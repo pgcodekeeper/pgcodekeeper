@@ -32,13 +32,10 @@ implements PgOptionContainer {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSql = new StringBuilder();
-        sbSql.append("CREATE TEXT SEARCH DICTIONARY ").append(getQualifiedName());
+        sbSql.append("CREATE TEXT SEARCH DICTIONARY ").append(PgDiffUtils.getQuotedName(getName()));
         sbSql.append(" (\n\tTEMPLATE = ").append(template);
 
-        for (Map.Entry<String, String> entry : options.entrySet()) {
-            sbSql.append(",\n\t").append(entry.getKey()).append(" = ").append(entry.getValue());
-        }
-
+        options.forEach((k,v) -> sbSql.append(",\n\t").append(k).append(" = ").append(v));
         sbSql.append(" );");
 
         appendOwnerSQL(sbSql);
@@ -63,13 +60,13 @@ implements PgOptionContainer {
     @Override
     protected StringBuilder appendOwnerSQL(StringBuilder sb) {
         return owner == null ? sb
-                : sb.append("\n\nALTER TEXT SEARCH DICTIONARY ").append(getQualifiedName())
+                : sb.append("\n\nALTER TEXT SEARCH DICTIONARY ").append(PgDiffUtils.getQuotedName(getName()))
                 .append(" OWNER TO ").append(PgDiffUtils.getQuotedName(owner)).append(';');
     }
 
     @Override
     public String getDropSQL() {
-        return "DROP TEXT SEARCH DICTIONARY " + getQualifiedName() + ';';
+        return "DROP TEXT SEARCH DICTIONARY " + PgDiffUtils.getQuotedName(getName()) + ';';
     }
 
     @Override
@@ -101,7 +98,7 @@ implements PgOptionContainer {
     public void appendOptions(PgOptionContainer newContainer, StringBuilder setOptions,
             StringBuilder resetOptions, StringBuilder sb) {
         sb.append("\n\nALTER TEXT SEARCH DICTIONARY ");
-        sb.append(getQualifiedName());
+        sb.append(PgDiffUtils.getQuotedName(getName()));
         sb.append("\n\t(");
 
         if (setOptions.length() > 0) {

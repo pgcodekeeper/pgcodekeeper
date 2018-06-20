@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,13 +35,15 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
     @Override
     public String getCreationSQL() {
         StringBuilder sbSql = new StringBuilder();
-        sbSql.append("CREATE TEXT SEARCH CONFIGURATION ").append(getQualifiedName()).append(" (\n\t");
+        sbSql.append("CREATE TEXT SEARCH CONFIGURATION ")
+        .append(PgDiffUtils.getQuotedName(getName())).append(" (\n\t");
         sbSql.append("PARSER = ").append(parser).append(" );");
 
         dictionariesMap.forEach((fragment, dictionaries) -> {
-            sbSql.append("\n\nALTER TEXT SEARCH CONFIGURATION ").append(getQualifiedName());
+            sbSql.append("\n\nALTER TEXT SEARCH CONFIGURATION ")
+            .append(PgDiffUtils.getQuotedName(getName()));
             sbSql.append("\n\tADD MAPPING FOR ").append(fragment)
-            .append("\n\tWITH ").append(String.join(", ", dictionaries)).append(";");
+            .append("\n\tWITH ").append(dictionaries).append(";");
         });
 
         appendOwnerSQL(sbSql);
@@ -63,13 +66,14 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
     @Override
     protected StringBuilder appendOwnerSQL(StringBuilder sb) {
         return owner == null ? sb
-                : sb.append("\n\nALTER TEXT SEARCH CONFIGURATION ").append(getQualifiedName())
+                : sb.append("\n\nALTER TEXT SEARCH CONFIGURATION ")
+                .append(PgDiffUtils.getQuotedName(getName()))
                 .append(" OWNER TO ").append(PgDiffUtils.getQuotedName(owner)).append(';');
     }
 
     @Override
     public String getDropSQL() {
-        return "DROP TEXT SEARCH CONFIGURATION " + getQualifiedName() + ';';
+        return "DROP TEXT SEARCH CONFIGURATION " + PgDiffUtils.getQuotedName(getName()) + ';';
     }
 
     @Override
@@ -108,10 +112,12 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
             String newDictionaries = newMap.get(fragment);
 
             if (newDictionaries == null) {
-                sb.append("\n\nALTER TEXT SEARCH CONFIGURATION ").append(getQualifiedName())
+                sb.append("\n\nALTER TEXT SEARCH CONFIGURATION ")
+                .append(PgDiffUtils.getQuotedName(getName()))
                 .append("\n\tDROP MAPPING FOR ").append(fragment).append(';');
             } else if (!dictionaries.equals(newDictionaries)) {
-                sb.append("\n\nALTER TEXT SEARCH CONFIGURATION ").append(getQualifiedName())
+                sb.append("\n\nALTER TEXT SEARCH CONFIGURATION ")
+                .append(PgDiffUtils.getQuotedName(getName()))
                 .append("\n\tALTER MAPPING FOR ").append(fragment)
                 .append("\n\tWITH ").append(newDictionaries).append(";");
             }
@@ -119,7 +125,8 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
 
         newMap.forEach((fragment, dictionaries) -> {
             if (!oldMap.containsKey(fragment)) {
-                sb.append("\n\nALTER TEXT SEARCH CONFIGURATION ").append(getQualifiedName())
+                sb.append("\n\nALTER TEXT SEARCH CONFIGURATION ")
+                .append(PgDiffUtils.getQuotedName(getName()))
                 .append("\n\tADD MAPPING FOR ").append(fragment)
                 .append("\n\tWITH ").append(dictionaries).append(";");
             }
@@ -184,6 +191,6 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
     }
 
     public Map<String, String> getDictionariesMap() {
-        return dictionariesMap;
+        return Collections.unmodifiableMap(dictionariesMap);
     }
 }
