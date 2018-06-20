@@ -46,8 +46,13 @@ public class FtsDictionariesReader extends JdbcReader {
 
         String tmplname = res.getString("tmplname");
         String templateSchema = res.getString("tmplnspname");
-        dic.setTemplate(PgDiffUtils.getQuotedName(templateSchema) + '.' + PgDiffUtils.getQuotedName(tmplname));
-        dic.addDep(new GenericColumn(templateSchema, tmplname, DbObjType.FTS_TEMPLATE));
+
+        if ("pg_catalog".equals(templateSchema)) {
+            dic.setTemplate(PgDiffUtils.getQuotedName(tmplname));
+        } else {
+            dic.setTemplate(PgDiffUtils.getQuotedName(templateSchema) + '.' + PgDiffUtils.getQuotedName(tmplname));
+            dic.addDep(new GenericColumn(templateSchema, tmplname, DbObjType.FTS_TEMPLATE));
+        }
 
         // COMMENT
         String comment = res.getString("comment");

@@ -463,7 +463,8 @@ dictionary_option
 create_fts_configuration
     : TEXT SEARCH CONFIGURATION name=schema_qualified_name
     LEFT_PAREN
-        (PARSER | COPY) EQUAL parser_name=schema_qualified_name
+        (PARSER EQUAL parser_name=schema_qualified_name
+        | COPY EQUAL config_name=schema_qualified_name)
     RIGHT_PAREN
     ;
     

@@ -756,8 +756,8 @@ public class ReferenceListener extends SQLParserBaseListener {
                             ParserAbstract.getFullCtxText(ctx.getParent()));
                 }
 
-                addObjReference(dictSchemaName, QNameParser.getFirstName(dictIds), DbObjType.FTS_DICTIONARY,
-                        StatementActions.ALTER,
+                addObjReference(dictSchemaName, QNameParser.getFirstName(dictIds),
+                        DbObjType.FTS_DICTIONARY, StatementActions.NONE,
                         objName.getStart().getStartIndex() + dictOffset, objName.getStart().getLine(),
                         ParserAbstract.getFullCtxText(ctx.getParent()));
             }

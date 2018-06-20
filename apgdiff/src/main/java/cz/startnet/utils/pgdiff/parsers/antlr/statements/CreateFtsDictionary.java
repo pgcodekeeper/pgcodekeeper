@@ -34,11 +34,13 @@ public class CreateFtsDictionary extends ParserAbstract {
 
         List<IdentifierContext> templateIds = ctx.template.identifier();
         dictionary.setTemplate(ParserAbstract.getFullCtxText(ctx.template));
-        dictionary.addDep(new GenericColumn(QNameParser.getSchemaName(templateIds, "pg_catalog"),
-                QNameParser.getFirstName(templateIds), DbObjType.FTS_TEMPLATE));
+        String templateSchema = QNameParser.getSchemaName(templateIds, "pg_catalog");
+        if (!"pg_catalog".equals(templateSchema)) {
+            dictionary.addDep(new GenericColumn(templateSchema,
+                    QNameParser.getFirstName(templateIds), DbObjType.FTS_TEMPLATE));
+        }
 
         schema.addFtsDictionary(dictionary);
-
         return dictionary;
     }
 }
