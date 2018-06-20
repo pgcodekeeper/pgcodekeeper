@@ -1,11 +1,13 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgFtsConfiguration;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -39,21 +41,32 @@ public class FtsConfigurationsReader extends JdbcReader {
 
         String parserSchema = res.getString(NAMESPACE_NSPNAME);
         String parserName = res.getString("prsname");
-        config.setParser(parserSchema + '.' + parserName);
+        config.setParser(PgDiffUtils.getQuotedName(parserSchema) + '.' + PgDiffUtils.getQuotedName(parserName));
         config.addDep(new GenericColumn(parserSchema, parserName, DbObjType.FTS_PARSER));
 
         String[] fragments = res.getArray("tokennames", String.class);
+        String[] dictSchemas = res.getArray("dictschemas", String.class);
         String[] dictionaries = res.getArray("dictnames", String.class);
 
         if (fragments != null) {
-            for (int i = 0; i < fragments.length; i ++) {
-                String dict = dictionaries[i];
-                QNameParser parser = new QNameParser(dict);
+            Map<String, List<String>> dictMap = new HashMap<>();
 
-                String dictSchema = parser.getSchemaName("pg_catalog");
-                config.addDictionary(fragments[i], dict);
-                config.addDep(new GenericColumn(dictSchema, parser.getFirstName(), DbObjType.FTS_DICTIONARY));
+            for (int i = 0; i < fragments.length; i ++) {
+                String fragment = fragments[i];
+                String dictSchema = dictSchemas[i];
+                String dictName = dictionaries[i];
+
+                List<String> dicts = dictMap.get(fragment);
+                if (dicts == null) {
+                    dicts = new ArrayList<>();
+                    dictMap.put(fragment, dicts);
+                }
+                dicts.add(PgDiffUtils.getQuotedName(dictSchema) + '.' + PgDiffUtils.getQuotedName(dictName));
+
+                config.addDep(new GenericColumn(dictSchema, dictName, DbObjType.FTS_DICTIONARY));
             }
+
+            dictMap.forEach(config::addDictionary);
         }
 
         loader.setOwner(config, res.getLong("cfgowner"));

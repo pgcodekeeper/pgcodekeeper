@@ -1,8 +1,7 @@
 package cz.startnet.utils.pgdiff.schema;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -15,7 +14,7 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
 
     private String parser;
     /**key - fragment, value - dictionaries */
-    private final Map<String, Collection<String>> dictionariesMap = new HashMap<>();
+    private final Map<String, String> dictionariesMap = new HashMap<>();
 
 
     public PgFtsConfiguration(String name, String rawStatement) {
@@ -98,15 +97,15 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
     }
 
     public void compareOptions(PgFtsConfiguration newConf, StringBuilder sb) {
-        Map <String, Collection<String>> oldMap = dictionariesMap;
-        Map <String, Collection<String>> newMap = newConf.dictionariesMap;
+        Map <String, String> oldMap = dictionariesMap;
+        Map <String, String> newMap = newConf.dictionariesMap;
 
         if (oldMap.isEmpty() && newMap.isEmpty()) {
             return;
         }
 
         oldMap.forEach((fragment, dictionaries) -> {
-            Collection<String> newDictionaries = newMap.get(fragment);
+            String newDictionaries = newMap.get(fragment);
 
             if (newDictionaries == null) {
                 sb.append("\n\nALTER TEXT SEARCH CONFIGURATION ").append(getQualifiedName())
@@ -114,7 +113,7 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
             } else if (!dictionaries.equals(newDictionaries)) {
                 sb.append("\n\nALTER TEXT SEARCH CONFIGURATION ").append(getQualifiedName())
                 .append("\n\tALTER MAPPING FOR ").append(fragment)
-                .append("\n\tWITH ").append(String.join(", ", newDictionaries)).append(";");
+                .append("\n\tWITH ").append(newDictionaries).append(";");
             }
         });
 
@@ -122,7 +121,7 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
             if (!oldMap.containsKey(fragment)) {
                 sb.append("\n\nALTER TEXT SEARCH CONFIGURATION ").append(getQualifiedName())
                 .append("\n\tADD MAPPING FOR ").append(fragment)
-                .append("\n\tWITH ").append(String.join(", ", dictionaries)).append(";");
+                .append("\n\tWITH ").append(dictionaries).append(";");
             }
         });
     }
@@ -166,7 +165,7 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
         hasher.put(name);
         hasher.put(owner);
         hasher.put(parser);
-        hasher.putStringCollectionsMap(dictionariesMap);
+        hasher.put(dictionariesMap);
         hasher.put(comment);
     }
 
@@ -179,17 +178,12 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
         resetHash();
     }
 
-    public void addDictionary(String fragment, String dictionary) {
-        Collection<String> dictionaries = dictionariesMap.get(fragment);
-        if (dictionaries == null) {
-            dictionaries = new ArrayList<>();
-            dictionariesMap.put(fragment, dictionaries);
-        }
-        dictionaries.add(dictionary);
+    public void addDictionary(String fragment, List<String> dictionaries) {
+        dictionariesMap.put(fragment, String.join(", ", dictionaries));
         resetHash();
     }
 
-    public Map<String, Collection<String>> getDictionariesMap() {
+    public Map<String, String> getDictionariesMap() {
         return dictionariesMap;
     }
 }

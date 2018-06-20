@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
@@ -37,12 +38,14 @@ public class AlterFtsStatement extends ParserAbstract {
             Alter_fts_configurationContext afc = ctx.alter_fts_configuration();
             if (afc != null && afc.ADD() != null) {
                 for (IdentifierContext type : afc.types) {
+                    List<String> dics = new ArrayList<>();
                     for (Schema_qualified_nameContext dictionary : afc.dictionaries) {
                         List<IdentifierContext> dIds = dictionary.identifier();
-                        config.addDictionary(getFullCtxText(type),getFullCtxText(dictionary));
+                        dics.add(getFullCtxText(dictionary));
                         config.addDep(new GenericColumn(QNameParser.getSchemaName(dIds, "pg_catalog"),
                                 QNameParser.getFirstName(dIds), DbObjType.FTS_DICTIONARY));
                     }
+                    config.addDictionary(getFullCtxText(type), dics);
                 }
             }
             st = config;

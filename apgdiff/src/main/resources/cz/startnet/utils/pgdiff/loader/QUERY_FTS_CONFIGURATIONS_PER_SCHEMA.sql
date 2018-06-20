@@ -7,10 +7,11 @@ WITH extension_deps AS (
 
 SELECT c.oid::bigint,
        c.cfgname,
-       c.cfgowner,
+       c.cfgowner::bigint,
        p.prsname,
        n.nspname,
        words.tokennames,
+       words.dictschemas,
        words.dictnames,
        d.description AS comment
 FROM pg_ts_config c
@@ -25,9 +26,11 @@ LEFT JOIN LATERAL (
             FROM pg_catalog.ts_token_type(c.cfgparser::pg_catalog.oid) AS t 
             WHERE t.tokid = m.maptokentype) 
             ORDER BY m.mapcfg, m.maptokentype, m.mapseqno) AS tokennames,
-        pg_catalog.array_agg(m.mapdict::pg_catalog.regdictionary::text ORDER BY m.mapcfg, m.maptokentype, m.mapseqno) AS dictnames
+        pg_catalog.array_agg(nsp.nspname ORDER BY m.mapcfg, m.maptokentype, m.mapseqno) AS dictschemas,
+        pg_catalog.array_agg(dict.dictname ORDER BY m.mapcfg, m.maptokentype, m.mapseqno) AS dictnames
     FROM pg_catalog.pg_ts_config_map m
     LEFT JOIN pg_catalog.pg_ts_dict dict ON m.mapdict = dict.oid 
+    LEFT JOIN pg_catalog.pg_namespace nsp ON dict.dictnamespace = nsp.oid   
     GROUP BY m.mapcfg
 ) words ON words.mapcfg = c.oid
 WHERE c.cfgnamespace = ? AND 
