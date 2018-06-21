@@ -1,4 +1,4 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
 DROP TRIGGER test_table_trigger ON public.test_table;
 

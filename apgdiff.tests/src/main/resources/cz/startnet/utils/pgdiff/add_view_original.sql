@@ -15,7 +15,7 @@ SET escape_string_warning = off;
 COMMENT ON SCHEMA public IS 'Standard public schema';
 
 
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
 SET default_tablespace = '';
 
@@ -25,7 +25,7 @@ SET default_with_oids = false;
 -- Name: testtable; Type: TABLE; Schema: public; Owner: fordfrog; Tablespace: 
 --
 
-CREATE TABLE testtable (
+CREATE TABLE public.testtable (
     id bigint,
     name character varying(30)
 );

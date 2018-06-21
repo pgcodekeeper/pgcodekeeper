@@ -12,14 +12,14 @@ ALTER FUNCTION public.test_table_trigger() OWNER TO fordfrog;
 
 CREATE CONSTRAINT TRIGGER test_table_trigger
 	BEFORE INSERT OR UPDATE ON public.test_table
-	FROM test_table
+	FROM public.test_table
 	DEFERRABLE INITIALLY DEFERRED
 	FOR EACH ROW
 	EXECUTE PROCEDURE public.test_table_trigger();
 
 CREATE CONSTRAINT TRIGGER test_view_trigger1
 	INSTEAD OF INSERT OR UPDATE ON public.test_view
-	FROM test_table
+	FROM public.test_table
 	FOR EACH ROW
 	EXECUTE PROCEDURE public.test_table_trigger();
 

@@ -1,6 +1,6 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This TRIGGER depends on the FUNCTION: test_table_trigger()
+-- DEPCY: This TRIGGER depends on the FUNCTION: public.test_table_trigger()
 
 DROP TRIGGER test_table_trigger ON public.test_table;
 

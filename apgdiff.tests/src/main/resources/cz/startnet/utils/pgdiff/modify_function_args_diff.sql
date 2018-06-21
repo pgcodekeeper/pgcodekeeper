@@ -1,8 +1,8 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-DROP FUNCTION power_number(input integer);
+DROP FUNCTION public.power_number(input integer);
 
-CREATE OR REPLACE FUNCTION power_number(number integer) RETURNS integer
+CREATE OR REPLACE FUNCTION public.power_number(number integer) RETURNS integer
     AS $$
 begin
 	return number * number;
@@ -10,4 +10,4 @@ end;
 $$
     LANGUAGE plpgsql;
 
-ALTER FUNCTION power_number(number integer) OWNER TO fordfrog;
+ALTER FUNCTION public.power_number(number integer) OWNER TO fordfrog;
