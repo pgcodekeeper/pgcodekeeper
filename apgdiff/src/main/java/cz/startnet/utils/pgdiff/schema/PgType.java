@@ -665,7 +665,7 @@ public class PgType extends PgStatementWithSearchPath {
         hasher.put(name);
         hasher.put(form);
         hasher.putOrdered(attrs);
-        hasher.putOrderedStrings(enums);
+        hasher.put(enums);
         hasher.put(subtype);
         hasher.put(subtypeOpClass);
         hasher.put(collation);

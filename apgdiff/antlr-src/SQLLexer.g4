@@ -597,6 +597,11 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     USAGE: [uU] [sS] [aA] [gG] [eE];
     CONNECT: [cC] [oO] [nN] [nN] [eE] [cC] [tT];
     LIST: [lL] [iI] [sS] [tT];
+    INIT: [iI] [nN] [iI] [tT];
+    LEXIZE: [lL] [eE] [xX] [iI] [zZ] [eE];
+    GETTOKEN: [gG] [eE] [tT] [tT] [oO] [kK] [eE] [nN];
+    HEADLINE: [hH] [eE] [aA] [dD] [lL] [iI] [nN] [eE];
+    LEXTYPES: [lL] [eE] [xX] [tT] [yY] [pP] [eE] [sS];
 
 fragment UNDERLINE : '_';
 

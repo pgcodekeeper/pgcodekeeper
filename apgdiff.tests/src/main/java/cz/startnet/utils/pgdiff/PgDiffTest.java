@@ -388,7 +388,19 @@ public class PgDiffTest {
                     // Tests scenario where REGULAR TABLE is converted to PARTITION TABLE.
                     {"chg_reg_table_to_partition"},
                     // Tests scenario where PARTITION FOREIGN TABLE inherit is modified.
-                    {"modify_partition_ftable_inherit"}
+                    {"modify_partition_ftable_inherit"},
+                    // Tests scenario where FTS PARSER is added, modified and deleted.
+                    {"modify_fts_parser"},
+                    // Tests scenario where FTS TEMPLATE is added, modified and deleted.
+                    {"modify_fts_template"},
+                    // Tests scenario where FTS DICTIONARY is added, modified and deleted.
+                    {"modify_fts_dictionary"},
+                    // Tests scenario where FTS DICTIONARY OPTIONS is added, modified and deleted.
+                    {"modify_fts_dictionary_options"},
+                    // Tests scenario where FTS CONFIGURATION is added, modified and deleted.
+                    {"modify_fts_configuration"},
+                    // Tests scenario where FTS CONFIGURATION OPTIONS is added, modified and deleted.
+                    {"modify_fts_configuration_options"}
                 });
     }
 

@@ -283,6 +283,10 @@ public final class NewObjectPage extends WizardPage {
         case TABLE:
         case VIEW:
         case TYPE:
+        case FTS_PARSER:
+        case FTS_TEMPLATE:
+        case FTS_DICTIONARY:
+        case FTS_CONFIGURATION:
             path = schema + '.' + name;
             expectedFormat = SCHEMA + '.' + NAME;
             break;
@@ -427,27 +431,44 @@ public final class NewObjectPage extends WizardPage {
                     + PgDiffUtils.getQuotedName(schema)
                     + ", pg_catalog;"); //$NON-NLS-1$
             sb.append("\n\nCREATE "); //$NON-NLS-1$
-            if (type == DbObjType.FUNCTION) {
-                sb.append("OR REPLACE "); //$NON-NLS-1$
-                objectName +="()"; //$NON-NLS-1$
-            }
-            sb.append(type + " " + objectName); //$NON-NLS-1$
-
             switch (type) {
             case TYPE:
-                sb.append(';');
+                sb.append(type).append(' ').append(schema).append('.')
+                .append(objectName).append(';');
                 break;
             case DOMAIN:
-                sb.append(" AS datatype;"); //$NON-NLS-1$
+                sb.append(type).append(' ').append(schema).append('.')
+                .append(objectName).append(" AS datatype;"); //$NON-NLS-1$
                 break;
             case FUNCTION:
-                sb.append(" RETURNS void\n\tLANGUAGE sql\n    AS $$\n\t--function body \n$$;\n"); //$NON-NLS-1$
+                sb.append(" OR REPLACE FUNCTION ").append(schema).append('.') //$NON-NLS-1$
+                .append(objectName).append("() RETURNS void\n\tLANGUAGE sql\n    AS $$\n\t--function body \n$$;\n"); //$NON-NLS-1$
                 break;
             case TABLE:
-                sb.append(" (\n);"); //$NON-NLS-1$
+                sb.append(type).append(' ').append(schema).append('.')
+                .append(objectName).append(" (\n);"); //$NON-NLS-1$
+                break;
+            case VIEW:
+                sb.append(type).append(' ').append(schema).append('.')
+                .append(objectName).append(" AS\n\tSELECT 'select_text'::text AS text;"); //$NON-NLS-1$
+                break;
+            case FTS_PARSER:
+                sb.append("TEXT SEARCH PARSER ").append(schema).append('.').append(objectName) //$NON-NLS-1$
+                .append(" (\n\tSTART = start_function,\n\tGETTOKEN = gettoken_function,\n\tEND = end_function,\n\tLEXTYPES = lextypes_function );"); //$NON-NLS-1$
+                break;
+            case FTS_TEMPLATE:
+                sb.append("TEXT SEARCH TEMPLATE ").append(schema).append('.') //$NON-NLS-1$
+                .append(objectName).append(" (\n\tLEXIZE = lexize_function );"); //$NON-NLS-1$
+                break;
+            case FTS_DICTIONARY:
+                sb.append("TEXT SEARCH DICTIONARY ").append(schema).append('.') //$NON-NLS-1$
+                .append(objectName).append(" (\n\tTEMPLATE = template_name );"); //$NON-NLS-1$
+                break;
+            case FTS_CONFIGURATION:
+                sb.append("TEXT SEARCH CONFIGURATION ").append(schema).append('.') //$NON-NLS-1$
+                .append(objectName).append(" (\n\tPARSER = parser_name );"); //$NON-NLS-1$
                 break;
             default:
-                sb.append(" AS\n\tSELECT 'select_text'::text AS text;"); //$NON-NLS-1$
                 break;
             }
 

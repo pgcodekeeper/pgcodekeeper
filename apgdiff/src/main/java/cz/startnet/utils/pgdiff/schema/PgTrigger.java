@@ -5,10 +5,10 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -48,7 +48,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
     /**
      * Optional list of columns for UPDATE event.
      */
-    private final List<String> updateColumns = new ArrayList<>();
+    private final Set<String> updateColumns = new HashSet<>();
     private String when;
 
     /**
@@ -267,8 +267,8 @@ public class PgTrigger extends PgStatementWithSearchPath {
         return tableName;
     }
 
-    public List<String> getUpdateColumns() {
-        return Collections.unmodifiableList(updateColumns);
+    public Set<String> getUpdateColumns() {
+        return Collections.unmodifiableSet(updateColumns);
     }
 
     public void addUpdateColumn(final String columnName) {
@@ -361,7 +361,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
                 && Objects.equals(when, trigger.getWhen())
                 && Objects.equals(newTable, trigger.getNewTable())
                 && Objects.equals(oldTable, trigger.getOldTable())
-                && PgDiffUtils.setlikeEquals(updateColumns, trigger.updateColumns);
+                && Objects.equals(updateColumns, trigger.updateColumns);
     }
 
     @Override
@@ -376,7 +376,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
         hasher.put(onUpdate);
         hasher.put(tableName);
         hasher.put(when);
-        hasher.putUnorderedStrings(updateColumns);
+        hasher.put(updateColumns);
         hasher.put(comment);
         hasher.put(constraint);
         hasher.put(isImmediate);

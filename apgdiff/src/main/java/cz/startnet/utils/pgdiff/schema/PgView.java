@@ -499,7 +499,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     public void computeHash(Hasher hasher) {
         hasher.putOrdered(grants);
         hasher.putOrdered(revokes);
-        hasher.putOrderedStrings(columnNames);
+        hasher.put(columnNames);
         hasher.putUnordered(defaultValues);
         hasher.put(name);
         hasher.put(normalizedQuery);

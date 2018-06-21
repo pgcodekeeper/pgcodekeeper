@@ -131,7 +131,19 @@ public class PgDiffDepciesTest {
             // пересоздание вьюхи с комментарием
             // пользователь выбрал таблицу
             // задача 7095
-            {"chg_view_with_comment", "chg_view_with_comment_usr_table"}
+            {"chg_view_with_comment", "chg_view_with_comment_usr_table"},
+            // изменение зависимых объектов полнотекстового поиска
+            // пользователь выбрал парсер
+            {"chg_fts_statements", "chg_fts_statements_usr_parser"},
+            // изменение зависимых объектов полнотекстового поиска
+            // пользователь выбрал словарь
+            {"chg_fts_statements", "chg_fts_statements_usr_dictionary"},
+            // изменение зависимых объектов полнотекстового поиска
+            // пользователь выбрал шаблон
+            {"chg_fts_statements", "chg_fts_statements_usr_template"},
+            // изменение зависимых объектов полнотекстового поиска
+            // пользователь выбрал конфигурацию
+            {"chg_fts_statements", "chg_fts_statements_usr_configuration"}
         });
     }
 
