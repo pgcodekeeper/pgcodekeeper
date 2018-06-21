@@ -1,7 +1,7 @@
 package ru.taximaxim.codekeeper.ui.dialogs;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.jface.dialogs.Dialog;
@@ -201,8 +201,7 @@ public class FilterDialog extends Dialog {
         new Label(container, SWT.NONE).setText(Messages.FilterDialog_show_change_types);
 
         objViewer = CheckboxTableViewer.newCheckList(container, SWT.BORDER);
-        objViewer.add(Arrays.stream(DbObjType.class.getEnumConstants())
-                .filter(e -> e != DbObjType.DATABASE && e != DbObjType.COLUMN).toArray());
+        objViewer.add(EnumSet.complementOf(EnumSet.of(DbObjType.COLUMN, DbObjType.DATABASE)).toArray());
         objViewer.setCheckedElements(types.toArray());
         objViewer.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 

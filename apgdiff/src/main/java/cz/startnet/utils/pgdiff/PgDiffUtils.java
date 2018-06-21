@@ -258,6 +258,10 @@ public final class PgDiffUtils {
         if (s1 != c2.size()) {
             return false;
         }
+        if (0 == s1) {
+            // both are empty
+            return true;
+        }
         // mimic HashSet(Collection) constructor
         final float loadFactor = 0.75f;
         final Map<Object, Integer> map =
