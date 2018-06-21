@@ -34,7 +34,7 @@ public class CreateFtsDictionary extends ParserAbstract {
 
         List<IdentifierContext> templateIds = ctx.template.identifier();
         dictionary.setTemplate(ParserAbstract.getFullCtxText(ctx.template));
-        String templateSchema = QNameParser.getSchemaName(templateIds, "pg_catalog");
+        String templateSchema = QNameParser.getSchemaName(templateIds, getDefSchemaName());
         if (!"pg_catalog".equals(templateSchema)) {
             dictionary.addDep(new GenericColumn(templateSchema,
                     QNameParser.getFirstName(templateIds), DbObjType.FTS_TEMPLATE));

@@ -42,7 +42,7 @@ public class AlterFtsStatement extends ParserAbstract {
                     for (Schema_qualified_nameContext dictionary : afc.dictionaries) {
                         List<IdentifierContext> dIds = dictionary.identifier();
                         dics.add(getFullCtxText(dictionary));
-                        config.addDep(new GenericColumn(QNameParser.getSchemaName(dIds, "pg_catalog"),
+                        config.addDep(new GenericColumn(QNameParser.getSchemaName(dIds, getDefSchemaName()),
                                 QNameParser.getFirstName(dIds), DbObjType.FTS_DICTIONARY));
                     }
                     config.addDictionary(getFullCtxText(type), dics);

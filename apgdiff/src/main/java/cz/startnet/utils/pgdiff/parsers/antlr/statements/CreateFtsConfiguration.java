@@ -29,7 +29,7 @@ public class CreateFtsConfiguration extends ParserAbstract {
         PgFtsConfiguration config = new PgFtsConfiguration(name, getFullCtxText(ctx.getParent()));
         List<IdentifierContext> parserIds = ctx.parser_name.identifier();
         config.setParser(ParserAbstract.getFullCtxText(ctx.parser_name));
-        String parserSchema = QNameParser.getSchemaName(parserIds, "pg_catalog");
+        String parserSchema = QNameParser.getSchemaName(parserIds, getDefSchemaName());
         if (!"pg_catalog".equals(parserSchema)) {
             config.addDep(new GenericColumn(parserSchema,
                     QNameParser.getFirstName(parserIds), DbObjType.FTS_PARSER));

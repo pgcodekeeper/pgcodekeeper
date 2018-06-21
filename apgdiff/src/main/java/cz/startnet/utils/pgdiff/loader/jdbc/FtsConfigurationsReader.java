@@ -65,7 +65,12 @@ public class FtsConfigurationsReader extends JdbcReader {
                 if ("pg_catalog".equals(dictSchema)) {
                     dicts.add(PgDiffUtils.getQuotedName(dictName));
                 } else {
-                    dicts.add(PgDiffUtils.getQuotedName(dictSchema) + '.' + PgDiffUtils.getQuotedName(dictName));
+                    if (schema.getName().equals(dictSchema)) {
+                        dicts.add(PgDiffUtils.getQuotedName(dictName));
+                    } else {
+                        dicts.add(PgDiffUtils.getQuotedName(dictSchema) + '.' + PgDiffUtils.getQuotedName(dictName));
+                    }
+
                     config.addDep(new GenericColumn(dictSchema, dictName, DbObjType.FTS_DICTIONARY));
                 }
             }
