@@ -128,7 +128,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
         }
 
         sbSQL.append(" ON ");
-        sbSQL.append(getContainingSchema().getName())
+        sbSQL.append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
         .append('.').append(getTableName());
 
         if (isConstraint()) {
@@ -179,7 +179,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
     @Override
     public String getDropSQL() {
         return "DROP TRIGGER " + PgDiffUtils.getQuotedName(getName()) + " ON "
-                + getContainingSchema().getName() + '.' + getTableName() + ";";
+                + PgDiffUtils.getQuotedName(getContainingSchema().getName()) + '.' + getTableName() + ";";
     }
 
     @Override

@@ -1,14 +1,13 @@
-SET search_path = public, pg_catalog;
-
-CREATE TABLE t1 (
+CREATE TABLE public.t1 (
     c1 bigInt,
     c2 integer
 );
 
-CREATE TABLE t2 (
+CREATE TABLE public.t2 (
     c3 integer,
     c4 bigInt
 );
 
-CREATE VIEW v1 AS
-    select * from t1, (select * from t2) q1;
+CREATE VIEW public.v1 AS
+    SELECT * FROM public.t1, (SELECT * FROM public.t2) q1;
+    

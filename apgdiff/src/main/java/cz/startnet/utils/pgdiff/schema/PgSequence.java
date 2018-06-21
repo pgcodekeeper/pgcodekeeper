@@ -68,7 +68,7 @@ public class PgSequence extends PgStatementWithSearchPath implements IRelation {
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE SEQUENCE ");
-        sbSQL.append(getContainingSchema().getName()).append('.');
+        sbSQL.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
         sbSQL.append(PgDiffUtils.getQuotedName(name));
 
         if (!"bigint".equals(dataType)) {
@@ -139,10 +139,10 @@ public class PgSequence extends PgStatementWithSearchPath implements IRelation {
         final StringBuilder sbSQL = new StringBuilder();
 
         sbSQL.append("\n\nALTER SEQUENCE ")
-        .append(getContainingSchema().getName()).append('.')
+        .append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.')
         .append(PgDiffUtils.getQuotedName(name));
         sbSQL.append("\n\tOWNED BY ")
-        .append(getContainingSchema().getName()).append('.')
+        .append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.')
         .append(ownedBy).append(';');
 
         return sbSQL.toString();
@@ -166,7 +166,7 @@ public class PgSequence extends PgStatementWithSearchPath implements IRelation {
 
     @Override
     public String getDropSQL() {
-        return "DROP SEQUENCE " + getContainingSchema().getName() + '.'
+        return "DROP SEQUENCE " + PgDiffUtils.getQuotedName(getContainingSchema().getName()) + '.'
                 + PgDiffUtils.getQuotedName(getName()) + ";";
     }
 
@@ -250,7 +250,7 @@ public class PgSequence extends PgStatementWithSearchPath implements IRelation {
 
         if (sbSQL.length() > 0) {
             sb.append("\n\nALTER SEQUENCE "
-                    + getContainingSchema().getName() + '.'
+                    + PgDiffUtils.getQuotedName(getContainingSchema().getName()) + '.'
                     + PgDiffUtils.getQuotedName(newSequence.getName())
                     + sbSQL.toString() + ";");
         }

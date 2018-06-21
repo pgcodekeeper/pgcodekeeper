@@ -34,14 +34,14 @@ public abstract class ForeignPgTable extends PgTable {
         if (only) {
             sb.append("ONLY ");
         }
-        sb.append(getContainingSchema().getName()).append('.');
+        sb.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
         sb.append(PgDiffUtils.getQuotedName(getName()));
         return sb.toString();
     }
 
     @Override
     public String getDropSQL() {
-        return "DROP FOREIGN TABLE " + getContainingSchema().getName() + '.'
+        return "DROP FOREIGN TABLE " + PgDiffUtils.getQuotedName(getContainingSchema().getName()) + '.'
                 + PgDiffUtils.getQuotedName(getName()) + ';';
     }
 
@@ -54,7 +54,7 @@ public abstract class ForeignPgTable extends PgTable {
     @Override
     protected StringBuilder appendOwnerSQL(StringBuilder sb) {
         return owner == null ? super.appendOwnerSQL(sb)
-                : sb.append("\n\nALTER FOREIGN TABLE ").append(getContainingSchema().getName())
+                : sb.append("\n\nALTER FOREIGN TABLE ").append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
                 .append('.').append(PgDiffUtils.getQuotedName(getName()))
                 .append(" OWNER TO ").append(PgDiffUtils.getQuotedName(owner)).append(';');
     }
@@ -113,7 +113,7 @@ public abstract class ForeignPgTable extends PgTable {
     @Override
     protected void appendName(StringBuilder sbSQL) {
         sbSQL.append("CREATE FOREIGN TABLE ");
-        sbSQL.append(getContainingSchema().getName()).append('.');
+        sbSQL.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
         sbSQL.append(PgDiffUtils.getQuotedName(name));
     }
 

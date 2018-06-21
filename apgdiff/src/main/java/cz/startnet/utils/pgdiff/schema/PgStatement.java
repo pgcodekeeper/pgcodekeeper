@@ -275,7 +275,7 @@ public abstract class PgStatement implements IStatement {
         if (type == DbObjType.SCHEMA) {
             sb.append(PgDiffUtils.getQuotedName(getName()));
         } else {
-            sb.append(getParent().getName()).append('.');
+            sb.append(PgDiffUtils.getQuotedName(getParent().getName())).append('.');
             if (type == DbObjType.FUNCTION) {
                 ((PgFunction) this).appendFunctionSignature(sb, false, true);
             } else {

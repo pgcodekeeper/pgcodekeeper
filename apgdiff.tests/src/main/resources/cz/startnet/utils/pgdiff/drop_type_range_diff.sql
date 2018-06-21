@@ -1,3 +1,3 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-DROP TYPE typ_range;
+DROP TYPE public.typ_range;
