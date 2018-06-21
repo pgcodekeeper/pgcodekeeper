@@ -83,7 +83,7 @@ public class FeedBackDialog extends Dialog {
         new Label(container, SWT.NONE).setText(Messages.feedback_message);
 
         txtMessage = new Text(container, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = new PixelConverter(container).convertHeightInCharsToPixels(8);
         txtMessage.setLayoutData(gd);
 

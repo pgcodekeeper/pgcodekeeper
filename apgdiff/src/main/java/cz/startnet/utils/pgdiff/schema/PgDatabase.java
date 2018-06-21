@@ -45,7 +45,7 @@ public class PgDatabase extends PgStatement {
     // Содержит ссылки на объекты
     private final Map<String, List<PgObjLocation>> objReferences = new HashMap<>();
     // Contains PgStatement's contexts for analysis (for getting dependencies).
-    private final List<Entry<PgStatement, ParserRuleContext>> contextsForAnalyze = new ArrayList<>();
+    private final List<Entry<PgStatementWithSearchPath, ParserRuleContext>> contextsForAnalyze = new ArrayList<>();
 
     private PgDiffArguments arguments;
 
@@ -106,7 +106,7 @@ public class PgDatabase extends PgStatement {
         return objReferences;
     }
 
-    public List<Entry<PgStatement, ParserRuleContext>> getContextsForAnalyze() {
+    public List<Entry<PgStatementWithSearchPath, ParserRuleContext>> getContextsForAnalyze() {
         return contextsForAnalyze;
     }
 
@@ -116,7 +116,7 @@ public class PgDatabase extends PgStatement {
      * @param stmt statement to which the context belongs
      * @param ctx context for analyze
      */
-    public void addContextForAnalyze(PgStatement stmt, ParserRuleContext ctx) {
+    public void addContextForAnalyze(PgStatementWithSearchPath stmt, ParserRuleContext ctx) {
         contextsForAnalyze.add(new SimpleEntry<>(stmt, ctx));
     }
 

@@ -41,18 +41,17 @@ public final class FullAnalyze {
         }
 
         // Analysis of all statements except 'VIEW'.
-        for (Entry<PgStatement, ParserRuleContext> entry : db.getContextsForAnalyze()) {
-            if (DbObjType.VIEW == entry.getKey().getStatementType()) {
-                continue;
-            }
-            PgStatement statement = entry.getKey();
-            ParserRuleContext ctx = entry.getValue();
+        for (Entry<PgStatementWithSearchPath, ParserRuleContext> entry : db.getContextsForAnalyze()) {
+            PgStatementWithSearchPath statement = entry.getKey();
             DbObjType statementType = statement.getStatementType();
 
-            String schemaName = null;
-            if (statement instanceof PgStatementWithSearchPath) {
-                schemaName = ((PgStatementWithSearchPath) statement).getContainingSchema().getName();
+            // Duplicated objects doesn't have parent, skip them
+            if (DbObjType.VIEW == statementType || statement.getParent() == null) {
+                continue;
             }
+
+            ParserRuleContext ctx = entry.getValue();
+            String schemaName = statement.getContainingSchema().getName();
 
             switch (statementType) {
             case RULE:
