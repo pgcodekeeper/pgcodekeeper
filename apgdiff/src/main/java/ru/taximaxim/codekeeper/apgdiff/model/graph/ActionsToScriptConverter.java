@@ -13,6 +13,7 @@ import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -55,13 +56,16 @@ public class ActionsToScriptConverter {
                                 + '.';
                     }
                     objName += objStarter.getName();
+
+                    if (objStarter instanceof PgStatementWithSearchPath) {
+                        objName = ((PgStatementWithSearchPath)objStarter).getContainingSchema().getName() + '.' + objName;
+                    }
+
                     depcy = MessageFormat.format(
                             action.getAction() == StatementActions.CREATE ?
                                     CREATE_COMMENT : DROP_COMMENT,
                                     oldObj.getStatementType(),
-                                    objStarter.getStatementType(),
-                                    objStarter.getParent().getParent().getName()
-                                    + '.' + objName);
+                                    objStarter.getStatementType(), objName);
                 }
                 switch (action.getAction()) {
                 case CREATE:

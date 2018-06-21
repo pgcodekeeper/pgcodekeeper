@@ -67,6 +67,8 @@ public class PartitionPgTable extends RegularPgTable {
             .append('.')
             .append(PgDiffUtils.getQuotedName(tableName.getValue()))
             .append("\n\tDETACH PARTITION ")
+            .append(PgDiffUtils.getQuotedName(getParent().getName()))
+            .append('.')
             .append(PgDiffUtils.getQuotedName(getName()))
             .append(';');
 
@@ -85,6 +87,8 @@ public class PartitionPgTable extends RegularPgTable {
         .append('.')
         .append(PgDiffUtils.getQuotedName(newInherits.getValue()))
         .append("\n\tATTACH PARTITION ")
+        .append(PgDiffUtils.getQuotedName(getParent().getName()))
+        .append('.')
         .append(PgDiffUtils.getQuotedName(getName()))
         .append(' ').append(getPartitionBounds()).append(';');
     }
@@ -107,6 +111,8 @@ public class PartitionPgTable extends RegularPgTable {
                 .append('.')
                 .append(PgDiffUtils.getQuotedName(oldInherits.getValue()))
                 .append("\n\tDETACH PARTITION ")
+                .append(PgDiffUtils.getQuotedName(getParent().getName()))
+                .append('.')
                 .append(PgDiffUtils.getQuotedName(getName()))
                 .append(';');
 
@@ -116,6 +122,8 @@ public class PartitionPgTable extends RegularPgTable {
                 .append('.')
                 .append(PgDiffUtils.getQuotedName(newInherits.getValue()))
                 .append("\n\tATTACH PARTITION ")
+                .append(PgDiffUtils.getQuotedName(getParent().getName()))
+                .append('.')
                 .append(PgDiffUtils.getQuotedName(getName()))
                 .append(' ')
                 .append(((PartitionPgTable)newTable).getPartitionBounds())
