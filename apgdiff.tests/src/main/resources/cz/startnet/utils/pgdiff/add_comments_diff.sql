@@ -1,33 +1,33 @@
+SET search_path = pg_catalog;
+
 COMMENT ON DATABASE current_database() IS 'comments database';
 
-SET search_path = public, pg_catalog;
+COMMENT ON COLUMN public.typ_composite.key IS 'Type composite key comment';
 
-COMMENT ON COLUMN typ_composite.key IS 'Type composite key comment';
+COMMENT ON COLUMN public.typ_composite.val IS 'Type composite val comment';
 
-COMMENT ON COLUMN typ_composite.val IS 'Type composite val comment';
+COMMENT ON TYPE public.typ_composite IS 'test type';
 
-COMMENT ON TYPE typ_composite IS 'test type';
+COMMENT ON DOMAIN public.dom IS 'test domain';
 
-COMMENT ON DOMAIN dom IS 'test domain';
+COMMENT ON SEQUENCE public.test_id_seq IS 'test table sequence';
 
-COMMENT ON SEQUENCE test_id_seq IS 'test table sequence';
+COMMENT ON FUNCTION public.test_fnc(arg character varying) IS 'test function';
 
-COMMENT ON FUNCTION test_fnc(arg character varying) IS 'test function';
+COMMENT ON TABLE public.test IS 'test table';
 
-COMMENT ON TABLE test IS 'test table';
+COMMENT ON COLUMN public.test.id IS 'id column';
 
-COMMENT ON COLUMN test.id IS 'id column';
+COMMENT ON COLUMN public.test.text IS 'text column';
 
-COMMENT ON COLUMN test.text IS 'text column';
+COMMENT ON CONSTRAINT text_check ON public.test IS 'text check';
 
-COMMENT ON CONSTRAINT text_check ON test IS 'text check';
+COMMENT ON CONSTRAINT test_pkey ON public.test IS 'primary key';
 
-COMMENT ON CONSTRAINT test_pkey ON test IS 'primary key';
+COMMENT ON VIEW public.test_view IS 'test view';
 
-COMMENT ON VIEW test_view IS 'test view';
+COMMENT ON COLUMN public.test_view.id IS 'view id col';
 
-COMMENT ON COLUMN test_view.id IS 'view id col';
+COMMENT ON TRIGGER test_trigger ON public.test IS 'test trigger';
 
-COMMENT ON TRIGGER test_trigger ON test IS 'test trigger';
-
-COMMENT ON RULE test_rule ON test IS 'test rule';
+COMMENT ON RULE test_rule ON public.test IS 'test rule';

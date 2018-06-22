@@ -1,20 +1,20 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
--- DEPCY: This COLUMN depends on the TYPE: typ_range
+-- DEPCY: This COLUMN depends on the TYPE: public.typ_range
 
-ALTER TABLE distributors
+ALTER TABLE public.distributors
 	DROP COLUMN did;
 
-DROP TYPE typ_range;
+DROP TYPE public.typ_range;
 
--- DEPCY: This TYPE is a dependency of COLUMN: distributors.did
+-- DEPCY: This TYPE is a dependency of COLUMN: public.distributors.did
 
-CREATE TYPE typ_range AS RANGE (
+CREATE TYPE public.typ_range AS RANGE (
 	subtype = character varying,
 	collation = pg_catalog."ru_RU"
 );
 
-ALTER TYPE typ_range OWNER TO botov_av;
+ALTER TYPE public.typ_range OWNER TO botov_av;
 
-ALTER TABLE distributors
+ALTER TABLE public.distributors
 	ADD COLUMN did typ_range;

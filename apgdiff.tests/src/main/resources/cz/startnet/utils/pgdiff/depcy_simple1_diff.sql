@@ -1,44 +1,36 @@
-SET search_path = s, pg_catalog;
+SET search_path = pg_catalog;
 
--- DEPCY: This VIEW depends on the COLUMN: t1.id
+-- DEPCY: This VIEW depends on the COLUMN: public.t1.id
 
-DROP VIEW v1;
+DROP VIEW s.v1;
 
--- DEPCY: This VIEW depends on the COLUMN: t1.id
+-- DEPCY: This VIEW depends on the COLUMN: public.t1.id
 
-DROP VIEW v3;
+DROP VIEW s.v3;
 
-SET search_path = public, pg_catalog;
+-- DEPCY: This VIEW depends on the COLUMN: public.t1.id
 
--- DEPCY: This VIEW depends on the COLUMN: t1.id
+DROP VIEW public.v2;
 
-DROP VIEW v2;
+ALTER TABLE public.t1
+	ALTER COLUMN id TYPE bigint USING id::bigint; /* TYPE change - table: public.t1 original: integer new: bigint */
 
-ALTER TABLE t1
-	ALTER COLUMN id TYPE bigint USING id::bigint; /* TYPE change - table: t1 original: integer new: bigint */
-
-SET search_path = s, pg_catalog;
-
-CREATE VIEW v1 AS
+CREATE VIEW s.v1 AS
 	SELECT t1.id
    FROM public.t1;
 
-ALTER VIEW v1 OWNER TO levsha_aa;
+ALTER VIEW s.v1 OWNER TO levsha_aa;
 
-SET search_path = public, pg_catalog;
+-- DEPCY: This VIEW is a dependency of VIEW: s.v3
 
--- DEPCY: This VIEW is a dependency of VIEW: v3
-
-CREATE VIEW v2 AS
+CREATE VIEW public.v2 AS
 	SELECT t1.id
    FROM t1;
 
-ALTER VIEW v2 OWNER TO levsha_aa;
+ALTER VIEW public.v2 OWNER TO levsha_aa;
 
-SET search_path = s, pg_catalog;
-
-CREATE VIEW v3 AS
+CREATE VIEW s.v3 AS
 	SELECT v2.id
    FROM public.v2;
 
-ALTER VIEW v3 OWNER TO levsha_aa;
+ALTER VIEW s.v3 OWNER TO levsha_aa;

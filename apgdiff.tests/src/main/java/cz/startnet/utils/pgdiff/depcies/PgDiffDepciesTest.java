@@ -163,7 +163,7 @@ public class PgDiffDepciesTest {
         writer.flush();
 
         Assert.assertEquals("File name template: " + dbTemplate,
-                "", diffInput.toString().trim());
+                PgDiff.SET_SEARCH_PATH_PG_CATALOG, diffInput.toString().trim());
     }
 
     @Test(timeout = 120000)

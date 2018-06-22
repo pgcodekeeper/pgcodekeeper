@@ -1,26 +1,22 @@
-SET search_path = s, pg_catalog;
+SET search_path = pg_catalog;
 
--- DEPCY: This VIEW depends on the VIEW: v2
+-- DEPCY: This VIEW depends on the VIEW: public.v2
 
-DROP VIEW v3;
+DROP VIEW s.v3;
 
-SET search_path = public, pg_catalog;
+DROP VIEW public.v2;
 
-DROP VIEW v2;
+-- DEPCY: This VIEW is a dependency of VIEW: s.v3
 
--- DEPCY: This VIEW is a dependency of VIEW: v3
-
-CREATE VIEW v2 AS
+CREATE VIEW public.v2 AS
 	SELECT t1.id,
     'qwe' AS c1
-   FROM t1;
+   FROM public.t1;
 
-ALTER VIEW v2 OWNER TO levsha_aa;
+ALTER VIEW public.v2 OWNER TO levsha_aa;
 
-SET search_path = s, pg_catalog;
-
-CREATE VIEW v3 AS
+CREATE VIEW s.v3 AS
 	SELECT v2.id
    FROM public.v2;
 
-ALTER VIEW v3 OWNER TO levsha_aa;
+ALTER VIEW s.v3 OWNER TO levsha_aa;

@@ -213,6 +213,10 @@ public abstract class PgStatement implements IStatement {
         .append(getStatementType())
         .append(' ');
         if (DbObjType.SCHEMA != getStatementType()) {
+            if (this instanceof PgStatementWithSearchPath) {
+                sb.append(((PgStatementWithSearchPath)this).getContainingSchema().getName())
+                .append('.');
+            }
             sb.append(getParent().getName()).append('.');
         }
         sb.append(getName())
