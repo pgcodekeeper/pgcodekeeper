@@ -32,13 +32,13 @@ ALTER SCHEMA test_schema OWNER TO botov_av;
 --COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
 --
 -- Name: dom; Type: DOMAIN; Schema: public; Owner: botov_av
 --
 
-CREATE DOMAIN dom AS integer NOT NULL DEFAULT (-1)
+CREATE DOMAIN public.dom AS integer NOT NULL DEFAULT (-1)
 	CONSTRAINT dom_check CHECK ((VALUE <> 0));
 
 
@@ -48,7 +48,7 @@ ALTER DOMAIN public.dom OWNER TO botov_av;
 -- Name: typ_composite; Type: TYPE; Schema: public; Owner: botov_av
 --
 
-CREATE TYPE typ_composite AS (
+CREATE TYPE public.typ_composite AS (
 	key character varying(80) COLLATE pg_catalog."ru_RU.utf8",
 	val text COLLATE pg_catalog."en_GB"
 );
@@ -60,7 +60,7 @@ ALTER TYPE public.typ_composite OWNER TO botov_av;
 -- Name: test_fnc(character varying); Type: FUNCTION; Schema: public; Owner: botov_av
 --
 
-CREATE FUNCTION test_fnc(arg character varying) RETURNS boolean
+CREATE FUNCTION public.test_fnc(arg character varying) RETURNS boolean
     LANGUAGE plpgsql
     AS $$BEGIN
 RETURN true;
@@ -73,7 +73,7 @@ ALTER FUNCTION public.test_fnc(arg character varying) OWNER TO botov_av;
 -- Name: trigger_fnc(); Type: FUNCTION; Schema: public; Owner: botov_av
 --
 
-CREATE FUNCTION trigger_fnc() RETURNS trigger
+CREATE FUNCTION public.trigger_fnc() RETURNS trigger
     LANGUAGE plpgsql
     AS $$begin
 end;$$;
@@ -89,7 +89,7 @@ SET default_with_oids = false;
 -- Name: test; Type: TABLE; Schema: public; Owner: botov_av; Tablespace: 
 --
 
-CREATE TABLE test (
+CREATE TABLE public.test (
     id integer NOT NULL,
     text character varying(20) NOT NULL,
     CONSTRAINT text_check CHECK ((length((text)::text) > 0))
@@ -102,7 +102,7 @@ ALTER TABLE public.test OWNER TO botov_av;
 -- Name: test_id_seq; Type: SEQUENCE; Schema: public; Owner: botov_av
 --
 
-CREATE SEQUENCE test_id_seq
+CREATE SEQUENCE public.test_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -116,17 +116,17 @@ ALTER TABLE public.test_id_seq OWNER TO botov_av;
 -- Name: test_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: botov_av
 --
 
-ALTER SEQUENCE test_id_seq OWNED BY test.id;
+ALTER SEQUENCE public.test_id_seq OWNED BY test.id;
 
 
 --
 -- Name: test_view; Type: VIEW; Schema: public; Owner: botov_av
 --
 
-CREATE VIEW test_view AS
+CREATE VIEW public.test_view AS
  SELECT test.id,
     test.text
-   FROM test;
+   FROM public.test;
 
 
 ALTER TABLE public.test_view OWNER TO botov_av;
@@ -135,14 +135,14 @@ ALTER TABLE public.test_view OWNER TO botov_av;
 -- Name: id; Type: DEFAULT; Schema: public; Owner: botov_av
 --
 
-ALTER TABLE ONLY test ALTER COLUMN id SET DEFAULT nextval('test_id_seq'::regclass);
+ALTER TABLE ONLY public.test ALTER COLUMN id SET DEFAULT nextval('public.test_id_seq'::regclass);
 
 
 --
 -- Name: test_pkey; Type: CONSTRAINT; Schema: public; Owner: botov_av; Tablespace: 
 --
 
-ALTER TABLE ONLY test
+ALTER TABLE ONLY public.test
     ADD CONSTRAINT test_pkey PRIMARY KEY (id);
 
 
@@ -150,7 +150,7 @@ ALTER TABLE ONLY test
 -- Name: test_trigger; Type: TRIGGER; Schema: public; Owner: botov_av
 --
 
-CREATE TRIGGER test_trigger BEFORE UPDATE ON test FOR EACH STATEMENT EXECUTE PROCEDURE trigger_fnc();
+CREATE TRIGGER test_trigger BEFORE UPDATE ON public.test FOR EACH STATEMENT EXECUTE PROCEDURE public.trigger_fnc();
 
 
 --
@@ -177,83 +177,83 @@ GRANT ALL ON SCHEMA test_schema TO fordfrog;
 -- Name: dom; Type: ACL; Schema: public; Owner: botov_av
 --
 
-REVOKE ALL ON TYPE dom FROM PUBLIC;
-REVOKE ALL ON TYPE dom FROM botov_av;
-GRANT ALL ON TYPE dom TO botov_av;
-GRANT ALL ON TYPE dom TO PUBLIC;
-GRANT ALL ON TYPE dom TO fordfrog;
+REVOKE ALL ON TYPE public.dom FROM PUBLIC;
+REVOKE ALL ON TYPE public.dom FROM botov_av;
+GRANT ALL ON TYPE public.dom TO botov_av;
+GRANT ALL ON TYPE public.dom TO PUBLIC;
+GRANT ALL ON TYPE public.dom TO fordfrog;
 
 
 --
 -- Name: typ_composite; Type: ACL; Schema: public; Owner: botov_av
 --
 
-REVOKE ALL ON TYPE typ_composite FROM PUBLIC;
-REVOKE ALL ON TYPE typ_composite FROM botov_av;
-GRANT ALL ON TYPE typ_composite TO botov_av;
-GRANT ALL ON TYPE typ_composite TO PUBLIC;
-GRANT ALL ON TYPE typ_composite TO fordfrog;
+REVOKE ALL ON TYPE public.typ_composite FROM PUBLIC;
+REVOKE ALL ON TYPE public.typ_composite FROM botov_av;
+GRANT ALL ON TYPE public.typ_composite TO botov_av;
+GRANT ALL ON TYPE public.typ_composite TO PUBLIC;
+GRANT ALL ON TYPE public.typ_composite TO fordfrog;
 
 
 --
 -- Name: test_fnc(character varying); Type: ACL; Schema: public; Owner: botov_av
 --
 
-REVOKE ALL ON FUNCTION test_fnc(arg character varying) FROM PUBLIC;
-REVOKE ALL ON FUNCTION test_fnc(arg character varying) FROM botov_av;
-GRANT ALL ON FUNCTION test_fnc(arg character varying) TO botov_av;
-GRANT ALL ON FUNCTION test_fnc(arg character varying) TO PUBLIC;
-GRANT ALL ON FUNCTION test_fnc(arg character varying) TO fordfrog;
+REVOKE ALL ON FUNCTION public.test_fnc(arg character varying) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.test_fnc(arg character varying) FROM botov_av;
+GRANT ALL ON FUNCTION public.test_fnc(arg character varying) TO botov_av;
+GRANT ALL ON FUNCTION public.test_fnc(arg character varying) TO PUBLIC;
+GRANT ALL ON FUNCTION public.test_fnc(arg character varying) TO fordfrog;
 
 
 --
 -- Name: trigger_fnc(); Type: ACL; Schema: public; Owner: botov_av
 --
 
-REVOKE ALL ON FUNCTION trigger_fnc() FROM PUBLIC;
-REVOKE ALL ON FUNCTION trigger_fnc() FROM botov_av;
-GRANT ALL ON FUNCTION trigger_fnc() TO botov_av;
-GRANT ALL ON FUNCTION trigger_fnc() TO PUBLIC;
-GRANT ALL ON FUNCTION trigger_fnc() TO fordfrog;
+REVOKE ALL ON FUNCTION public.trigger_fnc() FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.trigger_fnc() FROM botov_av;
+GRANT ALL ON FUNCTION public.trigger_fnc() TO botov_av;
+GRANT ALL ON FUNCTION public.trigger_fnc() TO PUBLIC;
+GRANT ALL ON FUNCTION public.trigger_fnc() TO fordfrog;
 
 
 --
 -- Name: test; Type: ACL; Schema: public; Owner: botov_av
 --
 
-REVOKE ALL ON TABLE test FROM PUBLIC;
-REVOKE ALL ON TABLE test FROM botov_av;
-GRANT ALL ON TABLE test TO botov_av;
-GRANT ALL ON TABLE test TO fordfrog;
+REVOKE ALL ON TABLE public.test FROM PUBLIC;
+REVOKE ALL ON TABLE public.test FROM botov_av;
+GRANT ALL ON TABLE public.test TO botov_av;
+GRANT ALL ON TABLE public.test TO fordfrog;
 
 
 --
 -- Name: test.id; Type: ACL; Schema: public; Owner: botov_av
 --
 
-REVOKE ALL(id) ON TABLE test FROM PUBLIC;
-REVOKE ALL(id) ON TABLE test FROM botov_av;
-GRANT ALL(id) ON TABLE test TO fordfrog;
+REVOKE ALL(id) ON TABLE public.test FROM PUBLIC;
+REVOKE ALL(id) ON TABLE public.test FROM botov_av;
+GRANT ALL(id) ON TABLE public.test TO fordfrog;
 
 
 --
 -- Name: test_id_seq; Type: ACL; Schema: public; Owner: botov_av
 --
 
-REVOKE ALL ON SEQUENCE test_id_seq FROM PUBLIC;
-REVOKE ALL ON SEQUENCE test_id_seq FROM botov_av;
-GRANT ALL ON SEQUENCE test_id_seq TO botov_av;
-GRANT ALL ON SEQUENCE test_id_seq TO fordfrog;
+REVOKE ALL ON SEQUENCE public.test_id_seq FROM PUBLIC;
+REVOKE ALL ON SEQUENCE public.test_id_seq FROM botov_av;
+GRANT ALL ON SEQUENCE public.test_id_seq TO botov_av;
+GRANT ALL ON SEQUENCE public.test_id_seq TO fordfrog;
 
 
 --
 -- Name: test_view; Type: ACL; Schema: public; Owner: botov_av
 --
 
-REVOKE ALL ON TABLE test_view FROM PUBLIC;
-REVOKE ALL ON TABLE test_view FROM botov_av;
-GRANT ALL ON TABLE test_view TO botov_av;
-GRANT ALL ON TABLE test_view TO fordfrog;
+REVOKE ALL ON TABLE public.test_view FROM PUBLIC;
+REVOKE ALL ON TABLE public.test_view FROM botov_av;
+GRANT ALL ON TABLE public.test_view TO botov_av;
+GRANT ALL ON TABLE public.test_view TO fordfrog;
 
 
 --

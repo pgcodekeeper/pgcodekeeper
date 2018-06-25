@@ -23,7 +23,7 @@ SET client_min_messages = warning;
 --COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
 SET default_tablespace = '';
 
@@ -33,7 +33,7 @@ SET default_with_oids = false;
 -- Name: t1; Type: TABLE; Schema: public; Owner: botov_av; Tablespace: 
 --
 
-CREATE TABLE t1 (
+CREATE TABLE public.t1 (
     c1 integer,
     c2 text
 );
@@ -45,7 +45,7 @@ ALTER TABLE public.t1 OWNER TO botov_av;
 -- Name: t2; Type: TABLE; Schema: public; Owner: botov_av; Tablespace: 
 --
 
-CREATE TABLE t2 (
+CREATE TABLE public.t2 (
     c1 integer,
     c2 text
 );
@@ -53,9 +53,9 @@ CREATE TABLE t2 (
 
 ALTER TABLE public.t2 OWNER TO botov_av;
 
-CREATE VIEW v1 AS
+CREATE VIEW public.v1 AS
  SELECT t1.c1
-   FROM t1;
+   FROM public.t1;
    
 --
 -- Name: public; Type: ACL; Schema: -; Owner: postgres
@@ -71,18 +71,18 @@ GRANT ALL ON SCHEMA public TO PUBLIC;
 -- Name: t1.c1; Type: ACL; Schema: public; Owner: botov_av
 --
 
-REVOKE ALL(c1) ON TABLE t1 FROM PUBLIC;
-REVOKE ALL(c1) ON TABLE t1 FROM botov_av;
-GRANT ALL(c1, c2) ON TABLE t1 TO maindb;
-GRANT SELECT, INSERT(c1,c2),REFERENCES(c1),UPDATE(c1) ON TABLE t1,t2 TO levsha_aa;
+REVOKE ALL(c1) ON TABLE public.t1 FROM PUBLIC;
+REVOKE ALL(c1) ON TABLE public.t1 FROM botov_av;
+GRANT ALL(c1, c2) ON TABLE public.t1 TO maindb;
+GRANT SELECT, INSERT(c1,c2),REFERENCES(c1),UPDATE(c1) ON TABLE public.t1,public.t2 TO levsha_aa;
 
 --
 -- Name: v1.c1; Type: ACL; Schema: public; Owner: levsha_aa
 --
 
-REVOKE ALL(c1) ON TABLE v1 FROM PUBLIC;
-REVOKE ALL(c1) ON TABLE v1 FROM levsha_aa;
-GRANT UPDATE(c1) ON TABLE v1 TO maindb;
+REVOKE ALL(c1) ON TABLE public.v1 FROM PUBLIC;
+REVOKE ALL(c1) ON TABLE public.v1 FROM levsha_aa;
+GRANT UPDATE(c1) ON TABLE public.v1 TO maindb;
 --
 -- PostgreSQL database dump complete
 --

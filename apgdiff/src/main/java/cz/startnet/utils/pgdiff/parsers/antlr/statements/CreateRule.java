@@ -160,8 +160,11 @@ public class CreateRule extends ParserAbstract {
             // Здесь не должно быть пустых привилегий для колонок,
             // т.к. пустые привилегии ушли в таблицу/вью/сиквенс
             privilege.setLength(privilege.length() - 2);
-            privilege.append(" ON TABLE ").append(tblSt.getContainingSchema().getName())
-            .append('.').append(tableName).append(' ');
+            privilege.append(" ON TABLE ");
+            if (!tableName.contains(".")) {
+                privilege.append(tblSt.getContainingSchema().getName()).append('.');
+            }
+            privilege.append(tableName).append(' ');
             privilege.append(getFullCtxText(ctx_body.body_rules_rest()));
 
             col.addPrivilege(new PgPrivilege(revoke, privilege.toString(), getFullCtxText(ctx)));
