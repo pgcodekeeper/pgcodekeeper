@@ -1,16 +1,16 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This VIEW depends on the COLUMN: t2.c2
+-- DEPCY: This VIEW depends on the COLUMN: public.t2.c2
 
 DROP VIEW public.v1;
 
 ALTER TABLE public.t2
-	ALTER COLUMN c2 TYPE text USING c2::text; /* TYPE change - table: t2 original: integer new: text */
+	ALTER COLUMN c2 TYPE text USING c2::text; /* TYPE change - table: public.t2 original: integer new: text */
 
 ALTER TABLE public.t1
-	ALTER COLUMN c1 TYPE text USING c1::text; /* TYPE change - table: t1 original: integer new: text */
+	ALTER COLUMN c1 TYPE text USING c1::text; /* TYPE change - table: public.t1 original: integer new: text */
 
--- DEPCY: This VIEW is a dependency of VIEW: v2
+-- DEPCY: This VIEW is a dependency of VIEW: public.v2
 
 CREATE VIEW public.v1 AS
 	SELECT t1.c1,

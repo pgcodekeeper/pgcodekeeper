@@ -23,14 +23,14 @@ SET client_min_messages = warning;
 --COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
 --
 -- Name: t1; Type: TABLE; Schema: public; Owner: botov_av; Tablespace: 
 --
 
-CREATE TABLE t1 (
-    c1 dom2
+CREATE TABLE public.t1 (
+    c1 public.dom2
 );
 
 

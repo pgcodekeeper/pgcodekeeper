@@ -1,8 +1,8 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
--- DEPCY: This CONSTRAINT depends on the INDEX: testindex
+-- DEPCY: This CONSTRAINT depends on the INDEX: public.testindex
 
-ALTER TABLE testtable_2
+ALTER TABLE public.testtable_2
 	DROP CONSTRAINT testtable_2_c2_fkey;
 
-DROP INDEX testindex;
+DROP INDEX public.testindex;

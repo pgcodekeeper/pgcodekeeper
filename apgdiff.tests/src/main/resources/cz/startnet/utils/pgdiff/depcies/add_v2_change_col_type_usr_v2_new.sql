@@ -23,7 +23,7 @@ SET client_min_messages = warning;
 --COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
 SET default_tablespace = '';
 
@@ -33,10 +33,10 @@ SET default_with_oids = false;
 -- Name: v2; Type: VIEW; Schema: public; Owner: botov_av
 --
 
-CREATE VIEW v2 AS
+CREATE VIEW public.v2 AS
  SELECT v1.c1,
     v1.c2
-   FROM v1;
+   FROM public.v1;
 
 
 ALTER TABLE public.v2 OWNER TO botov_av;

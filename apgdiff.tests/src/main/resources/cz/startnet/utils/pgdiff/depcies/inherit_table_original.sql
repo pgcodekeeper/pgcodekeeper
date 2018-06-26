@@ -23,13 +23,13 @@ SET client_min_messages = warning;
 --COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
 --
 -- Name: seq1; Type: SEQUENCE; Schema: public; Owner: botov_av
 --
 
-CREATE SEQUENCE seq1
+CREATE SEQUENCE public.seq1
     START WITH 1
     INCREMENT BY 2
     NO MINVALUE
@@ -47,8 +47,8 @@ SET default_with_oids = false;
 -- Name: t1; Type: TABLE; Schema: public; Owner: botov_av; Tablespace: 
 --
 
-CREATE TABLE t1 (
-    c1 integer DEFAULT nextval('seq1'::regclass),
+CREATE TABLE public.t1 (
+    c1 integer DEFAULT nextval('public.seq1'::regclass),
     c2 integer
 );
 
@@ -59,10 +59,10 @@ ALTER TABLE public.t1 OWNER TO botov_av;
 -- Name: t2; Type: TABLE; Schema: public; Owner: botov_av; Tablespace: 
 --
 
-CREATE TABLE t2 (
+CREATE TABLE public.t2 (
     c3 integer
 )
-INHERITS (t1);
+INHERITS (public.t1);
 
 
 ALTER TABLE public.t2 OWNER TO botov_av;
@@ -71,7 +71,7 @@ ALTER TABLE public.t2 OWNER TO botov_av;
 -- Name: c1; Type: DEFAULT; Schema: public; Owner: botov_av
 --
 
-ALTER TABLE ONLY t2 ALTER COLUMN c1 SET DEFAULT nextval('seq1'::regclass);
+ALTER TABLE ONLY public.t2 ALTER COLUMN c1 SET DEFAULT nextval('public.seq1'::regclass);
 
 
 --

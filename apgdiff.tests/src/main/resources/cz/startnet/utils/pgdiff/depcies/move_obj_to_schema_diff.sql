@@ -1,40 +1,38 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-DROP RULE notify_me ON emp;
+DROP RULE notify_me ON public.emp;
 
-DROP TRIGGER emp_stamp ON emp;
+DROP TRIGGER emp_stamp ON public.emp;
 
-DROP VIEW emp_view;
+DROP VIEW public.emp_view;
 
-DROP INDEX name_ind;
+DROP INDEX public.name_ind;
 
-DROP TABLE emp;
+DROP TABLE public.emp;
 
-DROP FUNCTION emp_stamp();
+DROP FUNCTION public.emp_stamp();
 
-DROP FUNCTION increment(i integer);
+DROP FUNCTION public.increment(i integer);
 
-DROP TYPE user_code;
+DROP TYPE public.user_code;
 
-SET search_path = test, pg_catalog;
-
-CREATE TYPE user_code AS (
+CREATE TYPE test.user_code AS (
 	f1 integer,
 	f2 text
 );
 
-ALTER TYPE user_code OWNER TO galiev_mr;
+ALTER TYPE test.user_code OWNER TO galiev_mr;
 
-CREATE SEQUENCE emp_id_seq
+CREATE SEQUENCE test.emp_id_seq
 	START WITH 1
 	INCREMENT BY 1
 	NO MAXVALUE
 	NO MINVALUE
 	CACHE 1;
 
-ALTER SEQUENCE emp_id_seq OWNER TO galiev_mr;
+ALTER SEQUENCE test.emp_id_seq OWNER TO galiev_mr;
 
-CREATE OR REPLACE FUNCTION emp_stamp() RETURNS trigger
+CREATE OR REPLACE FUNCTION test.emp_stamp() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
     BEGIN
@@ -58,9 +56,9 @@ CREATE OR REPLACE FUNCTION emp_stamp() RETURNS trigger
     END;
 $$;
 
-ALTER FUNCTION emp_stamp() OWNER TO galiev_mr;
+ALTER FUNCTION test.emp_stamp() OWNER TO galiev_mr;
 
-CREATE OR REPLACE FUNCTION increment(i integer) RETURNS integer
+CREATE OR REPLACE FUNCTION test.increment(i integer) RETURNS integer
     LANGUAGE plpgsql
     AS $$
         BEGIN
@@ -68,10 +66,10 @@ CREATE OR REPLACE FUNCTION increment(i integer) RETURNS integer
         END;
 $$;
 
-ALTER FUNCTION increment(i integer) OWNER TO galiev_mr;
+ALTER FUNCTION test.increment(i integer) OWNER TO galiev_mr;
 
-CREATE TABLE emp (
-	id integer DEFAULT nextval('emp_id_seq'::regclass) NOT NULL,
+CREATE TABLE test.emp (
+	id integer DEFAULT nextval('test.emp_id_seq'::regclass) NOT NULL,
 	empname text,
 	salary integer,
 	last_date timestamp without time zone,
@@ -79,26 +77,26 @@ CREATE TABLE emp (
 	code user_code
 );
 
-ALTER TABLE emp OWNER TO galiev_mr;
+ALTER TABLE test.emp OWNER TO galiev_mr;
 
-CREATE UNIQUE INDEX name_ind ON emp USING btree (empname);
+CREATE UNIQUE INDEX name_ind ON test.emp USING btree (empname);
 
-CREATE VIEW emp_view AS
+CREATE VIEW test.emp_view AS
 	SELECT emp.empname,
     emp.last_date,
     increment(emp.salary) AS salary,
     emp.code
-   FROM emp;
+   FROM test.emp;
 
-ALTER VIEW emp_view OWNER TO galiev_mr;
+ALTER VIEW test.emp_view OWNER TO galiev_mr;
 
 CREATE TRIGGER emp_stamp
-	BEFORE INSERT OR UPDATE ON emp
+	BEFORE INSERT OR UPDATE ON test.emp
 	FOR EACH ROW
-	EXECUTE PROCEDURE emp_stamp();
+	EXECUTE PROCEDURE test.emp_stamp();
 
 CREATE RULE notify_me AS
-    ON UPDATE TO emp DO  NOTIFY emp;
+    ON UPDATE TO test.emp DO  NOTIFY test.emp;
 
-ALTER SEQUENCE emp_id_seq
-	OWNED BY emp.id;
+ALTER SEQUENCE test.emp_id_seq
+	OWNED BY test.emp.id;

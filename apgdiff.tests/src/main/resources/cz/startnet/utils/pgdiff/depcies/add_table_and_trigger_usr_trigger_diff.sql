@@ -1,6 +1,6 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This FUNCTION is a dependency of TRIGGER: emp_stamp
+-- DEPCY: This FUNCTION is a dependency of TRIGGER: public.emp_stamp
 
 CREATE OR REPLACE FUNCTION test.emp_stamp() RETURNS trigger
     LANGUAGE plpgsql

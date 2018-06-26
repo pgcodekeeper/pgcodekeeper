@@ -28,7 +28,7 @@ SET row_security = off;
 --COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
 SET default_tablespace = '';
 
@@ -38,7 +38,7 @@ SET default_with_oids = false;
 -- Name: t1; Type: TABLE; Schema: public; Owner: galiev_mr
 --
 
-CREATE TABLE t1 (
+CREATE TABLE public.t1 (
     c1 integer,
     c2 text,
     c3 text,
@@ -47,7 +47,7 @@ CREATE TABLE t1 (
 );
 
 
-ALTER TABLE t1 OWNER TO galiev_mr;
+ALTER TABLE public.t1 OWNER TO galiev_mr;
 
 --
 -- PostgreSQL database dump complete

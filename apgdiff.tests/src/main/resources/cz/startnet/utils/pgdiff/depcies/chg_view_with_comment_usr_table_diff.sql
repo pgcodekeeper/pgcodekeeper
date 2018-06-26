@@ -1,11 +1,11 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This VIEW depends on the COLUMN: testtable.c2
+-- DEPCY: This VIEW depends on the COLUMN: public.testtable.c2
 
 DROP VIEW public.testview;
 
 ALTER TABLE public.testtable
-	ALTER COLUMN c2 TYPE text USING c2::text; /* TYPE change - table: testtable original: integer new: text */
+	ALTER COLUMN c2 TYPE text USING c2::text; /* TYPE change - table: public.testtable original: integer new: text */
 
 CREATE VIEW public.testview AS
 	SELECT testtable.c1,
