@@ -186,7 +186,7 @@ public class PgConstraint extends PgStatementWithSearchPath {
         return eq;
     }
 
-    private boolean compareWithoutComments(PgConstraint constraint) {
+    protected boolean compareWithoutComments(PgConstraint constraint) {
         boolean eq;
         eq = Objects.equals(definition, constraint.getDefinition())
                 && Objects.equals(name, constraint.getName());

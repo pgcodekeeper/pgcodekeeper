@@ -26,7 +26,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  */
 public class PgColumn extends PgStatementWithSearchPath implements PgOptionContainer {
 
-    private static final String ALTER_COLUMN = "\n\tALTER COLUMN ";
+    protected static final String ALTER_COLUMN = "\n\tALTER COLUMN ";
     private static final String ALTER_FOREIGN_OPTION =  "{0} OPTIONS ({1} {2} {3});";
 
     private String type;
@@ -219,11 +219,11 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
         return sb.toString();
     }
 
-    private String getAlterTable() {
+    protected String getAlterTable() {
         return ((PgTable)this.getParent()).getAlterTable(false, false);
     }
 
-    private String getAlterColumn(boolean newLine, boolean only, String column) {
+    protected String getAlterColumn(boolean newLine, boolean only, String column) {
         return ((PgTable)this.getParent()).getAlterTable(newLine, only) + ALTER_COLUMN +
                 PgDiffUtils.getQuotedName(column);
     }

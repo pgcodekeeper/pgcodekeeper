@@ -175,7 +175,7 @@ public class PgIndex extends PgStatementWithSearchPath {
         return equals;
     }
 
-    private boolean compareWithoutComments(PgIndex index) {
+    protected boolean compareWithoutComments(PgIndex index) {
         return Objects.equals(definition, index.getDefinition())
                 && Objects.equals(name, index.getName())
                 && Objects.equals(tableName, index.getTableName())

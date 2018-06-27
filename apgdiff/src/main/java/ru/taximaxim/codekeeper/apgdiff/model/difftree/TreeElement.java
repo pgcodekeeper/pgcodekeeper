@@ -132,6 +132,7 @@ public class TreeElement {
         case SCHEMA:            return ((PgDatabase) parent.getPgStatement(db)).getSchema(name);
 
         case FUNCTION:          return ((PgSchema) parent.getPgStatement(db)).getFunction(name);
+        case PROCEDURE:         return ((PgSchema) parent.getPgStatement(db)).getProcedure(name);
         case SEQUENCE:          return ((PgSchema) parent.getPgStatement(db)).getSequence(name);
         case TYPE:              return ((PgSchema) parent.getPgStatement(db)).getType(name);
         case DOMAIN:            return ((PgSchema) parent.getPgStatement(db)).getDomain(name);

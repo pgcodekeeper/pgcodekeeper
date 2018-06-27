@@ -30,11 +30,11 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 public class PgView extends PgStatementWithSearchPath
 implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
-    private static final String CHECK_OPTION = "check_option";
+    protected static final String CHECK_OPTION = "check_option";
     private String query;
     private String normalizedQuery;
-    private final Map<String, String> options = new LinkedHashMap<>();
-    private List<String> columnNames = new ArrayList<>();
+    protected final Map<String, String> options = new LinkedHashMap<>();
+    protected List<String> columnNames = new ArrayList<>();
     private final List<DefaultValue> defaultValues = new ArrayList<>();
     private final List<ColumnComment> columnComments = new ArrayList<>();
     private final List<PgRule> rules = new ArrayList<>();
@@ -664,7 +664,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
      *
      * @return true if view has been modified, otherwise false
      */
-    private boolean isViewModified(final PgView newView) {
+    protected boolean isViewModified(final PgView newView) {
         List<String> oldColumnNames = getColumnNames();
         List<String> newColumnNames = newView.getColumnNames();
 

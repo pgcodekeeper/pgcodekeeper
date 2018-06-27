@@ -25,6 +25,7 @@ public class PgSchema extends PgStatement implements ISchema {
 
     private final List<PgDomain> domains = new ArrayList<>();
     private final List<PgFunction> functions = new ArrayList<>();
+    private final List<MsProcedure> procedures = new ArrayList<>();
     private final List<PgSequence> sequences = new ArrayList<>();
     private final List<PgTable> tables = new ArrayList<>();
     private final List<PgView> views = new ArrayList<>();
@@ -152,6 +153,23 @@ public class PgSchema extends PgStatement implements ISchema {
     }
 
     /**
+     * Finds procedure according to specified procedure {@code signature}.
+     *
+     * @param name name of the procedure to be searched
+     *
+     * @return found function or null if no such function has been found
+     */
+    public MsProcedure getProcedure(final String name) {
+        for (MsProcedure procedure : procedures) {
+            if (procedure.getName().equals(name)) {
+                return procedure;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * @return found relation or null if no such relation has been found
      */
     @Override
@@ -169,6 +187,16 @@ public class PgSchema extends PgStatement implements ISchema {
     public List<PgFunction> getFunctions() {
         return Collections.unmodifiableList(functions);
     }
+
+    /**
+     * Getter for {@link #procedures}. The list cannot be modified.
+     *
+     * @return {@link #procedures}
+     */
+    public List<MsProcedure> getProcedures() {
+        return Collections.unmodifiableList(procedures);
+    }
+
 
     @Override
     public Stream<IRelation> getRelations() {
@@ -451,6 +479,13 @@ public class PgSchema extends PgStatement implements ISchema {
         resetHash();
     }
 
+    public void addProcedure(final MsProcedure procedure) {
+        assertUnique(this::getProcedure, procedure);
+        procedures.add(procedure);
+        procedure.setParent(this);
+        resetHash();
+    }
+
     public void addSequence(final PgSequence sequence) {
         assertUnique(this::getSequence, sequence);
         sequences.add(sequence);
@@ -570,6 +605,7 @@ public class PgSchema extends PgStatement implements ISchema {
             return PgDiffUtils.setlikeEquals(domains, schema.domains)
                     && PgDiffUtils.setlikeEquals(sequences, schema.sequences)
                     && PgDiffUtils.setlikeEquals(functions, schema.functions)
+                    && PgDiffUtils.setlikeEquals(procedures, schema.procedures)
                     && PgDiffUtils.setlikeEquals(views, schema.views)
                     && PgDiffUtils.setlikeEquals(tables, schema.tables)
                     && PgDiffUtils.setlikeEquals(types, schema.types)
@@ -596,6 +632,7 @@ public class PgSchema extends PgStatement implements ISchema {
         hasher.putUnordered(domains);
         hasher.putUnordered(sequences);
         hasher.putUnordered(functions);
+        hasher.putUnordered(procedures);
         hasher.putUnordered(views);
         hasher.putUnordered(tables);
         hasher.putUnordered(types);
@@ -628,16 +665,19 @@ public class PgSchema extends PgStatement implements ISchema {
         for (PgDomain dom : domains) {
             copy.addDomain(dom.deepCopy());
         }
-        for(PgSequence seq : sequences) {
+        for (PgSequence seq : sequences) {
             copy.addSequence(seq.deepCopy());
         }
-        for(PgFunction func : functions) {
+        for (PgFunction func : functions) {
             copy.addFunction(func.deepCopy());
         }
-        for(PgView view : views) {
+        for (MsProcedure proc : procedures) {
+            copy.addProcedure(proc.deepCopy());
+        }
+        for (PgView view : views) {
             copy.addView(view.deepCopy());
         }
-        for(PgTable table : tables) {
+        for (PgTable table : tables) {
             copy.addTable(table.deepCopy());
         }
         for (PgType type : types) {
