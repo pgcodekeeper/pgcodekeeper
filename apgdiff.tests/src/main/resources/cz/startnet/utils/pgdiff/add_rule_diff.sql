@@ -5,7 +5,7 @@ CREATE RULE on_delete AS
 
 CREATE RULE on_insert AS
     ON INSERT TO public.t1 DO INSTEAD ( INSERT INTO public.user_data (id, email, created) VALUES (new.id, new.email, new.created);
- INSERT INTO t1(c1) DEFAULT VALUES;
+ INSERT INTO public.t1 DEFAULT VALUES;
 );
 
 CREATE RULE on_update AS
