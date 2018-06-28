@@ -581,10 +581,10 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
         colDst.setSequence(getSequence());
         colDst.setInherit(isInherit());
         for (PgPrivilege priv : grants) {
-            colDst.addPrivilege(priv.deepCopy());
+            colDst.addPrivilege(priv);
         }
         for (PgPrivilege priv : revokes) {
-            colDst.addPrivilege(priv.deepCopy());
+            colDst.addPrivilege(priv);
         }
         colDst.setComment(getComment());
         colDst.deps.addAll(deps);

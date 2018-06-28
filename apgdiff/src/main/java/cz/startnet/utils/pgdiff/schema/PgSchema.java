@@ -648,10 +648,10 @@ public class PgSchema extends PgStatement implements ISchema {
         schemaDst.setDefinition(getDefinition());
         schemaDst.setComment(getComment());
         for (PgPrivilege priv : revokes) {
-            schemaDst.addPrivilege(priv.deepCopy());
+            schemaDst.addPrivilege(priv);
         }
         for (PgPrivilege priv : grants) {
-            schemaDst.addPrivilege(priv.deepCopy());
+            schemaDst.addPrivilege(priv);
         }
         schemaDst.setOwner(getOwner());
         schemaDst.deps.addAll(deps);

@@ -528,10 +528,10 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         viewDst.defaultValues.addAll(defaultValues);
         viewDst.columnComments.addAll(columnComments);
         for (PgPrivilege priv : revokes) {
-            viewDst.addPrivilege(priv.deepCopy());
+            viewDst.addPrivilege(priv);
         }
         for (PgPrivilege priv : grants) {
-            viewDst.addPrivilege(priv.deepCopy());
+            viewDst.addPrivilege(priv);
         }
         viewDst.setOwner(getOwner());
         viewDst.deps.addAll(deps);

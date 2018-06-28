@@ -375,10 +375,10 @@ public class PgSequence extends PgStatementWithSearchPath implements IRelation {
         sequenceDst.setStartWith(getStartWith());
         sequenceDst.setComment(getComment());
         for (PgPrivilege priv : revokes) {
-            sequenceDst.addPrivilege(priv.deepCopy());
+            sequenceDst.addPrivilege(priv);
         }
         for (PgPrivilege priv : grants) {
-            sequenceDst.addPrivilege(priv.deepCopy());
+            sequenceDst.addPrivilege(priv);
         }
         sequenceDst.setOwner(getOwner());
         sequenceDst.deps.addAll(deps);

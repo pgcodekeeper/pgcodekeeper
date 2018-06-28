@@ -309,10 +309,10 @@ public class PgFunction extends PgStatementWithSearchPath implements IFunction {
             functionDst.addArgument(argDst);
         }
         for (PgPrivilege priv : revokes) {
-            functionDst.addPrivilege(priv.deepCopy());
+            functionDst.addPrivilege(priv);
         }
         for (PgPrivilege priv : grants) {
-            functionDst.addPrivilege(priv.deepCopy());
+            functionDst.addPrivilege(priv);
         }
         functionDst.setOwner(getOwner());
         functionDst.deps.addAll(deps);

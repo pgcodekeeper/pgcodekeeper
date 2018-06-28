@@ -579,10 +579,10 @@ public class PgType extends PgStatementWithSearchPath {
         }
         copy.enums.addAll(enums);
         for (PgPrivilege priv : grants) {
-            copy.addPrivilege(priv.deepCopy());
+            copy.addPrivilege(priv);
         }
         for (PgPrivilege priv : revokes) {
-            copy.addPrivilege(priv.deepCopy());
+            copy.addPrivilege(priv);
         }
         copy.setSubtype(getSubtype());
         copy.setSubtypeOpClass(getSubtypeOpClass());

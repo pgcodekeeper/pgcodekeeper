@@ -194,7 +194,6 @@ public abstract class PgStatement implements IStatement, IHashable {
         } else {
             grants.add(privilege);
         }
-        privilege.setParent(this);
         resetHash();
     }
 
@@ -217,20 +216,16 @@ public abstract class PgStatement implements IStatement, IHashable {
         .append("GRANT\n");
 
         for (PgPrivilege priv : revokes) {
-            sb.append('\n').append(priv.getCreationSQL());
+            sb.append('\n').append(priv);
         }
         for (PgPrivilege priv : grants) {
-            sb.append('\n').append(priv.getCreationSQL());
+            sb.append('\n').append(priv);
         }
 
         return sb;
     }
 
-    public String getPrivilegesSQL() {
-        return appendPrivileges(new StringBuilder()).toString();
-    }
-
-    protected void alterPrivileges(PgStatement newObj, StringBuilder sb){
+    protected void alterPrivileges(PgStatement newObj, StringBuilder sb) {
         // first drop (revoke) missing grants
         boolean grantsChanged = false;
         Set<PgPrivilege> newGrants = newObj.getGrants();

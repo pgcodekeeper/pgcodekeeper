@@ -636,10 +636,10 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         tableDst.options.putAll(options);
         tableDst.setHasOids(getHasOids());
         for (PgPrivilege priv : revokes) {
-            tableDst.addPrivilege(priv.deepCopy());
+            tableDst.addPrivilege(priv);
         }
         for (PgPrivilege priv : grants) {
-            tableDst.addPrivilege(priv.deepCopy());
+            tableDst.addPrivilege(priv);
         }
         tableDst.setOwner(getOwner());
         tableDst.setComment(getComment());
