@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
@@ -284,9 +285,9 @@ public abstract class PgStatement implements IStatement, IHashable {
             .append(PgDiffUtils.getQuotedName(owner))
             .append(';');
         } else {
-            // TODO SCHEMA OWNER instead null owner
-            sb.append(" AUTHORIZATION ON ").append(PgDiffUtils.getQuotedName(getName()))
-            .append(" TO ").append(PgDiffUtils.getQuotedName(owner)).append(GO);
+            // TODO SCHEMA OWNER instead of null owner
+            sb.append(" AUTHORIZATION ON ").append(MsDiffUtils.quoteName(getName()))
+            .append(" TO ").append(MsDiffUtils.quoteName(owner)).append(GO);
         }
 
         return sb;

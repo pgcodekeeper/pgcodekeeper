@@ -15,7 +15,7 @@ public class MsView extends PgView {
 
     @Override
     public String getQualifiedName() {
-        return MsDiffUtils.getQuotedName(getContainingSchema().getName()) + '.' + MsDiffUtils.getQuotedName(name);
+        return MsDiffUtils.quoteName(getContainingSchema().getName()) + '.' + MsDiffUtils.quoteName(name);
     }
 
     @Override
@@ -45,7 +45,7 @@ public class MsView extends PgView {
                     sbSQL.append(", ");
                 }
 
-                sbSQL.append(MsDiffUtils.getQuotedName(columnNames.get(i)));
+                sbSQL.append(MsDiffUtils.quoteName(columnNames.get(i)));
             }
             sbSQL.append(')');
         }

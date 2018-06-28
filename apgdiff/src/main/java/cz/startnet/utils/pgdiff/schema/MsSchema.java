@@ -16,9 +16,9 @@ public class MsSchema extends PgSchema {
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE SCHEMA ");
-        sbSQL.append(MsDiffUtils.getQuotedName(getName()));
+        sbSQL.append(MsDiffUtils.quoteName(getName()));
         if (owner != null) {
-            sbSQL.append("\nAUTHORIZATION ").append(MsDiffUtils.getQuotedName(owner));
+            sbSQL.append("\nAUTHORIZATION ").append(MsDiffUtils.quoteName(owner));
         }
         sbSQL.append(GO);
         appendPrivileges(sbSQL);
@@ -49,6 +49,6 @@ public class MsSchema extends PgSchema {
 
     @Override
     public String getDropSQL() {
-        return "DROP SCHEMA " + MsDiffUtils.getQuotedName(getName()) + GO;
+        return "DROP SCHEMA " + MsDiffUtils.quoteName(getName()) + GO;
     }
 }

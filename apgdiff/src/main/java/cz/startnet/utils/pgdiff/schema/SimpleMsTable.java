@@ -24,7 +24,7 @@ public class SimpleMsTable extends RegularPgTable {
 
     @Override
     public String getQualifiedName() {
-        return MsDiffUtils.getQuotedName(getContainingSchema().getName()) + '.' + MsDiffUtils.getQuotedName(name);
+        return MsDiffUtils.quoteName(getContainingSchema().getName()) + '.' + MsDiffUtils.quoteName(name);
     }
 
     @Override
@@ -34,7 +34,7 @@ public class SimpleMsTable extends RegularPgTable {
 
     @Override
     protected void appendColumns(StringBuilder sbSQL, StringBuilder sbOption) {
-        sbSQL.append("\n(\n");
+        sbSQL.append("(\n");
 
         int start = sbSQL.length();
         for (PgColumn column : columns) {
@@ -121,7 +121,7 @@ public class SimpleMsTable extends RegularPgTable {
             sb.append("\n\n");
         }
         sb.append("ALTER TABLE ");
-        sb.append(MsDiffUtils.getQuotedName(getName()));
+        sb.append(MsDiffUtils.quoteName(getName()));
         return sb.toString();
     }
 

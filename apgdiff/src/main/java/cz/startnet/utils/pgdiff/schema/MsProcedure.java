@@ -25,7 +25,7 @@ public class MsProcedure extends PgStatementWithSearchPath {
 
     @Override
     public String getQualifiedName() {
-        return MsDiffUtils.getQuotedName(getContainingSchema().getName()) + '.' + MsDiffUtils.getQuotedName(name);
+        return MsDiffUtils.quoteName(getContainingSchema().getName()) + '.' + MsDiffUtils.quoteName(name);
     }
 
     @Override
@@ -247,7 +247,7 @@ public class MsProcedure extends PgStatementWithSearchPath {
             final StringBuilder sbString = new StringBuilder();
 
             if (name != null && !name.isEmpty() && includeArgName) {
-                sbString.append(MsDiffUtils.getQuotedName(name));
+                sbString.append(MsDiffUtils.quoteName(name));
                 sbString.append(' ');
             }
 

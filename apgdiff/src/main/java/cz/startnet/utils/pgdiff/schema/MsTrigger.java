@@ -25,13 +25,13 @@ public class MsTrigger extends PgTrigger {
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE OR ALTER TRIGGER ");
-        sbSQL.append(MsDiffUtils.getQuotedName(getContainingSchema().getName()));
+        sbSQL.append(MsDiffUtils.quoteName(getContainingSchema().getName()));
         sbSQL.append('.');
-        sbSQL.append(MsDiffUtils.getQuotedName(getName()));
+        sbSQL.append(MsDiffUtils.quoteName(getName()));
         sbSQL.append("\nON ");
-        sbSQL.append(MsDiffUtils.getQuotedName(getContainingSchema().getName()));
+        sbSQL.append(MsDiffUtils.quoteName(getContainingSchema().getName()));
         sbSQL.append('.');
-        sbSQL.append(getTableName());
+        sbSQL.append(MsDiffUtils.quoteName(getTableName()));
         sbSQL.append("\n");
 
         if (!getOptions().isEmpty()) {
@@ -55,7 +55,7 @@ public class MsTrigger extends PgTrigger {
         boolean firstEvent = true;
 
         if (isOnInsert()) {
-            sbSQL.append(" INSERT");
+            sbSQL.append("INSERT");
             firstEvent = false;
         }
 
@@ -66,15 +66,15 @@ public class MsTrigger extends PgTrigger {
                 sbSQL.append(", ");
             }
 
-            sbSQL.append(" UPDATE");
+            sbSQL.append("UPDATE");
         }
 
         if (isOnDelete()) {
             if (!firstEvent) {
-                sbSQL.append(",");
+                sbSQL.append(", ");
             }
 
-            sbSQL.append(" DELETE");
+            sbSQL.append("DELETE");
         }
 
         if (isAppend()) {
@@ -114,8 +114,8 @@ public class MsTrigger extends PgTrigger {
 
     @Override
     public String getDropSQL() {
-        return "DROP TRIGGER " + MsDiffUtils.getQuotedName(getContainingSchema().getName())
-        + '.' + MsDiffUtils.getQuotedName(getName());
+        return "DROP TRIGGER " + MsDiffUtils.quoteName(getContainingSchema().getName())
+        + '.' + MsDiffUtils.quoteName(getName());
     }
 
     @Override

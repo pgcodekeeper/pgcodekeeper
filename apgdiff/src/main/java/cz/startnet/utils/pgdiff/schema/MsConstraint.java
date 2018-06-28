@@ -16,10 +16,10 @@ public class MsConstraint extends PgConstraint {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("ALTER ").append(getParent().getStatementType().name());
         sbSQL.append(' ');
-        sbSQL.append(MsDiffUtils.getQuotedName(getContainingSchema().getName()));
-        sbSQL.append('.').append(MsDiffUtils.getQuotedName(getParent().getName()));
+        sbSQL.append(MsDiffUtils.quoteName(getContainingSchema().getName()));
+        sbSQL.append('.').append(MsDiffUtils.quoteName(getParent().getName()));
         sbSQL.append("\n\tADD CONSTRAINT ");
-        sbSQL.append(MsDiffUtils.getQuotedName(getName()));
+        sbSQL.append(MsDiffUtils.quoteName(getName()));
         sbSQL.append(' ');
         sbSQL.append(getDefinition());
         sbSQL.append(GO);
@@ -49,9 +49,9 @@ public class MsConstraint extends PgConstraint {
     public String getDropSQL() {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("ALTER ").append(getParent().getStatementType().name()).append(' ');
-        sbSQL.append(MsDiffUtils.getQuotedName(getParent().getName()));
+        sbSQL.append(MsDiffUtils.quoteName(getParent().getName()));
         sbSQL.append("\n\tDROP CONSTRAINT ");
-        sbSQL.append(MsDiffUtils.getQuotedName(getName()));
+        sbSQL.append(MsDiffUtils.quoteName(getName()));
         sbSQL.append(GO);
 
         return sbSQL.toString();

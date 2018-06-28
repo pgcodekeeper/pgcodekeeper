@@ -23,9 +23,9 @@ public class MsColumn extends PgColumn {
     @Override
     public String getFullDefinition() {
         final StringBuilder sbDefinition = new StringBuilder();
-        sbDefinition.append(MsDiffUtils.getQuotedName(name));
+        sbDefinition.append(MsDiffUtils.quoteName(name));
         sbDefinition.append(' ');
-        sbDefinition.append(MsDiffUtils.getQuotedName(getType()));
+        sbDefinition.append(MsDiffUtils.quoteName(getType()));
 
         if (getCollation() != null) {
             sbDefinition.append(" COLLATE ").append(getCollation());
@@ -47,7 +47,7 @@ public class MsColumn extends PgColumn {
 
         if (getDefaultName() != null && getDefaultValue() != null) {
             sbDefinition.append(" CONSTRAINT ");
-            sbDefinition.append(MsDiffUtils.getQuotedName(getDefaultName()));
+            sbDefinition.append(MsDiffUtils.quoteName(getDefaultName()));
             sbDefinition.append(" DEFAULT ");
             sbDefinition.append(getDefaultValue());
         }
@@ -120,7 +120,7 @@ public class MsColumn extends PgColumn {
             if (newDefault != null) {
                 sb.append(getAlterColumn(true, false, name));
                 sb.append(" ADD CONSTRAINT ");
-                sb.append(MsDiffUtils.getQuotedName(newColumn.getDefaultName()));
+                sb.append(MsDiffUtils.quoteName(newColumn.getDefaultName()));
                 sb.append(" DEFAULT ");
                 sb.append(newDefault);
                 sb.append(GO);
@@ -151,7 +151,7 @@ public class MsColumn extends PgColumn {
     @Override
     protected String getAlterColumn(boolean newLine, boolean only, String column) {
         return ((PgTable)this.getParent()).getAlterTable(newLine, only) + ALTER_COLUMN +
-                MsDiffUtils.getQuotedName(column);
+                MsDiffUtils.quoteName(column);
     }
 
     @Override

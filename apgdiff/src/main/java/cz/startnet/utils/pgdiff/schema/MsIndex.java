@@ -25,10 +25,10 @@ public class MsIndex extends PgIndex {
         }
 
         sbSQL.append("INDEX ");
-        sbSQL.append(MsDiffUtils.getQuotedName(getName()));
+        sbSQL.append(MsDiffUtils.quoteName(getName()));
         sbSQL.append(" ON ");
-        sbSQL.append(MsDiffUtils.getQuotedName(getContainingSchema().getName()));
-        sbSQL.append('.').append(MsDiffUtils.getQuotedName(getTableName()));
+        sbSQL.append(MsDiffUtils.quoteName(getContainingSchema().getName()));
+        sbSQL.append('.').append(MsDiffUtils.quoteName(getTableName()));
         sbSQL.append(' ');
         sbSQL.append(getDefinition());
         sbSQL.append(GO);
@@ -50,8 +50,8 @@ public class MsIndex extends PgIndex {
 
     @Override
     public String getDropSQL() {
-        return "DROP INDEX " + MsDiffUtils.getQuotedName(getName()) + " ON "
-                + MsDiffUtils.getQuotedName(getContainingSchema().getName()) + '.'
-                + MsDiffUtils.getQuotedName(getTableName()) + GO;
+        return "DROP INDEX " + MsDiffUtils.quoteName(getName()) + " ON "
+                + MsDiffUtils.quoteName(getContainingSchema().getName()) + '.'
+                + MsDiffUtils.quoteName(getTableName()) + GO;
     }
 }

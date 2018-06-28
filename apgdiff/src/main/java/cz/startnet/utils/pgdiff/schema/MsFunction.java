@@ -11,7 +11,7 @@ public class MsFunction extends PgFunction {
 
     @Override
     public String getQualifiedName() {
-        return MsDiffUtils.getQuotedName(getContainingSchema().getName()) + '.' + MsDiffUtils.getQuotedName(name);
+        return MsDiffUtils.quoteName(getContainingSchema().getName()) + '.' + MsDiffUtils.quoteName(name);
     }
 
     @Override

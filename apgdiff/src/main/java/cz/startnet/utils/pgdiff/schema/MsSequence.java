@@ -14,7 +14,7 @@ public class MsSequence extends PgSequence {
 
     @Override
     public String getQualifiedName() {
-        return MsDiffUtils.getQuotedName(getContainingSchema().getName()) + '.' + MsDiffUtils.getQuotedName(name);
+        return MsDiffUtils.quoteName(getContainingSchema().getName()) + '.' + MsDiffUtils.quoteName(name);
     }
 
     @Override
@@ -24,7 +24,7 @@ public class MsSequence extends PgSequence {
         sbSQL.append(getQualifiedName());
 
         if (!"bigint".equals(getDataType())) {
-            sbSQL.append("\n\tAS ").append(getDataType());
+            sbSQL.append("\n\tAS ").append(MsDiffUtils.quoteName(getDataType()));
         }
 
         fillSequenceBody(sbSQL);
