@@ -898,7 +898,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
         col.setType("integer");
         col.setNullValue(false);
         col.setComment("'id column'");
-        col.setDefaultValue("nextval('test_id_seq'::regclass)");
+        col.setDefaultValue("nextval('public.test_id_seq'::regclass)");
         table.addColumn(col);
 
         col = new PgColumn("text");
@@ -935,7 +935,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
         seq.setComment("'test table sequence'");
 
         PgView view = new PgView("test_view", "");
-        view.setQuery("SELECT test.id, test.text FROM test");
+        view.setQuery("SELECT test.id, test.text FROM public.test");
         schema.addView(view);
 
         view.setComment("'test view'");
@@ -948,7 +948,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
         trigger.setOnUpdate(true);
         trigger.setTableName("test");
         trigger.setForEachRow(false);
-        trigger.setFunction("trigger_fnc()");
+        trigger.setFunction("public.trigger_fnc()");
         table.addTrigger(trigger);
 
         trigger.setComment("'test trigger'");
