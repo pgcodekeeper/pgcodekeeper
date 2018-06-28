@@ -36,6 +36,8 @@ public abstract class PgStatement implements IStatement, IHashable {
     protected final String name;
     protected String owner;
     protected String comment;
+    // add to equals and hash? move to constructor?
+    private boolean isPostgres = true;
     protected final Set<PgPrivilege> grants = new LinkedHashSet<>();
     protected final Set<PgPrivilege> revokes = new LinkedHashSet<>();
 
@@ -60,6 +62,15 @@ public abstract class PgStatement implements IStatement, IHashable {
     @Override
     public String getName() {
         return name;
+    }
+
+    public boolean isPostgres() {
+        return isPostgres;
+    }
+
+    public void setPostgres(final boolean isPostgres) {
+        this.isPostgres = isPostgres;
+        resetHash();
     }
 
     /**
@@ -240,7 +251,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         grantsChanged = grantsChanged || grants.size() != newGrants.size();
         if (grantsChanged || !revokes.equals(newObj.getRevokes())) {
             newObj.appendPrivileges(sb);
-            if (newObj.revokes.isEmpty() && newObj.grants.isEmpty()) {
+            if (newObj.isPostgres() && newObj.revokes.isEmpty() && newObj.grants.isEmpty()) {
                 PgPrivilege.appendDefaultPrivileges(newObj, sb);
             }
         }

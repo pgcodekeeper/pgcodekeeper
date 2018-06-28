@@ -8,6 +8,7 @@ public class MsIndex extends PgIndex {
 
     public MsIndex(String name, String rawStatement) {
         super(name, rawStatement);
+        setPostgres(false);
     }
 
     @Override

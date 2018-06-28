@@ -10,6 +10,7 @@ public class MsView extends PgView {
 
     public MsView(String name, String rawStatement) {
         super(name, rawStatement);
+        setPostgres(false);
     }
 
     @Override
@@ -57,7 +58,7 @@ public class MsView extends PgView {
         sbSQL.append(GO);
 
         //appendOwnerSQL(sbSQL);
-        //appendPrivileges(sbSQL);
+        appendPrivileges(sbSQL);
 
         return sbSQL.toString();
     }
@@ -77,15 +78,11 @@ public class MsView extends PgView {
             sb.append(newView.getCreationSQL());
             return true;
         }
-
         /*
         if (!Objects.equals(getOwner(), newView.getOwner())) {
             sb.append(newView.getOwnerSQL());
-        }
-
+        } */
         alterPrivileges(newView, sb);
-         */
-
 
         return sb.length() > startLength;
     }

@@ -9,6 +9,7 @@ public class MsSequence extends PgSequence {
 
     public MsSequence(String name, String rawStatement) {
         super(name, rawStatement);
+        setPostgres(false);
     }
 
     @Override
@@ -31,7 +32,7 @@ public class MsSequence extends PgSequence {
         sbSQL.append(GO);
 
         //appendOwnerSQL(sbSQL);
-        //appendPrivileges(sbSQL);
+        appendPrivileges(sbSQL);
 
         return sbSQL.toString();
     }
@@ -59,7 +60,7 @@ public class MsSequence extends PgSequence {
             .append(MsDiffUtils.getQuotedName(newSequence.getOwner())).append(GO);
         }
 
-        //  alterPrivileges(newSequence, sb);
+        alterPrivileges(newSequence, sb);
         return sb.length() > startLength;
     }
 

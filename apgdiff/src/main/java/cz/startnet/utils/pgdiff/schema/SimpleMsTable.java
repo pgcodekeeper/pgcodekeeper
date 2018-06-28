@@ -19,6 +19,7 @@ public class SimpleMsTable extends RegularPgTable {
 
     public SimpleMsTable(String name, String rawStatement) {
         super(name, rawStatement);
+        setPostgres(false);
     }
 
     @Override
@@ -99,7 +100,7 @@ public class SimpleMsTable extends RegularPgTable {
 
     @Override
     public String getDropSQL() {
-        return "DROP TABLE " + getQualifiedName();
+        return "DROP TABLE " + getQualifiedName() + GO;
     }
 
     @Override

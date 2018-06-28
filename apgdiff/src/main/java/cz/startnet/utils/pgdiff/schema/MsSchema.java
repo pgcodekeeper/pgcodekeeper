@@ -9,6 +9,7 @@ public class MsSchema extends PgSchema {
 
     public MsSchema(String name, String rawStatement) {
         super(name, rawStatement);
+        setPostgres(false);
     }
 
     @Override
@@ -20,7 +21,7 @@ public class MsSchema extends PgSchema {
             sbSQL.append("\nAUTHORIZATION ").append(MsDiffUtils.getQuotedName(owner));
         }
         sbSQL.append(GO);
-        //appendPrivileges(sbSQL);
+        appendPrivileges(sbSQL);
 
         return sbSQL.toString();
     }
@@ -43,7 +44,7 @@ public class MsSchema extends PgSchema {
             sb.append(GO);
         }
 
-        //alterPrivileges(newSchema, sb);
+        alterPrivileges(newSchema, sb);
 
         return sb.length() > startLength;
     }

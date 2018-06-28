@@ -17,6 +17,7 @@ public class MsColumn extends PgColumn {
 
     public MsColumn(String name) {
         super(name);
+        setPostgres(false);
     }
 
     @Override
@@ -63,6 +64,7 @@ public class MsColumn extends PgColumn {
         sb.append(getFullDefinition());
         sb.append(GO);
 
+        appendPrivileges(sb);
         return sb.toString();
     }
 
@@ -125,7 +127,7 @@ public class MsColumn extends PgColumn {
             }
         }
 
-        //alterPrivileges(newColumn, sb);
+        alterPrivileges(newColumn, sb);
 
         return sb.length() > startLength;
     }
@@ -192,6 +194,27 @@ public class MsColumn extends PgColumn {
     public void setIdentity(final String identity) {
         this.identity = identity;
         resetHash();
+    }
+
+    @Override
+    public MsColumn shallowCopy() {
+        MsColumn colDst = new MsColumn(getName());
+        colDst.setType(getType());
+        colDst.setCollation(getCollation());
+        colDst.setNullValue(getNullValue());
+        colDst.setDefaultValue(getDefaultValue());
+        colDst.setSparse(isSparse);
+        colDst.setNotForRep(isNotForRep);
+        colDst.setIdentity(identity);
+        colDst.setDefaultName(defaultName);
+        for (PgPrivilege priv : grants) {
+            colDst.addPrivilege(priv);
+        }
+        for (PgPrivilege priv : revokes) {
+            colDst.addPrivilege(priv);
+        }
+        colDst.deps.addAll(deps);
+        return colDst;
     }
 
     @Override

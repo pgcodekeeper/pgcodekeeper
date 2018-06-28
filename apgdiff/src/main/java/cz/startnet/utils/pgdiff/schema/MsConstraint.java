@@ -8,6 +8,7 @@ public class MsConstraint extends PgConstraint {
 
     public MsConstraint(String name, String rawStatement) {
         super(name, rawStatement);
+        setPostgres(false);
     }
 
     @Override

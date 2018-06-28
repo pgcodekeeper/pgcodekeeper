@@ -20,6 +20,7 @@ public class MsProcedure extends PgStatementWithSearchPath {
 
     public MsProcedure(String name, String rawStatement) {
         super(name, rawStatement);
+        setPostgres(false);
     }
 
     @Override
@@ -51,7 +52,7 @@ public class MsProcedure extends PgStatementWithSearchPath {
         sbSQL.append(GO);
 
         //        appendOwnerSQL(sbSQL);
-        //        appendPrivileges(sbSQL);
+        appendPrivileges(sbSQL);
 
         return sbSQL.toString();
     }
@@ -109,9 +110,8 @@ public class MsProcedure extends PgStatementWithSearchPath {
         /*
         if (!Objects.equals(getOwner(), newFunction.getOwner())) {
             sb.append(newFunction.getOwnerSQL());
-        }
+        } */
         alterPrivileges(newFunction, sb);
-         */
         return sb.length() > startLength;
     }
 
@@ -145,11 +145,11 @@ public class MsProcedure extends PgStatementWithSearchPath {
         }
 
         for (PgPrivilege priv : revokes) {
-            proc.addPrivilege(priv.deepCopy());
+            proc.addPrivilege(priv);
         }
 
         for (PgPrivilege priv : grants) {
-            proc.addPrivilege(priv.deepCopy());
+            proc.addPrivilege(priv);
         }
 
         for (String option: options) {

@@ -6,6 +6,7 @@ public class MsFunction extends PgFunction {
 
     public MsFunction(String name, String rawStatement) {
         super(name, rawStatement);
+        setPostgres(false);
     }
 
     @Override
@@ -25,7 +26,7 @@ public class MsFunction extends PgFunction {
         sbSQL.append(GO);
 
         // appendOwnerSQL(sbSQL);
-        // appendPrivileges(sbSQL);
+        appendPrivileges(sbSQL);
 
         return sbSQL.toString();
     }
@@ -33,11 +34,5 @@ public class MsFunction extends PgFunction {
     @Override
     public String getDropSQL() {
         return "DROP FUNCTION " + getQualifiedName() + GO;
-    }
-
-    @Override
-    protected void alterPrivileges(PgStatement newObj, StringBuilder sb) {
-        // TODO MS SQL version
-        super.alterPrivileges(newObj, sb);
     }
 }
