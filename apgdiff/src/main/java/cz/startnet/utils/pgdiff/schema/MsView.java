@@ -57,7 +57,7 @@ public class MsView extends PgView {
         }
         sbSQL.append(GO);
 
-        //appendOwnerSQL(sbSQL);
+        appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
 
         return sbSQL.toString();
@@ -78,10 +78,10 @@ public class MsView extends PgView {
             sb.append(newView.getCreationSQL());
             return true;
         }
-        /*
+
         if (!Objects.equals(getOwner(), newView.getOwner())) {
             sb.append(newView.getOwnerSQL());
-        } */
+        }
         alterPrivileges(newView, sb);
 
         return sb.length() > startLength;

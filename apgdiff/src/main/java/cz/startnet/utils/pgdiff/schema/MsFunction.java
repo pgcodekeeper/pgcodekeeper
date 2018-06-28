@@ -25,7 +25,7 @@ public class MsFunction extends PgFunction {
         sbSQL.append(getBody());
         sbSQL.append(GO);
 
-        // appendOwnerSQL(sbSQL);
+        appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
 
         return sbSQL.toString();

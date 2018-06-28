@@ -39,9 +39,7 @@ public class MsSchema extends PgSchema {
         MsSchema oldSchema = this;
 
         if (!Objects.equals(oldSchema.getOwner(), newSchema.getOwner())) {
-            sb.append("\nALTER AUTHORIZATION ON SCHEMA :: ").append(MsDiffUtils.getQuotedName(getName()));
-            sb.append("\nTO ").append(MsDiffUtils.getQuotedName(newSchema.getOwner()));
-            sb.append(GO);
+            sb.append(newSchema.getOwnerSQL());
         }
 
         alterPrivileges(newSchema, sb);

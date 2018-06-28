@@ -51,7 +51,7 @@ public class MsProcedure extends PgStatementWithSearchPath {
         sbSQL.append(getBody());
         sbSQL.append(GO);
 
-        //        appendOwnerSQL(sbSQL);
+        appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
 
         return sbSQL.toString();
@@ -107,10 +107,9 @@ public class MsProcedure extends PgStatementWithSearchPath {
             sb.append(newFunction.getCreationSQL());
         }
 
-        /*
         if (!Objects.equals(getOwner(), newFunction.getOwner())) {
             sb.append(newFunction.getOwnerSQL());
-        } */
+        }
         alterPrivileges(newFunction, sb);
         return sb.length() > startLength;
     }

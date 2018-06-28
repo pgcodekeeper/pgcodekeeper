@@ -31,7 +31,7 @@ public class MsSequence extends PgSequence {
 
         sbSQL.append(GO);
 
-        //appendOwnerSQL(sbSQL);
+        appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
 
         return sbSQL.toString();
@@ -55,9 +55,7 @@ public class MsSequence extends PgSequence {
         }
 
         if (!Objects.equals(getOwner(), newSequence.getOwner())) {
-            sb.append("\nALTER AUTHORIZATION ON OBJECT :: ")
-            .append(getQualifiedName()).append("\nTO ")
-            .append(MsDiffUtils.getQuotedName(newSequence.getOwner())).append(GO);
+            sb.append(newSequence.getOwnerSQL());
         }
 
         alterPrivileges(newSequence, sb);

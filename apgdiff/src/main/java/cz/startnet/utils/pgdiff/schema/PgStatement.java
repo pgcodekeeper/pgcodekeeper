@@ -270,19 +270,24 @@ public abstract class PgStatement implements IStatement, IHashable {
         if (owner == null) {
             return sb;
         }
+        sb.append("\n\nALTER ");
 
-        DbObjType type = getStatementType();
-        sb.append("\n\nALTER ")
-        .append(type)
-        .append(' ');
-        if (type == DbObjType.FUNCTION) {
-            ((PgFunction) this).appendFunctionSignature(sb, false, true);
+        if (isPostgres) {
+            DbObjType type = getStatementType();
+            sb.append(type).append(' ');
+            if (type == DbObjType.FUNCTION) {
+                ((PgFunction) this).appendFunctionSignature(sb, false, true);
+            } else {
+                sb.append(PgDiffUtils.getQuotedName(getName()));
+            }
+            sb.append(" OWNER TO ")
+            .append(PgDiffUtils.getQuotedName(owner))
+            .append(';');
         } else {
-            sb.append(PgDiffUtils.getQuotedName(getName()));
+            // TODO SCHEMA OWNER instead null owner
+            sb.append(" AUTHORIZATION ON ").append(PgDiffUtils.getQuotedName(getName()))
+            .append(" TO ").append(PgDiffUtils.getQuotedName(owner)).append(GO);
         }
-        sb.append(" OWNER TO ")
-        .append(PgDiffUtils.getQuotedName(owner))
-        .append(';');
 
         return sb;
     }
