@@ -6,7 +6,6 @@ public class MsFunction extends PgFunction {
 
     public MsFunction(String name, String rawStatement) {
         super(name, rawStatement);
-        setPostgres(false);
     }
 
     @Override
@@ -34,5 +33,44 @@ public class MsFunction extends PgFunction {
     @Override
     public String getDropSQL() {
         return "DROP FUNCTION " + getQualifiedName() + GO;
+    }
+
+    @Override
+    public boolean isPostgres() {
+        return false;
+    }
+
+    public class MsArgument extends Argument {
+
+        private static final long serialVersionUID = -8595307351991231778L;
+
+        public MsArgument(String name, String dataType) {
+            super(name, dataType);
+        }
+
+        public MsArgument(String mode, String name, String dataType) {
+            super(mode, name, dataType);
+        }
+
+        @Override
+        public String getDeclaration(boolean includeDefaultValue,
+                boolean includeArgName) {
+            final StringBuilder sbString = new StringBuilder();
+            sbString.append(name).append(' ').append(dataType);
+
+            if (includeDefaultValue && defaultExpression != null
+                    && !defaultExpression.isEmpty()) {
+                sbString.append(" = ");
+                sbString.append(defaultExpression);
+            }
+
+            if (mode != null && !"IN".equalsIgnoreCase(mode)) {
+                sbString.append(' ').append(mode);
+            }
+
+
+            return sbString.toString();
+        }
+
     }
 }

@@ -10,7 +10,6 @@ public class MsView extends PgView {
 
     public MsView(String name, String rawStatement) {
         super(name, rawStatement);
-        setPostgres(false);
     }
 
     @Override
@@ -92,4 +91,8 @@ public class MsView extends PgView {
         return "DROP VIEW " + getQualifiedName() + GO;
     }
 
+    @Override
+    public boolean isPostgres() {
+        return false;
+    }
 }

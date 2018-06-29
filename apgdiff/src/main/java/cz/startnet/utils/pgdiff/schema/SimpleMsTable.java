@@ -19,7 +19,6 @@ public class SimpleMsTable extends RegularPgTable {
 
     public SimpleMsTable(String name, String rawStatement) {
         super(name, rawStatement);
-        setPostgres(false);
     }
 
     @Override
@@ -148,5 +147,10 @@ public class SimpleMsTable extends RegularPgTable {
     public void setTextImage(String textImage) {
         this.textImage = textImage;
         resetHash();
+    }
+
+    @Override
+    public boolean isPostgres() {
+        return false;
     }
 }

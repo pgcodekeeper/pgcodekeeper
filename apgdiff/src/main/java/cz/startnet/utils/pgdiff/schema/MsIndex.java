@@ -8,7 +8,6 @@ public class MsIndex extends PgIndex {
 
     public MsIndex(String name, String rawStatement) {
         super(name, rawStatement);
-        setPostgres(false);
     }
 
     @Override
@@ -53,5 +52,10 @@ public class MsIndex extends PgIndex {
         return "DROP INDEX " + MsDiffUtils.quoteName(getName()) + " ON "
                 + MsDiffUtils.quoteName(getContainingSchema().getName()) + '.'
                 + MsDiffUtils.quoteName(getTableName()) + GO;
+    }
+
+    @Override
+    public boolean isPostgres() {
+        return false;
     }
 }

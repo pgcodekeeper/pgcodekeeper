@@ -17,7 +17,6 @@ public class MsColumn extends PgColumn {
 
     public MsColumn(String name) {
         super(name);
-        setPostgres(false);
     }
 
     @Override
@@ -236,6 +235,11 @@ public class MsColumn extends PgColumn {
                     && Objects.equals(defaultName, col.getDefaultName());
         }
 
+        return false;
+    }
+
+    @Override
+    public boolean isPostgres() {
         return false;
     }
 }

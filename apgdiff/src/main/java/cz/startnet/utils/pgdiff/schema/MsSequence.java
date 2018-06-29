@@ -9,7 +9,6 @@ public class MsSequence extends PgSequence {
 
     public MsSequence(String name, String rawStatement) {
         super(name, rawStatement);
-        setPostgres(false);
     }
 
     @Override
@@ -65,5 +64,10 @@ public class MsSequence extends PgSequence {
     @Override
     public String getDropSQL() {
         return "DROP SEQUENCE " + getQualifiedName() + GO;
+    }
+
+    @Override
+    public boolean isPostgres() {
+        return false;
     }
 }

@@ -9,7 +9,6 @@ public class MsSchema extends PgSchema {
 
     public MsSchema(String name, String rawStatement) {
         super(name, rawStatement);
-        setPostgres(false);
     }
 
     @Override
@@ -50,5 +49,10 @@ public class MsSchema extends PgSchema {
     @Override
     public String getDropSQL() {
         return "DROP SCHEMA " + MsDiffUtils.quoteName(getName()) + GO;
+    }
+
+    @Override
+    public boolean isPostgres() {
+        return false;
     }
 }

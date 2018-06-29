@@ -37,8 +37,6 @@ public abstract class PgStatement implements IStatement, IHashable {
     protected final String name;
     protected String owner;
     protected String comment;
-    // add to equals and hash? move to constructor?
-    private boolean isPostgres = true;
     protected final Set<PgPrivilege> grants = new LinkedHashSet<>();
     protected final Set<PgPrivilege> revokes = new LinkedHashSet<>();
 
@@ -66,12 +64,7 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     public boolean isPostgres() {
-        return isPostgres;
-    }
-
-    public void setPostgres(final boolean isPostgres) {
-        this.isPostgres = isPostgres;
-        resetHash();
+        return true;
     }
 
     /**
@@ -273,7 +266,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         }
         sb.append("\n\nALTER ");
 
-        if (isPostgres) {
+        if (isPostgres()) {
             DbObjType type = getStatementType();
             sb.append(type).append(' ');
             if (type == DbObjType.FUNCTION) {

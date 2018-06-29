@@ -18,7 +18,6 @@ public class MsTrigger extends PgTrigger {
 
     public MsTrigger(String name, String rawStatement) {
         super(name, rawStatement);
-        setPostgres(false);
     }
 
     @Override
@@ -190,5 +189,10 @@ public class MsTrigger extends PgTrigger {
         tr.setAppend(isAppend());
         tr.setNotForRep(isNotForRep());
         return tr;
+    }
+
+    @Override
+    public boolean isPostgres() {
+        return false;
     }
 }

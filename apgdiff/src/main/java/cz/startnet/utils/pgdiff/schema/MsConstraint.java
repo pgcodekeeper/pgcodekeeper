@@ -8,7 +8,6 @@ public class MsConstraint extends PgConstraint {
 
     public MsConstraint(String name, String rawStatement) {
         super(name, rawStatement);
-        setPostgres(false);
     }
 
     @Override
@@ -55,6 +54,11 @@ public class MsConstraint extends PgConstraint {
         sbSQL.append(GO);
 
         return sbSQL.toString();
+    }
+
+    @Override
+    public boolean isPostgres() {
+        return false;
     }
 
 }

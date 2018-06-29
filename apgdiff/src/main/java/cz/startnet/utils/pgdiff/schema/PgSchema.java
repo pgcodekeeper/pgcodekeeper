@@ -222,6 +222,7 @@ public class PgSchema extends PgStatement implements ISchema {
     @Override
     public Stream<PgStatement> getChildren() {
         Stream<PgStatement> stream = Stream.concat(getFunctions().stream(), getSequences().stream());
+        stream = Stream.concat(stream, getProcedures().stream());
         stream = Stream.concat(stream, getTypes().stream());
         stream = Stream.concat(stream, getDomains().stream());
         stream = Stream.concat(stream, getTables().stream());

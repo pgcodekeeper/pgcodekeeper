@@ -20,7 +20,6 @@ public class MsProcedure extends PgStatementWithSearchPath {
 
     public MsProcedure(String name, String rawStatement) {
         super(name, rawStatement);
-        setPostgres(false);
     }
 
     @Override
@@ -247,7 +246,7 @@ public class MsProcedure extends PgStatementWithSearchPath {
             final StringBuilder sbString = new StringBuilder();
 
             if (name != null && !name.isEmpty() && includeArgName) {
-                sbString.append(MsDiffUtils.quoteName(name));
+                sbString.append(name);
                 sbString.append(' ');
             }
 
@@ -328,5 +327,10 @@ public class MsProcedure extends PgStatementWithSearchPath {
             this.isReadOnly = isReadOnly;
             resetHash();
         }
+    }
+
+    @Override
+    public boolean isPostgres() {
+        return false;
     }
 }
