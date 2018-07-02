@@ -1,10 +1,13 @@
 package cz.startnet.utils.pgdiff;
 
+import java.util.regex.Pattern;
+
 import ru.taximaxim.codekeeper.apgdiff.sql.Keyword;
 import ru.taximaxim.codekeeper.apgdiff.sql.Keyword.KeywordCategory;
 
 public class MsDiffUtils {
-    public static final int ERROR_SUBSTRING_LENGTH = 20;
+
+    private static final Pattern PATTERN_DQ = Pattern.compile("]", Pattern.LITERAL);
 
     public static boolean isValidId(String id, boolean allowKeywords, boolean allowCaps) {
         if (id.isEmpty()) {
@@ -48,16 +51,18 @@ public class MsDiffUtils {
      * @return quoted string if needed, otherwise not quoted string
      */
     public static String getQuotedName(final String name) {
-        return isValidId(name, false, false) ? name : quoteName(name);
+        return isValidId(name, false, true) ? name : quoteName(name);
     }
 
     public static String quoteName(String name) {
         return new StringBuilder(name.length() + 2)
-                .append('[').append(name).append(']').toString();
+                .append('[')
+                .append(name.indexOf(']') != -1 ? PATTERN_DQ.matcher(name).replaceAll("]]") : name)
+                .append(']').toString();
     }
 
     public static String unquoteQuotedName(String name) {
-        return name.substring(1, name.length() - 1).replace("[[", "[").replaceAll("]]", "]");
+        return name.substring(1, name.length() - 1).replace("]]", "]");
     }
 
     private MsDiffUtils() {
