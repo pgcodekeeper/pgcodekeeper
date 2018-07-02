@@ -37,6 +37,14 @@ public class PgPrivilege implements IHashable {
         this.isPostgres = isPostgres;
     }
 
+    public String getCreationSQL() {
+        return new StringBuilder()
+                .append(revoke ? "REVOKE " : "GRANT ")
+                .append(definition)
+                .append(isPostgres ? ';' : "\nGO")
+                .toString();
+    }
+
     public String getDropSQL() {
         if (revoke) {
             return null;
@@ -75,11 +83,11 @@ public class PgPrivilege implements IHashable {
         owner =  PgDiffUtils.getQuotedName(owner);
 
         PgPrivilege priv = new PgPrivilege(true, true, "ALL" + column + " ON " + type + ' ' + name + " FROM PUBLIC");
-        sb.append('\n').append(priv);
+        sb.append('\n').append(priv.getCreationSQL());
         priv = new PgPrivilege(true, true, "ALL" + column + " ON " + type + ' ' + name + " FROM " + owner);
-        sb.append('\n').append(priv);
+        sb.append('\n').append(priv.getCreationSQL());
         priv = new PgPrivilege(false, true, "ALL" + column + " ON " + type + ' ' + name + " TO " + owner);
-        sb.append('\n').append(priv);
+        sb.append('\n').append(priv.getCreationSQL());
     }
 
     @Override
@@ -114,10 +122,6 @@ public class PgPrivilege implements IHashable {
 
     @Override
     public String toString() {
-        return new StringBuilder()
-                .append(revoke ? "REVOKE " : "GRANT ")
-                .append(definition)
-                .append(isPostgres ? ';' : "\nGO")
-                .toString();
+        return getCreationSQL();
     }
 }

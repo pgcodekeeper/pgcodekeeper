@@ -221,10 +221,10 @@ public abstract class PgStatement implements IStatement, IHashable {
         .append("GRANT\n");
 
         for (PgPrivilege priv : revokes) {
-            sb.append('\n').append(priv);
+            sb.append('\n').append(priv.getCreationSQL());
         }
         for (PgPrivilege priv : grants) {
-            sb.append('\n').append(priv);
+            sb.append('\n').append(priv.getCreationSQL());
         }
 
         return sb;
