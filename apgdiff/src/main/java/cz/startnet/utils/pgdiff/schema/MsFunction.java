@@ -56,16 +56,16 @@ public class MsFunction extends PgFunction {
         public String getDeclaration(boolean includeDefaultValue,
                 boolean includeArgName) {
             final StringBuilder sbString = new StringBuilder();
-            sbString.append(name).append(' ').append(dataType);
+            sbString.append(getName()).append(' ').append(getDataType());
 
-            if (includeDefaultValue && defaultExpression != null
-                    && !defaultExpression.isEmpty()) {
+            if (includeDefaultValue && getDefaultExpression() != null
+                    && !getDefaultExpression().isEmpty()) {
                 sbString.append(" = ");
-                sbString.append(defaultExpression);
+                sbString.append(getDefaultExpression());
             }
 
-            if (mode != null && !"IN".equalsIgnoreCase(mode)) {
-                sbString.append(' ').append(mode);
+            if (getMode() != null && !"IN".equalsIgnoreCase(getMode())) {
+                sbString.append(' ').append(getMode());
             }
 
 

@@ -8,7 +8,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
-import cz.startnet.utils.pgdiff.hashers.JavaHasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsProcedure extends PgStatementWithSearchPath {
@@ -245,26 +244,26 @@ public class MsProcedure extends PgStatementWithSearchPath {
                 boolean includeArgName) {
             final StringBuilder sbString = new StringBuilder();
 
-            if (name != null && !name.isEmpty() && includeArgName) {
-                sbString.append(name);
+            if (getName() != null && !getName().isEmpty() && includeArgName) {
+                sbString.append(getName());
                 sbString.append(' ');
             }
 
-            sbString.append(dataType);
+            sbString.append(getDataType());
 
             if (isVarying()) {
                 sbString.append(" VARYING");
             }
 
-            if (includeDefaultValue && defaultExpression != null
-                    && !defaultExpression.isEmpty()) {
+            if (includeDefaultValue && getDefaultExpression() != null
+                    && !getDefaultExpression().isEmpty()) {
                 sbString.append(" = ");
-                sbString.append(defaultExpression);
+                sbString.append(getDefaultExpression());
             }
 
-            if (mode != null && !"IN".equalsIgnoreCase(mode)) {
+            if (getMode() != null && !"IN".equalsIgnoreCase(getMode())) {
                 sbString.append(' ');
-                sbString.append(mode);
+                sbString.append(getMode());
             }
 
             if (isReadOnly()) {
@@ -278,14 +277,11 @@ public class MsProcedure extends PgStatementWithSearchPath {
         public boolean equals(Object obj) {
             boolean eq = false;
 
-            if(this == obj) {
+            if (this == obj) {
                 eq = true;
-            } else if(obj instanceof ProcedureArgument) {
+            } else if (super.equals(obj) && obj instanceof ProcedureArgument) {
                 final ProcedureArgument arg = (ProcedureArgument) obj;
-                eq = Objects.equals(dataType, arg.getDataType())
-                        && Objects.equals(defaultExpression, arg.getDefaultExpression())
-                        && Objects.equals(mode, arg.getMode())
-                        && Objects.equals(name, arg.getName())
+                eq = super.equals(arg)
                         && Objects.equals(isVarying, arg.isVarying())
                         && Objects.equals(isReadOnly, arg.isReadOnly());
             }
@@ -295,17 +291,12 @@ public class MsProcedure extends PgStatementWithSearchPath {
 
         @Override
         public int hashCode() {
-            JavaHasher hasher = new JavaHasher();
-            computeHash(hasher);
-            return hasher.getResult();
+            return super.hashCode();
         }
 
         @Override
         public void computeHash(Hasher hasher) {
-            hasher.put(dataType);
-            hasher.put(defaultExpression);
-            hasher.put(mode);
-            hasher.put(name);
+            super.computeHash(hasher);
             hasher.put(isReadOnly);
             hasher.put(isVarying);
         }

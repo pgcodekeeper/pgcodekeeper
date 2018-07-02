@@ -12,10 +12,10 @@ public abstract class AbstractArgument implements IArgument, Serializable, IHash
 
     private static final long serialVersionUID = 7466228261754446064L;
 
-    protected final String mode;
-    protected final String name;
-    protected final String dataType;
-    protected String defaultExpression;
+    private final String mode;
+    private final String name;
+    private final String dataType;
+    private String defaultExpression;
 
     public AbstractArgument(String name, String dataType) {
         this(null, name, dataType);
