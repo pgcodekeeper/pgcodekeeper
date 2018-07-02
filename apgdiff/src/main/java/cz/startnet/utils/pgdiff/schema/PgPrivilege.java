@@ -16,32 +16,25 @@ public class PgPrivilege implements IHashable {
     public static final String WITH_GRANT_OPTION = " WITH GRANT OPTION";
 
     private final boolean revoke;
-    private final boolean isPostgres;
     private final String definition;
 
     public boolean isRevoke() {
         return revoke;
     }
 
-    public boolean isPostgres() {
-        return isPostgres;
-    }
-
     public String getDefinition() {
         return definition;
     }
 
-    public PgPrivilege(boolean revoke, boolean isPostgres, String definition) {
+    public PgPrivilege(boolean revoke, String definition) {
         this.revoke = revoke;
         this.definition = definition;
-        this.isPostgres = isPostgres;
     }
 
     public String getCreationSQL() {
         return new StringBuilder()
                 .append(revoke ? "REVOKE " : "GRANT ")
                 .append(definition)
-                .append(isPostgres ? ';' : "\nGO")
                 .toString();
     }
 
@@ -62,6 +55,7 @@ public class PgPrivilege implements IHashable {
                         .toString();
     }
 
+    // TODO MS SQL override
     public static void appendDefaultPrivileges(PgStatement newObj, StringBuilder sb) {
         DbObjType type = newObj.getStatementType();
         String owner = type != DbObjType.COLUMN ? newObj.getOwner() : newObj.getParent().getOwner();
@@ -82,12 +76,12 @@ public class PgPrivilege implements IHashable {
 
         owner =  PgDiffUtils.getQuotedName(owner);
 
-        PgPrivilege priv = new PgPrivilege(true, true, "ALL" + column + " ON " + type + ' ' + name + " FROM PUBLIC");
-        sb.append('\n').append(priv.getCreationSQL());
-        priv = new PgPrivilege(true, true, "ALL" + column + " ON " + type + ' ' + name + " FROM " + owner);
-        sb.append('\n').append(priv.getCreationSQL());
-        priv = new PgPrivilege(false, true, "ALL" + column + " ON " + type + ' ' + name + " TO " + owner);
-        sb.append('\n').append(priv.getCreationSQL());
+        PgPrivilege priv = new PgPrivilege(true, "ALL" + column + " ON " + type + ' ' + name + " FROM PUBLIC");
+        sb.append('\n').append(priv.getCreationSQL()).append(';');
+        priv = new PgPrivilege(true, "ALL" + column + " ON " + type + ' ' + name + " FROM " + owner);
+        sb.append('\n').append(priv.getCreationSQL()).append(';');
+        priv = new PgPrivilege(false, "ALL" + column + " ON " + type + ' ' + name + " TO " + owner);
+        sb.append('\n').append(priv.getCreationSQL()).append(';');
     }
 
     @Override
@@ -99,7 +93,6 @@ public class PgPrivilege implements IHashable {
         } else if (obj instanceof PgPrivilege){
             PgPrivilege priv = (PgPrivilege) obj;
             eq = revoke == priv.isRevoke()
-                    && isPostgres == priv.isPostgres()
                     && Objects.equals(definition, priv.getDefinition());
         }
 
@@ -117,7 +110,6 @@ public class PgPrivilege implements IHashable {
     public void computeHash(Hasher hasher) {
         hasher.put(definition);
         hasher.put(revoke);
-        hasher.put(isPostgres);
     }
 
     @Override

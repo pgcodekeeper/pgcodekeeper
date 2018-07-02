@@ -63,6 +63,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         return name;
     }
 
+    //TODO enum later
     public boolean isPostgres() {
         return true;
     }
@@ -221,10 +222,10 @@ public abstract class PgStatement implements IStatement, IHashable {
         .append("GRANT\n");
 
         for (PgPrivilege priv : revokes) {
-            sb.append('\n').append(priv.getCreationSQL());
+            sb.append('\n').append(priv.getCreationSQL()).append(isPostgres() ? ';' : "\nGO");
         }
         for (PgPrivilege priv : grants) {
-            sb.append('\n').append(priv.getCreationSQL());
+            sb.append('\n').append(priv.getCreationSQL()).append(isPostgres() ? ';' : "\nGO");
         }
 
         return sb;

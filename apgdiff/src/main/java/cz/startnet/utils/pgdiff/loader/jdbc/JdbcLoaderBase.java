@@ -246,7 +246,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
 
         String column = (columnId != null && !columnId.isEmpty()) ? "(" + columnId + ")" : "";
         String revokePublic = "ALL" + column + " ON " + stType + " " + stSignature + " FROM PUBLIC";
-        st.addPrivilege(new PgPrivilege(true, true, revokePublic));
+        st.addPrivilege(new PgPrivilege(true, revokePublic));
 
         List<Privilege> grants = JdbcAclParser.parse(
                 aclItemsArrayAsString, possiblePrivilegeCount, order, owner);
@@ -261,7 +261,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         if (!metDefaultOwnersGrants) {
             String revokeOwner = "ALL" + column + " ON " + stType + " " + stSignature + " FROM " +
                     PgDiffUtils.getQuotedName(owner);
-            st.addPrivilege(new PgPrivilege(true, true, revokeOwner));
+            st.addPrivilege(new PgPrivilege(true, revokeOwner));
         }
 
         for (Privilege grant : grants) {
@@ -281,7 +281,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             if (grant.isGO) {
                 privDefinition = privDefinition.concat(PgPrivilege.WITH_GRANT_OPTION);
             }
-            st.addPrivilege(new PgPrivilege(false, true, privDefinition));
+            st.addPrivilege(new PgPrivilege(false, privDefinition));
         }
 
     }

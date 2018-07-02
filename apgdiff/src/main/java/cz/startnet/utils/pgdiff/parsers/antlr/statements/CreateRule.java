@@ -61,7 +61,7 @@ public class CreateRule extends ParserAbstract {
                 getSafe(schema::getFunction,
                         parseSignature(functNameCtx.getText(), functparam.function_args()),
                         functNameCtx.getStart())
-                .addPrivilege(new PgPrivilege(revoke, true, getFullCtxText(ctx.body_rule)));
+                .addPrivilege(new PgPrivilege(revoke, getFullCtxText(ctx.body_rule)));
             }
         } else if (ctx.body_rule.on_large_object() != null) {
             obj_name = ctx.body_rule.on_large_object().obj_name.name;
@@ -79,7 +79,7 @@ public class CreateRule extends ParserAbstract {
         }
 
         for (Schema_qualified_nameContext name : obj_name) {
-            addToDB(name, type, new PgPrivilege(revoke, true, getFullCtxText(ctx.body_rule)));
+            addToDB(name, type, new PgPrivilege(revoke, getFullCtxText(ctx.body_rule)));
         }
 
         return null;
@@ -131,13 +131,13 @@ public class CreateRule extends ParserAbstract {
             // если таблица не найдена попробовать вьюхи и проч. общим методом
             if (tblSt == null) {
                 addToDB(tbl, DbObjType.TABLE, new PgPrivilege(
-                        revoke, true, getFullCtxText(ctx.body_rule)));
+                        revoke, getFullCtxText(ctx.body_rule)));
             } else {
                 // применить привилегию к текущему объекту таблица
                 // здесь рассматривается случай grant SELECT, UPDATE(c2)
                 // SELECT добавляется тут ко всему объекту
                 if (tblPrivilege.length() > 0) {
-                    tblSt.addPrivilege(new PgPrivilege(revoke, true,
+                    tblSt.addPrivilege(new PgPrivilege(revoke,
                             tblPrivilege + tableName + ' ' + getFullCtxText(ctx_body.body_rules_rest())));
                 }
 
@@ -161,7 +161,7 @@ public class CreateRule extends ParserAbstract {
             privilege.append(" ON TABLE ").append(tableName).append(' ');
             privilege.append(getFullCtxText(ctx_body.body_rules_rest()));
 
-            col.addPrivilege(new PgPrivilege(revoke, true, privilege.toString()));
+            col.addPrivilege(new PgPrivilege(revoke, privilege.toString()));
         }
     }
 
