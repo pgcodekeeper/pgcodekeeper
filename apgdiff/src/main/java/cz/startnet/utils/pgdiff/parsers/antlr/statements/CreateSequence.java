@@ -8,6 +8,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_sequence_statemen
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
@@ -22,12 +23,14 @@ public class CreateSequence extends ParserAbstract {
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
         PgSequence sequence = new PgSequence(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
-        fillSequence(sequence, ctx.sequence_body());
-        getSchemaSafe(ids, db.getDefaultSchema()).addSequence(sequence);
+        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
+        fillSequence(sequence, ctx.sequence_body(), schema.getName());
+        schema.addSequence(sequence);
         return sequence;
     }
 
-    public static void fillSequence(PgSequence sequence, List<Sequence_bodyContext> list) {
+    public static void fillSequence(PgSequence sequence, List<Sequence_bodyContext> list,
+            String schemaName) {
         long inc = 1;
         Long maxValue = null;
         Long minValue = null;
@@ -49,15 +52,17 @@ public class CreateSequence extends ParserAbstract {
             } else if (body.col_name != null) {
                 // TODO incorrect qualified name work
                 // also broken in altersequence
-                setOwnedByWithoutSchema(sequence, body);
+                setOwnedByWithoutSchema(sequence, body, schemaName);
             }
         }
         sequence.setMinMaxInc(inc, maxValue, minValue);
     }
 
-    public static void setOwnedByWithoutSchema(PgSequence sequence, Sequence_bodyContext body) {
+    public static void setOwnedByWithoutSchema(PgSequence sequence, Sequence_bodyContext body,
+            String schemaName) {
         List<IdentifierContext> qualNameIdsCtx = body.col_name.identifier();
-        sequence.setOwnedBy(PgDiffUtils.getQuotedName(QNameParser.getSecondName(qualNameIdsCtx)) + '.'
+        sequence.setOwnedBy(PgDiffUtils.getQuotedName(schemaName) + '.'
+                + PgDiffUtils.getQuotedName(QNameParser.getSecondName(qualNameIdsCtx)) + '.'
                 + PgDiffUtils.getQuotedName(QNameParser.getFirstName(qualNameIdsCtx)));
     }
 }

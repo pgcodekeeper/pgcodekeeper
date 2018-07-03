@@ -677,7 +677,7 @@ class PgDB9 extends PgDatabaseObjectCreator {
         PgSequence seq = new PgSequence("user_id_seq", "");
         seq.setMinMaxInc(1L, null, null);
         seq.setCache("1");
-        seq.setOwnedBy("user_data.id");
+        seq.setOwnedBy("public.user_data.id");
         schema.addSequence(seq);
         seq.setOwner("postgres");
 
@@ -928,7 +928,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
         seq.setCache("1");
         schema.addSequence(seq);
 
-        seq.setOwnedBy("test.id");
+        seq.setOwnedBy("public.test.id");
 
         seq.setOwner("fordfrog");
 

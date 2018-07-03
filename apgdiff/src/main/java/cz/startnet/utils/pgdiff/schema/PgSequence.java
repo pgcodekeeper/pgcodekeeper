@@ -142,7 +142,6 @@ public class PgSequence extends PgStatementWithSearchPath implements IRelation {
         .append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.')
         .append(PgDiffUtils.getQuotedName(name));
         sbSQL.append("\n\tOWNED BY ")
-        .append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.')
         .append(ownedBy).append(';');
 
         return sbSQL.toString();

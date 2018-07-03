@@ -128,7 +128,7 @@ public class AlterTable extends AbstractTable {
                         }
                     }
                     PgSequence sequence = new PgSequence(name, null);
-                    CreateSequence.fillSequence(sequence, identity.sequence_body());
+                    CreateSequence.fillSequence(sequence, identity.sequence_body(), schema.getName());
 
                     col.setSequence(sequence);
                     sequence.setParent(schema);
