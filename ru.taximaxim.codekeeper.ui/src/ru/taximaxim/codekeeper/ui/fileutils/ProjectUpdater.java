@@ -58,7 +58,7 @@ public class ProjectUpdater {
             try {
                 for (WORK_DIR_NAMES subdirName : WORK_DIR_NAMES.values()) {
                     final Path sourcePath = dirExport.resolve(subdirName.toString());
-                    if (Files.exists(sourcePath)) {
+                    if (!Files.exists(sourcePath)) {
                         continue;
                     }
                     final Path targetPath = dirTmp.resolve(subdirName.toString());

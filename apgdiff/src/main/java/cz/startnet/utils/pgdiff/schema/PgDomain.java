@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgDomain extends PgStatementWithSearchPath {
@@ -250,22 +251,17 @@ public class PgDomain extends PgStatementWithSearchPath {
     }
 
     @Override
-    public int computeHash() {
-        final int prime = 31;
-        final int itrue = 1231;
-        final int ifalse = 1237;
-        int result = 1;
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((dataType == null) ? 0 : dataType.hashCode());
-        result = prime * result + ((collation == null) ? 0 : collation.hashCode());
-        result = prime * result + ((defaultValue == null) ? 0 : defaultValue.hashCode());
-        result = prime * result + (notNull ? itrue : ifalse);
-        result = prime * result + PgDiffUtils.setlikeHashcode(constraints);
-        result = prime * result + ((owner == null) ? 0 : owner.hashCode());
-        result = prime * result + ((grants == null) ? 0 : grants.hashCode());
-        result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
-        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
-        return result;
+    public void computeHash(Hasher hasher) {
+        hasher.put(name);
+        hasher.put(dataType);
+        hasher.put(collation);
+        hasher.put(defaultValue);
+        hasher.put(notNull);
+        hasher.putUnordered(constraints);
+        hasher.put(owner);
+        hasher.putOrdered(grants);
+        hasher.putOrdered(revokes);
+        hasher.put(comment);
     }
 
     @Override

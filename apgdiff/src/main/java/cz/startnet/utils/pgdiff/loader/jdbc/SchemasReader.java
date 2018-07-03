@@ -31,7 +31,7 @@ public class SchemasReader implements PgCatalogStrings {
 
         String query = JdbcQueries.QUERY_SCHEMAS.get(null);
 
-        List<ObjectTimestamp> objects = loader.getTimestampObjects();
+        List<ObjectTimestamp> objects = loader.getTimestampEqualObjects();
         if (objects != null && !objects.isEmpty()) {
             PgDatabase projDb = loader.getTimestampProjDb();
             StringBuilder sb = new StringBuilder();
@@ -39,7 +39,7 @@ public class SchemasReader implements PgCatalogStrings {
                 if (obj.getType() == DbObjType.SCHEMA) {
                     long oid = obj.getObjId();
                     sb.append(oid).append(',');
-                    PgSchema schema = (PgSchema)obj.getShallowCopy(projDb);
+                    PgSchema schema = (PgSchema)obj.copyStatement(projDb, loader);
                     db.addSchema(schema);
                     schemas.put(oid, schema);
                 }
@@ -73,10 +73,11 @@ public class SchemasReader implements PgCatalogStrings {
             if (comment != null && !comment.isEmpty()) {
                 s.setComment(loader.args, PgDiffUtils.quoteString(comment));
             }
+        } else if (!"postgres".equals(loader.getRoleByOid(owner))) {
+            loader.setOwner(s, owner);
         }
 
-        loader.setPrivileges(s, PgDiffUtils.getQuotedName(schemaName),
-                res.getString("nspacl"), owner, null);
+        loader.setPrivileges(s, res.getString("nspacl"), null);
 
         return s;
     }

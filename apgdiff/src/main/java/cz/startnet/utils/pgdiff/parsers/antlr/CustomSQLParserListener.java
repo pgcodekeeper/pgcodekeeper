@@ -8,6 +8,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_domain_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_fts_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_sequence_statementContext;
@@ -18,6 +19,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementCont
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_domain_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_extension_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_foreign_table_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_configurationContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_dictionaryContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_parserContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_templateContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_index_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
@@ -35,6 +40,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeE
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.ObjectCreationException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterDomain;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterFtsStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterFunction;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterSchema;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterSequence;
@@ -45,6 +51,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.CommentOn;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateDomain;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateExtension;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateForeignTable;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateFtsConfiguration;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateFtsDictionary;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateFtsParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateFtsTemplate;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateFunction;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateIndex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateRewrite;
@@ -221,6 +231,26 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     }
 
     @Override
+    public void exitCreate_fts_parser(Create_fts_parserContext ctx) {
+        safeParseStatement(new CreateFtsParser(ctx, db), ctx);
+    }
+
+    @Override
+    public void exitCreate_fts_template(Create_fts_templateContext ctx) {
+        safeParseStatement(new CreateFtsTemplate(ctx, db), ctx);
+    }
+
+    @Override
+    public void exitCreate_fts_dictionary(Create_fts_dictionaryContext ctx) {
+        safeParseStatement(new CreateFtsDictionary(ctx, db), ctx);
+    }
+
+    @Override
+    public void exitCreate_fts_configuration(Create_fts_configurationContext ctx) {
+        safeParseStatement(new CreateFtsConfiguration(ctx, db), ctx);
+    }
+
+    @Override
     public void exitAlter_function_statement(Alter_function_statementContext ctx) {
         safeParseStatement(new AlterFunction(ctx, db), ctx);
     }
@@ -253,6 +283,11 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     @Override
     public void exitAlter_domain_statement(Alter_domain_statementContext ctx) {
         safeParseStatement(new AlterDomain(ctx, db), ctx);
+    }
+
+    @Override
+    public void exitAlter_fts_statement(Alter_fts_statementContext ctx) {
+        safeParseStatement(new AlterFtsStatement(ctx, db), ctx);
     }
 
     static AntlrError handleUnresolvedReference(UnresolvedReferenceException ex, String filename) {

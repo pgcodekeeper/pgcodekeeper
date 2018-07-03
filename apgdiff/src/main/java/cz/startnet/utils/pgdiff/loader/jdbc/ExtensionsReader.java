@@ -26,7 +26,7 @@ public class ExtensionsReader implements PgCatalogStrings {
         loader.setCurrentOperation("extensions query");
         String query = JdbcQueries.QUERY_EXTENSIONS.get(null);
 
-        List<ObjectTimestamp> objects = loader.getTimestampObjects();
+        List<ObjectTimestamp> objects = loader.getTimestampEqualObjects();
         if (objects != null && !objects.isEmpty()) {
             PgDatabase projDb = loader.getTimestampProjDb();
             StringBuilder sb = new StringBuilder();
@@ -34,7 +34,7 @@ public class ExtensionsReader implements PgCatalogStrings {
             for (ObjectTimestamp obj : objects) {
                 if (obj.getType() == DbObjType.EXTENSION) {
                     sb.append(obj.getObjId()).append(',');
-                    db.addExtension((PgExtension)obj.getShallowCopy(projDb));
+                    db.addExtension((PgExtension)obj.copyStatement(projDb, loader));
                 }
             }
             if (sb.length() > 0) {

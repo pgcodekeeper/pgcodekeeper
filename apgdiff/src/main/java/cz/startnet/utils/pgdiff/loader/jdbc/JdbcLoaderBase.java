@@ -31,10 +31,15 @@ import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgTable;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.DaemonThreadFactory;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
  * Container for shared JdbcLoader state.
@@ -118,8 +123,8 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         errors.add(getCurrentLocation() + ' ' + message);
     }
 
-    public List<ObjectTimestamp> getTimestampObjects() {
-        return timestampParams.timestampObjects;
+    public List<ObjectTimestamp> getTimestampEqualObjects() {
+        return timestampParams.equalObjects;
     }
 
     public PgDatabase getTimestampProjDb() {
@@ -130,7 +135,10 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         return timestampParams.extensionSchema;
     }
 
-    private String getRoleByOid(long oid) {
+    protected String getRoleByOid(long oid) {
+        if (args.isIgnorePrivileges()) {
+            return null;
+        }
         return oid == 0 ? "PUBLIC" : cachedRolesNamesByOid.get(oid);
     }
 
@@ -140,13 +148,37 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         }
     }
 
-    protected void setPrivileges(PgStatement st, String stSignature,
-            String aclItemsArrayAsString, long ownerOid, String schemaName) {
-        if (!args.isIgnorePrivileges()) {
-            setPrivileges(st, stSignature, aclItemsArrayAsString, getRoleByOid(ownerOid),
-                    null, schemaName);
-        }
+    public void setPrivileges(PgStatement st, String aclItemsArrayAsString, String schemaName) {
+        setPrivileges(st, aclItemsArrayAsString, null, schemaName);
     }
+
+    public void setPrivileges(PgStatement st, String aclItemsArrayAsString, String columnName, String schemaName) {
+        String signature;
+        switch (st.getStatementType()) {
+        case FUNCTION:
+            signature = ((PgFunction) st).appendFunctionSignature(
+                    new StringBuilder(), false, true).toString();
+            break;
+        default:
+            signature = PgDiffUtils.getQuotedName(st.getName());
+            break;
+        }
+
+        String owner = st.getOwner();
+        if (owner == null && st.getStatementType() == DbObjType.SCHEMA
+                && ApgdiffConsts.PUBLIC.equals(st.getName())) {
+            owner = "postgres";
+        }
+
+        setPrivileges(st, signature, aclItemsArrayAsString, owner,
+                columnName == null ? null : PgDiffUtils.getQuotedName(columnName), schemaName);
+    }
+
+    public void setPrivileges(PgColumn column, PgTable t, String aclItemsArrayAsString) {
+        setPrivileges(column, PgDiffUtils.getQuotedName(t.getName()), aclItemsArrayAsString,
+                t.getOwner(), PgDiffUtils.getQuotedName(column.getName()), t.getContainingSchema().getName());
+    }
+
     /**
      * Parses <code>aclItemsArrayAsString</code> and adds parsed privileges to
      * <code>PgStatement</code> object. Owner privileges go first.
@@ -169,7 +201,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
      * Order of all characters (for all types of objects combined) : raxdtDXCcTUw
      */
     protected void setPrivileges(PgStatement st, String stSignature,
-            String aclItemsArrayAsString, String owner, String columnName, String schemaName) {
+            String aclItemsArrayAsString, String owner, String columnId, String schemaName) {
         if (aclItemsArrayAsString == null || args.isIgnorePrivileges()) {
             return;
         }
@@ -184,7 +216,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         case VIEW:
         case COLUMN:
             stType = "TABLE";
-            if (columnName == null) {
+            if (columnId == null) {
                 order = "raxdtDw";
             } else {
                 order = "raxw";
@@ -214,8 +246,8 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         }
 
         String qualStSignature = schemaName == null ? stSignature : schemaName + '.' + stSignature;
-        String column = (columnName != null && !columnName.isEmpty()) ? "(" + columnName + ")" : "";
-        String revokePublic = "ALL" + column + " ON " + stType + " " + qualStSignature + " FROM PUBLIC";
+        String column = (columnId != null && !columnId.isEmpty()) ? "(" + columnId + ")" : "";
+        String revokePublic = "ALL" + column + " ON " + stType + " " + stSignature + " FROM PUBLIC";
         st.addPrivilege(new PgPrivilege(true, revokePublic, "REVOKE " + revokePublic));
 
         List<Privilege> grants = JdbcAclParser.parse(
@@ -319,7 +351,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     }
 
     protected static class TimestampParam {
-        private List<ObjectTimestamp> timestampObjects;
+        private List<ObjectTimestamp> equalObjects;
         private PgDatabase projDB;
         private String extensionSchema;
 
@@ -328,8 +360,8 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             this.extensionSchema = extensionSchema;
         }
 
-        public void fillObjects(DBTimestamp dbTime) {
-            timestampObjects = projDB.getDbTimestamp().searchEqualsObjects(dbTime);
+        public void fillEqualObjects(DBTimestamp dbTime) {
+            equalObjects = projDB.getDbTimestamp().searchEqualsObjects(dbTime);
         }
     }
 }

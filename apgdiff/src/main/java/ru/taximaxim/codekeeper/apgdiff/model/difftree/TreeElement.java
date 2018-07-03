@@ -125,25 +125,30 @@ public class TreeElement {
         switch(type) {
         // container (if root) and database end recursion
         // if container is not root - just pass through it
-        case DATABASE:   return db;
+        case DATABASE:          return db;
 
         // other elements just get from their parent, and their parent from a parent above them etc
-        case EXTENSION:  return ((PgDatabase) parent.getPgStatement(db)).getExtension(name);
-        case SCHEMA:     return ((PgDatabase) parent.getPgStatement(db)).getSchema(name);
+        case EXTENSION:         return ((PgDatabase) parent.getPgStatement(db)).getExtension(name);
+        case SCHEMA:            return ((PgDatabase) parent.getPgStatement(db)).getSchema(name);
 
-        case FUNCTION:   return ((PgSchema) parent.getPgStatement(db)).getFunction(name);
-        case SEQUENCE:   return ((PgSchema) parent.getPgStatement(db)).getSequence(name);
-        case TYPE:       return ((PgSchema) parent.getPgStatement(db)).getType(name);
-        case DOMAIN:     return ((PgSchema) parent.getPgStatement(db)).getDomain(name);
-        case VIEW:       return ((PgSchema) parent.getPgStatement(db)).getView(name);
-        case TABLE:      return ((PgSchema) parent.getPgStatement(db)).getTable(name);
+        case FUNCTION:          return ((PgSchema) parent.getPgStatement(db)).getFunction(name);
+        case SEQUENCE:          return ((PgSchema) parent.getPgStatement(db)).getSequence(name);
+        case TYPE:              return ((PgSchema) parent.getPgStatement(db)).getType(name);
+        case DOMAIN:            return ((PgSchema) parent.getPgStatement(db)).getDomain(name);
+        case VIEW:              return ((PgSchema) parent.getPgStatement(db)).getView(name);
+        case TABLE:             return ((PgSchema) parent.getPgStatement(db)).getTable(name);
 
-        case INDEX:      return ((PgTable) parent.getPgStatement(db)).getIndex(name);
-        case TRIGGER:    return ((PgTriggerContainer) parent.getPgStatement(db)).getTrigger(name);
-        case CONSTRAINT: return ((PgTable) parent.getPgStatement(db)).getConstraint(name);
-        case COLUMN:     return ((PgTable) parent.getPgStatement(db)).getColumn(name);
-        case RULE:       return ((PgRuleContainer) parent.getPgStatement(db)).getRule(name);
-        default:         throw new IllegalStateException("Unknown element type: " + type);
+        case FTS_PARSER:        return ((PgSchema) parent.getPgStatement(db)).getFtsParser(name);
+        case FTS_TEMPLATE:      return ((PgSchema) parent.getPgStatement(db)).getFtsTemplate(name);
+        case FTS_DICTIONARY:    return ((PgSchema) parent.getPgStatement(db)).getFtsDictionary(name);
+        case FTS_CONFIGURATION: return ((PgSchema) parent.getPgStatement(db)).getFtsConfiguration(name);
+
+        case INDEX:             return ((PgTable) parent.getPgStatement(db)).getIndex(name);
+        case TRIGGER:           return ((PgTriggerContainer) parent.getPgStatement(db)).getTrigger(name);
+        case CONSTRAINT:        return ((PgTable) parent.getPgStatement(db)).getConstraint(name);
+        case COLUMN:            return ((PgTable) parent.getPgStatement(db)).getColumn(name);
+        case RULE:              return ((PgRuleContainer) parent.getPgStatement(db)).getRule(name);
+        default:                throw new IllegalStateException("Unknown element type: " + type);
         }
     }
 

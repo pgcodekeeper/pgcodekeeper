@@ -81,12 +81,17 @@ schema_create
     | create_type_statement
     | create_domain_statement
     | create_server_statement
+    | create_fts_configuration 
+    | create_fts_template 
+    | create_fts_parser 
+    | create_fts_dictionary
     | create_user_mapping
     | create_transform_statement)
 
     | comment_on_statement
     | rule_common
     | set_statement
+    | schema_import
     ;
 
 schema_alter
@@ -99,7 +104,8 @@ schema_alter
     | alter_view_statement
     | alter_type_statement
     | alter_domain_statement
-    | alter_server_statement)
+    | alter_server_statement
+    | alter_fts_statement)
     ;
 
 schema_drop
@@ -107,6 +113,14 @@ schema_drop
     | drop_trigger_statement
     | drop_rule_statement
     | drop_statements)
+    ;
+
+schema_import
+    : IMPORT FOREIGN SCHEMA schema_name_remote=identifier
+    ((LIMIT TO | EXCEPT)
+    LEFT_PAREN (table_name+=identifier (COMMA table_name+=identifier)*) RIGHT_PAREN)?
+    FROM SERVER server_name=identifier INTO schema_name_local=identifier
+    define_foreign_options?
     ;
 
 alter_function_statement
@@ -310,6 +324,21 @@ alter_server_statement
     | rename_to)
     ;
 
+alter_fts_statement
+    : TEXT SEARCH 
+    ((TEMPLATE | DICTIONARY | CONFIGURATION | PARSER) name=schema_qualified_name (rename_to | set_schema)
+    | (DICTIONARY | CONFIGURATION) name=schema_qualified_name owner_to
+    | DICTIONARY name=schema_qualified_name storage_parameter
+    | CONFIGURATION name=schema_qualified_name alter_fts_configuration) 
+    ;  
+  
+alter_fts_configuration
+    : (ADD | ALTER) MAPPING FOR types+=identifier (COMMA types+=identifier)* 
+    WITH dictionaries+=schema_qualified_name (COMMA dictionaries+=schema_qualified_name)* 
+    | ALTER MAPPING (FOR identifier (COMMA identifier))? REPLACE schema_qualified_name WITH schema_qualified_name 
+    | DROP MAPPING (IF EXISTS)? FOR identifier (COMMA identifier)*
+    ;
+
 type_action
     : ADD ATTRIBUTE attribute_name=identifier data_type collate_identifier? cascade_restrict?
     | DROP ATTRIBUTE (IF EXISTS)? attribute_name=identifier cascade_restrict?
@@ -419,6 +448,46 @@ create_server_statement
     FOREIGN DATA WRAPPER identifier
     define_foreign_options? 
     ; 
+    
+create_fts_dictionary
+    : TEXT SEARCH DICTIONARY name=schema_qualified_name 
+    LEFT_PAREN
+        TEMPLATE EQUAL template=schema_qualified_name (COMMA dictionary_option)*         
+    RIGHT_PAREN
+    ;
+    
+dictionary_option
+    : name=identifier EQUAL value=vex
+    ;
+
+create_fts_configuration
+    : TEXT SEARCH CONFIGURATION name=schema_qualified_name
+    LEFT_PAREN
+        (PARSER EQUAL parser_name=schema_qualified_name
+        | COPY EQUAL config_name=schema_qualified_name)
+    RIGHT_PAREN
+    ;
+    
+create_fts_template
+    : TEXT SEARCH TEMPLATE name=schema_qualified_name
+    LEFT_PAREN
+        (INIT EQUAL init_name=schema_qualified_name COMMA)?
+        LEXIZE EQUAL lexize_name=schema_qualified_name
+        (COMMA INIT EQUAL init_name=schema_qualified_name)?
+    RIGHT_PAREN
+    ;
+   
+create_fts_parser
+    : TEXT SEARCH PARSER name=schema_qualified_name
+    LEFT_PAREN
+        START EQUAL start_func=schema_qualified_name COMMA
+        GETTOKEN EQUAL gettoken_func=schema_qualified_name COMMA
+        END EQUAL end_func=schema_qualified_name COMMA
+        (HEADLINE EQUAL headline_func=schema_qualified_name COMMA)?
+        LEXTYPES EQUAL lextypes_func=schema_qualified_name
+        (COMMA HEADLINE EQUAL headline_func=schema_qualified_name)?
+    RIGHT_PAREN
+    ;
     
 create_user_mapping
     : USER MAPPING (IF NOT EXISTS)? FOR (identifier | USER | CURRENT_USER)
@@ -593,6 +662,7 @@ comment_on_statement
         | PROCEDURAL? LANGUAGE
         | LARGE OBJECT
         | FOREIGN (DATA WRAPPER | TABLE)
+        | TEXT SEARCH (CONFIGURATION | DICTIONARY | PARSER | TEMPLATE)
         | (COLUMN | CONVERSION | DATABASE| DOMAIN| EXTENSION| INDEX | ROLE
             | COLLATION| SCHEMA| SEQUENCE| SERVER| TABLE | TABLESPACE
             | TYPE | VIEW)
@@ -1000,6 +1070,7 @@ drop_statements
     | SEQUENCE 
     | MATERIALIZED? VIEW 
     | TYPE
+    | TEXT SEARCH (CONFIGURATION | PARSER | DICTIONARY | TEMPLATE) 
     | INDEX CONCURRENTLY?) if_exist_names_restrict_cascade
     ;
 
@@ -1514,6 +1585,11 @@ tokens_nonkeyword
   | ELEMENT
   | USAGE
   | CONNECT
+  | INIT
+  | LEXIZE
+  | GETTOKEN
+  | HEADLINE
+  | LEXTYPES
   ;
 
 /*

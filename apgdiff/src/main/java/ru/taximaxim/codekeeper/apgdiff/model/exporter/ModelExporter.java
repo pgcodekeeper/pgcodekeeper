@@ -832,6 +832,10 @@ public class ModelExporter {
         case VIEW:
         case TABLE:
         case FUNCTION:
+        case FTS_TEMPLATE:
+        case FTS_PARSER:
+        case FTS_DICTIONARY:
+        case FTS_CONFIGURATION:
             file = new File(new File(file, parentExportedFileName), type.name());
             break;
 
@@ -844,8 +848,8 @@ public class ModelExporter {
             schemaName = ModelExporter.getExportedFilename(parentSt.getParent());
             file = new File(new File(file, schemaName), parentSt.getStatementType().name());
             break;
-
-        case DATABASE:
+        default:
+            break;
         }
 
         return new File(file, addExtension ?

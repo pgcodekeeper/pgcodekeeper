@@ -60,8 +60,7 @@ public class TypesReader extends JdbcReader {
         }
         if (st != null) {
             loader.setOwner(st, res.getLong("typowner"));
-            loader.setPrivileges(st, PgDiffUtils.getQuotedName(st.getName()),
-                    res.getString("typacl"), st.getOwner(), null, schema.getName());
+            loader.setPrivileges(st, res.getString("typacl"), schema.getName());
             String comment = res.getString("description");
             if (comment != null && !comment.isEmpty()) {
                 st.setComment(loader.args, PgDiffUtils.quoteString(comment));

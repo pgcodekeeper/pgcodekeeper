@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -551,27 +552,22 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
     }
 
     @Override
-    public int computeHash() {
-        final int prime = 31;
-        final int itrue = 1231;
-        final int ifalse = 1237;
-        int result = 1;
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((type == null) ? 0 : type.hashCode());
-        result = prime * result + ((collation == null) ? 0 : collation.hashCode());
-        result = prime * result + (nullValue ? itrue : ifalse);
-        result = prime * result + ((defaultValue == null) ? 0 : defaultValue.hashCode());
-        result = prime * result + ((statistics == null) ? 0 : statistics.hashCode());
-        result = prime * result + ((storage == null) ? 0 : storage.hashCode());
-        result = prime * result + ((options == null) ? 0 : options.hashCode());
-        result = prime * result + ((fOptions == null) ? 0 : fOptions.hashCode());
-        result = prime * result + ((sequence == null) ? 0 : sequence.hashCode());
-        result = prime * result + ((identityType == null) ? 0 : identityType.hashCode());
-        result = prime * result + (isInherit ? itrue : ifalse);
-        result = prime * result + ((grants == null) ? 0 : grants.hashCode());
-        result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
-        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
-        return result;
+    public void computeHash(Hasher hasher) {
+        hasher.put(name);
+        hasher.put(type);
+        hasher.put(collation);
+        hasher.put(nullValue);
+        hasher.put(defaultValue);
+        hasher.put(statistics);
+        hasher.put(storage);
+        hasher.put(options);
+        hasher.put(fOptions);
+        hasher.put(sequence);
+        hasher.put(identityType);
+        hasher.put(isInherit);
+        hasher.putOrdered(grants);
+        hasher.putOrdered(revokes);
+        hasher.put(comment);
     }
 
     @Override

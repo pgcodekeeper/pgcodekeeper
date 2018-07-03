@@ -80,9 +80,21 @@ public abstract class ParserAbstract {
     public static String parseSignature(String name, Function_argsContext argsContext) {
         PgFunction function = new PgFunction(name, null);
         for (Function_argumentsContext argument : argsContext.function_arguments()) {
+            String type = getFullCtxText(argument.argtype_data);
+
+            // function identity types from pg_dbo_timestamp extension have
+            // names qualified by pg_catalog schema, delete them to have
+            // equal signatures in project and in extension
+            Schema_qualified_name_nontypeContext sqnn = argument.argtype_data.predefined_type().schema_qualified_name_nontype();
+            if (sqnn != null) {
+                IdentifierContext schema = sqnn.schema;
+                if (schema != null && "pg_catalog".equals(schema.getText())) {
+                    type = type.substring("pg_catalog.".length());
+                }
+            }
+
             Argument arg = function.new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
-                    argument.argname != null ? argument.argname.getText() : null,
-                            getFullCtxText(argument.argtype_data));
+                    argument.argname != null ? argument.argname.getText() : null, type);
             function.addArgument(arg);
         }
         return function.getSignature();
@@ -148,7 +160,7 @@ public abstract class ParserAbstract {
     }
 
     public static void fillOptionParams(String[] options, BiConsumer <String, String> c,
-            boolean isToast, boolean forceQuote){
+            boolean isToast, boolean forceQuote, boolean isQuoted) {
         for (String pair : options) {
             int sep = pair.indexOf('=');
             String option;
@@ -160,7 +172,7 @@ public abstract class ParserAbstract {
                 option = pair.substring(0, sep);
                 value = pair.substring(sep + 1);
             }
-            if (forceQuote || !PgDiffUtils.isValidId(value, false, false)) {
+            if (!isQuoted && (forceQuote || !PgDiffUtils.isValidId(value, false, false))) {
                 // only quote non-ids, do not quote columns
                 // pg_dump behavior
                 value = PgDiffUtils.quoteString(value);

@@ -6,13 +6,15 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.ShaHasher;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -20,6 +22,7 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 
@@ -36,6 +39,7 @@ public class DBTimestamp implements Serializable {
     private static final Map<Path, DBTimestamp> PROJ_TIMESTAMPS = new ConcurrentHashMap<>();
 
     private final Map <GenericColumn, ObjectTimestamp> objects = new HashMap<>();
+    private final transient Set<GenericColumn> duplicatedObjects = new HashSet<>();
 
     /**
      * Get database timestamps by given path, if not found create new empty object.
@@ -64,11 +68,30 @@ public class DBTimestamp implements Serializable {
         return db;
     }
 
-    public void addObject(GenericColumn column, long objId, Instant lastModified, String author) {
+    /**
+     * Added object from jdbc to objects map. <br>
+     * WARNING: if objects already present in map, all version of objects will be deleted,
+     * and new versions of this object cannot be added to map.
+     *
+     * @param column - object definition
+     * @param objId - object id
+     * @param lastModified - last object modified time
+     * @param author - modify aauthor
+     * @param acl - objects privileges
+     * @param colAcls - object columns privileges
+     */
+    public void addObject(GenericColumn column, long objId, Instant lastModified,
+            String author, String acl, Map<String, String> colAcls) {
         ObjectTimestamp obj = objects.get(column);
-        if (obj == null || obj.getTime().isBefore(lastModified)) {
-            // replace stale timestamps
-            objects.put(column, new ObjectTimestamp(column, objId, lastModified, author));
+        if (obj == null) {
+            if (!duplicatedObjects.contains(column)) {
+                objects.put(column, new ObjectTimestamp(column, objId, lastModified, author,
+                        acl, colAcls));
+            }
+        } else {
+            objects.remove(column, obj);
+            duplicatedObjects.add(column);
+            Log.log(Log.LOG_WARNING, "pg_dbo_timestamps: duplicated object " + obj);
         }
     }
 
@@ -86,26 +109,21 @@ public class DBTimestamp implements Serializable {
      * @see DBTimestamp
      */
     public void updateObjects(PgDatabase db) {
-        if (true) {
-            return;
-        }
-
         if (objects.isEmpty()) {
             return;
         }
 
         Map<GenericColumn, byte[]> statements = new HashMap<>();
         db.getDescendants().filter(st -> st.getStatementType() != DbObjType.CONSTRAINT).forEach(st -> {
-            String hash = st.getRawStatement();
             if (st.getStatementType() == DbObjType.TABLE) {
                 List<PgConstraint> cons = ((PgTable)st).getConstraints();
-                if (!cons.isEmpty()) {
-                    StringBuilder tableHash = new StringBuilder(hash);
-                    cons.forEach(con -> tableHash.append(con.getRawStatement()));
-                    hash = tableHash.toString();
-                }
+                ShaHasher hasher = new ShaHasher();
+                hasher.put(st);
+                hasher.putUnordered(cons);
+                statements.put(createGC(st), hasher.getArray());
+            } else {
+                statements.put(createGC(st), st.shaHash());
             }
-            statements.put(createGC(st), PgDiffUtils.sha(st.getRawStatement()));
         });
 
         for (Iterator<Entry<GenericColumn, ObjectTimestamp>> iterator = objects.entrySet().iterator();
@@ -162,6 +180,10 @@ public class DBTimestamp implements Serializable {
         case FUNCTION:
         case TABLE:
         case VIEW:
+        case FTS_PARSER:
+        case FTS_TEMPLATE:
+        case FTS_DICTIONARY:
+        case FTS_CONFIGURATION:
             gc = new GenericColumn(schema, name, type);
             break;
         case INDEX:
@@ -184,18 +206,13 @@ public class DBTimestamp implements Serializable {
      * @return equals objects
      */
     public List<ObjectTimestamp> searchEqualsObjects(DBTimestamp dbTime) {
-        if (true) {
-            return new ArrayList<>();
-        }
-
         List<ObjectTimestamp> equalsObjects = new ArrayList<>();
 
         for (ObjectTimestamp pObj : objects.values()) {
             GenericColumn gc = pObj.getObject();
             ObjectTimestamp rObj = dbTime.objects.get(gc);
             if (rObj != null && rObj.getTime().equals(pObj.getTime())) {
-                equalsObjects.add(new ObjectTimestamp(gc, pObj.getHash(),
-                        rObj.getObjId(), rObj.getTime()));
+                equalsObjects.add(rObj.copyNewHash(pObj.getHash()));
             }
         }
 
@@ -212,16 +229,20 @@ public class DBTimestamp implements Serializable {
     public void rewriteObjects(List<PgStatement> statements, DBTimestamp remoteDb) {
         objects.clear();
         for (PgStatement st : statements) {
-            StringBuilder hash = new StringBuilder(st.getRawStatement());
-            if (st.getStatementType() == DbObjType.TABLE) {
-                ((PgTable)st).getConstraints().forEach(con -> hash.append(con.getRawStatement()));
-            }
-
             GenericColumn gc = createGC(st);
             ObjectTimestamp obj = remoteDb.objects.get(gc);
             if (obj != null) {
-                objects.put(gc, new ObjectTimestamp(gc, PgDiffUtils.sha(hash.toString()),
-                        obj.getTime()));
+                byte [] hash;
+                if (st.getStatementType() == DbObjType.TABLE) {
+                    ShaHasher hasher = new ShaHasher();
+                    hasher.put(st);
+                    hasher.putUnordered(((PgTable)st).getConstraints());
+                    hash = hasher.getArray();
+                } else {
+                    hash = st.shaHash();
+                }
+
+                objects.put(gc, new ObjectTimestamp(gc, hash, obj.getTime()));
             }
         }
     }

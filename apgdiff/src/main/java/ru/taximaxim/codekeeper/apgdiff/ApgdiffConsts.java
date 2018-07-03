@@ -26,6 +26,8 @@ public interface ApgdiffConsts {
     String EXPORT_CURRENT_VERSION = "0.5.0";
     String EXPORT_MIN_VERSION = "0.2.9";
 
+    String EXTENSION_VERSION = "1.0.0";
+
     enum WORK_DIR_NAMES {
         SCHEMA,
         EXTENSION

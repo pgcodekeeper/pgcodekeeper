@@ -76,13 +76,12 @@ public class TablesReader extends JdbcReader {
 
         String[] foptions = res.getArray("ftoptions", String.class);
         if (foptions != null) {
-            ParserAbstract.fillOptionParams(foptions, t::addOption, false, true);
+            ParserAbstract.fillOptionParams(foptions, t::addOption, false, true, false);
         }
 
         // PRIVILEGES, OWNER
         loader.setOwner(t, res.getLong(CLASS_RELOWNER));
-        loader.setPrivileges(t, PgDiffUtils.getQuotedName(t.getName()), res.getString("aclarray"),
-                t.getOwner(), null, schemaName);
+        loader.setPrivileges(t, res.getString("aclarray"), schemaName);
 
         readColumns(res, t, ofTypeOid, schema);
 
@@ -100,12 +99,12 @@ public class TablesReader extends JdbcReader {
         // STORAGE PARAMETERS
         String [] opts = res.getArray("reloptions", String.class);
         if (opts != null) {
-            ParserAbstract.fillOptionParams(opts, t::addOption, false, false);
+            ParserAbstract.fillOptionParams(opts, t::addOption, false, false, false);
         }
 
         String[] toast = res.getArray("toast_reloptions", String.class);
         if (toast != null) {
-            ParserAbstract.fillOptionParams(toast, t::addOption, true, false);
+            ParserAbstract.fillOptionParams(toast, t::addOption, true, false, false);
         }
 
         // Table COMMENTS
@@ -190,10 +189,10 @@ public class TablesReader extends JdbcReader {
             loader.cachedTypesByOid.get(colTypeIds[i]).addTypeDepcy(column);
 
             if (colOptions[i] != null) {
-                ParserAbstract.fillOptionParams(colOptions[i].split(","), column::addOption, false, false);
+                ParserAbstract.fillOptionParams(colOptions[i].split(","), column::addOption, false, false, false);
             }
             if (colFOptions[i] != null) {
-                ParserAbstract.fillOptionParams(colFOptions[i].split(","), column::addForeignOption, false, true);
+                ParserAbstract.fillOptionParams(colFOptions[i].split(","), column::addForeignOption, false, true, false);
             }
 
             if (!colStorages[i].equals(colDefaultStorages[i])) {
@@ -251,9 +250,7 @@ public class TablesReader extends JdbcReader {
             // COLUMNS PRIVILEGES
             String columnPrivileges = colAcl[i];
             if (columnPrivileges != null && !columnPrivileges.isEmpty()) {
-                loader.setPrivileges(column, PgDiffUtils.getQuotedName(t.getName()),
-                        columnPrivileges, t.getOwner(), PgDiffUtils.getQuotedName(colNames[i]),
-                        schema.getName());
+                loader.setPrivileges(column, t, columnPrivileges);
             }
 
             if (ofTypeOid != 0 && column.getNullValue()

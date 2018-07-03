@@ -258,6 +258,10 @@ public final class PgDiffUtils {
         if (s1 != c2.size()) {
             return false;
         }
+        if (0 == s1) {
+            // both are empty
+            return true;
+        }
         // mimic HashSet(Collection) constructor
         final float loadFactor = 0.75f;
         final Map<Object, Integer> map =
@@ -285,24 +289,12 @@ public final class PgDiffUtils {
         return map.isEmpty();
     }
 
-    /**
-     * Complementary hashCode for {@link #setlikeEquals(Collection, Collection)} equals.
-     */
-    public static int setlikeHashcode(Collection<?> c) {
-        int h = 0;
-        for (Object el : c) {
-            h += el.hashCode();
-        }
-        return h;
-    }
-
-
     public static boolean isStringNotEmpty(String input) {
         return input != null && !input.isEmpty();
     }
 
     public static <T> Iterable<T> sIter(Stream<T> stream) {
-        return (Iterable<T>)stream::iterator;
+        return stream::iterator;
     }
 
     private PgDiffUtils() {

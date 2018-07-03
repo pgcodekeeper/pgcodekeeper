@@ -149,6 +149,18 @@ public class CommentOn extends ParserAbstract {
             PgRuleContainer c = getSafe(schema::getRuleContainer,
                     QNameParser.getFirstNameCtx(ctx.table_name.identifier()));
             getSafe(c::getRule, nameCtx).setComment(db.getArguments(), comment);
+            // fts configuration
+        } else if (ctx.CONFIGURATION() != null) {
+            getSafe(schema::getFtsConfiguration, nameCtx).setComment(db.getArguments(), comment);
+            // fts dictionary
+        } else if (ctx.DICTIONARY() != null) {
+            getSafe(schema::getFtsDictionary, nameCtx).setComment(db.getArguments(), comment);
+            // fts parser
+        } else if (ctx.PARSER() != null) {
+            getSafe(schema::getFtsParser, nameCtx).setComment(db.getArguments(), comment);
+            // fts template
+        } else if (ctx.TEMPLATE() != null) {
+            getSafe(schema::getFtsTemplate, nameCtx).setComment(db.getArguments(), comment);
         }
         return null;
     }

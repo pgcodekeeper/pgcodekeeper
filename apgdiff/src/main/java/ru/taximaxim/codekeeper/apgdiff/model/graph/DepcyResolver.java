@@ -252,7 +252,7 @@ public class DepcyResolver {
     }
 
     /**
-     * Ищет в переданной базе объетк по имени
+     * Ищет в переданной базе объект по имени
      * @param statement объект для поиска
      * @param db база для поиска
      * @return
@@ -323,6 +323,14 @@ public class DepcyResolver {
             return oldSchema.getType(statement.getName());
         case DOMAIN:
             return oldSchema.getDomain(statement.getName());
+        case FTS_PARSER:
+            return oldSchema.getFtsParser(statement.getName());
+        case FTS_TEMPLATE:
+            return oldSchema.getFtsTemplate(statement.getName());
+        case FTS_DICTIONARY:
+            return oldSchema.getFtsDictionary(statement.getName());
+        case FTS_CONFIGURATION:
+            return oldSchema.getFtsConfiguration(statement.getName());
         case DATABASE:
         default:
             break;

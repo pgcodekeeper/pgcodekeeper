@@ -40,6 +40,13 @@ implements IWorkbenchPreferencePage  {
         addField(new StringFieldEditor(PREF.PGDUMP_CUSTOM_PARAMS,
                 Messages.generalPrefPage_pg_dump_custom_parameters, getFieldEditorParent()));
 
+        BooleanFieldEditor extEditor = new BooleanFieldEditor(PREF.USE_EXTENSION,
+                Messages.GeneralPrefPage_use_extension, getFieldEditorParent());
+
+        extEditor.getDescriptionControl(getFieldEditorParent()).setToolTipText(
+                Messages.GeneralPrefPage_extension_desc);
+        addField(extEditor);
+
         addField(new BooleanFieldEditor(PREF.FORCE_SHOW_CONSOLE,
                 Messages.generalPrefPage_show_console_when_program_write_to_console, getFieldEditorParent()));
 

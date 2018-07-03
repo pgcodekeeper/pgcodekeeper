@@ -5,13 +5,14 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -47,7 +48,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
     /**
      * Optional list of columns for UPDATE event.
      */
-    private final List<String> updateColumns = new ArrayList<>();
+    private final Set<String> updateColumns = new HashSet<>();
     private String when;
 
     /**
@@ -267,8 +268,8 @@ public class PgTrigger extends PgStatementWithSearchPath {
         return tableName;
     }
 
-    public List<String> getUpdateColumns() {
-        return Collections.unmodifiableList(updateColumns);
+    public Set<String> getUpdateColumns() {
+        return Collections.unmodifiableSet(updateColumns);
     }
 
     public void addUpdateColumn(final String columnName) {
@@ -361,34 +362,30 @@ public class PgTrigger extends PgStatementWithSearchPath {
                 && Objects.equals(when, trigger.getWhen())
                 && Objects.equals(newTable, trigger.getNewTable())
                 && Objects.equals(oldTable, trigger.getOldTable())
-                && PgDiffUtils.setlikeEquals(updateColumns, trigger.updateColumns);
+                && Objects.equals(updateColumns, trigger.updateColumns);
     }
 
     @Override
-    public int computeHash() {
-        final int prime = 31;
-        final int itrue = 1231;
-        final int ifalse = 1237;
-        int result = 1;
-        result = prime * result + (tgType == null ? 0 : tgType.hashCode());
-        result = prime * result + (forEachRow ? itrue : ifalse);
-        result = prime * result + (function == null ? 0 : function.hashCode());
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + (onDelete ? itrue : ifalse);
-        result = prime * result + (onInsert ? itrue : ifalse);
-        result = prime * result + (onTruncate ? itrue : ifalse);
-        result = prime * result + (onUpdate ? itrue : ifalse);
-        result = prime * result + ((tableName == null) ? 0 : tableName.hashCode());
-        result = prime * result + (when == null ? 0 : when.hashCode());
-        result = prime * result + PgDiffUtils.setlikeHashcode(updateColumns);
-        result = prime * result + (comment == null ? 0 : comment.hashCode());
-        result = prime * result + (constraint ? itrue : ifalse);
-        result = prime * result + (isImmediate == null ? 0 : isImmediate.hashCode());
-        result = prime * result + (refTableName == null ? 0 : refTableName.hashCode());
-        result = prime * result + (newTable == null ? 0 : newTable.hashCode());
-        result = prime * result + (oldTable == null ? 0 : oldTable.hashCode());
-        return result;
+    public void computeHash(Hasher hasher) {
+        hasher.put(tgType);
+        hasher.put(forEachRow);
+        hasher.put(function);
+        hasher.put(name);
+        hasher.put(onDelete);
+        hasher.put(onInsert);
+        hasher.put(onTruncate);
+        hasher.put(onUpdate);
+        hasher.put(tableName);
+        hasher.put(when);
+        hasher.put(updateColumns);
+        hasher.put(comment);
+        hasher.put(constraint);
+        hasher.put(isImmediate);
+        hasher.put(refTableName);
+        hasher.put(newTable);
+        hasher.put(oldTable);
     }
+
 
     @Override
     public PgTrigger shallowCopy() {

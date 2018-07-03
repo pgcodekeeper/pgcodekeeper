@@ -4,6 +4,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -93,9 +94,9 @@ public class PgExtension extends PgStatement {
     public boolean compare(PgStatement obj) {
         boolean eq = false;
 
-        if(this == obj) {
+        if (this == obj) {
             eq = true;
-        } else if(obj instanceof PgExtension) {
+        } else if (obj instanceof PgExtension) {
             PgExtension ext = (PgExtension) obj;
             eq = Objects.equals(name, ext.getName())
                     && Objects.equals(schema, ext.getSchema())
@@ -106,13 +107,10 @@ public class PgExtension extends PgStatement {
     }
 
     @Override
-    public int computeHash() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((schema == null) ? 0 : schema.hashCode());
-        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
-        return result;
+    public void computeHash(Hasher hasher) {
+        hasher.put(name);
+        hasher.put(schema);
+        hasher.put(comment);
     }
 
     @Override

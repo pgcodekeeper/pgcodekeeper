@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -187,18 +188,13 @@ public class PgIndex extends PgStatementWithSearchPath {
 
 
     @Override
-    public int computeHash() {
-        final int prime = 31;
-        final int itrue = 1231;
-        final int ifalse = 1237;
-        int result = 1;
-        result = prime * result + ((definition == null) ? 0 : definition.hashCode());
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((tableName == null) ? 0 : tableName.hashCode());
-        result = prime * result + (unique ? itrue : ifalse);
-        result = prime * result + (clusterIndex ? itrue : ifalse);
-        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
-        return result;
+    public void computeHash(Hasher hasher) {
+        hasher.put(definition);
+        hasher.put(name);
+        hasher.put(tableName);
+        hasher.put(unique);
+        hasher.put(clusterIndex);
+        hasher.put(comment);
     }
 
     @Override

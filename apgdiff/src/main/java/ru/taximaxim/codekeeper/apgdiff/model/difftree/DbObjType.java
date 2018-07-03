@@ -16,6 +16,10 @@ public enum DbObjType {
     // TODO workaround for function call dependencies from COLUMN DEFAULT
     // maybe move back after COLUMN, when proper function call dependencies are implemented
     FUNCTION,
+    FTS_PARSER,
+    FTS_TEMPLATE,
+    FTS_DICTIONARY,
+    FTS_CONFIGURATION,
     TABLE,
     COLUMN,
     CONSTRAINT,

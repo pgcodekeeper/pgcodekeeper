@@ -20,6 +20,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -44,7 +45,7 @@ public class PgDatabase extends PgStatement {
     // Содержит ссылки на объекты
     private final Map<String, List<PgObjLocation>> objReferences = new HashMap<>();
     // Contains PgStatement's contexts for analysis (for getting dependencies).
-    private final List<Entry<PgStatement, ParserRuleContext>> contextsForAnalyze = new ArrayList<>();
+    private final List<Entry<PgStatementWithSearchPath, ParserRuleContext>> contextsForAnalyze = new ArrayList<>();
 
     private PgDiffArguments arguments;
 
@@ -101,7 +102,7 @@ public class PgDatabase extends PgStatement {
         return objReferences;
     }
 
-    public List<Entry<PgStatement, ParserRuleContext>> getContextsForAnalyze() {
+    public List<Entry<PgStatementWithSearchPath, ParserRuleContext>> getContextsForAnalyze() {
         return contextsForAnalyze;
     }
 
@@ -111,7 +112,7 @@ public class PgDatabase extends PgStatement {
      * @param stmt statement to which the context belongs
      * @param ctx context for analyze
      */
-    public void addContextForAnalyze(PgStatement stmt, ParserRuleContext ctx) {
+    public void addContextForAnalyze(PgStatementWithSearchPath stmt, ParserRuleContext ctx) {
         contextsForAnalyze.add(new SimpleEntry<>(stmt, ctx));
     }
 
@@ -283,12 +284,14 @@ public class PgDatabase extends PgStatement {
     }
 
     @Override
-    public int computeHash() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + PgDiffUtils.setlikeHashcode(extensions);
-        result = prime * result + PgDiffUtils.setlikeHashcode(schemas);
-        return result;
+    public void computeHash(Hasher hasher) {
+        // has only child objects
+    }
+
+    @Override
+    public void computeChildrenHash(Hasher hasher) {
+        hasher.putUnordered(extensions);
+        hasher.putUnordered(schemas);
     }
 
     @Override

@@ -4,6 +4,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
 
 /**
  * Base implementation of regular table
@@ -216,16 +217,12 @@ public abstract class RegularPgTable extends PgTable {
     }
 
     @Override
-    public int computeHash() {
-        final int itrue = 1231;
-        final int ifalse = 1237;
-        final int prime = 31;
-        int result = super.computeHash();
-        result = prime * result + (isLogged ? itrue : ifalse);
-        result = prime * result + ((tablespace == null) ? 0 : tablespace.hashCode());
-        result = prime * result + (isRowSecurity ? itrue : ifalse);
-        result = prime * result + (isForceSecurity ? itrue : ifalse);
-        result = prime * result + ((partitionBy == null) ? 0 : partitionBy.hashCode());
-        return result;
+    public void computeHash(Hasher hasher) {
+        super.computeHash(hasher);
+        hasher.put(isLogged);
+        hasher.put(tablespace);
+        hasher.put(isRowSecurity);
+        hasher.put(isForceSecurity);
+        hasher.put(partitionBy);
     }
 }

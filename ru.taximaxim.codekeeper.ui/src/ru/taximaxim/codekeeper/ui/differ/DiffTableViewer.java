@@ -664,7 +664,7 @@ public class DiffTableViewer extends Composite {
     private void updateColumnsWidth() {
         PixelConverter pc = new PixelConverter(viewer.getControl());
         columnCheck.getColumn().setWidth(viewOnly ? 0 : pc.convertWidthInCharsToPixels(10));
-        columnType.getColumn().setWidth(pc.convertWidthInCharsToPixels(19));
+        columnType.getColumn().setWidth(pc.convertWidthInCharsToPixels(25));
         columnChange.getColumn().setWidth(pc.convertWidthInCharsToPixels(19));
         // name column will take half of the space
         int width = (int)(viewer.getControl().getSize().x * 0.4f);

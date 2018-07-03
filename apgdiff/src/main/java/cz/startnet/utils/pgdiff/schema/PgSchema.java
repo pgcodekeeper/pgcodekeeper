@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -28,6 +29,10 @@ public class PgSchema extends PgStatement implements ISchema {
     private final List<PgTable> tables = new ArrayList<>();
     private final List<PgView> views = new ArrayList<>();
     private final List<PgType> types = new ArrayList<>();
+    private final List<PgFtsParser> parsers = new ArrayList<>();
+    private final List<PgFtsTemplate> templates = new ArrayList<>();
+    private final List<PgFtsDictionary> dictionaries = new ArrayList<>();
+    private final List<PgFtsConfiguration> configurations = new ArrayList<>();
 
     private String definition;
 
@@ -193,6 +198,10 @@ public class PgSchema extends PgStatement implements ISchema {
         stream = Stream.concat(stream, getDomains().stream());
         stream = Stream.concat(stream, getTables().stream());
         stream = Stream.concat(stream, getViews().stream());
+        stream = Stream.concat(stream, getFtsParsers().stream());
+        stream = Stream.concat(stream, getFtsTemplates().stream());
+        stream = Stream.concat(stream, getFtsDictionaries().stream());
+        stream = Stream.concat(stream, getFtsConfiguration().stream());
         return stream;
     }
 
@@ -305,6 +314,75 @@ public class PgSchema extends PgStatement implements ISchema {
         }
         return null;
     }
+
+    /**
+     * Finds parser according to specified dictionary {@code name}.
+     *
+     * @param name name of the parser to be searched
+     *
+     * @return found parser or null if no such type has been found
+     */
+    public PgFtsParser getFtsParser(final String name) {
+        for (PgFtsParser parser : parsers) {
+            if (parser.getName().equals(name)) {
+                return parser;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Finds template according to specified dictionary {@code name}.
+     *
+     * @param name name of the template to be searched
+     *
+     * @return found template or null if no such type has been found
+     */
+    public PgFtsTemplate getFtsTemplate(final String name) {
+        for (PgFtsTemplate template : templates) {
+            if (template.getName().equals(name)) {
+                return template;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Finds dictionary according to specified dictionary {@code name}.
+     *
+     * @param name name of the dictionary to be searched
+     *
+     * @return found dictionary or null if no such type has been found
+     */
+    public PgFtsDictionary getFtsDictionary(final String name) {
+        for (PgFtsDictionary dictionary : dictionaries) {
+            if (dictionary.getName().equals(name)) {
+                return dictionary;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Finds configuration according to specified dictionary {@code name}.
+     *
+     * @param name name of the configuration to be searched
+     *
+     * @return found configuration or null if no such type has been found
+     */
+    public PgFtsConfiguration getFtsConfiguration(final String name) {
+        for (PgFtsConfiguration configuration : configurations) {
+            if (configuration.getName().equals(name)) {
+                return configuration;
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Getter for {@link #types}. The list cannot be modified.
      *
@@ -314,6 +392,41 @@ public class PgSchema extends PgStatement implements ISchema {
         return Collections.unmodifiableList(types);
     }
 
+    /**
+     * Getter for {@link #parsers}. The list cannot be modified.
+     *
+     * @return {@link #parsers}
+     */
+    public List<PgFtsParser> getFtsParsers() {
+        return Collections.unmodifiableList(parsers);
+    }
+
+    /**
+     * Getter for {@link #templates}. The list cannot be modified.
+     *
+     * @return {@link #templates}
+     */
+    public List<PgFtsTemplate> getFtsTemplates() {
+        return Collections.unmodifiableList(templates);
+    }
+
+    /**
+     * Getter for {@link #dictionaries}. The list cannot be modified.
+     *
+     * @return {@link #dictionaries}
+     */
+    public List<PgFtsDictionary> getFtsDictionaries() {
+        return Collections.unmodifiableList(dictionaries);
+    }
+
+    /**
+     * Getter for {@link #configurations}. The list cannot be modified.
+     *
+     * @return {@link #configurations}
+     */
+    public List<PgFtsConfiguration> getFtsConfiguration() {
+        return Collections.unmodifiableList(configurations);
+    }
 
     public PgTable getTableByIndex(String name) {
         for (PgTable t : getTables()) {
@@ -366,6 +479,34 @@ public class PgSchema extends PgStatement implements ISchema {
         resetHash();
     }
 
+    public void addFtsParser(final PgFtsParser parser) {
+        assertUnique(this::getFtsParser, parser);
+        parsers.add(parser);
+        parser.setParent(this);
+        resetHash();
+    }
+
+    public void addFtsTemplate(final PgFtsTemplate template) {
+        assertUnique(this::getFtsTemplate, template);
+        templates.add(template);
+        template.setParent(this);
+        resetHash();
+    }
+
+    public void addFtsDictionary(final PgFtsDictionary dictionary) {
+        assertUnique(this::getFtsDictionary, dictionary);
+        dictionaries.add(dictionary);
+        dictionary.setParent(this);
+        resetHash();
+    }
+
+    public void addFtsConfiguration(final PgFtsConfiguration configuration) {
+        assertUnique(this::getFtsConfiguration, configuration);
+        configurations.add(configuration);
+        configuration.setParent(this);
+        resetHash();
+    }
+
     public boolean containsSequence(final String name) {
         return getSequence(name) != null;
     }
@@ -384,6 +525,22 @@ public class PgSchema extends PgStatement implements ISchema {
 
     public boolean containsDomain(final String name) {
         return getDomain(name) != null;
+    }
+
+    public boolean containsFtsParser(final String name) {
+        return getFtsParser(name) != null;
+    }
+
+    public boolean containsFtsTemplate(final String name) {
+        return getFtsTemplate(name) != null;
+    }
+
+    public boolean containsFtsDictionary(final String name) {
+        return getFtsDictionary(name) != null;
+    }
+
+    public boolean containsFtsConfiguration(final String name) {
+        return getFtsConfiguration(name) != null;
     }
 
     @Override
@@ -415,28 +572,37 @@ public class PgSchema extends PgStatement implements ISchema {
                     && PgDiffUtils.setlikeEquals(functions, schema.functions)
                     && PgDiffUtils.setlikeEquals(views, schema.views)
                     && PgDiffUtils.setlikeEquals(tables, schema.tables)
-                    && PgDiffUtils.setlikeEquals(types, schema.types);
+                    && PgDiffUtils.setlikeEquals(types, schema.types)
+                    && PgDiffUtils.setlikeEquals(parsers, schema.parsers)
+                    && PgDiffUtils.setlikeEquals(templates, schema.templates)
+                    && PgDiffUtils.setlikeEquals(dictionaries, schema.dictionaries)
+                    && PgDiffUtils.setlikeEquals(configurations, schema.configurations);
         }
         return false;
     }
 
     @Override
-    public int computeHash() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((grants == null) ? 0 : grants.hashCode());
-        result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
-        result = prime * result + ((owner == null) ? 0 : owner.hashCode());
-        result = prime * result + ((definition == null) ? 0 : definition.hashCode());
-        result = prime * result + PgDiffUtils.setlikeHashcode(domains);
-        result = prime * result + PgDiffUtils.setlikeHashcode(functions);
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + PgDiffUtils.setlikeHashcode(sequences);
-        result = prime * result + PgDiffUtils.setlikeHashcode(tables);
-        result = prime * result + PgDiffUtils.setlikeHashcode(views);
-        result = prime * result + PgDiffUtils.setlikeHashcode(types);
-        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
-        return result;
+    public void computeHash(Hasher hasher) {
+        hasher.put(name);
+        hasher.put(owner);
+        hasher.put(definition);
+        hasher.putOrdered(grants);
+        hasher.putOrdered(revokes);
+        hasher.put(comment);
+    }
+
+    @Override
+    protected void computeChildrenHash(Hasher hasher) {
+        hasher.putUnordered(domains);
+        hasher.putUnordered(sequences);
+        hasher.putUnordered(functions);
+        hasher.putUnordered(views);
+        hasher.putUnordered(tables);
+        hasher.putUnordered(types);
+        hasher.putUnordered(parsers);
+        hasher.putUnordered(templates);
+        hasher.putUnordered(dictionaries);
+        hasher.putUnordered(configurations);
     }
 
     @Override
@@ -476,6 +642,18 @@ public class PgSchema extends PgStatement implements ISchema {
         }
         for (PgType type : types) {
             copy.addType(type.deepCopy());
+        }
+        for (PgFtsParser parser : parsers) {
+            copy.addFtsParser(parser.deepCopy());
+        }
+        for (PgFtsTemplate template : templates) {
+            copy.addFtsTemplate(template.deepCopy());
+        }
+        for (PgFtsDictionary dictionary : dictionaries) {
+            copy.addFtsDictionary(dictionary.deepCopy());
+        }
+        for (PgFtsConfiguration configuration : configurations) {
+            copy.addFtsConfiguration(configuration.deepCopy());
         }
         return copy;
     }
