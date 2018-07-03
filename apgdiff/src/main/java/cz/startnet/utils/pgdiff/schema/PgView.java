@@ -249,7 +249,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     @Override
     public String getDropSQL() {
         String mat = isMatView() ? "MATERIALIZED " : "";
-        return "DROP " + mat + "VIEW " + PgDiffUtils.getQuotedName(PgDiffUtils.getQuotedName(getContainingSchema().getName())) + '.'
+        return "DROP " + mat + "VIEW " + PgDiffUtils.getQuotedName(getContainingSchema().getName()) + '.'
                 + PgDiffUtils.getQuotedName(getName()) + ';';
     }
 
