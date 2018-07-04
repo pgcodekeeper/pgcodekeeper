@@ -64,7 +64,7 @@ public final class NewObjectPage extends WizardPage {
 
     private static final String RULE_PATTERN = "CREATE RULE {0} AS\n\tON UPDATE TO {1} DO NOTHING;\n";//$NON-NLS-1$
     private static final String TRIGGER_PATTERN = "CREATE TRIGGER {0}\n\tBEFORE UPDATE ON {1}" //$NON-NLS-1$
-            + "\n\tFOR EACH STATEMENT\n\tEXECUTE PROCEDURE function_name_placeholder();\n"; //$NON-NLS-1$
+            + "\n\tFOR EACH STATEMENT\n\tEXECUTE PROCEDURE schema_name.function_name_placeholder();\n"; //$NON-NLS-1$
     private static final String CONSTRAINT_PATTERN = "ALTER TABLE {0}\n\tADD CONSTRAINT {1}" //$NON-NLS-1$
             + " PRIMARY KEY (COLUMN_NAME);\n"; //$NON-NLS-1$
     private static final String INDEX_PATTERN = "CREATE INDEX {0} ON {1} USING btree (COLUMN_NAME);\n"; //$NON-NLS-1$
@@ -427,8 +427,7 @@ public final class NewObjectPage extends WizardPage {
         IFile file = folder.getFile(ModelExporter.getExportedFilenameSql(name));
 
         if (!file.exists()) {
-            StringBuilder sb = new StringBuilder("SET search_path = pg_catalog;"); //$NON-NLS-1$
-            sb.append("\n\nCREATE "); //$NON-NLS-1$
+            StringBuilder sb = new StringBuilder("CREATE "); //$NON-NLS-1$
             switch (type) {
             case TYPE:
                 sb.append(type).append(' ').append(schema).append('.')
@@ -484,14 +483,15 @@ public final class NewObjectPage extends WizardPage {
         IFile file = createObject(schema, parent, parentType, false, project);
         StringBuilder sb = new StringBuilder(GROUP_DELIMITER);
         String objectName = PgDiffUtils.getQuotedName(name);
+        String parentName = schema + '.' + parent;
         if (type == DbObjType.RULE) {
-            sb.append(MessageFormat.format(RULE_PATTERN, objectName, parent));
+            sb.append(MessageFormat.format(RULE_PATTERN, objectName, parentName));
         } else if (type == DbObjType.TRIGGER) {
-            sb.append(MessageFormat.format(TRIGGER_PATTERN, objectName, parent));
+            sb.append(MessageFormat.format(TRIGGER_PATTERN, objectName, parentName));
         } else if (type == DbObjType.CONSTRAINT) {
-            sb.append(MessageFormat.format(CONSTRAINT_PATTERN, parent, objectName));
+            sb.append(MessageFormat.format(CONSTRAINT_PATTERN, parentName, objectName));
         } else {
-            sb.append(MessageFormat.format(INDEX_PATTERN, objectName, parent));
+            sb.append(MessageFormat.format(INDEX_PATTERN, objectName, parentName));
         }
         file.appendContents(new ByteArrayInputStream(sb.toString().getBytes()), true, true, null);
         openFileInEditor(file);
