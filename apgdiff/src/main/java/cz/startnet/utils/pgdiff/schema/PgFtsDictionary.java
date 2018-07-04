@@ -32,7 +32,9 @@ implements PgOptionContainer {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSql = new StringBuilder();
-        sbSql.append("CREATE TEXT SEARCH DICTIONARY ").append(PgDiffUtils.getQuotedName(getName()));
+        sbSql.append("CREATE TEXT SEARCH DICTIONARY ")
+        .append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.')
+        .append(PgDiffUtils.getQuotedName(getName()));
         sbSql.append(" (\n\tTEMPLATE = ").append(template);
 
         options.forEach((k,v) -> sbSql.append(",\n\t").append(k).append(" = ").append(v));
@@ -51,7 +53,8 @@ implements PgOptionContainer {
     @Override
     protected StringBuilder appendCommentSql(StringBuilder sb) {
         sb.append("COMMENT ON TEXT SEARCH DICTIONARY ");
-        sb.append(PgDiffUtils.getQuotedName(getName()));
+        sb.append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
+        .append('.').append(PgDiffUtils.getQuotedName(getName()));
         return sb.append(" IS ")
                 .append(comment == null || comment.isEmpty() ? "NULL" : comment)
                 .append(';');
@@ -60,13 +63,16 @@ implements PgOptionContainer {
     @Override
     protected StringBuilder appendOwnerSQL(StringBuilder sb) {
         return owner == null ? sb
-                : sb.append("\n\nALTER TEXT SEARCH DICTIONARY ").append(PgDiffUtils.getQuotedName(getName()))
+                : sb.append("\n\nALTER TEXT SEARCH DICTIONARY ")
+                .append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
+                .append('.').append(PgDiffUtils.getQuotedName(getName()))
                 .append(" OWNER TO ").append(PgDiffUtils.getQuotedName(owner)).append(';');
     }
 
     @Override
     public String getDropSQL() {
-        return "DROP TEXT SEARCH DICTIONARY " + PgDiffUtils.getQuotedName(getName()) + ';';
+        return "DROP TEXT SEARCH DICTIONARY " + PgDiffUtils.getQuotedName(getContainingSchema().getName())
+        + '.' + PgDiffUtils.getQuotedName(getName()) + ';';
     }
 
     @Override
@@ -98,7 +104,8 @@ implements PgOptionContainer {
     public void appendOptions(PgOptionContainer newContainer, StringBuilder setOptions,
             StringBuilder resetOptions, StringBuilder sb) {
         sb.append("\n\nALTER TEXT SEARCH DICTIONARY ");
-        sb.append(PgDiffUtils.getQuotedName(getName()));
+        sb.append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
+        .append('.').append(PgDiffUtils.getQuotedName(getName()));
         sb.append("\n\t(");
 
         if (setOptions.length() > 0) {

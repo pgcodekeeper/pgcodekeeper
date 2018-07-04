@@ -1,12 +1,12 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-DROP TEXT SEARCH TEMPLATE first_template;
+DROP TEXT SEARCH TEMPLATE public.first_template;
 
-CREATE TEXT SEARCH TEMPLATE third_template (
+CREATE TEXT SEARCH TEMPLATE public.third_template (
 	LEXIZE = dsnowball_lexize );
 
-DROP TEXT SEARCH TEMPLATE second_template;
+DROP TEXT SEARCH TEMPLATE public.second_template;
 
-CREATE TEXT SEARCH TEMPLATE second_template (
+CREATE TEXT SEARCH TEMPLATE public.second_template (
 	INIT = dsnowball_init,
 	LEXIZE = dsnowball_lexize );

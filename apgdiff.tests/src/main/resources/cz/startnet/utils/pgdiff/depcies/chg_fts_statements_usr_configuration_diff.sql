@@ -1,5 +1,5 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-ALTER TEXT SEARCH CONFIGURATION first_configuration
+ALTER TEXT SEARCH CONFIGURATION public.first_configuration
 	ALTER MAPPING FOR tag
 	WITH public.first_dictionary;
