@@ -12,11 +12,6 @@ public class MsSequence extends PgSequence {
     }
 
     @Override
-    public String getQualifiedName() {
-        return MsDiffUtils.quoteName(getContainingSchema().getName()) + '.' + MsDiffUtils.quoteName(name);
-    }
-
-    @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE SEQUENCE ");

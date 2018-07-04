@@ -158,6 +158,19 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         sbSQL.append(" VIEW ");
         sbSQL.append(PgDiffUtils.getQuotedName(name));
 
+        if (columnNames != null && !columnNames.isEmpty()) {
+            sbSQL.append(" (");
+
+            for (int i = 0; i < columnNames.size(); i++) {
+                if (i > 0) {
+                    sbSQL.append(", ");
+                }
+
+                sbSQL.append(PgDiffUtils.getQuotedName(columnNames.get(i)));
+            }
+            sbSQL.append(')');
+        }
+
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, String> entry : options.entrySet()){
             if (!CHECK_OPTION.equals(entry.getKey())){
@@ -172,19 +185,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         if (sb.length() > 0){
             sb.setLength(sb.length() - 2);
             sbSQL.append("\nWITH (").append(sb).append(")");
-        }
-
-        if (columnNames != null && !columnNames.isEmpty()) {
-            sbSQL.append(" (");
-
-            for (int i = 0; i < columnNames.size(); i++) {
-                if (i > 0) {
-                    sbSQL.append(", ");
-                }
-
-                sbSQL.append(PgDiffUtils.getQuotedName(columnNames.get(i)));
-            }
-            sbSQL.append(')');
         }
 
         if (tablespace != null) {

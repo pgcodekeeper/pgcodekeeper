@@ -22,11 +22,6 @@ public class SimpleMsTable extends RegularPgTable {
     }
 
     @Override
-    public String getQualifiedName() {
-        return MsDiffUtils.quoteName(getContainingSchema().getName()) + '.' + MsDiffUtils.quoteName(name);
-    }
-
-    @Override
     protected void convertTable(StringBuilder sb) {
         // no implements
     }

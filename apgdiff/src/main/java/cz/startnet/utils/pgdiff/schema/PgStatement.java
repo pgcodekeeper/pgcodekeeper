@@ -474,19 +474,16 @@ public abstract class PgStatement implements IStatement, IHashable {
      *          Identifiers are quoted.
      */
     public String getQualifiedName() {
-        String qname = PgDiffUtils.getQuotedName(getName());
+        Function<String, String> quoter = isPostgres() ? PgDiffUtils::getQuotedName : MsDiffUtils::quoteName;
+        StringBuilder sb = new StringBuilder(quoter.apply(getName()));
 
         PgStatement par = this.parent;
-        while (par != null) {
-            if (par instanceof PgDatabase) {
-                break;
-            }
-            qname = PgDiffUtils.getQuotedName(par.getName())
-                    + '.' + qname;
+        while (par != null && !(par instanceof PgDatabase)) {
+            sb.insert(0, '.').insert(0, quoter.apply(par.getName()));
             par = par.getParent();
         }
 
-        return qname;
+        return sb.toString();
     }
 
     @Override

@@ -13,28 +13,10 @@ public class MsView extends PgView {
     }
 
     @Override
-    public String getQualifiedName() {
-        return MsDiffUtils.quoteName(getContainingSchema().getName()) + '.' + MsDiffUtils.quoteName(name);
-    }
-
-    @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder(getQuery().length() * 2);
         sbSQL.append("CREATE OR ALTER VIEW ");
         sbSQL.append(getQualifiedName());
-
-        StringBuilder sb = new StringBuilder();
-        for (Map.Entry<String, String> entry : options.entrySet()) {
-            if (!CHECK_OPTION.equals(entry.getKey())){
-                sb.append(entry.getKey());
-                sb.append(", ");
-            }
-        }
-
-        if (sb.length() > 0) {
-            sb.setLength(sb.length() - 2);
-            sbSQL.append("\nWITH ").append(sb);
-        }
 
         if (columnNames != null && !columnNames.isEmpty()) {
             sbSQL.append(" (");
@@ -47,6 +29,19 @@ public class MsView extends PgView {
                 sbSQL.append(MsDiffUtils.quoteName(columnNames.get(i)));
             }
             sbSQL.append(')');
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, String> entry : options.entrySet()) {
+            if (!CHECK_OPTION.equals(entry.getKey())){
+                sb.append(entry.getKey());
+                sb.append(", ");
+            }
+        }
+
+        if (sb.length() > 0) {
+            sb.setLength(sb.length() - 2);
+            sbSQL.append("\nWITH ").append(sb);
         }
 
         sbSQL.append(" AS\n\t");

@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -19,11 +18,6 @@ public class MsProcedure extends PgStatementWithSearchPath {
 
     public MsProcedure(String name, String rawStatement) {
         super(name, rawStatement);
-    }
-
-    @Override
-    public String getQualifiedName() {
-        return MsDiffUtils.quoteName(getContainingSchema().getName()) + '.' + MsDiffUtils.quoteName(name);
     }
 
     @Override
@@ -72,18 +66,6 @@ public class MsProcedure extends PgStatementWithSearchPath {
     @Override
     public String getDropSQL() {
         return "DROP PROCEDURE " + getQualifiedName() + GO;
-    }
-
-    @Override
-    public void computeHash(Hasher hasher) {
-        hasher.putOrdered(grants);
-        hasher.putOrdered(revokes);
-        hasher.putOrdered(arguments);
-        hasher.put(options);
-        hasher.put(body);
-        hasher.put(isForReplication);
-        hasher.put(name);
-        hasher.put(owner);
     }
 
     @Override
@@ -171,16 +153,25 @@ public class MsProcedure extends PgStatementWithSearchPath {
 
         if (obj instanceof MsProcedure) {
             MsProcedure func  = (MsProcedure) obj;
-            if (!checkForChanges(func)) {
-                return false;
-            }
-
-            return  Objects.equals(owner, func.getOwner())
+            return  checkForChanges(func)
+                    && Objects.equals(owner, func.getOwner())
                     && Objects.equals(grants, func.grants)
                     && Objects.equals(revokes, func.revokes);
         }
 
         return false;
+    }
+
+    @Override
+    public void computeHash(Hasher hasher) {
+        hasher.putOrdered(grants);
+        hasher.putOrdered(revokes);
+        hasher.putOrdered(arguments);
+        hasher.put(options);
+        hasher.put(body);
+        hasher.put(isForReplication);
+        hasher.put(name);
+        hasher.put(owner);
     }
 
     public List<ProcedureArgument> getArguments() {
