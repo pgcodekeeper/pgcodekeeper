@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
@@ -27,6 +28,8 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  * @author Alexander Levsha
  */
 public abstract class PgStatement implements IStatement, IHashable {
+    //TODO move to MS SQL statement abstract class.
+    protected static final String GO = "\nGO";
     /**
      * The statement as it's been read from dump before parsing.
      */
@@ -58,6 +61,11 @@ public abstract class PgStatement implements IStatement, IHashable {
     @Override
     public String getName() {
         return name;
+    }
+
+    //TODO enum later
+    public boolean isPostgres() {
+        return true;
     }
 
     /**
@@ -192,7 +200,6 @@ public abstract class PgStatement implements IStatement, IHashable {
         } else {
             grants.add(privilege);
         }
-        privilege.setParent(this);
         resetHash();
     }
 
@@ -215,20 +222,16 @@ public abstract class PgStatement implements IStatement, IHashable {
         .append("GRANT\n");
 
         for (PgPrivilege priv : revokes) {
-            sb.append('\n').append(priv.getCreationSQL());
+            sb.append('\n').append(priv.getCreationSQL()).append(isPostgres() ? ';' : "\nGO");
         }
         for (PgPrivilege priv : grants) {
-            sb.append('\n').append(priv.getCreationSQL());
+            sb.append('\n').append(priv.getCreationSQL()).append(isPostgres() ? ';' : "\nGO");
         }
 
         return sb;
     }
 
-    public String getPrivilegesSQL() {
-        return appendPrivileges(new StringBuilder()).toString();
-    }
-
-    protected void alterPrivileges(PgStatement newObj, StringBuilder sb){
+    protected void alterPrivileges(PgStatement newObj, StringBuilder sb) {
         // first drop (revoke) missing grants
         boolean grantsChanged = false;
         Set<PgPrivilege> newGrants = newObj.getGrants();
@@ -243,7 +246,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         grantsChanged = grantsChanged || grants.size() != newGrants.size();
         if (grantsChanged || !revokes.equals(newObj.getRevokes())) {
             newObj.appendPrivileges(sb);
-            if (newObj.revokes.isEmpty() && newObj.grants.isEmpty()) {
+            if (newObj.isPostgres() && newObj.revokes.isEmpty() && newObj.grants.isEmpty()) {
                 PgPrivilege.appendDefaultPrivileges(newObj, sb);
             }
         }
@@ -262,19 +265,24 @@ public abstract class PgStatement implements IStatement, IHashable {
         if (owner == null) {
             return sb;
         }
+        sb.append("\n\nALTER ");
 
-        DbObjType type = getStatementType();
-        sb.append("\n\nALTER ")
-        .append(type)
-        .append(' ');
-        if (type == DbObjType.FUNCTION) {
-            ((PgFunction) this).appendFunctionSignature(sb, false, true);
+        if (isPostgres()) {
+            DbObjType type = getStatementType();
+            sb.append(type).append(' ');
+            if (type == DbObjType.FUNCTION) {
+                ((PgFunction) this).appendFunctionSignature(sb, false, true);
+            } else {
+                sb.append(PgDiffUtils.getQuotedName(getName()));
+            }
+            sb.append(" OWNER TO ")
+            .append(PgDiffUtils.getQuotedName(owner))
+            .append(';');
         } else {
-            sb.append(PgDiffUtils.getQuotedName(getName()));
+            // TODO SCHEMA OWNER instead of null owner
+            sb.append(" AUTHORIZATION ON ").append(MsDiffUtils.quoteName(getName()))
+            .append(" TO ").append(MsDiffUtils.quoteName(owner)).append(GO);
         }
-        sb.append(" OWNER TO ")
-        .append(PgDiffUtils.getQuotedName(owner))
-        .append(';');
 
         return sb;
     }
@@ -466,19 +474,16 @@ public abstract class PgStatement implements IStatement, IHashable {
      *          Identifiers are quoted.
      */
     public String getQualifiedName() {
-        String qname = PgDiffUtils.getQuotedName(getName());
+        Function<String, String> quoter = isPostgres() ? PgDiffUtils::getQuotedName : MsDiffUtils::quoteName;
+        StringBuilder sb = new StringBuilder(quoter.apply(getName()));
 
         PgStatement par = this.parent;
-        while (par != null) {
-            if (par instanceof PgDatabase) {
-                break;
-            }
-            qname = PgDiffUtils.getQuotedName(par.getName())
-                    + '.' + qname;
+        while (par != null && !(par instanceof PgDatabase)) {
+            sb.insert(0, '.').insert(0, quoter.apply(par.getName()));
             par = par.getParent();
         }
 
-        return qname;
+        return sb.toString();
     }
 
     @Override

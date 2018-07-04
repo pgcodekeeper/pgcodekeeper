@@ -179,6 +179,26 @@ public class PgSequence extends PgStatementWithSearchPath implements IRelation {
         StringBuilder sbSQL = new StringBuilder();
         sbSQL.setLength(0);
 
+        if (compareSequenceBody(newSequence, oldSequence, sbSQL)) {
+            sb.append("\n\nALTER SEQUENCE "
+                    + PgDiffUtils.getQuotedName(newSequence.getName())
+                    + sbSQL.toString() + ";");
+        }
+
+        if (!Objects.equals(oldSequence.getOwner(), newSequence.getOwner())) {
+            sb.append(newSequence.getOwnerSQL());
+        }
+
+        alterPrivileges(newSequence, sb);
+
+        if (!Objects.equals(oldSequence.getComment(), newSequence.getComment())) {
+            sb.append("\n\n");
+            newSequence.appendCommentSql(sb);
+        }
+        return sb.length() > startLength;
+    }
+
+    protected boolean compareSequenceBody(PgSequence newSequence, PgSequence oldSequence, StringBuilder sbSQL) {
         final String oldType = oldSequence.getDataType();
         final String newType = newSequence.getDataType();
 
@@ -243,23 +263,7 @@ public class PgSequence extends PgStatementWithSearchPath implements IRelation {
             sbSQL.append("\n\tCYCLE");
         }
 
-        if (sbSQL.length() > 0) {
-            sb.append("\n\nALTER SEQUENCE "
-                    + PgDiffUtils.getQuotedName(newSequence.getName())
-                    + sbSQL.toString() + ";");
-        }
-
-        if (!Objects.equals(oldSequence.getOwner(), newSequence.getOwner())) {
-            sb.append(newSequence.getOwnerSQL());
-        }
-
-        alterPrivileges(newSequence, sb);
-
-        if (!Objects.equals(oldSequence.getComment(), newSequence.getComment())) {
-            sb.append("\n\n");
-            newSequence.appendCommentSql(sb);
-        }
-        return sb.length() > startLength;
+        return sbSQL.length() > 0;
     }
 
     public void setMinMaxInc(long inc, Long max, Long min) {
@@ -371,10 +375,10 @@ public class PgSequence extends PgStatementWithSearchPath implements IRelation {
         sequenceDst.setStartWith(getStartWith());
         sequenceDst.setComment(getComment());
         for (PgPrivilege priv : revokes) {
-            sequenceDst.addPrivilege(priv.deepCopy());
+            sequenceDst.addPrivilege(priv);
         }
         for (PgPrivilege priv : grants) {
-            sequenceDst.addPrivilege(priv.deepCopy());
+            sequenceDst.addPrivilege(priv);
         }
         sequenceDst.setOwner(getOwner());
         sequenceDst.deps.addAll(deps);

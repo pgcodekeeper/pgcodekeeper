@@ -1,14 +1,15 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
+import cz.startnet.utils.pgdiff.hashers.IHashable;
+import cz.startnet.utils.pgdiff.hashers.JavaHasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class PgPrivilege extends PgStatement {
+public class PgPrivilege implements IHashable {
 
     // regex grouping here is used to preserve whitespace when doing replaceAll
     private static final Pattern PATTERN_TO = Pattern.compile("(\\s+)TO(\\s+)");
@@ -25,28 +26,18 @@ public class PgPrivilege extends PgStatement {
         return definition;
     }
 
-    public PgPrivilege(boolean revoke, String definition, String rawStatement) {
-        super(null, rawStatement);
-
+    public PgPrivilege(boolean revoke, String definition) {
         this.revoke = revoke;
         this.definition = definition;
     }
 
-    @Override
-    public DbObjType getStatementType() {
-        return null;
-    }
-
-    @Override
     public String getCreationSQL() {
         return new StringBuilder()
                 .append(revoke ? "REVOKE " : "GRANT ")
                 .append(definition)
-                .append(';')
                 .toString();
     }
 
-    @Override
     public String getDropSQL() {
         if (revoke) {
             return null;
@@ -55,15 +46,16 @@ public class PgPrivilege extends PgStatement {
         String definitionWithoutGO = definition.endsWith(WITH_GRANT_OPTION) ?
                 definition.substring(0, definition.length() - WITH_GRANT_OPTION.length()) : definition;
 
-        // TODO сделать надежнее чем просто регуляркой
-        return new StringBuilder()
-                .append("REVOKE ")
-                // regex groups capture surrounding whitespace so we don't alter it
-                .append(PATTERN_TO.matcher(definitionWithoutGO).replaceAll("$1FROM$2"))
-                .append(';')
-                .toString();
+                // TODO сделать надежнее чем просто регуляркой
+                return new StringBuilder()
+                        .append("REVOKE ")
+                        // regex groups capture surrounding whitespace so we don't alter it
+                        .append(PATTERN_TO.matcher(definitionWithoutGO).replaceAll("$1FROM$2"))
+                        .append(';')
+                        .toString();
     }
 
+    // TODO MS SQL override
     public static void appendDefaultPrivileges(PgStatement newObj, StringBuilder sb) {
         DbObjType type = newObj.getStatementType();
         String owner = type != DbObjType.COLUMN ? newObj.getOwner() : newObj.getParent().getOwner();
@@ -84,31 +76,16 @@ public class PgPrivilege extends PgStatement {
 
         owner =  PgDiffUtils.getQuotedName(owner);
 
-        PgPrivilege priv = new PgPrivilege(true, "ALL" + column + " ON " + type + ' ' + name + " FROM PUBLIC", "");
-        sb.append('\n').append(priv.getCreationSQL());
-        priv = new PgPrivilege(true, "ALL" + column + " ON " + type + ' ' + name + " FROM " + owner, "");
-        sb.append('\n').append(priv.getCreationSQL());
-        priv = new PgPrivilege(false, "ALL" + column + " ON " + type + ' ' + name + " TO " + owner, "");
-        sb.append('\n').append(priv.getCreationSQL());
+        PgPrivilege priv = new PgPrivilege(true, "ALL" + column + " ON " + type + ' ' + name + " FROM PUBLIC");
+        sb.append('\n').append(priv.getCreationSQL()).append(';');
+        priv = new PgPrivilege(true, "ALL" + column + " ON " + type + ' ' + name + " FROM " + owner);
+        sb.append('\n').append(priv.getCreationSQL()).append(';');
+        priv = new PgPrivilege(false, "ALL" + column + " ON " + type + ' ' + name + " TO " + owner);
+        sb.append('\n').append(priv.getCreationSQL()).append(';');
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
-        return false;
-    }
-
-    @Override
-    public PgPrivilege deepCopy() {
-        return shallowCopy();
-    }
-
-    @Override
-    public PgPrivilege shallowCopy() {
-        return new PgPrivilege(isRevoke(), getDefinition(), getRawStatement());
-    }
-
-    @Override
-    public boolean compare(PgStatement obj) {
+    public boolean equals(Object obj) {
         boolean eq = false;
 
         if (this == obj) {
@@ -123,6 +100,13 @@ public class PgPrivilege extends PgStatement {
     }
 
     @Override
+    public int hashCode() {
+        JavaHasher hasher = new JavaHasher();
+        computeHash(hasher);
+        return hasher.getResult();
+    }
+
+    @Override
     public void computeHash(Hasher hasher) {
         hasher.put(definition);
         hasher.put(revoke);
@@ -131,10 +115,5 @@ public class PgPrivilege extends PgStatement {
     @Override
     public String toString() {
         return getCreationSQL();
-    }
-
-    @Override
-    public PgDatabase getDatabase() {
-        return null;
     }
 }

@@ -30,11 +30,11 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 public class PgView extends PgStatementWithSearchPath
 implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
-    private static final String CHECK_OPTION = "check_option";
+    protected static final String CHECK_OPTION = "check_option";
     private String query;
     private String normalizedQuery;
     private final Map<String, String> options = new LinkedHashMap<>();
-    private List<String> columnNames = new ArrayList<>();
+    private final List<String> columnNames = new ArrayList<>();
     private final List<DefaultValue> defaultValues = new ArrayList<>();
     private final List<ColumnComment> columnComments = new ArrayList<>();
     private final List<PgRule> rules = new ArrayList<>();
@@ -125,11 +125,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         resetHash();
     }
 
-    public void setColumnNames(final List<String> columnNames) {
-        this.columnNames = columnNames;
-        resetHash();
-    }
-
     /**
      * Getter for {@link #columnNames}. The list cannot be modified.
      *
@@ -158,6 +153,19 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         sbSQL.append(" VIEW ");
         sbSQL.append(PgDiffUtils.getQuotedName(name));
 
+        if (!columnNames.isEmpty()) {
+            sbSQL.append(" (");
+
+            for (int i = 0; i < columnNames.size(); i++) {
+                if (i > 0) {
+                    sbSQL.append(", ");
+                }
+
+                sbSQL.append(PgDiffUtils.getQuotedName(columnNames.get(i)));
+            }
+            sbSQL.append(')');
+        }
+
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, String> entry : options.entrySet()){
             if (!CHECK_OPTION.equals(entry.getKey())){
@@ -172,19 +180,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         if (sb.length() > 0){
             sb.setLength(sb.length() - 2);
             sbSQL.append("\nWITH (").append(sb).append(")");
-        }
-
-        if (columnNames != null && !columnNames.isEmpty()) {
-            sbSQL.append(" (");
-
-            for (int i = 0; i < columnNames.size(); i++) {
-                if (i > 0) {
-                    sbSQL.append(", ");
-                }
-
-                sbSQL.append(PgDiffUtils.getQuotedName(columnNames.get(i)));
-            }
-            sbSQL.append(')');
         }
 
         if (tablespace != null) {
@@ -524,14 +519,14 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         viewDst.setComment(getComment());
         viewDst.setIsWithData(isWithData());
         viewDst.setTablespace(getTablespace());
-        viewDst.setColumnNames(new ArrayList<>(columnNames));
+        viewDst.columnNames.addAll(columnNames);
         viewDst.defaultValues.addAll(defaultValues);
         viewDst.columnComments.addAll(columnComments);
         for (PgPrivilege priv : revokes) {
-            viewDst.addPrivilege(priv.deepCopy());
+            viewDst.addPrivilege(priv);
         }
         for (PgPrivilege priv : grants) {
-            viewDst.addPrivilege(priv.deepCopy());
+            viewDst.addPrivilege(priv);
         }
         viewDst.setOwner(getOwner());
         viewDst.deps.addAll(deps);
@@ -664,7 +659,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
      *
      * @return true if view has been modified, otherwise false
      */
-    private boolean isViewModified(final PgView newView) {
+    protected boolean isViewModified(final PgView newView) {
         List<String> oldColumnNames = getColumnNames();
         List<String> newColumnNames = newView.getColumnNames();
 

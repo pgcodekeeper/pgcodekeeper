@@ -211,10 +211,10 @@ public class PgDomain extends PgStatementWithSearchPath {
             copy.addConstraint(constr.deepCopy());
         }
         for (PgPrivilege priv : grants) {
-            copy.addPrivilege(priv.deepCopy());
+            copy.addPrivilege(priv);
         }
         for (PgPrivilege priv : revokes) {
-            copy.addPrivilege(priv.deepCopy());
+            copy.addPrivilege(priv);
         }
         copy.deps.addAll(deps);
         return copy;
