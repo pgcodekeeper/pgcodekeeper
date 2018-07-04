@@ -33,8 +33,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     protected static final String CHECK_OPTION = "check_option";
     private String query;
     private String normalizedQuery;
-    protected final Map<String, String> options = new LinkedHashMap<>();
-    protected List<String> columnNames = new ArrayList<>();
+    private final Map<String, String> options = new LinkedHashMap<>();
+    private final List<String> columnNames = new ArrayList<>();
     private final List<DefaultValue> defaultValues = new ArrayList<>();
     private final List<ColumnComment> columnComments = new ArrayList<>();
     private final List<PgRule> rules = new ArrayList<>();
@@ -125,11 +125,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         resetHash();
     }
 
-    public void setColumnNames(final List<String> columnNames) {
-        this.columnNames = columnNames;
-        resetHash();
-    }
-
     /**
      * Getter for {@link #columnNames}. The list cannot be modified.
      *
@@ -158,7 +153,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         sbSQL.append(" VIEW ");
         sbSQL.append(PgDiffUtils.getQuotedName(name));
 
-        if (columnNames != null && !columnNames.isEmpty()) {
+        if (!columnNames.isEmpty()) {
             sbSQL.append(" (");
 
             for (int i = 0; i < columnNames.size(); i++) {
@@ -524,7 +519,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         viewDst.setComment(getComment());
         viewDst.setIsWithData(isWithData());
         viewDst.setTablespace(getTablespace());
-        viewDst.setColumnNames(new ArrayList<>(columnNames));
+        viewDst.columnNames.addAll(columnNames);
         viewDst.defaultValues.addAll(defaultValues);
         viewDst.columnComments.addAll(columnComments);
         for (PgPrivilege priv : revokes) {

@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -18,7 +19,8 @@ public class MsView extends PgView {
         sbSQL.append("CREATE OR ALTER VIEW ");
         sbSQL.append(getQualifiedName());
 
-        if (columnNames != null && !columnNames.isEmpty()) {
+        List<String> columnNames = getColumnNames();
+        if (!columnNames.isEmpty()) {
             sbSQL.append(" (");
 
             for (int i = 0; i < columnNames.size(); i++) {
@@ -31,6 +33,7 @@ public class MsView extends PgView {
             sbSQL.append(')');
         }
 
+        Map<String, String> options = getOptions();
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, String> entry : options.entrySet()) {
             if (!CHECK_OPTION.equals(entry.getKey())){
