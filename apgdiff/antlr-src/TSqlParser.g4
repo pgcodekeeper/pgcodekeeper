@@ -11,18 +11,21 @@ batch
     ;
 
 sql_clauses
-    : sql_clause+
+    : SEMI* (st_clause SEMI?)+
     ;
 
 sql_clause
+    : SEMI* st_clause SEMI*
+    ;
+
+st_clause
     : dml_clause
     | ddl_clause
     | cfl_statement
     | dbcc_clause
-    | empty_statement
+    //| empty_statement
     | another_statement
-    | backup_statement
-    ;
+    | backup_statement;
 
 // Data Manipulation Language: https://msdn.microsoft.com/en-us/library/ff848766(v=sql.120).aspx
 dml_clause
@@ -217,38 +220,38 @@ cfl_statement
 
 // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/begin-end-transact-sql
 block_statement
-    : BEGIN ';'? sql_clauses* END ';'?
+    : BEGIN sql_clauses END
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/break-transact-sql
 break_statement
-    : BREAK ';'?
+    : BREAK
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/continue-transact-sql
 continue_statement
-    : CONTINUE ';'?
+    : CONTINUE
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/goto-transact-sql
 goto_statement
-    : GOTO id ';'?
-    | id ':' ';'?
+    : GOTO id
+    | id ':'
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/return-transact-sql
 return_statement
-    : RETURN expression? ';'?
+    : RETURN expression?
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/if-else-transact-sql
 if_statement
-    : IF search_condition sql_clause (ELSE sql_clause)? ';'?
+    : IF search_condition sql_clause (ELSE sql_clause)?
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/throw-transact-sql
 throw_statement
-    : THROW (throw_error_number ',' throw_message ',' throw_state)? ';'?
+    : THROW (throw_error_number ',' throw_message ',' throw_state)?
     ;
 
 throw_error_number
@@ -265,33 +268,29 @@ throw_state
 
 // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/try-catch-transact-sql
 try_catch_statement
-    : BEGIN TRY ';'? try_clauses=sql_clauses* END TRY ';'? BEGIN CATCH ';'? catch_clauses=sql_clauses* END CATCH ';'?
+    : BEGIN TRY try_clauses=sql_clauses? END TRY ';'? BEGIN CATCH catch_clauses=sql_clauses? END CATCH
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/waitfor-transact-sql
 waitfor_statement
-    : WAITFOR receive_statement? ','? ((DELAY | TIME | TIMEOUT) time)?  expression? ';'?
+    : WAITFOR receive_statement? ','? ((DELAY | TIME | TIMEOUT) time)?  expression?
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/while-transact-sql
 while_statement
-    : WHILE search_condition (sql_clause | BREAK ';'? | CONTINUE ';'?)
+    : WHILE search_condition (sql_clause | BREAK  | CONTINUE )
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/print-transact-sql
 print_statement
-    : PRINT (expression | DOUBLE_QUOTE_ID) (',' LOCAL_ID)* ';'?
+    : PRINT (expression | DOUBLE_QUOTE_ID) (',' LOCAL_ID)*
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/raiserror-transact-sql
 raiseerror_statement
     : RAISERROR '(' msg=(DECIMAL | STRING | LOCAL_ID) ',' severity=constant_LOCAL_ID ','
-    state=constant_LOCAL_ID (',' constant_LOCAL_ID)* ')' (WITH (LOG | SETERROR | NOWAIT))? ';'?
+    state=constant_LOCAL_ID (',' constant_LOCAL_ID)* ')' (WITH (LOG | SETERROR | NOWAIT))?
     | RAISERROR DECIMAL formatstring=(STRING | LOCAL_ID | DOUBLE_QUOTE_ID) (',' argument=(DECIMAL | STRING | LOCAL_ID))*
-    ;
-
-empty_statement
-    : ';'
     ;
 
 another_statement
@@ -880,19 +879,12 @@ enable_trigger
      ;
 
 lock_table
-     : LOCK TABLE table_name IN (SHARE | EXCLUSIVE) MODE (WAIT seconds=DECIMAL | NOWAIT)? ';'?
+     : LOCK TABLE table_name IN (SHARE | EXCLUSIVE) MODE (WAIT seconds=DECIMAL | NOWAIT)? ?
      ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/truncate-table-transact-sql
 truncate_table
-     : TRUNCATE TABLE  (database_name=id DOT)? (schema_name=id DOT)? table=id
-          ( WITH LR_BRACKET
-              PARTITIONS LR_BRACKET
-                                (COMMA? (DECIMAL|DECIMAL TO DECIMAL) )+
-                         RR_BRACKET
-
-                 RR_BRACKET
-          )?
+     : TRUNCATE TABLE full_table_name ( WITH '(' PARTITIONS '(' (COMMA? (DECIMAL|DECIMAL TO DECIMAL) )+ ')' ')' )?
      ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-column-master-key-transact-sql
@@ -1000,7 +992,7 @@ alter_external_data_source
 alter_external_library
     : ALTER EXTERNAL LIBRARY library_name=id (AUTHORIZATION owner_name=id)?
        (SET|ADD) ( LR_BRACKET CONTENT EQUAL (client_library=STRING | BINARY | NONE)
-           (COMMA PLATFORM EQUAL (WINDOWS|LINUX)? RR_BRACKET) 
+           (COMMA PLATFORM EQUAL (WINDOWS|LINUX)? RR_BRACKET)
            WITH (COMMA? LANGUAGE EQUAL (R_LETTER | PYTHON) | DATA_SOURCE EQUAL external_data_source_name=id )+ RR_BRACKET
        )
    ;
@@ -1008,7 +1000,7 @@ alter_external_library
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-external-library-transact-sql
 create_external_library
     : CREATE EXTERNAL LIBRARY library_name=id (AUTHORIZATION owner_name=id)?
-       FROM (COMMA? LR_BRACKET?  (CONTENT EQUAL)? 
+       FROM (COMMA? LR_BRACKET?  (CONTENT EQUAL)?
            (client_library=STRING | BINARY | NONE) (COMMA PLATFORM EQUAL (WINDOWS|LINUX)? RR_BRACKET)?
        ) ( WITH (COMMA? LANGUAGE EQUAL (R_LETTER|PYTHON) | DATA_SOURCE EQUAL external_data_source_name=id )+ RR_BRACKET  )?
    ;
@@ -1017,7 +1009,7 @@ create_external_library
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-external-resource-pool-transact-sql
 alter_external_resource_pool
     : ALTER EXTERNAL RESOURCE POOL (pool_name=id | DEFAULT_DOUBLE_QUOTE) WITH LR_BRACKET MAX_CPU_PERCENT EQUAL max_cpu_percent=DECIMAL ( COMMA? AFFINITY CPU EQUAL (AUTO|(COMMA? DECIMAL TO DECIMAL |COMMA DECIMAL )+ ) | NUMANODE EQUAL (COMMA? DECIMAL TO DECIMAL| COMMA? DECIMAL )+  ) (COMMA? MAX_MEMORY_PERCENT EQUAL max_memory_percent=DECIMAL)? (COMMA? MAX_PROCESSES EQUAL max_processes=DECIMAL)?  RR_BRACKET
-    ; 
+    ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-external-resource-pool-transact-sql
 create_external_resource_pool
@@ -1390,20 +1382,20 @@ create_server_audit_specification
 
 alter_server_configuration
     : ALTER SERVER CONFIGURATION
-      SET  ( (PROCESS AFFINITY 
-          (CPU EQUAL (AUTO | (COMMA? DECIMAL | COMMA? DECIMAL TO DECIMAL)+ ) 
-              | NUMANODE EQUAL ( COMMA? DECIMAL |COMMA?  DECIMAL TO DECIMAL)+) 
-              | DIAGNOSTICS LOG (ON|OFF|PATH EQUAL (STRING | DEFAULT) 
+      SET  ( (PROCESS AFFINITY
+          (CPU EQUAL (AUTO | (COMMA? DECIMAL | COMMA? DECIMAL TO DECIMAL)+ )
+              | NUMANODE EQUAL ( COMMA? DECIMAL |COMMA?  DECIMAL TO DECIMAL)+)
+              | DIAGNOSTICS LOG (ON|OFF|PATH EQUAL (STRING | DEFAULT)
               |MAX_SIZE EQUAL (DECIMAL MB |DEFAULT)|MAX_FILES EQUAL (DECIMAL|DEFAULT)
-              ) 
-          | FAILOVER CLUSTER PROPERTY (VERBOSELOGGING EQUAL (STRING|DEFAULT) 
-          | SQLDUMPERFLAGS EQUAL (STRING|DEFAULT) 
-          | SQLDUMPERPATH EQUAL (STRING|DEFAULT) 
-          | SQLDUMPERTIMEOUT (STRING|DEFAULT) 
-          | FAILURECONDITIONLEVEL EQUAL (STRING|DEFAULT) 
+              )
+          | FAILOVER CLUSTER PROPERTY (VERBOSELOGGING EQUAL (STRING|DEFAULT)
+          | SQLDUMPERFLAGS EQUAL (STRING|DEFAULT)
+          | SQLDUMPERPATH EQUAL (STRING|DEFAULT)
+          | SQLDUMPERTIMEOUT (STRING|DEFAULT)
+          | FAILURECONDITIONLEVEL EQUAL (STRING|DEFAULT)
           | HEALTHCHECKTIMEOUT EQUAL (DECIMAL|DEFAULT)
-          ) | HADR CLUSTER CONTEXT EQUAL (STRING|LOCAL) 
-          | BUFFER POOL EXTENSION (ON LR_BRACKET FILENAME EQUAL STRING COMMA SIZE EQUAL DECIMAL (KB|MB|GB)  RR_BRACKET | OFF ) 
+          ) | HADR CLUSTER CONTEXT EQUAL (STRING|LOCAL)
+          | BUFFER POOL EXTENSION (ON LR_BRACKET FILENAME EQUAL STRING COMMA SIZE EQUAL DECIMAL (KB|MB|GB)  RR_BRACKET | OFF )
           | SET SOFTNUMA (ON|OFF)
       ) )
     ;
@@ -1656,14 +1648,13 @@ delete_statement
       output_clause?
       (FROM table_sources)?
       (WHERE (search_condition | CURRENT OF (GLOBAL? cursor_name | cursor_var=LOCAL_ID)))?
-      for_clause? option_clause? ';'?
+      for_clause? option_clause?
     ;
 
 delete_statement_from
     : ddl_object
-    | table_alias
+    | id with_table_hints
     | rowset_function_limited
-    | table_var=LOCAL_ID
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms174335.aspx
@@ -1675,12 +1666,11 @@ insert_statement
       ('(' column_name_list ')')?
       output_clause?
       insert_statement_value
-      for_clause? option_clause? ';'?
+      for_clause? option_clause?
     ;
 
 insert_statement_value
-    : table_value_constructor
-    | derived_table
+    : derived_table
     | execute_statement
     | DEFAULT VALUES
     ;
@@ -1694,8 +1684,27 @@ receive_statement
 
 // https://msdn.microsoft.com/en-us/library/ms189499.aspx
 select_statement
-    : with_expression? query_expression order_by_clause? for_clause? option_clause? ';'?
+    : with_expression? select_ops order_by_clause? for_clause? option_clause?
     ;
+
+// select_stmt copy that doesn't consume external parens
+// for use in vex
+// we let the expression rule to consume as many parens as it can
+select_stmt_no_parens
+    : with_expression? select_ops_no_parens order_by_clause? for_clause? option_clause?
+    ;
+
+select_ops
+    : '(' select_statement ')' //  parens can be used to apply "global" clauses (WITH etc) to a particular select in UNION expr
+    | select_ops (INTERSECT | UNION | EXCEPT) (DISTINCT | ALL)? select_ops
+    | query_specification
+    ;
+
+select_ops_no_parens
+    : select_ops (INTERSECT | UNION | EXCEPT) (DISTINCT | ALL)? select_ops
+    | query_specification
+    ;
+
 
 time
     : (LOCAL_ID | constant)
@@ -1711,7 +1720,7 @@ update_statement
       output_clause?
       (FROM table_sources)?
       (WHERE (search_condition_list | CURRENT OF (GLOBAL? cursor_name | cursor_var=LOCAL_ID)))?
-      for_clause? option_clause? ';'?
+      for_clause? option_clause?
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms177564.aspx
@@ -1748,7 +1757,7 @@ create_index
     (WHERE where=search_condition)?
     (index_options)?
     (ON id)?
-    ';'?
+
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms187926(v=sql.120).aspx
@@ -1806,8 +1815,8 @@ create_or_alter_function
     ;
 
 func_body_return
-    : RETURN ('(' select_statement ')' | select_statement)
-    | BEGIN sql_clause* RETURN ret=expression? ';'? END ';'?
+    : RETURN select_statement
+    | BEGIN sql_clauses? RETURN ret=expression? ';'? END
     | EXTERNAL NAME full_table_name
     ;
 
@@ -1833,7 +1842,7 @@ function_option
 create_statistics
     : CREATE STATISTICS id ON table_name_with_hint '(' column_name_list ')'
       (WITH (FULLSCAN | SAMPLE DECIMAL (PERCENT | ROWS) | STATS_STREAM)
-            (',' NORECOMPUTE)? (',' INCREMENTAL EQUAL on_off)? )? ';'?
+            (',' NORECOMPUTE)? (',' INCREMENTAL EQUAL on_off)? )?
     ;
 
 update_statistics
@@ -1842,7 +1851,7 @@ update_statistics
 
 // https://msdn.microsoft.com/en-us/library/ms174979.aspx
 create_table
-    : CREATE TABLE table_name '(' column_def_table_constraints ','? ')' (LOCK simple_id)? table_options* (ON id | DEFAULT)? (TEXTIMAGE_ON id | DEFAULT)?';'?
+    : CREATE TABLE table_name '(' column_def_table_constraints ','? ')' (LOCK simple_id)? table_options* (ON id | DEFAULT)? (TEXTIMAGE_ON id | DEFAULT)?
     ;
 
 table_options
@@ -1853,7 +1862,7 @@ table_options
 create_view
     : CREATE VIEW simple_name ('(' column_name_list ')')?
       (WITH view_attribute (',' view_attribute)*)?
-      AS select_statement (WITH CHECK OPTION)? ';'?
+      AS select_statement (WITH CHECK OPTION)?
     ;
 
 view_attribute
@@ -1872,13 +1881,13 @@ alter_table
                              | CHECK CONSTRAINT constraint=id
                              | (ENABLE | DISABLE) TRIGGER id?
                              | REBUILD table_options)
-                             ';'?
+
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms174269.aspx
 alter_database
     : ALTER DATABASE (database=id | CURRENT)
-      (MODIFY NAME '=' new_name=id | COLLATE collation=id | SET database_optionspec (WITH termination)? ) ';'?
+      (MODIFY NAME '=' new_name=id | COLLATE collation=id | SET database_optionspec (WITH termination)? )
     ;
 
 // https://msdn.microsoft.com/en-us/library/bb522682.aspx
@@ -2134,7 +2143,6 @@ drop_index
     ( drop_relational_or_xml_or_spatial_index (',' drop_relational_or_xml_or_spatial_index)*
     | drop_backward_compatible_index (',' drop_backward_compatible_index)*
     )
-    ';'?
     ;
 
 drop_relational_or_xml_or_spatial_index
@@ -2147,7 +2155,7 @@ drop_backward_compatible_index
 
 // https://msdn.microsoft.com/en-us/library/ms174969.aspx
 drop_procedure
-    : DROP proc=(PROC | PROCEDURE) (IF EXISTS)? func_proc_name (',' func_proc_name)* ';'?
+    : DROP proc=(PROC | PROCEDURE) (IF EXISTS)? func_proc_name (',' func_proc_name)*
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/drop-trigger-transact-sql
@@ -2157,32 +2165,32 @@ drop_trigger
     ;
 
 drop_dml_trigger
-    : DROP TRIGGER (IF EXISTS)? simple_name (',' simple_name)* ';'?
+    : DROP TRIGGER (IF EXISTS)? simple_name (',' simple_name)*
     ;
 
 drop_ddl_trigger
     : DROP TRIGGER (IF EXISTS)? simple_name (',' simple_name)*
-    ON (DATABASE | ALL SERVER) ';'?
+    ON (DATABASE | ALL SERVER)
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms190290.aspx
 drop_function
-    : DROP FUNCTION (IF EXISTS)? func_proc_name (',' func_proc_name)* ';'?
+    : DROP FUNCTION (IF EXISTS)? func_proc_name (',' func_proc_name)*
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms175075.aspx
 drop_statistics
-    : DROP STATISTICS (COMMA? (table_name '.')? name=id)+ ';'
+    : DROP STATISTICS (COMMA? (table_name '.')? name=id)+
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms173790.aspx
 drop_table
-    : DROP TABLE (IF EXISTS)? table_name ';'?
+    : DROP TABLE (IF EXISTS)? table_name
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms173492.aspx
 drop_view
-    : DROP VIEW (IF EXISTS)? simple_name (',' simple_name)* ';'?
+    : DROP VIEW (IF EXISTS)? simple_name (',' simple_name)*
     ;
 
 create_type
@@ -2216,16 +2224,16 @@ opendatasource
 
 // https://msdn.microsoft.com/en-us/library/ms188927.aspx
 declare_statement
-    : DECLARE LOCAL_ID AS? table_type_definition ';'?
-    | DECLARE declare_local (',' declare_local)* ';'?
-    | DECLARE LOCAL_ID AS? xml_type_definition ';'?
-    | WITH XMLNAMESPACES '(' xml_namespace_uri=STRING ','? AS id ')' ';'?
+    : DECLARE LOCAL_ID AS? table_type_definition
+    | DECLARE declare_local (',' declare_local)*
+    | DECLARE LOCAL_ID AS? xml_type_definition
+    | WITH XMLNAMESPACES '(' xml_namespace_uri=STRING ','? AS id ')'
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms181441(v=sql.120).aspx
 cursor_statement
     // https://msdn.microsoft.com/en-us/library/ms175035(v=sql.120).aspx
-    : (CLOSE | OPEN | DEALLOCATE) GLOBAL? cursor_name ';'?
+    : (CLOSE | OPEN | DEALLOCATE) GLOBAL? cursor_name
     // https://msdn.microsoft.com/en-us/library/ms180169(v=sql.120).aspx
     | declare_cursor
     // https://msdn.microsoft.com/en-us/library/ms180152(v=sql.120).aspx
@@ -2366,8 +2374,7 @@ execute_statement
     ;
 
 execute_body
-    : (return_status=LOCAL_ID '=')? (func_proc_name | expression) (execute_statement_arg (',' execute_statement_arg)*)? ';'?
-    | '(' execute_var_string ('+' execute_var_string)* ')' (AS? (LOGIN | USER) '=' STRING)? ';'?
+    : expression (execute_statement_arg (',' execute_statement_arg)*)? (AS? (LOGIN | USER) '=' STRING)?
     ;
 
 execute_statement_arg
@@ -2382,11 +2389,11 @@ execute_var_string
 // https://msdn.microsoft.com/en-us/library/ff848791.aspx
 security_statement
     // https://msdn.microsoft.com/en-us/library/ms188354.aspx
-    : execute_clause ';'?
+    : execute_clause
     // https://msdn.microsoft.com/en-us/library/ms187965.aspx
-    | GRANT (ALL PRIVILEGES? | grant_permission ('(' column_name_list ')')?) (ON on_id=table_name)? TO (to_principal+=id) (',' to_principal+=id)* (WITH GRANT OPTION)? (AS as_principal=id)? ';'?
+    | GRANT (ALL PRIVILEGES? | grant_permission ('(' column_name_list ')')?) (ON on_id=table_name)? TO (to_principal+=id) (',' to_principal+=id)* (WITH GRANT OPTION)? (AS as_principal=id)?
     // https://msdn.microsoft.com/en-us/library/ms178632.aspx
-    | REVERT ('(' WITH COOKIE '=' LOCAL_ID ')')? ';'?
+    | REVERT ('(' WITH COOKIE '=' LOCAL_ID ')')?
     | open_key
     | close_key
     | create_key
@@ -2488,10 +2495,10 @@ grant_permission
 // https://msdn.microsoft.com/en-us/library/ms190356.aspx
 // https://msdn.microsoft.com/en-us/library/ms189484.aspx
 set_statement
-    : SET LOCAL_ID ('.' member_name=id)? '=' expression ';'?
-    | SET LOCAL_ID assignment_operator expression ';'?
+    : SET LOCAL_ID ('.' member_name=id)? '=' expression
+    | SET LOCAL_ID assignment_operator expression
     | SET LOCAL_ID '='
-      CURSOR declare_set_cursor_common (FOR (READ ONLY | UPDATE (OF column_name_list)?))? ';'?
+      CURSOR declare_set_cursor_common (FOR (READ ONLY | UPDATE (OF column_name_list)?))?
     // https://msdn.microsoft.com/en-us/library/ms189837.aspx
     | set_special
     ;
@@ -2499,21 +2506,21 @@ set_statement
 // https://msdn.microsoft.com/en-us/library/ms174377.aspx
 transaction_statement
     // https://msdn.microsoft.com/en-us/library/ms188386.aspx
-    : BEGIN DISTRIBUTED (TRAN | TRANSACTION) (id | LOCAL_ID)? ';'?
+    : BEGIN DISTRIBUTED (TRAN | TRANSACTION) (id | LOCAL_ID)?
     // https://msdn.microsoft.com/en-us/library/ms188929.aspx
-    | BEGIN (TRAN | TRANSACTION) ((id | LOCAL_ID) (WITH MARK STRING)?)? ';'?
+    | BEGIN (TRAN | TRANSACTION) ((id | LOCAL_ID) (WITH MARK STRING)?)?
     // https://msdn.microsoft.com/en-us/library/ms190295.aspx
-    | COMMIT (TRAN | TRANSACTION) ((id | LOCAL_ID) (WITH '(' DELAYED_DURABILITY EQUAL (OFF | ON) ')')?)? ';'?
+    | COMMIT (TRAN | TRANSACTION) ((id | LOCAL_ID) (WITH '(' DELAYED_DURABILITY EQUAL (OFF | ON) ')')?)?
     // https://msdn.microsoft.com/en-us/library/ms178628.aspx
-    | COMMIT WORK? ';'?
+    | COMMIT WORK?
     | COMMIT id
     | ROLLBACK id
     // https://msdn.microsoft.com/en-us/library/ms181299.aspx
-    | ROLLBACK (TRAN | TRANSACTION) (id | LOCAL_ID)? ';'?
+    | ROLLBACK (TRAN | TRANSACTION) (id | LOCAL_ID)?
     // https://msdn.microsoft.com/en-us/library/ms174973.aspx
-    | ROLLBACK WORK? ';'?
+    | ROLLBACK WORK?
     // https://msdn.microsoft.com/en-us/library/ms188378.aspx
-    | SAVE (TRAN | TRANSACTION) (id | LOCAL_ID)? ';'?
+    | SAVE (TRAN | TRANSACTION) (id | LOCAL_ID)?
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms188037.aspx
@@ -2523,7 +2530,7 @@ go_statement
 
 // https://msdn.microsoft.com/en-us/library/ms188366.aspx
 use_statement
-    : USE database=id ';'?
+    : USE database=id
     ;
 
 setuser_statement
@@ -2531,7 +2538,7 @@ setuser_statement
     ;
 
 dbcc_clause
-    : DBCC name=simple_id ('(' expression_list ')')? (WITH dbcc_options)? ';'?
+    : DBCC name=simple_id ('(' expression_list ')')? (WITH dbcc_options)?
     ;
 
 dbcc_options
@@ -2563,8 +2570,7 @@ column_def_table_constraints
     ;
 
 column_def_table_constraint
-    : column_definition
-    | materialized_column_definition
+    : id (data_type | AS expression) column_option* (MATERIALIZED | NOT MATERIALIZED)?
     | table_constraint
     ;
 
@@ -2596,7 +2602,7 @@ table_constraint
     : (CONSTRAINT constraint=id)?
        ((PRIMARY KEY | UNIQUE) clustered? '(' column_name_list_with_order ')' index_options? (ON id)?
          | CHECK (NOT FOR REPLICATION)? '(' search_condition ')'
-         | DEFAULT '('*  (PLUS | DECIMAL | expression)+ ')'* FOR id
+         | DEFAULT expression+ FOR id
          | FOREIGN KEY '(' fk = column_name_list ')' REFERENCES table_name ('(' pk = column_name_list')')? on_delete? on_update?)
     ;
 
@@ -2621,10 +2627,8 @@ index_option
 
 // https://msdn.microsoft.com/en-us/library/ms180169.aspx
 declare_cursor
-    : DECLARE cursor_name
-      (CURSOR (declare_set_cursor_common (FOR UPDATE (OF column_name_list)?)?)?
-      | (SEMI_SENSITIVE | INSENSITIVE)? SCROLL? CURSOR FOR select_statement (FOR (READ ONLY | UPDATE | (OF column_name_list)))?
-      ) ';'?
+    : DECLARE cursor_name (SEMI_SENSITIVE | INSENSITIVE)? SCROLL? CURSOR declare_set_cursor_common_partial*
+    FOR select_statement (FOR (READ ONLY | UPDATE) (OF column_name_list)?)?
     ;
 
 declare_set_cursor_common
@@ -2642,18 +2646,18 @@ declare_set_cursor_common_partial
 
 fetch_cursor
     : FETCH ((NEXT | PRIOR | FIRST | LAST | (ABSOLUTE | RELATIVE) expression)? FROM)?
-      GLOBAL? cursor_name (INTO LOCAL_ID (',' LOCAL_ID)*)? ';'?
+      GLOBAL? cursor_name (INTO LOCAL_ID (',' LOCAL_ID)*)?
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms190356.aspx
 // Runtime check.
 set_special
-    : SET id (id | constant_LOCAL_ID | on_off) ';'?
+    : SET id (id | constant_LOCAL_ID | on_off)
     // https://msdn.microsoft.com/en-us/library/ms173763.aspx
     | SET TRANSACTION ISOLATION LEVEL
-      (READ UNCOMMITTED | READ COMMITTED | REPEATABLE READ | SNAPSHOT | SERIALIZABLE | DECIMAL) ';'?
+      (READ UNCOMMITTED | READ COMMITTED | REPEATABLE READ | SNAPSHOT | SERIALIZABLE | DECIMAL)
     // https://msdn.microsoft.com/en-us/library/ms188059.aspx
-    | SET IDENTITY_INSERT table_name (ON | OFF) ';'?
+    | SET IDENTITY_INSERT table_name (ON | OFF)
     | SET modify_method
     ;
 
@@ -2667,23 +2671,35 @@ constant_LOCAL_ID
 // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/expressions-transact-sql
 // Operator precendence: https://docs.microsoft.com/en-us/sql/t-sql/language-elements/operator-precedence-transact-sql
 expression
-    : primitive_expression
-    | function_call
-    | expression COLLATE id
-    | expression DOT function_call
-    | full_column_name ':' ':' function_call
-    | id ':' ':' id
-    | case_expression
-    | full_column_name
-    | bracket_expression
-    | op=('+' | '-' | '~') expression
+    : '(' expression ')'
+    | ('+' | '-' | '~') expression
     | expression op=('*' | '/' | '%') expression
     | expression op=('+' | '-' | '&' | '^' | '|' | '||') expression
     | expression comparison_operator expression
     | expression assignment_operator expression
+    | function_call
+    | expression COLLATE id
+    | object_expression DOT function_call
+    | full_column_name ':' ':' function_call
+    | id ':' ':' id
+    | case_expression
+    | full_column_name
+    |  over_clause
     | date_expression
-    | over_clause
     | sequence_call
+    | '(' select_stmt_no_parens ')'
+    |  primitive_expression
+    ;
+
+object_expression
+    : object_expression DOT function_call
+    | function_call
+    | full_column_name ':' ':' function_call
+    | id ':' ':' id
+    | case_expression
+    | over_clause
+    | '(' expression ')'
+    | '(' select_stmt_no_parens ')'
     ;
 
 sequence_call
@@ -2695,17 +2711,23 @@ date_expression
     ;
 
 primitive_expression
-    : DEFAULT | NULL | LOCAL_ID | constant
+    : DEFAULT
+    | NULL
+    | LOCAL_ID
+    | STRING // string, datetime or uniqueidentifier
+    | BINARY
+    | DECIMAL
+    | (REAL | FLOAT)  // float or decimal
+    | dollar='$' (DECIMAL | FLOAT)       // money
+    | TRUE // bit
+    | FALSE // bit
+    | IPV4_ADDR
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/case-transact-sql
 case_expression
     : CASE caseExpr=expression switch_section+ (ELSE elseExpr=expression)? END
     | CASE switch_search_condition_section+ (ELSE elseExpr=expression)? END
-    ;
-
-bracket_expression
-    : '(' expression ')' | '(' subquery ')'
     ;
 
 constant_expression
@@ -2763,16 +2785,6 @@ predicate
     | expression NOT? LIKE expression (ESCAPE expression)?
     | expression IS null_notnull
     | '(' search_condition ')'
-    ;
-
-// Changed union rule to sql_union to avoid union construct with C++ target.  Issue reported by person who generates into C++.  This individual reports change causes generated code to work
-
-query_expression
-    : (query_specification | '(' query_expression ')') sql_union*
-    ;
-
-sql_union
-    : (UNION ALL? | EXCEPT | INTERSECT) (query_specification | ('(' query_expression ')'))
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms176104.aspx
@@ -2882,9 +2894,7 @@ udt_method_arguments
 
 select_list_elem
     : (table_name '.')? '*'
-    | (table_name '.')? (column_name=id | '$' IDENTITY | '$' ROWGUID | expression) as_column_alias?
-    | udt_column_name=id '.' non_static_attr=id udt_method_arguments as_column_alias?
-    | column_alias eq='=' expression
+    | ('$' IDENTITY | '$' ROWGUID | expression) as_column_alias?
     ;
 
 table_sources
@@ -2937,9 +2947,9 @@ join_part
     : (INNER? |
        join_type=(LEFT | RIGHT | FULL) OUTER?) (join_hint=(LOOP | HASH | MERGE | REMOTE))?
        JOIN table_source ON search_condition
-    | CROSS JOIN table_source
-    | CROSS APPLY table_source
-    | OUTER APPLY table_source
+    | CROSS JOIN table_source_item
+    | CROSS APPLY table_source_item
+    | OUTER APPLY table_source_item
     | PIVOT pivot_clause as_table_alias
     | UNPIVOT unpivot_clause as_table_alias
     ;
@@ -2975,7 +2985,6 @@ bulk_option
 
 derived_table
     : subquery
-    | '(' subquery ')'
     | table_value_constructor
     | '(' table_value_constructor ')'
     ;
@@ -2999,26 +3008,12 @@ function_call
     | CURRENT_TIMESTAMP                                 #CURRENT_TIMESTAMP
     // https://msdn.microsoft.com/en-us/library/ms176050.aspx
     | CURRENT_USER                                      #CURRENT_USER
-    // https://msdn.microsoft.com/en-us/library/ms186819.aspx
-    | DATEADD '(' ID ',' expression ',' expression ')'  #DATEADD
-    // https://msdn.microsoft.com/en-us/library/ms189794.aspx
-    | DATEDIFF '(' ID ',' expression ',' expression ')' #DATEDIFF
-    // https://msdn.microsoft.com/en-us/library/ms174395.aspx
-    | DATENAME '(' ID ',' expression ')'                #DATENAME
-    // https://msdn.microsoft.com/en-us/library/ms174420.aspx
-    | DATEPART '(' ID ',' expression ')'                #DATEPART
-    // https://docs.microsoft.com/en-us/sql/t-sql/functions/getdate-transact-sql
-    | GETDATE '(' ')'                                   #GETDATE
-    // https://docs.microsoft.com/en-us/sql/t-sql/functions/getdate-transact-sql
-    | GETUTCDATE '(' ')'                                #GETUTCDATE
     // https://msdn.microsoft.com/en-us/library/ms189838.aspx
     | IDENTITY '(' data_type (',' seed=DECIMAL)? (',' increment=DECIMAL)? ')'                                                           #IDENTITY
     // https://msdn.microsoft.com/en-us/library/bb839514.aspx
     | MIN_ACTIVE_ROWVERSION                             #MIN_ACTIVE_ROWVERSION
     // https://msdn.microsoft.com/en-us/library/ms177562.aspx
     | NULLIF '(' expression ',' expression ')'          #NULLIF
-    // https://msdn.microsoft.com/fr-fr/library/ms188043.aspx
-    | STUFF '(' expression ',' DECIMAL ',' DECIMAL ',' expression ')'                                                                   #STUFF
     // https://msdn.microsoft.com/en-us/library/ms177587.aspx
     | SESSION_USER                                      #SESSION_USER
     // https://msdn.microsoft.com/en-us/library/ms179930.aspx
@@ -3150,7 +3145,7 @@ analytic_windowed_function
     ;
 
 all_distinct_expression
-    : (ALL | DISTINCT)? expression
+    : (ALL | DISTINCT) expression
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms189461.aspx
@@ -3250,7 +3245,7 @@ ddl_object
     ;
 /*  There are some RESERVED WORDS that can be column names */
 full_column_name
-    : (table_name '.')? (COMPATIBILITY_LEVEL | STATUS | QUOTED_IDENTIFIER | ARITHABORT | ANSI_WARNINGS | ANSI_PADDING | ANSI_NULLS | id)
+    : (table_name '.')? (COMPATIBILITY_LEVEL | QUOTED_IDENTIFIER | ARITHABORT | ANSI_WARNINGS | ANSI_PADDING | ANSI_NULLS | id)
     ;
 
 column_name_list_with_order
@@ -3289,7 +3284,7 @@ scalar_function_name
     ;
 
 begin_conversation_timer
-    : BEGIN CONVERSATION TIMER '(' LOCAL_ID ')' TIMEOUT '=' time ';'?
+    : BEGIN CONVERSATION TIMER '(' LOCAL_ID ')' TIMEOUT '=' time
     ;
 
 begin_conversation_dialog
@@ -3301,7 +3296,6 @@ begin_conversation_dialog
         ((RELATED_CONVERSATION | RELATED_CONVERSATION_GROUP) '=' LOCAL_ID ','?)?
         (LIFETIME '=' (DECIMAL | LOCAL_ID) ','?)?
         (ENCRYPTION '=' (ON | OFF))? )?
-      ';'?
     ;
 
 contract_name
@@ -3313,16 +3307,16 @@ service_name
     ;
 
 end_conversation
-    : END CONVERSATION conversation_handle=LOCAL_ID ';'?
+    : END CONVERSATION conversation_handle=LOCAL_ID
       (WITH (ERROR '=' faliure_code=(LOCAL_ID | STRING) DESCRIPTION '=' failure_text=(LOCAL_ID | STRING))? CLEANUP? )?
     ;
 
 waitfor_conversation
-    : WAITFOR? '(' get_conversation ')' (','? TIMEOUT timeout=time)? ';'?
+    : WAITFOR? '(' get_conversation ')' (','? TIMEOUT timeout=time)?
     ;
 
 get_conversation
-    :GET CONVERSATION GROUP conversation_group_id=(STRING | LOCAL_ID) FROM queue=queue_id ';'?
+    :GET CONVERSATION GROUP conversation_group_id=(STRING | LOCAL_ID) FROM queue=queue_id
     ;
 
 queue_id
@@ -3334,7 +3328,6 @@ send_conversation
     : SEND ON CONVERSATION conversation_handle=(STRING | LOCAL_ID)
       MESSAGE TYPE message_type_name=expression
       ('(' message_body_expression=(STRING | LOCAL_ID) ')' )?
-      ';'?
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms187752.aspx
@@ -3374,10 +3367,8 @@ data_type
     | VARBINARY '(' DECIMAL | MAX ')'
     | VARCHAR '(' DECIMAL | MAX ')'
     | XML*/
-    : id IDENTITY? ('(' (DECIMAL | MAX) (',' DECIMAL)? ')')?
-    | DOUBLE PRECISION?
-    | TINYINT
-    | SMALLINT
+    : id ('(' (DECIMAL | MAX) (',' DECIMAL)? ')')?
+    | DOUBLE PRECISION
     ;
 
 default_value
@@ -3393,7 +3384,7 @@ constant
     | sign? DECIMAL
     | sign? (REAL | FLOAT)  // float or decimal
     | sign? dollar='$' (DECIMAL | FLOAT)       // money
-    | TRUE  // bit
+    | TRUE // bit
     | FALSE // bit
     | IPV4_ADDR
     ;
@@ -3563,7 +3554,6 @@ simple_id
     | GETDATE
     | GETUTCDATE
     | GLOBAL
-    | GO
     | GROUP_MAX_REQUESTS
     | GROUPING
     | GROUPING_ID
