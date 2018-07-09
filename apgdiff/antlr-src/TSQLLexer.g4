@@ -810,9 +810,23 @@ LINE_COMMENT:       '--' ~[\r\n]* -> channel(HIDDEN);
 // TODO: ID can be not only Latin.
 LEFT_FIGURE_PAREN:  '{';
 RIGHT_FIGURE_PAREN: '}';
-DOUBLE_QUOTE_ID:    '"' ~'"'+ '"';
+DOUBLE_QUOTE_ID:  UnterminatedQuotedIdentifier '"'
+    // unquote so that we may always call getText() and not worry about quotes
+        {
+            String __tx = getText();
+            setText(__tx.substring(1, __tx.length() - 1).replace("\"\"", "\""));
+        }
+    ;
+    
 SINGLE_QUOTE:       '\'';
-SQUARE_BRACKET_ID:  '[' ~']'+ ']';
+SQUARE_BRACKET_ID:  UnterminatedSquareQuotedIdentifier ']'
+    // unquote so that we may always call getText() and not worry about quotes
+        {
+            String __tx = getText();
+            setText(__tx.substring(1, __tx.length() - 1).replace("]]", "]"));
+        }
+    ;
+    
 LOCAL_ID:           '@' ([a-zA-Z_$@#0-9] | FullWidthLetter)+;
 DECIMAL:             DEC_DIGIT+;
 ID:                  ( [a-zA-Z_#] | FullWidthLetter) ( [a-zA-Z_#$@0-9] | FullWidthLetter )*;
@@ -858,6 +872,22 @@ BIT_NOT:             '~';
 BIT_OR:              '|';
 BIT_AND:             '&';
 BIT_XOR:             '^';
+
+// This is a quoted identifier which only contains valid characters but is not terminated
+fragment UnterminatedQuotedIdentifier
+    : '"'
+    ( '""'
+    | ~[\u0000"]
+    )*
+    ;
+
+// This is a quoted identifier which only contains valid characters but is not terminated
+fragment UnterminatedSquareQuotedIdentifier
+    : '['
+    ( ']]'
+    | ~[\u0000\]]
+    )*
+    ;
 
 fragment LETTER:       [a-zA-Z_];
 fragment IPV6_OCTECT:  [0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f];
