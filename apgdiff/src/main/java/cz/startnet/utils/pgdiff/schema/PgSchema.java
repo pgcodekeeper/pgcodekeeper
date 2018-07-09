@@ -201,7 +201,7 @@ public class PgSchema extends PgStatement implements ISchema {
         stream = Stream.concat(stream, getFtsParsers().stream());
         stream = Stream.concat(stream, getFtsTemplates().stream());
         stream = Stream.concat(stream, getFtsDictionaries().stream());
-        stream = Stream.concat(stream, getFtsConfiguration().stream());
+        stream = Stream.concat(stream, getFtsConfigurations().stream());
         return stream;
     }
 
@@ -424,7 +424,7 @@ public class PgSchema extends PgStatement implements ISchema {
      *
      * @return {@link #configurations}
      */
-    public List<PgFtsConfiguration> getFtsConfiguration() {
+    public List<PgFtsConfiguration> getFtsConfigurations() {
         return Collections.unmodifiableList(configurations);
     }
 

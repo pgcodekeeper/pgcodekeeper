@@ -697,6 +697,10 @@ public class ModelExporter {
             dumpObjects(schema.getDomains(), schemaDir);
             dumpObjects(schema.getTables(), schemaDir);
             dumpObjects(schema.getViews(), schemaDir);
+            dumpObjects(schema.getFtsParsers(), schemaDir);
+            dumpObjects(schema.getFtsTemplates(), schemaDir);
+            dumpObjects(schema.getFtsDictionaries(), schemaDir);
+            dumpObjects(schema.getFtsConfigurations(), schemaDir);
 
             // indexes, triggers, rules, constraints are dumped when tables are processed
         }
