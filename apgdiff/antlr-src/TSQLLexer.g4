@@ -1,4 +1,6 @@
-lexer grammar TSqlLexer;
+lexer grammar TSQLLexer;
+
+@header {package cz.startnet.utils.pgdiff.parsers.antlr;}
 
 // Basic keywords (from https://msdn.microsoft.com/en-us/library/ms189822.aspx)
 ABSENT:                                        A B S E N T;

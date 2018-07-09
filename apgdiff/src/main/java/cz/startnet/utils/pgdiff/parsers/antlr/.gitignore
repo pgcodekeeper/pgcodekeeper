@@ -23,3 +23,9 @@
 /PrivilegesParser.java
 /PrivilegesBaseVisitor.java
 /PrivilegesVisitor.java
+/TSQLLexer.java
+/TSQLLexer.tokens
+/TSQLParser.java
+/TSQLParser.tokens
+/TSQLParserBaseListener.java
+/TSQLParserListener.java

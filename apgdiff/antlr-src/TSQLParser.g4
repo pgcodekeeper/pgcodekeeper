@@ -1,6 +1,11 @@
-parser grammar TSqlParser;
+parser grammar TSQLParser;
 
-options { tokenVocab=TSqlLexer; }
+options { 
+    language=Java;
+    tokenVocab=TSQLLexer;
+}
+
+@header {package cz.startnet.utils.pgdiff.parsers.antlr;}
 
 tsql_file
     : batch* EOF
