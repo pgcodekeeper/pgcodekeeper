@@ -35,6 +35,7 @@ import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -174,9 +175,9 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
                 columnName == null ? null : PgDiffUtils.getQuotedName(columnName), schemaName);
     }
 
-    public void setPrivileges(PgColumn column, PgTable t, String aclItemsArrayAsString) {
+    public void setPrivileges(PgColumn column, PgTable t, String aclItemsArrayAsString, PgSchema schema) {
         setPrivileges(column, PgDiffUtils.getQuotedName(t.getName()), aclItemsArrayAsString,
-                t.getOwner(), PgDiffUtils.getQuotedName(column.getName()), t.getContainingSchema().getName());
+                t.getOwner(), PgDiffUtils.getQuotedName(column.getName()), schema.getName());
     }
 
     /**
@@ -200,7 +201,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
      * For privilege characters see JdbcAclParser.PrivilegeTypes
      * Order of all characters (for all types of objects combined) : raxdtDXCcTUw
      */
-    protected void setPrivileges(PgStatement st, String stSignature,
+    private void setPrivileges(PgStatement st, String stSignature,
             String aclItemsArrayAsString, String owner, String columnId, String schemaName) {
         if (aclItemsArrayAsString == null || args.isIgnorePrivileges()) {
             return;
@@ -245,7 +246,8 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             stType = st.getStatementType().name();
         }
 
-        String qualStSignature = schemaName == null ? stSignature : schemaName + '.' + stSignature;
+        String qualStSignature = schemaName == null ? PgDiffUtils.getQuotedName(stSignature)
+                : PgDiffUtils.getQuotedName(schemaName) + '.' + PgDiffUtils.getQuotedName(stSignature);
         String column = (columnId != null && !columnId.isEmpty()) ? "(" + columnId + ")" : "";
         String revokePublic = "ALL" + column + " ON " + stType + " " + qualStSignature + " FROM PUBLIC";
         st.addPrivilege(new PgPrivilege(true, revokePublic, "REVOKE " + revokePublic));

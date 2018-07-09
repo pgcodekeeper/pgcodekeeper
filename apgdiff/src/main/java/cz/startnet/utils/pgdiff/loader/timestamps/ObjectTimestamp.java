@@ -148,7 +148,7 @@ public class ObjectTimestamp implements Serializable {
                     // which is the valid indication for "no ACL"
                     // which is the column state in this case
                     c.clearPrivileges();
-                    loader.setPrivileges(c, table, colAcls.get(c.getName()));
+                    loader.setPrivileges(c, table, colAcls.get(c.getName()), c.getContainingSchema());
                 }
             } else if (DbObjType.VIEW == type) {
                 colAcls.forEach((colName, colAcl) -> loader.setPrivileges(copy, colAcl, colName));
