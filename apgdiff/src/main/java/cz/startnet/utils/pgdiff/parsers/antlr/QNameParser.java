@@ -4,66 +4,75 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 
-public final class QNameParser {
+public final class QNameParser<T extends ParserRuleContext> {
 
-    public static String getFirstName(List<IdentifierContext> ids) {
+    public static <T extends ParserRuleContext> String getFirstName(List<T> ids) {
         return getLastId(ids, 1);
     }
 
-    public static String getSecondName(List<IdentifierContext> ids) {
+    public static <T extends ParserRuleContext> String getSecondName(List<T> ids) {
         return getLastId(ids, 2);
     }
 
-    public static String getThirdName(List<IdentifierContext> ids) {
+    public static <T extends ParserRuleContext> String getThirdName(List<T> ids) {
         return getLastId(ids, 3);
     }
 
-    public static IdentifierContext getFirstNameCtx(List<IdentifierContext> ids) {
+    public static <T extends ParserRuleContext> T getFirstNameCtx(List<T> ids) {
         return getLastIdCtx(ids, 1);
     }
 
-    public static IdentifierContext getSecondNameCtx(List<IdentifierContext> ids) {
+    public static <T extends ParserRuleContext> T getSecondNameCtx(List<T> ids) {
         return getLastIdCtx(ids, 2);
     }
 
-    public static IdentifierContext getThirdNameCtx(List<IdentifierContext> ids) {
+    public static <T extends ParserRuleContext> T getThirdNameCtx(List<T> ids) {
         return getLastIdCtx(ids, 3);
     }
 
-    public static String getSchemaName(List<IdentifierContext> ids, String defaultSchema) {
-        IdentifierContext schemaCtx = getSchemaNameCtx(ids);
+    public static <T extends ParserRuleContext> String getSchemaName(List<T> ids, String defaultSchema) {
+        ParserRuleContext schemaCtx = getSchemaNameCtx(ids);
         return schemaCtx == null ? defaultSchema : schemaCtx.getText();
     }
 
-    public static IdentifierContext getSchemaNameCtx(List<IdentifierContext> ids) {
+    public static <T extends ParserRuleContext> T getSchemaNameCtx(List<T> ids) {
         return ids.size() < 2 ? null : ids.get(0);
     }
 
-    private static String getLastId(List<IdentifierContext> ids, int i) {
-        IdentifierContext ctx = getLastIdCtx(ids, i);
+    private static <T extends ParserRuleContext> String getLastId(List<T> ids, int i) {
+        ParserRuleContext ctx = getLastIdCtx(ids, i);
         return ctx == null ? null : ctx.getText();
     }
 
-    private static IdentifierContext getLastIdCtx(List<IdentifierContext> ids, int i) {
+    private static <T extends ParserRuleContext> T getLastIdCtx(List<T> ids, int i) {
         int n = ids.size() - i;
         return n < 0 ? null : ids.get(n);
     }
 
-    private final List<IdentifierContext> parts;
-    private final List<AntlrError> errors = new ArrayList<>();
+    private final List<T> parts;
+    private final List<AntlrError> errors;
 
-    public List<IdentifierContext> getIds() {
+    public List<T> getIds() {
         return Collections.unmodifiableList(parts);
     }
 
-    public QNameParser(String schemaQualifiedName) {
-        this.parts = AntlrParser
+    public static QNameParser<IdentifierContext> parsePg(String schemaQualifiedName) {
+        List<AntlrError> errors = new ArrayList<>();
+        List<IdentifierContext> parts = AntlrParser
                 .makeBasicParser(SQLParser.class, schemaQualifiedName, "qname: " + schemaQualifiedName, errors)
                 .qname_parser()
                 .schema_qualified_name()
                 .identifier();
+        return new QNameParser<>(parts, errors);
+    }
+
+    private QNameParser(List<T> parts, List<AntlrError> errors) {
+        this.errors = errors;
+        this.parts = parts;
     }
 
     public String getFirstName() {
