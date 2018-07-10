@@ -80,12 +80,14 @@ public class SequencesReader extends JdbcReader {
 
         if (SupportedVersion.VERSION_10.checkVersion(loader.version)) {
             s.setStartWith(Long.toString(res.getLong("seqstart")));
-            s.setMinMaxInc(res.getLong("seqincrement"), res.getLong("seqmax"), res.getLong("seqmin"));
             s.setCache(Long.toString(res.getLong("seqcache")));
             s.setCycle(res.getBoolean("seqcycle"));
+
+            String dataType = null;
             if (identityType == null) {
-                s.setDataType(loader.cachedTypesByOid.get(res.getLong("data_type")).getFullName(schema.getName()));
+                dataType = loader.cachedTypesByOid.get(res.getLong("data_type")).getFullName(schema.getName());
             }
+            s.setMinMaxInc(res.getLong("seqincrement"), res.getLong("seqmax"), res.getLong("seqmin"), dataType);
         }
 
         if ("d".equals(identityType) || "a".equals(identityType)) {
@@ -182,7 +184,7 @@ public class SequencesReader extends JdbcReader {
             while (res.next()) {
                 PgSequence seq = seqs.get(res.getString("qname"));
                 seq.setStartWith(res.getString("start_value"));
-                seq.setMinMaxInc(res.getLong("increment_by"), res.getLong("max_value"), res.getLong("min_value"));
+                seq.setMinMaxInc(res.getLong("increment_by"), res.getLong("max_value"), res.getLong("min_value"), null);
                 seq.setCache(res.getString("cache_value"));
                 seq.setCycle(res.getBoolean("is_cycled"));
             }

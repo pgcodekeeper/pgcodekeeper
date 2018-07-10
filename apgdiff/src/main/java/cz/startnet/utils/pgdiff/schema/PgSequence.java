@@ -262,14 +262,35 @@ public class PgSequence extends PgStatementWithSearchPath implements IRelation {
         return sb.length() > startLength;
     }
 
-    public void setMinMaxInc(long inc, Long max, Long min) {
+    public void setMinMaxInc(long inc, Long max, Long min, String type) {
+        dataType = type != null ? type : "bigint";
+        resetHash();
+
+        long maxTypeVal;
+        long minTypeVal;
+        switch(dataType) {
+        case "smallint":
+            maxTypeVal = Short.MAX_VALUE;
+            minTypeVal = Short.MIN_VALUE;
+            break;
+        case "integer":
+            maxTypeVal = Integer.MAX_VALUE;
+            minTypeVal = Integer.MIN_VALUE;
+            break;
+        case "bigint":
+        default:
+            maxTypeVal = Long.MAX_VALUE;
+            minTypeVal = Long.MIN_VALUE;
+            break;
+        }
+
         this.increment = Long.toString(inc);
-        if (max == null || (inc > 0 && max == Long.MAX_VALUE) || (inc < 0 && max == -1)) {
+        if (max == null || (inc > 0 && max == maxTypeVal) || (inc < 0 && max == -1)) {
             this.maxValue = null;
         } else {
             this.maxValue = "" + max;
         }
-        if (min == null || (inc > 0 && min == 1) || (inc < 0 && min == -Long.MAX_VALUE)) {
+        if (min == null || (inc > 0 && min == 1) || (inc < 0 && min == minTypeVal)) {
             this.minValue = null;
         } else {
             this.minValue = "" + min;
@@ -295,11 +316,6 @@ public class PgSequence extends PgStatementWithSearchPath implements IRelation {
 
     public String getStartWith() {
         return startWith;
-    }
-
-    public void setDataType(final String dataType) {
-        this.dataType = dataType;
-        resetHash();
     }
 
     public String getDataType() {
