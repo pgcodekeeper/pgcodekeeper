@@ -14,6 +14,7 @@ public class MsColumn extends PgColumn {
     private boolean isNotForRep;
     private String identity;
     private String defaultName;
+    private String expession;
 
     public MsColumn(String name) {
         super(name);
@@ -24,7 +25,11 @@ public class MsColumn extends PgColumn {
         final StringBuilder sbDefinition = new StringBuilder();
         sbDefinition.append(MsDiffUtils.quoteName(name));
         sbDefinition.append(' ');
-        sbDefinition.append(MsDiffUtils.quoteName(getType()));
+        if (expession != null) {
+            sbDefinition.append("AS ").append(expession);
+        } else {
+            sbDefinition.append(MsDiffUtils.quoteName(getType()));
+        }
 
         if (getCollation() != null) {
             sbDefinition.append(" COLLATE ").append(getCollation());
@@ -37,16 +42,17 @@ public class MsColumn extends PgColumn {
         sbDefinition.append(getNullValue() ? " NULL" : " NOT NULL");
 
         if (identity != null) {
-            sbDefinition.append(" IDENTITY (").append(identity).append(")");;
+            sbDefinition.append(" IDENTITY (").append(identity).append(")");
+            if (isNotForRep()) {
+                sbDefinition.append(" NOT FOR REPLICATION");
+            }
         }
 
-        if (isNotForRep()) {
-            sbDefinition.append(" NOT FOR REPLICATION");
-        }
-
-        if (getDefaultName() != null && getDefaultValue() != null) {
-            sbDefinition.append(" CONSTRAINT ");
-            sbDefinition.append(MsDiffUtils.quoteName(getDefaultName()));
+        if (getDefaultValue() != null) {
+            if (getDefaultName() != null) {
+                sbDefinition.append(" CONSTRAINT ");
+                sbDefinition.append(MsDiffUtils.quoteName(getDefaultName()));
+            }
             sbDefinition.append(" DEFAULT ");
             sbDefinition.append(getDefaultValue());
         }
@@ -78,8 +84,9 @@ public class MsColumn extends PgColumn {
             return false;
         }
 
-        // recreate column to change identity
-        if (!Objects.equals(newColumn.getIdentity(), getIdentity())) {
+        // recreate column to change identity or computed value
+        if (!Objects.equals(newColumn.getIdentity(), getIdentity())
+                || !Objects.equals(newColumn.getExpression(), getExpression())) {
             isNeedDepcies.set(true);
             return true;
         }
@@ -186,6 +193,15 @@ public class MsColumn extends PgColumn {
         resetHash();
     }
 
+    public String getExpression() {
+        return expession;
+    }
+
+    public void setExpression(final String expession) {
+        this.expession = expession;
+        resetHash();
+    }
+
     public String getIdentity() {
         return identity;
     }
@@ -206,6 +222,7 @@ public class MsColumn extends PgColumn {
         colDst.setNotForRep(isNotForRep);
         colDst.setIdentity(identity);
         colDst.setDefaultName(defaultName);
+        colDst.setExpression(expession);
         for (PgPrivilege priv : grants) {
             colDst.addPrivilege(priv);
         }
@@ -223,6 +240,7 @@ public class MsColumn extends PgColumn {
         hasher.put(isNotForRep);
         hasher.put(identity);
         hasher.put(defaultName);
+        hasher.put(expession);
     }
 
     @Override
@@ -232,7 +250,8 @@ public class MsColumn extends PgColumn {
             return Objects.equals(isSparse, col.isSparse())
                     && Objects.equals(isNotForRep, col.isNotForRep())
                     && Objects.equals(identity, col.getIdentity())
-                    && Objects.equals(defaultName, col.getDefaultName());
+                    && Objects.equals(defaultName, col.getDefaultName())
+                    && Objects.equals(expession, col.getExpression());
         }
 
         return false;

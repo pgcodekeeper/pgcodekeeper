@@ -97,6 +97,7 @@ schema_alter
     | create_or_alter_function
     | create_or_alter_procedure
     | create_or_alter_trigger
+    | create_or_alter_view
     | create_symmetric_key
     )
     ;
@@ -129,6 +130,7 @@ schema_create
     | create_or_alter_function
     | create_or_alter_procedure
     | create_or_alter_trigger
+    | create_or_alter_view
     | create_queue
     | create_remote_service_binding
     | create_resource_pool
@@ -147,7 +149,6 @@ schema_create
     | create_table
     | create_type
     | create_user
-    | create_view
     | create_workload_group
     | create_xml_schema_collection)
     ;
@@ -862,7 +863,7 @@ create_schema
 
 schema_definition
     : (create_table
-         |create_view
+         |create_or_alter_view
          | (GRANT|DENY) (SELECT|INSERT|DELETE|UPDATE) ON (SCHEMA COLON COLON)? object_name=id TO owner_name=id
          | REVOKE (SELECT|INSERT|DELETE|UPDATE) ON (SCHEMA COLON COLON)? object_name=id FROM owner_name=id
         )+
@@ -890,25 +891,28 @@ create_security_policy
              (SCHEMABINDING (ON|OFF) )?
                   RR_BRACKET
              )?
-             (NOT FOR REPLICATION)?
+             not_for_replication?
      ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-sequence-transact-sql
 alter_sequence
-    : SEQUENCE (schema_name=id DOT)? sequence_name=id ( RESTART (WITH DECIMAL)? )? (INCREMENT BY sequnce_increment=DECIMAL )? ( MINVALUE DECIMAL| NO MINVALUE)? (MAXVALUE DECIMAL| NO MAXVALUE)? (CYCLE|NO CYCLE)? (CACHE DECIMAL | NO CACHE)?
+    : SEQUENCE simple_name (sequence_body | RESTART (WITH restart=signed_numerical_literal)?) *
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-sequence-transact-sql
 create_sequence
-    : SEQUENCE (schema_name=id DOT)? sequence_name=id
-        (AS data_type  )?
-        (START WITH DECIMAL)?
-        (INCREMENT BY MINUS? DECIMAL)?
-        (MINVALUE DECIMAL? | NO MINVALUE)?
-        (MAXVALUE DECIMAL? | NO MAXVALUE)?
-        (CYCLE|NO CYCLE)?
-        (CACHE DECIMAL? | NO CACHE)?
-     ;
+    : SEQUENCE simple_name (sequence_body)*
+    ;
+
+sequence_body
+    : AS data_type
+    | START WITH start_val=signed_numerical_literal
+    | INCREMENT BY incr=signed_numerical_literal
+    | (MINVALUE minval=signed_numerical_literal | NO MINVALUE)
+    | (MAXVALUE maxval=signed_numerical_literal | NO MAXVALUE)
+    | cycle_true = NO? cycle_val=CYCLE
+    | (CACHE cache_val=signed_numerical_literal? | NO CACHE)
+    ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-server-audit-transact-sql
 alter_server_audit
@@ -1390,11 +1394,19 @@ create_database
 
 // https://msdn.microsoft.com/en-us/library/ms188783.aspx
 create_index
-    : UNIQUE? clustered? INDEX id ON table_name_with_hint '(' column_name_list_with_order ')'
+    : UNIQUE? clustered? INDEX name=id ON table_name index_rest;
+
+index_rest
+    : index_sort index_where? index_options? (ON id)?
+    ;
+
+index_sort
+    : with_table_hints? '(' column_name_list_with_order ')'
     (INCLUDE '(' column_name_list ')' )?
-    (WHERE where=search_condition)?
-    (index_options)?
-    (ON id)?
+    ;
+
+index_where
+    : WHERE where=search_condition
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms187926(v=sql.120).aspx
@@ -1402,48 +1414,59 @@ create_or_alter_procedure
     : (OR ALTER)? proc=(PROC | PROCEDURE) func_proc_name (';' DECIMAL)?
       ('('? procedure_param (',' procedure_param)* ')'?)?
       (WITH procedure_option (',' procedure_option)*)?
-      (FOR REPLICATION)? AS (sql_clauses | EXTERNAL NAME full_table_name)
+      (FOR REPLICATION)? AS proc_body
     ;
 
-// https://docs.microsoft.com/en-us/sql/t-sql/statements/create-trigger-transact-sql
+ proc_body
+    : sql_clauses
+    | EXTERNAL NAME full_table_name
+    ;
+
 create_or_alter_trigger
-    : create_or_alter_dml_trigger
-    | create_or_alter_ddl_trigger
-    ;
-
-create_or_alter_dml_trigger
     : (OR ALTER)? TRIGGER simple_name
-      ON table_name
-      (WITH dml_trigger_option (',' dml_trigger_option)* )?
-      (FOR | AFTER | INSTEAD OF)
-      dml_trigger_operation (',' dml_trigger_operation)*
-      (WITH APPEND)?
-      (NOT FOR REPLICATION)?
-      AS sql_clauses
+    ON (table_name | ALL SERVER | DATABASE)
+    (WITH trigger_option (',' trigger_option)* )?
+    (FOR | AFTER | INSTEAD OF) trigger_operation (',' trigger_operation)*
+    with_append?
+    not_for_replication?
+    AS sql_clauses
     ;
 
-dml_trigger_option
+not_for_replication
+    : NOT FOR REPLICATION
+    ;
+
+with_append
+    : WITH APPEND
+    ;
+
+trigger_option
     : ENCRYPTION
     | execute_clause
     ;
 
-dml_trigger_operation
-    : (INSERT | UPDATE | DELETE)
-    ;
-
-create_or_alter_ddl_trigger
-    : (OR ALTER) TRIGGER simple_name
-      ON (ALL SERVER | DATABASE)
-      (WITH dml_trigger_option (',' dml_trigger_option)* )?
-      (FOR | AFTER) simple_id (',' simple_id)*
-      AS sql_clauses
+trigger_operation
+    : INSERT
+    | UPDATE
+    | DELETE
+    | simple_id
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms186755.aspx
 create_or_alter_function
     : (OR ALTER)? FUNCTION func_proc_name '(' (procedure_param (',' procedure_param)*)?  ')'
-    RETURNS (TABLE ('(' column_def_table_constraints ')')? | LOCAL_ID table_type_definition | data_type)
-    (WITH function_option (',' function_option)*)?
+    RETURNS func_return
+    func_body
+    ;
+
+func_return
+    : TABLE ('(' column_def_table_constraints ')')?
+    | LOCAL_ID table_type_definition
+    | data_type
+    ;
+
+func_body
+    : (WITH function_option (',' function_option)*)?
     AS? func_body_return
     ;
 
@@ -1454,7 +1477,7 @@ func_body_return
     ;
 
 procedure_param
-    : LOCAL_ID (id '.')? AS? data_type VARYING? ('=' default_val=default_value)? (OUT | OUTPUT | READONLY)?
+    : name=LOCAL_ID (id '.')? AS? data_type VARYING? ('=' default_val=default_value)? arg_mode=(OUT | OUTPUT | READONLY)?
     ;
 
 procedure_option
@@ -1484,7 +1507,16 @@ update_statistics
 
 // https://msdn.microsoft.com/en-us/library/ms174979.aspx
 create_table
-    : TABLE table_name '(' column_def_table_constraints ','? ')' (LOCK simple_id)? table_options* (ON id | DEFAULT)? (TEXTIMAGE_ON id | DEFAULT)?
+    : TABLE table_name '(' column_def_table_constraints ','? ')'
+    (ON tablespace=id_or_default)?
+    (TEXTIMAGE_ON textimage=id_or_default)?
+    (FILESTREAM_ON filestream=id_or_default)?
+    table_options*
+    ;
+
+id_or_default
+    : id
+    | DEFAULT
     ;
 
 table_options
@@ -1492,8 +1524,8 @@ table_options
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms187956.aspx
-create_view
-    : VIEW simple_name ('(' column_name_list ')')?
+create_or_alter_view
+    : (OR ALTER)? VIEW simple_name ('(' column_name_list ')')?
       (WITH view_attribute (',' view_attribute)*)?
       AS select_statement with_check_option?
     ;
@@ -1508,13 +1540,11 @@ view_attribute
 
 // https://msdn.microsoft.com/en-us/library/ms190273.aspx
 alter_table
-    : TABLE table_name (SET '(' LOCK_ESCALATION '=' (AUTO | TABLE | DISABLE) ')'
-                             | ADD column_def_table_constraint
+    : TABLE name=table_name (SET '(' LOCK_ESCALATION '=' (AUTO | TABLE | DISABLE) ')'
+                             | (WITH (CHECK | NOCHECK))? ADD column_def_table_constraint
                              | ALTER COLUMN column_definition
                              | DROP COLUMN id
                              | DROP CONSTRAINT constraint=id
-                             | (WITH (CHECK | NOCHECK))? ADD CONSTRAINT constraint=id FOREIGN KEY '(' fk = column_name_list ')'
-                             REFERENCES table_name '(' pk = column_name_list')' on_delete? on_update? (NOT FOR REPLICATION)?
                              | CHECK CONSTRAINT constraint=id
                              | (ENABLE | DISABLE) TRIGGER id?
                              | REBUILD table_options)
@@ -2152,16 +2182,23 @@ column_definition
 column_option
     : PERSISTED
     | SPARSE
-    | COLLATE id
+    | COLLATE collate=id
     | ROWGUIDCOL
-    | null_notnull
-    | IDENTITY ('(' seed=DECIMAL ',' increment=DECIMAL ')')? (NOT FOR REPLICATION)?
+    | NOT? NULL
+    | IDENTITY identity_value? not_for_rep=not_for_replication?
+    | (CONSTRAINT constraint=id)? column_constraint_body
     | (CONSTRAINT constraint=id)? DEFAULT constant_expression (WITH VALUES)?
-    | (CONSTRAINT constraint=id)? (PRIMARY KEY | UNIQUE) clustered? index_options?
-    | (CONSTRAINT constraint=id)? CHECK (NOT FOR REPLICATION)? '(' search_condition ')'
-    | (CONSTRAINT constraint=id)? (FOREIGN KEY)? REFERENCES table_name '(' pk = column_name_list')' on_delete? on_update? (NOT FOR REPLICATION)?
     ;
 
+identity_value
+    : ('(' seed=DECIMAL ',' increment=DECIMAL ')')
+    ;
+
+column_constraint_body
+    : (PRIMARY KEY | UNIQUE) clustered? index_options?
+    | CHECK not_for_replication? '(' search_condition ')'
+    | (FOREIGN KEY)? REFERENCES table_name '(' pk = column_name_list')' on_delete? on_update? not_for_replication?
+    ;
 
 materialized_column_definition
     : id (COMPUTE | AS) expression (MATERIALIZED | NOT MATERIALIZED)?
@@ -2169,11 +2206,14 @@ materialized_column_definition
 
 // https://msdn.microsoft.com/en-us/library/ms188066.aspx
 table_constraint
-    : (CONSTRAINT constraint=id)?
-       ((PRIMARY KEY | UNIQUE) clustered? '(' column_name_list_with_order ')' index_options? (ON id)?
-         | CHECK (NOT FOR REPLICATION)? '(' search_condition ')'
-         | DEFAULT expression+ FOR id
-         | FOREIGN KEY '(' fk = column_name_list ')' REFERENCES table_name ('(' pk = column_name_list')')? on_delete? on_update?)
+    : (CONSTRAINT constraint=id)? table_constraint_body
+    ;
+
+table_constraint_body
+    : (PRIMARY KEY | UNIQUE) clustered? '(' column_name_list_with_order ')' index_options? (ON id)?
+    | CHECK not_for_replication? '(' search_condition ')'
+    | DEFAULT expression+ FOR id
+    | FOREIGN KEY '(' fk = column_name_list ')' REFERENCES table_name ('(' pk = column_name_list')')? on_delete? on_update? not_for_replication?
     ;
 
 on_delete
@@ -2192,7 +2232,13 @@ index_options
 // Id runtime checking. Id in (PAD_INDEX, FILLFACTOR, IGNORE_DUP_KEY, STATISTICS_NORECOMPUTE, ALLOW_ROW_LOCKS,
 // ALLOW_PAGE_LOCKS, SORT_IN_TEMPDB, ONLINE, MAXDOP, DATA_COMPRESSION, ONLINE).
 index_option
-    : simple_id '=' (simple_id | on_off | DECIMAL)
+    : key=simple_id '=' index_option_value
+    ;
+
+index_option_value
+    : simple_id
+    | on_off
+    | DECIMAL
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms180169.aspx
@@ -2777,7 +2823,7 @@ full_table_name
 
 table_name
     : (database=id '.' (schema=id)? '.' | schema=id '.')? table=id
-    | (database=id '.' (schema=id)? '.' | schema=id '.')? BLOCKING_HIERARCHY
+   // | (database=id '.' (schema=id)? '.' | schema=id '.')? BLOCKING_HIERARCHY
     ;
 
 simple_name
@@ -2897,13 +2943,16 @@ default_value
 constant
     : STRING // string, datetime or uniqueidentifier
     | BINARY
-    | sign? DECIMAL
-    | sign? (REAL | FLOAT)  // float or decimal
+    | signed_numerical_literal
     | sign? dollar='$' (DECIMAL | FLOAT)       // money
     | TRUE // bit
     | FALSE // bit
     | IPV4_ADDR
     ;
+
+signed_numerical_literal
+  : sign? (DECIMAL | REAL | FLOAT)
+  ;
 
 sign
     : '+'

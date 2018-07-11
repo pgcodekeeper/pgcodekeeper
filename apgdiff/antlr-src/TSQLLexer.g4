@@ -519,6 +519,7 @@ FILEGROUP:                                     F I L E G R O U P;
 FILEGROWTH:                                    F I L E G R O W T H;
 FILEPATH:                                      F I L E P A T H;
 FILESTREAM:                                    F I L E S T R E A M;
+FILESTREAM_ON:                                 F I L E S T R E A M '_' O N;
 FILTER:                                        F I L T E R;
 FIRST:                                         F I R S T;
 FIRST_VALUE:                                   F I R S T '_' V A L U E;

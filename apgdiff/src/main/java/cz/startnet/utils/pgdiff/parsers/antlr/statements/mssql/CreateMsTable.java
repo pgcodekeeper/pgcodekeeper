@@ -1,0 +1,65 @@
+package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
+
+import java.util.List;
+
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_tableContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_optionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_optionsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.AbstractTable;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.RegularPgTable;
+import cz.startnet.utils.pgdiff.schema.SimpleMsTable;
+
+public class CreateMsTable extends AbstractTable {
+
+    private final Create_tableContext ctx;
+
+    public CreateMsTable(Create_tableContext ctx, PgDatabase db) {
+        super(db);
+        this.ctx = ctx;
+    }
+
+    @Override
+    public PgStatement getObject() {
+        IdContext schemaCtx = ctx.table_name().schema;
+        PgSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
+        String tableName = ctx.table_name().table.getText();
+
+        SimpleMsTable table = new SimpleMsTable(tableName, getFullCtxText(ctx.getParent()));
+
+        if (ctx.tablespace != null) {
+            table.setTablespace(ctx.tablespace.getText());
+        }
+
+        if (ctx.textimage != null) {
+            table.setTextImage(ctx.textimage.getText());
+        }
+
+        if (ctx.filestream != null) {
+            table.setFileStream(ctx.filestream.getText());
+        }
+
+        for (Table_optionsContext options : ctx.table_options()) {
+            parseOptions(options.index_option(), table);
+        }
+
+        for (Column_def_table_constraintContext colCtx : ctx.column_def_table_constraints().column_def_table_constraint()) {
+            fillColumn(colCtx, table);
+        }
+
+        schema.addTable(table);
+        return table;
+    }
+
+    private void parseOptions(List<Index_optionContext> options, RegularPgTable table){
+        for (Index_optionContext option : options){
+            String key = option.key.getText();
+            String value = option.index_option_value().getText();
+            fillOptionParams(value, key, false, table::addOption);
+        }
+    }
+}

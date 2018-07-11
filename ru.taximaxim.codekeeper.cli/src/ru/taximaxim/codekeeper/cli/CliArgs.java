@@ -169,6 +169,10 @@ public class CliArgs extends PgDiffArguments {
                     + " otherwise, in case of conflicts objects loaded first have priority")
     private boolean libSafeMode;
 
+    @Option(name="--ms-sql",
+            usage="work with MS SQL")
+    private boolean msSql;
+
     @Override
     public boolean isModeParse() {
         return modeParse;
@@ -277,6 +281,16 @@ public class CliArgs extends PgDiffArguments {
     @Override
     public void setLibSafeMode(boolean libSafeMode) {
         this.libSafeMode = libSafeMode;
+    }
+
+    @Override
+    public boolean isMsSql() {
+        return msSql;
+    }
+
+    @Override
+    public void setMsSql(boolean msSql) {
+        this.msSql = msSql;
     }
 
     @Override
