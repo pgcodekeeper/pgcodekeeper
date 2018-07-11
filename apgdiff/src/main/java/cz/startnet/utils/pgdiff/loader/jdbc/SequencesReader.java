@@ -80,14 +80,14 @@ public class SequencesReader extends JdbcReader {
 
         if (SupportedVersion.VERSION_10.checkVersion(loader.version)) {
             s.setStartWith(Long.toString(res.getLong("seqstart")));
+            String dataType = identityType != null ? null :
+                loader.cachedTypesByOid.get(res.getLong("data_type")).getFullName(schema.getName());
+            s.setMinMaxInc(res.getLong("seqincrement"), res.getLong("seqmax"), res.getLong("seqmin"), dataType);
             s.setCache(Long.toString(res.getLong("seqcache")));
             s.setCycle(res.getBoolean("seqcycle"));
-
-            String dataType = null;
             if (identityType == null) {
-                dataType = loader.cachedTypesByOid.get(res.getLong("data_type")).getFullName(schema.getName());
+                s.setDataType(dataType);
             }
-            s.setMinMaxInc(res.getLong("seqincrement"), res.getLong("seqmax"), res.getLong("seqmin"), dataType);
         }
 
         if ("d".equals(identityType) || "a".equals(identityType)) {

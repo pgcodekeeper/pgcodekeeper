@@ -262,13 +262,12 @@ public class PgSequence extends PgStatementWithSearchPath implements IRelation {
         return sb.length() > startLength;
     }
 
-    public void setMinMaxInc(long inc, Long max, Long min, String type) {
-        dataType = type != null ? type : "bigint";
-        resetHash();
+    public void setMinMaxInc(long inc, Long max, Long min, String dataType) {
+        String type = dataType != null ? dataType : "bigint";
 
         long maxTypeVal;
         long minTypeVal;
-        switch(dataType) {
+        switch(type) {
         case "smallint":
             maxTypeVal = Short.MAX_VALUE;
             minTypeVal = Short.MIN_VALUE;
@@ -316,6 +315,11 @@ public class PgSequence extends PgStatementWithSearchPath implements IRelation {
 
     public String getStartWith() {
         return startWith;
+    }
+
+    public void setDataType(final String dataType) {
+        this.dataType = dataType;
+        resetHash();
     }
 
     public String getDataType() {
