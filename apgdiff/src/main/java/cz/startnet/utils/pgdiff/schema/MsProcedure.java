@@ -11,6 +11,8 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsProcedure extends PgStatementWithSearchPath {
 
+    private boolean ansiNulls;
+    private boolean quotedIdentified;
     private final List<String> options = new ArrayList<>();
     private final List<ProcedureArgument> arguments = new ArrayList<>();
     private String body;
@@ -28,6 +30,10 @@ public class MsProcedure extends PgStatementWithSearchPath {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
+        sbSQL.append("SET QUOTED_IDENTIFIER ").append(quotedIdentified ? "ON" : "OFF");
+        sbSQL.append(GO);
+        sbSQL.append("SET ANSI_NULLS ").append(ansiNulls ? "ON" : "OFF");
+        sbSQL.append(GO);
         sbSQL.append("CREATE OR ALTER PROCEDURE ");
         sbSQL.append(getQualifiedName()).append('\n');
 
@@ -137,6 +143,8 @@ public class MsProcedure extends PgStatementWithSearchPath {
 
         proc.setOwner(getOwner());
         proc.deps.addAll(deps);
+        proc.setAnsiNulls(isAnsiNulls());
+        proc.setQuotedIdentified(isQuotedIdentified());
         return proc;
     }
 
@@ -156,10 +164,30 @@ public class MsProcedure extends PgStatementWithSearchPath {
             return  checkForChanges(func)
                     && Objects.equals(owner, func.getOwner())
                     && Objects.equals(grants, func.grants)
-                    && Objects.equals(revokes, func.revokes);
+                    && Objects.equals(revokes, func.revokes)
+                    && Objects.equals(quotedIdentified, func.isQuotedIdentified())
+                    && Objects.equals(ansiNulls, func.isAnsiNulls());
         }
 
         return false;
+    }
+
+    public void setAnsiNulls(boolean ansiNulls) {
+        this.ansiNulls = ansiNulls;
+        resetHash();
+    }
+
+    public boolean isAnsiNulls() {
+        return ansiNulls;
+    }
+
+    public void setQuotedIdentified(boolean quotedIdentified) {
+        this.quotedIdentified = quotedIdentified;
+        resetHash();
+    }
+
+    public boolean isQuotedIdentified() {
+        return quotedIdentified;
     }
 
     @Override
@@ -172,6 +200,8 @@ public class MsProcedure extends PgStatementWithSearchPath {
         hasher.put(isForReplication);
         hasher.put(name);
         hasher.put(owner);
+        hasher.put(quotedIdentified);
+        hasher.put(ansiNulls);
     }
 
     public List<ProcedureArgument> getArguments() {

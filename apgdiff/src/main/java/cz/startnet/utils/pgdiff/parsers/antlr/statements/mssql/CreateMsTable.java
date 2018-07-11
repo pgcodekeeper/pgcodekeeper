@@ -18,9 +18,14 @@ public class CreateMsTable extends AbstractTable {
 
     private final Create_tableContext ctx;
 
-    public CreateMsTable(Create_tableContext ctx, PgDatabase db) {
+    private final boolean ansiNulls;
+    private final boolean quotedIdentifier;
+
+    public CreateMsTable(Create_tableContext ctx, PgDatabase db, boolean ansiNulls, boolean quotedIdentifier) {
         super(db);
         this.ctx = ctx;
+        this.ansiNulls = ansiNulls;
+        this.quotedIdentifier = quotedIdentifier;
     }
 
     @Override
@@ -30,6 +35,9 @@ public class CreateMsTable extends AbstractTable {
         String tableName = ctx.table_name().table.getText();
 
         SimpleMsTable table = new SimpleMsTable(tableName, getFullCtxText(ctx.getParent()));
+
+        table.setAnsiNulls(ansiNulls);
+        table.setQuotedIdentified(quotedIdentifier);
 
         if (ctx.tablespace != null) {
             table.setTablespace(ctx.tablespace.getText());

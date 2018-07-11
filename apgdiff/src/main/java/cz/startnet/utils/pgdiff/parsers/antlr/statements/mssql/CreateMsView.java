@@ -19,9 +19,14 @@ public class CreateMsView extends ParserAbstract {
 
     private final Create_or_alter_viewContext ctx;
 
-    public CreateMsView(Create_or_alter_viewContext ctx, PgDatabase db) {
+    private final boolean ansiNulls;
+    private final boolean quotedIdentifier;
+
+    public CreateMsView(Create_or_alter_viewContext ctx, PgDatabase db, boolean ansiNulls, boolean quotedIdentifier) {
         super(db);
         this.ctx = ctx;
+        this.ansiNulls = ansiNulls;
+        this.quotedIdentifier = quotedIdentifier;
     }
 
     @Override
@@ -30,6 +35,8 @@ public class CreateMsView extends ParserAbstract {
         PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         IdContext name = QNameParser.getFirstNameCtx(ids);
         MsView view = new MsView(name.getText(), getFullCtxText(ctx.getParent()));
+        view.setAnsiNulls(ansiNulls);
+        view.setQuotedIdentified(quotedIdentifier);
 
         Select_statementContext vQuery = ctx.select_statement();
         if (vQuery != null) {

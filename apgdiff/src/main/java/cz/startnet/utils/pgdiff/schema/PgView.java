@@ -33,8 +33,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     protected static final String CHECK_OPTION = "check_option";
     private String query;
     private String normalizedQuery;
-    private final Map<String, String> options = new LinkedHashMap<>();
-    private final List<String> columnNames = new ArrayList<>();
+    protected final Map<String, String> options = new LinkedHashMap<>();
+    protected final List<String> columnNames = new ArrayList<>();
     private final List<DefaultValue> defaultValues = new ArrayList<>();
     private final List<ColumnComment> columnComments = new ArrayList<>();
     private final List<PgRule> rules = new ArrayList<>();

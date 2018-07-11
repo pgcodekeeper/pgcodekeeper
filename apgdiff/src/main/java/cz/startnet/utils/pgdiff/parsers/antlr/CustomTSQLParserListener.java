@@ -17,6 +17,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_viewCon
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_schemaContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_sequenceContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_tableContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Set_specialContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.ObjectCreationException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
@@ -42,6 +43,8 @@ public class CustomTSQLParserListener extends TSQLParserBaseListener {
     private final List<AntlrError> errors;
     private final IProgressMonitor monitor;
     private final String filename;
+    private boolean ansiNulls;
+    private boolean quotedIdentifier;
 
     public CustomTSQLParserListener(PgDatabase database, String filename,
             List<AntlrError> errors, IProgressMonitor monitor) {
@@ -87,7 +90,7 @@ public class CustomTSQLParserListener extends TSQLParserBaseListener {
 
     @Override
     public void exitCreate_or_alter_view(Create_or_alter_viewContext ctx) {
-        safeParseStatement(new CreateMsView(ctx, db), ctx);
+        safeParseStatement(new CreateMsView(ctx, db, ansiNulls, quotedIdentifier), ctx);
     }
 
     @Override
@@ -107,17 +110,17 @@ public class CustomTSQLParserListener extends TSQLParserBaseListener {
 
     @Override
     public void enterCreate_or_alter_procedure(Create_or_alter_procedureContext ctx) {
-        safeParseStatement(new CreateMsProcedure(ctx, db), ctx);
+        safeParseStatement(new CreateMsProcedure(ctx, db, ansiNulls, quotedIdentifier), ctx);
     }
 
     @Override
     public void exitCreate_or_alter_function(Create_or_alter_functionContext ctx) {
-        safeParseStatement(new CreateMsFunction(ctx, db), ctx);
+        safeParseStatement(new CreateMsFunction(ctx, db, ansiNulls, quotedIdentifier), ctx);
     }
 
     @Override
     public void exitCreate_table(Create_tableContext ctx) {
-        safeParseStatement(new CreateMsTable(ctx, db), ctx);
+        safeParseStatement(new CreateMsTable(ctx, db, ansiNulls, quotedIdentifier), ctx);
     }
 
     @Override
@@ -125,6 +128,32 @@ public class CustomTSQLParserListener extends TSQLParserBaseListener {
         safeParseStatement(new AlterMsTable(ctx, db), ctx);
     }
 
+    @Override
+    public void exitSet_special(Set_specialContext ctx) {
+        if (ctx.name == null) {
+            return;
+        }
+
+        String set = ctx.name.getText();
+        switch (set.toLowerCase()) {
+        case "ansi_nulls":
+            if (ctx.ON() != null) {
+                ansiNulls = true;
+            } else if (ctx.OFF() != null) {
+                ansiNulls = false;
+            }
+            break;
+        case "quoted_identifier":
+            if (ctx.ON() != null) {
+                quotedIdentifier = true;
+            } else if (ctx.OFF() != null) {
+                quotedIdentifier = false;
+            }
+            break;
+        default:
+            break;
+        }
+    }
 
     static AntlrError handleUnresolvedReference(UnresolvedReferenceException ex, String filename) {
         Token t = ex.getErrorToken();

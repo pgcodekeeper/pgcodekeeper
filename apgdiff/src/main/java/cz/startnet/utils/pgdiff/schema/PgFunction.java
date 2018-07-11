@@ -27,10 +27,10 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public class PgFunction extends PgStatementWithSearchPath implements IFunction {
 
     private String signatureCache;
-    private final List<Argument> arguments = new ArrayList<>();
+    protected final List<Argument> arguments = new ArrayList<>();
     private String body;
     private String returns;
-    private final Map<String, String> returnsColumns = new LinkedHashMap<>();
+    protected final Map<String, String> returnsColumns = new LinkedHashMap<>();
 
     @Override
     public DbObjType getStatementType() {

@@ -16,6 +16,8 @@ public class SimpleMsTable extends RegularPgTable {
 
     private String textImage;
     private String fileStream;
+    private boolean ansiNulls;
+    private boolean quotedIdentified;
 
     public SimpleMsTable(String name, String rawStatement) {
         super(name, rawStatement);
@@ -24,6 +26,16 @@ public class SimpleMsTable extends RegularPgTable {
     @Override
     protected void convertTable(StringBuilder sb) {
         // no implements
+    }
+
+    @Override
+    protected void appendName(StringBuilder sbSQL) {
+        sbSQL.append("SET QUOTED_IDENTIFIER ").append(quotedIdentified ? "ON" : "OFF");
+        sbSQL.append(GO);
+        sbSQL.append("SET ANSI_NULLS ").append(ansiNulls ? "ON" : "OFF");
+        sbSQL.append(GO);
+
+        super.appendName(sbSQL);
     }
 
     @Override
@@ -89,6 +101,8 @@ public class SimpleMsTable extends RegularPgTable {
         SimpleMsTable table = new SimpleMsTable(name, getRawStatement());
         table.setFileStream(getFileStream());
         table.setTextImage(getTextImage());
+        table.setQuotedIdentified(isQuotedIdentified());
+        table.setAnsiNulls(isAnsiNulls());
         return table;
     }
 
@@ -102,7 +116,9 @@ public class SimpleMsTable extends RegularPgTable {
         if (obj instanceof SimpleMsTable && super.compare(obj)) {
             SimpleMsTable table = (SimpleMsTable) obj;
             return Objects.equals(textImage, table.getTextImage())
-                    && Objects.equals(fileStream, table.getFileStream());
+                    && Objects.equals(fileStream, table.getFileStream())
+                    && Objects.equals(quotedIdentified, table.isQuotedIdentified())
+                    && Objects.equals(ansiNulls, table.isAnsiNulls());
         }
 
         return false;
@@ -124,6 +140,8 @@ public class SimpleMsTable extends RegularPgTable {
         super.computeHash(hasher);
         hasher.put(getTextImage());
         hasher.put(getFileStream());
+        hasher.put(isQuotedIdentified());
+        hasher.put(isAnsiNulls());
     }
 
     public String getFileStream() {
@@ -142,6 +160,24 @@ public class SimpleMsTable extends RegularPgTable {
     public void setTextImage(String textImage) {
         this.textImage = textImage;
         resetHash();
+    }
+
+    public void setAnsiNulls(boolean ansiNulls) {
+        this.ansiNulls = ansiNulls;
+        resetHash();
+    }
+
+    public boolean isAnsiNulls() {
+        return ansiNulls;
+    }
+
+    public void setQuotedIdentified(boolean quotedIdentified) {
+        this.quotedIdentified = quotedIdentified;
+        resetHash();
+    }
+
+    public boolean isQuotedIdentified() {
+        return quotedIdentified;
     }
 
     @Override
