@@ -17,6 +17,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_viewCon
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_schemaContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_sequenceContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_tableContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Grant_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Set_specialContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.ObjectCreationException;
@@ -27,6 +28,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.AlterMsTable;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsFunction;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsIndex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsProcedure;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsRule;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsSchema;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsSequence;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsTable;
@@ -126,6 +128,11 @@ public class CustomTSQLParserListener extends TSQLParserBaseListener {
     @Override
     public void exitAlter_table(Alter_tableContext ctx) {
         safeParseStatement(new AlterMsTable(ctx, db), ctx);
+    }
+
+    @Override
+    public void exitGrant_statement(Grant_statementContext ctx) {
+        safeParseStatement(new CreateMsRule(ctx, db), ctx);
     }
 
     @Override
