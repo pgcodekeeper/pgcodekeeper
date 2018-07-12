@@ -546,11 +546,8 @@ public class ReferenceListener extends SQLParserBaseListener {
             type = DbObjType.FUNCTION;
             for (Function_parametersContext functparam : ctx.body_rule.on_function().obj_name) {
                 List<IdentifierContext> functparamIds = functparam.name.identifier();
-                Token startFuncToken = QNameParser.getFirstNameCtx(functparamIds).getStart();
-                addObjReference(getDefSchemaName(), QNameParser.getFirstName(functparam.name.identifier()),
-                        DbObjType.FUNCTION, StatementActions.NONE,
-                        startFuncToken.getStartIndex(), startFuncToken.getLine(),
-                        ParserAbstract.getFullCtxText(ctx.getParent()));
+                addFullObjReference(getDefSchemaName(), QNameParser.getFirstName(functparamIds),
+                        functparam.name, DbObjType.FUNCTION, StatementActions.NONE, ctx.getParent());
             }
         } else if (ctx.body_rule.on_large_object() != null) {
             obj_name = ctx.body_rule.on_large_object().obj_name.name;
