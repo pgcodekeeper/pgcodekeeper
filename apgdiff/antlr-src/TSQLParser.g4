@@ -2934,8 +2934,12 @@ send_conversation
 // https://msdn.microsoft.com/en-us/library/ms187752.aspx
 // TODO: implement runtime check or add new tokens.
 data_type
-    : id ('(' (DECIMAL | MAX) (',' DECIMAL)? ')')?
+    : id size=data_type_size?
     | DOUBLE PRECISION
+    ;
+    
+data_type_size
+    : ('(' (DECIMAL | MAX) (',' DECIMAL)? ')')
     ;
 
 default_value

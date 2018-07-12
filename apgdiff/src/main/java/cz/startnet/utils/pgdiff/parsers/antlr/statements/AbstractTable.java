@@ -25,6 +25,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_unique_prkeyContex
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_optionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Data_type_sizeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Identity_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
@@ -270,7 +273,16 @@ public abstract class AbstractTable extends ParserAbstract {
             MsColumn col = new MsColumn(colCtx.id().getText());
 
             if (colCtx.data_type() != null) {
-                col.setType(getFullCtxText(colCtx.data_type()));
+                IdContext type = colCtx.data_type().id();
+                if (type != null) {
+                    col.setType(type.getText());
+                    Data_type_sizeContext size = colCtx.data_type().data_type_size();
+                    if (size != null) {
+                        col.setSize(size.getText());
+                    }
+                } else {
+                    col.setType(getFullCtxText(colCtx.data_type()));
+                }
             } else {
                 col.setExpression(getFullCtxText(colCtx.expression()));
             }
@@ -281,13 +293,18 @@ public abstract class AbstractTable extends ParserAbstract {
                 } else if (option.COLLATE() != null) {
                     col.setCollation(getFullCtxText(option.collate));
                 } else if (option.IDENTITY() != null) {
-                    col.setIdentity(option.identity_value() == null ? "1,1" :
-                        getFullCtxText(option.identity_value()));
+                    Identity_valueContext identity = option.identity_value();
+                    if (identity == null) {
+                        col.setIdentity("1", "1");
+                    } else {
+                        col.setIdentity(identity.seed.getText(), identity.increment.getText());
+                    }
+
                     if (option.not_for_rep != null) {
                         col.setNotForRep(true);
                     }
                 } else if (option.NULL() != null) {
-                    col.setNullValue(option.NOT() != null);
+                    col.setNullValue(option.NOT() == null);
                 } else if (option.DEFAULT() != null) {
                     if (option.id() != null) {
                         col.setDefaultName(option.id().getText());
