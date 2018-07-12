@@ -2092,6 +2092,8 @@ grant_permission
     | SHOWPLAN
     | IMPERSONATE
     | SELECT
+    | DELETE
+    | UPDATE
     | REFERENCES
     | INSERT
     | ALTER (ANY? (id | DATABASE))?

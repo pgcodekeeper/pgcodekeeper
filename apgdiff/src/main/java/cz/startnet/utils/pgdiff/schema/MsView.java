@@ -21,9 +21,9 @@ public class MsView extends PgView {
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder(getQuery().length() * 2);
         sbSQL.append("SET QUOTED_IDENTIFIER ").append(quotedIdentified ? "ON" : "OFF");
-        sbSQL.append(GO);
+        sbSQL.append(GO).append('\n');
         sbSQL.append("SET ANSI_NULLS ").append(ansiNulls ? "ON" : "OFF");
-        sbSQL.append(GO);
+        sbSQL.append(GO).append('\n');
 
         sbSQL.append("CREATE OR ALTER VIEW ");
         sbSQL.append(getQualifiedName());

@@ -31,9 +31,9 @@ public class SimpleMsTable extends RegularPgTable {
     @Override
     protected void appendName(StringBuilder sbSQL) {
         sbSQL.append("SET QUOTED_IDENTIFIER ").append(quotedIdentified ? "ON" : "OFF");
-        sbSQL.append(GO);
+        sbSQL.append(GO).append('\n');
         sbSQL.append("SET ANSI_NULLS ").append(ansiNulls ? "ON" : "OFF");
-        sbSQL.append(GO);
+        sbSQL.append(GO).append('\n');
 
         super.appendName(sbSQL);
     }
@@ -90,6 +90,11 @@ public class SimpleMsTable extends RegularPgTable {
         sbSQL.append(GO);
     }
 
+    @Override
+    protected boolean isNeedRecreate(PgTable newTable) {
+        return  !(newTable instanceof RegularPgTable) ||
+                !Objects.equals(((RegularPgTable)newTable).getTablespace(), getTablespace());
+    }
 
     @Override
     protected void compareTableTypes(PgTable newTable, StringBuilder sb) {

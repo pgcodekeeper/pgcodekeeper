@@ -31,9 +31,10 @@ public class MsProcedure extends PgStatementWithSearchPath {
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("SET QUOTED_IDENTIFIER ").append(quotedIdentified ? "ON" : "OFF");
-        sbSQL.append(GO);
+        sbSQL.append(GO).append('\n');
         sbSQL.append("SET ANSI_NULLS ").append(ansiNulls ? "ON" : "OFF");
-        sbSQL.append(GO);
+        sbSQL.append(GO).append('\n');
+
         sbSQL.append("CREATE OR ALTER PROCEDURE ");
         sbSQL.append(getQualifiedName()).append('\n');
 
