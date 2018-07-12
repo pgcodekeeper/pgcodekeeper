@@ -654,7 +654,7 @@ class PgDB9 extends PgDatabaseObjectCreator {
         PgColumn col = new PgColumn("id");
         col.setType("bigint");
         col.setNullValue(false);
-        col.setDefaultValue("nextval('user_id_seq'::regclass)");
+        col.setDefaultValue("nextval('public.user_id_seq'::regclass)");
         table.addColumn(col);
 
         col = new PgColumn("email");
@@ -681,7 +681,7 @@ class PgDB9 extends PgDatabaseObjectCreator {
         schema.addSequence(seq);
         seq.setOwner("postgres");
 
-        table = new SimplePgTable("t_ruleinsert", "");
+        table = new SimplePgTable("t1", "");
         schema.addTable(table);
 
         col = new PgColumn("c1");
@@ -689,7 +689,7 @@ class PgDB9 extends PgDatabaseObjectCreator {
         table.addColumn(col);
 
         PgView view = new PgView("user", "");
-        view.setQuery("( SELECT user_data.id, user_data.email, user_data.created FROM user_data)");
+        view.setQuery("( SELECT user_data.id, user_data.email, user_data.created FROM public.user_data)");
         view.addColumnDefaultValue("created", "now()");
         schema.addView(view);
 
@@ -697,24 +697,24 @@ class PgDB9 extends PgDatabaseObjectCreator {
 
         rule = new PgRule("on_delete", "");
         rule.setEvent(PgRuleEventType.DELETE);
-        rule.addCommand("DELETE FROM user_data WHERE (user_data.id = old.id)");
+        rule.addCommand("DELETE FROM public.user_data WHERE (user_data.id = old.id)");
         view.addRule(rule);
 
         rule = new PgRule("on_insert", "");
         rule.setEvent(PgRuleEventType.INSERT);
         rule.setInstead(true);
-        rule.addCommand("INSERT INTO user_data (id, email, created) VALUES (new.id, new.email, new.created)");
-        rule.addCommand("INSERT INTO t1(c1) DEFAULT VALUES");
+        rule.addCommand("INSERT INTO public.user_data (id, email, created) VALUES (new.id, new.email, new.created)");
+        rule.addCommand("INSERT INTO public.t1(c1) DEFAULT VALUES");
         view.addRule(rule);
 
         rule = new PgRule("on_update", "");
         rule.setEvent(PgRuleEventType.UPDATE);
         rule.setInstead(true);
-        rule.addCommand("UPDATE user_data SET id = new.id, email = new.email, created = new.created WHERE (user_data.id = old.id)");
+        rule.addCommand("UPDATE public.user_data SET id = new.id, email = new.email, created = new.created WHERE (user_data.id = old.id)");
         view.addRule(rule);
 
         view = new PgView("ws_test", "");
-        view.setQuery("SELECT ud.id \"   i   d   \" FROM user_data ud");
+        view.setQuery("SELECT ud.id \"   i   d   \" FROM public.user_data ud");
         schema.addView(view);
 
         return d;

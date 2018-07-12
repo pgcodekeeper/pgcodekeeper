@@ -10,7 +10,7 @@ CREATE SEQUENCE public.table2_col1_seq
 ALTER SEQUENCE public.table2_col1_seq OWNER TO fordfrog;
 
 CREATE TABLE public.table2 (
-	col1 integer DEFAULT nextval('table2_col1_seq'::regclass) NOT NULL
+	col1 integer DEFAULT nextval('public.table2_col1_seq'::regclass) NOT NULL
 );
 
 ALTER TABLE public.table2 OWNER TO fordfrog;

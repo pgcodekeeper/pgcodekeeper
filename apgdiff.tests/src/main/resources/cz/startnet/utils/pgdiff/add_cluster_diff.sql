@@ -10,7 +10,7 @@ CREATE SEQUENCE public.testtable2_id_seq
 ALTER SEQUENCE public.testtable2_id_seq OWNER TO fordfrog;
 
 CREATE TABLE public.testtable2 (
-	id integer DEFAULT nextval('testtable2_id_seq'::regclass) NOT NULL,
+	id integer DEFAULT nextval('public.testtable2_id_seq'::regclass) NOT NULL,
 	col1 boolean NOT NULL
 );
 

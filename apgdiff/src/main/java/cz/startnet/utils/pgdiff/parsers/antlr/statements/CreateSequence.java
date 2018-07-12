@@ -2,7 +2,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_sequence_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -24,13 +23,12 @@ public class CreateSequence extends ParserAbstract {
         List<IdentifierContext> ids = ctx.name.identifier();
         PgSequence sequence = new PgSequence(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
         PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
-        fillSequence(sequence, ctx.sequence_body(), schema.getName());
+        fillSequence(sequence, ctx.sequence_body());
         schema.addSequence(sequence);
         return sequence;
     }
 
-    public static void fillSequence(PgSequence sequence, List<Sequence_bodyContext> list,
-            String schemaName) {
+    public static void fillSequence(PgSequence sequence, List<Sequence_bodyContext> list) {
         long inc = 1;
         Long maxValue = null;
         Long minValue = null;
@@ -52,17 +50,9 @@ public class CreateSequence extends ParserAbstract {
             } else if (body.col_name != null) {
                 // TODO incorrect qualified name work
                 // also broken in altersequence
-                setOwnedByWithoutSchema(sequence, body, schemaName);
+                sequence.setOwnedBy(ParserAbstract.getFullCtxText(body.col_name));
             }
         }
         sequence.setMinMaxInc(inc, maxValue, minValue);
-    }
-
-    public static void setOwnedByWithoutSchema(PgSequence sequence, Sequence_bodyContext body,
-            String schemaName) {
-        List<IdentifierContext> qualNameIdsCtx = body.col_name.identifier();
-        sequence.setOwnedBy(PgDiffUtils.getQuotedName(schemaName) + '.'
-                + PgDiffUtils.getQuotedName(QNameParser.getSecondName(qualNameIdsCtx)) + '.'
-                + PgDiffUtils.getQuotedName(QNameParser.getFirstName(qualNameIdsCtx)));
     }
 }

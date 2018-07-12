@@ -27,7 +27,7 @@ public class AlterSequence extends ParserAbstract {
         fillOwnerTo(ctx.owner_to(), sequence);
         for (Sequence_bodyContext seqbody : ctx.sequence_body()) {
             if (seqbody.OWNED() != null && seqbody.col_name != null) {
-                CreateSequence.setOwnedByWithoutSchema(sequence, seqbody, schema.getName());
+                sequence.setOwnedBy(getFullCtxText(seqbody.col_name));
             }
         }
         return null;
