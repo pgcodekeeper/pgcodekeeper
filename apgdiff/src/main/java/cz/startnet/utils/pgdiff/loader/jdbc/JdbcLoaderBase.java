@@ -246,8 +246,8 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             stType = st.getStatementType().name();
         }
 
-        String qualStSignature = schemaName == null ? PgDiffUtils.getQuotedName(stSignature)
-                : PgDiffUtils.getQuotedName(schemaName) + '.' + PgDiffUtils.getQuotedName(stSignature);
+        String qualStSignature = schemaName == null ? stSignature
+                : PgDiffUtils.getQuotedName(schemaName) + '.' + stSignature;
         String column = (columnId != null && !columnId.isEmpty()) ? "(" + columnId + ")" : "";
         String revokePublic = "ALL" + column + " ON " + stType + " " + qualStSignature + " FROM PUBLIC";
         st.addPrivilege(new PgPrivilege(true, revokePublic, "REVOKE " + revokePublic));
