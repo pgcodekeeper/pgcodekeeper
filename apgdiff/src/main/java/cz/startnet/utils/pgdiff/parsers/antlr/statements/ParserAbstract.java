@@ -28,7 +28,6 @@ import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -65,6 +64,20 @@ public abstract class ParserAbstract {
         Interval interval = new Interval(ctx.getStart().getStartIndex(),
                 ctx.getStop().getStopIndex());
         return ctx.getStart().getInputStream().getText(interval);
+    }
+
+    /**
+     * Extracts raw text from list of IdentifierContext
+     *
+     * @param ids list of IdentifierContext
+     *            context
+     * @return raw string
+     */
+    private String getFullIdsText(List<IdentifierContext> ids) {
+        Token startToken = ids.get(0).getStart();
+        Interval interval = new Interval(startToken.getStartIndex(),
+                ids.get(ids.size() - 1).getStop().getStopIndex());
+        return startToken.getInputStream().getText(interval);
     }
 
     protected PgColumn getColumn(Table_column_definitionContext colCtx) {
@@ -123,8 +136,8 @@ public abstract class ParserAbstract {
         }
 
         IdentifierContext firstNameCtx = QNameParser.getFirstNameCtx(ids);
-        throw new UnresolvedReferenceException(MessageFormat.format(Messages.ParserAbstract_no_schema,
-                getFullCtxText(firstNameCtx)), firstNameCtx.start);
+        throw new UnresolvedReferenceException(MessageFormat.format("There is no schema for the {0}.",  //$NON-NLS-1$
+                getFullIdsText(ids)), firstNameCtx.start);
     }
 
     /**
