@@ -13,7 +13,6 @@ import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
@@ -118,7 +117,7 @@ public class ObjectTimestamp implements Serializable {
         PgStatement base = object.getStatement(db);
         PgRuleContainer parent = schema.getRuleContainer(base.getParent().getName());
         PgStatement copy = base.shallowCopy();
-        fillPrivileges(copy, loader);
+        fillPrivileges(copy, loader, schema.getName());
         parent.addRule((PgRule)copy);
     }
 
@@ -126,19 +125,19 @@ public class ObjectTimestamp implements Serializable {
         PgStatement base = object.getStatement(db);
         PgTriggerContainer parent = schema.getTriggerContainer(base.getParent().getName());
         PgStatement copy = base.shallowCopy();
-        fillPrivileges(copy, loader);
+        fillPrivileges(copy, loader, schema.getName());
         parent.addTrigger((PgTrigger)copy);
     }
 
-    public PgStatement copyStatement(PgDatabase db, JdbcLoaderBase loader) {
+    public PgStatement copyStatement(PgDatabase db, JdbcLoaderBase loader, String schemaName) {
         PgStatement copy = object.getStatement(db).shallowCopy();
-        fillPrivileges(copy, loader);
+        fillPrivileges(copy, loader, schemaName);
         return copy;
     }
 
-    private void fillPrivileges(PgStatement copy, JdbcLoaderBase loader) {
+    private void fillPrivileges(PgStatement copy, JdbcLoaderBase loader, String schemaName) {
         copy.clearPrivileges();
-        loader.setPrivileges(copy, acl, ((PgStatementWithSearchPath)copy).getContainingSchema().getName());
+        loader.setPrivileges(copy, acl, schemaName);
         if (colAcls != null) {
             DbObjType type = copy.getStatementType();
             if (DbObjType.TABLE == type) {

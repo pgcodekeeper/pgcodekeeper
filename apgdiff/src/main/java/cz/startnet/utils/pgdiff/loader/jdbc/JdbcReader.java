@@ -116,11 +116,11 @@ public abstract class JdbcReader implements PgCatalogStrings {
             if (obj.getSchema().equals(sc.getName()) && obj.getType() == local) {
                 switch (type) {
                 case VIEW:
-                    sc.addView((PgView) obj.copyStatement(projDb, loader));
+                    sc.addView((PgView) obj.copyStatement(projDb, loader, sc.getName()));
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case TABLE:
-                    sc.addTable((PgTable) obj.copyStatement(projDb, loader));
+                    sc.addTable((PgTable) obj.copyStatement(projDb, loader, sc.getName()));
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case RULE:
@@ -140,7 +140,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case FUNCTION:
-                    sc.addFunction((PgFunction) obj.copyStatement(projDb, loader));
+                    sc.addFunction((PgFunction) obj.copyStatement(projDb, loader, sc.getName()));
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case CONSTRAINT:
@@ -152,27 +152,27 @@ public abstract class JdbcReader implements PgCatalogStrings {
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case TYPE:
-                    sc.addType((PgType) obj.copyStatement(projDb, loader));
+                    sc.addType((PgType) obj.copyStatement(projDb, loader, sc.getName()));
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case SEQUENCE:
-                    sc.addSequence((PgSequence) obj.copyStatement(projDb, loader));
+                    sc.addSequence((PgSequence) obj.copyStatement(projDb, loader, sc.getName()));
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case FTS_PARSER:
-                    sc.addFtsParser((PgFtsParser) obj.copyStatement(projDb, loader));
+                    sc.addFtsParser((PgFtsParser) obj.copyStatement(projDb, loader, sc.getName()));
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case FTS_TEMPLATE:
-                    sc.addFtsTemplate((PgFtsTemplate) obj.copyStatement(projDb, loader));
+                    sc.addFtsTemplate((PgFtsTemplate) obj.copyStatement(projDb, loader, sc.getName()));
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case FTS_DICTIONARY:
-                    sc.addFtsDictionary((PgFtsDictionary) obj.copyStatement(projDb, loader));
+                    sc.addFtsDictionary((PgFtsDictionary) obj.copyStatement(projDb, loader, sc.getName()));
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case FTS_CONFIGURATION:
-                    sc.addFtsConfiguration((PgFtsConfiguration) obj.copyStatement(projDb, loader));
+                    sc.addFtsConfiguration((PgFtsConfiguration) obj.copyStatement(projDb, loader, sc.getName()));
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 default:
