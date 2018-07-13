@@ -5,11 +5,8 @@ import java.util.List;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_trigger_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Names_referencesContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Predefined_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_deferrableContext;
@@ -41,7 +38,7 @@ public class CreateTrigger extends ParserAbstract {
         PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         String schemaName = schema.getName();
         PgTrigger trigger = new PgTrigger(ctx.name.getText(), getFullCtxText(ctx.getParent()));
-        trigger.setTableName(QNameParser.getFirstName(ctx.table_name.identifier()));
+        trigger.setTableName(ParserAbstract.getFullCtxText(ctx.table_name));
         if (ctx.AFTER() != null) {
             trigger.setType(TgTypes.AFTER);
         } else if (ctx.BEFORE() != null) {
@@ -59,7 +56,7 @@ public class CreateTrigger extends ParserAbstract {
         trigger.setOnInsert(ctx.insert_true != null);
         trigger.setOnUpdate(ctx.update_true != null);
         trigger.setOnTruncate(ctx.truncate_true != null);
-        setQualifiedFunction(trigger, schemaName);
+        trigger.setFunction(getFullCtxText(ctx.func_name));
 
         if (ctx.CONSTRAINT() != null ) {
             trigger.setConstraint(true);
@@ -77,7 +74,10 @@ public class CreateTrigger extends ParserAbstract {
                 String refRelName = QNameParser.getFirstName(refName);
 
                 StringBuilder sb = new StringBuilder();
-                sb.append(PgDiffUtils.getQuotedName(refSchemaName == null ? schemaName : refSchemaName))
+                if (refSchemaName == null) {
+                    refSchemaName = schemaName;
+                }
+                sb.append(PgDiffUtils.getQuotedName(refSchemaName))
                 .append('.');
                 sb.append(PgDiffUtils.getQuotedName(refRelName));
 
@@ -114,23 +114,6 @@ public class CreateTrigger extends ParserAbstract {
         getSafe(schema::getTriggerContainer, QNameParser.getFirstNameCtx(ctx.table_name.identifier()))
         .addTrigger(trigger);
         return trigger;
-    }
-
-    private void setQualifiedFunction(PgTrigger trigger, String schemaName) {
-        Function_nameContext functionNameCtx = ctx.func_name.function_name();
-        if (functionNameCtx != null && functionNameCtx.data_type() != null) {
-            Data_typeContext dataTypeCtx = functionNameCtx.data_type();
-            Predefined_typeContext pridifinedType = dataTypeCtx.value != null ? dataTypeCtx.value : dataTypeCtx.predefined_type();
-
-            Schema_qualified_name_nontypeContext schemaQualNameNonType = pridifinedType.schema_qualified_name_nontype();
-            if (schemaQualNameNonType != null && schemaQualNameNonType.schema != null) {
-                trigger.setFunction(getFullCtxText(ctx.func_name));
-            } else {
-                trigger.setFunction(schemaName + '.' + getFullCtxText(ctx.func_name));
-            }
-        } else {
-            trigger.setFunction(getFullCtxText(ctx.func_name));
-        }
     }
 
     public static void parseWhen(When_triggerContext whenCtx, PgTrigger trigger,
