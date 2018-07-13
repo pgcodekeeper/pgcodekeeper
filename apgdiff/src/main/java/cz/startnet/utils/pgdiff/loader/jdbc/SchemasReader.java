@@ -39,7 +39,7 @@ public class SchemasReader implements PgCatalogStrings {
                 if (obj.getType() == DbObjType.SCHEMA) {
                     long oid = obj.getObjId();
                     sb.append(oid).append(',');
-                    PgSchema schema = (PgSchema)obj.copyStatement(projDb, loader, null);
+                    PgSchema schema = (PgSchema)obj.copyStatement(projDb, loader);
                     db.addSchema(schema);
                     schemas.put(oid, schema);
                 }

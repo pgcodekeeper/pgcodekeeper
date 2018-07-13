@@ -34,7 +34,7 @@ public class ExtensionsReader implements PgCatalogStrings {
             for (ObjectTimestamp obj : objects) {
                 if (obj.getType() == DbObjType.EXTENSION) {
                     sb.append(obj.getObjId()).append(',');
-                    db.addExtension((PgExtension)obj.copyStatement(projDb, loader, null));
+                    db.addExtension((PgExtension)obj.copyStatement(projDb, loader));
                 }
             }
             if (sb.length() > 0) {

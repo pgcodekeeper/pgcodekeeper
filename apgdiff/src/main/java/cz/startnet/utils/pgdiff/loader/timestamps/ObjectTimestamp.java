@@ -13,6 +13,7 @@ import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
@@ -129,8 +130,13 @@ public class ObjectTimestamp implements Serializable {
         parent.addTrigger((PgTrigger)copy);
     }
 
-    public PgStatement copyStatement(PgDatabase db, JdbcLoaderBase loader, String schemaName) {
-        PgStatement copy = object.getStatement(db).shallowCopy();
+    public PgStatement copyStatement(PgDatabase db, JdbcLoaderBase loader) {
+        PgStatement stmt = object.getStatement(db);
+        PgStatement copy = stmt.shallowCopy();
+        String schemaName = null;
+        if (stmt instanceof PgStatementWithSearchPath) {
+            schemaName = ((PgStatementWithSearchPath)stmt).getContainingSchema().getName();
+        }
         fillPrivileges(copy, loader, schemaName);
         return copy;
     }
