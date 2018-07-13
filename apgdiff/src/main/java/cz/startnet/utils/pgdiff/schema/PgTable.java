@@ -212,7 +212,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         if (!inherits.isEmpty()) {
             sbSQL.append("\nINHERITS (");
             for (final Inherits tableName : inherits) {
-                sbSQL.append(tableName.getKey() + "." + tableName.getValue());
+                sbSQL.append(tableName.getQualifiedName());
                 sbSQL.append(", ");
             }
             sbSQL.setLength(sbSQL.length() - 2);
@@ -357,9 +357,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
             if (!newInherits.contains(tableName)) {
                 sb.append(getAlterTable(true, false))
                 .append("\n\tNO INHERIT ")
-                .append(tableName.getKey() == null ?
-                        "" : PgDiffUtils.getQuotedName(tableName.getKey()) + '.')
-                .append(PgDiffUtils.getQuotedName(tableName.getValue()))
+                .append(tableName.getQualifiedName())
                 .append(';');
             }
         }
@@ -368,9 +366,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
             if (!inherits.contains(tableName)) {
                 sb.append(getAlterTable(true, false))
                 .append("\n\tINHERIT ")
-                .append(tableName.getKey() == null ?
-                        "" : PgDiffUtils.getQuotedName(tableName.getKey()) + '.')
-                .append(PgDiffUtils.getQuotedName(tableName.getValue()))
+                .append(tableName.getQualifiedName())
                 .append(';');
             }
         }
@@ -768,6 +764,11 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         public Inherits(String key, String value) {
             this.key = key;
             this.value = value;
+        }
+
+        public String getQualifiedName() {
+            return (key == null ? "" : (PgDiffUtils.getQuotedName(key) + '.'))
+                    + PgDiffUtils.getQuotedName(value);
         }
 
         @Override
