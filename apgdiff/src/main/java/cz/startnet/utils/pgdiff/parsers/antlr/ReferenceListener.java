@@ -305,9 +305,9 @@ public class ReferenceListener extends SQLParserBaseListener {
     public void createIndex(Create_index_statementContext ctx){
         List<IdentifierContext> ids = ctx.table_name.identifier();
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+        addFullObjReference(schemaName, QNameParser.getFirstName(ids), ctx.table_name,
+                DbObjType.TABLE, StatementActions.NONE, ctx.getParent());
         if (ctx.name != null) {
-            addFullObjReference(schemaName, QNameParser.getFirstName(ids), ctx.table_name,
-                    DbObjType.TABLE, StatementActions.NONE, ctx.getParent());
             fillObjDefinition(schemaName, ctx.name, DbObjType.INDEX);
         }
     }

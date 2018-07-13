@@ -43,8 +43,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
  */
 public final class PgDiff {
 
-    public static final String SET_SEARCH_PATH_PG_CATALOG = "SET search_path = pg_catalog;";
-
     /**
      * Creates diff on the two database schemas.
      *
@@ -167,8 +165,6 @@ public final class PgDiff {
             script.addStatement("SET check_function_bodies = false;");
         }
 
-        script.addStatement(SET_SEARCH_PATH_PG_CATALOG);
-
         if (arguments.isAddTransaction()) {
             script.addStatement("START TRANSACTION;");
         }
@@ -214,6 +210,10 @@ public final class PgDiff {
             }
         }
         depRes.recreateDrops();
+
+        if (!depRes.getActions().isEmpty()) {
+            script.addStatement("SET search_path = pg_catalog;");
+        }
         new ActionsToScriptConverter(depRes.getActions(), arguments).fillScript(script);
         if (arguments.isAddTransaction()) {
             script.addStatement("COMMIT TRANSACTION;");

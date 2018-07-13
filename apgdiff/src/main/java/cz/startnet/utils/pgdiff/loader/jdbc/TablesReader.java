@@ -250,7 +250,7 @@ public class TablesReader extends JdbcReader {
             // COLUMNS PRIVILEGES
             String columnPrivileges = colAcl[i];
             if (columnPrivileges != null && !columnPrivileges.isEmpty()) {
-                loader.setPrivileges(column, t, columnPrivileges, schema);
+                loader.setPrivileges(column, t, columnPrivileges, schema.getName());
             }
 
             if (ofTypeOid != 0 && column.getNullValue()

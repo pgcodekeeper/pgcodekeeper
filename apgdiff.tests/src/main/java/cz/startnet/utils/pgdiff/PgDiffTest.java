@@ -436,7 +436,7 @@ public class PgDiffTest {
         writer.flush();
 
         Assert.assertEquals("File name template: " + fileNameTemplate,
-                PgDiff.SET_SEARCH_PATH_PG_CATALOG, diffInput.toString().trim());
+                "", diffInput.toString().trim());
     }
 
     @Test

@@ -177,6 +177,7 @@ public abstract class PgStatement implements IStatement, IHashable {
             sb.append("current_database()");
             break;
 
+        case SCHEMA:
         case EXTENSION:
             sb.append(PgDiffUtils.getQuotedName(getName()));
             break;
