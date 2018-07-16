@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcLoader;
@@ -101,7 +102,9 @@ public final class PgDiff {
                 return loader.load();
             }
         } else if ("parsed".equals(format)) {
-            return PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,  arguments, null, null);
+            return arguments.isMsSql() ?
+                    PgDumpLoader.loadMsDatabaseSchemaFromDirTree(srcPath,  arguments, null, null) :
+                        PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,  arguments, null, null);
         } else if ("db".equals(format)) {
             JdbcLoader loader = new JdbcLoader(new JdbcConnector(srcPath, null, false), arguments);
             return loader.getDbFromJdbc();
@@ -131,8 +134,10 @@ public final class PgDiff {
             IgnoreList ignoreList) throws InterruptedException {
         TreeElement root = DiffTree.create(oldDbFull, newDbFull, null);
         root.setAllChecked();
-        return diffDatabaseSchemasAdditionalDepcies(writer, arguments,
-                root, oldDbFull, newDbFull, null, null, ignoreList);
+        return arguments.isMsSql() ? diffMsDatabaseSchemas(writer, arguments,
+                root, oldDbFull, newDbFull, ignoreList) :
+                    diffDatabaseSchemasAdditionalDepcies(writer, arguments,
+                            root, oldDbFull, newDbFull, null, null, ignoreList);
     }
 
     /**
@@ -218,6 +223,92 @@ public final class PgDiff {
         script.printStatements(writer);
 
         return script;
+    }
+
+
+    private static PgDiffScript diffMsDatabaseSchemas(PrintWriter writer,
+            PgDiffArguments arguments, TreeElement root, PgDatabase oldDbFull,
+            PgDatabase newDbFull, IgnoreList ignoreList) {
+        PgDiffScript script = new PgDiffScript();
+
+        if (arguments.isAddTransaction()) {
+            script.addStatement("BEGIN TRANSACTION;");
+        }
+
+        List<String> dbNames = new ArrayList<>();
+
+        if ("db".equals(arguments.getNewSrcFormat())) {
+            dbNames.add(JdbcConnector.dbNameFromUrl(arguments.getNewSrc()));
+        }
+
+        if ("db".equals(arguments.getOldSrcFormat())) {
+            dbNames.add(JdbcConnector.dbNameFromUrl(arguments.getOldSrc()));
+        }
+
+        List<TreeElement> selected = new TreeFlattener()
+                .onlySelected()
+                .useIgnoreList(ignoreList)
+                .onlyTypes(arguments.getAllowedTypes())
+                .flatten(root);
+        //TODO----------КОСТЫЛЬ колонки добавляются как выбранные если выбрана таблица-----------
+        addColumnsAsElements(oldDbFull, newDbFull, selected);
+        // ---КОСТЫЛЬ-----------
+
+        Collections.sort(selected, new CompareTree());
+
+        for (TreeElement st : selected) {
+            switch (st.getSide()) {
+            case LEFT:
+                if (st.getType() != DbObjType.COLUMN || !isTableRecreated(st.getParent(), oldDbFull, newDbFull)) {
+                    script.addStatement(st.getPgStatement(oldDbFull).getDropSQL());
+                }
+                break;
+            case BOTH:
+                AtomicBoolean isNeedDepcies = new AtomicBoolean();
+                StringBuilder sb = new StringBuilder();
+                PgStatement oldObj = st.getPgStatement(oldDbFull);
+                PgStatement newObj = st.getPgStatement(newDbFull);
+
+                if (st.getType() == DbObjType.COLUMN && isTableRecreated(st.getParent(), oldDbFull, newDbFull)) {
+                    continue;
+                }
+
+                if (oldObj.appendAlterSQL(newObj, sb, isNeedDepcies)) {
+                    if (isNeedDepcies.get()) {
+                        script.addStatement(oldObj.getDropSQL());
+                        script.addStatement(newObj.getCreationSQL());
+                    }
+                    script.addStatement(sb.toString());
+                }
+                break;
+            case RIGHT:
+                if (st.getType() != DbObjType.COLUMN || !isTableRecreated(st.getParent(), oldDbFull, newDbFull)) {
+                    script.addStatement(st.getPgStatement(newDbFull).getCreationSQL());
+                }
+                break;
+            }
+        }
+
+        if (arguments.isAddTransaction()) {
+            script.addStatement("COMMIT;");
+        }
+
+        script.printStatements(writer);
+
+        return script;
+    }
+
+    private static boolean isTableRecreated(TreeElement table, PgDatabase oldDb, PgDatabase newDb) {
+        PgStatement oldSt = table.getPgStatement(oldDb);
+        PgStatement newSt = table.getPgStatement(newDb);
+        if (oldSt == null || newSt == null) {
+            return true;
+        }
+
+        AtomicBoolean isRecreate = new AtomicBoolean();
+        oldSt.appendAlterSQL(newSt, new StringBuilder(), isRecreate);
+
+        return isRecreate.get();
     }
 
     /**

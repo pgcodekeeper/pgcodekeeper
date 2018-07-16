@@ -31,6 +31,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomTSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.ReferenceListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
+import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -51,6 +52,9 @@ public class PgDumpLoader implements AutoCloseable {
     protected static final String[] DIR_LOAD_ORDER = new String[] { "TYPE", "DOMAIN",
             "SEQUENCE", "FUNCTION", "TABLE", "CONSTRAINT", "INDEX", "TRIGGER", "VIEW",
             "FTS_PARSER", "FTS_TEMPLATE", "FTS_DICTIONARY", "FTS_CONFIGURATION" };
+
+    protected static final String[] MS_DIR_LOAD_ORDER = new String[] { "Assemblies",
+            "Sequences", "Stored procedures", "Functions", "Tables", "Views"};
 
     private final InputStream input;
     private final String inputObjectName;
@@ -224,6 +228,29 @@ public class PgDumpLoader implements AutoCloseable {
         }
 
         FullAnalyze.fullAnalyze(db);
+        return db;
+    }
+
+    /**
+     * Loads database schema from a MS SQL ModelExporter directory tree.
+     */
+    public static PgDatabase loadMsDatabaseSchemaFromDirTree(String dirPath,
+            PgDiffArguments arguments, IProgressMonitor monitor, List<AntlrError> errors)
+                    throws InterruptedException, IOException {
+        PgDatabase db = new PgDatabase(false);
+        db.addSchema(new MsSchema(ApgdiffConsts.DBO, ""));
+        db.setArguments(arguments);
+        File dir = new File(dirPath);
+
+        File securityFolder = new File(dir, "Security");
+        loadSubdir(securityFolder, arguments, "Roles", db, monitor, errors);
+        loadSubdir(securityFolder, arguments, "Users", db, monitor, errors);
+        loadSubdir(securityFolder, arguments, "Schemas", db, monitor, errors);
+
+        for (String dirSub : MS_DIR_LOAD_ORDER) {
+            loadSubdir(dir, arguments, dirSub, db, monitor, errors);
+        }
+
         return db;
     }
 

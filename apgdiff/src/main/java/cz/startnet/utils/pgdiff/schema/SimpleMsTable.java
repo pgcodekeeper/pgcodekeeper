@@ -58,7 +58,7 @@ public class SimpleMsTable extends RegularPgTable {
     @Override
     protected void appendOptions(StringBuilder sbSQL) {
         if (tablespace != null) {
-            sbSQL.append("ON ").append(tablespace).append("\n");
+            sbSQL.append(" ON ").append(MsDiffUtils.quoteName(tablespace)).append("\n");
         }
 
         if (getTextImage() != null) {
