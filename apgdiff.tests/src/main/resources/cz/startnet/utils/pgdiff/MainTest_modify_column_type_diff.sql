@@ -2,9 +2,9 @@ SET TIMEZONE TO 'UTC';
 
 SET check_function_bodies = false;
 
-SET search_path = pg_catalog;
-
 START TRANSACTION;
+
+SET search_path = pg_catalog;
 
 ALTER TABLE public.testtable
 	ALTER COLUMN field1 TYPE integer USING field1::integer; /* TYPE change - table: public.testtable original: smallint new: integer */
