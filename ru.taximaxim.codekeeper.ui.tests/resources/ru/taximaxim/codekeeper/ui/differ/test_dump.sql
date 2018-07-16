@@ -16,23 +16,25 @@ SET row_security = off;
 
 -- SCHEMA public GRANT
 
-CREATE TYPE user_code AS (
+SET search_path = pg_catalog;
+
+CREATE TYPE public.user_code AS (
     f1 integer,
     f2 text
 );
 
-ALTER TYPE user_code OWNER TO unit_test;
+ALTER TYPE public.user_code OWNER TO unit_test;
 
-CREATE SEQUENCE emp_id_seq
+CREATE SEQUENCE public.emp_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
 
-ALTER SEQUENCE emp_id_seq OWNER TO unit_test;
+ALTER SEQUENCE public.emp_id_seq OWNER TO unit_test;
 
-CREATE OR REPLACE FUNCTION emp_stamp() RETURNS trigger
+CREATE OR REPLACE FUNCTION public.emp_stamp() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
     BEGIN
@@ -56,9 +58,9 @@ CREATE OR REPLACE FUNCTION emp_stamp() RETURNS trigger
     END;
 $$;
 
-ALTER FUNCTION emp_stamp() OWNER TO unit_test;
+ALTER FUNCTION public.emp_stamp() OWNER TO unit_test;
 
-CREATE OR REPLACE FUNCTION increment(i integer) RETURNS integer
+CREATE OR REPLACE FUNCTION public.increment(i integer) RETURNS integer
     LANGUAGE plpgsql
     AS $$
         BEGIN
@@ -66,10 +68,10 @@ CREATE OR REPLACE FUNCTION increment(i integer) RETURNS integer
         END;
 $$;
 
-ALTER FUNCTION increment(i integer) OWNER TO unit_test;
+ALTER FUNCTION public.increment(i integer) OWNER TO unit_test;
 
-CREATE TABLE emp (
-    id integer DEFAULT nextval('emp_id_seq'::regclass) NOT NULL,
+CREATE TABLE public.emp (
+    id integer DEFAULT nextval('public.emp_id_seq'::regclass) NOT NULL,
     empname text,
     salary integer,
     last_date timestamp without time zone,
@@ -77,29 +79,29 @@ CREATE TABLE emp (
     code user_code
 );
 
-ALTER TABLE emp OWNER TO unit_test;
+ALTER TABLE public.emp OWNER TO unit_test;
 
-CREATE UNIQUE INDEX name_ind ON emp USING btree (empname);
+CREATE UNIQUE INDEX name_ind ON public.emp USING btree (empname);
 
-CREATE VIEW emp_view AS
+CREATE VIEW public.emp_view AS
     SELECT emp.empname,
     emp.last_date,
     increment(emp.salary) AS salary,
     emp.code
-   FROM emp;
+   FROM public.emp;
 
-ALTER VIEW emp_view OWNER TO unit_test;
+ALTER VIEW public.emp_view OWNER TO unit_test;
 
 CREATE TRIGGER emp_stamp
-    BEFORE INSERT OR UPDATE ON emp
+    BEFORE INSERT OR UPDATE ON public.emp
     FOR EACH ROW
-    EXECUTE PROCEDURE emp_stamp();
+    EXECUTE PROCEDURE public.emp_stamp();
 
 CREATE RULE notify_me AS
-    ON UPDATE TO emp DO  NOTIFY emp;
+    ON UPDATE TO public.emp DO  NOTIFY emp;
 
-ALTER SEQUENCE emp_id_seq
-    OWNED BY emp.id;
+ALTER SEQUENCE public.emp_id_seq
+    OWNED BY public.emp.id;
     
     
 REVOKE ALL ON SCHEMA public FROM PUBLIC;
