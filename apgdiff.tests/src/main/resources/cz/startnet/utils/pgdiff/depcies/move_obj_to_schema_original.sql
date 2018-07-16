@@ -37,25 +37,25 @@ ALTER SCHEMA test OWNER TO galiev_mr;
 --COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
 --
 -- Name: user_code; Type: TYPE; Schema: public; Owner: galiev_mr
 --
 
-CREATE TYPE user_code AS (
+CREATE TYPE public.user_code AS (
     f1 integer,
     f2 text
 );
 
 
-ALTER TYPE user_code OWNER TO galiev_mr;
+ALTER TYPE public.user_code OWNER TO galiev_mr;
 
 --
 -- Name: emp_stamp(); Type: FUNCTION; Schema: public; Owner: galiev_mr
 --
 
-CREATE FUNCTION emp_stamp() RETURNS trigger
+CREATE FUNCTION public.emp_stamp() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
     BEGIN
@@ -86,7 +86,7 @@ ALTER FUNCTION public.emp_stamp() OWNER TO galiev_mr;
 -- Name: increment(integer); Type: FUNCTION; Schema: public; Owner: galiev_mr
 --
 
-CREATE FUNCTION increment(i integer) RETURNS integer
+CREATE FUNCTION public.increment(i integer) RETURNS integer
     LANGUAGE plpgsql
     AS $$
         BEGIN
@@ -105,7 +105,7 @@ SET default_with_oids = false;
 -- Name: emp; Type: TABLE; Schema: public; Owner: galiev_mr
 --
 
-CREATE TABLE emp (
+CREATE TABLE public.emp (
     id integer NOT NULL,
     empname text,
     salary integer,
@@ -115,13 +115,13 @@ CREATE TABLE emp (
 );
 
 
-ALTER TABLE emp OWNER TO galiev_mr;
+ALTER TABLE public.emp OWNER TO galiev_mr;
 
 --
 -- Name: emp_id_seq; Type: SEQUENCE; Schema: public; Owner: galiev_mr
 --
 
-CREATE SEQUENCE emp_id_seq
+CREATE SEQUENCE public.emp_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -129,41 +129,41 @@ CREATE SEQUENCE emp_id_seq
     CACHE 1;
 
 
-ALTER TABLE emp_id_seq OWNER TO galiev_mr;
+ALTER SEQUENCE public.emp_id_seq OWNER TO galiev_mr;
 
 --
 -- Name: emp_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: galiev_mr
 --
 
-ALTER SEQUENCE emp_id_seq OWNED BY emp.id;
+ALTER SEQUENCE public.emp_id_seq OWNED BY emp.id;
 
 
 --
 -- Name: emp_view; Type: VIEW; Schema: public; Owner: galiev_mr
 --
 
-CREATE VIEW emp_view AS
+CREATE VIEW public.emp_view AS
  SELECT emp.empname,
     emp.last_date,
     increment(emp.salary) AS salary,
     emp.code
-   FROM emp;
+   FROM public.emp;
 
 
-ALTER TABLE emp_view OWNER TO galiev_mr;
+ALTER TABLE public.emp_view OWNER TO galiev_mr;
 
 --
 -- Name: emp id; Type: DEFAULT; Schema: public; Owner: galiev_mr
 --
 
-ALTER TABLE ONLY emp ALTER COLUMN id SET DEFAULT nextval('emp_id_seq'::regclass);
+ALTER TABLE ONLY public.emp ALTER COLUMN id SET DEFAULT nextval('public.emp_id_seq'::regclass);
 
 
 --
 -- Name: name_ind; Type: INDEX; Schema: public; Owner: galiev_mr
 --
 
-CREATE UNIQUE INDEX name_ind ON emp USING btree (empname);
+CREATE UNIQUE INDEX name_ind ON public.emp USING btree (empname);
 
 
 --
@@ -171,7 +171,7 @@ CREATE UNIQUE INDEX name_ind ON emp USING btree (empname);
 --
 
 CREATE RULE notify_me AS
-    ON UPDATE TO emp DO
+    ON UPDATE TO public.emp DO
  NOTIFY emp;
 
 
@@ -179,7 +179,7 @@ CREATE RULE notify_me AS
 -- Name: emp emp_stamp; Type: TRIGGER; Schema: public; Owner: galiev_mr
 --
 
-CREATE TRIGGER emp_stamp BEFORE INSERT OR UPDATE ON emp FOR EACH ROW EXECUTE PROCEDURE emp_stamp();
+CREATE TRIGGER emp_stamp BEFORE INSERT OR UPDATE ON public.emp FOR EACH ROW EXECUTE PROCEDURE public.emp_stamp();
 
 
 --

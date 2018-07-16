@@ -451,7 +451,7 @@ class PgDB4 extends PgDatabaseObjectCreator {
         PgColumn col = new PgColumn("id");
         col.setType("bigint");
         col.setNullValue(false);
-        col.setDefaultValue("nextval('call_logs_id_seq'::regclass)");
+        col.setDefaultValue("nextval('public.call_logs_id_seq'::regclass)");
         table.addColumn(col);
 
         return d;
@@ -946,7 +946,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
         PgTrigger trigger = new PgTrigger("test_trigger", "");
         trigger.setType(TgTypes.BEFORE);
         trigger.setOnUpdate(true);
-        trigger.setTableName("test");
+        trigger.setTableName("public.test");
         trigger.setForEachRow(false);
         trigger.setFunction("public.trigger_fnc()");
         table.addTrigger(trigger);

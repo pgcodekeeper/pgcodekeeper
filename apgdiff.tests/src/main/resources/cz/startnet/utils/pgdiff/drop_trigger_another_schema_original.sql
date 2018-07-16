@@ -29,7 +29,7 @@ ALTER SCHEMA another_triggers OWNER TO postgres;
 --COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
 SET default_tablespace = '';
 
@@ -39,7 +39,7 @@ SET default_with_oids = false;
 -- Name: test_table_trigger_another(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
-CREATE FUNCTION test_table_trigger_public() RETURNS trigger
+CREATE FUNCTION public.test_table_trigger_public() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 begin
@@ -48,15 +48,13 @@ end;
 $$;
 
 
-ALTER FUNCTION test_table_trigger_public() OWNER TO postgres;
-
-SET search_path = another_triggers, pg_catalog;
+ALTER FUNCTION public.test_table_trigger_public() OWNER TO postgres;
 
 --
 -- Name: test_table; Type: TABLE; Schema: another_triggers; Owner: postgres; Tablespace: 
 --
 
-CREATE TABLE test_table_a (
+CREATE TABLE another_triggers.test_table_a (
     id integer NOT NULL
 );
 
@@ -68,7 +66,7 @@ ALTER TABLE another_triggers.test_table_a OWNER TO postgres;
 -- Name: test_table_trigger; Type: TRIGGER; Schema: another_triggers; Owner: postgres
 --
 
-CREATE TRIGGER test_table_a_trigger BEFORE INSERT OR UPDATE ON test_table_a FOR EACH ROW EXECUTE PROCEDURE public.test_table_trigger_public();
+CREATE TRIGGER test_table_a_trigger BEFORE INSERT OR UPDATE ON another_triggers.test_table_a FOR EACH ROW EXECUTE PROCEDURE public.test_table_trigger_public();
 
 
 --

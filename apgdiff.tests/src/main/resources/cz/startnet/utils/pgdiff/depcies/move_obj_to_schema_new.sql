@@ -129,7 +129,7 @@ CREATE SEQUENCE test.emp_id_seq
     CACHE 1;
 
 
-ALTER TABLE test.emp_id_seq OWNER TO galiev_mr;
+ALTER SEQUENCE test.emp_id_seq OWNER TO galiev_mr;
 
 --
 -- Name: emp_id_seq; Type: SEQUENCE OWNED BY; Schema: test; Owner: galiev_mr
@@ -172,7 +172,7 @@ CREATE UNIQUE INDEX name_ind ON test.emp USING btree (empname);
 
 CREATE RULE notify_me AS
     ON UPDATE TO test.emp DO
- NOTIFY test.emp;
+ NOTIFY emp;
 
 
 --

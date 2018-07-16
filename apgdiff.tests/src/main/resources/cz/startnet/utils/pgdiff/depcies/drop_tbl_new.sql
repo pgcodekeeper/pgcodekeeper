@@ -23,13 +23,13 @@ SET client_min_messages = warning;
 --COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
 --
 -- Name: increment(); Type: FUNCTION; Schema: public; Owner: botov_av
 --
 
-CREATE FUNCTION increment() RETURNS trigger
+CREATE FUNCTION public.increment() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
         BEGIN

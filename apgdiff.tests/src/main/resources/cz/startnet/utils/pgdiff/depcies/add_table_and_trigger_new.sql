@@ -37,13 +37,13 @@ ALTER SCHEMA test OWNER TO galiev_mr;
 --COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 
-SET search_path = test, pg_catalog;
+SET search_path = pg_catalog;
 
 --
 -- Name: emp_stamp(); Type: FUNCTION; Schema: test; Owner: galiev_mr
 --
 
-CREATE FUNCTION emp_stamp() RETURNS trigger
+CREATE FUNCTION test.emp_stamp() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
     BEGIN
@@ -70,8 +70,6 @@ $$;
 
 ALTER FUNCTION test.emp_stamp() OWNER TO galiev_mr;
 
-SET search_path = public, pg_catalog;
-
 SET default_tablespace = '';
 
 SET default_with_oids = false;
@@ -80,7 +78,7 @@ SET default_with_oids = false;
 -- Name: emp; Type: TABLE; Schema: public; Owner: galiev_mr
 --
 
-CREATE TABLE emp (
+CREATE TABLE public.emp (
     empname text,
     salary integer,
     last_date timestamp without time zone,
@@ -88,13 +86,13 @@ CREATE TABLE emp (
 );
 
 
-ALTER TABLE emp OWNER TO galiev_mr;
+ALTER TABLE public.emp OWNER TO galiev_mr;
 
 --
 -- Name: emp emp_stamp; Type: TRIGGER; Schema: public; Owner: galiev_mr
 --
 
-CREATE TRIGGER emp_stamp BEFORE INSERT OR UPDATE ON emp FOR EACH ROW EXECUTE PROCEDURE test.emp_stamp();
+CREATE TRIGGER emp_stamp BEFORE INSERT OR UPDATE ON public.emp FOR EACH ROW EXECUTE PROCEDURE test.emp_stamp();
 
 
 --

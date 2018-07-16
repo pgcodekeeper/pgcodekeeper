@@ -23,13 +23,13 @@ SET client_min_messages = warning;
 --COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
 --
 -- Name: incr(); Type: FUNCTION; Schema: public; Owner: botov_av
 --
 
-CREATE FUNCTION incr() RETURNS trigger
+CREATE FUNCTION public.incr() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 BEGIN
@@ -48,7 +48,7 @@ SET default_with_oids = false;
 -- Name: t1; Type: TABLE; Schema: public; Owner: botov_av; Tablespace: 
 --
 
-CREATE TABLE t1 (
+CREATE TABLE public.t1 (
     c1 integer,
     c2 integer,
     c3 integer
@@ -61,7 +61,7 @@ ALTER TABLE public.t1 OWNER TO botov_av;
 -- Name: trig1; Type: TRIGGER; Schema: public; Owner: botov_av
 --
 
-CREATE TRIGGER trig1 AFTER UPDATE OF c1, c2 ON t1 FOR EACH ROW EXECUTE PROCEDURE incr();
+CREATE TRIGGER trig1 AFTER UPDATE OF c1, c2 ON public.t1 FOR EACH ROW EXECUTE PROCEDURE public.incr();
 
 
 --

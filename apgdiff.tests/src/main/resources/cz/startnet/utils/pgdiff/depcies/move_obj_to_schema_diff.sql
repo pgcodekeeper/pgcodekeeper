@@ -96,7 +96,7 @@ CREATE TRIGGER emp_stamp
 	EXECUTE PROCEDURE test.emp_stamp();
 
 CREATE RULE notify_me AS
-    ON UPDATE TO test.emp DO  NOTIFY test.emp;
+    ON UPDATE TO test.emp DO  NOTIFY emp;
 
 ALTER SEQUENCE test.emp_id_seq
 	OWNED BY test.emp.id;
