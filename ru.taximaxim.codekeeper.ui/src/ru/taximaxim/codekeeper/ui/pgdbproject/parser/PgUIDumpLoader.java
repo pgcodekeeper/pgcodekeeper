@@ -137,7 +137,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
             PgDiffArguments arguments, IProgressMonitor monitor,
             List<StatementBodyContainer> statementBodies, List<AntlrError> errors)
                     throws InterruptedException, IOException, CoreException {
-        PgDatabase db = new PgDatabase(false);
+        PgDatabase db = new PgDatabase();
         db.setArguments(arguments);
         for (WORK_DIR_NAMES workDirName : WORK_DIR_NAMES.values()) {
             IFolder iFolder = iProject.getFolder(workDirName.name());
@@ -208,7 +208,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
         SubMonitor mon = SubMonitor.convert(monitor, files.size());
         Set<String> schemaDirnamesLoaded = new HashSet<>();
         IPath schemasPath = new Path(WORK_DIR_NAMES.SCHEMA.name());
-        PgDatabase db = new PgDatabase(false);
+        PgDatabase db = new PgDatabase();
         db.setArguments(new PgDiffArguments());
 
         for (IFile file : files) {

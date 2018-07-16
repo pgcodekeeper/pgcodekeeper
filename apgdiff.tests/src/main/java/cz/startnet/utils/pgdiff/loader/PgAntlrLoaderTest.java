@@ -214,7 +214,7 @@ public class PgAntlrLoaderTest {
 class PgDB1 extends PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = new PgDatabase();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB();
         PgSchema schema = d.getDefaultSchema();
 
         PgTable table = new SimplePgTable("fax_boxes", "");
@@ -308,7 +308,7 @@ class PgDB1 extends PgDatabaseObjectCreator {
 class PgDB2 extends PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = new PgDatabase();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB();
 
         PgSchema schema = new PgSchema("postgis", "");
         d.addSchema(schema);
@@ -347,7 +347,7 @@ class PgDB2 extends PgDatabaseObjectCreator {
 class PgDB3 extends PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = new PgDatabase();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB();
         PgSchema schema = d.getDefaultSchema();
 
         PgSequence seq = new PgSequence("admins_aid_seq", "");
@@ -442,7 +442,7 @@ class PgDB3 extends PgDatabaseObjectCreator {
 class PgDB4 extends PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = new PgDatabase();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB();
         PgSchema schema = d.getDefaultSchema();
 
         PgTable table = new SimplePgTable("call_logs", "");
@@ -461,7 +461,7 @@ class PgDB4 extends PgDatabaseObjectCreator {
 class PgDB5 extends PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = new PgDatabase();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB();
         PgSchema schema = d.getDefaultSchema();
 
         PgFunction func = new PgFunction("gtsq_in", "");
@@ -528,7 +528,7 @@ class PgDB5 extends PgDatabaseObjectCreator {
 class PgDB6 extends PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = new PgDatabase();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB();
         PgSchema schema = d.getDefaultSchema();
         //    schema.setComment("'Standard public schema'");
 
@@ -562,7 +562,7 @@ class PgDB6 extends PgDatabaseObjectCreator {
 class PgDB7 extends PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = new PgDatabase();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB();
 
         PgSchema schema = new PgSchema("common", "");
         d.addSchema(schema);
@@ -611,7 +611,7 @@ class PgDB7 extends PgDatabaseObjectCreator {
 class PgDB8 extends PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = new PgDatabase();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB();
         PgSchema schema = d.getDefaultSchema();
         //    schema.setComment("'Standard public schema'");
 
@@ -645,7 +645,7 @@ class PgDB8 extends PgDatabaseObjectCreator {
 class PgDB9 extends PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = new PgDatabase();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB();
         PgSchema schema = d.getDefaultSchema();
 
         PgTable table = new SimplePgTable("user_data", "");
@@ -724,7 +724,7 @@ class PgDB9 extends PgDatabaseObjectCreator {
 class PgDB10 extends PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = new PgDatabase();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB();
         PgSchema schema = new PgSchema("admin", "");
         d.addSchema(schema);
         d.setDefaultSchema("admin");
@@ -815,7 +815,7 @@ class PgDB10 extends PgDatabaseObjectCreator {
 class PgDB11 extends PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = new PgDatabase();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB();
         PgSchema schema = d.getDefaultSchema();
 
         PgFunction func = new PgFunction("curdate", "");
@@ -830,7 +830,7 @@ class PgDB11 extends PgDatabaseObjectCreator {
 class PgDB12 extends PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = new PgDatabase();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB();
 
         d.setComment("'The status : ''E'' for enabled, ''D'' for disabled.'");
 
@@ -841,7 +841,7 @@ class PgDB12 extends PgDatabaseObjectCreator {
 class PgDB13 extends PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = new PgDatabase();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB();
         PgSchema schema = d.getDefaultSchema();
 
         PgFunction func = new PgFunction("drop_fk_except_for", "");
@@ -860,7 +860,7 @@ class PgDB13 extends PgDatabaseObjectCreator {
 class PgDB14 extends PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = new PgDatabase();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB();
         PgSchema schema = d.getDefaultSchema();
 
         schema.addPrivilege(new PgPrivilege(true, "ALL ON SCHEMA public FROM PUBLIC"));
@@ -960,7 +960,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
 class PgDB15 extends PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = new PgDatabase();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB();
         PgSchema schema = d.getDefaultSchema();
 
         PgTable table = new SimplePgTable("test", "");
@@ -985,7 +985,7 @@ class PgDB15 extends PgDatabaseObjectCreator {
 class PgDB16 extends PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = new PgDatabase();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB();
         PgSchema schema = d.getDefaultSchema();
 
         // table1
@@ -1022,7 +1022,7 @@ class PgDB16 extends PgDatabaseObjectCreator {
 class PgDB17 extends PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
-        PgDatabase d = new PgDatabase();
+        PgDatabase d = ApgdiffTestUtils.createDumpDB();
         PgSchema schema = d.getDefaultSchema();
 
         // table1

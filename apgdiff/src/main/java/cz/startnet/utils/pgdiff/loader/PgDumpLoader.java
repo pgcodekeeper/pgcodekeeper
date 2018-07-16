@@ -142,10 +142,15 @@ public class PgDumpLoader implements AutoCloseable {
      * The same as {@link #load(boolean)} with <code>false<code> argument.
      */
     public PgDatabase load() throws IOException, InterruptedException {
-        PgDatabase d = new PgDatabase(true);
+        PgDatabase d = new PgDatabase();
+
+        PgSchema schema = args.isMsSql() ? new MsSchema(ApgdiffConsts.DBO, "") :
+            new PgSchema(ApgdiffConsts.PUBLIC, "");
+        d.addSchema(schema);
+        d.setDefaultSchema(schema.getName());
         d.setArguments(args);
         load(d);
-        d.getSchema(ApgdiffConsts.PUBLIC).setLocation(inputObjectName);
+        d.getSchema(schema.getName()).setLocation(inputObjectName);
         FullAnalyze.fullAnalyze(d);
         return d;
     }
@@ -200,7 +205,7 @@ public class PgDumpLoader implements AutoCloseable {
     public static PgDatabase loadDatabaseSchemaFromDirTree(String dirPath,
             PgDiffArguments arguments, IProgressMonitor monitor, List<AntlrError> errors)
                     throws InterruptedException, IOException {
-        PgDatabase db = new PgDatabase(false);
+        PgDatabase db = new PgDatabase();
         db.setArguments(arguments);
         File dir = new File(dirPath);
 
@@ -237,8 +242,9 @@ public class PgDumpLoader implements AutoCloseable {
     public static PgDatabase loadMsDatabaseSchemaFromDirTree(String dirPath,
             PgDiffArguments arguments, IProgressMonitor monitor, List<AntlrError> errors)
                     throws InterruptedException, IOException {
-        PgDatabase db = new PgDatabase(false);
+        PgDatabase db = new PgDatabase();
         db.addSchema(new MsSchema(ApgdiffConsts.DBO, ""));
+        db.setDefaultSchema(ApgdiffConsts.DBO);
         db.setArguments(arguments);
         File dir = new File(dirPath);
 
@@ -284,7 +290,7 @@ public class PgDumpLoader implements AutoCloseable {
             if (Files.exists(p.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
                 return PgDumpLoader.loadDatabaseSchemaFromDirTree(path,  args, null, null);
             } else {
-                PgDatabase db = new PgDatabase(false);
+                PgDatabase db = new PgDatabase();
                 db.setArguments(args);
                 readStatementsFromDirectory(p, db, args);
                 return db;
