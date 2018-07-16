@@ -108,7 +108,7 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
         } catch (InterruptedException ex) {
             throw new MonitorCancelledRuntimeException();
         } catch (Exception e) {
-            Log.log(Log.LOG_ERROR, e.getLocalizedMessage());
+            Log.log(e);
         }
     }
 
