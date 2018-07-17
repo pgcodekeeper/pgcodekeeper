@@ -19,12 +19,9 @@ import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgView;
-import cz.startnet.utils.pgdiff.wrappers.JsonResultSetWrapper;
 import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
 import cz.startnet.utils.pgdiff.wrappers.SQLResultSetWrapper;
 import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
-import ru.taximaxim.codekeeper.apgdiff.Log;
-import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class JdbcReader implements PgCatalogStrings {
@@ -38,39 +35,6 @@ public abstract class JdbcReader implements PgCatalogStrings {
     }
 
     public void read() throws SQLException, InterruptedException, WrapperAccessException {
-        boolean helperSuccess = false;
-        if ((loader.availableHelpersBits & factory.hasHelperMask) != 0) {
-            try {
-                readAllUsingHelper();
-                helperSuccess = true;
-            } catch (SQLException | WrapperAccessException ex) {
-                loader.addError(Messages.JdbcReader_helper_function_error);
-                Log.log(Log.LOG_WARNING, "Error trying to use server JDBC helper, "
-                        + "falling back to old queries: " + factory.helperFunction, ex);
-                loader.connection.rollback();
-            }
-        }
-        if (!helperSuccess) {
-            readSchemasSeparately();
-        }
-    }
-
-    private void readAllUsingHelper() throws SQLException, InterruptedException, WrapperAccessException {
-        try (PreparedStatement st = loader.connection.prepareStatement(factory.helperQuery)) {
-            loader.setCurrentOperation(factory.helperFunction + " query");
-
-            st.setArray(1, loader.schemas.oids);
-            st.setArray(2, loader.schemas.names);
-            try (ResultSet result = loader.runner.runScript(st)) {
-                while (result.next()) {
-                    ResultSetWrapper wrapper = new JsonResultSetWrapper(result.getString(1));
-                    processResult(wrapper, loader.schemas.map.get(result.getLong("schema_oid")));
-                }
-            }
-        }
-    }
-
-    private void readSchemasSeparately() throws SQLException, InterruptedException, WrapperAccessException {
         String query = factory.makeFallbackQuery(loader.version);
         Set<Entry<Long, PgSchema>> schemas = loader.schemas.map.entrySet();
 

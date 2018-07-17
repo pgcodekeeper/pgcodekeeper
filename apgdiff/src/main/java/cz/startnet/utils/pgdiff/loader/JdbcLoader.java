@@ -30,8 +30,6 @@ import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 
 public class JdbcLoader extends JdbcLoaderBase {
 
-    private boolean useServerHelpers = true;
-
     public JdbcLoader(JdbcConnector connector, PgDiffArguments pgDiffArguments) {
         this(connector, pgDiffArguments, SubMonitor.convert(null));
     }
@@ -74,12 +72,10 @@ public class JdbcLoader extends JdbcLoaderBase {
                 finishAntlr();
                 d.setDbTimestamp(dbTime);
                 timestampParams.fillEqualObjects(dbTime);
-                useServerHelpers = false; // not supported in this version
             }
 
             schemas = new SchemasReader(this, d).read();
             try (SchemasContainer schemas = this.schemas) {
-                availableHelpersBits = useServerHelpers ? JdbcReaderFactory.getAvailableHelpersBits(this) : 0;
                 for (JdbcReaderFactory f : JdbcReaderFactory.FACTORIES) {
                     f.getReader(this).read();
                 }
@@ -107,20 +103,6 @@ public class JdbcLoader extends JdbcLoaderBase {
                     e.getLocalizedMessage(), getCurrentLocation()), e);
         }
         return d;
-    }
-
-    public void setUseServerHelpers(boolean useServerHelpers) {
-        this.useServerHelpers = useServerHelpers;
-    }
-
-    public boolean hasAllHelpers() throws IOException, InterruptedException {
-        // just makes new connection for now
-        // smarter solution would be to make the class AutoCloseable
-        try (Connection c = connector.getConnection()) {
-            return JdbcReaderFactory.getAvailableHelperBits(c, runner) == JdbcReaderFactory.getAllHelperBits();
-        } catch (SQLException ex) {
-            throw new IOException(ex.getLocalizedMessage(), ex);
-        }
     }
 
     /**

@@ -1,18 +1,11 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
-import cz.startnet.utils.pgdiff.loader.JdbcRunner;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.loader.jdbc.ConstraintsReader.ConstraintsReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.FtsConfigurationsReader.FtsConfigurationsReaderFactory;
@@ -27,8 +20,6 @@ import cz.startnet.utils.pgdiff.loader.jdbc.TablesReader.TablesReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.TriggersReader.TriggersReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.TypesReader.TypesReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.ViewsReader.ViewsReaderFactory;
-import ru.taximaxim.codekeeper.apgdiff.Log;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class JdbcReaderFactory {
 
@@ -37,7 +28,6 @@ public abstract class JdbcReaderFactory {
      */
     protected final long hasHelperMask;
     protected final String helperFunction;
-    protected final String helperQuery;
     protected final Map<SupportedVersion, String> queries;
 
     public String getHelperFunction() {
@@ -47,7 +37,6 @@ public abstract class JdbcReaderFactory {
     public JdbcReaderFactory(long hasHelperMask, String helperFunction, Map<SupportedVersion, String> queries) {
         this.hasHelperMask = hasHelperMask;
         this.helperFunction = helperFunction;
-        this.helperQuery = "SELECT * FROM " + HELPER_SCHEMA + '.' + helperFunction + "(?,?)";
         this.queries = queries;
     }
 
@@ -71,7 +60,6 @@ public abstract class JdbcReaderFactory {
      * Static part.
      */
 
-    private static final String HELPER_SCHEMA = "pgcodekeeperhelper";
     public static final List<? extends JdbcReaderFactory> FACTORIES;
     static {
         // SONAR-OFF
@@ -99,17 +87,6 @@ public abstract class JdbcReaderFactory {
     }
 
     /**
-     * @param loader loader connection must have been established
-     *
-     * @return helper functions that are available in the database
-     *          in the form of bit field of combined {@link #hasHelperMask}s.
-     */
-    public static long getAvailableHelpersBits(JdbcLoaderBase loader) throws SQLException, InterruptedException {
-        loader.setCurrentOperation("available helpers query");
-        return getAvailableHelperBits(loader.connection, loader.runner);
-    }
-
-    /**
      * Exclude oids from query
      *
      * @param base - base query
@@ -123,41 +100,6 @@ public abstract class JdbcReaderFactory {
         sb.append(oids);
         sb.append("]));");
         return sb.toString();
-    }
-
-    public static long getAvailableHelperBits(Connection connection, JdbcRunner runner) throws SQLException, InterruptedException {
-        long bits = 0;
-        try (PreparedStatement st = connection.prepareStatement(JdbcQueries.QUERY_HELPER_FUNCTIONS)) {
-            st.setString(1, HELPER_SCHEMA);
-            try (ResultSet res = runner.runScript(st)) {
-                Set<String> funcs = new HashSet<>();
-                while (res.next()) {
-                    Object schemaAccess = res.getObject("schema_access");
-                    JdbcReader.checkObjectValidity(schemaAccess, DbObjType.SCHEMA, HELPER_SCHEMA);
-
-                    if (!(boolean)schemaAccess) {
-                        Log.log(Log.LOG_WARNING, "No access to helper schema: " + HELPER_SCHEMA);
-                        break;
-                    }
-
-                    String func = res.getString("proname");
-                    Object functionAccess = res.getObject("function_access");
-                    JdbcReader.checkObjectValidity(functionAccess, DbObjType.FUNCTION, func);
-
-                    if ((boolean)functionAccess) {
-                        funcs.add(func);
-                    } else {
-                        Log.log(Log.LOG_WARNING, "No access to helper function: " + func);
-                    }
-                }
-                for (JdbcReaderFactory factory : FACTORIES) {
-                    if (funcs.contains(factory.helperFunction)) {
-                        bits |= factory.hasHelperMask;
-                    }
-                }
-            }
-        }
-        return bits;
     }
 
     public static long getAllHelperBits() {

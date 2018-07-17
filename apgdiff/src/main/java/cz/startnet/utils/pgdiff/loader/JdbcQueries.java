@@ -7,7 +7,6 @@ import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
-import cz.startnet.utils.pgdiff.loader.jdbc.JdbcReaderFactory;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
@@ -29,13 +28,9 @@ public final class JdbcQueries {
 
     public static String QUERY_TOTAL_OBJECTS_COUNT;
     public static String QUERY_TYPES_FOR_CACHE_ALL;
-    public static String QUERY_HELPER_FUNCTIONS;
     public static String QUERY_CHECK_VERSION;
     public static String QUERY_CHECK_LAST_SYS_OID;
     public static String QUERY_CHECK_TIMESTAMPS;
-
-    public static String QUERY_HELPER_FUNCTION_TEMPLATE;
-    public static String QUERY_HELPER_FUNCTIONS_BEGIN;
 
     public static Map <SupportedVersion, String> QUERY_EXTENSIONS;
     public static Map <SupportedVersion, String> QUERY_SCHEMAS;
@@ -64,9 +59,6 @@ public final class JdbcQueries {
     public static String QUERY_SYSTEM_CASTS;
 
     // SONAR-ON
-
-    private static final String HELPER_NAME = "%FUNCTION_NAME%";
-    private static final String HELPER_QUERY = "%FUNCTION_QUERY%";
 
     static {
         for (Field f : JdbcQueries.class.getFields()) {
@@ -111,21 +103,6 @@ public final class JdbcQueries {
             }
         }
         f.set(null, map);
-    }
-
-    public static String getHelperFunctions(SupportedVersion version) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(QUERY_HELPER_FUNCTIONS_BEGIN);
-
-        for (JdbcReaderFactory fac : JdbcReaderFactory.FACTORIES) {
-            // set helper functions default PostgreSQL version 9.5
-
-            sb.append(QUERY_HELPER_FUNCTION_TEMPLATE
-                    .replace(HELPER_NAME, fac.getHelperFunction())
-                    .replace(HELPER_QUERY, fac.makeFallbackQuery(version.getVersion()))
-                    .replace("?", "schema_oid"));
-        }
-        return sb.toString();
     }
 
     private JdbcQueries() {
