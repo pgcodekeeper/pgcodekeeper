@@ -1,5 +1,7 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -9,8 +11,6 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
-import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class ConstraintsReader extends JdbcReader {
@@ -34,15 +34,15 @@ public class ConstraintsReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
+    protected void processResult(ResultSet result, PgSchema schema) throws SQLException {
         PgTable table = schema.getTable(result.getString(CLASS_RELNAME));
         if (table != null) {
             table.addConstraint(getConstraint(result, schema, table.getName()));
         }
     }
 
-    private PgConstraint getConstraint(ResultSetWrapper res, PgSchema schema, String tableName)
-            throws WrapperAccessException {
+    private PgConstraint getConstraint(ResultSet res, PgSchema schema, String tableName)
+            throws SQLException {
         String schemaName = schema.getName();
         String contype = res.getString("contype");
 
@@ -77,14 +77,14 @@ public class ConstraintsReader extends JdbcReader {
         return c;
     }
 
-    private void createFKeyCon(ResultSetWrapper res, PgConstraint c) throws WrapperAccessException {
+    private void createFKeyCon(ResultSet res, PgConstraint c) throws SQLException {
         String fschema = res.getString("foreign_schema_name");
         String ftable = res.getString("foreign_table_name");
         GenericColumn ftableRef = new GenericColumn(fschema, ftable, DbObjType.TABLE);
         c.setForeignTable(ftableRef);
         c.addDep(ftableRef);
 
-        String[] referencedColumnNames = res.getArray("foreign_cols", String.class);
+        String[] referencedColumnNames = getColArray(res, "foreign_cols", String.class);
         for (String colName : referencedColumnNames) {
             if (colName != null) {
                 c.addForeignColumn(colName);
@@ -93,14 +93,14 @@ public class ConstraintsReader extends JdbcReader {
         }
     }
 
-    private void createUniqueCon(String contype, ResultSetWrapper res, PgConstraint c) throws WrapperAccessException {
+    private void createUniqueCon(String contype, ResultSet res, PgConstraint c) throws SQLException {
         if ("p".equals(contype)) {
             c.setPrimaryKey(true);
         } else {
             c.setUnique(true);
         }
 
-        String[] concols = res.getArray("cols", String.class);
+        String[] concols = getColArray(res, "cols", String.class);
         for (String name : concols) {
             c.addColumn(name);
         }

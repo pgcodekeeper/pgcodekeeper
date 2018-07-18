@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,8 +12,6 @@ import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgFtsConfiguration;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
-import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class FtsConfigurationsReader extends JdbcReader {
@@ -34,8 +33,7 @@ public class FtsConfigurationsReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSetWrapper res, PgSchema schema)
-            throws SQLException, WrapperAccessException {
+    protected void processResult(ResultSet res, PgSchema schema) throws SQLException {
         String name = res.getString("cfgname");
         PgFtsConfiguration config = new PgFtsConfiguration(name, "");
 
@@ -44,9 +42,9 @@ public class FtsConfigurationsReader extends JdbcReader {
         config.setParser(PgDiffUtils.getQuotedName(parserSchema) + '.' + PgDiffUtils.getQuotedName(parserName));
         config.addDep(new GenericColumn(parserSchema, parserName, DbObjType.FTS_PARSER));
 
-        String[] fragments = res.getArray("tokennames", String.class);
-        String[] dictSchemas = res.getArray("dictschemas", String.class);
-        String[] dictionaries = res.getArray("dictnames", String.class);
+        String[] fragments = getColArray(res, "tokennames", String.class);
+        String[] dictSchemas = getColArray(res, "dictschemas", String.class);
+        String[] dictionaries = getColArray(res, "dictnames", String.class);
 
         if (fragments != null) {
             Map<String, List<String>> dictMap = new HashMap<>();

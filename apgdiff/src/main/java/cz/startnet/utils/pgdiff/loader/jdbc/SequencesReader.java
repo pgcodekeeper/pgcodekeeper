@@ -18,8 +18,6 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
-import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class SequencesReader extends JdbcReader {
@@ -43,7 +41,7 @@ public class SequencesReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSetWrapper res, PgSchema schema) throws WrapperAccessException {
+    protected void processResult(ResultSet res, PgSchema schema) throws SQLException {
         loader.monitor.worked(1);
         String sequenceName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schema.getName(), sequenceName, DbObjType.SEQUENCE));

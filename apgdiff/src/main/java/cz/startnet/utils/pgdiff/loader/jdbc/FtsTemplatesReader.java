@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 
@@ -7,8 +8,6 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.schema.PgFtsTemplate;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
-import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class FtsTemplatesReader extends JdbcReader {
@@ -30,8 +29,7 @@ public class FtsTemplatesReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSetWrapper res, PgSchema schema)
-            throws SQLException, WrapperAccessException {
+    protected void processResult(ResultSet res, PgSchema schema) throws SQLException {
         PgFtsTemplate template = new PgFtsTemplate(res.getString("tmplname"), "");
 
         String init = res.getString("tmplinit");

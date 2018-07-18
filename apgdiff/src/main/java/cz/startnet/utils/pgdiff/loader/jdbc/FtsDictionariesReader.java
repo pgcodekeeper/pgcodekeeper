@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 
@@ -9,8 +10,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgFtsDictionary;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
-import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class FtsDictionariesReader extends JdbcReader {
@@ -32,8 +31,7 @@ public class FtsDictionariesReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSetWrapper res, PgSchema schema)
-            throws SQLException, WrapperAccessException {
+    protected void processResult(ResultSet res, PgSchema schema) throws SQLException {
         String name = res.getString("dictname");
         PgFtsDictionary dic = new PgFtsDictionary(name, "");
 

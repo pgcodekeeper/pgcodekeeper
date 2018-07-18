@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
+import java.sql.Array;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -19,9 +20,6 @@ import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgView;
-import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
-import cz.startnet.utils.pgdiff.wrappers.SQLResultSetWrapper;
-import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class JdbcReader implements PgCatalogStrings {
@@ -34,7 +32,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
         this.loader = loader;
     }
 
-    public void read() throws SQLException, InterruptedException, WrapperAccessException {
+    public void read() throws SQLException, InterruptedException {
         String query = factory.makeFallbackQuery(loader.version);
         Set<Entry<Long, PgSchema>> schemas = loader.schemas.map.entrySet();
 
@@ -61,11 +59,11 @@ public abstract class JdbcReader implements PgCatalogStrings {
                 loader.setCurrentOperation("set search_path query");
 
                 loader.setCurrentOperation(factory.helperFunction + " query for schema " + schema.getValue().getName());
-                st.setLong(1, schema.getKey());
                 try (ResultSet result = loader.runner.runScript(st)) {
                     while (result.next()) {
-                        ResultSetWrapper wrapper = new SQLResultSetWrapper(result);
-                        processResult(wrapper, schema.getValue());
+                        if (result.getLong("schema_oid") == schema.getKey()) {
+                            processResult(result, schema.getValue());
+                        }
                     }
                 }
             }
@@ -168,8 +166,19 @@ public abstract class JdbcReader implements PgCatalogStrings {
         }
     }
 
-    protected abstract void processResult(ResultSetWrapper json, PgSchema schema)
-            throws SQLException, WrapperAccessException;
+    protected <T> T[] getColArray(ResultSet rs, String columnName,
+            Class<T> arrayElement) throws SQLException {
+        Array arr = rs.getArray(columnName);
+        if (arr != null) {
+            @SuppressWarnings("unchecked")
+            T[] ret = (T[]) arr.getArray();
+            return ret;
+        }
+        return null;
+    }
+
+    protected abstract void processResult(ResultSet result, PgSchema schema)
+            throws SQLException;
 
     protected abstract DbObjType getType();
 
