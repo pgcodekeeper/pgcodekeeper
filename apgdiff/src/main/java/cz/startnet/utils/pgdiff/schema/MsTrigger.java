@@ -15,6 +15,8 @@ public class MsTrigger extends PgTrigger {
     private String query;
     private boolean isAppend;
     private boolean isNotForRep;
+    private boolean ansiNulls;
+    private boolean quotedIdentified;
 
     public MsTrigger(String name, String rawStatement) {
         super(name, rawStatement);
@@ -23,6 +25,11 @@ public class MsTrigger extends PgTrigger {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
+        sbSQL.append("SET QUOTED_IDENTIFIER ").append(quotedIdentified ? "ON" : "OFF");
+        sbSQL.append(GO).append('\n');
+        sbSQL.append("SET ANSI_NULLS ").append(ansiNulls ? "ON" : "OFF");
+        sbSQL.append(GO).append('\n');
+
         sbSQL.append("CREATE OR ALTER TRIGGER ");
         sbSQL.append(MsDiffUtils.quoteName(getContainingSchema().getName()));
         sbSQL.append('.');
@@ -124,6 +131,8 @@ public class MsTrigger extends PgTrigger {
         hasher.put(query);
         hasher.put(isAppend);
         hasher.put(isNotForRep);
+        hasher.put(quotedIdentified);
+        hasher.put(ansiNulls);
     }
 
     @Override
@@ -175,6 +184,24 @@ public class MsTrigger extends PgTrigger {
         resetHash();
     }
 
+    public void setAnsiNulls(boolean ansiNulls) {
+        this.ansiNulls = ansiNulls;
+        resetHash();
+    }
+
+    public boolean isAnsiNulls() {
+        return ansiNulls;
+    }
+
+    public void setQuotedIdentified(boolean quotedIdentified) {
+        this.quotedIdentified = quotedIdentified;
+        resetHash();
+    }
+
+    public boolean isQuotedIdentified() {
+        return quotedIdentified;
+    }
+
     @Override
     public MsTrigger shallowCopy() {
         MsTrigger tr = new MsTrigger(getName(), getRawStatement());
@@ -188,6 +215,8 @@ public class MsTrigger extends PgTrigger {
         tr.setQuery(getQuery());
         tr.setAppend(isAppend());
         tr.setNotForRep(isNotForRep());
+        tr.setAnsiNulls(isAnsiNulls());
+        tr.setQuotedIdentified(isQuotedIdentified());
         return tr;
     }
 

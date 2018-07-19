@@ -17,7 +17,7 @@ public class SimpleMsTable extends RegularPgTable {
     private String textImage;
     private String fileStream;
     private boolean ansiNulls;
-    private boolean quotedIdentified;
+    private boolean quotedIdentified = true;
 
     public SimpleMsTable(String name, String rawStatement) {
         super(name, rawStatement);
@@ -62,11 +62,11 @@ public class SimpleMsTable extends RegularPgTable {
         }
 
         if (getTextImage() != null) {
-            sbSQL.append("TEXTIMAGE_ON ").append(getTextImage()).append("\n");
+            sbSQL.append("TEXTIMAGE_ON ").append(MsDiffUtils.quoteName(getTextImage())).append("\n");
         }
 
         if (getFileStream() != null) {
-            sbSQL.append("FILESTREAM_ON ").append(getFileStream()).append("\n");
+            sbSQL.append("FILESTREAM_ON ").append(MsDiffUtils.quoteName(getFileStream())).append("\n");
         }
 
         StringBuilder sb = new StringBuilder();
@@ -92,8 +92,10 @@ public class SimpleMsTable extends RegularPgTable {
 
     @Override
     protected boolean isNeedRecreate(PgTable newTable) {
-        return  !(newTable instanceof RegularPgTable) ||
-                !Objects.equals(((RegularPgTable)newTable).getTablespace(), getTablespace());
+        return  !(newTable instanceof SimpleMsTable)
+                || !Objects.equals(((SimpleMsTable)newTable).getTablespace(), getTablespace())
+                || !Objects.equals(((SimpleMsTable)newTable).getTextImage(), getTextImage())
+                || !Objects.equals(((SimpleMsTable)newTable).getFileStream(), getFileStream());
     }
 
     @Override
