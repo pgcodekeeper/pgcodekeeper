@@ -67,14 +67,16 @@ public final class JdbcQueries {
 
     public static Map <SupportedVersion, String> QUERY_MS_SCHEMAS;
 
-    public static Map <SupportedVersion, String> QUERY_MS_TABLES_PER_SCHEMA;
-    public static Map <SupportedVersion, String> QUERY_MS_FUNCTIONS_PER_SCHEMA;
-    public static Map <SupportedVersion, String> QUERY_MS_PROCEDURES_PER_SCHEMA;
-    public static Map <SupportedVersion, String> QUERY_MS_SEQUENCES_PER_SCHEMA;
-    public static Map <SupportedVersion, String> QUERY_MS_INDICES_PER_SCHEMA;
-    public static Map <SupportedVersion, String> QUERY_MS_CONSTRAINTS_PER_SCHEMA;
-    public static Map <SupportedVersion, String> QUERY_MS_TRIGGERS_PER_SCHEMA;
-    public static Map <SupportedVersion, String> QUERY_MS_VIEWS_PER_SCHEMA;
+    public static Map <SupportedVersion, String> QUERY_MS_TABLES;
+    public static Map <SupportedVersion, String> QUERY_MS_FUNCTIONS_PROCEDURES_VIEWS_TRIGGERS;
+    public static Map <SupportedVersion, String> QUERY_MS_EXTENDED_FUNCTIONS_AND_PROCEDURES;
+    public static Map <SupportedVersion, String> QUERY_MS_COLUMNS;
+    public static Map <SupportedVersion, String> QUERY_MS_ARGUMENTS;
+    public static Map <SupportedVersion, String> QUERY_MS_SEQUENCES;
+    public static Map <SupportedVersion, String> QUERY_MS_INDICES_AND_PK;
+    public static Map <SupportedVersion, String> QUERY_MS_INDICES_AND_PK_COLUMNS;
+    public static Map <SupportedVersion, String> QUERY_MS_FK;
+    public static Map <SupportedVersion, String> QUERY_MS_CHECK_CONSTRAINTS;
 
     // SONAR-ON
 
