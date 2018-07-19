@@ -152,7 +152,6 @@ public class JdbcConnector {
         }
         props.setProperty("ApplicationName", "pgCodeKeeper apgdiff module, Bundle-Version: " + apgdiffVer);
 
-        Class.forName(ApgdiffConsts.JDBC_CONSTS.JDBC_DRIVER);
         Log.log(Log.LOG_INFO, "Establishing JDBC connection with host:port " +
                 host + ":" + port + ", db name " + dbName + ", username " + user);
         return DriverManager.getConnection(url, props);

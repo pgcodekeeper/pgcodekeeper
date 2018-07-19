@@ -26,7 +26,8 @@ Bundle-ClassPath: lib/jgrapht-core-0.9.0.jar,
  .,
  lib/antlr-runtime-4.6.jar,
  lib/postgresql-42.0.0.jre7.jar,
- lib/PgPass-0.0.2.jar
+ lib/PgPass-0.0.2.jar,
+ lib/mssql-jdbc-6.4.0.jre8.jar
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: ru.taximaxim.codekeeper.apgdiff.Activator
 Import-Package: org.eclipse.equinox.log;version="[1.0.0,2.0.0)",

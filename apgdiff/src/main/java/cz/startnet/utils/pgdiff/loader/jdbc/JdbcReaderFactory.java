@@ -53,6 +53,10 @@ public abstract class JdbcReaderFactory {
 
     public abstract JdbcReader getReader(JdbcLoaderBase loader);
 
+    public String getBaseQuery() {
+        return queries.get(null);
+    }
+
     public String makeFallbackQuery (int version) {
         StringBuilder sb = new StringBuilder("SELECT * FROM (");
         sb.append(queries.get(null));
@@ -73,6 +77,7 @@ public abstract class JdbcReaderFactory {
 
     private static final String HELPER_SCHEMA = "pgcodekeeperhelper";
     public static final List<? extends JdbcReaderFactory> FACTORIES;
+    public static final List<? extends JdbcReaderFactory> MS_FACTORIES;
     static {
         // SONAR-OFF
         // NOTE: order of readers has been changed to move the heaviest ANTLR tasks to the beginning
@@ -95,6 +100,9 @@ public abstract class JdbcReaderFactory {
                 new FtsDictionariesReaderFactory(  1 << i++, "get_all_fts_dictionaries",   JdbcQueries.QUERY_FTS_DICTIONARIES_PER_SCHEMA),
                 new FtsConfigurationsReaderFactory(1 << i++, "get_all_fts_configurations", JdbcQueries.QUERY_FTS_CONFIGURATIONS_PER_SCHEMA)
                 // SONAR-ON
+                ));
+        MS_FACTORIES = Collections.unmodifiableList(Arrays.asList(
+                // TODO add
                 ));
     }
 
