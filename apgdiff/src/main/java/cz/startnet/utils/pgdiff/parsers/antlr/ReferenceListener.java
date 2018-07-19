@@ -305,7 +305,7 @@ public class ReferenceListener extends SQLParserBaseListener {
                 ParserAbstract.getFullCtxText(ctx.getParent()));
 
         Schema_qualified_name_nontypeContext funcNameCtx = ctx.func_name.function_name()
-                .data_type().predefined_type().schema_qualified_name_nontype();
+                .schema_qualified_name_nontype();
         IdentifierContext sch = funcNameCtx.schema;
         String funcSchema = sch != null ?  sch.getText() : getDefSchemaName();
         String funcName = funcNameCtx.identifier_nontype().getText();

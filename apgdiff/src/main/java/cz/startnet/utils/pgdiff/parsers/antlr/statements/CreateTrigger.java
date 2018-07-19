@@ -98,7 +98,7 @@ public class CreateTrigger extends ParserAbstract {
         }
 
         Schema_qualified_name_nontypeContext funcNameCtx = ctx.func_name.function_name()
-                .data_type().predefined_type().schema_qualified_name_nontype();
+                .schema_qualified_name_nontype();
         IdentifierContext sch = funcNameCtx.schema;
         String schName = sch != null ?  sch.getText() : getDefSchemaName();
         String objName = funcNameCtx.identifier_nontype().getText();
