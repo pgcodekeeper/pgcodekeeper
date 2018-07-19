@@ -32,6 +32,16 @@ public class MsSequence extends PgSequence {
     }
 
     @Override
+    protected void appendSequenceCashe(StringBuilder sbSQL) {
+        if (isCached()) {
+            sbSQL.append("\n\tCACHE ");
+            if (getCache() != null) {
+                sbSQL.append(getCache());
+            }
+        }
+    }
+
+    @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
@@ -54,6 +64,19 @@ public class MsSequence extends PgSequence {
 
         alterPrivileges(newSequence, sb);
         return sb.length() > startLength;
+    }
+
+    @Override
+    protected void compareSequenceCache(PgSequence oldSeq, PgSequence newSeq, StringBuilder sbSQL) {
+        final String oldCache = oldSeq.getCache();
+        final String newCache = newSeq.getCache();
+
+        if (((MsSequence)newSeq).isCached() && !newCache.equals(oldCache)) {
+            sbSQL.append("\n\tCACHE ");
+            if (newCache != null) {
+                sbSQL.append(newCache);
+            }
+        }
     }
 
     @Override

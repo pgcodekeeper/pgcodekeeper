@@ -18,7 +18,7 @@ public abstract class JdbcMsReader extends JdbcReader {
     public void read() throws SQLException, InterruptedException {
         try (ResultSet r = loader.runner.runScript(loader.statement, factory.getBaseQuery())) {
             while (r.next()) {
-                processResult(r, loader.schemaIds.get(r.getLong("schema_oid")));
+                processResult(r, loader.schemaIds.get(r.getLong("schema_id")));
             }
         }
     }

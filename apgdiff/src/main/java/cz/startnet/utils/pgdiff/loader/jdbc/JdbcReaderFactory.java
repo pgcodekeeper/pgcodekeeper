@@ -21,6 +21,7 @@ import cz.startnet.utils.pgdiff.loader.jdbc.FtsParsersReader.FtsParsersReaderFac
 import cz.startnet.utils.pgdiff.loader.jdbc.FtsTemplatesReader.FtsTemplatesReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.FunctionsReader.FunctionsReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.IndicesReader.IndicesReaderFactory;
+import cz.startnet.utils.pgdiff.loader.jdbc.MsSequencesReader.MsSequencesReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.RulesReader.RulesReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.SequencesReader.SequencesReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.TablesReader.TablesReaderFactory;
@@ -103,6 +104,7 @@ public abstract class JdbcReaderFactory {
                 ));
         MS_FACTORIES = Collections.unmodifiableList(Arrays.asList(
                 // TODO add
+                new MsSequencesReaderFactory(1 << i++, "get_all_sequences", JdbcQueries.QUERY_MS_SEQUENCES)
                 ));
     }
 

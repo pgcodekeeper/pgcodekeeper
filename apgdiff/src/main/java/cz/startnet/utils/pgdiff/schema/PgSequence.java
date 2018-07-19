@@ -33,6 +33,7 @@ public class PgSequence extends PgStatementWithSearchPath implements IRelation {
                     new Pair<>("cache_value", "bigint"), new Pair<>("log_cnt", "bigint"),
                     new Pair<>("is_cycled", "boolean"), new Pair<>("is_called", "boolean"))));
 
+    private boolean isCached;
     private String cache;
     private String increment;
     private String maxValue;
@@ -119,13 +120,17 @@ public class PgSequence extends PgStatementWithSearchPath implements IRelation {
             sbSQL.append(minValue);
         }
 
-        if (cache != null) {
-            sbSQL.append("\n\tCACHE ");
-            sbSQL.append(cache);
-        }
+        appendSequenceCashe(sbSQL);
 
         if (cycle) {
             sbSQL.append("\n\tCYCLE");
+        }
+    }
+
+    protected void appendSequenceCashe(StringBuilder sbSQL) {
+        if (cache != null) {
+            sbSQL.append("\n\tCACHE ");
+            sbSQL.append(cache);
         }
     }
 
@@ -246,13 +251,7 @@ public class PgSequence extends PgStatementWithSearchPath implements IRelation {
             sbSQL.append(newStart);
         }
 
-        final String oldCache = oldSequence.getCache();
-        final String newCache = newSequence.getCache();
-
-        if (newCache != null && !newCache.equals(oldCache)) {
-            sbSQL.append("\n\tCACHE ");
-            sbSQL.append(newCache);
-        }
+        compareSequenceCache(oldSequence, newSequence, sbSQL);
 
         final boolean oldCycle = oldSequence.isCycle();
         final boolean newCycle = newSequence.isCycle();
@@ -264,6 +263,15 @@ public class PgSequence extends PgStatementWithSearchPath implements IRelation {
         }
 
         return sbSQL.length() > 0;
+    }
+
+    protected void compareSequenceCache(PgSequence oldSequence, PgSequence newSequence, StringBuilder sbSQL) {
+        final String oldCache = oldSequence.getCache();
+        final String newCache = newSequence.getCache();
+        if (newCache != null && !newCache.equals(oldCache)) {
+            sbSQL.append("\n\tCACHE ");
+            sbSQL.append(newCache);
+        }
     }
 
     public void setMinMaxInc(long inc, Long max, Long min) {
@@ -319,6 +327,15 @@ public class PgSequence extends PgStatementWithSearchPath implements IRelation {
         resetHash();
     }
 
+    public boolean isCached() {
+        return isCached;
+    }
+
+    public void setCached(boolean isCached) {
+        this.isCached = isCached;
+        resetHash();
+    }
+
     @Override
     public boolean compare(PgStatement obj) {
         boolean eq = false;
@@ -334,6 +351,7 @@ public class PgSequence extends PgStatementWithSearchPath implements IRelation {
                     && Objects.equals(startWith, seq.getStartWith())
                     && Objects.equals(cache, seq.getCache())
                     && cycle == seq.isCycle()
+                    && isCached == seq.isCached()
                     && Objects.equals(ownedBy, seq.getOwnedBy())
                     && grants.equals(seq.grants)
                     && revokes.equals(seq.revokes)
@@ -360,6 +378,7 @@ public class PgSequence extends PgStatementWithSearchPath implements IRelation {
         hasher.put(owner);
         hasher.put(comment);
         hasher.put(dataType);
+        hasher.put(isCached);
     }
 
     @Override
@@ -372,6 +391,7 @@ public class PgSequence extends PgStatementWithSearchPath implements IRelation {
         sequenceDst.minValue = getMinValue();
         sequenceDst.dataType = getDataType();
         sequenceDst.setOwnedBy(getOwnedBy());
+        sequenceDst.setCached(isCached());
         sequenceDst.setStartWith(getStartWith());
         sequenceDst.setComment(getComment());
         for (PgPrivilege priv : revokes) {
