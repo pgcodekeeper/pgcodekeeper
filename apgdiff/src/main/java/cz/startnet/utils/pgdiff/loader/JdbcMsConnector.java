@@ -28,4 +28,8 @@ public class JdbcMsConnector extends JdbcConnector {
         // TODO Auto-generated constructor stub
     }
 
+    @Override
+    protected String generateBasicConnectionString() {
+        return "jdbc:sqlserver://" + host + ':' + port + ";databaseName=" + dbName;
+    }
 }

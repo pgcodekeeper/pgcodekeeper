@@ -21,11 +21,11 @@ import ru.taximaxim.pgpass.PgPassException;
 
 public class JdbcConnector {
 
-    private final String host;
-    private final int port;
+    protected final String host;
+    protected final int port;
     private final String user;
     private final String pass;
-    private final String dbName;
+    protected final String dbName;
     private final String url;
     private Map<String, String> properties;
     private final String timezone;
@@ -55,7 +55,7 @@ public class JdbcConnector {
         this.dbName = dbName;
         this.user = user.isEmpty() ? System.getProperty("user.name") : user;
         this.pass = (pass == null || pass.isEmpty()) ? getPgPassPassword() : pass;
-        this.url = "jdbc:postgresql://" + host + ":" + this.port + "/" + dbName;
+        this.url = generateBasicConnectionString();
 
         this.timezone = timezone;
     }
@@ -114,6 +114,14 @@ public class JdbcConnector {
         this.dbName = dbName == null ? "" : dbName;
         this.user = user == null || user.isEmpty() ? System.getProperty("user.name") : user;
         this.pass = pass == null || pass.isEmpty() ? getPgPassPassword() : pass;
+    }
+
+    /**
+     * @return connection string derived from {@link #host}, {@link #port}
+     *          and {@link #dbName}
+     */
+    protected String generateBasicConnectionString() {
+        return "jdbc:postgresql://" + host + ':' + port + '/' + dbName;
     }
 
     /**
