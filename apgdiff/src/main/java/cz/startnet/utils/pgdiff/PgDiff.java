@@ -299,8 +299,8 @@ public final class PgDiff {
     }
 
     private static boolean isTableRecreated(TreeElement table, PgDatabase oldDb, PgDatabase newDb) {
-        PgStatement oldSt = table.getPgStatement(oldDb);
-        PgStatement newSt = table.getPgStatement(newDb);
+        PgStatement oldSt = table.getSide() != DiffSide.RIGHT ? table.getPgStatement(oldDb) : null;
+        PgStatement newSt = table.getSide() != DiffSide.LEFT  ? table.getPgStatement(newDb) : null;
         if (oldSt == null || newSt == null) {
             return true;
         }
