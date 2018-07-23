@@ -21,7 +21,11 @@ import cz.startnet.utils.pgdiff.loader.jdbc.FtsParsersReader.FtsParsersReaderFac
 import cz.startnet.utils.pgdiff.loader.jdbc.FtsTemplatesReader.FtsTemplatesReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.FunctionsReader.FunctionsReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.IndicesReader.IndicesReaderFactory;
+import cz.startnet.utils.pgdiff.loader.jdbc.MsExtendedObjectsReader.MsExtendedObjectsReaderFactory;
+import cz.startnet.utils.pgdiff.loader.jdbc.MsFPVTReader.MsFPVTReaderFactory;
+import cz.startnet.utils.pgdiff.loader.jdbc.MsIndicesAndPKReader.MsIndicesAndPKReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.MsSequencesReader.MsSequencesReaderFactory;
+import cz.startnet.utils.pgdiff.loader.jdbc.MsTablesReader.MsTablesReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.RulesReader.RulesReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.SequencesReader.SequencesReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.TablesReader.TablesReaderFactory;
@@ -103,8 +107,11 @@ public abstract class JdbcReaderFactory {
                 // SONAR-ON
                 ));
         MS_FACTORIES = Collections.unmodifiableList(Arrays.asList(
-                // TODO add
-                new MsSequencesReaderFactory(1 << i++, "get_all_sequences", JdbcQueries.QUERY_MS_SEQUENCES)
+                new MsFPVTReaderFactory(JdbcQueries.QUERY_MS_FUNCTIONS_PROCEDURES_VIEWS_TRIGGERS),
+                new MsExtendedObjectsReaderFactory(JdbcQueries.QUERY_MS_EXTENDED_FUNCTIONS_AND_PROCEDURES),
+                new MsTablesReaderFactory(JdbcQueries.QUERY_MS_TABLES),
+                new MsSequencesReaderFactory(JdbcQueries.QUERY_MS_SEQUENCES),
+                new MsIndicesAndPKReaderFactory(JdbcQueries.QUERY_MS_INDICES_AND_PK)
                 ));
     }
 

@@ -74,7 +74,6 @@ public final class JdbcQueries {
     public static Map <SupportedVersion, String> QUERY_MS_ARGUMENTS;
     public static Map <SupportedVersion, String> QUERY_MS_SEQUENCES;
     public static Map <SupportedVersion, String> QUERY_MS_INDICES_AND_PK;
-    public static Map <SupportedVersion, String> QUERY_MS_INDICES_AND_PK_COLUMNS;
     public static Map <SupportedVersion, String> QUERY_MS_FK;
     public static Map <SupportedVersion, String> QUERY_MS_CHECK_CONSTRAINTS;
 

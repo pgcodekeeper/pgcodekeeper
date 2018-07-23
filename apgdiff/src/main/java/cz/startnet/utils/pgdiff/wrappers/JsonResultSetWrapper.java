@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.wrappers;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -27,7 +28,7 @@ public class JsonResultSetWrapper implements ResultSetWrapper {
         Type type = new TypeToken<Map<String, Object>>(){}.getType();
         try {
             result = new Gson().fromJson(json, type);
-        } catch(JsonParseException ex) {
+        } catch (JsonParseException ex) {
             throw new WrapperAccessException(ex.getLocalizedMessage(), ex);
         }
     }
@@ -130,5 +131,15 @@ public class JsonResultSetWrapper implements ResultSetWrapper {
     @Override
     public short getShort(String columnName) throws WrapperAccessException {
         return getNumber(columnName).shortValue();
+    }
+
+    public static List<JsonResultSetWrapper> getWrappersList(String json) throws WrapperAccessException {
+        List <JsonResultSetWrapper> wrappers = new ArrayList<>();
+
+        for (String st : json.split(",")) {
+            wrappers.add(new JsonResultSetWrapper(st));
+        }
+
+        return wrappers;
     }
 }

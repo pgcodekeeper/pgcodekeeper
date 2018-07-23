@@ -102,7 +102,7 @@ public class CustomTSQLParserListener extends TSQLParserBaseListener {
 
     @Override
     public void exitCreate_or_alter_trigger(Create_or_alter_triggerContext ctx) {
-        safeParseStatement(new CreateMsTrigger(ctx, db), ctx);
+        safeParseStatement(new CreateMsTrigger(ctx, db, ansiNulls, quotedIdentifier), ctx);
     }
 
     @Override
