@@ -803,7 +803,6 @@ XSINIL:                                        X S I N I L;
 
 
 
-SPACE:              [ \t\r\n]+    -> skip;
 // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/slash-star-comment-transact-sql
 COMMENT:            '/*' (COMMENT | .)*? '*/' -> channel(HIDDEN);
 LINE_COMMENT:       '--' ~[\r\n]* -> channel(HIDDEN);
@@ -834,7 +833,7 @@ ID:                  ( [a-zA-Z_#] | FullWidthLetter) ( [a-zA-Z_#$@0-9] | FullWid
 QUOTED_URL:          '\''([a-zA-Z][a-zA-Z]+[:]) '//'(([a-zA-Z]+[.]|[a-zA-Z]+)|IPV4_ADDR) [:] DECIMAL '\'';
 QUOTED_HOST_AND_PORT:'\''(([a-zA-Z]+[.]|[a-zA-Z]+)|IPV4_ADDR) ([:] DECIMAL) '\'';
 STRING:              N? '\'' (~'\'' | '\'\'')* '\'';
-BINARY:              '0' X HEX_DIGIT*;
+BINARY:              '0' X (HEX_DIGIT | BACKSLASH [\r]? [\n])*;
 FLOAT:               DEC_DOT_DEC;
 REAL:                (DECIMAL | DEC_DOT_DEC) (E [+-]? DEC_DIGIT+);
 
@@ -940,3 +939,9 @@ fragment FullWidthLetter
     // | '\u10000'..'\u1F9FF'  //not support four bytes chars
     // | '\u20000'..'\u2FA1F'
     ;
+
+BOM: '\ufeff';
+SPACE:              [ \t\r\n]+    -> skip;
+BAD
+  : .
+  ;

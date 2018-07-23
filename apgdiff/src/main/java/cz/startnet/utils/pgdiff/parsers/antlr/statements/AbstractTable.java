@@ -25,8 +25,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_unique_prkeyContex
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_optionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Data_type_sizeContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Identity_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
@@ -273,16 +271,7 @@ public abstract class AbstractTable extends ParserAbstract {
             MsColumn col = new MsColumn(colCtx.id().getText());
 
             if (colCtx.data_type() != null) {
-                IdContext type = colCtx.data_type().id();
-                if (type != null) {
-                    col.setType(type.getText());
-                    Data_type_sizeContext size = colCtx.data_type().data_type_size();
-                    if (size != null) {
-                        col.setSize(size.getText());
-                    }
-                } else {
-                    col.setType(getFullCtxText(colCtx.data_type()));
-                }
+                col.setType(getFullCtxText(colCtx.data_type()));
             } else {
                 col.setExpression(getFullCtxText(colCtx.expression()));
             }
