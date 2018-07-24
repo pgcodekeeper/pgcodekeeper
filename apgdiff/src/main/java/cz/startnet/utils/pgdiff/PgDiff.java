@@ -106,7 +106,7 @@ public final class PgDiff {
                     PgDumpLoader.loadMsDatabaseSchemaFromDirTree(srcPath,  arguments, null, null) :
                         PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,  arguments, null, null);
         } else if ("db".equals(format)) {
-            JdbcLoader loader = new JdbcLoader(new JdbcConnector(srcPath, null, false), arguments);
+            JdbcLoader loader = new JdbcLoader(JdbcConnector.fromUrl(srcPath), arguments);
             return loader.getDbFromJdbc();
         }
 

@@ -1,8 +1,11 @@
 package cz.startnet.utils.pgdiff.loader;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -21,89 +24,109 @@ import ru.taximaxim.pgpass.PgPassException;
 
 public class JdbcConnector {
 
-    protected final String host;
-    protected final int port;
-    private final String user;
-    private final String pass;
-    protected final String dbName;
-    private final String url;
-    private Map<String, String> properties;
-    private final String timezone;
-    private boolean readOnly;
+    protected String host;
+    protected int port;
+    protected String user;
+    protected String pass;
+    protected String dbName;
+    protected String url;
+
+    protected Map<String, String> properties;
+    protected String timezone;
+    protected boolean readOnly;
 
     /**
      * @throws IllegalArgumentException url isn't valid
      */
     public static String dbNameFromUrl(String url) {
+        return fromUrl(url).dbName;
+    }
+
+    /**
+     * @throws IllegalArgumentException url isn't valid
+     */
+    public static JdbcConnector fromUrl(String url) {
         try {
-            return new JdbcConnector(url).dbName;
+            if (url.startsWith("jdbc:postgresql:")) {
+                return new JdbcConnector(url);
+            } else if (url.startsWith("jdbc:sqlserver:")) {
+                return new JdbcMsConnector(url);
+            }
         } catch (URISyntaxException ex) {
             throw new IllegalArgumentException(ex.getLocalizedMessage(), ex);
         }
+        throw new IllegalArgumentException(
+                "Unknown url schema, supported schemas are 'postgresql' and 'sqlserver'");
+    }
+
+    private static String urlDecode(String encoded) {
+        try {
+            return URLDecoder.decode(encoded, ApgdiffConsts.UTF_8);
+        } catch (UnsupportedEncodingException ex) {
+            Log.log(ex);
+            return encoded;
+        }
+    }
+
+    public JdbcConnector(String host, int port, String user, String pass, String dbName, String timezone) {
+        this(host, port, user, pass, dbName, null, false, timezone);
     }
 
     public JdbcConnector(String host, int port, String user, String pass, String dbName,
             Map<String, String> properties, boolean readOnly, String timezone) {
-        this(host, port, user, pass, dbName, timezone);
-        this.properties = properties;
-        this.readOnly = readOnly;
-    }
-
-    public JdbcConnector(String host, int port, String user, String pass, String dbName, String timezone) {
         this.host = host;
-        this.port = port == 0 ? ApgdiffConsts.JDBC_CONSTS.JDBC_DEFAULT_PORT : port;
+        this.port = port < 1 ? ApgdiffConsts.JDBC_CONSTS.JDBC_DEFAULT_PORT : port;
         this.dbName = dbName;
         this.user = user.isEmpty() ? System.getProperty("user.name") : user;
-        this.pass = (pass == null || pass.isEmpty()) ? getPgPassPassword() : pass;
+        this.pass = pass == null || pass.isEmpty() ? getPgPassPassword() : pass;
         this.url = generateBasicConnectionString();
 
         this.timezone = timezone;
-    }
-
-    public JdbcConnector(String url, Map<String, String> properties,
-            boolean readOnly) throws URISyntaxException {
-        this(url);
         this.properties = properties;
         this.readOnly = readOnly;
     }
 
-    public JdbcConnector(String url) throws URISyntaxException {
+    protected JdbcConnector() {
+        // no impl, unintialized instance
+    }
+
+    private JdbcConnector(String url) throws URISyntaxException {
         this.url = url;
         this.timezone = ApgdiffConsts.UTC;
 
         String host = null, user = null, pass = null, dbName = null;
         int port = -1;
-        if (url.startsWith("jdbc:postgresql:")) {
-            // strip jdbc:, URI doesn't understand schemas with colons
-            URI uri = new URI(url.substring(5));
+        // strip jdbc:, URI doesn't understand schemas with colons
+        URI uri = new URI(url.substring(5));
 
-            if (uri.isOpaque()) {
-                // special case for jdbc:postgres:database_name
-                dbName = uri.getSchemeSpecificPart();
-            } else {
-                host = uri.getHost();
-                port = uri.getPort();
-                dbName = uri.getPath();
-                if (dbName != null && !dbName.isEmpty()) {
-                    // strip leading /
-                    dbName = dbName.substring(1);
-                }
+        if (uri.isOpaque()) {
+            // special case for jdbc:postgres:database_name
+            dbName = uri.getSchemeSpecificPart();
+        } else {
+            host = uri.getHost();
+            port = uri.getPort();
+            dbName = uri.getPath();
+            if (dbName != null && !dbName.isEmpty()) {
+                // strip leading /
+                dbName = dbName.substring(1);
+            }
 
-                String query = uri.getQuery();
-                if (query != null) {
-                    for (String param : query.split("&")) {
-                        int eq = param.indexOf('=');
-                        if (eq != -1) {
-                            String key = param.substring(0, eq);
-                            String val = param.substring(eq + 1);
-                            switch (key) {
-                            case "user":
-                                user = val;
-                                break;
-                            case "password":
-                                pass = val;
-                                break;
-                            }
+            String query = uri.getRawQuery();
+            if (query != null) {
+                for (String param : query.split("&")) {
+                    int eq = param.indexOf('=');
+                    if (eq != -1) {
+                        String key = urlDecode(param.substring(0, eq));
+                        String val = urlDecode(param.substring(eq + 1));
+                        switch (key) {
+                        case "user":
+                            user = val;
+                            break;
+                        case "password":
+                            pass = val;
+                            break;
+                        default:
+                            break;
                         }
                     }
                 }
@@ -121,7 +144,14 @@ public class JdbcConnector {
      *          and {@link #dbName}
      */
     protected String generateBasicConnectionString() {
-        return "jdbc:postgresql://" + host + ':' + port + '/' + dbName;
+        String db;
+        try {
+            db = URLEncoder.encode(dbName, ApgdiffConsts.UTF_8);
+        } catch (UnsupportedEncodingException ex) {
+            Log.log(ex);
+            db = dbName;
+        }
+        return "jdbc:postgresql://" + host + ':' + port + '/' + db;
     }
 
     /**
@@ -145,6 +175,12 @@ public class JdbcConnector {
     }
 
     private Connection establishConnection() throws SQLException, ClassNotFoundException {
+        Log.log(Log.LOG_INFO, "Establishing JDBC connection with host:port " +
+                host + ":" + port + ", db name " + dbName + ", username " + user);
+        return DriverManager.getConnection(url, makeProperties());
+    }
+
+    protected Properties makeProperties() {
         Properties props = new Properties();
 
         if (properties != null) {
@@ -153,6 +189,7 @@ public class JdbcConnector {
 
         props.setProperty("user", user);
         props.setProperty("password", pass);
+
         String apgdiffVer = "unknown";
         BundleContext bctx = Activator.getContext();
         if (bctx != null) {
@@ -160,9 +197,7 @@ public class JdbcConnector {
         }
         props.setProperty("ApplicationName", "pgCodeKeeper apgdiff module, Bundle-Version: " + apgdiffVer);
 
-        Log.log(Log.LOG_INFO, "Establishing JDBC connection with host:port " +
-                host + ":" + port + ", db name " + dbName + ", username " + user);
-        return DriverManager.getConnection(url, props);
+        return props;
     }
 
     String getTimezone(){
