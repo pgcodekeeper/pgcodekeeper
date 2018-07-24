@@ -64,7 +64,7 @@ public class MsExtendedObjectsReader extends JdbcMsReader {
                 String argSize = "";
                 String dataType = arg.getString("type");
                 int size = arg.getInt("size");
-                if ("nvarchar".equals(dataType)) {
+                if (dataType.endsWith("varchar")) {
                     argSize = size == -1 ? "(max)" : ("(" + size + ")");
                 }
                 // TODO precision, scale
@@ -90,7 +90,7 @@ public class MsExtendedObjectsReader extends JdbcMsReader {
                 String argSize = "";
                 String dataType = arg.getString("type");
                 int size = arg.getInt("size");
-                if ("nvarchar".equals(dataType)) {
+                if (dataType.endsWith("varchar")) {
                     argSize = size == -1 ? "(max)" : ("(" + size + ")");
                 }
                 // TODO precision, scale
