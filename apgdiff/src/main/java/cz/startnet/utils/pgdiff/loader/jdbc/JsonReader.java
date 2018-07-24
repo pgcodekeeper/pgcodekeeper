@@ -1,4 +1,4 @@
-package cz.startnet.utils.pgdiff.wrappers;
+package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;
@@ -6,12 +6,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
 
-public class JsonResultSetWrapper implements ResultSetWrapper {
+import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
+
+public class JsonReader {
 
     /**
      * Hex string with even number of chars.
@@ -23,7 +26,11 @@ public class JsonResultSetWrapper implements ResultSetWrapper {
      */
     private final Map <String, Object> result;
 
-    public JsonResultSetWrapper (String json) throws WrapperAccessException {
+    private JsonReader(Map<String, Object> result) {
+        this.result = result;
+    }
+
+    public JsonReader(String json) throws WrapperAccessException {
         Type type = new TypeToken<Map<String, Object>>(){}.getType();
         try {
             result = new Gson().fromJson(json, type);
@@ -44,34 +51,28 @@ public class JsonResultSetWrapper implements ResultSetWrapper {
         return o == null ? 0 : (Number) o;
     }
 
-    @Override
     public double getDouble(String columnName) throws WrapperAccessException {
         return getNumber(columnName).doubleValue();
     }
 
-    @Override
     public long getLong(String columnName) throws WrapperAccessException {
         return getNumber(columnName).longValue();
     }
 
-    @Override
     public boolean getBoolean(String columnName) throws WrapperAccessException {
         Object o = get(columnName);
         return o == null ? false : (boolean) o;
     }
 
-    @Override
     public String getString(String columnName) throws WrapperAccessException {
         Object res = get(columnName);
         return res == null ? null : res.toString();
     }
 
-    @Override
     public float getFloat(String columnName) throws WrapperAccessException {
         return getNumber(columnName).floatValue();
     }
 
-    @Override
     @SuppressWarnings("unchecked")
     public <T> T[] getArray(String columnName, Class<T> arrayElement) throws WrapperAccessException {
         Object obj = get(columnName);
@@ -99,12 +100,10 @@ public class JsonResultSetWrapper implements ResultSetWrapper {
         }
     }
 
-    @Override
     public int getInt(String columnName) throws WrapperAccessException {
         return getNumber(columnName).intValue();
     }
 
-    @Override
     public byte[] getBytes(String columnName) throws WrapperAccessException {
         // we have byte array in string: \x001122ff...
         String s = (String) get(columnName);
@@ -127,8 +126,18 @@ public class JsonResultSetWrapper implements ResultSetWrapper {
         return data;
     }
 
-    @Override
     public short getShort(String columnName) throws WrapperAccessException {
         return getNumber(columnName).shortValue();
+    }
+
+    public static List<JsonReader> fromArray(String json) throws WrapperAccessException {
+        Type type = new TypeToken<List<Map<String, Object>>>(){}.getType();
+
+        try {
+            List<Map<String, Object>> stt = new Gson().fromJson(json, type);
+            return stt.stream().map(JsonReader::new).collect(Collectors.toList());
+        } catch (JsonParseException ex) {
+            throw new WrapperAccessException(ex.getLocalizedMessage(), ex);
+        }
     }
 }

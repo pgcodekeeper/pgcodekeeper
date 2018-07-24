@@ -13,7 +13,6 @@ import cz.startnet.utils.pgdiff.schema.MsConstraint;
 import cz.startnet.utils.pgdiff.schema.MsIndex;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.wrappers.JsonResultSetWrapper;
 import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -60,7 +59,7 @@ public class MsIndicesAndPKReader extends JdbcMsReader {
         List<String> columns = new ArrayList<>();
         List<String> includes = new ArrayList<>();
 
-        for (JsonResultSetWrapper col : JsonResultSetWrapper.getWrappersList(res.getString("cols"))) {
+        for (JsonReader col : JsonReader.fromArray(res.getString("cols"))) {
             boolean isDesc = col.getBoolean("is_desc");
             String column = MsDiffUtils.quoteName(col.getString("name")) + (isDesc ? " DESC" : "");
 
