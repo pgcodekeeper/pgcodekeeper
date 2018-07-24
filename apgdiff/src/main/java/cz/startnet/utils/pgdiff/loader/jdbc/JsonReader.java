@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -131,6 +132,10 @@ public class JsonReader {
     }
 
     public static List<JsonReader> fromArray(String json) throws WrapperAccessException {
+        if (json == null) {
+            return new ArrayList<>();
+        }
+
         Type type = new TypeToken<List<Map<String, Object>>>(){}.getType();
 
         try {

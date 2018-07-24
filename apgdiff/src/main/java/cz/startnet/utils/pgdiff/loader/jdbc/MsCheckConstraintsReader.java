@@ -4,7 +4,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 
-import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsConstraint;
@@ -47,9 +46,7 @@ public class MsCheckConstraintsReader extends JdbcMsReader {
             sb.append("NOT FOR REPLICATION ");
         }
 
-        sb.append(" (");
-        sb.append(MsDiffUtils.quoteName(res.getString("definition")));
-        sb.append(")");
+        sb.append(" (").append(res.getString("definition")).append(")");
 
         // TODO disabled
 

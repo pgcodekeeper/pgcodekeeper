@@ -28,6 +28,6 @@ CROSS APPLY (
         LEFT JOIN sys.columns sc WITH (NOLOCK) ON c.object_id = sc.object_id AND c.column_id = sc.column_id
         WHERE c.object_id = si.object_id AND c.index_id = si.index_id
 ) cc ORDER BY cc.id
-FOR JSON AUTO, INCLUDE_NULL_VALUES, WITHOUT_ARRAY_WRAPPER
+FOR JSON AUTO, INCLUDE_NULL_VALUES
 ) cc (cols)
 WHERE  o.type = 'U' AND si.name IS NOT NULL

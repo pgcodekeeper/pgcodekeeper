@@ -2,15 +2,19 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsFunction;
+import cz.startnet.utils.pgdiff.schema.MsFunction.MsArgument;
 import cz.startnet.utils.pgdiff.schema.MsProcedure;
+import cz.startnet.utils.pgdiff.schema.MsProcedure.ProcedureArgument;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -33,7 +37,7 @@ public class MsExtendedObjectsReader extends JdbcMsReader {
     }
 
     @Override
-    protected void processResult(ResultSet res, PgSchema schema) throws SQLException {
+    protected void processResult(ResultSet res, PgSchema schema) throws SQLException, WrapperAccessException {
         loader.monitor.worked(1);
         String name = res.getString("name");
         DbObjType type = "PC".equals(res.getString("type")) ? DbObjType.PROCEDURE : DbObjType.FUNCTION;
@@ -47,15 +51,61 @@ public class MsExtendedObjectsReader extends JdbcMsReader {
         String executeAs = res.getString("execute_as");
         String owner = res.getString("owner");
 
+        List<JsonReader> args = JsonReader.fromArray(res.getString("args"));
+
+
         if (type == DbObjType.PROCEDURE) {
             MsProcedure proc = new MsProcedure(name, "");
             proc.setBody(body);
             proc.addOption("EXECUTE AS " + (executeAs == null ? "CALLER" : executeAs));
-            // TODO add to query
-            // proc.setForReplication(i);
+
+
+            for (JsonReader arg : args) {
+                String argSize = "";
+                String dataType = arg.getString("type");
+                int size = arg.getInt("size");
+                if ("nvarchar".equals(dataType)) {
+                    argSize = size == -1 ? "(max)" : ("(" + size + ")");
+                }
+                // TODO precision, scale
+
+                ProcedureArgument argDst = proc.new ProcedureArgument(arg.getBoolean("ou") ? "OUTPUT" : null,
+                        arg.getString("name"), MsDiffUtils.quoteName(dataType) + argSize);
+
+                if (arg.getBoolean("hd")) {
+                    argDst.setDefaultExpression(arg.getString("dv"));
+                }
+
+                argDst.setReadOnly(arg.getBoolean("ro"));
+                // TODO VARYING to query; add to argument nullable ?
+                proc.addArgument(argDst);
+            }
+
+            // TODO add to query proc.setForReplication(i);
             setOwner(proc, owner);
         } else {
             MsFunction func = new MsFunction(name, "");
+
+            for (JsonReader arg : args) {
+                String argSize = "";
+                String dataType = arg.getString("type");
+                int size = arg.getInt("size");
+                if ("nvarchar".equals(dataType)) {
+                    argSize = size == -1 ? "(max)" : ("(" + size + ")");
+                }
+                // TODO precision, scale
+
+                MsArgument argDst = func.new MsArgument(arg.getBoolean("ou") ? "OUTPUT" : null,
+                        arg.getString("name"), MsDiffUtils.quoteName(dataType) + argSize);
+
+                if (arg.getBoolean("hd")) {
+                    argDst.setDefaultExpression(arg.getString("dv"));
+                }
+
+                // TODO add to argument nullable ?
+                func.addArgument(argDst);
+            }
+
             StringBuilder sb = new StringBuilder();
 
             sb.append(" WITH EXECUTE AS ");
