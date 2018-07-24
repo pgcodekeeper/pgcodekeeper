@@ -2,12 +2,14 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.MsFunction;
 import cz.startnet.utils.pgdiff.schema.MsFunction.MsArgument;
 import cz.startnet.utils.pgdiff.schema.MsProcedure;
@@ -40,7 +42,8 @@ public class MsExtendedObjectsReader extends JdbcMsReader {
     protected void processResult(ResultSet res, PgSchema schema) throws SQLException, WrapperAccessException {
         loader.monitor.worked(1);
         String name = res.getString("name");
-        DbObjType type = "PC".equals(res.getString("type")) ? DbObjType.PROCEDURE : DbObjType.FUNCTION;
+        String funcType = res.getString("type");
+        DbObjType type = "PC".equals(funcType) ? DbObjType.PROCEDURE : DbObjType.FUNCTION;
         loader.setCurrentObject(new GenericColumn(schema.getName(), name, type));
 
         String assembly = MsDiffUtils.quoteName(res.getString("assembly"));
@@ -66,8 +69,10 @@ public class MsExtendedObjectsReader extends JdbcMsReader {
                 int size = arg.getInt("size");
                 if (dataType.endsWith("varchar")) {
                     argSize = size == -1 ? "(max)" : ("(" + size + ")");
+                } else if ("decimal".equals(dataType)) {
+                    argSize = "(" + arg.getInt("ps") + ',' + arg.getInt("sc") + ')';
                 }
-                // TODO precision, scale
+                // TODO other type with size
 
                 ProcedureArgument argDst = proc.new ProcedureArgument(arg.getBoolean("ou") ? "OUTPUT" : null,
                         arg.getString("name"), MsDiffUtils.quoteName(dataType) + argSize);
@@ -92,8 +97,10 @@ public class MsExtendedObjectsReader extends JdbcMsReader {
                 int size = arg.getInt("size");
                 if (dataType.endsWith("varchar")) {
                     argSize = size == -1 ? "(max)" : ("(" + size + ")");
+                } else if ("decimal".equals(dataType)) {
+                    argSize = "(" + arg.getInt("ps") + ',' + arg.getInt("sc") + ')';
                 }
-                // TODO precision, scale
+                // TODO other type with size
 
                 MsArgument argDst = func.new MsArgument(arg.getBoolean("ou") ? "OUTPUT" : null,
                         arg.getString("name"), MsDiffUtils.quoteName(dataType) + argSize);
@@ -104,6 +111,58 @@ public class MsExtendedObjectsReader extends JdbcMsReader {
 
                 // TODO add to argument nullable ?
                 func.addArgument(argDst);
+            }
+
+            if ("FT".equals(funcType)) {
+
+                List<String> columns = new ArrayList<>();
+
+                for (JsonReader col : JsonReader.fromArray(res.getString("cols"))) {
+                    MsColumn column = new MsColumn(col.getString("name"));
+                    String argSize = "";
+                    String dataType = col.getString("type");
+                    int size = col.getInt("size");
+                    if (dataType.endsWith("varchar")) {
+                        argSize = size == -1 ? "(max)" : ("(" + size + ")");
+                    } else if ("decimal".equals(dataType)) {
+                        argSize = "(" + col.getInt("ps") + ',' + col.getInt("sc") + ')';
+                    }
+                    // TODO other type with size
+
+                    column.setType(MsDiffUtils.quoteName(dataType) + argSize);
+                    column.setSparse(col.getBoolean("sp"));
+                    column.setNullValue(col.getBoolean("nl"));
+                    if (col.getBoolean("ii")) {
+                        column.setIdentity(Integer.toString(col.getInt("s")), Integer.toString(col.getInt("i")));
+                        column.setNotForRep(col.getBoolean("nfr"));
+                    }
+
+                    String def = col.getString("dv");
+                    if (def != null) {
+                        column.setDefaultValue(def);
+                        column.setDefaultName(col.getString("dn"));
+                    }
+
+                    column.setCollation(col.getString("cn"));
+
+                    column.setExpression(col.getString("def"));
+                    columns.add(column.getFullDefinition());
+                }
+
+                // TODO table can have name, options and etc
+                func.setReturns("TABLE (" + String.join(",\n", columns) + ")");
+            } else {
+                String argSize = "";
+                String dataType = res.getString("return_type");
+                int size = res.getInt("return_type_size");
+                if (dataType.endsWith("varchar")) {
+                    argSize = size == -1 ? "(max)" : ("(" + size + ")");
+                } else if ("decimal".equals(dataType)) {
+                    argSize = "(" + res.getInt("return_type_pr") + ',' + res.getInt("return_type_sc") + ')';
+                }
+
+                // TODO other type with size
+                func.setReturns(MsDiffUtils.quoteName(dataType) + argSize);
             }
 
             StringBuilder sb = new StringBuilder();
