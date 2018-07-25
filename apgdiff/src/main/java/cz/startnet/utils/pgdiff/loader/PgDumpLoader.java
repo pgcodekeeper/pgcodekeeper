@@ -54,7 +54,7 @@ public class PgDumpLoader implements AutoCloseable {
             "FTS_PARSER", "FTS_TEMPLATE", "FTS_DICTIONARY", "FTS_CONFIGURATION" };
 
     protected static final String[] MS_DIR_LOAD_ORDER = new String[] { "Assemblies",
-            "Sequences", "Stored procedures", "Functions", "Tables", "Views"};
+            "Sequences", "Stored Procedures", "Functions", "Tables", "Views"};
 
     private final InputStream input;
     private final String inputObjectName;
