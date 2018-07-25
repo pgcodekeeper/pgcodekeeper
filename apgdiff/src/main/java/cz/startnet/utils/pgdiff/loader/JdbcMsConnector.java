@@ -50,21 +50,24 @@ public class JdbcMsConnector extends JdbcConnector {
         String uriPart = url.substring(5);
         int semic = uriPart.indexOf(';');
         if (semic > -1) {
+            Matcher m = PATTERN_PROPERTIES.matcher(uriPart.substring(semic));
+
+            // strip properties string from URI text
             uriPart = uriPart.substring(0, semic);
 
-            Matcher m = PATTERN_PROPERTIES.matcher(uriPart.substring(semic));
             while (m.find()) {
-                if (m.groupCount() <= 2) {
-                    // 1 = no groups, only lone semicolon matched
-                    // 2 = no value, not interested
+                if (m.groupCount() < 2) {
+                    // 0 = no groups, only lone semicolon matched
+                    // 1 = no value, not interested
                     continue;
                 }
-                switch (m.group(1).toLowerCase()) {
+                String s = m.group(1).toLowerCase();
+                switch (s) {
                 case "user":
                 case "username":
                     this.user = unescapeValue(m.group(2));
                     break;
-                case "pass":
+                case "password":
                     this.pass = unescapeValue(m.group(2));
                     break;
                 case "database":
