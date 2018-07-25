@@ -37,8 +37,9 @@ public class CreateTrigger extends ParserAbstract {
         List<IdentifierContext> ids = ctx.table_name.identifier();
         PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         String schemaName = schema.getName();
+        String tableName = QNameParser.getFirstName(ids);
         PgTrigger trigger = new PgTrigger(ctx.name.getText(), getFullCtxText(ctx.getParent()));
-        trigger.setTableName(ctx.table_name.getText());
+        trigger.setTableName(ParserAbstract.getFullCtxText(ctx.table_name));
         if (ctx.AFTER() != null) {
             trigger.setType(TgTypes.AFTER);
         } else if (ctx.BEFORE() != null) {
@@ -74,13 +75,11 @@ public class CreateTrigger extends ParserAbstract {
                 String refRelName = QNameParser.getFirstName(refName);
 
                 StringBuilder sb = new StringBuilder();
-                if (refSchemaName != null){
-                    if (!refSchemaName.equals(schemaName)){
-                        sb.append(PgDiffUtils.getQuotedName(refSchemaName)).append('.');
-                    }
-                } else {
+                if (refSchemaName == null) {
                     refSchemaName = schemaName;
                 }
+                sb.append(PgDiffUtils.getQuotedName(refSchemaName))
+                .append('.');
                 sb.append(PgDiffUtils.getQuotedName(refRelName));
 
                 trigger.addDep(new GenericColumn(refSchemaName, refRelName, DbObjType.TABLE));
@@ -108,7 +107,7 @@ public class CreateTrigger extends ParserAbstract {
             for (Schema_qualified_nameContext nameCol : column.name) {
                 String col = QNameParser.getFirstName(nameCol.identifier());
                 trigger.addUpdateColumn(col);
-                trigger.addDep(new GenericColumn(schemaName, trigger.getTableName(), col, DbObjType.COLUMN));
+                trigger.addDep(new GenericColumn(schemaName, tableName, col, DbObjType.COLUMN));
             }
         }
         parseWhen(ctx.when_trigger(), trigger, db);
@@ -130,7 +129,8 @@ public class CreateTrigger extends ParserAbstract {
     public static void analyzeTriggersWhen(VexContext ctx, PgTrigger trigger,
             String schemaName, PgDatabase db) {
         ValueExprWithNmspc vex = new ValueExprWithNmspc(schemaName, db);
-        GenericColumn implicitTable = new GenericColumn(schemaName, trigger.getTableName(), DbObjType.TABLE);
+        GenericColumn implicitTable = new GenericColumn(schemaName,
+                trigger.getParent().getName(), DbObjType.TABLE);
         vex.addReference("new", implicitTable);
         vex.addReference("old", implicitTable);
         UtilAnalyzeExpr.analyze(new Vex(ctx), vex, trigger);

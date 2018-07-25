@@ -1,4 +1,4 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-ALTER TABLE cities
-	ATTACH PARTITION cities_ab FOR VALUES IN ('a', 'b');
+ALTER TABLE public.cities
+	ATTACH PARTITION public.cities_ab FOR VALUES IN ('a', 'b');

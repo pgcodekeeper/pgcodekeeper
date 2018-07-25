@@ -334,6 +334,8 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
                 .append(newIdentityType)
                 .append(" AS IDENTITY (")
                 .append("\n\tSEQUENCE NAME ")
+                .append(PgDiffUtils.getQuotedName(newSequence.getContainingSchema().getName()))
+                .append('.')
                 .append(PgDiffUtils.getQuotedName(newSequence.getName()));
                 newSequence.fillSequenceBody(sb);
                 sb.append("\n);");
@@ -346,6 +348,8 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
                 !Objects.equals(oldSequence, newSequence)) {
             if (!oldSequence.getName().equals(newSequence.getName())) {
                 sb.append("\n\n").append("ALTER SEQUENCE ")
+                .append(PgDiffUtils.getQuotedName(oldSequence.getContainingSchema().getName()))
+                .append('.')
                 .append(PgDiffUtils.getQuotedName(oldSequence.getName()))
                 .append(" RENAME TO ")
                 .append(PgDiffUtils.getQuotedName(newSequence.getName())).append(';');
@@ -391,7 +395,7 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
                 .append("::").append(newColumn.getType());
             }
             sb.append("; /* " + MessageFormat.format(Messages.Table_TypeParameterChange,
-                    newColumn.getParent().getName(),
+                    newColumn.getParent().getParent().getName() + '.' + newColumn.getParent().getName(),
                     oldColumn.getType(), newColumn.getType()) + " */");
         }
     }

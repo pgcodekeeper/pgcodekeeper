@@ -13,6 +13,7 @@ import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
@@ -117,7 +118,7 @@ public class ObjectTimestamp implements Serializable {
         PgStatement base = object.getStatement(db);
         PgRuleContainer parent = schema.getRuleContainer(base.getParent().getName());
         PgStatement copy = base.shallowCopy();
-        fillPrivileges(copy, loader);
+        fillPrivileges(copy, loader, schema.getName());
         parent.addRule((PgRule)copy);
     }
 
@@ -125,19 +126,24 @@ public class ObjectTimestamp implements Serializable {
         PgStatement base = object.getStatement(db);
         PgTriggerContainer parent = schema.getTriggerContainer(base.getParent().getName());
         PgStatement copy = base.shallowCopy();
-        fillPrivileges(copy, loader);
+        fillPrivileges(copy, loader, schema.getName());
         parent.addTrigger((PgTrigger)copy);
     }
 
     public PgStatement copyStatement(PgDatabase db, JdbcLoaderBase loader) {
-        PgStatement copy = object.getStatement(db).shallowCopy();
-        fillPrivileges(copy, loader);
+        PgStatement stmt = object.getStatement(db);
+        PgStatement copy = stmt.shallowCopy();
+        String schemaName = null;
+        if (stmt instanceof PgStatementWithSearchPath) {
+            schemaName = ((PgStatementWithSearchPath)stmt).getContainingSchema().getName();
+        }
+        fillPrivileges(copy, loader, schemaName);
         return copy;
     }
 
-    private void fillPrivileges(PgStatement copy, JdbcLoaderBase loader) {
+    private void fillPrivileges(PgStatement copy, JdbcLoaderBase loader, String schemaName) {
         copy.clearPrivileges();
-        loader.setPrivileges(copy, acl);
+        loader.setPrivileges(copy, acl, schemaName);
         if (colAcls != null) {
             DbObjType type = copy.getStatementType();
             if (DbObjType.TABLE == type) {
@@ -147,7 +153,7 @@ public class ObjectTimestamp implements Serializable {
                     // which is the valid indication for "no ACL"
                     // which is the column state in this case
                     c.clearPrivileges();
-                    loader.setPrivileges(c, table, colAcls.get(c.getName()));
+                    loader.setPrivileges(c, table, colAcls.get(c.getName()), schemaName);
                 }
             } else if (DbObjType.VIEW == type) {
                 colAcls.forEach((colName, colAcl) -> loader.setPrivileges(copy, colAcl, colName));

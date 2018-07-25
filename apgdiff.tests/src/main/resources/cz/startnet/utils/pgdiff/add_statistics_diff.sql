@@ -1,4 +1,4 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-ALTER TABLE ONLY testtable
+ALTER TABLE ONLY public.testtable
 	ALTER COLUMN field4 SET STATISTICS 100;

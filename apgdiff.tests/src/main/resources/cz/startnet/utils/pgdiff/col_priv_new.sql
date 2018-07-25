@@ -55,9 +55,9 @@ GRANT ALL ON SCHEMA public TO PUBLIC;
 -- Name: t1.c1; Type: ACL; Schema: public; Owner: botov_av
 --
 
-REVOKE ALL(c1) ON TABLE t1 FROM PUBLIC;
-REVOKE ALL(c1) ON TABLE t1 FROM botov_av;
-GRANT ALL(c1, c2) ON TABLE t1 TO maindb;
+REVOKE ALL(c1) ON TABLE public.t1 FROM PUBLIC;
+REVOKE ALL(c1) ON TABLE public.t1 FROM botov_av;
+GRANT ALL(c1, c2) ON TABLE public.t1 TO maindb;
 
 
 --

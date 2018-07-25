@@ -81,7 +81,7 @@ public class TablesReader extends JdbcReader {
 
         // PRIVILEGES, OWNER
         loader.setOwner(t, res.getLong(CLASS_RELOWNER));
-        loader.setPrivileges(t, res.getString("aclarray"));
+        loader.setPrivileges(t, res.getString("aclarray"), schemaName);
 
         readColumns(res, t, ofTypeOid, schema);
 
@@ -91,7 +91,7 @@ public class TablesReader extends JdbcReader {
             String[] inhnspnames = res.getArray("inhnspnames", String.class);
 
             for (int i = 0; i < inhrelnames.length; ++i) {
-                t.addInherits(schemaName.equals(inhnspnames[i]) ? null : inhnspnames[i], inhrelnames[i]);
+                t.addInherits(inhnspnames[i], inhrelnames[i]);
                 t.addDep(new GenericColumn(inhnspnames[i], inhrelnames[i], DbObjType.TABLE));
             }
         }
@@ -250,7 +250,7 @@ public class TablesReader extends JdbcReader {
             // COLUMNS PRIVILEGES
             String columnPrivileges = colAcl[i];
             if (columnPrivileges != null && !columnPrivileges.isEmpty()) {
-                loader.setPrivileges(column, t, columnPrivileges);
+                loader.setPrivileges(column, t, columnPrivileges, schema.getName());
             }
 
             if (ofTypeOid != 0 && column.getNullValue()

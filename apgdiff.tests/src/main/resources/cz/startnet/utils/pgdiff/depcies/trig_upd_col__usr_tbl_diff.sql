@@ -1,13 +1,13 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
--- DEPCY: This TRIGGER depends on the COLUMN: t1.c2
+-- DEPCY: This TRIGGER depends on the COLUMN: public.t1.c2
 
-DROP TRIGGER trig1 ON t1;
+DROP TRIGGER trig1 ON public.t1;
 
-ALTER TABLE t1
-	ALTER COLUMN c2 TYPE bigint USING c2::bigint; /* TYPE change - table: t1 original: integer new: bigint */
+ALTER TABLE public.t1
+	ALTER COLUMN c2 TYPE bigint USING c2::bigint; /* TYPE change - table: public.t1 original: integer new: bigint */
 
 CREATE TRIGGER trig1
-	AFTER UPDATE OF c1, c2 ON t1
+	AFTER UPDATE OF c1, c2 ON public.t1
 	FOR EACH ROW
-	EXECUTE PROCEDURE incr();
+	EXECUTE PROCEDURE public.incr();

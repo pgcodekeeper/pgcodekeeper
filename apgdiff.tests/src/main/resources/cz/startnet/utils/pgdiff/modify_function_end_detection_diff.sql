@@ -1,6 +1,6 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-CREATE OR REPLACE FUNCTION afunction(text, text, numeric) RETURNS numeric
+CREATE OR REPLACE FUNCTION public.afunction(text, text, numeric) RETURNS numeric
     AS '
 DECLARE
   param1 ALIAS FOR $1;

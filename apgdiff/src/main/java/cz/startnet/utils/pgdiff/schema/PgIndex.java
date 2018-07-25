@@ -54,6 +54,7 @@ public class PgIndex extends PgStatementWithSearchPath {
         }
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
         sbSQL.append(" ON ");
+        sbSQL.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
         sbSQL.append(PgDiffUtils.getQuotedName(getTableName()));
         sbSQL.append(' ');
         sbSQL.append(getDefinition());
@@ -96,7 +97,8 @@ public class PgIndex extends PgStatementWithSearchPath {
 
     @Override
     public String getDropSQL() {
-        return "DROP INDEX " + PgDiffUtils.getQuotedName(getName()) + ";";
+        return "DROP INDEX " + PgDiffUtils.getQuotedName(getContainingSchema().getName()) + '.'
+                + PgDiffUtils.getQuotedName(getName()) + ";";
     }
 
     @Override
@@ -118,6 +120,7 @@ public class PgIndex extends PgStatementWithSearchPath {
         if (oldIndex.isClusterIndex() && !newIndex.isClusterIndex() &&
                 !((PgTable)newIndex.getParent()).isClustered()) {
             sb.append("\n\nALTER TABLE "
+                    + PgDiffUtils.getQuotedName(oldIndex.getContainingSchema().getName()) + '.'
                     + PgDiffUtils.getQuotedName(oldIndex.getTableName())
                     + " SET WITHOUT CLUSTER;");
         }
@@ -133,6 +136,7 @@ public class PgIndex extends PgStatementWithSearchPath {
         final StringBuilder sbSQL = new StringBuilder();
         if (clusterIndex) {
             sbSQL.append("\n\nALTER TABLE ");
+            sbSQL.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
             sbSQL.append(PgDiffUtils.getQuotedName(getTableName()));
             sbSQL.append(" CLUSTER ON ");
             sbSQL.append(getName());

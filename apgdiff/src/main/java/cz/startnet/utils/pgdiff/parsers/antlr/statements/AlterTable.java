@@ -131,6 +131,7 @@ public class AlterTable extends AbstractTable {
                     CreateSequence.fillSequence(sequence, identity.sequence_body());
 
                     col.setSequence(sequence);
+                    sequence.setParent(schema);
                     col.setIdentityType(identity.ALWAYS() != null ? "ALWAYS" : "BY DEFAULT");
                 }
             }

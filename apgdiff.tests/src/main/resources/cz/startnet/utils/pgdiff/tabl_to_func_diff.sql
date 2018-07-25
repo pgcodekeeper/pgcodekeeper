@@ -1,13 +1,13 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-CREATE OR REPLACE FUNCTION testf() RETURNS integer
+CREATE OR REPLACE FUNCTION public.testf() RETURNS integer
     LANGUAGE plpgsql
     AS $$begin return 0; end;$$;
 
-ALTER FUNCTION testf() OWNER TO botov_av;
+ALTER FUNCTION public.testf() OWNER TO botov_av;
 
-CREATE TABLE t1 (
-	c1 integer DEFAULT testf()
+CREATE TABLE public.t1 (
+	c1 integer DEFAULT public.testf()
 );
 
-ALTER TABLE t1 OWNER TO botov_av;
+ALTER TABLE public.t1 OWNER TO botov_av;

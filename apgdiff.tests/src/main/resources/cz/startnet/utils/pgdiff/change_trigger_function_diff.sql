@@ -1,18 +1,16 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
--- DEPCY: This TRIGGER depends on the FUNCTION: test_table_trigger()
+-- DEPCY: This TRIGGER depends on the FUNCTION: public.test_table_trigger()
 
-DROP TRIGGER test_table_trigger ON test_table;
+DROP TRIGGER test_table_trigger ON public.test_table;
 
-DROP FUNCTION test_table_trigger();
+DROP FUNCTION public.test_table_trigger();
 
 CREATE SCHEMA another_triggers;
 
 ALTER SCHEMA another_triggers OWNER TO postgres;
 
-SET search_path = another_triggers, pg_catalog;
-
-CREATE OR REPLACE FUNCTION test_table_trigger_another() RETURNS trigger
+CREATE OR REPLACE FUNCTION another_triggers.test_table_trigger_another() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 begin
@@ -20,11 +18,9 @@ begin
 end;
 $$;
 
-ALTER FUNCTION test_table_trigger_another() OWNER TO postgres;
-
-SET search_path = public, pg_catalog;
+ALTER FUNCTION another_triggers.test_table_trigger_another() OWNER TO postgres;
 
 CREATE TRIGGER test_table_trigger
-	BEFORE INSERT OR UPDATE ON test_table
+	BEFORE INSERT OR UPDATE ON public.test_table
 	FOR EACH ROW
 	EXECUTE PROCEDURE another_triggers.test_table_trigger_another();

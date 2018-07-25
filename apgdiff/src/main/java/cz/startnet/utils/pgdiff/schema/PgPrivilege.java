@@ -76,10 +76,13 @@ public class PgPrivilege extends PgStatement {
 
         if (type == DbObjType.COLUMN) {
             column = '(' + PgDiffUtils.getQuotedName(name) + ')';
-            name = PgDiffUtils.getQuotedName(newObj.getParent().getName());
+            name = PgDiffUtils.getQuotedName(newObj.getParent().getParent().getName())
+                    + '.' + PgDiffUtils.getQuotedName(newObj.getParent().getName());
             type = DbObjType.TABLE;
-        } else if (type != DbObjType.FUNCTION) {
+        } else if (type == DbObjType.SCHEMA) {
             name = PgDiffUtils.getQuotedName(name);
+        } else {
+            name = PgDiffUtils.getQuotedName(newObj.getParent().getName()) + '.' + name;
         }
 
         owner =  PgDiffUtils.getQuotedName(owner);

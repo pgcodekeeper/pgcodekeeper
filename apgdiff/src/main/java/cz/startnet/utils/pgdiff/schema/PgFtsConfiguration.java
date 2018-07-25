@@ -36,11 +36,13 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
     public String getCreationSQL() {
         StringBuilder sbSql = new StringBuilder();
         sbSql.append("CREATE TEXT SEARCH CONFIGURATION ")
+        .append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.')
         .append(PgDiffUtils.getQuotedName(getName())).append(" (\n\t");
         sbSql.append("PARSER = ").append(parser).append(" );");
 
         dictionariesMap.forEach((fragment, dictionaries) -> {
             sbSql.append("\n\nALTER TEXT SEARCH CONFIGURATION ")
+            .append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.')
             .append(PgDiffUtils.getQuotedName(getName()));
             sbSql.append("\n\tADD MAPPING FOR ").append(fragment)
             .append("\n\tWITH ").append(dictionaries).append(";");
@@ -59,7 +61,8 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
     @Override
     protected StringBuilder appendCommentSql(StringBuilder sb) {
         sb.append("COMMENT ON TEXT SEARCH CONFIGURATION ");
-        sb.append(PgDiffUtils.getQuotedName(getName()));
+        sb.append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
+        .append('.').append(PgDiffUtils.getQuotedName(getName()));
         return sb.append(" IS ").append(comment).append(';');
     }
 
@@ -67,13 +70,15 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
     protected StringBuilder appendOwnerSQL(StringBuilder sb) {
         return owner == null ? sb
                 : sb.append("\n\nALTER TEXT SEARCH CONFIGURATION ")
-                .append(PgDiffUtils.getQuotedName(getName()))
+                .append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
+                .append('.').append(PgDiffUtils.getQuotedName(getName()))
                 .append(" OWNER TO ").append(PgDiffUtils.getQuotedName(owner)).append(';');
     }
 
     @Override
     public String getDropSQL() {
-        return "DROP TEXT SEARCH CONFIGURATION " + PgDiffUtils.getQuotedName(getName()) + ';';
+        return "DROP TEXT SEARCH CONFIGURATION " + PgDiffUtils.getQuotedName(getContainingSchema().getName())
+        + '.' + PgDiffUtils.getQuotedName(getName()) + ';';
     }
 
     @Override
@@ -113,11 +118,13 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
 
             if (newDictionaries == null) {
                 sb.append("\n\nALTER TEXT SEARCH CONFIGURATION ")
-                .append(PgDiffUtils.getQuotedName(getName()))
+                .append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
+                .append('.').append(PgDiffUtils.getQuotedName(getName()))
                 .append("\n\tDROP MAPPING FOR ").append(fragment).append(';');
             } else if (!dictionaries.equals(newDictionaries)) {
                 sb.append("\n\nALTER TEXT SEARCH CONFIGURATION ")
-                .append(PgDiffUtils.getQuotedName(getName()))
+                .append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
+                .append('.').append(PgDiffUtils.getQuotedName(getName()))
                 .append("\n\tALTER MAPPING FOR ").append(fragment)
                 .append("\n\tWITH ").append(newDictionaries).append(";");
             }
@@ -126,7 +133,8 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
         newMap.forEach((fragment, dictionaries) -> {
             if (!oldMap.containsKey(fragment)) {
                 sb.append("\n\nALTER TEXT SEARCH CONFIGURATION ")
-                .append(PgDiffUtils.getQuotedName(getName()))
+                .append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
+                .append('.').append(PgDiffUtils.getQuotedName(getName()))
                 .append("\n\tADD MAPPING FOR ").append(fragment)
                 .append("\n\tWITH ").append(dictionaries).append(";");
             }

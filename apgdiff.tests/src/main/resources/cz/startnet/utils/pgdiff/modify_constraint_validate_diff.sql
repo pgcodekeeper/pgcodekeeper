@@ -1,7 +1,7 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-ALTER DOMAIN dom1
+ALTER DOMAIN public.dom1
 	VALIDATE CONSTRAINT dom1_check;
 
-ALTER TABLE t1
+ALTER TABLE public.t1
 	VALIDATE CONSTRAINT t1_c1_check;

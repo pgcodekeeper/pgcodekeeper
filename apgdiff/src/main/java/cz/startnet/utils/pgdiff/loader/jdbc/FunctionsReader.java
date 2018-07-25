@@ -133,7 +133,7 @@ public class FunctionsReader extends JdbcReader {
         }
 
         // PRIVILEGES
-        loader.setPrivileges(f, res.getString("aclarray"));
+        loader.setPrivileges(f, res.getString("aclarray"), schemaName);
 
         schema.addFunction(f);
     }

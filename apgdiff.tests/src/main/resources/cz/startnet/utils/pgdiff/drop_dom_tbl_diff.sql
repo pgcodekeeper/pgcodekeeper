@@ -1,5 +1,5 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-DROP TABLE distributors;
+DROP TABLE public.distributors;
 
-DROP DOMAIN dom2;
+DROP DOMAIN public.dom2;

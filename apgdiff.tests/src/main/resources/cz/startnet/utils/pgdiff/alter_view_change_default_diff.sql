@@ -1,3 +1,3 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-ALTER TABLE test ALTER COLUMN test_col SET DEFAULT 1;
+ALTER TABLE public.test ALTER COLUMN test_col SET DEFAULT 1;

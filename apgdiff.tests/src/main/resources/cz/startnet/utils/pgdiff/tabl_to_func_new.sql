@@ -1,11 +1,11 @@
 
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
 --
 -- Name: testf(); Type: FUNCTION; Schema: public; Owner: botov_av
 --
 
-CREATE FUNCTION testf() RETURNS integer
+CREATE FUNCTION public.testf() RETURNS integer
     LANGUAGE plpgsql
     AS $$begin return 0; end;$$;
 
@@ -20,8 +20,8 @@ SET default_with_oids = false;
 -- Name: t1; Type: TABLE; Schema: public; Owner: botov_av; Tablespace: 
 --
 
-CREATE TABLE t1 (
-    c1 integer DEFAULT testf()
+CREATE TABLE public.t1 (
+    c1 integer DEFAULT public.testf()
 );
 
 

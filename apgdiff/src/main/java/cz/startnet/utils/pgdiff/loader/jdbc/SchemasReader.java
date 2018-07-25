@@ -77,7 +77,7 @@ public class SchemasReader implements PgCatalogStrings {
             loader.setOwner(s, owner);
         }
 
-        loader.setPrivileges(s, res.getString("nspacl"));
+        loader.setPrivileges(s, res.getString("nspacl"), null);
 
         return s;
     }

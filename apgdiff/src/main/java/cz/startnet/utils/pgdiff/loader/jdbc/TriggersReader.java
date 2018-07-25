@@ -83,16 +83,15 @@ public class TriggersReader extends JdbcReader {
             t.setType(TgTypes.AFTER);
         }
 
-        t.setTableName(tableName);
+        t.setTableName(PgDiffUtils.getQuotedName(schemaName) + '.'
+                + PgDiffUtils.getQuotedName(tableName));
 
         String funcName = res.getString("proname");
         String funcSchema = res.getString(NAMESPACE_NSPNAME);
 
         StringBuilder functionCall = new StringBuilder(funcName.length() + 2);
-        if (!funcSchema.equals(schemaName)) {
-            functionCall.append(PgDiffUtils.getQuotedName(funcSchema)).append('.');
-        }
-        functionCall.append(PgDiffUtils.getQuotedName(funcName)).append('(');
+        functionCall.append(PgDiffUtils.getQuotedName(funcSchema)).append('.')
+        .append(PgDiffUtils.getQuotedName(funcName)).append('(');
 
         byte[] args = res.getBytes("tgargs");
         if (args.length > 0) {
@@ -123,9 +122,7 @@ public class TriggersReader extends JdbcReader {
             if (refRelName != null) {
                 String refSchemaName = res.getString("refnspname");
                 StringBuilder sb = new StringBuilder();
-                if (!refSchemaName.equals(schemaName)) {
-                    sb.append(PgDiffUtils.getQuotedName(refSchemaName)).append('.');
-                }
+                sb.append(PgDiffUtils.getQuotedName(refSchemaName)).append('.');
                 sb.append(PgDiffUtils.getQuotedName(refRelName));
 
                 t.setRefTableName(sb.toString());

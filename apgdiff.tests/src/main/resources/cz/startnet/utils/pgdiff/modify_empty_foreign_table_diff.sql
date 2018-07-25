@@ -1,7 +1,7 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-ALTER FOREIGN TABLE testtable
+ALTER FOREIGN TABLE public.testtable
 	ADD COLUMN c1 integer;
 
-ALTER FOREIGN TABLE ONLY testtable
+ALTER FOREIGN TABLE ONLY public.testtable
 	ALTER COLUMN c1 SET NOT NULL;

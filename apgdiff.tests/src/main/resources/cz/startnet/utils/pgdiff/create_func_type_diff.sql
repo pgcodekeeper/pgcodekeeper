@@ -1,14 +1,14 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-CREATE TYPE typ_composite AS (
+CREATE TYPE public.typ_composite AS (
 	key character varying(80) COLLATE pg_catalog."ru_RU.utf8",
 	val text COLLATE pg_catalog."en_GB"
 );
 
-ALTER TYPE typ_composite OWNER TO botov_av;
+ALTER TYPE public.typ_composite OWNER TO botov_av;
 
-CREATE OR REPLACE FUNCTION add(typ_composite, integer) RETURNS integer
+CREATE OR REPLACE FUNCTION public.add(typ_composite, integer) RETURNS integer
     LANGUAGE sql IMMUTABLE STRICT
     AS $_$select $2;$_$;
 
-ALTER FUNCTION add(typ_composite, integer) OWNER TO botov_av;
+ALTER FUNCTION public.add(typ_composite, integer) OWNER TO botov_av;

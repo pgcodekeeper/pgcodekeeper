@@ -1,19 +1,19 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-ALTER TABLE testtable
+ALTER TABLE public.testtable
 	DROP CONSTRAINT testtable_pkey;
 
-ALTER TABLE ONLY testtable
+ALTER TABLE ONLY public.testtable
 	ALTER COLUMN field1 DROP NOT NULL;
 
-ALTER TABLE ONLY testtable
+ALTER TABLE ONLY public.testtable
 	ALTER COLUMN field3 DROP DEFAULT;
 
-ALTER TABLE ONLY testtable
+ALTER TABLE ONLY public.testtable
 	ALTER COLUMN field2 SET DEFAULT 5000;
 
-ALTER TABLE ONLY testtable
+ALTER TABLE ONLY public.testtable
 	ALTER COLUMN field4 DROP DEFAULT;
 
-ALTER TABLE ONLY testtable
+ALTER TABLE ONLY public.testtable
 	ALTER COLUMN field4 SET NOT NULL;

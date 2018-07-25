@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -247,14 +249,41 @@ public class ReferenceListener extends SQLParserBaseListener {
         return defSchema;
     }
 
+    private void addReferenceOnSchema(List<IdentifierContext> ids, String schemaName,
+            ParserRuleContext ctx) {
+        if (schemaName != null) {
+            Token startSchemaToken = QNameParser.getSchemaNameCtx(ids).getStart();
+            addObjReference(null, schemaName,
+                    DbObjType.SCHEMA, StatementActions.NONE,
+                    startSchemaToken.getStartIndex(), startSchemaToken.getLine(),
+                    ParserAbstract.getFullCtxText(ctx.getParent()));
+        }
+    }
+
+    private void addFullObjReference(String schemaName, String name,
+            ParserRuleContext ctx, DbObjType type, StatementActions action,
+            ParserRuleContext def) {
+        int offset = 0;
+        if (schemaName != null) {
+            offset = schemaName.length() + 1;
+            addObjReference(null, schemaName, DbObjType.SCHEMA, StatementActions.NONE,
+                    ctx.getStart().getStartIndex(), ctx.getStart().getLine(),
+                    ParserAbstract.getFullCtxText(def));
+        }
+
+        addObjReference(schemaName, name, type, action,
+                ctx.getStart().getStartIndex() + offset, ctx.getStart().getLine(),
+                ParserAbstract.getFullCtxText(def));
+    }
+
     public void createTable(Create_table_statementContext ctx){
         List<IdentifierContext> ids = ctx.name.identifier();
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-
+        addReferenceOnSchema(ids, schemaName, ctx);
         Define_columnsContext defintColumns = ctx.define_table().define_columns();
         Define_typeContext defineType = ctx.define_table().define_type();
 
-        if(defintColumns != null){
+        if (defintColumns != null) {
             for (Table_column_defContext colCtx : defintColumns.table_col_def) {
                 if (colCtx.tabl_constraint != null) {
                     getTableConstraint(colCtx.tabl_constraint);
@@ -262,7 +291,7 @@ public class ReferenceListener extends SQLParserBaseListener {
             }
         }
 
-        if(defineType != null && defineType.list_of_type_column_def() != null){
+        if (defineType != null && defineType.list_of_type_column_def() != null) {
             for (Table_of_type_column_defContext typeCtx : defineType.list_of_type_column_def().table_col_def) {
                 if (typeCtx.tabl_constraint != null) {
                     getTableConstraint(typeCtx.tabl_constraint);
@@ -276,10 +305,8 @@ public class ReferenceListener extends SQLParserBaseListener {
     public void createIndex(Create_index_statementContext ctx){
         List<IdentifierContext> ids = ctx.table_name.identifier();
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-        addObjReference(schemaName, QNameParser.getFirstName(ids),
-                DbObjType.TABLE, StatementActions.NONE,
-                ctx.table_name.getStart().getStartIndex(), ctx.table_name.getStart().getLine(),
-                ParserAbstract.getFullCtxText(ctx.getParent()));
+        addFullObjReference(schemaName, QNameParser.getFirstName(ids), ctx.table_name,
+                DbObjType.TABLE, StatementActions.NONE, ctx.getParent());
         if (ctx.name != null) {
             fillObjDefinition(schemaName, ctx.name, DbObjType.INDEX);
         }
@@ -298,37 +325,24 @@ public class ReferenceListener extends SQLParserBaseListener {
 
     public void createTrigger(Create_trigger_statementContext ctx) {
         List<IdentifierContext> ids = ctx.table_name.identifier();
-        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-        addObjReference(schemaName, QNameParser.getFirstName(ids),
-                DbObjType.TABLE, StatementActions.NONE,
-                ctx.table_name.getStart().getStartIndex(), ctx.table_name.getStart().getLine(),
-                ParserAbstract.getFullCtxText(ctx.getParent()));
+        addFullObjReference(QNameParser.getSchemaName(ids, getDefSchemaName()),
+                QNameParser.getFirstName(ids), ctx.table_name, DbObjType.TABLE,
+                StatementActions.NONE, ctx.getParent());
 
         Schema_qualified_name_nontypeContext funcNameCtx = ctx.func_name.function_name()
                 .schema_qualified_name_nontype();
         IdentifierContext sch = funcNameCtx.schema;
         String funcSchema = sch != null ?  sch.getText() : getDefSchemaName();
         String funcName = funcNameCtx.identifier_nontype().getText();
-        int offset = 0;
-        // TODO proper qualified name splitting for every reference
-        if (sch != null) {
-            offset = funcSchema.length() + 1;
-            addObjReference(null, funcSchema,
-                    DbObjType.SCHEMA, StatementActions.NONE,
-                    ctx.func_name.getStart().getStartIndex(), ctx.func_name.getStart().getLine(),
-                    ParserAbstract.getFullCtxText(ctx.getParent()));
-        }
-        addObjReference(funcSchema, funcName,
-                DbObjType.FUNCTION, StatementActions.NONE,
-                ctx.func_name.getStart().getStartIndex() + offset, ctx.func_name.getStart().getLine(),
-                ParserAbstract.getFullCtxText(ctx.getParent()));
-
-        fillObjDefinition(schemaName, ctx.name, DbObjType.TRIGGER);
+        addFullObjReference(funcSchema, funcName, ctx.func_name,
+                DbObjType.FUNCTION, StatementActions.NONE, ctx.getParent());
+        fillObjDefinition(null, ctx.name, DbObjType.TRIGGER);
     }
 
     public void createDomain(Create_domain_statementContext ctx) {
         List<IdentifierContext> ids = ctx.name.identifier();
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+        addReferenceOnSchema(ids, schemaName, ctx);
         addObjReference(schemaName, ParserAbstract.getFullCtxText(ctx.dat_type),
                 DbObjType.TYPE, StatementActions.NONE,
                 ctx.dat_type.getStart().getStartIndex(), ctx.dat_type.getStart().getLine(),
@@ -339,31 +353,32 @@ public class ReferenceListener extends SQLParserBaseListener {
     public void createType(Create_type_statementContext ctx) {
         List<IdentifierContext> ids = ctx.name.identifier();
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+        addReferenceOnSchema(ids, schemaName, ctx);
         fillObjDefinition(schemaName, QNameParser.getFirstNameCtx(ids), DbObjType.TYPE);
     }
 
     public void createRewrite(Create_rewrite_statementContext ctx) {
         List<IdentifierContext> ids = ctx.table_name.identifier();
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-        addObjReference(schemaName, QNameParser.getFirstName(ids),
-                DbObjType.TABLE, StatementActions.NONE,
-                ctx.table_name.getStart().getStartIndex(), ctx.table_name.getStart().getLine(),
-                ParserAbstract.getFullCtxText(ctx.getParent()));
+        addFullObjReference(schemaName, QNameParser.getFirstName(ids), ctx.table_name,
+                DbObjType.TABLE, StatementActions.NONE, ctx.getParent());
         // TODO process references in statements/expressions
-        fillObjDefinition(schemaName, ctx.name, DbObjType.RULE);
+        fillObjDefinition(null, ctx.name, DbObjType.RULE);
     }
 
     public void createFunction(Create_function_statementContext ctx) {
         List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
+        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+        addReferenceOnSchema(ids, schemaName, ctx);
         statementBodies.add(new StatementBodyContainer(filePath, ctx.funct_body));
-        fillObjDefinition(QNameParser.getSchemaName(ids, getDefSchemaName()),
-                QNameParser.getFirstNameCtx(ids), DbObjType.FUNCTION);
+        fillObjDefinition(schemaName, QNameParser.getFirstNameCtx(ids), DbObjType.FUNCTION);
     }
 
     public void createSequence(Create_sequence_statementContext ctx) {
         List<IdentifierContext> ids = ctx.name.identifier();
-        fillObjDefinition(QNameParser.getSchemaName(ids, getDefSchemaName()),
-                QNameParser.getFirstNameCtx(ids), DbObjType.SEQUENCE);
+        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+        addReferenceOnSchema(ids, schemaName, ctx);
+        fillObjDefinition(schemaName, QNameParser.getFirstNameCtx(ids), DbObjType.SEQUENCE);
     }
 
     public void createSchema(Create_schema_statementContext ctx) {
@@ -374,104 +389,53 @@ public class ReferenceListener extends SQLParserBaseListener {
 
     public void createView(Create_view_statementContext ctx) {
         List<IdentifierContext> ids = ctx.name.identifier();
+        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+        addReferenceOnSchema(ids, schemaName, ctx);
+
         Select_stmtContext select = ctx.v_query;
         if (select != null) {
             statementBodies.add(new StatementBodyContainer(filePath, select));
         }
 
-        fillObjDefinition(QNameParser.getSchemaName(ids, getDefSchemaName()),
-                QNameParser.getFirstNameCtx(ids), DbObjType.VIEW);
+        fillObjDefinition(schemaName, QNameParser.getFirstNameCtx(ids), DbObjType.VIEW);
     }
 
     private void createFtsParser(Create_fts_parserContext ctx) {
         List<IdentifierContext> ids = ctx.name.identifier();
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-
-        if (ids.size() > 1) {
-            addObjReference(null, schemaName,
-                    DbObjType.SCHEMA, StatementActions.NONE,
-                    ctx.name.getStart().getStartIndex(), ctx.name.getStart().getLine(),
-                    ParserAbstract.getFullCtxText(ctx.getParent()));
-        }
-
+        addReferenceOnSchema(ids, schemaName, ctx);
         fillObjDefinition(schemaName, QNameParser.getFirstNameCtx(ids), DbObjType.FTS_PARSER);
     }
-
 
     private void createFtsTemplate(Create_fts_templateContext ctx) {
         List<IdentifierContext> ids = ctx.name.identifier();
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-
-        if (ids.size() > 1) {
-            addObjReference(null, schemaName,
-                    DbObjType.SCHEMA, StatementActions.NONE,
-                    ctx.name.getStart().getStartIndex(), ctx.name.getStart().getLine(),
-                    ParserAbstract.getFullCtxText(ctx.getParent()));
-        }
-
+        addReferenceOnSchema(ids, schemaName, ctx);
         fillObjDefinition(schemaName, QNameParser.getFirstNameCtx(ids), DbObjType.FTS_TEMPLATE);
     }
 
     private void createFtsDictionary(Create_fts_dictionaryContext ctx) {
-        List<IdentifierContext> ids = ctx.name.identifier();
         List<IdentifierContext> templateIds = ctx.template.identifier();
-        String templateSchemaName = QNameParser.getSchemaName(templateIds, "pg_catalog");
-
-        int offset = 0;
-        if (templateIds.size() > 1) {
-            offset = templateSchemaName.length() + 1;
-            addObjReference(null, templateSchemaName, DbObjType.SCHEMA, StatementActions.NONE,
-                    ctx.template.getStart().getStartIndex(), ctx.template.getStart().getLine(),
-                    ParserAbstract.getFullCtxText(ctx.getParent()));
-        }
-
-        addObjReference(templateSchemaName,
-                QNameParser.getFirstName(templateIds), DbObjType.FTS_TEMPLATE, StatementActions.NONE,
-                ctx.template.getStart().getStartIndex() + offset, ctx.template.getStart().getLine(),
-                ParserAbstract.getFullCtxText(ctx.getParent()));
-
+        addFullObjReference(QNameParser.getSchemaName(templateIds, "pg_catalog"),
+                QNameParser.getFirstName(templateIds), ctx.template,
+                DbObjType.FTS_TEMPLATE, StatementActions.NONE, ctx.getParent());
+        List<IdentifierContext> ids = ctx.name.identifier();
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-
-        if (ids.size() > 1) {
-            addObjReference(null, schemaName,
-                    DbObjType.SCHEMA, StatementActions.NONE,
-                    ctx.name.getStart().getStartIndex(), ctx.name.getStart().getLine(),
-                    ParserAbstract.getFullCtxText(ctx.getParent()));
-        }
-
+        addReferenceOnSchema(ids, schemaName, ctx);
         fillObjDefinition(schemaName, QNameParser.getFirstNameCtx(ids), DbObjType.FTS_DICTIONARY);
     }
 
     private void createFtsConfiguration(Create_fts_configurationContext ctx) {
-        List<IdentifierContext> ids = ctx.name.identifier();
         List<IdentifierContext> parserIds = ctx.parser_name.identifier();
-        String parserSchemaName = QNameParser.getSchemaName(parserIds, "pg_catalog");
+        addFullObjReference(QNameParser.getSchemaName(parserIds, "pg_catalog"),
+                QNameParser.getFirstName(parserIds), ctx.parser_name,
+                DbObjType.FTS_PARSER, StatementActions.NONE, ctx.getParent());
 
-        int offset = 0;
-        if (parserIds.size() > 1) {
-            offset = parserSchemaName.length() + 1;
-            addObjReference(null, parserSchemaName, DbObjType.SCHEMA, StatementActions.NONE,
-                    ctx.parser_name.getStart().getStartIndex(), ctx.parser_name.getStart().getLine(),
-                    ParserAbstract.getFullCtxText(ctx.getParent()));
-        }
-
-        addObjReference(parserSchemaName, QNameParser.getFirstName(parserIds),
-                DbObjType.FTS_PARSER, StatementActions.NONE,
-                ctx.parser_name.getStart().getStartIndex() + offset, ctx.parser_name.getStart().getLine(),
-                ParserAbstract.getFullCtxText(ctx.getParent()));
-
+        List<IdentifierContext> ids = ctx.name.identifier();
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-
-        if (ids.size() > 1) {
-            addObjReference(null, schemaName,
-                    DbObjType.SCHEMA, StatementActions.NONE,
-                    ctx.name.getStart().getStartIndex(), ctx.name.getStart().getLine(),
-                    ParserAbstract.getFullCtxText(ctx.getParent()));
-        }
-
+        addReferenceOnSchema(ids, schemaName, ctx);
         fillObjDefinition(schemaName, QNameParser.getFirstNameCtx(ids), DbObjType.FTS_CONFIGURATION);
     }
-
 
     public void commentOn(Comment_on_statementContext ctx) {
         if (ctx.name == null) {
@@ -492,22 +456,35 @@ public class ReferenceListener extends SQLParserBaseListener {
             if (schemaName.equals(tableName)) {
                 schemaName = getDefSchemaName();
             }
-            addObjReference(schemaName, tableName,
-                    DbObjType.TABLE, StatementActions.COMMENT,
-                    ctx.name.getStart().getStartIndex(), ctx.name.getStart().getLine(),
-                    ParserAbstract.getFullCtxText(ctx.getParent()));
-            // setCommentToDefinition(schemaName, tableName, DbObjType.TABLE, comment);
+            // TODO need to correct links for 'VIEW-column' comments.
+            // example: COMMENT ON COLUMN public.view_name.ts IS 'Comment for column in query of VIEW';
+            addFullObjReference(schemaName, tableName, ctx.name,
+                    DbObjType.TABLE, StatementActions.COMMENT, ctx.getParent());
         } else if (ctx.EXTENSION() != null) {
             schemaName = null;
             type = DbObjType.EXTENSION;
         } else if (ctx.TRIGGER() != null) {
+            List<IdentifierContext> idsTblTrigger = ctx.table_name.identifier();
+            addFullObjReference(QNameParser.getSchemaName(idsTblTrigger, getDefSchemaName()),
+                    QNameParser.getFirstName(idsTblTrigger), ctx.table_name,
+                    DbObjType.TABLE, StatementActions.NONE, ctx.getParent());
             schemaName = null;
             type = DbObjType.TRIGGER;
         } else if (ctx.RULE() != null) {
+            List<IdentifierContext> idsTblRule = ctx.table_name.identifier();
+            addFullObjReference(QNameParser.getSchemaName(idsTblRule, getDefSchemaName()),
+                    QNameParser.getFirstName(idsTblRule), ctx.table_name,
+                    DbObjType.TABLE, StatementActions.NONE, ctx.getParent());
             schemaName = null;
             type = DbObjType.RULE;
-        } else if (ctx.INDEX() != null) {
+        } else if (ctx.CONSTRAINT() != null) {
+            List<IdentifierContext> idsTblConstr = ctx.table_name.identifier();
+            addFullObjReference(QNameParser.getSchemaName(idsTblConstr, getDefSchemaName()),
+                    QNameParser.getFirstName(idsTblConstr), ctx.table_name,
+                    DbObjType.TABLE, StatementActions.NONE, ctx.getParent());
             schemaName = null;
+            type = DbObjType.CONSTRAINT;
+        } else if (ctx.INDEX() != null) {
             type = DbObjType.INDEX;
         } else if (ctx.SCHEMA() != null) {
             schemaName = null;
@@ -518,6 +495,8 @@ public class ReferenceListener extends SQLParserBaseListener {
             type = DbObjType.TABLE;
         } else if (ctx.VIEW() != null) {
             type = DbObjType.VIEW;
+        } else if (ctx.DOMAIN() != null) {
+            type = DbObjType.DOMAIN;
         } else if (ctx.PARSER() != null) {
             type = DbObjType.FTS_PARSER;
         } else if (ctx.TEMPLATE() != null) {
@@ -529,11 +508,7 @@ public class ReferenceListener extends SQLParserBaseListener {
         }
 
         if (type != null) {
-            addObjReference(schemaName, name,
-                    type, StatementActions.COMMENT,
-                    ctx.name.getStart().getStartIndex(), ctx.name.getStart().getLine(),
-                    ParserAbstract.getFullCtxText(ctx.getParent()));
-
+            addFullObjReference(schemaName, name, ctx.name, type, StatementActions.COMMENT, ctx.getParent());
             setCommentToDefinition(name, type, comment);
         }
     }
@@ -570,10 +545,9 @@ public class ReferenceListener extends SQLParserBaseListener {
         } else if (ctx.body_rule.on_function() != null) {
             type = DbObjType.FUNCTION;
             for (Function_parametersContext functparam : ctx.body_rule.on_function().obj_name) {
-                addObjReference(getDefSchemaName(), QNameParser.getFirstName(functparam.name.identifier()),
-                        DbObjType.FUNCTION, StatementActions.NONE,
-                        functparam.name.getStart().getStartIndex(), functparam.name.getStart().getLine(),
-                        ParserAbstract.getFullCtxText(ctx.getParent()));
+                List<IdentifierContext> functparamIds = functparam.name.identifier();
+                addFullObjReference(getDefSchemaName(), QNameParser.getFirstName(functparamIds),
+                        functparam.name, DbObjType.FUNCTION, StatementActions.NONE, ctx.getParent());
             }
         } else if (ctx.body_rule.on_large_object() != null) {
             obj_name = ctx.body_rule.on_large_object().obj_name.name;
@@ -594,34 +568,19 @@ public class ReferenceListener extends SQLParserBaseListener {
             return;
         }
         List<IdentifierContext> ids = name.identifier();
-        String firstPart = QNameParser.getFirstName(ids);
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-        switch (type) {
-        case TABLE:
-            addObjReference(schemaName, firstPart, type,
-                    StatementActions.NONE,
-                    name.getStart().getStartIndex(), name.getStart().getLine(),
-                    ParserAbstract.getFullCtxText(ctx.getParent()));
-            return;
-        case SCHEMA:
+        if (DbObjType.SCHEMA == type) {
             schemaName = null;
-            break;
-        default:
-            break;
         }
-        addObjReference(schemaName, firstPart, type,
-                StatementActions.NONE,
-                name.getStart().getStartIndex(), name.getStart().getLine(),
-                ParserAbstract.getFullCtxText(ctx.getParent()));
+        addFullObjReference(schemaName, QNameParser.getFirstName(ids), name, type,
+                StatementActions.NONE, ctx.getParent());
     }
 
     public void alterFunction(Alter_function_statementContext ctx) {
         List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
-        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-        addObjReference(schemaName, QNameParser.getFirstName(ids),
-                DbObjType.FUNCTION, StatementActions.ALTER,
-                ctx.function_parameters().name.getStart().getStartIndex(), ctx.function_parameters().name.getStart().getLine(),
-                ParserAbstract.getFullCtxText(ctx.getParent()));
+        addFullObjReference(QNameParser.getSchemaName(ids, getDefSchemaName()),
+                QNameParser.getFirstName(ids), ctx.function_parameters().name,
+                DbObjType.FUNCTION, StatementActions.ALTER, ctx.getParent());
     }
 
     public void alterSchema(Alter_schema_statementContext ctx) {
@@ -636,18 +595,8 @@ public class ReferenceListener extends SQLParserBaseListener {
         String name = QNameParser.getFirstName(ids);
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         for (Table_actionContext tablAction : ctx.table_action()) {
-
-            if (tablAction.owner_to() != null) {
-                addObjReference(schemaName, name,
-                        DbObjType.TABLE, StatementActions.ALTER,
-                        ctx.name.getStart().getStartIndex(), ctx.name.getStart().getLine(),
-                        ParserAbstract.getFullCtxText(ctx.getParent()));
-            } else {
-                addObjReference(schemaName, name,
-                        DbObjType.TABLE, StatementActions.ALTER,
-                        ctx.name.getStart().getStartIndex(), ctx.name.getStart().getLine(),
-                        ParserAbstract.getFullCtxText(ctx.getParent()));
-            }
+            addFullObjReference(schemaName, name, ctx.name, DbObjType.TABLE,
+                    StatementActions.ALTER, ctx.getParent());
             if (tablAction.tabl_constraint != null) {
                 getTableConstraint(tablAction.tabl_constraint);
             }
@@ -662,53 +611,37 @@ public class ReferenceListener extends SQLParserBaseListener {
                 List<IdentifierContext> idsColname = seqbody.col_name.identifier();
                 String tableName = QNameParser.getSecondName(idsColname);
                 String schName = QNameParser.getSchemaName(idsColname, getDefSchemaName());
-                int offset = 0;
                 if (tableName.equals(schName)) {
                     schName = schemaName;
-                } else {
-                    offset = schName.length() + 1;
-                    addObjReference(null, schName,
-                            DbObjType.SCHEMA, StatementActions.NONE,
-                            seqbody.col_name.getStart().getStartIndex(), seqbody.col_name.getStart().getLine(),
-                            ParserAbstract.getFullCtxText(ctx.getParent()));
                 }
-                addObjReference(schName, tableName,
-                        DbObjType.TABLE, StatementActions.NONE,
-                        seqbody.col_name.getStart().getStartIndex() + offset, seqbody.col_name.getStart().getLine(),
-                        ParserAbstract.getFullCtxText(ctx.getParent()));
+                addFullObjReference(schName, tableName, seqbody.col_name,
+                        DbObjType.TABLE, StatementActions.NONE, ctx.getParent());
             }
         }
-        addObjReference(schemaName, QNameParser.getFirstName(ids),
-                DbObjType.SEQUENCE, StatementActions.ALTER,
-                ctx.name.getStart().getStartIndex(), ctx.name.getStart().getLine(),
-                ParserAbstract.getFullCtxText(ctx.getParent()));
+
+        addFullObjReference(schemaName, QNameParser.getFirstName(ids), ctx.name,
+                DbObjType.SEQUENCE, StatementActions.ALTER, ctx.getParent());
     }
 
     public void alterView(Alter_view_statementContext ctx) {
         List<IdentifierContext> ids = ctx.name.identifier();
-        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-        addObjReference(schemaName, QNameParser.getFirstName(ids),
-                DbObjType.VIEW, StatementActions.ALTER,
-                ctx.name.getStart().getStartIndex(), ctx.name.getStart().getLine(),
-                ParserAbstract.getFullCtxText(ctx.getParent()));
+        addFullObjReference(QNameParser.getSchemaName(ids, getDefSchemaName()),
+                QNameParser.getFirstName(ids), ctx.name,
+                DbObjType.VIEW, StatementActions.ALTER, ctx.getParent());
     }
 
     public void alterDomain(Alter_domain_statementContext ctx) {
         List<IdentifierContext> ids = ctx.name.identifier();
-        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-        addObjReference(schemaName, QNameParser.getFirstName(ids),
-                DbObjType.DOMAIN, StatementActions.ALTER,
-                ctx.name.getStart().getStartIndex(), ctx.name.getStart().getLine(),
-                ParserAbstract.getFullCtxText(ctx.getParent()));
+        addFullObjReference(QNameParser.getSchemaName(ids, getDefSchemaName()),
+                QNameParser.getFirstName(ids), ctx.name,
+                DbObjType.DOMAIN, StatementActions.ALTER, ctx.getParent());
     }
 
     public void alterType(Alter_type_statementContext ctx) {
         List<IdentifierContext> ids = ctx.name.identifier();
-        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-        addObjReference(schemaName, QNameParser.getFirstName(ids),
-                DbObjType.TYPE, StatementActions.ALTER,
-                ctx.name.getStart().getStartIndex(), ctx.name.getStart().getLine(),
-                ParserAbstract.getFullCtxText(ctx.getParent()));
+        addFullObjReference(QNameParser.getSchemaName(ids, getDefSchemaName()),
+                QNameParser.getFirstName(ids), ctx.name,
+                DbObjType.TYPE, StatementActions.ALTER, ctx.getParent());
     }
 
     private void alterFts(Alter_fts_statementContext ctx) {
@@ -724,42 +657,18 @@ public class ReferenceListener extends SQLParserBaseListener {
         }
 
         List<IdentifierContext> ids = ctx.name.identifier();
-        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-
-        int offset = 0;
-        if (ids.size() > 1) {
-            offset = schemaName.length() + 1;
-            addObjReference(null, schemaName,
-                    DbObjType.SCHEMA, StatementActions.NONE,
-                    ctx.name.getStart().getStartIndex(), ctx.name.getStart().getLine(),
-                    ParserAbstract.getFullCtxText(ctx.getParent()));
-        }
-
-        addObjReference(schemaName, QNameParser.getFirstName(ids),
-                type, StatementActions.ALTER,
-                ctx.name.getStart().getStartIndex() + offset, ctx.name.getStart().getLine(),
-                ParserAbstract.getFullCtxText(ctx.getParent()));
+        addFullObjReference(QNameParser.getSchemaName(ids, getDefSchemaName()),
+                QNameParser.getFirstName(ids), ctx.name,
+                type, StatementActions.ALTER, ctx.getParent());
 
         Alter_fts_configurationContext afc = ctx.alter_fts_configuration();
 
         if (afc != null && afc.dictionaries != null) {
             for (Schema_qualified_nameContext objName : afc.dictionaries) {
                 List<IdentifierContext> dictIds = objName.identifier();
-                String dictSchemaName = QNameParser.getSchemaName(dictIds, getDefSchemaName());
-
-                int dictOffset = 0;
-                if (dictIds.size() > 1) {
-                    dictOffset = dictSchemaName.length() + 1;
-                    addObjReference(null, dictSchemaName,
-                            DbObjType.SCHEMA, StatementActions.NONE,
-                            objName.getStart().getStartIndex(), objName.getStart().getLine(),
-                            ParserAbstract.getFullCtxText(ctx.getParent()));
-                }
-
-                addObjReference(dictSchemaName, QNameParser.getFirstName(dictIds),
-                        DbObjType.FTS_DICTIONARY, StatementActions.NONE,
-                        objName.getStart().getStartIndex() + dictOffset, objName.getStart().getLine(),
-                        ParserAbstract.getFullCtxText(ctx.getParent()));
+                addFullObjReference(QNameParser.getSchemaName(dictIds, getDefSchemaName()),
+                        QNameParser.getFirstName(dictIds), objName,
+                        DbObjType.FTS_DICTIONARY, StatementActions.NONE, ctx.getParent());
             }
         }
     }
@@ -797,71 +706,39 @@ public class ReferenceListener extends SQLParserBaseListener {
         for (Schema_qualified_nameContext objName :
             ctx.if_exist_names_restrict_cascade().names_references().name) {
             List<IdentifierContext> ids = objName.identifier();
-            String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-
-            int offset = 0;
-            if (ids.size() > 1) {
-                offset = schemaName.length() + 1;
-                addObjReference(null, schemaName,
-                        DbObjType.SCHEMA, StatementActions.NONE,
-                        objName.getStart().getStartIndex(), objName.getStart().getLine(),
-                        ParserAbstract.getFullCtxText(ctx.getParent()));
-            }
-            addObjReference(schemaName, QNameParser.getFirstName(ids), type,
-                    StatementActions.DROP,
-                    objName.getStart().getStartIndex()+ offset, objName.getStart().getLine(),
-                    ParserAbstract.getFullCtxText(ctx.getParent()));
+            addFullObjReference(QNameParser.getSchemaName(ids, getDefSchemaName()),
+                    QNameParser.getFirstName(ids), objName,
+                    type, StatementActions.DROP, ctx.getParent());
         }
     }
 
     public void dropTrigger(Drop_trigger_statementContext ctx) {
-        String schemaName = QNameParser.getSchemaName(ctx.table_name.identifier(), getDefSchemaName());
         // FIXME table ref
-        addObjReference(null, schemaName,
-                DbObjType.SCHEMA, StatementActions.NONE,
-                ctx.table_name.getStart().getStartIndex(), ctx.table_name.getStart().getLine(),
-                ParserAbstract.getFullCtxText(ctx.getParent()));
+        List<IdentifierContext> tableIds = ctx.table_name.identifier();
+        addFullObjReference(QNameParser.getSchemaName(tableIds, getDefSchemaName()),
+                QNameParser.getFirstName(tableIds), ctx.table_name, DbObjType.TABLE,
+                StatementActions.NONE, ctx.getParent());
 
-        addObjReference(schemaName, ctx.name.getText(),
-                DbObjType.TRIGGER, StatementActions.DROP,
-                ctx.name.getStart().getStartIndex(), ctx.name.getStart().getLine(),
-                ParserAbstract.getFullCtxText(ctx.getParent()));
+        addFullObjReference(null,
+                ctx.name.getText(), ctx.name, DbObjType.TRIGGER,
+                StatementActions.DROP, ctx.getParent());
     }
 
     public void dropRule(Drop_rule_statementContext ctx) {
-        List<IdentifierContext> ids = ctx.schema_qualified_name().identifier();
-        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+        List<IdentifierContext> tableIds = ctx.schema_qualified_name().identifier();
+        addFullObjReference(QNameParser.getSchemaName(tableIds, getDefSchemaName()),
+                QNameParser.getFirstName(tableIds), ctx.schema_qualified_name(), DbObjType.TABLE,
+                StatementActions.NONE, ctx.getParent());
 
-        int offset=0;
-        if (schemaName == null) {
-            schemaName = getDefSchemaName();
-        } else {
-            addObjReference(null, schemaName, DbObjType.SCHEMA,
-                    StatementActions.NONE, ctx.name.getStart().getStartIndex(), ctx.name.getStart().getLine(),
-                    ParserAbstract.getFullCtxText(ctx.getParent()));
-        }
-        addObjReference(schemaName, ctx.name.getText(), DbObjType.RULE,
-                StatementActions.DROP, ctx.name.getStart().getStartIndex() + offset, ctx.name.getStart().getLine(),
-                ParserAbstract.getFullCtxText(ctx.getParent()));
+        addFullObjReference(null, ctx.name.getText(), ctx.name, DbObjType.RULE,
+                StatementActions.DROP, ctx.getParent());
     }
 
     public void dropFunction(Drop_function_statementContext ctx) {
-        Schema_qualified_nameContext nameCtx = ctx.function_parameters().name;
         List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
-        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-
-        int offset = 0;
-        if (ids.size() > 1) {
-            offset = schemaName.length() + 1;
-            addObjReference(null, schemaName,
-                    DbObjType.SCHEMA, StatementActions.NONE,
-                    nameCtx.getStart().getStartIndex(), nameCtx.getStart().getLine(),
-                    ParserAbstract.getFullCtxText(ctx.getParent()));
-        }
-        addObjReference(schemaName, QNameParser.getFirstName(ids),
-                DbObjType.FUNCTION, StatementActions.DROP,
-                nameCtx.getStart().getStartIndex()+ offset, nameCtx.getStart().getLine(),
-                ParserAbstract.getFullCtxText(ctx.getParent()));
+        addFullObjReference(QNameParser.getSchemaName(ids, getDefSchemaName()),
+                QNameParser.getFirstName(ids), ctx.function_parameters().name,
+                DbObjType.FUNCTION, StatementActions.DROP, ctx.getParent());
     }
 
 
@@ -924,24 +801,13 @@ public class ReferenceListener extends SQLParserBaseListener {
     private void getTableConstraint(Constraint_commonContext ctx) {
         if (ctx.constr_body().FOREIGN() != null) {
             Table_referencesContext tblRef = ctx.constr_body().table_references();
-
             List<IdentifierContext> ids = tblRef.reftable.identifier();
-
-            String tableName = QNameParser.getFirstName(ids);
-            String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-            int count = 0;
-            if (ids.size() > 1) {
-                count += schemaName.length() + 1;
-                addObjReference(null, schemaName,
-                        DbObjType.SCHEMA, StatementActions.NONE,
-                        tblRef.reftable.getStart().getStartIndex(), tblRef.reftable.getStart().getLine(),
-                        ParserAbstract.getFullCtxText(ctx.getParent()));
-            }
-            addObjReference(schemaName, tableName,
-                    DbObjType.TABLE, StatementActions.NONE,
-                    tblRef.reftable.getStart().getStartIndex() + count, tblRef.reftable.getStart().getLine(),
-                    ParserAbstract.getFullCtxText(ctx.getParent()));
+            addFullObjReference(QNameParser.getSchemaName(ids, getDefSchemaName()),
+                    QNameParser.getFirstName(ids), tblRef.reftable,
+                    DbObjType.TABLE, StatementActions.NONE, ctx.getParent());
         }
+
+        fillObjDefinition(null, ctx.constraint_name, DbObjType.CONSTRAINT);
     }
 
     public List<StatementBodyContainer> getStatementBodies() {

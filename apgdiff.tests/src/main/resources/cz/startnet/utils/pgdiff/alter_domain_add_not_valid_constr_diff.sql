@@ -1,4 +1,4 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-ALTER DOMAIN dom5
+ALTER DOMAIN public.dom5
 	ADD CONSTRAINT dom5_check2 CHECK ((VALUE <> 1)) NOT VALID;

@@ -210,6 +210,10 @@ public final class PgDiff {
             }
         }
         depRes.recreateDrops();
+
+        if (!depRes.getActions().isEmpty()) {
+            script.addStatement("SET search_path = pg_catalog;");
+        }
         new ActionsToScriptConverter(depRes.getActions(), arguments).fillScript(script);
         if (arguments.isAddTransaction()) {
             script.addStatement("COMMIT TRANSACTION;");

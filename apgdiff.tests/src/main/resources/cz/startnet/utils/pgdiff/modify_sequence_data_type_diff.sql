@@ -1,6 +1,6 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-ALTER SEQUENCE testseq
+ALTER SEQUENCE public.testseq
 	AS smallint
 	INCREMENT BY 10
 	RESTART WITH 15;

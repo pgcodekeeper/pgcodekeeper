@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFtsConfiguration;
@@ -93,10 +92,9 @@ public abstract class JdbcReader implements PgCatalogStrings {
         }
 
         try (PreparedStatement st = loader.connection.prepareStatement(query)) {
+            loader.runner.run(loader.statement, "SET search_path TO pg_catalog;");
             for (Entry<Long, PgSchema> schema : schemas) {
                 loader.setCurrentOperation("set search_path query");
-                loader.runner.run(loader.statement, "SET search_path TO " +
-                        PgDiffUtils.getQuotedName(schema.getValue().getName()) + ", pg_catalog;");
 
                 loader.setCurrentOperation(factory.helperFunction + " query for schema " + schema.getValue().getName());
                 st.setLong(1, schema.getKey());

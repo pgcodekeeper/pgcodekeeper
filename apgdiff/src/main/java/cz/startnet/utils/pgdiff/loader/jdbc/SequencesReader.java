@@ -62,14 +62,13 @@ public class SequencesReader extends JdbcReader {
         }
 
         if (refTable != null && identityType == null) {
-            s.setOwnedBy(PgDiffUtils.getQuotedName(refTable) + '.'
-                    + PgDiffUtils.getQuotedName(res.getString("ref_col_name")));
+            s.setOwnedBy(refTable + '.' + PgDiffUtils.getQuotedName(res.getString("ref_col_name")));
         }
 
         if (identityType == null) {
             loader.setOwner(s, res.getLong(CLASS_RELOWNER));
             // PRIVILEGES
-            loader.setPrivileges(s, res.getString("aclarray"));
+            loader.setPrivileges(s, res.getString("aclarray"), schema.getName());
         }
 
         // COMMENT
@@ -99,6 +98,7 @@ public class SequencesReader extends JdbcReader {
                 table.addColumn(column);
             }
             column.setSequence(s);
+            s.setParent(schema);
             column.setIdentityType("d".equals(identityType) ? "BY DEFAULT" : "ALWAYS") ;
         } else {
             schema.addSequence(s);

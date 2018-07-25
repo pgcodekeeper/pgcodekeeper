@@ -1,8 +1,8 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-CREATE TYPE typ_range AS RANGE (
+CREATE TYPE public.typ_range AS RANGE (
 	subtype = character varying,
 	collation = pg_catalog."ru_RU.utf8"
 );
 
-ALTER TYPE typ_range OWNER TO botov_av;
+ALTER TYPE public.typ_range OWNER TO botov_av;

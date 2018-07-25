@@ -70,7 +70,13 @@ public class CommentOn extends ParserAbstract {
             return null;
         }
 
-        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
+        PgSchema schema;
+        if (ctx.TRIGGER() != null || ctx.RULE() != null || ctx.CONSTRAINT() != null) {
+            schema = getSchemaSafe(ctx.table_name.identifier(), db.getDefaultSchema());
+        } else {
+            schema = (ctx.EXTENSION() != null || ctx.SCHEMA() != null) ? null
+                    : getSchemaSafe(ids, db.getDefaultSchema());
+        }
 
         // function
         if (ctx.FUNCTION() != null) {

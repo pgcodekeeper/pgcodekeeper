@@ -32,7 +32,8 @@ public abstract class RegularPgTable extends PgTable {
             sbSQL.append("UNLOGGED ");
         }
         sbSQL.append("TABLE ");
-        sbSQL.append(PgDiffUtils.getQuotedName(name));
+        sbSQL.append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
+        .append('.').append(PgDiffUtils.getQuotedName(name));
     }
 
     @Override
@@ -45,7 +46,8 @@ public abstract class RegularPgTable extends PgTable {
         if (only) {
             sb.append("ONLY ");
         }
-        sb.append(PgDiffUtils.getQuotedName(getName()));
+        sb.append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
+        .append('.').append(PgDiffUtils.getQuotedName(getName()));
         return sb.toString();
     }
 

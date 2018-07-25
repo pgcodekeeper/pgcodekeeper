@@ -60,9 +60,27 @@ public abstract class ParserAbstract {
      * @return raw string
      */
     public static String getFullCtxText(ParserRuleContext ctx) {
-        Interval interval = new Interval(ctx.getStart().getStartIndex(),
-                ctx.getStop().getStopIndex());
-        return ctx.getStart().getInputStream().getText(interval);
+        return getFullCtxText(ctx, ctx);
+    }
+
+    /**
+     * Extracts raw text from list of IdentifierContext
+     *
+     * @param ids list of IdentifierContext
+     *            context
+     * @return raw string
+     */
+    public static String getFullCtxText(List<? extends ParserRuleContext> ids) {
+        return getFullCtxText(ids.get(0), ids.get(ids.size() - 1));
+    }
+
+    public static String getFullCtxText(ParserRuleContext start, ParserRuleContext end) {
+        return getFullCtxText(start.getStart(), end.getStop());
+    }
+
+    public static String getFullCtxText(Token start, Token end) {
+        return start.getInputStream().getText(
+                Interval.of(start.getStartIndex(), end.getStopIndex()));
     }
 
     protected PgColumn getColumn(Table_column_definitionContext colCtx) {
@@ -115,7 +133,14 @@ public abstract class ParserAbstract {
 
     public PgSchema getSchemaSafe(List<IdentifierContext> ids, PgSchema defaultSchema) {
         IdentifierContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
-        return schemaCtx == null ? defaultSchema : getSafe(db::getSchema, schemaCtx);
+        PgSchema foundSchema = schemaCtx == null ? defaultSchema : getSafe(db::getSchema, schemaCtx);
+        if (foundSchema != null) {
+            return foundSchema;
+        }
+
+        IdentifierContext firstNameCtx = QNameParser.getFirstNameCtx(ids);
+        throw new UnresolvedReferenceException("Schema not forund for " +
+                getFullCtxText(ids), firstNameCtx.start);
     }
 
     /**

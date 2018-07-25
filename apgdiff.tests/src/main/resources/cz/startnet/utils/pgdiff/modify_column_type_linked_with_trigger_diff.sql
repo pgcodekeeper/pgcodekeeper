@@ -1,14 +1,14 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
--- DEPCY: This TRIGGER depends on the COLUMN: accounts.number
+-- DEPCY: This TRIGGER depends on the COLUMN: public.accounts.number
 
-DROP TRIGGER log_update ON accounts;
+DROP TRIGGER log_update ON public.accounts;
 
-ALTER TABLE accounts
-	ALTER COLUMN number TYPE numeric USING number::numeric; /* TYPE change - table: accounts original: integer new: numeric */
+ALTER TABLE public.accounts
+	ALTER COLUMN number TYPE numeric USING number::numeric; /* TYPE change - table: public.accounts original: integer new: numeric */
 
 CREATE TRIGGER log_update
-	AFTER UPDATE ON accounts
+	AFTER UPDATE ON public.accounts
 	FOR EACH ROW
 	WHEN ((old.number IS DISTINCT FROM new.number))
-	EXECUTE PROCEDURE log_account_update();
+	EXECUTE PROCEDURE public.log_account_update();

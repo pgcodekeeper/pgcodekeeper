@@ -1,9 +1,9 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-DROP FUNCTION test(OUT p1 integer, OUT p2 text, OUT p3 text);
+DROP FUNCTION public.test(OUT p1 integer, OUT p2 text, OUT p3 text);
 
-CREATE OR REPLACE FUNCTION test(OUT p1 integer, OUT p2 text) RETURNS SETOF record
+CREATE OR REPLACE FUNCTION public.test(OUT p1 integer, OUT p2 text) RETURNS SETOF record
     LANGUAGE plpgsql
     AS $$begin null; end;$$;
 
-ALTER FUNCTION test(OUT p1 integer, OUT p2 text) OWNER TO botov_av;
+ALTER FUNCTION public.test(OUT p1 integer, OUT p2 text) OWNER TO botov_av;
