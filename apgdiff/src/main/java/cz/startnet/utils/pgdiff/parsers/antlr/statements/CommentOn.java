@@ -43,6 +43,10 @@ public class CommentOn extends ParserAbstract {
             IdentifierContext schemaCtx = QNameParser.getThirdNameCtx(ids);
             PgSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
             IdentifierContext tableCtx = QNameParser.getSecondNameCtx(ids);
+            if (tableCtx == null) {
+                throw new UnresolvedReferenceException(
+                        "Table name is missing for commented column!", nameCtx.getStart());
+            }
             String tableName = tableCtx.getText();
             PgTable table = schema.getTable(tableName);
             if (table == null) {
