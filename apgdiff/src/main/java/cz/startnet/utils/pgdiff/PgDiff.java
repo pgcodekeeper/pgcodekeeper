@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcLoader;
+import cz.startnet.utils.pgdiff.loader.JdbcMsLoader;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.LibraryObjectDuplicationException;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -106,8 +107,8 @@ public final class PgDiff {
                     PgDumpLoader.loadMsDatabaseSchemaFromDirTree(srcPath,  arguments, null, null) :
                         PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,  arguments, null, null);
         } else if ("db".equals(format)) {
-            JdbcLoader loader = new JdbcLoader(JdbcConnector.fromUrl(srcPath), arguments);
-            return loader.getDbFromJdbc();
+            return arguments.isMsSql() ?  new JdbcMsLoader(JdbcConnector.fromUrl(srcPath), arguments).readDb()
+                    : new JdbcLoader(JdbcConnector.fromUrl(srcPath), arguments).getDbFromJdbc();
         }
 
         throw new UnsupportedOperationException(

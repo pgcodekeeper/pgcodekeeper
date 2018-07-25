@@ -45,7 +45,7 @@ public class MsTablesReader extends JdbcMsReader {
             table.setOwner(owner == null ? ApgdiffConsts.SCHEMA_OWNER : owner);
         }
 
-        if (res.getBoolean("is_memory_optimazed")) {
+        if (res.getBoolean("is_memory_optimized")) {
             table.addOption("MEMORY_OPTIMIZED" , "ON");
         }
 
@@ -55,7 +55,7 @@ public class MsTablesReader extends JdbcMsReader {
 
         table.setTextImage(res.getString("text_image"));
         table.setFileStream(res.getString("file_stream"));
-        table.setAnsiNulls(res.getBoolean("user_ansi_nulls"));
+        table.setAnsiNulls(res.getBoolean("uses_ansi_nulls"));
 
         for (JsonReader col : JsonReader.fromArray(res.getString("cols"))) {
             MsColumn column = new MsColumn(col.getString("name"));
@@ -65,7 +65,7 @@ public class MsTablesReader extends JdbcMsReader {
             if (dataType.endsWith("varchar")) {
                 argSize = size == -1 ? "(max)" : ("(" + size + ")");
             } else if ("decimal".equals(dataType)) {
-                argSize = "(" + col.getInt("ps") + ',' + col.getInt("sc") + ')';
+                argSize = "(" + col.getInt("pr") + ',' + col.getInt("sc") + ')';
             }
             // TODO other type with size
 

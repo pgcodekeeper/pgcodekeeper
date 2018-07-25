@@ -1,6 +1,6 @@
 SELECT  
     obj.schema_id AS schema_oid,
-    obj.name AS obj_name,
+    obj.name,
     roleprinc.name AS role_name, 
     perm.permission_name,
     perm.state_desc,       

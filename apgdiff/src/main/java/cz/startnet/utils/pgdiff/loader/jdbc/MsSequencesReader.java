@@ -45,8 +45,8 @@ public class MsSequencesReader extends JdbcMsReader {
 
         s.setStartWith(Long.toString(res.getLong("start_value")));
         s.setMinMaxInc(res.getLong("increment"), res.getLong("maximum_value"), res.getLong("minimum_value"));
-        s.setCached(res.getBoolean("is_cashed"));
-        s.setCache(Long.toString(res.getLong("cache_size")));
+        s.setCached(res.getBoolean("is_cached"));
+        s.setCache(Integer.toString(res.getInt("cache_size")));
         s.setCycle(res.getBoolean("is_cycling"));
         s.setDataType(res.getString("data_type"));
 

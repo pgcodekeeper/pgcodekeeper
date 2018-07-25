@@ -136,6 +136,7 @@ public class MsIndicesAndPKReader extends JdbcMsReader {
             index.setClusterIndex(isClustered);
             index.setUnique("1".equals(res.getString("is_unique")));
             index.setDefinition(sb.toString());
+            index.setTableName(t.getName());
             t.addIndex(index);
         }
     }

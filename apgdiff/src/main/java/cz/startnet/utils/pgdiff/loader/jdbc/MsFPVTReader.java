@@ -52,10 +52,10 @@ public class MsFPVTReader extends JdbcMsReader {
         case "TR":
             tt = DbObjType.TRIGGER;
             break;
-        case "V":
+        case "V ":
             tt = DbObjType.VIEW;
             break;
-        case "P":
+        case "P ":
             tt = DbObjType.PROCEDURE;
             break;
         default:
@@ -65,7 +65,7 @@ public class MsFPVTReader extends JdbcMsReader {
 
         loader.setCurrentObject(new GenericColumn(schema.getName(), name, tt));
         boolean an = res.getBoolean("ansi_nulls");
-        boolean qi = res.getBoolean("quotedIdentifier");
+        boolean qi = res.getBoolean("quoted_identifier");
 
         String def = res.getString("definition");
         String owner = res.getString("owner");

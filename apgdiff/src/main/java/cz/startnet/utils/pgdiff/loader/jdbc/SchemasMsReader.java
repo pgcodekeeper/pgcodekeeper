@@ -38,7 +38,7 @@ public class SchemasMsReader implements PgCatalogStrings {
         String schemaName = res.getString("name");
         loader.setCurrentObject(new GenericColumn(schemaName, DbObjType.SCHEMA));
         MsSchema s = new MsSchema(schemaName, "");
-        String owner = res.getString("nspowner");
+        String owner = res.getString("owner");
 
         if (!loader.args.isIgnorePrivileges()) {
             s.setOwner(owner == null ? ApgdiffConsts.SCHEMA_OWNER : owner);
