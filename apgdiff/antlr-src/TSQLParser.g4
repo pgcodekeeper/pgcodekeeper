@@ -8,7 +8,7 @@ options {
 @header {package cz.startnet.utils.pgdiff.parsers.antlr;}
 
 tsql_file
-    : batch* EOF
+    : BOM? batch* EOF
     ;
 
 batch
@@ -2220,7 +2220,7 @@ table_constraint
 table_constraint_body
     : (PRIMARY KEY | UNIQUE) clustered? '(' column_name_list_with_order ')' index_options? (ON id)?
     | CHECK not_for_replication? '(' search_condition ')'
-    | DEFAULT expression+ FOR id
+    | DEFAULT expression (FOR id)?
     | FOREIGN KEY '(' fk = column_name_list ')' REFERENCES table_name ('(' pk = column_name_list')')? on_delete? on_update? not_for_replication?
     ;
 
@@ -2937,7 +2937,7 @@ send_conversation
 // https://msdn.microsoft.com/en-us/library/ms187752.aspx
 // TODO: implement runtime check or add new tokens.
 data_type
-    : id size=data_type_size?
+    : simple_name size=data_type_size?
     | DOUBLE PRECISION
     ;
     

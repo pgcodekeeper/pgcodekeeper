@@ -12,7 +12,7 @@ options {
 /******* Start symbols *******/
 
 sql
-  : (statement SEMI_COLON)* EOF
+  : BOM? (statement SEMI_COLON)* EOF
   ;
 
 qname_parser

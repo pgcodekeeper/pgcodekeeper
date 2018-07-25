@@ -17,7 +17,6 @@ public class MsColumn extends PgColumn {
     private String increment;
     private String defaultName;
     private String expession;
-    private String size;
 
     public MsColumn(String name) {
         super(name);
@@ -31,10 +30,7 @@ public class MsColumn extends PgColumn {
         if (expession != null) {
             sbDefinition.append("AS ").append(expession);
         } else {
-            sbDefinition.append(MsDiffUtils.quoteName(getType()));
-            if (size != null) {
-                sbDefinition.append(size);
-            }
+            sbDefinition.append(getType());
         }
 
         if (getCollation() != null) {
@@ -147,16 +143,11 @@ public class MsColumn extends PgColumn {
 
     private void compareTypes(MsColumn newColumn, StringBuilder sb) {
         String newCollation = newColumn.getCollation();
-        String newSize = newColumn.getSize();
         if (!Objects.equals(getType(), newColumn.getType())
-                || !Objects.equals(getSize(), newSize)
                 || !Objects.equals(newCollation, getCollation())
                 || newColumn.getNullValue() != getNullValue()) {
             sb.append(getAlterColumn(true, false, newColumn.getName()))
             .append(MsDiffUtils.quoteName(newColumn.getType()));
-            if (newSize != null) {
-                sb.append(newSize);
-            }
 
             if (newCollation != null) {
                 sb.append(" COLLATE ").append(newCollation);
@@ -215,15 +206,6 @@ public class MsColumn extends PgColumn {
         resetHash();
     }
 
-    public String getSize() {
-        return size;
-    }
-
-    public void setSize(String size) {
-        this.size = size;
-        resetHash();
-    }
-
     public String getSeed() {
         return seed;
     }
@@ -251,7 +233,6 @@ public class MsColumn extends PgColumn {
         colDst.increment = getIncrement();
         colDst.setDefaultName(defaultName);
         colDst.setExpression(expession);
-        colDst.setSize(size);
         for (PgPrivilege priv : grants) {
             colDst.addPrivilege(priv);
         }
@@ -271,7 +252,6 @@ public class MsColumn extends PgColumn {
         hasher.put(increment);
         hasher.put(defaultName);
         hasher.put(expession);
-        hasher.put(size);
     }
 
     @Override
@@ -283,7 +263,6 @@ public class MsColumn extends PgColumn {
                     && Objects.equals(seed, col.seed)
                     && Objects.equals(increment, col.increment)
                     && Objects.equals(defaultName, col.getDefaultName())
-                    && Objects.equals(size, col.getSize())
                     && Objects.equals(expession, col.getExpression());
         }
 
