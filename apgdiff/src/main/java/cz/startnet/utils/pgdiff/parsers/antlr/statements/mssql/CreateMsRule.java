@@ -21,7 +21,8 @@ public class CreateMsRule extends ParserAbstract {
 
     @Override
     public PgStatement getObject() {
-        if (db.getArguments().isIgnorePrivileges()) {
+        // TODO role grant where table_name = null
+        if (db.getArguments().isIgnorePrivileges() || ctx.table_name() == null) {
             return null;
         }
 

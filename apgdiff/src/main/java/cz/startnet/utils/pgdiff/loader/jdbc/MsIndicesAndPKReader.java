@@ -138,8 +138,6 @@ public class MsIndicesAndPKReader extends JdbcMsReader {
             index.setDefinition(sb.toString());
             t.addIndex(index);
         }
-
-        // loader.setPrivileges(s, res.getString("aclarray"));
     }
 
     @Override

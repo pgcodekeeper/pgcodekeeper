@@ -2096,6 +2096,7 @@ grant_permission
     | UPDATE
     | REFERENCES
     | INSERT
+    | CONNECT
     | ALTER (ANY? (id | DATABASE))?
     ;
 
@@ -3042,6 +3043,7 @@ simple_id
     | COMPATIBILITY_LEVEL
     | CONCAT
     | CONCAT_NULL_YIELDS_NULL
+    | CONNECT
     | CONTENT
     | CONTROL
     | COOKIE

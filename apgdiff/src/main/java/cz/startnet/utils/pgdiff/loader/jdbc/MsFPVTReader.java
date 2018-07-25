@@ -88,8 +88,6 @@ public class MsFPVTReader extends JdbcMsReader {
                     .st_clause(0).ddl_clause().schema_create().create_or_alter_function(),
                     ctx -> setOwner(new CreateMsFunction(ctx, db, an, qi).getObject(), owner));
         }
-
-        // loader.setPrivileges(s, res.getString("aclarray"));
     }
 
     private void setOwner(PgStatement st, String owner) {

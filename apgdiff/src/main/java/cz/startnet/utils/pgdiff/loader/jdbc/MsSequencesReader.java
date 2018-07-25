@@ -43,8 +43,6 @@ public class MsSequencesReader extends JdbcMsReader {
             s.setOwner(owner == null ? ApgdiffConsts.SCHEMA_OWNER : owner);
         }
 
-        // loader.setPrivileges(s, res.getString("aclarray"));
-
         s.setStartWith(Long.toString(res.getLong("start_value")));
         s.setMinMaxInc(res.getLong("increment"), res.getLong("maximum_value"), res.getLong("minimum_value"));
         s.setCached(res.getBoolean("is_cashed"));

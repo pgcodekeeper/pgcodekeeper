@@ -44,7 +44,7 @@ public class SchemasMsReader implements PgCatalogStrings {
             s.setOwner(owner == null ? ApgdiffConsts.SCHEMA_OWNER : owner);
         }
 
-        //        loader.setPrivileges(s, res.getString("nspacl"));
+        // TODO schemas privileges
         return s;
     }
 }

@@ -80,8 +80,6 @@ public class MsFKReader extends JdbcMsReader {
         con.setDefinition(sb.toString());
 
         schema.getTable(res.getString("table_name")).addConstraint(con);
-
-        // loader.setPrivileges(s, res.getString("aclarray"));
     }
 
     @Override
