@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -61,9 +60,7 @@ public abstract class ParserAbstract {
      * @return raw string
      */
     public static String getFullCtxText(ParserRuleContext ctx) {
-        Interval interval = new Interval(ctx.getStart().getStartIndex(),
-                ctx.getStop().getStopIndex());
-        return ctx.getStart().getInputStream().getText(interval);
+        return getFullCtxText(ctx, ctx);
     }
 
     /**
@@ -73,11 +70,17 @@ public abstract class ParserAbstract {
      *            context
      * @return raw string
      */
-    private String getFullIdsText(List<IdentifierContext> ids) {
-        Token startToken = ids.get(0).getStart();
-        Interval interval = new Interval(startToken.getStartIndex(),
-                ids.get(ids.size() - 1).getStop().getStopIndex());
-        return startToken.getInputStream().getText(interval);
+    public static String getFullCtxText(List<? extends ParserRuleContext> ids) {
+        return getFullCtxText(ids.get(0), ids.get(ids.size() - 1));
+    }
+
+    public static String getFullCtxText(ParserRuleContext start, ParserRuleContext end) {
+        return getFullCtxText(start.getStart(), end.getStop());
+    }
+
+    public static String getFullCtxText(Token start, Token end) {
+        return start.getInputStream().getText(
+                Interval.of(start.getStartIndex(), end.getStopIndex()));
     }
 
     protected PgColumn getColumn(Table_column_definitionContext colCtx) {
@@ -136,8 +139,8 @@ public abstract class ParserAbstract {
         }
 
         IdentifierContext firstNameCtx = QNameParser.getFirstNameCtx(ids);
-        throw new UnresolvedReferenceException(MessageFormat.format("There is no schema for the {0}.",  //$NON-NLS-1$
-                getFullIdsText(ids)), firstNameCtx.start);
+        throw new UnresolvedReferenceException("Schema not forund for " +
+                getFullCtxText(ids), firstNameCtx.start);
     }
 
     /**

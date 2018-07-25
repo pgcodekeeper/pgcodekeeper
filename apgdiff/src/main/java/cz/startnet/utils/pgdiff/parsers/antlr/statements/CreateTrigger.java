@@ -37,6 +37,7 @@ public class CreateTrigger extends ParserAbstract {
         List<IdentifierContext> ids = ctx.table_name.identifier();
         PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         String schemaName = schema.getName();
+        String tableName = QNameParser.getFirstName(ids);
         PgTrigger trigger = new PgTrigger(ctx.name.getText(), getFullCtxText(ctx.getParent()));
         trigger.setTableName(ParserAbstract.getFullCtxText(ctx.table_name));
         if (ctx.AFTER() != null) {
@@ -106,8 +107,7 @@ public class CreateTrigger extends ParserAbstract {
             for (Schema_qualified_nameContext nameCol : column.name) {
                 String col = QNameParser.getFirstName(nameCol.identifier());
                 trigger.addUpdateColumn(col);
-                trigger.addDep(new GenericColumn(schemaName,
-                        getTableNameFromQualName(trigger.getTableName()), col, DbObjType.COLUMN));
+                trigger.addDep(new GenericColumn(schemaName, tableName, col, DbObjType.COLUMN));
             }
         }
         parseWhen(ctx.when_trigger(), trigger, db);
@@ -130,14 +130,9 @@ public class CreateTrigger extends ParserAbstract {
             String schemaName, PgDatabase db) {
         ValueExprWithNmspc vex = new ValueExprWithNmspc(schemaName, db);
         GenericColumn implicitTable = new GenericColumn(schemaName,
-                getTableNameFromQualName(trigger.getTableName()), DbObjType.TABLE);
+                trigger.getParent().getName(), DbObjType.TABLE);
         vex.addReference("new", implicitTable);
         vex.addReference("old", implicitTable);
         UtilAnalyzeExpr.analyze(new Vex(ctx), vex, trigger);
-    }
-
-    private static String getTableNameFromQualName(String qualTblName) {
-        return qualTblName.contains(".") ?
-                qualTblName.substring(qualTblName.indexOf(".") + 1) : qualTblName;
     }
 }
