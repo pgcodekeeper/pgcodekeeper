@@ -22,22 +22,10 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class SequencesReader extends JdbcReader {
 
-    public static class SequencesReaderFactory extends JdbcReaderFactory {
-
-        public SequencesReaderFactory(long hasHelperMask, String helperFunction, Map<SupportedVersion, String> queries) {
-            super(hasHelperMask, helperFunction, queries);
-        }
-
-        @Override
-        public JdbcReader getReader(JdbcLoaderBase loader) {
-            return new SequencesReader(this, loader);
-        }
-    }
-
     private static final int DATA_SELECT_LENGTH;
 
-    private SequencesReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
-        super(factory, loader);
+    public SequencesReader(JdbcLoaderBase loader) {
+        super(JdbcQueries.QUERY_SEQUENCES_PER_SCHEMA, loader);
     }
 
     @Override

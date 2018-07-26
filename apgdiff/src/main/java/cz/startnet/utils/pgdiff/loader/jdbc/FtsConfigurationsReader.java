@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgFtsConfiguration;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -16,20 +16,8 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class FtsConfigurationsReader extends JdbcReader {
 
-    public static class FtsConfigurationsReaderFactory extends JdbcReaderFactory {
-
-        public FtsConfigurationsReaderFactory(long hasHelperMask, String helperFunction, Map<SupportedVersion, String> queries) {
-            super(hasHelperMask, helperFunction, queries);
-        }
-
-        @Override
-        public JdbcReader getReader(JdbcLoaderBase loader) {
-            return new FtsConfigurationsReader(this, loader);
-        }
-    }
-
-    protected FtsConfigurationsReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
-        super(factory, loader);
+    public FtsConfigurationsReader(JdbcLoaderBase loader) {
+        super(JdbcQueries.QUERY_FTS_CONFIGURATIONS_PER_SCHEMA, loader);
     }
 
     @Override
@@ -42,9 +30,9 @@ public class FtsConfigurationsReader extends JdbcReader {
         config.setParser(PgDiffUtils.getQuotedName(parserSchema) + '.' + PgDiffUtils.getQuotedName(parserName));
         config.addDep(new GenericColumn(parserSchema, parserName, DbObjType.FTS_PARSER));
 
-        String[] fragments = getColArray(res, "tokennames", String.class);
-        String[] dictSchemas = getColArray(res, "dictschemas", String.class);
-        String[] dictionaries = getColArray(res, "dictnames", String.class);
+        String[] fragments = getColArray(res, "tokennames");
+        String[] dictSchemas = getColArray(res, "dictschemas");
+        String[] dictionaries = getColArray(res, "dictnames");
 
         if (fragments != null) {
             Map<String, List<String>> dictMap = new HashMap<>();

@@ -4,9 +4,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
@@ -20,23 +20,11 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class FunctionsReader extends JdbcReader {
 
-    public static class FunctionsReaderFactory extends JdbcReaderFactory {
-
-        public FunctionsReaderFactory(long hasHelperMask, String helperFunction, Map<SupportedVersion, String> queries) {
-            super(hasHelperMask, helperFunction, queries);
-        }
-
-        @Override
-        public JdbcReader getReader(JdbcLoaderBase loader) {
-            return new FunctionsReader(this, loader);
-        }
-    }
-
     private static final float DEFAULT_PROCOST = 100.0f;
     private static final float DEFAULT_PROROWS = 1000.0f;
 
-    private FunctionsReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
-        super(factory, loader);
+    public FunctionsReader(JdbcLoaderBase loader) {
+        super(JdbcQueries.QUERY_FUNCTIONS_PER_SCHEMA, loader);
     }
 
     @Override
@@ -58,11 +46,11 @@ public class FunctionsReader extends JdbcReader {
         }
 
         StringBuilder returnedTableArguments = new StringBuilder();
-        String[] argModes = getColArray(res, "proargmodes", String.class);
-        String[] argNames = getColArray(res, "proargnames", String.class);
-        Long[] argTypeOids = getColArray(res, "proallargtypes", Long.class);
+        String[] argModes = getColArray(res, "proargmodes");
+        String[] argNames = getColArray(res, "proargnames");
+        Long[] argTypeOids = getColArray(res, "proallargtypes");
 
-        Long[] argTypes = argTypeOids != null ? argTypeOids : (Long[]) res.getArray("argtypes").getArray();
+        Long[] argTypes = argTypeOids != null ? argTypeOids : getColArray(res, "argtypes");
         for (int i = 0; argTypes.length > i; i++) {
             String aMode = argModes != null ? argModes[i] : "i";
 
@@ -146,7 +134,7 @@ public class FunctionsReader extends JdbcReader {
 
         // since 9.5 PostgreSQL
         if (SupportedVersion.VERSION_9_5.checkVersion(loader.version)) {
-            Long[] protrftypes = getColArray(res, "protrftypes", Long.class);
+            Long[] protrftypes = getColArray(res, "protrftypes");
             if (protrftypes != null) {
                 body.append(" TRANSFORM ");
                 for (Long s : protrftypes) {
@@ -222,7 +210,7 @@ public class FunctionsReader extends JdbcReader {
             body.append(" ROWS ").append((int) rows);
         }
 
-        String[] proconfig = getColArray(res, "proconfig", String.class);
+        String[] proconfig = getColArray(res, "proconfig");
         if (proconfig != null) {
             for (String param : proconfig) {
                 String[] params = param.split("=");

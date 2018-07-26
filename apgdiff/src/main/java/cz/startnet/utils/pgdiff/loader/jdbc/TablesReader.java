@@ -2,9 +2,9 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -21,20 +21,8 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class TablesReader extends JdbcReader {
 
-    public static class TablesReaderFactory extends JdbcReaderFactory {
-
-        public TablesReaderFactory(long hasHelperMask, String helperFunction, Map<SupportedVersion, String> queries) {
-            super(hasHelperMask, helperFunction, queries);
-        }
-
-        @Override
-        public JdbcReader getReader(JdbcLoaderBase loader) {
-            return new TablesReader(this, loader);
-        }
-    }
-
-    private TablesReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
-        super(factory, loader);
+    public TablesReader(JdbcLoaderBase loader) {
+        super(JdbcQueries.QUERY_TABLES_PER_SCHEMA, loader);
     }
 
     @Override
@@ -74,7 +62,7 @@ public class TablesReader extends JdbcReader {
             t = new SimplePgTable(tableName, "");
         }
 
-        String[] foptions = getColArray(res, "ftoptions", String.class);
+        String[] foptions = getColArray(res, "ftoptions");
         if (foptions != null) {
             ParserAbstract.fillOptionParams(foptions, t::addOption, false, true, false);
         }
@@ -86,9 +74,9 @@ public class TablesReader extends JdbcReader {
         readColumns(res, t, ofTypeOid, schema);
 
         // INHERITS
-        String[] inhrelnames = getColArray(res, "inhrelnames", String.class);
+        String[] inhrelnames = getColArray(res, "inhrelnames");
         if (inhrelnames != null) {
-            String[] inhnspnames = getColArray(res, "inhnspnames", String.class);
+            String[] inhnspnames = getColArray(res, "inhnspnames");
 
             for (int i = 0; i < inhrelnames.length; ++i) {
                 t.addInherits(inhnspnames[i], inhrelnames[i]);
@@ -97,12 +85,12 @@ public class TablesReader extends JdbcReader {
         }
 
         // STORAGE PARAMETERS
-        String [] opts = getColArray(res, "reloptions", String.class);
+        String [] opts = getColArray(res, "reloptions");
         if (opts != null) {
             ParserAbstract.fillOptionParams(opts, t::addOption, false, false, false);
         }
 
-        String[] toast = getColArray(res, "toast_reloptions", String.class);
+        String[] toast = getColArray(res, "toast_reloptions");
         if (toast != null) {
             ParserAbstract.fillOptionParams(toast, t::addOption, true, false, false);
         }
@@ -153,28 +141,28 @@ public class TablesReader extends JdbcReader {
 
     private void readColumns(ResultSet res, PgTable t, long ofTypeOid,
             PgSchema schema) throws SQLException {
-        String[] colNames = getColArray(res, "col_names", String.class);
+        String[] colNames = getColArray(res, "col_names");
         if (colNames == null) {
             return;
         }
 
-        Long[] colTypeIds = getColArray(res, "col_type_ids", Long.class);
-        String[] colTypeName = getColArray(res, "col_type_name", String.class);
-        Boolean[] colHasDefault = getColArray(res, "col_has_default", Boolean.class);
-        String[] colDefaults = getColArray(res, "col_defaults", String.class);
-        String[] colComments = getColArray(res, "col_comments", String.class);
-        Boolean[] colNotNull = getColArray(res, "col_notnull", Boolean.class);
-        Integer[] colStatictics = getColArray(res, "col_statictics", Integer.class);
-        Boolean[] colIsLocal = getColArray(res, "col_local", Boolean.class);
-        Long[] colCollation = getColArray(res, "col_collation", Long.class);
-        Long[] colTypCollation = getColArray(res, "col_typcollation", Long.class);
-        String[] colCollationName = getColArray(res, "col_collationname", String.class);
-        String[] colCollationSchema = getColArray(res, "col_collationnspname", String.class);
-        String[] colAcl = getColArray(res, "col_acl", String.class);
-        String[] colOptions = getColArray(res, "col_options", String.class);
-        String[] colFOptions = getColArray(res, "col_foptions", String.class);
-        String[] colStorages = getColArray(res, "col_storages", String.class);
-        String[] colDefaultStorages = getColArray(res, "col_default_storages", String.class);
+        Long[] colTypeIds = getColArray(res, "col_type_ids");
+        String[] colTypeName = getColArray(res, "col_type_name");
+        Boolean[] colHasDefault = getColArray(res, "col_has_default");
+        String[] colDefaults = getColArray(res, "col_defaults");
+        String[] colComments = getColArray(res, "col_comments");
+        Boolean[] colNotNull = getColArray(res, "col_notnull");
+        Integer[] colStatictics = getColArray(res, "col_statictics");
+        Boolean[] colIsLocal = getColArray(res, "col_local");
+        Long[] colCollation = getColArray(res, "col_collation");
+        Long[] colTypCollation = getColArray(res, "col_typcollation");
+        String[] colCollationName = getColArray(res, "col_collationname");
+        String[] colCollationSchema = getColArray(res, "col_collationnspname");
+        String[] colAcl = getColArray(res, "col_acl");
+        String[] colOptions = getColArray(res, "col_options");
+        String[] colFOptions = getColArray(res, "col_foptions");
+        String[] colStorages = getColArray(res, "col_storages");
+        String[] colDefaultStorages = getColArray(res, "col_default_storages");
 
         for (int i = 0; i < colNames.length; i++) {
             PgColumn column = new PgColumn(colNames[i]);

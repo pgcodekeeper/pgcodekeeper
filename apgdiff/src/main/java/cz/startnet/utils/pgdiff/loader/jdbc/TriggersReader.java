@@ -3,9 +3,9 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -16,18 +16,6 @@ import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class TriggersReader extends JdbcReader {
-
-    public static class TriggersReaderFactory extends JdbcReaderFactory {
-
-        public TriggersReaderFactory(long hasHelperMask, String helperFunction, Map<SupportedVersion, String> queries) {
-            super(hasHelperMask, helperFunction, queries);
-        }
-
-        @Override
-        public JdbcReader getReader(JdbcLoaderBase loader) {
-            return new TriggersReader(this, loader);
-        }
-    }
 
     // SONAR-OFF
     // pg_trigger.h
@@ -40,8 +28,8 @@ public class TriggersReader extends JdbcReader {
     private static final int TRIGGER_TYPE_INSTEAD   = 1 << 6;
     // SONAR-ON
 
-    private TriggersReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
-        super(factory, loader);
+    public TriggersReader(JdbcLoaderBase loader) {
+        super(JdbcQueries.QUERY_TRIGGERS_PER_SCHEMA, loader);
     }
 
     @Override
@@ -143,7 +131,7 @@ public class TriggersReader extends JdbcReader {
             t.setNewTable(res.getString("tgnewtable"));
         }
 
-        String[] arrCols = getColArray(res, "cols", String.class);
+        String[] arrCols = getColArray(res, "cols");
         if (arrCols != null) {
             for (String col_name : arrCols) {
                 t.addUpdateColumn(col_name);

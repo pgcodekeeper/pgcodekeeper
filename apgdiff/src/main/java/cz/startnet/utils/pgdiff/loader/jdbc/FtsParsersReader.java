@@ -2,30 +2,17 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.schema.PgFtsParser;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class FtsParsersReader extends JdbcReader {
 
-    public static class FtsParsersReaderFactory extends JdbcReaderFactory {
-
-        public FtsParsersReaderFactory(long hasHelperMask, String helperFunction, Map<SupportedVersion, String> queries) {
-            super(hasHelperMask, helperFunction, queries);
-        }
-
-        @Override
-        public JdbcReader getReader(JdbcLoaderBase loader) {
-            return new FtsParsersReader(this, loader);
-        }
-    }
-
-    protected FtsParsersReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
-        super(factory, loader);
+    public FtsParsersReader(JdbcLoaderBase loader) {
+        super(JdbcQueries.QUERY_FTS_PARSERS_PER_SCHEMA, loader);
     }
 
     @Override

@@ -2,10 +2,9 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -15,22 +14,10 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class ConstraintsReader extends JdbcReader {
 
-    public static class ConstraintsReaderFactory extends JdbcReaderFactory {
-
-        public ConstraintsReaderFactory(long hasHelperMask, String helperFunction, Map<SupportedVersion, String> queries) {
-            super(hasHelperMask, helperFunction, queries);
-        }
-
-        @Override
-        public JdbcReader getReader(JdbcLoaderBase loader) {
-            return new ConstraintsReader(this, loader);
-        }
-    }
-
     static final String ADD_CONSTRAINT = "ALTER TABLE noname ADD CONSTRAINT noname ";
 
-    private ConstraintsReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
-        super(factory, loader);
+    public ConstraintsReader(JdbcLoaderBase loader) {
+        super(JdbcQueries.QUERY_CONSTRAINTS_PER_SCHEMA, loader);
     }
 
     @Override
@@ -84,7 +71,7 @@ public class ConstraintsReader extends JdbcReader {
         c.setForeignTable(ftableRef);
         c.addDep(ftableRef);
 
-        String[] referencedColumnNames = getColArray(res, "foreign_cols", String.class);
+        String[] referencedColumnNames = getColArray(res, "foreign_cols");
         for (String colName : referencedColumnNames) {
             if (colName != null) {
                 c.addForeignColumn(colName);
@@ -100,7 +87,7 @@ public class ConstraintsReader extends JdbcReader {
             c.setUnique(true);
         }
 
-        String[] concols = getColArray(res, "cols", String.class);
+        String[] concols = getColArray(res, "cols");
         for (String name : concols) {
             c.addColumn(name);
         }

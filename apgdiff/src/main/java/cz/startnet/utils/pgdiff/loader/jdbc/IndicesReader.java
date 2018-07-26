@@ -2,10 +2,9 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateIndex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
@@ -15,20 +14,8 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class IndicesReader extends JdbcReader {
 
-    public static class IndicesReaderFactory extends JdbcReaderFactory {
-
-        public IndicesReaderFactory(long hasHelperMask, String helperFunction, Map<SupportedVersion, String> queries) {
-            super(hasHelperMask, helperFunction, queries);
-        }
-
-        @Override
-        public JdbcReader getReader(JdbcLoaderBase loader) {
-            return new IndicesReader(this, loader);
-        }
-    }
-
-    private IndicesReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
-        super(factory, loader);
+    public IndicesReader(JdbcLoaderBase loader) {
+        super(JdbcQueries.QUERY_INDICES_PER_SCHEMA, loader);
     }
 
     @Override

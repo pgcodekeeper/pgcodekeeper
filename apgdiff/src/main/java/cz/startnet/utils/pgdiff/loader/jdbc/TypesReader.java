@@ -2,10 +2,9 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateDomain;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -20,22 +19,10 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class TypesReader extends JdbcReader {
 
-    public static class TypesReaderFactory extends JdbcReaderFactory {
-
-        public TypesReaderFactory(long hasHelperMask, String helperFunction, Map<SupportedVersion, String> queries) {
-            super(hasHelperMask, helperFunction, queries);
-        }
-
-        @Override
-        public JdbcReader getReader(JdbcLoaderBase loader) {
-            return new TypesReader(this, loader);
-        }
-    }
-
     static final String ADD_CONSTRAINT = "ALTER DOMAIN noname ADD CONSTRAINT noname ";
 
-    private TypesReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
-        super(factory, loader);
+    public TypesReader(JdbcLoaderBase loader) {
+        super(JdbcQueries.QUERY_TYPES_PER_SCHEMA, loader);
     }
 
     @Override
@@ -101,10 +88,10 @@ public class TypesReader extends JdbcReader {
         d.setDefaultValue(def);
         d.setNotNull(res.getBoolean("dom_notnull"));
 
-        String[] connames = getColArray(res, "dom_connames", String.class);
+        String[] connames = getColArray(res, "dom_connames");
         if (connames != null) {
-            String[] condefs = getColArray(res, "dom_condefs", String.class);
-            String[] concomments = getColArray(res, "dom_concomments", String.class);
+            String[] condefs = getColArray(res, "dom_condefs");
+            String[] concomments = getColArray(res, "dom_concomments");
 
             for (int i = 0; i < connames.length; ++i) {
                 String conName = connames[i];
@@ -231,17 +218,17 @@ public class TypesReader extends JdbcReader {
         case "c":
             t = new PgType(name, PgTypeForm.COMPOSITE, "");
 
-            String[] attnames = getColArray(res, "comp_attnames", String.class);
+            String[] attnames = getColArray(res, "comp_attnames");
             if (attnames == null) {
                 break;
             }
-            String[] atttypes = getColArray(res, "comp_atttypdefns", String.class);
-            Long[] atttypeids = getColArray(res, "comp_atttypids", Long.class);
-            Long[] attcollations = getColArray(res, "comp_attcollations", Long.class);
-            Long[] atttypcollations = getColArray(res, "comp_atttypcollations", Long.class);
-            String[] attcollationnames = getColArray(res, "comp_attcollationnames", String.class);
-            String[] attcollationnspnames = getColArray(res, "comp_attcollationnspnames", String.class);
-            String[] attcomments = getColArray(res, "comp_attcomments", String.class);
+            String[] atttypes = getColArray(res, "comp_atttypdefns");
+            Long[] atttypeids = getColArray(res, "comp_atttypids");
+            Long[] attcollations = getColArray(res, "comp_attcollations");
+            Long[] atttypcollations = getColArray(res, "comp_atttypcollations");
+            String[] attcollationnames = getColArray(res, "comp_attcollationnames");
+            String[] attcollationnspnames = getColArray(res, "comp_attcollationnspnames");
+            String[] attcomments = getColArray(res, "comp_attcomments");
 
             for (int i = 0; i < attnames.length; ++i) {
                 PgColumn a = new PgColumn(attnames[i]);
@@ -266,7 +253,7 @@ public class TypesReader extends JdbcReader {
         case "e":
             t = new PgType(name, PgTypeForm.ENUM, "");
 
-            String[] enums = getColArray(res, "enums", String.class);
+            String[] enums = getColArray(res, "enums");
             if (enums == null) {
                 break;
             }

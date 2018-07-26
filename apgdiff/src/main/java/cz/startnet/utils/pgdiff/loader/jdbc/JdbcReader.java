@@ -1,13 +1,12 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.sql.Array;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
+import java.util.Map;
 
+import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFtsConfiguration;
@@ -24,17 +23,21 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class JdbcReader implements PgCatalogStrings {
 
-    protected final JdbcReaderFactory factory;
+    protected final Map<SupportedVersion, String> queries;
     protected final JdbcLoaderBase loader;
 
-    protected JdbcReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
-        this.factory = factory;
+    protected JdbcReader(Map<SupportedVersion, String> queries, JdbcLoaderBase loader) {
+        this.queries = queries;
         this.loader = loader;
     }
 
+    protected abstract void processResult(ResultSet result, PgSchema schema)
+            throws SQLException;
+
+    protected abstract DbObjType getType();
+
     public void read() throws SQLException, InterruptedException {
-        String query = factory.makeFallbackQuery(loader.version);
-        Set<Entry<Long, PgSchema>> schemas = loader.schemas.map.entrySet();
+        String query = makeQuery(loader.version);
 
         List<ObjectTimestamp> objects = loader.getTimestampEqualObjects();
         if (objects != null && !objects.isEmpty()) {
@@ -42,32 +45,36 @@ public abstract class JdbcReader implements PgCatalogStrings {
 
             StringBuilder sb = new StringBuilder();
 
-            for (Entry<Long, PgSchema> schema : schemas) {
-                PgSchema sc = schema.getValue();
-                fillOldObjects(objects, sc, projDb, sb);
+            for (PgSchema schema : loader.schemas.map.values()) {
+                fillOldObjects(objects, schema, projDb, sb);
             }
 
             if (sb.length() > 0) {
                 sb.setLength(sb.length() - 1);
-                query = JdbcReaderFactory.excludeObjects(query, sb.toString());
+                query = excludeObjects(query, sb.toString());
             }
         }
 
-        try (PreparedStatement st = loader.connection.prepareStatement(query)) {
-            loader.runner.run(loader.statement, "SET search_path TO pg_catalog;");
-            for (Entry<Long, PgSchema> schema : schemas) {
-                loader.setCurrentOperation("set search_path query");
-
-                loader.setCurrentOperation(factory.helperFunction + " query for schema " + schema.getValue().getName());
-                try (ResultSet result = loader.runner.runScript(st)) {
-                    while (result.next()) {
-                        if (result.getLong("schema_oid") == schema.getKey()) {
-                            processResult(result, schema.getValue());
-                        }
-                    }
-                }
+        loader.setCurrentOperation(getClass().getSimpleName() + " query");
+        try (ResultSet result = loader.statement.executeQuery(query)) {
+            while (result.next()) {
+                processResult(result, loader.schemas.map.get(result.getLong("schema_oid")));
             }
         }
+    }
+
+    public String makeQuery(int version) {
+        StringBuilder sb = new StringBuilder("SELECT * FROM (");
+        sb.append(queries.get(null));
+        sb.append(") t1 ");
+
+        queries.entrySet().stream()
+        .filter(e -> e.getKey() != null && e.getKey().checkVersion(version))
+        .forEach(e -> sb.append("LEFT JOIN (").append(e.getValue())
+                .append(") t").append(e.getKey().getVersion())
+                .append(" USING (oid) "));
+
+        return sb.toString();
     }
 
     private void fillOldObjects(List<ObjectTimestamp> objects, PgSchema sc, PgDatabase projDb, StringBuilder sbOids) {
@@ -166,8 +173,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
         }
     }
 
-    protected <T> T[] getColArray(ResultSet rs, String columnName,
-            Class<T> arrayElement) throws SQLException {
+    protected static <T> T[] getColArray(ResultSet rs, String columnName) throws SQLException {
         Array arr = rs.getArray(columnName);
         if (arr != null) {
             @SuppressWarnings("unchecked")
@@ -177,9 +183,19 @@ public abstract class JdbcReader implements PgCatalogStrings {
         return null;
     }
 
-    protected abstract void processResult(ResultSet result, PgSchema schema)
-            throws SQLException;
-
-    protected abstract DbObjType getType();
-
+    /**
+     * Exclude oids from query
+     *
+     * @param base - base query
+     * @param oids - oids separated by commas
+     * @return new query
+     */
+    public static String excludeObjects(String base, String oids) {
+        StringBuilder sb = new StringBuilder("SELECT * FROM (");
+        sb.append(base);
+        sb.append(") q WHERE NOT (q.oid = ANY (ARRAY [");
+        sb.append(oids);
+        sb.append("]));");
+        return sb.toString();
+    }
 }
