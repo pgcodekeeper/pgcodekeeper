@@ -30,8 +30,8 @@ public class MsFunction extends PgFunction {
         sbSQL.append("CREATE OR ALTER FUNCTION ");
         appendFunctionSignature(sbSQL, true, true);
         sbSQL.append(' ');
-        sbSQL.append("RETURNS ").append(getReturns());
-        sbSQL.append("\n    ");
+        sbSQL.append("\nRETURNS ").append(getReturns());
+        sbSQL.append("\n");
         sbSQL.append(getBody());
         sbSQL.append(GO);
 

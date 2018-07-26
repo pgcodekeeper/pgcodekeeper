@@ -298,7 +298,7 @@ public abstract class AbstractTable extends ParserAbstract {
                     if (option.id() != null) {
                         col.setDefaultName(option.id().getText());
                     }
-                    col.setDefaultValue(getFullCtxText(option.constant_expression()));
+                    col.setDefaultValue(getFullCtxText(option.expression()));
                 } else if (option.column_constraint_body() != null) {
                     String conName = option.id() == null ? "" : getFullCtxText(option.id());
                     MsConstraint con = new MsConstraint(conName, getFullCtxText(option));

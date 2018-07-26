@@ -26,7 +26,6 @@ import cz.startnet.utils.pgdiff.loader.jdbc.MsExtendedObjectsReader.MsExtendedOb
 import cz.startnet.utils.pgdiff.loader.jdbc.MsFKReader.MsFKReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.MsFPVTReader.MsFPVTReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.MsIndicesAndPKReader.MsIndicesAndPKReaderFactory;
-import cz.startnet.utils.pgdiff.loader.jdbc.MsPrivilegesReader.MsPrivilegesReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.MsSequencesReader.MsSequencesReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.MsTablesReader.MsTablesReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.RulesReader.RulesReaderFactory;
@@ -116,8 +115,7 @@ public abstract class JdbcReaderFactory {
                 new MsSequencesReaderFactory(JdbcQueries.QUERY_MS_SEQUENCES),
                 new MsIndicesAndPKReaderFactory(JdbcQueries.QUERY_MS_INDICES_AND_PK),
                 new MsFKReaderFactory(JdbcQueries.QUERY_MS_FK),
-                new MsCheckConstraintsReaderFactory(JdbcQueries.QUERY_MS_CHECK_CONSTRAINTS),
-                new MsPrivilegesReaderFactory(JdbcQueries.QUERY_MS_PRIVILEGES)
+                new MsCheckConstraintsReaderFactory(JdbcQueries.QUERY_MS_CHECK_CONSTRAINTS)
                 ));
     }
 

@@ -2195,7 +2195,7 @@ column_option
     | NOT? NULL
     | IDENTITY identity_value? not_for_rep=not_for_replication?
     | (CONSTRAINT constraint=id)? column_constraint_body
-    | (CONSTRAINT constraint=id)? DEFAULT constant_expression (WITH VALUES)?
+    | (CONSTRAINT constraint=id)? DEFAULT expression (WITH VALUES)?
     ;
 
 identity_value
@@ -2220,7 +2220,7 @@ table_constraint
 table_constraint_body
     : (PRIMARY KEY | UNIQUE) clustered? '(' column_name_list_with_order ')' index_options? (ON id)?
     | CHECK not_for_replication? '(' search_condition ')'
-    | DEFAULT expression (FOR id)?
+    | DEFAULT expression FOR id
     | FOREIGN KEY '(' fk = column_name_list ')' REFERENCES table_name ('(' pk = column_name_list')')? on_delete? on_update? not_for_replication?
     ;
 

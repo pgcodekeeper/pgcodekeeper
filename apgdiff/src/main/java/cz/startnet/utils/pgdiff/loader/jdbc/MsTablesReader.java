@@ -11,7 +11,6 @@ import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.SimpleMsTable;
 import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsTablesReader extends JdbcMsReader {
@@ -40,11 +39,6 @@ public class MsTablesReader extends JdbcMsReader {
         loader.setCurrentObject(new GenericColumn(schema.getName(), tableName, DbObjType.TABLE));
         SimpleMsTable table = new SimpleMsTable(tableName, "");
 
-        if (!loader.args.isIgnorePrivileges()) {
-            String owner = res.getString("owner");
-            table.setOwner(owner == null ? ApgdiffConsts.SCHEMA_OWNER : owner);
-        }
-
         if (res.getBoolean("is_memory_optimized")) {
             table.addOption("MEMORY_OPTIMIZED" , "ON");
         }
@@ -63,9 +57,9 @@ public class MsTablesReader extends JdbcMsReader {
             String dataType = col.getString("type");
             int size = col.getInt("size");
             if (dataType.endsWith("varchar")) {
-                argSize = size == -1 ? "(max)" : ("(" + size + ")");
-            } else if ("decimal".equals(dataType)) {
-                argSize = "(" + col.getInt("pr") + ',' + col.getInt("sc") + ')';
+                argSize = size == -1 ? " (max)" : (" (" + size + ")");
+            } else if ("decimal".equals(dataType) || "numeric".equals(dataType)) {
+                argSize = " (" + col.getInt("pr") + ", " + col.getInt("sc") + ')';
             }
             // TODO other type with size
 
@@ -89,11 +83,8 @@ public class MsTablesReader extends JdbcMsReader {
             table.addColumn(column);
         }
 
-
-        // loader.setPrivileges(s, res.getString("aclarray"));
-
-        // TODO add filegroup/tablespace
-        // table.setTablespace(tablespace);
+        table.setTablespace(res.getString("space_name"));
+        loader.setOwner(table, res.getString("owner"));
 
         schema.addTable(table);
     }

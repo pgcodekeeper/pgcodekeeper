@@ -41,7 +41,7 @@ public class CreateMsRule extends ParserAbstract {
             stream = db.getChildren();
         }
 
-        PgStatement st = stream.filter(e -> e.getName().equals(name)).findAny().orElse(null);
+        PgStatement st = stream.filter(e -> e.getBareName().equals(name)).findAny().orElse(null);
         if (st != null) {
             st.addPrivilege(new PgPrivilege(false, definition));
         }

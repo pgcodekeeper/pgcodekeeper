@@ -67,7 +67,7 @@ public class MsColumn extends PgColumn {
         StringBuilder sb = new StringBuilder();
 
         sb.append(getAlterTable());
-        sb.append("\n\tADD COLUMN ");
+        sb.append("\n\tADD ");
         sb.append(getFullDefinition());
         sb.append(GO);
 
@@ -110,13 +110,6 @@ public class MsColumn extends PgColumn {
             sb.append(GO);
         }
 
-        if (newColumn.isSparse() != isSparse()) {
-            sb.append(getAlterColumn(true, false, name));
-            sb.append(newColumn.isSparse() ? " ADD" : " DROP" );
-            sb.append(" SPARSE");
-            sb.append(GO);
-        }
-
         String newDefault = newColumn.getDefaultValue();
         if (!Objects.equals(newDefault, getDefaultValue())
                 || !Objects.equals(getDefaultName(), newColumn.getDefaultName())) {
@@ -146,8 +139,9 @@ public class MsColumn extends PgColumn {
         if (!Objects.equals(getType(), newColumn.getType())
                 || !Objects.equals(newCollation, getCollation())
                 || newColumn.getNullValue() != getNullValue()) {
+
             sb.append(getAlterColumn(true, false, newColumn.getName()))
-            .append(MsDiffUtils.quoteName(newColumn.getType()));
+            .append(' ').append(newColumn.getType());
 
             if (newCollation != null) {
                 sb.append(" COLLATE ").append(newCollation);

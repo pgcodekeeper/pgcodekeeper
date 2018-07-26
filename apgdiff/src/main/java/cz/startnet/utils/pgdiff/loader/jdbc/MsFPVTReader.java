@@ -12,8 +12,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsView;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsFPVTReader extends JdbcMsReader {
@@ -74,25 +72,19 @@ public class MsFPVTReader extends JdbcMsReader {
         if (tt == DbObjType.TRIGGER) {
             loader.submitMsAntlrTask(def, p -> p.tsql_file().batch(0).sql_clauses()
                     .st_clause(0).ddl_clause().schema_create().create_or_alter_trigger(),
-                    ctx -> setOwner(new CreateMsTrigger(ctx, db, an, qi).getObject(), owner));
+                    ctx -> new CreateMsTrigger(ctx, db, an, qi).getObject());
         } else if (tt == DbObjType.VIEW) {
             loader.submitMsAntlrTask(def, p -> p.tsql_file().batch(0).sql_clauses()
                     .st_clause(0).ddl_clause().schema_create().create_or_alter_view(),
-                    ctx -> setOwner(new CreateMsView(ctx, db, an, qi).getObject(), owner));
+                    ctx -> loader.setOwner(new CreateMsView(ctx, db, an, qi).getObject(), owner));
         } else if (tt == DbObjType.PROCEDURE) {
             loader.submitMsAntlrTask(def, p -> p.tsql_file().batch(0).sql_clauses()
                     .st_clause(0).ddl_clause().schema_create().create_or_alter_procedure(),
-                    ctx -> setOwner(new CreateMsProcedure(ctx, db, an, qi).getObject(), owner));
+                    ctx -> loader.setOwner(new CreateMsProcedure(ctx, db, an, qi).getObject(), owner));
         } else {
             loader.submitMsAntlrTask(def, p -> p.tsql_file().batch(0).sql_clauses()
                     .st_clause(0).ddl_clause().schema_create().create_or_alter_function(),
-                    ctx -> setOwner(new CreateMsFunction(ctx, db, an, qi).getObject(), owner));
-        }
-    }
-
-    private void setOwner(PgStatement st, String owner) {
-        if (!loader.args.isIgnorePrivileges()) {
-            st.setOwner(owner == null ? ApgdiffConsts.SCHEMA_OWNER : owner);
+                    ctx -> loader.setOwner(new CreateMsFunction(ctx, db, an, qi).getObject(), owner));
         }
     }
 

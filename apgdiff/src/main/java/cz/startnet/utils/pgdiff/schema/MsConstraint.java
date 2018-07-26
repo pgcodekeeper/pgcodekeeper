@@ -49,7 +49,8 @@ public class MsConstraint extends PgConstraint {
     public String getDropSQL() {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("ALTER ").append(getParent().getStatementType().name()).append(' ');
-        sbSQL.append(MsDiffUtils.quoteName(getParent().getName()));
+        sbSQL.append(MsDiffUtils.quoteName(getContainingSchema().getName()));
+        sbSQL.append('.').append(MsDiffUtils.quoteName(getParent().getName()));
         sbSQL.append("\n\tDROP CONSTRAINT ");
         sbSQL.append(MsDiffUtils.quoteName(getName()));
         sbSQL.append(GO);

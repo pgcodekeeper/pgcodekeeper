@@ -8,7 +8,6 @@ import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsSequence;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsSequencesReader extends JdbcMsReader {
@@ -37,18 +36,20 @@ public class MsSequencesReader extends JdbcMsReader {
         loader.setCurrentObject(new GenericColumn(schema.getName(), sequenceName, DbObjType.SEQUENCE));
         MsSequence s = new MsSequence(sequenceName, "");
 
-
-        if (!loader.args.isIgnorePrivileges()) {
-            String owner = res.getString("owner");
-            s.setOwner(owner == null ? ApgdiffConsts.SCHEMA_OWNER : owner);
-        }
-
         s.setStartWith(Long.toString(res.getLong("start_value")));
         s.setMinMaxInc(res.getLong("increment"), res.getLong("maximum_value"), res.getLong("minimum_value"));
         s.setCached(res.getBoolean("is_cached"));
-        s.setCache(Integer.toString(res.getInt("cache_size")));
+
+        // getInt convert null to 0
+        Object cashe = res.getObject("cache_size");
+        if (cashe != null) {
+            s.setCache(cashe.toString());
+        }
+
         s.setCycle(res.getBoolean("is_cycling"));
         s.setDataType(res.getString("data_type"));
+
+        loader.setOwner(s, res.getString("owner"));
 
         schema.addSequence(s);
     }

@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.Map.Entry;
 import java.util.Objects;
 
+import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 
@@ -32,7 +33,7 @@ public abstract class RegularPgTable extends PgTable {
             sbSQL.append("UNLOGGED ");
         }
         sbSQL.append("TABLE ");
-        sbSQL.append(PgDiffUtils.getQuotedName(name));
+        sbSQL.append(isPostgres() ? PgDiffUtils.getQuotedName(name) : MsDiffUtils.quoteName(name));
     }
 
     @Override

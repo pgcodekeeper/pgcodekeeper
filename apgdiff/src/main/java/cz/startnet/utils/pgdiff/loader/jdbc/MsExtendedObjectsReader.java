@@ -15,9 +15,7 @@ import cz.startnet.utils.pgdiff.schema.MsFunction.MsArgument;
 import cz.startnet.utils.pgdiff.schema.MsProcedure;
 import cz.startnet.utils.pgdiff.schema.MsProcedure.ProcedureArgument;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsExtendedObjectsReader extends JdbcMsReader {
@@ -56,7 +54,6 @@ public class MsExtendedObjectsReader extends JdbcMsReader {
 
         List<JsonReader> args = JsonReader.fromArray(res.getString("args"));
 
-
         if (type == DbObjType.PROCEDURE) {
             MsProcedure proc = new MsProcedure(name, "");
             proc.setBody(body);
@@ -68,9 +65,9 @@ public class MsExtendedObjectsReader extends JdbcMsReader {
                 String dataType = arg.getString("type");
                 int size = arg.getInt("size");
                 if (dataType.endsWith("varchar")) {
-                    argSize = size == -1 ? "(max)" : ("(" + size + ")");
-                } else if ("decimal".equals(dataType)) {
-                    argSize = "(" + arg.getInt("ps") + ',' + arg.getInt("sc") + ')';
+                    argSize = size == -1 ? " (max)" : (" (" + size + ")");
+                } else if ("decimal".equals(dataType) || "numeric".equals(dataType)) {
+                    argSize = " (" + arg.getInt("pr") + ", " + arg.getInt("sc") + ')';
                 }
                 // TODO other type with size
 
@@ -87,7 +84,8 @@ public class MsExtendedObjectsReader extends JdbcMsReader {
             }
 
             // TODO add to query proc.setForReplication(i);
-            setOwner(proc, owner);
+            loader.setOwner(proc, owner);
+            schema.addProcedure(proc);
         } else {
             MsFunction func = new MsFunction(name, "");
 
@@ -96,9 +94,9 @@ public class MsExtendedObjectsReader extends JdbcMsReader {
                 String dataType = arg.getString("type");
                 int size = arg.getInt("size");
                 if (dataType.endsWith("varchar")) {
-                    argSize = size == -1 ? "(max)" : ("(" + size + ")");
-                } else if ("decimal".equals(dataType)) {
-                    argSize = "(" + arg.getInt("ps") + ',' + arg.getInt("sc") + ')';
+                    argSize = size == -1 ? " (max)" : (" (" + size + ")");
+                } else if ("decimal".equals(dataType) || "numeric".equals(dataType)) {
+                    argSize = " (" + arg.getInt("pr") + ", " + arg.getInt("sc") + ')';
                 }
                 // TODO other type with size
 
@@ -123,9 +121,9 @@ public class MsExtendedObjectsReader extends JdbcMsReader {
                     String dataType = col.getString("type");
                     int size = col.getInt("size");
                     if (dataType.endsWith("varchar")) {
-                        argSize = size == -1 ? "(max)" : ("(" + size + ")");
-                    } else if ("decimal".equals(dataType)) {
-                        argSize = "(" + col.getInt("ps") + ',' + col.getInt("sc") + ')';
+                        argSize = size == -1 ? " (max)" : (" (" + size + ")");
+                    } else if ("decimal".equals(dataType) || "numeric".equals(dataType)) {
+                        argSize = " (" + col.getInt("pr") + ", " + col.getInt("sc") + ')';
                     }
                     // TODO other type with size
 
@@ -150,15 +148,15 @@ public class MsExtendedObjectsReader extends JdbcMsReader {
                 }
 
                 // TODO table can have name, options and etc
-                func.setReturns("TABLE (" + String.join(",\n", columns) + ")");
+                func.setReturns("TABLE (\n" + String.join(",\n", columns) + ")");
             } else {
                 String argSize = "";
                 String dataType = res.getString("return_type");
                 int size = res.getInt("return_type_size");
                 if (dataType.endsWith("varchar")) {
-                    argSize = size == -1 ? "(max)" : ("(" + size + ")");
-                } else if ("decimal".equals(dataType)) {
-                    argSize = "(" + res.getInt("return_type_pr") + ',' + res.getInt("return_type_sc") + ')';
+                    argSize = size == -1 ? " (max)" : (" (" + size + ")");
+                } else if ("decimal".equals(dataType) || "numeric".equals(dataType)) {
+                    argSize = " (" + res.getInt("pr") + ", " + res.getInt("sc") + ')';
                 }
 
                 // TODO other type with size
@@ -167,21 +165,16 @@ public class MsExtendedObjectsReader extends JdbcMsReader {
 
             StringBuilder sb = new StringBuilder();
 
-            sb.append(" WITH EXECUTE AS ");
+            sb.append("WITH EXECUTE AS ");
             sb.append((executeAs == null ? "CALLER" : executeAs));
             if (nullOnNullInput) {
                 sb.append(", RETURNS NULL ON NULL INPUT");
             }
-            sb.append("\nAS\n");
+            sb.append('\n');
             sb.append(body);
             func.setBody(sb.toString());
-            setOwner(func, owner);
-        }
-    }
-
-    private void setOwner(PgStatement st, String owner) {
-        if (!loader.args.isIgnorePrivileges()) {
-            st.setOwner(owner == null ? ApgdiffConsts.SCHEMA_OWNER : owner);
+            loader.setOwner(func, owner);
+            schema.addFunction(func);
         }
     }
 

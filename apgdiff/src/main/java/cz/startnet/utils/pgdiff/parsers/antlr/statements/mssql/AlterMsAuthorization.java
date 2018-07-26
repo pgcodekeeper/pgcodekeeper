@@ -8,7 +8,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
 public class AlterMsAuthorization extends ParserAbstract {
 
@@ -22,7 +21,10 @@ public class AlterMsAuthorization extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         IdContext ownerId = ctx.authorization_grantee().principal_name;
-        String owner = ownerId == null ? ApgdiffConsts.SCHEMA_OWNER : ownerId.getText();
+        if (ownerId == null) {
+            return null;
+        }
+        String owner = ownerId.getText();
 
         IdContext schemaName = ctx.entity.schema;
         String schema = schemaName != null ? schemaName.getText() : null;
@@ -37,7 +39,7 @@ public class AlterMsAuthorization extends ParserAbstract {
             stream = db.getChildren();
         }
 
-        PgStatement st = stream.filter(e -> e.getName().equals(name)).findAny().orElse(null);
+        PgStatement st = stream.filter(e -> e.getBareName().equals(name)).findAny().orElse(null);
         if (st != null) {
             st.setOwner(owner);
         }

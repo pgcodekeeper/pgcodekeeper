@@ -71,11 +71,13 @@ public class MsSequence extends PgSequence {
         final String oldCache = oldSeq.getCache();
         final String newCache = newSeq.getCache();
 
-        if (((MsSequence)newSeq).isCached() && !newCache.equals(oldCache)) {
+        if (newSeq.isCached() && !Objects.equals(newCache, oldCache)) {
             sbSQL.append("\n\tCACHE ");
             if (newCache != null) {
                 sbSQL.append(newCache);
             }
+        } else if (!newSeq.isCached()) {
+            sbSQL.append("\n\tNO CACHE");
         }
     }
 

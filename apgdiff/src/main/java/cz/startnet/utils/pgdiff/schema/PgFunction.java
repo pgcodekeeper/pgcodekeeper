@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
@@ -72,7 +73,7 @@ public class PgFunction extends PgStatementWithSearchPath implements IFunction {
         }
         final int sigStart = sb.length();
 
-        sb.append(PgDiffUtils.getQuotedName(name)).append('(');
+        sb.append(isPostgres() ? PgDiffUtils.getQuotedName(name) : MsDiffUtils.quoteName(name)).append('(');
         boolean addComma = false;
         for (final Argument argument : arguments) {
             if (!includeArgNames && "OUT".equalsIgnoreCase(argument.getMode())) {

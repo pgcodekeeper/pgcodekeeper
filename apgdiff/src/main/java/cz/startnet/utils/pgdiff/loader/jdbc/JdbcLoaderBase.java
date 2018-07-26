@@ -155,6 +155,12 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         }
     }
 
+    protected void setOwner(PgStatement st, String owner) {
+        if (!args.isIgnorePrivileges()) {
+            st.setOwner(owner);
+        }
+    }
+
     public void setPrivileges(PgStatement st, String aclItemsArrayAsString) {
         setPrivileges(st, aclItemsArrayAsString, null);
     }

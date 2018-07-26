@@ -38,8 +38,11 @@ public class CreateMsSequence extends ParserAbstract {
                 sequence.setDataType(body.data_type().getText().toLowerCase());
             } else if (body.start_val != null) {
                 sequence.setStartWith(body.start_val.getText());
-            } else if (body.cache_val != null) {
-                sequence.setCache(body.cache_val.getText());
+            } else if (body.CACHE() != null && body.NO() == null) {
+                sequence.setCached(true);
+                if (body.cache_val != null) {
+                    sequence.setCache(body.cache_val.getText());
+                }
             } else if (body.incr != null) {
                 inc = Long.parseLong(body.incr.getText());
             } else if (body.maxval != null) {

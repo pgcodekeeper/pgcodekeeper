@@ -41,9 +41,9 @@ public class MsFKReader extends JdbcMsReader {
         // TODO with no check
 
         StringBuilder sb = new StringBuilder();
-        sb.append(" FOREIGN KEY (");
+        sb.append("FOREIGN KEY (");
         sb.append(MsDiffUtils.quoteName(res.getString("field_name")));
-        sb.append(")\n REFERENCES ");
+        sb.append(") REFERENCES ");
         sb.append(MsDiffUtils.quoteName(res.getString("referenced_schema_name")));
         sb.append('.');
         sb.append(MsDiffUtils.quoteName(res.getString("referenced_table_name")));
@@ -53,26 +53,26 @@ public class MsFKReader extends JdbcMsReader {
 
         int del = res.getInt("delete_referential_action");
         if (del > 0) {
-            sb.append("\nON DELETE ");
+            sb.append(" ON DELETE ");
             if (del == 1) {
-                sb.append(" CASCADE");
+                sb.append("CASCADE");
             } else {
-                sb.append(" SET ").append(del == 2 ? "NULL" : "DEFAULT");
+                sb.append("SET ").append(del == 2 ? "NULL" : "DEFAULT");
             }
         }
 
         int upd = res.getInt("update_referential_action");
         if (upd > 0) {
-            sb.append("\nON UPDATE ");
+            sb.append(" ON UPDATE ");
             if (upd == 1) {
-                sb.append(" CASCADE");
+                sb.append("CASCADE");
             } else {
-                sb.append(" SET ").append(upd == 2 ? "NULL" : "DEFAULT");
+                sb.append("SET ").append(upd == 2 ? "NULL" : "DEFAULT");
             }
         }
 
         if (res.getBoolean("is_not_for_replication")) {
-            sb.append("\nNOT FOR REPLICATION");
+            sb.append(" NOT FOR REPLICATION");
         }
 
         // TODO disabled

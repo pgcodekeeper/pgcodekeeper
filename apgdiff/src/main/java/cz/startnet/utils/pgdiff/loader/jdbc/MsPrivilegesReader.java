@@ -2,36 +2,34 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Map;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
-import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class MsPrivilegesReader extends JdbcMsReader {
+// TODO move to queries
+public class MsPrivilegesReader implements PgCatalogStrings {
 
-    public static class MsPrivilegesReaderFactory extends JdbcReaderFactory {
+    private final JdbcLoaderBase loader;
 
-        public MsPrivilegesReaderFactory(Map<SupportedVersion, String> queries) {
-            super(0, "", queries);
-        }
+    public MsPrivilegesReader(JdbcLoaderBase loader) {
+        this.loader = loader;
+    }
 
-        @Override
-        public JdbcReader getReader(JdbcLoaderBase loader) {
-            return new MsPrivilegesReader(this, loader);
+    public void read() throws SQLException, InterruptedException  {
+        loader.setCurrentOperation("privileges query");
+
+        String query = JdbcQueries.QUERY_MS_PRIVILEGES.get(null);
+        try (ResultSet r = loader.runner.runScript(loader.statement, query)) {
+            while (r.next()) {
+                readPrivilege(r, loader.schemaIds.get(r.getLong("schema_oid")));
+            }
         }
     }
 
-    public MsPrivilegesReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
-        super(factory, loader);
-    }
-
-    @Override
-    protected void processResult(ResultSet res, PgSchema schema) throws SQLException, WrapperAccessException {
+    private void readPrivilege(ResultSet res, PgSchema schema) throws SQLException {
         loader.monitor.worked(1);
         String name = res.getString("name");
 
@@ -43,14 +41,10 @@ public class MsPrivilegesReader extends JdbcMsReader {
         String definition = permission + " ON  " + MsDiffUtils.quoteName(schema.getName())
         + '.' + MsDiffUtils.quoteName(name) + " TO " + MsDiffUtils.quoteName(role);
 
-        PgStatement st = schema.getChildren().filter(e -> e.getName().equals(name)).findAny().orElse(null);
+        PgStatement st = schema.getChildren().filter(e -> e.getBareName().equals(name)).findFirst().orElse(null);
         if (st != null) {
             st.addPrivilege(new PgPrivilege(!isGrant, definition));
         }
-    }
-
-    @Override
-    protected DbObjType getType() {
-        return null;
+        // TODO column privileges
     }
 }
