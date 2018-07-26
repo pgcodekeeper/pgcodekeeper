@@ -1,10 +1,12 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
@@ -14,33 +16,19 @@ import cz.startnet.utils.pgdiff.schema.IArgument;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
-import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class FunctionsReader extends JdbcReader {
 
-    public static class FunctionsReaderFactory extends JdbcReaderFactory {
-
-        public FunctionsReaderFactory(long hasHelperMask, String helperFunction, Map<SupportedVersion, String> queries) {
-            super(hasHelperMask, helperFunction, queries);
-        }
-
-        @Override
-        public JdbcReader getReader(JdbcLoaderBase loader) {
-            return new FunctionsReader(this, loader);
-        }
-    }
-
     private static final float DEFAULT_PROCOST = 100.0f;
     private static final float DEFAULT_PROROWS = 1000.0f;
 
-    private FunctionsReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
-        super(factory, loader);
+    public FunctionsReader(JdbcLoaderBase loader) {
+        super(JdbcQueries.QUERY_FUNCTIONS_PER_SCHEMA, loader);
     }
 
     @Override
-    protected void processResult(ResultSetWrapper res, PgSchema schema) throws WrapperAccessException {
+    protected void processResult(ResultSet res, PgSchema schema) throws SQLException {
         String schemaName = schema.getName();
         String functionName = res.getString("proname");
         loader.setCurrentObject(new GenericColumn(schemaName, functionName, DbObjType.FUNCTION));
@@ -58,11 +46,11 @@ public class FunctionsReader extends JdbcReader {
         }
 
         StringBuilder returnedTableArguments = new StringBuilder();
-        String[] argModes = res.getArray("proargmodes", String.class);
-        String[] argNames = res.getArray("proargnames", String.class);
-        Long[] argTypeOids = res.getArray("proallargtypes", Long.class);
+        String[] argModes = getColArray(res, "proargmodes");
+        String[] argNames = getColArray(res, "proargnames");
+        Long[] argTypeOids = getColArray(res, "proallargtypes");
 
-        Long[] argTypes = argTypeOids != null ? argTypeOids : res.getArray("argtypes", Long.class);
+        Long[] argTypes = argTypeOids != null ? argTypeOids : getColArray(res, "argtypes");
         for (int i = 0; argTypes.length > i; i++) {
             String aMode = argModes != null ? argModes[i] : "i";
 
@@ -138,7 +126,7 @@ public class FunctionsReader extends JdbcReader {
         schema.addFunction(f);
     }
 
-    private String getFunctionBody(ResultSetWrapper res, String schemaName) throws WrapperAccessException {
+    private String getFunctionBody(ResultSet res, String schemaName) throws SQLException {
         StringBuilder body = new StringBuilder();
 
         String lanName = res.getString("lang_name");
@@ -146,7 +134,7 @@ public class FunctionsReader extends JdbcReader {
 
         // since 9.5 PostgreSQL
         if (SupportedVersion.VERSION_9_5.checkVersion(loader.version)) {
-            Long[] protrftypes = res.getArray("protrftypes", Long.class);
+            Long[] protrftypes = getColArray(res, "protrftypes");
             if (protrftypes != null) {
                 body.append(" TRANSFORM ");
                 for (Long s : protrftypes) {
@@ -222,7 +210,7 @@ public class FunctionsReader extends JdbcReader {
             body.append(" ROWS ").append((int) rows);
         }
 
-        String [] proconfig = res.getArray("proconfig", String.class);
+        String[] proconfig = getColArray(res, "proconfig");
         if (proconfig != null) {
             for (String param : proconfig) {
                 String[] params = param.split("=");

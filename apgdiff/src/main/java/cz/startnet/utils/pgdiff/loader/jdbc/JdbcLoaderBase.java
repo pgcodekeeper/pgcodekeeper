@@ -63,7 +63,6 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected Statement statement;
     private Map<Long, String> cachedRolesNamesByOid;
     protected Map<Long, JdbcType> cachedTypesByOid;
-    protected long availableHelpersBits;
     protected SchemasContainer schemas;
     protected int version;
     private long lastSysOid;

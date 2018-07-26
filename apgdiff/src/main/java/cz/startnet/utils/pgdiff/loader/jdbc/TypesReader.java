@@ -1,9 +1,10 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.util.Map;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateDomain;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -14,32 +15,18 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgType.PgTypeForm;
-import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
-import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class TypesReader extends JdbcReader {
 
-    public static class TypesReaderFactory extends JdbcReaderFactory {
-
-        public TypesReaderFactory(long hasHelperMask, String helperFunction, Map<SupportedVersion, String> queries) {
-            super(hasHelperMask, helperFunction, queries);
-        }
-
-        @Override
-        public JdbcReader getReader(JdbcLoaderBase loader) {
-            return new TypesReader(this, loader);
-        }
-    }
-
     static final String ADD_CONSTRAINT = "ALTER DOMAIN noname ADD CONSTRAINT noname ";
 
-    private TypesReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
-        super(factory, loader);
+    public TypesReader(JdbcLoaderBase loader) {
+        super(JdbcQueries.QUERY_TYPES_PER_SCHEMA, loader);
     }
 
     @Override
-    protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
+    protected void processResult(ResultSet result, PgSchema schema) throws SQLException {
         PgStatement typeOrDomain = getTypeDomain(result, schema);
         if (typeOrDomain != null) {
             if (typeOrDomain.getStatementType() == DbObjType.DOMAIN) {
@@ -50,7 +37,7 @@ public class TypesReader extends JdbcReader {
         }
     }
 
-    private PgStatement getTypeDomain(ResultSetWrapper res, PgSchema schema) throws WrapperAccessException {
+    private PgStatement getTypeDomain(ResultSet res, PgSchema schema) throws SQLException {
         PgStatement st;
         String typtype = res.getString("typtype");
         if ("d".equals(typtype)) {
@@ -69,7 +56,7 @@ public class TypesReader extends JdbcReader {
         return st;
     }
 
-    private PgDomain getDomain(ResultSetWrapper res, PgSchema schema) throws WrapperAccessException {
+    private PgDomain getDomain(ResultSet res, PgSchema schema) throws SQLException {
         String schemaName = schema.getName();
         PgDomain d = new PgDomain(res.getString("typname"), "");
         loader.setCurrentObject(new GenericColumn(schemaName, d.getName(), DbObjType.DOMAIN));
@@ -101,10 +88,10 @@ public class TypesReader extends JdbcReader {
         d.setDefaultValue(def);
         d.setNotNull(res.getBoolean("dom_notnull"));
 
-        String[] connames = res.getArray("dom_connames", String.class);
+        String[] connames = getColArray(res, "dom_connames");
         if (connames != null) {
-            String[] condefs = res.getArray("dom_condefs", String.class);
-            String[] concomments = res.getArray("dom_concomments", String.class);
+            String[] condefs = getColArray(res, "dom_condefs");
+            String[] concomments = getColArray(res, "dom_concomments");
 
             for (int i = 0; i < connames.length; ++i) {
                 String conName = connames[i];
@@ -127,7 +114,7 @@ public class TypesReader extends JdbcReader {
         return d;
     }
 
-    private PgType getType(ResultSetWrapper res, String schemaName, String typtype) throws WrapperAccessException {
+    private PgType getType(ResultSet res, String schemaName, String typtype) throws SQLException {
         String name = res.getString("typname");
         loader.setCurrentObject(new GenericColumn(schemaName, name, DbObjType.TYPE));
         PgType t;
@@ -231,17 +218,17 @@ public class TypesReader extends JdbcReader {
         case "c":
             t = new PgType(name, PgTypeForm.COMPOSITE, "");
 
-            String[] attnames = res.getArray("comp_attnames", String.class);
+            String[] attnames = getColArray(res, "comp_attnames");
             if (attnames == null) {
                 break;
             }
-            String[] atttypes = res.getArray("comp_atttypdefns", String.class);
-            Long[] atttypeids = res.getArray("comp_atttypids", Long.class);
-            Long[] attcollations = res.getArray("comp_attcollations", Long.class);
-            Long[] atttypcollations = res.getArray("comp_atttypcollations", Long.class);
-            String[] attcollationnames = res.getArray("comp_attcollationnames", String.class);
-            String[] attcollationnspnames = res.getArray("comp_attcollationnspnames", String.class);
-            String[] attcomments = res.getArray("comp_attcomments", String.class);
+            String[] atttypes = getColArray(res, "comp_atttypdefns");
+            Long[] atttypeids = getColArray(res, "comp_atttypids");
+            Long[] attcollations = getColArray(res, "comp_attcollations");
+            Long[] atttypcollations = getColArray(res, "comp_atttypcollations");
+            String[] attcollationnames = getColArray(res, "comp_attcollationnames");
+            String[] attcollationnspnames = getColArray(res, "comp_attcollationnspnames");
+            String[] attcomments = getColArray(res, "comp_attcomments");
 
             for (int i = 0; i < attnames.length; ++i) {
                 PgColumn a = new PgColumn(attnames[i]);
@@ -266,7 +253,7 @@ public class TypesReader extends JdbcReader {
         case "e":
             t = new PgType(name, PgTypeForm.ENUM, "");
 
-            String[] enums = res.getArray("enums", String.class);
+            String[] enums = getColArray(res, "enums");
             if (enums == null) {
                 break;
             }

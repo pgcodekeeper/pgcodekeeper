@@ -1,39 +1,24 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgFtsDictionary;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
-import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class FtsDictionariesReader extends JdbcReader {
 
-    public static class FtsDictionariesReaderFactory extends JdbcReaderFactory {
-
-        public FtsDictionariesReaderFactory(long hasHelperMask, String helperFunction, Map<SupportedVersion, String> queries) {
-            super(hasHelperMask, helperFunction, queries);
-        }
-
-        @Override
-        public JdbcReader getReader(JdbcLoaderBase loader) {
-            return new FtsDictionariesReader(this, loader);
-        }
-    }
-
-    protected FtsDictionariesReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
-        super(factory, loader);
+    public FtsDictionariesReader(JdbcLoaderBase loader) {
+        super(JdbcQueries.QUERY_FTS_DICTIONARIES_PER_SCHEMA, loader);
     }
 
     @Override
-    protected void processResult(ResultSetWrapper res, PgSchema schema)
-            throws SQLException, WrapperAccessException {
+    protected void processResult(ResultSet res, PgSchema schema) throws SQLException {
         String name = res.getString("dictname");
         PgFtsDictionary dic = new PgFtsDictionary(name, "");
 
