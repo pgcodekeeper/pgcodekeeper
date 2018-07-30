@@ -13,7 +13,7 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class SchemasMsReader implements PgCatalogStrings {
+public class SchemasMsReader {
 
     private final JdbcLoaderBase loader;
     private final PgDatabase db;
@@ -43,13 +43,19 @@ public class SchemasMsReader implements PgCatalogStrings {
         loader.setOwner(s, res.getString("owner"));
 
         for (JsonReader acl : JsonReader.fromArray(res.getString("acl"))) {
-            boolean isGrant = "GRANT".equals(acl.getString("sd"));
-            String permission = res.getString("pn");
-            String role = res.getString("r");
+            String state = acl.getString("sd");
+            boolean isWithGrantOption = false;
+            if ("GRANT_WITH_GRANT_OPTION".equals(state)) {
+                state = "GRANT";
+                isWithGrantOption = true;
+            }
 
-            String definition = permission + " ON SCHEMA::" + MsDiffUtils.quoteName(s.getName()) +
-                    " TO " + MsDiffUtils.quoteName(role);
-            s.addPrivilege(new PgPrivilege(!isGrant, definition));
+            String permission = acl.getString("pn");
+            String role = acl.getString("r");
+
+            s.addPrivilege(new PgPrivilege(state, permission,
+                    "SCHEMA::" + MsDiffUtils.quoteName(s.getName()),
+                    MsDiffUtils.quoteName(role), isWithGrantOption));
         }
 
         return s;

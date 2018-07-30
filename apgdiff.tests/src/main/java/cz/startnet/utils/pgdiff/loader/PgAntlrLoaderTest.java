@@ -532,10 +532,10 @@ class PgDB6 extends PgDatabaseObjectCreator {
         PgSchema schema = d.getDefaultSchema();
         //    schema.setComment("'Standard public schema'");
 
-        schema.addPrivilege(new PgPrivilege(true, "ALL ON SCHEMA public FROM PUBLIC"));
-        schema.addPrivilege(new PgPrivilege(true, "ALL ON SCHEMA public FROM postgres"));
-        schema.addPrivilege(new PgPrivilege(false, "ALL ON SCHEMA public TO postgres"));
-        schema.addPrivilege(new PgPrivilege(false, "ALL ON SCHEMA public TO PUBLIC"));
+        schema.addPrivilege(new PgPrivilege("REVOKE", "ALL", "SCHEMA public", "PUBLIC", false));
+        schema.addPrivilege(new PgPrivilege("REVOKE", "ALL", "SCHEMA public", "postgres", false));
+        schema.addPrivilege(new PgPrivilege("GRANT", "ALL", "SCHEMA public", "postgres", false));
+        schema.addPrivilege(new PgPrivilege("GRANT", "ALL", "SCHEMA public", "PUBLIC", false));
 
         PgTable table = new SimplePgTable("test_table", "");
         schema.addTable(table);
@@ -863,10 +863,10 @@ class PgDB14 extends PgDatabaseObjectCreator {
         PgDatabase d = ApgdiffTestUtils.createDumpDB();
         PgSchema schema = d.getDefaultSchema();
 
-        schema.addPrivilege(new PgPrivilege(true, "ALL ON SCHEMA public FROM PUBLIC"));
-        schema.addPrivilege(new PgPrivilege(true, "ALL ON SCHEMA public FROM postgres"));
-        schema.addPrivilege(new PgPrivilege(false, "ALL ON SCHEMA public TO postgres"));
-        schema.addPrivilege(new PgPrivilege(false, "ALL ON SCHEMA public TO PUBLIC"));
+        schema.addPrivilege(new PgPrivilege("REVOKE", "ALL", "SCHEMA public", "PUBLIC", false));
+        schema.addPrivilege(new PgPrivilege("REVOKE", "ALL", "SCHEMA public", "postgres", false));
+        schema.addPrivilege(new PgPrivilege("GRANT", "ALL", "SCHEMA public", "postgres", false));
+        schema.addPrivilege(new PgPrivilege("GRANT", "ALL", "SCHEMA public", "PUBLIC", false));
 
         d.setComment("'comments database'");
         //    schema.setComment("'public schema'");

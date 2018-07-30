@@ -32,18 +32,22 @@ public class MsPrivilegesReader implements PgCatalogStrings {
     private void readPrivilege(ResultSet res, PgSchema schema) throws SQLException {
         loader.monitor.worked(1);
         String name = res.getString("name");
-
-        // TODO can be DENY, REVOKE, GRANT, GRANT_WITH_GRANT_OPTION
-        boolean isGrant = "GRANT".equals(res.getString("state_desc"));
+        String state = res.getString("state_desc");
         String permission = res.getString("permission_name");
         String role = res.getString("role_name");
 
-        String definition = permission + " ON  " + MsDiffUtils.quoteName(schema.getName())
-        + '.' + MsDiffUtils.quoteName(name) + " TO " + MsDiffUtils.quoteName(role);
+        boolean isWithGrantOption = false;
+        if ("GRANT_WITH_GRANT_OPTION".equals(state)) {
+            state = "GRANT";
+            isWithGrantOption = true;
+        }
 
         PgStatement st = schema.getChildren().filter(e -> e.getBareName().equals(name)).findFirst().orElse(null);
         if (st != null) {
-            st.addPrivilege(new PgPrivilege(!isGrant, definition));
+            st.addPrivilege(new PgPrivilege(state, permission,
+                    "OBJECT::" + MsDiffUtils.quoteName(schema.getName()) + '.'
+                    + MsDiffUtils.quoteName(st.getName()),
+                    MsDiffUtils.quoteName(role), isWithGrantOption));
         }
         // TODO column privileges
     }

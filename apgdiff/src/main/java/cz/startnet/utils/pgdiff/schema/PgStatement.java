@@ -238,7 +238,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         for (PgPrivilege grant : grants) {
             if (!newGrants.contains(grant)) {
                 grantsChanged = true;
-                sb.append('\n').append(grant.getDropSQL());
+                sb.append('\n').append(grant.getDropSQL()).append(isPostgres() ? ';' : "\nGO");
             }
         }
 

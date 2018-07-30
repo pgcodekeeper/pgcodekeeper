@@ -81,9 +81,9 @@ schema_create
     | create_type_statement
     | create_domain_statement
     | create_server_statement
-    | create_fts_configuration 
-    | create_fts_template 
-    | create_fts_parser 
+    | create_fts_configuration
+    | create_fts_template
+    | create_fts_parser
     | create_fts_dictionary
     | create_user_mapping
     | create_transform_statement)
@@ -162,7 +162,7 @@ table_action
         | set_attribute_option
         | define_foreign_options
         | RESET LEFT_PAREN storage_parameter RIGHT_PAREN
-        | set_storage 
+        | set_storage
         | ADD identity_body
         | alter_identity+
         | DROP IDENTITY (IF EXISTS)?
@@ -194,7 +194,7 @@ table_action
 identity_body
     : GENERATED (ALWAYS | BY DEFAULT) AS IDENTITY (LEFT_PAREN sequence_body+ RIGHT_PAREN)?
     ;
-   
+
 alter_identity
     : SET GENERATED (ALWAYS | BY DEFAULT)
     | SET sequence_body
@@ -210,9 +210,9 @@ set_storage
     ;
 
 storage_option
-    : PLAIN 
-    | EXTERNAL 
-    | EXTENDED 
+    : PLAIN
+    | EXTERNAL
+    | EXTENDED
     | MAIN
     ;
 
@@ -237,7 +237,7 @@ function_actions_common
       | TRANSFORM transform_for_type (COMMA transform_for_type)*
       | (STRICT | IMMUTABLE | VOLATILE | STABLE)
       | (EXTERNAL)? SECURITY (INVOKER | DEFINER)
-      | PARALLEL identifier 
+      | PARALLEL identifier
       | COST execution_cost=NUMBER_LITERAL
       | ROWS result_rows=NUMBER_LITERAL
       | SET configuration_parameter=identifier  (((TO | EQUAL)? (value+=set_statement_value)) | FROM CURRENT)(COMMA value+=set_statement_value)*
@@ -261,7 +261,7 @@ abbreviated_grant_or_revoke
 
     | (EXECUTE | ALL PRIVILEGES?)
         ON FUNCTIONS
-    
+
     | (USAGE | CREATE | ALL PRIVILEGES?)
         ON SCHEMAS
 
@@ -318,24 +318,24 @@ alter_domain_statement
     ;
 
 alter_server_statement
-    : SERVER identifier 
+    : SERVER identifier
     ((VERSION identifier)? define_foreign_options
-    | owner_to 
+    | owner_to
     | rename_to)
     ;
 
 alter_fts_statement
-    : TEXT SEARCH 
+    : TEXT SEARCH
     ((TEMPLATE | DICTIONARY | CONFIGURATION | PARSER) name=schema_qualified_name (rename_to | set_schema)
     | (DICTIONARY | CONFIGURATION) name=schema_qualified_name owner_to
     | DICTIONARY name=schema_qualified_name storage_parameter
-    | CONFIGURATION name=schema_qualified_name alter_fts_configuration) 
-    ;  
-  
+    | CONFIGURATION name=schema_qualified_name alter_fts_configuration)
+    ;
+
 alter_fts_configuration
-    : (ADD | ALTER) MAPPING FOR types+=identifier (COMMA types+=identifier)* 
-    WITH dictionaries+=schema_qualified_name (COMMA dictionaries+=schema_qualified_name)* 
-    | ALTER MAPPING (FOR identifier (COMMA identifier))? REPLACE schema_qualified_name WITH schema_qualified_name 
+    : (ADD | ALTER) MAPPING FOR types+=identifier (COMMA types+=identifier)*
+    WITH dictionaries+=schema_qualified_name (COMMA dictionaries+=schema_qualified_name)*
+    | ALTER MAPPING (FOR identifier (COMMA identifier))? REPLACE schema_qualified_name WITH schema_qualified_name
     | DROP MAPPING (IF EXISTS)? FOR identifier (COMMA identifier)*
     ;
 
@@ -361,19 +361,19 @@ create_index_statement
 index_rest
     : index_sort table_space? index_where?
     ;
-    
+
 index_sort
     : (USING method=identifier)?
       LEFT_PAREN sort_specifier_list RIGHT_PAREN
       including_index?
       with_storage_parameter?
     ;
-    
+
 including_index
-    : INCLUDE LEFT_PAREN identifier (COMMA identifier)* RIGHT_PAREN 
+    : INCLUDE LEFT_PAREN identifier (COMMA identifier)* RIGHT_PAREN
     ;
-    
-index_where 
+
+index_where
     : WHERE vex
     ;
 
@@ -446,16 +446,16 @@ create_domain_statement
 create_server_statement
     : SERVER (IF NOT EXISTS)? identifier (TYPE character_string)? (VERSION character_string)?
     FOREIGN DATA WRAPPER identifier
-    define_foreign_options? 
-    ; 
-    
+    define_foreign_options?
+    ;
+
 create_fts_dictionary
-    : TEXT SEARCH DICTIONARY name=schema_qualified_name 
+    : TEXT SEARCH DICTIONARY name=schema_qualified_name
     LEFT_PAREN
-        TEMPLATE EQUAL template=schema_qualified_name (COMMA dictionary_option)*         
+        TEMPLATE EQUAL template=schema_qualified_name (COMMA dictionary_option)*
     RIGHT_PAREN
     ;
-    
+
 dictionary_option
     : name=identifier EQUAL value=vex
     ;
@@ -467,7 +467,7 @@ create_fts_configuration
         | COPY EQUAL config_name=schema_qualified_name)
     RIGHT_PAREN
     ;
-    
+
 create_fts_template
     : TEXT SEARCH TEMPLATE name=schema_qualified_name
     LEFT_PAREN
@@ -476,7 +476,7 @@ create_fts_template
         (COMMA INIT EQUAL init_name=schema_qualified_name)?
     RIGHT_PAREN
     ;
-   
+
 create_fts_parser
     : TEXT SEARCH PARSER name=schema_qualified_name
     LEFT_PAREN
@@ -488,11 +488,11 @@ create_fts_parser
         (COMMA HEADLINE EQUAL headline_func=schema_qualified_name)?
     RIGHT_PAREN
     ;
-    
+
 create_user_mapping
     : USER MAPPING (IF NOT EXISTS)? FOR (identifier | USER | CURRENT_USER)
     SERVER identifier
-    define_foreign_options? 
+    define_foreign_options?
     ;
 
 domain_constraint
@@ -501,7 +501,7 @@ domain_constraint
     ;
 
 create_transform_statement
-    : (OR REPLACE)? TRANSFORM FOR data_type LANGUAGE identifier 
+    : (OR REPLACE)? TRANSFORM FOR data_type LANGUAGE identifier
     LEFT_PAREN
         FROM SQL WITH FUNCTION  function_parameters COMMA
         TO SQL WITH FUNCTION function_parameters
@@ -557,28 +557,64 @@ when_trigger
 
 rule_common
     : (GRANT | REVOKE grant_opt_for=grant_option_for?)
-      body_rule=body_rules
+    (permissions | columns_permissions)
+    ON ((object_type | all_objects)? obj_name=names_references
+    | FUNCTION func_name+=function_parameters (COMMA func_name+=function_parameters)*)
+    (TO | FROM) roles_names (WITH GRANT OPTION | cascade_restrict)?
+    | other_rules
     ;
 
-body_rules
-    :(on_table
-    | on_sequence
-    | on_database
-    | on_datawrapper_server_lang
-    | on_function
-    | on_large_object
-    | on_schema
-    | on_tablespace
-    | on_type
-    | on_domain)
-    body_rules_rest
+columns_permissions
+    : table_column_privileges (COMMA table_column_privileges)*
     ;
 
-body_rules_rest
-    :(grant_to_rule | revoke_from_cascade_restrict)
-    | GRANT obj_name=names_references TO role_name=names_references (WITH ADMIN OPTION)?
-    | REVOKE (ADMIN OPTION FOR)? obj_name=names_references FROM role_name=names_references
-      cascade_restrict?
+table_column_privileges
+    : table_column_privilege LEFT_PAREN column+=identifier (COMMA column+=identifier)* RIGHT_PAREN
+    ;
+
+permissions
+    : permission (COMMA permission)*
+    ;
+
+permission
+    : ALL PRIVILEGES?
+    | CONNECT
+    | CREATE
+    | DELETE
+    | EXECUTE
+    | INSERT
+    | UPDATE
+    | REFERENCES
+    | SELECT
+    | TEMP
+    | TRIGGER
+    | TRUNCATE
+    | USAGE
+    ;
+
+object_type
+    : TABLE
+    | SEQUENCE
+    | DATABASE
+    | DOMAIN
+    | FOREIGN DATA WRAPPER
+    | FOREIGN SERVER
+    | LANGUAGE
+    | LARGE OBJECT
+    | SCHEMA
+    | TABLESPACE
+    | TYPE
+    ;
+
+all_objects
+    : ALL TABLES IN SCHEMA
+    | ALL SEQUENCES IN SCHEMA
+    | ALL FUNCTIONS IN SCHEMA
+    ;
+
+other_rules
+    : GRANT obj_name=names_references TO role_name=names_references (WITH ADMIN OPTION)?
+    | REVOKE (ADMIN OPTION FOR)? obj_name=names_references FROM role_name=names_references cascade_restrict?
     ;
 
 grant_to_rule
@@ -589,65 +625,12 @@ revoke_from_cascade_restrict
     : FROM roles_names cascade_restrict?
     ;
 
-on_table
-    : priv_tbl_col+=table_column_privileges (COMMA priv_tbl_col+=table_column_privileges)*
-        ON ( (TABLE? obj_name=names_references)
-             | ALL TABLES IN SCHEMA (schema_name+=identifier)+)
-    ;
-
-table_column_privileges
-    : table_column_privilege (LEFT_PAREN column+=identifier (COMMA column+=identifier)* RIGHT_PAREN)?
-    ;
-
-on_sequence
-    : (usage_select_update(COMMA usage_select_update)*
-        | ALL PRIVILEGES?)
-        ON (SEQUENCE obj_name=names_references
-             | ALL SEQUENCES IN SCHEMA schema_name+=identifier (COMMA schema_name+=identifier)*)
-    ;
-
-on_database
-    : (create_connect_temporary_temp(COMMA create_connect_temporary_temp)* | ALL PRIVILEGES? )
-        ON DATABASE obj_name=names_references
-    ;
-
-on_datawrapper_server_lang
-    : (USAGE | ALL PRIVILEGES?)
-        ON (FOREIGN (DATA WRAPPER | SERVER) | LANGUAGE) obj_name=names_references
-    ;
-
-on_function
-    : (EXECUTE | ALL PRIVILEGES?)
-        ON (FUNCTION obj_name+=function_parameters (COMMA obj_name+=function_parameters)*
-           | ALL FUNCTIONS IN SCHEMA schema_name=names_references)
-    ;
-
-on_large_object
-    : ((SELECT | UPDATE COMMA?)+  | ALL PRIVILEGES?)
-        ON LARGE OBJECT obj_name=names_references
-    ;
-on_schema
-    : (((CREATE | USAGE) COMMA?)+ | ALL PRIVILEGES?)
-        ON SCHEMA obj_name=names_references
-    ;
-
-on_tablespace
-    : (CREATE | ALL PRIVILEGES?)
-        ON TABLESPACE obj_name=names_references
-    ;
-
-on_type
-    : (USAGE | ALL PRIVILEGES?)
-        ON TYPE obj_name=names_references
-    ;
-
-on_domain
-    : (USAGE | ALL PRIVILEGES?)
-        ON DOMAIN obj_name=names_references
-    ;
-
 roles_names
-    :(GROUP? role_name+=identifier)(COMMA (GROUP? role_name+=identifier))*
+    : role_name_with_group (COMMA role_name_with_group)*
+    ;
+
+role_name_with_group
+    : GROUP? role_name=identifier
     ;
 
 comment_on_statement
@@ -770,7 +753,7 @@ create_view_statement
         with_check_option?
         (WITH NO? DATA)?
     ;
-        
+
 with_check_option
     : WITH (CASCADED|LOCAL)? CHECK OPTION
     ;
@@ -789,10 +772,10 @@ create_foreign_table_statement
    (define_foreign_table | define_partition)
    define_server
    ;
-   
+
 define_foreign_table
-   : LEFT_PAREN 
-       (columns+=foreign_column_def (COMMA columns+=foreign_column_def)*)? 
+   : LEFT_PAREN
+       (columns+=foreign_column_def (COMMA columns+=foreign_column_def)*)?
      RIGHT_PAREN
      (INHERITS parent_table=column_references)?
    ;
@@ -800,8 +783,8 @@ define_foreign_table
 foreign_column_def
    : define_foreign_columns
    | tabl_constraint=constraint_common
-   ;   
-   
+   ;
+
 define_foreign_columns
    : column_name=identifier datatype=data_type
    define_foreign_options?
@@ -809,11 +792,11 @@ define_foreign_columns
    ;
 
 define_table
-   : define_columns 
+   : define_columns
    | define_type
    | define_partition
    ;
-   
+
 define_partition
     : PARTITION OF parent_table=schema_qualified_name
     list_of_type_column_def?
@@ -823,20 +806,20 @@ define_partition
 for_values_bound
     : FOR VALUES partition_bound_spec
     ;
-    
+
 partition_bound_spec
     : IN LEFT_PAREN (unsigned_value_specification | NULL) (COMMA unsigned_value_specification | NULL)* RIGHT_PAREN
     | FROM partition_bound_part TO partition_bound_part
     ;
 
 partition_bound_part
-    : LEFT_PAREN (unsigned_value_specification | MINVALUE | MAXVALUE) 
+    : LEFT_PAREN (unsigned_value_specification | MINVALUE | MAXVALUE)
     (COMMA unsigned_value_specification | MINVALUE | MAXVALUE)* RIGHT_PAREN
-    ;   
+    ;
 
 define_columns
-  : LEFT_PAREN 
-      (table_col_def+=table_column_def (COMMA table_col_def+=table_column_def)*)? 
+  : LEFT_PAREN
+      (table_col_def+=table_column_def (COMMA table_col_def+=table_column_def)*)?
     RIGHT_PAREN
     (INHERITS parent_table=column_references)?
   ;
@@ -845,42 +828,42 @@ define_type
   : OF type_name=data_type
     list_of_type_column_def?
   ;
-  
-partition_by 
+
+partition_by
     : PARTITION BY partition_method
     ;
-    
+
 partition_method
     : (RANGE | LIST) LEFT_PAREN partition_column (COMMA partition_column)* RIGHT_PAREN
     ;
-    
+
 partition_column
     :  (identifier | vex) collate_name=collate_identifier? op_class=identifier?
     ;
 
 define_server
-  : SERVER server_name=identifier define_foreign_options? 
+  : SERVER server_name=identifier define_foreign_options?
   ;
-  
+
 define_foreign_options
   : OPTIONS
-    LEFT_PAREN 
-      (foreign_option (COMMA foreign_option)*) 
+    LEFT_PAREN
+      (foreign_option (COMMA foreign_option)*)
     RIGHT_PAREN
   ;
-  
+
 foreign_option
   : (ADD | SET | DROP)? name=foreign_option_name value=character_string?
   ;
-  
+
 foreign_option_name
   : identifier
   | USER
   ;
 
 list_of_type_column_def
-  : LEFT_PAREN 
-      (table_col_def+=table_of_type_column_def (COMMA table_col_def+=table_of_type_column_def)*) 
+  : LEFT_PAREN
+      (table_col_def+=table_of_type_column_def (COMMA table_col_def+=table_of_type_column_def)*)
     RIGHT_PAREN
   ;
 
@@ -889,7 +872,7 @@ table_column_def
        | tabl_constraint=constraint_common
        | LIKE parent_table=schema_qualified_name (like_opt+=like_option)*
     ;
-    
+
 table_of_type_column_def
     : table_of_type_column_definition
        | tabl_constraint=constraint_common
@@ -898,7 +881,7 @@ table_of_type_column_def
 table_column_definition
     : column_name=identifier datatype=data_type collate_name=collate_identifier? (colmn_constraint+=constraint_common)*
     ;
-    
+
 table_of_type_column_definition
     : column_name=identifier (WITH OPTIONS)? (colmn_constraint+=constraint_common)*
     ;
@@ -926,7 +909,7 @@ constr_body
       )
       table_deferrable? table_initialy_immed?
     ;
-    
+
 all_op
     :op
     | EQUAL | NOT_EQUAL | LTH | LEQ | GTH | GEQ
@@ -954,7 +937,7 @@ table_references
 column_references
     :LEFT_PAREN names_references RIGHT_PAREN
     ;
-    
+
 names_references
     : name+=schema_qualified_name (COMMA name+=schema_qualified_name)*
     ;
@@ -973,7 +956,7 @@ storage_parameter
         (COMMA storage_parameter_option)*
       RIGHT_PAREN
     ;
-    
+
 storage_parameter_option
     :  storage_param=schema_qualified_name (EQUAL value=vex)?
     ;
@@ -1023,9 +1006,6 @@ table_column_privilege
 usage_select_update
     : USAGE | SELECT | UPDATE
     ;
-create_connect_temporary_temp
-    :CREATE | CONNECT | TEMPORARY | TEMP
-    ;
 
 partition_by_columns
     : PARTITION BY vex (COMMA vex)*
@@ -1038,7 +1018,7 @@ cascade_restrict
 collate_identifier
     : COLLATE collation=schema_qualified_name
     ;
-    
+
 indirection_identifier
     : LEFT_PAREN vex RIGHT_PAREN (DOT identifier)+
     ;
@@ -1062,15 +1042,15 @@ drop_rule_statement
     ;
 
 drop_statements
-    :(DATABASE 
-    | DOMAIN 
+    :(DATABASE
+    | DOMAIN
     | FOREIGN? TABLE
-    | EXTENSION 
-    | SCHEMA 
-    | SEQUENCE 
-    | MATERIALIZED? VIEW 
+    | EXTENSION
+    | SCHEMA
+    | SEQUENCE
+    | MATERIALIZED? VIEW
     | TYPE
-    | TEXT SEARCH (CONFIGURATION | PARSER | DICTIONARY | TEMPLATE) 
+    | TEXT SEARCH (CONFIGURATION | PARSER | DICTIONARY | TEMPLATE)
     | INDEX CONCURRENTLY?) if_exist_names_restrict_cascade
     ;
 
@@ -1600,7 +1580,7 @@ tokens_nonkeyword
 
 schema_qualified_name_nontype
   : identifier_nontype
-  | schema=identifier DOT identifier_nontype 
+  | schema=identifier DOT identifier_nontype
   ;
 
 data_type
@@ -1609,7 +1589,7 @@ data_type
   ;
 
 predefined_type
-  : BIGINT 
+  : BIGINT
   | BIT VARYING? type_length?
   | BOOLEAN
   | DEC precision_param?
@@ -1853,7 +1833,7 @@ array_query
 type_coercion
     : data_type character_string
     ;
-    
+
 /*
 ===============================================================================
   7.13 <query expression>
@@ -1947,7 +1927,7 @@ from_primary
     : ONLY? schema_qualified_name MULTIPLY? alias_clause?
     | LATERAL? table_subquery alias_clause
     | LATERAL? function_call
-        (AS from_function_column_def 
+        (AS from_function_column_def
         | AS? alias=identifier (LEFT_PAREN column_alias+=identifier (COMMA column_alias+=identifier)* RIGHT_PAREN | from_function_column_def)?
         )?
     ;
@@ -2069,8 +2049,8 @@ using_table
 notify_stmt
   : NOTIFY channel=identifier (COMMA payload=character_string)?
   ;
-  
+
 truncate_stmt
   : TRUNCATE TABLE? ONLY? name=schema_qualified_name MULTIPLY? (COMMA name=schema_qualified_name MULTIPLY?)*
-  ((RESTART | CONTINUE) IDENTITY)? (CASCADE | RESTRICT)?  
+  ((RESTART | CONTINUE) IDENTITY)? (CASCADE | RESTRICT)?
   ;

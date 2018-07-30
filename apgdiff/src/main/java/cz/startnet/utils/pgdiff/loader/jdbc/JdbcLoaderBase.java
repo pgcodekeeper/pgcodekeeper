@@ -258,8 +258,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         }
 
         String column = (columnId != null && !columnId.isEmpty()) ? "(" + columnId + ")" : "";
-        String revokePublic = "ALL" + column + " ON " + stType + " " + stSignature + " FROM PUBLIC";
-        st.addPrivilege(new PgPrivilege(true, revokePublic));
+        st.addPrivilege(new PgPrivilege("REVOKE", "ALL" + column, stType + " " + stSignature, "PUBLIC", false));
 
         List<Privilege> grants = JdbcAclParser.parse(
                 aclItemsArrayAsString, possiblePrivilegeCount, order, owner);
@@ -272,9 +271,8 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         }
 
         if (!metDefaultOwnersGrants) {
-            String revokeOwner = "ALL" + column + " ON " + stType + " " + stSignature + " FROM " +
-                    PgDiffUtils.getQuotedName(owner);
-            st.addPrivilege(new PgPrivilege(true, revokeOwner));
+            st.addPrivilege(new PgPrivilege("REVOKE", "ALL" + column,
+                    stType + " " + stSignature, PgDiffUtils.getQuotedName(owner), false));
         }
 
         for (Privilege grant : grants) {
@@ -289,26 +287,11 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
                     grantValues.add(plainGrant + column);
                 }
             }
-            String privDefinition = getStringListAsString(grantValues, ",") + " ON " + stType + " " +
-                    stSignature + " TO " + grant.grantee;
-            if (grant.isGO) {
-                privDefinition = privDefinition.concat(PgPrivilege.WITH_GRANT_OPTION);
-            }
-            st.addPrivilege(new PgPrivilege(false, privDefinition));
+
+            st.addPrivilege(new PgPrivilege("GRANT", String.join(",", grantValues),
+                    stType + " " + stSignature, grant.grantee, grant.isGO));
         }
 
-    }
-
-    private String getStringListAsString(List<String> strings, String delimeter) {
-        StringBuilder resultList = new StringBuilder();
-        for (int i = 0; i < strings.size(); i++) {
-            String listItem = strings.get(i);
-            resultList.append(listItem);
-            if (i < strings.size() - 1) {
-                resultList.append(delimeter);
-            }
-        }
-        return resultList.toString();
     }
 
     protected void queryTypesForCache() throws SQLException, InterruptedException {

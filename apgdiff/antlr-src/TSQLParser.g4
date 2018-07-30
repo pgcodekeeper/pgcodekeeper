@@ -1993,16 +1993,58 @@ security_statement
     // https://msdn.microsoft.com/en-us/library/ms188354.aspx
     : execute_clause
     // https://msdn.microsoft.com/en-us/library/ms187965.aspx
-    | GRANT grant_statement
+    | rule_common
     // https://msdn.microsoft.com/en-us/library/ms178632.aspx
     | REVERT ('(' WITH COOKIE '=' LOCAL_ID ')')?
     | open_key
     | close_key
     ;
     
-grant_statement
-    : (ALL PRIVILEGES? | grant_permission ('(' column_name_list ')')?) 
-    (ON on_id=table_name)? TO (to_principal+=id) (',' to_principal+=id)* (WITH GRANT OPTION)? (AS as_principal=id)?
+rule_common
+    : (GRANT | DENY | REVOKE (GRANT OPTION FOR)?)
+    (permissions | columns_permissions)
+    object_type?
+    (TO | FROM) role_names (WITH GRANT OPTION | CASCADE)? 
+    (AS as_principal=id)?
+    ;
+        
+permissions
+    : permission (COMMA permission)*
+    ; 
+    
+columns_permissions
+    : table_column_privileges (COMMA table_column_privileges)*
+    ;
+
+table_column_privileges
+    : permission '(' column+=id (COMMA column+=id)* ')'
+    ;
+    
+permission
+    : ALL PRIVILEGES? 
+    | EXECUTE
+    | VIEW id // DEFINITION
+    | TAKE id // OWNERSHIP
+    | CONTROL id? // SERVER
+    | CREATE (TABLE | VIEW)
+    | SHOWPLAN
+    | IMPERSONATE
+    | SELECT
+    | DELETE
+    | UPDATE
+    | REFERENCES
+    | INSERT
+    | CONNECT
+    | ALTER (ANY? (id | DATABASE))?
+    ;
+    
+object_type
+    : ON (type=(LOGIN | DATABASE | OBJECT | ROLE | SCHEMA | USER) ':' ':')? 
+    on_id=table_name
+    ; 
+    
+role_names
+    : (to_principal+=id) (',' to_principal+=id)*
     ;
 
 create_certificate
