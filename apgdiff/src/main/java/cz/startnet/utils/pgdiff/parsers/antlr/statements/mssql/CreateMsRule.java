@@ -9,17 +9,19 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Columns_permissionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Object_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Rule_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_column_privilegesContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_columnsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
-import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 
 public class CreateMsRule extends ParserAbstract {
@@ -37,7 +39,7 @@ public class CreateMsRule extends ParserAbstract {
             state = ctx.REVOKE() != null ? "REVOKE" : "GRANT";
         }
 
-        isGO = ctx.OPTION() != null;
+        isGO = ctx.WITH() != null;
     }
 
     @Override
@@ -53,20 +55,47 @@ public class CreateMsRule extends ParserAbstract {
 
         Columns_permissionsContext columnsCtx = ctx.columns_permissions();
         if (columnsCtx != null) {
-            // TODO MS SQL dump columns as name part, rewrite parser rule
             parseColumns(columnsCtx, nameCtx, roles);
             return null;
         }
 
-        String permission = ctx.permissions().permission().stream().map(ParserAbstract::getFullCtxText)
-                .collect(Collectors.joining(","));
+        List<String> permissions = ctx.permissions().permission().stream()
+                .map(ParserAbstract::getFullCtxText).collect(Collectors.toList());
 
         PgStatement st = getStatement(nameCtx);
 
-        if (st != null) {
-            for (String role : roles) {
-                st.addPrivilege(new PgPrivilege(state, permission,
-                        getFullCtxText(nameCtx), role, isGO));
+        if (st == null) {
+            return null;
+        }
+
+        String objectName = MsDiffUtils.quoteName(st.getBareName());
+
+        if (st instanceof PgStatementWithSearchPath) {
+            objectName = MsDiffUtils.quoteName(((PgStatementWithSearchPath) st).getContainingSchema().getName())
+                    + '.' + objectName;
+        }
+
+        Table_columnsContext columns = nameCtx.table_columns();
+
+        // 1 privilege for each role
+        for (String role : roles) {
+            // 1 privilege for each permission
+            for (String per : permissions) {
+                if (columns != null) {
+                    // column privileges
+                    for (IdContext column : columns.column) {
+                        String name = objectName + '(' + MsDiffUtils.quoteName(column.getText()) + ')';
+                        PgPrivilege priv = new PgPrivilege(state, per, name, role, isGO);
+                        // table column privileges to columns, other columns to statement
+                        if (st instanceof PgTable) {
+                            getSafe(((PgTable)st)::getColumn, column).addPrivilege(priv);
+                        } else {
+                            st.addPrivilege(priv);
+                        }
+                    }
+                } else {
+                    st.addPrivilege(new PgPrivilege(state, per, objectName, role, isGO));
+                }
             }
         }
 
@@ -96,7 +125,7 @@ public class CreateMsRule extends ParserAbstract {
         Map<String, Entry<IdContext, List<String>>> colPriv = new HashMap<>();
         for (Table_column_privilegesContext priv : columnsCtx.table_column_privileges()) {
             String privName = getFullCtxText(priv.permission());
-            for (IdContext col : priv.column) {
+            for (IdContext col : priv.table_columns().column) {
                 String colName = col.getText();
                 Entry<IdContext, List<String>> privList = colPriv.get(colName);
                 if (privList == null) {
@@ -119,23 +148,24 @@ public class CreateMsRule extends ParserAbstract {
             return;
         }
 
+        String schemaName = ((PgStatementWithSearchPath)st).getContainingSchema().getName();
+
+        // 1 permission for 1 column = 1 privilege
         for (Entry<String, Entry<IdContext, List<String>>> colPriv : colPrivs.entrySet()) {
-            StringBuilder permission = new StringBuilder();
-            for (String priv : colPriv.getValue().getValue()) {
-                permission.append(priv).append('(')
-                .append(colPriv.getValue().getKey().getText()).append("), ");
-            }
+            for (String pr : colPriv.getValue().getValue()) {
 
-            permission.setLength(permission.length() - 2);
+                IdContext col = colPriv.getValue().getKey();
+                String objectName = MsDiffUtils.quoteName(schemaName) + '.' +
+                        MsDiffUtils.quoteName(st.getBareName()) + " (" +
+                        MsDiffUtils.quoteName(col.getText()) + ')';
 
-            for (String role : roles) {
-                PgPrivilege priv = new PgPrivilege(state, permission.toString(),
-                        "OBJECT " + st.getBareName(), role, isGO);
-                if (st instanceof PgTable) {
-                    PgColumn col = getSafe(((PgTable)st)::getColumn, colPriv.getValue().getKey());
-                    col.addPrivilege(priv);
-                } else {
-                    st.addPrivilege(priv);
+                for (String role : roles) {
+                    PgPrivilege priv = new PgPrivilege(state, pr, objectName, role, isGO);
+                    if (st instanceof PgTable) {
+                        getSafe(((PgTable)st)::getColumn, col).addPrivilege(priv);
+                    } else {
+                        st.addPrivilege(priv);
+                    }
                 }
             }
         }

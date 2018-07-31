@@ -2003,7 +2003,7 @@ security_statement
 rule_common
     : (GRANT | DENY | REVOKE (GRANT OPTION FOR)?)
     (permissions | columns_permissions)
-    object_type?
+    object_type?  
     (TO | FROM) role_names (WITH GRANT OPTION | CASCADE)? 
     (AS as_principal=id)?
     ;
@@ -2017,7 +2017,11 @@ columns_permissions
     ;
 
 table_column_privileges
-    : permission '(' column+=id (COMMA column+=id)* ')'
+    : permission table_columns
+    ;
+
+table_columns
+    : '(' column+=id (COMMA column+=id)* ')'
     ;
     
 permission
@@ -2040,7 +2044,7 @@ permission
     
 object_type
     : ON (type=(LOGIN | DATABASE | OBJECT | ROLE | SCHEMA | USER) ':' ':')? 
-    on_id=table_name
+    on_id=table_name table_columns?
     ; 
     
 role_names
