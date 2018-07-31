@@ -248,7 +248,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
                     // pre-load schema for object's search path
                     // otherwise we're dealing with the schema file itself, allow it to load normally
                     // don't pass progress monitor since this file isn't in the original load-set
-                    String schemaFilename = schemaDirname + ".sql";
+                    String schemaFilename = schemaDirname + ".sql"; //$NON-NLS-1$
                     IProject proj = file.getProject();
                     IPath schemaPath = schemasPath.append(schemaDirname).append(schemaFilename);
                     if (!proj.exists(schemaPath)) {

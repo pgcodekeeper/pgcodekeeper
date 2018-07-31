@@ -144,7 +144,7 @@ public final class OpenProjectUtils {
         List<IFile> schemas;
         try {
             schemas = Arrays.stream(schemasDir.members())
-                    .filter(r -> r.getType() == IResource.FILE && "sql".equals(r.getFileExtension()))
+                    .filter(r -> r.getType() == IResource.FILE && "sql".equals(r.getFileExtension())) //$NON-NLS-1$
                     .map(r -> (IFile) r)
                     .collect(Collectors.toList());
         } catch (CoreException ex) {
@@ -157,9 +157,9 @@ public final class OpenProjectUtils {
 
         if (!schemas.isEmpty()) {
             MessageBox mb = new MessageBox(shell, SWT.ICON_QUESTION | SWT.YES | SWT.NO);
-            mb.setText("Update project format?");
+            mb.setText(Messages.OpenProjectUtils_update_format);
             mb.setMessage(MessageFormat.format(
-                    "Project '{0}' contains legacy schema files.\nIt is recommended to update the project by moving schema files into their respective directories.\n\nDo you want to perform this now?",
+                    Messages.OpenProjectUtils_update_warning,
                     proj.getName()));
             if (mb.open() != SWT.YES) {
                 return;
@@ -169,7 +169,7 @@ public final class OpenProjectUtils {
         }
 
         IRunnableWithProgress runnable = monitor -> {
-            SubMonitor m = SubMonitor.convert(monitor, "Updating project", schemas.size() + 1);
+            SubMonitor m = SubMonitor.convert(monitor, Messages.OpenProjectUtils_updating_project, schemas.size() + 1);
             try {
                 proj.refreshLocal(IResource.DEPTH_INFINITE, m.newChild(1));
                 for (IResource r : schemas) {

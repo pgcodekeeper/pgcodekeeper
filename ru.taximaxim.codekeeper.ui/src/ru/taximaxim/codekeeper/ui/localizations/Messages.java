@@ -411,7 +411,6 @@ public final class Messages extends NLS {
 
     public static String ImportProjWizard_title;
 
-    public static String ImprovePerformanceJdbcLoader_performance_helpers;
 
     public static String InternalIgnoreList_error_workspace_path;
 
@@ -536,6 +535,12 @@ public final class Messages extends NLS {
     public static String OpenProjectUtils_unexpected_version_error;
 
     public static String OpenProjectUtils_unknown_proj_version;
+
+    public static String OpenProjectUtils_update_format;
+
+    public static String OpenProjectUtils_update_warning;
+
+    public static String OpenProjectUtils_updating_project;
 
     public static String OpenProjectUtils_version_error;
 
@@ -690,10 +695,6 @@ public final class Messages extends NLS {
     public static String XmlHistory_write_error;
     public static String XmlStringList_root_name_invalid;
 
-    public static String yesNoEditingSupport_no;
-
-    public static String yesNoEditingSupport_yes;
-
     public static String e_mail;
 
     public static String edit;
@@ -774,8 +775,6 @@ public final class Messages extends NLS {
     public static String GetSystemObjects_save_success_title;
 
     public static String GitUserReader_error_reading_local_changes;
-
-    public static String JdbcPerfVersionsDynamic_jdbc_helper_error;
 
     // usage report
     public static String EclipseEnvironment_Error_SavePreferences;
