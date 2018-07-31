@@ -23,7 +23,7 @@ public interface ApgdiffConsts {
 
     String FILENAME_WORKING_DIR_MARKER = ".pgcodekeeper";
     String VERSION_PROP_NAME = "version";
-    String EXPORT_CURRENT_VERSION = "0.5.0";
+    String EXPORT_CURRENT_VERSION = "0.6.0";
     String EXPORT_MIN_VERSION = "0.2.9";
 
     String EXTENSION_VERSION = "1.0.0";

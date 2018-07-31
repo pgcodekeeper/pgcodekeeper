@@ -4,12 +4,23 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
@@ -19,6 +30,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.osgi.framework.Version;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -118,6 +130,78 @@ public final class OpenProjectUtils {
             Messages.OpenProjectUtils_proj_version_warn;
         mb.setMessage(msg + error);
         mb.open();
+    }
+
+    /**
+     * @throws CoreException only when user chose to convert project and the following process failed
+     */
+    public static void checkLegacySchemas(IProject proj, Shell shell) throws CoreException {
+        IFolder schemasDir = proj.getFolder(WORK_DIR_NAMES.SCHEMA.name());
+        if (!schemasDir.exists()) {
+            return;
+        }
+
+        List<IFile> schemas;
+        try {
+            schemas = Arrays.stream(schemasDir.members())
+                    .filter(r -> r.getType() == IResource.FILE && "sql".equals(r.getFileExtension()))
+                    .map(r -> (IFile) r)
+                    .collect(Collectors.toList());
+        } catch (CoreException ex) {
+            Log.log(ex);
+            // we don't know whether user actually wants to convert
+            // or even whether there's anything to convert
+            // fail silently, this shouldn't happen anyway
+            return;
+        }
+
+        if (!schemas.isEmpty()) {
+            MessageBox mb = new MessageBox(shell, SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+            mb.setText("Update project format?");
+            mb.setMessage(MessageFormat.format(
+                    "Project '{0}' contains legacy schema files.\nIt is recommended to update the project by moving schema files into their respective directories.\n\nDo you want to perform this now?",
+                    proj.getName()));
+            if (mb.open() != SWT.YES) {
+                return;
+            }
+        } else {
+            return;
+        }
+
+        IRunnableWithProgress runnable = monitor -> {
+            SubMonitor m = SubMonitor.convert(monitor, "Updating project", schemas.size() + 1);
+            try {
+                proj.refreshLocal(IResource.DEPTH_INFINITE, m.newChild(1));
+                for (IResource r : schemas) {
+                    SubMonitor sm = m.newChild(1);
+                    IPath schemaPath = r.getProjectRelativePath().removeFileExtension();
+                    if (!proj.exists(schemaPath)) {
+                        proj.getFolder(schemaPath).create(false, true, sm.newChild(1));
+                    }
+                    // move relative to original
+                    IPath newPath = schemaPath
+                            .removeFirstSegments(schemaPath.segmentCount() - 1)
+                            .append(r.getName());
+                    r.move(newPath, false, sm.newChild(1));
+                }
+            } catch (CoreException e) {
+                throw new InvocationTargetException(e, e.getLocalizedMessage());
+            } finally {
+                monitor.done();
+            }
+        };
+        try {
+            new ProgressMonitorDialog(shell).run(true, false, runnable);
+        } catch (InvocationTargetException e) {
+            Throwable t = e.getCause();
+            if (t instanceof CoreException) {
+                throw (CoreException) t;
+            } else {
+                throw new IllegalStateException(t.getLocalizedMessage(), e);
+            }
+        } catch (InterruptedException e) {
+            // can't be cancelled
+        }
     }
 
     private OpenProjectUtils() {

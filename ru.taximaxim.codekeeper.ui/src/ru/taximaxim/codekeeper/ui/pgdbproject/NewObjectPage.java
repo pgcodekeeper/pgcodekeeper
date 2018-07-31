@@ -40,6 +40,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
@@ -387,7 +388,7 @@ public final class NewObjectPage extends WizardPage {
     }
 
     private IFolder createSchema(String name, boolean open, IProject project) throws CoreException {
-        IFolder projectFolder = project.getFolder(DbObjType.SCHEMA.name());
+        IFolder projectFolder = project.getFolder(WORK_DIR_NAMES.SCHEMA.name());
         if (!projectFolder.exists()) {
             projectFolder.create(false, true, null);
         }
@@ -395,7 +396,7 @@ public final class NewObjectPage extends WizardPage {
         if (!schemaFolder.exists()) {
             schemaFolder.create(false, true, null);
         }
-        IFile file = projectFolder.getFile(ModelExporter.getExportedFilenameSql(name));
+        IFile file = schemaFolder.getFile(ModelExporter.getExportedFilenameSql(name));
         if (!file.exists()) {
             StringBuilder sb = new StringBuilder();
             sb.append(MessageFormat.format(PATTERN, DbObjType.SCHEMA, PgDiffUtils.getQuotedName(name)));

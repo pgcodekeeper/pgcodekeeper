@@ -10,6 +10,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.ISources;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
@@ -65,7 +66,15 @@ public class OpenEditor extends AbstractHandler {
 
     public static void openEditor(IWorkbenchPage page, IProject proj) throws PartInitException {
         Log.log(Log.LOG_INFO, "Opening editor for project: " + proj.getName()); //$NON-NLS-1$
-        if (OpenProjectUtils.checkVersionAndWarn(proj, page.getWorkbenchWindow().getShell(), true)) {
+        Shell shell = page.getWorkbenchWindow().getShell();
+        if (OpenProjectUtils.checkVersionAndWarn(proj, shell, true)) {
+            try {
+                OpenProjectUtils.checkLegacySchemas(proj, shell);
+            } catch (CoreException ex) {
+                ExceptionNotifier.notifyCoreException(ex);
+                return;
+            }
+
             ProjectEditorInput input = new ProjectEditorInput(proj.getName());
             page.openEditor(input, EDITOR.PROJECT);
         }

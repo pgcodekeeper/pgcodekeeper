@@ -1,5 +1,6 @@
 package ru.taximaxim.codekeeper.ui.dialogs;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.statushandlers.StatusManager;
@@ -16,6 +17,11 @@ public final class ExceptionNotifier {
 
     public static void notifyDefault(String message, Throwable ex) {
         Status status = new Status(IStatus.ERROR, PLUGIN_ID.THIS, message, ex);
+        StatusManager.getManager().handle(status, StatusManager.SHOW | StatusManager.LOG);
+    }
+
+    public static void notifyCoreException(CoreException ex) {
+        Status status = new Status(ex.getStatus().getSeverity(), PLUGIN_ID.THIS, ex.getLocalizedMessage(), ex);
         StatusManager.getManager().handle(status, StatusManager.SHOW | StatusManager.LOG);
     }
 
