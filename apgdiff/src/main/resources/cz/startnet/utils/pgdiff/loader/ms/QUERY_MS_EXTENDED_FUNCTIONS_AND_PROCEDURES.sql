@@ -2,6 +2,7 @@ SELECT
     s.schema_id AS schema_oid,
     s.name, 
     s.type,
+    aa.acl,
     usrt.name AS return_type,
     CASE WHEN usrt.max_length>=0 AND usrt.name IN (N'nchar', N'nvarchar') THEN usrt.max_length/2 ELSE usrt.max_length END AS return_type_size,
     usrt.precision AS return_type_pr,
@@ -21,6 +22,21 @@ LEFT JOIN sys.assemblies a WITH (NOLOCK) ON a.assembly_id=am.assembly_id
 LEFT JOIN sys.database_principals p2 WITH (NOLOCK) ON p2.principal_id=am.execute_as_principal_id
 LEFT JOIN sys.all_parameters AS ret_param ON ret_param.object_id = s.object_id and ret_param.parameter_id = 0
 LEFT JOIN sys.types AS usrt ON usrt.user_type_id = ret_param.user_type_id
+CROSS APPLY (
+    SELECT * FROM (
+        SELECT  
+            perm.state_desc AS sd,
+            perm.permission_name AS pn,
+            roleprinc.name AS r,
+            col.name AS c
+        FROM sys.database_principals roleprinc
+        LEFT JOIN sys.database_permissions perm WITH (NOLOCK) ON perm.grantee_principal_id = roleprinc.principal_id
+        LEFT JOIN sys.columns col WITH (NOLOCK) on col.object_id = perm.major_id  AND col.column_id = perm.minor_id
+        WHERE major_id = s.object_id
+    ) cc 
+    FOR JSON AUTO, INCLUDE_NULL_VALUES
+) aa (acl)
+
 CROSS APPLY (
     SELECT * FROM (
             SELECT 

@@ -8,6 +8,7 @@ import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsSequence;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsSequencesReader extends JdbcMsReader {
@@ -30,7 +31,7 @@ public class MsSequencesReader extends JdbcMsReader {
     }
 
     @Override
-    protected void processResult(ResultSet res, PgSchema schema) throws SQLException {
+    protected void processResult(ResultSet res, PgSchema schema) throws SQLException, WrapperAccessException {
         loader.monitor.worked(1);
         String sequenceName = res.getString("name");
         loader.setCurrentObject(new GenericColumn(schema.getName(), sequenceName, DbObjType.SEQUENCE));
@@ -52,6 +53,7 @@ public class MsSequencesReader extends JdbcMsReader {
         loader.setOwner(s, res.getString("owner"));
 
         schema.addSequence(s);
+        loader.setPrivileges(s, JsonReader.fromArray(res.getString("acl")));
     }
 
     @Override

@@ -10,7 +10,6 @@ import org.eclipse.core.runtime.SubMonitor;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.jdbc.JdbcLoaderBase;
 import cz.startnet.utils.pgdiff.loader.jdbc.JdbcReaderFactory;
-import cz.startnet.utils.pgdiff.loader.jdbc.MsPrivilegesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.SchemasMsReader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
@@ -57,7 +56,6 @@ public class JdbcMsLoader extends JdbcLoaderBase {
             }
 
             finishAntlr();
-            new MsPrivilegesReader(this).read();
 
             connection.commit();
 

@@ -87,6 +87,7 @@ public class MsTablesReader extends JdbcMsReader {
         loader.setOwner(table, res.getString("owner"));
 
         schema.addTable(table);
+        loader.setPrivileges(table, JsonReader.fromArray(res.getString("acl")));
     }
 
     @Override

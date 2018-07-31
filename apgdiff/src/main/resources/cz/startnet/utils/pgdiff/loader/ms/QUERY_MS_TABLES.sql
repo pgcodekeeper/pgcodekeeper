@@ -5,6 +5,7 @@ SELECT
     p.name AS owner,
     ds.name AS file_stream, 
     cc.cols,
+    aa.acl,
     dsx.name AS text_image, 
     o.uses_ansi_nulls,
     o.is_memory_optimized,
@@ -16,6 +17,21 @@ LEFT JOIN sys.indexes ind WITH (NOLOCK) on ind.object_id = o.object_id AND ind.i
 LEFT JOIN sys.data_spaces dsp WITH (NOLOCK) on dsp.data_space_id = ind.data_space_id  
 LEFT JOIN sys.data_spaces ds WITH (NOLOCK) ON o.filestream_data_space_id = ds.data_space_id
 LEFT JOIN sys.data_spaces dsx WITH (NOLOCK) ON dsx.data_space_id=o.lob_data_space_id
+CROSS APPLY (
+    SELECT * FROM (
+        SELECT  
+            perm.state_desc AS sd,
+            perm.permission_name AS pn,
+            roleprinc.name AS r,
+            col.name AS c
+        FROM sys.database_principals roleprinc
+        LEFT JOIN sys.database_permissions perm WITH (NOLOCK) ON perm.grantee_principal_id = roleprinc.principal_id
+        LEFT JOIN sys.columns col WITH (NOLOCK) on col.object_id = perm.major_id  AND col.column_id = perm.minor_id
+        WHERE major_id = o.object_id
+    ) cc 
+    FOR JSON AUTO, INCLUDE_NULL_VALUES
+) aa (acl)
+
 CROSS APPLY (
     SELECT TOP 1 dsp.name
     FROM sys.indexes ind WITH (NOLOCK) 

@@ -20,6 +20,7 @@ import java.util.function.Function;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.eclipse.core.runtime.SubMonitor;
 
+import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
@@ -38,7 +39,9 @@ import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.DaemonThreadFactory;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -291,7 +294,39 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             st.addPrivilege(new PgPrivilege("GRANT", String.join(",", grantValues),
                     stType + " " + stSignature, grant.grantee, grant.isGO));
         }
+    }
 
+    public void setPrivileges(PgStatementWithSearchPath st, List<JsonReader> privs) throws WrapperAccessException {
+        for (JsonReader acl : privs) {
+            String state = acl.getString("sd");
+            boolean isWithGrantOption = false;
+            if ("GRANT_WITH_GRANT_OPTION".equals(state)) {
+                state = "GRANT";
+                isWithGrantOption = true;
+            }
+
+            String permission = acl.getString("pn");
+            String role = acl.getString("r");
+            String col = acl.getString("c");
+            StringBuilder sb = new StringBuilder();
+
+
+            sb.append(MsDiffUtils.quoteName(st.getContainingSchema().getName())).append('.')
+            .append(MsDiffUtils.quoteName(st.getName()));
+
+            if (col != null) {
+                sb.append('(').append(MsDiffUtils.quoteName(col)).append(')');
+            }
+
+            PgPrivilege priv = new PgPrivilege(state, permission, sb.toString(),
+                    MsDiffUtils.quoteName(role), isWithGrantOption);
+
+            if (st instanceof PgTable) {
+                ((PgTable) st).getColumn(col).addPrivilege(priv);
+            } else {
+                st.addPrivilege(priv);
+            }
+        }
     }
 
     protected void queryTypesForCache() throws SQLException, InterruptedException {
@@ -366,4 +401,5 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             equalObjects = projDB.getDbTimestamp().searchEqualsObjects(dbTime);
         }
     }
+
 }

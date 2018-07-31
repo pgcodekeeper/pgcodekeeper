@@ -86,6 +86,7 @@ public class MsExtendedObjectsReader extends JdbcMsReader {
             // TODO add to query proc.setForReplication(i);
             loader.setOwner(proc, owner);
             schema.addProcedure(proc);
+            loader.setPrivileges(proc, JsonReader.fromArray(res.getString("acl")));
         } else {
             MsFunction func = new MsFunction(name, "");
 
@@ -175,6 +176,7 @@ public class MsExtendedObjectsReader extends JdbcMsReader {
             func.setBody(sb.toString());
             loader.setOwner(func, owner);
             schema.addFunction(func);
+            loader.setPrivileges(func, JsonReader.fromArray(res.getString("acl")));
         }
     }
 

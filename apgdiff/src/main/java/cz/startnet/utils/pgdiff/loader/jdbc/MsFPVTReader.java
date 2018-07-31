@@ -2,7 +2,9 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsFunction;
@@ -12,6 +14,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsView;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
+import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsFPVTReader extends JdbcMsReader {
@@ -33,7 +39,7 @@ public class MsFPVTReader extends JdbcMsReader {
     }
 
     @Override
-    protected void processResult(ResultSet res, PgSchema schema) throws SQLException {
+    protected void processResult(ResultSet res, PgSchema schema) throws SQLException, WrapperAccessException {
         loader.monitor.worked(1);
         String name = res.getString("name");
 
@@ -67,7 +73,18 @@ public class MsFPVTReader extends JdbcMsReader {
 
         String def = res.getString("definition");
         String owner = res.getString("owner");
+
+        List<JsonReader> acls = JsonReader.fromArray(res.getString("acl"));
+
         PgDatabase db = schema.getDatabase();
+
+        BiConsumer<PgStatementWithSearchPath, List<JsonReader>> cons = (st, acl) -> {
+            try {
+                loader.setPrivileges(st, acl);
+            } catch (WrapperAccessException e) {
+                Log.log(e);
+            }
+        };
 
         if (tt == DbObjType.TRIGGER) {
             loader.submitMsAntlrTask(def, p -> p.tsql_file().batch(0).sql_clauses()
@@ -76,15 +93,27 @@ public class MsFPVTReader extends JdbcMsReader {
         } else if (tt == DbObjType.VIEW) {
             loader.submitMsAntlrTask(def, p -> p.tsql_file().batch(0).sql_clauses()
                     .st_clause(0).ddl_clause().schema_create().create_or_alter_view(),
-                    ctx -> loader.setOwner(new CreateMsView(ctx, db, an, qi).getObject(), owner));
+                    ctx -> {
+                        PgStatement st = new CreateMsView(ctx, db, an, qi).getObject();
+                        loader.setOwner(st, owner);
+                        cons.accept((PgStatementWithSearchPath)st, acls);
+                    });
         } else if (tt == DbObjType.PROCEDURE) {
             loader.submitMsAntlrTask(def, p -> p.tsql_file().batch(0).sql_clauses()
                     .st_clause(0).ddl_clause().schema_create().create_or_alter_procedure(),
-                    ctx -> loader.setOwner(new CreateMsProcedure(ctx, db, an, qi).getObject(), owner));
+                    ctx -> {
+                        PgStatement st = new CreateMsProcedure(ctx, db, an, qi).getObject();
+                        loader.setOwner(st, owner);
+                        cons.accept((PgStatementWithSearchPath)st, acls);
+                    });
         } else {
             loader.submitMsAntlrTask(def, p -> p.tsql_file().batch(0).sql_clauses()
                     .st_clause(0).ddl_clause().schema_create().create_or_alter_function(),
-                    ctx -> loader.setOwner(new CreateMsFunction(ctx, db, an, qi).getObject(), owner));
+                    ctx -> {
+                        PgStatement st = new CreateMsFunction(ctx, db, an, qi).getObject();
+                        loader.setOwner(st, owner);
+                        cons.accept((PgStatementWithSearchPath)st, acls);
+                    });
         }
     }
 
