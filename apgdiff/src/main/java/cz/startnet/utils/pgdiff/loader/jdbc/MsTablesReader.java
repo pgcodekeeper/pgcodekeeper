@@ -56,17 +56,22 @@ public class MsTablesReader extends JdbcMsReader {
 
         for (JsonReader col : JsonReader.fromArray(res.getString("cols"))) {
             MsColumn column = new MsColumn(col.getString("name"));
-            String argSize = "";
-            String dataType = col.getString("type");
-            int size = col.getInt("size");
-            if ("varbinary".equals(dataType) || dataType.endsWith("varchar")) {
-                argSize = size == -1 ? " (max)" : (" (" + size + ")");
-            } else if ("decimal".equals(dataType) || "numeric".equals(dataType)) {
-                argSize = " (" + col.getInt("pr") + ", " + col.getInt("sc") + ')';
-            }
             // TODO other type with size
+            String exp = col.getString("def");
+            column.setExpression(exp);
+            if (exp == null) {
+                column.setNullValue(col.getBoolean("nl"));
+                String dataType = col.getString("type");
+                String argSize = "";
+                int size = col.getInt("size");
+                if ("varbinary".equals(dataType) || dataType.endsWith("varchar")) {
+                    argSize = size == -1 ? " (max)" : (" (" + size + ")");
+                } else if ("decimal".equals(dataType) || "numeric".equals(dataType)) {
+                    argSize = " (" + col.getInt("pr") + ", " + col.getInt("sc") + ')';
+                }
+                column.setType(MsDiffUtils.quoteName(dataType) + argSize);
+            }
 
-            column.setType(MsDiffUtils.quoteName(dataType) + argSize);
             column.setSparse(col.getBoolean("sp"));
 
             if (col.getBoolean("ii")) {
@@ -81,13 +86,6 @@ public class MsTablesReader extends JdbcMsReader {
             }
 
             column.setCollation(col.getString("cn"));
-
-            String exp = col.getString("def");
-            column.setExpression(exp);
-            if (exp == null) {
-                column.setNullValue(col.getBoolean("nl"));
-            }
-
             table.addColumn(column);
         }
 
