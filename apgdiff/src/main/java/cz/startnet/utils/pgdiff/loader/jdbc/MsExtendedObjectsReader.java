@@ -63,7 +63,7 @@ public class MsExtendedObjectsReader extends JdbcMsReader {
                 String argSize = "";
                 String dataType = arg.getString("type");
                 int size = arg.getInt("size");
-                if (dataType.endsWith("varchar")) {
+                if ("varbinary".equals(dataType) || dataType.endsWith("varchar")) {
                     argSize = size == -1 ? " (max)" : (" (" + size + ")");
                 } else if ("decimal".equals(dataType) || "numeric".equals(dataType)) {
                     argSize = " (" + arg.getInt("pr") + ", " + arg.getInt("sc") + ')';
@@ -93,7 +93,7 @@ public class MsExtendedObjectsReader extends JdbcMsReader {
                 String argSize = "";
                 String dataType = arg.getString("type");
                 int size = arg.getInt("size");
-                if (dataType.endsWith("varchar")) {
+                if ("varbinary".equals(dataType) || dataType.endsWith("varchar")) {
                     argSize = size == -1 ? " (max)" : (" (" + size + ")");
                 } else if ("decimal".equals(dataType) || "numeric".equals(dataType)) {
                     argSize = " (" + arg.getInt("pr") + ", " + arg.getInt("sc") + ')';
@@ -120,7 +120,7 @@ public class MsExtendedObjectsReader extends JdbcMsReader {
                     String argSize = "";
                     String dataType = col.getString("type");
                     int size = col.getInt("size");
-                    if (dataType.endsWith("varchar")) {
+                    if ("varbinary".equals(dataType) || dataType.endsWith("varchar")) {
                         argSize = size == -1 ? " (max)" : (" (" + size + ")");
                     } else if ("decimal".equals(dataType) || "numeric".equals(dataType)) {
                         argSize = " (" + col.getInt("pr") + ", " + col.getInt("sc") + ')';
@@ -153,7 +153,7 @@ public class MsExtendedObjectsReader extends JdbcMsReader {
                 String argSize = "";
                 String dataType = res.getString("return_type");
                 int size = res.getInt("return_type_size");
-                if (dataType.endsWith("varchar")) {
+                if ("varbinary".equals(dataType) || dataType.endsWith("varchar")) {
                     argSize = size == -1 ? " (max)" : (" (" + size + ")");
                 } else if ("decimal".equals(dataType) || "numeric".equals(dataType)) {
                     argSize = " (" + res.getInt("pr") + ", " + res.getInt("sc") + ')';

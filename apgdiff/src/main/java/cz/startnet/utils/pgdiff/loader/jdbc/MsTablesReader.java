@@ -55,7 +55,7 @@ public class MsTablesReader extends JdbcMsReader {
             String argSize = "";
             String dataType = col.getString("type");
             int size = col.getInt("size");
-            if (dataType.endsWith("varchar")) {
+            if ("varbinary".equals(dataType) || dataType.endsWith("varchar")) {
                 argSize = size == -1 ? " (max)" : (" (" + size + ")");
             } else if ("decimal".equals(dataType) || "numeric".equals(dataType)) {
                 argSize = " (" + col.getInt("pr") + ", " + col.getInt("sc") + ')';
@@ -64,7 +64,7 @@ public class MsTablesReader extends JdbcMsReader {
 
             column.setType(MsDiffUtils.quoteName(dataType) + argSize);
             column.setSparse(col.getBoolean("sp"));
-            column.setNullValue(col.getBoolean("nl"));
+
             if (col.getBoolean("ii")) {
                 column.setIdentity(Integer.toString(col.getInt("s")), Integer.toString(col.getInt("i")));
                 column.setNotForRep(col.getBoolean("nfr"));
@@ -78,7 +78,12 @@ public class MsTablesReader extends JdbcMsReader {
 
             column.setCollation(col.getString("cn"));
 
-            column.setExpression(col.getString("def"));
+            String exp = col.getString("def");
+            column.setExpression(exp);
+            if (exp == null) {
+                column.setNullValue(col.getBoolean("nl"));
+            }
+
             table.addColumn(column);
         }
 

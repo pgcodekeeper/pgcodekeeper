@@ -41,7 +41,9 @@ public class MsColumn extends PgColumn {
             sbDefinition.append(" SPARSE");
         }
 
-        sbDefinition.append(getNullValue() ? " NULL" : " NOT NULL");
+        if (expession == null) {
+            sbDefinition.append(getNullValue() ? " NULL" : " NOT NULL");
+        }
 
         if (isIdentity) {
             sbDefinition.append(" IDENTITY (").append(seed).append(',').append(increment).append(")");

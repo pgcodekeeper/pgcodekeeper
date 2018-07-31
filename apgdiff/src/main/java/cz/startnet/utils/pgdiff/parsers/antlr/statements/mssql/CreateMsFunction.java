@@ -35,7 +35,8 @@ public class CreateMsFunction extends ParserAbstract {
         fillArguments(function);
         function.setBody(db.getArguments(), getFullCtxText(ctx.func_body()));
         Func_returnContext returns = ctx.func_return();
-        function.setReturns(getFullCtxText(returns));
+        // TODO safe just necessary part
+        function.setReturns(getFullCtxText(returns).replace("\r", ""));
         schema.addFunction(function);
         return function;
     }

@@ -10,6 +10,7 @@ import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class SchemasMsReader {
@@ -39,7 +40,11 @@ public class SchemasMsReader {
         String schemaName = res.getString("name");
         loader.setCurrentObject(new GenericColumn(schemaName, DbObjType.SCHEMA));
         MsSchema s = new MsSchema(schemaName, "");
-        loader.setOwner(s, res.getString("owner"));
+
+        String owner = res.getString("owner");
+        if (!schemaName.equalsIgnoreCase(ApgdiffConsts.DBO) || !owner.equalsIgnoreCase(ApgdiffConsts.DBO)) {
+            loader.setOwner(s, owner);
+        }
 
         for (JsonReader acl : JsonReader.fromArray(res.getString("acl"))) {
             String state = acl.getString("sd");
