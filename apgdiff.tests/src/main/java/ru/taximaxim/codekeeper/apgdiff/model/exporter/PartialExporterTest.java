@@ -447,7 +447,7 @@ class PartialExportInfoImpl_11 extends PartialExportInfo{
 
     @Override
     public LinkedList<String> newFiles() {
-        return new LinkedList<>(Arrays.asList("SCHEMA/newschema.sql"));
+        return new LinkedList<>(Arrays.asList("SCHEMA/newschema/newschema.sql"));
     }
 }
 
@@ -497,7 +497,7 @@ class PartialExportInfoImpl_14 extends PartialExportInfo{
 
     @Override
     public LinkedList<String> deletedFiles() {
-        return new LinkedList<>(Arrays.asList("SCHEMA/test/TABLE/test_table.sql", "SCHEMA/test/TABLE/test_table_2.sql", "SCHEMA/test.sql"));
+        return new LinkedList<>(Arrays.asList("SCHEMA/test/TABLE/test_table.sql", "SCHEMA/test/TABLE/test_table_2.sql", "SCHEMA/test/test.sql"));
     }
 }
 
