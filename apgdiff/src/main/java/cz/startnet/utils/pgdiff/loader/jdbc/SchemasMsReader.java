@@ -10,7 +10,6 @@ import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class SchemasMsReader {
@@ -23,7 +22,7 @@ public class SchemasMsReader {
         this.db = db;
     }
 
-    public void read() throws SQLException, InterruptedException, WrapperAccessException {
+    public void read() throws SQLException, InterruptedException, JsonReaderException {
         loader.setCurrentOperation("schemas query");
 
         String query = JdbcQueries.QUERY_MS_SCHEMAS.get(null);
@@ -36,7 +35,7 @@ public class SchemasMsReader {
         }
     }
 
-    private MsSchema getSchema(ResultSet res) throws SQLException, WrapperAccessException {
+    private MsSchema getSchema(ResultSet res) throws SQLException, JsonReaderException {
         String schemaName = res.getString("name");
         loader.setCurrentObject(new GenericColumn(schemaName, DbObjType.SCHEMA));
         MsSchema s = new MsSchema(schemaName, "");

@@ -16,7 +16,6 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
-import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -39,7 +38,7 @@ public class MsFPVTReader extends JdbcMsReader {
     }
 
     @Override
-    protected void processResult(ResultSet res, PgSchema schema) throws SQLException, WrapperAccessException {
+    protected void processResult(ResultSet res, PgSchema schema) throws SQLException, JsonReaderException {
         loader.monitor.worked(1);
         String name = res.getString("name");
 
@@ -81,7 +80,7 @@ public class MsFPVTReader extends JdbcMsReader {
         BiConsumer<PgStatementWithSearchPath, List<JsonReader>> cons = (st, acl) -> {
             try {
                 loader.setPrivileges(st, acl);
-            } catch (WrapperAccessException e) {
+            } catch (JsonReaderException e) {
                 Log.log(e);
             }
         };

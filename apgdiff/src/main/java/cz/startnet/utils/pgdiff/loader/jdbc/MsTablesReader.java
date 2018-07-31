@@ -10,7 +10,6 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.SimpleMsTable;
-import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsTablesReader extends JdbcMsReader {
@@ -33,7 +32,7 @@ public class MsTablesReader extends JdbcMsReader {
     }
 
     @Override
-    protected void processResult(ResultSet res, PgSchema schema) throws SQLException, WrapperAccessException {
+    protected void processResult(ResultSet res, PgSchema schema) throws SQLException, JsonReaderException {
         loader.monitor.worked(1);
         String tableName = res.getString("name");
         loader.setCurrentObject(new GenericColumn(schema.getName(), tableName, DbObjType.TABLE));

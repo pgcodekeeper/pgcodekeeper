@@ -41,7 +41,6 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.DaemonThreadFactory;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -296,7 +295,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         }
     }
 
-    public void setPrivileges(PgStatementWithSearchPath st, List<JsonReader> privs) throws WrapperAccessException {
+    public void setPrivileges(PgStatementWithSearchPath st, List<JsonReader> privs) throws JsonReaderException {
         for (JsonReader acl : privs) {
             String state = acl.getString("sd");
             boolean isWithGrantOption = false;

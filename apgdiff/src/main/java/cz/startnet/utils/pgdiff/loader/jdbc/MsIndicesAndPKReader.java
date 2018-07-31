@@ -13,7 +13,6 @@ import cz.startnet.utils.pgdiff.schema.MsConstraint;
 import cz.startnet.utils.pgdiff.schema.MsIndex;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsIndicesAndPKReader extends JdbcMsReader {
@@ -35,7 +34,7 @@ public class MsIndicesAndPKReader extends JdbcMsReader {
     }
 
     @Override
-    protected void processResult(ResultSet res, PgSchema schema) throws SQLException, WrapperAccessException {
+    protected void processResult(ResultSet res, PgSchema schema) throws SQLException, JsonReaderException {
         loader.monitor.worked(1);
         String name = res.getString("name");
         boolean isPrimaryKey = res.getBoolean("is_primary_key");

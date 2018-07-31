@@ -15,7 +15,6 @@ import cz.startnet.utils.pgdiff.schema.MsFunction.MsArgument;
 import cz.startnet.utils.pgdiff.schema.MsProcedure;
 import cz.startnet.utils.pgdiff.schema.MsProcedure.ProcedureArgument;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsExtendedObjectsReader extends JdbcMsReader {
@@ -37,7 +36,7 @@ public class MsExtendedObjectsReader extends JdbcMsReader {
     }
 
     @Override
-    protected void processResult(ResultSet res, PgSchema schema) throws SQLException, WrapperAccessException {
+    protected void processResult(ResultSet res, PgSchema schema) throws SQLException, JsonReaderException {
         loader.monitor.worked(1);
         String name = res.getString("name");
         String funcType = res.getString("type");

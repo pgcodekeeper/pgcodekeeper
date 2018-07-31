@@ -15,7 +15,7 @@ public abstract class JdbcMsReader extends JdbcReader {
 
     // TODO use super implementation after PG queries become schema-independent
     @Override
-    public void read() throws SQLException, InterruptedException, WrapperAccessException {
+    public void read() throws SQLException, InterruptedException, JsonReaderException {
         try (ResultSet r = loader.runner.runScript(loader.statement, factory.getBaseQuery())) {
             while (r.next()) {
                 processResult(r, loader.schemaIds.get(r.getLong("schema_oid")));
@@ -24,7 +24,7 @@ public abstract class JdbcMsReader extends JdbcReader {
     }
 
     protected abstract void processResult(ResultSet result, PgSchema schema)
-            throws SQLException, WrapperAccessException;
+            throws SQLException, JsonReaderException;
 
     @Override
     protected void processResult(ResultSetWrapper json, PgSchema schema)

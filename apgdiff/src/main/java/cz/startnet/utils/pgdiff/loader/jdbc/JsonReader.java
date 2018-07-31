@@ -13,8 +13,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
 
-import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
-
 public class JsonReader {
 
     /**
@@ -31,51 +29,51 @@ public class JsonReader {
         this.result = result;
     }
 
-    public JsonReader(String json) throws WrapperAccessException {
+    public JsonReader(String json) throws JsonReaderException {
         Type type = new TypeToken<Map<String, Object>>(){}.getType();
         try {
             result = new Gson().fromJson(json, type);
         } catch (JsonParseException ex) {
-            throw new WrapperAccessException(ex.getLocalizedMessage(), ex);
+            throw new JsonReaderException(ex.getLocalizedMessage(), ex);
         }
     }
 
-    private Object get(String columnName) throws WrapperAccessException {
+    private Object get(String columnName) throws JsonReaderException {
         if (result.containsKey(columnName)) {
             return result.get(columnName);
         }
-        throw new WrapperAccessException("Column " + columnName + " doesn't exist in json/resultset!");
+        throw new JsonReaderException("Column " + columnName + " doesn't exist in json/resultset!");
     }
 
-    private Number getNumber(String columnName) throws WrapperAccessException {
+    private Number getNumber(String columnName) throws JsonReaderException {
         Object o = get(columnName);
         return o == null ? 0 : (Number) o;
     }
 
-    public double getDouble(String columnName) throws WrapperAccessException {
+    public double getDouble(String columnName) throws JsonReaderException {
         return getNumber(columnName).doubleValue();
     }
 
-    public long getLong(String columnName) throws WrapperAccessException {
+    public long getLong(String columnName) throws JsonReaderException {
         return getNumber(columnName).longValue();
     }
 
-    public boolean getBoolean(String columnName) throws WrapperAccessException {
+    public boolean getBoolean(String columnName) throws JsonReaderException {
         Object o = get(columnName);
         return o == null ? false : (boolean) o;
     }
 
-    public String getString(String columnName) throws WrapperAccessException {
+    public String getString(String columnName) throws JsonReaderException {
         Object res = get(columnName);
         return res == null ? null : res.toString();
     }
 
-    public float getFloat(String columnName) throws WrapperAccessException {
+    public float getFloat(String columnName) throws JsonReaderException {
         return getNumber(columnName).floatValue();
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T[] getArray(String columnName, Class<T> arrayElement) throws WrapperAccessException {
+    public <T> T[] getArray(String columnName, Class<T> arrayElement) throws JsonReaderException {
         Object obj = get(columnName);
         if (obj == null) {
             return null;
@@ -101,11 +99,11 @@ public class JsonReader {
         }
     }
 
-    public int getInt(String columnName) throws WrapperAccessException {
+    public int getInt(String columnName) throws JsonReaderException {
         return getNumber(columnName).intValue();
     }
 
-    public byte[] getBytes(String columnName) throws WrapperAccessException {
+    public byte[] getBytes(String columnName) throws JsonReaderException {
         // we have byte array in string: \x001122ff...
         String s = (String) get(columnName);
         if (PATTERN_BYTEA2JSON.matcher(s).matches()) {
@@ -127,11 +125,11 @@ public class JsonReader {
         return data;
     }
 
-    public short getShort(String columnName) throws WrapperAccessException {
+    public short getShort(String columnName) throws JsonReaderException {
         return getNumber(columnName).shortValue();
     }
 
-    public static List<JsonReader> fromArray(String json) throws WrapperAccessException {
+    public static List<JsonReader> fromArray(String json) throws JsonReaderException {
         if (json == null) {
             return new ArrayList<>();
         }
@@ -142,7 +140,7 @@ public class JsonReader {
             List<Map<String, Object>> stt = new Gson().fromJson(json, type);
             return stt.stream().map(JsonReader::new).collect(Collectors.toList());
         } catch (JsonParseException ex) {
-            throw new WrapperAccessException(ex.getLocalizedMessage(), ex);
+            throw new JsonReaderException(ex.getLocalizedMessage(), ex);
         }
     }
 }
