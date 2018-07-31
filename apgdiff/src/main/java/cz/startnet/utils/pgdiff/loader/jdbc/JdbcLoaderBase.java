@@ -309,9 +309,8 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             String col = acl.getString("c");
             StringBuilder sb = new StringBuilder();
 
-
             sb.append(MsDiffUtils.quoteName(st.getContainingSchema().getName())).append('.')
-            .append(MsDiffUtils.quoteName(st.getName()));
+            .append(MsDiffUtils.quoteName(st.getBareName()));
 
             if (col != null) {
                 sb.append('(').append(MsDiffUtils.quoteName(col)).append(')');
@@ -320,7 +319,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             PgPrivilege priv = new PgPrivilege(state, permission, sb.toString(),
                     MsDiffUtils.quoteName(role), isWithGrantOption);
 
-            if (st instanceof PgTable) {
+            if (col != null && st instanceof PgTable) {
                 ((PgTable) st).getColumn(col).addPrivilege(priv);
             } else {
                 st.addPrivilege(priv);
