@@ -95,7 +95,9 @@ public class SimpleMsTable extends RegularPgTable {
         return  !(newTable instanceof SimpleMsTable)
                 || !Objects.equals(((SimpleMsTable)newTable).getTablespace(), getTablespace())
                 || !Objects.equals(((SimpleMsTable)newTable).getTextImage(), getTextImage())
-                || !Objects.equals(((SimpleMsTable)newTable).getFileStream(), getFileStream());
+                || !Objects.equals(((SimpleMsTable)newTable).getFileStream(), getFileStream())
+                // TODO some option can be altered by rebuild syntax
+                || !Objects.equals(((SimpleMsTable)newTable).getOptions(), getOptions());
     }
 
     @Override

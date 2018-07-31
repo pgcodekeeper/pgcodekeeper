@@ -46,6 +46,10 @@ public class MsTablesReader extends JdbcMsReader {
             table.addOption("DURABILITY", res.getString("durability_desc"));
         }
 
+        if (res.getBoolean("data_compression")) {
+            table.addOption("DATA_COMPRESSION", res.getString("data_compression_desc"));
+        }
+
         table.setTextImage(res.getString("text_image"));
         table.setFileStream(res.getString("file_stream"));
         table.setAnsiNulls(res.getBoolean("uses_ansi_nulls"));

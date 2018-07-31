@@ -10,13 +10,16 @@ SELECT
     o.uses_ansi_nulls,
     o.is_memory_optimized,
     o.durability,
-    o.durability_desc
+    o.durability_desc,
+    sp.data_compression,
+    sp.data_compression_desc
 FROM sys.tables o WITH (NOLOCK)
 LEFT JOIN sys.database_principals p WITH (NOLOCK) ON p.principal_id=o.principal_id
 LEFT JOIN sys.indexes ind WITH (NOLOCK) on ind.object_id = o.object_id AND ind.index_id = 0
 LEFT JOIN sys.data_spaces dsp WITH (NOLOCK) on dsp.data_space_id = ind.data_space_id  
 LEFT JOIN sys.data_spaces ds WITH (NOLOCK) ON o.filestream_data_space_id = ds.data_space_id
 LEFT JOIN sys.data_spaces dsx WITH (NOLOCK) ON dsx.data_space_id=o.lob_data_space_id
+LEFT JOIN sys.partitions sp WITH (NOLOCK) ON sp.object_id = o.object_id AND sp.index_id in (0,1)
 CROSS APPLY (
     SELECT * FROM (
         SELECT  
@@ -24,7 +27,7 @@ CROSS APPLY (
             perm.permission_name AS pn,
             roleprinc.name AS r,
             col.name AS c
-        FROM sys.database_principals roleprinc
+        FROM sys.database_principals roleprinc WITH (NOLOCK)
         LEFT JOIN sys.database_permissions perm WITH (NOLOCK) ON perm.grantee_principal_id = roleprinc.principal_id
         LEFT JOIN sys.columns col WITH (NOLOCK) on col.object_id = perm.major_id  AND col.column_id = perm.minor_id
         WHERE major_id = o.object_id

@@ -67,7 +67,7 @@ public class CreateMsTable extends AbstractTable {
         for (Index_optionContext option : options){
             String key = option.key.getText();
             String value = option.index_option_value().getText();
-            fillOptionParams(value, key, false, table::addOption);
+            table.addOption(key, value);
         }
     }
 }
