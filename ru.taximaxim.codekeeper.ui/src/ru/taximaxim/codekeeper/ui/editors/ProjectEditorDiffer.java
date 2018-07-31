@@ -495,12 +495,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         if (!OpenProjectUtils.checkVersionAndWarn(proj.getProject(), parent.getShell(), true)) {
             return;
         }
-        try {
-            OpenProjectUtils.checkLegacySchemas(proj.getProject(), parent.getShell());
-        } catch (CoreException ex) {
-            ExceptionNotifier.notifyCoreException(ex);
-            return;
-        }
+        OpenProjectUtils.checkLegacySchemas(proj.getProject(), parent.getShell());
 
         Log.log(Log.LOG_INFO, "Getting changes for diff"); //$NON-NLS-1$
 

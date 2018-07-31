@@ -68,12 +68,7 @@ public class OpenEditor extends AbstractHandler {
         Log.log(Log.LOG_INFO, "Opening editor for project: " + proj.getName()); //$NON-NLS-1$
         Shell shell = page.getWorkbenchWindow().getShell();
         if (OpenProjectUtils.checkVersionAndWarn(proj, shell, true)) {
-            try {
-                OpenProjectUtils.checkLegacySchemas(proj, shell);
-            } catch (CoreException ex) {
-                ExceptionNotifier.notifyCoreException(ex);
-                return;
-            }
+            OpenProjectUtils.checkLegacySchemas(proj, shell);
 
             ProjectEditorInput input = new ProjectEditorInput(proj.getName());
             page.openEditor(input, EDITOR.PROJECT);

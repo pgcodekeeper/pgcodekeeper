@@ -532,6 +532,8 @@ public final class Messages extends NLS {
 
     public static String OpenProjectUtils_proj_version_warn;
 
+    public static String OpenProjectUtils_schema_convert_error;
+
     public static String OpenProjectUtils_unexpected_version_error;
 
     public static String OpenProjectUtils_unknown_proj_version;

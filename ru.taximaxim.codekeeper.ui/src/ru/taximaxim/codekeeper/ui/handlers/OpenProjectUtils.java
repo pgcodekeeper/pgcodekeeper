@@ -33,6 +33,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
+import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
@@ -132,10 +133,20 @@ public final class OpenProjectUtils {
         mb.open();
     }
 
+    public static void checkLegacySchemas(IProject proj, Shell shell) {
+        try {
+            doCheckLegacySchemas(proj, shell);
+        } catch (CoreException ex) {
+            ExceptionNotifier.notifyDefault(MessageFormat.format(
+                    Messages.OpenProjectUtils_schema_convert_error, ex.getLocalizedMessage()), ex);
+            return;
+        }
+    }
+
     /**
      * @throws CoreException only when user chose to convert project and the following process failed
      */
-    public static void checkLegacySchemas(IProject proj, Shell shell) throws CoreException {
+    private static void doCheckLegacySchemas(IProject proj, Shell shell) throws CoreException {
         IFolder schemasDir = proj.getFolder(WORK_DIR_NAMES.SCHEMA.name());
         if (!schemasDir.exists()) {
             return;
