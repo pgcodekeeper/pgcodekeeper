@@ -36,6 +36,8 @@ public class MsDiffTest {
                     {"add_ms_column_privileges"},
                     // Tests scenario where MS COLUMN type is modified.
                     {"modify_ms_column_type"},
+                    // Tests scenario where MS SEQUENCE cashe is modified.
+                    {"modify_ms_sequence_cache"},
                 });
     }
 
