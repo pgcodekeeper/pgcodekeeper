@@ -9,6 +9,8 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Columns_permissionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
@@ -51,7 +53,7 @@ public class CreateMsRule extends ParserAbstract {
         }
 
         List<String> roles = ctx.role_names().id().stream()
-                .map(ParserAbstract::getFullCtxText).collect(Collectors.toList());
+                .map(ParserRuleContext::getText).map(MsDiffUtils::quoteName).collect(Collectors.toList());
 
         Columns_permissionsContext columnsCtx = ctx.columns_permissions();
         if (columnsCtx != null) {
