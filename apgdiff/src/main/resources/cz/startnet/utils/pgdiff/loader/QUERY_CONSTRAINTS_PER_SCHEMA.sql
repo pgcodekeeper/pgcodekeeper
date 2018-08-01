@@ -3,7 +3,7 @@ WITH sys_schemas AS (
     FROM pg_catalog.pg_namespace n
     WHERE n.nspname LIKE 'pg\_%'
         OR n.nspname = 'information_schema'
-        OR NOT EXISTS (SELECT 1 FROM pg_catalog.pg_depend dp WHERE dp.objid = n.oid AND dp.deptype = 'e')
+        OR EXISTS (SELECT 1 FROM pg_catalog.pg_depend dp WHERE dp.objid = n.oid AND dp.deptype = 'e')
 )
 
 SELECT ccc.oid::bigint, 
