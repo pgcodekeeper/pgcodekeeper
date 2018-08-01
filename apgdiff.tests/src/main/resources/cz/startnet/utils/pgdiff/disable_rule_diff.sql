@@ -1,3 +1,3 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-ALTER TABLE t1 DISABLE RULE notify_me;
+ALTER TABLE public.t1 DISABLE RULE notify_me;

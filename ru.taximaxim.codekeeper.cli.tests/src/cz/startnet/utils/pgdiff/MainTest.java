@@ -843,7 +843,7 @@ class ArgumentsProvider_23 extends ArgumentsProvider{
 
     @Override
     public String output() {
-        return "SET search_path = public, pg_catalog;\n\n" +
-                "CREATE INDEX CONCURRENTLY testindex3 ON testtable USING btree (field3);\n\n";
+        return "SET search_path = pg_catalog;\n\n" +
+                "CREATE INDEX CONCURRENTLY testindex3 ON public.testtable USING btree (field3);\n\n";
     }
 }

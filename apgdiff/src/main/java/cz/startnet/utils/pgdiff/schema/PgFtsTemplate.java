@@ -29,7 +29,9 @@ public class PgFtsTemplate extends PgStatementWithSearchPath {
     @Override
     public String getCreationSQL() {
         StringBuilder sbSql = new StringBuilder();
-        sbSql.append("CREATE TEXT SEARCH TEMPLATE ").append(PgDiffUtils.getQuotedName(getName())).append(" (\n\t");
+        sbSql.append("CREATE TEXT SEARCH TEMPLATE ")
+        .append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.')
+        .append(PgDiffUtils.getQuotedName(getName())).append(" (\n\t");
 
         if (initFunction != null) {
             sbSql.append("INIT = ").append(initFunction).append(",\n\t");
@@ -48,13 +50,15 @@ public class PgFtsTemplate extends PgStatementWithSearchPath {
     @Override
     protected StringBuilder appendCommentSql(StringBuilder sb) {
         sb.append("COMMENT ON TEXT SEARCH TEMPLATE ");
-        sb.append(PgDiffUtils.getQuotedName(getName()));
+        sb.append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
+        .append('.').append(PgDiffUtils.getQuotedName(getName()));
         return sb.append(" IS ").append(comment).append(';');
     }
 
     @Override
     public String getDropSQL() {
-        return "DROP TEXT SEARCH TEMPLATE " + PgDiffUtils.getQuotedName(getName()) + ';';
+        return "DROP TEXT SEARCH TEMPLATE " + PgDiffUtils.getQuotedName(getContainingSchema().getName())
+        + '.' + PgDiffUtils.getQuotedName(getName()) + ';';
     }
 
     @Override

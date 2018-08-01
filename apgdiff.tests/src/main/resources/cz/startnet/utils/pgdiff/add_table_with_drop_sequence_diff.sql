@@ -1,11 +1,11 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-DROP SEQUENCE testtable2_sequence_seq;
+DROP SEQUENCE public.testtable2_sequence_seq;
 
-CREATE TABLE testtable2 (
+CREATE TABLE public.testtable2 (
 	id integer,
 	name character varying(100) NOT NULL,
 	sequence integer NOT NULL
 );
 
-ALTER TABLE testtable2 OWNER TO fordfrog;
+ALTER TABLE public.testtable2 OWNER TO fordfrog;

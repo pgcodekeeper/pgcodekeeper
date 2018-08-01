@@ -69,7 +69,6 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected Statement statement;
     private Map<Long, String> cachedRolesNamesByOid;
     protected Map<Long, JdbcType> cachedTypesByOid;
-    protected long availableHelpersBits;
     // TODO remove schemas container after removal of helpers
     // it is superseded by the simple schemas map
     protected SchemasContainer schemas;
@@ -163,11 +162,11 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         }
     }
 
-    public void setPrivileges(PgStatement st, String aclItemsArrayAsString) {
-        setPrivileges(st, aclItemsArrayAsString, null);
+    public void setPrivileges(PgStatement st, String aclItemsArrayAsString, String schemaName) {
+        setPrivileges(st, aclItemsArrayAsString, null, schemaName);
     }
 
-    public void setPrivileges(PgStatement st, String aclItemsArrayAsString, String columnName) {
+    public void setPrivileges(PgStatement st, String aclItemsArrayAsString, String columnName, String schemaName) {
         String signature;
         switch (st.getStatementType()) {
         case FUNCTION:
@@ -186,12 +185,12 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         }
 
         setPrivileges(st, signature, aclItemsArrayAsString, owner,
-                columnName == null ? null : PgDiffUtils.getQuotedName(columnName));
+                columnName == null ? null : PgDiffUtils.getQuotedName(columnName), schemaName);
     }
 
-    public void setPrivileges(PgColumn column, PgTable t, String aclItemsArrayAsString) {
+    public void setPrivileges(PgColumn column, PgTable t, String aclItemsArrayAsString, String schemaName) {
         setPrivileges(column, PgDiffUtils.getQuotedName(t.getName()), aclItemsArrayAsString,
-                t.getOwner(), PgDiffUtils.getQuotedName(column.getName()));
+                t.getOwner(), PgDiffUtils.getQuotedName(column.getName()), schemaName);
     }
 
     /**
@@ -208,6 +207,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
      * @param owner the owner of PgStatement object (why separate?)
      * @param column    column name, if this aclItemsArrayAsString is column
      *                      privilege string; otherwise null
+     * @param schemaName name of schema for 'PgStatement st'
      */
     /*
      * See parseAclItem() in dumputils.c
@@ -215,7 +215,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
      * Order of all characters (for all types of objects combined) : raxdtDXCcTUw
      */
     private void setPrivileges(PgStatement st, String stSignature,
-            String aclItemsArrayAsString, String owner, String columnId) {
+            String aclItemsArrayAsString, String owner, String columnId, String schemaName) {
         if (aclItemsArrayAsString == null || args.isIgnorePrivileges()) {
             return;
         }
@@ -259,8 +259,10 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             stType = st.getStatementType().name();
         }
 
+        String qualStSignature = schemaName == null ? stSignature
+                : PgDiffUtils.getQuotedName(schemaName) + '.' + stSignature;
         String column = (columnId != null && !columnId.isEmpty()) ? "(" + columnId + ")" : "";
-        st.addPrivilege(new PgPrivilege("REVOKE", "ALL" + column, stType + " " + stSignature, "PUBLIC", false));
+        st.addPrivilege(new PgPrivilege("REVOKE", "ALL" + column, stType + " " + qualStSignature, "PUBLIC", false));
 
         List<Privilege> grants = JdbcAclParser.parse(
                 aclItemsArrayAsString, possiblePrivilegeCount, order, owner);
@@ -274,7 +276,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
 
         if (!metDefaultOwnersGrants) {
             st.addPrivilege(new PgPrivilege("REVOKE", "ALL" + column,
-                    stType + " " + stSignature, PgDiffUtils.getQuotedName(owner), false));
+                    stType + " " + qualStSignature, PgDiffUtils.getQuotedName(owner), false));
         }
 
         for (Privilege grant : grants) {
@@ -291,7 +293,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             }
 
             st.addPrivilege(new PgPrivilege("GRANT", String.join(",", grantValues),
-                    stType + " " + stSignature, grant.grantee, grant.isGO));
+                    stType + " " + qualStSignature, grant.grantee, grant.isGO));
         }
     }
 
@@ -399,5 +401,4 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             equalObjects = projDB.getDbTimestamp().searchEqualsObjects(dbTime);
         }
     }
-
 }

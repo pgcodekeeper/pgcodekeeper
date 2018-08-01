@@ -406,12 +406,6 @@
                     mnemonic="%command.mnemonic.diffWizard"
                     style="push">
                 </command>
-                <menu label="%command.label.improvePerformanceJdbc">
-                    <dynamic
-                        class="ru.taximaxim.codekeeper.ui.menuitems.JdbcPerfVersionsDynamic"
-                        id="ru.taximaxim.codekeeper.ui.dynamicJdbcPerf">
-                    </dynamic>
-                </menu>
                 <separator
                     name="ru.taximaxim.codekeeper.ui.separator4"
                     visible="true">
@@ -464,7 +458,7 @@
                 </visibleWhen>
             </menu>
         </menuContribution>
-        <menuContribution locationURI="toolbar:org.eclipse.ui.main.toolbar">
+        <menuContribution locationURI="toolbar:org.eclipse.ui.main.toolbar?after=org.eclipse.ui.workbench.navigate">
             <toolbar id="ru.taximaxim.codekeeper.ui.toolbar">
                 <command
                     commandId="ru.taximaxim.codekeeper.ui.command.QuickUpdate"

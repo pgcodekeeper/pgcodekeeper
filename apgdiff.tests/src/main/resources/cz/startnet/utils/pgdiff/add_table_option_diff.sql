@@ -1,5 +1,5 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-ALTER TABLE testtable SET (fillfactor=70);
+ALTER TABLE public.testtable SET (fillfactor=70);
 
-ALTER TABLE ONLY testtable SET WITH OIDS;
+ALTER TABLE ONLY public.testtable SET WITH OIDS;

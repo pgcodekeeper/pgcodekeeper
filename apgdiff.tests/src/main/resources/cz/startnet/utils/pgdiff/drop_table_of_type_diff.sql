@@ -1,6 +1,6 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-ALTER TABLE testtable
+ALTER TABLE public.testtable
 	DROP CONSTRAINT testtable_pkey;
 
-DROP TABLE testtable;
+DROP TABLE public.testtable;

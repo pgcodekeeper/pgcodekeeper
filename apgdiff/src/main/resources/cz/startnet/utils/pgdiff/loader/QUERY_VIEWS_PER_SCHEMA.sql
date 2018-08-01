@@ -1,4 +1,9 @@
-WITH extension_deps AS (
+WITH sys_schemas AS (
+    SELECT n.oid
+    FROM pg_catalog.pg_namespace n
+    WHERE n.nspname LIKE 'pg\_%'
+        OR n.nspname = 'information_schema'    
+), extension_deps AS (
     SELECT dep.objid 
     FROM pg_catalog.pg_depend dep 
     WHERE refclassid = 'pg_catalog.pg_extension'::pg_catalog.regclass 
@@ -17,7 +22,8 @@ SELECT c.oid::bigint,
        subselect.column_comments,
        subselect.column_defaults,
        subselect.column_acl,
-       c.reloptions
+       c.reloptions,
+       c.relnamespace AS schema_oid
 FROM pg_catalog.pg_class c
 LEFT JOIN
     (SELECT attrelid,
@@ -35,6 +41,6 @@ LEFT JOIN
 LEFT JOIN pg_catalog.pg_tablespace tabsp ON tabsp.oid = c.reltablespace
 LEFT JOIN pg_catalog.pg_description d ON c.oid = d.objoid
     AND d.objsubid = 0
-WHERE relnamespace = ?
+WHERE c.relnamespace NOT IN (SELECT oid FROM sys_schemas)
     AND c.relkind IN ('v','m')
     AND c.oid NOT IN (SELECT objid FROM extension_deps)

@@ -1,10 +1,10 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-DROP FOREIGN TABLE testtable;
+DROP FOREIGN TABLE public.testtable;
 
--- DEPCY: This TABLE is a dependency of COLUMN: testtable.f1
+-- DEPCY: This TABLE is a dependency of COLUMN: public.testtable.f1
 
-CREATE TABLE testtable (
+CREATE TABLE public.testtable (
 	f1 integer,
 	f2 text,
 	f3 text

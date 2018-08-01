@@ -29,9 +29,7 @@ ALTER SCHEMA another_triggers OWNER TO postgres;
 --COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 
-SET search_path = another_triggers, pg_catalog;
-
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
 SET default_tablespace = '';
 
@@ -41,7 +39,7 @@ SET default_with_oids = false;
 -- Name: test_table; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
 --
 
-CREATE TABLE test_table (
+CREATE TABLE public.test_table (
     id integer NOT NULL
 );
 

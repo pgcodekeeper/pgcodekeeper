@@ -1,3 +1,3 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-ALTER TABLE testtable NOT OF;
+ALTER TABLE public.testtable NOT OF;

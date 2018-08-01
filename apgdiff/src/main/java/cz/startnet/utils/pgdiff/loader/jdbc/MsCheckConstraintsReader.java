@@ -2,9 +2,8 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Map;
 
-import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsConstraint;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -12,20 +11,8 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsCheckConstraintsReader extends JdbcMsReader {
 
-    public static class MsCheckConstraintsReaderFactory extends JdbcReaderFactory {
-
-        public MsCheckConstraintsReaderFactory(Map<SupportedVersion, String> queries) {
-            super(0, "", queries);
-        }
-
-        @Override
-        public JdbcReader getReader(JdbcLoaderBase loader) {
-            return new MsCheckConstraintsReader(this, loader);
-        }
-    }
-
-    public MsCheckConstraintsReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
-        super(factory, loader);
+    public MsCheckConstraintsReader(JdbcLoaderBase loader) {
+        super(JdbcQueries.QUERY_MS_CHECK_CONSTRAINTS, loader);
     }
 
     @Override

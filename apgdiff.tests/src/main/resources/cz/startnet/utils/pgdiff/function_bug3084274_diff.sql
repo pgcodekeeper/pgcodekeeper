@@ -1,6 +1,6 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-CREATE OR REPLACE FUNCTION f_obj_execute_node_select(in_id_model bigint, in_id_object text, in_arr_val text, in_mode bigint) RETURNS bigint
+CREATE OR REPLACE FUNCTION public.f_obj_execute_node_select(in_id_model bigint, in_id_object text, in_arr_val text, in_mode bigint) RETURNS bigint
     LANGUAGE plpgsql SECURITY DEFINER
     AS $$
 DECLARE

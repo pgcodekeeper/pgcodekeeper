@@ -1,3 +1,5 @@
+SET search_path = pg_catalog;
+
 DROP EXTENSION testext1;
 
 CREATE SCHEMA other;

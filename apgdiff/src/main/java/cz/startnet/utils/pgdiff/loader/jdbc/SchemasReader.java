@@ -46,7 +46,7 @@ public class SchemasReader implements PgCatalogStrings {
             }
             if (sb.length() > 0) {
                 sb.setLength(sb.length() - 1);
-                query = JdbcReaderFactory.excludeObjects(query, sb.toString());
+                query = JdbcReader.excludeObjects(query, sb.toString());
             }
         }
 
@@ -77,7 +77,7 @@ public class SchemasReader implements PgCatalogStrings {
             loader.setOwner(s, owner);
         }
 
-        loader.setPrivileges(s, res.getString("nspacl"));
+        loader.setPrivileges(s, res.getString("nspacl"), null);
 
         return s;
     }

@@ -272,7 +272,7 @@ class PartialExportInfoImpl_1 extends PartialExportInfo{
     @Override
     public Map<String, String> modifiedFiles() {
         Map<String, String> m = new HashMap<>(1);
-        m.put("SCHEMA/public/TABLE/t4.sql", "fdc9260afa675ced60d7aee58cac176d");
+        m.put("SCHEMA/public/TABLE/t4.sql", "106afb720883502cfec4ba9db5da8289");
         return m;
     }
 }
@@ -309,7 +309,7 @@ class PartialExportInfoImpl_3 extends PartialExportInfo{
     @Override
     public Map<String, String> modifiedFiles() {
         Map<String, String> m = new HashMap<>(1);
-        m.put("SCHEMA/public/TABLE/t2.sql", "429093b3c496c98c679a2760453ca6ee");
+        m.put("SCHEMA/public/TABLE/t2.sql", "46255b7358a9dff55b672275d3840285");
         return m;
     }
 }
@@ -343,7 +343,7 @@ class PartialExportInfoImpl_5 extends PartialExportInfo{
     @Override
     public Map<String, String> modifiedFiles() {
         Map<String, String> m = new HashMap<>(1);
-        m.put("SCHEMA/public/FUNCTION/fun1.sql", "bddfc92535bebcf7dd8d2f8ac707d780");
+        m.put("SCHEMA/public/FUNCTION/fun1.sql", "a2a5c040544ebf26c6aacadcebe938f9");
         return m;
     }
 }
@@ -361,7 +361,7 @@ class PartialExportInfoImpl_6 extends PartialExportInfo{
     @Override
     public Map<String, String> modifiedFiles() {
         Map<String, String> m = new HashMap<>(1);
-        m.put("SCHEMA/public/TABLE/t5.sql", "888e26dfb67d136f4dc04220e2630143");
+        m.put("SCHEMA/public/TABLE/t5.sql", "96bbbc209be7a2f2075513faaac10f4e");
         return m;
     }
 }
@@ -429,7 +429,7 @@ class PartialExportInfoImpl_10 extends PartialExportInfo{
     @Override
     public Map<String, String> modifiedFiles() {
         Map<String, String> m = new HashMap<>(1);
-        m.put("SCHEMA/public/TABLE/t3.sql", "edd4e6c0430a09e405afef599f9c6ac8");
+        m.put("SCHEMA/public/TABLE/t3.sql", "13b6c5a48316d7371be416723027aadf");
         return m;
     }
 }
@@ -447,7 +447,7 @@ class PartialExportInfoImpl_11 extends PartialExportInfo{
 
     @Override
     public LinkedList<String> newFiles() {
-        return new LinkedList<>(Arrays.asList("SCHEMA/newschema.sql"));
+        return new LinkedList<>(Arrays.asList("SCHEMA/newschema/newschema.sql"));
     }
 }
 
@@ -497,7 +497,7 @@ class PartialExportInfoImpl_14 extends PartialExportInfo{
 
     @Override
     public LinkedList<String> deletedFiles() {
-        return new LinkedList<>(Arrays.asList("SCHEMA/test/TABLE/test_table.sql", "SCHEMA/test/TABLE/test_table_2.sql", "SCHEMA/test.sql"));
+        return new LinkedList<>(Arrays.asList("SCHEMA/test/TABLE/test_table.sql", "SCHEMA/test/TABLE/test_table_2.sql", "SCHEMA/test/test.sql"));
     }
 }
 
@@ -532,7 +532,7 @@ class PartialExportInfoImpl_16 extends PartialExportInfo{
     @Override
     public Map<String, String> modifiedFiles() {
         Map<String, String> m = new HashMap<>(1);
-        m.put("SCHEMA/public/TABLE/t2.sql", "278235c06e713c6af126d7f166a9cdb9");
+        m.put("SCHEMA/public/TABLE/t2.sql", "db4dbe900e6338850a2957a9d61ef253");
         return m;
     }
 }
@@ -550,7 +550,7 @@ class PartialExportInfoImpl_17 extends PartialExportInfo{
     @Override
     public Map<String, String> modifiedFiles() {
         Map<String, String> m = new HashMap<>(1);
-        m.put("SCHEMA/public/TABLE/t2.sql", "109345146db82013ac3e2970e325ee7a");
+        m.put("SCHEMA/public/TABLE/t2.sql", "e5fc35e43a007612b1305d65ccbeabd8");
         return m;
     }
 }
@@ -570,7 +570,7 @@ class PartialExportInfoImpl_18 extends PartialExportInfo{
     @Override
     public Map<String, String> modifiedFiles() {
         Map<String, String> m = new HashMap<>(1);
-        m.put("SCHEMA/public/TABLE/t2.sql", "283e944ab17b21a41db185bb9a79cddf");
+        m.put("SCHEMA/public/TABLE/t2.sql", "8c3e5f36294f98ff4c2b147061d33689");
         return m;
     }
 }
@@ -591,7 +591,7 @@ class PartialExportInfoImpl_19 extends PartialExportInfo{
     @Override
     public Map<String, String> modifiedFiles() {
         Map<String, String> m = new HashMap<>(1);
-        m.put("SCHEMA/public/TABLE/t2.sql", "9be93036f24351393030d4b633eb5a2c");
+        m.put("SCHEMA/public/TABLE/t2.sql", "3785a71f4f8f286b41e3751046934f38");
         return m;
     }
 }

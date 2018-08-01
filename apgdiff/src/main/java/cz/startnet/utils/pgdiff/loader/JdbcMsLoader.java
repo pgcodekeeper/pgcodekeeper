@@ -9,7 +9,13 @@ import org.eclipse.core.runtime.SubMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.jdbc.JdbcLoaderBase;
-import cz.startnet.utils.pgdiff.loader.jdbc.JdbcReaderFactory;
+import cz.startnet.utils.pgdiff.loader.jdbc.MsCheckConstraintsReader;
+import cz.startnet.utils.pgdiff.loader.jdbc.MsExtendedObjectsReader;
+import cz.startnet.utils.pgdiff.loader.jdbc.MsFKReader;
+import cz.startnet.utils.pgdiff.loader.jdbc.MsFPVTReader;
+import cz.startnet.utils.pgdiff.loader.jdbc.MsIndicesAndPKReader;
+import cz.startnet.utils.pgdiff.loader.jdbc.MsSequencesReader;
+import cz.startnet.utils.pgdiff.loader.jdbc.MsTablesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.SchemasMsReader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
@@ -50,10 +56,13 @@ public class JdbcMsLoader extends JdbcLoaderBase {
             //setupMonitorWork();
 
             new SchemasMsReader(this, d).read();
-
-            for (JdbcReaderFactory f : JdbcReaderFactory.MS_FACTORIES) {
-                f.getReader(this).read();
-            }
+            new MsFPVTReader(this).read();
+            new MsExtendedObjectsReader(this).read();
+            new MsTablesReader(this).read();
+            new MsSequencesReader(this).read();
+            new MsIndicesAndPKReader(this).read();
+            new MsFKReader(this).read();
+            new MsCheckConstraintsReader(this).read();
 
             finishAntlr();
 

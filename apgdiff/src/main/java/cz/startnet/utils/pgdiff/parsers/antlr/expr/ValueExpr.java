@@ -307,13 +307,11 @@ public class ValueExpr extends AbstractExpr {
 
         String schemaName = null;
         String functionName;
-        Data_typeContext dataTypeCtx = funcNameCtx.data_type();
-        Schema_qualified_name_nontypeContext funcNameQualCtx;
+        Schema_qualified_name_nontypeContext funcNameQualCtx = funcNameCtx.schema_qualified_name_nontype();
 
         IdentifierContext id;
         Tokens_simple_functionsContext tokensSimpleFunc;
-        if (dataTypeCtx != null &&
-                (funcNameQualCtx = dataTypeCtx.predefined_type().schema_qualified_name_nontype()) != null) {
+        if (funcNameQualCtx != null) {
             functionName = funcNameQualCtx.identifier_nontype().getText();
 
             if ((id = funcNameQualCtx.identifier()) != null) {

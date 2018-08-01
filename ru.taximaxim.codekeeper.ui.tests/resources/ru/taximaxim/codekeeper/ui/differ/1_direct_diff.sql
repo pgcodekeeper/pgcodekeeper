@@ -1,9 +1,9 @@
 SET TIMEZONE TO 'UTC';
 
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-ALTER TABLE t4
+ALTER TABLE public.t4
 	DROP CONSTRAINT t4_c2_key;
 
-ALTER TABLE t4
+ALTER TABLE public.t4
 	ADD CONSTRAINT t4_c2_key UNIQUE (c2);

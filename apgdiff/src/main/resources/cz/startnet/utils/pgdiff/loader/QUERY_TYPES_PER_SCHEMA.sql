@@ -1,4 +1,9 @@
-WITH extension_deps AS (
+WITH sys_schemas AS (
+    SELECT n.oid
+    FROM pg_catalog.pg_namespace n
+    WHERE n.nspname LIKE 'pg\_%'
+        OR n.nspname = 'information_schema'    
+), extension_deps AS (
     SELECT dep.objid 
     FROM pg_catalog.pg_depend dep 
     WHERE refclassid = 'pg_catalog.pg_extension'::pg_catalog.regclass 
@@ -92,8 +97,10 @@ SELECT  -- GENERAL
     comp_attrs.atttypcollations AS comp_atttypcollations,
     comp_attrs.attcollationnames AS comp_attcollationnames, -- don't output if comp_attcollations[i] = comp_atttypcollations[i]
     comp_attrs.attcollationnspnames AS comp_attcollationnspnames,
-    comp_attrs.attcomments AS comp_attcomments
+    comp_attrs.attcomments AS comp_attcomments,
     -- END COMPOSITE
+    
+    t.typnamespace AS schema_oid
 FROM pg_catalog.pg_type t
 LEFT JOIN pg_catalog.pg_description d ON d.objoid = t.oid
 LEFT JOIN pg_catalog.pg_range r ON r.rngtypid = t.oid
@@ -125,7 +132,7 @@ LEFT JOIN
      LEFT JOIN pg_catalog.pg_description d ON d.objoid = a.attrelid AND d.objsubid = a.attnum
      WHERE a.attisdropped = FALSE
      GROUP BY a.attrelid) comp_attrs ON comp_attrs.attrelid = t.typrelid
-WHERE typnamespace = ?
+WHERE t.typnamespace NOT IN (SELECT oid FROM sys_schemas)
     AND t.typisdefined = TRUE
     AND (t.typrelid = 0 OR (SELECT c.relkind FROM pg_catalog.pg_class c WHERE c.oid = t.typrelid) = 'c')
     AND NOT EXISTS(SELECT 1 FROM pg_catalog.pg_type el WHERE el.oid = t.typelem AND el.typarray = t.oid)

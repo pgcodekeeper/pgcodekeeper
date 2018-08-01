@@ -1,4 +1,9 @@
-WITH extension_deps AS (
+WITH sys_schemas AS (
+    SELECT n.oid
+    FROM pg_catalog.pg_namespace n
+    WHERE n.nspname LIKE 'pg\_%'
+        OR n.nspname = 'information_schema'    
+), extension_deps AS (
     SELECT dep.objid 
     FROM pg_catalog.pg_depend dep 
     WHERE refclassid = 'pg_catalog.pg_extension'::pg_catalog.regclass 
@@ -57,8 +62,9 @@ SELECT  -- GENERAL
    columns.col_collation,
    columns.col_typcollation,
    columns.col_collationname,
-   columns.col_collationnspname
-    
+   columns.col_collationnspname,
+   
+   c.relnamespace AS schema_oid
 FROM pg_catalog.pg_class c
 LEFT JOIN pg_catalog.pg_foreign_table ftbl ON ftbl.ftrelid = c.relfilenode
 LEFT JOIN pg_catalog.pg_foreign_server ser ON ser.oid = ftbl.ftserver
@@ -114,6 +120,6 @@ LEFT JOIN (SELECT
      LEFT JOIN pg_catalog.pg_class inhrel ON inh.inhparent = inhrel.oid
      LEFT JOIN pg_catalog.pg_namespace inhns ON inhrel.relnamespace = inhns.oid
      GROUP BY inh.inhrelid) parents ON parents.inhrelid = c.oid
- WHERE c.relnamespace = ?
+ WHERE c.relnamespace NOT IN (SELECT oid FROM sys_schemas)
        AND c.relkind IN ('f','r','p')
        AND c.oid NOT IN (SELECT objid FROM extension_deps)

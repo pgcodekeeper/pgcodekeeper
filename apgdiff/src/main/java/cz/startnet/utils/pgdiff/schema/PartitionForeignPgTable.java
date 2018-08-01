@@ -32,11 +32,7 @@ public class PartitionForeignPgTable extends ForeignPgTable {
 
     @Override
     protected void appendColumns(StringBuilder sbSQL, StringBuilder sbOption) {
-        final Inherits tableName = inherits.get(0);
-        String parentName = (tableName.getKey() == null ? "" : (tableName.getKey() + ".")) +
-                tableName.getValue();
-
-        sbSQL.append(" PARTITION OF ").append(parentName);
+        sbSQL.append(" PARTITION OF ").append(inherits.get(0).getQualifiedName());
 
         if (!columns.isEmpty()) {
             sbSQL.append(" (\n");

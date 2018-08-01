@@ -7,6 +7,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_sequence_statemen
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
@@ -21,8 +22,9 @@ public class CreateSequence extends ParserAbstract {
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
         PgSequence sequence = new PgSequence(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
+        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         fillSequence(sequence, ctx.sequence_body());
-        getSchemaSafe(ids, db.getDefaultSchema()).addSequence(sequence);
+        schema.addSequence(sequence);
         return sequence;
     }
 
@@ -30,9 +32,11 @@ public class CreateSequence extends ParserAbstract {
         long inc = 1;
         Long maxValue = null;
         Long minValue = null;
+        String dataType = null;
         for (Sequence_bodyContext body : list) {
             if (body.type != null) {
-                sequence.setDataType(body.type.getText().toLowerCase());
+                dataType = body.type.getText().toLowerCase();
+                sequence.setDataType(dataType);
             } else if (body.cache_val != null) {
                 sequence.setCache(body.cache_val.getText());
             } else if (body.incr != null) {
@@ -48,9 +52,9 @@ public class CreateSequence extends ParserAbstract {
             } else if (body.col_name != null) {
                 // TODO incorrect qualified name work
                 // also broken in altersequence
-                sequence.setOwnedBy(body.col_name.getText());
+                sequence.setOwnedBy(ParserAbstract.getFullCtxText(body.col_name));
             }
         }
-        sequence.setMinMaxInc(inc, maxValue, minValue);
+        sequence.setMinMaxInc(inc, maxValue, minValue, dataType);
     }
 }

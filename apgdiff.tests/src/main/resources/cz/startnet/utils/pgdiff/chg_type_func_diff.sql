@@ -1,15 +1,15 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
--- DEPCY: This FUNCTION depends on the TYPE: typ_composite
+-- DEPCY: This FUNCTION depends on the TYPE: public.typ_composite
 
-DROP FUNCTION add(typ_composite, integer);
+DROP FUNCTION public.add(typ_composite, integer);
 
-ALTER TYPE typ_composite
+ALTER TYPE public.typ_composite
 	ALTER ATTRIBUTE key TYPE character varying(80) COLLATE pg_catalog."ru_RU", 
 	ALTER ATTRIBUTE val TYPE text COLLATE pg_catalog."en_GB.utf8";
 
-CREATE OR REPLACE FUNCTION add(typ_composite, integer) RETURNS integer
+CREATE OR REPLACE FUNCTION public.add(typ_composite, integer) RETURNS integer
     LANGUAGE sql IMMUTABLE STRICT
     AS $_$select $2;$_$;
 
-ALTER FUNCTION add(typ_composite, integer) OWNER TO botov_av;
+ALTER FUNCTION public.add(typ_composite, integer) OWNER TO botov_av;

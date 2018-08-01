@@ -70,6 +70,7 @@ public class PgSequence extends PgStatementWithSearchPath implements IRelation {
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE SEQUENCE ");
+        sbSQL.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
         sbSQL.append(PgDiffUtils.getQuotedName(name));
 
         if (!"bigint".equals(dataType)) {
@@ -143,8 +144,11 @@ public class PgSequence extends PgStatementWithSearchPath implements IRelation {
         }
         final StringBuilder sbSQL = new StringBuilder();
 
-        sbSQL.append("\n\nALTER SEQUENCE ").append(PgDiffUtils.getQuotedName(name));
-        sbSQL.append("\n\tOWNED BY ").append(ownedBy).append(';');
+        sbSQL.append("\n\nALTER SEQUENCE ")
+        .append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.')
+        .append(PgDiffUtils.getQuotedName(name));
+        sbSQL.append("\n\tOWNED BY ")
+        .append(ownedBy).append(';');
 
         return sbSQL.toString();
     }
@@ -167,7 +171,8 @@ public class PgSequence extends PgStatementWithSearchPath implements IRelation {
 
     @Override
     public String getDropSQL() {
-        return "DROP SEQUENCE " + PgDiffUtils.getQuotedName(getName()) + ";";
+        return "DROP SEQUENCE " + PgDiffUtils.getQuotedName(getContainingSchema().getName()) + '.'
+                + PgDiffUtils.getQuotedName(getName()) + ";";
     }
 
     @Override
@@ -186,6 +191,7 @@ public class PgSequence extends PgStatementWithSearchPath implements IRelation {
 
         if (compareSequenceBody(newSequence, oldSequence, sbSQL)) {
             sb.append("\n\nALTER SEQUENCE "
+                    + PgDiffUtils.getQuotedName(getContainingSchema().getName()) + '.'
                     + PgDiffUtils.getQuotedName(newSequence.getName())
                     + sbSQL.toString() + ";");
         }
@@ -274,14 +280,34 @@ public class PgSequence extends PgStatementWithSearchPath implements IRelation {
         }
     }
 
-    public void setMinMaxInc(long inc, Long max, Long min) {
+    public void setMinMaxInc(long inc, Long max, Long min, String dataType) {
+        String type = dataType != null ? dataType : "bigint";
+
+        long maxTypeVal;
+        long minTypeVal;
+        switch(type) {
+        case "smallint":
+            maxTypeVal = Short.MAX_VALUE;
+            minTypeVal = Short.MIN_VALUE;
+            break;
+        case "integer":
+            maxTypeVal = Integer.MAX_VALUE;
+            minTypeVal = Integer.MIN_VALUE;
+            break;
+        case "bigint":
+        default:
+            maxTypeVal = Long.MAX_VALUE;
+            minTypeVal = Long.MIN_VALUE;
+            break;
+        }
+
         this.increment = Long.toString(inc);
-        if (max == null || (inc > 0 && max == Long.MAX_VALUE) || (inc < 0 && max == -1)) {
+        if (max == null || (inc > 0 && max == maxTypeVal) || (inc < 0 && max == -1)) {
             this.maxValue = null;
         } else {
             this.maxValue = "" + max;
         }
-        if (min == null || (inc > 0 && min == 1) || (inc < 0 && min == -Long.MAX_VALUE)) {
+        if (min == null || (inc > 0 && min == 1) || (inc < 0 && min == minTypeVal)) {
             this.minValue = null;
         } else {
             this.minValue = "" + min;

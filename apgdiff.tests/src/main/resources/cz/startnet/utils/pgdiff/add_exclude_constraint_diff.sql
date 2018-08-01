@@ -1,7 +1,7 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-ALTER TABLE testtable
+ALTER TABLE public.testtable
 	ADD CONSTRAINT testtable2_c_excl EXCLUDE USING gist (c WITH &&);
 
-ALTER TABLE testtable
+ALTER TABLE public.testtable
 	ADD CONSTRAINT test EXCLUDE USING id(test WITH =) INITIALLY DEFERRED;

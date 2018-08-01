@@ -1,6 +1,6 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-DROP INDEX testindex2;
+DROP INDEX public.testindex2;
 
-ALTER TABLE testtable
+ALTER TABLE public.testtable
 	DROP COLUMN field5;

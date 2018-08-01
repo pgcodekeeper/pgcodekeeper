@@ -34,12 +34,10 @@ import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
@@ -142,6 +140,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
         for (WORK_DIR_NAMES workDirName : WORK_DIR_NAMES.values()) {
             IFolder iFolder = iProject.getFolder(workDirName.name());
             if (iFolder.exists()) {
+                // legacy schemas
                 loadSubdir(iFolder, db, monitor, statementBodies, errors);
             }
         }
@@ -152,14 +151,18 @@ public class PgUIDumpLoader extends PgDumpLoader {
             return db;
         }
 
+        // new schemas + content
         // step 2
         // read out schemas names, and work in loop on each
-        for (PgSchema schema : db.getSchemas()) {
-            IFolder schemaFolder = schemasCommonDir.getFolder(ModelExporter.getExportedFilename(schema));
-            for (String dirSub : DIR_LOAD_ORDER) {
-                IFolder iFolder = schemaFolder.getFolder(dirSub);
-                if (iFolder.exists()) {
-                    loadSubdir(iFolder, db, monitor, statementBodies, errors);
+        for (IResource sub : schemasCommonDir.members()) {
+            if (sub.getType() == IResource.FOLDER) {
+                IFolder schemaDir = (IFolder) sub;
+                loadSubdir(schemaDir, db, monitor, statementBodies, errors);
+                for (String dirSub : DIR_LOAD_ORDER) {
+                    IFolder iFolder = schemaDir.getFolder(dirSub);
+                    if (iFolder.exists()) {
+                        loadSubdir(iFolder, db, monitor, statementBodies, errors);
+                    }
                 }
             }
         }
@@ -223,7 +226,9 @@ public class PgUIDumpLoader extends PgDumpLoader {
             if (schemasPath.isPrefixOf(filePath)) {
                 IPath relSchemasPath = filePath.makeRelativeTo(schemasPath);
                 String schemaDirname;
-                boolean schemaDefSql = relSchemasPath.segmentCount() == 1;
+                // 1 = [SCHEMA/]x.sql, legacy
+                // 2 = [SCHEMA/]x/x.sql, new schema location
+                boolean schemaDefSql = relSchemasPath.segmentCount() <= 2;
                 if (schemaDefSql) {
                     // schema definition SQL-file
                     schemaDirname = relSchemasPath.removeFileExtension().lastSegment();
@@ -243,8 +248,15 @@ public class PgUIDumpLoader extends PgDumpLoader {
                     // pre-load schema for object's search path
                     // otherwise we're dealing with the schema file itself, allow it to load normally
                     // don't pass progress monitor since this file isn't in the original load-set
-                    loadFile(file.getProject().getFile(schemasPath.append(schemaDirname + ".sql")), //$NON-NLS-1$
-                            null, db, statementBodies, null);
+                    String schemaFilename = schemaDirname + ".sql"; //$NON-NLS-1$
+                    IProject proj = file.getProject();
+                    IPath schemaPath = schemasPath.append(schemaDirname).append(schemaFilename);
+                    if (!proj.exists(schemaPath)) {
+                        // new schema location not found, use legacy
+                        schemaPath = schemasPath.append(schemaFilename);
+                    }
+
+                    loadFile(proj.getFile(schemaPath), null, db, statementBodies, null);
                 }
             }
 
@@ -308,7 +320,9 @@ public class PgUIDumpLoader extends PgDumpLoader {
      *          like this: /SCHEMA/schema_name.sql
      */
     public static boolean isSchemaFile(IPath path) {
-        return path.segmentCount() == 2 && path.segment(0).equals(WORK_DIR_NAMES.SCHEMA.name())
-                && path.segment(1).endsWith(".sql"); //$NON-NLS-1$
+        int c = path.segmentCount();
+        return (c == 2 || c == 3) // legacy or new schemas
+                && path.segment(0).equals(WORK_DIR_NAMES.SCHEMA.name())
+                && path.segment(c - 1).endsWith(".sql"); //$NON-NLS-1$
     }
 }

@@ -1,8 +1,8 @@
-SET search_path = test, pg_catalog;
+SET search_path = pg_catalog;
 
--- DEPCY: This FUNCTION is a dependency of TRIGGER: emp_stamp
+-- DEPCY: This FUNCTION is a dependency of TRIGGER: public.emp_stamp
 
-CREATE OR REPLACE FUNCTION emp_stamp() RETURNS trigger
+CREATE OR REPLACE FUNCTION test.emp_stamp() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
     BEGIN
@@ -26,11 +26,9 @@ CREATE OR REPLACE FUNCTION emp_stamp() RETURNS trigger
     END;
 $$;
 
-ALTER FUNCTION emp_stamp() OWNER TO galiev_mr;
-
-SET search_path = public, pg_catalog;
+ALTER FUNCTION test.emp_stamp() OWNER TO galiev_mr;
 
 CREATE TRIGGER emp_stamp
-	BEFORE INSERT OR UPDATE ON emp
+	BEFORE INSERT OR UPDATE ON public.emp
 	FOR EACH ROW
 	EXECUTE PROCEDURE test.emp_stamp();

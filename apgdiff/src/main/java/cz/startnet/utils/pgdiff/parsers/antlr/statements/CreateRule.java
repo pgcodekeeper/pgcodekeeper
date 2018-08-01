@@ -194,7 +194,9 @@ public class CreateRule extends ParserAbstract {
         List<IdentifierContext> ids = name.identifier();
         IdentifierContext idCtx = QNameParser.getFirstNameCtx(ids);
         String id = idCtx.getText();
-        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
+        PgSchema schema = (DbObjType.SCHEMA == type ?
+                getSafe(db::getSchema, idCtx)
+                : getSchemaSafe(ids, db.getDefaultSchema()));
         PgStatement statement = null;
         switch (type) {
         case TABLE:

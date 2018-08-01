@@ -32,7 +32,7 @@ ALTER SCHEMA s OWNER TO levsha_aa;
 --COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
 SET default_tablespace = '';
 
@@ -42,7 +42,7 @@ SET default_with_oids = false;
 -- Name: t1; Type: TABLE; Schema: public; Owner: levsha_aa; Tablespace: 
 --
 
-CREATE TABLE t1 (
+CREATE TABLE public.t1 (
     id integer
 );
 
@@ -53,21 +53,20 @@ ALTER TABLE public.t1 OWNER TO levsha_aa;
 -- Name: v2; Type: VIEW; Schema: public; Owner: levsha_aa
 --
 
-CREATE VIEW v2 AS
+CREATE VIEW public.v2 AS
  SELECT t1.id,
     'qwe' AS c1
-   FROM t1;
+   FROM public.t1;
 
 
 ALTER TABLE public.v2 OWNER TO levsha_aa;
 
-SET search_path = s, pg_catalog;
 
 --
 -- Name: v1; Type: VIEW; Schema: s; Owner: levsha_aa
 --
 
-CREATE VIEW v1 AS
+CREATE VIEW s.v1 AS
  SELECT t1.id
    FROM public.t1;
 
@@ -78,7 +77,7 @@ ALTER TABLE s.v1 OWNER TO levsha_aa;
 -- Name: v3; Type: VIEW; Schema: s; Owner: levsha_aa
 --
 
-CREATE VIEW v3 AS
+CREATE VIEW s.v3 AS
  SELECT v2.id
    FROM public.v2;
 

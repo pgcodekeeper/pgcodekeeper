@@ -1,6 +1,6 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-CREATE OR REPLACE FUNCTION notify_change() RETURNS trigger
+CREATE OR REPLACE FUNCTION public.notify_change() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 BEGIN
@@ -14,9 +14,9 @@ BEGIN
 END;
 $$;
 
-ALTER FUNCTION notify_change() OWNER TO galiev_mr;
+ALTER FUNCTION public.notify_change() OWNER TO galiev_mr;
 
 CREATE TRIGGER multi_event_trig
-	AFTER INSERT OR DELETE OR TRUNCATE ON t1
+	AFTER INSERT OR DELETE OR TRUNCATE ON public.t1
 	FOR EACH STATEMENT
-	EXECUTE PROCEDURE notify_change();
+	EXECUTE PROCEDURE public.notify_change();

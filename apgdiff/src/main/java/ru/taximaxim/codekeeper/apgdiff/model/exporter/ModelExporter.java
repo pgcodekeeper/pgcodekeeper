@@ -234,8 +234,7 @@ public class ModelExporter {
 
             createParentSchema(elParent);
             // dump new version
-            dumpSQL(getDumpSql((PgStatementWithSearchPath)stInNew),
-                    new File(outDir, getRelativeFilePath(stInNew, true)));
+            dumpSQL(getDumpSql(stInNew), new File(outDir, getRelativeFilePath(stInNew, true)));
         }
     }
 
@@ -267,11 +266,10 @@ public class ModelExporter {
         case SCHEMA:
             // delete schema if already exists
             deleteStatementIfExists(stInNew);
-            // FALLTHROUGH
+            // $FALL-THROUGH$
         case EXTENSION:
             // export schema/extension sql file
-            dumpSQL(stInNew.getFullSQL(),
-                    new File (outDir, getRelativeFilePath(stInNew, true)));
+            dumpSQL(stInNew.getFullSQL(), new File (outDir, getRelativeFilePath(stInNew, true)));
             break;
 
         case FUNCTION:
@@ -621,10 +619,10 @@ public class ModelExporter {
             Collections.sort(contents, ExportTableOrder.INSTANCE);
         }
 
-        StringBuilder groupSql = new StringBuilder(getDumpSql(obj, true));
+        StringBuilder groupSql = new StringBuilder(getDumpSql(obj));
 
         for (PgStatementWithSearchPath st : contents) {
-            groupSql.append(GROUP_DELIMITER).append(getDumpSql(st, false));
+            groupSql.append(GROUP_DELIMITER).append(getDumpSql(st));
         }
 
         dumpSQL(groupSql, new File(tablesDir, getExportedFilenameSql(obj)));
@@ -657,20 +655,6 @@ public class ModelExporter {
                     outDir.getAbsolutePath()));
         }
 
-        // exporting schemas
-        File schemasSharedDir = new File(outDir,
-                ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.name());
-        if (!schemasSharedDir.mkdir()) {
-            throw new DirectoryException(MessageFormat.format(
-                    "Could not create schemas directory: {0}",
-                    schemasSharedDir.getAbsolutePath()));
-        }
-
-        for (PgSchema schema : newDb.getSchemas()) {
-            File schemaSQL = new File(schemasSharedDir, getExportedFilenameSql(schema));
-            dumpSQL(schema.getCreationSQL(), schemaSQL);
-        }
-
         // exporting extensions
         File extensionsDir = new File(outDir,
                 ApgdiffConsts.WORK_DIR_NAMES.EXTENSION.name());
@@ -685,6 +669,15 @@ public class ModelExporter {
             dumpSQL(ext.getCreationSQL(), extSQL);
         }
 
+        // exporting schemas
+        File schemasSharedDir = new File(outDir,
+                ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.name());
+        if (!schemasSharedDir.mkdir()) {
+            throw new DirectoryException(MessageFormat.format(
+                    "Could not create schemas directory: {0}",
+                    schemasSharedDir.getAbsolutePath()));
+        }
+
         // exporting schemas contents
         for (PgSchema schema : newDb.getSchemas()) {
             File schemaDir = new File(schemasSharedDir, getExportedFilename(schema));
@@ -693,12 +686,20 @@ public class ModelExporter {
                         "Could not create schema directory: {0}",
                         schemaDir.getAbsolutePath()));
             }
+
+            File schemaSQL = new File(schemaDir, getExportedFilenameSql(schema));
+            dumpSQL(schema.getCreationSQL(), schemaSQL);
+
             dumpFunctions(schema.getFunctions(), schemaDir);
             dumpObjects(schema.getSequences(), schemaDir);
             dumpObjects(schema.getTypes(), schemaDir);
             dumpObjects(schema.getDomains(), schemaDir);
             dumpObjects(schema.getTables(), schemaDir);
             dumpObjects(schema.getViews(), schemaDir);
+            dumpObjects(schema.getFtsParsers(), schemaDir);
+            dumpObjects(schema.getFtsTemplates(), schemaDir);
+            dumpObjects(schema.getFtsDictionaries(), schemaDir);
+            dumpObjects(schema.getFtsConfigurations(), schemaDir);
 
             // indexes, triggers, rules, constraints are dumped when tables are processed
         }
@@ -721,7 +722,7 @@ public class ModelExporter {
                 groupedDump = new StringBuilder(getDumpSql(f));
                 dumps.put(fileName, groupedDump);
             } else {
-                groupedDump.append(GROUP_DELIMITER).append(getDumpSql(f, false));
+                groupedDump.append(GROUP_DELIMITER).append(getDumpSql(f));
             }
         }
         for (Entry<String, StringBuilder> dump : dumps.entrySet()) {
@@ -741,7 +742,7 @@ public class ModelExporter {
                     StringBuilder groupSql = new StringBuilder(dump);
                     // only tables and views can be here
                     obj.getChildren().map(st -> (PgStatementWithSearchPath)st).sorted(new ExportTableOrder())
-                    .forEach(st -> groupSql.append(GROUP_DELIMITER).append(getDumpSql(st, false)));
+                    .forEach(st -> groupSql.append(GROUP_DELIMITER).append(getDumpSql(st)));
                     dump = groupSql.toString();
                 }
 
@@ -803,14 +804,8 @@ public class ModelExporter {
         return getExportedFilename(name) + ".sql"; //$NON-NLS-1$
     }
 
-    private String getDumpSql(PgStatementWithSearchPath statement) {
-        return getDumpSql(statement, true);
-    }
-
-    private String getDumpSql(PgStatement statement, boolean searchPath) {
-        return searchPath ? ((PgStatementWithSearchPath)statement).getSearchPath()
-                + "\n\n" + statement.getFullSQL() : statement.getFullSQL();//$NON-NLS-1$
-
+    private String getDumpSql(PgStatement statement) {
+        return statement.getFullSQL();
     }
 
     public static void writeProjVersion(File f) throws FileNotFoundException {
@@ -820,6 +815,12 @@ public class ModelExporter {
         }
     }
 
+    /**
+     * @param addExtension whether to add .sql extension to the path
+     *      for schemas, no extension also means to get schema dir path,
+     *      one segment shorter than file location since schema files
+     *      are now stored in schema dirs
+     */
     public static String getRelativeFilePath(PgStatement st, boolean addExtension){
         PgStatement parentSt = st.getParent();
         String parentExportedFileName = parentSt == null ?
@@ -830,8 +831,15 @@ public class ModelExporter {
         String schemaName;
         switch (type) {
         case EXTENSION:
-        case SCHEMA:
             file = new File(type.name());
+            break;
+
+        case SCHEMA:
+            file = new File(file, getExportedFilename(st));
+            if (!addExtension) {
+                // return schema dir path
+                return file.toString();
+            }
             break;
 
         case SEQUENCE:

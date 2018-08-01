@@ -1,9 +1,9 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-CREATE TABLE t3 (
+CREATE TABLE public.t3 (
 	c1 integer,
 	c2 text,
 	c3 text
 );
 
-ALTER TABLE t3 OWNER TO galiev_mr;
+ALTER TABLE public.t3 OWNER TO galiev_mr;
