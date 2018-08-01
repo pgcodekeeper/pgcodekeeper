@@ -16,7 +16,7 @@ import cz.startnet.utils.pgdiff.schema.MsProcedure.ProcedureArgument;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class MsExtendedObjectsReader extends JdbcMsReader {
+public class MsExtendedObjectsReader extends JdbcReader {
 
     public MsExtendedObjectsReader(JdbcLoaderBase loader) {
         super(JdbcQueries.QUERY_MS_EXTENDED_FUNCTIONS_AND_PROCEDURES, loader);

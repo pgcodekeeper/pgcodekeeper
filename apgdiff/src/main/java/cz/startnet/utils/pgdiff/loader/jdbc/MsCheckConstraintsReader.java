@@ -9,7 +9,7 @@ import cz.startnet.utils.pgdiff.schema.MsConstraint;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class MsCheckConstraintsReader extends JdbcMsReader {
+public class MsCheckConstraintsReader extends JdbcReader {
 
     public MsCheckConstraintsReader(JdbcLoaderBase loader) {
         super(JdbcQueries.QUERY_MS_CHECK_CONSTRAINTS, loader);

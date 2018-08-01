@@ -11,7 +11,7 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.SimpleMsTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class MsTablesReader extends JdbcMsReader {
+public class MsTablesReader extends JdbcReader {
 
     public MsTablesReader(JdbcLoaderBase loader) {
         super(JdbcQueries.QUERY_MS_TABLES, loader);

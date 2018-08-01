@@ -14,7 +14,7 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class MsIndicesAndPKReader extends JdbcMsReader {
+public class MsIndicesAndPKReader extends JdbcReader {
 
     public MsIndicesAndPKReader(JdbcLoaderBase loader) {
         super(JdbcQueries.QUERY_MS_INDICES_AND_PK, loader);

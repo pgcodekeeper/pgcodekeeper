@@ -10,7 +10,7 @@ import cz.startnet.utils.pgdiff.schema.MsConstraint;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class MsFKReader extends JdbcMsReader {
+public class MsFKReader extends JdbcReader {
 
     public MsFKReader(JdbcLoaderBase loader) {
         super(JdbcQueries.QUERY_MS_FK, loader);

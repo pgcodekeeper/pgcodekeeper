@@ -40,7 +40,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
 
             StringBuilder sb = new StringBuilder();
 
-            for (PgSchema schema : loader.schemas.map.values()) {
+            for (PgSchema schema : loader.schemaIds.values()) {
                 fillOldObjects(objects, schema, projDb, sb);
             }
 
@@ -53,7 +53,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
         loader.setCurrentOperation(getClass().getSimpleName() + " query");
         try (ResultSet result = loader.statement.executeQuery(query)) {
             while (result.next()) {
-                processResult(result, loader.schemas.map.get(result.getLong("schema_oid")));
+                processResult(result, loader.schemaIds.get(result.getLong("schema_oid")));
             }
         }
     }

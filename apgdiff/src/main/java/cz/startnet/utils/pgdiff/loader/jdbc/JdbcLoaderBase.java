@@ -69,9 +69,6 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected Statement statement;
     private Map<Long, String> cachedRolesNamesByOid;
     protected Map<Long, JdbcType> cachedTypesByOid;
-    // TODO remove schemas container after removal of helpers
-    // it is superseded by the simple schemas map
-    protected SchemasContainer schemas;
     protected final Map<Long, PgSchema> schemaIds = new HashMap<>();
     protected int version;
     private long lastSysOid;

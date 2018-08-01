@@ -18,7 +18,7 @@ import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class MsFPVTReader extends JdbcMsReader {
+public class MsFPVTReader extends JdbcReader {
 
     public MsFPVTReader(JdbcLoaderBase loader) {
         super(JdbcQueries.QUERY_MS_FUNCTIONS_PROCEDURES_VIEWS_TRIGGERS, loader);

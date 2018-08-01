@@ -25,7 +25,6 @@ import cz.startnet.utils.pgdiff.loader.jdbc.FunctionsReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.IndicesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.JdbcLoaderBase;
 import cz.startnet.utils.pgdiff.loader.jdbc.RulesReader;
-import cz.startnet.utils.pgdiff.loader.jdbc.SchemasContainer;
 import cz.startnet.utils.pgdiff.loader.jdbc.SchemasReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.SequencesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.TablesReader;
@@ -86,31 +85,31 @@ public class JdbcLoader extends JdbcLoaderBase {
                 timestampParams.fillEqualObjects(dbTime);
             }
 
-            schemas = new SchemasReader(this, d).read();
-            try (SchemasContainer schemas = this.schemas) {
-                // NOTE: order of readers has been changed to move the heaviest ANTLR tasks to the beginning
-                // to give them a chance to finish while JDBC processes other non-ANTLR stuff
-                new ViewsReader(this).read();
-                new TablesReader(this).read();
-                new RulesReader(this).read();
-                new TriggersReader(this).read();
-                new IndicesReader(this).read();
-                new FunctionsReader(this).read();
-                // non-ANTLR tasks
-                new ConstraintsReader(this).read();
-                new TypesReader(this).read();
-                new SequencesReader(this).read();
-                new FtsParsersReader(this).read();
-                new FtsTemplatesReader(this).read();
-                new FtsDictionariesReader(this).read();
-                new FtsConfigurationsReader(this).read();
+            new SchemasReader(this, d).read();
 
-                new ExtensionsReader(this, d).read();
+            // NOTE: order of readers has been changed to move the heaviest ANTLR tasks to the beginning
+            // to give them a chance to finish while JDBC processes other non-ANTLR stuff
+            new ViewsReader(this).read();
+            new TablesReader(this).read();
+            new RulesReader(this).read();
+            new TriggersReader(this).read();
+            new IndicesReader(this).read();
+            new FunctionsReader(this).read();
+            // non-ANTLR tasks
+            new ConstraintsReader(this).read();
+            new TypesReader(this).read();
+            new SequencesReader(this).read();
+            new FtsParsersReader(this).read();
+            new FtsTemplatesReader(this).read();
+            new FtsDictionariesReader(this).read();
+            new FtsConfigurationsReader(this).read();
 
-                if(!SupportedVersion.VERSION_10.checkVersion(version)) {
-                    SequencesReader.querySequencesData(d, this);
-                }
+            new ExtensionsReader(this, d).read();
+
+            if (!SupportedVersion.VERSION_10.checkVersion(version)) {
+                SequencesReader.querySequencesData(d, this);
             }
+
             connection.commit();
             finishAntlr();
 

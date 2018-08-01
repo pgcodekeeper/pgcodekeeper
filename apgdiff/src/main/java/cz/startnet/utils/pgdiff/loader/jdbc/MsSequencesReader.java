@@ -9,7 +9,7 @@ import cz.startnet.utils.pgdiff.schema.MsSequence;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class MsSequencesReader extends JdbcMsReader {
+public class MsSequencesReader extends JdbcReader {
 
     public MsSequencesReader(JdbcLoaderBase loader) {
         super(JdbcQueries.QUERY_MS_SEQUENCES, loader);
