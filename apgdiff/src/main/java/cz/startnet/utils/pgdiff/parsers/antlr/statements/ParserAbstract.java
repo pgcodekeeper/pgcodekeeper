@@ -139,7 +139,7 @@ public abstract class ParserAbstract {
         }
 
         IdentifierContext firstNameCtx = QNameParser.getFirstNameCtx(ids);
-        throw new UnresolvedReferenceException("Schema not forund for " +
+        throw new UnresolvedReferenceException("Schema not found for " +
                 getFullCtxText(ids), firstNameCtx.start);
     }
 
