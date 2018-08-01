@@ -14,8 +14,8 @@ SELECT c.oid::bigint,
        c.relowner::bigint,
        c.relname,
        descr.description AS comment,
-       --(SELECT t.relname FROM pg_catalog.pg_class t WHERE t.oid=d.refobjid) referenced_table_name,
-       d.refobjid::regclass::text referenced_table_name,
+       -- always in the same schema
+       (SELECT t.relname FROM pg_catalog.pg_class t WHERE t.oid=d.refobjid) referenced_table_name,
        a.attname AS ref_col_name,
        c.relacl::text AS aclarray,
        c.relnamespace AS schema_oid
