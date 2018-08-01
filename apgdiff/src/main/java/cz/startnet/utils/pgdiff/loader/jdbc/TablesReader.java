@@ -53,7 +53,7 @@ public class TablesReader extends JdbcReader {
             }
         } else if (ofTypeOid != 0) {
             JdbcType jdbcOfType = loader.cachedTypesByOid.get(ofTypeOid);
-            String ofType = jdbcOfType.getFullName(schemaName);
+            String ofType = jdbcOfType.getFullName();
             t = new TypedPgTable(tableName, "", ofType);
             jdbcOfType.addTypeDepcy(t);
         } else if (partitionBound != null) {
