@@ -7,6 +7,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementCont
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -16,7 +17,6 @@ import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
-import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
 public class CommentOn extends ParserAbstract {
@@ -50,7 +50,7 @@ public class CommentOn extends ParserAbstract {
             String tableName = tableCtx.getText();
             PgTable table = schema.getTable(tableName);
             if (table == null) {
-                PgView view = schema.getView(tableName);
+                AbstractView view = schema.getView(tableName);
                 if (view == null) {
                     getSafe(schema::getType, tableCtx).getAttr(name).setComment(db.getArguments(), comment);
                 } else {

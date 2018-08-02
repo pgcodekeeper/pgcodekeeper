@@ -416,8 +416,8 @@ public class PgDatabase extends PgStatement {
                     }
                 }
 
-                for (PgView v : s.getViews()) {
-                    PgView view = schema.getView(v.getName());
+                for (AbstractView v : s.getViews()) {
+                    AbstractView view = schema.getView(v.getName());
                     if (view == null) {
                         v.dropParent();
                         schema.addView(v);

@@ -69,7 +69,7 @@ public class PgSchema extends AbstractSchema {
     }
 
     @Override
-    public AbstractSchema getSchemaCopy() {
+    protected AbstractSchema getSchemaCopy() {
         return new PgSchema(getName(), getRawStatement());
     }
 }

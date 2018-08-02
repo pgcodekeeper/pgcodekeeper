@@ -9,6 +9,7 @@ import java.util.Map;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFtsConfiguration;
 import cz.startnet.utils.pgdiff.schema.PgFtsDictionary;
@@ -18,7 +19,6 @@ import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgType;
-import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class JdbcReader implements PgCatalogStrings {
@@ -80,7 +80,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
             if (obj.getSchema().equals(sc.getName()) && obj.getType() == local) {
                 switch (type) {
                 case VIEW:
-                    sc.addView((PgView) obj.copyStatement(projDb, loader));
+                    sc.addView((AbstractView) obj.copyStatement(projDb, loader));
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case TABLE:

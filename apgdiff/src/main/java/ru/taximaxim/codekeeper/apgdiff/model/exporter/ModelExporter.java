@@ -27,13 +27,13 @@ import java.util.stream.Collectors;
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
@@ -526,7 +526,7 @@ public class ModelExporter {
         List<PgStatementWithSearchPath> contents = new LinkedList<>();
         AbstractSchema newParentSchema = newDb.getSchema(st.getParent().getName());
         AbstractSchema oldParentSchema = oldDb.getSchema(st.getParent().getName());
-        PgView oldView = null;
+        AbstractView oldView = null;
         if (oldParentSchema != null) {
             oldView = oldParentSchema.getView(st.getName());
             if (oldView != null) {
@@ -535,7 +535,7 @@ public class ModelExporter {
             }
         }
         // view to dump, initially assume old unmodified state
-        PgView viewPrimary = oldView;
+        AbstractView viewPrimary = oldView;
 
         // modify the dump state as requested by the changeList elements
         Iterator<TreeElement> it = changeList.iterator();
@@ -553,7 +553,7 @@ public class ModelExporter {
             default:
                 continue;
             }
-            PgView viewChange = (elViewChange.getSide() == DiffSide.LEFT ?
+            AbstractView viewChange = (elViewChange.getSide() == DiffSide.LEFT ?
                     oldParentSchema : newParentSchema).getView(elViewChange.getName());
             if (viewChange == null || !viewChange.getName().equals(st.getName())
                     || !viewChange.getParent().getName().equals(elViewChange.getParent().getName())) {

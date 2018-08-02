@@ -59,7 +59,7 @@ public class MsSchema extends AbstractSchema {
     }
 
     @Override
-    public AbstractSchema getSchemaCopy() {
+    protected AbstractSchema getSchemaCopy() {
         return new MsSchema(getName(), getRawStatement());
     }
 }

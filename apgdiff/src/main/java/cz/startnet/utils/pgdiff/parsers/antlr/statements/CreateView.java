@@ -23,6 +23,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ViewSelect;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgView;
@@ -49,7 +50,7 @@ public class CreateView extends ParserAbstract {
         List<IdentifierContext> ids = ctx.name.identifier();
         AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         IdentifierContext name = QNameParser.getFirstNameCtx(ids);
-        PgView view = new PgView(name.getText(), getFullCtxText(ctx.getParent()));
+        AbstractView view = new PgView(name.getText(), getFullCtxText(ctx.getParent()));
         if (ctx.MATERIALIZED() != null) {
             view.setIsWithData(ctx.NO() == null);
             Table_spaceContext tablespace = ctx.table_space();
@@ -98,7 +99,7 @@ public class CreateView extends ParserAbstract {
         return view;
     }
 
-    public static void analyzeViewCtx(ParserRuleContext ctx, PgView view,
+    public static void analyzeViewCtx(ParserRuleContext ctx, AbstractView view,
             String schemaName, PgDatabase db) {
         if (ctx instanceof Select_stmtContext) {
             Select select = new Select(schemaName, db);

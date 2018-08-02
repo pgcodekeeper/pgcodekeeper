@@ -21,7 +21,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     private final List<MsProcedure> procedures = new ArrayList<>();
     private final List<PgSequence> sequences = new ArrayList<>();
     private final List<PgTable> tables = new ArrayList<>();
-    private final List<PgView> views = new ArrayList<>();
+    private final List<AbstractView> views = new ArrayList<>();
     private final List<PgType> types = new ArrayList<>();
     private final List<PgFtsParser> parsers = new ArrayList<>();
     private final List<PgFtsTemplate> templates = new ArrayList<>();
@@ -156,7 +156,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
             stream = Stream.concat(stream, tab.getDescendants());
         }
 
-        for (PgView view : getViews()) {
+        for (AbstractView view : getViews()) {
             stream = Stream.concat(stream, view.getDescendants());
         }
 
@@ -237,8 +237,8 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      *
      * @return found view or null if no such view has been found
      */
-    public PgView getView(final String name) {
-        for (PgView view : views) {
+    public AbstractView getView(final String name) {
+        for (AbstractView view : views) {
             if (view.getName().equals(name)) {
                 return view;
             }
@@ -252,7 +252,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      *
      * @return {@link #views}
      */
-    public List<PgView> getViews() {
+    public List<AbstractView> getViews() {
         return Collections.unmodifiableList(views);
     }
 
@@ -445,7 +445,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         resetHash();
     }
 
-    public void addView(final PgView view) {
+    public void addView(final AbstractView view) {
         assertUnique(this::getView, view);
         views.add(view);
         view.setParent(this);
@@ -603,7 +603,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         return schemaDst;
     }
 
-    public abstract AbstractSchema getSchemaCopy();
+    protected abstract AbstractSchema getSchemaCopy();
 
     @Override
     public AbstractSchema deepCopy() {
@@ -621,7 +621,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         for (MsProcedure proc : procedures) {
             copy.addProcedure(proc.deepCopy());
         }
-        for (PgView view : views) {
+        for (AbstractView view : views) {
             copy.addView(view.deepCopy());
         }
         for (PgTable table : tables) {

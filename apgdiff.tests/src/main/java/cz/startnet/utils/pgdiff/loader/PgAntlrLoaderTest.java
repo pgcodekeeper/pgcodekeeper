@@ -20,6 +20,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -690,7 +691,7 @@ class PgDB9 extends PgDatabaseObjectCreator {
         col.setType("int");
         table.addColumn(col);
 
-        PgView view = new PgView("user", "");
+        AbstractView view = new PgView("user", "");
         view.setQuery("( SELECT user_data.id, user_data.email, user_data.created FROM public.user_data)");
         view.addColumnDefaultValue("created", "now()");
         schema.addView(view);
@@ -936,7 +937,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
 
         seq.setComment("'test table sequence'");
 
-        PgView view = new PgView("test_view", "");
+        AbstractView view = new PgView("test_view", "");
         view.setQuery("SELECT test.id, test.text FROM public.test");
         schema.addView(view);
 
@@ -1006,7 +1007,7 @@ class PgDB16 extends PgDatabaseObjectCreator {
         table2.addColumn(col);
 
         // view
-        PgView view = new PgView("v_subselect", "");
+        AbstractView view = new PgView("v_subselect", "");
         view.setQuery("SELECT c.id, t.id FROM ( SELECT t_work.id FROM t_work) t"
                 + " JOIN t_chart c ON t.id = c.id");
         schema.addView(view);
@@ -1050,7 +1051,7 @@ class PgDB17 extends PgDatabaseObjectCreator {
         table3.addColumn(col);
 
         // view
-        PgView view = new PgView("v_subselect", "");
+        AbstractView view = new PgView("v_subselect", "");
         view.setQuery("SELECT c.id, t.id, t.name FROM  ( SELECT w.id, m.name FROM "
                 + "(SELECT t_work.id FROM t_work) w JOIN t_memo m ON w.id::text = m.name)  t JOIN t_chart c ON t.id = c.id");
         schema.addView(view);

@@ -6,12 +6,8 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
-import cz.startnet.utils.pgdiff.hashers.Hasher;
 
-public class MsView extends PgView {
-
-    private boolean ansiNulls;
-    private boolean quotedIdentified;
+public class MsView extends AbstractView {
 
     public MsView(String name, String rawStatement) {
         super(name, rawStatement);
@@ -19,13 +15,19 @@ public class MsView extends PgView {
 
     @Override
     public String getCreationSQL() {
+        return getViewFullSQL(true);
+    }
+
+    public String getViewFullSQL(boolean isCreate) {
         final StringBuilder sbSQL = new StringBuilder(getQuery().length() * 2);
-        sbSQL.append("SET QUOTED_IDENTIFIER ").append(quotedIdentified ? "ON" : "OFF");
+        sbSQL.append("SET QUOTED_IDENTIFIER ").append(isQuotedIdentified() ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
-        sbSQL.append("SET ANSI_NULLS ").append(ansiNulls ? "ON" : "OFF");
+        sbSQL.append("SET ANSI_NULLS ").append(isAnsiNulls() ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
 
-        sbSQL.append("CREATE OR ALTER VIEW ");
+        sbSQL.append(isCreate ? "CREATE" : "ALTER");
+
+        sbSQL.append(" VIEW ");
         sbSQL.append(getQualifiedName());
 
         List<String> columnNames = getColumnNames();
@@ -81,7 +83,7 @@ public class MsView extends PgView {
         }
 
         if (isViewModified(newView) || !Objects.equals(getOptions(), newView.getOptions())) {
-            sb.append(newView.getCreationSQL());
+            sb.append(newView.getViewFullSQL(false));
             return true;
         }
 
@@ -98,64 +100,13 @@ public class MsView extends PgView {
         return "DROP VIEW " + getQualifiedName() + GO;
     }
 
-    public void setAnsiNulls(boolean ansiNulls) {
-        this.ansiNulls = ansiNulls;
-        resetHash();
-    }
-
-    public boolean isAnsiNulls() {
-        return ansiNulls;
-    }
-
-    public void setQuotedIdentified(boolean quotedIdentified) {
-        this.quotedIdentified = quotedIdentified;
-        resetHash();
-    }
-
-    public boolean isQuotedIdentified() {
-        return quotedIdentified;
-    }
-
-    @Override
-    public boolean compare(PgStatement obj) {
-        if (obj instanceof MsView && super.compare(obj)) {
-            MsView view = (MsView) obj;
-            return Objects.equals(quotedIdentified, view.isQuotedIdentified())
-                    && Objects.equals(ansiNulls, view.isAnsiNulls());
-        }
-
-        return false;
-    }
-
-    @Override
-    public void computeHash(Hasher hasher) {
-        super.computeHash(hasher);
-        hasher.put(isQuotedIdentified());
-        hasher.put(isAnsiNulls());
-    }
-
-    @Override
-    public PgView shallowCopy() {
-        MsView viewDst = new MsView(getName(), getRawStatement());
-        viewDst.setQuery(getQuery());
-        viewDst.setComment(getComment());
-        viewDst.columnNames.addAll(columnNames);
-        for (PgPrivilege priv : revokes) {
-            viewDst.addPrivilege(priv);
-        }
-        for (PgPrivilege priv : grants) {
-            viewDst.addPrivilege(priv);
-        }
-        viewDst.setOwner(getOwner());
-        viewDst.deps.addAll(deps);
-        viewDst.options.putAll(options);
-        viewDst.setAnsiNulls(isAnsiNulls());
-        viewDst.setQuotedIdentified(isQuotedIdentified());
-        return viewDst;
-    }
-
     @Override
     public boolean isPostgres() {
         return false;
+    }
+
+    @Override
+    protected AbstractView getViewCopy() {
+        return new MsView(getName(), getRawStatement());
     }
 }
