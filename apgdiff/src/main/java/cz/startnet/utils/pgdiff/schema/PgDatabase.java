@@ -35,9 +35,9 @@ public class PgDatabase extends PgStatement {
     /**
      * Current default schema.
      */
-    private PgSchema defaultSchema;
+    private AbstractSchema defaultSchema;
 
-    private final List<PgSchema> schemas = new ArrayList<>();
+    private final List<AbstractSchema> schemas = new ArrayList<>();
     private final List<PgExtension> extensions = new ArrayList<>();
 
     // Contains object definitions
@@ -67,7 +67,7 @@ public class PgDatabase extends PgStatement {
         defaultSchema = getSchema(name);
     }
 
-    public PgSchema getDefaultSchema() {
+    public AbstractSchema getDefaultSchema() {
         return defaultSchema;
     }
 
@@ -134,12 +134,12 @@ public class PgDatabase extends PgStatement {
      *
      * @return found schema or null
      */
-    public PgSchema getSchema(final String name) {
+    public AbstractSchema getSchema(final String name) {
         if (name == null) {
             return getDefaultSchema();
         }
 
-        for (final PgSchema schema : schemas) {
+        for (final AbstractSchema schema : schemas) {
             if (schema.getName().equals(name)) {
                 return schema;
             }
@@ -153,11 +153,11 @@ public class PgDatabase extends PgStatement {
      *
      * @return {@link #schemas}
      */
-    public List<PgSchema> getSchemas() {
+    public List<AbstractSchema> getSchemas() {
         return Collections.unmodifiableList(schemas);
     }
 
-    public void addSchema(final PgSchema schema) {
+    public void addSchema(final AbstractSchema schema) {
         assertUnique(this::getSchema, schema);
         schemas.add(schema);
         schema.setParent(this);
@@ -173,7 +173,7 @@ public class PgDatabase extends PgStatement {
     public Stream<PgStatement> getDescendants() {
         Stream<PgStatement> stream = getChildren();
 
-        for (PgSchema schema : getSchemas()) {
+        for (AbstractSchema schema : getSchemas()) {
             stream = Stream.concat(stream, schema.getDescendants());
         }
 
@@ -219,7 +219,7 @@ public class PgDatabase extends PgStatement {
     }
 
     public void sortColumns() {
-        for (PgSchema schema : schemas) {
+        for (AbstractSchema schema : schemas) {
             schema.getTables().forEach(PgTable::sortColumns);
         }
     }
@@ -294,7 +294,7 @@ public class PgDatabase extends PgStatement {
         for (PgExtension ext : extensions) {
             copy.addExtension(ext.deepCopy());
         }
-        for (PgSchema schema : schemas) {
+        for (AbstractSchema schema : schemas) {
             copy.addSchema(schema.deepCopy());
         }
         return copy;
@@ -316,8 +316,8 @@ public class PgDatabase extends PgStatement {
             }
         }
 
-        for (PgSchema s : database.getSchemas()) {
-            PgSchema schema = getSchema(s.getName());
+        for (AbstractSchema s : database.getSchemas()) {
+            AbstractSchema schema = getSchema(s.getName());
             if (schema == null) {
                 s.dropParent();
                 addSchema(s);

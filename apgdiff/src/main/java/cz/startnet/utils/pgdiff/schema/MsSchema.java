@@ -5,7 +5,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 
-public class MsSchema extends PgSchema {
+/**
+ * MS SQL schema code generation.
+ */
+public class MsSchema extends AbstractSchema {
 
     public MsSchema(String name, String rawStatement) {
         super(name, rawStatement);
@@ -35,9 +38,8 @@ public class MsSchema extends PgSchema {
         } else {
             return false;
         }
-        MsSchema oldSchema = this;
 
-        if (!Objects.equals(oldSchema.getOwner(), newSchema.getOwner())) {
+        if (!Objects.equals(getOwner(), newSchema.getOwner())) {
             sb.append(newSchema.getOwnerSQL());
         }
 
@@ -54,5 +56,10 @@ public class MsSchema extends PgSchema {
     @Override
     public boolean isPostgres() {
         return false;
+    }
+
+    @Override
+    public AbstractSchema getSchemaCopy() {
+        return new MsSchema(getName(), getRawStatement());
     }
 }

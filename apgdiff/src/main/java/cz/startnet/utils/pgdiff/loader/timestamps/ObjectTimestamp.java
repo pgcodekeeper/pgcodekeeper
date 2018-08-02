@@ -6,12 +6,12 @@ import java.util.Map;
 import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.loader.jdbc.JdbcLoaderBase;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTable;
@@ -114,7 +114,7 @@ public class ObjectTimestamp implements Serializable {
         return object.column;
     }
 
-    public void addRuleCopy(PgDatabase db, PgSchema schema, JdbcLoaderBase loader) {
+    public void addRuleCopy(PgDatabase db, AbstractSchema schema, JdbcLoaderBase loader) {
         PgStatement base = object.getStatement(db);
         PgRuleContainer parent = schema.getRuleContainer(base.getParent().getName());
         PgStatement copy = base.shallowCopy();
@@ -122,7 +122,7 @@ public class ObjectTimestamp implements Serializable {
         parent.addRule((PgRule)copy);
     }
 
-    public void addTriggerCopy(PgDatabase db, PgSchema schema, JdbcLoaderBase loader) {
+    public void addTriggerCopy(PgDatabase db, AbstractSchema schema, JdbcLoaderBase loader) {
         PgStatement base = object.getStatement(db);
         PgTriggerContainer parent = schema.getTriggerContainer(base.getParent().getName());
         PgStatement copy = base.shallowCopy();

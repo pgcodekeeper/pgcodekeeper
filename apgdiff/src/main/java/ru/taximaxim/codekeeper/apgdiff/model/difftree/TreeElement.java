@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
@@ -131,18 +131,18 @@ public class TreeElement {
         case EXTENSION:         return ((PgDatabase) parent.getPgStatement(db)).getExtension(name);
         case SCHEMA:            return ((PgDatabase) parent.getPgStatement(db)).getSchema(name);
 
-        case FUNCTION:          return ((PgSchema) parent.getPgStatement(db)).getFunction(name);
-        case PROCEDURE:         return ((PgSchema) parent.getPgStatement(db)).getProcedure(name);
-        case SEQUENCE:          return ((PgSchema) parent.getPgStatement(db)).getSequence(name);
-        case TYPE:              return ((PgSchema) parent.getPgStatement(db)).getType(name);
-        case DOMAIN:            return ((PgSchema) parent.getPgStatement(db)).getDomain(name);
-        case VIEW:              return ((PgSchema) parent.getPgStatement(db)).getView(name);
-        case TABLE:             return ((PgSchema) parent.getPgStatement(db)).getTable(name);
+        case FUNCTION:          return ((AbstractSchema) parent.getPgStatement(db)).getFunction(name);
+        case PROCEDURE:         return ((AbstractSchema) parent.getPgStatement(db)).getProcedure(name);
+        case SEQUENCE:          return ((AbstractSchema) parent.getPgStatement(db)).getSequence(name);
+        case TYPE:              return ((AbstractSchema) parent.getPgStatement(db)).getType(name);
+        case DOMAIN:            return ((AbstractSchema) parent.getPgStatement(db)).getDomain(name);
+        case VIEW:              return ((AbstractSchema) parent.getPgStatement(db)).getView(name);
+        case TABLE:             return ((AbstractSchema) parent.getPgStatement(db)).getTable(name);
 
-        case FTS_PARSER:        return ((PgSchema) parent.getPgStatement(db)).getFtsParser(name);
-        case FTS_TEMPLATE:      return ((PgSchema) parent.getPgStatement(db)).getFtsTemplate(name);
-        case FTS_DICTIONARY:    return ((PgSchema) parent.getPgStatement(db)).getFtsDictionary(name);
-        case FTS_CONFIGURATION: return ((PgSchema) parent.getPgStatement(db)).getFtsConfiguration(name);
+        case FTS_PARSER:        return ((AbstractSchema) parent.getPgStatement(db)).getFtsParser(name);
+        case FTS_TEMPLATE:      return ((AbstractSchema) parent.getPgStatement(db)).getFtsTemplate(name);
+        case FTS_DICTIONARY:    return ((AbstractSchema) parent.getPgStatement(db)).getFtsDictionary(name);
+        case FTS_CONFIGURATION: return ((AbstractSchema) parent.getPgStatement(db)).getFtsConfiguration(name);
 
         case INDEX:             return ((PgTable) parent.getPgStatement(db)).getIndex(name);
         case TRIGGER:           return ((PgTriggerContainer) parent.getPgStatement(db)).getTrigger(name);

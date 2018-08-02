@@ -25,8 +25,8 @@ implements PgOptionContainer {
     }
 
     @Override
-    public PgSchema getContainingSchema() {
-        return (PgSchema)getParent();
+    public AbstractSchema getContainingSchema() {
+        return (AbstractSchema)getParent();
     }
 
     @Override

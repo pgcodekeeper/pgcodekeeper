@@ -4,9 +4,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsSequence;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsSequencesReader extends JdbcReader {
@@ -16,7 +16,7 @@ public class MsSequencesReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet res, PgSchema schema) throws SQLException, JsonReaderException {
+    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException, JsonReaderException {
         loader.monitor.worked(1);
         String sequenceName = res.getString("name");
         loader.setCurrentObject(new GenericColumn(schema.getName(), sequenceName, DbObjType.SEQUENCE));

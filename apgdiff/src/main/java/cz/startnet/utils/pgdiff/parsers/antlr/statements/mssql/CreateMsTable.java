@@ -8,8 +8,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_optionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AbstractTable;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.RegularPgTable;
 import cz.startnet.utils.pgdiff.schema.SimpleMsTable;
@@ -31,7 +31,7 @@ public class CreateMsTable extends AbstractTable {
     @Override
     public PgStatement getObject() {
         IdContext schemaCtx = ctx.table_name().schema;
-        PgSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
+        AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
         String tableName = ctx.table_name().table.getText();
 
         SimpleMsTable table = new SimpleMsTable(tableName, getFullCtxText(ctx.getParent()));

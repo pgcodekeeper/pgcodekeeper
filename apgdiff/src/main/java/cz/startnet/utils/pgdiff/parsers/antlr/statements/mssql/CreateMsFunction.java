@@ -5,10 +5,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Func_returnContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Procedure_paramContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.MsFunction;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class CreateMsFunction extends ParserAbstract {
@@ -28,7 +28,7 @@ public class CreateMsFunction extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         IdContext schemaCtx = ctx.func_proc_name().schema;
-        PgSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
+        AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
         MsFunction function = new MsFunction(ctx.func_proc_name().procedure.getText(), getFullCtxText(ctx.getParent()));
         function.setAnsiNulls(ansiNulls);
         function.setQuotedIdentified(quotedIdentifier);

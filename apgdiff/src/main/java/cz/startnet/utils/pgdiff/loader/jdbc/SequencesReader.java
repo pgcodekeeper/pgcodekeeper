@@ -12,10 +12,10 @@ import java.util.Map;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -29,7 +29,7 @@ public class SequencesReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet res, PgSchema schema) throws SQLException {
+    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException {
         loader.monitor.worked(1);
         String sequenceName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schema.getName(), sequenceName, DbObjType.SEQUENCE));
@@ -108,7 +108,7 @@ public class SequencesReader extends JdbcReader {
         List<String> schemasAccess = new ArrayList<>();
         try (PreparedStatement schemasAccessQuery = loader.connection.prepareStatement(JdbcQueries.QUERY_SCHEMAS_ACCESS)) {
             Array arrSchemas = loader.connection.createArrayOf("text",
-                    db.getSchemas().stream().filter(s -> !s.getSequences().isEmpty()).map(PgSchema::getName).toArray());
+                    db.getSchemas().stream().filter(s -> !s.getSequences().isEmpty()).map(AbstractSchema::getName).toArray());
             schemasAccessQuery.setArray(1, arrSchemas);
             try (ResultSet schemaRes = loader.runner.runScript(schemasAccessQuery)) {
                 while (schemaRes.next()) {

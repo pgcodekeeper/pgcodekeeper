@@ -29,13 +29,13 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Identity_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.MsConstraint;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -203,7 +203,7 @@ public abstract class AbstractTable extends ParserAbstract {
             List<IdentifierContext> ids = tblRef.reftable.identifier();
             String refTableName = QNameParser.getFirstName(ids);
 
-            PgSchema s = db.getDefaultSchema();
+            AbstractSchema s = db.getDefaultSchema();
             String defSchemaName = s == null ? null : s.getName();
 
             String refSchemaName = QNameParser.getSchemaName(ids, defSchemaName);

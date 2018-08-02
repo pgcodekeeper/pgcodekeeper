@@ -8,9 +8,9 @@ import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ViewSelect;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -21,13 +21,13 @@ public class ViewsReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet result, PgSchema schema) throws SQLException {
+    protected void processResult(ResultSet result, AbstractSchema schema) throws SQLException {
         PgView view = getView(result, schema);
         loader.monitor.worked(1);
         schema.addView(view);
     }
 
-    private PgView getView(ResultSet res, PgSchema schema) throws SQLException {
+    private PgView getView(ResultSet res, AbstractSchema schema) throws SQLException {
         String schemaName = schema.getName();
         String viewName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, viewName, DbObjType.VIEW));

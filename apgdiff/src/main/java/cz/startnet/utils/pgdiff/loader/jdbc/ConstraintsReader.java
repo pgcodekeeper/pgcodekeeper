@@ -6,9 +6,9 @@ import java.sql.SQLException;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterTable;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -21,14 +21,14 @@ public class ConstraintsReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet result, PgSchema schema) throws SQLException {
+    protected void processResult(ResultSet result, AbstractSchema schema) throws SQLException {
         PgTable table = schema.getTable(result.getString(CLASS_RELNAME));
         if (table != null) {
             table.addConstraint(getConstraint(result, schema, table.getName()));
         }
     }
 
-    private PgConstraint getConstraint(ResultSet res, PgSchema schema, String tableName)
+    private PgConstraint getConstraint(ResultSet res, AbstractSchema schema, String tableName)
             throws SQLException {
         String schemaName = schema.getName();
         String contype = res.getString("contype");

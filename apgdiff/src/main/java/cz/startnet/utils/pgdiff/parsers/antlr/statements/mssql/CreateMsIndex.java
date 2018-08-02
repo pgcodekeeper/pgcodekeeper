@@ -6,10 +6,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_restContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_sortContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_whereContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsIndex;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class CreateMsIndex extends ParserAbstract {
@@ -24,7 +24,7 @@ public class CreateMsIndex extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         IdContext schemaCtx = ctx.table_name().schema;
-        PgSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
+        AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
         String tableName = ctx.table_name().table.getText();
         String name = ctx.name.getText();
         MsIndex ind = new MsIndex(name, getFullCtxText(ctx.getParent()));

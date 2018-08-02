@@ -228,7 +228,7 @@ public class PgConstraint extends PgStatementWithSearchPath {
     }
 
     @Override
-    public PgSchema getContainingSchema() {
-        return (PgSchema)this.getParent().getParent();
+    public AbstractSchema getContainingSchema() {
+        return (AbstractSchema)this.getParent().getParent();
     }
 }

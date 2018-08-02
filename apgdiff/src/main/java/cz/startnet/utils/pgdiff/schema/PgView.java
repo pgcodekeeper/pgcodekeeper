@@ -658,8 +658,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     }
 
     @Override
-    public PgSchema getContainingSchema() {
-        return (PgSchema)this.getParent();
+    public AbstractSchema getContainingSchema() {
+        return (AbstractSchema)this.getParent();
     }
 
     /**

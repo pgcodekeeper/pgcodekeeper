@@ -22,8 +22,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ViewSelect;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
@@ -47,7 +47,7 @@ public class CreateView extends ParserAbstract {
     public PgStatement getObject() {
         Create_view_statementContext ctx = context;
         List<IdentifierContext> ids = ctx.name.identifier();
-        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
+        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         IdentifierContext name = QNameParser.getFirstNameCtx(ids);
         PgView view = new PgView(name.getText(), getFullCtxText(ctx.getParent()));
         if (ctx.MATERIALIZED() != null) {

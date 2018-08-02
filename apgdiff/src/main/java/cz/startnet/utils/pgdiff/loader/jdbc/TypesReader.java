@@ -6,12 +6,12 @@ import java.sql.SQLException;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateDomain;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgType.PgTypeForm;
@@ -26,7 +26,7 @@ public class TypesReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet result, PgSchema schema) throws SQLException {
+    protected void processResult(ResultSet result, AbstractSchema schema) throws SQLException {
         PgStatement typeOrDomain = getTypeDomain(result, schema);
         if (typeOrDomain != null) {
             if (typeOrDomain.getStatementType() == DbObjType.DOMAIN) {
@@ -37,7 +37,7 @@ public class TypesReader extends JdbcReader {
         }
     }
 
-    private PgStatement getTypeDomain(ResultSet res, PgSchema schema) throws SQLException {
+    private PgStatement getTypeDomain(ResultSet res, AbstractSchema schema) throws SQLException {
         PgStatement st;
         String typtype = res.getString("typtype");
         if ("d".equals(typtype)) {
@@ -56,7 +56,7 @@ public class TypesReader extends JdbcReader {
         return st;
     }
 
-    private PgDomain getDomain(ResultSet res, PgSchema schema) throws SQLException {
+    private PgDomain getDomain(ResultSet res, AbstractSchema schema) throws SQLException {
         String schemaName = schema.getName();
         PgDomain d = new PgDomain(res.getString("typname"), "");
         loader.setCurrentObject(new GenericColumn(schemaName, d.getName(), DbObjType.DOMAIN));

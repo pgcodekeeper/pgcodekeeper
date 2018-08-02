@@ -7,12 +7,12 @@ import java.util.List;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.MsFunction;
 import cz.startnet.utils.pgdiff.schema.MsProcedure;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsExtendedObjectsReader extends JdbcReader {
@@ -22,7 +22,7 @@ public class MsExtendedObjectsReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet res, PgSchema schema) throws SQLException, JsonReaderException {
+    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException, JsonReaderException {
         loader.monitor.worked(1);
         String name = res.getString("name");
         String funcType = res.getString("type");

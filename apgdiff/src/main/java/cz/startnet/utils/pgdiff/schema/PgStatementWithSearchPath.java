@@ -13,7 +13,7 @@ public abstract class PgStatementWithSearchPath extends PgStatement implements I
     }
 
     @Override
-    public abstract PgSchema getContainingSchema();
+    public abstract AbstractSchema getContainingSchema();
 
     @Override
     public PgDatabase getDatabase() {

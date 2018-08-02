@@ -5,9 +5,9 @@ import java.util.List;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class AlterFunction extends ParserAbstract {
@@ -21,7 +21,7 @@ public class AlterFunction extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
-        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
+        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
 
         PgFunction func = getSafe(schema::getFunction,

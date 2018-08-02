@@ -5,8 +5,8 @@ import java.util.stream.Stream;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_authorizationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class AlterMsAuthorization extends ParserAbstract {
@@ -33,7 +33,7 @@ public class AlterMsAuthorization extends ParserAbstract {
         Stream<PgStatement> stream;
 
         if (schema != null) {
-            PgSchema s = db.getSchema(schema);
+            AbstractSchema s = db.getSchema(schema);
             stream = s != null ? s.getChildren() : Stream.empty();
         } else {
             stream = db.getChildren();

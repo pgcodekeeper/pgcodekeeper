@@ -26,10 +26,10 @@ import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTable;
@@ -324,8 +324,8 @@ public class ModelExporter {
         deleteStatementIfExists(st);
 
         List<PgFunction> funcsToDump = new LinkedList<>();
-        PgSchema newParentSchema = newDb.getSchema(st.getParent().getName());
-        PgSchema oldParentSchema = oldDb.getSchema(st.getParent().getName());
+        AbstractSchema newParentSchema = newDb.getSchema(st.getParent().getName());
+        AbstractSchema oldParentSchema = oldDb.getSchema(st.getParent().getName());
 
         // prepare the overloaded function list as if there are no changes
         if (oldParentSchema != null) {
@@ -403,8 +403,8 @@ public class ModelExporter {
 
         // prepare the dump data, old state
         List<PgStatementWithSearchPath> contents = new LinkedList<>();
-        PgSchema newParentSchema = newDb.getSchema(st.getParent().getName());
-        PgSchema oldParentSchema = oldDb.getSchema(st.getParent().getName());
+        AbstractSchema newParentSchema = newDb.getSchema(st.getParent().getName());
+        AbstractSchema oldParentSchema = oldDb.getSchema(st.getParent().getName());
         PgTable oldTable = null;
         if (oldParentSchema != null) {
             oldTable = oldParentSchema.getTable(st.getName());
@@ -524,8 +524,8 @@ public class ModelExporter {
 
         // prepare the dump data, old state
         List<PgStatementWithSearchPath> contents = new LinkedList<>();
-        PgSchema newParentSchema = newDb.getSchema(st.getParent().getName());
-        PgSchema oldParentSchema = oldDb.getSchema(st.getParent().getName());
+        AbstractSchema newParentSchema = newDb.getSchema(st.getParent().getName());
+        AbstractSchema oldParentSchema = oldDb.getSchema(st.getParent().getName());
         PgView oldView = null;
         if (oldParentSchema != null) {
             oldView = oldParentSchema.getView(st.getName());
@@ -679,7 +679,7 @@ public class ModelExporter {
         }
 
         // exporting schemas contents
-        for (PgSchema schema : newDb.getSchemas()) {
+        for (AbstractSchema schema : newDb.getSchemas()) {
             File schemaDir = new File(schemasSharedDir, getExportedFilename(schema));
             if (!schemaDir.mkdir()) {
                 throw new DirectoryException(MessageFormat.format(

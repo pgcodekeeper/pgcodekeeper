@@ -18,11 +18,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Role_name_with_groupCont
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rule_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_privilegesContext;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -71,7 +71,7 @@ public class CreateRule extends ParserAbstract {
             for (Function_parametersContext funct : ctx.func_name) {
                 List<IdentifierContext> funcIds = funct.name.identifier();
                 IdentifierContext functNameCtx = QNameParser.getFirstNameCtx(funcIds);
-                PgSchema schema = getSchemaSafe(funcIds, db.getDefaultSchema());
+                AbstractSchema schema = getSchemaSafe(funcIds, db.getDefaultSchema());
                 PgFunction func = getSafe(schema::getFunction,
                         parseSignature(functNameCtx.getText(), funct.function_args()),
                         functNameCtx.getStart());
@@ -152,7 +152,7 @@ public class CreateRule extends ParserAbstract {
         String tableName = getFullCtxText(tbl);
         List<IdentifierContext> ids = tbl.identifier();
         String firstPart = QNameParser.getFirstName(ids);
-        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
+        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         //привилегии пишем так как получили одной строкой
         PgStatement st = null;
         PgTable tblSt = schema.getTable(firstPart);
@@ -196,7 +196,7 @@ public class CreateRule extends ParserAbstract {
         List<IdentifierContext> ids = name.identifier();
         IdentifierContext idCtx = QNameParser.getFirstNameCtx(ids);
         String id = idCtx.getText();
-        PgSchema schema = (DbObjType.SCHEMA == type ?
+        AbstractSchema schema = (DbObjType.SCHEMA == type ?
                 getSafe(db::getSchema, idCtx)
                 : getSchemaSafe(ids, db.getDefaultSchema()));
         PgStatement statement = null;

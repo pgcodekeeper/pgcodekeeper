@@ -9,9 +9,9 @@ import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgFtsConfiguration;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class FtsConfigurationsReader extends JdbcReader {
@@ -21,7 +21,7 @@ public class FtsConfigurationsReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet res, PgSchema schema) throws SQLException {
+    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException {
         String name = res.getString("cfgname");
         PgFtsConfiguration config = new PgFtsConfiguration(name, "");
 

@@ -700,7 +700,7 @@ public class PgType extends PgStatementWithSearchPath {
     }
 
     @Override
-    public PgSchema getContainingSchema() {
-        return (PgSchema) this.getParent();
+    public AbstractSchema getContainingSchema() {
+        return (AbstractSchema) this.getParent();
     }
 }

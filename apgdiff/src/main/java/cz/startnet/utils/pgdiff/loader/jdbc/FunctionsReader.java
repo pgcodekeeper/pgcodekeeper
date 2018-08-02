@@ -11,10 +11,10 @@ import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class FunctionsReader extends JdbcReader {
@@ -27,7 +27,7 @@ public class FunctionsReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet res, PgSchema schema) throws SQLException {
+    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException {
         String schemaName = schema.getName();
         String functionName = res.getString("proname");
         loader.setCurrentObject(new GenericColumn(schemaName, functionName, DbObjType.FUNCTION));

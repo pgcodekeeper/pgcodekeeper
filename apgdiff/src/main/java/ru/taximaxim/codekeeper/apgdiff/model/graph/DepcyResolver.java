@@ -17,12 +17,12 @@ import org.jgrapht.event.VertexTraversalEvent;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.DepthFirstIterator;
 
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
@@ -269,7 +269,7 @@ public class DepcyResolver {
             break;
         }
 
-        PgSchema oldSchema = null;
+        AbstractSchema oldSchema = null;
         if (statement instanceof PgStatementWithSearchPath) {
             oldSchema = db.getSchema(((PgStatementWithSearchPath) statement)
                     .getContainingSchema().getName());

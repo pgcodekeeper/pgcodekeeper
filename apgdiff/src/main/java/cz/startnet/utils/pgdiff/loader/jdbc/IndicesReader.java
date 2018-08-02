@@ -6,9 +6,9 @@ import java.sql.SQLException;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateIndex;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -19,7 +19,7 @@ public class IndicesReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet result, PgSchema schema) throws SQLException {
+    protected void processResult(ResultSet result, AbstractSchema schema) throws SQLException {
         PgTable table = schema.getTable(result.getString("table_name"));
         if (table != null) {
             PgIndex index = getIndex(result, schema, table.getName());
@@ -28,7 +28,7 @@ public class IndicesReader extends JdbcReader {
         }
     }
 
-    private PgIndex getIndex(ResultSet res, PgSchema schema, String tableName) throws SQLException {
+    private PgIndex getIndex(ResultSet res, AbstractSchema schema, String tableName) throws SQLException {
         String schemaName = schema.getName();
         String indexName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, indexName, DbObjType.INDEX));

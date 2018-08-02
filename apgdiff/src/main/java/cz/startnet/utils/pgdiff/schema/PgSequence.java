@@ -437,7 +437,7 @@ public class PgSequence extends PgStatementWithSearchPath implements IRelation {
     }
 
     @Override
-    public PgSchema getContainingSchema() {
-        return (PgSchema)this.getParent();
+    public AbstractSchema getContainingSchema() {
+        return (AbstractSchema)this.getParent();
     }
 }

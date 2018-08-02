@@ -10,9 +10,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsFunction;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsProcedure;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsTrigger;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsView;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.apgdiff.Log;
@@ -25,7 +25,7 @@ public class MsFPVTReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet res, PgSchema schema) throws SQLException, JsonReaderException {
+    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException, JsonReaderException {
         loader.monitor.worked(1);
         String name = res.getString("name");
 

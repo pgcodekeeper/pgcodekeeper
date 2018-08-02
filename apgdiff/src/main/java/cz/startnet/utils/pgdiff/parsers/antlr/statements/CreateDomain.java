@@ -9,10 +9,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_domain_statementC
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Domain_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class CreateDomain extends ParserAbstract {
@@ -26,7 +26,7 @@ public class CreateDomain extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
+        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         PgDomain domain = new PgDomain(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
         domain.setDataType(getFullCtxText(ctx.dat_type));
         addTypeAsDepcy(ctx.dat_type, domain, getDefSchemaName());

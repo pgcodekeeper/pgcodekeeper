@@ -8,9 +8,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Select_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.View_attributeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class CreateMsView extends ParserAbstract {
@@ -32,7 +32,7 @@ public class CreateMsView extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         List<IdContext> ids = ctx.simple_name().id();
-        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
+        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         IdContext name = QNameParser.getFirstNameCtx(ids);
         MsView view = new MsView(name.getText(), getFullCtxText(ctx.getParent()));
         view.setAnsiNulls(ansiNulls);

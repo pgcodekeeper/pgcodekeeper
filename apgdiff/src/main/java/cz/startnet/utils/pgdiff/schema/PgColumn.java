@@ -601,7 +601,7 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
     }
 
     @Override
-    public PgSchema getContainingSchema() {
-        return (PgSchema)this.getParent().getParent();
+    public AbstractSchema getContainingSchema() {
+        return (AbstractSchema)this.getParent().getParent();
     }
 }

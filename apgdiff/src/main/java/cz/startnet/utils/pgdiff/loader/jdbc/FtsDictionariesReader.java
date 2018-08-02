@@ -6,9 +6,9 @@ import java.sql.SQLException;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgFtsDictionary;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class FtsDictionariesReader extends JdbcReader {
@@ -18,7 +18,7 @@ public class FtsDictionariesReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet res, PgSchema schema) throws SQLException {
+    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException {
         String name = res.getString("dictname");
         PgFtsDictionary dic = new PgFtsDictionary(name, "");
 

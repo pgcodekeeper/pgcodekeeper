@@ -123,7 +123,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         Stream<Pair<String, String>> inhColumns = Stream.empty();
         for (Inherits inht : inherits) {
             String schemaName = inht.getKey();
-            PgSchema inhtSchema = schemaName == null ? getContainingSchema()
+            AbstractSchema inhtSchema = schemaName == null ? getContainingSchema()
                     : getDatabase().getSchema(schemaName);
             inhColumns = Stream.concat(inhColumns, inhtSchema
                     .getTable(inht.getValue()).getRelationColumns());
@@ -665,8 +665,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     }
 
     @Override
-    public PgSchema getContainingSchema() {
-        return (PgSchema)this.getParent();
+    public AbstractSchema getContainingSchema() {
+        return (AbstractSchema)this.getParent();
     }
 
     private void writeOptions(PgColumn column, StringBuilder sbOption, boolean isInherit) {

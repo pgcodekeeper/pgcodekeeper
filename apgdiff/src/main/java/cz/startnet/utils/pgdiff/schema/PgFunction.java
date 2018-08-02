@@ -337,8 +337,8 @@ public class PgFunction extends PgStatementWithSearchPath implements IFunction {
     }
 
     @Override
-    public PgSchema getContainingSchema() {
-        return (PgSchema)this.getParent();
+    public AbstractSchema getContainingSchema() {
+        return (AbstractSchema)this.getParent();
     }
 
     private static boolean needDrop(PgFunction oldFunction,

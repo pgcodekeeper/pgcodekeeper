@@ -94,7 +94,7 @@ public final class GenericColumn implements Serializable {
             return null;
         }
 
-        PgSchema s = db.getSchema(schema);
+        AbstractSchema s = db.getSchema(schema);
         if (s == null && type != DbObjType.DATABASE && type != DbObjType.EXTENSION) {
             return null;
         }
@@ -139,7 +139,7 @@ public final class GenericColumn implements Serializable {
         }
     }
 
-    private PgStatement getRelation(PgSchema s) {
+    private PgStatement getRelation(AbstractSchema s) {
         PgStatement st = s.getTable(table);
         if (st != null) {
             return st;
@@ -158,7 +158,7 @@ public final class GenericColumn implements Serializable {
         return null;
     }
 
-    private PgStatement getType(PgSchema s) {
+    private PgStatement getType(AbstractSchema s) {
         PgStatement st = s.getType(table);
         if (st != null) {
             return st;
@@ -176,7 +176,7 @@ public final class GenericColumn implements Serializable {
     public static final Map<String, Integer> ZERO = new HashMap<>();
     public static final Map<String, Integer> MANY = new HashMap<>();
      */
-    private PgFunction resolveFunctionCall(PgSchema schema) {
+    private PgFunction resolveFunctionCall(AbstractSchema schema) {
         // in some cases (like triggers) we already have a signature reference, try it first
         // eventually this will become the norm (pending function call analysis)
         // and bare name lookup will become deprecated

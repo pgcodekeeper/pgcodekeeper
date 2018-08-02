@@ -5,8 +5,8 @@ import java.sql.SQLException;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgFtsParser;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class FtsParsersReader extends JdbcReader {
@@ -16,7 +16,7 @@ public class FtsParsersReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet res, PgSchema schema) throws SQLException {
+    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException {
         PgFtsParser parser = new PgFtsParser(res.getString("prsname"), "");
 
         parser.setStartFunction(res.getString("prsstart"));

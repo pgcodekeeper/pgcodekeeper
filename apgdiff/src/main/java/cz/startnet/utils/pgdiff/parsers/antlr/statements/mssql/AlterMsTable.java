@@ -4,8 +4,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AbstractTable;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 
@@ -21,7 +21,7 @@ public class AlterMsTable extends AbstractTable {
     @Override
     public PgStatement getObject() {
         IdContext schemaCtx = ctx.name.schema;
-        PgSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
+        AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
         PgTable table = getSafe(schema::getTable, ctx.name.table);
 
         Column_def_table_constraintContext colCtx = ctx.column_def_table_constraint();

@@ -7,11 +7,11 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PartitionForeignPgTable;
 import cz.startnet.utils.pgdiff.schema.PartitionPgTable;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.RegularPgTable;
 import cz.startnet.utils.pgdiff.schema.SimpleForeignPgTable;
@@ -26,13 +26,13 @@ public class TablesReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet result, PgSchema schema) throws SQLException {
+    protected void processResult(ResultSet result, AbstractSchema schema) throws SQLException {
         PgTable table = getTable(result, schema);
         loader.monitor.worked(1);
         schema.addTable(table);
     }
 
-    private PgTable getTable(ResultSet res, PgSchema schema) throws SQLException {
+    private PgTable getTable(ResultSet res, AbstractSchema schema) throws SQLException {
         String schemaName = schema.getName();
         String tableName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, DbObjType.TABLE));
@@ -140,7 +140,7 @@ public class TablesReader extends JdbcReader {
     }
 
     private void readColumns(ResultSet res, PgTable t, long ofTypeOid,
-            PgSchema schema) throws SQLException {
+            AbstractSchema schema) throws SQLException {
         String[] colNames = getColArray(res, "col_names");
         if (colNames == null) {
             return;

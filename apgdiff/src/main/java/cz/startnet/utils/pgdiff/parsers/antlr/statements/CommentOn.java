@@ -6,13 +6,13 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
@@ -41,7 +41,7 @@ public class CommentOn extends ParserAbstract {
         // otherwise schema reference is considered unresolved
         if (ctx.COLUMN() != null) {
             IdentifierContext schemaCtx = QNameParser.getThirdNameCtx(ids);
-            PgSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
+            AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
             IdentifierContext tableCtx = QNameParser.getSecondNameCtx(ids);
             if (tableCtx == null) {
                 throw new UnresolvedReferenceException(
@@ -74,7 +74,7 @@ public class CommentOn extends ParserAbstract {
             return null;
         }
 
-        PgSchema schema;
+        AbstractSchema schema;
         if (ctx.TRIGGER() != null || ctx.RULE() != null || ctx.CONSTRAINT() != null) {
             schema = getSchemaSafe(ctx.table_name.identifier(), db.getDefaultSchema());
         } else {

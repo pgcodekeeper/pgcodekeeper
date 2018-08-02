@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 
@@ -19,7 +20,7 @@ public final class ApgdiffTestUtils {
 
     public static PgDatabase createDumpDB() {
         PgDatabase db = new PgDatabase();
-        PgSchema schema = new PgSchema(ApgdiffConsts.PUBLIC, "");
+        AbstractSchema schema = new PgSchema(ApgdiffConsts.PUBLIC, "");
         db.addSchema(schema);
         db.setDefaultSchema(ApgdiffConsts.PUBLIC);
         return db;

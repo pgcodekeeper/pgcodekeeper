@@ -8,8 +8,8 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgTrigger.TgTypes;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
@@ -33,7 +33,7 @@ public class TriggersReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet result, PgSchema schema) throws SQLException {
+    protected void processResult(ResultSet result, AbstractSchema schema) throws SQLException {
         String contName = result.getString(CLASS_RELNAME);
         PgTriggerContainer c = schema.getTriggerContainer(contName);
         if (c != null) {
@@ -41,7 +41,7 @@ public class TriggersReader extends JdbcReader {
         }
     }
 
-    private PgTrigger getTrigger(ResultSet res, PgSchema schema, String tableName) throws SQLException {
+    private PgTrigger getTrigger(ResultSet res, AbstractSchema schema, String tableName) throws SQLException {
         String schemaName = schema.getName();
         String triggerName = res.getString("tgname");
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, triggerName, DbObjType.TRIGGER));

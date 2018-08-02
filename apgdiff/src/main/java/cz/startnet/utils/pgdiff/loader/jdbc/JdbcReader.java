@@ -8,13 +8,13 @@ import java.util.Map;
 
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFtsConfiguration;
 import cz.startnet.utils.pgdiff.schema.PgFtsDictionary;
 import cz.startnet.utils.pgdiff.schema.PgFtsParser;
 import cz.startnet.utils.pgdiff.schema.PgFtsTemplate;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgType;
@@ -40,7 +40,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
 
             StringBuilder sb = new StringBuilder();
 
-            for (PgSchema schema : loader.schemaIds.values()) {
+            for (AbstractSchema schema : loader.schemaIds.values()) {
                 fillOldObjects(objects, schema, projDb, sb);
             }
 
@@ -72,7 +72,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
         return sb.toString();
     }
 
-    private void fillOldObjects(List<ObjectTimestamp> objects, PgSchema sc, PgDatabase projDb, StringBuilder sbOids) {
+    private void fillOldObjects(List<ObjectTimestamp> objects, AbstractSchema sc, PgDatabase projDb, StringBuilder sbOids) {
         DbObjType type = getType();
         DbObjType local = type == DbObjType.CONSTRAINT ? DbObjType.TABLE : type;
 
@@ -96,7 +96,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case INDEX:
-                    PgSchema schema = projDb.getSchema(sc.getName());
+                    AbstractSchema schema = projDb.getSchema(sc.getName());
                     PgTable t;
                     if (schema != null && (t = schema.getTableByIndex(obj.getColumn())) != null) {
                         sc.getTable(t.getName()).addIndex(t.getIndex(obj.getColumn()).shallowCopy());
@@ -194,7 +194,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
         return sb.toString();
     }
 
-    protected abstract void processResult(ResultSet result, PgSchema schema)
+    protected abstract void processResult(ResultSet result, AbstractSchema schema)
             throws SQLException, JsonReaderException;
 
     protected abstract DbObjType getType();
