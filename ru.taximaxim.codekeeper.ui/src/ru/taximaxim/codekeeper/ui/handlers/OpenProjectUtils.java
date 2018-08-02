@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
@@ -157,6 +159,7 @@ public final class OpenProjectUtils {
             schemas = Arrays.stream(schemasDir.members())
                     .filter(r -> r.getType() == IResource.FILE && "sql".equals(r.getFileExtension())) //$NON-NLS-1$
                     .map(r -> (IFile) r)
+                    .filter(OpenProjectUtils::checkLegacySchemaFile)
                     .collect(Collectors.toList());
         } catch (CoreException ex) {
             Log.log(ex);
@@ -212,6 +215,21 @@ public final class OpenProjectUtils {
             }
         } catch (InterruptedException e) {
             // can't be cancelled
+        }
+    }
+
+    private static boolean checkLegacySchemaFile(IFile f) {
+        try (InputStream stream = f.getContents()) {
+            byte[] bb = new byte[512];
+            int size = stream.read(bb);
+            // we check for an ASCII string so we don't care about real encoding
+            // this won't work with UTF-16+, but at least it will work with UTF-8
+            // and all single-byte/ASCII compatible encodings
+            String s = new String(bb, 0, size, StandardCharsets.US_ASCII);
+            return s.contains("CREATE SCHEMA");
+        } catch(CoreException | IOException ex) {
+            Log.log(ex);
+            return false;
         }
     }
 
