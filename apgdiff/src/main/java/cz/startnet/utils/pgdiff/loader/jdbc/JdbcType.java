@@ -73,6 +73,10 @@ public class JdbcType{
         return qname;
     }
 
+    public String getSchemaQualifiedName() {
+        return getSchemaQualifiedName("");
+    }
+
     /**
      * Returns the name of this type. If the type's schema name
      * differs from targetSchemaName, the returned type name is schema-qualified.
@@ -81,6 +85,10 @@ public class JdbcType{
     public String getFullName(String targetSchemaName){
         String schemaQualName = getSchemaQualifiedName(targetSchemaName);
         return isArrayType ? schemaQualName + "[]" : schemaQualName;
+    }
+
+    public String getFullName() {
+        return getFullName("");
     }
 
     public void addTypeDepcy(PgStatement st) {

@@ -58,7 +58,7 @@ public class FunctionsReader extends JdbcReader {
 
             if("t".equals(aMode)) {
                 String name = argNames[i];
-                String type = returnType.getFullName(schemaName);
+                String type = returnType.getFullName();
                 returnedTableArguments.append(PgDiffUtils.getQuotedName(name)).append(" ")
                 .append(type).append(", ");
                 f.addReturnsColumn(argNames[i], type);
@@ -82,7 +82,7 @@ public class FunctionsReader extends JdbcReader {
 
             Argument a = new Argument(aMode,
                     argNames != null ? argNames[i] : null,
-                            loader.cachedTypesByOid.get(argTypes[i]).getFullName(schemaName));
+                            loader.cachedTypesByOid.get(argTypes[i]).getFullName());
 
             f.addArgument(a);
         }
@@ -93,7 +93,7 @@ public class FunctionsReader extends JdbcReader {
             f.setReturns("TABLE(" + returnedTableArguments + ")");
         } else {
             JdbcType returnType = loader.cachedTypesByOid.get(res.getLong("prorettype"));
-            String retType = returnType.getFullName(schemaName);
+            String retType = returnType.getFullName();
             f.setReturns(res.getBoolean("proretset") ? "SETOF " + retType : retType);
             returnType.addTypeDepcy(f);
         }
@@ -138,7 +138,7 @@ public class FunctionsReader extends JdbcReader {
                 body.append(" TRANSFORM ");
                 for (Long s : protrftypes) {
                     body.append("FOR TYPE ")
-                    .append(loader.cachedTypesByOid.get(s).getFullName(schemaName));
+                    .append(loader.cachedTypesByOid.get(s).getFullName());
                     body.append(", ");
                 }
                 body.setLength(body.length() - 2);
