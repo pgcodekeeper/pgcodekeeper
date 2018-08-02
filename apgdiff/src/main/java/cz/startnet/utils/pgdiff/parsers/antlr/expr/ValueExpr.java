@@ -53,7 +53,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Window_definitionContext
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Xml_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
-import cz.startnet.utils.pgdiff.schema.IArgument;
+import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.ISchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -473,7 +473,7 @@ public class ValueExpr extends AbstractExpr {
             int argN = 0;
             int exactMatches = 0;
             boolean signatureApplicable = true;
-            for (IArgument arg : PgDiffUtils.sIter(getInInoutFuncArgs(f))) {
+            for (Argument arg : PgDiffUtils.sIter(getInInoutFuncArgs(f))) {
                 if (argN >= sourceTypes.size()) {
                     // supplied fewer arguments than function requires
                     // current (unsatisfied) parameter having a default value
@@ -518,7 +518,7 @@ public class ValueExpr extends AbstractExpr {
                 : TypesSetManually.FUNCTION_COLUMN);
     }
 
-    private Stream<? extends IArgument> getInInoutFuncArgs(IFunction func) {
+    private Stream<Argument> getInInoutFuncArgs(IFunction func) {
         return func.getArguments().stream()
                 .filter(arg -> "IN".equals(arg.getMode()) || "INOUT".equals(arg.getMode()));
     }

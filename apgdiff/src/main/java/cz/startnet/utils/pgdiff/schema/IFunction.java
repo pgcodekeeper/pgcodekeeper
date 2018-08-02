@@ -7,5 +7,5 @@ public interface IFunction extends IStatement, ISearchPath {
     String getBareName();
     String getReturns();
     Map<String, String> getReturnsColumns();
-    List<? extends IArgument> getArguments();
+    List<Argument> getArguments();
 }

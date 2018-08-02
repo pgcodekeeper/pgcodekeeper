@@ -83,7 +83,7 @@ public class PgFunction extends PgStatementWithSearchPath implements IFunction {
             if (addComma) {
                 sb.append(", ");
             }
-            sb.append(argument.getDeclaration(includeDefaultValues, includeArgNames));
+            sb.append(getDeclaration(argument, includeDefaultValues, includeArgNames));
             addComma = true;
         }
         sb.append(')');
@@ -92,6 +92,34 @@ public class PgFunction extends PgStatementWithSearchPath implements IFunction {
             signatureCache = sb.substring(sigStart, sb.length());
         }
         return sb;
+    }
+
+    public String getDeclaration(Argument arg, boolean includeDefaultValue, boolean includeArgName) {
+        final StringBuilder sbString = new StringBuilder();
+
+        String mode = arg.getMode();
+        if (mode != null && !"IN".equalsIgnoreCase(mode)) {
+            sbString.append(mode);
+            sbString.append(' ');
+        }
+
+        String name = arg.getName();
+
+        if (name != null && !name.isEmpty() && includeArgName) {
+            sbString.append(PgDiffUtils.getQuotedName(name));
+            sbString.append(' ');
+        }
+
+        sbString.append(arg.getDataType());
+
+        String def = arg.getDefaultExpression();
+
+        if (includeDefaultValue && def != null && !def.isEmpty()) {
+            sbString.append(" = ");
+            sbString.append(def);
+        }
+
+        return sbString.toString();
     }
 
     public void setBody(final String body) {
@@ -279,25 +307,6 @@ public class PgFunction extends PgStatementWithSearchPath implements IFunction {
         hasher.put(comment);
     }
 
-    public class Argument extends AbstractArgument {
-
-        private static final long serialVersionUID = -4612717362596320139L;
-
-        public Argument(String name, String dataType) {
-            super(name, dataType);
-        }
-
-        public Argument(String mode, String name, String dataType) {
-            super(mode, name, dataType);
-        }
-
-        @Override
-        public void setDefaultExpression(final String defaultExpression) {
-            super.setDefaultExpression(defaultExpression);
-            resetHash();
-        }
-    }
-
     @Override
     public PgFunction shallowCopy() {
         PgFunction functionDst =
@@ -306,8 +315,8 @@ public class PgFunction extends PgStatementWithSearchPath implements IFunction {
         functionDst.returnsColumns.putAll(returnsColumns);
         functionDst.setBody(getBody());
         functionDst.setComment(getComment());
-        for(Argument argSrc : arguments) {
-            Argument argDst = functionDst.new Argument(argSrc.getMode(), argSrc.getName(), argSrc.getDataType());
+        for (Argument argSrc : arguments) {
+            Argument argDst = new Argument(argSrc.getMode(), argSrc.getName(), argSrc.getDataType());
             argDst.setDefaultExpression(argSrc.getDefaultExpression());
             functionDst.addArgument(argDst);
         }

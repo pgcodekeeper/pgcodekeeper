@@ -14,7 +14,7 @@ public class MsProcedure extends PgStatementWithSearchPath {
     private boolean ansiNulls;
     private boolean quotedIdentified;
     private final List<String> options = new ArrayList<>();
-    private final List<ProcedureArgument> arguments = new ArrayList<>();
+    private final List<Argument> arguments = new ArrayList<>();
     private String body;
     private boolean isForReplication;
 
@@ -58,8 +58,8 @@ public class MsProcedure extends PgStatementWithSearchPath {
 
     public StringBuilder appendArguments(StringBuilder sb) {
         int startLenght = sb.length();
-        for (final ProcedureArgument argument : getArguments()) {
-            sb.append(argument.getDeclaration(true, true));
+        for (final Argument argument : getArguments()) {
+            sb.append(getDeclaration(argument, true, true));
             sb.append(",\n");
         }
 
@@ -123,8 +123,8 @@ public class MsProcedure extends PgStatementWithSearchPath {
         proc.setBody(getBody());
         proc.setForReplication(isForReplication());
 
-        for (ProcedureArgument argSrc : arguments) {
-            ProcedureArgument argDst = proc.new ProcedureArgument(argSrc.getMode(),
+        for (Argument argSrc : arguments) {
+            Argument argDst = new Argument(argSrc.getMode(),
                     argSrc.getName(), argSrc.getDataType());
             argDst.setDefaultExpression(argSrc.getDefaultExpression());
             argDst.setReadOnly(argSrc.isReadOnly());
@@ -207,11 +207,11 @@ public class MsProcedure extends PgStatementWithSearchPath {
         hasher.put(ansiNulls);
     }
 
-    public List<ProcedureArgument> getArguments() {
+    public List<Argument> getArguments() {
         return Collections.unmodifiableList(arguments);
     }
 
-    public void addArgument(final ProcedureArgument argument) {
+    public void addArgument(final Argument argument) {
         arguments.add(argument);
         resetHash();
     }
@@ -243,105 +243,38 @@ public class MsProcedure extends PgStatementWithSearchPath {
         resetHash();
     }
 
-    public class ProcedureArgument extends AbstractArgument {
-        private boolean isVarying;
-        private boolean isReadOnly;
+    public String getDeclaration(Argument arg, boolean includeDefaultValue,  boolean includeArgName) {
+        final StringBuilder sbString = new StringBuilder();
 
-        private static final long serialVersionUID = 2131286179717976254L;
-
-        public ProcedureArgument(String name, String dataType) {
-            super(name, dataType);
+        if (getName() != null && !getName().isEmpty() && includeArgName) {
+            sbString.append(getName());
+            sbString.append(' ');
         }
 
-        public ProcedureArgument(String mode, String name, String dataType) {
-            super(mode, name, dataType);
+        sbString.append(arg.getDataType());
+
+        if (arg.isVarying()) {
+            sbString.append(" VARYING");
         }
 
-        @Override
-        public void setDefaultExpression(final String defaultExpression) {
-            super.setDefaultExpression(defaultExpression);
-            resetHash();
+        String def = arg.getDefaultExpression();
+
+        if (includeDefaultValue && def != null && !def.isEmpty()) {
+            sbString.append(" = ");
+            sbString.append(def);
         }
 
-        @Override
-        public String getDeclaration(boolean includeDefaultValue,
-                boolean includeArgName) {
-            final StringBuilder sbString = new StringBuilder();
-
-            if (getName() != null && !getName().isEmpty() && includeArgName) {
-                sbString.append(getName());
-                sbString.append(' ');
-            }
-
-            sbString.append(getDataType());
-
-            if (isVarying()) {
-                sbString.append(" VARYING");
-            }
-
-            if (includeDefaultValue && getDefaultExpression() != null
-                    && !getDefaultExpression().isEmpty()) {
-                sbString.append(" = ");
-                sbString.append(getDefaultExpression());
-            }
-
-            if (getMode() != null && !"IN".equalsIgnoreCase(getMode())) {
-                sbString.append(' ');
-                sbString.append(getMode());
-            }
-
-            if (isReadOnly()) {
-                sbString.append(" READONLY");
-            }
-
-            return sbString.toString();
+        String mode = arg.getMode();
+        if (mode != null && !"IN".equalsIgnoreCase(mode)) {
+            sbString.append(' ');
+            sbString.append(mode);
         }
 
-        @Override
-        public boolean equals(Object obj) {
-            boolean eq = false;
-
-            if (this == obj) {
-                eq = true;
-            } else if (super.equals(obj) && obj instanceof ProcedureArgument) {
-                final ProcedureArgument arg = (ProcedureArgument) obj;
-                eq = super.equals(arg)
-                        && Objects.equals(isVarying, arg.isVarying())
-                        && Objects.equals(isReadOnly, arg.isReadOnly());
-            }
-
-            return eq;
+        if (arg.isReadOnly()) {
+            sbString.append(" READONLY");
         }
 
-        @Override
-        public int hashCode() {
-            return super.hashCode();
-        }
-
-        @Override
-        public void computeHash(Hasher hasher) {
-            super.computeHash(hasher);
-            hasher.put(isReadOnly);
-            hasher.put(isVarying);
-        }
-
-        public boolean isVarying() {
-            return isVarying;
-        }
-
-        public void setVarying(final boolean isVarying) {
-            this.isVarying = isVarying;
-            resetHash();
-        }
-
-        public boolean isReadOnly() {
-            return isReadOnly;
-        }
-
-        public void setReadOnly(final boolean isReadOnly) {
-            this.isReadOnly = isReadOnly;
-            resetHash();
-        }
+        return sbString.toString();
     }
 
     @Override

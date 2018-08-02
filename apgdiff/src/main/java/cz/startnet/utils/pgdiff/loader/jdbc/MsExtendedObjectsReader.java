@@ -7,12 +7,11 @@ import java.util.List;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.MsFunction;
-import cz.startnet.utils.pgdiff.schema.MsFunction.MsArgument;
 import cz.startnet.utils.pgdiff.schema.MsProcedure;
-import cz.startnet.utils.pgdiff.schema.MsProcedure.ProcedureArgument;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -57,7 +56,7 @@ public class MsExtendedObjectsReader extends JdbcReader {
                 }
                 // TODO other type with size
 
-                ProcedureArgument argDst = proc.new ProcedureArgument(arg.getBoolean("ou") ? "OUTPUT" : null,
+                Argument argDst = new Argument(arg.getBoolean("ou") ? "OUTPUT" : null,
                         arg.getString("name"), MsDiffUtils.quoteName(dataType) + argSize);
 
                 if (arg.getBoolean("hd")) {
@@ -87,7 +86,7 @@ public class MsExtendedObjectsReader extends JdbcReader {
                 }
                 // TODO other type with size
 
-                MsArgument argDst = func.new MsArgument(arg.getBoolean("ou") ? "OUTPUT" : null,
+                Argument argDst = new Argument(arg.getBoolean("ou") ? "OUTPUT" : null,
                         arg.getString("name"), MsDiffUtils.quoteName(dataType) + argSize);
 
                 if (arg.getBoolean("hd")) {

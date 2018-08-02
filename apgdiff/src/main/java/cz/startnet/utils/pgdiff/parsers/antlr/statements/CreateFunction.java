@@ -7,9 +7,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statemen
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_column_name_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
-import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
@@ -45,7 +45,7 @@ public class CreateFunction extends ParserAbstract {
     private void fillArguments(PgFunction function) {
         for (Function_argumentsContext argument : ctx.function_parameters()
                 .function_args().function_arguments()) {
-            Argument arg = function.new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
+            Argument arg = new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
                     argument.argname != null ? argument.argname.getText() : null,
                             getFullCtxText(argument.argtype_data));
             addTypeAsDepcy(argument.data_type(), function, getDefSchemaName());

@@ -11,10 +11,9 @@ import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.IArgument;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
-import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -81,7 +80,7 @@ public class FunctionsReader extends JdbcReader {
                 break;
             }
 
-            Argument a = f.new Argument(aMode,
+            Argument a = new Argument(aMode,
                     argNames != null ? argNames[i] : null,
                             loader.cachedTypesByOid.get(argTypes[i]).getFullName(schemaName));
 
@@ -110,7 +109,7 @@ public class FunctionsReader extends JdbcReader {
                             if (!vexCtxListIterator.hasPrevious()) {
                                 break;
                             }
-                            IArgument a = f.getArguments().get(i);
+                            Argument a = f.getArguments().get(i);
                             if ("IN".equals(a.getMode()) || "INOUT".equals(a.getMode())) {
                                 VexContext vx = vexCtxListIterator.previous();
                                 a.setDefaultExpression(ParserAbstract.getFullCtxText(vx));

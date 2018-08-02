@@ -92,7 +92,7 @@ public class MsFunction extends PgFunction {
         functionDst.setComment(getComment());
 
         for (Argument argSrc : arguments) {
-            Argument argDst = functionDst.new MsArgument(argSrc.getMode(), argSrc.getName(), argSrc.getDataType());
+            Argument argDst = new Argument(argSrc.getMode(), argSrc.getName(), argSrc.getDataType());
             argDst.setDefaultExpression(argSrc.getDefaultExpression());
             functionDst.addArgument(argDst);
         }
@@ -113,41 +113,28 @@ public class MsFunction extends PgFunction {
     }
 
     @Override
-    public boolean isPostgres() {
-        return false;
+    public String getDeclaration(Argument arg, boolean includeDefaultValue,  boolean includeArgName) {
+        final StringBuilder sbString = new StringBuilder();
+        sbString.append(getName()).append(' ').append(arg.getDataType());
+
+        String def = arg.getDefaultExpression();
+
+        if (includeDefaultValue && def != null && !def.isEmpty()) {
+            sbString.append(" = ");
+            sbString.append(def);
+        }
+
+        String mode = arg.getMode();
+
+        if (mode != null && !"IN".equalsIgnoreCase(mode)) {
+            sbString.append(' ').append(mode);
+        }
+
+        return sbString.toString();
     }
 
-    public class MsArgument extends Argument {
-
-        private static final long serialVersionUID = -8595307351991231778L;
-
-        public MsArgument(String name, String dataType) {
-            super(name, dataType);
-        }
-
-        public MsArgument(String mode, String name, String dataType) {
-            super(mode, name, dataType);
-        }
-
-        @Override
-        public String getDeclaration(boolean includeDefaultValue,
-                boolean includeArgName) {
-            final StringBuilder sbString = new StringBuilder();
-            sbString.append(getName()).append(' ').append(getDataType());
-
-            if (includeDefaultValue && getDefaultExpression() != null
-                    && !getDefaultExpression().isEmpty()) {
-                sbString.append(" = ");
-                sbString.append(getDefaultExpression());
-            }
-
-            if (getMode() != null && !"IN".equalsIgnoreCase(getMode())) {
-                sbString.append(' ').append(getMode());
-            }
-
-
-            return sbString.toString();
-        }
-
+    @Override
+    public boolean isPostgres() {
+        return false;
     }
 }

@@ -7,8 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.schema.AbstractArgument;
-import cz.startnet.utils.pgdiff.schema.IArgument;
+import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -16,13 +15,13 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction {
 
     private static final long serialVersionUID = -7905948011960006249L;
 
-    private List<PgSystemArgument> arguments;
+    private List<Argument> arguments;
     private transient String signatureCache;
 
     /**
      * Order by for aggregate functions
      */
-    private List<PgSystemArgument> orderBy;
+    private List<Argument> orderBy;
 
     /**
      *  Contains table's columns, if function returns table.
@@ -57,11 +56,11 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction {
     }
 
     @Override
-    public List<PgSystemArgument> getArguments() {
+    public List<Argument> getArguments() {
         return arguments == null ? Collections.emptyList() : Collections.unmodifiableList(arguments);
     }
 
-    public void addArgument(final PgSystemArgument arg) {
+    public void addArgument(final Argument arg) {
         if (arguments == null) {
             arguments = new ArrayList<>();
         }
@@ -76,11 +75,11 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction {
         this.setof = setof;
     }
 
-    public List<PgSystemArgument> getOrderBy() {
+    public List<Argument> getOrderBy() {
         return orderBy == null ? Collections.emptyList() : Collections.unmodifiableList(orderBy);
     }
 
-    public void addOrderBy(final PgSystemArgument type) {
+    public void addOrderBy(final Argument type) {
         if (orderBy == null) {
             orderBy = new ArrayList<>();
         }
@@ -129,14 +128,14 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction {
 
         sb.append(PgDiffUtils.getQuotedName(name)).append('(');
         boolean addComma = false;
-        for (final IArgument argument : getArguments()) {
+        for (final Argument argument : getArguments()) {
             if ("OUT".equalsIgnoreCase(argument.getMode())) {
                 continue;
             }
             if (addComma) {
                 sb.append(", ");
             }
-            sb.append(argument.getDeclaration(false, false));
+            sb.append(getDeclaration(argument, false, false));
             addComma = true;
         }
         sb.append(')');
@@ -151,16 +150,31 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction {
         return (PgSystemSchema) getParent();
     }
 
-    public static class PgSystemArgument extends AbstractArgument {
+    public String getDeclaration(Argument arg, boolean includeDefaultValue, boolean includeArgName) {
+        final StringBuilder sbString = new StringBuilder();
 
-        private static final long serialVersionUID = -4230871703844831688L;
-
-        public PgSystemArgument(String name, String dataType) {
-            super(name, dataType);
+        String mode = arg.getMode();
+        if (mode != null && !"IN".equalsIgnoreCase(mode)) {
+            sbString.append(mode);
+            sbString.append(' ');
         }
 
-        public PgSystemArgument(String mode, String name, String dataType) {
-            super(mode, name, dataType);
+        String name = arg.getName();
+
+        if (name != null && !name.isEmpty() && includeArgName) {
+            sbString.append(PgDiffUtils.getQuotedName(name));
+            sbString.append(' ');
         }
+
+        sbString.append(arg.getDataType());
+
+        String def = arg.getDefaultExpression();
+
+        if (includeDefaultValue && def != null && !def.isEmpty()) {
+            sbString.append(" = ");
+            sbString.append(def);
+        }
+
+        return sbString.toString();
     }
 }
