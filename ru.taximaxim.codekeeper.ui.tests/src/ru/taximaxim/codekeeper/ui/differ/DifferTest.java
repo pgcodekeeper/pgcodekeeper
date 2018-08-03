@@ -33,7 +33,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
@@ -193,7 +193,7 @@ class DifferData_2 extends DifferData{
 
     @Override
     List<Entry<PgStatement, PgStatement>> getAdditionalDepciesSource(PgDatabase source) {
-        PgTable t = source.getSchema("public").getTable("t1");
+        AbstractTable t = source.getSchema("public").getTable("t1");
         AbstractSequence s = source.getSchema("public").getSequence("t1_c1_seq");
         Entry<PgStatement, PgStatement> arr = new AbstractMap.SimpleEntry<> (s, t);
         List<Entry<PgStatement, PgStatement>> list = new ArrayList<>();

@@ -220,7 +220,7 @@ public class PgDatabase extends PgStatement {
 
     public void sortColumns() {
         for (AbstractSchema schema : schemas) {
-            schema.getTables().forEach(PgTable::sortColumns);
+            schema.getTables().forEach(AbstractTable::sortColumns);
         }
     }
 
@@ -366,8 +366,8 @@ public class PgDatabase extends PgStatement {
                     }
                 }
 
-                for (PgTable t : s.getTables()) {
-                    PgTable table = schema.getTable(t.getName());
+                for (AbstractTable t : s.getTables()) {
+                    AbstractTable table = schema.getTable(t.getName());
                     if (table == null) {
                         t.dropParent();
                         schema.addTable(t);
@@ -451,7 +451,7 @@ public class PgDatabase extends PgStatement {
 
     public static Map<String, PgStatement> listPgObjects(PgDatabase db) {
         Map<String, PgStatement> statements = new HashMap<>();
-        db.getDescendants().flatMap(PgTable::columnAdder).forEach(st -> statements.put(st.getQualifiedName(), st));
+        db.getDescendants().flatMap(AbstractTable::columnAdder).forEach(st -> statements.put(st.getQualifiedName(), st));
         return statements;
     }
 }

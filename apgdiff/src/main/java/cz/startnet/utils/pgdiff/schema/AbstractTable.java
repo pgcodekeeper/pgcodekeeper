@@ -27,7 +27,7 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
  *
  * @author fordfrog
  */
-public abstract class PgTable extends PgStatementWithSearchPath
+public abstract class AbstractTable extends PgStatementWithSearchPath
 implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
     protected static final String ALTER_COLUMN = " ALTER COLUMN ";
@@ -46,7 +46,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         return DbObjType.TABLE;
     }
 
-    public PgTable(String name, String rawStatement) {
+    public AbstractTable(String name, String rawStatement) {
         super(name, rawStatement);
     }
 
@@ -70,7 +70,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     public static Stream<PgStatement> columnAdder(PgStatement st) {
         Stream<PgStatement> newStream = Stream.of(st);
         if (st.getStatementType() == DbObjType.TABLE) {
-            newStream = Stream.concat(newStream, ((PgTable)st).getColumns().stream());
+            newStream = Stream.concat(newStream, ((AbstractTable)st).getColumns().stream());
         }
 
         return newStream;
@@ -296,11 +296,11 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
-        if (!(newCondition instanceof PgTable)) {
+        if (!(newCondition instanceof AbstractTable)) {
             return false;
         }
 
-        PgTable newTable = (PgTable)newCondition;
+        AbstractTable newTable = (AbstractTable)newCondition;
 
         if (isNeedRecreate(newTable)) {
             isNeedDepcies.set(true);
@@ -324,7 +324,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
      * @param newTable - new table
      * @param sb - StringBuilder for statements
      */
-    protected void compareTableOptions(PgTable newTable, StringBuilder sb) {
+    protected void compareTableOptions(AbstractTable newTable, StringBuilder sb) {
         if (hasOids != newTable.getHasOids()) {
             sb.append(getAlterTable(true, true))
             .append(" SET ")
@@ -333,20 +333,20 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         }
     }
 
-    protected void compareComment(PgTable newTable, StringBuilder sb) {
+    protected void compareComment(AbstractTable newTable, StringBuilder sb) {
         if (!Objects.equals(getComment(), newTable.getComment())) {
             sb.append("\n\n");
             newTable.appendCommentSql(sb);
         }
     }
 
-    protected void compareOwners(PgTable newTable, StringBuilder sb) {
+    protected void compareOwners(AbstractTable newTable, StringBuilder sb) {
         if (!Objects.equals(owner, newTable.getOwner())) {
             sb.append(newTable.getOwnerSQL());
         }
     }
 
-    protected void compareInherits(PgTable newTable, StringBuilder sb) {
+    protected void compareInherits(AbstractTable newTable, StringBuilder sb) {
         List<Inherits> newInherits = newTable.getInherits();
 
         if (newTable instanceof PartitionPgTable) {
@@ -372,7 +372,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         }
     }
 
-    protected abstract boolean isNeedRecreate(PgTable newTable);
+    protected abstract boolean isNeedRecreate(AbstractTable newTable);
 
     /**
      * Compare tables types and generate transform scripts for change tables type
@@ -381,7 +381,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
      * @param newTable - new table
      * @param sb - StringBuilder for statements
      */
-    protected abstract void compareTableTypes(PgTable newTable, StringBuilder sb);
+    protected abstract void compareTableTypes(AbstractTable newTable, StringBuilder sb);
 
     /**
      * Finds index according to specified index {@code name}.
@@ -572,8 +572,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
         if(this == obj) {
             eq = true;
-        } else if(obj instanceof PgTable) {
-            PgTable table = (PgTable) obj;
+        } else if(obj instanceof AbstractTable) {
+            AbstractTable table = (AbstractTable) obj;
 
             eq = getClass().equals(table.getClass())
                     && Objects.equals(name, table.getName())
@@ -591,8 +591,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
     @Override
     public boolean compareChildren(PgStatement obj) {
-        if (obj instanceof PgTable) {
-            PgTable table = (PgTable) obj;
+        if (obj instanceof AbstractTable) {
+            AbstractTable table = (AbstractTable) obj;
             return PgDiffUtils.setlikeEquals(constraints, table.constraints)
                     && PgDiffUtils.setlikeEquals(indexes, table.indexes)
                     && PgDiffUtils.setlikeEquals(triggers, table.triggers)
@@ -623,8 +623,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     }
 
     @Override
-    public PgTable shallowCopy() {
-        PgTable tableDst = getTableCopy();
+    public AbstractTable shallowCopy() {
+        AbstractTable tableDst = getTableCopy();
         for (AbstractColumn colSrc : columns) {
             tableDst.addColumn(colSrc.deepCopy());
         }
@@ -643,11 +643,11 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         return tableDst;
     }
 
-    protected abstract PgTable getTableCopy();
+    protected abstract AbstractTable getTableCopy();
 
     @Override
-    public PgTable deepCopy() {
-        PgTable copy = shallowCopy();
+    public AbstractTable deepCopy() {
+        AbstractTable copy = shallowCopy();
 
         for (AbstractConstraint constraint : constraints) {
             copy.addConstraint(constraint.deepCopy());

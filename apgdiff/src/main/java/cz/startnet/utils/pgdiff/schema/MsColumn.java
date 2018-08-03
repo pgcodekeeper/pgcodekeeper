@@ -144,7 +144,7 @@ public class MsColumn extends AbstractColumn {
     }
 
     private String getAlterColumn(boolean newLine, boolean only, String column) {
-        return ((PgTable)this.getParent()).getAlterTable(newLine, only) + ALTER_COLUMN +
+        return ((AbstractTable)this.getParent()).getAlterTable(newLine, only) + ALTER_COLUMN +
                 MsDiffUtils.quoteName(column);
     }
 

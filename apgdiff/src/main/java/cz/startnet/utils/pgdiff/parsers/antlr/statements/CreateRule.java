@@ -25,7 +25,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateRule extends ParserAbstract {
@@ -156,7 +156,7 @@ public class CreateRule extends ParserAbstract {
         AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         //привилегии пишем так как получили одной строкой
         PgStatement st = null;
-        PgTable tblSt = schema.getTable(firstPart);
+        AbstractTable tblSt = schema.getTable(firstPart);
 
         // если таблица не найдена попробовать вьюхи и проч
         if (tblSt == null) {

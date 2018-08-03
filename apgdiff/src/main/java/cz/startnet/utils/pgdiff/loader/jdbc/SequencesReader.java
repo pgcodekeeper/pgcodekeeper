@@ -19,7 +19,7 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class SequencesReader extends JdbcReader {
@@ -80,7 +80,7 @@ public class SequencesReader extends JdbcReader {
         }
 
         if ("d".equals(identityType) || "a".equals(identityType)) {
-            PgTable table = schema.getTable(refTable);
+            AbstractTable table = schema.getTable(refTable);
             AbstractColumn column = table.getColumn(refColumn);
             if (column == null) {
                 column = new PgColumn(refColumn);

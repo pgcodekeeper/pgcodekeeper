@@ -33,7 +33,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
@@ -405,7 +405,7 @@ public class ModelExporter {
         List<PgStatementWithSearchPath> contents = new LinkedList<>();
         AbstractSchema newParentSchema = newDb.getSchema(st.getParent().getName());
         AbstractSchema oldParentSchema = oldDb.getSchema(st.getParent().getName());
-        PgTable oldTable = null;
+        AbstractTable oldTable = null;
         if (oldParentSchema != null) {
             oldTable = oldParentSchema.getTable(st.getName());
             if (oldTable != null) {
@@ -414,7 +414,7 @@ public class ModelExporter {
             }
         }
         // table to dump, initially assume old unmodified state
-        PgTable tablePrimary = oldTable;
+        AbstractTable tablePrimary = oldTable;
 
         // modify the dump state as requested by the changeList elements
         Iterator<TreeElement> it = changeList.iterator();
@@ -434,7 +434,7 @@ public class ModelExporter {
             default:
                 continue;
             }
-            PgTable tableChange = (elTableChange.getSide() == DiffSide.LEFT ?
+            AbstractTable tableChange = (elTableChange.getSide() == DiffSide.LEFT ?
                     oldParentSchema : newParentSchema).getTable(elTableChange.getName());
             if (tableChange == null || !tableChange.getName().equals(st.getName())
                     || !tableChange.getParent().getName().equals(elTableChange.getParent().getName())) {

@@ -40,7 +40,7 @@ import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.DaemonThreadFactory;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -185,7 +185,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
                 columnName == null ? null : PgDiffUtils.getQuotedName(columnName), schemaName);
     }
 
-    public void setPrivileges(AbstractColumn column, PgTable t, String aclItemsArrayAsString, String schemaName) {
+    public void setPrivileges(AbstractColumn column, AbstractTable t, String aclItemsArrayAsString, String schemaName) {
         setPrivileges(column, PgDiffUtils.getQuotedName(t.getName()), aclItemsArrayAsString,
                 t.getOwner(), PgDiffUtils.getQuotedName(column.getName()), schemaName);
     }
@@ -318,8 +318,8 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             PgPrivilege priv = new PgPrivilege(state, permission, sb.toString(),
                     MsDiffUtils.quoteName(role), isWithGrantOption);
 
-            if (col != null && st instanceof PgTable) {
-                ((PgTable) st).getColumn(col).addPrivilege(priv);
+            if (col != null && st instanceof AbstractTable) {
+                ((AbstractTable) st).getColumn(col).addPrivilege(priv);
             } else {
                 st.addPrivilege(priv);
             }

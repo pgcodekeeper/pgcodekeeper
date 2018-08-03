@@ -10,7 +10,7 @@ import cz.startnet.utils.pgdiff.hashers.Hasher;
  * @since 4.1.1
  * @author galiev_mr
  */
-public class PartitionForeignPgTable extends ForeignPgTable {
+public class PartitionForeignPgTable extends AbstractForeignTable {
     private final String partitionBounds;
 
     public PartitionForeignPgTable(String name, String rawStatement,
@@ -24,7 +24,7 @@ public class PartitionForeignPgTable extends ForeignPgTable {
     }
 
     @Override
-    protected boolean isNeedRecreate(PgTable newTable) {
+    protected boolean isNeedRecreate(AbstractTable newTable) {
         return super.isNeedRecreate(newTable)
                 || !(Objects.equals(partitionBounds, ((PartitionForeignPgTable)newTable).getPartitionBounds()))
                 || !inherits.equals(newTable.inherits);
@@ -60,7 +60,7 @@ public class PartitionForeignPgTable extends ForeignPgTable {
     }
 
     @Override
-    protected PgTable getTableCopy() {
+    protected AbstractTable getTableCopy() {
         return new PartitionForeignPgTable(name, getRawStatement(), serverName,
                 partitionBounds);
     }

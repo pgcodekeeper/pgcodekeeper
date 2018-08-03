@@ -36,7 +36,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsTrigger;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
 public class CustomTSQLParserListener extends TSQLParserBaseListener {
@@ -63,8 +63,8 @@ public class CustomTSQLParserListener extends TSQLParserBaseListener {
             if (st != null) {
                 st.setLocation(filename);
 
-                if (st instanceof PgTable) {
-                    ((PgTable) st).getConstraints().stream()
+                if (st instanceof AbstractTable) {
+                    ((AbstractTable) st).getConstraints().stream()
                     .filter(con -> con.getLocation() == null)
                     .forEach(con -> con.setLocation(filename));
                 }

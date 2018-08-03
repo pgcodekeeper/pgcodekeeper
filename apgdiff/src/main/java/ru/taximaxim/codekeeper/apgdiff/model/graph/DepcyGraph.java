@@ -14,7 +14,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class DepcyGraph {
@@ -58,14 +58,14 @@ public class DepcyGraph {
         graph.addVertex(db);
 
         // first pass: object tree
-        db.getDescendants().flatMap(PgTable::columnAdder).forEach(st -> {
+        db.getDescendants().flatMap(AbstractTable::columnAdder).forEach(st -> {
             graph.addVertex(st);
             graph.addEdge(st, st.getParent());
         });
 
 
         // second pass: dependency graph
-        db.getDescendants().flatMap(PgTable::columnAdder).forEach(st -> {
+        db.getDescendants().flatMap(AbstractTable::columnAdder).forEach(st -> {
             processDeps(st);
             if (st.getStatementType() == DbObjType.CONSTRAINT) {
                 createFkeyToUnique((AbstractConstraint)st);
@@ -92,7 +92,7 @@ public class DepcyGraph {
         Set<String> refs = con.getForeignColumns();
         GenericColumn refTable = con.getForeignTable();
         if (!refs.isEmpty() && refTable != null) {
-            PgTable table = (PgTable) refTable.getStatement(db);
+            AbstractTable table = (AbstractTable) refTable.getStatement(db);
             if (table != null) {
                 for (AbstractConstraint refCon : table.getConstraints()) {
                     if ((refCon.isPrimaryKey() || refCon.isUnique()) && refs.equals(refCon.getColumns())) {

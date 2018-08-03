@@ -26,7 +26,7 @@ import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import cz.startnet.utils.pgdiff.schema.TypedPgTable;
@@ -296,21 +296,21 @@ public class DepcyResolver {
             break;
         case INDEX:
             AbstractIndex ind = (AbstractIndex) statement;
-            PgTable tableInd = oldSchema.getTable(ind.getTableName());
+            AbstractTable tableInd = oldSchema.getTable(ind.getTableName());
             if (tableInd != null) {
                 return tableInd.getIndex(ind.getName());
             }
             break;
         case CONSTRAINT:
             AbstractConstraint constr = (AbstractConstraint) statement;
-            PgTable tableConstr = oldSchema.getTable(constr.getParent().getName());
+            AbstractTable tableConstr = oldSchema.getTable(constr.getParent().getName());
             if (tableConstr != null) {
                 return tableConstr.getConstraint(constr.getName());
             }
             break;
         case COLUMN:
             AbstractColumn column = (AbstractColumn) statement;
-            PgTable tableCol = oldSchema.getTable(column.getParent().getName());
+            AbstractTable tableCol = oldSchema.getTable(column.getParent().getName());
             if (tableCol != null) {
                 return tableCol.getColumn(column.getName());
             }
@@ -450,7 +450,7 @@ public class DepcyResolver {
             }
             // Колонки пропускаются при удалении таблицы
             if (oldObj.getStatementType() == DbObjType.COLUMN) {
-                PgTable oldTable = (PgTable) oldObj.getParent();
+                AbstractTable oldTable = (AbstractTable) oldObj.getParent();
                 PgStatement newTable = getObjectFromDB(oldObj.getParent(),
                         newDb);
 
@@ -537,7 +537,7 @@ public class DepcyResolver {
                     return true;
                 }
 
-                PgTable newTable = (PgTable)newObj.getParent();
+                AbstractTable newTable = (AbstractTable)newObj.getParent();
                 // columns are integrated into CREATE TABLE OF TYPE
                 if (newTable instanceof TypedPgTable) {
                     TypedPgTable newTypedTable = (TypedPgTable) newTable;

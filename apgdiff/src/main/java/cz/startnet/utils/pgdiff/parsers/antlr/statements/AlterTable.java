@@ -22,10 +22,10 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.schema.RegularPgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
+import cz.startnet.utils.pgdiff.schema.AbstractRegularTable;
 
-public class AlterTable extends AbstractTable {
+public class AlterTable extends TableAbstract {
 
     private final Alter_table_statementContext ctx;
     public AlterTable(Alter_table_statementContext ctx, PgDatabase db) {
@@ -38,7 +38,7 @@ public class AlterTable extends AbstractTable {
         List<IdentifierContext> ids = ctx.name.identifier();
         AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
-        PgTable tabl = null;
+        AbstractTable tabl = null;
 
         for (Table_actionContext tablAction : ctx.table_action()) {
             // for owners try to get any relation, fail if the last attempt fails
@@ -159,8 +159,8 @@ public class AlterTable extends AbstractTable {
                 createRule(tabl, tablAction);
             }
 
-            if (tabl instanceof RegularPgTable) {
-                RegularPgTable regTable = (RegularPgTable)tabl;
+            if (tabl instanceof AbstractRegularTable) {
+                AbstractRegularTable regTable = (AbstractRegularTable)tabl;
                 // since 9.5 PostgreSQL
                 if (tablAction.SECURITY() != null) {
                     if (tablAction.FORCE() != null) {
@@ -174,7 +174,7 @@ public class AlterTable extends AbstractTable {
         return tabl;
     }
 
-    private void createRule(PgTable tabl, Table_actionContext tablAction) {
+    private void createRule(AbstractTable tabl, Table_actionContext tablAction) {
         PgRule rule = getSafe(tabl::getRule, tablAction.rewrite_rule_name.identifier(0));
         if (rule != null) {
             if (tablAction.DISABLE() != null) {

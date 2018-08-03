@@ -23,12 +23,12 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PartitionPgTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.schema.RegularPgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
+import cz.startnet.utils.pgdiff.schema.AbstractRegularTable;
 import cz.startnet.utils.pgdiff.schema.SimplePgTable;
 import cz.startnet.utils.pgdiff.schema.TypedPgTable;
 
-public class CreateTable extends AbstractTable {
+public class CreateTable extends TableAbstract {
     private final Create_table_statementContext ctx;
     private final String tablespace;
     private final String oids;
@@ -47,20 +47,20 @@ public class CreateTable extends AbstractTable {
         AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         String schemaName = schema.getName();
 
-        PgTable table = defineTable(tableName, schemaName);
+        AbstractTable table = defineTable(tableName, schemaName);
 
         schema.addTable(table);
         return table;
     }
 
-    private PgTable defineTable(String tableName, String schemaName) {
+    private AbstractTable defineTable(String tableName, String schemaName) {
         Define_tableContext tabCtx = ctx.define_table();
         Define_columnsContext colCtx = tabCtx.define_columns();
         Define_typeContext typeCtx = tabCtx.define_type();
         Define_partitionContext partCtx = tabCtx.define_partition();
 
         String rawStatement = getFullCtxText(ctx.getParent());
-        PgTable table;
+        AbstractTable table;
 
         if (typeCtx != null) {
             table = defineType(typeCtx, tableName, rawStatement, schemaName);
@@ -77,7 +77,7 @@ public class CreateTable extends AbstractTable {
         return table;
     }
 
-    private void fillColumns(Define_columnsContext columnsCtx, PgTable table, String schemaName) {
+    private void fillColumns(Define_columnsContext columnsCtx, AbstractTable table, String schemaName) {
         for (Table_column_defContext colCtx : columnsCtx.table_col_def) {
             if (colCtx.tabl_constraint != null) {
                 addTableConstraint(colCtx.tabl_constraint, table, schemaName);
@@ -107,7 +107,7 @@ public class CreateTable extends AbstractTable {
         return table;
     }
 
-    private RegularPgTable fillRegularTable(RegularPgTable table) {
+    private AbstractRegularTable fillRegularTable(AbstractRegularTable table) {
         if (tablespace != null) {
             table.setTablespace(tablespace);
         }
@@ -146,7 +146,7 @@ public class CreateTable extends AbstractTable {
         return table;
     }
 
-    private void parseOptions(List<Storage_parameter_optionContext> options, RegularPgTable table){
+    private void parseOptions(List<Storage_parameter_optionContext> options, AbstractRegularTable table){
         for (Storage_parameter_optionContext option : options){
             Schema_qualified_nameContext key = option.schema_qualified_name();
             List <IdentifierContext> optionIds = key.identifier();

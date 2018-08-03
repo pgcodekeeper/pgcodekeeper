@@ -17,7 +17,7 @@ import cz.startnet.utils.pgdiff.schema.PgFtsConfiguration;
 import cz.startnet.utils.pgdiff.schema.PgFtsDictionary;
 import cz.startnet.utils.pgdiff.schema.PgFtsParser;
 import cz.startnet.utils.pgdiff.schema.PgFtsTemplate;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -84,7 +84,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case TABLE:
-                    sc.addTable((PgTable) obj.copyStatement(projDb, loader));
+                    sc.addTable((AbstractTable) obj.copyStatement(projDb, loader));
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case RULE:
@@ -97,7 +97,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
                     break;
                 case INDEX:
                     AbstractSchema schema = projDb.getSchema(sc.getName());
-                    PgTable t;
+                    AbstractTable t;
                     if (schema != null && (t = schema.getTableByIndex(obj.getColumn())) != null) {
                         sc.getTable(t.getName()).addIndex(t.getIndex(obj.getColumn()).shallowCopy());
                     }
@@ -108,8 +108,8 @@ public abstract class JdbcReader implements PgCatalogStrings {
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case CONSTRAINT:
-                    PgTable table = (PgTable) obj.getObject().getStatement(projDb);
-                    PgTable newTable = sc.getTable(table.getName());
+                    AbstractTable table = (AbstractTable) obj.getObject().getStatement(projDb);
+                    AbstractTable newTable = sc.getTable(table.getName());
                     if (newTable.getConstraints().isEmpty()) {
                         table.getConstraints().forEach(con -> newTable.addConstraint(con.shallowCopy()));
                     }

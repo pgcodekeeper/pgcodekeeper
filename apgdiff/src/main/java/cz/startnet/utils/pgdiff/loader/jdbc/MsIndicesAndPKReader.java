@@ -13,7 +13,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsConstraint;
 import cz.startnet.utils.pgdiff.schema.MsIndex;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsIndicesAndPKReader extends JdbcReader {
@@ -40,7 +40,7 @@ public class MsIndicesAndPKReader extends JdbcReader {
         String filter = res.getString("filter_definition");
 
         String parent = res.getString("table_name");
-        PgTable t = schema.getTable(parent);
+        AbstractTable t = schema.getTable(parent);
 
         StringBuilder sb = new StringBuilder();
 

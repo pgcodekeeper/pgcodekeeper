@@ -40,7 +40,7 @@ import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgRule.PgRuleEventType;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgType.PgTypeForm;
@@ -226,7 +226,7 @@ class PgDB1 extends PgDatabaseObjectCreator {
         PgDatabase d = ApgdiffTestUtils.createDumpDB();
         AbstractSchema schema = d.getDefaultSchema();
 
-        PgTable table = new SimplePgTable("fax_boxes", "");
+        AbstractTable table = new SimplePgTable("fax_boxes", "");
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("fax_box_id");
@@ -329,7 +329,7 @@ class PgDB2 extends PgDatabaseObjectCreator {
 
         schema = d.getSchema(ApgdiffConsts.PUBLIC);
 
-        PgTable table = new SimplePgTable("contacts", "");
+        AbstractTable table = new SimplePgTable("contacts", "");
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("id");
@@ -365,7 +365,7 @@ class PgDB3 extends PgDatabaseObjectCreator {
         seq.setCache("1");
         schema.addSequence(seq);
 
-        PgTable table = new SimplePgTable("admins", "");
+        AbstractTable table = new SimplePgTable("admins", "");
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("aid");
@@ -454,7 +454,7 @@ class PgDB4 extends PgDatabaseObjectCreator {
         PgDatabase d = ApgdiffTestUtils.createDumpDB();
         AbstractSchema schema = d.getDefaultSchema();
 
-        PgTable table = new SimplePgTable("call_logs", "");
+        AbstractTable table = new SimplePgTable("call_logs", "");
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("id");
@@ -546,7 +546,7 @@ class PgDB6 extends PgDatabaseObjectCreator {
         schema.addPrivilege(new PgPrivilege("GRANT", "ALL", "SCHEMA public", "postgres", false));
         schema.addPrivilege(new PgPrivilege("GRANT", "ALL", "SCHEMA public", "PUBLIC", false));
 
-        PgTable table = new SimplePgTable("test_table", "");
+        AbstractTable table = new SimplePgTable("test_table", "");
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("id");
@@ -657,7 +657,7 @@ class PgDB9 extends PgDatabaseObjectCreator {
         PgDatabase d = ApgdiffTestUtils.createDumpDB();
         AbstractSchema schema = d.getDefaultSchema();
 
-        PgTable table = new SimplePgTable("user_data", "");
+        AbstractTable table = new SimplePgTable("user_data", "");
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("id");
@@ -740,7 +740,7 @@ class PgDB10 extends PgDatabaseObjectCreator {
 
         schema.setOwner("postgres");
 
-        PgTable table = new SimplePgTable("acl_role", "");
+        AbstractTable table = new SimplePgTable("acl_role", "");
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("id");
@@ -900,7 +900,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
 
         func.setOwner("fordfrog");
 
-        PgTable table = new SimplePgTable("test", "");
+        AbstractTable table = new SimplePgTable("test", "");
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("id");
@@ -972,7 +972,7 @@ class PgDB15 extends PgDatabaseObjectCreator {
         PgDatabase d = ApgdiffTestUtils.createDumpDB();
         AbstractSchema schema = d.getDefaultSchema();
 
-        PgTable table = new SimplePgTable("test", "");
+        AbstractTable table = new SimplePgTable("test", "");
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("id");
@@ -998,7 +998,7 @@ class PgDB16 extends PgDatabaseObjectCreator {
         AbstractSchema schema = d.getDefaultSchema();
 
         // table1
-        PgTable table = new SimplePgTable("t_work", "");
+        AbstractTable table = new SimplePgTable("t_work", "");
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("id");
@@ -1006,7 +1006,7 @@ class PgDB16 extends PgDatabaseObjectCreator {
         table.addColumn(col);
 
         // table2
-        PgTable table2 = new SimplePgTable("t_chart", "");
+        AbstractTable table2 = new SimplePgTable("t_chart", "");
         schema.addTable(table2);
         col = new PgColumn("id");
         col.setType("integer");
@@ -1035,7 +1035,7 @@ class PgDB17 extends PgDatabaseObjectCreator {
         AbstractSchema schema = d.getDefaultSchema();
 
         // table1
-        PgTable table = new SimplePgTable("t_work", "");
+        AbstractTable table = new SimplePgTable("t_work", "");
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("id");
@@ -1043,14 +1043,14 @@ class PgDB17 extends PgDatabaseObjectCreator {
         table.addColumn(col);
 
         // table2
-        PgTable table2 = new SimplePgTable("t_chart", "");
+        AbstractTable table2 = new SimplePgTable("t_chart", "");
         schema.addTable(table2);
         col = new PgColumn("id");
         col.setType("integer");
         table2.addColumn(col);
 
         // table 3
-        PgTable table3 = new SimplePgTable("t_memo", "");
+        AbstractTable table3 = new SimplePgTable("t_memo", "");
         schema.addTable(table3);
         col = new PgColumn("name");
         col.setType("text");

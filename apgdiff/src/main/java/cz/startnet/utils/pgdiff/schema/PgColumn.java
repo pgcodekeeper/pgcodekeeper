@@ -93,7 +93,7 @@ public class PgColumn extends AbstractColumn {
     }
 
     private String getAlterColumn(boolean newLine, boolean only, String column) {
-        return ((PgTable) getParent()).getAlterTable(newLine, only) + ALTER_COLUMN +
+        return ((AbstractTable) getParent()).getAlterTable(newLine, only) + ALTER_COLUMN +
                 PgDiffUtils.getQuotedName(column);
     }
 

@@ -7,14 +7,14 @@ package cz.startnet.utils.pgdiff.schema;
  * @author galiev_mr
  *
  */
-public class SimpleForeignPgTable extends ForeignPgTable {
+public class SimpleForeignPgTable extends AbstractForeignTable {
 
     public SimpleForeignPgTable(String name, String rawStatement, String serverName) {
         super(name, rawStatement, serverName);
     }
 
     @Override
-    protected PgTable getTableCopy() {
+    protected AbstractTable getTableCopy() {
         return new SimpleForeignPgTable(name, getRawStatement(), serverName);
     }
 

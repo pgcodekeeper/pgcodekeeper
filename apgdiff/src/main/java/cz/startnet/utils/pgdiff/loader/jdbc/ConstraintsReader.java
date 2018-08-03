@@ -10,7 +10,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class ConstraintsReader extends JdbcReader {
@@ -23,7 +23,7 @@ public class ConstraintsReader extends JdbcReader {
 
     @Override
     protected void processResult(ResultSet result, AbstractSchema schema) throws SQLException {
-        PgTable table = schema.getTable(result.getString(CLASS_RELNAME));
+        AbstractTable table = schema.getTable(result.getString(CLASS_RELNAME));
         if (table != null) {
             table.addConstraint(getConstraint(result, schema, table.getName()));
         }

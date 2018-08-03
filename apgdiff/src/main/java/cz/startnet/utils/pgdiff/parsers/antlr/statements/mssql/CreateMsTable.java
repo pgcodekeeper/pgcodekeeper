@@ -7,14 +7,14 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_optionsContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.AbstractTable;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.TableAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.RegularPgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractRegularTable;
 import cz.startnet.utils.pgdiff.schema.SimpleMsTable;
 
-public class CreateMsTable extends AbstractTable {
+public class CreateMsTable extends TableAbstract {
 
     private final Create_tableContext ctx;
 
@@ -63,7 +63,7 @@ public class CreateMsTable extends AbstractTable {
         return table;
     }
 
-    private void parseOptions(List<Index_optionContext> options, RegularPgTable table){
+    private void parseOptions(List<Index_optionContext> options, AbstractRegularTable table){
         for (Index_optionContext option : options){
             String key = option.key.getText();
             String value = option.index_option_value().getText();

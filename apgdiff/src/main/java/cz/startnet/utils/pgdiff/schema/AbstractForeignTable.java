@@ -14,13 +14,13 @@ import cz.startnet.utils.pgdiff.hashers.Hasher;
  * @since 4.1.1
  * @author galiev_mr
  */
-public abstract class ForeignPgTable extends PgTable {
+public abstract class AbstractForeignTable extends AbstractTable {
 
     protected final String serverName;
 
     protected static final String ALTER_FOREIGN_OPTION = "{0} OPTIONS ({1} {2} {3});";
 
-    public ForeignPgTable(String name, String rawStatement, String serverName) {
+    public AbstractForeignTable(String name, String rawStatement, String serverName) {
         super(name, rawStatement);
         this.serverName = serverName;
     }
@@ -47,9 +47,9 @@ public abstract class ForeignPgTable extends PgTable {
     }
 
     @Override
-    protected boolean isNeedRecreate(PgTable newTable) {
+    protected boolean isNeedRecreate(AbstractTable newTable) {
         return !this.getClass().equals(newTable.getClass())
-                || !Objects.equals(serverName, ((ForeignPgTable)newTable).getServerName());
+                || !Objects.equals(serverName, ((AbstractForeignTable)newTable).getServerName());
     }
 
     @Override
@@ -127,7 +127,7 @@ public abstract class ForeignPgTable extends PgTable {
     }
 
     @Override
-    protected void compareTableTypes(PgTable newTable,  StringBuilder sb) {
+    protected void compareTableTypes(AbstractTable newTable,  StringBuilder sb) {
         // untransformable
     }
 
@@ -137,8 +137,8 @@ public abstract class ForeignPgTable extends PgTable {
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof ForeignPgTable && super.compare(obj)) {
-            ForeignPgTable table = (ForeignPgTable) obj;
+        if (obj instanceof AbstractForeignTable && super.compare(obj)) {
+            AbstractForeignTable table = (AbstractForeignTable) obj;
             return Objects.equals(serverName, table.getServerName());
         }
 

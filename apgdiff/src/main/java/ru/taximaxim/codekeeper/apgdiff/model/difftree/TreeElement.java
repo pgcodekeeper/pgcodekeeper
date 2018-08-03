@@ -10,7 +10,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
 
 /**
@@ -144,10 +144,10 @@ public class TreeElement {
         case FTS_DICTIONARY:    return ((AbstractSchema) parent.getPgStatement(db)).getFtsDictionary(name);
         case FTS_CONFIGURATION: return ((AbstractSchema) parent.getPgStatement(db)).getFtsConfiguration(name);
 
-        case INDEX:             return ((PgTable) parent.getPgStatement(db)).getIndex(name);
+        case INDEX:             return ((AbstractTable) parent.getPgStatement(db)).getIndex(name);
         case TRIGGER:           return ((PgTriggerContainer) parent.getPgStatement(db)).getTrigger(name);
-        case CONSTRAINT:        return ((PgTable) parent.getPgStatement(db)).getConstraint(name);
-        case COLUMN:            return ((PgTable) parent.getPgStatement(db)).getColumn(name);
+        case CONSTRAINT:        return ((AbstractTable) parent.getPgStatement(db)).getConstraint(name);
+        case COLUMN:            return ((AbstractTable) parent.getPgStatement(db)).getColumn(name);
         case RULE:              return ((PgRuleContainer) parent.getPgStatement(db)).getRule(name);
         default:                throw new IllegalStateException("Unknown element type: " + type);
         }

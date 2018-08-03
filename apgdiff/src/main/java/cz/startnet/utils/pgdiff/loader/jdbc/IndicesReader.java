@@ -10,7 +10,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class IndicesReader extends JdbcReader {
@@ -21,7 +21,7 @@ public class IndicesReader extends JdbcReader {
 
     @Override
     protected void processResult(ResultSet result, AbstractSchema schema) throws SQLException {
-        PgTable table = schema.getTable(result.getString("table_name"));
+        AbstractTable table = schema.getTable(result.getString("table_name"));
         if (table != null) {
             AbstractIndex index = getIndex(result, schema, table.getName());
             loader.monitor.worked(1);

@@ -218,7 +218,7 @@ public abstract class AbstractColumn extends PgStatementWithSearchPath implement
     }
 
     protected String getAlterTable() {
-        return ((PgTable) getParent()).getAlterTable(false, false);
+        return ((AbstractTable) getParent()).getAlterTable(false, false);
     }
 
     @Override

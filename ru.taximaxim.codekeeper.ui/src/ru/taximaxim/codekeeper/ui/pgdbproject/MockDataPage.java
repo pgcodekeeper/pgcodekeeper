@@ -39,7 +39,7 @@ import org.eclipse.swt.widgets.Text;
 
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -688,9 +688,9 @@ public class MockDataPage extends WizardPage {
         Object source = selection.getFirstElement();
         if (source instanceof IFile && PgUIDumpLoader.isInProject((IFile)source)) {
             IFile file = (IFile)source;
-            PgTable table = null;
+            AbstractTable table = null;
             try {
-                table = (PgTable) PgUIDumpLoader.parseStatement(file, Arrays.asList(DbObjType.TABLE));
+                table = (AbstractTable) PgUIDumpLoader.parseStatement(file, Arrays.asList(DbObjType.TABLE));
             } catch (InterruptedException | IOException | CoreException e) {
                 Log.log(Log.LOG_ERROR, "Error parsing file: " + file.getName(), e); //$NON-NLS-1$
             }

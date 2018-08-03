@@ -24,7 +24,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 
 public class CreateMsRule extends ParserAbstract {
 
@@ -89,8 +89,8 @@ public class CreateMsRule extends ParserAbstract {
                         String name = objectName + '(' + MsDiffUtils.quoteName(column.getText()) + ')';
                         PgPrivilege priv = new PgPrivilege(state, per, name, role, isGO);
                         // table column privileges to columns, other columns to statement
-                        if (st instanceof PgTable) {
-                            getSafe(((PgTable)st)::getColumn, column).addPrivilege(priv);
+                        if (st instanceof AbstractTable) {
+                            getSafe(((AbstractTable)st)::getColumn, column).addPrivilege(priv);
                         } else {
                             st.addPrivilege(priv);
                         }
@@ -163,8 +163,8 @@ public class CreateMsRule extends ParserAbstract {
 
                 for (String role : roles) {
                     PgPrivilege priv = new PgPrivilege(state, pr, objectName, role, isGO);
-                    if (st instanceof PgTable) {
-                        getSafe(((PgTable)st)::getColumn, col).addPrivilege(priv);
+                    if (st instanceof AbstractTable) {
+                        getSafe(((AbstractTable)st)::getColumn, col).addPrivilege(priv);
                     } else {
                         st.addPrivilege(priv);
                     }

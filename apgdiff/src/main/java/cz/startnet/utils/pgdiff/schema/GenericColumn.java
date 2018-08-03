@@ -71,7 +71,7 @@ public final class GenericColumn implements Serializable {
                 if (rel.getStatementType() != DbObjType.TABLE) {
                     // return silently if non-table
                     return null;
-                } else if (!((PgTable) rel).getInherits().isEmpty()) {
+                } else if (!((AbstractTable) rel).getInherits().isEmpty()) {
                     // or if inherited column
                     return null;
                 }
@@ -99,7 +99,7 @@ public final class GenericColumn implements Serializable {
             return null;
         }
 
-        PgTable t;
+        AbstractTable t;
         switch (type) {
         case DATABASE: return db;
         case SCHEMA: return s;

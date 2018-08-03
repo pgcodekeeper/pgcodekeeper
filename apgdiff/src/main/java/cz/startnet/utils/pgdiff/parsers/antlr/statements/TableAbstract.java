@@ -39,17 +39,17 @@ import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public abstract class AbstractTable extends ParserAbstract {
+public abstract class TableAbstract extends ParserAbstract {
 
-    public AbstractTable(PgDatabase db) {
+    public TableAbstract(PgDatabase db) {
         super(db);
     }
 
     protected void fillTypeColumns(List_of_type_column_defContext columns,
-            PgTable table, String schemaName) {
+            AbstractTable table, String schemaName) {
         if (columns == null) {
             return;
         }
@@ -64,14 +64,14 @@ public abstract class AbstractTable extends ParserAbstract {
     }
 
     protected void addTableConstraint(Constraint_commonContext tblConstrCtx,
-            PgTable table, String schemaName) {
+            AbstractTable table, String schemaName) {
         AbstractConstraint constrBlank = createTableConstraintBlank(tblConstrCtx);
         processTableConstraintBlank(tblConstrCtx, constrBlank, db, schemaName, table.getName());
         table.addConstraint(constrBlank);
     }
 
     private void addTableConstraint(Constraint_commonContext ctx,
-            AbstractColumn col, PgTable table) {
+            AbstractColumn col, AbstractTable table) {
         Constr_bodyContext body = ctx.constr_body();
         Common_constraintContext comConstr = body.common_constraint();
         Table_unique_prkeyContext prkey = body.table_unique_prkey();
@@ -151,7 +151,7 @@ public abstract class AbstractTable extends ParserAbstract {
 
     protected void addColumn(String columnName, Data_typeContext datatype,
             Collate_identifierContext collate, List<Constraint_commonContext> constraints,
-            Define_foreign_optionsContext options, PgTable table) {
+            Define_foreign_optionsContext options, AbstractTable table) {
         AbstractColumn col = new PgColumn(columnName);
         if (datatype != null) {
             col.setType(getFullCtxText(datatype));
@@ -174,16 +174,16 @@ public abstract class AbstractTable extends ParserAbstract {
 
     protected void addColumn(String columnName, Data_typeContext datatype,
             Collate_identifierContext collate, List<Constraint_commonContext> constraints,
-            PgTable table) {
+            AbstractTable table) {
         addColumn(columnName, datatype, collate, constraints, null, table);
     }
 
     protected void addColumn(String columnName, List<Constraint_commonContext> constraints,
-            PgTable table) {
+            AbstractTable table) {
         addColumn(columnName, null, null, constraints, table);
     }
 
-    protected void addInherit(PgTable table, List<IdentifierContext> idsInh) {
+    protected void addInherit(AbstractTable table, List<IdentifierContext> idsInh) {
         String inhSchemaName = QNameParser.getSchemaName(idsInh, getDefSchemaName());
         String inhTableName = QNameParser.getFirstName(idsInh);
         table.addInherits(inhSchemaName, inhTableName);
@@ -264,7 +264,7 @@ public abstract class AbstractTable extends ParserAbstract {
     }
 
     protected static void fillColumn(Column_def_table_constraintContext colCtx,
-            PgTable table) {
+            AbstractTable table) {
         if (colCtx.table_constraint() != null) {
             addMsConstraint(colCtx.table_constraint(), table);
         } else {
@@ -311,7 +311,7 @@ public abstract class AbstractTable extends ParserAbstract {
         }
     }
 
-    protected static void addMsConstraint(Table_constraintContext conCtx, PgTable table) {
+    protected static void addMsConstraint(Table_constraintContext conCtx, AbstractTable table) {
         String conName = conCtx.id() == null ? "" : conCtx.id().getText();
         AbstractConstraint con = new MsConstraint(conName, getFullCtxText(conCtx));
         con.setDefinition(getFullCtxText(conCtx.table_constraint_body()));

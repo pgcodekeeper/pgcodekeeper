@@ -19,7 +19,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     private final List<PgDomain> domains = new ArrayList<>();
     private final List<AbstractFunction> functions = new ArrayList<>();
     private final List<AbstractSequence> sequences = new ArrayList<>();
-    private final List<PgTable> tables = new ArrayList<>();
+    private final List<AbstractTable> tables = new ArrayList<>();
     private final List<AbstractView> views = new ArrayList<>();
     private final List<PgType> types = new ArrayList<>();
     private final List<PgFtsParser> parsers = new ArrayList<>();
@@ -124,7 +124,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     public Stream<PgStatement> getDescendants() {
         Stream<PgStatement> stream = getChildren();
 
-        for (PgTable tab : getTables()) {
+        for (AbstractTable tab : getTables()) {
             stream = Stream.concat(stream, tab.getDescendants());
         }
 
@@ -182,8 +182,8 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      *
      * @return found table or null if no such table has been found
      */
-    public PgTable getTable(final String name) {
-        for (PgTable table : tables) {
+    public AbstractTable getTable(final String name) {
+        for (AbstractTable table : tables) {
             if (table.getName().equals(name)) {
                 return table;
             }
@@ -197,7 +197,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      *
      * @return {@link #tables}
      */
-    public List<PgTable> getTables() {
+    public List<AbstractTable> getTables() {
         return Collections.unmodifiableList(tables);
     }
 
@@ -372,8 +372,8 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         return Collections.unmodifiableList(configurations);
     }
 
-    public PgTable getTableByIndex(String name) {
-        for (PgTable t : getTables()) {
+    public AbstractTable getTableByIndex(String name) {
+        for (AbstractTable t : getTables()) {
             if (t.getIndex(name) != null) {
                 return t;
             }
@@ -402,7 +402,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         resetHash();
     }
 
-    public void addTable(final PgTable table) {
+    public void addTable(final AbstractTable table) {
         assertUnique(this::getTable, table);
         tables.add(table);
         table.setParent(this);
@@ -583,7 +583,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         for (AbstractView view : views) {
             copy.addView(view.deepCopy());
         }
-        for (PgTable table : tables) {
+        for (AbstractTable table : tables) {
             copy.addTable(table.deepCopy());
         }
         for (PgType type : types) {

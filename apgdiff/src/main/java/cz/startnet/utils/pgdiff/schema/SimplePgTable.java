@@ -7,7 +7,7 @@ package cz.startnet.utils.pgdiff.schema;
  * @author galiev_mr
  *
  */
-public class SimplePgTable extends RegularPgTable {
+public class SimplePgTable extends AbstractRegularTable {
 
     public SimplePgTable(String name, String rawStatement) {
         super(name, rawStatement);
@@ -31,14 +31,14 @@ public class SimplePgTable extends RegularPgTable {
     }
 
     @Override
-    protected PgTable getTableCopy() {
+    protected AbstractTable getTableCopy() {
         return new SimplePgTable(name, getRawStatement());
     }
 
     @Override
-    protected void compareTableTypes(PgTable newTable, StringBuilder sb) {
-        if (newTable instanceof RegularPgTable) {
-            ((RegularPgTable)newTable).convertTable(sb);
+    protected void compareTableTypes(AbstractTable newTable, StringBuilder sb) {
+        if (newTable instanceof AbstractRegularTable) {
+            ((AbstractRegularTable)newTable).convertTable(sb);
         }
     }
 
