@@ -206,14 +206,10 @@ public abstract class AbstractColumn extends PgStatementWithSearchPath implement
         return isIdentity;
     }
 
-    public void setIdentity(boolean isIdentity) {
-        this.isIdentity = isIdentity;
-        resetHash();
-    }
-
     public void setIdentity(String seed, String increment) {
         this.seed = seed;
         this.increment = increment;
+        this.isIdentity = true;
         resetHash();
     }
 
@@ -294,7 +290,7 @@ public abstract class AbstractColumn extends PgStatementWithSearchPath implement
         colDst.setStorage(getStorage());
         colDst.setSparse(isSparse());
         colDst.setNotForRep(isNotForRep());
-        colDst.setIdentity(isIdentity());
+        colDst.isIdentity = isIdentity();
         colDst.seed = getSeed();
         colDst.increment = getIncrement();
         colDst.setDefaultName(getDefaultName());
