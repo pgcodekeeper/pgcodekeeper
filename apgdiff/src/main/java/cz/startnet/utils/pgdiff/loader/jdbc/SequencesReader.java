@@ -13,6 +13,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractSequence;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -33,7 +34,7 @@ public class SequencesReader extends JdbcReader {
         loader.monitor.worked(1);
         String sequenceName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schema.getName(), sequenceName, DbObjType.SEQUENCE));
-        PgSequence s = new PgSequence(sequenceName, "");
+        AbstractSequence s = new PgSequence(sequenceName, "");
 
         String refTable = res.getString("referenced_table_name");
         String refColumn = res.getString("ref_col_name");
@@ -128,9 +129,9 @@ public class SequencesReader extends JdbcReader {
             }
         }
 
-        Map<String, PgSequence> seqs = new HashMap<>();
+        Map<String, AbstractSequence> seqs = new HashMap<>();
         for (String schema : schemasAccess) {
-            for (PgSequence seq : db.getSchema(schema).getSequences()) {
+            for (AbstractSequence seq : db.getSchema(schema).getSequences()) {
                 seqs.put(seq.getQualifiedName(), seq);
             }
         }
@@ -170,7 +171,7 @@ public class SequencesReader extends JdbcReader {
 
         try (ResultSet res = loader.runner.runScript(loader.statement, sbUnionQuery.toString())) {
             while (res.next()) {
-                PgSequence seq = seqs.get(res.getString("qname"));
+                AbstractSequence seq = seqs.get(res.getString("qname"));
                 seq.setStartWith(res.getString("start_value"));
                 seq.setMinMaxInc(res.getLong("increment_by"), res.getLong("max_value"), res.getLong("min_value"), null);
                 seq.setCache(res.getString("cache_value"));

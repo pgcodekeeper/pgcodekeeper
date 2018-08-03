@@ -346,8 +346,8 @@ public class PgDatabase extends PgStatement {
                     }
                 }
 
-                for (PgSequence seq : s.getSequences()) {
-                    PgSequence sequence = schema.getSequence(seq.getName());
+                for (AbstractSequence seq : s.getSequences()) {
+                    AbstractSequence sequence = schema.getSequence(seq.getName());
                     if (sequence == null) {
                         seq.dropParent();
                         schema.addSequence(seq);

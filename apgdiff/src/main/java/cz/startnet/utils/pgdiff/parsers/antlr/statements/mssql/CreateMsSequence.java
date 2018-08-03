@@ -7,6 +7,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_sequenceContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Sequence_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.AbstractSequence;
 import cz.startnet.utils.pgdiff.schema.MsSequence;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -23,13 +24,13 @@ public class CreateMsSequence extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         List<IdContext> ids = ctx.simple_name().id();
-        MsSequence sequence = new MsSequence(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
+        AbstractSequence sequence = new MsSequence(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
         fillSequence(sequence, ctx.sequence_body());
         getSchemaSafe(ids, db.getDefaultSchema()).addSequence(sequence);
         return sequence;
     }
 
-    private void fillSequence(MsSequence sequence, List<Sequence_bodyContext> list) {
+    private void fillSequence(AbstractSequence sequence, List<Sequence_bodyContext> list) {
         long inc = 1;
         Long maxValue = null;
         Long minValue = null;

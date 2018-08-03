@@ -21,6 +21,7 @@ import org.junit.runners.Parameterized.Parameters;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractSequence;
 import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -354,7 +355,7 @@ class PgDB3 extends PgDatabaseObjectCreator {
         PgDatabase d = ApgdiffTestUtils.createDumpDB();
         AbstractSchema schema = d.getDefaultSchema();
 
-        PgSequence seq = new PgSequence("admins_aid_seq", "");
+        AbstractSequence seq = new PgSequence("admins_aid_seq", "");
         seq.setStartWith("1");
         seq.setMinMaxInc(1L, 1000000000L, null, null);
         seq.setCache("1");
@@ -678,7 +679,7 @@ class PgDB9 extends PgDatabaseObjectCreator {
         rule.setInstead(true);
         table.addRule(rule);
 
-        PgSequence seq = new PgSequence("user_id_seq", "");
+        AbstractSequence seq = new PgSequence("user_id_seq", "");
         seq.setMinMaxInc(1L, null, null, null);
         seq.setCache("1");
         seq.setOwnedBy("public.user_data.id");
@@ -926,7 +927,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
 
         table.setOwner("fordfrog");
 
-        PgSequence seq = new PgSequence("test_id_seq", "");
+        AbstractSequence seq = new PgSequence("test_id_seq", "");
         seq.setStartWith("1");
         seq.setMinMaxInc(1L, null, null, null);
         seq.setCache("1");

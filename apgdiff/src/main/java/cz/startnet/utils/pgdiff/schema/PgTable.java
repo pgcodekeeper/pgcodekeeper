@@ -272,7 +272,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     }
 
     private void writeSequences(PgColumn column, StringBuilder sbOption) {
-        PgSequence sequence = column.getSequence();
+        AbstractSequence sequence = column.getSequence();
         if (sequence != null) {
             sbOption.append(getAlterTable(true, false))
             .append(ALTER_COLUMN)

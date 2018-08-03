@@ -115,7 +115,7 @@ public class ActionsToScriptConverter {
     }
 
     private void processSequence(ActionContainer action) {
-        if (action.getOldObj().getStatementType() == DbObjType.SEQUENCE) {
+        if (action.getOldObj() instanceof PgSequence) {
             PgSequence oldSeq = (PgSequence) action.getOldObj();
             PgSequence newSeq = (PgSequence) action.getNewObj();
             if (newSeq.getOwnedBy() != null

@@ -18,7 +18,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
 
     private final List<PgDomain> domains = new ArrayList<>();
     private final List<AbstractFunction> functions = new ArrayList<>();
-    private final List<PgSequence> sequences = new ArrayList<>();
+    private final List<AbstractSequence> sequences = new ArrayList<>();
     private final List<PgTable> tables = new ArrayList<>();
     private final List<AbstractView> views = new ArrayList<>();
     private final List<PgType> types = new ArrayList<>();
@@ -156,8 +156,8 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      *
      * @return found sequence or null if no such sequence has been found
      */
-    public PgSequence getSequence(final String name) {
-        for (PgSequence sequence : sequences) {
+    public AbstractSequence getSequence(final String name) {
+        for (AbstractSequence sequence : sequences) {
             if (sequence.getName().equals(name)) {
                 return sequence;
             }
@@ -171,7 +171,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      *
      * @return {@link #sequences}
      */
-    public List<PgSequence> getSequences() {
+    public List<AbstractSequence> getSequences() {
         return Collections.unmodifiableList(sequences);
     }
 
@@ -395,7 +395,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         resetHash();
     }
 
-    public void addSequence(final PgSequence sequence) {
+    public void addSequence(final AbstractSequence sequence) {
         assertUnique(this::getSequence, sequence);
         sequences.add(sequence);
         sequence.setParent(this);
@@ -574,7 +574,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         for (PgDomain dom : domains) {
             copy.addDomain(dom.deepCopy());
         }
-        for (PgSequence seq : sequences) {
+        for (AbstractSequence seq : sequences) {
             copy.addSequence(seq.deepCopy());
         }
         for (AbstractFunction func : functions) {

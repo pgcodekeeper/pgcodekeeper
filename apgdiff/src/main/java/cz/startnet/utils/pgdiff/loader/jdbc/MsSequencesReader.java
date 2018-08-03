@@ -5,6 +5,7 @@ import java.sql.SQLException;
 
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractSequence;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsSequence;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -20,7 +21,7 @@ public class MsSequencesReader extends JdbcReader {
         loader.monitor.worked(1);
         String sequenceName = res.getString("name");
         loader.setCurrentObject(new GenericColumn(schema.getName(), sequenceName, DbObjType.SEQUENCE));
-        MsSequence s = new MsSequence(sequenceName, "");
+        AbstractSequence s = new MsSequence(sequenceName, "");
 
         s.setStartWith(Long.toString(res.getLong("start_value")));
         s.setMinMaxInc(res.getLong("increment"), res.getLong("maximum_value"),

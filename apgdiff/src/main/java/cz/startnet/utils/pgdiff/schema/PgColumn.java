@@ -37,7 +37,7 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
     private String storage;
     private final Map<String, String> options = new LinkedHashMap<>(0);
     private final Map<String, String> fOptions = new LinkedHashMap<>(0);
-    private PgSequence sequence;
+    private AbstractSequence sequence;
     private String identityType;
     private boolean isInherit;
 
@@ -166,11 +166,11 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
         return collation;
     }
 
-    public PgSequence getSequence() {
+    public AbstractSequence getSequence() {
         return sequence;
     }
 
-    public void setSequence(final PgSequence sequence) {
+    public void setSequence(final AbstractSequence sequence) {
         this.sequence = sequence;
         resetHash();
     }
@@ -322,7 +322,7 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
      * @param sb - StringBuilder for difference
      */
     private void compareIdentity(String oldIdentityType, String newIdentityType,
-            PgSequence oldSequence, PgSequence newSequence, StringBuilder sb) {
+            AbstractSequence oldSequence, AbstractSequence newSequence, StringBuilder sb) {
 
         if (!Objects.equals(oldIdentityType, newIdentityType)) {
             sb.append(getAlterColumn(true, false, PgDiffUtils.getQuotedName(name)));
