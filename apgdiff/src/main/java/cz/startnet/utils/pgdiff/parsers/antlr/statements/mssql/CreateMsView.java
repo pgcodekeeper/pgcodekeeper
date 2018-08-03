@@ -16,8 +16,6 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class CreateMsView extends ParserAbstract {
 
-    private static final String CHECK_OPTION = "check_option";
-
     private final Create_or_alter_viewContext ctx;
 
     private final boolean ansiNulls;
@@ -59,7 +57,7 @@ public class CreateMsView extends ParserAbstract {
         }
 
         if (ctx.with_check_option() != null){
-            view.addOption(CHECK_OPTION, "");
+            view.addOption(AbstractView.CHECK_OPTION, "");
         }
 
         schema.addView(view);

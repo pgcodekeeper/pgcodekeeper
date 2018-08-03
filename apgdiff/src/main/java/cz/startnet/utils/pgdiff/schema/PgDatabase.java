@@ -394,8 +394,8 @@ public class PgDatabase extends PgStatement {
                             }
                         }
 
-                        for (PgTrigger tr : t.getTriggers()) {
-                            PgTrigger trigger = table.getTrigger(tr.getName());
+                        for (AbstractTrigger tr : t.getTriggers()) {
+                            AbstractTrigger trigger = table.getTrigger(tr.getName());
                             if (trigger == null) {
                                 tr.dropParent();
                                 table.addTrigger(tr);
@@ -424,8 +424,8 @@ public class PgDatabase extends PgStatement {
                     } else {
                         overrides.add(new PgOverride(view, v));
 
-                        for (PgTrigger tr : v.getTriggers()) {
-                            PgTrigger trigger = view.getTrigger(tr.getName());
+                        for (AbstractTrigger tr : v.getTriggers()) {
+                            AbstractTrigger trigger = view.getTrigger(tr.getName());
                             if (trigger == null) {
                                 tr.dropParent();
                                 view.addTrigger(tr);

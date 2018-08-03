@@ -19,7 +19,8 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 public abstract class AbstractView extends PgStatementWithSearchPath
 implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
-    protected static final String CHECK_OPTION = "check_option";
+    public static final String CHECK_OPTION = "check_option";
+
     private String query;
     private String normalizedQuery;
     protected final Map<String, String> options = new LinkedHashMap<>();
@@ -27,7 +28,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     private final List<DefaultValue> defaultValues = new ArrayList<>();
     private final List<ColumnComment> columnComments = new ArrayList<>();
     private final List<PgRule> rules = new ArrayList<>();
-    private final List<PgTrigger> triggers = new ArrayList<>();
+    private final List<AbstractTrigger> triggers = new ArrayList<>();
     private Boolean isWithData;
     private String tablespace;
     private final List<Pair<String, String>> relationColumns = new ArrayList<>();
@@ -88,8 +89,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
      * @return found trigger or null if no such trigger has been found
      */
     @Override
-    public PgTrigger getTrigger(final String name) {
-        for (PgTrigger trigger : triggers) {
+    public AbstractTrigger getTrigger(final String name) {
+        for (AbstractTrigger trigger : triggers) {
             if (trigger.getName().equals(name)) {
                 return trigger;
             }
@@ -99,12 +100,12 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     }
 
     @Override
-    public List<PgTrigger> getTriggers() {
+    public List<AbstractTrigger> getTriggers() {
         return Collections.unmodifiableList(triggers);
     }
 
     @Override
-    public void addTrigger(final PgTrigger trigger) {
+    public void addTrigger(final AbstractTrigger trigger) {
         assertUnique(this::getTrigger, trigger);
         triggers.add(trigger);
         trigger.setParent(this);
@@ -355,11 +356,11 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     public AbstractView deepCopy() {
         AbstractView copy = shallowCopy();
 
-        for(PgRule rule : rules) {
+        for (PgRule rule : rules) {
             copy.addRule(rule.deepCopy());
         }
 
-        for(PgTrigger trigger : triggers) {
+        for (AbstractTrigger trigger : triggers) {
             copy.addTrigger(trigger.deepCopy());
         }
 

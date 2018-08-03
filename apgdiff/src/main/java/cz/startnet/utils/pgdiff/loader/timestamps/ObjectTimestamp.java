@@ -7,6 +7,7 @@ import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.loader.jdbc.JdbcLoaderBase;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractTrigger;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -15,7 +16,6 @@ import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -127,7 +127,7 @@ public class ObjectTimestamp implements Serializable {
         PgTriggerContainer parent = schema.getTriggerContainer(base.getParent().getName());
         PgStatement copy = base.shallowCopy();
         fillPrivileges(copy, loader, schema.getName());
-        parent.addTrigger((PgTrigger)copy);
+        parent.addTrigger((AbstractTrigger)copy);
     }
 
     public PgStatement copyStatement(PgDatabase db, JdbcLoaderBase loader) {

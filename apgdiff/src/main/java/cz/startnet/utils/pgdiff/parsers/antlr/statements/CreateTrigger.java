@@ -18,11 +18,12 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractTrigger;
+import cz.startnet.utils.pgdiff.schema.AbstractTrigger.TgTypes;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
-import cz.startnet.utils.pgdiff.schema.PgTrigger.TgTypes;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateTrigger extends ParserAbstract {
@@ -38,7 +39,7 @@ public class CreateTrigger extends ParserAbstract {
         AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         String schemaName = schema.getName();
         String tableName = QNameParser.getFirstName(ids);
-        PgTrigger trigger = new PgTrigger(ctx.name.getText(), getFullCtxText(ctx.getParent()));
+        AbstractTrigger trigger = new PgTrigger(ctx.name.getText(), getFullCtxText(ctx.getParent()));
         trigger.setTableName(ParserAbstract.getFullCtxText(ctx.table_name));
         if (ctx.AFTER() != null) {
             trigger.setType(TgTypes.AFTER);
@@ -117,7 +118,7 @@ public class CreateTrigger extends ParserAbstract {
         return trigger;
     }
 
-    public static void parseWhen(When_triggerContext whenCtx, PgTrigger trigger,
+    public static void parseWhen(When_triggerContext whenCtx, AbstractTrigger trigger,
             PgDatabase db) {
         if (whenCtx != null) {
             VexContext vex = whenCtx.when_expr;
@@ -126,7 +127,7 @@ public class CreateTrigger extends ParserAbstract {
         }
     }
 
-    public static void analyzeTriggersWhen(VexContext ctx, PgTrigger trigger,
+    public static void analyzeTriggersWhen(VexContext ctx, AbstractTrigger trigger,
             String schemaName, PgDatabase db) {
         ValueExprWithNmspc vex = new ValueExprWithNmspc(schemaName, db);
         GenericColumn implicitTable = new GenericColumn(schemaName,

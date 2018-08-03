@@ -18,12 +18,12 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateIndex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateRewrite;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
+import cz.startnet.utils.pgdiff.schema.AbstractTrigger;
 import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
-import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 
@@ -60,7 +60,7 @@ public final class FullAnalyze {
                 break;
             case TRIGGER:
                 CreateTrigger.analyzeTriggersWhen((VexContext) ctx,
-                        (PgTrigger) statement, schemaName, db);
+                        (AbstractTrigger) statement, schemaName, db);
                 break;
             case INDEX:
                 CreateIndex.analyzeIndexRest((Index_restContext) ctx, statement,

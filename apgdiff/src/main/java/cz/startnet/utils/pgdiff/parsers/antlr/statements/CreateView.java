@@ -35,7 +35,6 @@ public class CreateView extends ParserAbstract {
             + "\n{2}\n)"
             + "\nSELECT {1}"
             + "\nFROM {0};";
-    private static final String CHECK_OPTION = "check_option";
 
     private final Create_view_statementContext context;
 
@@ -89,12 +88,10 @@ public class CreateView extends ParserAbstract {
             }
         }
         if (ctx.with_check_option() != null){
-            if (ctx.with_check_option().LOCAL() != null){
-                view.addOption(CHECK_OPTION, "local");
-            } else {
-                view.addOption(CHECK_OPTION, "cascaded");
-            }
+            view.addOption(AbstractView.CHECK_OPTION,
+                    ctx.with_check_option().LOCAL() != null ? "local" : "cascaded");
         }
+
         schema.addView(view);
         return view;
     }

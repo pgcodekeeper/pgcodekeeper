@@ -38,7 +38,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     protected boolean hasOids;
     protected final List<PgConstraint> constraints = new ArrayList<>();
     protected final List<PgIndex> indexes = new ArrayList<>();
-    protected final List<PgTrigger> triggers = new ArrayList<>();
+    protected final List<AbstractTrigger> triggers = new ArrayList<>();
     protected final List<PgRule> rules = new ArrayList<>();
 
     @Override
@@ -408,8 +408,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
      * @return found trigger or null if no such trigger has been found
      */
     @Override
-    public PgTrigger getTrigger(final String name) {
-        for (PgTrigger trigger : triggers) {
+    public AbstractTrigger getTrigger(final String name) {
+        for (AbstractTrigger trigger : triggers) {
             if (trigger.getName().equals(name)) {
                 return trigger;
             }
@@ -476,7 +476,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
      * @return {@link #triggers}
      */
     @Override
-    public List<PgTrigger> getTriggers() {
+    public List<AbstractTrigger> getTriggers() {
         return Collections.unmodifiableList(triggers);
     }
 
@@ -539,7 +539,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     }
 
     @Override
-    public void addTrigger(final PgTrigger trigger) {
+    public void addTrigger(final AbstractTrigger trigger) {
         assertUnique(this::getTrigger, trigger);
         triggers.add(trigger);
         trigger.setParent(this);
@@ -649,16 +649,16 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     public PgTable deepCopy() {
         PgTable copy = shallowCopy();
 
-        for(PgConstraint constraint : constraints) {
+        for (PgConstraint constraint : constraints) {
             copy.addConstraint(constraint.deepCopy());
         }
-        for(PgIndex index : indexes) {
+        for (PgIndex index : indexes) {
             copy.addIndex(index.deepCopy());
         }
-        for(PgTrigger trigger : triggers) {
+        for (AbstractTrigger trigger : triggers) {
             copy.addTrigger(trigger.deepCopy());
         }
-        for(PgRule rule : rules) {
+        for (PgRule rule : rules) {
             copy.addRule(rule.deepCopy());
         }
         return copy;
