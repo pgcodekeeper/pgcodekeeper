@@ -1,6 +1,8 @@
 package cz.startnet.utils.pgdiff.loader;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -63,6 +65,16 @@ public final class JdbcQueries {
     public static String QUERY_SYSTEM_OPERATORS;
     public static String QUERY_SYSTEM_CASTS;
 
+    public static Map <SupportedVersion, String> QUERY_MS_SCHEMAS;
+
+    public static Map <SupportedVersion, String> QUERY_MS_TABLES;
+    public static Map <SupportedVersion, String> QUERY_MS_FUNCTIONS_PROCEDURES_VIEWS_TRIGGERS;
+    public static Map <SupportedVersion, String> QUERY_MS_EXTENDED_FUNCTIONS_AND_PROCEDURES;
+    public static Map <SupportedVersion, String> QUERY_MS_SEQUENCES;
+    public static Map <SupportedVersion, String> QUERY_MS_INDICES_AND_PK;
+    public static Map <SupportedVersion, String> QUERY_MS_FK;
+    public static Map <SupportedVersion, String> QUERY_MS_CHECK_CONSTRAINTS;
+
     // SONAR-ON
 
     private static final String HELPER_NAME = "%FUNCTION_NAME%";
@@ -76,16 +88,10 @@ public final class JdbcQueries {
             try {
                 if (Map.class.isAssignableFrom(f.getType())) {
                     fillMaps(f);
-                } else if (f.getName().contains("SYSTEM")) {
-                    String query = new String(Files.readAllBytes(ApgdiffUtils.getFileFromOsgiRes(
-                            JdbcQueries.class.getResource("system/" + f.getName() + ".sql")).toPath()),
-                            StandardCharsets.UTF_8);
-                    f.set(null, query);
+                } else if (f.getName().startsWith("QUERY_SYSTEM")) {
+                    f.set(null, readResource("system/" + f.getName()));
                 } else if (String.class.isAssignableFrom(f.getType())) {
-                    String query = new String(Files.readAllBytes(ApgdiffUtils.getFileFromOsgiRes(
-                            JdbcQueries.class.getResource(f.getName() + ".sql")).toPath()),
-                            StandardCharsets.UTF_8);
-                    f.set(null, query);
+                    f.set(null, readResource(f.getName()));
                 }
             } catch (Exception ex) {
                 Log.log(Log.LOG_ERROR,
@@ -96,21 +102,30 @@ public final class JdbcQueries {
 
     private static void fillMaps (Field f) throws Exception {
         Map <SupportedVersion, String> map  = new HashMap<>();
+        f.set(null, map);
 
-        String query = new String(Files.readAllBytes(ApgdiffUtils.getFileFromOsgiRes(
-                JdbcQueries.class.getResource(f.getName() + ".sql")).toPath()),
-                StandardCharsets.UTF_8);
-        map.put(null, query);
+        if (f.getName().startsWith("QUERY_MS")) {
+            map.put(null, readResource("ms/" + f.getName()));
+            return;
+        }
+
+        map.put(null, readResource(f.getName()));
 
         for (SupportedVersion version : SupportedVersion.values()) {
             URL url = JdbcQueries.class.getResource(f.getName() + '_' + version + ".sql");
             if (url != null) {
-                query = new String(Files.readAllBytes(ApgdiffUtils.getFileFromOsgiRes(
-                        url).toPath()), StandardCharsets.UTF_8);
-                map.put(version, query);
+                map.put(version, readResource(url));
             }
         }
-        f.set(null, map);
+    }
+
+    private static String readResource(String name) throws IOException, URISyntaxException {
+        return readResource(JdbcQueries.class.getResource(name + ".sql"));
+    }
+
+    private static String readResource(URL url) throws IOException, URISyntaxException {
+        return new String(Files.readAllBytes(ApgdiffUtils.getFileFromOsgiRes(url).toPath()),
+                StandardCharsets.UTF_8);
     }
 
     public static String getHelperFunctions(SupportedVersion version) {

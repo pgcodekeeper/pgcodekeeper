@@ -17,7 +17,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_viewCon
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_schemaContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_sequenceContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_tableContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Grant_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Rule_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Set_specialContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.ObjectCreationException;
@@ -102,7 +102,7 @@ public class CustomTSQLParserListener extends TSQLParserBaseListener {
 
     @Override
     public void exitCreate_or_alter_trigger(Create_or_alter_triggerContext ctx) {
-        safeParseStatement(new CreateMsTrigger(ctx, db), ctx);
+        safeParseStatement(new CreateMsTrigger(ctx, db, ansiNulls, quotedIdentifier), ctx);
     }
 
     @Override
@@ -131,7 +131,7 @@ public class CustomTSQLParserListener extends TSQLParserBaseListener {
     }
 
     @Override
-    public void exitGrant_statement(Grant_statementContext ctx) {
+    public void exitRule_common(Rule_commonContext ctx) {
         safeParseStatement(new CreateMsRule(ctx, db), ctx);
     }
 

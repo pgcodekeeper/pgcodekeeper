@@ -448,6 +448,7 @@ COMMITTED:                                     C O M M I T T E D;
 COMPATIBILITY_LEVEL:                           C O M P A T I B I L I T Y '_' L E V E L;
 CONCAT:                                        C O N C A T;
 CONCAT_NULL_YIELDS_NULL:                       C O N C A T '_' N U L L '_' Y I E L D S '_' N U L L;
+CONNECT:                                       C O N N E C T;
 CONTENT:                                       C O N T E N T;
 CONTROL:                                       C O N T R O L;
 COOKIE:                                        C O O K I E;

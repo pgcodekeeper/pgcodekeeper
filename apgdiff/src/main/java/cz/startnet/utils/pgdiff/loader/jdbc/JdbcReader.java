@@ -38,7 +38,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
         this.loader = loader;
     }
 
-    public void read() throws SQLException, InterruptedException, WrapperAccessException {
+    public void read() throws SQLException, InterruptedException, WrapperAccessException, JsonReaderException {
         boolean helperSuccess = false;
         if ((loader.availableHelpersBits & factory.hasHelperMask) != 0) {
             try {

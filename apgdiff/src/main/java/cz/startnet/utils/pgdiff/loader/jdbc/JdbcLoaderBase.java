@@ -20,6 +20,7 @@ import java.util.function.Function;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.eclipse.core.runtime.SubMonitor;
 
+import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
@@ -30,12 +31,15 @@ import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
 import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.DaemonThreadFactory;
@@ -53,6 +57,8 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             Integer.max(1, Runtime.getRuntime().availableProcessors() - 1),
             new DaemonThreadFactory());
 
+    // TODO after removing helpers split this into MS and PG base classes
+
     protected final JdbcConnector connector;
     protected final SubMonitor monitor;
     protected final PgDiffArguments args;
@@ -64,7 +70,10 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     private Map<Long, String> cachedRolesNamesByOid;
     protected Map<Long, JdbcType> cachedTypesByOid;
     protected long availableHelpersBits;
+    // TODO remove schemas container after removal of helpers
+    // it is superseded by the simple schemas map
     protected SchemasContainer schemas;
+    protected final Map<Long, PgSchema> schemaIds = new HashMap<>();
     protected int version;
     private long lastSysOid;
     protected List<String> errors = new ArrayList<>();
@@ -145,6 +154,12 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected void setOwner(PgStatement statement, long ownerOid) {
         if (!args.isIgnorePrivileges()) {
             statement.setOwner(getRoleByOid(ownerOid));
+        }
+    }
+
+    protected void setOwner(PgStatement st, String owner) {
+        if (!args.isIgnorePrivileges()) {
+            st.setOwner(owner);
         }
     }
 
@@ -245,8 +260,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         }
 
         String column = (columnId != null && !columnId.isEmpty()) ? "(" + columnId + ")" : "";
-        String revokePublic = "ALL" + column + " ON " + stType + " " + stSignature + " FROM PUBLIC";
-        st.addPrivilege(new PgPrivilege(true, revokePublic));
+        st.addPrivilege(new PgPrivilege("REVOKE", "ALL" + column, stType + " " + stSignature, "PUBLIC", false));
 
         List<Privilege> grants = JdbcAclParser.parse(
                 aclItemsArrayAsString, possiblePrivilegeCount, order, owner);
@@ -259,9 +273,8 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         }
 
         if (!metDefaultOwnersGrants) {
-            String revokeOwner = "ALL" + column + " ON " + stType + " " + stSignature + " FROM " +
-                    PgDiffUtils.getQuotedName(owner);
-            st.addPrivilege(new PgPrivilege(true, revokeOwner));
+            st.addPrivilege(new PgPrivilege("REVOKE", "ALL" + column,
+                    stType + " " + stSignature, PgDiffUtils.getQuotedName(owner), false));
         }
 
         for (Privilege grant : grants) {
@@ -276,26 +289,42 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
                     grantValues.add(plainGrant + column);
                 }
             }
-            String privDefinition = getStringListAsString(grantValues, ",") + " ON " + stType + " " +
-                    stSignature + " TO " + grant.grantee;
-            if (grant.isGO) {
-                privDefinition = privDefinition.concat(PgPrivilege.WITH_GRANT_OPTION);
-            }
-            st.addPrivilege(new PgPrivilege(false, privDefinition));
-        }
 
+            st.addPrivilege(new PgPrivilege("GRANT", String.join(",", grantValues),
+                    stType + " " + stSignature, grant.grantee, grant.isGO));
+        }
     }
 
-    private String getStringListAsString(List<String> strings, String delimeter) {
-        StringBuilder resultList = new StringBuilder();
-        for (int i = 0; i < strings.size(); i++) {
-            String listItem = strings.get(i);
-            resultList.append(listItem);
-            if (i < strings.size() - 1) {
-                resultList.append(delimeter);
+    public void setPrivileges(PgStatementWithSearchPath st, List<JsonReader> privs) throws JsonReaderException {
+        for (JsonReader acl : privs) {
+            String state = acl.getString("sd");
+            boolean isWithGrantOption = false;
+            if ("GRANT_WITH_GRANT_OPTION".equals(state)) {
+                state = "GRANT";
+                isWithGrantOption = true;
+            }
+
+            String permission = acl.getString("pn");
+            String role = acl.getString("r");
+            String col = acl.getString("c");
+            StringBuilder sb = new StringBuilder();
+
+            sb.append(MsDiffUtils.quoteName(st.getContainingSchema().getName())).append('.')
+            .append(MsDiffUtils.quoteName(st.getBareName()));
+
+            if (col != null) {
+                sb.append('(').append(MsDiffUtils.quoteName(col)).append(')');
+            }
+
+            PgPrivilege priv = new PgPrivilege(state, permission, sb.toString(),
+                    MsDiffUtils.quoteName(role), isWithGrantOption);
+
+            if (col != null && st instanceof PgTable) {
+                ((PgTable) st).getColumn(col).addPrivilege(priv);
+            } else {
+                st.addPrivilege(priv);
             }
         }
-        return resultList.toString();
     }
 
     protected void queryTypesForCache() throws SQLException, InterruptedException {
@@ -341,6 +370,14 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         antlrTasks.add(new AntlrTask<>(future, finalizer));
     }
 
+    protected <T extends ParserRuleContext> void submitMsAntlrTask(String sql,
+            Function<TSQLParser, T> parserCtxReader, Consumer<T> finalizer) {
+        String loc = getCurrentLocation();
+        Future<T> future = ANTLR_POOL.submit(() -> parserCtxReader.apply(
+                AntlrParser.makeBasicParser(TSQLParser.class, sql, loc)));
+        antlrTasks.add(new AntlrTask<>(future, finalizer));
+    }
+
     protected void finishAntlr() throws InterruptedException, ExecutionException {
         AntlrTask<? extends ParserRuleContext> task;
         while ((task = antlrTasks.poll()) != null) {
@@ -362,4 +399,5 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             equalObjects = projDB.getDbTimestamp().searchEqualsObjects(dbTime);
         }
     }
+
 }

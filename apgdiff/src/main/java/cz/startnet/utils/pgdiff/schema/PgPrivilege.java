@@ -1,7 +1,6 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
@@ -11,51 +10,50 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgPrivilege implements IHashable {
 
-    // regex grouping here is used to preserve whitespace when doing replaceAll
-    private static final Pattern PATTERN_TO = Pattern.compile("(\\s+)TO(\\s+)");
     public static final String WITH_GRANT_OPTION = " WITH GRANT OPTION";
 
-    private final boolean revoke;
-    private final String definition;
+    private final String state;
+    private final String permission;
+    private final String role;
+    private final String name;
+    private final boolean isGrantOption;
 
     public boolean isRevoke() {
-        return revoke;
+        return "REVOKE".equalsIgnoreCase(getState());
     }
 
-    public String getDefinition() {
-        return definition;
-    }
-
-    public PgPrivilege(boolean revoke, String definition) {
-        this.revoke = revoke;
-        this.definition = definition;
+    public PgPrivilege(String state, String permission, String name, String role, boolean isGrantOption) {
+        this.state = state;
+        this.permission = permission;
+        this.name = name;
+        this.role = role;
+        this.isGrantOption = isGrantOption;
     }
 
     public String getCreationSQL() {
-        return new StringBuilder()
-                .append(revoke ? "REVOKE " : "GRANT ")
-                .append(definition)
-                .toString();
+        StringBuilder sb = new StringBuilder();
+        sb.append(state).append(' ').append(permission);
+        if (name != null) {
+            sb.append(" ON ").append(getName());
+        }
+
+        sb.append(isRevoke() ? " FROM ": " TO ").append(getRole());
+
+        if (isGrantOption) {
+            sb.append(WITH_GRANT_OPTION);
+        }
+
+        return sb.toString();
     }
 
     public String getDropSQL() {
-        if (revoke) {
+        if (isRevoke()) {
             return null;
         }
 
-        String definitionWithoutGO = definition.endsWith(WITH_GRANT_OPTION) ?
-                definition.substring(0, definition.length() - WITH_GRANT_OPTION.length()) : definition;
-
-                // TODO сделать надежнее чем просто регуляркой
-                return new StringBuilder()
-                        .append("REVOKE ")
-                        // regex groups capture surrounding whitespace so we don't alter it
-                        .append(PATTERN_TO.matcher(definitionWithoutGO).replaceAll("$1FROM$2"))
-                        .append(';')
-                        .toString();
+        return new PgPrivilege("REVOKE", permission, name, role, false).getCreationSQL();
     }
 
-    // TODO MS SQL override
     public static void appendDefaultPrivileges(PgStatement newObj, StringBuilder sb) {
         DbObjType type = newObj.getStatementType();
         String owner = type != DbObjType.COLUMN ? newObj.getOwner() : newObj.getParent().getOwner();
@@ -76,11 +74,11 @@ public class PgPrivilege implements IHashable {
 
         owner =  PgDiffUtils.getQuotedName(owner);
 
-        PgPrivilege priv = new PgPrivilege(true, "ALL" + column + " ON " + type + ' ' + name + " FROM PUBLIC");
+        PgPrivilege priv = new PgPrivilege("REVOKE", "ALL" + column, type + " " + name, "PUBLIC", false);
         sb.append('\n').append(priv.getCreationSQL()).append(';');
-        priv = new PgPrivilege(true, "ALL" + column + " ON " + type + ' ' + name + " FROM " + owner);
+        priv = new PgPrivilege("REVOKE", "ALL" + column, type + " " + name, owner, false);
         sb.append('\n').append(priv.getCreationSQL()).append(';');
-        priv = new PgPrivilege(false, "ALL" + column + " ON " + type + ' ' + name + " TO " + owner);
+        priv = new PgPrivilege("GRANT", "ALL" + column, type + " " + name, owner, false);
         sb.append('\n').append(priv.getCreationSQL()).append(';');
     }
 
@@ -90,10 +88,13 @@ public class PgPrivilege implements IHashable {
 
         if (this == obj) {
             eq = true;
-        } else if (obj instanceof PgPrivilege){
+        } else if (obj instanceof PgPrivilege) {
             PgPrivilege priv = (PgPrivilege) obj;
-            eq = revoke == priv.isRevoke()
-                    && Objects.equals(definition, priv.getDefinition());
+            eq = isGrantOption == priv.isGrantOption()
+                    && Objects.equals(state, priv.getState())
+                    && Objects.equals(permission, priv.getPermission())
+                    && Objects.equals(role, priv.getRole())
+                    && Objects.equals(name, priv.getName());
         }
 
         return eq;
@@ -108,12 +109,35 @@ public class PgPrivilege implements IHashable {
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(definition);
-        hasher.put(revoke);
+        hasher.put(state);
+        hasher.put(permission);
+        hasher.put(role);
+        hasher.put(name);
+        hasher.put(isGrantOption);
     }
 
     @Override
     public String toString() {
         return getCreationSQL();
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public String getPermission() {
+        return permission;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public boolean isGrantOption() {
+        return isGrantOption;
     }
 }

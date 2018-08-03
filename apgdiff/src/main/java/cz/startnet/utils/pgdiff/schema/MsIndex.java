@@ -19,9 +19,10 @@ public class MsIndex extends PgIndex {
             sbSQL.append("UNIQUE ");
         }
 
-        if (isClusterIndex()) {
-            sbSQL.append("CLUSTERED ");
+        if (!isClusterIndex()) {
+            sbSQL.append("NON");
         }
+        sbSQL.append("CLUSTERED ");
 
         sbSQL.append("INDEX ");
         sbSQL.append(MsDiffUtils.quoteName(getName()));

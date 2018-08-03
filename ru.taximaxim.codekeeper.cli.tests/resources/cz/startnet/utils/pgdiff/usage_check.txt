@@ -68,6 +68,7 @@ Usage:
                                           library objects otherwise, in case of
                                           conflicts objects loaded first have
                                           priority
+ --ms-sql                               : work with MS SQL
 
 DANGER_STATEMENT : [DROP_TABLE | ALTER_COLUMN | DROP_COLUMN | RESTART_WITH]
 OBJECT_TYPE : [SCHEMA | EXTENSION | TYPE | DOMAIN | SEQUENCE | FUNCTION | PROCEDURE | FTS_PARSER | FTS_TEMPLATE | FTS_DICTIONARY | FTS_CONFIGURATION | TABLE | CONSTRAINT | INDEX | VIEW | TRIGGER | RULE]

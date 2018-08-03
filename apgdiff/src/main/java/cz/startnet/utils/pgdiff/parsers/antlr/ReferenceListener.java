@@ -41,6 +41,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_statementsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_trigger_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_parametersContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Object_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rule_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
@@ -553,35 +554,22 @@ public class ReferenceListener extends SQLParserBaseListener {
 
     public void createRule(Rule_commonContext ctx) {
         DbObjType type = null;
-        List<Schema_qualified_nameContext> obj_name = new ArrayList<>();
-        if (ctx.body_rule.body_rules_rest().obj_name != null) {
-            obj_name = ctx.body_rule.body_rules_rest().obj_name.name;
-        } else if (ctx.body_rule.on_table() != null) {
+        List<Schema_qualified_nameContext> obj_name = ctx.names_references().name;
+        Object_typeContext typeCtx = ctx.object_type();
+        if (typeCtx.TABLE() != null) {
             type = DbObjType.TABLE;
-            obj_name = ctx.body_rule.on_table().obj_name.name;
-        } else if (ctx.body_rule.on_sequence() != null) {
+        } else if (typeCtx.SEQUENCE() != null) {
             type = DbObjType.SEQUENCE;
-            obj_name = ctx.body_rule.on_sequence().obj_name.name;
-        } else if (ctx.body_rule.on_database() != null) {
-            type = DbObjType.DATABASE;
-            obj_name = ctx.body_rule.on_database().obj_name.name;
-        } else if (ctx.body_rule.on_datawrapper_server_lang() != null) {
-            obj_name = ctx.body_rule.on_datawrapper_server_lang().obj_name.name;
-        } else if (ctx.body_rule.on_function() != null) {
+        } else if (ctx.FUNCTION() != null) {
             type = DbObjType.FUNCTION;
-            for (Function_parametersContext functparam : ctx.body_rule.on_function().obj_name) {
+            for (Function_parametersContext functparam : ctx.func_name) {
                 addObjReference(getDefSchemaName(), QNameParser.getFirstName(functparam.name.identifier()),
                         DbObjType.FUNCTION, StatementActions.NONE,
                         functparam.name.getStart().getStartIndex(), functparam.name.getStart().getLine(),
                         ParserAbstract.getFullCtxText(ctx.getParent()));
             }
-        } else if (ctx.body_rule.on_large_object() != null) {
-            obj_name = ctx.body_rule.on_large_object().obj_name.name;
-        } else if (ctx.body_rule.on_schema() != null) {
+        } else if (typeCtx.SCHEMA() != null) {
             type = DbObjType.SCHEMA;
-            obj_name = ctx.body_rule.on_schema().obj_name.name;
-        } else if (ctx.body_rule.on_tablespace() != null) {
-            obj_name = ctx.body_rule.on_tablespace().obj_name.name;
         }
 
         for (Schema_qualified_nameContext name : obj_name) {

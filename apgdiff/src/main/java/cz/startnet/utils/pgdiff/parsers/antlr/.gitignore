@@ -29,3 +29,5 @@
 /TSQLParser.tokens
 /TSQLParserBaseListener.java
 /TSQLParserListener.java
+/TSQLParserBaseVisitor.java
+/TSQLParserVisitor.java

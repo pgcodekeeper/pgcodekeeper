@@ -127,6 +127,8 @@ public class MsProcedure extends PgStatementWithSearchPath {
             ProcedureArgument argDst = proc.new ProcedureArgument(argSrc.getMode(),
                     argSrc.getName(), argSrc.getDataType());
             argDst.setDefaultExpression(argSrc.getDefaultExpression());
+            argDst.setReadOnly(argSrc.isReadOnly());
+            argDst.setVarying(argSrc.isVarying());
             proc.addArgument(argDst);
         }
 

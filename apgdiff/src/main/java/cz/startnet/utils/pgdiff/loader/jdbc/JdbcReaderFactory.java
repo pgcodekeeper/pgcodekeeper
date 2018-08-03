@@ -21,6 +21,13 @@ import cz.startnet.utils.pgdiff.loader.jdbc.FtsParsersReader.FtsParsersReaderFac
 import cz.startnet.utils.pgdiff.loader.jdbc.FtsTemplatesReader.FtsTemplatesReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.FunctionsReader.FunctionsReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.IndicesReader.IndicesReaderFactory;
+import cz.startnet.utils.pgdiff.loader.jdbc.MsCheckConstraintsReader.MsCheckConstraintsReaderFactory;
+import cz.startnet.utils.pgdiff.loader.jdbc.MsExtendedObjectsReader.MsExtendedObjectsReaderFactory;
+import cz.startnet.utils.pgdiff.loader.jdbc.MsFKReader.MsFKReaderFactory;
+import cz.startnet.utils.pgdiff.loader.jdbc.MsFPVTReader.MsFPVTReaderFactory;
+import cz.startnet.utils.pgdiff.loader.jdbc.MsIndicesAndPKReader.MsIndicesAndPKReaderFactory;
+import cz.startnet.utils.pgdiff.loader.jdbc.MsSequencesReader.MsSequencesReaderFactory;
+import cz.startnet.utils.pgdiff.loader.jdbc.MsTablesReader.MsTablesReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.RulesReader.RulesReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.SequencesReader.SequencesReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.TablesReader.TablesReaderFactory;
@@ -53,6 +60,10 @@ public abstract class JdbcReaderFactory {
 
     public abstract JdbcReader getReader(JdbcLoaderBase loader);
 
+    public String getBaseQuery() {
+        return queries.get(null);
+    }
+
     public String makeFallbackQuery (int version) {
         StringBuilder sb = new StringBuilder("SELECT * FROM (");
         sb.append(queries.get(null));
@@ -73,6 +84,7 @@ public abstract class JdbcReaderFactory {
 
     private static final String HELPER_SCHEMA = "pgcodekeeperhelper";
     public static final List<? extends JdbcReaderFactory> FACTORIES;
+    public static final List<? extends JdbcReaderFactory> MS_FACTORIES;
     static {
         // SONAR-OFF
         // NOTE: order of readers has been changed to move the heaviest ANTLR tasks to the beginning
@@ -95,6 +107,15 @@ public abstract class JdbcReaderFactory {
                 new FtsDictionariesReaderFactory(  1 << i++, "get_all_fts_dictionaries",   JdbcQueries.QUERY_FTS_DICTIONARIES_PER_SCHEMA),
                 new FtsConfigurationsReaderFactory(1 << i++, "get_all_fts_configurations", JdbcQueries.QUERY_FTS_CONFIGURATIONS_PER_SCHEMA)
                 // SONAR-ON
+                ));
+        MS_FACTORIES = Collections.unmodifiableList(Arrays.asList(
+                new MsFPVTReaderFactory(JdbcQueries.QUERY_MS_FUNCTIONS_PROCEDURES_VIEWS_TRIGGERS),
+                new MsExtendedObjectsReaderFactory(JdbcQueries.QUERY_MS_EXTENDED_FUNCTIONS_AND_PROCEDURES),
+                new MsTablesReaderFactory(JdbcQueries.QUERY_MS_TABLES),
+                new MsSequencesReaderFactory(JdbcQueries.QUERY_MS_SEQUENCES),
+                new MsIndicesAndPKReaderFactory(JdbcQueries.QUERY_MS_INDICES_AND_PK),
+                new MsFKReaderFactory(JdbcQueries.QUERY_MS_FK),
+                new MsCheckConstraintsReaderFactory(JdbcQueries.QUERY_MS_CHECK_CONSTRAINTS)
                 ));
     }
 

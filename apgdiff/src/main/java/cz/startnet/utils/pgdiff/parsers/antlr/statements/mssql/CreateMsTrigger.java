@@ -18,9 +18,15 @@ public class CreateMsTrigger extends ParserAbstract {
 
     private final Create_or_alter_triggerContext ctx;
 
-    public CreateMsTrigger(Create_or_alter_triggerContext ctx, PgDatabase db) {
+    private final boolean ansiNulls;
+    private final boolean quotedIdentifier;
+
+    public CreateMsTrigger(Create_or_alter_triggerContext ctx, PgDatabase db,
+            boolean ansiNulls, boolean quotedIdentifier) {
         super(db);
         this.ctx = ctx;
+        this.ansiNulls = ansiNulls;
+        this.quotedIdentifier = quotedIdentifier;
     }
 
     @Override
@@ -29,6 +35,9 @@ public class CreateMsTrigger extends ParserAbstract {
         PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         MsTrigger trigger = new MsTrigger(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
         trigger.setTableName(QNameParser.getFirstName(ctx.table_name().id()));
+        trigger.setAnsiNulls(ansiNulls);
+        trigger.setQuotedIdentified(quotedIdentifier);
+
         if (ctx.AFTER() != null) {
             trigger.setType(TgTypes.AFTER);
         } else if (ctx.FOR() != null) {
@@ -53,7 +62,6 @@ public class CreateMsTrigger extends ParserAbstract {
 
         trigger.setNotForRep(ctx.not_for_replication() != null);
         trigger.setAppend(ctx.with_append() != null);
-        // TODO select analyze
         trigger.setQuery(getFullCtxText(ctx.sql_clauses()));
 
         getSafe(schema::getTriggerContainer, QNameParser.getFirstNameCtx(ctx.table_name().id()))
