@@ -17,6 +17,7 @@ import cz.startnet.utils.pgdiff.hashers.IHashable;
 import cz.startnet.utils.pgdiff.hashers.JavaHasher;
 import cz.startnet.utils.pgdiff.hashers.ShaHasher;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.ObjectCreationException;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -279,9 +280,9 @@ public abstract class PgStatement implements IStatement, IHashable {
             .append(PgDiffUtils.getQuotedName(owner))
             .append(';');
         } else {
-            // TODO SCHEMA OWNER instead of null owner
-            sb.append(" AUTHORIZATION ON ").append(MsDiffUtils.quoteName(getName()))
-            .append(" TO ").append(MsDiffUtils.quoteName(owner)).append(GO);
+            sb.append("AUTHORIZATION ON ").append(getQualifiedName())
+            .append(" TO ").append(ApgdiffConsts.SCHEMA_OWNER.equals(owner) ? owner :
+                MsDiffUtils.quoteName(owner)).append(GO);
         }
 
         return sb;

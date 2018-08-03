@@ -519,6 +519,7 @@ FILEGROUP:                                     F I L E G R O U P;
 FILEGROWTH:                                    F I L E G R O W T H;
 FILEPATH:                                      F I L E P A T H;
 FILESTREAM:                                    F I L E S T R E A M;
+FILESTREAM_ON:                                 F I L E S T R E A M '_' O N;
 FILTER:                                        F I L T E R;
 FIRST:                                         F I R S T;
 FIRST_VALUE:                                   F I R S T '_' V A L U E;
@@ -802,7 +803,6 @@ XSINIL:                                        X S I N I L;
 
 
 
-SPACE:              [ \t\r\n]+    -> skip;
 // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/slash-star-comment-transact-sql
 COMMENT:            '/*' (COMMENT | .)*? '*/' -> channel(HIDDEN);
 LINE_COMMENT:       '--' ~[\r\n]* -> channel(HIDDEN);
@@ -810,16 +810,30 @@ LINE_COMMENT:       '--' ~[\r\n]* -> channel(HIDDEN);
 // TODO: ID can be not only Latin.
 LEFT_FIGURE_PAREN:  '{';
 RIGHT_FIGURE_PAREN: '}';
-DOUBLE_QUOTE_ID:    '"' ~'"'+ '"';
+DOUBLE_QUOTE_ID:  UnterminatedQuotedIdentifier '"'
+    // unquote so that we may always call getText() and not worry about quotes
+        {
+            String __tx = getText();
+            setText(__tx.substring(1, __tx.length() - 1).replace("\"\"", "\""));
+        }
+    ;
+    
 SINGLE_QUOTE:       '\'';
-SQUARE_BRACKET_ID:  '[' ~']'+ ']';
+SQUARE_BRACKET_ID:  UnterminatedSquareQuotedIdentifier ']'
+    // unquote so that we may always call getText() and not worry about quotes
+        {
+            String __tx = getText();
+            setText(__tx.substring(1, __tx.length() - 1).replace("]]", "]"));
+        }
+    ;
+    
 LOCAL_ID:           '@' ([a-zA-Z_$@#0-9] | FullWidthLetter)+;
 DECIMAL:             DEC_DIGIT+;
 ID:                  ( [a-zA-Z_#] | FullWidthLetter) ( [a-zA-Z_#$@0-9] | FullWidthLetter )*;
 QUOTED_URL:          '\''([a-zA-Z][a-zA-Z]+[:]) '//'(([a-zA-Z]+[.]|[a-zA-Z]+)|IPV4_ADDR) [:] DECIMAL '\'';
 QUOTED_HOST_AND_PORT:'\''(([a-zA-Z]+[.]|[a-zA-Z]+)|IPV4_ADDR) ([:] DECIMAL) '\'';
 STRING:              N? '\'' (~'\'' | '\'\'')* '\'';
-BINARY:              '0' X HEX_DIGIT*;
+BINARY:              '0' X (HEX_DIGIT | BACKSLASH [\r]? [\n])*;
 FLOAT:               DEC_DOT_DEC;
 REAL:                (DECIMAL | DEC_DOT_DEC) (E [+-]? DEC_DIGIT+);
 
@@ -858,6 +872,22 @@ BIT_NOT:             '~';
 BIT_OR:              '|';
 BIT_AND:             '&';
 BIT_XOR:             '^';
+
+// This is a quoted identifier which only contains valid characters but is not terminated
+fragment UnterminatedQuotedIdentifier
+    : '"'
+    ( '""'
+    | ~[\u0000"]
+    )*
+    ;
+
+// This is a quoted identifier which only contains valid characters but is not terminated
+fragment UnterminatedSquareQuotedIdentifier
+    : '['
+    ( ']]'
+    | ~[\u0000\]]
+    )*
+    ;
 
 fragment LETTER:       [a-zA-Z_];
 fragment IPV6_OCTECT:  [0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f];
@@ -909,3 +939,9 @@ fragment FullWidthLetter
     // | '\u10000'..'\u1F9FF'  //not support four bytes chars
     // | '\u20000'..'\u2FA1F'
     ;
+
+BOM: '\ufeff';
+SPACE:              [ \t\r\n]+    -> skip;
+BAD
+  : .
+  ;

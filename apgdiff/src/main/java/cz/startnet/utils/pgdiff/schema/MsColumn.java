@@ -12,8 +12,11 @@ public class MsColumn extends PgColumn {
     // TODO ROWGUIDCOL | PERSISTED | HIDDEN | MASKED
     private boolean isSparse;
     private boolean isNotForRep;
-    private String identity;
+    private boolean isIdentity;
+    private String seed;
+    private String increment;
     private String defaultName;
+    private String expession;
 
     public MsColumn(String name) {
         super(name);
@@ -24,7 +27,11 @@ public class MsColumn extends PgColumn {
         final StringBuilder sbDefinition = new StringBuilder();
         sbDefinition.append(MsDiffUtils.quoteName(name));
         sbDefinition.append(' ');
-        sbDefinition.append(MsDiffUtils.quoteName(getType()));
+        if (expession != null) {
+            sbDefinition.append("AS ").append(expession);
+        } else {
+            sbDefinition.append(getType());
+        }
 
         if (getCollation() != null) {
             sbDefinition.append(" COLLATE ").append(getCollation());
@@ -36,17 +43,18 @@ public class MsColumn extends PgColumn {
 
         sbDefinition.append(getNullValue() ? " NULL" : " NOT NULL");
 
-        if (identity != null) {
-            sbDefinition.append(" IDENTITY (").append(identity).append(")");;
+        if (isIdentity) {
+            sbDefinition.append(" IDENTITY (").append(seed).append(',').append(increment).append(")");
+            if (isNotForRep()) {
+                sbDefinition.append(" NOT FOR REPLICATION");
+            }
         }
 
-        if (isNotForRep()) {
-            sbDefinition.append(" NOT FOR REPLICATION");
-        }
-
-        if (getDefaultName() != null && getDefaultValue() != null) {
-            sbDefinition.append(" CONSTRAINT ");
-            sbDefinition.append(MsDiffUtils.quoteName(getDefaultName()));
+        if (getDefaultValue() != null) {
+            if (getDefaultName() != null) {
+                sbDefinition.append(" CONSTRAINT ");
+                sbDefinition.append(MsDiffUtils.quoteName(getDefaultName()));
+            }
             sbDefinition.append(" DEFAULT ");
             sbDefinition.append(getDefaultValue());
         }
@@ -78,8 +86,10 @@ public class MsColumn extends PgColumn {
             return false;
         }
 
-        // recreate column to change identity
-        if (!Objects.equals(newColumn.getIdentity(), getIdentity())) {
+        // recreate column to change identity or computed value
+        if (!Objects.equals(newColumn.getSeed(), getSeed())
+                || !Objects.equals(newColumn.getIncrement(), getIncrement())
+                || !Objects.equals(newColumn.getExpression(), getExpression())) {
             isNeedDepcies.set(true);
             return true;
         }
@@ -136,7 +146,8 @@ public class MsColumn extends PgColumn {
         if (!Objects.equals(getType(), newColumn.getType())
                 || !Objects.equals(newCollation, getCollation())
                 || newColumn.getNullValue() != getNullValue()) {
-            sb.append(getAlterColumn(true, false, newColumn.getName())).append(newColumn.getType());
+            sb.append(getAlterColumn(true, false, newColumn.getName()))
+            .append(MsDiffUtils.quoteName(newColumn.getType()));
 
             if (newCollation != null) {
                 sb.append(" COLLATE ").append(newCollation);
@@ -186,12 +197,26 @@ public class MsColumn extends PgColumn {
         resetHash();
     }
 
-    public String getIdentity() {
-        return identity;
+    public String getExpression() {
+        return expession;
     }
 
-    public void setIdentity(final String identity) {
-        this.identity = identity;
+    public void setExpression(final String expession) {
+        this.expession = expession;
+        resetHash();
+    }
+
+    public String getSeed() {
+        return seed;
+    }
+
+    public String getIncrement() {
+        return increment;
+    }
+
+    public void setIdentity(String seed, String increment) {
+        this.seed = seed;
+        this.increment = increment;
         resetHash();
     }
 
@@ -204,8 +229,10 @@ public class MsColumn extends PgColumn {
         colDst.setDefaultValue(getDefaultValue());
         colDst.setSparse(isSparse);
         colDst.setNotForRep(isNotForRep);
-        colDst.setIdentity(identity);
+        colDst.seed = getSeed();
+        colDst.increment = getIncrement();
         colDst.setDefaultName(defaultName);
+        colDst.setExpression(expession);
         for (PgPrivilege priv : grants) {
             colDst.addPrivilege(priv);
         }
@@ -221,8 +248,10 @@ public class MsColumn extends PgColumn {
         super.computeHash(hasher);
         hasher.put(isSparse);
         hasher.put(isNotForRep);
-        hasher.put(identity);
+        hasher.put(seed);
+        hasher.put(increment);
         hasher.put(defaultName);
+        hasher.put(expession);
     }
 
     @Override
@@ -231,8 +260,10 @@ public class MsColumn extends PgColumn {
             MsColumn col = (MsColumn) obj;
             return Objects.equals(isSparse, col.isSparse())
                     && Objects.equals(isNotForRep, col.isNotForRep())
-                    && Objects.equals(identity, col.getIdentity())
-                    && Objects.equals(defaultName, col.getDefaultName());
+                    && Objects.equals(seed, col.seed)
+                    && Objects.equals(increment, col.increment)
+                    && Objects.equals(defaultName, col.getDefaultName())
+                    && Objects.equals(expession, col.getExpression());
         }
 
         return false;

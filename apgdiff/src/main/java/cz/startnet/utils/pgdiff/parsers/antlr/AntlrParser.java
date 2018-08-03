@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Tsql_fileContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import ru.taximaxim.codekeeper.apgdiff.Log;
@@ -70,6 +71,9 @@ public class AntlrParser {
         if (parserClass.isAssignableFrom(SQLParser.class)) {
             lexer = new SQLLexer(stream);
             parser = new SQLParser(new CommonTokenStream(lexer));
+        } else if (parserClass.isAssignableFrom(TSQLParser.class)) {
+            lexer = new TSQLLexer(stream);
+            parser = new TSQLParser(new CommonTokenStream(lexer));
         } else if (parserClass.isAssignableFrom(IgnoreListParser.class)) {
             lexer = new IgnoreListLexer(stream);
             parser = new IgnoreListParser(new CommonTokenStream(lexer));
@@ -91,19 +95,37 @@ public class AntlrParser {
 
     public static void parseSqlStream(InputStream inputStream, String charsetName,
             String parsedObjectName, List<AntlrError> errors,IProgressMonitor mon, int monitoringLevel,
-            Collection<SQLParserBaseListener> listeners) throws IOException, InterruptedException {
+            Collection<ParseTreeListener> listeners) throws IOException, InterruptedException {
         SQLParser parser = makeBasicParser(SQLParser.class, inputStream, charsetName, parsedObjectName, errors);
         parser.addParseListener(new CustomParseTreeListener(
                 monitoringLevel, mon == null ? new NullProgressMonitor() : mon));
         try {
             SqlContext ctx = parser.sql();
-            for (SQLParserBaseListener listener : listeners) {
+            for (ParseTreeListener listener : listeners) {
                 ParseTreeWalker.DEFAULT.walk(listener, ctx);
             }
         } catch (MonitorCancelledRuntimeException mcre){
             throw new InterruptedException();
         } catch (UnresolvedReferenceException ex) {
             errors.add(CustomSQLParserListener.handleUnresolvedReference(ex, parsedObjectName));
+        }
+    }
+
+    public static void parseTSqlStream(InputStream inputStream, String charsetName,
+            String parsedObjectName, List<AntlrError> errors,IProgressMonitor mon, int monitoringLevel,
+            Collection<ParseTreeListener> listeners) throws IOException, InterruptedException {
+        TSQLParser parser = makeBasicParser(TSQLParser.class, inputStream, charsetName, parsedObjectName, errors);
+        parser.addParseListener(new CustomParseTreeListener(
+                monitoringLevel, mon == null ? new NullProgressMonitor() : mon));
+        try {
+            Tsql_fileContext ctx = parser.tsql_file();
+            for (ParseTreeListener listener : listeners) {
+                ParseTreeWalker.DEFAULT.walk(listener, ctx);
+            }
+        } catch (MonitorCancelledRuntimeException mcre){
+            throw new InterruptedException();
+        } catch (UnresolvedReferenceException ex) {
+            errors.add(CustomTSQLParserListener.handleUnresolvedReference(ex, parsedObjectName));
         }
     }
 }

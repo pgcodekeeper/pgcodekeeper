@@ -23,9 +23,15 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_of_type_column_def
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_unique_prkeyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_optionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Identity_valueContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.MsColumn;
+import cz.startnet.utils.pgdiff.schema.MsConstraint;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -64,7 +70,6 @@ public abstract class AbstractTable extends ParserAbstract {
 
     private void addTableConstraint(Constraint_commonContext ctx,
             PgColumn col, PgTable table) {
-
         Constr_bodyContext body = ctx.constr_body();
         Common_constraintContext comConstr = body.common_constraint();
         Table_unique_prkeyContext prkey = body.table_unique_prkey();
@@ -256,5 +261,60 @@ public abstract class AbstractTable extends ParserAbstract {
             String schemaName, PgDatabase db) {
         UtilAnalyzeExpr.analyzeWithNmspc(ctx, statement, schemaName,
                 statement.getParent().getName(), db);
+    }
+
+    protected static void fillColumn(Column_def_table_constraintContext colCtx,
+            PgTable table) {
+        if (colCtx.table_constraint() != null) {
+            addMsConstraint(colCtx.table_constraint(), table);
+        } else {
+            MsColumn col = new MsColumn(colCtx.id().getText());
+
+            if (colCtx.data_type() != null) {
+                col.setType(getFullCtxText(colCtx.data_type()));
+            } else {
+                col.setExpression(getFullCtxText(colCtx.expression()));
+            }
+
+            for (Column_optionContext option : colCtx.column_option()) {
+                if (option.SPARSE() != null) {
+                    col.setSparse(true);
+                } else if (option.COLLATE() != null) {
+                    col.setCollation(getFullCtxText(option.collate));
+                } else if (option.IDENTITY() != null) {
+                    Identity_valueContext identity = option.identity_value();
+                    if (identity == null) {
+                        col.setIdentity("1", "1");
+                    } else {
+                        col.setIdentity(identity.seed.getText(), identity.increment.getText());
+                    }
+
+                    if (option.not_for_rep != null) {
+                        col.setNotForRep(true);
+                    }
+                } else if (option.NULL() != null) {
+                    col.setNullValue(option.NOT() == null);
+                } else if (option.DEFAULT() != null) {
+                    if (option.id() != null) {
+                        col.setDefaultName(option.id().getText());
+                    }
+                    col.setDefaultValue(getFullCtxText(option.constant_expression()));
+                } else if (option.column_constraint_body() != null) {
+                    String conName = option.id() == null ? "" : getFullCtxText(option.id());
+                    MsConstraint con = new MsConstraint(conName, getFullCtxText(option));
+                    con.setDefinition(getFullCtxText(option.column_constraint_body()));
+                    table.addConstraint(con);
+                }
+            }
+
+            table.addColumn(col);
+        }
+    }
+
+    protected static void addMsConstraint(Table_constraintContext conCtx, PgTable table) {
+        String conName = conCtx.id() == null ? "" : conCtx.id().getText();
+        MsConstraint con = new MsConstraint(conName, getFullCtxText(conCtx));
+        con.setDefinition(getFullCtxText(conCtx.table_constraint_body()));
+        table.addConstraint(con);
     }
 }

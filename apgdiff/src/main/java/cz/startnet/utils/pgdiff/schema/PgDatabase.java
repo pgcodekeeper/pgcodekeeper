@@ -60,22 +60,7 @@ public class PgDatabase extends PgStatement {
     }
 
     public PgDatabase() {
-        this(true);
-    }
-
-    /**
-     * @param createDefaultObjects
-     *          add default public schema and default plpgsql extension automatically
-     */
-    public PgDatabase(boolean createDefaultObjects) {
         super("DB_name_placeholder", null);
-
-        if (createDefaultObjects) {
-            addSchema(new PgSchema(ApgdiffConsts.PUBLIC, null));
-            defaultSchema = schemas.get(0);
-            // DO NOT ADD plpgsql extension here
-            // it is already present in dumps and this branch is executed only for dumps
-        }
     }
 
     public void setDefaultSchema(final String name) {
@@ -300,7 +285,7 @@ public class PgDatabase extends PgStatement {
 
     @Override
     public PgDatabase shallowCopy() {
-        PgDatabase dbDst = new PgDatabase(false);
+        PgDatabase dbDst = new PgDatabase();
         dbDst.setArguments(getArguments());
         dbDst.setComment(getComment());
         dbDst.setPostgresVersion(getPostgresVersion());

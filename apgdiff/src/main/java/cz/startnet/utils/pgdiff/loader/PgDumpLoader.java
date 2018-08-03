@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
@@ -27,9 +28,10 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
+import cz.startnet.utils.pgdiff.parsers.antlr.CustomTSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.ReferenceListener;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
+import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -50,6 +52,9 @@ public class PgDumpLoader implements AutoCloseable {
     protected static final String[] DIR_LOAD_ORDER = new String[] { "TYPE", "DOMAIN",
             "SEQUENCE", "FUNCTION", "TABLE", "CONSTRAINT", "INDEX", "TRIGGER", "VIEW",
             "FTS_PARSER", "FTS_TEMPLATE", "FTS_DICTIONARY", "FTS_CONFIGURATION" };
+
+    protected static final String[] MS_DIR_LOAD_ORDER = new String[] { "Assemblies",
+            "Sequences", "Stored procedures", "Functions", "Tables", "Views"};
 
     private final InputStream input;
     private final String inputObjectName;
@@ -137,28 +142,50 @@ public class PgDumpLoader implements AutoCloseable {
      * The same as {@link #load(boolean)} with <code>false<code> argument.
      */
     public PgDatabase load() throws IOException, InterruptedException {
-        PgDatabase d = new PgDatabase(true);
+        PgDatabase d = new PgDatabase();
+
+        PgSchema schema = args.isMsSql() ? new MsSchema(ApgdiffConsts.DBO, "") :
+            new PgSchema(ApgdiffConsts.PUBLIC, "");
+        d.addSchema(schema);
+        d.setDefaultSchema(schema.getName());
         d.setArguments(args);
         load(d);
-        d.getSchema(ApgdiffConsts.PUBLIC).setLocation(inputObjectName);
+        d.getSchema(schema.getName()).setLocation(inputObjectName);
         FullAnalyze.fullAnalyze(d);
         return d;
     }
 
     protected PgDatabase load(PgDatabase intoDb) throws IOException, InterruptedException {
         PgDiffUtils.checkCancelled(monitor);
+        List<ParseTreeListener> listeners = new ArrayList<>();
 
-        List<SQLParserBaseListener> listeners = new ArrayList<>();
-        if (loadSchema) {
-            listeners.add(new CustomSQLParserListener(intoDb, inputObjectName, errors, monitor));
+        if (args.isMsSql()) {
+            if (loadSchema) {
+                listeners.add(new CustomTSQLParserListener(intoDb, inputObjectName, errors, monitor));
+            }
+
+            /*
+            if (loadReferences) {
+                ReferenceListener refListener = new ReferenceListener(intoDb, inputObjectName, monitor);
+                statementBodyReferences = refListener.getStatementBodies();
+                listeners.add(refListener);
+            } */
+
+            AntlrParser.parseTSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
+                    monitor, monitoringLevel, listeners);
+        } else {
+            if (loadSchema) {
+                listeners.add(new CustomSQLParserListener(intoDb, inputObjectName, errors, monitor));
+            }
+            if (loadReferences) {
+                ReferenceListener refListener = new ReferenceListener(intoDb, inputObjectName, monitor);
+                statementBodyReferences = refListener.getStatementBodies();
+                listeners.add(refListener);
+            }
+            AntlrParser.parseSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
+                    monitor, monitoringLevel, listeners);
         }
-        if (loadReferences) {
-            ReferenceListener refListener = new ReferenceListener(intoDb, inputObjectName, monitor);
-            statementBodyReferences = refListener.getStatementBodies();
-            listeners.add(refListener);
-        }
-        AntlrParser.parseSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
-                monitor, monitoringLevel, listeners);
+
         return intoDb;
     }
 
@@ -178,7 +205,7 @@ public class PgDumpLoader implements AutoCloseable {
     public static PgDatabase loadDatabaseSchemaFromDirTree(String dirPath,
             PgDiffArguments arguments, IProgressMonitor monitor, List<AntlrError> errors)
                     throws InterruptedException, IOException {
-        PgDatabase db = new PgDatabase(false);
+        PgDatabase db = new PgDatabase();
         db.setArguments(arguments);
         File dir = new File(dirPath);
 
@@ -206,6 +233,30 @@ public class PgDumpLoader implements AutoCloseable {
         }
 
         FullAnalyze.fullAnalyze(db);
+        return db;
+    }
+
+    /**
+     * Loads database schema from a MS SQL ModelExporter directory tree.
+     */
+    public static PgDatabase loadMsDatabaseSchemaFromDirTree(String dirPath,
+            PgDiffArguments arguments, IProgressMonitor monitor, List<AntlrError> errors)
+                    throws InterruptedException, IOException {
+        PgDatabase db = new PgDatabase();
+        db.addSchema(new MsSchema(ApgdiffConsts.DBO, ""));
+        db.setDefaultSchema(ApgdiffConsts.DBO);
+        db.setArguments(arguments);
+        File dir = new File(dirPath);
+
+        File securityFolder = new File(dir, "Security");
+        loadSubdir(securityFolder, arguments, "Roles", db, monitor, errors);
+        loadSubdir(securityFolder, arguments, "Users", db, monitor, errors);
+        loadSubdir(securityFolder, arguments, "Schemas", db, monitor, errors);
+
+        for (String dirSub : MS_DIR_LOAD_ORDER) {
+            loadSubdir(dir, arguments, dirSub, db, monitor, errors);
+        }
+
         return db;
     }
 
@@ -239,7 +290,7 @@ public class PgDumpLoader implements AutoCloseable {
             if (Files.exists(p.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
                 return PgDumpLoader.loadDatabaseSchemaFromDirTree(path,  args, null, null);
             } else {
-                PgDatabase db = new PgDatabase(false);
+                PgDatabase db = new PgDatabase();
                 db.setArguments(args);
                 readStatementsFromDirectory(p, db, args);
                 return db;

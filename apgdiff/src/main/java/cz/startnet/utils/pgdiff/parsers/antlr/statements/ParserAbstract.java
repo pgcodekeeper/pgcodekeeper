@@ -99,7 +99,7 @@ public abstract class ParserAbstract {
     }
 
     public static <T extends IStatement> T getSafe(Function <String, T> getter,
-            IdentifierContext ctx) {
+            ParserRuleContext ctx) {
         return getSafe(getter, ctx.getText(), ctx.getStart());
     }
 
@@ -113,8 +113,8 @@ public abstract class ParserAbstract {
         return statement;
     }
 
-    public PgSchema getSchemaSafe(List<IdentifierContext> ids, PgSchema defaultSchema) {
-        IdentifierContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
+    public PgSchema getSchemaSafe(List<? extends ParserRuleContext> ids, PgSchema defaultSchema) {
+        ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
         return schemaCtx == null ? defaultSchema : getSafe(db::getSchema, schemaCtx);
     }
 

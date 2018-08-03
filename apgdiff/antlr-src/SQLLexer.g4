@@ -799,6 +799,8 @@ White_Space
   : ( Control_Characters  | Extended_Control_Characters )+ -> channel(HIDDEN)
   ;
 
+BOM: '\ufeff';
+
 BAD
   : .
   ;

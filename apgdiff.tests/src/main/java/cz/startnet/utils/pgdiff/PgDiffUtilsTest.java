@@ -19,69 +19,69 @@ public class PgDiffUtilsTest {
     @Test(timeout = 1000)
     public void testParseSchemaBothQuoted() {
         Assert.assertThat(
-                new QNameParser("\"juzz_system\".\"f_obj_execute_node_select\"").getSchemaName(null),
+                QNameParser.parsePg("\"juzz_system\".\"f_obj_execute_node_select\"").getSchemaName(null),
                 IsEqual.equalTo("juzz_system"));
     }
 
     @Test(timeout = 1000)
     public void testParseSchemaFirstQuoted() {
         Assert.assertThat(
-                new QNameParser("\"juzz_system\".f_obj_execute_node_select").getSchemaName(null),
+                QNameParser.parsePg("\"juzz_system\".f_obj_execute_node_select").getSchemaName(null),
                 IsEqual.equalTo("juzz_system"));
     }
 
     @Test(timeout = 1000)
     public void testParseSchemaSecondQuoted() {
         Assert.assertThat(
-                new QNameParser("juzz_system.\"f_obj_execute_node_select\"").getSchemaName(null),
+                QNameParser.parsePg("juzz_system.\"f_obj_execute_node_select\"").getSchemaName(null),
                 IsEqual.equalTo("juzz_system"));
     }
 
     @Test(timeout = 1000)
     public void testParseSchemaNoneQuoted() {
         Assert.assertThat(
-                new QNameParser("juzz_system.f_obj_execute_node_select").getSchemaName(null),
+                QNameParser.parsePg("juzz_system.f_obj_execute_node_select").getSchemaName(null),
                 IsEqual.equalTo("juzz_system"));
     }
 
     @Test(timeout = 1000)
     public void testParseSchemaThreeQuoted() {
         Assert.assertThat(
-                new QNameParser("\"juzz_system\".\"f_obj_execute_node_select\".\"test\"").getSchemaName(null),
+                QNameParser.parsePg("\"juzz_system\".\"f_obj_execute_node_select\".\"test\"").getSchemaName(null),
                 IsEqual.equalTo("juzz_system"));
     }
 
     @Test(timeout = 1000)
     public void testParseObjectBothQuoted() {
-        Assert.assertThat(new QNameParser(
+        Assert.assertThat(QNameParser.parsePg(
                 "\"juzz_system\".\"f_obj_execute_node_select\"").getFirstName(),
                 IsEqual.equalTo("f_obj_execute_node_select"));
     }
 
     @Test(timeout = 1000)
     public void testParseObjectFirstQuoted() {
-        Assert.assertThat(new QNameParser(
+        Assert.assertThat(QNameParser.parsePg(
                 "\"juzz_system\".f_obj_execute_node_select").getFirstName(),
                 IsEqual.equalTo("f_obj_execute_node_select"));
     }
 
     @Test(timeout = 1000)
     public void testParseObjectSecondQuoted() {
-        Assert.assertThat(new QNameParser(
+        Assert.assertThat(QNameParser.parsePg(
                 "juzz_system.\"f_obj_execute_node_select\"").getFirstName(),
                 IsEqual.equalTo("f_obj_execute_node_select"));
     }
 
     @Test(timeout = 1000)
     public void testParseObjectNoneQuoted() {
-        Assert.assertThat(new QNameParser(
+        Assert.assertThat(QNameParser.parsePg(
                 "juzz_system.f_obj_execute_node_select").getFirstName(),
                 IsEqual.equalTo("f_obj_execute_node_select"));
     }
 
     @Test(timeout = 1000)
     public void testParseObjectThreeQuoted() {
-        Assert.assertThat(new QNameParser(
+        Assert.assertThat(QNameParser.parsePg(
                 "\"juzz_system\".\"f_obj_execute_node_select\".\"test\"").getFirstName(),
                 IsEqual.equalTo("test"));
     }

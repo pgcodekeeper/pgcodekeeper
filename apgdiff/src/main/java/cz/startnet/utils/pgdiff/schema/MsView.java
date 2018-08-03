@@ -6,8 +6,12 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
 
 public class MsView extends PgView {
+
+    private boolean ansiNulls;
+    private boolean quotedIdentified;
 
     public MsView(String name, String rawStatement) {
         super(name, rawStatement);
@@ -16,6 +20,11 @@ public class MsView extends PgView {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder(getQuery().length() * 2);
+        sbSQL.append("SET QUOTED_IDENTIFIER ").append(quotedIdentified ? "ON" : "OFF");
+        sbSQL.append(GO).append('\n');
+        sbSQL.append("SET ANSI_NULLS ").append(ansiNulls ? "ON" : "OFF");
+        sbSQL.append(GO).append('\n');
+
         sbSQL.append("CREATE OR ALTER VIEW ");
         sbSQL.append(getQualifiedName());
 
@@ -87,6 +96,62 @@ public class MsView extends PgView {
     @Override
     public String getDropSQL() {
         return "DROP VIEW " + getQualifiedName() + GO;
+    }
+
+    public void setAnsiNulls(boolean ansiNulls) {
+        this.ansiNulls = ansiNulls;
+        resetHash();
+    }
+
+    public boolean isAnsiNulls() {
+        return ansiNulls;
+    }
+
+    public void setQuotedIdentified(boolean quotedIdentified) {
+        this.quotedIdentified = quotedIdentified;
+        resetHash();
+    }
+
+    public boolean isQuotedIdentified() {
+        return quotedIdentified;
+    }
+
+    @Override
+    public boolean compare(PgStatement obj) {
+        if (obj instanceof MsView && super.compare(obj)) {
+            MsView view = (MsView) obj;
+            return Objects.equals(quotedIdentified, view.isQuotedIdentified())
+                    && Objects.equals(ansiNulls, view.isAnsiNulls());
+        }
+
+        return false;
+    }
+
+    @Override
+    public void computeHash(Hasher hasher) {
+        super.computeHash(hasher);
+        hasher.put(isQuotedIdentified());
+        hasher.put(isAnsiNulls());
+    }
+
+    @Override
+    public PgView shallowCopy() {
+        MsView viewDst = new MsView(getName(), getRawStatement());
+        viewDst.setQuery(getQuery());
+        viewDst.setComment(getComment());
+        viewDst.columnNames.addAll(columnNames);
+        for (PgPrivilege priv : revokes) {
+            viewDst.addPrivilege(priv);
+        }
+        for (PgPrivilege priv : grants) {
+            viewDst.addPrivilege(priv);
+        }
+        viewDst.setOwner(getOwner());
+        viewDst.deps.addAll(deps);
+        viewDst.options.putAll(options);
+        viewDst.setAnsiNulls(isAnsiNulls());
+        viewDst.setQuotedIdentified(isQuotedIdentified());
+        return viewDst;
     }
 
     @Override

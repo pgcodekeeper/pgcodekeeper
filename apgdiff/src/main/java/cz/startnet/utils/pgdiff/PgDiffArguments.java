@@ -40,6 +40,7 @@ public class PgDiffArguments implements Cloneable {
     private final List<String> targetLibs = new ArrayList<>();
     private final List<String> targetLibsWithoutPriv = new ArrayList<>();
     private boolean libSafeMode;
+    private boolean msSql;
 
     public void setModeParse(final boolean modeParse) {
         this.modeParse = modeParse;
@@ -143,6 +144,14 @@ public class PgDiffArguments implements Cloneable {
 
     public void setLibSafeMode(boolean libSafeMode) {
         this.libSafeMode = libSafeMode;
+    }
+
+    public boolean isMsSql() {
+        return msSql;
+    }
+
+    public void setMsSql(boolean msSql) {
+        this.msSql = msSql;
     }
 
     public String getInCharsetName() {

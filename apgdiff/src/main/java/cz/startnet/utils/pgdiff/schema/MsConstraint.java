@@ -17,9 +17,10 @@ public class MsConstraint extends PgConstraint {
         sbSQL.append(' ');
         sbSQL.append(MsDiffUtils.quoteName(getContainingSchema().getName()));
         sbSQL.append('.').append(MsDiffUtils.quoteName(getParent().getName()));
-        sbSQL.append("\n\tADD CONSTRAINT ");
-        sbSQL.append(MsDiffUtils.quoteName(getName()));
-        sbSQL.append(' ');
+        sbSQL.append("\n\tADD ");
+        if (!name.isEmpty()) {
+            sbSQL.append(" CONSTRAINT ").append(MsDiffUtils.quoteName(getName())).append(' ');
+        }
         sbSQL.append(getDefinition());
         sbSQL.append(GO);
 

@@ -594,17 +594,17 @@ public class ValueExpr extends AbstractExpr {
         switch (regcast) {
         case "regproc":
             // In this case, the function is not overloaded.
-            addFunctionDepcyNotOverloaded(new QNameParser(s).getIds());
+            addFunctionDepcyNotOverloaded(QNameParser.parsePg(s).getIds());
             break;
         case "regclass":
-            addRelationDepcy(new QNameParser(s).getIds());
+            addRelationDepcy(QNameParser.parsePg(s).getIds());
             break;
         case "regtype":
             // TODO pending DbObjType.TYPE
             break;
 
         case "regnamespace":
-            addSchemaDepcy(new QNameParser(s).getIds());
+            addSchemaDepcy(QNameParser.parsePg(s).getIds());
             return;
 
         case "regprocedure":
