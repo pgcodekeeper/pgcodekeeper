@@ -369,7 +369,8 @@ class PageDb extends WizardPage {
                     dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(), dbinfo.getProperties(),
                     dbinfo.isReadOnly(), ApgdiffConsts.UTC);
 
-            try (ResultSet rs = new JdbcRunner(monitor).runScript(connector, QUERY_TZ)) {
+            try (ResultSet rs = new JdbcRunner(monitor)
+                    .runScript(connector.getConnection().createStatement(), QUERY_TZ)) {
                 timezone = rs.next() ? rs.getString("setting") : null; //$NON-NLS-1$
             } catch (SQLException | IOException e) {
                 throw new InvocationTargetException(e, e.getLocalizedMessage());
