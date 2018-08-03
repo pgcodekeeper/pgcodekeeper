@@ -6,10 +6,11 @@ import java.sql.SQLException;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterTable;
+import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class ConstraintsReader extends JdbcReader {
@@ -21,21 +22,21 @@ public class ConstraintsReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet result, PgSchema schema) throws SQLException {
-        PgTable table = schema.getTable(result.getString(CLASS_RELNAME));
+    protected void processResult(ResultSet result, AbstractSchema schema) throws SQLException {
+        AbstractTable table = schema.getTable(result.getString(CLASS_RELNAME));
         if (table != null) {
             table.addConstraint(getConstraint(result, schema, table.getName()));
         }
     }
 
-    private PgConstraint getConstraint(ResultSet res, PgSchema schema, String tableName)
+    private AbstractConstraint getConstraint(ResultSet res, AbstractSchema schema, String tableName)
             throws SQLException {
         String schemaName = schema.getName();
         String contype = res.getString("contype");
 
         String constraintName = res.getString("conname");
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, constraintName, DbObjType.CONSTRAINT));
-        PgConstraint c = new PgConstraint(constraintName, "");
+        AbstractConstraint c = new PgConstraint(constraintName, "");
 
         switch (contype) {
         case "f":
@@ -64,7 +65,7 @@ public class ConstraintsReader extends JdbcReader {
         return c;
     }
 
-    private void createFKeyCon(ResultSet res, PgConstraint c) throws SQLException {
+    private void createFKeyCon(ResultSet res, AbstractConstraint c) throws SQLException {
         String fschema = res.getString("foreign_schema_name");
         String ftable = res.getString("foreign_table_name");
         GenericColumn ftableRef = new GenericColumn(fschema, ftable, DbObjType.TABLE);
@@ -80,7 +81,7 @@ public class ConstraintsReader extends JdbcReader {
         }
     }
 
-    private void createUniqueCon(String contype, ResultSet res, PgConstraint c) throws SQLException {
+    private void createUniqueCon(String contype, ResultSet res, AbstractConstraint c) throws SQLException {
         if ("p".equals(contype)) {
             c.setPrimaryKey(true);
         } else {

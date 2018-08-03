@@ -5,9 +5,10 @@ import java.sql.SQLException;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsConstraint;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsFKReader extends JdbcReader {
@@ -17,13 +18,13 @@ public class MsFKReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet res, PgSchema schema) throws SQLException, JsonReaderException {
+    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException, JsonReaderException {
         loader.monitor.worked(1);
         String name = res.getString("name");
         boolean isSystemNamed = res.getBoolean("is_system_named");
         loader.setCurrentObject(new GenericColumn(schema.getName(), name, DbObjType.CONSTRAINT));
 
-        MsConstraint con = new MsConstraint(isSystemNamed ? "" : name, "");
+        AbstractConstraint con = new MsConstraint(isSystemNamed ? "" : name, "");
         // TODO with no check
 
         StringBuilder sb = new StringBuilder();

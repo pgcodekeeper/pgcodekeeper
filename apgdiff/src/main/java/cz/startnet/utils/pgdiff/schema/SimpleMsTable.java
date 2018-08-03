@@ -12,7 +12,7 @@ import cz.startnet.utils.pgdiff.hashers.Hasher;
  * @author galiev_mr
  *
  */
-public class SimpleMsTable extends RegularPgTable {
+public class SimpleMsTable extends AbstractRegularTable {
 
     private String textImage;
     private String fileStream;
@@ -43,7 +43,7 @@ public class SimpleMsTable extends RegularPgTable {
         sbSQL.append("(\n");
 
         int start = sbSQL.length();
-        for (PgColumn column : columns) {
+        for (AbstractColumn column : columns) {
             writeColumn(column, sbSQL, sbOption);
         }
 
@@ -91,7 +91,7 @@ public class SimpleMsTable extends RegularPgTable {
     }
 
     @Override
-    protected boolean isNeedRecreate(PgTable newTable) {
+    protected boolean isNeedRecreate(AbstractTable newTable) {
         return  !(newTable instanceof SimpleMsTable)
                 || !Objects.equals(((SimpleMsTable)newTable).getTablespace(), getTablespace())
                 || !Objects.equals(((SimpleMsTable)newTable).getTextImage(), getTextImage())
@@ -101,7 +101,7 @@ public class SimpleMsTable extends RegularPgTable {
     }
 
     @Override
-    protected void compareTableTypes(PgTable newTable, StringBuilder sb) {
+    protected void compareTableTypes(AbstractTable newTable, StringBuilder sb) {
         // no implements
     }
 

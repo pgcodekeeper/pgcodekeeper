@@ -1,22 +1,10 @@
 package cz.startnet.utils.pgdiff.schema;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
-import cz.startnet.utils.pgdiff.hashers.Hasher;
 
-public class MsTrigger extends PgTrigger {
-
-    private final List<String> options = new ArrayList<>();
-    private String query;
-    private boolean isAppend;
-    private boolean isNotForRep;
-    private boolean ansiNulls;
-    private boolean quotedIdentified;
+public class MsTrigger extends AbstractTrigger {
 
     public MsTrigger(String name, String rawStatement) {
         super(name, rawStatement);
@@ -25,9 +13,9 @@ public class MsTrigger extends PgTrigger {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append("SET QUOTED_IDENTIFIER ").append(quotedIdentified ? "ON" : "OFF");
+        sbSQL.append("SET QUOTED_IDENTIFIER ").append(isQuotedIdentified() ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
-        sbSQL.append("SET ANSI_NULLS ").append(ansiNulls ? "ON" : "OFF");
+        sbSQL.append("SET ANSI_NULLS ").append(isAnsiNulls() ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
 
         sbSQL.append("CREATE OR ALTER TRIGGER ");
@@ -40,8 +28,8 @@ public class MsTrigger extends PgTrigger {
         sbSQL.append(MsDiffUtils.quoteName(getTableName()));
         sbSQL.append("\n");
 
-        if (!getOptions().isEmpty()) {
-            sbSQL.append("WITH ").append(String.join(", ", getOptions())).append('\n');
+        if (!options.isEmpty()) {
+            sbSQL.append("WITH ").append(String.join(", ", options)).append('\n');
         }
 
         switch (getType()) {
@@ -101,127 +89,30 @@ public class MsTrigger extends PgTrigger {
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
-        MsTrigger newTrigger;
         if (newCondition instanceof MsTrigger) {
-            newTrigger = (MsTrigger) newCondition;
-        } else {
-            return false;
-        }
-
-        if (compareWithoutComments(newTrigger)) {
-            sb.append(newTrigger.getCreationSQL());
-            return true;
-        }
-
-        return sb.length() > startLength;
-    }
-
-
-    @Override
-    public String getDropSQL() {
-        return "DROP TRIGGER " + MsDiffUtils.quoteName(getContainingSchema().getName())
-        + '.' + MsDiffUtils.quoteName(getName());
-    }
-
-    @Override
-    public void computeHash(Hasher hasher) {
-        super.computeHash(hasher);
-        hasher.put(options);
-        hasher.put(query);
-        hasher.put(isAppend);
-        hasher.put(isNotForRep);
-        hasher.put(quotedIdentified);
-        hasher.put(ansiNulls);
-    }
-
-    @Override
-    public boolean compare(PgStatement obj) {
-        if (obj instanceof MsTrigger && super.compare(obj)) {
-            MsTrigger trigger = (MsTrigger) obj;
-            return Objects.equals(options, trigger.getOptions())
-                    && Objects.equals(query, trigger.getQuery())
-                    && Objects.equals(isAppend, trigger.isAppend())
-                    && Objects.equals(isNotForRep, trigger.isNotForRep());
+            MsTrigger newTrigger = (MsTrigger) newCondition;
+            if (compareWithoutComments(newTrigger)) {
+                sb.append(newTrigger.getCreationSQL());
+                return true;
+            }
         }
 
         return false;
     }
 
-    public List<String> getOptions() {
-        return Collections.unmodifiableList(options);
-    }
-
-    public void addOption(String option) {
-        options.add(option);
-        resetHash();
-    }
-
-    public String getQuery() {
-        return query;
-    }
-
-    public void setQuery(final String query) {
-        this.query = query;
-        resetHash();
-    }
-
-    public boolean isAppend() {
-        return isAppend;
-    }
-
-    public void setAppend(final boolean isAppend) {
-        this.isAppend = isAppend;
-        resetHash();
-    }
-
-    public boolean isNotForRep() {
-        return isNotForRep;
-    }
-
-    public void setNotForRep(final boolean isNotForRep) {
-        this.isNotForRep = isNotForRep;
-        resetHash();
-    }
-
-    public void setAnsiNulls(boolean ansiNulls) {
-        this.ansiNulls = ansiNulls;
-        resetHash();
-    }
-
-    public boolean isAnsiNulls() {
-        return ansiNulls;
-    }
-
-    public void setQuotedIdentified(boolean quotedIdentified) {
-        this.quotedIdentified = quotedIdentified;
-        resetHash();
-    }
-
-    public boolean isQuotedIdentified() {
-        return quotedIdentified;
-    }
-
     @Override
-    public MsTrigger shallowCopy() {
-        MsTrigger tr = new MsTrigger(getName(), getRawStatement());
-        tr.setType(getType());
-        tr.setOnDelete(isOnDelete());
-        tr.setOnInsert(isOnInsert());
-        tr.setOnUpdate(isOnUpdate());
-        tr.setTableName(getTableName());
-        tr.deps.addAll(deps);
-        tr.options.addAll(options);
-        tr.setQuery(getQuery());
-        tr.setAppend(isAppend());
-        tr.setNotForRep(isNotForRep());
-        tr.setAnsiNulls(isAnsiNulls());
-        tr.setQuotedIdentified(isQuotedIdentified());
-        return tr;
+    public String getDropSQL() {
+        return "DROP TRIGGER " + MsDiffUtils.quoteName(getContainingSchema().getName()) +
+                '.' + MsDiffUtils.quoteName(getName()) + GO;
     }
 
     @Override
     public boolean isPostgres() {
         return false;
+    }
+
+    @Override
+    protected AbstractTrigger getTriggerCopy() {
+        return new MsTrigger(getName(), getRawStatement());
     }
 }

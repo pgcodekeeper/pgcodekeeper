@@ -71,7 +71,7 @@ public final class GenericColumn implements Serializable {
                 if (rel.getStatementType() != DbObjType.TABLE) {
                     // return silently if non-table
                     return null;
-                } else if (!((PgTable) rel).getInherits().isEmpty()) {
+                } else if (!((AbstractTable) rel).getInherits().isEmpty()) {
                     // or if inherited column
                     return null;
                 }
@@ -94,12 +94,12 @@ public final class GenericColumn implements Serializable {
             return null;
         }
 
-        PgSchema s = db.getSchema(schema);
+        AbstractSchema s = db.getSchema(schema);
         if (s == null && type != DbObjType.DATABASE && type != DbObjType.EXTENSION) {
             return null;
         }
 
-        PgTable t;
+        AbstractTable t;
         switch (type) {
         case DATABASE: return db;
         case SCHEMA: return s;
@@ -108,8 +108,8 @@ public final class GenericColumn implements Serializable {
         case TYPE: return getType(s);
         case DOMAIN: return s.getDomain(table);
         case SEQUENCE: return s.getSequence(table);
-        case FUNCTION: return resolveFunctionCall(s);
-        case PROCEDURE: return s.getProcedure(table);
+        case FUNCTION:
+        case PROCEDURE: return resolveFunctionCall(s);
         case TABLE: return getRelation(s);
         case VIEW: return s.getView(table);
 
@@ -139,7 +139,7 @@ public final class GenericColumn implements Serializable {
         }
     }
 
-    private PgStatement getRelation(PgSchema s) {
+    private PgStatement getRelation(AbstractSchema s) {
         PgStatement st = s.getTable(table);
         if (st != null) {
             return st;
@@ -158,7 +158,7 @@ public final class GenericColumn implements Serializable {
         return null;
     }
 
-    private PgStatement getType(PgSchema s) {
+    private PgStatement getType(AbstractSchema s) {
         PgStatement st = s.getType(table);
         if (st != null) {
             return st;
@@ -176,7 +176,7 @@ public final class GenericColumn implements Serializable {
     public static final Map<String, Integer> ZERO = new HashMap<>();
     public static final Map<String, Integer> MANY = new HashMap<>();
      */
-    private PgFunction resolveFunctionCall(PgSchema schema) {
+    private AbstractFunction resolveFunctionCall(AbstractSchema schema) {
         // in some cases (like triggers) we already have a signature reference, try it first
         // eventually this will become the norm (pending function call analysis)
         // and bare name lookup will become deprecated
@@ -184,7 +184,7 @@ public final class GenericColumn implements Serializable {
         // for now optimize by preferring bareName path for names with no signature (no parens)
         // later we can make a requirement of caching signatures when loading functions
 
-        PgFunction func = null;
+        AbstractFunction func = null;
         if (table.indexOf('(') != -1) {
             func = schema.getFunction(table);
         }
@@ -193,7 +193,7 @@ public final class GenericColumn implements Serializable {
         }
 
         int found = 0;
-        for (PgFunction f : schema.getFunctions()) {
+        for (AbstractFunction f : schema.getFunctions()) {
             if (f.getBareName().equals(table)) {
                 ++found;
                 func = f;

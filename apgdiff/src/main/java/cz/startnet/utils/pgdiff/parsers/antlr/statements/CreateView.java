@@ -22,8 +22,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ViewSelect;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
@@ -34,7 +35,6 @@ public class CreateView extends ParserAbstract {
             + "\n{2}\n)"
             + "\nSELECT {1}"
             + "\nFROM {0};";
-    private static final String CHECK_OPTION = "check_option";
 
     private final Create_view_statementContext context;
 
@@ -47,9 +47,9 @@ public class CreateView extends ParserAbstract {
     public PgStatement getObject() {
         Create_view_statementContext ctx = context;
         List<IdentifierContext> ids = ctx.name.identifier();
-        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
+        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         IdentifierContext name = QNameParser.getFirstNameCtx(ids);
-        PgView view = new PgView(name.getText(), getFullCtxText(ctx.getParent()));
+        AbstractView view = new PgView(name.getText(), getFullCtxText(ctx.getParent()));
         if (ctx.MATERIALIZED() != null) {
             view.setIsWithData(ctx.NO() == null);
             Table_spaceContext tablespace = ctx.table_space();
@@ -88,17 +88,15 @@ public class CreateView extends ParserAbstract {
             }
         }
         if (ctx.with_check_option() != null){
-            if (ctx.with_check_option().LOCAL() != null){
-                view.addOption(CHECK_OPTION, "local");
-            } else {
-                view.addOption(CHECK_OPTION, "cascaded");
-            }
+            view.addOption(AbstractView.CHECK_OPTION,
+                    ctx.with_check_option().LOCAL() != null ? "local" : "cascaded");
         }
+
         schema.addView(view);
         return view;
     }
 
-    public static void analyzeViewCtx(ParserRuleContext ctx, PgView view,
+    public static void analyzeViewCtx(ParserRuleContext ctx, AbstractView view,
             String schemaName, PgDatabase db) {
         if (ctx instanceof Select_stmtContext) {
             Select select = new Select(schemaName, db);

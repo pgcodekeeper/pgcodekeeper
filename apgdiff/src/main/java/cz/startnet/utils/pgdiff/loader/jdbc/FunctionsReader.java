@@ -11,11 +11,11 @@ import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.AbstractFunction;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.IArgument;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
-import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class FunctionsReader extends JdbcReader {
@@ -28,11 +28,11 @@ public class FunctionsReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet res, PgSchema schema) throws SQLException {
+    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException {
         String schemaName = schema.getName();
         String functionName = res.getString("proname");
         loader.setCurrentObject(new GenericColumn(schemaName, functionName, DbObjType.FUNCTION));
-        PgFunction f = new PgFunction(functionName, "");
+        AbstractFunction f = new PgFunction(functionName, "");
 
         f.setBody(loader.args, getFunctionBody(res, schemaName));
 
@@ -59,7 +59,7 @@ public class FunctionsReader extends JdbcReader {
 
             if("t".equals(aMode)) {
                 String name = argNames[i];
-                String type = returnType.getFullName(schemaName);
+                String type = returnType.getFullName();
                 returnedTableArguments.append(PgDiffUtils.getQuotedName(name)).append(" ")
                 .append(type).append(", ");
                 f.addReturnsColumn(argNames[i], type);
@@ -81,9 +81,9 @@ public class FunctionsReader extends JdbcReader {
                 break;
             }
 
-            Argument a = f.new Argument(aMode,
+            Argument a = new Argument(aMode,
                     argNames != null ? argNames[i] : null,
-                            loader.cachedTypesByOid.get(argTypes[i]).getFullName(schemaName));
+                            loader.cachedTypesByOid.get(argTypes[i]).getFullName());
 
             f.addArgument(a);
         }
@@ -94,7 +94,7 @@ public class FunctionsReader extends JdbcReader {
             f.setReturns("TABLE(" + returnedTableArguments + ")");
         } else {
             JdbcType returnType = loader.cachedTypesByOid.get(res.getLong("prorettype"));
-            String retType = returnType.getFullName(schemaName);
+            String retType = returnType.getFullName();
             f.setReturns(res.getBoolean("proretset") ? "SETOF " + retType : retType);
             returnType.addTypeDepcy(f);
         }
@@ -110,7 +110,7 @@ public class FunctionsReader extends JdbcReader {
                             if (!vexCtxListIterator.hasPrevious()) {
                                 break;
                             }
-                            IArgument a = f.getArguments().get(i);
+                            Argument a = f.getArguments().get(i);
                             if ("IN".equals(a.getMode()) || "INOUT".equals(a.getMode())) {
                                 VexContext vx = vexCtxListIterator.previous();
                                 a.setDefaultExpression(ParserAbstract.getFullCtxText(vx));
@@ -139,7 +139,7 @@ public class FunctionsReader extends JdbcReader {
                 body.append(" TRANSFORM ");
                 for (Long s : protrftypes) {
                     body.append("FOR TYPE ")
-                    .append(loader.cachedTypesByOid.get(s).getFullName(schemaName));
+                    .append(loader.cachedTypesByOid.get(s).getFullName());
                     body.append(", ");
                 }
                 body.setLength(body.length() - 2);

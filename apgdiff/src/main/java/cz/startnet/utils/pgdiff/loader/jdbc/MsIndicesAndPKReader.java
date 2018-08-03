@@ -7,11 +7,13 @@ import java.util.List;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
+import cz.startnet.utils.pgdiff.schema.AbstractIndex;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsConstraint;
 import cz.startnet.utils.pgdiff.schema.MsIndex;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsIndicesAndPKReader extends JdbcReader {
@@ -21,7 +23,7 @@ public class MsIndicesAndPKReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet res, PgSchema schema) throws SQLException, JsonReaderException {
+    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException, JsonReaderException {
         loader.monitor.worked(1);
         String name = res.getString("name");
         boolean isPrimaryKey = res.getBoolean("is_primary_key");
@@ -38,7 +40,7 @@ public class MsIndicesAndPKReader extends JdbcReader {
         String filter = res.getString("filter_definition");
 
         String parent = res.getString("table_name");
-        PgTable t = schema.getTable(parent);
+        AbstractTable t = schema.getTable(parent);
 
         StringBuilder sb = new StringBuilder();
 
@@ -99,7 +101,7 @@ public class MsIndicesAndPKReader extends JdbcReader {
         sb.append(" ON ").append(MsDiffUtils.quoteName(dataSpace));
 
         if (type == DbObjType.CONSTRAINT) {
-            MsConstraint constraint = new MsConstraint(name, "");
+            AbstractConstraint constraint = new MsConstraint(name, "");
 
             StringBuilder definition = new StringBuilder();
             if (!isUniqueConstraint) {
@@ -120,7 +122,7 @@ public class MsIndicesAndPKReader extends JdbcReader {
             constraint.setDefinition(definition.toString());
             t.addConstraint(constraint);
         } else {
-            MsIndex index = new MsIndex(name, "");
+            AbstractIndex index = new MsIndex(name, "");
             index.setClusterIndex(isClustered);
             index.setUnique("1".equals(res.getString("is_unique")));
             index.setDefinition(sb.toString());

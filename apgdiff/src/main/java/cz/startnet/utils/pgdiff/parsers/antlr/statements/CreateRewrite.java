@@ -13,11 +13,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.Update;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgRule.PgRuleEventType;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -31,7 +31,7 @@ public class CreateRewrite extends ParserAbstract {
 
     @Override
     public PgStatement getObject() {
-        PgSchema schema = getSchemaSafe(ctx.table_name.identifier(), db.getDefaultSchema());
+        AbstractSchema schema = getSchemaSafe(ctx.table_name.identifier(), db.getDefaultSchema());
         PgRule rule = new PgRule(ctx.name.getText(), getFullCtxText(ctx.getParent()));
         rule.setEvent(PgRuleEventType.valueOf(ctx.event.getText()));
         if (ctx.INSTEAD() != null){

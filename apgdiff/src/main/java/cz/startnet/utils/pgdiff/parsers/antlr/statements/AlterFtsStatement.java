@@ -8,10 +8,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_fts_configurationC
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_fts_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFtsConfiguration;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -27,7 +27,7 @@ public class AlterFtsStatement extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
+        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         PgStatement st = null;
         if (ctx.DICTIONARY() != null) {
             st = getSafe(schema::getFtsDictionary, QNameParser.getFirstNameCtx(ids));

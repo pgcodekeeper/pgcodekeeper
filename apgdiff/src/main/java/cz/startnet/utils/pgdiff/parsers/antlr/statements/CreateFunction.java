@@ -7,10 +7,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statemen
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_column_name_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.schema.AbstractFunction;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
-import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class CreateFunction extends ParserAbstract {
@@ -23,8 +24,8 @@ public class CreateFunction extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
-        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
-        PgFunction function = new PgFunction(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
+        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
+        AbstractFunction function = new PgFunction(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
         fillArguments(function);
         function.setBody(db.getArguments(), getFullCtxText(ctx.funct_body));
 
@@ -42,10 +43,10 @@ public class CreateFunction extends ParserAbstract {
         return function;
     }
 
-    private void fillArguments(PgFunction function) {
+    private void fillArguments(AbstractFunction function) {
         for (Function_argumentsContext argument : ctx.function_parameters()
                 .function_args().function_arguments()) {
-            Argument arg = function.new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
+            Argument arg = new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
                     argument.argname != null ? argument.argname.getText() : null,
                             getFullCtxText(argument.argtype_data));
             addTypeAsDepcy(argument.data_type(), function, getDefSchemaName());

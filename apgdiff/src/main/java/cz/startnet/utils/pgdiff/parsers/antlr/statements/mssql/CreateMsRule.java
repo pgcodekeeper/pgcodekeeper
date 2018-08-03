@@ -9,6 +9,8 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Columns_permissionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
@@ -17,12 +19,12 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Rule_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_column_privilegesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_columnsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 
 public class CreateMsRule extends ParserAbstract {
 
@@ -51,7 +53,7 @@ public class CreateMsRule extends ParserAbstract {
         }
 
         List<String> roles = ctx.role_names().id().stream()
-                .map(ParserAbstract::getFullCtxText).collect(Collectors.toList());
+                .map(ParserRuleContext::getText).map(MsDiffUtils::quoteName).collect(Collectors.toList());
 
         Columns_permissionsContext columnsCtx = ctx.columns_permissions();
         if (columnsCtx != null) {
@@ -87,8 +89,8 @@ public class CreateMsRule extends ParserAbstract {
                         String name = objectName + '(' + MsDiffUtils.quoteName(column.getText()) + ')';
                         PgPrivilege priv = new PgPrivilege(state, per, name, role, isGO);
                         // table column privileges to columns, other columns to statement
-                        if (st instanceof PgTable) {
-                            getSafe(((PgTable)st)::getColumn, column).addPrivilege(priv);
+                        if (st instanceof AbstractTable) {
+                            getSafe(((AbstractTable)st)::getColumn, column).addPrivilege(priv);
                         } else {
                             st.addPrivilege(priv);
                         }
@@ -110,7 +112,7 @@ public class CreateMsRule extends ParserAbstract {
         Stream<PgStatement> stream;
 
         if (schema != null) {
-            PgSchema s = db.getSchema(schema);
+            AbstractSchema s = db.getSchema(schema);
             stream = s != null ? s.getChildren() : Stream.empty();
         } else {
             stream = db.getChildren();
@@ -161,8 +163,8 @@ public class CreateMsRule extends ParserAbstract {
 
                 for (String role : roles) {
                     PgPrivilege priv = new PgPrivilege(state, pr, objectName, role, isGO);
-                    if (st instanceof PgTable) {
-                        getSafe(((PgTable)st)::getColumn, col).addPrivilege(priv);
+                    if (st instanceof AbstractTable) {
+                        getSafe(((AbstractTable)st)::getColumn, col).addPrivilege(priv);
                     } else {
                         st.addPrivilege(priv);
                     }

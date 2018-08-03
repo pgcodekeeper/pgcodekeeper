@@ -8,17 +8,17 @@ import java.util.Map;
 
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
+import cz.startnet.utils.pgdiff.schema.AbstractFunction;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractSequence;
+import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFtsConfiguration;
 import cz.startnet.utils.pgdiff.schema.PgFtsDictionary;
 import cz.startnet.utils.pgdiff.schema.PgFtsParser;
 import cz.startnet.utils.pgdiff.schema.PgFtsTemplate;
-import cz.startnet.utils.pgdiff.schema.PgFunction;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgSequence;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgType;
-import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class JdbcReader implements PgCatalogStrings {
@@ -40,7 +40,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
 
             StringBuilder sb = new StringBuilder();
 
-            for (PgSchema schema : loader.schemaIds.values()) {
+            for (AbstractSchema schema : loader.schemaIds.values()) {
                 fillOldObjects(objects, schema, projDb, sb);
             }
 
@@ -72,7 +72,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
         return sb.toString();
     }
 
-    private void fillOldObjects(List<ObjectTimestamp> objects, PgSchema sc, PgDatabase projDb, StringBuilder sbOids) {
+    private void fillOldObjects(List<ObjectTimestamp> objects, AbstractSchema sc, PgDatabase projDb, StringBuilder sbOids) {
         DbObjType type = getType();
         DbObjType local = type == DbObjType.CONSTRAINT ? DbObjType.TABLE : type;
 
@@ -80,11 +80,11 @@ public abstract class JdbcReader implements PgCatalogStrings {
             if (obj.getSchema().equals(sc.getName()) && obj.getType() == local) {
                 switch (type) {
                 case VIEW:
-                    sc.addView((PgView) obj.copyStatement(projDb, loader));
+                    sc.addView((AbstractView) obj.copyStatement(projDb, loader));
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case TABLE:
-                    sc.addTable((PgTable) obj.copyStatement(projDb, loader));
+                    sc.addTable((AbstractTable) obj.copyStatement(projDb, loader));
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case RULE:
@@ -96,20 +96,20 @@ public abstract class JdbcReader implements PgCatalogStrings {
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case INDEX:
-                    PgSchema schema = projDb.getSchema(sc.getName());
-                    PgTable t;
+                    AbstractSchema schema = projDb.getSchema(sc.getName());
+                    AbstractTable t;
                     if (schema != null && (t = schema.getTableByIndex(obj.getColumn())) != null) {
                         sc.getTable(t.getName()).addIndex(t.getIndex(obj.getColumn()).shallowCopy());
                     }
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case FUNCTION:
-                    sc.addFunction((PgFunction) obj.copyStatement(projDb, loader));
+                    sc.addFunction((AbstractFunction) obj.copyStatement(projDb, loader));
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case CONSTRAINT:
-                    PgTable table = (PgTable) obj.getObject().getStatement(projDb);
-                    PgTable newTable = sc.getTable(table.getName());
+                    AbstractTable table = (AbstractTable) obj.getObject().getStatement(projDb);
+                    AbstractTable newTable = sc.getTable(table.getName());
                     if (newTable.getConstraints().isEmpty()) {
                         table.getConstraints().forEach(con -> newTable.addConstraint(con.shallowCopy()));
                     }
@@ -120,7 +120,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case SEQUENCE:
-                    sc.addSequence((PgSequence) obj.copyStatement(projDb, loader));
+                    sc.addSequence((AbstractSequence) obj.copyStatement(projDb, loader));
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case FTS_PARSER:
@@ -194,7 +194,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
         return sb.toString();
     }
 
-    protected abstract void processResult(ResultSet result, PgSchema schema)
+    protected abstract void processResult(ResultSet result, AbstractSchema schema)
             throws SQLException, JsonReaderException;
 
     protected abstract DbObjType getType();

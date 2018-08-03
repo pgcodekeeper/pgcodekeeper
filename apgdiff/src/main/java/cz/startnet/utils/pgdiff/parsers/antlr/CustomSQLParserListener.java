@@ -68,7 +68,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
 public class CustomSQLParserListener extends SQLParserBaseListener {
@@ -95,8 +95,8 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
             if (st != null) {
                 st.setLocation(filename);
 
-                if (st instanceof PgTable) {
-                    ((PgTable) st).getConstraints().stream()
+                if (st instanceof AbstractTable) {
+                    ((AbstractTable) st).getConstraints().stream()
                     .filter(con -> con.getLocation() == null)
                     .forEach(con -> con.setLocation(filename));
                 }

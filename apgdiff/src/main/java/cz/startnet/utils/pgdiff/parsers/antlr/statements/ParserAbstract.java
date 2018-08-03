@@ -19,13 +19,14 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
+import cz.startnet.utils.pgdiff.schema.AbstractColumn;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IStatement;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
-import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -48,7 +49,7 @@ public abstract class ParserAbstract {
     public abstract PgStatement getObject();
 
     protected String getDefSchemaName() {
-        PgSchema s = db.getDefaultSchema();
+        AbstractSchema s = db.getDefaultSchema();
         return s == null ? null : s.getName();
     }
 
@@ -83,8 +84,8 @@ public abstract class ParserAbstract {
                 Interval.of(start.getStartIndex(), end.getStopIndex()));
     }
 
-    protected PgColumn getColumn(Table_column_definitionContext colCtx) {
-        PgColumn col = new PgColumn(colCtx.column_name.getText());
+    protected AbstractColumn getColumn(Table_column_definitionContext colCtx) {
+        AbstractColumn col = new PgColumn(colCtx.column_name.getText());
         col.setType(getFullCtxText(colCtx.datatype));
         addTypeAsDepcy(colCtx.datatype, col, getDefSchemaName());
         if (colCtx.collate_name != null) {
@@ -109,7 +110,7 @@ public abstract class ParserAbstract {
                 }
             }
 
-            Argument arg = function.new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
+            Argument arg = new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
                     argument.argname != null ? argument.argname.getText() : null, type);
             function.addArgument(arg);
         }
@@ -131,9 +132,9 @@ public abstract class ParserAbstract {
         return statement;
     }
 
-    public PgSchema getSchemaSafe(List<? extends ParserRuleContext> ids, PgSchema defaultSchema) {
+    public AbstractSchema getSchemaSafe(List<? extends ParserRuleContext> ids, AbstractSchema defaultSchema) {
         ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
-        PgSchema foundSchema = schemaCtx == null ? defaultSchema : getSafe(db::getSchema, schemaCtx);
+        AbstractSchema foundSchema = schemaCtx == null ? defaultSchema : getSafe(db::getSchema, schemaCtx);
         if (foundSchema != null) {
             return foundSchema;
         }

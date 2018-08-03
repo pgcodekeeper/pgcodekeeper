@@ -7,6 +7,7 @@ import java.util.List;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -36,7 +37,7 @@ public class SchemasReader implements PgCatalogStrings {
                 if (obj.getType() == DbObjType.SCHEMA) {
                     long oid = obj.getObjId();
                     sb.append(oid).append(',');
-                    PgSchema schema = (PgSchema)obj.copyStatement(projDb, loader);
+                    AbstractSchema schema = (AbstractSchema)obj.copyStatement(projDb, loader);
                     db.addSchema(schema);
                     loader.schemaIds.put(oid, schema);
                 }
@@ -49,17 +50,17 @@ public class SchemasReader implements PgCatalogStrings {
 
         try (ResultSet result = loader.runner.runScript(loader.statement, query)) {
             while (result.next()) {
-                PgSchema schema = getSchema(result);
+                AbstractSchema schema = getSchema(result);
                 db.addSchema(schema);
                 loader.schemaIds.put(result.getLong(OID), schema);
             }
         }
     }
 
-    private PgSchema getSchema(ResultSet res) throws SQLException {
+    private AbstractSchema getSchema(ResultSet res) throws SQLException {
         String schemaName = res.getString(NAMESPACE_NSPNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, DbObjType.SCHEMA));
-        PgSchema s = new PgSchema(schemaName, "");
+        AbstractSchema s = new PgSchema(schemaName, "");
         long owner = res.getLong("nspowner");
 
         if (!schemaName.equals(ApgdiffConsts.PUBLIC)) {

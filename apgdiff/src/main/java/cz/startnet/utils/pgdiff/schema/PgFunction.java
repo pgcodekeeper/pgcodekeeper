@@ -5,38 +5,20 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
-import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.hashers.Hasher;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
- * Stores function information.
- *
- * @author fordfrog
+ * Stores Postgres function information.
  */
-public class PgFunction extends PgStatementWithSearchPath implements IFunction {
+public class PgFunction extends AbstractFunction {
 
     private String signatureCache;
-    protected final List<Argument> arguments = new ArrayList<>();
-    private String body;
-    private String returns;
-    protected final Map<String, String> returnsColumns = new LinkedHashMap<>();
-
-    @Override
-    public DbObjType getStatementType() {
-        return DbObjType.FUNCTION;
-    }
 
     public PgFunction(String name, String rawStatement) {
         super(name, rawStatement);
@@ -50,9 +32,9 @@ public class PgFunction extends PgStatementWithSearchPath implements IFunction {
         appendFunctionSignature(sbSQL, true, true);
         sbSQL.append(' ');
         sbSQL.append("RETURNS ");
-        sbSQL.append(returns);
+        sbSQL.append(getReturns());
         sbSQL.append("\n    ");
-        sbSQL.append(body);
+        sbSQL.append(getBody());
         sbSQL.append(';');
 
         appendOwnerSQL(sbSQL);
@@ -83,7 +65,7 @@ public class PgFunction extends PgStatementWithSearchPath implements IFunction {
             if (addComma) {
                 sb.append(", ");
             }
-            sb.append(argument.getDeclaration(includeDefaultValues, includeArgNames));
+            sb.append(getDeclaration(argument, includeDefaultValues, includeArgNames));
             addComma = true;
         }
         sb.append(')');
@@ -94,48 +76,33 @@ public class PgFunction extends PgStatementWithSearchPath implements IFunction {
         return sb;
     }
 
-    public void setBody(final String body) {
-        this.body = body;
-        resetHash();
-    }
-
-    /**
-     * Sets {@link #body} with newlines as requested in arguments.
-     */
-    public void setBody(PgDiffArguments args, String body) {
-        setBody(args.isKeepNewlines() ? body : body.replace("\r", ""));
-    }
-
-    public String getBody() {
-        return body;
-    }
-
-    /**
-     * @return the returns
-     */
     @Override
-    public String getReturns() {
-        return returns;
-    }
+    public String getDeclaration(Argument arg, boolean includeDefaultValue, boolean includeArgName) {
+        final StringBuilder sbString = new StringBuilder();
 
-    /**
-     * @param returns the returns to set
-     */
-    public void setReturns(String returns) {
-        this.returns = returns;
-        resetHash();
-    }
+        String mode = arg.getMode();
+        if (mode != null && !"IN".equalsIgnoreCase(mode)) {
+            sbString.append(mode);
+            sbString.append(' ');
+        }
 
-    /**
-     * @return unmodifiable RETURNS TABLE map
-     */
-    @Override
-    public Map<String, String> getReturnsColumns() {
-        return Collections.unmodifiableMap(returnsColumns);
-    }
+        String name = arg.getName();
 
-    public void addReturnsColumn(String name, String type) {
-        returnsColumns.put(name, type);
+        if (name != null && !name.isEmpty() && includeArgName) {
+            sbString.append(PgDiffUtils.getQuotedName(name));
+            sbString.append(' ');
+        }
+
+        sbString.append(arg.getDataType());
+
+        String def = arg.getDefaultExpression();
+
+        if (includeDefaultValue && def != null && !def.isEmpty()) {
+            sbString.append(" = ");
+            sbString.append(def);
+        }
+
+        return sbString.toString();
     }
 
     @Override
@@ -159,10 +126,9 @@ public class PgFunction extends PgStatementWithSearchPath implements IFunction {
         } else {
             return false;
         }
-        PgFunction oldFunction = this;
 
-        if (!oldFunction.checkForChanges(newFunction)) {
-            if (PgFunction.needDrop(oldFunction, newFunction)) {
+        if (!checkForChanges(newFunction)) {
+            if (needDrop(this, newFunction)) {
                 isNeedDepcies.set(true);
                 return true;
             } else {
@@ -170,11 +136,11 @@ public class PgFunction extends PgStatementWithSearchPath implements IFunction {
             }
         }
 
-        if (!Objects.equals(oldFunction.getOwner(), newFunction.getOwner())) {
+        if (!Objects.equals(getOwner(), newFunction.getOwner())) {
             sb.append(newFunction.getOwnerSQL());
         }
         alterPrivileges(newFunction, sb);
-        if (!Objects.equals(oldFunction.getComment(), newFunction.getComment())) {
+        if (!Objects.equals(getComment(), newFunction.getComment())) {
             sb.append("\n\n");
             newFunction.appendCommentSql(sb);
         }
@@ -206,6 +172,7 @@ public class PgFunction extends PgStatementWithSearchPath implements IFunction {
         return Collections.unmodifiableList(arguments);
     }
 
+    @Override
     public void addArgument(final Argument argument) {
         arguments.add(argument);
         resetHash();
@@ -224,161 +191,8 @@ public class PgFunction extends PgStatementWithSearchPath implements IFunction {
         return signatureCache;
     }
 
-    /**
-     * Compares two objects whether they are equal. If both objects are of the
-     * same class but they equal just in whitespace in {@link #body}, they are
-     * considered being equal.
-     *
-     * @param func                     object to be compared
-     * @return true if {@code object} is PgFunction and the function code is
-     *         the same when compared ignoring whitespace, otherwise returns
-     *         false
-     */
-    public boolean checkForChanges(PgFunction func) {
-        boolean equals = false;
-
-        if (this == func) {
-            equals = true;
-        } else {
-            equals = Objects.equals(name, func.getBareName())
-                    && arguments.equals(func.arguments)
-                    && Objects.equals(body, func.getBody())
-                    && Objects.equals(returns, func.getReturns());
-        }
-        return equals;
-    }
-
     @Override
-    public boolean compare(PgStatement obj) {
-        if (this == obj) {
-            return true;
-        }
-
-        if (obj instanceof PgFunction) {
-            PgFunction func  = (PgFunction) obj;
-            if (!checkForChanges(func)) {
-                return false;
-            }
-            return  Objects.equals(owner, func.getOwner())
-                    && Objects.equals(grants, func.grants)
-                    && Objects.equals(revokes, func.revokes)
-                    && Objects.equals(comment, func.getComment());
-        }
-        return false;
-    }
-
-    @Override
-    public void computeHash(Hasher hasher) {
-        hasher.putOrdered(grants);
-        hasher.putOrdered(revokes);
-        hasher.putOrdered(arguments);
-        hasher.put(returns);
-        hasher.put(body);
-        hasher.put(name);
-        hasher.put(owner);
-        hasher.put(comment);
-    }
-
-    public class Argument extends AbstractArgument {
-
-        private static final long serialVersionUID = -4612717362596320139L;
-
-        public Argument(String name, String dataType) {
-            super(name, dataType);
-        }
-
-        public Argument(String mode, String name, String dataType) {
-            super(mode, name, dataType);
-        }
-
-        @Override
-        public void setDefaultExpression(final String defaultExpression) {
-            super.setDefaultExpression(defaultExpression);
-            resetHash();
-        }
-    }
-
-    @Override
-    public PgFunction shallowCopy() {
-        PgFunction functionDst =
-                new PgFunction(getBareName(),getRawStatement());
-        functionDst.setReturns(getReturns());
-        functionDst.returnsColumns.putAll(returnsColumns);
-        functionDst.setBody(getBody());
-        functionDst.setComment(getComment());
-        for(Argument argSrc : arguments) {
-            Argument argDst = functionDst.new Argument(argSrc.getMode(), argSrc.getName(), argSrc.getDataType());
-            argDst.setDefaultExpression(argSrc.getDefaultExpression());
-            functionDst.addArgument(argDst);
-        }
-        for (PgPrivilege priv : revokes) {
-            functionDst.addPrivilege(priv);
-        }
-        for (PgPrivilege priv : grants) {
-            functionDst.addPrivilege(priv);
-        }
-        functionDst.setOwner(getOwner());
-        functionDst.deps.addAll(deps);
-        return functionDst;
-    }
-
-    @Override
-    public PgFunction deepCopy() {
-        return shallowCopy();
-    }
-
-    @Override
-    public PgSchema getContainingSchema() {
-        return (PgSchema)this.getParent();
-    }
-
-    private static boolean needDrop(PgFunction oldFunction,
-            PgFunction newFunction) {
-        if (newFunction == null ||
-                !Objects.equals(oldFunction.getReturns(), newFunction.getReturns())) {
-            return true;
-        }
-
-        Iterator<Argument> iOld = oldFunction.getArguments().iterator();
-        Iterator<Argument> iNew = newFunction.getArguments().iterator();
-        while (iOld.hasNext() && iNew.hasNext()) {
-            Argument argOld = iOld.next();
-            Argument argNew = iNew.next();
-
-            String oldDef = argOld.getDefaultExpression();
-            String newDef = argNew.getDefaultExpression();
-            // allow creation of defaults (old==null && new!=null)
-            if (oldDef != null && !oldDef.equals(newDef)) {
-                return true;
-            }
-
-            // [IN]OUT args that change their names implicitly change the function's
-            // return type due to it being "SETOF record" in case of
-            // multiple [IN]OUT args present
-
-            // actually any argument name change requires drop
-            if (!Objects.equals(argOld.getName(), argNew.getName())) {
-                return true;
-            }
-            // нельзя менять тип out параметров
-            if ("OUT".equalsIgnoreCase(argOld.getMode()) &&
-                    !Objects.equals(argOld.getDataType(), argNew.getDataType())) {
-                return true;
-            }
-        }
-        // Если добавляется или удаляется out параметр нужно удалить функцию,
-        // т.к. меняется её возвращаемое значение
-        while (iOld.hasNext()) {
-            if ("OUT".equalsIgnoreCase(iOld.next().getMode())) {
-                return true;
-            }
-        }
-        while (iNew.hasNext()) {
-            if ("OUT".equalsIgnoreCase(iNew.next().getMode())) {
-                return true;
-            }
-        }
-
-        return false;
+    protected AbstractFunction getFunctionCopy() {
+        return new PgFunction(getBareName(), getRawStatement());
     }
 }

@@ -11,7 +11,7 @@ import cz.startnet.utils.pgdiff.hashers.Hasher;
  * @since 4.1.1
  * @author galiev_mr
  */
-public class PartitionPgTable extends RegularPgTable {
+public class PartitionPgTable extends AbstractRegularTable {
 
     private final String partitionBounds;
 
@@ -32,7 +32,7 @@ public class PartitionPgTable extends RegularPgTable {
             sbSQL.append(" (\n");
 
             int start = sbSQL.length();
-            for (PgColumn column : columns) {
+            for (AbstractColumn column : columns) {
                 writeColumn(column, sbSQL, sbOption);
             }
 
@@ -55,7 +55,7 @@ public class PartitionPgTable extends RegularPgTable {
     }
 
     @Override
-    protected void compareTableTypes(PgTable newTable, StringBuilder sb) {
+    protected void compareTableTypes(AbstractTable newTable, StringBuilder sb) {
         if (!(newTable instanceof PartitionPgTable)) {
             final Inherits tableName = inherits.get(0);
             sb.append("\n\nALTER TABLE ");
@@ -66,8 +66,8 @@ public class PartitionPgTable extends RegularPgTable {
             .append(PgDiffUtils.getQuotedName(getName()))
             .append(';');
 
-            if (newTable instanceof RegularPgTable) {
-                ((RegularPgTable)newTable).convertTable(sb);
+            if (newTable instanceof AbstractRegularTable) {
+                ((AbstractRegularTable)newTable).convertTable(sb);
             }
         }
     }
@@ -85,7 +85,7 @@ public class PartitionPgTable extends RegularPgTable {
     }
 
     @Override
-    protected void compareTableOptions(PgTable newTable, StringBuilder sb) {
+    protected void compareTableOptions(AbstractTable newTable, StringBuilder sb) {
         super.compareTableOptions(newTable, sb);
 
         if (newTable instanceof PartitionPgTable) {
@@ -118,12 +118,12 @@ public class PartitionPgTable extends RegularPgTable {
     }
 
     @Override
-    protected void compareInherits(PgTable newTable, StringBuilder sb) {
+    protected void compareInherits(AbstractTable newTable, StringBuilder sb) {
         //not support default syntax
     }
 
     @Override
-    protected PgTable getTableCopy() {
+    protected AbstractTable getTableCopy() {
         return new PartitionPgTable(name, getRawStatement(), partitionBounds);
     }
 

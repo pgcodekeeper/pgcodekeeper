@@ -18,13 +18,14 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Role_name_with_groupCont
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rule_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_privilegesContext;
-import cz.startnet.utils.pgdiff.schema.PgColumn;
+import cz.startnet.utils.pgdiff.schema.AbstractFunction;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateRule extends ParserAbstract {
@@ -71,15 +72,15 @@ public class CreateRule extends ParserAbstract {
             for (Function_parametersContext funct : ctx.func_name) {
                 List<IdentifierContext> funcIds = funct.name.identifier();
                 IdentifierContext functNameCtx = QNameParser.getFirstNameCtx(funcIds);
-                PgSchema schema = getSchemaSafe(funcIds, db.getDefaultSchema());
-                PgFunction func = getSafe(schema::getFunction,
+                AbstractSchema schema = getSchemaSafe(funcIds, db.getDefaultSchema());
+                AbstractFunction func = getSafe(schema::getFunction,
                         parseSignature(functNameCtx.getText(), funct.function_args()),
                         functNameCtx.getStart());
 
                 StringBuilder sb = new StringBuilder();
                 sb.append(DbObjType.FUNCTION).append(' ');
                 sb.append(PgDiffUtils.getQuotedName(schema.getName())).append('.');
-                func.appendFunctionSignature(sb, false, true);
+                ((PgFunction)func).appendFunctionSignature(sb, false, true);
 
                 for (String role : roles) {
                     func.addPrivilege(new PgPrivilege(state, permissions,
@@ -152,10 +153,10 @@ public class CreateRule extends ParserAbstract {
         String tableName = getFullCtxText(tbl);
         List<IdentifierContext> ids = tbl.identifier();
         String firstPart = QNameParser.getFirstName(ids);
-        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
+        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         //привилегии пишем так как получили одной строкой
         PgStatement st = null;
-        PgTable tblSt = schema.getTable(firstPart);
+        AbstractTable tblSt = schema.getTable(firstPart);
 
         // если таблица не найдена попробовать вьюхи и проч
         if (tblSt == null) {
@@ -185,7 +186,7 @@ public class CreateRule extends ParserAbstract {
                 if (tblSt == null) {
                     st.addPrivilege(priv);
                 } else {
-                    PgColumn col = getSafe(tblSt::getColumn, colPriv.getValue().getKey());
+                    AbstractColumn col = getSafe(tblSt::getColumn, colPriv.getValue().getKey());
                     col.addPrivilege(priv);
                 }
             }
@@ -196,7 +197,7 @@ public class CreateRule extends ParserAbstract {
         List<IdentifierContext> ids = name.identifier();
         IdentifierContext idCtx = QNameParser.getFirstNameCtx(ids);
         String id = idCtx.getText();
-        PgSchema schema = (DbObjType.SCHEMA == type ?
+        AbstractSchema schema = (DbObjType.SCHEMA == type ?
                 getSafe(db::getSchema, idCtx)
                 : getSchemaSafe(ids, db.getDefaultSchema()));
         PgStatement statement = null;

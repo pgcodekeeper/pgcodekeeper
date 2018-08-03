@@ -22,9 +22,9 @@ import org.junit.runners.Parameterized.Parameters;
 import cz.startnet.utils.pgdiff.FILES_POSTFIX;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 
@@ -69,13 +69,13 @@ public class ExprTypeTest {
 
     private String getRelationColumnsTypes(PgDatabase db) throws IOException, InterruptedException {
         StringBuilder cols = new StringBuilder();
-        for (PgSchema schema : db.getSchemas()) {
-            List<PgView> views = schema.getViews();
+        for (AbstractSchema schema : db.getSchemas()) {
+            List<AbstractView> views = schema.getViews();
             if(views.isEmpty()) {
                 continue;
             }
             cols.append("\n\nSchema: " + schema.getName());
-            for (PgView view : views) {
+            for (AbstractView view : views) {
                 cols.append("\n\n  View: " + view.getName());
                 cols.append("\n    RelationColumns : ");
 

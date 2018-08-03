@@ -32,15 +32,15 @@ import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.PgColumn;
+import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.DaemonThreadFactory;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -69,7 +69,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected Statement statement;
     private Map<Long, String> cachedRolesNamesByOid;
     protected Map<Long, JdbcType> cachedTypesByOid;
-    protected final Map<Long, PgSchema> schemaIds = new HashMap<>();
+    protected final Map<Long, AbstractSchema> schemaIds = new HashMap<>();
     protected int version;
     private long lastSysOid;
     protected List<String> errors = new ArrayList<>();
@@ -185,7 +185,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
                 columnName == null ? null : PgDiffUtils.getQuotedName(columnName), schemaName);
     }
 
-    public void setPrivileges(PgColumn column, PgTable t, String aclItemsArrayAsString, String schemaName) {
+    public void setPrivileges(AbstractColumn column, AbstractTable t, String aclItemsArrayAsString, String schemaName) {
         setPrivileges(column, PgDiffUtils.getQuotedName(t.getName()), aclItemsArrayAsString,
                 t.getOwner(), PgDiffUtils.getQuotedName(column.getName()), schemaName);
     }
@@ -318,8 +318,8 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             PgPrivilege priv = new PgPrivilege(state, permission, sb.toString(),
                     MsDiffUtils.quoteName(role), isWithGrantOption);
 
-            if (col != null && st instanceof PgTable) {
-                ((PgTable) st).getColumn(col).addPrivilege(priv);
+            if (col != null && st instanceof AbstractTable) {
+                ((AbstractTable) st).getColumn(col).addPrivilege(priv);
             } else {
                 st.addPrivilege(priv);
             }

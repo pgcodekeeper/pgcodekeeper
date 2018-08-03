@@ -14,15 +14,15 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Foreign_column_defContex
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Foreign_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
-import cz.startnet.utils.pgdiff.schema.ForeignPgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractForeignTable;
 import cz.startnet.utils.pgdiff.schema.PartitionForeignPgTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.SimpleForeignPgTable;
 
-public class CreateForeignTable extends AbstractTable {
+public class CreateForeignTable extends TableAbstract {
 
     private final Create_foreign_table_statementContext ctx;
 
@@ -35,22 +35,22 @@ public class CreateForeignTable extends AbstractTable {
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
         String tableName = QNameParser.getFirstName(ids);
-        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
+        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         String schemaName = schema.getName();
 
-        PgTable table = defineTable(tableName, schemaName);
+        AbstractTable table = defineTable(tableName, schemaName);
 
         schema.addTable(table);
         return table;
     }
 
-    private PgTable defineTable(String tableName, String schemaName) {
+    private AbstractTable defineTable(String tableName, String schemaName) {
         Define_serverContext srvCtx = ctx.define_server();
         Define_foreign_tableContext colCtx = ctx.define_foreign_table();
         Define_partitionContext partCtx = ctx.define_partition();
 
         String rawStatement = getFullCtxText(ctx.getParent());
-        PgTable table;
+        AbstractTable table;
 
         if (colCtx != null) {
             table = fillForeignTable(srvCtx, new SimpleForeignPgTable(
@@ -68,7 +68,7 @@ public class CreateForeignTable extends AbstractTable {
         return table;
     }
 
-    private void fillColumns(Define_foreign_tableContext columnsCtx, PgTable table,
+    private void fillColumns(Define_foreign_tableContext columnsCtx, AbstractTable table,
             String schemaName) {
         for (Foreign_column_defContext colCtx : columnsCtx.columns) {
             if (colCtx.tabl_constraint != null) {
@@ -89,7 +89,7 @@ public class CreateForeignTable extends AbstractTable {
         }
     }
 
-    private ForeignPgTable fillForeignTable(Define_serverContext server, ForeignPgTable table) {
+    private AbstractForeignTable fillForeignTable(Define_serverContext server, AbstractForeignTable table) {
         Define_foreign_optionsContext options = server.define_foreign_options();
         if (options != null){
             for (Foreign_optionContext option : options.foreign_option()){

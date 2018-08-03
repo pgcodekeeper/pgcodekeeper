@@ -14,7 +14,7 @@ import cz.startnet.utils.pgdiff.hashers.Hasher;
  * @author galiev_mr
  *
  */
-public abstract class RegularPgTable extends PgTable {
+public abstract class AbstractRegularTable extends AbstractTable {
 
     protected boolean isLogged = true;
     protected String tablespace;
@@ -22,7 +22,7 @@ public abstract class RegularPgTable extends PgTable {
     protected boolean isForceSecurity;
     protected String partitionBy;
 
-    public RegularPgTable(String name, String rawStatement) {
+    public AbstractRegularTable(String name, String rawStatement) {
         super(name, rawStatement);
     }
 
@@ -109,10 +109,10 @@ public abstract class RegularPgTable extends PgTable {
     }
 
     @Override
-    protected void compareTableOptions(PgTable newTable, StringBuilder sb) {
+    protected void compareTableOptions(AbstractTable newTable, StringBuilder sb) {
         super.compareTableOptions(newTable, sb);
 
-        RegularPgTable newRegTable = (RegularPgTable) newTable;
+        AbstractRegularTable newRegTable = (AbstractRegularTable) newTable;
         if (!Objects.equals(tablespace, newRegTable.getTablespace())) {
             sb.append(getAlterTable(true, false))
             .append("\n\tSET TABLESPACE ")
@@ -146,10 +146,10 @@ public abstract class RegularPgTable extends PgTable {
     protected abstract void convertTable(StringBuilder sb);
 
     @Override
-    protected boolean isNeedRecreate(PgTable newTable) {
-        return  !(newTable instanceof RegularPgTable) ||
+    protected boolean isNeedRecreate(AbstractTable newTable) {
+        return  !(newTable instanceof AbstractRegularTable) ||
                 !Objects.equals(getPartitionBy(),
-                        ((RegularPgTable)newTable).getPartitionBy());
+                        ((AbstractRegularTable)newTable).getPartitionBy());
     }
 
     public boolean isLogged() {
@@ -199,8 +199,8 @@ public abstract class RegularPgTable extends PgTable {
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof RegularPgTable && super.compare(obj)) {
-            RegularPgTable table = (RegularPgTable) obj;
+        if (obj instanceof AbstractRegularTable && super.compare(obj)) {
+            AbstractRegularTable table = (AbstractRegularTable) obj;
             return Objects.equals(tablespace, table.getTablespace())
                     && isLogged == table.isLogged()
                     && isRowSecurity == table.isRowSecurity()
@@ -212,8 +212,8 @@ public abstract class RegularPgTable extends PgTable {
     }
 
     @Override
-    public PgTable shallowCopy() {
-        RegularPgTable copy = (RegularPgTable) super.shallowCopy();
+    public AbstractTable shallowCopy() {
+        AbstractRegularTable copy = (AbstractRegularTable) super.shallowCopy();
         copy.setLogged(isLogged());
         copy.setTablespace(getTablespace());
         copy.setRowSecurity(isRowSecurity());

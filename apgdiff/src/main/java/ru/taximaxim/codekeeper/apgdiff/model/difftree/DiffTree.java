@@ -7,10 +7,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.schema.PgColumn;
+import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 
 public final class DiffTree {
@@ -20,10 +20,10 @@ public final class DiffTree {
     }
 
     @Deprecated
-    public static void addColumns(List<PgColumn> left, List<PgColumn> right,
+    public static void addColumns(List<AbstractColumn> left, List<AbstractColumn> right,
             TreeElement parent, List<TreeElement> list) {
-        for (PgColumn sLeft : left) {
-            PgColumn foundRight = right.stream().filter(
+        for (AbstractColumn sLeft : left) {
+            AbstractColumn foundRight = right.stream().filter(
                     sRight -> sLeft.getName().equals(sRight.getName()))
                     .findAny().orElse(null);
 
@@ -34,7 +34,7 @@ public final class DiffTree {
             }
         }
 
-        for (PgColumn sRight : right) {
+        for (AbstractColumn sRight : right) {
             if (!left.stream().anyMatch(sLeft -> sRight.getName().equals(sLeft.getName()))) {
                 TreeElement col = new TreeElement(sRight, DiffSide.RIGHT);
                 col.setParent(parent);
@@ -98,8 +98,8 @@ public final class DiffTree {
                         if (sLeft.getStatementType() == DbObjType.TABLE) {
                             // tables equality includes constraints for this purpose
                             add = PgDiffUtils.setlikeEquals(
-                                    ((PgTable) sLeft).getConstraints(),
-                                    ((PgTable) foundRight).getConstraints());
+                                    ((AbstractTable) sLeft).getConstraints(),
+                                    ((AbstractTable) foundRight).getConstraints());
                         }
                         if (add) {
                             equalsStatements.add(sLeft);

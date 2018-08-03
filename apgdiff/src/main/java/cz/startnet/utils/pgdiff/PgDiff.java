@@ -25,7 +25,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.exception.LibraryObjectDuplication
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgOverride;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.ignoreparser.IgnoreParser;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.CompareTree;
@@ -325,10 +325,10 @@ public final class PgDiff {
         List<TreeElement> tempColumns = new ArrayList<>();
         for (TreeElement el : selected) {
             if (el.getType() == DbObjType.TABLE && el.getSide() != DiffSide.LEFT) {
-                PgTable oldTbl = null;
-                PgTable newTbl =(PgTable) el.getPgStatement(newDbFull);
+                AbstractTable oldTbl = null;
+                AbstractTable newTbl =(AbstractTable) el.getPgStatement(newDbFull);
                 if (el.getSide() == DiffSide.BOTH) {
-                    oldTbl =(PgTable) el.getPgStatement(oldDbFull);
+                    oldTbl =(AbstractTable) el.getPgStatement(oldDbFull);
                 }
                 DiffTree.addColumns(oldTbl == null ? Collections.emptyList() : oldTbl.getColumns(),
                         newTbl.getColumns(), el, tempColumns);

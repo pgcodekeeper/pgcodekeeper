@@ -12,18 +12,20 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_option
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
+import cz.startnet.utils.pgdiff.schema.AbstractColumn;
+import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
+import cz.startnet.utils.pgdiff.schema.AbstractIndex;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractSequence;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
-import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgRule;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.schema.RegularPgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
+import cz.startnet.utils.pgdiff.schema.AbstractRegularTable;
 
-public class AlterTable extends AbstractTable {
+public class AlterTable extends TableAbstract {
 
     private final Alter_table_statementContext ctx;
     public AlterTable(Alter_table_statementContext ctx, PgDatabase db) {
@@ -34,9 +36,9 @@ public class AlterTable extends AbstractTable {
     @Override
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
+        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
-        PgTable tabl = null;
+        AbstractTable tabl = null;
 
         for (Table_actionContext tablAction : ctx.table_action()) {
             // for owners try to get any relation, fail if the last attempt fails
@@ -65,7 +67,7 @@ public class AlterTable extends AbstractTable {
             }
 
             if (tablAction.column != null) {
-                PgColumn col;
+                AbstractColumn col;
                 if (tabl.getInherits().isEmpty()) {
                     col = getSafe(tabl::getColumn,
                             QNameParser.getFirstNameCtx(tablAction.column.identifier()));
@@ -127,7 +129,7 @@ public class AlterTable extends AbstractTable {
                             name = body.name.getText();
                         }
                     }
-                    PgSequence sequence = new PgSequence(name, null);
+                    AbstractSequence sequence = new PgSequence(name, null);
                     CreateSequence.fillSequence(sequence, identity.sequence_body());
 
                     col.setSequence(sequence);
@@ -143,7 +145,7 @@ public class AlterTable extends AbstractTable {
             }
             if (tablAction.index_name != null) {
                 IdentifierContext indexName = QNameParser.getFirstNameCtx(tablAction.index_name.identifier());
-                PgIndex index = getSafe(tabl::getIndex, indexName);
+                AbstractIndex index = getSafe(tabl::getIndex, indexName);
                 index.setClusterIndex(true);
             }
 
@@ -157,8 +159,8 @@ public class AlterTable extends AbstractTable {
                 createRule(tabl, tablAction);
             }
 
-            if (tabl instanceof RegularPgTable) {
-                RegularPgTable regTable = (RegularPgTable)tabl;
+            if (tabl instanceof AbstractRegularTable) {
+                AbstractRegularTable regTable = (AbstractRegularTable)tabl;
                 // since 9.5 PostgreSQL
                 if (tablAction.SECURITY() != null) {
                     if (tablAction.FORCE() != null) {
@@ -172,7 +174,7 @@ public class AlterTable extends AbstractTable {
         return tabl;
     }
 
-    private void createRule(PgTable tabl, Table_actionContext tablAction) {
+    private void createRule(AbstractTable tabl, Table_actionContext tablAction) {
         PgRule rule = getSafe(tabl::getRule, tablAction.rewrite_rule_name.identifier(0));
         if (rule != null) {
             if (tablAction.DISABLE() != null) {
@@ -187,8 +189,8 @@ public class AlterTable extends AbstractTable {
         }
     }
 
-    public static PgConstraint parseAlterTableConstraint(Table_actionContext tableAction,
-            PgConstraint constrBlank, PgDatabase db, String schemaName, String tableName) {
+    public static AbstractConstraint parseAlterTableConstraint(Table_actionContext tableAction,
+            AbstractConstraint constrBlank, PgDatabase db, String schemaName, String tableName) {
         constrBlank.setNotValid(tableAction.not_valid != null);
         processTableConstraintBlank(tableAction.tabl_constraint, constrBlank, db,
                 schemaName, tableName);

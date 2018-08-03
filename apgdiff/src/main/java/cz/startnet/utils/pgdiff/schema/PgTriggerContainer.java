@@ -4,9 +4,9 @@ import java.util.List;
 
 public interface PgTriggerContainer extends IStatement {
 
-    void addTrigger(PgTrigger rule);
-    PgTrigger getTrigger(String name);
-    List<PgTrigger> getTriggers();
+    void addTrigger(AbstractTrigger rule);
+    AbstractTrigger getTrigger(String name);
+    List<AbstractTrigger> getTriggers();
 
     default boolean containsTrigger(String name) {
         return getTrigger(name) != null;

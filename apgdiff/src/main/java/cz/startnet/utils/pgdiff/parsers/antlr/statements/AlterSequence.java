@@ -6,9 +6,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_sequence_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractSequence;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class AlterSequence extends ParserAbstract {
@@ -21,8 +21,8 @@ public class AlterSequence extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
-        PgSequence sequence = getSafe(schema::getSequence, QNameParser.getFirstNameCtx(ids));
+        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
+        AbstractSequence sequence = getSafe(schema::getSequence, QNameParser.getFirstNameCtx(ids));
 
         fillOwnerTo(ctx.owner_to(), sequence);
         for (Sequence_bodyContext seqbody : ctx.sequence_body()) {

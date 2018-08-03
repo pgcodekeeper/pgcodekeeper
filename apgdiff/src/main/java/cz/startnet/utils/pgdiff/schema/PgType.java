@@ -20,7 +20,7 @@ public class PgType extends PgStatementWithSearchPath {
     private final PgTypeForm form;
 
     // attributes (fields) for composite type
-    private final List<PgColumn> attrs = new ArrayList<>();
+    private final List<AbstractColumn> attrs = new ArrayList<>();
     // enum labels for enum type
     private final List<String> enums = new ArrayList<>();
 
@@ -55,12 +55,12 @@ public class PgType extends PgStatementWithSearchPath {
         return form;
     }
 
-    public List<PgColumn> getAttrs() {
+    public List<AbstractColumn> getAttrs() {
         return Collections.unmodifiableList(attrs);
     }
 
-    public PgColumn getAttr(String name) {
-        for (PgColumn att : attrs) {
+    public AbstractColumn getAttr(String name) {
+        for (AbstractColumn att : attrs) {
             if (att.getName().equals(name)) {
                 return att;
             }
@@ -68,7 +68,7 @@ public class PgType extends PgStatementWithSearchPath {
         return null;
     }
 
-    public void addAttr(PgColumn attr) {
+    public void addAttr(AbstractColumn attr) {
         attrs.add(attr);
         attr.setParent(this);
         resetHash();
@@ -344,7 +344,7 @@ public class PgType extends PgStatementWithSearchPath {
         }
 
         if (form == PgTypeForm.COMPOSITE) {
-            for (PgColumn c : attrs) {
+            for (AbstractColumn c : attrs) {
                 if (PgDiffUtils.isStringNotEmpty(c.getComment())) {
                     sb.append("\n\n");
                     c.appendCommentSql(sb);
@@ -357,7 +357,7 @@ public class PgType extends PgStatementWithSearchPath {
 
     private void appendCompositeDef(StringBuilder sb) {
         boolean bFirst = true;
-        for (PgColumn attr : attrs) {
+        for (AbstractColumn attr : attrs) {
             if (bFirst) {
                 bFirst = false;
             } else {
@@ -495,8 +495,8 @@ public class PgType extends PgStatementWithSearchPath {
     private void compareAttr(PgType newType, PgType oldType, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         StringBuilder attrSb = new StringBuilder();
-        for (PgColumn attr : newType.getAttrs()) {
-            PgColumn oldAttr = oldType.getAttr(attr.getName());
+        for (AbstractColumn attr : newType.getAttrs()) {
+            AbstractColumn oldAttr = oldType.getAttr(attr.getName());
             if (oldAttr == null) {
                 isNeedDepcies.set(true);
                 attrSb.append("\n\tADD ATTRIBUTE ")
@@ -522,7 +522,7 @@ public class PgType extends PgStatementWithSearchPath {
             }
         }
 
-        for (PgColumn attr : oldType.getAttrs()) {
+        for (AbstractColumn attr : oldType.getAttrs()) {
             if (newType.getAttr(attr.getName()) == null) {
                 isNeedDepcies.set(true);
                 attrSb.append("\n\tDROP ATTRIBUTE ")
@@ -561,8 +561,8 @@ public class PgType extends PgStatementWithSearchPath {
     }
 
     private void columnsComments(PgType newType, PgType oldType, StringBuilder sb) {
-        for (PgColumn newAttr : newType.getAttrs()) {
-            PgColumn oldAttr = oldType.getAttr(newAttr.getName());
+        for (AbstractColumn newAttr : newType.getAttrs()) {
+            AbstractColumn oldAttr = oldType.getAttr(newAttr.getName());
             if (oldAttr != null) {
                 if (!Objects.equals(oldAttr.getComment(), newAttr.getComment())) {
                     sb.append("\n\n");
@@ -578,7 +578,7 @@ public class PgType extends PgStatementWithSearchPath {
     @Override
     public PgType shallowCopy() {
         PgType copy = new PgType(getName(), getForm(), getRawStatement());
-        for (PgColumn attr : attrs) {
+        for (AbstractColumn attr : attrs) {
             copy.addAttr(attr.deepCopy());
         }
         copy.enums.addAll(enums);
@@ -700,7 +700,7 @@ public class PgType extends PgStatementWithSearchPath {
     }
 
     @Override
-    public PgSchema getContainingSchema() {
-        return (PgSchema) this.getParent();
+    public AbstractSchema getContainingSchema() {
+        return (AbstractSchema) this.getParent();
     }
 }

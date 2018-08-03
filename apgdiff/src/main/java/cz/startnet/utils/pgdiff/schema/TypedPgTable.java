@@ -11,7 +11,7 @@ import cz.startnet.utils.pgdiff.hashers.Hasher;
  * @author galiev_mr
  *
  */
-public class TypedPgTable extends RegularPgTable {
+public class TypedPgTable extends AbstractRegularTable {
 
     private final String ofType;
 
@@ -28,7 +28,7 @@ public class TypedPgTable extends RegularPgTable {
             sbSQL.append(" (\n");
 
             int start = sbSQL.length();
-            for (PgColumn column : columns) {
+            for (AbstractColumn column : columns) {
                 writeColumn(column, sbSQL, sbOption);
             }
 
@@ -44,7 +44,7 @@ public class TypedPgTable extends RegularPgTable {
     }
 
     @Override
-    protected void compareTableTypes(PgTable newTable, StringBuilder sb) {
+    protected void compareTableTypes(AbstractTable newTable, StringBuilder sb) {
         if (newTable instanceof TypedPgTable) {
             String newType  = ((TypedPgTable)newTable).getOfType();
             if (!Objects.equals(ofType, newType)) {
@@ -58,14 +58,14 @@ public class TypedPgTable extends RegularPgTable {
             .append(" NOT OF")
             .append(';');
 
-            if (newTable instanceof RegularPgTable) {
-                ((RegularPgTable)newTable).convertTable(sb);
+            if (newTable instanceof AbstractRegularTable) {
+                ((AbstractRegularTable)newTable).convertTable(sb);
             }
         }
     }
 
     @Override
-    protected PgTable getTableCopy() {
+    protected AbstractTable getTableCopy() {
         return new TypedPgTable(name, getRawStatement(), getOfType());
     }
 

@@ -25,8 +25,8 @@ public class PgFtsParser extends PgStatementWithSearchPath {
     }
 
     @Override
-    public PgSchema getContainingSchema() {
-        return (PgSchema)getParent();
+    public AbstractSchema getContainingSchema() {
+        return (AbstractSchema)getParent();
     }
 
     @Override

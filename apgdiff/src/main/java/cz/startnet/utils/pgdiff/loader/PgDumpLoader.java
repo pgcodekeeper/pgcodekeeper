@@ -31,6 +31,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomTSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.ReferenceListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -144,7 +145,7 @@ public class PgDumpLoader implements AutoCloseable {
     public PgDatabase load() throws IOException, InterruptedException {
         PgDatabase d = new PgDatabase();
 
-        PgSchema schema = args.isMsSql() ? new MsSchema(ApgdiffConsts.DBO, "") :
+        AbstractSchema schema = args.isMsSql() ? new MsSchema(ApgdiffConsts.DBO, "") :
             new PgSchema(ApgdiffConsts.PUBLIC, "");
         d.addSchema(schema);
         d.setDefaultSchema(schema.getName());

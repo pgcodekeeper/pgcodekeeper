@@ -35,9 +35,9 @@ public class PgDatabase extends PgStatement {
     /**
      * Current default schema.
      */
-    private PgSchema defaultSchema;
+    private AbstractSchema defaultSchema;
 
-    private final List<PgSchema> schemas = new ArrayList<>();
+    private final List<AbstractSchema> schemas = new ArrayList<>();
     private final List<PgExtension> extensions = new ArrayList<>();
 
     // Contains object definitions
@@ -67,7 +67,7 @@ public class PgDatabase extends PgStatement {
         defaultSchema = getSchema(name);
     }
 
-    public PgSchema getDefaultSchema() {
+    public AbstractSchema getDefaultSchema() {
         return defaultSchema;
     }
 
@@ -134,12 +134,12 @@ public class PgDatabase extends PgStatement {
      *
      * @return found schema or null
      */
-    public PgSchema getSchema(final String name) {
+    public AbstractSchema getSchema(final String name) {
         if (name == null) {
             return getDefaultSchema();
         }
 
-        for (final PgSchema schema : schemas) {
+        for (final AbstractSchema schema : schemas) {
             if (schema.getName().equals(name)) {
                 return schema;
             }
@@ -153,11 +153,11 @@ public class PgDatabase extends PgStatement {
      *
      * @return {@link #schemas}
      */
-    public List<PgSchema> getSchemas() {
+    public List<AbstractSchema> getSchemas() {
         return Collections.unmodifiableList(schemas);
     }
 
-    public void addSchema(final PgSchema schema) {
+    public void addSchema(final AbstractSchema schema) {
         assertUnique(this::getSchema, schema);
         schemas.add(schema);
         schema.setParent(this);
@@ -173,7 +173,7 @@ public class PgDatabase extends PgStatement {
     public Stream<PgStatement> getDescendants() {
         Stream<PgStatement> stream = getChildren();
 
-        for (PgSchema schema : getSchemas()) {
+        for (AbstractSchema schema : getSchemas()) {
             stream = Stream.concat(stream, schema.getDescendants());
         }
 
@@ -219,8 +219,8 @@ public class PgDatabase extends PgStatement {
     }
 
     public void sortColumns() {
-        for (PgSchema schema : schemas) {
-            schema.getTables().forEach(PgTable::sortColumns);
+        for (AbstractSchema schema : schemas) {
+            schema.getTables().forEach(AbstractTable::sortColumns);
         }
     }
 
@@ -294,7 +294,7 @@ public class PgDatabase extends PgStatement {
         for (PgExtension ext : extensions) {
             copy.addExtension(ext.deepCopy());
         }
-        for (PgSchema schema : schemas) {
+        for (AbstractSchema schema : schemas) {
             copy.addSchema(schema.deepCopy());
         }
         return copy;
@@ -316,8 +316,8 @@ public class PgDatabase extends PgStatement {
             }
         }
 
-        for (PgSchema s : database.getSchemas()) {
-            PgSchema schema = getSchema(s.getName());
+        for (AbstractSchema s : database.getSchemas()) {
+            AbstractSchema schema = getSchema(s.getName());
             if (schema == null) {
                 s.dropParent();
                 addSchema(s);
@@ -346,8 +346,8 @@ public class PgDatabase extends PgStatement {
                     }
                 }
 
-                for (PgSequence seq : s.getSequences()) {
-                    PgSequence sequence = schema.getSequence(seq.getName());
+                for (AbstractSequence seq : s.getSequences()) {
+                    AbstractSequence sequence = schema.getSequence(seq.getName());
                     if (sequence == null) {
                         seq.dropParent();
                         schema.addSequence(seq);
@@ -356,8 +356,8 @@ public class PgDatabase extends PgStatement {
                     }
                 }
 
-                for (PgFunction func : s.getFunctions()) {
-                    PgFunction function = schema.getFunction(func.getName());
+                for (AbstractFunction func : s.getFunctions()) {
+                    AbstractFunction function = schema.getFunction(func.getName());
                     if (!schema.containsFunction(func.getName())) {
                         func.dropParent();
                         schema.addFunction(func);
@@ -366,16 +366,16 @@ public class PgDatabase extends PgStatement {
                     }
                 }
 
-                for (PgTable t : s.getTables()) {
-                    PgTable table = schema.getTable(t.getName());
+                for (AbstractTable t : s.getTables()) {
+                    AbstractTable table = schema.getTable(t.getName());
                     if (table == null) {
                         t.dropParent();
                         schema.addTable(t);
                     } else {
                         overrides.add(new PgOverride(table, t));
 
-                        for (PgConstraint con : t.getConstraints()) {
-                            PgConstraint constraint = table.getConstraint(con.getName());
+                        for (AbstractConstraint con : t.getConstraints()) {
+                            AbstractConstraint constraint = table.getConstraint(con.getName());
                             if (constraint == null) {
                                 con.dropParent();
                                 table.addConstraint(con);
@@ -384,8 +384,8 @@ public class PgDatabase extends PgStatement {
                             }
                         }
 
-                        for (PgIndex ind : t.getIndexes()) {
-                            PgIndex index = table.getIndex(ind.getName());
+                        for (AbstractIndex ind : t.getIndexes()) {
+                            AbstractIndex index = table.getIndex(ind.getName());
                             if (index == null) {
                                 ind.dropParent();
                                 table.addIndex(ind);
@@ -394,8 +394,8 @@ public class PgDatabase extends PgStatement {
                             }
                         }
 
-                        for (PgTrigger tr : t.getTriggers()) {
-                            PgTrigger trigger = table.getTrigger(tr.getName());
+                        for (AbstractTrigger tr : t.getTriggers()) {
+                            AbstractTrigger trigger = table.getTrigger(tr.getName());
                             if (trigger == null) {
                                 tr.dropParent();
                                 table.addTrigger(tr);
@@ -416,16 +416,16 @@ public class PgDatabase extends PgStatement {
                     }
                 }
 
-                for (PgView v : s.getViews()) {
-                    PgView view = schema.getView(v.getName());
+                for (AbstractView v : s.getViews()) {
+                    AbstractView view = schema.getView(v.getName());
                     if (view == null) {
                         v.dropParent();
                         schema.addView(v);
                     } else {
                         overrides.add(new PgOverride(view, v));
 
-                        for (PgTrigger tr : v.getTriggers()) {
-                            PgTrigger trigger = view.getTrigger(tr.getName());
+                        for (AbstractTrigger tr : v.getTriggers()) {
+                            AbstractTrigger trigger = view.getTrigger(tr.getName());
                             if (trigger == null) {
                                 tr.dropParent();
                                 view.addTrigger(tr);
@@ -451,7 +451,7 @@ public class PgDatabase extends PgStatement {
 
     public static Map<String, PgStatement> listPgObjects(PgDatabase db) {
         Map<String, PgStatement> statements = new HashMap<>();
-        db.getDescendants().flatMap(PgTable::columnAdder).forEach(st -> statements.put(st.getQualifiedName(), st));
+        db.getDescendants().flatMap(AbstractTable::columnAdder).forEach(st -> statements.put(st.getQualifiedName(), st));
         return statements;
     }
 }

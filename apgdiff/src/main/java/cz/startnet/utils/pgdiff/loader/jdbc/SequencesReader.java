@@ -12,12 +12,14 @@ import java.util.Map;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.schema.AbstractColumn;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractSequence;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class SequencesReader extends JdbcReader {
@@ -29,11 +31,11 @@ public class SequencesReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet res, PgSchema schema) throws SQLException {
+    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException {
         loader.monitor.worked(1);
         String sequenceName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schema.getName(), sequenceName, DbObjType.SEQUENCE));
-        PgSequence s = new PgSequence(sequenceName, "");
+        AbstractSequence s = new PgSequence(sequenceName, "");
 
         String refTable = res.getString("referenced_table_name");
         String refColumn = res.getString("ref_col_name");
@@ -68,7 +70,7 @@ public class SequencesReader extends JdbcReader {
         if (SupportedVersion.VERSION_10.checkVersion(loader.version)) {
             s.setStartWith(Long.toString(res.getLong("seqstart")));
             String dataType = identityType != null ? null :
-                loader.cachedTypesByOid.get(res.getLong("data_type")).getFullName(schema.getName());
+                loader.cachedTypesByOid.get(res.getLong("data_type")).getFullName();
             s.setMinMaxInc(res.getLong("seqincrement"), res.getLong("seqmax"), res.getLong("seqmin"), dataType);
             s.setCache(Long.toString(res.getLong("seqcache")));
             s.setCycle(res.getBoolean("seqcycle"));
@@ -78,8 +80,8 @@ public class SequencesReader extends JdbcReader {
         }
 
         if ("d".equals(identityType) || "a".equals(identityType)) {
-            PgTable table = schema.getTable(refTable);
-            PgColumn column = table.getColumn(refColumn);
+            AbstractTable table = schema.getTable(refTable);
+            AbstractColumn column = table.getColumn(refColumn);
             if (column == null) {
                 column = new PgColumn(refColumn);
                 column.setInherit(true);
@@ -108,7 +110,7 @@ public class SequencesReader extends JdbcReader {
         List<String> schemasAccess = new ArrayList<>();
         try (PreparedStatement schemasAccessQuery = loader.connection.prepareStatement(JdbcQueries.QUERY_SCHEMAS_ACCESS)) {
             Array arrSchemas = loader.connection.createArrayOf("text",
-                    db.getSchemas().stream().filter(s -> !s.getSequences().isEmpty()).map(PgSchema::getName).toArray());
+                    db.getSchemas().stream().filter(s -> !s.getSequences().isEmpty()).map(AbstractSchema::getName).toArray());
             schemasAccessQuery.setArray(1, arrSchemas);
             try (ResultSet schemaRes = loader.runner.runScript(schemasAccessQuery)) {
                 while (schemaRes.next()) {
@@ -128,9 +130,9 @@ public class SequencesReader extends JdbcReader {
             }
         }
 
-        Map<String, PgSequence> seqs = new HashMap<>();
+        Map<String, AbstractSequence> seqs = new HashMap<>();
         for (String schema : schemasAccess) {
-            for (PgSequence seq : db.getSchema(schema).getSequences()) {
+            for (AbstractSequence seq : db.getSchema(schema).getSequences()) {
                 seqs.put(seq.getQualifiedName(), seq);
             }
         }
@@ -170,7 +172,7 @@ public class SequencesReader extends JdbcReader {
 
         try (ResultSet res = loader.runner.runScript(loader.statement, sbUnionQuery.toString())) {
             while (res.next()) {
-                PgSequence seq = seqs.get(res.getString("qname"));
+                AbstractSequence seq = seqs.get(res.getString("qname"));
                 seq.setStartWith(res.getString("start_value"));
                 seq.setMinMaxInc(res.getLong("increment_by"), res.getLong("max_value"), res.getLong("min_value"), null);
                 seq.setCache(res.getString("cache_value"));

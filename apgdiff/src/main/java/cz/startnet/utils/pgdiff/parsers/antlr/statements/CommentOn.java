@@ -6,17 +6,18 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
+import cz.startnet.utils.pgdiff.schema.AbstractColumn;
+import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
+import cz.startnet.utils.pgdiff.schema.AbstractIndex;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
-import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
-import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
-import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
 public class CommentOn extends ParserAbstract {
@@ -41,23 +42,23 @@ public class CommentOn extends ParserAbstract {
         // otherwise schema reference is considered unresolved
         if (ctx.COLUMN() != null) {
             IdentifierContext schemaCtx = QNameParser.getThirdNameCtx(ids);
-            PgSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
+            AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
             IdentifierContext tableCtx = QNameParser.getSecondNameCtx(ids);
             if (tableCtx == null) {
                 throw new UnresolvedReferenceException(
                         "Table name is missing for commented column!", nameCtx.getStart());
             }
             String tableName = tableCtx.getText();
-            PgTable table = schema.getTable(tableName);
+            AbstractTable table = schema.getTable(tableName);
             if (table == null) {
-                PgView view = schema.getView(tableName);
+                AbstractView view = schema.getView(tableName);
                 if (view == null) {
                     getSafe(schema::getType, tableCtx).getAttr(name).setComment(db.getArguments(), comment);
                 } else {
                     view.addColumnComment(db.getArguments(), name, comment);
                 }
             } else {
-                PgColumn column;
+                AbstractColumn column;
                 if (table.getInherits().isEmpty()) {
                     column = getSafe(table::getColumn, nameCtx);
                 } else {
@@ -74,7 +75,7 @@ public class CommentOn extends ParserAbstract {
             return null;
         }
 
-        PgSchema schema;
+        AbstractSchema schema;
         if (ctx.TRIGGER() != null || ctx.RULE() != null || ctx.CONSTRAINT() != null) {
             schema = getSchemaSafe(ctx.table_name.identifier(), db.getDefaultSchema());
         } else {
@@ -91,7 +92,7 @@ public class CommentOn extends ParserAbstract {
             getSafe(db::getExtension, nameCtx).setComment(db.getArguments(), comment);
             //constraint
         } else if (ctx.CONSTRAINT() != null) {
-            PgTable table = schema.getTable(QNameParser.getFirstName(ctx.table_name.identifier()));
+            AbstractTable table = schema.getTable(QNameParser.getFirstName(ctx.table_name.identifier()));
             if (table == null) {
                 PgDomain domain = getSafe(schema::getDomain, nameCtx);
                 getSafe(domain::getConstraint, nameCtx).setComment(db.getArguments(), comment);
@@ -108,8 +109,8 @@ public class CommentOn extends ParserAbstract {
             db.setComment(db.getArguments(), comment);
             // index
         } else if (ctx.INDEX() != null) {
-            PgIndex index = null;
-            for (PgTable table : schema.getTables()) {
+            AbstractIndex index = null;
+            for (AbstractTable table : schema.getTables()) {
                 index = table.getIndex(name);
                 if (index != null) {
                     index.setComment(db.getArguments(), comment);
@@ -118,8 +119,8 @@ public class CommentOn extends ParserAbstract {
             }
 
             if (index == null) {
-                PgConstraint constr = null;
-                for (PgTable table : schema.getTables()) {
+                AbstractConstraint constr = null;
+                for (AbstractTable table : schema.getTables()) {
                     constr = table.getConstraint(name);
                     if (constr != null) {
                         constr.setComment(db.getArguments(), comment);

@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_schemaContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -22,7 +23,7 @@ public class CreateMsSchema extends ParserAbstract {
             return null;
         }
 
-        MsSchema schema = new MsSchema(name, getFullCtxText(ctx.getParent()));
+        AbstractSchema schema = new MsSchema(name, getFullCtxText(ctx.getParent()));
         if (ctx.owner_name != null) {
             schema.setOwner(ctx.owner_name.getText());
         }

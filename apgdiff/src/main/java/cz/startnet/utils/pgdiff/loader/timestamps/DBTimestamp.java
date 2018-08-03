@@ -16,11 +16,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import cz.startnet.utils.pgdiff.hashers.ShaHasher;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.PgConstraint;
+import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -116,7 +116,7 @@ public class DBTimestamp implements Serializable {
         Map<GenericColumn, byte[]> statements = new HashMap<>();
         db.getDescendants().filter(st -> st.getStatementType() != DbObjType.CONSTRAINT).forEach(st -> {
             if (st.getStatementType() == DbObjType.TABLE) {
-                List<PgConstraint> cons = ((PgTable)st).getConstraints();
+                List<AbstractConstraint> cons = ((AbstractTable)st).getConstraints();
                 ShaHasher hasher = new ShaHasher();
                 hasher.put(st);
                 hasher.putUnordered(cons);
@@ -236,7 +236,7 @@ public class DBTimestamp implements Serializable {
                 if (st.getStatementType() == DbObjType.TABLE) {
                     ShaHasher hasher = new ShaHasher();
                     hasher.put(st);
-                    hasher.putUnordered(((PgTable)st).getConstraints());
+                    hasher.putUnordered(((AbstractTable)st).getConstraints());
                     hash = hasher.getArray();
                 } else {
                     hash = st.shaHash();

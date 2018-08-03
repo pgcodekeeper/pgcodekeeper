@@ -6,8 +6,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_sequence_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractSequence;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
@@ -21,14 +22,14 @@ public class CreateSequence extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        PgSequence sequence = new PgSequence(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
-        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
+        AbstractSequence sequence = new PgSequence(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
+        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         fillSequence(sequence, ctx.sequence_body());
         schema.addSequence(sequence);
         return sequence;
     }
 
-    public static void fillSequence(PgSequence sequence, List<Sequence_bodyContext> list) {
+    public static void fillSequence(AbstractSequence sequence, List<Sequence_bodyContext> list) {
         long inc = 1;
         Long maxValue = null;
         Long minValue = null;

@@ -21,10 +21,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.TypesSetManually;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.system.CastContext;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemCast;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemFunction;
-import cz.startnet.utils.pgdiff.schema.system.PgSystemFunction.PgSystemArgument;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemRelation;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
 import ru.taximaxim.codekeeper.apgdiff.Log;
@@ -135,8 +135,8 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
         }
     }
 
-    private PgSystemArgument getArgument(Function_argumentsContext argument) {
-        PgSystemArgument arg = new PgSystemArgument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
+    private Argument getArgument(Function_argumentsContext argument) {
+        Argument arg = new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
                 argument.argname != null ? argument.argname.getText() : null,
                         ParserAbstract.getFullCtxText(argument.argtype_data));
 
@@ -204,8 +204,8 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                 }
 
                 PgSystemFunction operator = new PgSystemFunction(name);
-                PgSystemFunction.PgSystemArgument firstArg = new PgSystemArgument(null, left);
-                PgSystemFunction.PgSystemArgument secondArg = new PgSystemArgument(null, right);
+                Argument firstArg = new Argument(null, left);
+                Argument secondArg = new Argument(null, right);
                 operator.addArgument(firstArg);
                 operator.addArgument(secondArg);
                 operator.setReturns(cachedTypesByOid.get(result.getLong("result")).getFullName(schemaName));

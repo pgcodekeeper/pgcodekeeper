@@ -14,8 +14,8 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.zest.core.viewers.EntityConnectionData;
 import org.eclipse.zest.core.viewers.IEntityStyleProvider;
 
-import cz.startnet.utils.pgdiff.schema.PgConstraint;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvider{
@@ -53,7 +53,7 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
                 // just for tests
                 return "COL " + st.getBareName(); //$NON-NLS-1$
             case CONSTRAINT:
-                if (!((PgConstraint)st).getForeignColumns().isEmpty()) {
+                if (!((AbstractConstraint)st).getForeignColumns().isEmpty()) {
                     return "FK " + st.getBareName(); //$NON-NLS-1$
                 }
                 return "CONSTR " + st.getBareName(); //$NON-NLS-1$
@@ -107,7 +107,7 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
 
     @Override
     public Color getBorderColor(Object entity) {
-        return entity instanceof PgSchema ? ColorConstants.black : ColorConstants.lightGray;
+        return entity instanceof AbstractSchema ? ColorConstants.black : ColorConstants.lightGray;
     }
 
     @Override
@@ -117,7 +117,7 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
 
     @Override
     public int getBorderWidth(Object entity) {
-        return entity instanceof PgSchema ? 2 : 1;
+        return entity instanceof AbstractSchema ? 2 : 1;
     }
 
     @Override
@@ -127,7 +127,7 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
 
     @Override
     public Color getForegroundColour(Object entity) {
-        return entity instanceof PgSchema ? ColorConstants.black : colorDBlue;
+        return entity instanceof AbstractSchema ? ColorConstants.black : colorDBlue;
     }
 
     @Override

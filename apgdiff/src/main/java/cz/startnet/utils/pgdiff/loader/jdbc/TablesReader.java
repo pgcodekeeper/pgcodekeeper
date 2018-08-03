@@ -7,13 +7,14 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.AbstractColumn;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PartitionForeignPgTable;
 import cz.startnet.utils.pgdiff.schema.PartitionPgTable;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.schema.RegularPgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
+import cz.startnet.utils.pgdiff.schema.AbstractRegularTable;
 import cz.startnet.utils.pgdiff.schema.SimpleForeignPgTable;
 import cz.startnet.utils.pgdiff.schema.SimplePgTable;
 import cz.startnet.utils.pgdiff.schema.TypedPgTable;
@@ -26,13 +27,13 @@ public class TablesReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet result, PgSchema schema) throws SQLException {
-        PgTable table = getTable(result, schema);
+    protected void processResult(ResultSet result, AbstractSchema schema) throws SQLException {
+        AbstractTable table = getTable(result, schema);
         loader.monitor.worked(1);
         schema.addTable(table);
     }
 
-    private PgTable getTable(ResultSet res, PgSchema schema) throws SQLException {
+    private AbstractTable getTable(ResultSet res, AbstractSchema schema) throws SQLException {
         String schemaName = schema.getName();
         String tableName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, DbObjType.TABLE));
@@ -42,7 +43,7 @@ public class TablesReader extends JdbcReader {
             partitionBound = res.getString("partition_bound");
             checkObjectValidity(partitionBound, getType(), tableName);
         }
-        PgTable t;
+        AbstractTable t;
         String serverName = res.getString("server_name");
         long ofTypeOid = res.getLong("of_type");
         if (serverName != null) {
@@ -53,7 +54,7 @@ public class TablesReader extends JdbcReader {
             }
         } else if (ofTypeOid != 0) {
             JdbcType jdbcOfType = loader.cachedTypesByOid.get(ofTypeOid);
-            String ofType = jdbcOfType.getFullName(schemaName);
+            String ofType = jdbcOfType.getFullName();
             t = new TypedPgTable(tableName, "", ofType);
             jdbcOfType.addTypeDepcy(t);
         } else if (partitionBound != null) {
@@ -105,8 +106,8 @@ public class TablesReader extends JdbcReader {
             t.setHasOids(true);
         }
 
-        if (t instanceof RegularPgTable) {
-            RegularPgTable regTable = (RegularPgTable) t;
+        if (t instanceof AbstractRegularTable) {
+            AbstractRegularTable regTable = (AbstractRegularTable) t;
 
             // TableSpace
             String tableSpace = res.getString("table_space");
@@ -139,8 +140,8 @@ public class TablesReader extends JdbcReader {
         return t;
     }
 
-    private void readColumns(ResultSet res, PgTable t, long ofTypeOid,
-            PgSchema schema) throws SQLException {
+    private void readColumns(ResultSet res, AbstractTable t, long ofTypeOid,
+            AbstractSchema schema) throws SQLException {
         String[] colNames = getColArray(res, "col_names");
         if (colNames == null) {
             return;
@@ -165,7 +166,7 @@ public class TablesReader extends JdbcReader {
         String[] colDefaultStorages = getColArray(res, "col_default_storages");
 
         for (int i = 0; i < colNames.length; i++) {
-            PgColumn column = new PgColumn(colNames[i]);
+            AbstractColumn column = new PgColumn(colNames[i]);
             column.setInherit(!colIsLocal[i]);
 
             if (ofTypeOid == 0 && !column.isInherit()) {

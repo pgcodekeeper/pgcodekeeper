@@ -6,10 +6,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_restContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_sortContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_whereContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.AbstractIndex;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsIndex;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgIndex;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class CreateMsIndex extends ParserAbstract {
@@ -24,10 +24,10 @@ public class CreateMsIndex extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         IdContext schemaCtx = ctx.table_name().schema;
-        PgSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
+        AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
         String tableName = ctx.table_name().table.getText();
         String name = ctx.name.getText();
-        MsIndex ind = new MsIndex(name, getFullCtxText(ctx.getParent()));
+        AbstractIndex ind = new MsIndex(name, getFullCtxText(ctx.getParent()));
         ind.setTableName(tableName);
         ind.setUnique(ctx.UNIQUE() != null);
 
@@ -37,7 +37,7 @@ public class CreateMsIndex extends ParserAbstract {
         return ind;
     }
 
-    private void parseIndex(Index_restContext rest, PgIndex ind) {
+    private void parseIndex(Index_restContext rest, AbstractIndex ind) {
         Index_sortContext sort = rest.index_sort();
         for (IdContext col : sort.column_name_list_with_order().id()) {
             ind.addColumn(col.getText());

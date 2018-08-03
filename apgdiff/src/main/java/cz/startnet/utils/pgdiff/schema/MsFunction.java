@@ -1,14 +1,12 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
-import cz.startnet.utils.pgdiff.hashers.Hasher;
 
-public class MsFunction extends PgFunction {
-
-    private boolean ansiNulls;
-    private boolean quotedIdentified;
+public class MsFunction extends AbstractFunction {
 
     public MsFunction(String name, String rawStatement) {
         super(name, rawStatement);
@@ -22,24 +20,59 @@ public class MsFunction extends PgFunction {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append("SET QUOTED_IDENTIFIER ").append(quotedIdentified ? "ON" : "OFF");
+        sbSQL.append(getFunctionFullSQL(true));
+
+        appendOwnerSQL(sbSQL);
+        appendPrivileges(sbSQL);
+        return sbSQL.toString();
+    }
+
+    public String getFunctionFullSQL(boolean isCreate) {
+        final StringBuilder sbSQL = new StringBuilder();
+        sbSQL.append("SET QUOTED_IDENTIFIER ").append(isQuotedIdentified() ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
-        sbSQL.append("SET ANSI_NULLS ").append(ansiNulls ? "ON" : "OFF");
+        sbSQL.append("SET ANSI_NULLS ").append(isAnsiNulls() ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
 
-        sbSQL.append("CREATE OR ALTER FUNCTION ");
+        sbSQL.append(isCreate ? "CREATE" : "ALTER");
+        sbSQL.append(" FUNCTION ");
         sbSQL.append(MsDiffUtils.quoteName(getContainingSchema().getName())).append('.');
-        appendFunctionSignature(sbSQL, true, true);
+        appendFunctionSignature(sbSQL);
         sbSQL.append(' ');
         sbSQL.append("\nRETURNS ").append(getReturns());
         sbSQL.append("\n");
         sbSQL.append(getBody());
         sbSQL.append(GO);
 
-        appendOwnerSQL(sbSQL);
-        appendPrivileges(sbSQL);
-
         return sbSQL.toString();
+    }
+
+    @Override
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+            AtomicBoolean isNeedDepcies) {
+        final int startLength = sb.length();
+        MsFunction newFunction;
+        if (newCondition instanceof MsFunction) {
+            newFunction = (MsFunction)newCondition;
+        } else {
+            return false;
+        }
+
+        if (!checkForChanges(newFunction)) {
+            sb.append(getFunctionFullSQL(false));
+        }
+
+        if (!Objects.equals(getOwner(), newFunction.getOwner())) {
+            sb.append(newFunction.getOwnerSQL());
+        }
+
+        alterPrivileges(newFunction, sb);
+        if (!Objects.equals(getComment(), newFunction.getComment())) {
+            sb.append("\n\n");
+            newFunction.appendCommentSql(sb);
+        }
+
+        return sb.length() > startLength;
     }
 
     @Override
@@ -47,69 +80,34 @@ public class MsFunction extends PgFunction {
         return "DROP FUNCTION " + getQualifiedName() + GO;
     }
 
-    public void setAnsiNulls(boolean ansiNulls) {
-        this.ansiNulls = ansiNulls;
-        resetHash();
-    }
+    public StringBuilder appendFunctionSignature(StringBuilder sb) {
+        sb.append(MsDiffUtils.quoteName(name)).append('(');
+        sb.append(arguments.stream().map(arg -> getDeclaration(arg, true, true))
+                .collect(Collectors.joining(", ")));
+        sb.append(')');
 
-    public boolean isAnsiNulls() {
-        return ansiNulls;
-    }
-
-    public void setQuotedIdentified(boolean quotedIdentified) {
-        this.quotedIdentified = quotedIdentified;
-        resetHash();
-    }
-
-    public boolean isQuotedIdentified() {
-        return quotedIdentified;
+        return sb;
     }
 
     @Override
-    public boolean compare(PgStatement obj) {
-        if (obj instanceof MsFunction && super.compare(obj)) {
-            MsFunction func = (MsFunction) obj;
-            return Objects.equals(quotedIdentified, func.isQuotedIdentified())
-                    && Objects.equals(ansiNulls, func.isAnsiNulls());
+    public String getDeclaration(Argument arg, boolean includeDefaultValue,  boolean includeArgName) {
+        final StringBuilder sbString = new StringBuilder();
+        sbString.append(getName()).append(' ').append(arg.getDataType());
+
+        String def = arg.getDefaultExpression();
+
+        if (includeDefaultValue && def != null && !def.isEmpty()) {
+            sbString.append(" = ");
+            sbString.append(def);
         }
 
-        return false;
-    }
+        String mode = arg.getMode();
 
-    @Override
-    public void computeHash(Hasher hasher) {
-        super.computeHash(hasher);
-        hasher.put(isQuotedIdentified());
-        hasher.put(isAnsiNulls());
-    }
-
-    @Override
-    public MsFunction shallowCopy() {
-        MsFunction functionDst = new MsFunction(getBareName(),getRawStatement());
-        functionDst.setReturns(getReturns());
-        functionDst.returnsColumns.putAll(returnsColumns);
-        functionDst.setBody(getBody());
-        functionDst.setComment(getComment());
-
-        for (Argument argSrc : arguments) {
-            Argument argDst = functionDst.new MsArgument(argSrc.getMode(), argSrc.getName(), argSrc.getDataType());
-            argDst.setDefaultExpression(argSrc.getDefaultExpression());
-            functionDst.addArgument(argDst);
+        if (mode != null && !"IN".equalsIgnoreCase(mode)) {
+            sbString.append(' ').append(mode);
         }
 
-        for (PgPrivilege priv : revokes) {
-            functionDst.addPrivilege(priv);
-        }
-
-        for (PgPrivilege priv : grants) {
-            functionDst.addPrivilege(priv);
-        }
-
-        functionDst.setOwner(getOwner());
-        functionDst.deps.addAll(deps);
-        functionDst.setAnsiNulls(isAnsiNulls());
-        functionDst.setQuotedIdentified(isQuotedIdentified());
-        return functionDst;
+        return sbString.toString();
     }
 
     @Override
@@ -117,37 +115,8 @@ public class MsFunction extends PgFunction {
         return false;
     }
 
-    public class MsArgument extends Argument {
-
-        private static final long serialVersionUID = -8595307351991231778L;
-
-        public MsArgument(String name, String dataType) {
-            super(name, dataType);
-        }
-
-        public MsArgument(String mode, String name, String dataType) {
-            super(mode, name, dataType);
-        }
-
-        @Override
-        public String getDeclaration(boolean includeDefaultValue,
-                boolean includeArgName) {
-            final StringBuilder sbString = new StringBuilder();
-            sbString.append(getName()).append(' ').append(getDataType());
-
-            if (includeDefaultValue && getDefaultExpression() != null
-                    && !getDefaultExpression().isEmpty()) {
-                sbString.append(" = ");
-                sbString.append(getDefaultExpression());
-            }
-
-            if (getMode() != null && !"IN".equalsIgnoreCase(getMode())) {
-                sbString.append(' ').append(getMode());
-            }
-
-
-            return sbString.toString();
-        }
-
+    @Override
+    protected AbstractFunction getFunctionCopy() {
+        return new MsFunction(getName(), getRawStatement());
     }
 }

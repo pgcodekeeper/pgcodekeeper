@@ -26,14 +26,14 @@ import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.schema.AbstractFunction;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
-import cz.startnet.utils.pgdiff.schema.PgFunction;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
-import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.schema.PgView;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
@@ -323,13 +323,13 @@ public class ModelExporter {
         // delete function sql file
         deleteStatementIfExists(st);
 
-        List<PgFunction> funcsToDump = new LinkedList<>();
-        PgSchema newParentSchema = newDb.getSchema(st.getParent().getName());
-        PgSchema oldParentSchema = oldDb.getSchema(st.getParent().getName());
+        List<AbstractFunction> funcsToDump = new LinkedList<>();
+        AbstractSchema newParentSchema = newDb.getSchema(st.getParent().getName());
+        AbstractSchema oldParentSchema = oldDb.getSchema(st.getParent().getName());
 
         // prepare the overloaded function list as if there are no changes
         if (oldParentSchema != null) {
-            for (PgFunction oldFunc : oldParentSchema.getFunctions()) {
+            for (AbstractFunction oldFunc : oldParentSchema.getFunctions()) {
                 if (oldFunc.getBareName().equals(st.getBareName())) {
                     funcsToDump.add(oldFunc);
                 }
@@ -349,7 +349,7 @@ public class ModelExporter {
                 continue;
             }
             // final required function state
-            PgFunction funcPrimary = (elFunc.getSide() == DiffSide.LEFT ?
+            AbstractFunction funcPrimary = (elFunc.getSide() == DiffSide.LEFT ?
                     oldParentSchema : newParentSchema).getFunction(elFunc.getName());
             if (funcPrimary == null || !funcPrimary.getBareName().equals(st.getBareName())
                     || !funcPrimary.getParent().getName().equals(elFunc.getParent().getName())) {
@@ -403,9 +403,9 @@ public class ModelExporter {
 
         // prepare the dump data, old state
         List<PgStatementWithSearchPath> contents = new LinkedList<>();
-        PgSchema newParentSchema = newDb.getSchema(st.getParent().getName());
-        PgSchema oldParentSchema = oldDb.getSchema(st.getParent().getName());
-        PgTable oldTable = null;
+        AbstractSchema newParentSchema = newDb.getSchema(st.getParent().getName());
+        AbstractSchema oldParentSchema = oldDb.getSchema(st.getParent().getName());
+        AbstractTable oldTable = null;
         if (oldParentSchema != null) {
             oldTable = oldParentSchema.getTable(st.getName());
             if (oldTable != null) {
@@ -414,7 +414,7 @@ public class ModelExporter {
             }
         }
         // table to dump, initially assume old unmodified state
-        PgTable tablePrimary = oldTable;
+        AbstractTable tablePrimary = oldTable;
 
         // modify the dump state as requested by the changeList elements
         Iterator<TreeElement> it = changeList.iterator();
@@ -434,7 +434,7 @@ public class ModelExporter {
             default:
                 continue;
             }
-            PgTable tableChange = (elTableChange.getSide() == DiffSide.LEFT ?
+            AbstractTable tableChange = (elTableChange.getSide() == DiffSide.LEFT ?
                     oldParentSchema : newParentSchema).getTable(elTableChange.getName());
             if (tableChange == null || !tableChange.getName().equals(st.getName())
                     || !tableChange.getParent().getName().equals(elTableChange.getParent().getName())) {
@@ -524,9 +524,9 @@ public class ModelExporter {
 
         // prepare the dump data, old state
         List<PgStatementWithSearchPath> contents = new LinkedList<>();
-        PgSchema newParentSchema = newDb.getSchema(st.getParent().getName());
-        PgSchema oldParentSchema = oldDb.getSchema(st.getParent().getName());
-        PgView oldView = null;
+        AbstractSchema newParentSchema = newDb.getSchema(st.getParent().getName());
+        AbstractSchema oldParentSchema = oldDb.getSchema(st.getParent().getName());
+        AbstractView oldView = null;
         if (oldParentSchema != null) {
             oldView = oldParentSchema.getView(st.getName());
             if (oldView != null) {
@@ -535,7 +535,7 @@ public class ModelExporter {
             }
         }
         // view to dump, initially assume old unmodified state
-        PgView viewPrimary = oldView;
+        AbstractView viewPrimary = oldView;
 
         // modify the dump state as requested by the changeList elements
         Iterator<TreeElement> it = changeList.iterator();
@@ -553,7 +553,7 @@ public class ModelExporter {
             default:
                 continue;
             }
-            PgView viewChange = (elViewChange.getSide() == DiffSide.LEFT ?
+            AbstractView viewChange = (elViewChange.getSide() == DiffSide.LEFT ?
                     oldParentSchema : newParentSchema).getView(elViewChange.getName());
             if (viewChange == null || !viewChange.getName().equals(st.getName())
                     || !viewChange.getParent().getName().equals(elViewChange.getParent().getName())) {
@@ -679,7 +679,7 @@ public class ModelExporter {
         }
 
         // exporting schemas contents
-        for (PgSchema schema : newDb.getSchemas()) {
+        for (AbstractSchema schema : newDb.getSchemas()) {
             File schemaDir = new File(schemasSharedDir, getExportedFilename(schema));
             if (!schemaDir.mkdir()) {
                 throw new DirectoryException(MessageFormat.format(
@@ -707,7 +707,7 @@ public class ModelExporter {
                 ApgdiffConsts.FILENAME_WORKING_DIR_MARKER));
     }
 
-    private void dumpFunctions(List<PgFunction> funcs, File parentDir) throws IOException {
+    private void dumpFunctions(List<AbstractFunction> funcs, File parentDir) throws IOException {
         if (funcs.isEmpty()) {
             return;
         }
@@ -715,7 +715,7 @@ public class ModelExporter {
         File funcDir = mkdirObjects(parentDir, "FUNCTION");
 
         Map<String, StringBuilder> dumps = new HashMap<>(funcs.size());
-        for (PgFunction f : funcs) {
+        for (AbstractFunction f : funcs) {
             String fileName = getExportedFilenameSql(f);
             StringBuilder groupedDump = dumps.get(fileName);
             if (groupedDump == null) {

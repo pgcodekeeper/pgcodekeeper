@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 
-public class MsConstraint extends PgConstraint {
+public class MsConstraint extends AbstractConstraint {
 
     public MsConstraint(String name, String rawStatement) {
         super(name, rawStatement);
@@ -30,19 +30,15 @@ public class MsConstraint extends PgConstraint {
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
-        MsConstraint newConstr;
         if (newCondition instanceof MsConstraint) {
-            newConstr = (MsConstraint)newCondition;
-        } else {
-            return false;
+            MsConstraint newConstr = (MsConstraint)newCondition;
+            if (!compareWithoutComments(newConstr)) {
+                sb.append(newCondition.getCreationSQL());
+                return true;
+            }
         }
 
-        if (!compareWithoutComments(newConstr)) {
-            isNeedDepcies.set(true);
-            return true;
-        }
-        return sb.length() > startLength;
+        return false;
     }
 
     @Override
@@ -63,4 +59,8 @@ public class MsConstraint extends PgConstraint {
         return false;
     }
 
+    @Override
+    protected AbstractConstraint getConstraintCopy() {
+        return new MsConstraint(getName(), getRawStatement());
+    }
 }

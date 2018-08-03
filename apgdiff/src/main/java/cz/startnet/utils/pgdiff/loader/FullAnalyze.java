@@ -13,17 +13,17 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_restContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.AbstractTable;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.TableAbstract;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateIndex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateRewrite;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
+import cz.startnet.utils.pgdiff.schema.AbstractTrigger;
+import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
-import cz.startnet.utils.pgdiff.schema.PgTrigger;
-import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 
@@ -60,14 +60,14 @@ public final class FullAnalyze {
                 break;
             case TRIGGER:
                 CreateTrigger.analyzeTriggersWhen((VexContext) ctx,
-                        (PgTrigger) statement, schemaName, db);
+                        (AbstractTrigger) statement, schemaName, db);
                 break;
             case INDEX:
                 CreateIndex.analyzeIndexRest((Index_restContext) ctx, statement,
                         schemaName, db);
                 break;
             case CONSTRAINT:
-                AbstractTable.analyzeConstraintCtx(ctx, statement, schemaName, db);
+                TableAbstract.analyzeConstraintCtx(ctx, statement, schemaName, db);
                 break;
             case DOMAIN:
             case FUNCTION:
@@ -98,7 +98,7 @@ public final class FullAnalyze {
             PgStatement stmt = event.getVertex();
             if (DbObjType.VIEW.equals(stmt.getStatementType())) {
                 db.getContextsForAnalyze().stream().filter(e -> stmt.equals(e.getKey()))
-                .forEach(e -> CreateView.analyzeViewCtx(e.getValue(), (PgView) e.getKey(),
+                .forEach(e -> CreateView.analyzeViewCtx(e.getValue(), (AbstractView) e.getKey(),
                         stmt.getParent().getName(), db));
             }
         }

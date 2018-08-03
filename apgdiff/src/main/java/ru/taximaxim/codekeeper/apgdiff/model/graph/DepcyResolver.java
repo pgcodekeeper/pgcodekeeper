@@ -17,16 +17,16 @@ import org.jgrapht.event.VertexTraversalEvent;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.DepthFirstIterator;
 
-import cz.startnet.utils.pgdiff.schema.PgColumn;
-import cz.startnet.utils.pgdiff.schema.PgConstraint;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractColumn;
+import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgIndex;
+import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import cz.startnet.utils.pgdiff.schema.TypedPgTable;
@@ -269,7 +269,7 @@ public class DepcyResolver {
             break;
         }
 
-        PgSchema oldSchema = null;
+        AbstractSchema oldSchema = null;
         if (statement instanceof PgStatementWithSearchPath) {
             oldSchema = db.getSchema(((PgStatementWithSearchPath) statement)
                     .getContainingSchema().getName());
@@ -295,22 +295,22 @@ public class DepcyResolver {
             }
             break;
         case INDEX:
-            PgIndex ind = (PgIndex) statement;
-            PgTable tableInd = oldSchema.getTable(ind.getTableName());
+            AbstractIndex ind = (AbstractIndex) statement;
+            AbstractTable tableInd = oldSchema.getTable(ind.getTableName());
             if (tableInd != null) {
                 return tableInd.getIndex(ind.getName());
             }
             break;
         case CONSTRAINT:
-            PgConstraint constr = (PgConstraint) statement;
-            PgTable tableConstr = oldSchema.getTable(constr.getParent().getName());
+            AbstractConstraint constr = (AbstractConstraint) statement;
+            AbstractTable tableConstr = oldSchema.getTable(constr.getParent().getName());
             if (tableConstr != null) {
                 return tableConstr.getConstraint(constr.getName());
             }
             break;
         case COLUMN:
-            PgColumn column = (PgColumn) statement;
-            PgTable tableCol = oldSchema.getTable(column.getParent().getName());
+            AbstractColumn column = (AbstractColumn) statement;
+            AbstractTable tableCol = oldSchema.getTable(column.getParent().getName());
             if (tableCol != null) {
                 return tableCol.getColumn(column.getName());
             }
@@ -318,9 +318,8 @@ public class DepcyResolver {
         case SEQUENCE:
             return oldSchema.getSequence(statement.getName());
         case FUNCTION:
-            return oldSchema.getFunction(statement.getName());
         case PROCEDURE:
-            return oldSchema.getProcedure(statement.getName());
+            return oldSchema.getFunction(statement.getName());
         case TYPE:
             return oldSchema.getType(statement.getName());
         case DOMAIN:
@@ -451,7 +450,7 @@ public class DepcyResolver {
             }
             // Колонки пропускаются при удалении таблицы
             if (oldObj.getStatementType() == DbObjType.COLUMN) {
-                PgTable oldTable = (PgTable) oldObj.getParent();
+                AbstractTable oldTable = (AbstractTable) oldObj.getParent();
                 PgStatement newTable = getObjectFromDB(oldObj.getParent(),
                         newDb);
 
@@ -538,7 +537,7 @@ public class DepcyResolver {
                     return true;
                 }
 
-                PgTable newTable = (PgTable)newObj.getParent();
+                AbstractTable newTable = (AbstractTable)newObj.getParent();
                 // columns are integrated into CREATE TABLE OF TYPE
                 if (newTable instanceof TypedPgTable) {
                     TypedPgTable newTypedTable = (TypedPgTable) newTable;

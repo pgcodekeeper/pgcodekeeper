@@ -5,11 +5,11 @@ import java.sql.SQLException;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -29,17 +29,17 @@ public class SchemasMsReader {
         String query = JdbcQueries.QUERY_MS_SCHEMAS.get(null);
         try (ResultSet result = loader.runner.runScript(loader.statement, query)) {
             while (result.next()) {
-                PgSchema schema = getSchema(result);
+                AbstractSchema schema = getSchema(result);
                 db.addSchema(schema);
                 loader.schemaIds.put(result.getLong("schema_id"), schema);
             }
         }
     }
 
-    private MsSchema getSchema(ResultSet res) throws SQLException, JsonReaderException {
+    private AbstractSchema getSchema(ResultSet res) throws SQLException, JsonReaderException {
         String schemaName = res.getString("name");
         loader.setCurrentObject(new GenericColumn(schemaName, DbObjType.SCHEMA));
-        MsSchema s = new MsSchema(schemaName, "");
+        AbstractSchema s = new MsSchema(schemaName, "");
 
         String owner = res.getString("owner");
         if (!schemaName.equalsIgnoreCase(ApgdiffConsts.DBO) || !owner.equalsIgnoreCase(ApgdiffConsts.DBO)) {
