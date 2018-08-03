@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 
-public class MsIndex extends PgIndex {
+public class MsIndex extends AbstractIndex {
 
     public MsIndex(String name, String rawStatement) {
         super(name, rawStatement);
@@ -36,12 +36,11 @@ public class MsIndex extends PgIndex {
         return sbSQL.toString();
     }
 
-    // TODO append alter for each part of definition
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         if (newCondition instanceof MsIndex && !compare(newCondition)) {
-            isNeedDepcies.set(true);
+            sb.append(newCondition.getCreationSQL());
             return true;
         }
 
@@ -58,5 +57,10 @@ public class MsIndex extends PgIndex {
     @Override
     public boolean isPostgres() {
         return false;
+    }
+
+    @Override
+    protected AbstractIndex getIndexCopy() {
+        return new MsIndex(getName(), getRawStatement());
     }
 }

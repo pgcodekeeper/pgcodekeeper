@@ -37,7 +37,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     protected final Map<String, String> options = new LinkedHashMap<>();
     protected boolean hasOids;
     protected final List<PgConstraint> constraints = new ArrayList<>();
-    protected final List<PgIndex> indexes = new ArrayList<>();
+    protected final List<AbstractIndex> indexes = new ArrayList<>();
     protected final List<AbstractTrigger> triggers = new ArrayList<>();
     protected final List<PgRule> rules = new ArrayList<>();
 
@@ -51,7 +51,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     }
 
     public boolean isClustered() {
-        for (PgIndex ind : indexes) {
+        for (AbstractIndex ind : indexes) {
             if (ind.isClusterIndex()) {
                 return true;
             }
@@ -390,8 +390,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
      *
      * @return found index or null if no such index has been found
      */
-    public PgIndex getIndex(final String name) {
-        for (PgIndex index : indexes) {
+    public AbstractIndex getIndex(final String name) {
+        for (AbstractIndex index : indexes) {
             if (index.getName().equals(name)) {
                 return index;
             }
@@ -441,7 +441,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
      *
      * @return {@link #indexes}
      */
-    public List<PgIndex> getIndexes() {
+    public List<AbstractIndex> getIndexes() {
         return Collections.unmodifiableList(indexes);
     }
 
@@ -531,7 +531,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         resetHash();
     }
 
-    public void addIndex(final PgIndex index) {
+    public void addIndex(final AbstractIndex index) {
         assertUnique(this::getIndex, index);
         indexes.add(index);
         index.setParent(this);
@@ -652,7 +652,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         for (PgConstraint constraint : constraints) {
             copy.addConstraint(constraint.deepCopy());
         }
-        for (PgIndex index : indexes) {
+        for (AbstractIndex index : indexes) {
             copy.addIndex(index.deepCopy());
         }
         for (AbstractTrigger trigger : triggers) {

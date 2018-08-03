@@ -12,7 +12,7 @@ import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
-import cz.startnet.utils.pgdiff.schema.PgIndex;
+import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
@@ -108,7 +108,7 @@ public class CommentOn extends ParserAbstract {
             db.setComment(db.getArguments(), comment);
             // index
         } else if (ctx.INDEX() != null) {
-            PgIndex index = null;
+            AbstractIndex index = null;
             for (PgTable table : schema.getTables()) {
                 index = table.getIndex(name);
                 if (index != null) {

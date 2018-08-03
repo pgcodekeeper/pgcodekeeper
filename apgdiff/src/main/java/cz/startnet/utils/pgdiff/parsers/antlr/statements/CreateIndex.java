@@ -13,6 +13,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sort_specifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expression_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
+import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -37,7 +38,7 @@ public class CreateIndex extends ParserAbstract {
         String schemaName = schema.getName();
         String tableName = QNameParser.getFirstName(ids);
         String name = ctx.name.getText();
-        PgIndex ind = new PgIndex(name != null ? name : "", getFullCtxText(ctx.getParent()));
+        AbstractIndex ind = new PgIndex(name != null ? name : "", getFullCtxText(ctx.getParent()));
         ind.setTableName(tableName);
         parseIndex(ctx.index_rest(), tablespace, schemaName, tableName, ind, db);
         ind.setUnique(ctx.UNIQUE() != null);
@@ -52,7 +53,7 @@ public class CreateIndex extends ParserAbstract {
     }
 
     public static void parseIndex(Index_restContext rest, String tablespace,
-            String schemaName, String tableName, PgIndex ind, PgDatabase db) {
+            String schemaName, String tableName, AbstractIndex ind, PgDatabase db) {
         db.addContextForAnalyze(ind, rest);
 
         Index_sortContext sort = rest.index_sort();
@@ -77,7 +78,7 @@ public class CreateIndex extends ParserAbstract {
         ind.setDefinition(sb.toString());
     }
 
-    private static void parseColumns(Index_sortContext sort, PgIndex ind, PgDatabase db) {
+    private static void parseColumns(Index_sortContext sort, AbstractIndex ind, PgDatabase db) {
         for (Sort_specifierContext sort_ctx : sort.sort_specifier_list().sort_specifier()) {
             Value_expression_primaryContext vexPrimary = sort_ctx.key.value_expression_primary();
             if (vexPrimary != null) {

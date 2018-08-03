@@ -12,7 +12,7 @@ import org.jgrapht.graph.SimpleDirectedGraph;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgIndex;
+import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -99,7 +99,7 @@ public class DepcyGraph {
                         graph.addEdge(con, refCon);
                     }
                 }
-                for (PgIndex refInd : table.getIndexes()) {
+                for (AbstractIndex refInd : table.getIndexes()) {
                     if (refInd.isUnique() && refs.equals(refInd.getColumns())) {
                         graph.addEdge(con, refInd);
                     }

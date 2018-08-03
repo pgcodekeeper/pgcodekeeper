@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateIndex;
+import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
@@ -22,17 +23,17 @@ public class IndicesReader extends JdbcReader {
     protected void processResult(ResultSet result, AbstractSchema schema) throws SQLException {
         PgTable table = schema.getTable(result.getString("table_name"));
         if (table != null) {
-            PgIndex index = getIndex(result, schema, table.getName());
+            AbstractIndex index = getIndex(result, schema, table.getName());
             loader.monitor.worked(1);
             table.addIndex(index);
         }
     }
 
-    private PgIndex getIndex(ResultSet res, AbstractSchema schema, String tableName) throws SQLException {
+    private AbstractIndex getIndex(ResultSet res, AbstractSchema schema, String tableName) throws SQLException {
         String schemaName = schema.getName();
         String indexName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, indexName, DbObjType.INDEX));
-        PgIndex i = new PgIndex(indexName, "");
+        AbstractIndex i = new PgIndex(indexName, "");
         i.setTableName(tableName);
 
         String tablespace = res.getString("table_space");

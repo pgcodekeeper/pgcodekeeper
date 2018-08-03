@@ -384,8 +384,8 @@ public class PgDatabase extends PgStatement {
                             }
                         }
 
-                        for (PgIndex ind : t.getIndexes()) {
-                            PgIndex index = table.getIndex(ind.getName());
+                        for (AbstractIndex ind : t.getIndexes()) {
+                            AbstractIndex index = table.getIndex(ind.getName());
                             if (index == null) {
                                 ind.dropParent();
                                 table.addIndex(ind);

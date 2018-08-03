@@ -17,7 +17,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractSequence;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgIndex;
+import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -144,7 +144,7 @@ public class AlterTable extends AbstractTable {
             }
             if (tablAction.index_name != null) {
                 IdentifierContext indexName = QNameParser.getFirstNameCtx(tablAction.index_name.identifier());
-                PgIndex index = getSafe(tabl::getIndex, indexName);
+                AbstractIndex index = getSafe(tabl::getIndex, indexName);
                 index.setClusterIndex(true);
             }
 

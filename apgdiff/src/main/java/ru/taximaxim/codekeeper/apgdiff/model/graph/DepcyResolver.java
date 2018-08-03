@@ -21,7 +21,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgIndex;
+import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -295,7 +295,7 @@ public class DepcyResolver {
             }
             break;
         case INDEX:
-            PgIndex ind = (PgIndex) statement;
+            AbstractIndex ind = (AbstractIndex) statement;
             PgTable tableInd = oldSchema.getTable(ind.getTableName());
             if (tableInd != null) {
                 return tableInd.getIndex(ind.getName());

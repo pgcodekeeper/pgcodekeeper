@@ -20,6 +20,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
+import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractSequence;
 import cz.startnet.utils.pgdiff.schema.AbstractTrigger;
@@ -341,7 +342,7 @@ class PgDB2 extends PgDatabaseObjectCreator {
         col.setType("varchar(50)");
         table.addColumn(col);
 
-        PgIndex idx = new PgIndex("contacts_number_pool_id_idx", "");
+        AbstractIndex idx = new PgIndex("contacts_number_pool_id_idx", "");
         table.addIndex(idx);
         idx.setTableName("contacts");
         idx.setDefinition("(number_pool_id)");
@@ -556,7 +557,7 @@ class PgDB6 extends PgDatabaseObjectCreator {
 
         table.setOwner("postgres");
 
-        PgIndex idx = new PgIndex("test_table_deleted", "");
+        AbstractIndex idx = new PgIndex("test_table_deleted", "");
         idx.setTableName("test_table");
         idx.setDefinition("USING btree (date_deleted) WHERE (date_deleted IS NULL)");
         table.addIndex(idx);
@@ -803,7 +804,7 @@ class PgDB10 extends PgDatabaseObjectCreator {
         col.setNullValue(false);
         table.addColumn(col);
 
-        PgIndex idx = new PgIndex("fki_user_role_id_fkey", "");
+        AbstractIndex idx = new PgIndex("fki_user_role_id_fkey", "");
         idx.setTableName("user");
         idx.setDefinition("USING btree (role_id)");
         table.addIndex(idx);
