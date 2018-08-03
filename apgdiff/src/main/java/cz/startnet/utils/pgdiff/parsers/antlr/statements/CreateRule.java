@@ -20,7 +20,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_privilegesContext;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.PgColumn;
+import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
@@ -186,7 +186,7 @@ public class CreateRule extends ParserAbstract {
                 if (tblSt == null) {
                     st.addPrivilege(priv);
                 } else {
-                    PgColumn col = getSafe(tblSt::getColumn, colPriv.getValue().getKey());
+                    AbstractColumn col = getSafe(tblSt::getColumn, colPriv.getValue().getKey());
                     col.addPrivilege(priv);
                 }
             }

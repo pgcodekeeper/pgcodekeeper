@@ -37,7 +37,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import cz.startnet.utils.pgdiff.schema.PgColumn;
+import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
@@ -727,7 +727,7 @@ public class MockDataPage extends WizardPage {
      *
      * @param column Table column
      */
-    private void parseColumns(PgColumn column) {
+    private void parseColumns(AbstractColumn column) {
         String type = column.getType();
         PgData<?> c = PgDataType.dataForType(type == null  ? "other" : type); //$NON-NLS-1$
         c.setNotNull(!column.getNullValue());

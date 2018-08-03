@@ -34,7 +34,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.PgColumn;
+import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
@@ -185,7 +185,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
                 columnName == null ? null : PgDiffUtils.getQuotedName(columnName), schemaName);
     }
 
-    public void setPrivileges(PgColumn column, PgTable t, String aclItemsArrayAsString, String schemaName) {
+    public void setPrivileges(AbstractColumn column, PgTable t, String aclItemsArrayAsString, String schemaName) {
         setPrivileges(column, PgDiffUtils.getQuotedName(t.getName()), aclItemsArrayAsString,
                 t.getOwner(), PgDiffUtils.getQuotedName(column.getName()), schemaName);
     }

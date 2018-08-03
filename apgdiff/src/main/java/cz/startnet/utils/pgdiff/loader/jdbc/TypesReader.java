@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateDomain;
+import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -232,7 +233,7 @@ public class TypesReader extends JdbcReader {
             String[] attcomments = getColArray(res, "comp_attcomments");
 
             for (int i = 0; i < attnames.length; ++i) {
-                PgColumn a = new PgColumn(attnames[i]);
+                AbstractColumn a = new PgColumn(attnames[i]);
                 String type = atttypes[i];
                 checkTypeValidity(type);
                 a.setType(type);

@@ -30,7 +30,7 @@ import org.junit.runners.Parameterized.Parameters;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractSequence;
 import cz.startnet.utils.pgdiff.schema.AbstractView;
-import cz.startnet.utils.pgdiff.schema.PgColumn;
+import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
@@ -220,7 +220,7 @@ class DifferData_3 extends DifferData{
 
     @Override
     List<Entry<PgStatement, PgStatement>> getAdditionalDepciesSource(PgDatabase source) {
-        PgColumn c = source.getSchema("public").getTable("t1").getColumn("c1");
+        AbstractColumn c = source.getSchema("public").getTable("t1").getColumn("c1");
         AbstractSequence s = source.getSchema("public").getSequence("t1_c1_seq");
         Entry<PgStatement, PgStatement> arr = new AbstractMap.SimpleEntry<> (s, c);
         List<Entry<PgStatement, PgStatement>> list = new ArrayList<>();

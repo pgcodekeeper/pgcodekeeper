@@ -5,6 +5,7 @@ import java.sql.SQLException;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
@@ -41,7 +42,7 @@ public class MsTablesReader extends JdbcReader {
         table.setAnsiNulls(res.getBoolean("uses_ansi_nulls"));
 
         for (JsonReader col : JsonReader.fromArray(res.getString("cols"))) {
-            MsColumn column = new MsColumn(col.getString("name"));
+            AbstractColumn column = new MsColumn(col.getString("name"));
             // TODO other type with size
             String exp = col.getString("def");
             column.setExpression(exp);

@@ -29,6 +29,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Identity_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
+import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -70,7 +71,7 @@ public abstract class AbstractTable extends ParserAbstract {
     }
 
     private void addTableConstraint(Constraint_commonContext ctx,
-            PgColumn col, PgTable table) {
+            AbstractColumn col, PgTable table) {
         Constr_bodyContext body = ctx.constr_body();
         Common_constraintContext comConstr = body.common_constraint();
         Table_unique_prkeyContext prkey = body.table_unique_prkey();
@@ -151,7 +152,7 @@ public abstract class AbstractTable extends ParserAbstract {
     protected void addColumn(String columnName, Data_typeContext datatype,
             Collate_identifierContext collate, List<Constraint_commonContext> constraints,
             Define_foreign_optionsContext options, PgTable table) {
-        PgColumn col = new PgColumn(columnName);
+        AbstractColumn col = new PgColumn(columnName);
         if (datatype != null) {
             col.setType(getFullCtxText(datatype));
             addTypeAsDepcy(datatype, col, getDefSchemaName());
@@ -267,7 +268,7 @@ public abstract class AbstractTable extends ParserAbstract {
         if (colCtx.table_constraint() != null) {
             addMsConstraint(colCtx.table_constraint(), table);
         } else {
-            MsColumn col = new MsColumn(colCtx.id().getText());
+            AbstractColumn col = new MsColumn(colCtx.id().getText());
 
             if (colCtx.data_type() != null) {
                 col.setType(getFullCtxText(colCtx.data_type()));

@@ -32,7 +32,7 @@ public class PartitionPgTable extends RegularPgTable {
             sbSQL.append(" (\n");
 
             int start = sbSQL.length();
-            for (PgColumn column : columns) {
+            for (AbstractColumn column : columns) {
                 writeColumn(column, sbSQL, sbOption);
             }
 

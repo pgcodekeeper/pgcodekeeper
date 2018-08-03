@@ -9,7 +9,7 @@ import cz.startnet.utils.pgdiff.loader.jdbc.JdbcLoaderBase;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTrigger;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.PgColumn;
+import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
@@ -148,7 +148,7 @@ public class ObjectTimestamp implements Serializable {
             DbObjType type = copy.getStatementType();
             if (DbObjType.TABLE == type) {
                 PgTable table = (PgTable) copy;
-                for (PgColumn c : table.getColumns()) {
+                for (AbstractColumn c : table.getColumns()) {
                     // in case the ACL map lacks a column, null will be passed as ACL
                     // which is the valid indication for "no ACL"
                     // which is the column state in this case

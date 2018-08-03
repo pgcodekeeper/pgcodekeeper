@@ -35,7 +35,7 @@ import org.eclipse.zest.layouts.algorithms.SpringLayoutAlgorithm;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 
-import cz.startnet.utils.pgdiff.schema.PgColumn;
+import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
@@ -189,7 +189,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
                 boolean elIsProject = el.getSide() == DiffSide.LEFT;
                 if (elIsProject == showProject || el.getSide() == DiffSide.BOTH) {
                     for (PgStatement dependant : depRes.getDropDepcies(el.getPgStatement(currentDb))) {
-                        if (!(dependant instanceof PgColumn)) {
+                        if (!(dependant instanceof AbstractColumn)) {
                             newInput.add(dependant);
                         }
                     }
@@ -214,7 +214,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
                     List<PgStatement> connected = new ArrayList<>();
                     for (DefaultEdge e : currentGraph.outgoingEdgesOf((PgStatement)entity)){
                         PgStatement connectedVertex = currentGraph.getEdgeTarget(e);
-                        if (!(connectedVertex instanceof PgColumn)) {
+                        if (!(connectedVertex instanceof AbstractColumn)) {
                             connected.add(connectedVertex);
                         }
                     }

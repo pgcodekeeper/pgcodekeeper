@@ -18,7 +18,7 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.DepthFirstIterator;
 
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.PgColumn;
+import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
@@ -309,7 +309,7 @@ public class DepcyResolver {
             }
             break;
         case COLUMN:
-            PgColumn column = (PgColumn) statement;
+            AbstractColumn column = (AbstractColumn) statement;
             PgTable tableCol = oldSchema.getTable(column.getParent().getName());
             if (tableCol != null) {
                 return tableCol.getColumn(column.getName());

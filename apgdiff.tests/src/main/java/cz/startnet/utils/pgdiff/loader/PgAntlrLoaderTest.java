@@ -19,6 +19,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
+import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
@@ -228,7 +229,7 @@ class PgDB1 extends PgDatabaseObjectCreator {
         PgTable table = new SimplePgTable("fax_boxes", "");
         schema.addTable(table);
 
-        PgColumn col = new PgColumn("fax_box_id");
+        AbstractColumn col = new PgColumn("fax_box_id");
         col.setType("serial");
         col.setNullValue(false);
         table.addColumn(col);
@@ -331,7 +332,7 @@ class PgDB2 extends PgDatabaseObjectCreator {
         PgTable table = new SimplePgTable("contacts", "");
         schema.addTable(table);
 
-        PgColumn col = new PgColumn("id");
+        AbstractColumn col = new PgColumn("id");
         col.setType("int");
         table.addColumn(col);
 
@@ -367,7 +368,7 @@ class PgDB3 extends PgDatabaseObjectCreator {
         PgTable table = new SimplePgTable("admins", "");
         schema.addTable(table);
 
-        PgColumn col = new PgColumn("aid");
+        AbstractColumn col = new PgColumn("aid");
         col.setType("integer");
         col.setDefaultValue("nextval('\"admins_aid_seq\"'::regclass)");
         col.setNullValue(false);
@@ -456,7 +457,7 @@ class PgDB4 extends PgDatabaseObjectCreator {
         PgTable table = new SimplePgTable("call_logs", "");
         schema.addTable(table);
 
-        PgColumn col = new PgColumn("id");
+        AbstractColumn col = new PgColumn("id");
         col.setType("bigint");
         col.setNullValue(false);
         col.setDefaultValue("nextval('public.call_logs_id_seq'::regclass)");
@@ -548,7 +549,7 @@ class PgDB6 extends PgDatabaseObjectCreator {
         PgTable table = new SimplePgTable("test_table", "");
         schema.addTable(table);
 
-        PgColumn col = new PgColumn("id");
+        AbstractColumn col = new PgColumn("id");
         col.setType("bigint");
         table.addColumn(col);
 
@@ -624,7 +625,7 @@ class PgDB8 extends PgDatabaseObjectCreator {
         //    schema.setComment("'Standard public schema'");
 
         PgType type = new PgType("testtt", PgTypeForm.COMPOSITE, "");
-        PgColumn col = new PgColumn("a");
+        AbstractColumn col = new PgColumn("a");
         col.setType("integer");
         type.addAttr(col);
         col = new PgColumn("b");
@@ -659,7 +660,7 @@ class PgDB9 extends PgDatabaseObjectCreator {
         PgTable table = new SimplePgTable("user_data", "");
         schema.addTable(table);
 
-        PgColumn col = new PgColumn("id");
+        AbstractColumn col = new PgColumn("id");
         col.setType("bigint");
         col.setNullValue(false);
         col.setDefaultValue("nextval('public.user_id_seq'::regclass)");
@@ -742,7 +743,7 @@ class PgDB10 extends PgDatabaseObjectCreator {
         PgTable table = new SimplePgTable("acl_role", "");
         schema.addTable(table);
 
-        PgColumn col = new PgColumn("id");
+        AbstractColumn col = new PgColumn("id");
         col.setType("bigint");
         col.setNullValue(false);
         table.addColumn(col);
@@ -902,7 +903,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
         PgTable table = new SimplePgTable("test", "");
         schema.addTable(table);
 
-        PgColumn col = new PgColumn("id");
+        AbstractColumn col = new PgColumn("id");
         col.setType("integer");
         col.setNullValue(false);
         col.setComment("'id column'");
@@ -974,7 +975,7 @@ class PgDB15 extends PgDatabaseObjectCreator {
         PgTable table = new SimplePgTable("test", "");
         schema.addTable(table);
 
-        PgColumn col = new PgColumn("id");
+        AbstractColumn col = new PgColumn("id");
         col.setType("bigint");
         table.addColumn(col);
 
@@ -1000,7 +1001,7 @@ class PgDB16 extends PgDatabaseObjectCreator {
         PgTable table = new SimplePgTable("t_work", "");
         schema.addTable(table);
 
-        PgColumn col = new PgColumn("id");
+        AbstractColumn col = new PgColumn("id");
         col.setType("integer");
         table.addColumn(col);
 
@@ -1037,7 +1038,7 @@ class PgDB17 extends PgDatabaseObjectCreator {
         PgTable table = new SimplePgTable("t_work", "");
         schema.addTable(table);
 
-        PgColumn col = new PgColumn("id");
+        AbstractColumn col = new PgColumn("id");
         col.setType("integer");
         table.addColumn(col);
 

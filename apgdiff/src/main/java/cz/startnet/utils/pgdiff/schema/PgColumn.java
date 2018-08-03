@@ -7,7 +7,6 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.text.MessageFormat;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -15,201 +14,75 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
  * Stores column information.
- *
- * @author fordfrog
  */
-public class PgColumn extends PgStatementWithSearchPath implements PgOptionContainer {
+public class PgColumn extends AbstractColumn {
 
-    protected static final String ALTER_COLUMN = "\n\tALTER COLUMN ";
     private static final String ALTER_FOREIGN_OPTION =  "{0} OPTIONS ({1} {2} {3});";
 
-    private String type;
-    private String collation;
-    private boolean nullValue = true;
-    private String defaultValue;
-    private Integer statistics;
-    private String storage;
-    private final Map<String, String> options = new LinkedHashMap<>(0);
-    private final Map<String, String> fOptions = new LinkedHashMap<>(0);
-    private AbstractSequence sequence;
-    private String identityType;
-    private boolean isInherit;
-
-    @Override
-    public DbObjType getStatementType() {
-        return DbObjType.COLUMN;
-    }
-
     public PgColumn(String name) {
-        super(name, null);
-    }
-
-    public void setDefaultValue(final String defaultValue) {
-        this.defaultValue = defaultValue;
-        resetHash();
-    }
-
-    public String getDefaultValue() {
-        return defaultValue;
+        super(name);
     }
 
     @Override
-    public Map<String, String> getOptions() {
-        return Collections.unmodifiableMap(options);
-    }
-
-    @Override
-    public void addOption(String attribute, String value){
-        this.options.put(attribute, value);
-        resetHash();
-    }
-
-    public Map<String, String> getForeignOptions() {
-        return Collections.unmodifiableMap(fOptions);
-    }
-
-    public void addForeignOption(String attribute, String value){
-        this.fOptions.put(attribute, value);
-        resetHash();
-    }
-
-    public boolean isInherit() {
-        return isInherit;
-    }
-
-    public void setInherit(boolean isInherit) {
-        this.isInherit = isInherit;
-        resetHash();
-    }
-
-    /**
-     * Returns full definition of the column.
-     *
-     * @return full definition of the column
-     */
     public String getFullDefinition() {
         final StringBuilder sbDefinition = new StringBuilder();
         String cName = PgDiffUtils.getQuotedName(name);
         sbDefinition.append(cName);
 
-        if (type == null) {
+        if (getType() == null) {
             sbDefinition.append(" WITH OPTIONS");
         } else {
             sbDefinition.append(' ');
-            sbDefinition.append(type);
-            if (collation != null) {
-                sbDefinition.append(" COLLATE ").append(collation);
+            sbDefinition.append(getType());
+            if (getCollation() != null) {
+                sbDefinition.append(" COLLATE ").append(getCollation());
             }
         }
 
-        if (defaultValue != null) {
+        if (getDefaultValue() != null) {
             sbDefinition.append(" DEFAULT ");
-            sbDefinition.append(defaultValue);
+            sbDefinition.append(getDefaultValue());
         }
 
-        if (!nullValue) {
+        if (!getNullValue()) {
             sbDefinition.append(" NOT NULL");
         }
 
         return sbDefinition.toString();
     }
 
-
-    public void setNullValue(final boolean nullValue) {
-        this.nullValue = nullValue;
-        resetHash();
-    }
-
-    public boolean getNullValue() {
-        return nullValue;
-    }
-
-    public void setStatistics(final Integer statistics) {
-        this.statistics = statistics;
-        resetHash();
-    }
-
-    public Integer getStatistics() {
-        return statistics;
-    }
-
-    public String getStorage() {
-        return storage;
-    }
-
-    public void setStorage(final String storage) {
-        this.storage = storage;
-        resetHash();
-    }
-
-    public void setType(final String type) {
-        this.type = type;
-        resetHash();
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setCollation(final String collation) {
-        this.collation = collation;
-        resetHash();
-    }
-
-    public String getCollation() {
-        return collation;
-    }
-
-    public AbstractSequence getSequence() {
-        return sequence;
-    }
-
-    public void setSequence(final AbstractSequence sequence) {
-        this.sequence = sequence;
-        resetHash();
-    }
-
-    public void setIdentityType(final String identityType) {
-        this.identityType = identityType;
-        resetHash();
-    }
-
-    public String getIdentityType() {
-        return identityType;
-    }
-
     @Override
     public String getCreationSQL() {
         StringBuilder sb = new StringBuilder();
 
-        if (type != null) {
+        if (getType() != null) {
             sb.append(getAlterTable());
             sb.append("\n\tADD COLUMN ")
             .append(PgDiffUtils.getQuotedName(name))
             .append(' ')
-            .append(type);
-            if (collation != null) {
-                sb.append(" COLLATE ").append(collation);
+            .append(getType());
+            if (getCollation() != null) {
+                sb.append(" COLLATE ").append(getCollation());
             }
             sb.append(';');
+            // TODO need full definition here
+            // https://github.com/pgcodekeeper/pgcodekeeper/issues/12
         }
 
-        compareDefaults(null, defaultValue, new AtomicBoolean(), sb);
-        compareNullValues(true, nullValue, sb);
-        compareStorages(null, storage, sb);
+        compareDefaults(null, getDefaultValue(), new AtomicBoolean(), sb);
+        compareNullValues(true, getNullValue(), sb);
+        compareStorages(null, getStorage(), sb);
 
         appendPrivileges(sb);
 
         compareForeignOptions(Collections.<String, String>emptyMap(), fOptions, sb);
         writeOptions(true, sb);
-        compareStats(null, statistics, sb);
-        compareIdentity(null, identityType, null, sequence, sb);
+        compareStats(null, getStatistics(), sb);
+        compareIdentity(null, getIdentityType(), null, getSequence(), sb);
 
         if (comment != null && !comment.isEmpty()) {
             sb.append("\n\n");
@@ -219,34 +92,30 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
         return sb.toString();
     }
 
-    protected String getAlterTable() {
-        return ((PgTable)this.getParent()).getAlterTable(false, false);
-    }
-
-    protected String getAlterColumn(boolean newLine, boolean only, String column) {
-        return ((PgTable)this.getParent()).getAlterTable(newLine, only) + ALTER_COLUMN +
+    private String getAlterColumn(boolean newLine, boolean only, String column) {
+        return ((PgTable) getParent()).getAlterTable(newLine, only) + ALTER_COLUMN +
                 PgDiffUtils.getQuotedName(column);
     }
 
     @Override
     public String getDropSQL() {
-        if (type != null) {
+        if (getType() != null) {
             return getAlterTable() + "\n\tDROP COLUMN "
                     + PgDiffUtils.getQuotedName(getName()) + ';';
         }
 
         StringBuilder sb = new StringBuilder();
 
-        compareDefaults(defaultValue, null, new AtomicBoolean(), sb);
-        compareNullValues(nullValue, true, sb);
-        compareStorages(storage, null, sb);
+        compareDefaults(getDefaultValue(), null, new AtomicBoolean(), sb);
+        compareNullValues(getNullValue(), true, sb);
+        compareStorages(getStorage(), null, sb);
 
         alterPrivileges(new PgColumn(name), sb);
 
         compareForeignOptions(fOptions, Collections.<String, String>emptyMap(), sb);
         writeOptions(false, sb);
-        compareStats(statistics, null, sb);
-        compareIdentity(identityType, null, sequence, null, sb);
+        compareStats(getStatistics(), null, sb);
+        compareIdentity(getIdentityType(), null, getSequence(), null, sb);
 
         if (comment != null && !comment.isEmpty()) {
             sb.append("\n\n");
@@ -266,23 +135,22 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
         } else {
             return false;
         }
-        PgColumn oldColumn = this;
 
-        compareTypes(oldColumn, newColumn, isNeedDepcies, sb);
+        compareTypes(this, newColumn, isNeedDepcies, sb);
 
-        compareDefaults(oldColumn.getDefaultValue(), newColumn.getDefaultValue(), isNeedDepcies, sb);
-        compareNullValues(oldColumn.getNullValue(), newColumn.getNullValue(), sb);
-        compareStorages(oldColumn.getStorage(), newColumn.getStorage(), sb);
+        compareDefaults(getDefaultValue(), newColumn.getDefaultValue(), isNeedDepcies, sb);
+        compareNullValues(getNullValue(), newColumn.getNullValue(), sb);
+        compareStorages(getStorage(), newColumn.getStorage(), sb);
 
         alterPrivileges(newColumn, sb);
 
         compareOptions(newColumn, sb);
-        compareForeignOptions(oldColumn.getForeignOptions(), newColumn.getForeignOptions(), sb);
-        compareStats(oldColumn.getStatistics(), newColumn.getStatistics(), sb);
-        compareIdentity(oldColumn.getIdentityType(), newColumn.getIdentityType(),
-                oldColumn.getSequence(), newColumn.getSequence(), sb);
+        compareForeignOptions(getForeignOptions(), newColumn.getForeignOptions(), sb);
+        compareStats(getStatistics(), newColumn.getStatistics(), sb);
+        compareIdentity(getIdentityType(), newColumn.getIdentityType(),
+                getSequence(), newColumn.getSequence(), sb);
 
-        if (!Objects.equals(oldColumn.getComment(), newColumn.getComment())) {
+        if (!Objects.equals(getComment(), newColumn.getComment())) {
             sb.append("\n\n");
             newColumn.appendCommentSql(sb);
         }
@@ -524,84 +392,7 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
     }
 
     @Override
-    public boolean compare(PgStatement obj) {
-        boolean eq = false;
-
-        if (this == obj) {
-            eq = true;
-        } else if(obj instanceof PgColumn) {
-            PgColumn col = (PgColumn) obj;
-
-            eq = Objects.equals(name, col.getName())
-                    && Objects.equals(type, col.getType())
-                    && Objects.equals(collation, col.getCollation())
-                    && nullValue == col.getNullValue()
-                    && Objects.equals(defaultValue, col.getDefaultValue())
-                    && Objects.equals(statistics, col.getStatistics())
-                    && Objects.equals(storage, col.getStorage())
-                    && options.equals(col.options)
-                    && fOptions.equals(col.fOptions)
-                    && Objects.equals(sequence, col.sequence)
-                    && Objects.equals(identityType, col.identityType)
-                    && isInherit == col.isInherit()
-                    && grants.equals(col.grants)
-                    && revokes.equals(col.revokes)
-                    && Objects.equals(comment, col.getComment());
-        }
-        return eq;
-    }
-
-    @Override
-    public void computeHash(Hasher hasher) {
-        hasher.put(name);
-        hasher.put(type);
-        hasher.put(collation);
-        hasher.put(nullValue);
-        hasher.put(defaultValue);
-        hasher.put(statistics);
-        hasher.put(storage);
-        hasher.put(options);
-        hasher.put(fOptions);
-        hasher.put(sequence);
-        hasher.put(identityType);
-        hasher.put(isInherit);
-        hasher.putOrdered(grants);
-        hasher.putOrdered(revokes);
-        hasher.put(comment);
-    }
-
-    @Override
-    public PgColumn shallowCopy() {
-        PgColumn colDst = new PgColumn(getName());
-        colDst.setType(getType());
-        colDst.setCollation(getCollation());
-        colDst.setNullValue(getNullValue());
-        colDst.setDefaultValue(getDefaultValue());
-        colDst.setStatistics(getStatistics());
-        colDst.setStorage(getStorage());
-        colDst.options.putAll(options);
-        colDst.fOptions.putAll(fOptions);
-        colDst.setIdentityType(getIdentityType());
-        colDst.setSequence(getSequence());
-        colDst.setInherit(isInherit());
-        for (PgPrivilege priv : grants) {
-            colDst.addPrivilege(priv);
-        }
-        for (PgPrivilege priv : revokes) {
-            colDst.addPrivilege(priv);
-        }
-        colDst.setComment(getComment());
-        colDst.deps.addAll(deps);
-        return colDst;
-    }
-
-    @Override
-    public PgColumn deepCopy() {
-        return shallowCopy();
-    }
-
-    @Override
-    public AbstractSchema getContainingSchema() {
-        return (AbstractSchema)this.getParent().getParent();
+    protected AbstractColumn getColumnCopy() {
+        return new PgColumn(getName());
     }
 }

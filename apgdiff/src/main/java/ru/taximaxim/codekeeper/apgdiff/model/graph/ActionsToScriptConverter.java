@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import cz.startnet.utils.pgdiff.NotAllowedObjectException;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffScript;
-import cz.startnet.utils.pgdiff.schema.PgColumn;
+import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
@@ -52,7 +52,7 @@ public class ActionsToScriptConverter {
                         && objStarter != action.getNewObj()) {
                     String objName = "";
                     if (objStarter.getStatementType() == DbObjType.COLUMN) {
-                        objName = ((PgColumn) objStarter).getParent().getName()
+                        objName = ((AbstractColumn) objStarter).getParent().getName()
                                 + '.';
                     }
                     objName += objStarter.getName();

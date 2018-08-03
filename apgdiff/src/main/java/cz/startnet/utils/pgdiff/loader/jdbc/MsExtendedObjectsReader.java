@@ -7,6 +7,7 @@ import java.util.List;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
@@ -54,7 +55,7 @@ public class MsExtendedObjectsReader extends JdbcReader {
                 List<String> columns = new ArrayList<>();
 
                 for (JsonReader col : JsonReader.fromArray(res.getString("cols"))) {
-                    MsColumn column = new MsColumn(col.getString("name"));
+                    AbstractColumn column = new MsColumn(col.getString("name"));
                     String argSize = "";
                     String dataType = col.getString("type");
                     int size = col.getInt("size");

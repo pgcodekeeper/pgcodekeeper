@@ -12,6 +12,7 @@ import java.util.Map;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractSequence;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -80,7 +81,7 @@ public class SequencesReader extends JdbcReader {
 
         if ("d".equals(identityType) || "a".equals(identityType)) {
             PgTable table = schema.getTable(refTable);
-            PgColumn column = table.getColumn(refColumn);
+            AbstractColumn column = table.getColumn(refColumn);
             if (column == null) {
                 column = new PgColumn(refColumn);
                 column.setInherit(true);

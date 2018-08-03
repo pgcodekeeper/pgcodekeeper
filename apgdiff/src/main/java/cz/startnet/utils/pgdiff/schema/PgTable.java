@@ -32,7 +32,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
     protected static final String ALTER_COLUMN = " ALTER COLUMN ";
 
-    protected final List<PgColumn> columns = new ArrayList<>();
+    protected final List<AbstractColumn> columns = new ArrayList<>();
     protected final List<Inherits> inherits = new ArrayList<>();
     protected final Map<String, String> options = new LinkedHashMap<>();
     protected boolean hasOids;
@@ -93,8 +93,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
      *
      * @return found column or null if no such column has been found
      */
-    public PgColumn getColumn(final String name) {
-        for (PgColumn column : columns) {
+    public AbstractColumn getColumn(final String name) {
+        for (AbstractColumn column : columns) {
             if (column.getName().equals(name)) {
                 return column;
             }
@@ -107,7 +107,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
      *
      * @return {@link #columns}
      */
-    public List<PgColumn> getColumns() {
+    public List<AbstractColumn> getColumns() {
         return Collections.unmodifiableList(columns);
     }
 
@@ -240,7 +240,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     protected abstract void appendAlterOptions(StringBuilder sbSQL);
 
     protected void appendColumnsPriliges(StringBuilder sbSQL) {
-        for (PgColumn col : columns) {
+        for (AbstractColumn col : columns) {
             col.appendPrivileges(sbSQL);
         }
     }
@@ -263,7 +263,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
             appendCommentSql(sbSQL);
         }
 
-        for (final PgColumn column : columns) {
+        for (final AbstractColumn column : columns) {
             if (column.getComment() != null && !column.getComment().isEmpty()) {
                 sbSQL.append("\n\n");
                 column.appendCommentSql(sbSQL);
@@ -271,7 +271,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         }
     }
 
-    private void writeSequences(PgColumn column, StringBuilder sbOption) {
+    private void writeSequences(AbstractColumn column, StringBuilder sbOption) {
         AbstractSequence sequence = column.getSequence();
         if (sequence != null) {
             sbOption.append(getAlterTable(true, false))
@@ -499,7 +499,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         resetHash();
     }
 
-    public void addColumn(final PgColumn column) {
+    public void addColumn(final AbstractColumn column) {
         assertUnique(this::getColumn, column);
         columns.add(column);
         column.setParent(this);
@@ -625,7 +625,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     @Override
     public PgTable shallowCopy() {
         PgTable tableDst = getTableCopy();
-        for (PgColumn colSrc : columns) {
+        for (AbstractColumn colSrc : columns) {
             tableDst.addColumn(colSrc.deepCopy());
         }
         tableDst.inherits.addAll(inherits);
@@ -669,7 +669,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         return (AbstractSchema)this.getParent();
     }
 
-    private void writeOptions(PgColumn column, StringBuilder sbOption, boolean isInherit) {
+    private void writeOptions(AbstractColumn column, StringBuilder sbOption, boolean isInherit) {
         Map<String, String> opts = column.getOptions();
         Map<String, String> fOpts = column.getForeignOptions();
 
@@ -708,7 +708,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         }
     }
 
-    protected void writeColumn(PgColumn column, StringBuilder sbSQL,
+    protected void writeColumn(AbstractColumn column, StringBuilder sbSQL,
             StringBuilder sbOption) {
         boolean isInherit = column.isInherit();
         if (isInherit) {
@@ -732,7 +732,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         writeSequences(column, sbOption);
     }
 
-    private void fillInheritOptions(PgColumn column, StringBuilder sb) {
+    private void fillInheritOptions(AbstractColumn column, StringBuilder sb) {
         if (!column.getNullValue()) {
             sb.append(getAlterTable(true, true))
             .append(ALTER_COLUMN)

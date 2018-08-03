@@ -8,7 +8,7 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.Locale;
 
 /**
- * Utilities for {@link PgColumn}.
+ * Utilities for {@link AbstractColumn}.
  *
  * @author fordfrog
  */

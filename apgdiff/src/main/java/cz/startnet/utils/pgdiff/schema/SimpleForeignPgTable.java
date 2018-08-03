@@ -23,7 +23,7 @@ public class SimpleForeignPgTable extends ForeignPgTable {
         sbSQL.append(" (\n");
 
         int start = sbSQL.length();
-        for (PgColumn column : columns) {
+        for (AbstractColumn column : columns) {
             writeColumn(column, sbSQL, sbOption);
         }
 
