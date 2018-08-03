@@ -4,10 +4,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
-import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsConstraint;
 import cz.startnet.utils.pgdiff.schema.MsIndex;
@@ -15,22 +14,10 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class MsIndicesAndPKReader extends JdbcMsReader {
+public class MsIndicesAndPKReader extends JdbcReader {
 
-    public static class MsIndicesAndPKReaderFactory extends JdbcReaderFactory {
-
-        public MsIndicesAndPKReaderFactory(Map<SupportedVersion, String> queries) {
-            super(0, "", queries);
-        }
-
-        @Override
-        public JdbcReader getReader(JdbcLoaderBase loader) {
-            return new MsIndicesAndPKReader(this, loader);
-        }
-    }
-
-    public MsIndicesAndPKReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
-        super(factory, loader);
+    public MsIndicesAndPKReader(JdbcLoaderBase loader) {
+        super(JdbcQueries.QUERY_MS_INDICES_AND_PK, loader);
     }
 
     @Override

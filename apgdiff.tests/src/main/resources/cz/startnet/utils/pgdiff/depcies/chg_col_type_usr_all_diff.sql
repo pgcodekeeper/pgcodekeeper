@@ -1,19 +1,19 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-CREATE DOMAIN dom2 AS integer
+CREATE DOMAIN public.dom2 AS integer
 	CONSTRAINT chechk1 CHECK ((VALUE > 0));
 
-ALTER DOMAIN dom2 OWNER TO botov_av;
+ALTER DOMAIN public.dom2 OWNER TO botov_av;
 
--- DEPCY: This VIEW depends on the COLUMN: t1.c1
+-- DEPCY: This VIEW depends on the COLUMN: public.t1.c1
 
-DROP VIEW v1;
+DROP VIEW public.v1;
 
-ALTER TABLE t1
-	ALTER COLUMN c1 TYPE dom2 USING c1::dom2; /* TYPE change - table: t1 original: integer new: dom2 */
+ALTER TABLE public.t1
+	ALTER COLUMN c1 TYPE public.dom2 USING c1::public.dom2; /* TYPE change - table: public.t1 original: integer new: public.dom2 */
 
-CREATE VIEW v1 AS
+CREATE VIEW public.v1 AS
 	SELECT t1.c1
-   FROM t1;
+   FROM public.t1;
 
-ALTER VIEW v1 OWNER TO botov_av;
+ALTER VIEW public.v1 OWNER TO botov_av;

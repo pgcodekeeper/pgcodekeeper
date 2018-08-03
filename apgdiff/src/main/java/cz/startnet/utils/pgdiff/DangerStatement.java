@@ -24,7 +24,7 @@ public enum DangerStatement {
                 "^ALTER[\\s]+TABLE[\\s]+"
                         + "(IF[\\s]+EXISTS[\\s]+)?"
                         + "(ONLY[\\s]+)?"
-                        + "([\\w]+[\\s]+)"
+                        + "([\\w]+(\\.\\w+)?+[\\s]+)"
                         + "(\\*[\\s]+)?";
     }
 

@@ -28,6 +28,7 @@ public class MsFunction extends PgFunction {
         sbSQL.append(GO).append('\n');
 
         sbSQL.append("CREATE OR ALTER FUNCTION ");
+        sbSQL.append(MsDiffUtils.quoteName(getContainingSchema().getName())).append('.');
         appendFunctionSignature(sbSQL, true, true);
         sbSQL.append(' ');
         sbSQL.append("\nRETURNS ").append(getReturns());

@@ -1,7 +1,5 @@
-SET search_path = another_triggers, pg_catalog;
+SET search_path = pg_catalog;
 
-DROP TRIGGER test_table_a_trigger ON test_table_a;
+DROP TRIGGER test_table_a_trigger ON another_triggers.test_table_a;
 
-SET search_path = public, pg_catalog;
-
-DROP FUNCTION test_table_trigger_public();
+DROP FUNCTION public.test_table_trigger_public();

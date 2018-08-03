@@ -1,4 +1,10 @@
--- extension owned indices are skipped by table != null check in java code
+WITH sys_schemas AS (
+    SELECT n.oid
+    FROM pg_catalog.pg_namespace n
+    WHERE n.nspname LIKE 'pg\_%'
+        OR n.nspname = 'information_schema'
+        OR EXISTS (SELECT 1 FROM pg_catalog.pg_depend dp WHERE dp.objid = n.oid AND dp.deptype = 'e')
+)
 
 SELECT  cls.oid::bigint,
     cls.relname,
@@ -7,7 +13,8 @@ SELECT  cls.oid::bigint,
     ind.indisclustered as isclustered,
     des.description AS comment,
     t.spcname AS table_space,
-    pg_catalog.pg_get_indexdef(cls.oid) || ';' AS definition
+    pg_catalog.pg_get_indexdef(cls.oid) || ';' AS definition,
+    cls.relnamespace AS schema_oid
 FROM pg_catalog.pg_index ind
 JOIN pg_catalog.pg_class cls ON cls.oid = ind.indexrelid
 JOIN pg_catalog.pg_class clsrel ON clsrel.oid = ind.indrelid
@@ -17,7 +24,7 @@ LEFT JOIN pg_catalog.pg_description des ON ind.indexrelid = des.objoid
 LEFT JOIN pg_catalog.pg_constraint cons ON cons.conindid = ind.indexrelid
     AND cons.contype IN ('p', 'u', 'x')
 WHERE cls.relkind = 'i'
-    AND cls.relnamespace = ?
+    AND cls.relnamespace NOT IN (SELECT oid FROM sys_schemas)
     AND ind.indisprimary = FALSE
     AND ind.indisexclusion = FALSE
     AND cons.conindid is NULL

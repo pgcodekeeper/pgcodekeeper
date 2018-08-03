@@ -20,13 +20,13 @@ COMMENT ON SCHEMA public IS 'Standard public schema';
 CREATE PROCEDURAL LANGUAGE plpgsql;
 
 
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
 --
 -- Name: test_table_trigger(); Type: FUNCTION; Schema: public; Owner: fordfrog
 --
 
-CREATE FUNCTION test_table_trigger() RETURNS "trigger"
+CREATE FUNCTION public.test_table_trigger() RETURNS "trigger"
     AS $$
 begin
 	return NEW;
@@ -45,29 +45,29 @@ SET default_with_oids = false;
 -- Name: test_table; Type: TABLE; Schema: public; Owner: fordfrog; Tablespace: 
 --
 
-CREATE TABLE test_table (
+CREATE TABLE public.test_table (
     id serial NOT NULL
 );
 
 
 ALTER TABLE public.test_table OWNER TO fordfrog;
 
-CREATE VIEW test_view AS 
-    SELECT test_table.id FROM test_table;
+CREATE VIEW public.test_view AS 
+    SELECT test_table.id FROM public.test_table;
 
 --
 -- Name: test_table_trigger; Type: TRIGGER; Schema: public; Owner: fordfrog
 --
 
 CREATE TRIGGER test_table_trigger
-    BEFORE INSERT OR UPDATE ON test_table
+    BEFORE INSERT OR UPDATE ON public.test_table
     FOR EACH ROW
-    EXECUTE PROCEDURE test_table_trigger();
+    EXECUTE PROCEDURE public.test_table_trigger();
 
 CREATE TRIGGER test_view_trigger1
-    INSTEAD OF INSERT OR UPDATE ON test_view
+    INSTEAD OF INSERT OR UPDATE ON public.test_view
     FOR EACH ROW
-    EXECUTE PROCEDURE test_table_trigger();
+    EXECUTE PROCEDURE public.test_table_trigger();
 
 --
 -- Name: public; Type: ACL; Schema: -; Owner: postgres

@@ -71,10 +71,6 @@ public class PgDatabase extends PgStatement {
         return defaultSchema;
     }
 
-    public String getDefSearchPath(){
-        return "SET search_path = " + defaultSchema.getName() + ", pg_catalog;";
-    }
-
     public void setArguments(PgDiffArguments arguments) {
         this.arguments = arguments;
     }

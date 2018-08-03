@@ -86,7 +86,8 @@ public class PgDomain extends PgStatementWithSearchPath {
     @Override
     public String getCreationSQL() {
         StringBuilder sb = new StringBuilder();
-        sb.append("CREATE DOMAIN ").append(PgDiffUtils.getQuotedName(getName()))
+        sb.append("CREATE DOMAIN ").append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
+        .append('.').append(PgDiffUtils.getQuotedName(getName()))
         .append(" AS ").append(dataType);
         if (collation != null && !collation.isEmpty()) {
             sb.append(" COLLATE ").append(collation);
@@ -132,7 +133,8 @@ public class PgDomain extends PgStatementWithSearchPath {
 
     @Override
     public String getDropSQL() {
-        return "DROP DOMAIN " + PgDiffUtils.getQuotedName(getName()) + ';';
+        return "DROP DOMAIN " + PgDiffUtils.getQuotedName(getContainingSchema().getName()) + '.'
+                + PgDiffUtils.getQuotedName(getName()) + ';';
     }
 
     @Override
@@ -153,7 +155,8 @@ public class PgDomain extends PgStatementWithSearchPath {
         }
 
         if (!Objects.equals(newDomain.getDefaultValue(), oldDomain.getDefaultValue())) {
-            sb.append("\n\nALTER DOMAIN ").append(PgDiffUtils.getQuotedName(newDomain.getName()));
+            sb.append("\n\nALTER DOMAIN ").append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
+            .append('.').append(PgDiffUtils.getQuotedName(newDomain.getName()));
             if (newDomain.getDefaultValue() == null) {
                 sb.append("\n\tDROP DEFAULT");
             } else {
@@ -163,7 +166,8 @@ public class PgDomain extends PgStatementWithSearchPath {
         }
 
         if (newDomain.isNotNull() != oldDomain.isNotNull()) {
-            sb.append("\n\nALTER DOMAIN ").append(PgDiffUtils.getQuotedName(newDomain.getName()));
+            sb.append("\n\nALTER DOMAIN ").append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
+            .append('.').append(PgDiffUtils.getQuotedName(newDomain.getName()));
             if (newDomain.isNotNull()) {
                 sb.append("\n\tSET NOT NULL");
             } else {

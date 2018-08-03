@@ -2,9 +2,7 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
@@ -25,9 +23,8 @@ public class SchemasReader implements PgCatalogStrings {
         this.db = db;
     }
 
-    public SchemasContainer read() throws SQLException, InterruptedException {
+    public void read() throws SQLException, InterruptedException {
         loader.setCurrentOperation("schemas query");
-        Map<Long, PgSchema> schemas = new HashMap<>();
 
         String query = JdbcQueries.QUERY_SCHEMAS.get(null);
 
@@ -41,12 +38,12 @@ public class SchemasReader implements PgCatalogStrings {
                     sb.append(oid).append(',');
                     PgSchema schema = (PgSchema)obj.copyStatement(projDb, loader);
                     db.addSchema(schema);
-                    schemas.put(oid, schema);
+                    loader.schemaIds.put(oid, schema);
                 }
             }
             if (sb.length() > 0) {
                 sb.setLength(sb.length() - 1);
-                query = JdbcReaderFactory.excludeObjects(query, sb.toString());
+                query = JdbcReader.excludeObjects(query, sb.toString());
             }
         }
 
@@ -54,10 +51,9 @@ public class SchemasReader implements PgCatalogStrings {
             while (result.next()) {
                 PgSchema schema = getSchema(result);
                 db.addSchema(schema);
-                schemas.put(result.getLong(OID), schema);
+                loader.schemaIds.put(result.getLong(OID), schema);
             }
         }
-        return new SchemasContainer(schemas, loader.connection);
     }
 
     private PgSchema getSchema(ResultSet res) throws SQLException {
@@ -77,7 +73,7 @@ public class SchemasReader implements PgCatalogStrings {
             loader.setOwner(s, owner);
         }
 
-        loader.setPrivileges(s, res.getString("nspacl"));
+        loader.setPrivileges(s, res.getString("nspacl"), null);
 
         return s;
     }

@@ -13,7 +13,7 @@ SET client_min_messages = warning;
 COMMENT ON SCHEMA public IS 'Standard public schema';
 
 
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
 SET default_tablespace = '';
 
@@ -23,15 +23,15 @@ SET default_with_oids = false;
 -- Name: test_table; Type: TABLE; Schema: public; Owner: fordfrog; Tablespace: 
 --
 
-CREATE TABLE test_table (
+CREATE TABLE public.test_table (
     id serial NOT NULL
 );
 
 
 ALTER TABLE public.test_table OWNER TO fordfrog;
 
-CREATE VIEW test_view AS 
-    SELECT test_table.id FROM test_table;
+CREATE VIEW public.test_view AS 
+    SELECT test_table.id FROM public.test_table;
 
 --
 -- Name: public; Type: ACL; Schema: -; Owner: postgres

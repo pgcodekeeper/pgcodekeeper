@@ -1,3 +1,3 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-DROP SEQUENCE testseq;
+DROP SEQUENCE public.testseq;

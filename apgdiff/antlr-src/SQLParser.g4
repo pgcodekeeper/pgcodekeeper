@@ -702,7 +702,7 @@ character_string
     ;
 
 function_arguments
-    :arg_mode=argmode? argname=identifier? argtype_data=data_type function_def_value?
+    :arg_mode=argmode? argname=identifier_nontype? argtype_data=data_type function_def_value?
     ;
 
 function_def_value
@@ -1746,7 +1746,7 @@ function_call
     ;
 
 function_name
-  : data_type
+  : schema_qualified_name_nontype
   // allow for all built-in function except those with explicit syntax rules defined
   | (identifier DOT)? tokens_simple_functions
   ;

@@ -37,7 +37,6 @@ public class ActionsToScriptConverter {
      * @param script скрипт для печати
      */
     public void fillScript(PgDiffScript script) {
-        String currentSearchPath = "";
         Collection<DbObjType> allowedTypes = arguments.getAllowedTypes();
         for (ActionContainer action : actions) {
             DbObjType type = action.getOldObj().getStatementType();
@@ -57,6 +56,11 @@ public class ActionsToScriptConverter {
                                 + '.';
                     }
                     objName += objStarter.getName();
+
+                    if (objStarter instanceof PgStatementWithSearchPath) {
+                        objName = ((PgStatementWithSearchPath)objStarter).getContainingSchema().getName() + '.' + objName;
+                    }
+
                     depcy = MessageFormat.format(
                             action.getAction() == StatementActions.CREATE ?
                                     CREATE_COMMENT : DROP_COMMENT,
@@ -65,8 +69,6 @@ public class ActionsToScriptConverter {
                 }
                 switch (action.getAction()) {
                 case CREATE:
-                    currentSearchPath = setSearchPath(currentSearchPath, oldObj,
-                            script);
                     if (depcy != null) {
                         script.addStatement(depcy);
                     }
@@ -74,8 +76,6 @@ public class ActionsToScriptConverter {
                     script.addCreate(oldObj, null, oldObj.getCreationSQL(), true);
                     break;
                 case DROP:
-                    currentSearchPath = setSearchPath(currentSearchPath, oldObj,
-                            script);
                     if (depcy != null) {
                         script.addStatement(depcy);
                     }
@@ -86,8 +86,6 @@ public class ActionsToScriptConverter {
                     oldObj.appendAlterSQL(action.getNewObj(), sb,
                             new AtomicBoolean());
                     if (sb.length() > 0) {
-                        currentSearchPath = setSearchPath(currentSearchPath,
-                                oldObj, script);
                         if (depcy != null) {
                             script.addStatement(depcy);
                         }
@@ -109,33 +107,11 @@ public class ActionsToScriptConverter {
         }
 
         for (PgSequence sequence : sequencesOwnedBy) {
-            currentSearchPath = setSearchPath(currentSearchPath, sequence,
-                    script);
             String ownedBy = sequence.getOwnedBySQL();
             if (!ownedBy.isEmpty()) {
                 script.addStatement(ownedBy);
             }
         }
-    }
-
-    /**
-     * Переключает путь для поиска объектов если текущий объект содержится в другой схеме
-     * @param currentSearchPath текущий путь
-     * @param st объект для вывода
-     * @param script скрипт для печати
-     * @return
-     */
-    private String setSearchPath(String currentSearchPath, PgStatement st,
-            PgDiffScript script) {
-        if (st instanceof PgStatementWithSearchPath) {
-            String searchPath = ((PgStatementWithSearchPath) st)
-                    .getSearchPath();
-            if (!currentSearchPath.equals(searchPath)) {
-                script.addStatement(searchPath);
-                return searchPath;
-            }
-        }
-        return currentSearchPath;
     }
 
     private void processSequence(ActionContainer action) {

@@ -1,3 +1,3 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-DROP INDEX testindex3;
+DROP INDEX public.testindex3;

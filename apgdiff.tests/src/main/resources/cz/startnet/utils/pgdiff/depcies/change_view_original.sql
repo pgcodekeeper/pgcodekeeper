@@ -28,7 +28,7 @@ SET row_security = off;
 --COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
 SET default_tablespace = '';
 
@@ -38,7 +38,7 @@ SET default_with_oids = false;
 -- Name: t1; Type: TABLE; Schema: public; Owner: galiev_mr
 --
 
-CREATE TABLE t1 (
+CREATE TABLE public.t1 (
     c1 integer,
     c2 text,
     c3 text,
@@ -47,13 +47,13 @@ CREATE TABLE t1 (
 );
 
 
-ALTER TABLE t1 OWNER TO galiev_mr;
+ALTER TABLE public.t1 OWNER TO galiev_mr;
 
 --
 -- Name: t2; Type: TABLE; Schema: public; Owner: galiev_mr
 --
 
-CREATE TABLE t2 (
+CREATE TABLE public.t2 (
     c1 integer,
     c2 text,
     c3 text,
@@ -62,116 +62,116 @@ CREATE TABLE t2 (
 );
 
 
-ALTER TABLE t2 OWNER TO galiev_mr;
+ALTER TABLE public.t2 OWNER TO galiev_mr;
 
 --
 -- Name: v1; Type: VIEW; Schema: public; Owner: galiev_mr
 --
 
-CREATE VIEW v1 AS
+CREATE VIEW public.v1 AS
  SELECT t1.c1,
     t1.c2,
     t1.c3,
     t1.c4
-   FROM t1;
+   FROM public.t1;
 
 
-ALTER TABLE v1 OWNER TO galiev_mr;
+ALTER TABLE public.v1 OWNER TO galiev_mr;
 
 --
 -- Name: v2; Type: VIEW; Schema: public; Owner: galiev_mr
 --
 
-CREATE VIEW v2 AS
+CREATE VIEW public.v2 AS
  SELECT t2.c1,
     t2.c2,
     t2.c3,
     t2.c4
-   FROM t2;
+   FROM public.t2;
 
 
-ALTER TABLE v2 OWNER TO galiev_mr;
+ALTER TABLE public.v2 OWNER TO galiev_mr;
 
 --
 -- Name: v3; Type: VIEW; Schema: public; Owner: galiev_mr
 --
 
-CREATE VIEW v3 AS
+CREATE VIEW public.v3 AS
  SELECT t1.c1,
     t2.c2
    FROM t1,
     t2;
 
 
-ALTER TABLE v3 OWNER TO galiev_mr;
+ALTER TABLE public.v3 OWNER TO galiev_mr;
 
 --
 -- Name: v4; Type: VIEW; Schema: public; Owner: galiev_mr
 --
 
-CREATE VIEW v4 AS
+CREATE VIEW public.v4 AS
  SELECT v1.c1,
     v3.c2,
     t1.c3
-   FROM v1,
-    v3,
-    t1;
+   FROM public.v1,
+    public.v3,
+    public.t1;
 
 
-ALTER TABLE v4 OWNER TO galiev_mr;
+ALTER TABLE public.v4 OWNER TO galiev_mr;
 
 --
 -- Name: v5; Type: VIEW; Schema: public; Owner: galiev_mr
 --
 
-CREATE VIEW v5 AS
+CREATE VIEW public.v5 AS
  SELECT v2.c1,
     v3.c2,
     v4.c3
-   FROM v2,
-    v3,
-    v4;
+   FROM public.v2,
+    public.v3,
+    public.v4;
 
 
-ALTER TABLE v5 OWNER TO galiev_mr;
+ALTER TABLE public.v5 OWNER TO galiev_mr;
 
 --
 -- Name: v6; Type: VIEW; Schema: public; Owner: galiev_mr
 --
 
-CREATE VIEW v6 AS
+CREATE VIEW public.v6 AS
  SELECT v2.c1,
     v2.c2
-   FROM v2;
+   FROM public.v2;
 
 
-ALTER TABLE v6 OWNER TO galiev_mr;
+ALTER TABLE public.v6 OWNER TO galiev_mr;
 
 --
 -- Name: v7; Type: VIEW; Schema: public; Owner: galiev_mr
 --
 
-CREATE VIEW v7 AS
+CREATE VIEW public.v7 AS
  SELECT v2.c1,
     v6.c2
-   FROM v2,
-    v6;
+   FROM public.v2,
+    public.v6;
 
 
-ALTER TABLE v7 OWNER TO galiev_mr;
+ALTER TABLE public.v7 OWNER TO galiev_mr;
 
 --
 -- Name: v8; Type: VIEW; Schema: public; Owner: galiev_mr
 --
 
-CREATE VIEW v8 AS
+CREATE VIEW public.v8 AS
  SELECT v5.c1,
     v7.c2
-   FROM v5,
-    v7;
+   FROM public.v5,
+    public.v7;
 
 
-ALTER TABLE v8 OWNER TO galiev_mr;
+ALTER TABLE public.v8 OWNER TO galiev_mr;
 
 --
 -- PostgreSQL database dump complete

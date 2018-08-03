@@ -1,6 +1,6 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-ALTER TABLE agent
+ALTER TABLE public.agent
 	ADD COLUMN abc BIGINT;
 
-COMMENT ON COLUMN agent.abc IS 'This agent supports credit system or not.';
+COMMENT ON COLUMN public.agent.abc IS 'This agent supports credit system or not.';

@@ -96,7 +96,7 @@ public class PgDiffTest {
                     {"add_column"},
                     // Tests scenario where COLUMN is added to TABLE definition and has null values.
                     {"add_column_null"},
-                    // Tests scenario where COLUMN is dropped from TABLE.
+                    // Tests scenario where COLUMN with index dependency is dropped from TABLE.
                     {"drop_column"},
                     // Tests scenario where new TABLE is added.
                     {"add_table"},
@@ -171,6 +171,10 @@ public class PgDiffTest {
                     // Tests scenario where SEQUENCE with data type is modified.
                     {"modify_sequence_data_type"},
                     // Tests scenario where new PARTITION TABLE is modified.
+                    // TODO при формировании скрипта не учитываются пересечения партиций
+                    // ATTACH PARTITION public.cities_fg FOR VALUES IN ('e', 'g');
+                    // выполняется раньше чем
+                    // DROP FOREIGN TABLE public.f_cities_e;
                     {"modify_partition_table"},
                     // Tests scenario where new PARTITION TABLE is converted to TYPED TABLE.
                     {"chg_table_type"},
@@ -265,10 +269,16 @@ public class PgDiffTest {
                     // Tests adding view default value
                     {"alter_view_add_default"},
                     // Tests adding of comments
+                    // TODO function 'current_database()' in this line does not work:
+                    // COMMENT ON DATABASE current_database() IS 'comments database';
                     {"add_comments"},
                     // Tests dropping of comments
+                    // TODO function 'current_database()' in this line does not work:
+                    // COMMENT ON DATABASE current_database() IS NULL;
                     {"drop_comments"},
                     // Tests altering of comments
+                    // TODO function 'current_database()' in this line does not work:
+                    // COMMENT ON DATABASE current_database() IS 'comments database 2';
                     {"alter_comments"},
                     // Tests changing view default value
                     {"alter_view_change_default"},
@@ -363,6 +373,7 @@ public class PgDiffTest {
                     {"multiply_view_1"},
                     {"multiply_view_dif_schema"},
                     {"add_rule"},
+                    {"add_rule_2"},
                     {"drop_rule"},
                     {"modify_constraint_validate"},
                     {"modify_rule_enable"},

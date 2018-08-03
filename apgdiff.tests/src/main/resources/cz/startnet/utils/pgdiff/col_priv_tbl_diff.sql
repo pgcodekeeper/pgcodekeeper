@@ -1,49 +1,49 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-CREATE TABLE t2 (
+CREATE TABLE public.t2 (
 	c1 integer,
 	c2 text
 );
 
-ALTER TABLE t2 OWNER TO botov_av;
+ALTER TABLE public.t2 OWNER TO botov_av;
 
--- TABLE t2 GRANT
+-- TABLE public.t2 GRANT
 
-GRANT SELECT ON TABLE t2 TO levsha_aa;
+GRANT SELECT ON TABLE public.t2 TO levsha_aa;
 
--- COLUMN c1 GRANT
+-- COLUMN public.t2.c1 GRANT
 
-GRANT INSERT(c1), REFERENCES(c1), UPDATE(c1) ON TABLE t2 TO levsha_aa;
+GRANT INSERT(c1), REFERENCES(c1), UPDATE(c1) ON TABLE public.t2 TO levsha_aa;
 
--- COLUMN c2 GRANT
+-- COLUMN public.t2.c2 GRANT
 
-GRANT INSERT(c2) ON TABLE t2 TO levsha_aa;
+GRANT INSERT(c2) ON TABLE public.t2 TO levsha_aa;
 
--- TABLE t1 GRANT
+-- TABLE public.t1 GRANT
 
-GRANT SELECT ON TABLE t1 TO levsha_aa;
+GRANT SELECT ON TABLE public.t1 TO levsha_aa;
 
-ALTER TABLE t1
+ALTER TABLE public.t1
 	ADD COLUMN c2 text;
 
--- COLUMN c2 GRANT
+-- COLUMN public.t1.c2 GRANT
 
-GRANT ALL(c2) ON TABLE t1 TO maindb;
-GRANT INSERT(c2) ON TABLE t1 TO levsha_aa;
+GRANT ALL(c2) ON TABLE public.t1 TO maindb;
+GRANT INSERT(c2) ON TABLE public.t1 TO levsha_aa;
 
--- COLUMN c1 GRANT
+-- COLUMN public.t1.c1 GRANT
 
-REVOKE ALL(c1) ON TABLE t1 FROM PUBLIC;
-REVOKE ALL(c1) ON TABLE t1 FROM botov_av;
-GRANT ALL(c1) ON TABLE t1 TO maindb;
-GRANT INSERT(c1), REFERENCES(c1), UPDATE(c1) ON TABLE t1 TO levsha_aa;
+REVOKE ALL(c1) ON TABLE public.t1 FROM PUBLIC;
+REVOKE ALL(c1) ON TABLE public.t1 FROM botov_av;
+GRANT ALL(c1) ON TABLE public.t1 TO maindb;
+GRANT INSERT(c1), REFERENCES(c1), UPDATE(c1) ON TABLE public.t1 TO levsha_aa;
 
-CREATE VIEW v1 AS
+CREATE VIEW public.v1 AS
 	SELECT t1.c1
-   FROM t1;
+   FROM public.t1;
 
--- VIEW v1 GRANT
+-- VIEW public.v1 GRANT
 
-REVOKE ALL(c1) ON TABLE v1 FROM PUBLIC;
-REVOKE ALL(c1) ON TABLE v1 FROM levsha_aa;
-GRANT UPDATE(c1) ON TABLE v1 TO maindb;
+REVOKE ALL(c1) ON TABLE public.v1 FROM PUBLIC;
+REVOKE ALL(c1) ON TABLE public.v1 FROM levsha_aa;
+GRANT UPDATE(c1) ON TABLE public.v1 TO maindb;

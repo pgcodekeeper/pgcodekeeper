@@ -26,11 +26,7 @@ public class PartitionPgTable extends RegularPgTable {
 
     @Override
     protected void appendColumns(StringBuilder sbSQL, StringBuilder sbOption) {
-        final Inherits tableName = inherits.get(0);
-        String parentName = (tableName.getKey() == null ? "" : (tableName.getKey() + ".")) +
-                tableName.getValue();
-
-        sbSQL.append(" PARTITION OF ").append(parentName);
+        sbSQL.append(" PARTITION OF ").append(inherits.get(0).getQualifiedName());
 
         if (!columns.isEmpty()) {
             sbSQL.append(" (\n");
@@ -63,10 +59,10 @@ public class PartitionPgTable extends RegularPgTable {
         if (!(newTable instanceof PartitionPgTable)) {
             final Inherits tableName = inherits.get(0);
             sb.append("\n\nALTER TABLE ");
-            sb.append(tableName.getKey() == null ?
-                    "" : PgDiffUtils.getQuotedName(tableName.getKey()) + '.')
-            .append(PgDiffUtils.getQuotedName(tableName.getValue()))
+            sb.append(tableName.getQualifiedName())
             .append("\n\tDETACH PARTITION ")
+            .append(PgDiffUtils.getQuotedName(getParent().getName()))
+            .append('.')
             .append(PgDiffUtils.getQuotedName(getName()))
             .append(';');
 
@@ -80,10 +76,10 @@ public class PartitionPgTable extends RegularPgTable {
     protected void convertTable(StringBuilder sb) {
         Inherits newInherits = getInherits().get(0);
         sb.append("\n\nALTER TABLE ");
-        sb.append(newInherits.getKey() == null ?
-                "" : PgDiffUtils.getQuotedName(newInherits.getKey()) + '.')
-        .append(PgDiffUtils.getQuotedName(newInherits.getValue()))
+        sb.append(newInherits.getQualifiedName())
         .append("\n\tATTACH PARTITION ")
+        .append(PgDiffUtils.getQuotedName(getParent().getName()))
+        .append('.')
         .append(PgDiffUtils.getQuotedName(getName()))
         .append(' ').append(getPartitionBounds()).append(';');
     }
@@ -101,18 +97,18 @@ public class PartitionPgTable extends RegularPgTable {
             if (!Objects.equals(partitionBounds, newBounds)
                     || !Objects.equals(oldInherits, newInherits)) {
                 sb.append("\n\nALTER TABLE ");
-                sb.append(oldInherits.getKey() == null ?
-                        "" : PgDiffUtils.getQuotedName(oldInherits.getKey()) + '.')
-                .append(PgDiffUtils.getQuotedName(oldInherits.getValue()))
+                sb.append(oldInherits.getQualifiedName())
                 .append("\n\tDETACH PARTITION ")
+                .append(PgDiffUtils.getQuotedName(getParent().getName()))
+                .append('.')
                 .append(PgDiffUtils.getQuotedName(getName()))
                 .append(';');
 
                 sb.append("\n\nALTER TABLE ");
-                sb.append(newInherits.getKey() == null ?
-                        "" : PgDiffUtils.getQuotedName(newInherits.getKey()) + '.')
-                .append(PgDiffUtils.getQuotedName(newInherits.getValue()))
+                sb.append(newInherits.getQualifiedName())
                 .append("\n\tATTACH PARTITION ")
+                .append(PgDiffUtils.getQuotedName(getParent().getName()))
+                .append('.')
                 .append(PgDiffUtils.getQuotedName(getName()))
                 .append(' ')
                 .append(((PartitionPgTable)newTable).getPartitionBounds())

@@ -151,6 +151,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
             sbSQL.append(" MATERIALIZED");
         }
         sbSQL.append(" VIEW ");
+        sbSQL.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
         sbSQL.append(PgDiffUtils.getQuotedName(name));
 
         if (!columnNames.isEmpty()) {
@@ -209,6 +210,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
         for (final DefaultValue defaultValue : defaultValues) {
             sbSQL.append("\n\nALTER VIEW ");
+            sbSQL.append(PgDiffUtils.getQuotedName(getContainingSchema().getName()));
+            sbSQL.append('.');
             sbSQL.append(PgDiffUtils.getQuotedName(name));
             sbSQL.append(" ALTER COLUMN ");
             sbSQL.append(
@@ -227,6 +230,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
             if (columnComment.getComment() != null
                     && !columnComment.getComment().isEmpty()) {
                 sbSQL.append("\n\nCOMMENT ON COLUMN ");
+                sbSQL.append(PgDiffUtils.getQuotedName(getContainingSchema().getName()));
+                sbSQL.append('.');
                 sbSQL.append(PgDiffUtils.getQuotedName(name));
                 sbSQL.append('.');
                 sbSQL.append(PgDiffUtils.getQuotedName(columnComment.getColumnName()));
@@ -242,13 +247,15 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     @Override
     public String getDropSQL() {
         String mat = isMatView() ? "MATERIALIZED " : "";
-        return "DROP " + mat + "VIEW " + PgDiffUtils.getQuotedName(getName()) + ';';
+        return "DROP " + mat + "VIEW " + PgDiffUtils.getQuotedName(getContainingSchema().getName()) + '.'
+                + PgDiffUtils.getQuotedName(getName()) + ';';
     }
 
     @Override
     protected StringBuilder appendOwnerSQL(StringBuilder sb) {
         return (!isMatView() || owner == null) ? super.appendOwnerSQL(sb)
-                : sb.append("\n\nALTER MATERIALIZED VIEW ").append(PgDiffUtils.getQuotedName(getName()))
+                : sb.append("\n\nALTER MATERIALIZED VIEW ").append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
+                .append('.').append(PgDiffUtils.getQuotedName(getName()))
                 .append(" OWNER TO ").append(PgDiffUtils.getQuotedName(owner)).append(';');
     }
 
@@ -326,6 +333,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
                             newColumnComment.getComment())) {
 
                 sb.append("\n\nCOMMENT ON COLUMN "
+                        + PgDiffUtils.getQuotedName(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
+                        + '.'
                         + PgDiffUtils.getQuotedName(newView.getName())
                         + '.'
                         + PgDiffUtils.getQuotedName(newColumnComment
@@ -334,6 +343,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
             } else if (oldColumnComment != null && newColumnComment == null) {
 
                 sb.append("\n\nCOMMENT ON COLUMN "
+                        + PgDiffUtils.getQuotedName(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
+                        + '.'
                         + PgDiffUtils.getQuotedName(newView.getName())
                         + '.'
                         + PgDiffUtils.getQuotedName(oldColumnComment
@@ -691,6 +702,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
                     if (!oldValue.getDefaultValue().equals(newValue.getDefaultValue())) {
                         sb.append("\n\nALTER TABLE "
+                                + PgDiffUtils.getQuotedName(newView.getContainingSchema().getName()) + '.'
                                 + PgDiffUtils.getQuotedName(newView.getName())
                                 + " ALTER COLUMN "
                                 + PgDiffUtils.getQuotedName(newValue.getColumnName())
@@ -705,6 +717,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
             if (!found) {
                 sb.append("\n\nALTER TABLE "
+                        + PgDiffUtils.getQuotedName(newView.getContainingSchema().getName()) + '.'
                         + PgDiffUtils.getQuotedName(newView.getName())
                         + " ALTER COLUMN "
                         + PgDiffUtils.getQuotedName(oldValue.getColumnName())
@@ -728,6 +741,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
             }
 
             sb.append("\n\nALTER TABLE "
+                    + PgDiffUtils.getQuotedName(newView.getContainingSchema().getName()) + '.'
                     + PgDiffUtils.getQuotedName(newView.getName())
                     + " ALTER COLUMN "
                     + PgDiffUtils.getQuotedName(newValue.getColumnName())

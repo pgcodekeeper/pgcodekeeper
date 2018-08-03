@@ -1,8 +1,8 @@
-SET search_path = "ABC", pg_catalog;
+SET search_path = pg_catalog;
 
-CREATE TABLE testtable2 (
+CREATE TABLE "ABC".testtable2 (
 	id integer,
 	name character varying(100) NOT NULL
 );
 
-ALTER TABLE testtable2 OWNER TO fordfrog;
+ALTER TABLE "ABC".testtable2 OWNER TO fordfrog;

@@ -23,13 +23,13 @@ SET client_min_messages = warning;
 --COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
 --
 -- Name: ty1; Type: TYPE; Schema: public; Owner: botov_av
 --
 
-CREATE TYPE ty1 AS ENUM (
+CREATE TYPE public.ty1 AS ENUM (
     'a'
 );
 

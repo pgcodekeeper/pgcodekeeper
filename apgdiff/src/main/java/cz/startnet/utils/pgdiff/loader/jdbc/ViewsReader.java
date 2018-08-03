@@ -1,9 +1,10 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.util.Map;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ViewSelect;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
@@ -11,36 +12,22 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgView;
-import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
-import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class ViewsReader extends JdbcReader {
 
-    public static class ViewsReaderFactory extends JdbcReaderFactory {
-
-        public ViewsReaderFactory(long hasHelperMask, String helperFunction, Map<SupportedVersion, String> queries) {
-            super(hasHelperMask, helperFunction, queries);
-        }
-
-        @Override
-        public JdbcReader getReader(JdbcLoaderBase loader) {
-            return new ViewsReader(this, loader);
-        }
-    }
-
-    private ViewsReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
-        super(factory, loader);
+    public ViewsReader(JdbcLoaderBase loader) {
+        super(JdbcQueries.QUERY_VIEWS_PER_SCHEMA, loader);
     }
 
     @Override
-    protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
+    protected void processResult(ResultSet result, PgSchema schema) throws SQLException {
         PgView view = getView(result, schema);
         loader.monitor.worked(1);
         schema.addView(view);
     }
 
-    private PgView getView(ResultSetWrapper res, PgSchema schema) throws WrapperAccessException {
+    private PgView getView(ResultSet res, PgSchema schema) throws SQLException {
         String schemaName = schema.getName();
         String viewName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, viewName, DbObjType.VIEW));
@@ -80,11 +67,11 @@ public class ViewsReader extends JdbcReader {
         loader.setOwner(v, res.getLong(CLASS_RELOWNER));
 
         // Query columns default values and comments
-        String[] colNames = res.getArray("column_names", String.class);
+        String[] colNames = getColArray(res, "column_names");
         if (colNames != null) {
-            String[] colComments = res.getArray("column_comments", String.class);
-            String[] colDefaults = res.getArray("column_defaults", String.class);
-            String[] colACLs = res.getArray("column_acl", String.class);
+            String[] colComments = getColArray(res, "column_comments");
+            String[] colDefaults = getColArray(res, "column_defaults");
+            String[] colACLs = getColArray(res, "column_acl");
 
             for (int i = 0; i < colNames.length; i++) {
                 String colName = colNames[i];
@@ -101,16 +88,16 @@ public class ViewsReader extends JdbcReader {
                 String colAcl = colACLs[i];
                 // Привилегии на столбцы view записываются в саму view
                 if (colAcl != null) {
-                    loader.setPrivileges(v, colAcl, colName);
+                    loader.setPrivileges(v, colAcl, colName, schemaName);
                 }
             }
         }
 
         // Query view privileges
-        loader.setPrivileges(v, res.getString("relacl"));
+        loader.setPrivileges(v, res.getString("relacl"), schemaName);
 
         // STORAGE PARAMETRS
-        String[] options = res.getArray("reloptions", String.class);
+        String[] options = getColArray(res, "reloptions");
         if (options != null) {
             ParserAbstract.fillOptionParams(options, v::addOption, false, false, false);
         }

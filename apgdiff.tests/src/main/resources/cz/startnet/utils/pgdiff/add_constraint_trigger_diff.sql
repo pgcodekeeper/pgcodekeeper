@@ -1,6 +1,6 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-CREATE OR REPLACE FUNCTION test_table_trigger() RETURNS "trigger"
+CREATE OR REPLACE FUNCTION public.test_table_trigger() RETURNS "trigger"
     AS $$
 begin
 	return NEW;
@@ -8,23 +8,23 @@ end;
 $$
     LANGUAGE plpgsql;
 
-ALTER FUNCTION test_table_trigger() OWNER TO fordfrog;
+ALTER FUNCTION public.test_table_trigger() OWNER TO fordfrog;
 
 CREATE CONSTRAINT TRIGGER test_table_trigger
-	BEFORE INSERT OR UPDATE ON test_table
-	FROM test_table
+	BEFORE INSERT OR UPDATE ON public.test_table
+	FROM public.test_table
 	DEFERRABLE INITIALLY DEFERRED
 	FOR EACH ROW
-	EXECUTE PROCEDURE test_table_trigger();
+	EXECUTE PROCEDURE public.test_table_trigger();
 
 CREATE CONSTRAINT TRIGGER test_view_trigger1
-	INSTEAD OF INSERT OR UPDATE ON test_view
-	FROM test_table
+	INSTEAD OF INSERT OR UPDATE ON public.test_view
+	FROM public.test_table
 	FOR EACH ROW
-	EXECUTE PROCEDURE test_table_trigger();
+	EXECUTE PROCEDURE public.test_table_trigger();
 
 CREATE CONSTRAINT TRIGGER test_view_trigger2
-	AFTER INSERT OR UPDATE ON test_view
+	AFTER INSERT OR UPDATE ON public.test_view
 	DEFERRABLE INITIALLY IMMEDIATE
 	FOR EACH STATEMENT
-	EXECUTE PROCEDURE test_table_trigger();
+	EXECUTE PROCEDURE public.test_table_trigger();

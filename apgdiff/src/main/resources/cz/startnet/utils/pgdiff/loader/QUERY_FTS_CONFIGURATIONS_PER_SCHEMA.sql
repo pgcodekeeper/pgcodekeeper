@@ -1,4 +1,9 @@
-WITH extension_deps AS (
+WITH sys_schemas AS (
+    SELECT n.oid
+    FROM pg_catalog.pg_namespace n
+    WHERE n.nspname LIKE 'pg\_%'
+        OR n.nspname = 'information_schema'    
+), extension_deps AS (
     SELECT dep.objid 
     FROM pg_catalog.pg_depend dep 
     WHERE refclassid = 'pg_catalog.pg_extension'::pg_catalog.regclass 
@@ -13,7 +18,8 @@ SELECT c.oid::bigint,
        words.tokennames,
        words.dictschemas,
        words.dictnames,
-       d.description AS comment
+       d.description AS comment,
+       c.cfgnamespace AS schema_oid
 FROM pg_ts_config c
 LEFT JOIN pg_catalog.pg_description d ON c.oid = d.objoid 
 LEFT JOIN pg_catalog.pg_ts_parser p ON p.oid = c.cfgparser
@@ -33,5 +39,5 @@ LEFT JOIN LATERAL (
     LEFT JOIN pg_catalog.pg_namespace nsp ON dict.dictnamespace = nsp.oid   
     GROUP BY m.mapcfg
 ) words ON words.mapcfg = c.oid
-WHERE c.cfgnamespace = ? AND 
-      c.oid NOT IN (SELECT objid FROM extension_deps)
+WHERE c.cfgnamespace NOT IN (SELECT oid FROM sys_schemas) 
+      AND c.oid NOT IN (SELECT objid FROM extension_deps)

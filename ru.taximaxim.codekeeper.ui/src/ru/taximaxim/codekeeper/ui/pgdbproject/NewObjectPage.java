@@ -41,6 +41,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
@@ -65,7 +66,7 @@ public final class NewObjectPage extends WizardPage {
 
     private static final String RULE_PATTERN = "CREATE RULE {0} AS\n\tON UPDATE TO {1} DO NOTHING;\n";//$NON-NLS-1$
     private static final String TRIGGER_PATTERN = "CREATE TRIGGER {0}\n\tBEFORE UPDATE ON {1}" //$NON-NLS-1$
-            + "\n\tFOR EACH STATEMENT\n\tEXECUTE PROCEDURE function_name_placeholder();\n"; //$NON-NLS-1$
+            + "\n\tFOR EACH STATEMENT\n\tEXECUTE PROCEDURE schema_name.function_name_placeholder();\n"; //$NON-NLS-1$
     private static final String CONSTRAINT_PATTERN = "ALTER TABLE {0}\n\tADD CONSTRAINT {1}" //$NON-NLS-1$
             + " PRIMARY KEY (COLUMN_NAME);\n"; //$NON-NLS-1$
     private static final String INDEX_PATTERN = "CREATE INDEX {0} ON {1} USING btree (COLUMN_NAME);\n"; //$NON-NLS-1$
@@ -388,7 +389,7 @@ public final class NewObjectPage extends WizardPage {
     }
 
     private IFolder createSchema(String name, boolean open, IProject project) throws CoreException {
-        IFolder projectFolder = project.getFolder(DbObjType.SCHEMA.name());
+        IFolder projectFolder = project.getFolder(WORK_DIR_NAMES.SCHEMA.name());
         if (!projectFolder.exists()) {
             projectFolder.create(false, true, null);
         }
@@ -396,7 +397,7 @@ public final class NewObjectPage extends WizardPage {
         if (!schemaFolder.exists()) {
             schemaFolder.create(false, true, null);
         }
-        IFile file = projectFolder.getFile(ModelExporter.getExportedFilenameSql(name));
+        IFile file = schemaFolder.getFile(ModelExporter.getExportedFilenameSql(name));
         if (!file.exists()) {
             StringBuilder sb = new StringBuilder();
             sb.append(MessageFormat.format(PATTERN, DbObjType.SCHEMA, PgDiffUtils.getQuotedName(name)));
@@ -428,10 +429,7 @@ public final class NewObjectPage extends WizardPage {
         IFile file = folder.getFile(ModelExporter.getExportedFilenameSql(name));
 
         if (!file.exists()) {
-            StringBuilder sb = new StringBuilder("SET search_path = " //$NON-NLS-1$
-                    + PgDiffUtils.getQuotedName(schema)
-                    + ", pg_catalog;"); //$NON-NLS-1$
-            sb.append("\n\nCREATE "); //$NON-NLS-1$
+            StringBuilder sb = new StringBuilder("CREATE "); //$NON-NLS-1$
             switch (type) {
             case TYPE:
                 sb.append(type).append(' ').append(schema).append('.')
@@ -487,14 +485,15 @@ public final class NewObjectPage extends WizardPage {
         IFile file = createObject(schema, parent, parentType, false, project);
         StringBuilder sb = new StringBuilder(GROUP_DELIMITER);
         String objectName = PgDiffUtils.getQuotedName(name);
+        String parentName = schema + '.' + parent;
         if (type == DbObjType.RULE) {
-            sb.append(MessageFormat.format(RULE_PATTERN, objectName, parent));
+            sb.append(MessageFormat.format(RULE_PATTERN, objectName, parentName));
         } else if (type == DbObjType.TRIGGER) {
-            sb.append(MessageFormat.format(TRIGGER_PATTERN, objectName, parent));
+            sb.append(MessageFormat.format(TRIGGER_PATTERN, objectName, parentName));
         } else if (type == DbObjType.CONSTRAINT) {
-            sb.append(MessageFormat.format(CONSTRAINT_PATTERN, parent, objectName));
+            sb.append(MessageFormat.format(CONSTRAINT_PATTERN, parentName, objectName));
         } else {
-            sb.append(MessageFormat.format(INDEX_PATTERN, objectName, parent));
+            sb.append(MessageFormat.format(INDEX_PATTERN, objectName, parentName));
         }
         file.appendContents(new ByteArrayInputStream(sb.toString().getBytes()), true, true, null);
         openFileInEditor(file);

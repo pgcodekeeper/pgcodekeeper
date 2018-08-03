@@ -1,10 +1,5 @@
 package cz.startnet.utils.pgdiff.schema;
 
-import java.text.MessageFormat;
-
-import cz.startnet.utils.pgdiff.PgDiffUtils;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-
 /**
  * The superclass for general pgsql statement with search_path. That is any but
  * SCHEMA and EXTENSION.
@@ -15,11 +10,6 @@ public abstract class PgStatementWithSearchPath extends PgStatement implements I
 
     public PgStatementWithSearchPath(String name, String rawStatement) {
         super(name, rawStatement);
-    }
-
-    public String getSearchPath() {
-        return MessageFormat.format(ApgdiffConsts.SEARCH_PATH_PATTERN,
-                PgDiffUtils.getQuotedName(getContainingSchema().getName()));
     }
 
     @Override

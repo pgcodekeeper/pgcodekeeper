@@ -1,4 +1,4 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-ALTER TABLE cities
-	DETACH PARTITION cities_ab;
+ALTER TABLE public.cities
+	DETACH PARTITION public.cities_ab;

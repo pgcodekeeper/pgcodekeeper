@@ -2,33 +2,19 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Map;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
-import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.SimpleMsTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class MsTablesReader extends JdbcMsReader {
+public class MsTablesReader extends JdbcReader {
 
-
-    public static class MsTablesReaderFactory extends JdbcReaderFactory {
-
-        public MsTablesReaderFactory(Map<SupportedVersion, String> queries) {
-            super(0, "", queries);
-        }
-
-        @Override
-        public JdbcReader getReader(JdbcLoaderBase loader) {
-            return new MsTablesReader(this, loader);
-        }
-    }
-
-    public MsTablesReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
-        super(factory, loader);
+    public MsTablesReader(JdbcLoaderBase loader) {
+        super(JdbcQueries.QUERY_MS_TABLES, loader);
     }
 
     @Override

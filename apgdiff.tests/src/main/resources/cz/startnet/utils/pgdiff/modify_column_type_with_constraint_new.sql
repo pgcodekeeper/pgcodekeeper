@@ -13,7 +13,7 @@ SET client_min_messages = warning;
 COMMENT ON SCHEMA public IS 'Standard public schema';
 
 
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
 SET default_tablespace = '';
 
@@ -23,14 +23,14 @@ SET default_with_oids = false;
 -- Name: products; Type: TABLE; Schema: public; Owner: shamsutdinov_lr; Tablespace: 
 --
 
-CREATE TABLE products (
+CREATE TABLE public.products (
     name character varying(40) NOT NULL,
     unic_number numeric
 );
 
-ALTER TABLE products OWNER TO shamsutdinov_lr;
+ALTER TABLE public.products OWNER TO shamsutdinov_lr;
 
-ALTER TABLE products
+ALTER TABLE public.products
     ADD CONSTRAINT products_unic_number_check CHECK ((unic_number > 100));
 
 --

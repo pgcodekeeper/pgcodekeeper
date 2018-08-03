@@ -23,13 +23,13 @@ SET client_min_messages = warning;
 --COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
 --
 -- Name: increment(); Type: FUNCTION; Schema: public; Owner: botov_av
 --
 
-CREATE FUNCTION increment() RETURNS trigger
+CREATE FUNCTION public.increment() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
         BEGIN
@@ -48,7 +48,7 @@ SET default_with_oids = false;
 -- Name: t1; Type: TABLE; Schema: public; Owner: botov_av; Tablespace: 
 --
 
-CREATE TABLE t1 (
+CREATE TABLE public.t1 (
     c1 integer
 );
 
@@ -59,14 +59,14 @@ ALTER TABLE public.t1 OWNER TO botov_av;
 -- Name: ind1; Type: INDEX; Schema: public; Owner: botov_av; Tablespace: 
 --
 
-CREATE INDEX ind1 ON t1 USING btree (c1);
+CREATE INDEX ind1 ON public.t1 USING btree (c1);
 
 
 --
 -- Name: trig1; Type: TRIGGER; Schema: public; Owner: botov_av
 --
 
-CREATE TRIGGER trig1 AFTER TRUNCATE ON t1 FOR EACH STATEMENT EXECUTE PROCEDURE increment();
+CREATE TRIGGER trig1 AFTER TRUNCATE ON public.t1 FOR EACH STATEMENT EXECUTE PROCEDURE public.increment();
 
 
 --

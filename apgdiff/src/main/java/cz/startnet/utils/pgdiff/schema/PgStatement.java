@@ -153,11 +153,15 @@ public abstract class PgStatement implements IStatement, IHashable {
         sb.append(type).append(' ');
         switch (type) {
         case COLUMN:
-            sb.append(PgDiffUtils.getQuotedName(getParent().getName()))
+            sb.append(PgDiffUtils.getQuotedName(getParent().getParent().getName()))
+            .append('.')
+            .append(PgDiffUtils.getQuotedName(getParent().getName()))
             .append('.')
             .append(PgDiffUtils.getQuotedName(getName()));
             break;
         case FUNCTION:
+            sb.append(PgDiffUtils.getQuotedName(getParent().getName()))
+            .append('.');
             ((PgFunction) this).appendFunctionSignature(sb, false, true);
             break;
 
@@ -166,15 +170,30 @@ public abstract class PgStatement implements IStatement, IHashable {
         case RULE:
             sb.append(PgDiffUtils.getQuotedName(getName()))
             .append(" ON ")
+            .append(PgDiffUtils.getQuotedName(getParent().getParent().getName()))
+            .append('.')
             .append(PgDiffUtils.getQuotedName(getParent().getName()));
+            break;
+
+        case INDEX:
+            sb.append(PgDiffUtils.getQuotedName(getParent().getParent().getName()))
+            .append('.')
+            .append(PgDiffUtils.getQuotedName(getName()));
             break;
 
         case DATABASE:
             sb.append("current_database()");
             break;
 
-        default:
+        case SCHEMA:
+        case EXTENSION:
             sb.append(PgDiffUtils.getQuotedName(getName()));
+            break;
+
+        default:
+            sb.append(PgDiffUtils.getQuotedName(getParent().getName()))
+            .append('.')
+            .append(PgDiffUtils.getQuotedName(getName()));
         }
 
         return sb.append(" IS ")
@@ -216,8 +235,18 @@ public abstract class PgStatement implements IStatement, IHashable {
 
         sb.append("\n\n-- ")
         .append(getStatementType())
-        .append(' ')
-        .append(getName())
+        .append(' ');
+        if (DbObjType.SCHEMA != getStatementType()) {
+            if (this instanceof PgStatementWithSearchPath) {
+                sb.append(((PgStatementWithSearchPath)this).getContainingSchema().getName())
+                .append('.');
+            }
+
+            if (DbObjType.COLUMN == getStatementType()) {
+                sb.append(getParent().getName()).append('.');
+            }
+        }
+        sb.append(getName())
         .append(' ')
         .append("GRANT\n");
 
@@ -270,10 +299,15 @@ public abstract class PgStatement implements IStatement, IHashable {
         if (isPostgres()) {
             DbObjType type = getStatementType();
             sb.append(type).append(' ');
-            if (type == DbObjType.FUNCTION) {
-                ((PgFunction) this).appendFunctionSignature(sb, false, true);
-            } else {
+            if (type == DbObjType.SCHEMA) {
                 sb.append(PgDiffUtils.getQuotedName(getName()));
+            } else {
+                sb.append(PgDiffUtils.getQuotedName(getParent().getName())).append('.');
+                if (type == DbObjType.FUNCTION) {
+                    ((PgFunction) this).appendFunctionSignature(sb, false, true);
+                } else {
+                    sb.append(PgDiffUtils.getQuotedName(getName()));
+                }
             }
             sb.append(" OWNER TO ")
             .append(PgDiffUtils.getQuotedName(owner))

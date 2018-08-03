@@ -1,5 +1,5 @@
 SET TIMEZONE TO 'UTC';
 
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-DROP VIEW v1;
+DROP VIEW public.v1;

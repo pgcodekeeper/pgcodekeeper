@@ -33,6 +33,7 @@ public class PgFtsParser extends PgStatementWithSearchPath {
     public String getCreationSQL() {
         StringBuilder sbSql = new StringBuilder();
         sbSql.append("CREATE TEXT SEARCH PARSER ")
+        .append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.')
         .append(PgDiffUtils.getQuotedName(getName())).append(" (\n\t")
         .append("START = ").append(startFunction).append(",\n\t")
         .append("GETTOKEN = ").append(getTokenFunction).append(",\n\t")
@@ -55,13 +56,15 @@ public class PgFtsParser extends PgStatementWithSearchPath {
     @Override
     protected StringBuilder appendCommentSql(StringBuilder sb) {
         sb.append("COMMENT ON TEXT SEARCH PARSER ");
-        sb.append(PgDiffUtils.getQuotedName(getName()));
+        sb.append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
+        .append('.').append(PgDiffUtils.getQuotedName(getName()));
         return sb.append(" IS ").append(comment).append(';');
     }
 
     @Override
     public String getDropSQL() {
-        return "DROP TEXT SEARCH PARSER " + PgDiffUtils.getQuotedName(getName()) + ';';
+        return "DROP TEXT SEARCH PARSER " + PgDiffUtils.getQuotedName(getContainingSchema().getName())
+        + '.' + PgDiffUtils.getQuotedName(getName()) + ';';
     }
 
     @Override

@@ -10,6 +10,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 
 public final class DiffTree {
@@ -93,7 +94,16 @@ public final class DiffTree {
                     rv.add(new CompareResult(sLeft, foundRight));
 
                     if (sLeft.compare(foundRight)) {
-                        equalsStatements.add(sLeft);
+                        boolean add = true;
+                        if (sLeft.getStatementType() == DbObjType.TABLE) {
+                            // tables equality includes constraints for this purpose
+                            add = PgDiffUtils.setlikeEquals(
+                                    ((PgTable) sLeft).getConstraints(),
+                                    ((PgTable) foundRight).getConstraints());
+                        }
+                        if (add) {
+                            equalsStatements.add(sLeft);
+                        }
                     }
                 } else {
                     equalsStatements.add(sLeft);

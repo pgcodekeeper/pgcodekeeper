@@ -1,10 +1,10 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-ALTER SEQUENCE inventoryitemsupplier_seq
+ALTER SEQUENCE public.inventoryitemsupplier_seq
 	RESTART WITH 1;
 
-ALTER TABLE inventoryitemsupplier
+ALTER TABLE public.inventoryitemsupplier
 	ADD CONSTRAINT inventoryitemsupplier_5a808b9c_key UNIQUE (inventoryitemid, partneridentificationid);
 
-ALTER TABLE inventoryitemsupplier
+ALTER TABLE public.inventoryitemsupplier
 	ADD CONSTRAINT inventoryitemsupplier_pkey PRIMARY KEY (id);

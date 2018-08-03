@@ -1,3 +1,3 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-ALTER VIEW testview SET (security_barrier);
+ALTER VIEW public.testview SET (security_barrier);

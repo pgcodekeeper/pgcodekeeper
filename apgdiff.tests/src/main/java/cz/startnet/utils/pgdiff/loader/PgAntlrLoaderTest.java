@@ -352,7 +352,7 @@ class PgDB3 extends PgDatabaseObjectCreator {
 
         PgSequence seq = new PgSequence("admins_aid_seq", "");
         seq.setStartWith("1");
-        seq.setMinMaxInc(1L, 1000000000L, null);
+        seq.setMinMaxInc(1L, 1000000000L, null, null);
         seq.setCache("1");
         schema.addSequence(seq);
 
@@ -451,7 +451,7 @@ class PgDB4 extends PgDatabaseObjectCreator {
         PgColumn col = new PgColumn("id");
         col.setType("bigint");
         col.setNullValue(false);
-        col.setDefaultValue("nextval('call_logs_id_seq'::regclass)");
+        col.setDefaultValue("nextval('public.call_logs_id_seq'::regclass)");
         table.addColumn(col);
 
         return d;
@@ -654,7 +654,7 @@ class PgDB9 extends PgDatabaseObjectCreator {
         PgColumn col = new PgColumn("id");
         col.setType("bigint");
         col.setNullValue(false);
-        col.setDefaultValue("nextval('user_id_seq'::regclass)");
+        col.setDefaultValue("nextval('public.user_id_seq'::regclass)");
         table.addColumn(col);
 
         col = new PgColumn("email");
@@ -675,13 +675,13 @@ class PgDB9 extends PgDatabaseObjectCreator {
         table.addRule(rule);
 
         PgSequence seq = new PgSequence("user_id_seq", "");
-        seq.setMinMaxInc(1L, null, null);
+        seq.setMinMaxInc(1L, null, null, null);
         seq.setCache("1");
-        seq.setOwnedBy("user_data.id");
+        seq.setOwnedBy("public.user_data.id");
         schema.addSequence(seq);
         seq.setOwner("postgres");
 
-        table = new SimplePgTable("t_ruleinsert", "");
+        table = new SimplePgTable("t1", "");
         schema.addTable(table);
 
         col = new PgColumn("c1");
@@ -689,7 +689,7 @@ class PgDB9 extends PgDatabaseObjectCreator {
         table.addColumn(col);
 
         PgView view = new PgView("user", "");
-        view.setQuery("( SELECT user_data.id, user_data.email, user_data.created FROM user_data)");
+        view.setQuery("( SELECT user_data.id, user_data.email, user_data.created FROM public.user_data)");
         view.addColumnDefaultValue("created", "now()");
         schema.addView(view);
 
@@ -697,24 +697,24 @@ class PgDB9 extends PgDatabaseObjectCreator {
 
         rule = new PgRule("on_delete", "");
         rule.setEvent(PgRuleEventType.DELETE);
-        rule.addCommand("DELETE FROM user_data WHERE (user_data.id = old.id)");
+        rule.addCommand("DELETE FROM public.user_data WHERE (user_data.id = old.id)");
         view.addRule(rule);
 
         rule = new PgRule("on_insert", "");
         rule.setEvent(PgRuleEventType.INSERT);
         rule.setInstead(true);
-        rule.addCommand("INSERT INTO user_data (id, email, created) VALUES (new.id, new.email, new.created)");
-        rule.addCommand("INSERT INTO t1(c1) DEFAULT VALUES");
+        rule.addCommand("INSERT INTO public.user_data (id, email, created) VALUES (new.id, new.email, new.created)");
+        rule.addCommand("INSERT INTO public.t1(c1) DEFAULT VALUES");
         view.addRule(rule);
 
         rule = new PgRule("on_update", "");
         rule.setEvent(PgRuleEventType.UPDATE);
         rule.setInstead(true);
-        rule.addCommand("UPDATE user_data SET id = new.id, email = new.email, created = new.created WHERE (user_data.id = old.id)");
+        rule.addCommand("UPDATE public.user_data SET id = new.id, email = new.email, created = new.created WHERE (user_data.id = old.id)");
         view.addRule(rule);
 
         view = new PgView("ws_test", "");
-        view.setQuery("SELECT ud.id \"   i   d   \" FROM user_data ud");
+        view.setQuery("SELECT ud.id \"   i   d   \" FROM public.user_data ud");
         schema.addView(view);
 
         return d;
@@ -898,7 +898,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
         col.setType("integer");
         col.setNullValue(false);
         col.setComment("'id column'");
-        col.setDefaultValue("nextval('test_id_seq'::regclass)");
+        col.setDefaultValue("nextval('public.test_id_seq'::regclass)");
         table.addColumn(col);
 
         col = new PgColumn("text");
@@ -924,18 +924,18 @@ class PgDB14 extends PgDatabaseObjectCreator {
 
         PgSequence seq = new PgSequence("test_id_seq", "");
         seq.setStartWith("1");
-        seq.setMinMaxInc(1L, null, null);
+        seq.setMinMaxInc(1L, null, null, null);
         seq.setCache("1");
         schema.addSequence(seq);
 
-        seq.setOwnedBy("test.id");
+        seq.setOwnedBy("public.test.id");
 
         seq.setOwner("fordfrog");
 
         seq.setComment("'test table sequence'");
 
         PgView view = new PgView("test_view", "");
-        view.setQuery("SELECT test.id, test.text FROM test");
+        view.setQuery("SELECT test.id, test.text FROM public.test");
         schema.addView(view);
 
         view.setComment("'test view'");
@@ -946,9 +946,9 @@ class PgDB14 extends PgDatabaseObjectCreator {
         PgTrigger trigger = new PgTrigger("test_trigger", "");
         trigger.setType(TgTypes.BEFORE);
         trigger.setOnUpdate(true);
-        trigger.setTableName("test");
+        trigger.setTableName("public.test");
         trigger.setForEachRow(false);
-        trigger.setFunction("trigger_fnc()");
+        trigger.setFunction("public.trigger_fnc()");
         table.addTrigger(trigger);
 
         trigger.setComment("'test trigger'");

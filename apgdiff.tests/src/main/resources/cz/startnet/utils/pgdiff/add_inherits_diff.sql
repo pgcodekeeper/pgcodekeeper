@@ -1,8 +1,8 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-CREATE TABLE testtable (
+CREATE TABLE public.testtable (
 	field1 polygon
 )
-INHERITS (parenttable);
+INHERITS (public.parenttable);
 
-ALTER TABLE testtable OWNER TO fordfrog;
+ALTER TABLE public.testtable OWNER TO fordfrog;

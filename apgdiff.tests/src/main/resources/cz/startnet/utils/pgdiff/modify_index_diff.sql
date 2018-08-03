@@ -1,5 +1,5 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-DROP INDEX testindex;
+DROP INDEX public.testindex;
 
-CREATE INDEX """idxф.garbage=:;\""""." ON testtable USING btree (field3);
+CREATE INDEX """idxф.garbage=:;\""""." ON public.testtable USING btree (field3);

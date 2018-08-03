@@ -35,7 +35,7 @@ import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 
 /**
  * Loads PostgreSQL dump into classes.
@@ -211,23 +211,28 @@ public class PgDumpLoader implements AutoCloseable {
 
         // step 1
         // read files in schema folder, add schemas to db
-        for (ApgdiffConsts.WORK_DIR_NAMES dirEnum : ApgdiffConsts.WORK_DIR_NAMES.values()) {
+        for (WORK_DIR_NAMES dirEnum : WORK_DIR_NAMES.values()) {
+            // legacy schemas
             loadSubdir(dir, arguments, dirEnum.name(), db, monitor, errors);
         }
 
-        File schemasCommonDir = new File(dir, ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.name());
+        File schemasCommonDir = new File(dir, WORK_DIR_NAMES.SCHEMA.name());
         // skip walking SCHEMA folder if it does not exist
         if (!schemasCommonDir.isDirectory()) {
             return db;
         }
 
+        // new schemas + content
         // step 2
         // read out schemas names, and work in loop on each
-        for (PgSchema schema : db.getSchemas()) {
-            File schemaFolder = new File(schemasCommonDir, ModelExporter.getExportedFilename(schema));
-            if (schemaFolder.isDirectory()) {
-                for (String dirSub : DIR_LOAD_ORDER) {
-                    loadSubdir(schemaFolder, arguments, dirSub, db, monitor, errors);
+        try (Stream<Path> schemas = Files.list(schemasCommonDir.toPath())) {
+            for (Path schemaDir : PgDiffUtils.sIter(schemas)) {
+                if (Files.isDirectory(schemaDir)) {
+                    loadSubdir(schemasCommonDir, arguments, schemaDir.getFileName().toString(),
+                            db, monitor, errors);
+                    for (String dirSub : DIR_LOAD_ORDER) {
+                        loadSubdir(schemaDir.toFile(), arguments, dirSub, db, monitor, errors);
+                    }
                 }
             }
         }
@@ -316,8 +321,6 @@ public class PgDumpLoader implements AutoCloseable {
             }
         }
     }
-
-    //protected static void load
 
     private static void loadSubdir(File dir, PgDiffArguments arguments, String sub, PgDatabase db,
             IProgressMonitor monitor, List<AntlrError> errors)

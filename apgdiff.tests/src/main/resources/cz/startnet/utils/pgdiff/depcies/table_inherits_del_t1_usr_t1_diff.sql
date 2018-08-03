@@ -1,8 +1,8 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
--- DEPCY: This TABLE depends on the TABLE: t1
+-- DEPCY: This TABLE depends on the TABLE: public.t1
 
-ALTER TABLE t2
-	NO INHERIT t1;
+ALTER TABLE public.t2
+	NO INHERIT public.t1;
 
-DROP TABLE t1;
+DROP TABLE public.t1;

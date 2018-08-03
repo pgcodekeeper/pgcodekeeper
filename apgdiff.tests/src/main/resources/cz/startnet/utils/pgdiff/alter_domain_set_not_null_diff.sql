@@ -1,4 +1,4 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-ALTER DOMAIN dom2
+ALTER DOMAIN public.dom2
 	SET NOT NULL;

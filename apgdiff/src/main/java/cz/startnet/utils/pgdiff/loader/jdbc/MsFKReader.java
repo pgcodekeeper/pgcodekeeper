@@ -2,31 +2,18 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Map;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
-import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsConstraint;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class MsFKReader extends JdbcMsReader {
+public class MsFKReader extends JdbcReader {
 
-    public static class MsFKReaderFactory extends JdbcReaderFactory {
-
-        public MsFKReaderFactory(Map<SupportedVersion, String> queries) {
-            super(0, "", queries);
-        }
-
-        @Override
-        public JdbcReader getReader(JdbcLoaderBase loader) {
-            return new MsFKReader(this, loader);
-        }
-    }
-
-    public MsFKReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
-        super(factory, loader);
+    public MsFKReader(JdbcLoaderBase loader) {
+        super(JdbcQueries.QUERY_MS_FK, loader);
     }
 
     @Override

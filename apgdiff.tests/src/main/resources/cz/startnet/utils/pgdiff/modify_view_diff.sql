@@ -1,8 +1,8 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-DROP VIEW testview;
+DROP VIEW public.testview;
 
-CREATE VIEW testview AS
-	SELECT testtable.name, testtable.id FROM testtable;
+CREATE VIEW public.testview AS
+	SELECT testtable.name, testtable.id FROM public.testtable;
 
-ALTER VIEW testview OWNER TO fordfrog;
+ALTER VIEW public.testview OWNER TO fordfrog;

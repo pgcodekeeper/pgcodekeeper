@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Columns_permissionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_parametersContext;
@@ -77,6 +78,7 @@ public class CreateRule extends ParserAbstract {
 
                 StringBuilder sb = new StringBuilder();
                 sb.append(DbObjType.FUNCTION).append(' ');
+                sb.append(PgDiffUtils.getQuotedName(schema.getName())).append('.');
                 func.appendFunctionSignature(sb, false, true);
 
                 for (String role : roles) {
@@ -194,7 +196,9 @@ public class CreateRule extends ParserAbstract {
         List<IdentifierContext> ids = name.identifier();
         IdentifierContext idCtx = QNameParser.getFirstNameCtx(ids);
         String id = idCtx.getText();
-        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
+        PgSchema schema = (DbObjType.SCHEMA == type ?
+                getSafe(db::getSchema, idCtx)
+                : getSchemaSafe(ids, db.getDefaultSchema()));
         PgStatement statement = null;
         switch (type) {
         case TABLE:

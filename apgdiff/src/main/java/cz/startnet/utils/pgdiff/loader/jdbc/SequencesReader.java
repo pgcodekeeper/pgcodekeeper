@@ -18,32 +18,18 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
-import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class SequencesReader extends JdbcReader {
 
-    public static class SequencesReaderFactory extends JdbcReaderFactory {
-
-        public SequencesReaderFactory(long hasHelperMask, String helperFunction, Map<SupportedVersion, String> queries) {
-            super(hasHelperMask, helperFunction, queries);
-        }
-
-        @Override
-        public JdbcReader getReader(JdbcLoaderBase loader) {
-            return new SequencesReader(this, loader);
-        }
-    }
-
     private static final int DATA_SELECT_LENGTH;
 
-    private SequencesReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
-        super(factory, loader);
+    public SequencesReader(JdbcLoaderBase loader) {
+        super(JdbcQueries.QUERY_SEQUENCES_PER_SCHEMA, loader);
     }
 
     @Override
-    protected void processResult(ResultSetWrapper res, PgSchema schema) throws WrapperAccessException {
+    protected void processResult(ResultSet res, PgSchema schema) throws SQLException {
         loader.monitor.worked(1);
         String sequenceName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schema.getName(), sequenceName, DbObjType.SEQUENCE));
@@ -62,14 +48,15 @@ public class SequencesReader extends JdbcReader {
         }
 
         if (refTable != null && identityType == null) {
-            s.setOwnedBy(PgDiffUtils.getQuotedName(refTable) + '.'
+            s.setOwnedBy(PgDiffUtils.getQuotedName(schema.getName()) + '.'
+                    + PgDiffUtils.getQuotedName(refTable) + '.'
                     + PgDiffUtils.getQuotedName(res.getString("ref_col_name")));
         }
 
         if (identityType == null) {
             loader.setOwner(s, res.getLong(CLASS_RELOWNER));
             // PRIVILEGES
-            loader.setPrivileges(s, res.getString("aclarray"));
+            loader.setPrivileges(s, res.getString("aclarray"), schema.getName());
         }
 
         // COMMENT
@@ -80,11 +67,13 @@ public class SequencesReader extends JdbcReader {
 
         if (SupportedVersion.VERSION_10.checkVersion(loader.version)) {
             s.setStartWith(Long.toString(res.getLong("seqstart")));
-            s.setMinMaxInc(res.getLong("seqincrement"), res.getLong("seqmax"), res.getLong("seqmin"));
+            String dataType = identityType != null ? null :
+                loader.cachedTypesByOid.get(res.getLong("data_type")).getFullName(schema.getName());
+            s.setMinMaxInc(res.getLong("seqincrement"), res.getLong("seqmax"), res.getLong("seqmin"), dataType);
             s.setCache(Long.toString(res.getLong("seqcache")));
             s.setCycle(res.getBoolean("seqcycle"));
             if (identityType == null) {
-                s.setDataType(loader.cachedTypesByOid.get(res.getLong("data_type")).getFullName(schema.getName()));
+                s.setDataType(dataType);
             }
         }
 
@@ -97,6 +86,7 @@ public class SequencesReader extends JdbcReader {
                 table.addColumn(column);
             }
             column.setSequence(s);
+            s.setParent(schema);
             column.setIdentityType("d".equals(identityType) ? "BY DEFAULT" : "ALWAYS") ;
         } else {
             schema.addSequence(s);
@@ -182,7 +172,7 @@ public class SequencesReader extends JdbcReader {
             while (res.next()) {
                 PgSequence seq = seqs.get(res.getString("qname"));
                 seq.setStartWith(res.getString("start_value"));
-                seq.setMinMaxInc(res.getLong("increment_by"), res.getLong("max_value"), res.getLong("min_value"));
+                seq.setMinMaxInc(res.getLong("increment_by"), res.getLong("max_value"), res.getLong("min_value"), null);
                 seq.setCache(res.getString("cache_value"));
                 seq.setCycle(res.getBoolean("is_cycled"));
             }

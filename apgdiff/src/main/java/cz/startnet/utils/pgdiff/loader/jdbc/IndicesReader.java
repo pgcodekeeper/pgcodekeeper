@@ -1,38 +1,25 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.util.Map;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateIndex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
-import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class IndicesReader extends JdbcReader {
 
-    public static class IndicesReaderFactory extends JdbcReaderFactory {
-
-        public IndicesReaderFactory(long hasHelperMask, String helperFunction, Map<SupportedVersion, String> queries) {
-            super(hasHelperMask, helperFunction, queries);
-        }
-
-        @Override
-        public JdbcReader getReader(JdbcLoaderBase loader) {
-            return new IndicesReader(this, loader);
-        }
-    }
-
-    private IndicesReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
-        super(factory, loader);
+    public IndicesReader(JdbcLoaderBase loader) {
+        super(JdbcQueries.QUERY_INDICES_PER_SCHEMA, loader);
     }
 
     @Override
-    protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
+    protected void processResult(ResultSet result, PgSchema schema) throws SQLException {
         PgTable table = schema.getTable(result.getString("table_name"));
         if (table != null) {
             PgIndex index = getIndex(result, schema, table.getName());
@@ -41,7 +28,7 @@ public class IndicesReader extends JdbcReader {
         }
     }
 
-    private PgIndex getIndex(ResultSetWrapper res, PgSchema schema, String tableName) throws WrapperAccessException {
+    private PgIndex getIndex(ResultSet res, PgSchema schema, String tableName) throws SQLException {
         String schemaName = schema.getName();
         String indexName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, indexName, DbObjType.INDEX));

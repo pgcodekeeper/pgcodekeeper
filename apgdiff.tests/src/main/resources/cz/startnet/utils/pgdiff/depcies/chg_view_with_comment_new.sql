@@ -28,7 +28,7 @@ SET row_security = off;
 --COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
 SET default_tablespace = '';
 
@@ -38,31 +38,31 @@ SET default_with_oids = false;
 -- Name: testtable; Type: TABLE; Schema: public; Owner: galiev_mr
 --
 
-CREATE TABLE testtable (
+CREATE TABLE public.testtable (
     c1 integer,
     c2 text
 );
 
 
-ALTER TABLE testtable OWNER TO galiev_mr;
+ALTER TABLE public.testtable OWNER TO galiev_mr;
 
 --
 -- Name: testview; Type: VIEW; Schema: public; Owner: galiev_mr
 --
 
-CREATE VIEW testview AS
+CREATE VIEW public.testview AS
  SELECT testtable.c1,
     testtable.c2
-   FROM testtable;
+   FROM public.testtable;
 
 
-ALTER TABLE testview OWNER TO galiev_mr;
+ALTER TABLE public.testview OWNER TO galiev_mr;
 
 --
 -- Name: VIEW testview; Type: COMMENT; Schema: public; Owner: galiev_mr
 --
 
-COMMENT ON VIEW testview IS 'this is test comment';
+COMMENT ON VIEW public.testview IS 'this is test comment';
 
 
 --

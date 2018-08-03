@@ -1,3 +1,3 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-ALTER VIEW testview RESET (check_option);
+ALTER VIEW public.testview RESET (check_option);
