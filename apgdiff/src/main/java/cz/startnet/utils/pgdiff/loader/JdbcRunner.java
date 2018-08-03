@@ -79,14 +79,6 @@ public class JdbcRunner {
         return runScript(new ResultSetCallable(st, script));
     }
 
-    public ResultSet runScript(JdbcConnector connector, String script)
-            throws SQLException, IOException, InterruptedException {
-        try (Connection connection = connector.getConnection();
-                Statement st = connection.createStatement()) {
-            return runScript(st, script);
-        }
-    }
-
     private <T> T runScript(StatementCallable<T> callable) throws InterruptedException, SQLException {
         Future<T> queryFuture = THREAD_POOL.submit(callable);
 
