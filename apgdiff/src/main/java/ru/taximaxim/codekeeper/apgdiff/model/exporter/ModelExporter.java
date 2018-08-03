@@ -26,11 +26,11 @@ import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
-import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTable;
@@ -323,13 +323,13 @@ public class ModelExporter {
         // delete function sql file
         deleteStatementIfExists(st);
 
-        List<PgFunction> funcsToDump = new LinkedList<>();
+        List<AbstractFunction> funcsToDump = new LinkedList<>();
         AbstractSchema newParentSchema = newDb.getSchema(st.getParent().getName());
         AbstractSchema oldParentSchema = oldDb.getSchema(st.getParent().getName());
 
         // prepare the overloaded function list as if there are no changes
         if (oldParentSchema != null) {
-            for (PgFunction oldFunc : oldParentSchema.getFunctions()) {
+            for (AbstractFunction oldFunc : oldParentSchema.getFunctions()) {
                 if (oldFunc.getBareName().equals(st.getBareName())) {
                     funcsToDump.add(oldFunc);
                 }
@@ -349,7 +349,7 @@ public class ModelExporter {
                 continue;
             }
             // final required function state
-            PgFunction funcPrimary = (elFunc.getSide() == DiffSide.LEFT ?
+            AbstractFunction funcPrimary = (elFunc.getSide() == DiffSide.LEFT ?
                     oldParentSchema : newParentSchema).getFunction(elFunc.getName());
             if (funcPrimary == null || !funcPrimary.getBareName().equals(st.getBareName())
                     || !funcPrimary.getParent().getName().equals(elFunc.getParent().getName())) {
@@ -707,7 +707,7 @@ public class ModelExporter {
                 ApgdiffConsts.FILENAME_WORKING_DIR_MARKER));
     }
 
-    private void dumpFunctions(List<PgFunction> funcs, File parentDir) throws IOException {
+    private void dumpFunctions(List<AbstractFunction> funcs, File parentDir) throws IOException {
         if (funcs.isEmpty()) {
             return;
         }
@@ -715,7 +715,7 @@ public class ModelExporter {
         File funcDir = mkdirObjects(parentDir, "FUNCTION");
 
         Map<String, StringBuilder> dumps = new HashMap<>(funcs.size());
-        for (PgFunction f : funcs) {
+        for (AbstractFunction f : funcs) {
             String fileName = getExportedFilenameSql(f);
             StringBuilder groupedDump = dumps.get(fileName);
             if (groupedDump == null) {

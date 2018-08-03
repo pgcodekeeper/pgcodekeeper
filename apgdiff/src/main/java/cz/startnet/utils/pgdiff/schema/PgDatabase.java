@@ -356,8 +356,8 @@ public class PgDatabase extends PgStatement {
                     }
                 }
 
-                for (PgFunction func : s.getFunctions()) {
-                    PgFunction function = schema.getFunction(func.getName());
+                for (AbstractFunction func : s.getFunctions()) {
+                    AbstractFunction function = schema.getFunction(func.getName());
                     if (!schema.containsFunction(func.getName())) {
                         func.dropParent();
                         schema.addFunction(func);

@@ -19,13 +19,13 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.DbObjNature;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.ISchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -327,11 +327,11 @@ public abstract class AbstractExpr {
         }
 
         String functionName = QNameParser.getFirstName(ids);
-        PgFunction function = db.getSchema(schemaName).getFunctions().stream()
+        AbstractFunction function = db.getSchema(schemaName).getFunctions().stream()
                 .filter(f -> functionName.equals(f.getBareName()))
                 .findAny().orElse(null);
         if (function != null) {
-            depcies.add(new GenericColumn(schemaName, function.getName(), DbObjType.FUNCTION));
+            depcies.add(new GenericColumn(schemaName, function.getName(), function.getStatementType()));
         }
     }
 

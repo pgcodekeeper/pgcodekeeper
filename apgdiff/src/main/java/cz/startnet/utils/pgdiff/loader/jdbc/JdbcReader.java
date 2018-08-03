@@ -8,6 +8,7 @@ import java.util.Map;
 
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
+import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -15,7 +16,6 @@ import cz.startnet.utils.pgdiff.schema.PgFtsConfiguration;
 import cz.startnet.utils.pgdiff.schema.PgFtsDictionary;
 import cz.startnet.utils.pgdiff.schema.PgFtsParser;
 import cz.startnet.utils.pgdiff.schema.PgFtsTemplate;
-import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgType;
@@ -104,7 +104,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case FUNCTION:
-                    sc.addFunction((PgFunction) obj.copyStatement(projDb, loader));
+                    sc.addFunction((AbstractFunction) obj.copyStatement(projDb, loader));
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case CONSTRAINT:

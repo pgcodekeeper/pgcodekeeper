@@ -108,8 +108,8 @@ public final class GenericColumn implements Serializable {
         case TYPE: return getType(s);
         case DOMAIN: return s.getDomain(table);
         case SEQUENCE: return s.getSequence(table);
-        case FUNCTION: return resolveFunctionCall(s);
-        case PROCEDURE: return s.getProcedure(table);
+        case FUNCTION:
+        case PROCEDURE: return resolveFunctionCall(s);
         case TABLE: return getRelation(s);
         case VIEW: return s.getView(table);
 
@@ -176,7 +176,7 @@ public final class GenericColumn implements Serializable {
     public static final Map<String, Integer> ZERO = new HashMap<>();
     public static final Map<String, Integer> MANY = new HashMap<>();
      */
-    private PgFunction resolveFunctionCall(AbstractSchema schema) {
+    private AbstractFunction resolveFunctionCall(AbstractSchema schema) {
         // in some cases (like triggers) we already have a signature reference, try it first
         // eventually this will become the norm (pending function call analysis)
         // and bare name lookup will become deprecated
@@ -184,7 +184,7 @@ public final class GenericColumn implements Serializable {
         // for now optimize by preferring bareName path for names with no signature (no parens)
         // later we can make a requirement of caching signatures when loading functions
 
-        PgFunction func = null;
+        AbstractFunction func = null;
         if (table.indexOf('(') != -1) {
             func = schema.getFunction(table);
         }
@@ -193,7 +193,7 @@ public final class GenericColumn implements Serializable {
         }
 
         int found = 0;
-        for (PgFunction f : schema.getFunctions()) {
+        for (AbstractFunction f : schema.getFunctions()) {
             if (f.getBareName().equals(table)) {
                 ++found;
                 func = f;

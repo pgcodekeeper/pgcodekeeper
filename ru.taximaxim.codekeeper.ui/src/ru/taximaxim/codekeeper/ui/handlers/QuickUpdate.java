@@ -32,8 +32,8 @@ import org.eclipse.ui.ide.ResourceUtil;
 
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
+import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -252,7 +252,7 @@ class QuickUpdateJob extends SingletonEditorJob {
             // children of tables, views, overloads of functions
             switch (el.getType()) {
             case FUNCTION:
-                markFunctions((PgFunction) st, el, checked, left, right);
+                markFunctions((AbstractFunction) st, el, checked, left, right);
                 break;
             case TABLE:
             case VIEW:
@@ -274,7 +274,7 @@ class QuickUpdateJob extends SingletonEditorJob {
         return checked;
     }
 
-    private void markFunctions(PgFunction func, TreeElement elFunc, Set<TreeElement> checked,
+    private void markFunctions(AbstractFunction func, TreeElement elFunc, Set<TreeElement> checked,
             PgDatabase left, PgDatabase right) {
         // check every "adjacent" element for overload changes
         elFunc.getParent().getChildren().stream()

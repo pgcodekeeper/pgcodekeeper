@@ -7,6 +7,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statemen
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_column_name_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -24,7 +25,7 @@ public class CreateFunction extends ParserAbstract {
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
         AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
-        PgFunction function = new PgFunction(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
+        AbstractFunction function = new PgFunction(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
         fillArguments(function);
         function.setBody(db.getArguments(), getFullCtxText(ctx.funct_body));
 
@@ -42,7 +43,7 @@ public class CreateFunction extends ParserAbstract {
         return function;
     }
 
-    private void fillArguments(PgFunction function) {
+    private void fillArguments(AbstractFunction function) {
         for (Function_argumentsContext argument : ctx.function_parameters()
                 .function_args().function_arguments()) {
             Argument arg = new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,

@@ -5,6 +5,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Func_returnContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Procedure_paramContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.MsFunction;
@@ -29,7 +30,7 @@ public class CreateMsFunction extends ParserAbstract {
     public PgStatement getObject() {
         IdContext schemaCtx = ctx.func_proc_name().schema;
         AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
-        MsFunction function = new MsFunction(ctx.func_proc_name().procedure.getText(), getFullCtxText(ctx.getParent()));
+        AbstractFunction function = new MsFunction(ctx.func_proc_name().procedure.getText(), getFullCtxText(ctx.getParent()));
         function.setAnsiNulls(ansiNulls);
         function.setQuotedIdentified(quotedIdentifier);
         fillArguments(function);
@@ -41,7 +42,7 @@ public class CreateMsFunction extends ParserAbstract {
         return function;
     }
 
-    private void fillArguments(MsFunction function) {
+    private void fillArguments(AbstractFunction function) {
         for (Procedure_paramContext argument : ctx.procedure_param()) {
             Argument arg = new Argument(
                     argument.arg_mode != null ? argument.arg_mode.getText() : null,

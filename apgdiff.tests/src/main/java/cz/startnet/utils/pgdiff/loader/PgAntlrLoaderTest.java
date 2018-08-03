@@ -19,6 +19,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
+import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.Argument;
@@ -467,7 +468,7 @@ class PgDB5 extends PgDatabaseObjectCreator {
         PgDatabase d = ApgdiffTestUtils.createDumpDB();
         AbstractSchema schema = d.getDefaultSchema();
 
-        PgFunction func = new PgFunction("gtsq_in", "");
+        AbstractFunction func = new PgFunction("gtsq_in", "");
         func.setBody("AS '$libdir/tsearch2', 'gtsq_in'\n    LANGUAGE c STRICT");
         func.setReturns("gtsq");
 
@@ -571,7 +572,7 @@ class PgDB7 extends PgDatabaseObjectCreator {
         d.addSchema(schema);
         d.setDefaultSchema("common");
 
-        PgFunction func = new PgFunction("t_common_casttotext", "");
+        AbstractFunction func = new PgFunction("t_common_casttotext", "");
         func.setBody("AS $_$SELECT textin(timetz_out($1));$_$\n    LANGUAGE sql IMMUTABLE STRICT");
         func.setReturns("text");
 
@@ -631,7 +632,7 @@ class PgDB8 extends PgDatabaseObjectCreator {
         schema = new PgSchema("``54'253-=9!@#$%^&*()__<>?:\"{}[];',./", "");
         d.addSchema(schema);
 
-        PgFunction func = new PgFunction(".x\".\"\".", "");
+        AbstractFunction func = new PgFunction(".x\".\"\".", "");
         func.setBody("AS $_$\ndeclare\nbegin\nraise notice 'inside: %', $1;\nreturn true;\nend;\n$_$\n    LANGUAGE plpgsql");
         func.setReturns("boolean");
 
@@ -821,7 +822,7 @@ class PgDB11 extends PgDatabaseObjectCreator {
         PgDatabase d = ApgdiffTestUtils.createDumpDB();
         AbstractSchema schema = d.getDefaultSchema();
 
-        PgFunction func = new PgFunction("curdate", "");
+        AbstractFunction func = new PgFunction("curdate", "");
         func.setBody("LANGUAGE sql\n    AS $$SELECT CAST('now' AS date);\n$$");
         func.setReturns("date");
         schema.addFunction(func);
@@ -847,7 +848,7 @@ class PgDB13 extends PgDatabaseObjectCreator {
         PgDatabase d = ApgdiffTestUtils.createDumpDB();
         AbstractSchema schema = d.getDefaultSchema();
 
-        PgFunction func = new PgFunction("drop_fk_except_for", "");
+        AbstractFunction func = new PgFunction("drop_fk_except_for", "");
         func.setBody("LANGUAGE plpgsql\n    AS $$\nDECLARE\nBEGIN\n  -- aaa\nEND;\n$$");
         func.setReturns("SETOF character varying");
 
@@ -874,7 +875,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
         d.setComment("'comments database'");
         //    schema.setComment("'public schema'");
 
-        PgFunction func = new PgFunction("test_fnc", "");
+        AbstractFunction func = new PgFunction("test_fnc", "");
         func.setBody("LANGUAGE plpgsql\n    AS $$BEGIN\nRETURN true;\nEND;$$");
         func.setReturns("boolean");
 

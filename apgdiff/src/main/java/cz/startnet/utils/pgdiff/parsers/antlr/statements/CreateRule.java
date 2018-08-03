@@ -18,6 +18,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Role_name_with_groupCont
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rule_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_privilegesContext;
+import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -72,14 +73,14 @@ public class CreateRule extends ParserAbstract {
                 List<IdentifierContext> funcIds = funct.name.identifier();
                 IdentifierContext functNameCtx = QNameParser.getFirstNameCtx(funcIds);
                 AbstractSchema schema = getSchemaSafe(funcIds, db.getDefaultSchema());
-                PgFunction func = getSafe(schema::getFunction,
+                AbstractFunction func = getSafe(schema::getFunction,
                         parseSignature(functNameCtx.getText(), funct.function_args()),
                         functNameCtx.getStart());
 
                 StringBuilder sb = new StringBuilder();
                 sb.append(DbObjType.FUNCTION).append(' ');
                 sb.append(PgDiffUtils.getQuotedName(schema.getName())).append('.');
-                func.appendFunctionSignature(sb, false, true);
+                ((PgFunction)func).appendFunctionSignature(sb, false, true);
 
                 for (String role : roles) {
                     func.addPrivilege(new PgPrivilege(state, permissions,

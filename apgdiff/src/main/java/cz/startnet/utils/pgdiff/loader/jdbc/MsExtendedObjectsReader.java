@@ -7,6 +7,7 @@ import java.util.List;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -38,64 +39,15 @@ public class MsExtendedObjectsReader extends JdbcReader {
         String owner = res.getString("owner");
 
         List<JsonReader> args = JsonReader.fromArray(res.getString("args"));
+        AbstractFunction func;
 
         if (type == DbObjType.PROCEDURE) {
-            MsProcedure proc = new MsProcedure(name, "");
-            proc.setBody(body);
-            proc.addOption("EXECUTE AS " + (executeAs == null ? "CALLER" : executeAs));
-
-
-            for (JsonReader arg : args) {
-                String argSize = "";
-                String dataType = arg.getString("type");
-                int size = arg.getInt("size");
-                if ("varbinary".equals(dataType) || dataType.endsWith("varchar")) {
-                    argSize = size == -1 ? " (max)" : (" (" + size + ")");
-                } else if ("decimal".equals(dataType) || "numeric".equals(dataType)) {
-                    argSize = " (" + arg.getInt("pr") + ", " + arg.getInt("sc") + ')';
-                }
-                // TODO other type with size
-
-                Argument argDst = new Argument(arg.getBoolean("ou") ? "OUTPUT" : null,
-                        arg.getString("name"), MsDiffUtils.quoteName(dataType) + argSize);
-
-                if (arg.getBoolean("hd")) {
-                    argDst.setDefaultExpression(arg.getString("dv"));
-                }
-
-                argDst.setReadOnly(arg.getBoolean("ro"));
-                // TODO VARYING to query; add to argument nullable ?
-                proc.addArgument(argDst);
-            }
-
+            func = new MsProcedure(name, "");
+            func.setBody(body);
+            func.addOption("EXECUTE AS " + (executeAs == null ? "CALLER" : executeAs));
             // TODO add to query proc.setForReplication(i);
-            loader.setOwner(proc, owner);
-            schema.addProcedure(proc);
-            loader.setPrivileges(proc, JsonReader.fromArray(res.getString("acl")));
         } else {
-            MsFunction func = new MsFunction(name, "");
-
-            for (JsonReader arg : args) {
-                String argSize = "";
-                String dataType = arg.getString("type");
-                int size = arg.getInt("size");
-                if ("varbinary".equals(dataType) || dataType.endsWith("varchar")) {
-                    argSize = size == -1 ? " (max)" : (" (" + size + ")");
-                } else if ("decimal".equals(dataType) || "numeric".equals(dataType)) {
-                    argSize = " (" + arg.getInt("pr") + ", " + arg.getInt("sc") + ')';
-                }
-                // TODO other type with size
-
-                Argument argDst = new Argument(arg.getBoolean("ou") ? "OUTPUT" : null,
-                        arg.getString("name"), MsDiffUtils.quoteName(dataType) + argSize);
-
-                if (arg.getBoolean("hd")) {
-                    argDst.setDefaultExpression(arg.getString("dv"));
-                }
-
-                // TODO add to argument nullable ?
-                func.addArgument(argDst);
-            }
+            func = new MsFunction(name, "");
 
             if ("FT".equals(funcType)) {
 
@@ -159,14 +111,38 @@ public class MsExtendedObjectsReader extends JdbcReader {
             sb.append('\n');
             sb.append(body);
             func.setBody(sb.toString());
-            loader.setOwner(func, owner);
-            schema.addFunction(func);
-            loader.setPrivileges(func, JsonReader.fromArray(res.getString("acl")));
         }
+
+        for (JsonReader arg : args) {
+            String argSize = "";
+            String dataType = arg.getString("type");
+            int size = arg.getInt("size");
+            if ("varbinary".equals(dataType) || dataType.endsWith("varchar")) {
+                argSize = size == -1 ? " (max)" : (" (" + size + ")");
+            } else if ("decimal".equals(dataType) || "numeric".equals(dataType)) {
+                argSize = " (" + arg.getInt("pr") + ", " + arg.getInt("sc") + ')';
+            }
+            // TODO other type with size
+
+            Argument argDst = new Argument(arg.getBoolean("ou") ? "OUTPUT" : null,
+                    arg.getString("name"), MsDiffUtils.quoteName(dataType) + argSize);
+
+            if (arg.getBoolean("hd")) {
+                argDst.setDefaultExpression(arg.getString("dv"));
+            }
+
+            argDst.setReadOnly(arg.getBoolean("ro"));
+            // TODO VARYING to query; add to argument nullable ?
+            func.addArgument(argDst);
+        }
+
+        loader.setOwner(func, owner);
+        schema.addFunction(func);
+        loader.setPrivileges(func, JsonReader.fromArray(res.getString("acl")));
     }
 
     @Override
     protected DbObjType getType() {
-        return null;
+        return DbObjType.FUNCTION;
     }
 }

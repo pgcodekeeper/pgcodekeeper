@@ -15,7 +15,12 @@ public class MsView extends AbstractView {
 
     @Override
     public String getCreationSQL() {
-        return getViewFullSQL(true);
+        StringBuilder sbSQL = new StringBuilder();
+        sbSQL.append(getViewFullSQL(true));
+
+        appendOwnerSQL(sbSQL);
+        appendPrivileges(sbSQL);
+        return sbSQL.toString();
     }
 
     public String getViewFullSQL(boolean isCreate) {
@@ -65,9 +70,6 @@ public class MsView extends AbstractView {
         }
         sbSQL.append(GO);
 
-        appendOwnerSQL(sbSQL);
-        appendPrivileges(sbSQL);
-
         return sbSQL.toString();
     }
 
@@ -84,7 +86,6 @@ public class MsView extends AbstractView {
 
         if (isViewModified(newView) || !Objects.equals(getOptions(), newView.getOptions())) {
             sb.append(newView.getViewFullSQL(false));
-            return true;
         }
 
         if (!Objects.equals(getOwner(), newView.getOwner())) {

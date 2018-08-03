@@ -17,8 +17,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public abstract class AbstractSchema extends PgStatement implements ISchema {
 
     private final List<PgDomain> domains = new ArrayList<>();
-    private final List<PgFunction> functions = new ArrayList<>();
-    private final List<MsProcedure> procedures = new ArrayList<>();
+    private final List<AbstractFunction> functions = new ArrayList<>();
     private final List<PgSequence> sequences = new ArrayList<>();
     private final List<PgTable> tables = new ArrayList<>();
     private final List<AbstractView> views = new ArrayList<>();
@@ -86,27 +85,10 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      * @return found function or null if no such function has been found
      */
     @Override
-    public PgFunction getFunction(final String signature) {
-        for (PgFunction function : functions) {
-            if (function.getSignature().equals(signature)) {
+    public AbstractFunction getFunction(final String signature) {
+        for (AbstractFunction function : functions) {
+            if (function.getName().equals(signature)) {
                 return function;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Finds procedure according to specified procedure {@code signature}.
-     *
-     * @param name name of the procedure to be searched
-     *
-     * @return found function or null if no such function has been found
-     */
-    public MsProcedure getProcedure(final String name) {
-        for (MsProcedure procedure : procedures) {
-            if (procedure.getName().equals(name)) {
-                return procedure;
             }
         }
 
@@ -128,19 +110,9 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      * @return {@link #functions}
      */
     @Override
-    public List<PgFunction> getFunctions() {
+    public List<AbstractFunction> getFunctions() {
         return Collections.unmodifiableList(functions);
     }
-
-    /**
-     * Getter for {@link #procedures}. The list cannot be modified.
-     *
-     * @return {@link #procedures}
-     */
-    public List<MsProcedure> getProcedures() {
-        return Collections.unmodifiableList(procedures);
-    }
-
 
     @Override
     public Stream<IRelation> getRelations() {
@@ -166,7 +138,6 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     @Override
     public Stream<PgStatement> getChildren() {
         Stream<PgStatement> stream = Stream.concat(getFunctions().stream(), getSequences().stream());
-        stream = Stream.concat(stream, getProcedures().stream());
         stream = Stream.concat(stream, getTypes().stream());
         stream = Stream.concat(stream, getDomains().stream());
         stream = Stream.concat(stream, getTables().stream());
@@ -417,17 +388,10 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         resetHash();
     }
 
-    public void addFunction(final PgFunction function) {
+    public void addFunction(final AbstractFunction function) {
         assertUnique(this::getFunction, function);
         functions.add(function);
         function.setParent(this);
-        resetHash();
-    }
-
-    public void addProcedure(final MsProcedure procedure) {
-        assertUnique(this::getProcedure, procedure);
-        procedures.add(procedure);
-        procedure.setParent(this);
         resetHash();
     }
 
@@ -550,7 +514,6 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
             return PgDiffUtils.setlikeEquals(domains, schema.domains)
                     && PgDiffUtils.setlikeEquals(sequences, schema.sequences)
                     && PgDiffUtils.setlikeEquals(functions, schema.functions)
-                    && PgDiffUtils.setlikeEquals(procedures, schema.procedures)
                     && PgDiffUtils.setlikeEquals(views, schema.views)
                     && PgDiffUtils.setlikeEquals(tables, schema.tables)
                     && PgDiffUtils.setlikeEquals(types, schema.types)
@@ -577,7 +540,6 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         hasher.putUnordered(domains);
         hasher.putUnordered(sequences);
         hasher.putUnordered(functions);
-        hasher.putUnordered(procedures);
         hasher.putUnordered(views);
         hasher.putUnordered(tables);
         hasher.putUnordered(types);
@@ -615,11 +577,8 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         for (PgSequence seq : sequences) {
             copy.addSequence(seq.deepCopy());
         }
-        for (PgFunction func : functions) {
+        for (AbstractFunction func : functions) {
             copy.addFunction(func.deepCopy());
-        }
-        for (MsProcedure proc : procedures) {
-            copy.addProcedure(proc.deepCopy());
         }
         for (AbstractView view : views) {
             copy.addView(view.deepCopy());
