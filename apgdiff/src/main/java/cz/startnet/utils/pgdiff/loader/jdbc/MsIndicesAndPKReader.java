@@ -7,6 +7,8 @@ import java.util.List;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
+import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsConstraint;
@@ -99,7 +101,7 @@ public class MsIndicesAndPKReader extends JdbcReader {
         sb.append(" ON ").append(MsDiffUtils.quoteName(dataSpace));
 
         if (type == DbObjType.CONSTRAINT) {
-            MsConstraint constraint = new MsConstraint(name, "");
+            AbstractConstraint constraint = new MsConstraint(name, "");
 
             StringBuilder definition = new StringBuilder();
             if (!isUniqueConstraint) {
@@ -120,7 +122,7 @@ public class MsIndicesAndPKReader extends JdbcReader {
             constraint.setDefinition(definition.toString());
             t.addConstraint(constraint);
         } else {
-            MsIndex index = new MsIndex(name, "");
+            AbstractIndex index = new MsIndex(name, "");
             index.setClusterIndex(isClustered);
             index.setUnique("1".equals(res.getString("is_unique")));
             index.setDefinition(sb.toString());

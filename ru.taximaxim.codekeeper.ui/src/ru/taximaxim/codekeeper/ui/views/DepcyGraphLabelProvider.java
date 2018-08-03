@@ -15,7 +15,7 @@ import org.eclipse.zest.core.viewers.EntityConnectionData;
 import org.eclipse.zest.core.viewers.IEntityStyleProvider;
 
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.PgConstraint;
+import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvider{
@@ -53,7 +53,7 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
                 // just for tests
                 return "COL " + st.getBareName(); //$NON-NLS-1$
             case CONSTRAINT:
-                if (!((PgConstraint)st).getForeignColumns().isEmpty()) {
+                if (!((AbstractConstraint)st).getForeignColumns().isEmpty()) {
                     return "FK " + st.getBareName(); //$NON-NLS-1$
                 }
                 return "CONSTR " + st.getBareName(); //$NON-NLS-1$

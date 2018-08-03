@@ -10,7 +10,7 @@ import org.jgrapht.graph.EdgeReversedGraph;
 import org.jgrapht.graph.SimpleDirectedGraph;
 
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.PgConstraint;
+import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -68,7 +68,7 @@ public class DepcyGraph {
         db.getDescendants().flatMap(PgTable::columnAdder).forEach(st -> {
             processDeps(st);
             if (st.getStatementType() == DbObjType.CONSTRAINT) {
-                createFkeyToUnique((PgConstraint)st);
+                createFkeyToUnique((AbstractConstraint)st);
             }
         });
     }
@@ -88,13 +88,13 @@ public class DepcyGraph {
      * Unfortunately they might not exist at the stage where {@link PgStatement#getDeps()}
      * are populated so we have to defer their lookup until here.
      */
-    private void createFkeyToUnique(PgConstraint con) {
+    private void createFkeyToUnique(AbstractConstraint con) {
         Set<String> refs = con.getForeignColumns();
         GenericColumn refTable = con.getForeignTable();
         if (!refs.isEmpty() && refTable != null) {
             PgTable table = (PgTable) refTable.getStatement(db);
             if (table != null) {
-                for (PgConstraint refCon : table.getConstraints()) {
+                for (AbstractConstraint refCon : table.getConstraints()) {
                     if ((refCon.isPrimaryKey() || refCon.isUnique()) && refs.equals(refCon.getColumns())) {
                         graph.addEdge(con, refCon);
                     }

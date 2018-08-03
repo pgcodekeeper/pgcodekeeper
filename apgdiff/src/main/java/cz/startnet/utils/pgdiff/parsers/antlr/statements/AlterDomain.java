@@ -8,7 +8,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Check_boolean_expression
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Domain_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.PgConstraint;
+import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -35,7 +35,7 @@ public class AlterDomain extends ParserAbstract {
         if (constrCtx != null
                 && (boolExpCtx = constrCtx.common_constraint()
                 .check_boolean_expression()) != null) {
-            PgConstraint constr = CreateDomain.processDomainConstraintCtx(constrCtx,
+            AbstractConstraint constr = CreateDomain.processDomainConstraintCtx(constrCtx,
                     boolExpCtx, domain, db);
             if (ctx.not_valid != null) {
                 constr.setNotValid(true);

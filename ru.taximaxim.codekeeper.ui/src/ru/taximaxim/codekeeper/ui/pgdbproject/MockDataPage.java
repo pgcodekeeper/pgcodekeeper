@@ -38,7 +38,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import cz.startnet.utils.pgdiff.schema.PgColumn;
-import cz.startnet.utils.pgdiff.schema.PgConstraint;
+import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -714,7 +714,7 @@ public class MockDataPage extends WizardPage {
      *
      * @param constraint Table constraint
      */
-    private void parseConstraints(PgConstraint constraint) {
+    private void parseConstraints(AbstractConstraint constraint) {
         if (constraint.isUnique() || constraint.isPrimaryKey()) {
             columns.stream()
             .filter(wrapper -> constraint.getColumns().contains(wrapper.getName()))

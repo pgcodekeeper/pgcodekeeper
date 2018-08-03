@@ -36,7 +36,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     protected final List<Inherits> inherits = new ArrayList<>();
     protected final Map<String, String> options = new LinkedHashMap<>();
     protected boolean hasOids;
-    protected final List<PgConstraint> constraints = new ArrayList<>();
+    protected final List<AbstractConstraint> constraints = new ArrayList<>();
     protected final List<AbstractIndex> indexes = new ArrayList<>();
     protected final List<AbstractTrigger> triggers = new ArrayList<>();
     protected final List<PgRule> rules = new ArrayList<>();
@@ -138,8 +138,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
      *
      * @return found constraint or null if no such constraint has been found
      */
-    public PgConstraint getConstraint(final String name) {
-        for (PgConstraint constraint : constraints) {
+    public AbstractConstraint getConstraint(final String name) {
+        for (AbstractConstraint constraint : constraints) {
             if (constraint.getName().equals(name)) {
                 return constraint;
             }
@@ -153,7 +153,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
      *
      * @return {@link #constraints}
      */
-    public List<PgConstraint> getConstraints() {
+    public List<AbstractConstraint> getConstraints() {
         return Collections.unmodifiableList(constraints);
     }
 
@@ -524,7 +524,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         resetHash();
     }
 
-    public void addConstraint(final PgConstraint constraint) {
+    public void addConstraint(final AbstractConstraint constraint) {
         assertUnique(this::getConstraint, constraint);
         constraints.add(constraint);
         constraint.setParent(this);
@@ -649,7 +649,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     public PgTable deepCopy() {
         PgTable copy = shallowCopy();
 
-        for (PgConstraint constraint : constraints) {
+        for (AbstractConstraint constraint : constraints) {
             copy.addConstraint(constraint.deepCopy());
         }
         for (AbstractIndex index : indexes) {

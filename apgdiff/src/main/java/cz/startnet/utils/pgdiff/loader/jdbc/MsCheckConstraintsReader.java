@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsConstraint;
@@ -22,7 +23,7 @@ public class MsCheckConstraintsReader extends JdbcReader {
         boolean isSystemNamed = res.getBoolean("is_system_named");
         loader.setCurrentObject(new GenericColumn(schema.getName(), name, DbObjType.CONSTRAINT));
 
-        MsConstraint con = new MsConstraint(isSystemNamed ? "" : name, "");
+        AbstractConstraint con = new MsConstraint(isSystemNamed ? "" : name, "");
         // TODO with no check
 
         StringBuilder sb = new StringBuilder();

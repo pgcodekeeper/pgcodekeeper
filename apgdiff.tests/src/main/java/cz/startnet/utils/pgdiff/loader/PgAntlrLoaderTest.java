@@ -19,6 +19,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
+import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
@@ -236,7 +237,7 @@ class PgDB1 extends PgDatabaseObjectCreator {
         col.setType("text");
         table.addColumn(col);
 
-        PgConstraint constraint = new PgConstraint("fax_boxes_pkey", "");
+        AbstractConstraint constraint = new PgConstraint("fax_boxes_pkey", "");
         table.addConstraint(constraint);
         constraint.setDefinition("PRIMARY KEY (fax_box_id)");
 
@@ -438,7 +439,7 @@ class PgDB3 extends PgDatabaseObjectCreator {
         col.setDefaultValue("'f'::bool");
         table.addColumn(col);
 
-        PgConstraint constraint = new PgConstraint("admins_pkey", "");
+        AbstractConstraint constraint = new PgConstraint("admins_pkey", "");
         constraint.setDefinition("Primary Key (\"aid\")");
         table.addConstraint(constraint);
 
@@ -746,7 +747,7 @@ class PgDB10 extends PgDatabaseObjectCreator {
         col.setNullValue(false);
         table.addColumn(col);
 
-        PgConstraint constraint = new PgConstraint("acl_role_pkey", "");
+        AbstractConstraint constraint = new PgConstraint("acl_role_pkey", "");
         constraint.setDefinition("PRIMARY KEY (id)");
         table.addConstraint(constraint);
 
@@ -914,7 +915,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
         col.setComment("'text column'");
         table.addColumn(col);
 
-        PgConstraint constraint = new PgConstraint("text_check", "");
+        AbstractConstraint constraint = new PgConstraint("text_check", "");
         constraint.setDefinition("CHECK ((length((text)::text) > 0))");
         constraint.setComment("'text check'");
         table.addConstraint(constraint);

@@ -374,8 +374,8 @@ public class PgDatabase extends PgStatement {
                     } else {
                         overrides.add(new PgOverride(table, t));
 
-                        for (PgConstraint con : t.getConstraints()) {
-                            PgConstraint constraint = table.getConstraint(con.getName());
+                        for (AbstractConstraint con : t.getConstraints()) {
+                            AbstractConstraint constraint = table.getConstraint(con.getName());
                             if (constraint == null) {
                                 con.dropParent();
                                 table.addConstraint(con);

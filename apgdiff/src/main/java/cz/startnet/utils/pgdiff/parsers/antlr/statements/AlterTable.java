@@ -15,7 +15,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractSequence;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
-import cz.startnet.utils.pgdiff.schema.PgConstraint;
+import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.PgRule;
@@ -188,8 +188,8 @@ public class AlterTable extends AbstractTable {
         }
     }
 
-    public static PgConstraint parseAlterTableConstraint(Table_actionContext tableAction,
-            PgConstraint constrBlank, PgDatabase db, String schemaName, String tableName) {
+    public static AbstractConstraint parseAlterTableConstraint(Table_actionContext tableAction,
+            AbstractConstraint constrBlank, PgDatabase db, String schemaName, String tableName) {
         constrBlank.setNotValid(tableAction.not_valid != null);
         processTableConstraintBlank(tableAction.tabl_constraint, constrBlank, db,
                 schemaName, tableName);

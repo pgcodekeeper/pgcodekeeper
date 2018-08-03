@@ -19,7 +19,7 @@ import org.jgrapht.traverse.DepthFirstIterator;
 
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
-import cz.startnet.utils.pgdiff.schema.PgConstraint;
+import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
@@ -302,7 +302,7 @@ public class DepcyResolver {
             }
             break;
         case CONSTRAINT:
-            PgConstraint constr = (PgConstraint) statement;
+            AbstractConstraint constr = (AbstractConstraint) statement;
             PgTable tableConstr = oldSchema.getTable(constr.getParent().getName());
             if (tableConstr != null) {
                 return tableConstr.getConstraint(constr.getName());

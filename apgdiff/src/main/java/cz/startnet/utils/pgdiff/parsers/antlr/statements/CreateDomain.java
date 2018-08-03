@@ -9,6 +9,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_domain_statementC
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Domain_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
+import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -54,16 +55,16 @@ public class CreateDomain extends ParserAbstract {
         return domain;
     }
 
-    public static PgConstraint processDomainConstraintCtx(Domain_constraintContext constrCtx,
+    public static AbstractConstraint processDomainConstraintCtx(Domain_constraintContext constrCtx,
             Check_boolean_expressionContext boolExpCtx, PgDomain domain, PgDatabase db) {
-        PgConstraint constr = new PgConstraint(
+        AbstractConstraint constr = new PgConstraint(
                 constrCtx.name != null ? QNameParser.getFirstName(constrCtx.name.identifier()) : "",
                         getFullCtxText(constrCtx));
         parseDomainConstraint(domain, constr, boolExpCtx, db);
         return constr;
     }
 
-    public static void parseDomainConstraint(PgDomain domain, PgConstraint constr,
+    public static void parseDomainConstraint(PgDomain domain, AbstractConstraint constr,
             Check_boolean_expressionContext boolExpCtx, PgDatabase db) {
         constr.setDefinition(getFullCtxText(boolExpCtx));
         db.addContextForAnalyze(domain, boolExpCtx.expression);

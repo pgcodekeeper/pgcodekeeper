@@ -9,7 +9,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceExcep
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
-import cz.startnet.utils.pgdiff.schema.PgConstraint;
+import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
@@ -118,7 +118,7 @@ public class CommentOn extends ParserAbstract {
             }
 
             if (index == null) {
-                PgConstraint constr = null;
+                AbstractConstraint constr = null;
                 for (PgTable table : schema.getTables()) {
                     constr = table.getConstraint(name);
                     if (constr != null) {

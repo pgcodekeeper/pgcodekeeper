@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateDomain;
+import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -95,7 +96,7 @@ public class TypesReader extends JdbcReader {
 
             for (int i = 0; i < connames.length; ++i) {
                 String conName = connames[i];
-                PgConstraint c = new PgConstraint(conName, "");
+                AbstractConstraint c = new PgConstraint(conName, "");
                 String definition = condefs[i];
                 checkObjectValidity(definition, DbObjType.CONSTRAINT, conName);
                 loader.submitAntlrTask(ADD_CONSTRAINT + definition + ';',

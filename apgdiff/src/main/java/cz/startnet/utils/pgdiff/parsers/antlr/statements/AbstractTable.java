@@ -29,6 +29,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Identity_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
+import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
@@ -63,7 +64,7 @@ public abstract class AbstractTable extends ParserAbstract {
 
     protected void addTableConstraint(Constraint_commonContext tblConstrCtx,
             PgTable table, String schemaName) {
-        PgConstraint constrBlank = createTableConstraintBlank(tblConstrCtx);
+        AbstractConstraint constrBlank = createTableConstraintBlank(tblConstrCtx);
         processTableConstraintBlank(tblConstrCtx, constrBlank, db, schemaName, table.getName());
         table.addConstraint(constrBlank);
     }
@@ -73,7 +74,7 @@ public abstract class AbstractTable extends ParserAbstract {
         Constr_bodyContext body = ctx.constr_body();
         Common_constraintContext comConstr = body.common_constraint();
         Table_unique_prkeyContext prkey = body.table_unique_prkey();
-        PgConstraint constr = null;
+        AbstractConstraint constr = null;
         String colName = col.getName();
 
         VexContext def = body.default_expr;
@@ -188,13 +189,13 @@ public abstract class AbstractTable extends ParserAbstract {
         table.addDep(new GenericColumn(inhSchemaName, inhTableName, DbObjType.TABLE));
     }
 
-    protected static PgConstraint createTableConstraintBlank(Constraint_commonContext ctx) {
+    protected static AbstractConstraint createTableConstraintBlank(Constraint_commonContext ctx) {
         String constrName = ctx.constraint_name == null ? "" : ctx.constraint_name.getText();
         return new PgConstraint(constrName, getFullCtxText(ctx));
     }
 
     protected static void processTableConstraintBlank(Constraint_commonContext ctx,
-            PgConstraint constrBlank, PgDatabase db, String schemaName, String tableName) {
+            AbstractConstraint constrBlank, PgDatabase db, String schemaName, String tableName) {
         Constr_bodyContext constrBody = ctx.constr_body();
 
         if (constrBody.FOREIGN() != null) {
@@ -242,7 +243,7 @@ public abstract class AbstractTable extends ParserAbstract {
      * Вычитать PrimaryKey или Unique со списком колонок
      */
     private static void setPrimaryUniq(Table_unique_prkeyContext ctx,
-            PgConstraint constr, String schemaName, String tableName) {
+            AbstractConstraint constr, String schemaName, String tableName) {
         constr.setUnique(ctx.UNIQUE() != null);
         constr.setPrimaryKey(ctx.PRIMARY() != null);
         for (Schema_qualified_nameContext name :
@@ -299,7 +300,7 @@ public abstract class AbstractTable extends ParserAbstract {
                     col.setDefaultValue(getFullCtxText(option.expression()));
                 } else if (option.column_constraint_body() != null) {
                     String conName = option.id() == null ? "" : getFullCtxText(option.id());
-                    MsConstraint con = new MsConstraint(conName, getFullCtxText(option));
+                    AbstractConstraint con = new MsConstraint(conName, getFullCtxText(option));
                     con.setDefinition(getFullCtxText(option.column_constraint_body()));
                     table.addConstraint(con);
                 }
@@ -311,7 +312,7 @@ public abstract class AbstractTable extends ParserAbstract {
 
     protected static void addMsConstraint(Table_constraintContext conCtx, PgTable table) {
         String conName = conCtx.id() == null ? "" : conCtx.id().getText();
-        MsConstraint con = new MsConstraint(conName, getFullCtxText(conCtx));
+        AbstractConstraint con = new MsConstraint(conName, getFullCtxText(conCtx));
         con.setDefinition(getFullCtxText(conCtx.table_constraint_body()));
         table.addConstraint(con);
     }

@@ -16,7 +16,7 @@ public class PgDomain extends PgStatementWithSearchPath {
     private String collation;
     private String defaultValue;
     private boolean notNull;
-    private final List<PgConstraint> constraints = new ArrayList<>();
+    private final List<AbstractConstraint> constraints = new ArrayList<>();
 
     public String getDataType() {
         return dataType;
@@ -54,12 +54,12 @@ public class PgDomain extends PgStatementWithSearchPath {
         resetHash();
     }
 
-    public List<PgConstraint> getConstraints() {
+    public List<AbstractConstraint> getConstraints() {
         return Collections.unmodifiableList(constraints);
     }
 
-    public PgConstraint getConstraint(String name) {
-        for (PgConstraint c : constraints) {
+    public AbstractConstraint getConstraint(String name) {
+        for (AbstractConstraint c : constraints) {
             if (c.getName().equals(name)) {
                 return c;
             }
@@ -67,7 +67,7 @@ public class PgDomain extends PgStatementWithSearchPath {
         return null;
     }
 
-    public void addConstraint(PgConstraint constraint) {
+    public void addConstraint(AbstractConstraint constraint) {
         assertUnique(this::getConstraint, constraint);
         constraints.add(constraint);
         constraint.setParent(this);
@@ -99,8 +99,8 @@ public class PgDomain extends PgStatementWithSearchPath {
             sb.append(" DEFAULT ").append(defaultValue);
         }
 
-        List<PgConstraint> notValids = new ArrayList<>();
-        for (PgConstraint constr : constraints) {
+        List<AbstractConstraint> notValids = new ArrayList<>();
+        for (AbstractConstraint constr : constraints) {
             if (constr.isNotValid()) {
                 notValids.add(constr);
             } else {
@@ -110,7 +110,7 @@ public class PgDomain extends PgStatementWithSearchPath {
         }
         sb.append(';');
 
-        for (PgConstraint notValid : notValids) {
+        for (AbstractConstraint notValid : notValids) {
             sb.append("\n\n").append(notValid.getCreationSQL());
         }
 
@@ -121,7 +121,7 @@ public class PgDomain extends PgStatementWithSearchPath {
             sb.append("\n\n");
             appendCommentSql(sb);
         }
-        for (PgConstraint c : constraints) {
+        for (AbstractConstraint c : constraints) {
             if (c.getComment() != null && !c.getComment().isEmpty()) {
                 sb.append("\n\n");
                 c.appendCommentSql(sb);
@@ -177,15 +177,15 @@ public class PgDomain extends PgStatementWithSearchPath {
         }
 
         AtomicBoolean needDepcyConstr = new AtomicBoolean();
-        for (PgConstraint oldConstr : oldDomain.getConstraints()) {
-            PgConstraint newConstr = newDomain.getConstraint(oldConstr.getName());
+        for (AbstractConstraint oldConstr : oldDomain.getConstraints()) {
+            AbstractConstraint newConstr = newDomain.getConstraint(oldConstr.getName());
             if (newConstr == null) {
                 sb.append("\n\n").append(oldConstr.getDropSQL());
             } else {
                 oldConstr.appendAlterSQL(newConstr, sb, needDepcyConstr);
             }
         }
-        for (PgConstraint newConstr : newDomain.getConstraints()) {
+        for (AbstractConstraint newConstr : newDomain.getConstraints()) {
             if (oldDomain.getConstraint(newConstr.getName()) == null) {
                 sb.append("\n\n").append(newConstr.getCreationSQL());
             }
@@ -211,7 +211,7 @@ public class PgDomain extends PgStatementWithSearchPath {
         copy.setNotNull(isNotNull());
         copy.setOwner(getOwner());
         copy.setComment(getComment());
-        for (PgConstraint constr : constraints) {
+        for (AbstractConstraint constr : constraints) {
             copy.addConstraint(constr.deepCopy());
         }
         for (PgPrivilege priv : grants) {
