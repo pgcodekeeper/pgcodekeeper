@@ -38,6 +38,8 @@ public class MsDiffTest {
                     {"modify_ms_column_type"},
                     // Tests scenario where MS SEQUENCE cashe is modified.
                     {"modify_ms_sequence_cache"},
+                    // Tests scenario where MS TABLE identity is modified.
+                    {"modify_ms_table_identity"},
                 });
     }
 
