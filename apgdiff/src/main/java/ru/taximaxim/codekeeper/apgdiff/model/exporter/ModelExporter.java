@@ -1,42 +1,34 @@
 package ru.taximaxim.codekeeper.apgdiff.model.exporter;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
-import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
@@ -52,59 +44,15 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
  *
  * @author Alexander Levsha
  */
-public class ModelExporter {
+public class ModelExporter extends AbstractModelExporter {
 
-    private static final int HASH_LENGTH = 10;
-    private static final String GROUP_DELIMITER =
-            "\n\n--------------------------------------------------------------------------------\n\n";
-
-    /**
-     * Objects of the export directory;
-     */
-    private final File outDir;
-
-    /**
-     * Database to export.
-     */
-    private final PgDatabase newDb;
-
-    /**
-     * Old state db to fetch filenames from
-     */
-    private final PgDatabase oldDb;
-
-    /**
-     * SQL files encoding.
-     */
-    private final String sqlEncoding;
-
-    /**
-     * Objects that we need to operate on.<br>
-     * Remove the entry from this list after it has been processed.
-     */
-    private final LinkedList<TreeElement> changeList;
-
-    /**
-     * Creates a new ModelExporter object with set {@link #outDir} and {@link #newDb}
-     * and {@link #sqlEncoding}.
-     *
-     * @param outDir outDir, directory should be empty or not exist
-     * @param newDb database
-     */
     public ModelExporter(File outDir, PgDatabase db, String sqlEncoding) {
-        this.outDir = outDir;
-        this.newDb = db;
-        this.oldDb = null;
-        this.sqlEncoding = sqlEncoding;
-        this.changeList = null;
+        super(outDir, db, sqlEncoding);
     }
 
-    public ModelExporter(File outDir, PgDatabase newDb, PgDatabase oldDb, Collection<TreeElement> changedObjects, String sqlEncoding){
-        this.outDir = outDir;
-        this.newDb = newDb;
-        this.oldDb = oldDb;
-        this.sqlEncoding = sqlEncoding;
-        this.changeList = new LinkedList<>(changedObjects);
+    public ModelExporter(File outDir, PgDatabase newDb, PgDatabase oldDb,
+            Collection<TreeElement> changedObjects, String sqlEncoding) {
+        super(outDir, newDb, oldDb, changedObjects, sqlEncoding);
     }
 
     /**
@@ -769,52 +717,6 @@ public class ModelExporter {
         return objectDir;
     }
 
-    private void dumpSQL(CharSequence sql, File file) throws IOException {
-        Files.createDirectories(file.toPath().getParent());
-        try (PrintWriter outFile = new UnixPrintWriter(Files.newOutputStream(file.toPath(),
-                StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE), sqlEncoding)) {
-            outFile.println(sql);
-        }
-    }
-
-    /**
-     * @return a statement's exported file name
-     */
-    public static String getExportedFilename(PgStatement statement) {
-        return getExportedFilename(statement.getBareName());
-    }
-
-    public static String getExportedFilenameSql(PgStatement statement) {
-        return getExportedFilenameSql(getExportedFilename(statement));
-    }
-
-    public static String getExportedFilename(String name) {
-        Matcher m = FileUtils.INVALID_FILENAME.matcher(name);
-        if (m.find()) {
-            String hash = PgDiffUtils.md5(name)
-                    // 2^40 variants, should be enough for this purpose
-                    .substring(0, HASH_LENGTH);
-            return m.replaceAll("") + '_' + hash; //$NON-NLS-1$
-        } else {
-            return name;
-        }
-    }
-
-    public static String getExportedFilenameSql(String name) {
-        return getExportedFilename(name) + ".sql"; //$NON-NLS-1$
-    }
-
-    private String getDumpSql(PgStatement statement) {
-        return statement.getFullSQL();
-    }
-
-    public static void writeProjVersion(File f) throws FileNotFoundException {
-        try (PrintWriter pw = new UnixPrintWriter(f, StandardCharsets.UTF_8)) {
-            pw.println(ApgdiffConsts.VERSION_PROP_NAME + " = " //$NON-NLS-1$
-                    + ApgdiffConsts.EXPORT_CURRENT_VERSION);
-        }
-    }
-
     /**
      * @param addExtension whether to add .sql extension to the path
      *      for schemas, no extension also means to get schema dir path,
@@ -871,28 +773,5 @@ public class ModelExporter {
 
         return new File(file, addExtension ?
                 getExportedFilenameSql(st) : getExportedFilename(st)).toString();
-    }
-}
-
-/**
- * Sets fixed order for table subelements export as historically defined by DiffTree.create().
- */
-class ExportTableOrder implements Comparator<PgStatementWithSearchPath> {
-
-    public static final ExportTableOrder INSTANCE = new ExportTableOrder();
-
-    @Override
-    public int compare(PgStatementWithSearchPath o1, PgStatementWithSearchPath o2) {
-        return getTableSubelementRank(o1) - getTableSubelementRank(o2);
-    }
-
-    private int getTableSubelementRank(PgStatementWithSearchPath el) {
-        switch (el.getStatementType()) {
-        case INDEX:     return 0;
-        case TRIGGER:   return 1;
-        case RULE:      return 2;
-        case CONSTRAINT:return 3;
-        default: throw new IllegalArgumentException("Illegal table subelement: " + el.getName());
-        }
     }
 }
