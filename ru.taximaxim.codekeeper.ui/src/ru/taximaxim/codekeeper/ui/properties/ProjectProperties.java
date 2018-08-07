@@ -9,6 +9,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -32,6 +33,7 @@ public class ProjectProperties extends PropertyPage {
     private Button btnDisableParser;
     private Combo cmbTimezone;
     private CLabel lblWarn;
+    private CLabel lblWarnPosix;
 
     private IEclipsePreferences prefs;
 
@@ -68,7 +70,7 @@ public class ProjectProperties extends PropertyPage {
         cmbTimezone.setItems(UIConsts.TIME_ZONES.toArray(new String[UIConsts.TIME_ZONES.size()]));
         String tz = prefs.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC);
         cmbTimezone.setText(tz);
-        cmbTimezone.addModifyListener(e -> checkSwitchWarnLbl());
+        cmbTimezone.addModifyListener(this::checkSwitchWarnLbl);
 
         lblWarn = new CLabel(panel, SWT.NONE);
         lblWarn.setImage(Activator.getEclipseImage(ISharedImages.IMG_OBJS_WARN_TSK));
@@ -78,15 +80,33 @@ public class ProjectProperties extends PropertyPage {
         lblWarn.setLayoutData(gd);
         lblWarn.setVisible(false);
 
+        lblWarnPosix = new CLabel(panel, SWT.NONE);
+        lblWarnPosix.setImage(Activator.getEclipseImage(ISharedImages.IMG_OBJS_WARN_TSK));
+        lblWarnPosix.setText(Messages.ProjectProperties_posix_is_used_warn);
+        gd = new GridData(SWT.FILL, SWT.DEFAULT, false, false, 2, 1);
+        gd.exclude = true;
+        lblWarnPosix.setLayoutData(gd);
+        timeZoneWarn(tz, gd);
+
         return panel;
     }
 
-    private void checkSwitchWarnLbl() {
+    private void checkSwitchWarnLbl(ModifyEvent e) {
         boolean show = !cmbTimezone.getText()
                 .equals(prefs.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
         ((GridData) lblWarn.getLayoutData()).exclude = !show;
         lblWarn.setVisible(show);
         lblWarn.getParent().layout();
+
+        timeZoneWarn(((Combo) e.getSource()).getText(), (GridData) lblWarnPosix.getLayoutData());
+    }
+
+    private void timeZoneWarn(String selectedTimeZone, GridData data) {
+        if (ApgdiffConsts.UTC.equals(selectedTimeZone) != data.exclude) {
+            lblWarnPosix.setVisible(data.exclude);
+            data.exclude = !data.exclude;
+            lblWarnPosix.getParent().layout();
+        }
     }
 
     @Override
