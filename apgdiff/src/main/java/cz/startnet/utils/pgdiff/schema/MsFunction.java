@@ -13,11 +13,6 @@ public class MsFunction extends AbstractFunction {
     }
 
     @Override
-    public String getQualifiedName() {
-        return MsDiffUtils.quoteName(getContainingSchema().getName()) + '.' + MsDiffUtils.quoteName(name);
-    }
-
-    @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append(getFunctionFullSQL(true));
@@ -27,7 +22,7 @@ public class MsFunction extends AbstractFunction {
         return sbSQL.toString();
     }
 
-    public String getFunctionFullSQL(boolean isCreate) {
+    private String getFunctionFullSQL(boolean isCreate) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("SET QUOTED_IDENTIFIER ").append(isQuotedIdentified() ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
@@ -92,7 +87,7 @@ public class MsFunction extends AbstractFunction {
     @Override
     public String getDeclaration(Argument arg, boolean includeDefaultValue,  boolean includeArgName) {
         final StringBuilder sbString = new StringBuilder();
-        sbString.append(getName()).append(' ').append(arg.getDataType());
+        sbString.append(arg.getName()).append(' ').append(arg.getDataType());
 
         String def = arg.getDefaultExpression();
 

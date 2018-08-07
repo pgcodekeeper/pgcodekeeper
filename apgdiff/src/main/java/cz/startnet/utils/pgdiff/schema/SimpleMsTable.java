@@ -140,7 +140,7 @@ public class SimpleMsTable extends AbstractRegularTable {
             sb.append("\n\n");
         }
         sb.append("ALTER TABLE ");
-        sb.append(MsDiffUtils.quoteName(getName()));
+        sb.append(getQualifiedName());
         return sb.toString();
     }
 

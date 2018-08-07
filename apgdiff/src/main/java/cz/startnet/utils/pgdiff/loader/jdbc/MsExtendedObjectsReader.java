@@ -118,8 +118,10 @@ public class MsExtendedObjectsReader extends JdbcReader {
             String argSize = "";
             String dataType = arg.getString("type");
             int size = arg.getInt("size");
+            boolean isText = false;
             if ("varbinary".equals(dataType) || dataType.endsWith("varchar")) {
                 argSize = size == -1 ? " (max)" : (" (" + size + ")");
+                isText = true;
             } else if ("decimal".equals(dataType) || "numeric".equals(dataType)) {
                 argSize = " (" + arg.getInt("pr") + ", " + arg.getInt("sc") + ')';
             }
@@ -129,7 +131,17 @@ public class MsExtendedObjectsReader extends JdbcReader {
                     arg.getString("name"), MsDiffUtils.quoteName(dataType) + argSize);
 
             if (arg.getBoolean("hd")) {
-                argDst.setDefaultExpression(arg.getString("dv"));
+                String def = arg.getString("dv");
+                String defValue;
+                if (def == null) {
+                    defValue = "NULL";
+                } else if (isText) {
+                    defValue = "N'" + def + "'";
+                } else {
+                    defValue = def;
+                }
+
+                argDst.setDefaultExpression(defValue);
             }
 
             argDst.setReadOnly(arg.getBoolean("ro"));

@@ -12,13 +12,18 @@ public class MsTrigger extends AbstractTrigger {
 
     @Override
     public String getCreationSQL() {
+        return getTriggerFullSQL(true);
+    }
+
+    private String getTriggerFullSQL(boolean isCreate) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("SET QUOTED_IDENTIFIER ").append(isQuotedIdentified() ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
         sbSQL.append("SET ANSI_NULLS ").append(isAnsiNulls() ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
 
-        sbSQL.append("CREATE OR ALTER TRIGGER ");
+        sbSQL.append(isCreate ? "CREATE " : "ALTER ");
+        sbSQL.append("TRIGGER ");
         sbSQL.append(MsDiffUtils.quoteName(getContainingSchema().getName()));
         sbSQL.append('.');
         sbSQL.append(MsDiffUtils.quoteName(getName()));
@@ -92,7 +97,7 @@ public class MsTrigger extends AbstractTrigger {
         if (newCondition instanceof MsTrigger) {
             MsTrigger newTrigger = (MsTrigger) newCondition;
             if (compareWithoutComments(newTrigger)) {
-                sb.append(newTrigger.getCreationSQL());
+                sb.append(getTriggerFullSQL(false));
                 return true;
             }
         }

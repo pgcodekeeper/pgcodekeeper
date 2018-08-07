@@ -25,6 +25,7 @@ import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.MsModelExporter;
 import ru.taximaxim.codekeeper.cli.localizations.Messages;
 
 /**
@@ -93,8 +94,14 @@ public final class Main {
             throws IOException, InterruptedException, URISyntaxException {
         PgDatabase d = PgDiff.loadDatabaseSchema(
                 arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments);
-        new ModelExporter(new File(arguments.getOutputTarget()),
-                d, arguments.getOutCharsetName()).exportFull();
+
+        if (arguments.isMsSql()) {
+            new MsModelExporter(new File(arguments.getOutputTarget()),
+                    d, arguments.getOutCharsetName()).exportFull();
+        } else {
+            new ModelExporter(new File(arguments.getOutputTarget()),
+                    d, arguments.getOutCharsetName()).exportFull();
+        }
     }
 
     private Main() {

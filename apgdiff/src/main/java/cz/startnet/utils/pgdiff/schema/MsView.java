@@ -23,7 +23,7 @@ public class MsView extends AbstractView {
         return sbSQL.toString();
     }
 
-    public String getViewFullSQL(boolean isCreate) {
+    private String getViewFullSQL(boolean isCreate) {
         final StringBuilder sbSQL = new StringBuilder(getQuery().length() * 2);
         sbSQL.append("SET QUOTED_IDENTIFIER ").append(isQuotedIdentified() ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');

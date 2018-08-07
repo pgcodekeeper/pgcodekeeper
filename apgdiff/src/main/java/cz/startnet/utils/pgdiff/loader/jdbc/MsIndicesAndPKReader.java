@@ -10,10 +10,10 @@ import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsConstraint;
 import cz.startnet.utils.pgdiff.schema.MsIndex;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsIndicesAndPKReader extends JdbcReader {
@@ -106,9 +106,7 @@ public class MsIndicesAndPKReader extends JdbcReader {
             StringBuilder definition = new StringBuilder();
             if (!isUniqueConstraint) {
                 definition.append("PRIMARY KEY ");
-            }
-
-            if (res.getBoolean("is_unique")) {
+            } else if (res.getBoolean("is_unique")) {
                 definition.append("UNIQUE ");
             }
 
