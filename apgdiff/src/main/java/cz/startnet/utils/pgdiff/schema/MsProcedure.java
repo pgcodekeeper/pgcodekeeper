@@ -28,7 +28,7 @@ public class MsProcedure extends AbstractFunction {
         return sbSQL.toString();
     }
 
-    public String getProcedureFullSQL(boolean isCreate) {
+    private String getProcedureFullSQL(boolean isCreate) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("SET QUOTED_IDENTIFIER ").append(isQuotedIdentified() ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
@@ -88,8 +88,9 @@ public class MsProcedure extends AbstractFunction {
     public String getDeclaration(Argument arg, boolean includeDefaultValue, boolean includeArgName) {
         final StringBuilder sbString = new StringBuilder();
 
-        if (getName() != null && !getName().isEmpty() && includeArgName) {
-            sbString.append(getName());
+        String name = arg.getName();
+        if (name != null && !name.isEmpty() && includeArgName) {
+            sbString.append(name);
             sbString.append(' ');
         }
 

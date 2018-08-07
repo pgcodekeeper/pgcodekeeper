@@ -19,7 +19,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -63,7 +63,7 @@ public class ConvertProject extends AbstractHandler {
 
         Path markerFile = path.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER);
         if (isNeedCreate && Files.notExists(markerFile)) {
-            ModelExporter.writeProjVersion(markerFile.toFile());
+            AbstractModelExporter.writeProjVersion(markerFile.toFile());
         }
 
         return isNeedCreate;

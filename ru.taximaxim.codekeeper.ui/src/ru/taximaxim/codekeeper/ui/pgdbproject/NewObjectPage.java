@@ -44,7 +44,7 @@ import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
@@ -393,11 +393,11 @@ public final class NewObjectPage extends WizardPage {
         if (!projectFolder.exists()) {
             projectFolder.create(false, true, null);
         }
-        IFolder schemaFolder = projectFolder.getFolder(ModelExporter.getExportedFilename(name));
+        IFolder schemaFolder = projectFolder.getFolder(AbstractModelExporter.getExportedFilename(name));
         if (!schemaFolder.exists()) {
             schemaFolder.create(false, true, null);
         }
-        IFile file = schemaFolder.getFile(ModelExporter.getExportedFilenameSql(name));
+        IFile file = schemaFolder.getFile(AbstractModelExporter.getExportedFilenameSql(name));
         if (!file.exists()) {
             StringBuilder sb = new StringBuilder();
             sb.append(MessageFormat.format(PATTERN, DbObjType.SCHEMA, PgDiffUtils.getQuotedName(name)));
@@ -414,7 +414,7 @@ public final class NewObjectPage extends WizardPage {
         if (!folder.exists()) {
             folder.create(false, true, null);
         }
-        IFile extFile = folder.getFile(ModelExporter.getExportedFilenameSql(name));
+        IFile extFile = folder.getFile(AbstractModelExporter.getExportedFilenameSql(name));
         if (!extFile.exists()) {
             String code = MessageFormat.format(PATTERN, DbObjType.EXTENSION, PgDiffUtils.getQuotedName(name));
             extFile.create(new ByteArrayInputStream(code.getBytes()), false, null);
@@ -426,7 +426,7 @@ public final class NewObjectPage extends WizardPage {
             boolean open, IProject project) throws CoreException {
         String objectName = PgDiffUtils.getQuotedName(name);
         IFolder folder = getFolder(schema, type, project);
-        IFile file = folder.getFile(ModelExporter.getExportedFilenameSql(name));
+        IFile file = folder.getFile(AbstractModelExporter.getExportedFilenameSql(name));
 
         if (!file.exists()) {
             StringBuilder sb = new StringBuilder("CREATE "); //$NON-NLS-1$
