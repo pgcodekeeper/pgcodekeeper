@@ -33,7 +33,7 @@ public class MsConstraint extends AbstractConstraint {
         if (newCondition instanceof MsConstraint) {
             MsConstraint newConstr = (MsConstraint)newCondition;
             if (!compareWithoutComments(newConstr)) {
-                sb.append(newCondition.getCreationSQL());
+                isNeedDepcies.set(true);
                 return true;
             }
         }
