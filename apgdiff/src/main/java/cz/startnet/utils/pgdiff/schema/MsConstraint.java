@@ -19,7 +19,7 @@ public class MsConstraint extends AbstractConstraint {
         sbSQL.append('.').append(MsDiffUtils.quoteName(getParent().getName()));
         sbSQL.append("\n\tADD ");
         if (!name.isEmpty()) {
-            sbSQL.append(" CONSTRAINT ").append(MsDiffUtils.quoteName(getName())).append(' ');
+            sbSQL.append("CONSTRAINT ").append(MsDiffUtils.quoteName(getName())).append(' ');
         }
         sbSQL.append(getDefinition());
         sbSQL.append(GO);

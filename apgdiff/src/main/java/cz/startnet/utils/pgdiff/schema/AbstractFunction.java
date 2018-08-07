@@ -116,11 +116,6 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
         resetHash();
     }
 
-    @Override
-    public String getQualifiedName() {
-        return getParent().getQualifiedName() + '.' + getName();
-    }
-
     /**
      * Getter for {@link #arguments}. List cannot be modified.
      *
