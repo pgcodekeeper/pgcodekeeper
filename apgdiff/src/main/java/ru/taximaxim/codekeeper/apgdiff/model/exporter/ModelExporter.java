@@ -16,13 +16,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
-import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -55,45 +52,16 @@ public class ModelExporter extends AbstractModelExporter {
         super(outDir, newDb, oldDb, changedObjects, sqlEncoding);
     }
 
-    /**
-     * Removes file if it exists.
-     */
-    private void deleteStatementIfExists(PgStatement st) throws IOException {
+    @Override
+    protected void deleteStatementIfExists(PgStatement st) throws IOException {
         Path toDelete = Paths.get(outDir.getCanonicalPath(), getRelativeFilePath(st, true));
         Log.log(Log.LOG_INFO, "Deleting file " + toDelete.toString() +
                 " for object " + st.getStatementType() + ' ' + st.getName());
         Files.deleteIfExists(toDelete);
     }
 
-    public void exportPartial() throws IOException, PgCodekeeperException {
-        if (oldDb == null){
-            throw new PgCodekeeperException("Old database should not be null for partial export.");
-        }
-        if (!outDir.exists() || !outDir.isDirectory()) {
-            throw new DirectoryException(MessageFormat.format(
-                    "Output directory does not exist: {0}",
-                    outDir.getAbsolutePath()));
-        }
-
-        while (!changeList.isEmpty()) {
-            TreeElement el = changeList.pop();
-            Log.log(Log.LOG_DEBUG, "Exporting object: " + el);
-            switch(el.getSide()){
-            case LEFT:
-                deleteObject(el);
-                break;
-            case BOTH:
-                editObject(el);
-                break;
-            case RIGHT:
-                createObject(el);
-                break;
-            }
-        }
-        writeProjVersion(new File(outDir.getPath(), ApgdiffConsts.FILENAME_WORKING_DIR_MARKER));
-    }
-
-    private void deleteObject(TreeElement el) throws IOException{
+    @Override
+    protected void deleteObject(TreeElement el) throws IOException {
         PgStatement st = el.getPgStatement(oldDb);
 
         switch (st.getStatementType()) {
@@ -134,7 +102,8 @@ public class ModelExporter extends AbstractModelExporter {
         }
     }
 
-    private void editObject(TreeElement el) throws IOException, PgCodekeeperException{
+    @Override
+    protected void editObject(TreeElement el) throws IOException, PgCodekeeperException {
         PgStatement stInNew = el.getPgStatement(newDb);
         TreeElement elParent = el.getParent();
 
@@ -206,7 +175,8 @@ public class ModelExporter extends AbstractModelExporter {
         }
     }
 
-    private void createObject(TreeElement el) throws IOException, PgCodekeeperException {
+    @Override
+    protected void createObject(TreeElement el) throws IOException, PgCodekeeperException {
         PgStatement stInNew = el.getPgStatement(newDb);
         TreeElement elParent = el.getParent();
 
@@ -327,237 +297,11 @@ public class ModelExporter extends AbstractModelExporter {
                 newParentSchema == null ? oldParentSchema : newParentSchema, false)));
     }
 
-    /**
-     * @param elCause The element that caused the table processing.
-     * It is expected to be popped from the {@link #changeList}.
-     */
-    private void processTableAndContents(TreeElement el, PgStatement st,
-            TreeElement elCause) throws IOException {
-        if (el.getSide() == DiffSide.LEFT && el.isSelected()) {
-            // table is dropped entirely
-            return;
-        }
-        TreeElement elParent = el.getParent();
-        if (elParent.getSide() == DiffSide.LEFT && elParent.isSelected()) {
-            // the entire schema is dropped
-            return;
-        }
+    @Override
+    protected void dumpContainer(PgStatement obj, List<PgStatementWithSearchPath> contents,
+            AbstractSchema schema) throws IOException {
+        File parentDir =  new File(outDir, getRelativeFilePath(schema, false));
 
-        // same as in processFunction
-        // we need to have every related element on the list
-        changeList.push(elCause);
-
-        deleteStatementIfExists(st);
-
-        // prepare the dump data, old state
-        List<PgStatementWithSearchPath> contents = new LinkedList<>();
-        AbstractSchema newParentSchema = newDb.getSchema(st.getParent().getName());
-        AbstractSchema oldParentSchema = oldDb.getSchema(st.getParent().getName());
-        AbstractTable oldTable = null;
-        if (oldParentSchema != null) {
-            oldTable = oldParentSchema.getTable(st.getName());
-            if (oldTable != null) {
-                contents.addAll(oldTable.getChildren().map(
-                        e -> (PgStatementWithSearchPath)e).collect(Collectors.toList()));
-            }
-        }
-        // table to dump, initially assume old unmodified state
-        AbstractTable tablePrimary = oldTable;
-
-        // modify the dump state as requested by the changeList elements
-        Iterator<TreeElement> it = changeList.iterator();
-        while (it.hasNext()) {
-            TreeElement elChange = it.next();
-            TreeElement elTableChange;
-            switch (elChange.getType()) {
-            case TABLE:
-                elTableChange = elChange;
-                break;
-            case CONSTRAINT:
-            case INDEX:
-            case TRIGGER:
-            case RULE:
-                elTableChange = elChange.getParent();
-                break;
-            default:
-                continue;
-            }
-            AbstractTable tableChange = (elTableChange.getSide() == DiffSide.LEFT ?
-                    oldParentSchema : newParentSchema).getTable(elTableChange.getName());
-            if (tableChange == null || !tableChange.getName().equals(st.getName())
-                    || !tableChange.getParent().getName().equals(elTableChange.getParent().getName())) {
-                continue;
-            }
-
-            if (elChange.getType() == DbObjType.TABLE) {
-                tablePrimary = tableChange;
-            } else {
-                PgStatementWithSearchPath stChange = null;
-                PgStatementWithSearchPath stChangeOld = null;
-                // now get the table based on the child's DiffSide
-                // otherwise BOTH (new) table may be chosen to get LEFT children
-                // which it does not contain
-                tableChange = (elChange.getSide() == DiffSide.LEFT ?
-                        oldParentSchema : newParentSchema).getTable(elChange.getParent().getName());
-                switch (elChange.getType()) {
-                case CONSTRAINT:
-                    stChange = tableChange.getConstraint(elChange.getName());
-                    if (elChange.getSide() == DiffSide.BOTH) {
-                        stChangeOld = oldTable.getConstraint(elChange.getName());
-                    }
-                    break;
-                case INDEX:
-                    stChange = tableChange.getIndex(elChange.getName());
-                    if (elChange.getSide() == DiffSide.BOTH) {
-                        stChangeOld = oldTable.getIndex(elChange.getName());
-                    }
-                    break;
-                case TRIGGER:
-                    stChange = tableChange.getTrigger(elChange.getName());
-                    if (elChange.getSide() == DiffSide.BOTH) {
-                        stChangeOld = oldTable.getTrigger(elChange.getName());
-                    }
-                    break;
-                case RULE:
-                    stChange = tableChange.getRule(elChange.getName());
-                    if (elChange.getSide() == DiffSide.BOTH) {
-                        stChangeOld = oldTable.getRule(elChange.getName());
-                    }
-                    break;
-                default:
-                    continue;
-                }
-
-                switch (elChange.getSide()) {
-                case LEFT:
-                    contents.remove(stChange);
-                    break;
-                case RIGHT:
-                    contents.add(stChange);
-                    break;
-                case BOTH:
-                    contents.set(contents.indexOf(stChangeOld), stChange);
-                    break;
-                }
-            }
-
-            it.remove();
-        }
-
-        dumpContainer(tablePrimary, contents, new File(outDir, getRelativeFilePath(
-                newParentSchema == null ? oldParentSchema : newParentSchema, false)));
-    }
-
-    /**
-     * @param elCause The element that caused the table processing.
-     * It is expected to be popped from the {@link #changeList}.
-     */
-    private void processViewAndContents(TreeElement el, PgStatement st,
-            TreeElement elCause) throws IOException{
-        if (el.getSide() == DiffSide.LEFT && el.isSelected()) {
-            // view is dropped entirely
-            return;
-        }
-        TreeElement elParent = el.getParent();
-        if (elParent.getSide() == DiffSide.LEFT && elParent.isSelected()) {
-            // the entire schema is dropped
-            return;
-        }
-
-        // same as in processFunction
-        // we need to have every related element on the list
-        changeList.push(elCause);
-
-        deleteStatementIfExists(st);
-
-        // prepare the dump data, old state
-        List<PgStatementWithSearchPath> contents = new LinkedList<>();
-        AbstractSchema newParentSchema = newDb.getSchema(st.getParent().getName());
-        AbstractSchema oldParentSchema = oldDb.getSchema(st.getParent().getName());
-        AbstractView oldView = null;
-        if (oldParentSchema != null) {
-            oldView = oldParentSchema.getView(st.getName());
-            if (oldView != null) {
-                contents.addAll(oldView.getChildren().map(
-                        e -> (PgStatementWithSearchPath)e).collect(Collectors.toList()));
-            }
-        }
-        // view to dump, initially assume old unmodified state
-        AbstractView viewPrimary = oldView;
-
-        // modify the dump state as requested by the changeList elements
-        Iterator<TreeElement> it = changeList.iterator();
-        while (it.hasNext()) {
-            TreeElement elChange = it.next();
-            TreeElement elViewChange;
-            switch (elChange.getType()) {
-            case VIEW:
-                elViewChange = elChange;
-                break;
-            case RULE:
-            case TRIGGER:
-                elViewChange = elChange.getParent();
-                break;
-            default:
-                continue;
-            }
-            AbstractView viewChange = (elViewChange.getSide() == DiffSide.LEFT ?
-                    oldParentSchema : newParentSchema).getView(elViewChange.getName());
-            if (viewChange == null || !viewChange.getName().equals(st.getName())
-                    || !viewChange.getParent().getName().equals(elViewChange.getParent().getName())) {
-                continue;
-            }
-
-            if (elChange.getType() == DbObjType.VIEW) {
-                viewPrimary = viewChange;
-            } else {
-                PgStatementWithSearchPath stChange = null;
-                PgStatementWithSearchPath stChangeOld = null;
-                // now get the view based on the child's DiffSide
-                // otherwise BOTH (new) view may be chosen to get LEFT children
-                // which it does not contain
-                viewChange = (elChange.getSide() == DiffSide.LEFT ?
-                        oldParentSchema : newParentSchema).getView(elChange.getParent().getName());
-                switch (elChange.getType()) {
-                case RULE:
-                    stChange = viewChange.getRule(elChange.getName());
-                    if (elChange.getSide() == DiffSide.BOTH) {
-                        stChangeOld = oldView.getRule(elChange.getName());
-                    }
-                    break;
-                case TRIGGER:
-                    stChange = viewChange.getTrigger(elChange.getName());
-                    if (elChange.getSide() == DiffSide.BOTH) {
-                        stChangeOld = oldView.getTrigger(elChange.getName());
-                    }
-                    break;
-                default:
-                    continue;
-                }
-
-                switch (elChange.getSide()) {
-                case LEFT:
-                    contents.remove(stChange);
-                    break;
-                case RIGHT:
-                    contents.add(stChange);
-                    break;
-                case BOTH:
-                    contents.set(contents.indexOf(stChangeOld), stChange);
-                    break;
-                }
-            }
-
-            it.remove();
-        }
-
-        dumpContainer(viewPrimary, contents, new File(outDir, getRelativeFilePath(
-                newParentSchema == null ? oldParentSchema : newParentSchema, false)));
-    }
-
-
-    private void dumpContainer(PgStatement obj, List<PgStatementWithSearchPath> contents,
-            File parentDir) throws IOException {
         mkdirObjects(null, parentDir.toString());
         DbObjType type = obj.getStatementType();
 
@@ -584,6 +328,7 @@ public class ModelExporter extends AbstractModelExporter {
     /**
      * Starts the {@link #newDb} export process.
      */
+    @Override
     public void exportFull() throws IOException {
         if (outDir.exists()) {
             if (!outDir.isDirectory()) {
@@ -697,24 +442,6 @@ public class ModelExporter extends AbstractModelExporter {
                 dumpSQL(dump, new File(objectDir, getExportedFilenameSql(obj)));
             }
         }
-    }
-
-    private File mkdirObjects(File parentOutDir, String outDirName)
-            throws NotDirectoryException, DirectoryException {
-        File objectDir = new File(parentOutDir, outDirName);
-
-        if (objectDir.exists()) {
-            if(!objectDir.isDirectory()) {
-                throw new NotDirectoryException(objectDir.getAbsolutePath());
-            }
-        } else {
-            if (!objectDir.mkdir()) {
-                throw new DirectoryException(MessageFormat.format(
-                        "Could not create objects directory: {0}",
-                        objectDir.getAbsolutePath()));
-            }
-        }
-        return objectDir;
     }
 
     /**
