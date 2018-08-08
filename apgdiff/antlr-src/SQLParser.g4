@@ -85,6 +85,7 @@ schema_create
     | create_fts_template
     | create_fts_parser
     | create_fts_dictionary
+    | create_collation
     | create_user_mapping
     | create_transform_statement)
 
@@ -105,14 +106,17 @@ schema_alter
     | alter_type_statement
     | alter_domain_statement
     | alter_server_statement
-    | alter_fts_statement)
+    | alter_fts_statement
+    | alter_collation
+    | alter_user_mapping)
     ;
 
 schema_drop
     : DROP (drop_function_statement
     | drop_trigger_statement
     | drop_rule_statement
-    | drop_statements)
+    | drop_statements
+    | drop_user_mapping)
     ;
 
 schema_import
@@ -488,11 +492,37 @@ create_fts_parser
         (COMMA HEADLINE EQUAL headline_func=schema_qualified_name)?
     RIGHT_PAREN
     ;
+    
+create_collation
+    : COLLATION (IF NOT EXISTS)? name=schema_qualified_name 
+      (FROM copy=schema_qualified_name | LEFT_PAREN collation_option* RIGHT_PAREN)
+    ;
 
+alter_collation
+    : COLLATION name=schema_qualified_name (REFRESH VERSION | rename_to | owner_to | set_schema)
+    ;
+    
+collation_option
+    : LOCALE EQUAL character_string 
+    | LC_COLLATE EQUAL character_string
+    | LC_CTYPE EQUAL character_string 
+    | PROVIDER EQUAL character_string 
+    | VERSION EQUAL character_string 
+    ;
+    
 create_user_mapping
     : USER MAPPING (IF NOT EXISTS)? FOR (identifier | USER | CURRENT_USER)
     SERVER identifier
     define_foreign_options?
+    ;
+    
+alter_user_mapping
+    : USER MAPPING FOR (identifier | USER | CURRENT_USER) SERVER identifier
+    define_foreign_options? 
+    ;
+
+drop_user_mapping
+    : USER MAPPING (IF EXISTS)? FOR (identifier | USER | CURRENT_USER) SERVER identifier
     ;
 
 domain_constraint
@@ -1042,15 +1072,17 @@ drop_rule_statement
     ;
 
 drop_statements
-    :(DATABASE
-    | DOMAIN
+    : (COLLATION
+    | DATABASE 
+    | DOMAIN 
     | FOREIGN? TABLE
     | EXTENSION
     | SCHEMA
     | SEQUENCE
     | MATERIALIZED? VIEW
+    | SERVER
     | TYPE
-    | TEXT SEARCH (CONFIGURATION | PARSER | DICTIONARY | TEMPLATE)
+    | TEXT SEARCH (CONFIGURATION | PARSER | DICTIONARY | TEMPLATE) 
     | INDEX CONCURRENTLY?) if_exist_names_restrict_cascade
     ;
 
@@ -1570,6 +1602,10 @@ tokens_nonkeyword
   | GETTOKEN
   | HEADLINE
   | LEXTYPES
+  | LOCALE 
+  | LC_COLLATE
+  | LC_CTYPE 
+  | PROVIDER
   ;
 
 /*

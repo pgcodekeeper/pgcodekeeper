@@ -1,25 +1,9 @@
--- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
--- THIS FILE MUST BE IDENTICAL TO THE ONE IN ru.taximaxim.codekeeper.internal.tests!
--- The above applies only to internal pgCodeKeeper developers at TaxiMaxim.
--------------------------------------------------------------------------------
-
---
--- PostgreSQL database dump
---
-
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
-
---
--- Name: test; Type: COMMENT; Schema: -; Owner: unit_test
---
-
---COMMENT ON DATABASE test IS 'Test DB';
---create schema public;
 
 --
 -- Name: dblink; Type: SCHEMA; Schema: -; Owner: unit_test
@@ -35,35 +19,6 @@ ALTER SCHEMA dblink OWNER TO unit_test;
 --
 
 COMMENT ON SCHEMA dblink IS 'This is test schema';
-
-
---
--- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
---
-
-----CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
-
-
---
--- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
---
-
-----COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
-
-
---
--- Name: dblink; Type: EXTENSION; Schema: -; Owner: 
---
-
---CREATE EXTENSION IF NOT EXISTS dblink WITH SCHEMA dblink;
-
-
---
--- Name: EXTENSION dblink; Type: COMMENT; Schema: -; Owner: 
---
-
---COMMENT ON EXTENSION dblink IS 'connect to other PostgreSQL databases from within a database';
-
 
 SET search_path = pg_catalog;
 
@@ -367,9 +322,3 @@ REVOKE ALL ON SCHEMA public FROM PUBLIC;
 REVOKE ALL ON SCHEMA public FROM postgres;
 GRANT ALL ON SCHEMA public TO postgres;
 GRANT ALL ON SCHEMA public TO PUBLIC;
-
-
---
--- PostgreSQL database dump complete
---
-

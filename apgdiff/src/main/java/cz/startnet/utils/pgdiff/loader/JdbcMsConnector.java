@@ -7,8 +7,6 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-
 public class JdbcMsConnector extends JdbcConnector {
 
     private static final int DEFAULT_PORT = 1433;
@@ -42,9 +40,9 @@ public class JdbcMsConnector extends JdbcConnector {
         this.readOnly = readOnly;
     }
 
-    protected JdbcMsConnector(String url) throws URISyntaxException {
+    protected JdbcMsConnector(String url, String timezone) throws URISyntaxException {
         this.url = url;
-        this.timezone = ApgdiffConsts.UTC;
+        this.timezone = timezone;
 
         // strip jdbc:, URI doesn't understand schemas with colons
         String uriPart = url.substring(5);

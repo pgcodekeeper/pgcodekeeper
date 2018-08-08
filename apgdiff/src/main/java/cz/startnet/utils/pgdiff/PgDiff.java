@@ -22,10 +22,11 @@ import cz.startnet.utils.pgdiff.loader.JdbcLoader;
 import cz.startnet.utils.pgdiff.loader.JdbcMsLoader;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.LibraryObjectDuplicationException;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgOverride;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ignoreparser.IgnoreParser;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.CompareTree;
@@ -107,8 +108,10 @@ public final class PgDiff {
                     PgDumpLoader.loadMsDatabaseSchemaFromDirTree(srcPath,  arguments, null, null) :
                         PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,  arguments, null, null);
         } else if ("db".equals(format)) {
-            return arguments.isMsSql() ?  new JdbcMsLoader(JdbcConnector.fromUrl(srcPath), arguments).readDb()
-                    : new JdbcLoader(JdbcConnector.fromUrl(srcPath), arguments).getDbFromJdbc();
+            String timezone = arguments.getTimeZone() == null ? ApgdiffConsts.UTC : arguments.getTimeZone();
+            return arguments.isMsSql() ?
+                    new JdbcMsLoader(JdbcConnector.fromUrl(srcPath, timezone), arguments).readDb()
+                    : new JdbcLoader(JdbcConnector.fromUrl(srcPath, timezone), arguments).getDbFromJdbc();
         }
 
         throw new UnsupportedOperationException(

@@ -692,6 +692,10 @@ public class ReferenceListener extends SQLParserBaseListener {
             type = DbObjType.FTS_CONFIGURATION;
         }
 
+        if (type == null) {
+            return;
+        }
+
         for (Schema_qualified_nameContext objName :
             ctx.if_exist_names_restrict_cascade().names_references().name) {
             List<IdentifierContext> ids = objName.identifier();

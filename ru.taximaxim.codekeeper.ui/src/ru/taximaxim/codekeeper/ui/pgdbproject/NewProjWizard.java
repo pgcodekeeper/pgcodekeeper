@@ -3,8 +3,10 @@ package ru.taximaxim.codekeeper.ui.pgdbproject;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -23,6 +25,7 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -32,6 +35,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.INewWizard;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.dialogs.WizardNewProjectCreationPage;
@@ -239,6 +243,7 @@ class PageDb extends WizardPage {
     private DbStorePicker storePicker;
     private ComboViewer timezoneCombo;
     private ComboViewer charsetCombo;
+    private CLabel lblWarnPosix;
 
     public DbInfo getDbInfo() {
         return storePicker.getDbInfo();
@@ -319,6 +324,7 @@ class PageDb extends WizardPage {
         timezoneCombo.setContentProvider(ArrayContentProvider.getInstance());
         timezoneCombo.setInput(UIConsts.TIME_ZONES);
         timezoneCombo.setSelection(new StructuredSelection(ApgdiffConsts.UTC));
+        timezoneCombo.getCombo().addModifyListener(e -> timeZoneWarn());
 
         btnGetTz = new Button(container, SWT.PUSH);
         btnGetTz.setText(Messages.NewProjWizard_get_from_db);
@@ -344,7 +350,25 @@ class PageDb extends WizardPage {
             }
         });
 
+        lblWarnPosix = new CLabel(container, SWT.NONE);
+        lblWarnPosix.setImage(Activator.getEclipseImage(ISharedImages.IMG_OBJS_WARN_TSK));
+        lblWarnPosix.setText(Messages.ProjectProperties_posix_is_used_warn);
+        GridData gd = new GridData(SWT.FILL, SWT.DEFAULT, false, false, 3, 1);
+        gd.exclude = true;
+        lblWarnPosix.setLayoutData(gd);
+
         setControl(container);
+    }
+
+    private void timeZoneWarn() {
+        String tz =  timezoneCombo.getCombo().getText();
+        GridData data = (GridData) lblWarnPosix.getLayoutData();
+        if ((!ApgdiffConsts.UTC.equals(tz)
+                && tz.startsWith(ApgdiffConsts.UTC)) == data.exclude)  {
+            lblWarnPosix.setVisible(data.exclude);
+            data.exclude = !data.exclude;
+            lblWarnPosix.getParent().layout();
+        }
     }
 
     @Override
@@ -369,7 +393,9 @@ class PageDb extends WizardPage {
                     dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(), dbinfo.getProperties(),
                     dbinfo.isReadOnly(), ApgdiffConsts.UTC);
 
-            try (ResultSet rs = new JdbcRunner(monitor).runScript(connector, QUERY_TZ)) {
+            try (Connection connection = connector.getConnection();
+                    Statement st = connection.createStatement();
+                    ResultSet rs = new JdbcRunner(monitor).runScript(st, QUERY_TZ)) {
                 timezone = rs.next() ? rs.getString("setting") : null; //$NON-NLS-1$
             } catch (SQLException | IOException e) {
                 throw new InvocationTargetException(e, e.getLocalizedMessage());
