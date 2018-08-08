@@ -32,6 +32,7 @@ public class ProjectProperties extends PropertyPage {
     private Button btnDisableParser;
     private Combo cmbTimezone;
     private CLabel lblWarn;
+    private CLabel lblWarnPosix;
 
     private IEclipsePreferences prefs;
 
@@ -78,15 +79,36 @@ public class ProjectProperties extends PropertyPage {
         lblWarn.setLayoutData(gd);
         lblWarn.setVisible(false);
 
+        lblWarnPosix = new CLabel(panel, SWT.NONE);
+        lblWarnPosix.setImage(Activator.getEclipseImage(ISharedImages.IMG_OBJS_WARN_TSK));
+        lblWarnPosix.setText(Messages.ProjectProperties_posix_is_used_warn);
+        gd = new GridData(SWT.FILL, SWT.DEFAULT, false, false, 2, 1);
+        gd.exclude = true;
+        lblWarnPosix.setLayoutData(gd);
+        timeZoneWarn(tz);
+
         return panel;
     }
 
     private void checkSwitchWarnLbl() {
-        boolean show = !cmbTimezone.getText()
-                .equals(prefs.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
-        ((GridData) lblWarn.getLayoutData()).exclude = !show;
+        String tz = cmbTimezone.getText();
+        GridData data = (GridData) lblWarn.getLayoutData();
+        boolean show = !tz.equals(prefs.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
+        data.exclude = !show;
         lblWarn.setVisible(show);
         lblWarn.getParent().layout();
+
+        timeZoneWarn(tz);
+    }
+
+    private void timeZoneWarn(String tz) {
+        GridData data = (GridData) lblWarnPosix.getLayoutData();
+        if ((!ApgdiffConsts.UTC.equals(tz)
+                && tz.startsWith(ApgdiffConsts.UTC)) == data.exclude)  {
+            lblWarnPosix.setVisible(data.exclude);
+            data.exclude = !data.exclude;
+            lblWarnPosix.getParent().layout();
+        }
     }
 
     @Override

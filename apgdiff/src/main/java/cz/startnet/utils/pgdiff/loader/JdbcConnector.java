@@ -42,15 +42,18 @@ public class JdbcConnector {
         return fromUrl(url).dbName;
     }
 
+    public static JdbcConnector fromUrl(String url) {
+        return fromUrl(url, ApgdiffConsts.UTC);
+    }
     /**
      * @throws IllegalArgumentException url isn't valid
      */
-    public static JdbcConnector fromUrl(String url) {
+    public static JdbcConnector fromUrl(String url, String timezone) {
         try {
             if (url.startsWith("jdbc:postgresql:")) {
-                return new JdbcConnector(url);
+                return new JdbcConnector(url, timezone);
             } else if (url.startsWith("jdbc:sqlserver:")) {
-                return new JdbcMsConnector(url);
+                return new JdbcMsConnector(url, timezone);
             }
         } catch (URISyntaxException ex) {
             throw new IllegalArgumentException(ex.getLocalizedMessage(), ex);
@@ -90,9 +93,9 @@ public class JdbcConnector {
         // no impl, unintialized instance
     }
 
-    private JdbcConnector(String url) throws URISyntaxException {
+    private JdbcConnector(String url, String timezone) throws URISyntaxException {
         this.url = url;
-        this.timezone = ApgdiffConsts.UTC;
+        this.timezone = timezone;
 
         String host = null, user = null, pass = null, dbName = null;
         int port = -1;

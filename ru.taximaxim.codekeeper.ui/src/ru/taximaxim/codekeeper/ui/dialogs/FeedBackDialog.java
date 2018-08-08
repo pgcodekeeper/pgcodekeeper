@@ -59,6 +59,12 @@ public class FeedBackDialog extends Dialog {
     }
 
     @Override
+    protected void setShellStyle(int newShellStyle) {
+        super.setShellStyle(SWT.CLOSE | SWT.MODELESS | SWT.BORDER | SWT.TITLE | SWT.RESIZE);
+        setBlockOnOpen(false);
+    }
+
+    @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
         newShell.setText(Messages.FeedBackDialog_feedback);

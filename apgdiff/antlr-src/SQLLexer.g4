@@ -602,6 +602,10 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     GETTOKEN: [gG] [eE] [tT] [tT] [oO] [kK] [eE] [nN];
     HEADLINE: [hH] [eE] [aA] [dD] [lL] [iI] [nN] [eE];
     LEXTYPES: [lL] [eE] [xX] [tT] [yY] [pP] [eE] [sS];
+    LOCALE: [lL] [oO] [cC] [aA] [lL] [eE]; 
+    LC_COLLATE: [lL] [cC] UNDERLINE [cC] [oO] [lL] [lL] [aA] [tT] [eE];
+    LC_CTYPE: [lL] [cC] UNDERLINE [cC] [tT] [yY] [pP] [eE]; 
+    PROVIDER: [pP] [rR] [oO] [vV] [iI] [dD] [eE] [rR]; 
 
 fragment UNDERLINE : '_';
 

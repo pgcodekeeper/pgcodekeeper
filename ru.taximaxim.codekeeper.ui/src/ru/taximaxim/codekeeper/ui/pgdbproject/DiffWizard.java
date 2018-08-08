@@ -19,12 +19,14 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.FileStoreEditorInput;
@@ -142,6 +144,7 @@ class PageDiff extends WizardPage implements Listener {
 
     private DbSourcePicker dbSource, dbTarget;
     private ComboViewer cmbTimezone;
+    private CLabel lblWarnPosix;
 
     public PageDiff(String pageName, IPreferenceStore mainPrefs, PgDbProject proj) {
         super(pageName, pageName, null);
@@ -190,12 +193,31 @@ class PageDiff extends WizardPage implements Listener {
         cmbTimezone.setLabelProvider(new LabelProvider());
         cmbTimezone.setInput(UIConsts.TIME_ZONES);
         cmbTimezone.getCombo().setText(ApgdiffConsts.UTC);
+        cmbTimezone.getCombo().addModifyListener(e -> timeZoneWarn());
+
+        lblWarnPosix = new CLabel(container, SWT.NONE);
+        lblWarnPosix.setImage(Activator.getEclipseImage(ISharedImages.IMG_OBJS_WARN_TSK));
+        lblWarnPosix.setText(Messages.ProjectProperties_posix_is_used_warn);
+        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
+        gd.exclude = true;
+        lblWarnPosix.setLayoutData(gd);
 
         if (proj != null) {
             dbTarget.setDbStore(new StructuredSelection(proj.getProject().getLocation().toFile()));
         }
 
         setControl(container);
+    }
+
+    private void timeZoneWarn() {
+        String tz =  cmbTimezone.getCombo().getText();
+        GridData data = (GridData) lblWarnPosix.getLayoutData();
+        if ((!ApgdiffConsts.UTC.equals(tz)
+                && tz.startsWith(ApgdiffConsts.UTC)) == data.exclude)  {
+            lblWarnPosix.setVisible(data.exclude);
+            data.exclude = !data.exclude;
+            lblWarnPosix.getParent().layout();
+        }
     }
 
     @Override
