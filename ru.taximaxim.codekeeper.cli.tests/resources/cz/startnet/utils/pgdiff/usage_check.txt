@@ -26,8 +26,9 @@ Usage:
                                           transaction statements
  -F (--no-check-function-bodies)        : set check_function_bodies to false at
                                           the beginning of the script
- -Z (--time-zone) <timezone>            : add SET TIMEZONE statement to the
-                                          script
+ -Z (--time-zone) <timezone>            : use this timezone when working with
+                                          database, also add SET TIMEZONE
+                                          statement to the script
  --using-off                            : do not print USING expression for
                                           ALTER COLUMN TYPE
  -C (--concurrently-mode)               : print CREATE INDEX with CONCURRENTLY
