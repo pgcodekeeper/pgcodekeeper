@@ -109,7 +109,7 @@ public class CliArgs extends PgDiffArguments {
     private boolean disableCheckFunctionBodies;
 
     @Option(name="-Z", aliases="--time-zone", metaVar="<timezone>", forbids="--parse",
-            usage="add SET TIMEZONE statement to the script")
+            usage="use this timezone when working with database, also add SET TIMEZONE statement to the script")
     private String timeZone;
 
     @Option(name="--using-off", forbids="--parse",

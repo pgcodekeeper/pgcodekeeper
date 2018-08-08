@@ -24,6 +24,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgOverride;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ignoreparser.IgnoreParser;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.CompareTree;
@@ -103,7 +104,9 @@ public final class PgDiff {
         } else if ("parsed".equals(format)) {
             return PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,  arguments, null, null);
         } else if ("db".equals(format)) {
-            JdbcLoader loader = new JdbcLoader(new JdbcConnector(srcPath, null, false), arguments);
+            String timeZone = arguments.getTimeZone();
+            JdbcLoader loader = new JdbcLoader(new JdbcConnector(srcPath, null, false,
+                    timeZone == null ? ApgdiffConsts.UTC : timeZone), arguments);
             return loader.getDbFromJdbc();
         }
 
