@@ -61,15 +61,19 @@ public class JdbcConnector {
     }
 
     public JdbcConnector(String url, Map<String, String> properties,
-            boolean readOnly) throws URISyntaxException {
-        this(url);
+            boolean readOnly, String timezone) throws URISyntaxException {
+        this(url, timezone);
         this.properties = properties;
         this.readOnly = readOnly;
     }
 
     public JdbcConnector(String url) throws URISyntaxException {
+        this(url, ApgdiffConsts.UTC);
+    }
+
+    public JdbcConnector(String url, String timezone) throws URISyntaxException {
         this.url = url;
-        this.timezone = ApgdiffConsts.UTC;
+        this.timezone = timezone;
 
         String host = null, user = null, pass = null, dbName = null;
         int port = -1;
