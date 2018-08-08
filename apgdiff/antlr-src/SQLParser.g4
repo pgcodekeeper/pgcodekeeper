@@ -1100,6 +1100,7 @@ drop_statements
     | SCHEMA 
     | SEQUENCE 
     | MATERIALIZED? VIEW 
+    | SERVER
     | TYPE
     | TEXT SEARCH (CONFIGURATION | PARSER | DICTIONARY | TEMPLATE) 
     | INDEX CONCURRENTLY?) if_exist_names_restrict_cascade
