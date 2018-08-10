@@ -40,6 +40,90 @@ public class MsDiffTest {
                     {"modify_ms_sequence_cache"},
                     // Tests scenario where MS TABLE identity is modified.
                     {"modify_ms_table_identity"},
+
+                    // Tests scenario where MS TABLE is added.
+                    {"add_ms_table"},
+                    // Tests scenario where MS TABLE is dropped.
+                    {"drop_ms_table"},
+                    // Tests scenario where MS TABLE is modified.
+                    // {"modify_ms_table_..."},
+
+                    // Tests scenario where MS VIEW is added.
+                    {"add_ms_view"},
+                    // Tests scenario where MS VIEW is dropped.
+                    {"drop_ms_view"},
+                    // Tests scenario where MS VIEW is modified.
+                    // {"modify_ms_view"},
+
+                    // TODO Uncomment the code when user-defined type will be supported.
+                    // Tests scenario where MS TYPE is added.
+                    // {"add_ms_type"},
+                    // Tests scenario where MS TYPE is dropped.
+                    // {"drop_ms_type"},
+                    // Tests scenario where MS TYPE is modified.
+                    // {"modify_ms_type"},
+
+                    // Tests scenario where MS INDEX is added.
+                    {"add_ms_index"},
+                    // Tests scenario where MS INDEX is dropped.
+                    {"drop_ms_index"},
+                    // Tests scenario where MS INDEX definition is modified.
+                    // {"modify_index"},
+
+                    // Tests scenario where MS FUNCTION without args is added.
+                    {"add_ms_function_noargs"},
+                    // Tests scenario where MS FUNCTION without args is dropped.
+                    {"drop_ms_function_noargs"},
+                    // Tests scenario where MS FUNCTION without args is modified.
+                    // {"modify_ms_function_noargs"},
+
+                    // Tests scenario where MS FUNCTION with args is added.
+                    {"add_ms_function_args"},
+                    // Tests scenario where MS FUNCTION with args is dropped.
+                    {"drop_ms_function_args"},
+                    // Tests scenario where MS FUNCTION with args is modified.
+                    // {"modify_ms_function_args"},
+
+                    // Tests scenario where MS TABLE CONSTRAINT of column is added.
+                    {"add_ms_constraint_column"},
+                    // Tests scenario where MS TABLE CONSTRAINT of column is dropped.
+                    {"drop_ms_constraint_column"},
+                    // Tests scenario where MS TABLE CONSTRAINT of column is modified.
+                    {"modify_ms_constraint_column"},
+
+                    // Tests scenario where MS SEQUENCE is added.
+                    {"add_ms_sequence"},
+                    // Tests scenario where MS SEQUENCE is dropped.
+                    // {"drop_ms_sequence"},
+                    // Tests scenario where ... is modified on MS SEQUENCE.
+                    // {"modify_ms_sequence_..."},
+
+
+
+                    //// TODO add this tests:
+
+                    // Tests scenario where MS TRIGGER is added.
+                    // {"add_ms_trigger"},
+                    // Tests scenario where MS TRIGGER is dropped.
+                    // {"drop_ms_trigger"},
+                    // Tests scenario where MS TRIGGER is modified.
+                    // {"modify_ms_trigger"},
+
+                    // Tests scenario where COLUMN is added to MS TABLE definition.
+                    // {"add_ms_column"},
+                    // Tests scenario where COLUMN is dropped from MS TABLE.
+                    // {"drop_ms_column"},
+                    // Tests scenario where COLUMN with index dependency is dropped from MS TABLE.
+                    // {"drop_ms_column_with_idx"},
+                    // Tests scenario where COLUMN of MS TABLE is modified.
+                    // {"modify_ms_column"},
+
+
+                    // test privileges
+                    // tests for fts
+
+                    // dependencies tests
+
                 });
     }
 
