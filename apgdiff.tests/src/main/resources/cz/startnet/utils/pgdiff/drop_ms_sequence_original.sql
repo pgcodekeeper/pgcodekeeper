@@ -17,5 +17,5 @@ ALTER TABLE [dbo].[table1]
 GO
 
 ALTER TABLE [dbo].[table1]
-    ADD DEFAULT (NEXT VALUE FOR [dbo].[seq1]) FOR [c1]
+    ADD CONSTRAINT [constraint_default_c1] DEFAULT (NEXT VALUE FOR [dbo].[seq1]) FOR [c1]
 GO
