@@ -34,12 +34,10 @@ public class MsDiffTest {
                 new Object[][] {
                     // Tests scenario where MS PRIVILEGES for columns is added.
                     {"add_ms_column_privileges"},
-                    // Tests scenario where MS COLUMN type is modified.
-                    {"modify_ms_column_type"},
-                    // Tests scenario where MS SEQUENCE cashe is modified.
-                    {"modify_ms_sequence_cache"},
-                    // Tests scenario where MS TABLE identity is modified.
-                    {"modify_ms_table_identity"},
+                    // Tests scenario where MS PRIVILEGES for columns is dropped.
+                    {"drop_ms_column_privileges"},
+                    // Tests scenario where MS PRIVILEGES for columns is modified.
+                    {"modify_ms_column_privileges"},
 
                     // Tests scenario where MS TABLE is added.
                     {"add_ms_table"},
@@ -47,6 +45,8 @@ public class MsDiffTest {
                     {"drop_ms_table"},
                     // Tests scenario where MS TABLE is modified.
                     // {"modify_ms_table_..."},
+                    // Tests scenario where MS TABLE identity is modified.
+                    {"modify_ms_table_identity"},
 
                     // Tests scenario where MS VIEW is added.
                     {"add_ms_view"},
@@ -82,7 +82,9 @@ public class MsDiffTest {
                     // Tests scenario where MS FUNCTION with args is dropped.
                     {"drop_ms_function_args"},
                     // Tests scenario where MS FUNCTION with args is modified.
-                    // {"modify_ms_function_args"},
+                    {"modify_ms_function_args"},
+                    // Tests scenario where MS FUNCTION with args return type is modified.
+                    // {"modify_ms_function_args_return_tbl"},
 
                     // Tests scenario where MS TABLE CONSTRAINT of column is added.
                     {"add_ms_constraint_column"},
@@ -94,36 +96,30 @@ public class MsDiffTest {
                     // Tests scenario where MS SEQUENCE is added.
                     {"add_ms_sequence"},
                     // Tests scenario where MS SEQUENCE is dropped.
-                    // {"drop_ms_sequence"},
-                    // Tests scenario where ... is modified on MS SEQUENCE.
-                    // {"modify_ms_sequence_..."},
-
-
-
-                    //// TODO add this tests:
+                    {"drop_ms_sequence"},
+                    // Tests scenario where MS SEQUENCE is modified.
+                    {"modify_ms_sequence"},
+                    // Tests scenario where MS SEQUENCE cashe is modified.
+                    {"modify_ms_sequence_cache"},
 
                     // Tests scenario where MS TRIGGER is added.
-                    // {"add_ms_trigger"},
+                    {"add_ms_trigger"},
                     // Tests scenario where MS TRIGGER is dropped.
-                    // {"drop_ms_trigger"},
+                    {"drop_ms_trigger"},
                     // Tests scenario where MS TRIGGER is modified.
-                    // {"modify_ms_trigger"},
+                    {"modify_ms_trigger"},
 
                     // Tests scenario where COLUMN is added to MS TABLE definition.
-                    // {"add_ms_column"},
+                    {"add_ms_column"},
                     // Tests scenario where COLUMN is dropped from MS TABLE.
-                    // {"drop_ms_column"},
+                    {"drop_ms_column"},
                     // Tests scenario where COLUMN with index dependency is dropped from MS TABLE.
-                    // {"drop_ms_column_with_idx"},
-                    // Tests scenario where COLUMN of MS TABLE is modified.
-                    // {"modify_ms_column"},
-
-
-                    // test privileges
-                    // tests for fts
-
-                    // dependencies tests
-
+                    {"drop_ms_column_with_idx"},
+                    // Tests scenario where MS COLUMN type is modified.
+                    {"modify_ms_column_type"},
+                    // Tests scenario where MS COLUMN type is modified, column has constraint.
+                    // TODO Uncomment the code when dependency columns from constraint will be supported.
+                    // {"modify_ms_column_type_with_constraint"},
                 });
     }
 
