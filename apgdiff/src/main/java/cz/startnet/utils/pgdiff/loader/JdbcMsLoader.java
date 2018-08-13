@@ -15,6 +15,7 @@ import cz.startnet.utils.pgdiff.loader.jdbc.MsExtendedObjectsReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.MsFKReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.MsFPVTReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.MsIndicesAndPKReader;
+import cz.startnet.utils.pgdiff.loader.jdbc.MsRolesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.MsSequencesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.MsTablesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.SchemasMsReader;
@@ -57,7 +58,6 @@ public class JdbcMsLoader extends JdbcLoaderBase {
             //setupMonitorWork();
 
             new SchemasMsReader(this, d).read();
-            new MsAssembliesReader(this, d).read();
             new MsFPVTReader(this).read();
             new MsExtendedObjectsReader(this).read();
             new MsTablesReader(this).read();
@@ -65,6 +65,8 @@ public class JdbcMsLoader extends JdbcLoaderBase {
             new MsIndicesAndPKReader(this).read();
             new MsFKReader(this).read();
             new MsCheckConstraintsReader(this).read();
+            new MsAssembliesReader(this, d).read();
+            new MsRolesReader(this, d).read();
 
             finishAntlr();
 

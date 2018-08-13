@@ -31,6 +31,6 @@ public class AlterMsAssembly extends TableAbstract {
             }
         }
 
-        return assembly;
+        return null;
     }
 }

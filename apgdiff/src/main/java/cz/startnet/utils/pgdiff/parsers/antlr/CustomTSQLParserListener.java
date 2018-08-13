@@ -9,8 +9,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_assemblyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_authorizationContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_db_roleContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_assemblyContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_db_roleContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_procedureContext;
@@ -27,11 +29,13 @@ import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceExcep
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.AlterMsAssembly;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.AlterMsAuthorization;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.AlterMsRole;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.AlterMsTable;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsAssembly;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsFunction;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsIndex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsProcedure;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsRole;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsRule;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsSchema;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsSequence;
@@ -147,6 +151,16 @@ public class CustomTSQLParserListener extends TSQLParserBaseListener {
     @Override
     public void exitRule_common(Rule_commonContext ctx) {
         safeParseStatement(new CreateMsRule(ctx, db), ctx);
+    }
+
+    @Override
+    public void exitCreate_db_role(Create_db_roleContext ctx) {
+        safeParseStatement(new CreateMsRole(ctx, db), ctx);
+    }
+
+    @Override
+    public void exitAlter_db_role(Alter_db_roleContext ctx) {
+        safeParseStatement(new AlterMsRole(ctx, db), ctx);
     }
 
     @Override

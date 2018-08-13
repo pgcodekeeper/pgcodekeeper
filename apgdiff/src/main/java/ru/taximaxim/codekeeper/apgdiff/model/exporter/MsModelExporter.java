@@ -17,6 +17,7 @@ import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsAssembly;
+import cz.startnet.utils.pgdiff.schema.MsRole;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
@@ -36,6 +37,7 @@ public class MsModelExporter extends AbstractModelExporter {
     private static final String SECURITY_FOLDER = "Security";
     private static final String SCHEMAS_FOLDER = "Schemas";
     private static final String ASSEMBLIES_FOLDER = "Assemblies";
+    private static final String ROLES_FOLDER = "Roles";
 
     public MsModelExporter(File outDir, PgDatabase db, String sqlEncoding) {
         super(outDir, db, sqlEncoding);
@@ -90,6 +92,11 @@ public class MsModelExporter extends AbstractModelExporter {
             throw new DirectoryException(MessageFormat.format(
                     "Could not create schemas directory: {0}",
                     schemasSharedDir.getAbsolutePath()));
+        }
+
+        File rolesFolder = new File(securityFolder, ROLES_FOLDER);
+        for (MsRole role : newDb.getRoles()) {
+            dumpSQL(getDumpSql(role), new File(rolesFolder, getExportedFilenameSql(role)));
         }
 
         // exporting schemas contents
