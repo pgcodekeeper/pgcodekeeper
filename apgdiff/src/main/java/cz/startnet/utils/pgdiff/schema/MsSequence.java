@@ -17,9 +17,7 @@ public class MsSequence extends AbstractSequence {
         sbSQL.append("CREATE SEQUENCE ");
         sbSQL.append(getQualifiedName());
 
-        if (!"bigint".equals(getDataType())) {
-            sbSQL.append("\n\tAS ").append(MsDiffUtils.quoteName(getDataType()));
-        }
+        sbSQL.append("\n\tAS ").append(MsDiffUtils.quoteName(getDataType()));
 
         fillSequenceBody(sbSQL);
         sbSQL.append(GO);

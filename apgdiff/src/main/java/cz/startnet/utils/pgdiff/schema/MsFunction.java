@@ -54,7 +54,7 @@ public class MsFunction extends AbstractFunction {
         }
 
         if (!checkForChanges(newFunction)) {
-            sb.append(getFunctionFullSQL(false));
+            sb.append(newFunction.getFunctionFullSQL(false));
         }
 
         if (!Objects.equals(getOwner(), newFunction.getOwner())) {

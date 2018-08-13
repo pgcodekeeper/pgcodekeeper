@@ -96,8 +96,8 @@ public class MsTrigger extends AbstractTrigger {
             AtomicBoolean isNeedDepcies) {
         if (newCondition instanceof MsTrigger) {
             MsTrigger newTrigger = (MsTrigger) newCondition;
-            if (compareWithoutComments(newTrigger)) {
-                sb.append(getTriggerFullSQL(false));
+            if (!compareWithoutComments(newTrigger)) {
+                sb.append(newTrigger.getTriggerFullSQL(false));
                 return true;
             }
         }

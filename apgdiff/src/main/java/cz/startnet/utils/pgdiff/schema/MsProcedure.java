@@ -72,7 +72,7 @@ public class MsProcedure extends AbstractFunction {
             return false;
         }
         if (!checkForChanges(newProcedure)) {
-            sb.append(getProcedureFullSQL(false));
+            sb.append(newProcedure.getProcedureFullSQL(false));
         }
 
         if (!Objects.equals(getOwner(), newProcedure.getOwner())) {
