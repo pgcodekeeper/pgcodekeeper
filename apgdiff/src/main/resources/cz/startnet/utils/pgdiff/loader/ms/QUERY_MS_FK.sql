@@ -9,9 +9,8 @@ SELECT
     --sfk.is_disabled AS disabled,
     sfk.is_not_for_replication,
     sfk.update_referential_action,
-    sfk.delete_referential_action,
+    sfk.delete_referential_action
     --sfk.is_not_trusted AS with_no_check,
-    sfk.is_system_named As is_system_named
 FROM sys.foreign_keys AS sfk WITH (NOLOCK)
 LEFT JOIN sys.foreign_key_columns AS sfkc WITH (NOLOCK) ON sfk.object_id=sfkc.constraint_object_id
 LEFT JOIN sys.objects fs WITH (NOLOCK) ON sfk.parent_object_id=fs.object_id

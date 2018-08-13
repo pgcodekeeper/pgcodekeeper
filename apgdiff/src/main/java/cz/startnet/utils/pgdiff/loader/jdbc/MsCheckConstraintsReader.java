@@ -20,10 +20,9 @@ public class MsCheckConstraintsReader extends JdbcReader {
     protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException, JsonReaderException {
         loader.monitor.worked(1);
         String name = res.getString("name");
-        boolean isSystemNamed = res.getBoolean("is_system_named");
         loader.setCurrentObject(new GenericColumn(schema.getName(), name, DbObjType.CONSTRAINT));
 
-        AbstractConstraint con = new MsConstraint(isSystemNamed ? "" : name, "");
+        AbstractConstraint con = new MsConstraint(name, "");
         // TODO with no check
 
         StringBuilder sb = new StringBuilder();
