@@ -41,6 +41,7 @@ public class PgDatabase extends PgStatement {
     private final List<PgExtension> extensions = new ArrayList<>();
     private final List<MsAssembly> assemblies = new ArrayList<>();
     private final List<MsRole> roles = new ArrayList<>();
+    private final List<MsUser> users = new ArrayList<>();
 
     // Contains object definitions
     private final Map<String, List<PgObjLocation>> objDefinitions = new HashMap<>();
@@ -259,6 +260,23 @@ public class PgDatabase extends PgStatement {
     }
 
     /**
+     * Returns user of given name or null if the user has not been found.
+     *
+     * @param name user name
+     *
+     * @return found user or null
+     */
+    public MsUser getUser(final String name) {
+        for (final MsUser user : users) {
+            if (user.getName().equals(name)) {
+                return user;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Getter for {@link #assemblies}. The list cannot be modified.
      *
      * @return {@link #assemblies}
@@ -276,6 +294,15 @@ public class PgDatabase extends PgStatement {
         return Collections.unmodifiableList(roles);
     }
 
+    /**
+     * Getter for {@link #users}. The list cannot be modified.
+     *
+     * @return {@link #users}
+     */
+    public List<MsUser> getUsers() {
+        return Collections.unmodifiableList(users);
+    }
+
     public void addAssembly(final MsAssembly assembly) {
         assertUnique(this::getAssembly, assembly);
         assemblies.add(assembly);
@@ -287,6 +314,13 @@ public class PgDatabase extends PgStatement {
         assertUnique(this::getRole, role);
         roles.add(role);
         role.setParent(this);
+        resetHash();
+    }
+
+    public void addUser(final MsUser user) {
+        assertUnique(this::getRole, user);
+        users.add(user);
+        user.setParent(this);
         resetHash();
     }
 
@@ -337,7 +371,8 @@ public class PgDatabase extends PgStatement {
             return PgDiffUtils.setlikeEquals(extensions, db.extensions)
                     && PgDiffUtils.setlikeEquals(schemas, db.schemas)
                     && PgDiffUtils.setlikeEquals(assemblies, db.assemblies)
-                    && PgDiffUtils.setlikeEquals(roles, db.roles);
+                    && PgDiffUtils.setlikeEquals(roles, db.roles)
+                    && PgDiffUtils.setlikeEquals(users, db.users);
         }
         return false;
     }
@@ -353,6 +388,7 @@ public class PgDatabase extends PgStatement {
         hasher.putUnordered(schemas);
         hasher.putUnordered(assemblies);
         hasher.putUnordered(roles);
+        hasher.putUnordered(users);
     }
 
     @Override
@@ -378,6 +414,9 @@ public class PgDatabase extends PgStatement {
         }
         for (MsRole role : roles) {
             copy.addRole(role);
+        }
+        for (MsUser user : users) {
+            copy.addUser(user);
         }
         return copy;
     }
@@ -415,6 +454,16 @@ public class PgDatabase extends PgStatement {
                 addRole(r);
             } else {
                 overrides.add(new PgOverride(role, r));
+            }
+        }
+
+        for (MsUser u : database.getUsers()) {
+            MsUser user = getUser(u.getName());
+            if (user == null) {
+                u.dropParent();
+                addUser(user);
+            } else {
+                overrides.add(new PgOverride(user, u));
             }
         }
 

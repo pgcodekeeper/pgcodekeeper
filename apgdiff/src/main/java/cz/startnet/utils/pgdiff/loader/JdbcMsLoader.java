@@ -18,6 +18,7 @@ import cz.startnet.utils.pgdiff.loader.jdbc.MsIndicesAndPKReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.MsRolesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.MsSequencesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.MsTablesReader;
+import cz.startnet.utils.pgdiff.loader.jdbc.MsUsersReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.SchemasMsReader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
@@ -67,6 +68,7 @@ public class JdbcMsLoader extends JdbcLoaderBase {
             new MsCheckConstraintsReader(this).read();
             new MsAssembliesReader(this, d).read();
             new MsRolesReader(this, d).read();
+            new MsUsersReader(this, d).read();
 
             finishAntlr();
 

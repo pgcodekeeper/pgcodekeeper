@@ -71,6 +71,7 @@ public final class JdbcQueries {
     public static Map <SupportedVersion, String> QUERY_MS_CHECK_CONSTRAINTS;
     public static Map <SupportedVersion, String> QUERY_MS_ASSEMBLIES;
     public static Map <SupportedVersion, String> QUERY_MS_ROLES;
+    public static Map <SupportedVersion, String> QUERY_MS_USERS;
 
     // SONAR-ON
 

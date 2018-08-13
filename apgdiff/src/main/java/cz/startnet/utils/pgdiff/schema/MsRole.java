@@ -124,10 +124,10 @@ public class MsRole extends PgStatement {
     @Override
     public boolean compare(PgStatement obj) {
         if (obj instanceof MsRole) {
-            MsRole schema = (MsRole) obj;
-            return Objects.equals(members, schema.members)
-                    && Objects.equals(name, schema.getName())
-                    && Objects.equals(owner, schema.getOwner());
+            MsRole role = (MsRole) obj;
+            return Objects.equals(members, role.members)
+                    && Objects.equals(name, role.getName())
+                    && Objects.equals(owner, role.getOwner());
         }
         return false;
     }

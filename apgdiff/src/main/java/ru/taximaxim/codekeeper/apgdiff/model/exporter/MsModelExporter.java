@@ -18,6 +18,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsAssembly;
 import cz.startnet.utils.pgdiff.schema.MsRole;
+import cz.startnet.utils.pgdiff.schema.MsUser;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
@@ -38,6 +39,7 @@ public class MsModelExporter extends AbstractModelExporter {
     private static final String SCHEMAS_FOLDER = "Schemas";
     private static final String ASSEMBLIES_FOLDER = "Assemblies";
     private static final String ROLES_FOLDER = "Roles";
+    private static final String USERS_FOLDER = "Users";
 
     public MsModelExporter(File outDir, PgDatabase db, String sqlEncoding) {
         super(outDir, db, sqlEncoding);
@@ -84,14 +86,17 @@ public class MsModelExporter extends AbstractModelExporter {
 
         File securityFolder = new File(outDir, SECURITY_FOLDER);
 
-        // TODO Security folder contains schemas, roles and users
-
         // exporting schemas
         File schemasSharedDir = new File(securityFolder, SCHEMAS_FOLDER);
         if (!schemasSharedDir.mkdir()) {
             throw new DirectoryException(MessageFormat.format(
                     "Could not create schemas directory: {0}",
                     schemasSharedDir.getAbsolutePath()));
+        }
+
+        File usersFolder = new File(securityFolder, USERS_FOLDER);
+        for (MsUser user : newDb.getUsers()) {
+            dumpSQL(getDumpSql(user), new File(usersFolder, getExportedFilenameSql(user)));
         }
 
         File rolesFolder = new File(securityFolder, ROLES_FOLDER);
