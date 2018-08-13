@@ -16,6 +16,7 @@ import java.util.List;
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.MsAssembly;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
@@ -34,6 +35,7 @@ public class MsModelExporter extends AbstractModelExporter {
     private static final String PROCEDURE_FOLDER = "Stored Procedures";
     private static final String SECURITY_FOLDER = "Security";
     private static final String SCHEMAS_FOLDER = "Schemas";
+    private static final String ASSEMBLIES_FOLDER = "Assemblies";
 
     public MsModelExporter(File outDir, PgDatabase db, String sqlEncoding) {
         super(outDir, db, sqlEncoding);
@@ -46,7 +48,7 @@ public class MsModelExporter extends AbstractModelExporter {
 
     @Override
     public void exportFull() throws IOException {
-        String[] dirs = new String[] { /*"Assemblies",*/
+        String[] dirs = new String[] { ASSEMBLIES_FOLDER,
                 SEQUENCES_FOLDER, SECURITY_FOLDER, PROCEDURE_FOLDER,
                 FUNCTIONS_FOLDER, TABLES_FOLDER, VIEWS_FOLDER};
 
@@ -100,6 +102,11 @@ public class MsModelExporter extends AbstractModelExporter {
             dumpObjects(schema.getViews(), new File(outDir, VIEWS_FOLDER));
 
             // indexes, triggers, rules, constraints are dumped when tables are processed
+        }
+
+        File assembliesFolder = new File(outDir, ASSEMBLIES_FOLDER);
+        for (MsAssembly assembly : newDb.getAssemblies()) {
+            dumpSQL(getDumpSql(assembly), new File(assembliesFolder, getExportedFilenameSql(assembly)));
         }
 
         writeProjVersion(new File(outDir.getPath(),

@@ -7,8 +7,10 @@ import org.antlr.v4.runtime.Token;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_assemblyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_authorizationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_tableContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_assemblyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_procedureContext;
@@ -23,8 +25,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeE
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.ObjectCreationException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.AlterMsAssembly;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.AlterMsAuthorization;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.AlterMsTable;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsAssembly;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsFunction;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsIndex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsProcedure;
@@ -34,9 +38,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsSequence;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsTable;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsTrigger;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsView;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
 public class CustomTSQLParserListener extends TSQLParserBaseListener {
@@ -126,8 +130,18 @@ public class CustomTSQLParserListener extends TSQLParserBaseListener {
     }
 
     @Override
+    public void exitCreate_assembly(Create_assemblyContext ctx) {
+        safeParseStatement(new CreateMsAssembly(ctx, db), ctx);
+    }
+
+    @Override
     public void exitAlter_table(Alter_tableContext ctx) {
         safeParseStatement(new AlterMsTable(ctx, db), ctx);
+    }
+
+    @Override
+    public void exitAlter_assembly(Alter_assemblyContext ctx) {
+        safeParseStatement(new AlterMsAssembly(ctx, db), ctx);
     }
 
     @Override

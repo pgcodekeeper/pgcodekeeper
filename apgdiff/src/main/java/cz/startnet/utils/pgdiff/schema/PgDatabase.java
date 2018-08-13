@@ -39,6 +39,7 @@ public class PgDatabase extends PgStatement {
 
     private final List<AbstractSchema> schemas = new ArrayList<>();
     private final List<PgExtension> extensions = new ArrayList<>();
+    private final List<MsAssembly> assemblies = new ArrayList<>();
 
     // Contains object definitions
     private final Map<String, List<PgObjLocation>> objDefinitions = new HashMap<>();
@@ -169,6 +170,10 @@ public class PgDatabase extends PgStatement {
         return getExtension(name) != null;
     }
 
+    public boolean containsAssembly(final String name) {
+        return getAssembly(name) != null;
+    }
+
     @Override
     public Stream<PgStatement> getDescendants() {
         Stream<PgStatement> stream = getChildren();
@@ -218,6 +223,39 @@ public class PgDatabase extends PgStatement {
         resetHash();
     }
 
+    /**
+     * Returns assembly of given name or null if the assembly has not been found.
+     *
+     * @param name assembly name
+     *
+     * @return found assembly or null
+     */
+    public MsAssembly getAssembly(final String name) {
+        for (final MsAssembly ass : assemblies) {
+            if (ass.getName().equals(name)) {
+                return ass;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Getter for {@link #assemblies}. The list cannot be modified.
+     *
+     * @return {@link #assemblies}
+     */
+    public List<MsAssembly> getAssemblies() {
+        return Collections.unmodifiableList(assemblies);
+    }
+
+    public void addAssembly(final MsAssembly assembly) {
+        assertUnique(this::getAssembly, assembly);
+        assemblies.add(assembly);
+        assembly.setParent(this);
+        resetHash();
+    }
+
     public void sortColumns() {
         for (AbstractSchema schema : schemas) {
             schema.getTables().forEach(AbstractTable::sortColumns);
@@ -263,7 +301,8 @@ public class PgDatabase extends PgStatement {
         if (obj instanceof PgDatabase) {
             PgDatabase db = (PgDatabase) obj;
             return PgDiffUtils.setlikeEquals(extensions, db.extensions)
-                    && PgDiffUtils.setlikeEquals(schemas, db.schemas);
+                    && PgDiffUtils.setlikeEquals(schemas, db.schemas)
+                    && PgDiffUtils.setlikeEquals(assemblies, db.assemblies);
         }
         return false;
     }
@@ -277,6 +316,7 @@ public class PgDatabase extends PgStatement {
     public void computeChildrenHash(Hasher hasher) {
         hasher.putUnordered(extensions);
         hasher.putUnordered(schemas);
+        hasher.putUnordered(assemblies);
     }
 
     @Override
@@ -297,6 +337,9 @@ public class PgDatabase extends PgStatement {
         for (AbstractSchema schema : schemas) {
             copy.addSchema(schema.deepCopy());
         }
+        for (MsAssembly ass : assemblies) {
+            copy.addAssembly(ass);
+        }
         return copy;
     }
 
@@ -313,6 +356,16 @@ public class PgDatabase extends PgStatement {
                 addExtension(e);
             } else if (!"plpgsql".equals(e.getName())) {
                 overrides.add(new PgOverride(ext, e));
+            }
+        }
+
+        for (MsAssembly a : database.getAssemblies()) {
+            MsAssembly ass = getAssembly(a.getName());
+            if (ass == null) {
+                a.dropParent();
+                addAssembly(a);
+            } else {
+                overrides.add(new PgOverride(ass, a));
             }
         }
 

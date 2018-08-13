@@ -69,6 +69,7 @@ public final class JdbcQueries {
     public static Map <SupportedVersion, String> QUERY_MS_INDICES_AND_PK;
     public static Map <SupportedVersion, String> QUERY_MS_FK;
     public static Map <SupportedVersion, String> QUERY_MS_CHECK_CONSTRAINTS;
+    public static Map <SupportedVersion, String> QUERY_MS_ASSEMBLIES;
 
     // SONAR-ON
 

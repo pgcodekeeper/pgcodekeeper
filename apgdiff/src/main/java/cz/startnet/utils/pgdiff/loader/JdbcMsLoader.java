@@ -9,6 +9,7 @@ import org.eclipse.core.runtime.SubMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.jdbc.JdbcLoaderBase;
+import cz.startnet.utils.pgdiff.loader.jdbc.MsAssembliesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.MsCheckConstraintsReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.MsExtendedObjectsReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.MsFKReader;
@@ -56,6 +57,7 @@ public class JdbcMsLoader extends JdbcLoaderBase {
             //setupMonitorWork();
 
             new SchemasMsReader(this, d).read();
+            new MsAssembliesReader(this, d).read();
             new MsFPVTReader(this).read();
             new MsExtendedObjectsReader(this).read();
             new MsTablesReader(this).read();
