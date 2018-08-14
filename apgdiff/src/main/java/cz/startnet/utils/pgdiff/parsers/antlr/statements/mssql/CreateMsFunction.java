@@ -1,7 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_functionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Func_returnContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Procedure_paramContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
@@ -35,9 +34,8 @@ public class CreateMsFunction extends ParserAbstract {
         function.setQuotedIdentified(quotedIdentifier);
         fillArguments(function);
         function.setBody(db.getArguments(), getFullCtxText(ctx.func_body()));
-        Func_returnContext returns = ctx.func_return();
-        // TODO safe just necessary part
-        function.setReturns(getFullCtxText(returns).replace("\r", ""));
+        String returns = getFullCtxText(ctx.func_return());
+        function.setReturns(db.getArguments().isKeepNewlines() ? returns : returns.replace("\r", ""));
         schema.addFunction(function);
         return function;
     }

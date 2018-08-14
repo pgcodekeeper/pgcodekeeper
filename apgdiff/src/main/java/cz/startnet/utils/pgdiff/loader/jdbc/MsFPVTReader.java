@@ -12,6 +12,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsTrigger;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsView;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
@@ -56,6 +57,7 @@ public class MsFPVTReader extends JdbcReader {
         loader.setCurrentObject(new GenericColumn(schema.getName(), name, tt));
         boolean an = res.getBoolean("ansi_nulls");
         boolean qi = res.getBoolean("quoted_identifier");
+        boolean isDisable = res.getBoolean("is_disabled");
 
         String def = res.getString("definition");
         String owner = res.getString("owner");
@@ -75,7 +77,10 @@ public class MsFPVTReader extends JdbcReader {
         if (tt == DbObjType.TRIGGER) {
             loader.submitMsAntlrTask(def, p -> p.tsql_file().batch(0).sql_clauses()
                     .st_clause(0).ddl_clause().schema_create().create_or_alter_trigger(),
-                    ctx -> new CreateMsTrigger(ctx, db, an, qi).getObject());
+                    ctx -> {
+                        MsTrigger tr = (MsTrigger) new CreateMsTrigger(ctx, db, an, qi).getObject();
+                        tr.setDisable(isDisable);
+                    });
         } else if (tt == DbObjType.VIEW) {
             loader.submitMsAntlrTask(def, p -> p.tsql_file().batch(0).sql_clauses()
                     .st_clause(0).ddl_clause().schema_create().create_or_alter_view(),

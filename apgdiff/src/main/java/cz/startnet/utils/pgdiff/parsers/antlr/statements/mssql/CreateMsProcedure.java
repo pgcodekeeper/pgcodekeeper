@@ -35,7 +35,7 @@ public class CreateMsProcedure extends ParserAbstract {
         procedure.setQuotedIdentified(quotedIdentifier);
         fillArguments(procedure);
         procedure.setForReplication(ctx.REPLICATION() != null);
-        procedure.setBody(getFullCtxText(ctx.proc_body()));
+        procedure.setBody(db.getArguments(), getFullCtxText(ctx.proc_body()));
 
         for (Procedure_optionContext option : ctx.procedure_option()) {
             procedure.addOption(getFullCtxText(option));

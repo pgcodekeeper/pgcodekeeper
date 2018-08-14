@@ -1546,7 +1546,7 @@ alter_table
                              | DROP COLUMN id
                              | DROP CONSTRAINT constraint=id
                              | CHECK CONSTRAINT constraint=id
-                             | (ENABLE | DISABLE) TRIGGER id?
+                             | (ENABLE | DISABLE) TRIGGER trigger=id?
                              | REBUILD table_options)
 
     ;
