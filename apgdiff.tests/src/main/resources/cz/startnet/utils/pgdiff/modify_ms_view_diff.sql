@@ -1,0 +1,9 @@
+SET QUOTED_IDENTIFIER OFF
+GO
+SET ANSI_NULLS OFF
+GO
+ALTER VIEW [dbo].[view1] AS
+	SELECT 
+    a.[c1]
+FROM [dbo].[table1] a
+GO

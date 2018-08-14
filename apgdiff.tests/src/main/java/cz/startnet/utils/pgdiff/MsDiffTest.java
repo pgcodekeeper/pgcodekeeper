@@ -53,7 +53,7 @@ public class MsDiffTest {
                     // Tests scenario where MS VIEW is dropped.
                     {"drop_ms_view"},
                     // Tests scenario where MS VIEW is modified.
-                    // {"modify_ms_view"},
+                    {"modify_ms_view"},
 
                     // TODO Uncomment the code when user-defined type will be supported.
                     // Tests scenario where MS TYPE is added.
@@ -68,14 +68,14 @@ public class MsDiffTest {
                     // Tests scenario where MS INDEX is dropped.
                     {"drop_ms_index"},
                     // Tests scenario where MS INDEX definition is modified.
-                    // {"modify_index"},
+                    {"modify_ms_index"},
 
                     // Tests scenario where MS FUNCTION without args is added.
                     {"add_ms_function_noargs"},
                     // Tests scenario where MS FUNCTION without args is dropped.
                     {"drop_ms_function_noargs"},
                     // Tests scenario where MS FUNCTION without args is modified.
-                    // {"modify_ms_function_noargs"},
+                    {"modify_ms_function_noargs"},
 
                     // Tests scenario where MS FUNCTION with args is added.
                     {"add_ms_function_args"},
@@ -84,7 +84,7 @@ public class MsDiffTest {
                     // Tests scenario where MS FUNCTION with args is modified.
                     {"modify_ms_function_args"},
                     // Tests scenario where MS FUNCTION with args return type is modified.
-                    // {"modify_ms_function_args_return_tbl"},
+                    {"modify_ms_function_args_return_tbl"},
 
                     // Tests scenario where MS TABLE CONSTRAINT of column is added.
                     {"add_ms_constraint_column"},
