@@ -3,7 +3,7 @@ CREATE TABLE [dbo].[table1](
     [c2] [varchar](100) NOT NULL)
 GO
 
-CREATE   VIEW [dbo].[view1] AS
+CREATE VIEW [dbo].[view1] AS
     SELECT 
     a.[c1],
     a.[c2]
