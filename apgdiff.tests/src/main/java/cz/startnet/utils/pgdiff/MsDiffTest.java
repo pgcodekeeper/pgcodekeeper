@@ -43,10 +43,13 @@ public class MsDiffTest {
                     {"add_ms_table"},
                     // Tests scenario where MS TABLE is dropped.
                     {"drop_ms_table"},
-                    // Tests scenario where MS TABLE is modified.
-                    // {"modify_ms_table_..."},
                     // Tests scenario where MS TABLE identity is modified.
                     {"modify_ms_table_identity"},
+                    // Tests scenario where MS TABLE trigger state is modified.
+                    {"modify_ms_table_disable_trigger"},
+                    // Tests scenario where MS TABLE option is modified.
+                    // TODO Uncomment the code when table option will be supported.
+                    // {"modify_ms_table_option"},
 
                     // Tests scenario where MS VIEW is added.
                     {"add_ms_view"},
