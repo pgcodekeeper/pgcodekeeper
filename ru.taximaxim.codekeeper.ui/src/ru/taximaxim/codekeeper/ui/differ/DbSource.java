@@ -16,6 +16,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.osgi.service.prefs.BackingStoreException;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
@@ -32,6 +33,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
+import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgUIDumpLoader;
@@ -85,13 +87,13 @@ public abstract class DbSource {
     protected abstract PgDatabase loadInternal(SubMonitor monitor)
             throws IOException, InterruptedException, CoreException;
 
-    static PgDiffArguments getPgDiffArgs(String charset, boolean forceUnixNewlines)
+    static PgDiffArguments getPgDiffArgs(String charset, boolean forceUnixNewlines, boolean msSql)
             throws IOException {
-        return getPgDiffArgs(charset, ApgdiffConsts.UTC, forceUnixNewlines);
+        return getPgDiffArgs(charset, ApgdiffConsts.UTC, forceUnixNewlines, msSql);
     }
 
     static PgDiffArguments getPgDiffArgs(String charset, String timeZone,
-            boolean forceUnixNewlines) throws IOException {
+            boolean forceUnixNewlines, boolean msSql) throws IOException {
         PgDiffArguments args = new PgDiffArguments();
         IPreferenceStore mainPS = Activator.getDefault().getPreferenceStore();
         args.setInCharsetName(charset);
@@ -101,6 +103,7 @@ public abstract class DbSource {
         args.setIgnorePrivileges(mainPS.getBoolean(PREF.NO_PRIVILEGES));
         args.setTimeZone(timeZone);
         args.setKeepNewlines(!forceUnixNewlines);
+        args.setMsSql(msSql);
         return args;
     }
 
@@ -189,7 +192,7 @@ class DbSourceDirTree extends DbSource {
 
         List<AntlrError> er = new ArrayList<>();
         PgDatabase db = PgDumpLoader.loadDatabaseSchemaFromDirTree(dirTreePath,
-                getPgDiffArgs(encoding, forceUnixNewlines), monitor, er);
+                getPgDiffArgs(encoding, forceUnixNewlines, false), monitor, er);
         errors = er;
         return db;
     }
@@ -216,9 +219,27 @@ class DbSourceProject extends DbSource {
 
         IEclipsePreferences pref = proj.getPrefs();
         List<AntlrError> er = new ArrayList<>();
-        PgDiffArguments arguments = getPgDiffArgs(charset, pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true));
-        PgDatabase db = PgUIDumpLoader.loadDatabaseSchemaFromIProject(project,
-                arguments, monitor, null, er);
+
+        // TODO move to other place?
+        boolean isMsSql = OpenProjectUtils.checkMsSql(proj.getProject());
+        try {
+            pref.putBoolean(PROJ_PREF.MSSQL_MODE, isMsSql);
+            pref.flush();
+        } catch (BackingStoreException e) {
+            Log.log(e);
+        }
+
+        PgDiffArguments arguments = getPgDiffArgs(charset,
+                pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true), isMsSql);
+
+        PgDatabase db;
+        if (isMsSql) {
+            db = PgUIDumpLoader.loadDatabaseSchemaFromMsProject(project,
+                    arguments, monitor, null, er);
+        } else {
+            db = PgUIDumpLoader.loadDatabaseSchemaFromIProject(project,
+                    arguments, monitor, null, er);
+        }
 
         try {
             PgUIDumpLoader.loadLibraries(db, arguments, new DependenciesXmlStore(project).readObjects());
@@ -267,8 +288,9 @@ class DbSourceFile extends DbSource {
         }
 
         List<AntlrError> errList = null;
+        // TODO how to know MS OR PG?
         try (PgDumpLoader loader = new PgDumpLoader(filename,
-                getPgDiffArgs(encoding, forceUnixNewlines),
+                getPgDiffArgs(encoding, forceUnixNewlines, true),
                 monitor, 2)) {
             errList = loader.getErrors();
             return loader.load();
@@ -353,7 +375,7 @@ class DbSourceDb extends DbSource {
             pm.newChild(1).subTask(Messages.dbSource_loading_dump);
 
             try (PgDumpLoader loader = new PgDumpLoader(dump,
-                    getPgDiffArgs(encoding, forceUnixNewlines),
+                    getPgDiffArgs(encoding, forceUnixNewlines, false),
                     monitor)) {
                 PgDatabase database = loader.load();
                 errors = loader.getErrors();
@@ -388,7 +410,7 @@ class DbSourceJdbc extends DbSource {
     protected PgDatabase loadInternal(SubMonitor monitor)
             throws IOException, InterruptedException {
         monitor.subTask(Messages.reading_db_from_jdbc);
-        PgDiffArguments args = getPgDiffArgs(ApgdiffConsts.UTF_8, forceUnixNewlines);
+        PgDiffArguments args = getPgDiffArgs(ApgdiffConsts.UTF_8, forceUnixNewlines, false);
         JdbcLoader loader = new JdbcLoader(jdbcConnector, args, monitor);
         PgDatabase database = loader.getDbFromJdbc();
         errors = loader.getErrors();
@@ -426,7 +448,7 @@ class DbSourceTimestamp extends DbSource {
     protected PgDatabase loadInternal(SubMonitor monitor)
             throws IOException, InterruptedException {
         monitor.subTask(Messages.reading_db_from_jdbc);
-        PgDiffArguments args = getPgDiffArgs(charset, forceUnixNewlines);
+        PgDiffArguments args = getPgDiffArgs(charset, forceUnixNewlines, false);
         JdbcLoader loader = new JdbcLoader(jdbcConnector, args, monitor);
         loader.setTimestampParams(dbSrc, extSchema);
         PgDatabase database = loader.getDbFromJdbc();

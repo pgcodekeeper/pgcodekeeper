@@ -113,9 +113,10 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
     public boolean performFinish() {
         try {
             TreeDiffer treediffer = pagePartial.getTreeDiffer();
+            // TODO add combo
             Differ differ = new Differ(treediffer.getDbSource().getDbObject(),
                     treediffer.getDbTarget().getDbObject(),
-                    treediffer.getDiffTree(), false, pageDiff.getTimezone());
+                    treediffer.getDiffTree(), false, pageDiff.getTimezone(), false);
             getContainer().run(true, true, differ);
 
             Path path = Files.createTempFile("diff_wizard_result_", ""); //$NON-NLS-1$ //$NON-NLS-2$

@@ -182,7 +182,7 @@ class QuickUpdateJob extends SingletonEditorJob {
         }
 
         Differ differ = new Differ(dbRemote.getDbObject(), dbProject.getDbObject(),
-                treeFull, false, timezone);
+                treeFull, false, timezone, proj.getPrefs().getBoolean(PROJ_PREF.MSSQL_MODE, false));
         differ.run(monitor.newChild(1));
 
         if (differ.getScript().isDangerDdl(false, false, false, false)) {

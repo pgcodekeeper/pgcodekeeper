@@ -103,7 +103,7 @@ public class MsModelExporter extends AbstractModelExporter {
         }
 
         writeProjVersion(new File(outDir.getPath(),
-                ApgdiffConsts.FILENAME_WORKING_DIR_MARKER));
+                ApgdiffConsts.FILENAME_WORKING_DIR_MARKER), true);
     }
 
     private void dumpFunctions(List<AbstractFunction> funcs) throws IOException {

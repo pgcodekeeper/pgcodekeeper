@@ -663,7 +663,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         IEclipsePreferences pref = proj.getPrefs();
         final Differ differ = new Differ(dbRemote.getDbObject(),
                 dbProject.getDbObject(), diffTree.getRevertedCopy(), false,
-                pref.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
+                pref.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC),
+                pref.getBoolean(PROJ_PREF.MSSQL_MODE, false));
         differ.setAdditionalDepciesSource(manualDepciesSource);
         differ.setAdditionalDepciesTarget(manualDepciesTarget);
 

@@ -153,6 +153,9 @@ public final class PgDiff {
             PgDatabase oldDbFull, PgDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget) {
+        if (arguments.isMsSql()) {
+            return diffMsDatabaseSchemas(writer, arguments, root, oldDbFull, newDbFull, null);
+        }
         return diffDatabaseSchemasAdditionalDepcies(writer, arguments, root,
                 oldDbFull, newDbFull, additionalDepciesSource, additionalDepciesTarget, null);
     }

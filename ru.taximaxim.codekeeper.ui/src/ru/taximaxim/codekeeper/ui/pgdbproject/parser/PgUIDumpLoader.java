@@ -170,6 +170,46 @@ public class PgUIDumpLoader extends PgDumpLoader {
         return db;
     }
 
+    /**
+     * Loads database schema from a MsModelExporter directory tree.
+     *
+     * @return database schema
+     */
+    public static PgDatabase loadDatabaseSchemaFromMsProject(IProject iProject,
+            PgDiffArguments arguments, IProgressMonitor monitor,
+            List<StatementBodyContainer> statementBodies, List<AntlrError> errors)
+                    throws InterruptedException, IOException, CoreException {
+        PgDatabase db = new PgDatabase();
+        db.setArguments(arguments);
+
+        IFolder securityFolder = iProject.getFolder("Security");
+
+        // skip walking SCHEMA folder if it does not exist
+        if (!securityFolder.exists()) {
+            return db;
+        }
+
+        IFolder schemasCommonDir = securityFolder.getFolder("Schemas");
+
+        // skip walking SCHEMA folder if it does not exist
+        if (!schemasCommonDir.exists()) {
+            return db;
+        }
+
+        // load schemas
+        loadSubdir(schemasCommonDir, db, monitor, statementBodies, errors);
+
+        // content
+        for (String dirSub : MS_DIR_LOAD_ORDER) {
+            IFolder iFolder = iProject.getFolder(dirSub);
+            if (iFolder.exists()) {
+                loadSubdir(iFolder, db, monitor, statementBodies, errors);
+            }
+        }
+
+        return db;
+    }
+
     private static void loadSubdir(IFolder folder, PgDatabase db, IProgressMonitor monitor,
             List<StatementBodyContainer> statementBodies, List<AntlrError> errors)
                     throws InterruptedException, IOException, CoreException {
@@ -183,7 +223,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
     private static void loadFile(IFile file, IProgressMonitor monitor, PgDatabase db,
             List<StatementBodyContainer> statementBodies, List<AntlrError> errors)
                     throws IOException, CoreException, InterruptedException {
-        PgDiffArguments arguments = new PgDiffArguments();
+        PgDiffArguments arguments = db.getArguments().clone();
         arguments.setInCharsetName(file.getCharset());
 
         List<AntlrError> errList = null;

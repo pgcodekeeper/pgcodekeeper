@@ -425,9 +425,17 @@ public abstract class AbstractModelExporter {
     }
 
     public static void writeProjVersion(File f) throws FileNotFoundException {
+        writeProjVersion(f, false);
+    }
+
+    public static void writeProjVersion(File f, boolean isMsSql) throws FileNotFoundException {
         try (PrintWriter pw = new UnixPrintWriter(f, StandardCharsets.UTF_8)) {
             pw.println(ApgdiffConsts.VERSION_PROP_NAME + " = " //$NON-NLS-1$
                     + ApgdiffConsts.EXPORT_CURRENT_VERSION);
+            if (isMsSql) {
+                pw.println(ApgdiffConsts.MSSQL_PROP_NAME + " = " //$NON-NLS-1$
+                        + ApgdiffConsts.MSSQL_TRUE_VALUE);
+            }
         }
     }
 }

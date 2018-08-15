@@ -61,6 +61,20 @@ public final class OpenProjectUtils {
         return null;
     }
 
+    public static boolean checkMsSql(IProject proj) {
+        File markerFile = new File(proj.getLocation().toFile(),
+                ApgdiffConsts.FILENAME_WORKING_DIR_MARKER);
+        try (FileInputStream stream = new FileInputStream(markerFile)) {
+            Properties props = new Properties();
+            props.load(stream);
+            return ApgdiffConsts.MSSQL_TRUE_VALUE.equals(
+                    props.getProperty(ApgdiffConsts.MSSQL_PROP_NAME, "").trim()); //$NON-NLS-1$
+        } catch (IOException ex) {
+            Log.log(ex);
+            return false;
+        }
+    }
+
     public static boolean checkVersionAndWarn(IProject proj, Shell parent,
             boolean warnNonBlockers) {
         StringBuilder err = new StringBuilder();
