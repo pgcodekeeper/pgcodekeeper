@@ -51,12 +51,22 @@ public class MsDiffTest {
                     // TODO Uncomment the code when table option will be supported.
                     // {"modify_ms_table_option"},
 
+                    // TODO Uncomment the code when table with partitions will be supported.
+                    // Tests scenario where MS TABLE with partition is added.
+                    // {"add_ms_table_with_partition"},
+                    // Tests scenario where MS TABLE with partition is dropped.
+                    // {"drop_ms_table_with_partition"},
+                    // Tests scenario where MS TABLE with partition is modified.
+                    // {"modify_ms_table_with_partition"},
+
                     // Tests scenario where MS VIEW is added.
                     {"add_ms_view"},
                     // Tests scenario where MS VIEW is dropped.
                     {"drop_ms_view"},
                     // Tests scenario where MS VIEW is modified.
                     {"modify_ms_view"},
+                    // Tests scenario where MS VIEW trigger state is modified.
+                    {"modify_ms_view_disable_trigger"},
 
                     // TODO Uncomment the code when user-defined type will be supported.
                     // Tests scenario where MS TYPE is added.
