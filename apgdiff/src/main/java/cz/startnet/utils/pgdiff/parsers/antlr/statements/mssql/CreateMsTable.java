@@ -8,10 +8,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_optionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.TableAbstract;
+import cz.startnet.utils.pgdiff.schema.AbstractRegularTable;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.AbstractRegularTable;
 import cz.startnet.utils.pgdiff.schema.SimpleMsTable;
 
 public class CreateMsTable extends TableAbstract {
@@ -40,6 +40,7 @@ public class CreateMsTable extends TableAbstract {
         table.setQuotedIdentified(quotedIdentifier);
 
         if (ctx.tablespace != null) {
+            // TODO add support for partition
             table.setTablespace(ctx.tablespace.getText());
         }
 
