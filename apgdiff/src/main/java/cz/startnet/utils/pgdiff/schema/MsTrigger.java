@@ -16,13 +16,14 @@ public class MsTrigger extends AbstractTrigger {
         sb.append(getTriggerFullSQL(true));
 
         if (isDisable()) {
-            sb.append("\nALTER ").append(getParent().getStatementType().name());
-            sb.append(" ");
+            sb.append("\nDISABLE TRIGGER ");
             sb.append(MsDiffUtils.quoteName(getContainingSchema().getName()));
             sb.append('.');
-            sb.append(MsDiffUtils.quoteName(getTableName()));
-            sb.append(" DISABLE TRIGGER ");
             sb.append(MsDiffUtils.quoteName(getName()));
+            sb.append(" ON ");
+            sb.append(MsDiffUtils.quoteName(getContainingSchema().getName()));
+            sb.append(".");
+            sb.append(MsDiffUtils.quoteName(getTableName()));
             sb.append(GO);
         }
 
@@ -116,14 +117,16 @@ public class MsTrigger extends AbstractTrigger {
             }
 
             if (isDisable() != newTrigger.isDisable()) {
-                sb.append("\nALTER ").append(newTrigger.getParent().getStatementType().name());
-                sb.append(" ");
+                sb.append('\n');
+                sb.append(newTrigger.isDisable() ? "DISABLE" : "ENABLE");
+                sb.append(" TRIGGER ");
                 sb.append(MsDiffUtils.quoteName(newTrigger.getContainingSchema().getName()));
                 sb.append('.');
-                sb.append(MsDiffUtils.quoteName(newTrigger.getTableName()));
-                sb.append(newTrigger.isDisable() ? " DISABLE" : " ENABLE");
-                sb.append(" TRIGGER ");
                 sb.append(MsDiffUtils.quoteName(newTrigger.getName()));
+                sb.append(" ON ");
+                sb.append(MsDiffUtils.quoteName(newTrigger.getContainingSchema().getName()));
+                sb.append(".");
+                sb.append(MsDiffUtils.quoteName(newTrigger.getTableName()));
                 sb.append(GO);
             }
 

@@ -1,2 +1,2 @@
-ALTER TABLE [dbo].[table1] DISABLE TRIGGER [trig1]
+DISABLE TRIGGER [dbo].[trig1] ON [dbo].[table1]
 GO

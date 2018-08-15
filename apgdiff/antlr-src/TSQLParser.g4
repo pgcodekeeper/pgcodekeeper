@@ -537,13 +537,20 @@ drop_symmetric_key
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/disable-trigger-transact-sql
 disable_trigger
-     : DISABLE TRIGGER ( ( COMMA? (schema_name=id DOT)? trigger_name=id )+ | ALL)         ON ((schema_id=id DOT)? object_name=id|DATABASE|ALL SERVER)
+     : DISABLE TRIGGER (trigger_names | ALL) ON (table_name|DATABASE|ALL SERVER)
      ;
+     
+trigger_names
+    : trigger_name (COMMA trigger_name)*
+    ;
 
-
+trigger_name
+    : (schema_name=id DOT)? name=id
+    ;
+    
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/enable-trigger-transact-sql
 enable_trigger
-     : ENABLE TRIGGER ( ( COMMA? (schema_name=id DOT)? trigger_name=id )+ | ALL)         ON ( (schema_id=id DOT)? object_name=id|DATABASE|ALL SERVER)
+     : ENABLE TRIGGER (trigger_names| ALL) ON (table_name|DATABASE|ALL SERVER)
      ;
 
 lock_table
