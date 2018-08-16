@@ -109,6 +109,12 @@ public class MsDiffTest {
                     {"modify_ms_function_args"},
                     // Tests scenario where MS FUNCTION with args return type is modified.
                     {"modify_ms_function_args_return_tbl"},
+                    // Tests scenario where default argument of MS FUNCTION with args is modified.
+                    {"modify_ms_function_args_default"},
+                    // Tests scenario where with option of MS FUNCTION with args is modified.
+                    {"modify_ms_function_args_with"},
+                    // Tests scenario where external name of MS FUNCTION with args is modified.
+                    {"modify_ms_function_args_external"},
 
                     // Tests scenario where MS TABLE CONSTRAINT of column is added.
                     {"add_ms_constraint_column"},
