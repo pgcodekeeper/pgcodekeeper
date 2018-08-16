@@ -12,12 +12,15 @@ import java.util.Collection;
 
 import org.eclipse.core.runtime.CoreException;
 
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.MS_WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.TempDir;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.MsModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
@@ -30,6 +33,7 @@ public class ProjectUpdater {
     private final Collection<TreeElement> changedObjects;
     private final String encoding;
     private final Path dirExport;
+    private final boolean isMsSql;
 
     /**
      * dbOld, changedObjects are necessary only for partial update
@@ -43,6 +47,13 @@ public class ProjectUpdater {
 
         this.encoding = proj.getProjectCharset();
         this.dirExport = proj.getPathToProject();
+
+        PgDiffArguments args = null;
+        if (dbNew != null) {
+            args = dbNew.getArguments();
+        }
+
+        this.isMsSql = args != null && args.isMsSql();
     }
 
     public void updatePartial() throws IOException {
@@ -119,7 +130,11 @@ public class ProjectUpdater {
 
             try {
                 safeCleanProjectDir(dirTmp);
-                new ModelExporter(dirExport.toFile(), dbNew, encoding).exportFull();
+                if (isMsSql) {
+                    new MsModelExporter(dirExport.toFile(), dbNew, encoding).exportFull();
+                } else {
+                    new ModelExporter(dirExport.toFile(), dbNew, encoding).exportFull();
+                }
             } catch (Exception ex) {
                 caughtProcessingEx = true;
 
@@ -153,27 +168,45 @@ public class ProjectUpdater {
     }
 
     private void safeCleanProjectDir(Path dirTmp) throws IOException {
-        for (WORK_DIR_NAMES subdirName : WORK_DIR_NAMES.values()) {
-            String sSubdirName = subdirName.toString();
-            Path dirOld = dirExport.resolve(sSubdirName);
-            if (Files.exists(dirOld)) {
-                Files.move(dirOld, dirTmp.resolve(sSubdirName), StandardCopyOption.ATOMIC_MOVE);
+        if (isMsSql) {
+            for (MS_WORK_DIR_NAMES subdirName : MS_WORK_DIR_NAMES.values()) {
+                moveFolder(dirTmp, subdirName.getName());
+            }
+        } else {
+            for (WORK_DIR_NAMES subdirName : WORK_DIR_NAMES.values()) {
+                moveFolder(dirTmp, subdirName.toString());
             }
         }
     }
 
-    private void restoreProjectDir(Path dirTmp) throws IOException {
-        for (WORK_DIR_NAMES subdirName : WORK_DIR_NAMES.values()) {
-            String sSubdirName = subdirName.toString();
-            Path subDir = dirExport.resolve(sSubdirName);
-            Path subDirTemp = dirTmp.resolve(sSubdirName);
+    private void moveFolder(Path dirTmp, String folder) throws IOException {
+        Path dirOld = dirExport.resolve(folder);
+        if (Files.exists(dirOld)) {
+            Files.move(dirOld, dirTmp.resolve(folder), StandardCopyOption.ATOMIC_MOVE);
+        }
+    }
 
-            if (Files.exists(subDirTemp)) {
-                if (Files.exists(subDir)) {
-                    FileUtils.deleteRecursive(subDir);
-                }
-                Files.move(subDirTemp, subDir, StandardCopyOption.ATOMIC_MOVE);
+    private void restoreProjectDir(Path dirTmp) throws IOException {
+        if (isMsSql) {
+            for (MS_WORK_DIR_NAMES subdirName : MS_WORK_DIR_NAMES.values()) {
+                restoreFolder(dirTmp, subdirName.getName());
             }
+        } else {
+            for (WORK_DIR_NAMES subdirName : WORK_DIR_NAMES.values()) {
+                restoreFolder(dirTmp, subdirName.toString());
+            }
+        }
+    }
+
+    private void restoreFolder(Path dirTmp, String folder) throws IOException {
+        Path subDir = dirExport.resolve(folder);
+        Path subDirTemp = dirTmp.resolve(folder);
+
+        if (Files.exists(subDirTemp)) {
+            if (Files.exists(subDir)) {
+                FileUtils.deleteRecursive(subDir);
+            }
+            Files.move(subDirTemp, subDir, StandardCopyOption.ATOMIC_MOVE);
         }
     }
 }

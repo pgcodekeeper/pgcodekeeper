@@ -115,8 +115,9 @@ public abstract class DbSource {
         return new DbSourceProject(proj);
     }
 
-    public static DbSource fromFile(boolean forceUnixNewlines, File filename, String encoding) {
-        return new DbSourceFile(forceUnixNewlines, filename, encoding);
+    public static DbSource fromFile(boolean forceUnixNewlines, File filename,
+            String encoding, boolean isMsSql) {
+        return new DbSourceFile(forceUnixNewlines, filename, encoding, isMsSql);
     }
 
     public static DbSource fromDbInfo(DbInfo dbinfo, IPreferenceStore prefs,
@@ -264,13 +265,15 @@ class DbSourceFile extends DbSource {
     private final boolean forceUnixNewlines;
     private final File filename;
     private final String encoding;
+    private final boolean isMsSql;
 
-    DbSourceFile(boolean forceUnixNewlines, File filename, String encoding) {
+    DbSourceFile(boolean forceUnixNewlines, File filename, String encoding, boolean isMsSql) {
         super(filename.getAbsolutePath());
 
         this.forceUnixNewlines = forceUnixNewlines;
         this.filename = filename;
         this.encoding = encoding;
+        this.isMsSql = isMsSql;
     }
 
     @Override
@@ -288,9 +291,8 @@ class DbSourceFile extends DbSource {
         }
 
         List<AntlrError> errList = null;
-        // TODO how to know MS OR PG?
         try (PgDumpLoader loader = new PgDumpLoader(filename,
-                getPgDiffArgs(encoding, forceUnixNewlines, true),
+                getPgDiffArgs(encoding, forceUnixNewlines, isMsSql),
                 monitor, 2)) {
             errList = loader.getErrors();
             return loader.load();

@@ -361,6 +361,8 @@ public final class Messages extends NLS {
 
     public static String DiffWizard_db_tz;
 
+    public static String DiffWizard_ms_sql_dump;
+
     public static String DiffWizard_select_db_tz;
 
     public static String DiffWizard_source;
@@ -501,6 +503,8 @@ public final class Messages extends NLS {
     public static String NewProjWizard_select_time_zone;
 
     public static String NewProjWizard_get_from_db;
+
+    public static String NewProjWizard_ms_project;
     public static String NormalizeProject_are_you_sure;
 
     public static String NormalizeProject_error_while_updating_project;

@@ -484,7 +484,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         } else {
             File file = (File) currentRemote;
             name = file.getName();
-            dbRemote = DbSource.fromFile(forceUnixNewlines, file, charset);
+            // at this moment MSSQL project property must checked and we can use them
+            dbRemote = DbSource.fromFile(forceUnixNewlines, file, charset,
+                    projProps.getBoolean(PROJ_PREF.MSSQL_MODE, false));
             newDiffer = new ClassicTreeDiffer(dbProject, dbRemote, false);
         }
 

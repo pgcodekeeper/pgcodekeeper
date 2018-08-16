@@ -65,7 +65,7 @@ public class DbSourceTest {
     CoreException {
         URL urla = DbSourceTest.class.getResource(DUMP);
 
-        performTest(DbSource.fromFile(true, ApgdiffUtils.getFileFromOsgiRes(urla), ApgdiffConsts.UTF_8));
+        performTest(DbSource.fromFile(true, ApgdiffUtils.getFileFromOsgiRes(urla), ApgdiffConsts.UTF_8, false));
     }
 
     @Test

@@ -22,6 +22,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
@@ -144,6 +145,7 @@ class PageDiff extends WizardPage implements Listener {
     private final PgDbProject proj;
 
     private DbSourcePicker dbSource, dbTarget;
+    private Button btnMsSql;
     private ComboViewer cmbTimezone;
     private CLabel lblWarnPosix;
 
@@ -156,11 +158,11 @@ class PageDiff extends WizardPage implements Listener {
     }
 
     public DbSource getDbSource() {
-        return dbSource.getDbSource();
+        return dbSource.getDbSource(btnMsSql.getSelection());
     }
 
     public DbSource getDbTarget() {
-        return dbTarget.getDbSource();
+        return dbTarget.getDbSource(btnMsSql.getSelection());
     }
 
     public String getTimezone() {
@@ -195,6 +197,9 @@ class PageDiff extends WizardPage implements Listener {
         cmbTimezone.setInput(UIConsts.TIME_ZONES);
         cmbTimezone.getCombo().setText(ApgdiffConsts.UTC);
         cmbTimezone.getCombo().addModifyListener(e -> timeZoneWarn());
+
+        btnMsSql = new Button(container, SWT.CHECK);
+        btnMsSql.setText(Messages.DiffWizard_ms_sql_dump);
 
         lblWarnPosix = new CLabel(container, SWT.NONE);
         lblWarnPosix.setImage(Activator.getEclipseImage(ISharedImages.IMG_OBJS_WARN_TSK));

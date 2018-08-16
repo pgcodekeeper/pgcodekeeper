@@ -91,14 +91,14 @@ class DbSourcePicker extends Composite {
         return cmbEncoding.getCombo().getText();
     }
 
-    public DbSource getDbSource() {
+    public DbSource getDbSource(boolean isMsSql) {
         final boolean forceUnixNewlines = true; // true by default, check project if path is given
         DbInfo dbInfo;
         File file, dir;
         if ((dbInfo = storePicker.getDbInfo()) != null) {
             return DbSource.fromDbInfo(dbInfo, mainPrefs, forceUnixNewlines, getEncoding(), pageDiff.getTimezone());
         } else if ((file = storePicker.getPathOfFile()) != null) {
-            return DbSource.fromFile(forceUnixNewlines, file, getEncoding());
+            return DbSource.fromFile(forceUnixNewlines, file, getEncoding(), isMsSql);
         } else if ((dir = storePicker.getPathOfDir()) != null) {
             PgDbProject project = getProjectFromDir(dir);
             if (project != null) {

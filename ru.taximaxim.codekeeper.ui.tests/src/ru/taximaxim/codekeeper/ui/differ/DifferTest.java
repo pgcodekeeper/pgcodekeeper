@@ -90,8 +90,8 @@ public class DifferTest {
         File sourceFile = ApgdiffUtils.getFileFromOsgiRes(PartialExporterTest.class.getResource(sourceFilename));
         File targetFile = ApgdiffUtils.getFileFromOsgiRes(PartialExporterTest.class.getResource(targetFilename));
 
-        DbSource dbSource = DbSource.fromFile(true, sourceFile, ApgdiffConsts.UTF_8);
-        DbSource dbTarget = DbSource.fromFile(true, targetFile, ApgdiffConsts.UTF_8);
+        DbSource dbSource = DbSource.fromFile(true, sourceFile, ApgdiffConsts.UTF_8, false);
+        DbSource dbTarget = DbSource.fromFile(true, targetFile, ApgdiffConsts.UTF_8, false);
 
         final TreeDiffer newDiffer = new ClassicTreeDiffer(dbSource, dbTarget, false);
 

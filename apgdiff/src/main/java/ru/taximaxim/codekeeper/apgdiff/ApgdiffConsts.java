@@ -36,6 +36,26 @@ public interface ApgdiffConsts {
         EXTENSION
     }
 
+    enum MS_WORK_DIR_NAMES {
+        TABLES("Tables"),
+        VIEWS("Views"),
+        SEQUENCES("Sequences"),
+        FUNCTIONS("Functions"),
+        PROCEDURES("Stored Procedures"),
+        SECURITY("Security");
+
+        String name;
+
+        MS_WORK_DIR_NAMES(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
+
+
     interface JDBC_CONSTS{
         String JDBC_DRIVER = "org.postgresql.Driver";
         int JDBC_DEFAULT_PORT = 5432;
