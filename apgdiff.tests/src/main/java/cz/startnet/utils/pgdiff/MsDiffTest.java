@@ -39,6 +39,15 @@ public class MsDiffTest {
                     // Tests scenario where MS PRIVILEGES for columns is modified.
                     {"modify_ms_column_privileges"},
 
+                    // Tests scenario where MS SCEMA is added.
+                    {"add_ms_schema"},
+                    // Tests scenario where MS SCEMA is dropped.
+                    {"drop_ms_schema"},
+                    // Tests scenario where name of MS SCEMA is modified.
+                    {"modify_ms_schema_name"},
+                    // Tests scenario where MS SCEMA is modified.
+                    {"modify_ms_schema"},
+
                     // Tests scenario where MS TABLE is added.
                     {"add_ms_table"},
                     // Tests scenario where MS TABLE is dropped.
@@ -61,6 +70,8 @@ public class MsDiffTest {
 
                     // Tests scenario where MS VIEW is added.
                     {"add_ms_view"},
+                    // Tests scenario where MS VIEW, which use table from other schema, is added.
+                    {"add_ms_view_other_schema"},
                     // Tests scenario where MS VIEW is dropped.
                     {"drop_ms_view"},
                     // Tests scenario where MS VIEW is modified.

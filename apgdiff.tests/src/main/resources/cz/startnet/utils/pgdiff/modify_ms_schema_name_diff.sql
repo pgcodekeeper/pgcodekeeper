@@ -1,0 +1,26 @@
+ALTER TABLE [tester].[table1]
+	DROP CONSTRAINT [PK_table1]
+GO
+
+DROP TABLE [tester].[table1]
+GO
+
+DROP SCHEMA [tester]
+GO
+
+CREATE SCHEMA [super]
+GO
+
+SET QUOTED_IDENTIFIER OFF
+GO
+SET ANSI_NULLS OFF
+GO
+CREATE TABLE [super].[table1](
+	[c1] [int] NOT NULL,
+	[c2] [varchar](100) NULL
+)
+GO
+
+ALTER TABLE [super].[table1]
+	ADD CONSTRAINT [PK_table1] PRIMARY KEY CLUSTERED  ([c1]) ON [PRIMARY]
+GO
