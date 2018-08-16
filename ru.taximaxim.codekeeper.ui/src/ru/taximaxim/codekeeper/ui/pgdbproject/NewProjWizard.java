@@ -43,7 +43,6 @@ import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 import org.osgi.service.prefs.BackingStoreException;
 
-import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -143,6 +142,15 @@ implements IExecutableExtension, INewWizard {
                         Log.log(Log.LOG_WARNING, "Error while flushing project properties!", e); //$NON-NLS-1$
                     }
                 }
+                if (pageDb.isMsSql()) {
+                    props.getPrefs().putBoolean(PROJ_PREF.MSSQL_MODE, true);
+                    try {
+                        props.getPrefs().flush();
+                    } catch (BackingStoreException e) {
+                        Log.log(Log.LOG_WARNING, "Error while flushing project properties!", e); //$NON-NLS-1$
+                    }
+                }
+
                 getContainer().run(true, true, new InitProjectFromSource(
                         props, getDbSource(props)));
             }
@@ -187,11 +195,7 @@ implements IExecutableExtension, INewWizard {
         String timezone = props.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC);
 
         if (!pageDb.isInit()) {
-            PgDatabase db = new PgDatabase();
-            PgDiffArguments args = new PgDiffArguments();
-            args.setMsSql(pageDb.isMsSql());
-            db.setArguments(args);
-            src = DbSource.fromDbObject(db, "Empty DB"); //$NON-NLS-1$
+            src = DbSource.fromDbObject(new PgDatabase(), "Empty DB"); //$NON-NLS-1$
         } else if (dbinfo != null) {
             src = DbSource.fromDbInfo(dbinfo, mainPrefStore, forceUnixNewlines, charset, timezone);
         } else if ((dump = pageDb.getDumpPath()) != null) {

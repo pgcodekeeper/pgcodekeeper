@@ -145,6 +145,8 @@ class QuickUpdateJob extends SingletonEditorJob {
 
     private void doRun() throws IOException, InterruptedException,
     CoreException, PgCodekeeperUIException, InvocationTargetException {
+        OpenProjectUtils.checkAndFlushMsSql(proj);
+
         boolean isSchemaFile = PgUIDumpLoader.isSchemaFile(file.getProjectRelativePath());
         String timezone = proj.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC);
 

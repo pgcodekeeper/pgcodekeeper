@@ -16,7 +16,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.osgi.service.prefs.BackingStoreException;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
@@ -221,14 +220,7 @@ class DbSourceProject extends DbSource {
         IEclipsePreferences pref = proj.getPrefs();
         List<AntlrError> er = new ArrayList<>();
 
-        // TODO move to other place?
-        boolean isMsSql = OpenProjectUtils.checkMsSql(proj.getProject());
-        try {
-            pref.putBoolean(PROJ_PREF.MSSQL_MODE, isMsSql);
-            pref.flush();
-        } catch (BackingStoreException e) {
-            Log.log(e);
-        }
+        boolean isMsSql = OpenProjectUtils.checkAndFlushMsSql(proj);
 
         PgDiffArguments arguments = getPgDiffArgs(charset,
                 pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true), isMsSql);

@@ -31,16 +31,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 
-/**
- * Exports PgDatabase model as a directory tree with
- * sql files with objects' code as leaves.<br><br>
- *
- * For historical reasons we expect a filtered user-selection-only list in {@link #exportPartial()}
- * but we use the new API {@link TreeElement#isSelected()} for selection checks
- * instead of calling {@link Collection#contains(Object)} for performance reasons.
- *
- * @author Alexander Levsha
- */
 public class ModelExporter extends AbstractModelExporter {
 
     public ModelExporter(File outDir, PgDatabase db, String sqlEncoding) {

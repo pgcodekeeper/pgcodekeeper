@@ -98,6 +98,11 @@ public class MsModelExporter extends AbstractModelExporter {
                 ApgdiffConsts.FILENAME_WORKING_DIR_MARKER), true);
     }
 
+    @Override
+    public void exportPartial() throws IOException, PgCodekeeperException {
+        super.exportPartial(true);
+    }
+
     private void dumpFunctions(List<AbstractFunction> funcs) throws IOException {
         for (PgStatementWithSearchPath obj : funcs) {
             String schemaName = getExportedFilename(obj.getContainingSchema());

@@ -12,7 +12,6 @@ import java.util.Collection;
 
 import org.eclipse.core.runtime.CoreException;
 
-import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.MS_WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
@@ -22,6 +21,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.MsModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
@@ -48,12 +48,7 @@ public class ProjectUpdater {
         this.encoding = proj.getProjectCharset();
         this.dirExport = proj.getPathToProject();
 
-        PgDiffArguments args = null;
-        if (dbNew != null) {
-            args = dbNew.getArguments();
-        }
-
-        this.isMsSql = args != null && args.isMsSql();
+        this.isMsSql = proj.getPrefs().getBoolean(PROJ_PREF.MSSQL_MODE, false);
     }
 
     public void updatePartial() throws IOException {
@@ -67,30 +62,19 @@ public class ProjectUpdater {
             Path dirTmp = tmp.get();
 
             try {
-                for (WORK_DIR_NAMES subdirName : WORK_DIR_NAMES.values()) {
-                    final Path sourcePath = dirExport.resolve(subdirName.toString());
-                    if (!Files.exists(sourcePath)) {
-                        continue;
+                if (isMsSql) {
+                    for (MS_WORK_DIR_NAMES subdir : MS_WORK_DIR_NAMES.values()) {
+                        updateFolder(dirTmp, subdir.getName());
                     }
-                    final Path targetPath = dirTmp.resolve(subdirName.toString());
-
-                    Files.walkFileTree(sourcePath, new SimpleFileVisitor<Path>() {
-                        @Override
-                        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                            Files.createDirectories(targetPath.resolve(sourcePath.relativize(dir)));
-                            return FileVisitResult.CONTINUE;
-                        }
-
-                        @Override
-                        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                            Files.copy(file, targetPath.resolve(sourcePath.relativize(file)));
-                            return FileVisitResult.CONTINUE;
-                        }
-                    });
+                    new MsModelExporter(dirExport.toFile(), dbNew, dbOld, changedObjects, encoding)
+                    .exportPartial();
+                } else {
+                    for (WORK_DIR_NAMES subdir : WORK_DIR_NAMES.values()) {
+                        updateFolder(dirTmp, subdir.toString());
+                    }
+                    new ModelExporter(dirExport.toFile(), dbNew, dbOld, changedObjects, encoding)
+                    .exportPartial();
                 }
-
-                new ModelExporter(dirExport.toFile(), dbNew, dbOld, changedObjects, encoding)
-                .exportPartial();
             } catch (Exception ex) {
                 caughtProcessingEx = true;
 
@@ -119,6 +103,27 @@ public class ProjectUpdater {
             throw new IOException(MessageFormat.format(
                     Messages.ProjectUpdater_error_no_tempdir,
                     ex.getLocalizedMessage()), ex);
+        }
+    }
+
+    private void updateFolder(Path dirTmp, String folder) throws IOException {
+        final Path sourcePath = dirExport.resolve(folder);
+        if (Files.exists(sourcePath)) {
+            final Path targetPath = dirTmp.resolve(folder);
+
+            Files.walkFileTree(sourcePath, new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                    Files.createDirectories(targetPath.resolve(sourcePath.relativize(dir)));
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    Files.copy(file, targetPath.resolve(sourcePath.relativize(file)));
+                    return FileVisitResult.CONTINUE;
+                }
+            });
         }
     }
 
