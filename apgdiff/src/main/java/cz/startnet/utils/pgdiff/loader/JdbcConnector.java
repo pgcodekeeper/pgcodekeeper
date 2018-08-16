@@ -207,7 +207,7 @@ public class JdbcConnector {
         return timezone;
     }
 
-    private String getPgPassPassword(){
+    protected String getPgPassPassword(){
         Log.log(Log.LOG_INFO, "User provided an empty password. Reading password from pgpass file."); //$NON-NLS-1$
 
         try {

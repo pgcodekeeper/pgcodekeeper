@@ -31,6 +31,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.ide.ResourceUtil;
 
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
+import cz.startnet.utils.pgdiff.loader.JdbcMsConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -195,9 +196,16 @@ class QuickUpdateJob extends SingletonEditorJob {
 
         monitor.newChild(1).subTask(Messages.QuickUpdate_updating_db);
 
-        JdbcConnector connector = new JdbcConnector(dbinfo.getDbHost(), dbinfo.getDbPort(),
-                dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),
-                dbinfo.getProperties(), dbinfo.isReadOnly(), ApgdiffConsts.UTF_8);
+        JdbcConnector connector;
+        if (dbinfo.isMsSql()) {
+            connector = new JdbcMsConnector(dbinfo.getDbHost(), dbinfo.getDbPort(),
+                    dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),
+                    dbinfo.getProperties(), dbinfo.isReadOnly(), ApgdiffConsts.UTF_8);
+        } else {
+            connector = new JdbcConnector(dbinfo.getDbHost(), dbinfo.getDbPort(),
+                    dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),
+                    dbinfo.getProperties(), dbinfo.isReadOnly(), ApgdiffConsts.UTF_8);
+        }
 
         try {
             new JdbcRunner(monitor).run(connector, differ.getDiffDirect());

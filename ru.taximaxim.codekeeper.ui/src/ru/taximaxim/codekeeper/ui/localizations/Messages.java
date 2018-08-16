@@ -240,6 +240,8 @@ public final class Messages extends NLS {
 
     public static String DbStoreEditorDialog_auto_generation_description;
 
+    public static String DbStoreEditorDialog_ms_sql_database;
+
     public static String DbStoreEditorDialog_select_ignore_file;
 
     public static String DbStoreEditorDialog_success;

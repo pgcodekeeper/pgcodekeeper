@@ -75,6 +75,7 @@ import org.osgi.service.prefs.BackingStoreException;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
+import cz.startnet.utils.pgdiff.loader.JdbcMsConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
@@ -499,10 +500,18 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
             Log.log(Log.LOG_INFO, "Running DDL update using JDBC"); //$NON-NLS-1$
 
-            JdbcConnector connector = new JdbcConnector(
-                    dbInfo.getDbHost(), dbInfo.getDbPort(), dbInfo.getDbUser(),
-                    dbInfo.getDbPass(), dbInfo.getDbName(), dbInfo.getProperties(),
-                    dbInfo.isReadOnly(), ApgdiffConsts.UTC);
+            JdbcConnector connector;
+            if (dbInfo.isMsSql()) {
+                connector = new JdbcMsConnector(
+                        dbInfo.getDbHost(), dbInfo.getDbPort(), dbInfo.getDbUser(),
+                        dbInfo.getDbPass(), dbInfo.getDbName(), dbInfo.getProperties(),
+                        dbInfo.isReadOnly(), ApgdiffConsts.UTC);
+            } else {
+                connector = new JdbcConnector(
+                        dbInfo.getDbHost(), dbInfo.getDbPort(), dbInfo.getDbUser(),
+                        dbInfo.getDbPass(), dbInfo.getDbName(), dbInfo.getProperties(),
+                        dbInfo.isReadOnly(), ApgdiffConsts.UTC);
+            }
 
             try {
                 new JdbcRunner(monitor).run(connector, script);

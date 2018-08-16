@@ -20,6 +20,8 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcLoader;
+import cz.startnet.utils.pgdiff.loader.JdbcMsConnector;
+import cz.startnet.utils.pgdiff.loader.JdbcMsLoader;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -121,7 +123,7 @@ public abstract class DbSource {
 
     public static DbSource fromDbInfo(DbInfo dbinfo, IPreferenceStore prefs,
             boolean forceUnixNewlines, String charset, String timezone) {
-        if (prefs.getBoolean(PREF.PGDUMP_SWITCH)) {
+        if (!dbinfo.isMsSql() && prefs.getBoolean(PREF.PGDUMP_SWITCH)) {
             return DbSource.fromDb(forceUnixNewlines,
                     prefs.getString(PREF.PGDUMP_EXE_PATH),
                     prefs.getString(PREF.PGDUMP_CUSTOM_PARAMS),
@@ -132,7 +134,7 @@ public abstract class DbSource {
             return DbSource.fromJdbc(dbinfo.getDbHost(), dbinfo.getDbPort(),
                     dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),
                     dbinfo.getProperties(), dbinfo.isReadOnly(), timezone,
-                    forceUnixNewlines);
+                    forceUnixNewlines, dbinfo.isMsSql());
         }
     }
 
@@ -146,9 +148,9 @@ public abstract class DbSource {
 
     public static DbSource fromJdbc(String host, int port, String user, String pass, String dbname,
             Map<String, String> properties, boolean readOnly, String timezone,
-            boolean forceUnixNewlines) {
+            boolean forceUnixNewlines, boolean isMsSql) {
         return new DbSourceJdbc(host, port, user, pass, dbname, properties, readOnly, timezone,
-                forceUnixNewlines);
+                forceUnixNewlines, isMsSql);
     }
 
     public static DbSource fromDbObject(PgDatabase db, String origin) {
@@ -384,6 +386,7 @@ class DbSourceJdbc extends DbSource {
     private final JdbcConnector jdbcConnector;
     private final String dbName;
     private final boolean forceUnixNewlines;
+    private final boolean isMsSql;
 
     @Override
     public String getDbName() {
@@ -392,12 +395,18 @@ class DbSourceJdbc extends DbSource {
 
     DbSourceJdbc(String host, int port, String user, String pass, String dbName,
             Map<String, String> properties, boolean readOnly, String timezone,
-            boolean forceUnixNewlines) {
+            boolean forceUnixNewlines, boolean isMsSql) {
         super(dbName);
         this.dbName = dbName;
         this.forceUnixNewlines = forceUnixNewlines;
-        jdbcConnector = new JdbcConnector(host, port, user, pass, dbName, properties,
-                readOnly, timezone);
+        this.isMsSql = isMsSql;
+        if (isMsSql) {
+            jdbcConnector = new JdbcMsConnector(host, port, user, pass, dbName, properties,
+                    readOnly, timezone);
+        } else {
+            jdbcConnector = new JdbcConnector(host, port, user, pass, dbName, properties,
+                    readOnly, timezone);
+        }
     }
 
     @Override
@@ -405,6 +414,10 @@ class DbSourceJdbc extends DbSource {
             throws IOException, InterruptedException {
         monitor.subTask(Messages.reading_db_from_jdbc);
         PgDiffArguments args = getPgDiffArgs(ApgdiffConsts.UTF_8, forceUnixNewlines, false);
+        if (isMsSql) {
+            return new JdbcMsLoader(jdbcConnector, args, monitor).readDb();
+        }
+
         JdbcLoader loader = new JdbcLoader(jdbcConnector, args, monitor);
         PgDatabase database = loader.getDbFromJdbc();
         errors = loader.getErrors();

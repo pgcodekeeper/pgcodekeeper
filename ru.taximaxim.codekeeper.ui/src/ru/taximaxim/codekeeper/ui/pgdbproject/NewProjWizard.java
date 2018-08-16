@@ -319,8 +319,13 @@ class PageDb extends WizardPage {
         storePicker = new DbStorePicker(group, mainPrefs, true, false, false);
         storePicker.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
         storePicker.addListenerToCombo(e -> {
-            boolean enable = storePicker.getDbInfo() != null;
-            btnGetTz.setEnabled(enable);
+            DbInfo info = storePicker.getDbInfo();
+            boolean enable = info != null;
+            if (enable && info.isMsSql()) {
+                btnGetTz.setEnabled(false);
+            } else {
+                btnGetTz.setEnabled(enable);
+            }
             getWizard().getContainer().updateButtons();
             getWizard().getContainer().updateMessage();
             btnMsSql.setEnabled(!enable);
