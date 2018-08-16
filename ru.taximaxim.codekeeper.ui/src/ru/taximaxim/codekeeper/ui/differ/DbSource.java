@@ -413,7 +413,7 @@ class DbSourceJdbc extends DbSource {
     protected PgDatabase loadInternal(SubMonitor monitor)
             throws IOException, InterruptedException {
         monitor.subTask(Messages.reading_db_from_jdbc);
-        PgDiffArguments args = getPgDiffArgs(ApgdiffConsts.UTF_8, forceUnixNewlines, false);
+        PgDiffArguments args = getPgDiffArgs(ApgdiffConsts.UTF_8, forceUnixNewlines, isMsSql);
         if (isMsSql) {
             return new JdbcMsLoader(jdbcConnector, args, monitor).readDb();
         }

@@ -142,7 +142,8 @@ implements IExecutableExtension, INewWizard {
                         Log.log(Log.LOG_WARNING, "Error while flushing project properties!", e); //$NON-NLS-1$
                     }
                 }
-                if (pageDb.isMsSql()) {
+                DbInfo info = pageDb.getDbInfo();
+                if (pageDb.isMsSql() || (info != null && info.isMsSql())) {
                     props.getPrefs().putBoolean(PROJ_PREF.MSSQL_MODE, true);
                     try {
                         props.getPrefs().flush();
