@@ -283,7 +283,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
                     && Objects.equals(isWithData, view.isWithData())
                     && Objects.equals(tablespace, view.getTablespace())
                     && Objects.equals(quotedIdentified, view.isQuotedIdentified())
-                    && Objects.equals(ansiNulls, view.isAnsiNulls());;
+                    && Objects.equals(ansiNulls, view.isAnsiNulls());
         }
 
         return eq;

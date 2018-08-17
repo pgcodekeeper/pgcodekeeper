@@ -12,7 +12,22 @@ public class MsTrigger extends AbstractTrigger {
 
     @Override
     public String getCreationSQL() {
-        return getTriggerFullSQL(true);
+        StringBuilder sb = new StringBuilder();
+        sb.append(getTriggerFullSQL(true));
+
+        if (isDisable()) {
+            sb.append("\nDISABLE TRIGGER ");
+            sb.append(MsDiffUtils.quoteName(getContainingSchema().getName()));
+            sb.append('.');
+            sb.append(MsDiffUtils.quoteName(getName()));
+            sb.append(" ON ");
+            sb.append(MsDiffUtils.quoteName(getContainingSchema().getName()));
+            sb.append(".");
+            sb.append(MsDiffUtils.quoteName(getTableName()));
+            sb.append(GO);
+        }
+
+        return sb.toString();
     }
 
     private String getTriggerFullSQL(boolean isCreate) {
@@ -96,10 +111,26 @@ public class MsTrigger extends AbstractTrigger {
             AtomicBoolean isNeedDepcies) {
         if (newCondition instanceof MsTrigger) {
             MsTrigger newTrigger = (MsTrigger) newCondition;
+            final int startLength = sb.length();
             if (!compareWithoutComments(newTrigger)) {
                 sb.append(newTrigger.getTriggerFullSQL(false));
-                return true;
             }
+
+            if (isDisable() != newTrigger.isDisable()) {
+                sb.append('\n');
+                sb.append(newTrigger.isDisable() ? "DISABLE" : "ENABLE");
+                sb.append(" TRIGGER ");
+                sb.append(MsDiffUtils.quoteName(newTrigger.getContainingSchema().getName()));
+                sb.append('.');
+                sb.append(MsDiffUtils.quoteName(newTrigger.getName()));
+                sb.append(" ON ");
+                sb.append(MsDiffUtils.quoteName(newTrigger.getContainingSchema().getName()));
+                sb.append(".");
+                sb.append(MsDiffUtils.quoteName(newTrigger.getTableName()));
+                sb.append(GO);
+            }
+
+            return sb.length() > startLength;
         }
 
         return false;

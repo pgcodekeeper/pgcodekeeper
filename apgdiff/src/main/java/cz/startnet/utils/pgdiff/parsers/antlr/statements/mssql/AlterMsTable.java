@@ -5,9 +5,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constr
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.TableAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
+import cz.startnet.utils.pgdiff.schema.AbstractTrigger;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
 
 public class AlterMsTable extends TableAbstract {
 
@@ -29,6 +30,13 @@ public class AlterMsTable extends TableAbstract {
             // TODO check / no check constraint
             addMsConstraint(colCtx.table_constraint(), table);
         }
+
+        IdContext triggerName = ctx.trigger;
+        if (triggerName != null) {
+            AbstractTrigger tr = getSafe(table::getTrigger, triggerName);
+            tr.setDisable(ctx.ENABLE() == null);
+        }
+
 
         return table;
     }

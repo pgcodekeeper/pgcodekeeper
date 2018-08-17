@@ -39,10 +39,10 @@ public class MsProcedure extends AbstractFunction {
         sbSQL.append(" PROCEDURE ");
         sbSQL.append(getQualifiedName()).append('\n');
 
-        sbSQL.append(arguments.stream().map(arg -> getDeclaration(arg, true, true))
-                .collect(Collectors.joining(",\n")));
-
-        sbSQL.append('\n');
+        if (!arguments.isEmpty()) {
+            sbSQL.append(arguments.stream().map(arg -> getDeclaration(arg, true, true))
+                    .collect(Collectors.joining(",\n"))).append('\n');
+        }
         if (!options.isEmpty()) {
             sbSQL.append(" WITH ").append(String.join(", ", options)).append('\n');
         }

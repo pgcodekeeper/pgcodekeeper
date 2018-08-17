@@ -1,0 +1,8 @@
+CREATE TABLE [dbo].[table1](
+    [c1] [int] NOT NULL,
+    [c2] [int] NOT NULL,
+    [c3] [varchar](100) NOT NULL)
+GO
+
+CREATE NONCLUSTERED INDEX [index_table1] ON [dbo].[table1] ([c1])
+GO

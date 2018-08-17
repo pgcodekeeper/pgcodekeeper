@@ -2,7 +2,6 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -234,54 +233,5 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
     @Override
     public AbstractSchema getContainingSchema() {
         return (AbstractSchema) getParent();
-    }
-
-    protected static boolean needDrop(AbstractFunction oldFunction, AbstractFunction newFunction) {
-        if (newFunction == null ||
-                !Objects.equals(oldFunction.getReturns(), newFunction.getReturns())) {
-            return true;
-        }
-
-        Iterator<Argument> iOld = oldFunction.getArguments().iterator();
-        Iterator<Argument> iNew = newFunction.getArguments().iterator();
-        while (iOld.hasNext() && iNew.hasNext()) {
-            Argument argOld = iOld.next();
-            Argument argNew = iNew.next();
-
-            String oldDef = argOld.getDefaultExpression();
-            String newDef = argNew.getDefaultExpression();
-            // allow creation of defaults (old==null && new!=null)
-            if (oldDef != null && !oldDef.equals(newDef)) {
-                return true;
-            }
-
-            // [IN]OUT args that change their names implicitly change the function's
-            // return type due to it being "SETOF record" in case of
-            // multiple [IN]OUT args present
-
-            // actually any argument name change requires drop
-            if (!Objects.equals(argOld.getName(), argNew.getName())) {
-                return true;
-            }
-            // нельзя менять тип out параметров
-            if ("OUT".equalsIgnoreCase(argOld.getMode()) &&
-                    !Objects.equals(argOld.getDataType(), argNew.getDataType())) {
-                return true;
-            }
-        }
-        // Если добавляется или удаляется out параметр нужно удалить функцию,
-        // т.к. меняется её возвращаемое значение
-        while (iOld.hasNext()) {
-            if ("OUT".equalsIgnoreCase(iOld.next().getMode())) {
-                return true;
-            }
-        }
-        while (iNew.hasNext()) {
-            if ("OUT".equalsIgnoreCase(iNew.next().getMode())) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

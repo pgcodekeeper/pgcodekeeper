@@ -54,7 +54,12 @@ public class MsFunction extends AbstractFunction {
         }
 
         if (!checkForChanges(newFunction)) {
-            sb.append(newFunction.getFunctionFullSQL(false));
+            if (needDrop(newFunction)) {
+                isNeedDepcies.set(true);
+                return true;
+            } else {
+                sb.append(newFunction.getFunctionFullSQL(false));
+            }
         }
 
         if (!Objects.equals(getOwner(), newFunction.getOwner())) {
@@ -68,6 +73,16 @@ public class MsFunction extends AbstractFunction {
         }
 
         return sb.length() > startLength;
+    }
+
+    private boolean needDrop(MsFunction newFunc) {
+        if (getReturns().toUpperCase().startsWith("TABLE") !=
+                newFunc.getReturns().toUpperCase().startsWith("TABLE")) {
+            return true;
+        }
+
+        return getBody().toUpperCase().startsWith("EXTERNAL") !=
+                newFunc.getBody().toUpperCase().startsWith("EXTERNAL");
     }
 
     @Override
