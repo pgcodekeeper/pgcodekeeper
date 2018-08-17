@@ -48,7 +48,8 @@ public class DbXmlStore extends XmlStore<DbInfo> {
         PROPERTY_LIST("property_list"), //$NON-NLS-1$
         PROPERTY("property"), //$NON-NLS-1$
         PROPERTY_NAME("name"), //$NON-NLS-1$
-        PROPERTY_VALUE("value"); //$NON-NLS-1$
+        PROPERTY_VALUE("value"), //$NON-NLS-1$
+        MSSQL("mssql"); //$NON-NLS-1$
 
         String name;
 
@@ -103,7 +104,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
             createSubElement(xml, keyElement, Tags.DBPORT.toString(), String.valueOf(dbInfo.getDbPort()));
             createSubElement(xml, keyElement, Tags.READ_ONLY.toString(), String.valueOf(dbInfo.isReadOnly()));
             createSubElement(xml, keyElement, Tags.GENERATE_NAME.toString(), String.valueOf(dbInfo.isGeneratedName()));
-
+            createSubElement(xml, keyElement, Tags.MSSQL.toString(), String.valueOf(dbInfo.isMsSql()));
 
             Element ignoreList = xml.createElement(Tags.IGNORE_LIST.toString());
             keyElement.appendChild(ignoreList);
@@ -141,6 +142,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
                 case DBPORT:
                 case READ_ONLY:
                 case GENERATE_NAME:
+                case MSSQL:
                     object.put(tag, param.getTextContent());
                     break;
                 case IGNORE_LIST:
@@ -160,7 +162,8 @@ public class DbXmlStore extends XmlStore<DbInfo> {
                 Integer.parseInt(object.get(Tags.DBPORT)),
                 Boolean.parseBoolean(object.get(Tags.READ_ONLY)),
                 Boolean.parseBoolean(object.get(Tags.GENERATE_NAME)),
-                ignoreFiles, properties);
+                ignoreFiles, properties,
+                Boolean.parseBoolean(object.get(Tags.MSSQL)));
     }
 
     private void fillIgnoreFileList(NodeList xml, List<String> list) {

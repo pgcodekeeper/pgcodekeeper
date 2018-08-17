@@ -431,7 +431,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 // something other than just markers has changed
                 // check that it's our resource
                 if (delta.getFlags() != IResourceDelta.MARKERS &&
-                        PgUIDumpLoader.isInProject(delta) &&
+                        PgUIDumpLoader.isInProject(delta, OpenProjectUtils.checkMsSql(proj)) &&
                         delta.getResource().getType() == IResource.FILE &&
                         delta.getResource().getProject().equals(proj.getProject())) {
                     schemaChanged[0] = true;
@@ -484,7 +484,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         } else {
             File file = (File) currentRemote;
             name = file.getName();
-            dbRemote = DbSource.fromFile(forceUnixNewlines, file, charset);
+            // at this moment MSSQL project property must checked and we can use them
+            dbRemote = DbSource.fromFile(forceUnixNewlines, file, charset,
+                    projProps.getBoolean(PROJ_PREF.MSSQL_MODE, false));
             newDiffer = new ClassicTreeDiffer(dbProject, dbRemote, false);
         }
 
@@ -663,7 +665,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         IEclipsePreferences pref = proj.getPrefs();
         final Differ differ = new Differ(dbRemote.getDbObject(),
                 dbProject.getDbObject(), diffTree.getRevertedCopy(), false,
-                pref.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
+                pref.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC),
+                pref.getBoolean(PROJ_PREF.MSSQL_MODE, false));
         differ.setAdditionalDepciesSource(manualDepciesSource);
         differ.setAdditionalDepciesTarget(manualDepciesTarget);
 

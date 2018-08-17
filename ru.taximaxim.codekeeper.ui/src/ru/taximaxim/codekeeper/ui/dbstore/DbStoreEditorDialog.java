@@ -35,6 +35,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.ISharedImages;
 
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
+import cz.startnet.utils.pgdiff.loader.JdbcMsConnector;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UiSync;
@@ -58,6 +59,7 @@ public class DbStoreEditorDialog extends TrayDialog {
     private CLabel lblWarnDbPass;
     private Button btnReadOnly;
     private Button btnGenerateName;
+    private Button btnMsSql;
 
     private IgnoreListEditor ignoreListEditor;
     private DbPropertyListEditor propertyListEditor;
@@ -107,6 +109,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                             .collect(Collectors.toCollection(ArrayList::new));
 
                     btnReadOnly.setSelection(dbInitial.isReadOnly());
+                    btnMsSql.setSelection(dbInitial.isMsSql());
                 }
 
                 txtDbHost.setText(dbHost);
@@ -233,6 +236,11 @@ public class DbStoreEditorDialog extends TrayDialog {
         btnReadOnly.setLayoutData(new GridData(SWT.FILL, SWT.NONE, false, false, 3, 1));
         btnReadOnly.setText(Messages.DbStoreEditorDialog_read_only_description);
 
+        new Label(tabAreaDb, SWT.NONE).setText(Messages.DbStoreEditorDialog_ms_sql_database);
+
+        btnMsSql = new Button(tabAreaDb, SWT.CHECK);
+        btnMsSql.setLayoutData(new GridData(SWT.FILL, SWT.NONE, false, false, 3, 1));
+
         int verticalIndent = 15;
 
         Label lblEntryName = new Label(tabAreaDb, SWT.NONE);
@@ -324,13 +332,22 @@ public class DbStoreEditorDialog extends TrayDialog {
 
                 try {
                     int dbport = port.isEmpty() ? 0 : Integer.parseInt(port);
+                    JdbcConnector connector;
+                    if (btnMsSql.getSelection()) {
+                        connector = new JdbcMsConnector(txtDbHost.getText(), dbport,
+                                txtDbUser.getText(), txtDbPass.getText(),
+                                txtDbName.getText(), propertyListEditor.getList().stream()
+                                .collect(Collectors.toMap(Entry::getKey, Entry::getValue)),
+                                btnReadOnly.getSelection() , ApgdiffConsts.UTC);
+                    } else {
+                        connector = new JdbcConnector(txtDbHost.getText(), dbport,
+                                txtDbUser.getText(), txtDbPass.getText(),
+                                txtDbName.getText(), propertyListEditor.getList().stream()
+                                .collect(Collectors.toMap(Entry::getKey, Entry::getValue)),
+                                btnReadOnly.getSelection() , ApgdiffConsts.UTC);
+                    }
 
-                    try (Connection connection = new JdbcConnector(txtDbHost.getText(), dbport,
-                            txtDbUser.getText(), txtDbPass.getText(),
-                            txtDbName.getText(), propertyListEditor.getList().stream()
-                            .collect(Collectors.toMap(Entry::getKey, Entry::getValue)),
-                            btnReadOnly.getSelection() , ApgdiffConsts.UTC)
-                            .getConnection()) {
+                    try (Connection connection = connector.getConnection()) {
                         style = SWT.OK;
                         message = Messages.DbStoreEditorDialog_successfull_connection;
                     }
@@ -379,7 +396,8 @@ public class DbStoreEditorDialog extends TrayDialog {
                 txtDbHost.getText(), dbport, btnReadOnly.getSelection(),
                 btnGenerateName.getSelection(), ignoreListEditor.getList(),
                 propertyListEditor.getList().stream()
-                .collect(Collectors.toMap(Entry::getKey, Entry::getValue)));
+                .collect(Collectors.toMap(Entry::getKey, Entry::getValue)),
+                btnMsSql.getSelection());
         super.okPressed();
     }
 

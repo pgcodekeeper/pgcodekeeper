@@ -32,7 +32,7 @@ public class JdbcMsConnector extends JdbcConnector {
         this.port = port < 1 ? DEFAULT_PORT : port;
         this.dbName = dbName;
         this.user = user;
-        this.pass = pass == null ? "" : pass;
+        this.pass = pass == null || pass.isEmpty() ? getPgPassPassword() : pass;
         this.url = generateBasicConnectionString();
 
         this.timezone = timezone;

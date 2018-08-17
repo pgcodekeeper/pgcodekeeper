@@ -21,6 +21,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
@@ -30,11 +31,13 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.osgi.framework.Version;
+import org.osgi.service.prefs.BackingStoreException;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
+import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
@@ -59,6 +62,34 @@ public final class OpenProjectUtils {
             Log.log(Log.LOG_ERROR, ce.getMessage());
         }
         return null;
+    }
+
+    public static boolean checkAndFlushMsSql(PgDbProject proj) {
+        boolean isMsSql = checkMsSql(proj);
+        IEclipsePreferences pref = proj.getPrefs();
+        pref.putBoolean(PROJ_PREF.MSSQL_MODE, isMsSql);
+        try {
+            pref.flush();
+        } catch (BackingStoreException ex) {
+            Log.log(ex);
+            return false;
+        }
+
+        return isMsSql;
+    }
+
+    public static boolean checkMsSql(PgDbProject proj) {
+        File markerFile = new File(proj.getProject().getLocation().toFile(),
+                ApgdiffConsts.FILENAME_WORKING_DIR_MARKER);
+        try (FileInputStream stream = new FileInputStream(markerFile)) {
+            Properties props = new Properties();
+            props.load(stream);
+            return ApgdiffConsts.MSSQL_TRUE_VALUE.equals(
+                    props.getProperty(ApgdiffConsts.MSSQL_PROP_NAME, "").trim()); //$NON-NLS-1$
+        } catch (IOException ex) {
+            Log.log(ex);
+            return false;
+        }
     }
 
     public static boolean checkVersionAndWarn(IProject proj, Shell parent,

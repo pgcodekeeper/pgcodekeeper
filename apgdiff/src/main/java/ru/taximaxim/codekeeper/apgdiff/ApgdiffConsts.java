@@ -26,6 +26,8 @@ public interface ApgdiffConsts {
     String VERSION_PROP_NAME = "version";
     String EXPORT_CURRENT_VERSION = "0.6.0";
     String EXPORT_MIN_VERSION = "0.2.9";
+    String MSSQL_PROP_NAME = "mssql";
+    String MSSQL_TRUE_VALUE = "1";
 
     String EXTENSION_VERSION = "1.0.0";
 
@@ -33,6 +35,26 @@ public interface ApgdiffConsts {
         SCHEMA,
         EXTENSION
     }
+
+    enum MS_WORK_DIR_NAMES {
+        TABLES("Tables"),
+        VIEWS("Views"),
+        SEQUENCES("Sequences"),
+        FUNCTIONS("Functions"),
+        PROCEDURES("Stored Procedures"),
+        SECURITY("Security");
+
+        String name;
+
+        MS_WORK_DIR_NAMES(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
+
 
     interface JDBC_CONSTS{
         String JDBC_DRIVER = "org.postgresql.Driver";

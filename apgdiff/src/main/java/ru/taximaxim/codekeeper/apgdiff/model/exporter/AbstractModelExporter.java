@@ -33,7 +33,16 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 
-
+/**
+ * Exports PgDatabase model as a directory tree with
+ * sql files with objects' code as leaves.<br><br>
+ *
+ * For historical reasons we expect a filtered user-selection-only list in {@link #exportPartial()}
+ * but we use the new API {@link TreeElement#isSelected()} for selection checks
+ * instead of calling {@link Collection#contains(Object)} for performance reasons.
+ *
+ * @author Alexander Levsha
+ */
 public abstract class AbstractModelExporter {
 
     protected static final int HASH_LENGTH = 10;
@@ -96,6 +105,10 @@ public abstract class AbstractModelExporter {
     public abstract void exportFull() throws IOException;
 
     public void exportPartial() throws IOException, PgCodekeeperException {
+        this.exportPartial(false);
+    }
+
+    protected void exportPartial(boolean isMsSql) throws IOException, PgCodekeeperException {
         if (oldDb == null){
             throw new PgCodekeeperException("Old database should not be null for partial export.");
         }
@@ -120,7 +133,7 @@ public abstract class AbstractModelExporter {
                 break;
             }
         }
-        writeProjVersion(new File(outDir.getPath(), ApgdiffConsts.FILENAME_WORKING_DIR_MARKER));
+        writeProjVersion(new File(outDir.getPath(), ApgdiffConsts.FILENAME_WORKING_DIR_MARKER), isMsSql);
     }
 
     protected abstract void deleteObject(TreeElement el) throws IOException;
@@ -425,9 +438,17 @@ public abstract class AbstractModelExporter {
     }
 
     public static void writeProjVersion(File f) throws FileNotFoundException {
+        writeProjVersion(f, false);
+    }
+
+    public static void writeProjVersion(File f, boolean isMsSql) throws FileNotFoundException {
         try (PrintWriter pw = new UnixPrintWriter(f, StandardCharsets.UTF_8)) {
             pw.println(ApgdiffConsts.VERSION_PROP_NAME + " = " //$NON-NLS-1$
                     + ApgdiffConsts.EXPORT_CURRENT_VERSION);
+            if (isMsSql) {
+                pw.println(ApgdiffConsts.MSSQL_PROP_NAME + " = " //$NON-NLS-1$
+                        + ApgdiffConsts.MSSQL_TRUE_VALUE);
+            }
         }
     }
 }

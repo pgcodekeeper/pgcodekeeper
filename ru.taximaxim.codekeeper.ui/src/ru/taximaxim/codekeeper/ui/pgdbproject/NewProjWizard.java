@@ -142,6 +142,16 @@ implements IExecutableExtension, INewWizard {
                         Log.log(Log.LOG_WARNING, "Error while flushing project properties!", e); //$NON-NLS-1$
                     }
                 }
+                DbInfo info = pageDb.getDbInfo();
+                if (pageDb.isMsSql() || (info != null && info.isMsSql())) {
+                    props.getPrefs().putBoolean(PROJ_PREF.MSSQL_MODE, true);
+                    try {
+                        props.getPrefs().flush();
+                    } catch (BackingStoreException e) {
+                        Log.log(Log.LOG_WARNING, "Error while flushing project properties!", e); //$NON-NLS-1$
+                    }
+                }
+
                 getContainer().run(true, true, new InitProjectFromSource(
                         props, getDbSource(props)));
             }
@@ -185,12 +195,12 @@ implements IExecutableExtension, INewWizard {
         String charset = props.getProjectCharset();
         String timezone = props.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC);
 
-        if(!pageDb.isInit()){
+        if (!pageDb.isInit()) {
             src = DbSource.fromDbObject(new PgDatabase(), "Empty DB"); //$NON-NLS-1$
         } else if (dbinfo != null) {
             src = DbSource.fromDbInfo(dbinfo, mainPrefStore, forceUnixNewlines, charset, timezone);
         } else if ((dump = pageDb.getDumpPath()) != null) {
-            src = DbSource.fromFile(forceUnixNewlines, dump, charset);
+            src = DbSource.fromFile(forceUnixNewlines, dump, charset, pageDb.isMsSql());
         } else {
             // should be prevented by page completion state
             throw new IllegalStateException(Messages.initProjectFromSource_init_request_but_no_schema_source);
@@ -240,6 +250,7 @@ class PageDb extends WizardPage {
     private final IPreferenceStore mainPrefs;
     private Button btnInit;
     private Button btnGetTz;
+    private Button btnMsSql;
     private DbStorePicker storePicker;
     private ComboViewer timezoneCombo;
     private ComboViewer charsetCombo;
@@ -259,6 +270,10 @@ class PageDb extends WizardPage {
 
     public boolean isInit() {
         return btnInit.getSelection();
+    }
+
+    public boolean isMsSql() {
+        return btnMsSql.getSelection();
     }
 
     public String getTimeZone(){
@@ -282,7 +297,7 @@ class PageDb extends WizardPage {
         Group group = new Group(container, SWT.NONE);
         group.setText(Messages.NewProjWizard_initializing_title);
         group.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 3, 1));
-        group.setLayout(new GridLayout());
+        group.setLayout(new GridLayout(2, true));
 
         btnInit = new Button(group, SWT.CHECK);
         btnInit.setText(Messages.NewProjWizard_initializing_check);
@@ -299,12 +314,22 @@ class PageDb extends WizardPage {
             }
         });
 
+        btnMsSql = new Button(group, SWT.CHECK);
+        btnMsSql.setText(Messages.NewProjWizard_ms_project);
+
         storePicker = new DbStorePicker(group, mainPrefs, true, false, false);
-        storePicker.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        storePicker.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
         storePicker.addListenerToCombo(e -> {
-            btnGetTz.setEnabled(storePicker.getDbInfo() != null);
+            DbInfo info = storePicker.getDbInfo();
+            boolean enable = info != null;
+            if (enable && info.isMsSql()) {
+                btnGetTz.setEnabled(false);
+            } else {
+                btnGetTz.setEnabled(enable);
+            }
             getWizard().getContainer().updateButtons();
             getWizard().getContainer().updateMessage();
+            btnMsSql.setEnabled(!enable);
         });
 
         //char sets

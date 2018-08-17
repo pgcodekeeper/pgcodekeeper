@@ -81,7 +81,7 @@ public abstract class TreeDiffer implements IRunnableWithProgress {
     public static TreeDiffer getTree(DbSource dbProj, DbInfo dbInfo, String charset,
             boolean forceUnixNewlines, IPreferenceStore prefs, String timezone) {
         String error = null;
-        if (!prefs.getBoolean(PREF.PGDUMP_SWITCH) && prefs.getBoolean(PREF.USE_EXTENSION)) {
+        if (!dbInfo.isMsSql() && !prefs.getBoolean(PREF.PGDUMP_SWITCH) && prefs.getBoolean(PREF.USE_EXTENSION)) {
             try {
                 Path timePath = FileUtilsUi.getPathToTimeObject(dbProj.getOrigin(),
                         dbInfo.getName(), PgDiffUtils.shaString(dbInfo.toString()));

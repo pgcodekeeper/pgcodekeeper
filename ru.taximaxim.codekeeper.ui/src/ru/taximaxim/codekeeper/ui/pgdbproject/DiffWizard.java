@@ -22,6 +22,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
@@ -31,6 +32,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -113,9 +115,11 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
     public boolean performFinish() {
         try {
             TreeDiffer treediffer = pagePartial.getTreeDiffer();
-            Differ differ = new Differ(treediffer.getDbSource().getDbObject(),
-                    treediffer.getDbTarget().getDbObject(),
-                    treediffer.getDiffTree(), false, pageDiff.getTimezone());
+            PgDatabase source = treediffer.getDbSource().getDbObject();
+
+            Differ differ = new Differ(source, treediffer.getDbTarget().getDbObject(),
+                    treediffer.getDiffTree(), false, pageDiff.getTimezone(),
+                    source.getArguments().isMsSql());
             getContainer().run(true, true, differ);
 
             Path path = Files.createTempFile("diff_wizard_result_", ""); //$NON-NLS-1$ //$NON-NLS-2$
@@ -143,6 +147,7 @@ class PageDiff extends WizardPage implements Listener {
     private final PgDbProject proj;
 
     private DbSourcePicker dbSource, dbTarget;
+    private Button btnMsSql;
     private ComboViewer cmbTimezone;
     private CLabel lblWarnPosix;
 
@@ -155,11 +160,11 @@ class PageDiff extends WizardPage implements Listener {
     }
 
     public DbSource getDbSource() {
-        return dbSource.getDbSource();
+        return dbSource.getDbSource(btnMsSql.getSelection());
     }
 
     public DbSource getDbTarget() {
-        return dbTarget.getDbSource();
+        return dbTarget.getDbSource(btnMsSql.getSelection());
     }
 
     public String getTimezone() {
@@ -168,6 +173,10 @@ class PageDiff extends WizardPage implements Listener {
 
     public void setTimezone(String timezone) {
         cmbTimezone.getCombo().setText(timezone);
+    }
+
+    public boolean isMsSql() {
+        return btnMsSql.getSelection();
     }
 
     @Override
@@ -194,6 +203,9 @@ class PageDiff extends WizardPage implements Listener {
         cmbTimezone.setInput(UIConsts.TIME_ZONES);
         cmbTimezone.getCombo().setText(ApgdiffConsts.UTC);
         cmbTimezone.getCombo().addModifyListener(e -> timeZoneWarn());
+
+        btnMsSql = new Button(container, SWT.CHECK);
+        btnMsSql.setText(Messages.DiffWizard_ms_sql_dump);
 
         lblWarnPosix = new CLabel(container, SWT.NONE);
         lblWarnPosix.setImage(Activator.getEclipseImage(ISharedImages.IMG_OBJS_WARN_TSK));
