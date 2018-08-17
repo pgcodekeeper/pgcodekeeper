@@ -65,21 +65,28 @@ public final class OpenProjectUtils {
     }
 
     public static boolean checkAndFlushMsSql(PgDbProject proj) {
+        boolean isMsSql = checkMsSql(proj);
+        IEclipsePreferences pref = proj.getPrefs();
+        pref.putBoolean(PROJ_PREF.MSSQL_MODE, isMsSql);
+        try {
+            pref.flush();
+        } catch (BackingStoreException ex) {
+            Log.log(ex);
+            return false;
+        }
+
+        return isMsSql;
+    }
+
+    public static boolean checkMsSql(PgDbProject proj) {
         File markerFile = new File(proj.getProject().getLocation().toFile(),
                 ApgdiffConsts.FILENAME_WORKING_DIR_MARKER);
         try (FileInputStream stream = new FileInputStream(markerFile)) {
             Properties props = new Properties();
             props.load(stream);
-            IEclipsePreferences pref = proj.getPrefs();
-
-            boolean isMsSql = ApgdiffConsts.MSSQL_TRUE_VALUE.equals(
+            return ApgdiffConsts.MSSQL_TRUE_VALUE.equals(
                     props.getProperty(ApgdiffConsts.MSSQL_PROP_NAME, "").trim()); //$NON-NLS-1$
-
-            pref.putBoolean(PROJ_PREF.MSSQL_MODE, isMsSql);
-            pref.flush();
-
-            return isMsSql;
-        } catch (IOException | BackingStoreException ex) {
+        } catch (IOException ex) {
             Log.log(ex);
             return false;
         }

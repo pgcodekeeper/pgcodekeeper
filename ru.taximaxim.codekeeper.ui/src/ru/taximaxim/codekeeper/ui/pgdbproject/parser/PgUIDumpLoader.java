@@ -36,11 +36,14 @@ import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.MS_WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
+import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
+import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.properties.PgLibrary;
 
 /**
@@ -320,38 +323,46 @@ public class PgUIDumpLoader extends PgDumpLoader {
      * @param path project relative path of checked resource
      * @return whether this resource is within the main database schema hierarchy
      */
-    public static boolean isInProject(IPath path) {
+    private static boolean isInProject(IPath path) {
         String dir = path.segment(0);
         return dir == null ? false : Arrays.stream(ApgdiffConsts.WORK_DIR_NAMES.values())
                 .map(Enum::name).anyMatch(dir::equals);
     }
 
+    private static boolean isInMsProject(IPath path) {
+        String dir = path.segment(0);
+        return dir == null ? false : Arrays.stream(ApgdiffConsts.MS_WORK_DIR_NAMES.values())
+                .map(MS_WORK_DIR_NAMES::getName).anyMatch(dir::equals);
+    }
+
     public static boolean isInProject(IResource resource) {
         try {
-            return resource.getProject().hasNature(NATURE.ID)
-                    && isInProject(resource.getProjectRelativePath());
+            IProject project = resource.getProject();
+            if (!project.hasNature(NATURE.ID)) {
+                return false;
+            }
+
+            if (OpenProjectUtils.checkMsSql(new PgDbProject(project))) {
+                return isInMsProject(resource.getProjectRelativePath());
+            }
+
+            return isInProject(resource.getProjectRelativePath());
         } catch (CoreException ex) {
             Log.log(ex);
             return false;
         }
     }
 
-    public static boolean isInProject(IResourceDelta delta) {
+    public static boolean isInProject(IResourceDelta delta, boolean isMsSql) {
+        if (isMsSql) {
+            return isInMsProject(delta.getProjectRelativePath());
+        }
         return isInProject(delta.getProjectRelativePath());
     }
 
     public static boolean isInProject(IEditorInput editorInput) {
         IResource res = ResourceUtil.getResource(editorInput);
         return res == null ? false : isInProject(res);
-    }
-
-    /**
-     * @param editorInput
-     * @return param's {@link IResource} or null if not available or not {@link #isInProject(IPath)}
-     */
-    public static IResource getProjectResource(IEditorInput editorInput) {
-        IResource res = ResourceUtil.getResource(editorInput);
-        return isInProject(res) ? res : null;
     }
 
     /**

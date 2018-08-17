@@ -16,6 +16,8 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.SubMonitor;
 
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
+import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
+import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgUIDumpLoader;
 import ru.taximaxim.codekeeper.ui.views.navigator.PgDecorator;
@@ -70,7 +72,7 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
             throws CoreException, InterruptedException, IOException {
         List<IFile> files = new ArrayList<>();
         delta.accept(d -> {
-            if (PgUIDumpLoader.isInProject(d)) {
+            if (PgUIDumpLoader.isInProject(d, OpenProjectUtils.checkMsSql(new PgDbProject(getProject())))) {
                 IResource res = d.getResource();
                 if (res.getType() == IResource.FILE) {
                     switch (d.getKind()) {

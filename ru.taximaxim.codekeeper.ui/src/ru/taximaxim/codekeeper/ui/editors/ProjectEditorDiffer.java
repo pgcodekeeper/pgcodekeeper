@@ -431,7 +431,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 // something other than just markers has changed
                 // check that it's our resource
                 if (delta.getFlags() != IResourceDelta.MARKERS &&
-                        PgUIDumpLoader.isInProject(delta) &&
+                        PgUIDumpLoader.isInProject(delta, OpenProjectUtils.checkMsSql(proj)) &&
                         delta.getResource().getType() == IResource.FILE &&
                         delta.getResource().getProject().equals(proj.getProject())) {
                     schemaChanged[0] = true;
