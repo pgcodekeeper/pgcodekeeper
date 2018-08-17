@@ -72,7 +72,12 @@ public class MsProcedure extends AbstractFunction {
             return false;
         }
         if (!checkForChanges(newProcedure)) {
-            sb.append(newProcedure.getProcedureFullSQL(false));
+            if (needDrop(newProcedure)) {
+                isNeedDepcies.set(true);
+                return true;
+            } else {
+                sb.append(newProcedure.getProcedureFullSQL(false));
+            }
         }
 
         if (!Objects.equals(getOwner(), newProcedure.getOwner())) {
@@ -82,6 +87,11 @@ public class MsProcedure extends AbstractFunction {
         alterPrivileges(newProcedure, sb);
 
         return sb.length() > startLength;
+    }
+
+    private boolean needDrop(MsProcedure newProcedure) {
+        return getBody().toUpperCase().startsWith("EXTERNAL") !=
+                newProcedure.getBody().toUpperCase().startsWith("EXTERNAL");
     }
 
     @Override

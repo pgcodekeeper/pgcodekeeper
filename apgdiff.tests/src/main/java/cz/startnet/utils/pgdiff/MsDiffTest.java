@@ -176,6 +176,8 @@ public class MsDiffTest {
                     {"drop_ms_procedure"},
                     // Tests scenario where MS PROCEDURE is modified.
                     {"modify_ms_procedure"},
+                    // Tests scenario where MS PROCEDURE type is modified.
+                    {"modify_ms_procedure_type"},
 
                     // Tests scenario where COLUMN is added to MS TABLE definition.
                     {"add_ms_column"},
