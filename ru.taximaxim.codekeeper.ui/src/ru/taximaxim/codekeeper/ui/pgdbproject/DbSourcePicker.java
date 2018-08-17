@@ -104,7 +104,8 @@ class DbSourcePicker extends Composite {
             if (project != null) {
                 return DbSource.fromProject(project);
             } else {
-                return DbSource.fromDirTree(forceUnixNewlines, dir.getAbsolutePath(), getEncoding());
+                return DbSource.fromDirTree(forceUnixNewlines, dir.getAbsolutePath(),
+                        getEncoding(), isMsSql);
             }
         }
         return null;

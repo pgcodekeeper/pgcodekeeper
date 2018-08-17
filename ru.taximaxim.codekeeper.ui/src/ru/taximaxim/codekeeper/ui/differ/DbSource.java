@@ -108,8 +108,9 @@ public abstract class DbSource {
         return args;
     }
 
-    public static DbSource fromDirTree(boolean forceUnixNewlines,String dirTreePath, String encoding) {
-        return new DbSourceDirTree(forceUnixNewlines, dirTreePath, encoding);
+    public static DbSource fromDirTree(boolean forceUnixNewlines,String dirTreePath,
+            String encoding, boolean isMsSql) {
+        return new DbSourceDirTree(forceUnixNewlines, dirTreePath, encoding, isMsSql);
     }
 
     public static DbSource fromProject(PgDbProject proj) {
@@ -178,13 +179,15 @@ class DbSourceDirTree extends DbSource {
     private final boolean forceUnixNewlines;
     private final String dirTreePath;
     private final String encoding;
+    private final boolean isMsSql;
 
-    DbSourceDirTree(boolean forceUnixNewlines, String dirTreePath, String encoding) {
+    DbSourceDirTree(boolean forceUnixNewlines, String dirTreePath, String encoding, boolean isMsSql) {
         super(dirTreePath);
 
         this.forceUnixNewlines = forceUnixNewlines;
         this.dirTreePath = dirTreePath;
         this.encoding = encoding;
+        this.isMsSql = isMsSql;
     }
 
     @Override
@@ -194,7 +197,7 @@ class DbSourceDirTree extends DbSource {
 
         List<AntlrError> er = new ArrayList<>();
         PgDatabase db = PgDumpLoader.loadDatabaseSchemaFromDirTree(dirTreePath,
-                getPgDiffArgs(encoding, forceUnixNewlines, false), monitor, er);
+                getPgDiffArgs(encoding, forceUnixNewlines, isMsSql), monitor, er);
         errors = er;
         return db;
     }
