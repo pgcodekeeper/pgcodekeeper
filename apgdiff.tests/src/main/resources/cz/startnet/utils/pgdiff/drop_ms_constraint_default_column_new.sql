@@ -1,0 +1,17 @@
+CREATE SEQUENCE [dbo].[seq1]
+    START WITH 555888
+    INCREMENT BY 555
+    MAXVALUE 5557772036854775807
+    MINVALUE 555777
+    CACHE 
+GO
+
+CREATE TABLE [dbo].[table1](
+    [c1] [bigint] NOT NULL,
+    [c2] [int] NOT NULL,
+    [c3] [varchar](100) NOT NULL)
+GO
+
+ALTER TABLE [dbo].[table1] 
+    ADD CONSTRAINT [PK_table1] PRIMARY KEY CLUSTERED  ([c1]) ON [PRIMARY]
+GO
