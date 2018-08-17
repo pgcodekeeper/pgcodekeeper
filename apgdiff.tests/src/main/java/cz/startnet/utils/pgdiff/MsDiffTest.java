@@ -164,6 +164,13 @@ public class MsDiffTest {
                     // Tests scenario where MS TRIGGER is modified.
                     {"modify_ms_trigger"},
 
+                    // Tests scenario where MS PROCEDURE without args is added.
+                    {"add_ms_procedure_noargs"},
+                    // Tests scenario where MS PROCEDURE without args is dropped.
+                    {"add_ms_procedure_noargs"},
+                    // Tests scenario where MS PROCEDURE without args is modified.
+                    {"add_ms_procedure_noargs"},
+
                     // Tests scenario where MS PROCEDURE is added.
                     {"add_ms_procedure"},
                     // Tests scenario where MS PROCEDURE is dropped.
