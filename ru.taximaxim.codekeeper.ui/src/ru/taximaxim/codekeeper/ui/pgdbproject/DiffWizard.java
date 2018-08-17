@@ -32,6 +32,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -114,10 +115,11 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
     public boolean performFinish() {
         try {
             TreeDiffer treediffer = pagePartial.getTreeDiffer();
-            // TODO add combo
-            Differ differ = new Differ(treediffer.getDbSource().getDbObject(),
-                    treediffer.getDbTarget().getDbObject(),
-                    treediffer.getDiffTree(), false, pageDiff.getTimezone(), false);
+            PgDatabase source = treediffer.getDbSource().getDbObject();
+
+            Differ differ = new Differ(source, treediffer.getDbTarget().getDbObject(),
+                    treediffer.getDiffTree(), false, pageDiff.getTimezone(),
+                    source.getArguments().isMsSql());
             getContainer().run(true, true, differ);
 
             Path path = Files.createTempFile("diff_wizard_result_", ""); //$NON-NLS-1$ //$NON-NLS-2$
@@ -171,6 +173,10 @@ class PageDiff extends WizardPage implements Listener {
 
     public void setTimezone(String timezone) {
         cmbTimezone.getCombo().setText(timezone);
+    }
+
+    public boolean isMsSql() {
+        return btnMsSql.getSelection();
     }
 
     @Override
