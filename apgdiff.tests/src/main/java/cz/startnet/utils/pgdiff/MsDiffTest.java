@@ -59,6 +59,9 @@ public class MsDiffTest {
                     // Tests scenario where MS TABLE option is modified.
                     // TODO Uncomment the code when table option will be supported.
                     // {"modify_ms_table_option"},
+                    // Tests scenario where MS TABLE CHANGE_TRACKING is modified.
+                    // TODO Uncomment the code when table CHANGE_TRACKING will be supported.
+                    // {"modify_ms_table_tracking"},
 
                     // TODO Uncomment the code when table with partitions will be supported.
                     // Tests scenario where MS TABLE with partition is added.
