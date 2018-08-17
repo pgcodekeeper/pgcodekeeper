@@ -50,13 +50,12 @@ public class MsDiffTest {
                     {"drop_ms_procedure_privileges"},
                     // Tests scenario where MS PRIVILEGES for procedure is modify.
                     {"modify_ms_procedure_privileges"},
-                    //// TODO Uncomment the code when schema privileges will be fixed.
                     // Tests scenario where MS PRIVILEGES for schema is added.
-                    // {"add_ms_schema_privileges"},
+                    {"add_ms_schema_privileges"},
                     // Tests scenario where MS PRIVILEGES for schema is dropped.
-                    // {"drop_ms_schema_privileges"},
+                    {"drop_ms_schema_privileges"},
                     // Tests scenario where MS PRIVILEGES for schema is modified.
-                    // {"modify_ms_schema_privileges"},
+                    {"modify_ms_schema_privileges"},
 
                     // Tests scenario where MS SCEMA is added.
                     {"add_ms_schema"},
