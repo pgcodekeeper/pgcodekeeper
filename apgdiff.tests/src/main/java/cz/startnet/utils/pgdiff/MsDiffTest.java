@@ -32,13 +32,6 @@ public class MsDiffTest {
     public static Collection<?> parameters() {
         return Arrays.asList(
                 new Object[][] {
-                    // Tests scenario where MS PRIVILEGES for columns is added.
-                    {"add_ms_column_privileges"},
-                    // Tests scenario where MS PRIVILEGES for columns is dropped.
-                    {"drop_ms_column_privileges"},
-                    // Tests scenario where MS PRIVILEGES for columns is modified.
-                    {"modify_ms_column_privileges"},
-
                     // Tests scenario where MS SCEMA is added.
                     {"add_ms_schema"},
                     // Tests scenario where MS SCEMA is dropped.
@@ -47,6 +40,13 @@ public class MsDiffTest {
                     {"modify_ms_schema_name"},
                     // Tests scenario where MS SCEMA is modified.
                     {"modify_ms_schema"},
+                    //// TODO Uncomment the code when schema privileges will be fixed.
+                    // Tests scenario where MS PRIVILEGES for schema is added.
+                    // {"add_ms_schema_privileges"},
+                    // Tests scenario where MS PRIVILEGES for schema is dropped.
+                    // {"drop_ms_schema_privileges"},
+                    // Tests scenario where MS PRIVILEGES for schema is modified.
+                    // {"modify_ms_schema_privileges"},
 
                     // Tests scenario where MS TABLE is added.
                     {"add_ms_table"},
@@ -62,6 +62,12 @@ public class MsDiffTest {
                     // Tests scenario where MS TABLE CHANGE_TRACKING is modified.
                     // TODO Uncomment the code when table CHANGE_TRACKING will be supported.
                     // {"modify_ms_table_tracking"},
+                    // Tests scenario where MS PRIVILEGES for table is added.
+                    {"add_ms_table_privileges"},
+                    // Tests scenario where MS PRIVILEGES for table is dropped.
+                    {"drop_ms_table_privileges"},
+                    // Tests scenario where MS PRIVILEGES for table is modified.
+                    {"modify_ms_table_privileges"},
 
                     // TODO Uncomment the code when table with partitions will be supported.
                     // Tests scenario where MS TABLE with partition is added.
@@ -145,6 +151,19 @@ public class MsDiffTest {
                     // Tests scenario where MS TRIGGER is modified.
                     {"modify_ms_trigger"},
 
+                    // Tests scenario where MS PROCEDURE is added.
+                    {"add_ms_procedure"},
+                    // Tests scenario where MS PROCEDURE is dropped.
+                    {"drop_ms_procedure"},
+                    // Tests scenario where MS PROCEDURE is modified.
+                    {"modify_ms_procedure"},
+                    // Tests scenario where MS PRIVILEGES for procedure is added.
+                    {"add_ms_procedure_privileges"},
+                    // Tests scenario where MS PRIVILEGES for procedure is dropped.
+                    {"drop_ms_procedure_privileges"},
+                    // Tests scenario where MS PRIVILEGES for procedure is modify.
+                    {"modify_ms_procedure_privileges"},
+
                     // Tests scenario where COLUMN is added to MS TABLE definition.
                     {"add_ms_column"},
                     // Tests scenario where COLUMN is dropped from MS TABLE.
@@ -156,6 +175,12 @@ public class MsDiffTest {
                     // Tests scenario where MS COLUMN type is modified, column has constraint.
                     // TODO Uncomment the code when dependency columns from constraint will be supported.
                     // {"modify_ms_column_type_with_constraint"},
+                    // Tests scenario where MS PRIVILEGES for columns is added.
+                    {"add_ms_column_privileges"},
+                    // Tests scenario where MS PRIVILEGES for columns is dropped.
+                    {"drop_ms_column_privileges"},
+                    // Tests scenario where MS PRIVILEGES for columns is modified.
+                    {"modify_ms_column_privileges"},
                 });
     }
 
