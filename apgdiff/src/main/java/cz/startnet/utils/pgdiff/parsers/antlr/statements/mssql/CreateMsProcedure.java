@@ -31,8 +31,14 @@ public class CreateMsProcedure extends ParserAbstract {
         IdContext schemaCtx = ctx.func_proc_name().schema;
         AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
         AbstractFunction procedure = new MsProcedure(ctx.func_proc_name().procedure.getText(), getFullCtxText(ctx.getParent()));
-        procedure.setAnsiNulls(ansiNulls);
-        procedure.setQuotedIdentified(quotedIdentifier);
+        if (ctx.proc_body().EXTERNAL() != null) {
+            procedure.setAnsiNulls(false);
+            procedure.setQuotedIdentified(false);
+        } else {
+            procedure.setAnsiNulls(ansiNulls);
+            procedure.setQuotedIdentified(quotedIdentifier);
+        }
+
         fillArguments(procedure);
         procedure.setForReplication(ctx.REPLICATION() != null);
         procedure.setBody(db.getArguments(), getFullCtxText(ctx.proc_body()));
