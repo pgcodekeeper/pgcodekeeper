@@ -16,9 +16,7 @@ public class SimpleMsTable extends AbstractRegularTable {
 
     private String textImage;
     private String fileStream;
-    private String partitionColName;
     private boolean ansiNulls;
-    private boolean quotedIdentified = true;
 
     public SimpleMsTable(String name, String rawStatement) {
         super(name, rawStatement);
@@ -31,8 +29,7 @@ public class SimpleMsTable extends AbstractRegularTable {
 
     @Override
     protected void appendName(StringBuilder sbSQL) {
-        sbSQL.append("SET QUOTED_IDENTIFIER ").append(quotedIdentified ? "ON" : "OFF");
-        sbSQL.append(GO).append('\n');
+        sbSQL.append("SET QUOTED_IDENTIFIER ON").append(GO).append('\n');
         sbSQL.append("SET ANSI_NULLS ").append(ansiNulls ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
 
@@ -58,17 +55,22 @@ public class SimpleMsTable extends AbstractRegularTable {
 
     @Override
     protected void appendOptions(StringBuilder sbSQL) {
+        int startLenght = sbSQL.length();
         if (tablespace != null) {
-            sbSQL.append(" ON ").append(MsDiffUtils.quoteName(tablespace))
-            .append("(").append(MsDiffUtils.quoteName(partitionColName)).append(")");
+            // tablespace already quoted
+            sbSQL.append(" ON ").append(tablespace).append(' ');
         }
 
         if (getTextImage() != null) {
-            sbSQL.append("TEXTIMAGE_ON ").append(MsDiffUtils.quoteName(getTextImage())).append("\n");
+            sbSQL.append("TEXTIMAGE_ON ").append(MsDiffUtils.quoteName(getTextImage())).append(' ');
         }
 
         if (getFileStream() != null) {
-            sbSQL.append("FILESTREAM_ON ").append(MsDiffUtils.quoteName(getFileStream())).append("\n");
+            sbSQL.append("FILESTREAM_ON ").append(MsDiffUtils.quoteName(getFileStream())).append(' ');
+        }
+
+        if (sbSQL.length() > startLenght) {
+            sbSQL.setLength(sbSQL.length() - 1);
         }
 
         StringBuilder sb = new StringBuilder();
@@ -78,7 +80,7 @@ public class SimpleMsTable extends AbstractRegularTable {
 
             sb.append(key);
             if (!value.isEmpty()) {
-                sb.append('=').append(value);
+                sb.append(" = ").append(value);
             }
             sb.append(", ");
         }
@@ -98,7 +100,6 @@ public class SimpleMsTable extends AbstractRegularTable {
                 || !Objects.equals(((SimpleMsTable)newTable).getTablespace(), getTablespace())
                 || !Objects.equals(((SimpleMsTable)newTable).getTextImage(), getTextImage())
                 || !Objects.equals(((SimpleMsTable)newTable).getFileStream(), getFileStream())
-                || !Objects.equals(((SimpleMsTable)newTable).getPartitionColName(), getPartitionColName())
                 // TODO some option can be altered by rebuild syntax
                 || !Objects.equals(((SimpleMsTable)newTable).getOptions(), getOptions());
     }
@@ -112,9 +113,7 @@ public class SimpleMsTable extends AbstractRegularTable {
     protected SimpleMsTable getTableCopy() {
         SimpleMsTable table = new SimpleMsTable(name, getRawStatement());
         table.setFileStream(getFileStream());
-        table.setPartitionColName(getPartitionColName());
         table.setTextImage(getTextImage());
-        table.setQuotedIdentified(isQuotedIdentified());
         table.setAnsiNulls(isAnsiNulls());
         return table;
     }
@@ -130,8 +129,6 @@ public class SimpleMsTable extends AbstractRegularTable {
             SimpleMsTable table = (SimpleMsTable) obj;
             return Objects.equals(textImage, table.getTextImage())
                     && Objects.equals(fileStream, table.getFileStream())
-                    && Objects.equals(partitionColName, table.getPartitionColName())
-                    && Objects.equals(quotedIdentified, table.isQuotedIdentified())
                     && Objects.equals(ansiNulls, table.isAnsiNulls());
         }
 
@@ -154,8 +151,6 @@ public class SimpleMsTable extends AbstractRegularTable {
         super.computeHash(hasher);
         hasher.put(getTextImage());
         hasher.put(getFileStream());
-        hasher.put(getPartitionColName());
-        hasher.put(isQuotedIdentified());
         hasher.put(isAnsiNulls());
     }
 
@@ -177,15 +172,6 @@ public class SimpleMsTable extends AbstractRegularTable {
         resetHash();
     }
 
-    public String getPartitionColName() {
-        return partitionColName;
-    }
-
-    public void setPartitionColName(String partitionColName) {
-        this.partitionColName = partitionColName;
-        resetHash();
-    }
-
     public void setAnsiNulls(boolean ansiNulls) {
         this.ansiNulls = ansiNulls;
         resetHash();
@@ -193,15 +179,6 @@ public class SimpleMsTable extends AbstractRegularTable {
 
     public boolean isAnsiNulls() {
         return ansiNulls;
-    }
-
-    public void setQuotedIdentified(boolean quotedIdentified) {
-        this.quotedIdentified = quotedIdentified;
-        resetHash();
-    }
-
-    public boolean isQuotedIdentified() {
-        return quotedIdentified;
     }
 
     @Override
