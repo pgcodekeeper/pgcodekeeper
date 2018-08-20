@@ -210,6 +210,7 @@ public class MsModelExporter extends AbstractModelExporter {
             processViewAndContents(el, stInNew, el);
             break;
         case SEQUENCE:
+            deleteStatementIfExists(stInNew);
             dumpObjects(Arrays.asList((PgStatementWithSearchPath)stInNew),
                     new File(outDir, MS_WORK_DIR_NAMES.SEQUENCES.getName()));
             break;

@@ -3,6 +3,7 @@ SELECT
     s.name,
     aa.acl,
     t.name AS data_type,
+    s.precision,
     p.name AS owner,
     CONVERT(bigint, s.start_value) AS start_value,
     CONVERT(bigint, s.increment) AS increment,

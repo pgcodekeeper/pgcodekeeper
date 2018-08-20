@@ -18,6 +18,9 @@ public class MsSequence extends AbstractSequence {
         sbSQL.append(getQualifiedName());
 
         sbSQL.append("\n\tAS ").append(MsDiffUtils.quoteName(getDataType()));
+        if (getPresicion() != null) {
+            sbSQL.append('(').append(getPresicion()).append(", 0)");
+        }
 
         fillSequenceBody(sbSQL);
         sbSQL.append(GO);
@@ -81,10 +84,17 @@ public class MsSequence extends AbstractSequence {
         } else {
             return false;
         }
+
+        if (!newSequence.getDataType().equals(getDataType())  ||
+                !Objects.equals(newSequence.getPresicion(), getPresicion())) {
+            isNeedDepcies.set(true);
+            return true;
+        }
+
         StringBuilder sbSQL = new StringBuilder();
         sbSQL.setLength(0);
 
-        if (compareSequenceBody(newSequence, this, sbSQL)) {
+        if (compareSequenceBody(newSequence, sbSQL)) {
             sb.append("\n\nALTER SEQUENCE " + getQualifiedName() + sbSQL.toString() + GO);
         }
 
@@ -96,16 +106,8 @@ public class MsSequence extends AbstractSequence {
         return sb.length() > startLength;
     }
 
-    private boolean compareSequenceBody(AbstractSequence newSequence, AbstractSequence oldSequence, StringBuilder sbSQL) {
-        final String oldType = oldSequence.getDataType();
-        final String newType = newSequence.getDataType();
-
-        if (!oldType.equals(newType)) {
-            sbSQL.append("\n\tAS ");
-            sbSQL.append(newType);
-        }
-
-        final String oldIncrement = oldSequence.getIncrement();
+    private boolean compareSequenceBody(AbstractSequence newSequence, StringBuilder sbSQL) {
+        final String oldIncrement = getIncrement();
         final String newIncrement = newSequence.getIncrement();
 
         if (newIncrement != null
@@ -114,7 +116,7 @@ public class MsSequence extends AbstractSequence {
             sbSQL.append(newIncrement);
         }
 
-        final String oldMinValue = oldSequence.getMinValue();
+        final String oldMinValue = getMinValue();
         final String newMinValue = newSequence.getMinValue();
 
         if (newMinValue == null && oldMinValue != null) {
@@ -125,7 +127,7 @@ public class MsSequence extends AbstractSequence {
             sbSQL.append(newMinValue);
         }
 
-        final String oldMaxValue = oldSequence.getMaxValue();
+        final String oldMaxValue = getMaxValue();
         final String newMaxValue = newSequence.getMaxValue();
 
         if (newMaxValue == null && oldMaxValue != null) {
@@ -136,7 +138,7 @@ public class MsSequence extends AbstractSequence {
             sbSQL.append(newMaxValue);
         }
 
-        final String oldStart = oldSequence.getStartWith();
+        final String oldStart = getStartWith();
         final String newStart = newSequence.getStartWith();
 
         if (newStart != null && !newStart.equals(oldStart)) {
@@ -144,7 +146,7 @@ public class MsSequence extends AbstractSequence {
             sbSQL.append(newStart);
         }
 
-        final String oldCache = oldSequence.getCache();
+        final String oldCache = getCache();
         final String newCache = newSequence.getCache();
 
         if (newSequence.isCached() && !Objects.equals(newCache, oldCache)) {
@@ -156,7 +158,7 @@ public class MsSequence extends AbstractSequence {
             sbSQL.append("\n\tNO CACHE");
         }
 
-        final boolean oldCycle = oldSequence.isCycle();
+        final boolean oldCycle = isCycle();
         final boolean newCycle = newSequence.isCycle();
 
         if (oldCycle && !newCycle) {
