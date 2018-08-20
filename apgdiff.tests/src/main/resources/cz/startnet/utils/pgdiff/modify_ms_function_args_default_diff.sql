@@ -1,6 +1,6 @@
-SET QUOTED_IDENTIFIER OFF
+SET QUOTED_IDENTIFIER ON
 GO
-SET ANSI_NULLS OFF
+SET ANSI_NULLS ON
 GO
 ALTER FUNCTION [dbo].[ReturnOperResult](@First int, @Second int = 777, @Third int) 
 RETURNS integer

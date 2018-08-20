@@ -1,9 +1,17 @@
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
 CREATE TABLE [dbo].[person](
     [id] [int] NOT NULL,
     [name] [nvarchar](255) NOT NULL,
     [value] [int] NOT NULL)
 GO
 
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
 CREATE FUNCTION [dbo].[findPerson] (@Condition INTEGER)  
 RETURNS @retFindReports TABLE   
 (  

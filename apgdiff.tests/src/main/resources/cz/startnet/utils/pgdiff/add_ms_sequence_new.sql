@@ -6,6 +6,10 @@ CREATE SEQUENCE [dbo].[seq1]
     CACHE 
 GO
 
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
 CREATE TABLE [dbo].[table1](
     [c1] [bigint] NOT NULL,
     [c2] [int] NOT NULL,

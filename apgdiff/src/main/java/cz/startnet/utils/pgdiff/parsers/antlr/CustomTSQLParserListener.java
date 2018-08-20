@@ -124,7 +124,7 @@ public class CustomTSQLParserListener extends TSQLParserBaseListener {
 
     @Override
     public void exitCreate_table(Create_tableContext ctx) {
-        safeParseStatement(new CreateMsTable(ctx, db, ansiNulls, quotedIdentifier), ctx);
+        safeParseStatement(new CreateMsTable(ctx, db, ansiNulls), ctx);
     }
 
     @Override

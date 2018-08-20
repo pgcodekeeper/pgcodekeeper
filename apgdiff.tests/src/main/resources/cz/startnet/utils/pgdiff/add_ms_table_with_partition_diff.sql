@@ -1,10 +1,8 @@
-CREATE PARTITION FUNCTION [pf_range_left](int) AS RANGE LEFT FOR VALUES (1, 10, 100)
+SET QUOTED_IDENTIFIER ON
 GO
-
-CREATE PARTITION SCHEME [ps_range_left] AS PARTITION [pf_range_left] TO ([PRIMARY], [PRIMARY], [PRIMARY], [PRIMARY], [PRIMARY])
+SET ANSI_NULLS ON
 GO
-
 CREATE TABLE [dbo].[table_partition_01](
-    [id] [int] NULL
+	[id] [int] NULL
 ) ON [ps_range_left]([id])
 GO

@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import java.util.List;
 
+import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
@@ -19,13 +20,11 @@ public class CreateMsTable extends TableAbstract {
     private final Create_tableContext ctx;
 
     private final boolean ansiNulls;
-    private final boolean quotedIdentifier;
 
-    public CreateMsTable(Create_tableContext ctx, PgDatabase db, boolean ansiNulls, boolean quotedIdentifier) {
+    public CreateMsTable(Create_tableContext ctx, PgDatabase db, boolean ansiNulls) {
         super(db);
         this.ctx = ctx;
         this.ansiNulls = ansiNulls;
-        this.quotedIdentifier = quotedIdentifier;
     }
 
     @Override
@@ -37,11 +36,14 @@ public class CreateMsTable extends TableAbstract {
         SimpleMsTable table = new SimpleMsTable(tableName, getFullCtxText(ctx.getParent()));
 
         table.setAnsiNulls(ansiNulls);
-        table.setQuotedIdentified(quotedIdentifier);
 
         if (ctx.tablespace != null) {
-            // TODO add support for partition
-            table.setTablespace(ctx.tablespace.getText());
+            String tableSpace = MsDiffUtils.quoteName(ctx.tablespace.getText());
+            if (ctx.partition_col_name != null) {
+                tableSpace = tableSpace + '(' +
+                        MsDiffUtils.quoteName(ctx.partition_col_name.getText()) + ')';
+            }
+            table.setTablespace(tableSpace);
         }
 
         if (ctx.textimage != null) {

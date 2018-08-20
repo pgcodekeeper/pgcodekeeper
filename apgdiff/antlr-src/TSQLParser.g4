@@ -1515,7 +1515,7 @@ update_statistics
 // https://msdn.microsoft.com/en-us/library/ms174979.aspx
 create_table
     : TABLE table_name '(' column_def_table_constraints ','? ')'
-    (ON tablespace=id_or_default)?
+    (ON tablespace=id_or_default ('(' partition_col_name=id ')')?)?
     (TEXTIMAGE_ON textimage=id_or_default)?
     (FILESTREAM_ON filestream=id_or_default)?
     table_options*
