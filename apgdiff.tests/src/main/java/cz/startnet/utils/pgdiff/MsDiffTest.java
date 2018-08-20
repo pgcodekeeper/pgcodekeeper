@@ -80,14 +80,12 @@ public class MsDiffTest {
                     // Tests scenario where MS TABLE CHANGE_TRACKING is modified.
                     // TODO Uncomment the code when table CHANGE_TRACKING will be supported.
                     // {"modify_ms_table_tracking"},
-
-                    //// TODO Uncomment the code when table with partitions will be supported.
                     // Tests scenario where MS TABLE with partition is added.
-                    // {"add_ms_table_with_partition"},
+                    {"add_ms_table_with_partition"},
                     // Tests scenario where MS TABLE with partition is dropped.
-                    // {"drop_ms_table_with_partition"},
+                    {"drop_ms_table_with_partition"},
                     // Tests scenario where MS TABLE with partition is modified.
-                    // {"modify_ms_table_with_partition"},
+                    {"modify_ms_table_with_partition"},
 
                     // Tests scenario where MS VIEW is added.
                     {"add_ms_view"},
