@@ -4,6 +4,8 @@ import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_sequenceContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Data_typeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Data_type_sizeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Sequence_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
@@ -37,7 +39,13 @@ public class CreateMsSequence extends ParserAbstract {
         String dataType = null;
         for (Sequence_bodyContext body : list) {
             if (body.data_type() != null) {
-                dataType = body.data_type().getText().toLowerCase();
+                Data_typeContext data = body.data_type();
+                dataType = data.simple_name().getText().toLowerCase();
+                sequence.setDataType(dataType);
+                Data_type_sizeContext size = data.size;
+                if (size != null && size.presicion != null) {
+                    sequence.setPresicion(size.presicion.getText());
+                }
             } else if (body.start_val != null) {
                 sequence.setStartWith(body.start_val.getText());
             } else if (body.CACHE() != null && body.NO() == null) {

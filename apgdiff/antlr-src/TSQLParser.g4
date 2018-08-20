@@ -2995,7 +2995,7 @@ data_type
     ;
     
 data_type_size
-    : ('(' (DECIMAL | MAX) (',' DECIMAL)? ')')
+    : ('(' (presicion=DECIMAL | MAX) (',' scale=DECIMAL)? ')')
     ;
 
 default_value

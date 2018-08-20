@@ -151,6 +151,8 @@ public class MsDiffTest {
                     {"drop_ms_sequence"},
                     // Tests scenario where MS SEQUENCE is modified.
                     {"modify_ms_sequence"},
+                    // Tests scenario where MS SEQUENCE data type is modified.
+                    {"modify_ms_sequence_data_type"},
                     // Tests scenario where MS SEQUENCE cashe is modified.
                     {"modify_ms_sequence_cache"},
 
