@@ -22,6 +22,7 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
     private boolean isForReplication;
     private boolean ansiNulls;
     private boolean quotedIdentified;
+    private boolean isCLR;
 
     @Override
     public DbObjType getStatementType() {
@@ -112,6 +113,14 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
 
     public void setForReplication(boolean isForReplication) {
         this.isForReplication = isForReplication;
+    }
+
+    public boolean isCLR() {
+        return isCLR;
+    }
+
+    public void setCLR(boolean isCLR) {
+        this.isCLR = isCLR;
         resetHash();
     }
 
@@ -151,7 +160,8 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
                     && options.equals(func.options)
                     && Objects.equals(body, func.getBody())
                     && Objects.equals(isForReplication, func.isForReplication())
-                    && Objects.equals(returns, func.getReturns());
+                    && Objects.equals(returns, func.getReturns())
+                    && Objects.equals(isCLR, func.isCLR());
         }
         return equals;
     }
@@ -168,11 +178,9 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
                 return false;
             }
             return  Objects.equals(owner, func.getOwner())
-                    && options.equals(func.options)
                     && Objects.equals(grants, func.grants)
                     && Objects.equals(revokes, func.revokes)
                     && Objects.equals(comment, func.getComment())
-                    && Objects.equals(isForReplication, func.isForReplication)
                     && Objects.equals(quotedIdentified, func.isQuotedIdentified())
                     && Objects.equals(ansiNulls, func.isAnsiNulls());
         }
@@ -193,6 +201,7 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
         hasher.put(ansiNulls);
         hasher.put(options);
         hasher.put(isForReplication);
+        hasher.put(isCLR);
     }
 
     @Override
@@ -201,6 +210,8 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
         functionDst.setReturns(getReturns());
         functionDst.setAnsiNulls(isAnsiNulls());
         functionDst.setQuotedIdentified(isQuotedIdentified());
+        functionDst.setForReplication(isForReplication());
+        functionDst.setCLR(isCLR());
         functionDst.returnsColumns.putAll(returnsColumns);
         functionDst.setBody(getBody());
         functionDst.setComment(getComment());

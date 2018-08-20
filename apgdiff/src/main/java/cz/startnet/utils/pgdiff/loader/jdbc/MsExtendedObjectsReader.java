@@ -150,6 +150,7 @@ public class MsExtendedObjectsReader extends JdbcReader {
         }
 
         loader.setOwner(func, owner);
+        func.setCLR(true);
         schema.addFunction(func);
         loader.setPrivileges(func, JsonReader.fromArray(res.getString("acl")));
     }

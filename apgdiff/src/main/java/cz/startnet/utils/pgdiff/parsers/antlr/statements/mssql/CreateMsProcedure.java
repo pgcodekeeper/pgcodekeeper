@@ -34,6 +34,7 @@ public class CreateMsProcedure extends ParserAbstract {
         if (ctx.proc_body().EXTERNAL() != null) {
             procedure.setAnsiNulls(false);
             procedure.setQuotedIdentified(false);
+            procedure.setCLR(true);
         } else {
             procedure.setAnsiNulls(ansiNulls);
             procedure.setQuotedIdentified(quotedIdentifier);

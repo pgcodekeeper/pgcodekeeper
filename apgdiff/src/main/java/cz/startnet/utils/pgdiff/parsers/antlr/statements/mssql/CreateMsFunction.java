@@ -33,6 +33,7 @@ public class CreateMsFunction extends ParserAbstract {
         if (ctx.func_body().func_body_return().EXTERNAL() != null) {
             function.setAnsiNulls(false);
             function.setQuotedIdentified(false);
+            function.setCLR(true);
         } else {
             function.setAnsiNulls(ansiNulls);
             function.setQuotedIdentified(quotedIdentifier);

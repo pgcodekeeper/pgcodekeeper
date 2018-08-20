@@ -90,8 +90,7 @@ public class MsProcedure extends AbstractFunction {
     }
 
     private boolean needDrop(MsProcedure newProcedure) {
-        return getBody().toUpperCase().startsWith("EXTERNAL") !=
-                newProcedure.getBody().toUpperCase().startsWith("EXTERNAL");
+        return isCLR() != newProcedure.isCLR();
     }
 
     @Override

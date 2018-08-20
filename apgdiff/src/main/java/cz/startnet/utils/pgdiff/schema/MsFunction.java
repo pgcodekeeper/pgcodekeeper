@@ -81,8 +81,7 @@ public class MsFunction extends AbstractFunction {
             return true;
         }
 
-        return getBody().toUpperCase().startsWith("EXTERNAL") !=
-                newFunc.getBody().toUpperCase().startsWith("EXTERNAL");
+        return isCLR() != newFunc.isCLR();
     }
 
     @Override
