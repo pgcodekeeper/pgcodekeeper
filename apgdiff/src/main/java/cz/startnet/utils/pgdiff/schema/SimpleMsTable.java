@@ -16,6 +16,7 @@ public class SimpleMsTable extends AbstractRegularTable {
 
     private String textImage;
     private String fileStream;
+    private String partitionColName;
     private boolean ansiNulls;
     private boolean quotedIdentified = true;
 
@@ -58,7 +59,8 @@ public class SimpleMsTable extends AbstractRegularTable {
     @Override
     protected void appendOptions(StringBuilder sbSQL) {
         if (tablespace != null) {
-            sbSQL.append(" ON ").append(MsDiffUtils.quoteName(tablespace)).append("\n");
+            sbSQL.append(" ON ").append(MsDiffUtils.quoteName(tablespace))
+            .append("(").append(MsDiffUtils.quoteName(partitionColName)).append(")");
         }
 
         if (getTextImage() != null) {
@@ -96,6 +98,7 @@ public class SimpleMsTable extends AbstractRegularTable {
                 || !Objects.equals(((SimpleMsTable)newTable).getTablespace(), getTablespace())
                 || !Objects.equals(((SimpleMsTable)newTable).getTextImage(), getTextImage())
                 || !Objects.equals(((SimpleMsTable)newTable).getFileStream(), getFileStream())
+                || !Objects.equals(((SimpleMsTable)newTable).getPartitionColName(), getPartitionColName())
                 // TODO some option can be altered by rebuild syntax
                 || !Objects.equals(((SimpleMsTable)newTable).getOptions(), getOptions());
     }
@@ -109,6 +112,7 @@ public class SimpleMsTable extends AbstractRegularTable {
     protected SimpleMsTable getTableCopy() {
         SimpleMsTable table = new SimpleMsTable(name, getRawStatement());
         table.setFileStream(getFileStream());
+        table.setPartitionColName(getPartitionColName());
         table.setTextImage(getTextImage());
         table.setQuotedIdentified(isQuotedIdentified());
         table.setAnsiNulls(isAnsiNulls());
@@ -126,6 +130,7 @@ public class SimpleMsTable extends AbstractRegularTable {
             SimpleMsTable table = (SimpleMsTable) obj;
             return Objects.equals(textImage, table.getTextImage())
                     && Objects.equals(fileStream, table.getFileStream())
+                    && Objects.equals(partitionColName, table.getPartitionColName())
                     && Objects.equals(quotedIdentified, table.isQuotedIdentified())
                     && Objects.equals(ansiNulls, table.isAnsiNulls());
         }
@@ -149,6 +154,7 @@ public class SimpleMsTable extends AbstractRegularTable {
         super.computeHash(hasher);
         hasher.put(getTextImage());
         hasher.put(getFileStream());
+        hasher.put(getPartitionColName());
         hasher.put(isQuotedIdentified());
         hasher.put(isAnsiNulls());
     }
@@ -168,6 +174,15 @@ public class SimpleMsTable extends AbstractRegularTable {
 
     public void setTextImage(String textImage) {
         this.textImage = textImage;
+        resetHash();
+    }
+
+    public String getPartitionColName() {
+        return partitionColName;
+    }
+
+    public void setPartitionColName(String partitionColName) {
+        this.partitionColName = partitionColName;
         resetHash();
     }
 

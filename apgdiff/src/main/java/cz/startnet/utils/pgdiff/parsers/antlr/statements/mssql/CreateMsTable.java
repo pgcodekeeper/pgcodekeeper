@@ -40,8 +40,8 @@ public class CreateMsTable extends TableAbstract {
         table.setQuotedIdentified(quotedIdentifier);
 
         if (ctx.tablespace != null) {
-            // TODO add support for partition
             table.setTablespace(ctx.tablespace.getText());
+            table.setPartitionColName(ctx.partition_col_name.getText());
         }
 
         if (ctx.textimage != null) {

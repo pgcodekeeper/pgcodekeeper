@@ -77,6 +77,7 @@ public class MsTablesReader extends JdbcReader {
         }
 
         table.setTablespace(res.getString("space_name"));
+        table.setPartitionColName(res.getString("part_column"));
         loader.setOwner(table, res.getString("owner"));
 
         schema.addTable(table);
