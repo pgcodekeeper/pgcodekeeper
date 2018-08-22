@@ -53,7 +53,7 @@ public class JdbcConnector {
             if (url.startsWith("jdbc:postgresql:")) {
                 return new JdbcConnector(url, timezone);
             } else if (url.startsWith("jdbc:sqlserver:")) {
-                return new JdbcMsConnector(url, timezone);
+                return new JdbcMsConnector(url);
             }
         } catch (URISyntaxException ex) {
             throw new IllegalArgumentException(ex.getLocalizedMessage(), ex);

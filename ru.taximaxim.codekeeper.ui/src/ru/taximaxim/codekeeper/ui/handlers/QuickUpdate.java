@@ -206,7 +206,7 @@ class QuickUpdateJob extends SingletonEditorJob {
         if (isMsSql) {
             connector = new JdbcMsConnector(dbinfo.getDbHost(), dbinfo.getDbPort(),
                     dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),
-                    dbinfo.getProperties(), dbinfo.isReadOnly(), ApgdiffConsts.UTF_8);
+                    dbinfo.getProperties(), dbinfo.isReadOnly());
         } else {
             connector = new JdbcConnector(dbinfo.getDbHost(), dbinfo.getDbPort(),
                     dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),

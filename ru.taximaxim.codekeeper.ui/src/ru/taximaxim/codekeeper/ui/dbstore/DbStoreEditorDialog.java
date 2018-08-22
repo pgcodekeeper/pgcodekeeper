@@ -338,13 +338,13 @@ public class DbStoreEditorDialog extends TrayDialog {
                                 txtDbUser.getText(), txtDbPass.getText(),
                                 txtDbName.getText(), propertyListEditor.getList().stream()
                                 .collect(Collectors.toMap(Entry::getKey, Entry::getValue)),
-                                btnReadOnly.getSelection() , ApgdiffConsts.UTC);
+                                btnReadOnly.getSelection());
                     } else {
                         connector = new JdbcConnector(txtDbHost.getText(), dbport,
                                 txtDbUser.getText(), txtDbPass.getText(),
                                 txtDbName.getText(), propertyListEditor.getList().stream()
                                 .collect(Collectors.toMap(Entry::getKey, Entry::getValue)),
-                                btnReadOnly.getSelection() , ApgdiffConsts.UTC);
+                                btnReadOnly.getSelection(), ApgdiffConsts.UTC);
                     }
 
                     try (Connection connection = connector.getConnection()) {

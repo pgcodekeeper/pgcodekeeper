@@ -47,8 +47,6 @@ public class JdbcMsLoader extends JdbcLoaderBase {
             // TODO maybe not needed and/or may cause extra locking (compared to PG)
             // may need to be removed, Source Control seems to work in default READ COMMITTED state
             runner.run(statement, "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ");
-            // TODO the way to manage TZ reads in MS is unclear for now
-            //runner.run(statement, "SET timezone = " + PgDiffUtils.quoteString(connector.getTimezone()));
 
             // TODO add role cache if needed to process permissions, or remove this
             //queryRoles();

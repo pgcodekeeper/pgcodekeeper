@@ -21,13 +21,12 @@ public class JdbcMsConnector extends JdbcConnector {
         return val;
     }
 
-    public JdbcMsConnector(String host, int port, String user, String pass, String dbName,
-            String timezone) {
-        this(host, port, user, pass, dbName, null, false, timezone);
+    public JdbcMsConnector(String host, int port, String user, String pass, String dbName) {
+        this(host, port, user, pass, dbName, null, false);
     }
 
     public JdbcMsConnector(String host, int port, String user, String pass, String dbName,
-            Map<String, String> properties, boolean readOnly, String timezone) {
+            Map<String, String> properties, boolean readOnly) {
         this.host = host;
         this.port = port < 1 ? DEFAULT_PORT : port;
         this.dbName = dbName;
@@ -35,14 +34,12 @@ public class JdbcMsConnector extends JdbcConnector {
         this.pass = pass == null || pass.isEmpty() ? getPgPassPassword() : pass;
         this.url = generateBasicConnectionString();
 
-        this.timezone = timezone;
         this.properties = properties;
         this.readOnly = readOnly;
     }
 
-    protected JdbcMsConnector(String url, String timezone) throws URISyntaxException {
+    protected JdbcMsConnector(String url) throws URISyntaxException {
         this.url = url;
-        this.timezone = timezone;
 
         // strip jdbc:, URI doesn't understand schemas with colons
         String uriPart = url.substring(5);
