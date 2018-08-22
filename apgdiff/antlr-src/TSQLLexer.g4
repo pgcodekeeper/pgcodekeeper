@@ -769,6 +769,7 @@ TIMEOUT:                                       T I M E O U T;
 TIMER:                                         T I M E R;
 TINYINT:                                       T I N Y I N T;
 TORN_PAGE_DETECTION:                           T O R N '_' P A G E '_' D E T E C T I O N;
+TRACK_COLUMNS_UPDATED:                         T R A C K '_' C O L U M N S '_' U P D A T E D;
 TRANSFORM_NOISE_WORDS:                         T R A N S F O R M '_' N O I S E '_' W O R D S;
 TRIPLE_DES:                                    T R I P L E '_' D E S;
 TRIPLE_DES_3KEY:                               T R I P L E '_' D E S '_' '3' K E Y;

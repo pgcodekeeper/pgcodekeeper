@@ -40,6 +40,10 @@ public class MsTablesReader extends JdbcReader {
         table.setTextImage(res.getString("text_image"));
         table.setFileStream(res.getString("file_stream"));
         table.setAnsiNulls(res.getBoolean("uses_ansi_nulls"));
+        Object isTracked = res.getObject("is_tracked");
+        if (isTracked != null) {
+            table.setTracked((Boolean)isTracked);
+        }
 
         for (JsonReader col : JsonReader.fromArray(res.getString("cols"))) {
             AbstractColumn column = new MsColumn(col.getString("name"));

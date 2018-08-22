@@ -17,6 +17,7 @@ public class SimpleMsTable extends AbstractRegularTable {
     private String textImage;
     private String fileStream;
     private boolean ansiNulls;
+    private Boolean isTracked;
 
     public SimpleMsTable(String name, String rawStatement) {
         super(name, rawStatement);
@@ -25,6 +26,13 @@ public class SimpleMsTable extends AbstractRegularTable {
     @Override
     protected void convertTable(StringBuilder sb) {
         // no implements
+    }
+
+    @Override
+    protected void appendAlterOptions(StringBuilder sbSQL) {
+        if (isTracked != null) {
+            enableTracking(sbSQL);
+        }
     }
 
     @Override
@@ -110,11 +118,35 @@ public class SimpleMsTable extends AbstractRegularTable {
     }
 
     @Override
+    protected void compareTableOptions(AbstractTable table, StringBuilder sb) {
+        SimpleMsTable newTable = (SimpleMsTable) table;
+        if (!Objects.equals(isTracked, newTable.isTracked())) {
+            if (newTable.isTracked() == null) {
+                sb.append(getAlterTable(true, false));
+                sb.append(" DISABLE CHANGE_TRACKING").append(GO);
+            } else if (isTracked == null) {
+                newTable.enableTracking(sb);
+            } else {
+                sb.append(getAlterTable(true, false));
+                sb.append(" DISABLE CHANGE_TRACKING").append(GO);
+                newTable.enableTracking(sb);
+            }
+        }
+    }
+
+    private void enableTracking(StringBuilder sb) {
+        sb.append(getAlterTable(true, false));
+        sb.append(" ENABLE CHANGE_TRACKING WITH (TRACK_COLUMNS_UPDATED = ");
+        sb.append(isTracked() ? "ON" : "OFF").append(')').append(GO);
+    }
+
+    @Override
     protected SimpleMsTable getTableCopy() {
         SimpleMsTable table = new SimpleMsTable(name, getRawStatement());
         table.setFileStream(getFileStream());
         table.setTextImage(getTextImage());
         table.setAnsiNulls(isAnsiNulls());
+        table.setTracked(isTracked());
         return table;
     }
 
@@ -129,7 +161,8 @@ public class SimpleMsTable extends AbstractRegularTable {
             SimpleMsTable table = (SimpleMsTable) obj;
             return Objects.equals(textImage, table.getTextImage())
                     && Objects.equals(fileStream, table.getFileStream())
-                    && Objects.equals(ansiNulls, table.isAnsiNulls());
+                    && Objects.equals(ansiNulls, table.isAnsiNulls())
+                    && Objects.equals(isTracked, table.isTracked());
         }
 
         return false;
@@ -152,6 +185,7 @@ public class SimpleMsTable extends AbstractRegularTable {
         hasher.put(getTextImage());
         hasher.put(getFileStream());
         hasher.put(isAnsiNulls());
+        hasher.put(isTracked());
     }
 
     public String getFileStream() {
@@ -179,6 +213,15 @@ public class SimpleMsTable extends AbstractRegularTable {
 
     public boolean isAnsiNulls() {
         return ansiNulls;
+    }
+
+    public Boolean isTracked() {
+        return isTracked;
+    }
+
+    public void setTracked(final Boolean isTracked) {
+        this.isTracked = isTracked;
+        resetHash();
     }
 
     @Override
