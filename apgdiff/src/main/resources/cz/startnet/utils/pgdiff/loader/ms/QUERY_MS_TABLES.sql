@@ -22,9 +22,9 @@ LEFT JOIN sys.data_spaces dsp WITH (NOLOCK) on dsp.data_space_id = ind.data_spac
 LEFT JOIN sys.data_spaces ds WITH (NOLOCK) ON o.filestream_data_space_id = ds.data_space_id
 LEFT JOIN sys.data_spaces dsx WITH (NOLOCK) ON dsx.data_space_id=o.lob_data_space_id
 LEFT JOIN sys.partitions sp WITH (NOLOCK) ON sp.object_id = o.object_id AND sp.index_id in (0,1) AND sp.partition_number = 1
-LEFT JOIN sys.index_columns  ic ON ic.partition_ordinal > 0 AND ic.index_id = ind.index_id and ic.object_id = o.object_id
-LEFT JOIN sys.columns c ON c.object_id = ic.object_id AND c.column_id = ic.column_id
-LEFT JOIN sys.change_tracking_tables ctt ON ctt.object_id = o.object_id
+LEFT JOIN sys.index_columns ic WITH (NOLOCK) ON ic.partition_ordinal > 0 AND ic.index_id = ind.index_id and ic.object_id = o.object_id
+LEFT JOIN sys.columns c WITH (NOLOCK) ON c.object_id = ic.object_id AND c.column_id = ic.column_id
+LEFT JOIN sys.change_tracking_tables ctt WITH (NOLOCK) ON ctt.object_id = o.object_id
 CROSS APPLY (
     SELECT * FROM (
         SELECT  

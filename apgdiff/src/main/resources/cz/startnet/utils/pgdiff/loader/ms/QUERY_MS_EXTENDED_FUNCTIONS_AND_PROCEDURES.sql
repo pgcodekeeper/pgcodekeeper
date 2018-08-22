@@ -20,8 +20,8 @@ LEFT JOIN sys.database_principals p WITH (NOLOCK) ON p.principal_id=s.principal_
 LEFT JOIN sys.assembly_modules am WITH (NOLOCK) ON am.object_id=s.object_id
 LEFT JOIN sys.assemblies a WITH (NOLOCK) ON a.assembly_id=am.assembly_id
 LEFT JOIN sys.database_principals p2 WITH (NOLOCK) ON p2.principal_id=am.execute_as_principal_id
-LEFT JOIN sys.all_parameters AS ret_param ON ret_param.object_id = s.object_id and ret_param.parameter_id = 0
-LEFT JOIN sys.types AS usrt ON usrt.user_type_id = ret_param.user_type_id
+LEFT JOIN sys.all_parameters ret_param WITH (NOLOCK) ON ret_param.object_id = s.object_id and ret_param.parameter_id = 0
+LEFT JOIN sys.types usrt WITH (NOLOCK) ON usrt.user_type_id = ret_param.user_type_id
 CROSS APPLY (
     SELECT * FROM (
         SELECT  
