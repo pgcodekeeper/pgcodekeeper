@@ -57,14 +57,16 @@ public class MsDiffTest {
                     // Tests scenario where MS PRIVILEGES for schema is modified.
                     {"modify_ms_schema_privileges"},
 
-                    // Tests scenario where MS SCEMA is added.
+                    // Tests scenario where MS SCHEMA is added.
                     {"add_ms_schema"},
-                    // Tests scenario where MS SCEMA is dropped.
+                    // Tests scenario where MS SCHEMA is dropped.
                     {"drop_ms_schema"},
-                    // Tests scenario where name of MS SCEMA is modified.
+                    // Tests scenario where name of MS SCHEMA is modified.
                     {"modify_ms_schema_name"},
-                    // Tests scenario where MS SCEMA is modified.
+                    // Tests scenario where MS SCHEMA is modified.
                     {"modify_ms_schema"},
+                    // Tests scenario where MS SCHEMA owner is modified.
+                    {"modify_ms_schema_owner"},
 
                     // Tests scenario where MS TABLE is added.
                     {"add_ms_table"},

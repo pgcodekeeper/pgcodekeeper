@@ -40,7 +40,8 @@ public class MsSchema extends AbstractSchema {
         }
 
         if (!Objects.equals(getOwner(), newSchema.getOwner())) {
-            sb.append(newSchema.getOwnerSQL());
+            sb.append("ALTER AUTHORIZATION ON SCHEMA::").append(newSchema.getQualifiedName())
+            .append(" TO ").append(MsDiffUtils.quoteName(newSchema.getOwner())).append(GO);
         }
 
         alterPrivileges(newSchema, sb);
