@@ -405,7 +405,7 @@ class DbSourceJdbc extends DbSource {
         this.isMsSql = isMsSql;
         if (isMsSql) {
             jdbcConnector = new JdbcMsConnector(host, port, user, pass, dbName, properties,
-                    readOnly, timezone);
+                    readOnly);
         } else {
             jdbcConnector = new JdbcConnector(host, port, user, pass, dbName, properties,
                     readOnly, timezone);

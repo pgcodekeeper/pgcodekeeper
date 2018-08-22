@@ -505,7 +505,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
                 connector = new JdbcMsConnector(
                         dbInfo.getDbHost(), dbInfo.getDbPort(), dbInfo.getDbUser(),
                         dbInfo.getDbPass(), dbInfo.getDbName(), dbInfo.getProperties(),
-                        dbInfo.isReadOnly(), ApgdiffConsts.UTC);
+                        dbInfo.isReadOnly());
             } else {
                 connector = new JdbcConnector(
                         dbInfo.getDbHost(), dbInfo.getDbPort(), dbInfo.getDbUser(),

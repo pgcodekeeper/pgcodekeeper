@@ -130,11 +130,12 @@ implements IExecutableExtension, INewWizard {
             if (!checkMarkerExist()) {
                 String charset = pageDb.getCharset();
                 String timezone = pageDb.getTimeZone();
+                boolean isMsSql = pageDb.isMsSql();
                 if (!charset.isEmpty() && !ResourcesPlugin.getWorkspace().getRoot()
                         .getDefaultCharset().equals(charset)) {
                     props.setProjectCharset(charset);
                 }
-                if (!timezone.isEmpty() && !ApgdiffConsts.UTC.equals(timezone)) {
+                if (!isMsSql && !timezone.isEmpty() && !ApgdiffConsts.UTC.equals(timezone)) {
                     props.getPrefs().put(PROJ_PREF.TIMEZONE, timezone);
                     try {
                         props.getPrefs().flush();
@@ -143,7 +144,7 @@ implements IExecutableExtension, INewWizard {
                     }
                 }
                 DbInfo info = pageDb.getDbInfo();
-                if (pageDb.isMsSql() || (info != null && info.isMsSql())) {
+                if (isMsSql || (info != null && info.isMsSql())) {
                     props.getPrefs().putBoolean(PROJ_PREF.MSSQL_MODE, true);
                     try {
                         props.getPrefs().flush();
@@ -316,6 +317,15 @@ class PageDb extends WizardPage {
 
         btnMsSql = new Button(group, SWT.CHECK);
         btnMsSql.setText(Messages.NewProjWizard_ms_project);
+        btnMsSql.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                timezoneCombo.getControl().setEnabled(!btnMsSql.getSelection());
+                getWizard().getContainer().updateButtons();
+                getWizard().getContainer().updateMessage();
+            }
+        });
 
         storePicker = new DbStorePicker(group, mainPrefs, true, false, false);
         storePicker.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
@@ -324,12 +334,20 @@ class PageDb extends WizardPage {
             boolean enable = info != null;
             if (enable && info.isMsSql()) {
                 btnGetTz.setEnabled(false);
+                timezoneCombo.getControl().setEnabled(false);
             } else {
+                if (enable) {
+                    timezoneCombo.getControl().setEnabled(true);
+                } else {
+                    timezoneCombo.getControl().setEnabled(!btnMsSql.getSelection());
+                }
                 btnGetTz.setEnabled(enable);
             }
+
+            btnMsSql.setEnabled(!enable);
+
             getWizard().getContainer().updateButtons();
             getWizard().getContainer().updateMessage();
-            btnMsSql.setEnabled(!enable);
         });
 
         //char sets
