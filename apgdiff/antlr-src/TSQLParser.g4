@@ -1554,6 +1554,7 @@ alter_table
                              | DROP CONSTRAINT constraint=id
                              | CHECK CONSTRAINT constraint=id
                              | (ENABLE | DISABLE) TRIGGER trigger=id?
+                             | (ENABLE | DISABLE) CHANGE_TRACKING (WITH '(' TRACK_COLUMNS_UPDATED '=' (ON|OFF) ')')?
                              | REBUILD table_options)
 
     ;
@@ -3436,6 +3437,7 @@ simple_id
     | TIMER
     | TINYINT
     | TORN_PAGE_DETECTION
+    | TRACK_COLUMNS_UPDATED
     | TRANSFORM_NOISE_WORDS
     | TRIPLE_DES
     | TRIPLE_DES_3KEY
