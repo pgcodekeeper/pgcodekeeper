@@ -245,13 +245,66 @@ public class PgUIDumpLoader extends PgDumpLoader {
     }
 
     public static PgStatement parseStatement(IFile file, Collection<DbObjType> types) throws InterruptedException, IOException, CoreException {
-        return buildFiles(Arrays.asList(file), null, null).getDescendants().
+        return buildFiles(Arrays.asList(file), null, null, false).getDescendants().
                 filter(e -> types.contains(e.getStatementType())).findAny().orElse(null);
     }
 
     public static PgDatabase buildFiles(Collection<IFile> files, IProgressMonitor monitor,
-            List<StatementBodyContainer> statementBodies) throws InterruptedException, IOException, CoreException {
+            List<StatementBodyContainer> statementBodies, boolean isMsSql) throws InterruptedException, IOException, CoreException {
         SubMonitor mon = SubMonitor.convert(monitor, files.size());
+        return isMsSql ? buildMsFiles(files, mon, statementBodies) :
+            buildPgFiles(files, mon, statementBodies);
+    }
+
+    private static PgDatabase buildMsFiles(Collection<IFile> files, SubMonitor mon,
+            List<StatementBodyContainer> statementBodies) throws InterruptedException, IOException, CoreException {
+        PgDatabase db = new PgDatabase();
+        PgDiffArguments args = new PgDiffArguments();
+        Set<String> schemaFiles = new HashSet<>();
+        args.setMsSql(true);
+        db.setArguments(args);
+
+        IPath schemasPath = new Path(MS_WORK_DIR_NAMES.SECURITY.getName()).append("Schemas"); //$NON-NLS-1$
+        boolean isLoaded = false;
+        for (IFile file : files) {
+            IPath filePath = file.getProjectRelativePath();
+            if (!"sql".equals(file.getFileExtension()) || !isInMsProject(filePath)) { //$NON-NLS-1$
+                // skip non-sql or non-project files
+                // still report work
+                mon.worked(1);
+                continue;
+            }
+
+            if (!isLoaded) {
+                // load all schemas, because we don't know in which schema the object
+                IProject proj = file.getProject();
+                loadSubdir(proj.getFolder(schemasPath), db, mon, statementBodies, null);
+                isLoaded = true;
+            }
+
+            if (schemasPath.isPrefixOf(filePath)) {
+                schemaFiles.add(filePath.removeFileExtension().lastSegment());
+            } else {
+                loadFile(file, mon, db, statementBodies, null);
+            }
+        }
+
+        PgDatabase newDb = new PgDatabase();
+        newDb.setArguments(args);
+
+        // exclude empty schemas (except loaded from schema files) that have been loaded early
+        db.getSchemas().stream()
+        .filter(sc -> schemaFiles.contains(sc.getName()) || sc.hasChildren())
+        .forEach(st -> {
+            st.dropParent();
+            newDb.addSchema(st);
+        });
+
+        return newDb;
+    }
+
+    private static PgDatabase buildPgFiles(Collection<IFile> files, SubMonitor mon,
+            List<StatementBodyContainer> statementBodies) throws InterruptedException, IOException, CoreException {
         Set<String> schemaDirnamesLoaded = new HashSet<>();
         IPath schemasPath = new Path(WORK_DIR_NAMES.SCHEMA.name());
         PgDatabase db = new PgDatabase();
@@ -367,13 +420,34 @@ public class PgUIDumpLoader extends PgDumpLoader {
 
     /**
      * @param path project relative path
+     * @param is MS project
      * @return whether the path corresponds to a schema sql file
-     *          like this: /SCHEMA/schema_name.sql
      */
-    public static boolean isSchemaFile(IPath path) {
+    public static boolean isSchemaFile(IPath path, boolean isMsSql) {
+        return isMsSql ? isMsSchemaFile(path) : isPgSchemaFile(path);
+    }
+
+    /**
+     * @param path project relative path
+     * @return whether the path corresponds to a schema sql file
+     *     like this: /SCHEMA/schema_name.sql or /SCHEMA/schema_name/schema_name.sql
+     */
+    private static boolean isPgSchemaFile(IPath path) {
         int c = path.segmentCount();
         return (c == 2 || c == 3) // legacy or new schemas
                 && path.segment(0).equals(WORK_DIR_NAMES.SCHEMA.name())
                 && path.segment(c - 1).endsWith(".sql"); //$NON-NLS-1$
+    }
+
+    /**
+     * @param path project relative path
+     * @return whether the path corresponds to a schema sql file
+     *          like this: /Security/Schemas/schema_name.sql
+     */
+    private static boolean isMsSchemaFile(IPath path) {
+        return path.segmentCount() == 3
+                && path.segment(0).equals(MS_WORK_DIR_NAMES.SECURITY.getName())
+                && path.segment(1).equals("Schemas")
+                && path.segment(2).endsWith(".sql"); //$NON-NLS-1$
     }
 }

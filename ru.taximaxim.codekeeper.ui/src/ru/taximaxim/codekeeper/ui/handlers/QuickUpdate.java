@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
@@ -146,13 +147,18 @@ class QuickUpdateJob extends SingletonEditorJob {
 
     private void doRun() throws IOException, InterruptedException,
     CoreException, PgCodekeeperUIException, InvocationTargetException {
-        OpenProjectUtils.checkAndFlushMsSql(proj);
+        boolean isMsSql = OpenProjectUtils.checkMsSql(proj);
 
-        boolean isSchemaFile = PgUIDumpLoader.isSchemaFile(file.getProjectRelativePath());
-        String timezone = proj.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC);
+        if (dbinfo.isMsSql() != isMsSql) {
+            throw new PgCodekeeperUIException(Messages.QuickUpdate_different_types);
+        }
+
+        boolean isSchemaFile = PgUIDumpLoader.isSchemaFile(file.getProjectRelativePath(), isMsSql);
+        IEclipsePreferences projPrefs = proj.getPrefs();
+        String timezone = projPrefs.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC);
 
         PgDatabase dbProjectFragment =
-                PgUIDumpLoader.buildFiles(Arrays.asList(file), monitor.newChild(1), null);
+                PgUIDumpLoader.buildFiles(Arrays.asList(file), monitor.newChild(1), null, isMsSql);
         Collection<PgStatement> listPgObjectsFragment = dbProjectFragment.getDescendants().collect(Collectors.toList());
 
         long schemaCount = dbProjectFragment.getSchemas().size();
@@ -169,7 +175,7 @@ class QuickUpdateJob extends SingletonEditorJob {
         checkFileModified();
 
         DbSource dbRemote = DbSource.fromDbInfo(dbinfo, prefs,
-                proj.getPrefs().getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
+                projPrefs.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
                 proj.getProjectCharset(), timezone);
         DbSource dbProject = DbSource.fromProject(proj);
 
@@ -185,7 +191,7 @@ class QuickUpdateJob extends SingletonEditorJob {
         }
 
         Differ differ = new Differ(dbRemote.getDbObject(), dbProject.getDbObject(),
-                treeFull, false, timezone, proj.getPrefs().getBoolean(PROJ_PREF.MSSQL_MODE, false));
+                treeFull, false, timezone, isMsSql);
         differ.run(monitor.newChild(1));
 
         if (differ.getScript().isDangerDdl(false, false, false, false)) {
@@ -197,7 +203,7 @@ class QuickUpdateJob extends SingletonEditorJob {
         monitor.newChild(1).subTask(Messages.QuickUpdate_updating_db);
 
         JdbcConnector connector;
-        if (dbinfo.isMsSql()) {
+        if (isMsSql) {
             connector = new JdbcMsConnector(dbinfo.getDbHost(), dbinfo.getDbPort(),
                     dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),
                     dbinfo.getProperties(), dbinfo.isReadOnly(), ApgdiffConsts.UTF_8);
