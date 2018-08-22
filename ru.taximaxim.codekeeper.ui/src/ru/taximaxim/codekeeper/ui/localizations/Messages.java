@@ -824,6 +824,8 @@ public final class Messages extends NLS {
 
     public static String QuickUpdate_danger;
 
+    public static String QuickUpdate_different_types;
+
     public static String QuickUpdate_empty_script;
 
     public static String QuickUpdate_error;
