@@ -70,7 +70,11 @@ public interface PgOptionContainer extends IStatement {
             sb.append(type)
             .append(' ');
             if (type != DbObjType.COLUMN) {
-                sb.append(PgDiffUtils.getQuotedName(getParent().getName())).append('.');
+                IStatement parent = getParent();
+                if (type == DbObjType.INDEX) {
+                    parent = parent.getParent();
+                }
+                sb.append(PgDiffUtils.getQuotedName(parent.getName())).append('.');
             }
             sb.append(PgDiffUtils.getQuotedName(getName())).append(" SET (")
             .append(setOptions).append(");");
@@ -90,7 +94,11 @@ public interface PgOptionContainer extends IStatement {
             sb.append(type)
             .append(' ');
             if (type != DbObjType.COLUMN) {
-                sb.append(PgDiffUtils.getQuotedName(getParent().getName())).append('.');
+                IStatement parent = getParent();
+                if (type == DbObjType.INDEX) {
+                    parent = parent.getParent();
+                }
+                sb.append(PgDiffUtils.getQuotedName(parent.getName())).append('.');
             }
             sb.append(PgDiffUtils.getQuotedName(getName()))
             .append(" RESET (").append(resetOptions).append(");");

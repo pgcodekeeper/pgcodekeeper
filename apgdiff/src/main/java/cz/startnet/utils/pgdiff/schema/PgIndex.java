@@ -5,6 +5,7 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -37,6 +38,27 @@ public class PgIndex extends AbstractIndex {
         sbSQL.append(PgDiffUtils.getQuotedName(getTableName()));
         sbSQL.append(' ');
         sbSQL.append(getDefinition());
+
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, String> entry : options.entrySet()) {
+            sb.append(entry.getKey());
+            if (!entry.getValue().isEmpty()){
+                sb.append("=").append(entry.getValue());
+            }
+            sb.append(", ");
+        }
+
+        if (sb.length() > 0){
+            sb.setLength(sb.length() - 2);
+            sbSQL.append("\nWITH (").append(sb).append(")");
+        }
+
+        if (getTableSpace() != null) {
+            sbSQL.append("\nTABLESPACE ").append(getTableSpace());
+        }
+        if (getWhere() != null) {
+            sbSQL.append("\nWHERE ").append(getWhere());
+        }
         sbSQL.append(';');
         sbSQL.append(getClusterSQL());
 
@@ -64,21 +86,22 @@ public class PgIndex extends AbstractIndex {
         } else {
             return false;
         }
-        PgIndex oldIndex = this;
-        if (!oldIndex.compareWithoutComments(newIndex)) {
+        if (!compareWithoutComments(newIndex)) {
             isNeedDepcies.set(true);
             return true;
         }
 
-        if (oldIndex.isClusterIndex() && !newIndex.isClusterIndex() &&
+        if (isClusterIndex() && !newIndex.isClusterIndex() &&
                 !((AbstractTable)newIndex.getParent()).isClustered()) {
-            sb.append("\n\nALTER TABLE "
-                    + PgDiffUtils.getQuotedName(oldIndex.getContainingSchema().getName()) + '.'
-                    + PgDiffUtils.getQuotedName(oldIndex.getTableName())
-                    + " SET WITHOUT CLUSTER;");
+            sb.append("\n\nALTER TABLE ")
+            .append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
+            .append('.').append(PgDiffUtils.getQuotedName(getTableName()))
+            .append(" SET WITHOUT CLUSTER;");
         }
 
-        if (!Objects.equals(oldIndex.getComment(), newIndex.getComment())) {
+        compareOptions(newIndex, sb);
+
+        if (!Objects.equals(getComment(), newIndex.getComment())) {
             sb.append("\n\n");
             newIndex.appendCommentSql(sb);
         }
