@@ -46,7 +46,6 @@ public class MsIndex extends AbstractIndex {
             sb.append(", ");
         }
 
-        // TODO global preference: transaction cannot be used with concurrently mode for PG
         PgDiffArguments args = getDatabase().getArguments();
         if (args != null && args.isConcurrentlyMode() && !options.containsKey("ONLINE")) {
             sb.append("ONLINE = ON, ");
