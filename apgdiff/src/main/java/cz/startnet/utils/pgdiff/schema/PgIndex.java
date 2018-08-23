@@ -40,7 +40,7 @@ public class PgIndex extends AbstractIndex {
         sbSQL.append(getDefinition());
 
         StringBuilder sb = new StringBuilder();
-        for (Map.Entry<String, String> entry : options.entrySet()){
+        for (Map.Entry<String, String> entry : options.entrySet()) {
             sb.append(entry.getKey());
             if (!entry.getValue().isEmpty()){
                 sb.append("=").append(entry.getValue());
@@ -86,23 +86,22 @@ public class PgIndex extends AbstractIndex {
         } else {
             return false;
         }
-        PgIndex oldIndex = this;
-        if (!oldIndex.compareWithoutComments(newIndex)) {
+        if (!compareWithoutComments(newIndex)) {
             isNeedDepcies.set(true);
             return true;
         }
 
-        if (oldIndex.isClusterIndex() && !newIndex.isClusterIndex() &&
+        if (isClusterIndex() && !newIndex.isClusterIndex() &&
                 !((AbstractTable)newIndex.getParent()).isClustered()) {
-            sb.append("\n\nALTER TABLE "
-                    + PgDiffUtils.getQuotedName(oldIndex.getContainingSchema().getName()) + '.'
-                    + PgDiffUtils.getQuotedName(oldIndex.getTableName())
-                    + " SET WITHOUT CLUSTER;");
+            sb.append("\n\nALTER TABLE ")
+            .append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
+            .append('.').append(PgDiffUtils.getQuotedName(getTableName()))
+            .append(" SET WITHOUT CLUSTER;");
         }
 
         compareOptions(newIndex, sb);
 
-        if (!Objects.equals(oldIndex.getComment(), newIndex.getComment())) {
+        if (!Objects.equals(getComment(), newIndex.getComment())) {
             sb.append("\n\n");
             newIndex.appendCommentSql(sb);
         }

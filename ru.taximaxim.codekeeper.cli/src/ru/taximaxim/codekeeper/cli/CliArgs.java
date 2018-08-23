@@ -117,7 +117,7 @@ public class CliArgs extends PgDiffArguments {
     private boolean usingTypeCastOff;
 
     @Option(name="-C", aliases="--concurrently-mode", forbids="--parse",
-            usage="print CREATE INDEX with CONCURRENTLY option")
+            usage="print CREATE INDEX with CONCURRENTLY option for PostgreSQL and WITH ONLINE = ON for MS SQL")
     private boolean concurrentlyMode;
 
     @Option(name="-S", aliases="--safe-mode", forbids="--parse",
