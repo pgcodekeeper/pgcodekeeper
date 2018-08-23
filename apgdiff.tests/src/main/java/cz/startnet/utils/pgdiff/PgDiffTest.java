@@ -74,6 +74,8 @@ public class PgDiffTest {
                     {"drop_index_with_cluster"},
                     // Tests scenario where INDEX definition is modified.
                     {"modify_index"},
+                    // Tests scenario where INDEX option is modified.
+                    {"modify_index_option"},
                     // Tests scenario where STATISTICS information is added
                     // to COLUMN.
                     {"add_statistics"},

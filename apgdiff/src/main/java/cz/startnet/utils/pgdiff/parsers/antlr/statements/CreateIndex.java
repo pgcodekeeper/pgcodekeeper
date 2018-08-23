@@ -11,7 +11,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_sortContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_whereContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sort_specifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expression_primaryContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_storage_parameterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
@@ -57,28 +60,39 @@ public class CreateIndex extends ParserAbstract {
         db.addContextForAnalyze(ind, rest);
 
         Index_sortContext sort = rest.index_sort();
-        parseColumns(sort, ind, db);
+        parseColumns(sort, ind);
 
         Including_indexContext incl = sort.including_index();
         if (incl != null) {
             fillIncludingDepcy(incl, ind, schemaName, tableName);
         }
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(getFullCtxText(sort));
-        if (rest.table_space() != null){
-            sb.append(' ').append(getFullCtxText(rest.table_space()));
+        ind.setDefinition(getFullCtxText(sort));
+
+        With_storage_parameterContext options = rest.with_storage_parameter();
+
+        if (options != null) {
+            for (Storage_parameter_optionContext option : options.storage_parameter().storage_parameter_option()) {
+                String key = option.storage_param.getText();
+                VexContext v = option.value;
+                String value = v == null ? "" : v.getText();
+                ind.addOption(key, value);
+            }
+        }
+
+        if (rest.table_space() != null) {
+            ind.setTableSpace(getFullCtxText(rest.table_space().name));
         } else if (tablespace != null) {
-            sb.append(" TABLESPACE ").append(tablespace);
+            ind.setTableSpace(tablespace);
         }
-        if (rest.index_where() != null){
-            Index_whereContext whereCtx = rest.index_where();
-            sb.append(' ').append(getFullCtxText(whereCtx));
+
+        Index_whereContext wherePart = rest.index_where();
+        if (wherePart != null){
+            ind.setWhere(getFullCtxText(wherePart.vex()));
         }
-        ind.setDefinition(sb.toString());
     }
 
-    private static void parseColumns(Index_sortContext sort, AbstractIndex ind, PgDatabase db) {
+    private static void parseColumns(Index_sortContext sort, AbstractIndex ind) {
         for (Sort_specifierContext sort_ctx : sort.sort_specifier_list().sort_specifier()) {
             Value_expression_primaryContext vexPrimary = sort_ctx.key.value_expression_primary();
             if (vexPrimary != null) {

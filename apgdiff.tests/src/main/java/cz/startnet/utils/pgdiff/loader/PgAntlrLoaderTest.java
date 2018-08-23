@@ -25,6 +25,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractSequence;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.AbstractTrigger;
 import cz.startnet.utils.pgdiff.schema.AbstractTrigger.TgTypes;
 import cz.startnet.utils.pgdiff.schema.AbstractView;
@@ -40,7 +41,6 @@ import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgRule.PgRuleEventType;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgType.PgTypeForm;
@@ -561,7 +561,8 @@ class PgDB6 extends PgDatabaseObjectCreator {
 
         AbstractIndex idx = new PgIndex("test_table_deleted", "");
         idx.setTableName("test_table");
-        idx.setDefinition("USING btree (date_deleted) WHERE (date_deleted IS NULL)");
+        idx.setDefinition("USING btree (date_deleted)");
+        idx.setWhere("(date_deleted IS NULL)");
         table.addIndex(idx);
 
         return d;
