@@ -307,11 +307,7 @@ class PageDb extends WizardPage {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                boolean init = btnInit.getSelection();
-                storePicker.setComboEnabled(init);
-                btnGetTz.setEnabled(init);
-                getWizard().getContainer().updateButtons();
-                getWizard().getContainer().updateMessage();
+                modifyButtons();
             }
         });
 
@@ -321,34 +317,13 @@ class PageDb extends WizardPage {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                timezoneCombo.getControl().setEnabled(!btnMsSql.getSelection());
-                getWizard().getContainer().updateButtons();
-                getWizard().getContainer().updateMessage();
+                modifyButtons();
             }
         });
 
         storePicker = new DbStorePicker(group, mainPrefs, true, false, false);
         storePicker.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
-        storePicker.addListenerToCombo(e -> {
-            DbInfo info = storePicker.getDbInfo();
-            boolean enable = info != null;
-            if (enable && info.isMsSql()) {
-                btnGetTz.setEnabled(false);
-                timezoneCombo.getControl().setEnabled(false);
-            } else {
-                if (enable) {
-                    timezoneCombo.getControl().setEnabled(true);
-                } else {
-                    timezoneCombo.getControl().setEnabled(!btnMsSql.getSelection());
-                }
-                btnGetTz.setEnabled(enable);
-            }
-
-            btnMsSql.setEnabled(!enable);
-
-            getWizard().getContainer().updateButtons();
-            getWizard().getContainer().updateMessage();
-        });
+        storePicker.addListenerToCombo(e -> modifyButtons());
 
         //char sets
         new Label(container, SWT.NONE).setText(Messages.NewProjWizard_select_charset);
@@ -401,6 +376,24 @@ class PageDb extends WizardPage {
         lblWarnPosix.setLayoutData(gd);
 
         setControl(container);
+    }
+
+    private void modifyButtons() {
+        boolean init = btnInit.getSelection();
+        boolean isMsSql = btnMsSql.getSelection();
+        DbInfo info = storePicker.getDbInfo();
+        boolean enable = info != null;
+        boolean isMsSqlDb = enable && info.isMsSql();
+        // 1 - disabled init and mssql buttons
+        // 2 - enabled init button, it is database, not MS database
+        // 3 - enabled init button, it is not database, disabled mssql button
+        timezoneCombo.getControl().setEnabled((!init && !isMsSql)
+                || (init && !isMsSqlDb && enable) || (init && !enable && !isMsSql));
+        btnMsSql.setEnabled(!init || !enable);
+        btnGetTz.setEnabled(init && enable && !isMsSqlDb);
+        storePicker.setComboEnabled(init);
+        getWizard().getContainer().updateButtons();
+        getWizard().getContainer().updateMessage();
     }
 
     private void timeZoneWarn() {

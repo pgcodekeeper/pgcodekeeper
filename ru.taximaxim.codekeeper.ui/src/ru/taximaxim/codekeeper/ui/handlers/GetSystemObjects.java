@@ -42,7 +42,7 @@ public class GetSystemObjects extends AbstractHandler {
                     JdbcConnector jdbcConnector = new JdbcConnector(info.getDbHost(),
                             info.getDbPort(), info.getDbUser(), info.getDbPass(),
                             info.getDbName(), info.getProperties(), info.isReadOnly(),
-                            ApgdiffConsts.UTF_8);
+                            ApgdiffConsts.UTC);
                     try {
                         PgSystemStorage storage = new JdbcSystemLoader(jdbcConnector,
                                 SubMonitor.convert(new NullProgressMonitor())).getStorageFromJdbc();
