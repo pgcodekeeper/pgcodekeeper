@@ -365,6 +365,8 @@ public final class Messages extends NLS {
 
     public static String DiffWizard_select_db_tz;
 
+    public static String DiffWizard_different_types;
+
     public static String DiffWizard_source;
 
     public static String DiffWizard_target;

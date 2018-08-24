@@ -272,7 +272,7 @@ class PageDiff extends WizardPage implements Listener {
         } else if (getTimezone().isEmpty()) {
             err = Messages.DiffWizard_select_db_tz;
         } else if (isMsSqlDb(dbSource) != isMsSqlDb(dbTarget)) {
-            err = Messages.ProjectEditorDiffer_different_types_msg;
+            err = Messages.DiffWizard_different_types;
         }
 
         setErrorMessage(err);
