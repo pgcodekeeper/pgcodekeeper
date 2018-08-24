@@ -205,7 +205,7 @@ public class DbInfo {
      * @since 4.3.3
      */
     @Deprecated
-    public static LinkedList<DbInfo> preferenceToStore(String preference) {
+    public static List<DbInfo> preferenceToStore(String preference) {
         LinkedList<DbInfo> store = new LinkedList<>();
         String[] coordStrings = preference.split(DELIM_ENTRY);
         for(String coords : coordStrings) {

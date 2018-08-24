@@ -34,7 +34,7 @@ public class FunctionsReader extends JdbcReader {
         loader.setCurrentObject(new GenericColumn(schemaName, functionName, DbObjType.FUNCTION));
         AbstractFunction f = new PgFunction(functionName, "");
 
-        f.setBody(loader.args, getFunctionBody(res, schemaName));
+        f.setBody(loader.args, getFunctionBody(res));
 
         // OWNER
         loader.setOwner(f, res.getLong("proowner"));
@@ -126,7 +126,7 @@ public class FunctionsReader extends JdbcReader {
         schema.addFunction(f);
     }
 
-    private String getFunctionBody(ResultSet res, String schemaName) throws SQLException {
+    private String getFunctionBody(ResultSet res) throws SQLException {
         StringBuilder body = new StringBuilder();
 
         String lanName = res.getString("lang_name");
@@ -206,7 +206,7 @@ public class FunctionsReader extends JdbcReader {
         }
 
         float rows = res.getFloat("prorows");
-        if (rows != 0.0f && rows != DEFAULT_PROROWS) {
+        if (0.0f != rows && rows != DEFAULT_PROROWS) {
             body.append(" ROWS ").append((int) rows);
         }
 

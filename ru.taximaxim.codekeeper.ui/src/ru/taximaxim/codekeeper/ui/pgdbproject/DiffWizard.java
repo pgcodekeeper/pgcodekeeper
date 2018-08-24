@@ -151,7 +151,8 @@ class PageDiff extends WizardPage implements Listener {
     private final IPreferenceStore mainPrefs;
     private final PgDbProject proj;
 
-    private DbSourcePicker dbSource, dbTarget;
+    private DbSourcePicker dbSource;
+    private DbSourcePicker dbTarget;
     private Button btnMsSql;
     private ComboViewer cmbTimezone;
     private CLabel lblWarnPosix;
@@ -289,7 +290,8 @@ class PageDiff extends WizardPage implements Listener {
 class PagePartial extends WizardPage {
 
     private TreeDiffer treeDiffer;
-    private Label lblSource, lblTarget;
+    private Label lblSource;
+    private Label lblTarget;
     private DiffTableViewer diffTable;
 
     public void setData(String source, String target, TreeDiffer treeDiffer) {

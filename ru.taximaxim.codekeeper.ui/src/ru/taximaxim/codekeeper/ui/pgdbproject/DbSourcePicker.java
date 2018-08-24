@@ -9,10 +9,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -54,25 +52,6 @@ class DbSourcePicker extends Composite {
 
         storePicker = new DbStorePicker(sourceComp, mainPrefs, true, true, false);
         storePicker.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
-        storePicker.addListenerToCombo(new ISelectionChangedListener() {
-
-            @Override
-            public void selectionChanged(SelectionChangedEvent event) {
-                pageDiff.getWizard().getContainer().updateButtons();
-                File dir = storePicker.getPathOfDir();
-                PgDbProject project = null;
-                boolean isProject = dir != null && (project = getProjectFromDir(dir)) != null;
-                if (isProject) {
-                    try {
-                        cmbEncoding.getCombo().setText(project.getProjectCharset());
-                        pageDiff.setTimezone(project.getPrefs().get(PROJ_PREF.TIMEZONE, pageDiff.getTimezone()));
-                    } catch (CoreException ex) {
-                        Log.log(ex);
-                    }
-                }
-                cmbEncoding.getControl().setEnabled(!isProject);
-            }
-        });
 
         new Label(sourceComp, SWT.NONE).setText(Messages.diffWizard_target_encoding);
 
@@ -81,6 +60,23 @@ class DbSourcePicker extends Composite {
         cmbEncoding.setLabelProvider(new LabelProvider());
         cmbEncoding.setInput(UIConsts.ENCODINGS);
         cmbEncoding.getCombo().setText(ApgdiffConsts.UTF_8);
+
+        storePicker.addListenerToCombo(event -> {
+            pageDiff.getWizard().getContainer().updateButtons();
+            File dir = storePicker.getPathOfDir();
+            PgDbProject project = null;
+            boolean isProject = dir != null && (project = getProjectFromDir(dir)) != null;
+            if (isProject) {
+                try {
+                    cmbEncoding.getCombo().setText(project.getProjectCharset());
+                    pageDiff.setTimezone(project.getPrefs().get(PROJ_PREF.TIMEZONE, pageDiff.getTimezone()));
+                } catch (CoreException ex) {
+                    Log.log(ex);
+                }
+            }
+            cmbEncoding.getControl().setEnabled(!isProject);
+        });
+
     }
 
     public void setDbStore(IStructuredSelection selection) {
@@ -102,7 +98,8 @@ class DbSourcePicker extends Composite {
     public DbSource getDbSource(boolean isMsSql) {
         final boolean forceUnixNewlines = true; // true by default, check project if path is given
         DbInfo dbInfo;
-        File file, dir;
+        File file;
+        File dir;
         if ((dbInfo = storePicker.getDbInfo()) != null) {
             return DbSource.fromDbInfo(dbInfo, mainPrefs, forceUnixNewlines, getEncoding(), pageDiff.getTimezone());
         } else if ((file = storePicker.getPathOfFile()) != null) {

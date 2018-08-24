@@ -97,7 +97,10 @@ public class JdbcConnector {
         this.url = url;
         this.timezone = timezone;
 
-        String host = null, user = null, pass = null, dbName = null;
+        String host = null;
+        String user = null;
+        String pass = null;
+        String dbName = null;
         int port = -1;
         // strip jdbc:, URI doesn't understand schemas with colons
         URI uri = new URI(url.substring(5));

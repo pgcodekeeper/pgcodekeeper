@@ -447,7 +447,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
     private static boolean isMsSchemaFile(IPath path) {
         return path.segmentCount() == 3
                 && path.segment(0).equals(MS_WORK_DIR_NAMES.SECURITY.getName())
-                && path.segment(1).equals("Schemas")
+                && "Schemas".equals(path.segment(1))
                 && path.segment(2).endsWith(".sql"); //$NON-NLS-1$
     }
 }

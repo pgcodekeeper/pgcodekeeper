@@ -44,7 +44,8 @@ public class Differ implements IRunnableWithProgress {
     private final String timezone;
     private final boolean msSql;
 
-    private String diffDirect, diffReverse;
+    private String diffDirect;
+    private String diffReverse;
     private PgDiffScript script;
 
     private List<Entry<PgStatement, PgStatement>> additionalDepciesSource;
