@@ -79,8 +79,11 @@ public final class OpenProjectUtils {
     }
 
     public static boolean checkMsSql(PgDbProject proj) {
-        File markerFile = new File(proj.getProject().getLocation().toFile(),
-                ApgdiffConsts.FILENAME_WORKING_DIR_MARKER);
+        return checkMsSql(new File(proj.getProject().getLocation().toFile(),
+                ApgdiffConsts.FILENAME_WORKING_DIR_MARKER));
+    }
+
+    public static boolean checkMsSql(File markerFile) {
         try (FileInputStream stream = new FileInputStream(markerFile)) {
             Properties props = new Properties();
             props.load(stream);

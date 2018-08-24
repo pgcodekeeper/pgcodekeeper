@@ -1,5 +1,6 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
@@ -20,6 +21,8 @@ import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -38,12 +41,14 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.ClassicTreeDiffer;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
+import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class DiffWizard extends Wizard implements IPageChangingListener {
@@ -206,6 +211,14 @@ class PageDiff extends WizardPage implements Listener {
 
         btnMsSql = new Button(container, SWT.CHECK);
         btnMsSql.setText(Messages.DiffWizard_ms_sql_dump);
+        btnMsSql.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                getWizard().getContainer().updateButtons();
+                getWizard().getContainer().updateMessage();
+            }
+        });
 
         lblWarnPosix = new CLabel(container, SWT.NONE);
         lblWarnPosix.setImage(Activator.getEclipseImage(ISharedImages.IMG_OBJS_WARN_TSK));
@@ -232,6 +245,22 @@ class PageDiff extends WizardPage implements Listener {
         }
     }
 
+    private boolean isMsSqlDb(DbSourcePicker sourcePicer) {
+        DbInfo dbInfo = sourcePicer.getSelectedDbInfo();
+        File dir = sourcePicer.getSelectedDir();
+        boolean typeIsMsSql = isMsSql();
+        if (dbInfo != null) {
+            typeIsMsSql = dbInfo.isMsSql();
+        } else if (dir != null) {
+            File fileMarker = new File(dir, ApgdiffConsts.FILENAME_WORKING_DIR_MARKER);
+            if (fileMarker.exists() && !fileMarker.isDirectory()) {
+                typeIsMsSql = OpenProjectUtils.checkMsSql(fileMarker);
+            }
+        }
+
+        return typeIsMsSql;
+    }
+
     @Override
     public boolean isPageComplete() {
         String err = null;
@@ -242,6 +271,8 @@ class PageDiff extends WizardPage implements Listener {
             err = Messages.diffwizard_diffpage_target_warning;
         } else if (getTimezone().isEmpty()) {
             err = Messages.DiffWizard_select_db_tz;
+        } else if (isMsSqlDb(dbSource) != isMsSqlDb(dbTarget)) {
+            err = Messages.ProjectEditorDiffer_different_types_msg;
         }
 
         setErrorMessage(err);
