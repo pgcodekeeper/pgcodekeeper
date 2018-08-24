@@ -117,7 +117,7 @@ public class CliArgs extends PgDiffArguments {
     private boolean usingTypeCastOff;
 
     @Option(name="-C", aliases="--concurrently-mode", forbids="--parse",
-            usage="print CREATE INDEX with CONCURRENTLY option")
+            usage="print CREATE INDEX with CONCURRENTLY option for PostgreSQL and WITH ONLINE = ON for MS SQL")
     private boolean concurrentlyMode;
 
     @Option(name="-S", aliases="--safe-mode", forbids="--parse",
@@ -440,8 +440,8 @@ public class CliArgs extends PgDiffArguments {
             if (getOldSrc() == null || getNewSrc() == null) {
                 badArgs("Please specify both SOURCE and DEST.");
             }
-            if (isAddTransaction() && isConcurrentlyMode()) {
-                badArgs("-C (--concurrently-mode) cannot be used with the option(s) -X (--add-transaction)");
+            if (isAddTransaction() && isConcurrentlyMode() && !isMsSql()) {
+                badArgs("-C (--concurrently-mode) cannot be used with the option(s) -X (--add-transaction) for PostgreSQL");
             }
             if (getOldSrc().startsWith(msJdbcStart) && getNewSrc().startsWith(pgJdbcStart)
                     || getOldSrc().startsWith(pgJdbcStart) && getNewSrc().startsWith(msJdbcStart)) {

@@ -32,7 +32,8 @@ Usage:
  --using-off                            : do not print USING expression for
                                           ALTER COLUMN TYPE
  -C (--concurrently-mode)               : print CREATE INDEX with CONCURRENTLY
-                                          option
+                                          option for PostgreSQL and WITH ONLINE
+                                          = ON for MS SQL
  -S (--safe-mode)                       : do not generate scripts containing
                                           dangerous statements
                                           see: --allow-danger-ddl

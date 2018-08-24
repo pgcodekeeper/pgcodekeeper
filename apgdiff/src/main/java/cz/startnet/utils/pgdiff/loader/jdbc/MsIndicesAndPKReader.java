@@ -31,6 +31,8 @@ public class MsIndicesAndPKReader extends JdbcReader {
         DbObjType type = isPrimaryKey || isUniqueConstraint ? DbObjType.CONSTRAINT : DbObjType.INDEX;
         loader.setCurrentObject(new GenericColumn(schema.getName(), name, type));
 
+        // TODO more options
+        boolean isUnique = res.getBoolean("is_unique");
         boolean isClustered = res.getBoolean("is_clustered");
         boolean isPadded = res.getBoolean("is_padded");
         boolean allowRowLocks = res.getBoolean("allow_row_locks");
@@ -69,44 +71,41 @@ public class MsIndicesAndPKReader extends JdbcReader {
             sb.append(")");
         }
 
-        if (filter != null) {
-            sb.append(" WHERE ").append(filter);
-        }
-
-        if (isPadded || !allowRowLocks || !allowPageLocks || fillfactor != 0) {
-            sb.append(" WITH (");
-
-            if (isPadded) {
-                sb.append("PAD_INDEX = ON, ");
-            }
-
-            if (!allowPageLocks) {
-                sb.append("ALLOW_PAGE_LOCKS = OFF, ");
-            }
-
-            if (!allowRowLocks) {
-                sb.append("ALLOW_ROW_LOCKS = OFF, ");
-            }
-
-            if (fillfactor != 0) {
-                sb.append("FILLFACTOR = ").append(fillfactor).append(", ");
-            }
-
-            sb.setLength(sb.length() - 2);
-
-            // TODO drop existing = off property
-            sb.append(")");
-        }
-
-        sb.append(" ON ").append(MsDiffUtils.quoteName(dataSpace));
-
         if (type == DbObjType.CONSTRAINT) {
             AbstractConstraint constraint = new MsConstraint(name, "");
+
+            sb.append(" WHERE ").append(filter);
+
+            if (isPadded || !allowRowLocks || !allowPageLocks || fillfactor != 0) {
+                sb.append(" WITH (");
+
+                if (isPadded) {
+                    sb.append("PAD_INDEX = ON, ");
+                }
+
+                if (!allowPageLocks) {
+                    sb.append("ALLOW_PAGE_LOCKS = OFF, ");
+                }
+
+                if (!allowRowLocks) {
+                    sb.append("ALLOW_ROW_LOCKS = OFF, ");
+                }
+
+                if (fillfactor != 0) {
+                    sb.append("FILLFACTOR = ").append(fillfactor).append(", ");
+                }
+
+                sb.setLength(sb.length() - 2);
+
+                sb.append(")");
+            }
+
+            sb.append(" ON ").append(MsDiffUtils.quoteName(dataSpace));
 
             StringBuilder definition = new StringBuilder();
             if (!isUniqueConstraint) {
                 definition.append("PRIMARY KEY ");
-            } else if (res.getBoolean("is_unique")) {
+            } else if (isUnique) {
                 definition.append("UNIQUE ");
             }
 
@@ -122,9 +121,28 @@ public class MsIndicesAndPKReader extends JdbcReader {
         } else {
             AbstractIndex index = new MsIndex(name, "");
             index.setClusterIndex(isClustered);
-            index.setUnique("1".equals(res.getString("is_unique")));
+            index.setUnique(isUnique);
             index.setDefinition(sb.toString());
             index.setTableName(t.getName());
+            index.setWhere(filter);
+            index.setTableSpace(dataSpace);
+
+            if (isPadded) {
+                index.addOption("PAD_INDEX", "ON");
+            }
+
+            if (!allowPageLocks) {
+                index.addOption("ALLOW_PAGE_LOCKS", "OFF");
+            }
+
+            if (!allowRowLocks) {
+                index.addOption("ALLOW_ROW_LOCKS", "OFF");
+            }
+
+            if (fillfactor != 0) {
+                index.addOption("FILLFACTOR", Long.toString(fillfactor));
+            }
+
             t.addIndex(index);
         }
     }

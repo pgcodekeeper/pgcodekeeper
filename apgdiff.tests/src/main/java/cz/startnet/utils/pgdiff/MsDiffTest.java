@@ -117,6 +117,8 @@ public class MsDiffTest {
                     {"drop_ms_index"},
                     // Tests scenario where MS INDEX definition is modified.
                     {"modify_ms_index"},
+                    // Tests scenario where MS INDEX definition is modified.
+                    {"modify_ms_index_option"},
 
                     // Tests scenario where MS FUNCTION without args is added.
                     {"add_ms_function_noargs"},
