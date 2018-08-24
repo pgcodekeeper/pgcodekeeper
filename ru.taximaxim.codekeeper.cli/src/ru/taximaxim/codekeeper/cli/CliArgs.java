@@ -441,7 +441,7 @@ public class CliArgs extends PgDiffArguments {
                 badArgs("Please specify both SOURCE and DEST.");
             }
             if (isAddTransaction() && isConcurrentlyMode() && !isMsSql()) {
-                badArgs("-C (--concurrently-mode) cannot be used with the option(s) -X (--add-transaction) for PostgreSQL");
+                badArgs("-C (--concurrently-mode) cannot be used with the option(s) -X (--add-transaction) for PostgreSQL.");
             }
             if (getOldSrc().startsWith(msJdbcStart) && getNewSrc().startsWith(pgJdbcStart)
                     || getOldSrc().startsWith(pgJdbcStart) && getNewSrc().startsWith(msJdbcStart)) {
