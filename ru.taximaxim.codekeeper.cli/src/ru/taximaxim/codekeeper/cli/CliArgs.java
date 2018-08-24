@@ -420,6 +420,9 @@ public class CliArgs extends PgDiffArguments {
             return false;
         }
 
+        String msJdbcStart = "jdbc:sqlserver:";
+        String pgJdbcStart = "jdbc:postgresql:";
+
         if (isModeParse()) {
             if (getNewSrc() == null) {
                 badArgs("Please specify SCHEMA to parse.");
@@ -427,13 +430,31 @@ public class CliArgs extends PgDiffArguments {
             if (getOldSrc() != null) {
                 badArgs("Parser mode doesn't require DEST argument.");
             }
+            if (isMsSql() && getNewSrc().startsWith(pgJdbcStart)) {
+                badArgs("Cannot parse PostgerSQL database as MS SQL project.");
+            }
+            if (!isMsSql() && getNewSrc().startsWith(msJdbcStart)) {
+                badArgs("Cannot parse MS SQL database as PostgerSQL project.");
+            }
         } else {
             if (getOldSrc() == null || getNewSrc() == null) {
                 badArgs("Please specify both SOURCE and DEST.");
             }
             if (isAddTransaction() && isConcurrentlyMode() && !isMsSql()) {
-                badArgs("-C (--concurrently-mode) cannot be used with the option(s) -X (--add-transaction) for PostgreSQL");
+                badArgs("-C (--concurrently-mode) cannot be used with the option(s) -X (--add-transaction) for PostgreSQL.");
             }
+            if (getOldSrc().startsWith(msJdbcStart) && getNewSrc().startsWith(pgJdbcStart)
+                    || getOldSrc().startsWith(pgJdbcStart) && getNewSrc().startsWith(msJdbcStart)) {
+                badArgs("Cannot compare MS SQL and PostgerSQL databases.");
+            }
+            if ((getOldSrc().startsWith(msJdbcStart) || getNewSrc().startsWith(msJdbcStart)) && !isMsSql()) {
+                badArgs("Cannot work with MS SQL database without --ms-sql parameter.");
+            }
+            if ((getOldSrc().startsWith(pgJdbcStart) || getNewSrc().startsWith(pgJdbcStart)) && isMsSql()) {
+                badArgs("Cannot work with PostgreSQL database with --ms-sql parameter.");
+            }
+            // TODO Do we need to check DB types for dump and directories?
+
             setOldSrcFormat(parsePath(getOldSrc()));
         }
         setNewSrcFormat(parsePath(getNewSrc()));

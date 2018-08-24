@@ -365,6 +365,8 @@ public final class Messages extends NLS {
 
     public static String DiffWizard_select_db_tz;
 
+    public static String DiffWizard_different_types;
+
     public static String DiffWizard_source;
 
     public static String DiffWizard_target;
@@ -634,6 +636,9 @@ public final class Messages extends NLS {
     public static String ProjectEditorDiffer_script_creation_message;
 
     public static String ProjectEditorDiffer_script_creation_title;
+
+    public static String ProjectEditorDiffer_different_types;
+    public static String ProjectEditorDiffer_different_types_msg;
 
     public static String ProjectEditorInput_pgcodekeeper_project;
 

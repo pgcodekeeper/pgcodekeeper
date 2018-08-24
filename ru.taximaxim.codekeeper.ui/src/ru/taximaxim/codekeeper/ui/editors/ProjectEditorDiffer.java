@@ -458,6 +458,16 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             return;
         }
 
+        boolean isDbInfo = currentRemote instanceof DbInfo;
+        boolean isMsProj = OpenProjectUtils.checkMsSql(proj);
+        if (isDbInfo && ((DbInfo)currentRemote).isMsSql() != isMsProj) {
+            MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_INFORMATION);
+            mb.setText(Messages.ProjectEditorDiffer_different_types);
+            mb.setMessage(Messages.ProjectEditorDiffer_different_types_msg);
+            mb.open();
+            return;
+        }
+
         String charset;
         try {
             charset = proj.getProjectCharset();
@@ -475,7 +485,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         TreeDiffer newDiffer;
         String name;
 
-        if (currentRemote instanceof DbInfo) {
+        if (isDbInfo) {
             DbInfo dbInfo = (DbInfo) currentRemote;
             newDiffer = TreeDiffer.getTree(dbProject, dbInfo, charset, forceUnixNewlines,
                     mainPrefs, projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
@@ -484,9 +494,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         } else {
             File file = (File) currentRemote;
             name = file.getName();
-            // at this moment MSSQL project property must checked and we can use them
-            dbRemote = DbSource.fromFile(forceUnixNewlines, file, charset,
-                    projProps.getBoolean(PROJ_PREF.MSSQL_MODE, false));
+            dbRemote = DbSource.fromFile(forceUnixNewlines, file, charset, isMsProj);
             newDiffer = new ClassicTreeDiffer(dbProject, dbRemote, false);
         }
 
