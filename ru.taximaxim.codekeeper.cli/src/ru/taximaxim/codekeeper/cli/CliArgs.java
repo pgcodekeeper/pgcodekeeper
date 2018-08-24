@@ -431,8 +431,8 @@ public class CliArgs extends PgDiffArguments {
             if (getOldSrc() == null || getNewSrc() == null) {
                 badArgs("Please specify both SOURCE and DEST.");
             }
-            if (isAddTransaction() && isConcurrentlyMode()) {
-                badArgs("-C (--concurrently-mode) cannot be used with the option(s) -X (--add-transaction)");
+            if (isAddTransaction() && isConcurrentlyMode() && !isMsSql()) {
+                badArgs("-C (--concurrently-mode) cannot be used with the option(s) -X (--add-transaction) for PostgreSQL");
             }
             setOldSrcFormat(parsePath(getOldSrc()));
         }
