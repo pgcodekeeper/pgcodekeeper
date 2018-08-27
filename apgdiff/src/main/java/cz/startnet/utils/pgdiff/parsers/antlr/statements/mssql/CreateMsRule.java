@@ -68,6 +68,9 @@ public class CreateMsRule extends ParserAbstract {
         PgStatement st = getStatement(nameCtx);
 
         if (st == null) {
+            // TODO объект не найден, расширить или создать новый класс для ошибок MS парсера
+            // throw new UnresolvedReferenceException("Cannot find object in database: "
+            //        + nameCtx.getText(), nameCtx);
             return null;
         }
 
