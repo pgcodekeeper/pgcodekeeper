@@ -92,9 +92,4 @@ public class MsTablesReader extends JdbcReader {
         schema.addTable(table);
         loader.setPrivileges(table, JsonReader.fromArray(res.getString("acl")));
     }
-
-    @Override
-    protected DbObjType getType() {
-        return DbObjType.TABLE;
-    }
 }

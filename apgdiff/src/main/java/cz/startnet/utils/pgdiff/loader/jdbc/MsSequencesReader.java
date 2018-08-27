@@ -48,9 +48,4 @@ public class MsSequencesReader extends JdbcReader {
         schema.addSequence(s);
         loader.setPrivileges(s, JsonReader.fromArray(res.getString("acl")));
     }
-
-    @Override
-    protected DbObjType getType() {
-        return DbObjType.SEQUENCE;
-    }
 }

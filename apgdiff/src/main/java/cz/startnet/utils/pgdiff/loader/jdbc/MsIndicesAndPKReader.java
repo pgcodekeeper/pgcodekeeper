@@ -146,9 +146,4 @@ public class MsIndicesAndPKReader extends JdbcReader {
             t.addIndex(index);
         }
     }
-
-    @Override
-    protected DbObjType getType() {
-        return null;
-    }
 }

@@ -39,9 +39,4 @@ public class MsCheckConstraintsReader extends JdbcReader {
         con.setDefinition(sb.toString());
         schema.getTable(res.getString("table_name")).addConstraint(con);
     }
-
-    @Override
-    protected DbObjType getType() {
-        return DbObjType.CONSTRAINT;
-    }
 }

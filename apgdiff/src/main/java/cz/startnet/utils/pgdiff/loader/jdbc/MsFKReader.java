@@ -67,9 +67,4 @@ public class MsFKReader extends JdbcReader {
 
         schema.getTable(res.getString("table_name")).addConstraint(con);
     }
-
-    @Override
-    protected DbObjType getType() {
-        return DbObjType.CONSTRAINT;
-    }
 }

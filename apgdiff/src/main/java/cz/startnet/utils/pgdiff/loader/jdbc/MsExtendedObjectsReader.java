@@ -56,17 +56,9 @@ public class MsExtendedObjectsReader extends JdbcReader {
 
                 for (JsonReader col : JsonReader.fromArray(res.getString("cols"))) {
                     AbstractColumn column = new MsColumn(col.getString("name"));
-                    String argSize = "";
                     String dataType = col.getString("type");
                     int size = col.getInt("size");
-                    if ("varbinary".equals(dataType) || dataType.endsWith("varchar")) {
-                        argSize = size == -1 ? " (max)" : (" (" + size + ")");
-                    } else if ("decimal".equals(dataType) || "numeric".equals(dataType)) {
-                        argSize = " (" + col.getInt("pr") + ", " + col.getInt("sc") + ')';
-                    }
-                    // TODO other type with size
-
-                    column.setType(MsDiffUtils.quoteName(dataType) + argSize);
+                    column.setType(MsDiffUtils.quoteName(dataType) + getArgSize(dataType, size, res));
                     column.setSparse(col.getBoolean("sp"));
                     column.setNullValue(col.getBoolean("nl"));
                     if (col.getBoolean("ii")) {
@@ -89,17 +81,9 @@ public class MsExtendedObjectsReader extends JdbcReader {
                 // TODO table can have name, options and etc
                 func.setReturns("TABLE (\n" + String.join(",\n", columns) + ")");
             } else {
-                String argSize = "";
                 String dataType = res.getString("return_type");
                 int size = res.getInt("return_type_size");
-                if ("varbinary".equals(dataType) || dataType.endsWith("varchar")) {
-                    argSize = size == -1 ? " (max)" : (" (" + size + ")");
-                } else if ("decimal".equals(dataType) || "numeric".equals(dataType)) {
-                    argSize = " (" + res.getInt("pr") + ", " + res.getInt("sc") + ')';
-                }
-
-                // TODO other type with size
-                func.setReturns(MsDiffUtils.quoteName(dataType) + argSize);
+                func.setReturns(MsDiffUtils.quoteName(dataType) +  getArgSize(dataType, size, res));
             }
 
             StringBuilder sb = new StringBuilder();
@@ -115,27 +99,18 @@ public class MsExtendedObjectsReader extends JdbcReader {
         }
 
         for (JsonReader arg : args) {
-            String argSize = "";
             String dataType = arg.getString("type");
             int size = arg.getInt("size");
-            boolean isText = false;
-            if ("varbinary".equals(dataType) || dataType.endsWith("varchar")) {
-                argSize = size == -1 ? " (max)" : (" (" + size + ")");
-                isText = true;
-            } else if ("decimal".equals(dataType) || "numeric".equals(dataType)) {
-                argSize = " (" + arg.getInt("pr") + ", " + arg.getInt("sc") + ')';
-            }
-            // TODO other type with size
 
             Argument argDst = new Argument(arg.getBoolean("ou") ? "OUTPUT" : null,
-                    arg.getString("name"), MsDiffUtils.quoteName(dataType) + argSize);
+                    arg.getString("name"), MsDiffUtils.quoteName(dataType) + getArgSize(dataType, size, res));
 
             if (arg.getBoolean("hd")) {
                 String def = arg.getString("dv");
                 String defValue;
                 if (def == null) {
                     defValue = "NULL";
-                } else if (isText) {
+                } else if ("varbinary".equals(dataType) || dataType.endsWith("varchar")) {
                     defValue = "N'" + def + "'";
                 } else {
                     defValue = def;
@@ -145,7 +120,6 @@ public class MsExtendedObjectsReader extends JdbcReader {
             }
 
             argDst.setReadOnly(arg.getBoolean("ro"));
-            // TODO VARYING to query; add to argument nullable ?
             func.addArgument(argDst);
         }
 
@@ -155,8 +129,14 @@ public class MsExtendedObjectsReader extends JdbcReader {
         loader.setPrivileges(func, JsonReader.fromArray(res.getString("acl")));
     }
 
-    @Override
-    protected DbObjType getType() {
-        return DbObjType.FUNCTION;
+    private String getArgSize(String dataType, int size, ResultSet res) throws SQLException {
+        // TODO other type with size
+        if ("varbinary".equals(dataType) || dataType.endsWith("varchar")) {
+            return size == -1 ? " (max)" : (" (" + size + ")");
+        } else if ("decimal".equals(dataType) || "numeric".equals(dataType)) {
+            return " (" + res.getInt("pr") + ", " + res.getInt("sc") + ')';
+        }
+
+        return "";
     }
 }

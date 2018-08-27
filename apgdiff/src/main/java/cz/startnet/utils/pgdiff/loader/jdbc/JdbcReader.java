@@ -11,13 +11,13 @@ import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractSequence;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFtsConfiguration;
 import cz.startnet.utils.pgdiff.schema.PgFtsDictionary;
 import cz.startnet.utils.pgdiff.schema.PgFtsParser;
 import cz.startnet.utils.pgdiff.schema.PgFtsTemplate;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -197,6 +197,8 @@ public abstract class JdbcReader implements PgCatalogStrings {
     protected abstract void processResult(ResultSet result, AbstractSchema schema)
             throws SQLException, JsonReaderException;
 
-    protected abstract DbObjType getType();
-
+    protected DbObjType getType() {
+        // PG subclasses must override
+        return null;
+    }
 }

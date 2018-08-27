@@ -107,9 +107,4 @@ public class MsFPVTReader extends JdbcReader {
                     });
         }
     }
-
-    @Override
-    protected DbObjType getType() {
-        return null;
-    }
 }
