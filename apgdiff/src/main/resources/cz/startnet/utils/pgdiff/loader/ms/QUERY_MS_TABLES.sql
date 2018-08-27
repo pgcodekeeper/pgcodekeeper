@@ -66,6 +66,8 @@ CROSS APPLY (
             ic.seed_value AS s,
             ic.increment_value AS i,
             ic.is_not_for_replication AS nfr,
+            c.is_rowguidcol,
+            cc.is_persisted,
             --t.is_user_defined AS ud,
             --t.is_table_type AS tt,
             --c.is_filestream AS fs,

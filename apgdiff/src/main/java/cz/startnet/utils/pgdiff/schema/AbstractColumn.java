@@ -32,8 +32,9 @@ public abstract class AbstractColumn extends PgStatementWithSearchPath implement
     private String identityType;
     private boolean isInherit;
 
-    // TODO ROWGUIDCOL | PERSISTED | HIDDEN | MASKED
     private boolean isSparse;
+    private boolean isRowGuidCol;
+    private boolean isPersisted;
     private boolean isNotForRep;
     private boolean isIdentity;
     private String seed;
@@ -167,6 +168,24 @@ public abstract class AbstractColumn extends PgStatementWithSearchPath implement
         resetHash();
     }
 
+    public boolean isRowGuidCol() {
+        return isRowGuidCol;
+    }
+
+    public void setRowGuidCol(final boolean isRowGuidCol) {
+        this.isRowGuidCol = isRowGuidCol;
+        resetHash();
+    }
+
+    public boolean isPersisted() {
+        return isPersisted;
+    }
+
+    public void setPersisted(final boolean isPersisted) {
+        this.isPersisted = isPersisted;
+        resetHash();
+    }
+
     public boolean isNotForRep() {
         return isNotForRep;
     }
@@ -242,6 +261,8 @@ public abstract class AbstractColumn extends PgStatementWithSearchPath implement
                     && revokes.equals(col.revokes)
                     && Objects.equals(comment, col.getComment())
                     && Objects.equals(isSparse, col.isSparse())
+                    && Objects.equals(isRowGuidCol, col.isRowGuidCol())
+                    && Objects.equals(isPersisted, col.isPersisted())
                     && Objects.equals(isNotForRep, col.isNotForRep())
                     && isIdentity == col.isIdentity()
                     && Objects.equals(seed, col.getSeed())
@@ -271,6 +292,8 @@ public abstract class AbstractColumn extends PgStatementWithSearchPath implement
         hasher.putOrdered(revokes);
         hasher.put(comment);
         hasher.put(isSparse);
+        hasher.put(isRowGuidCol);
+        hasher.put(isPersisted);
         hasher.put(isNotForRep);
         hasher.put(isIdentity);
         hasher.put(seed);
@@ -289,6 +312,8 @@ public abstract class AbstractColumn extends PgStatementWithSearchPath implement
         colDst.setStatistics(getStatistics());
         colDst.setStorage(getStorage());
         colDst.setSparse(isSparse());
+        colDst.setRowGuidCol(isRowGuidCol());
+        colDst.setPersisted(isPersisted());
         colDst.setNotForRep(isNotForRep());
         colDst.isIdentity = isIdentity();
         colDst.seed = getSeed();
