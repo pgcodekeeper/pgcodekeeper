@@ -24,7 +24,9 @@ public class MsFKReader extends JdbcReader {
         loader.setCurrentObject(new GenericColumn(schema.getName(), name, DbObjType.CONSTRAINT));
 
         AbstractConstraint con = new MsConstraint(name, "");
-        // TODO with no check
+
+        con.setNotValid(res.getBoolean("with_no_check"));
+        con.setDisabled(res.getBoolean("is_disabled"));
 
         StringBuilder sb = new StringBuilder();
         sb.append("FOREIGN KEY (");
@@ -60,8 +62,6 @@ public class MsFKReader extends JdbcReader {
         if (res.getBoolean("is_not_for_replication")) {
             sb.append(" NOT FOR REPLICATION");
         }
-
-        // TODO disabled
 
         con.setDefinition(sb.toString());
 

@@ -1552,7 +1552,7 @@ alter_table
                              | ALTER COLUMN column_definition
                              | DROP COLUMN id
                              | DROP CONSTRAINT constraint=id
-                             | CHECK CONSTRAINT constraint=id
+                             | (CHECK | NOCHECK) CONSTRAINT con=id
                              | (ENABLE | DISABLE) TRIGGER trigger=id?
                              | (ENABLE | DISABLE) CHANGE_TRACKING (WITH '(' TRACK_COLUMNS_UPDATED '=' (ON|OFF) ')')?
                              | REBUILD table_options)

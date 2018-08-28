@@ -4,6 +4,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.TableAbstract;
+import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.AbstractTrigger;
@@ -28,8 +29,11 @@ public class AlterMsTable extends TableAbstract {
 
         Column_def_table_constraintContext colCtx = ctx.column_def_table_constraint();
         if (colCtx != null && colCtx.table_constraint() != null) {
-            // TODO check / no check constraint
-            addMsConstraint(colCtx.table_constraint(), table);
+            AbstractConstraint con = getMsConstraint(colCtx.table_constraint());
+            con.setNotValid(ctx.NOCHECK() != null);
+            table.addConstraint(con);
+        } else if (ctx.con != null) {
+            getSafe(table::getConstraint, ctx.con).setDisabled(ctx.NOCHECK() != null);;
         }
 
         IdContext triggerName = ctx.trigger;

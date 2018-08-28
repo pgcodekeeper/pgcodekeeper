@@ -266,7 +266,8 @@ public abstract class TableAbstract extends ParserAbstract {
     protected static void fillColumn(Column_def_table_constraintContext colCtx,
             AbstractTable table) {
         if (colCtx.table_constraint() != null) {
-            addMsConstraint(colCtx.table_constraint(), table);
+            AbstractConstraint con = getMsConstraint(colCtx.table_constraint());
+            table.addConstraint(con);
         } else {
             AbstractColumn col = new MsColumn(colCtx.id().getText());
 
@@ -315,10 +316,10 @@ public abstract class TableAbstract extends ParserAbstract {
         }
     }
 
-    protected static void addMsConstraint(Table_constraintContext conCtx, AbstractTable table) {
+    protected static AbstractConstraint getMsConstraint(Table_constraintContext conCtx) {
         String conName = conCtx.id() == null ? "" : conCtx.id().getText();
         AbstractConstraint con = new MsConstraint(conName, getFullCtxText(conCtx));
         con.setDefinition(getFullCtxText(conCtx.table_constraint_body()));
-        table.addConstraint(con);
+        return con;
     }
 }
