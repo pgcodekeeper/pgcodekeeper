@@ -226,7 +226,7 @@ public final class OpenProjectUtils {
             // this won't work with UTF-16+, but at least it will work with UTF-8
             // and all single-byte/ASCII compatible encodings
             String s = new String(bb, 0, size, StandardCharsets.US_ASCII);
-            return s.contains("CREATE SCHEMA");
+            return s.contains("CREATE SCHEMA"); //$NON-NLS-1$
         } catch(CoreException | IOException ex) {
             Log.log(ex);
             return false;
