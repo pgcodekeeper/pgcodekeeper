@@ -151,6 +151,14 @@ public class MsDiffTest {
                     // Tests scenario where MS TABLE CONSTRAINT, with default name, of column is dropped.
                     // TODO Uncomment the code when the deleting of the "default constraint" will be supported.
                     // {"drop_ms_constraint_default_column"},
+                    // Tests scenario where MS TABLE CONSTRAINT is disabled.
+                    {"disable_ms_constraint"},
+                    // Tests scenario where MS TABLE CONSTRAINT is enabled.
+                    {"enable_ms_constraint"},
+                    // Tests scenario where MS TABLE FOREIGN KEY CONSTRAINT is disabled.
+                    {"disable_ms_constraint_fk"},
+                    // Tests scenario where MS TABLE FOREIGN KEY CONSTRAINT is enabled.
+                    {"enable_ms_constraint_fk"},
 
                     // Tests scenario where MS SEQUENCE is added.
                     {"add_ms_sequence"},

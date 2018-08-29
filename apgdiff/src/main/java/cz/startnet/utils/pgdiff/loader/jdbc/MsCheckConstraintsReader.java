@@ -23,7 +23,9 @@ public class MsCheckConstraintsReader extends JdbcReader {
         loader.setCurrentObject(new GenericColumn(schema.getName(), name, DbObjType.CONSTRAINT));
 
         AbstractConstraint con = new MsConstraint(name, "");
-        // TODO with no check
+
+        con.setNotValid(res.getBoolean("with_no_check"));
+        con.setDisabled(res.getBoolean("is_disabled"));
 
         StringBuilder sb = new StringBuilder();
         sb.append("CHECK ");
@@ -33,8 +35,6 @@ public class MsCheckConstraintsReader extends JdbcReader {
         }
 
         sb.append(" (").append(res.getString("definition")).append(")");
-
-        // TODO disabled
 
         con.setDefinition(sb.toString());
         schema.getTable(res.getString("table_name")).addConstraint(con);

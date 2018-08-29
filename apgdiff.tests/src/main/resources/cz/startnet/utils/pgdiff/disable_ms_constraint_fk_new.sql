@@ -1,0 +1,24 @@
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+CREATE TABLE [dbo].[table1](
+    [c1] [int] NOT NULL IDENTITY (1,1) NOT FOR REPLICATION,
+    [c2] [int] NOT NULL)
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+CREATE TABLE [dbo].[table2](
+    [c1] [int] NOT NULL,
+    [c2] [int] NOT NULL)
+GO
+
+ALTER TABLE [dbo].[table1] WITH NOCHECK
+    ADD CONSTRAINT [iden_fk] FOREIGN KEY ([c1]) REFERENCES [dbo].[table2] ([c2])
+GO
+
+ALTER TABLE [dbo].[table1] NOCHECK CONSTRAINT [iden_fk]
+GO

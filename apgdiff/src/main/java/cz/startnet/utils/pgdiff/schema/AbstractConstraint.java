@@ -25,6 +25,7 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath {
     private GenericColumn refTable;
     private final Set<String> refs = new HashSet<>();
     private boolean notValid;
+    private boolean isDisabled;
 
     /**
      * Список колонок на которых установлен PrimaryKey или Unique
@@ -84,6 +85,15 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath {
         this.notValid = notValid;
     }
 
+    public boolean isDisabled() {
+        return isDisabled;
+    }
+
+    public void setDisabled(boolean isDisabled) {
+        this.isDisabled = isDisabled;
+        resetHash();
+    }
+
     @Override
     public DbObjType getStatementType() {
         return DbObjType.CONSTRAINT;
@@ -112,6 +122,7 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath {
             AbstractConstraint constraint = (AbstractConstraint) obj;
             eq = compareWithoutComments(constraint)
                     && notValid == constraint.isNotValid()
+                    && isDisabled == constraint.isDisabled()
                     && Objects.equals(comment, constraint.getComment());
         }
 
@@ -130,6 +141,7 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath {
         hasher.put(name);
         hasher.put(definition);
         hasher.put(notValid);
+        hasher.put(isDisabled);
         hasher.put(comment);
     }
 
@@ -145,6 +157,7 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath {
         constraintDst.refs.addAll(refs);
         constraintDst.deps.addAll(deps);
         constraintDst.setNotValid(isNotValid());
+        constraintDst.setDisabled(isDisabled());
         return constraintDst;
     }
 
