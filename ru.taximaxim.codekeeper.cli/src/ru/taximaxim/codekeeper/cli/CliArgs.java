@@ -92,6 +92,10 @@ public class CliArgs extends PgDiffArguments {
     @Option(name="--out-charset", metaVar="<charset>", usage="output charset")
     private String outCharsetName;
 
+    @Option(name="-E", aliases="--error",
+            usage="print exception stacktrace")
+    private boolean isDebug;
+
     @Option(name="-P", aliases="--no-privileges",
             usage="ignore privileges and owners of database objects")
     private boolean ignorePrivileges;
@@ -293,6 +297,14 @@ public class CliArgs extends PgDiffArguments {
         this.msSql = msSql;
     }
 
+    public boolean isDebug() {
+        return isDebug;
+    }
+
+    public void setDebug(boolean isDebug) {
+        this.isDebug = isDebug;
+    }
+
     @Override
     public String getInCharsetName() {
         return inCharsetName;
@@ -378,9 +390,8 @@ public class CliArgs extends PgDiffArguments {
         this.concurrentlyMode = concurrentlyMode;
     }
 
-    @SuppressWarnings("deprecation")
     private static void badArgs(String message) throws CmdLineException{
-        throw new CmdLineException(message);
+        throw new CmdLineException(null, message, null);
     }
 
     /**
