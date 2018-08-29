@@ -74,7 +74,9 @@ public class MsIndicesAndPKReader extends JdbcReader {
         if (type == DbObjType.CONSTRAINT) {
             AbstractConstraint constraint = new MsConstraint(name, "");
 
-            sb.append(" WHERE ").append(filter);
+            if (filter != null) {
+                sb.append(" WHERE ").append(filter);
+            }
 
             if (isPadded || !allowRowLocks || !allowPageLocks || fillfactor != 0) {
                 sb.append(" WITH (");
