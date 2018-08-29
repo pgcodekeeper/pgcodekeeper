@@ -14,7 +14,7 @@ public class JdbcMsConnector extends JdbcConnector {
             Pattern.compile(";(?:(\\w+)=(\\w+|\\{[^}]*\\})?)?");
 
     private static String unescapeValue(String val) {
-        if (val.length() > 1 && val.charAt(0) == '{') {
+        if (val != null && val.length() > 1 && val.charAt(0) == '{') {
             // strip escape braces
             return val.substring(1, val.length() - 1);
         }
