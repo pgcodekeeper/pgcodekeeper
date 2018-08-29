@@ -37,15 +37,13 @@ CREATE TABLE [dbo].[faxes] (
 GO
 
 ALTER TABLE [dbo].[faxes] 
-    ADD CONSTRAINT [faxes_pkey] PRIMARY KEY CLUSTERED  ([fax_id]) ON [PRIMARY]
+    ADD CONSTRAINT [PK_faxes] PRIMARY KEY CLUSTERED  ([fax_id]) ON [PRIMARY]
 GO
 
--- TODO uncomment this
---ALTER TABLE [dbo].[faxes] 
---    ADD CONSTRAINT [faxes_fax_box_id_fkey] FOREIGN KEY (fax_box_id) REFERENCES fax_boxes(fax_box_id)
---    ON UPDATE CASCADE 
---    ON DELETE CASCADE
---GO
+ALTER TABLE [dbo].[faxes] 
+    ADD CONSTRAINT [FK_faxes_fax_box_id] FOREIGN KEY (fax_box_id) 
+    REFERENCES [dbo].[fax_boxes](fax_box_id) ON DELETE SET NULL ON UPDATE CASCADE
+GO
 
 SET QUOTED_IDENTIFIER ON
 GO
@@ -55,9 +53,7 @@ CREATE TABLE [dbo].[extensions] (
     [id] [int] NOT NULL)
 GO
 
--- TODO uncomment this 
---ALTER TABLE [dbo].[extensions] 
---    ADD CONSTRAINT [extensions_fax_box_id_fkey] FOREIGN KEY (fax_box_id) REFERENCES fax_boxes(fax_box_id)
---    ON UPDATE NO ACTION
---    ON DELETE SET NULL
---GO  
+ALTER TABLE [dbo].[extensions] 
+    ADD CONSTRAINT [FK_extensions_fax_box_id] FOREIGN KEY (fax_box_id) 
+    REFERENCES [dbo].[fax_boxes](fax_box_id) ON DELETE SET NULL ON UPDATE CASCADE
+GO  

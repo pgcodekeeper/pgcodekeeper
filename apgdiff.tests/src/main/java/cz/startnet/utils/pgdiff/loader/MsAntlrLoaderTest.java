@@ -260,15 +260,14 @@ class MsDB0 extends MsDatabaseObjectCreator {
         col.setType("[text]");
         table.addColumn(col);
 
-        constraint = new PgConstraint("faxes_pkey", "");
+        constraint = new PgConstraint("PK_faxes", "");
         constraint.setDefinition("PRIMARY KEY CLUSTERED  ([fax_id]) ON [PRIMARY]");
         table.addConstraint(constraint);
 
-        // TODO uncomment this
-        //        constraint = new PgConstraint("faxes_fax_box_id_fkey", "");
-        //        constraint.setDefinition("FOREIGN KEY (fax_box_id) REFERENCES fax_boxes(fax_box_id)\n"
-        //                + "    ON UPDATE CASCADE \n    ON DELETE CASCADE");
-        //        table.addConstraint(constraint);
+        constraint = new PgConstraint("FK_faxes_fax_box_id", "");
+        constraint.setDefinition("FOREIGN KEY (fax_box_id) \n" +
+                "    REFERENCES [dbo].[fax_boxes](fax_box_id) ON DELETE SET NULL ON UPDATE CASCADE");
+        table.addConstraint(constraint);
 
         table = new SimpleMsTable("extensions", "");
         table.setAnsiNulls(true);
@@ -278,10 +277,11 @@ class MsDB0 extends MsDatabaseObjectCreator {
         col.setType("[int]");
         col.setNullValue(false);
         table.addColumn(col);
-        // TODO uncomment this
-        //        constraint = new PgConstraint("extensions_fax_box_id_fkey", "");
-        //        constraint.setDefinition("FOREIGN KEY (fax_box_id) REFERENCES fax_boxes\n(fax_box_id)    ON UPDATE NO ACTION ON DELETE SET NULL");
-        //        table.addConstraint(constraint);
+
+        constraint = new PgConstraint("FK_extensions_fax_box_id", "");
+        constraint.setDefinition("FOREIGN KEY (fax_box_id) \n" +
+                "    REFERENCES [dbo].[fax_boxes](fax_box_id) ON DELETE SET NULL ON UPDATE CASCADE");
+        table.addConstraint(constraint);
 
         return d;
     }
