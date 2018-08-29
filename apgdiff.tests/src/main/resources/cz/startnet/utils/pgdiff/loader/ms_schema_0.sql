@@ -11,11 +11,6 @@ ALTER TABLE [dbo].[fax_boxes]
     ADD CONSTRAINT [PK_fax_boxes] PRIMARY KEY CLUSTERED  ([fax_box_id]) ON [PRIMARY]
 GO
 
--- TODO uncomment this firstly
---ALTER TABLE [dbo].[fax_boxes] 
---    ADD CONSTRAINT [DF_fax_boxes] DEFAULT (getdate()) FOR [time_received]
---GO
-
 ALTER AUTHORIZATION ON OBJECT::[dbo].[fax_boxes] TO [ms_user];    
 GO
 
@@ -43,6 +38,14 @@ GO
 ALTER TABLE [dbo].[faxes] 
     ADD CONSTRAINT [FK_faxes_fax_box_id] FOREIGN KEY (fax_box_id) 
     REFERENCES [dbo].[fax_boxes](fax_box_id) ON DELETE SET NULL ON UPDATE CASCADE
+GO
+
+ALTER TABLE [dbo].[faxes] 
+    ADD CONSTRAINT [DF_faxes] DEFAULT (getdate()) FOR time_received
+GO
+
+ALTER TABLE [dbo].[faxes] 
+    ADD CONSTRAINT [DF_faxes_2] DEFAULT 0 FOR read
 GO
 
 SET QUOTED_IDENTIFIER ON

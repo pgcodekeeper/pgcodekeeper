@@ -233,17 +233,17 @@ class MsDB0 extends MsDatabaseObjectCreator {
 
         col = new MsColumn("time_received");
         col.setType("[datetime]");
-        // TODO uncomment this when default value setting will be fixed
+        // TODO replace constraint 'constraint = new MsConstraint("DF_faxes", "")' by this,
+        // when default value setting will be fixed
         // TODO fix default value setting; at this moment trying to set default value gives us:
         //    ALTER TABLE [dbo].[faxes] ALTER COLUMN [time_received] DROP CONSTRAINT null
-        //    ALTER TABLE [dbo].[fax_boxes] ADD CONSTRAINT [DF_fax_boxes] DEFAULT (getdate()) FOR [time_received]
+        //    ALTER TABLE [dbo].[faxes] ADD CONSTRAINT [DF_faxes] DEFAULT (getdate()) FOR time_received
         // col.setDefaultValue("getdate()");
         table.addColumn(col);
-        // TODO uncomment this firstly
-        // TODO replace constraint by 'setDefaultValue' when it will be fixed
-        // constraint = new MsConstraint("DF_fax_boxes", "");
-        // constraint.setDefinition("DEFAULT (getdate()) FOR [time_received]");
-        // table.addConstraint(constraint);
+        // TODO replace constraint by 'col.setDefaultValue("getdate()")' when it will be fixed
+        constraint = new MsConstraint("DF_faxes", "");
+        constraint.setDefinition("DEFAULT (getdate()) FOR time_received");
+        table.addConstraint(constraint);
 
         col = new MsColumn("time_finished_received");
         col.setType("[datetime]");
@@ -251,10 +251,18 @@ class MsDB0 extends MsDatabaseObjectCreator {
 
         col = new MsColumn("read");
         col.setType("[int]");
-        // TODO uncomment this when default value setting will be fixed
-        // TODO for now replace 'default value setting' by constraint adding
+        // TODO replace constraint 'constraint = new MsConstraint("DF_faxes_2", "")' by this,
+        // when default value setting will be fixed
+        // TODO fix default value setting; at this moment trying to set default value gives us:
+        //    ALTER TABLE [dbo].[faxes] ALTER COLUMN [read] DROP CONSTRAINT null
+        //    ALTER TABLE [dbo].[faxes] ADD CONSTRAINT [DF_faxes_2] DEFAULT 0 FOR read
         // col.setDefaultValue("0");
         table.addColumn(col);
+        // TODO uncomment this firstly
+        // TODO replace constraint by 'col.setDefaultValue("0")' when it will be fixed
+        constraint = new MsConstraint("DF_faxes_2", "");
+        constraint.setDefinition("DEFAULT 0 FOR read");
+        table.addConstraint(constraint);
 
         col = new MsColumn("station_id");
         col.setType("[text]");
