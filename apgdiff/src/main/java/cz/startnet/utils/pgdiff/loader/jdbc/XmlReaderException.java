@@ -1,25 +1,25 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-public class JsonReaderException extends Exception {
+public class XmlReaderException extends Exception {
 
     private static final long serialVersionUID = -3302955275651589283L;
 
-    public JsonReaderException() {
+    public XmlReaderException() {
     }
 
-    public JsonReaderException(String message) {
+    public XmlReaderException(String message) {
         super(message);
     }
 
-    public JsonReaderException(Throwable cause) {
+    public XmlReaderException(Throwable cause) {
         super(cause);
     }
 
-    public JsonReaderException(String message, Throwable cause) {
+    public XmlReaderException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public JsonReaderException(String message, Throwable cause,
+    public XmlReaderException(String message, Throwable cause,
             boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }

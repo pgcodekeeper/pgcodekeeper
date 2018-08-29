@@ -16,6 +16,6 @@ CROSS APPLY (
         LEFT JOIN sys.database_permissions perm WITH (NOLOCK) ON perm.grantee_principal_id = roleprinc.principal_id
         WHERE major_id = s.schema_id
     ) cc 
-    FOR JSON AUTO, INCLUDE_NULL_VALUES
+    FOR XML RAW, ROOT
 ) cc (acl)
 WHERE p.name = N'dbo'

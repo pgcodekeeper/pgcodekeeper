@@ -17,7 +17,7 @@ public class MsSequencesReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException, JsonReaderException {
+    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException, XmlReaderException {
         loader.monitor.worked(1);
         String sequenceName = res.getString("name");
         loader.setCurrentObject(new GenericColumn(schema.getName(), sequenceName, DbObjType.SEQUENCE));
@@ -46,6 +46,6 @@ public class MsSequencesReader extends JdbcReader {
         loader.setOwner(s, res.getString("owner"));
 
         schema.addSequence(s);
-        loader.setPrivileges(s, JsonReader.fromArray(res.getString("acl")));
+        loader.setPrivileges(s, XmlReader.readXML(res.getString("acl")));
     }
 }

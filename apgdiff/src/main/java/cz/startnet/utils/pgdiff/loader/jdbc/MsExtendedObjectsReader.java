@@ -24,7 +24,7 @@ public class MsExtendedObjectsReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException, JsonReaderException {
+    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException, XmlReaderException {
         loader.monitor.worked(1);
         String name = res.getString("name");
         String funcType = res.getString("type");
@@ -39,7 +39,7 @@ public class MsExtendedObjectsReader extends JdbcReader {
         String executeAs = res.getString("execute_as");
         String owner = res.getString("owner");
 
-        List<JsonReader> args = JsonReader.fromArray(res.getString("args"));
+        List<XmlReader> args = XmlReader.readXML(res.getString("args"));
         AbstractFunction func;
 
         if (type == DbObjType.PROCEDURE) {
@@ -54,7 +54,7 @@ public class MsExtendedObjectsReader extends JdbcReader {
 
                 List<String> columns = new ArrayList<>();
 
-                for (JsonReader col : JsonReader.fromArray(res.getString("cols"))) {
+                for (XmlReader col : XmlReader.readXML(res.getString("cols"))) {
                     AbstractColumn column = new MsColumn(col.getString("name"));
                     String dataType = col.getString("type");
                     int size = col.getInt("size");
@@ -98,7 +98,7 @@ public class MsExtendedObjectsReader extends JdbcReader {
             func.setBody(sb.toString());
         }
 
-        for (JsonReader arg : args) {
+        for (XmlReader arg : args) {
             String dataType = arg.getString("type");
             int size = arg.getInt("size");
 
@@ -126,7 +126,7 @@ public class MsExtendedObjectsReader extends JdbcReader {
         loader.setOwner(func, owner);
         func.setCLR(true);
         schema.addFunction(func);
-        loader.setPrivileges(func, JsonReader.fromArray(res.getString("acl")));
+        loader.setPrivileges(func, XmlReader.readXML(res.getString("acl")));
     }
 
     private String getArgSize(String dataType, int size, ResultSet res) throws SQLException {

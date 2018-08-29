@@ -23,7 +23,7 @@ public class MsIndicesAndPKReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException, JsonReaderException {
+    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException, XmlReaderException {
         loader.monitor.worked(1);
         String name = res.getString("name");
         boolean isPrimaryKey = res.getBoolean("is_primary_key");
@@ -50,7 +50,7 @@ public class MsIndicesAndPKReader extends JdbcReader {
         List<String> columns = new ArrayList<>();
         List<String> includes = new ArrayList<>();
 
-        for (JsonReader col : JsonReader.fromArray(res.getString("cols"))) {
+        for (XmlReader col : XmlReader.readXML(res.getString("cols"))) {
             boolean isDesc = col.getBoolean("is_desc");
             String column = MsDiffUtils.quoteName(col.getString("name")) + (isDesc ? " DESC" : "");
 
