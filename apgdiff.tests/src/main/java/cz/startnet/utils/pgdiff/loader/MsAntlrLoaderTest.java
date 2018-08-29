@@ -21,9 +21,12 @@ import org.junit.runners.Parameterized.Parameters;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
+import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.MsConstraint;
+import cz.startnet.utils.pgdiff.schema.MsIndex;
+import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.SimpleMsTable;
@@ -64,9 +67,8 @@ public class MsAntlrLoaderTest {
         return Arrays.asList(
                 new Object[][]{
                     // SONAR-OFF
-                    {0}
-                    // ,
-                    // {1}
+                    {0},
+                    {1}
                     // SONAR-ON
                 });
     }
@@ -80,9 +82,8 @@ public class MsAntlrLoaderTest {
      * each returning a specific {@link PgDatabase} for a test-case.
      */
     private static final MsDatabaseObjectCreator[] DB_OBJS = {
-            new MsDB0()
-            // ,
-            // new MsDB1()
+            new MsDB0(),
+            new MsDB1()
     };
 
     /**
@@ -290,6 +291,41 @@ class MsDB0 extends MsDatabaseObjectCreator {
         constraint.setDefinition("FOREIGN KEY (fax_box_id) \n" +
                 "    REFERENCES [dbo].[fax_boxes](fax_box_id) ON DELETE SET NULL ON UPDATE CASCADE");
         table.addConstraint(constraint);
+
+        return d;
+    }
+}
+
+class MsDB1 extends MsDatabaseObjectCreator {
+    @Override
+    public PgDatabase getDatabase() {
+        PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
+
+        AbstractSchema schema = new MsSchema("msschema", "");
+        d.addSchema(schema);
+
+        schema = d.getSchema(ApgdiffConsts.DBO);
+
+        SimpleMsTable table = new SimpleMsTable("contacts", "");
+        table.setAnsiNulls(true);
+        schema.addTable(table);
+
+        AbstractColumn col = new MsColumn("id");
+        col.setType("[int]");
+        table.addColumn(col);
+
+        col = new MsColumn("number_pool_id");
+        col.setType("[int]");
+        table.addColumn(col);
+
+        col = new MsColumn("name");
+        col.setType("[varchar](50)");
+        table.addColumn(col);
+
+        AbstractIndex idx = new MsIndex("IX_number_pool_id", "");
+        table.addIndex(idx);
+        idx.setTableName("contacts");
+        idx.setDefinition("([number_pool_id])");
 
         return d;
     }
