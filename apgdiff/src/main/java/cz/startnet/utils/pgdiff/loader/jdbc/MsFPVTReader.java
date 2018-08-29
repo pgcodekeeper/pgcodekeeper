@@ -26,7 +26,7 @@ public class MsFPVTReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException, JsonReaderException {
+    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException, XmlReaderException {
         loader.monitor.worked(1);
         String name = res.getString("name");
 
@@ -62,14 +62,14 @@ public class MsFPVTReader extends JdbcReader {
         String def = res.getString("definition");
         String owner = res.getString("owner");
 
-        List<JsonReader> acls = JsonReader.fromArray(res.getString("acl"));
+        List<XmlReader> acls = XmlReader.readXML(res.getString("acl"));
 
         PgDatabase db = schema.getDatabase();
 
-        BiConsumer<PgStatementWithSearchPath, List<JsonReader>> cons = (st, acl) -> {
+        BiConsumer<PgStatementWithSearchPath, List<XmlReader>> cons = (st, acl) -> {
             try {
                 loader.setPrivileges(st, acl);
-            } catch (JsonReaderException e) {
+            } catch (XmlReaderException e) {
                 Log.log(e);
             }
         };

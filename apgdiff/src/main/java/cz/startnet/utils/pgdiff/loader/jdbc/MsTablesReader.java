@@ -19,7 +19,7 @@ public class MsTablesReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException, JsonReaderException {
+    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException, XmlReaderException {
         loader.monitor.worked(1);
         String tableName = res.getString("name");
         loader.setCurrentObject(new GenericColumn(schema.getName(), tableName, DbObjType.TABLE));
@@ -45,7 +45,7 @@ public class MsTablesReader extends JdbcReader {
             table.setTracked((Boolean)isTracked);
         }
 
-        for (JsonReader col : JsonReader.fromArray(res.getString("cols"))) {
+        for (XmlReader col : XmlReader.readXML(res.getString("cols"))) {
             AbstractColumn column = new MsColumn(col.getString("name"));
             // TODO other type with size
             String exp = col.getString("def");
@@ -92,6 +92,6 @@ public class MsTablesReader extends JdbcReader {
         loader.setOwner(table, res.getString("owner"));
 
         schema.addTable(table);
-        loader.setPrivileges(table, JsonReader.fromArray(res.getString("acl")));
+        loader.setPrivileges(table, XmlReader.readXML(res.getString("acl")));
     }
 }

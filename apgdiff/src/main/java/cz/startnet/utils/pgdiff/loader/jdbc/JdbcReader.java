@@ -31,7 +31,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
         this.loader = loader;
     }
 
-    public void read() throws SQLException, InterruptedException, JsonReaderException {
+    public void read() throws SQLException, InterruptedException, XmlReaderException {
         String query = makeQuery(loader.version);
 
         List<ObjectTimestamp> objects = loader.getTimestampEqualObjects();
@@ -195,7 +195,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
     }
 
     protected abstract void processResult(ResultSet result, AbstractSchema schema)
-            throws SQLException, JsonReaderException;
+            throws SQLException, XmlReaderException;
 
     protected DbObjType getType() {
         // PG subclasses must override

@@ -27,7 +27,7 @@ CROSS APPLY (
         FROM sys.index_columns c WITH (NOLOCK)
         LEFT JOIN sys.columns sc WITH (NOLOCK) ON c.object_id = sc.object_id AND c.column_id = sc.column_id
         WHERE c.object_id = si.object_id AND c.index_id = si.index_id
-) cc ORDER BY cc.id
-FOR JSON AUTO, INCLUDE_NULL_VALUES
+    ) cc ORDER BY cc.id
+    FOR XML RAW, ROOT
 ) cc (cols)
 WHERE  o.type = 'U' AND si.name IS NOT NULL

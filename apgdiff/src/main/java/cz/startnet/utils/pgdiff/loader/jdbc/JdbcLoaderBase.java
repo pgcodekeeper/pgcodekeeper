@@ -32,15 +32,15 @@ import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser;
-import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.DaemonThreadFactory;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -294,8 +294,8 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         }
     }
 
-    public void setPrivileges(PgStatementWithSearchPath st, List<JsonReader> privs) throws JsonReaderException {
-        for (JsonReader acl : privs) {
+    public void setPrivileges(PgStatementWithSearchPath st, List<XmlReader> privs) throws XmlReaderException {
+        for (XmlReader acl : privs) {
             String state = acl.getString("sd");
             boolean isWithGrantOption = false;
             if ("GRANT_WITH_GRANT_OPTION".equals(state)) {

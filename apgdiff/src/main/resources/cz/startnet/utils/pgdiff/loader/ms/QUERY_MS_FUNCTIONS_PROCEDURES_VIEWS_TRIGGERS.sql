@@ -24,7 +24,7 @@ CROSS APPLY (
         LEFT JOIN sys.columns col WITH (NOLOCK) on col.object_id = perm.major_id  AND col.column_id = perm.minor_id
         WHERE major_id = s.object_id
     ) cc 
-    FOR JSON AUTO, INCLUDE_NULL_VALUES
+    FOR XML RAW, ROOT
 ) aa (acl)
 
 WHERE s.type IN (N'TR', N'V', N'IF', N'FN', N'TF', N'P')

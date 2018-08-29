@@ -34,7 +34,7 @@ CROSS APPLY (
         LEFT JOIN sys.columns col WITH (NOLOCK) on col.object_id = perm.major_id  AND col.column_id = perm.minor_id
         WHERE major_id = s.object_id
     ) cc 
-    FOR JSON AUTO, INCLUDE_NULL_VALUES
+    FOR XML RAW, ROOT
 ) aa (acl)
 
 CROSS APPLY (
@@ -57,7 +57,7 @@ CROSS APPLY (
             WHERE p.parameter_id > 0
             AND so.object_id = s.object_id 
     ) cc ORDER BY cc.id
-FOR JSON AUTO, INCLUDE_NULL_VALUES
+    FOR XML RAW, ROOT
 ) cc (args)
 CROSS APPLY (
     SELECT * FROM (
@@ -90,6 +90,6 @@ CROSS APPLY (
         LEFT JOIN sys.objects so WITH (NOLOCK) ON so.object_id = c.object_id
         WHERE c.object_id = s.object_id
     ) ccc ORDER BY ccc.id
-FOR JSON AUTO, INCLUDE_NULL_VALUES
+    FOR XML RAW, ROOT
 ) ccc (cols)
 WHERE s.type IN ('PC', 'FT', 'FS')
