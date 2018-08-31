@@ -12,13 +12,16 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.MS_WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
@@ -36,9 +39,20 @@ public class ConvertProject extends AbstractHandler {
         }
 
         IProject project = (IProject) obj;
+        Shell shell = HandlerUtil.getActiveShell(event);
+
+        int code = new MessageDialog(shell, Messages.ConvertProject_select_type_title,
+                null, Messages.ConvertProject_select_type_desc, MessageDialog.CONFIRM,
+                new String[] {"MS SQL", "PostgreSQL"}, 0).open(); //$NON-NLS-1$ //$NON-NLS-2$
+
+        if (code == SWT.DEFAULT) {
+            return null;
+        }
+
+        boolean isMsSql = code == Window.OK;
 
         try {
-            if (createMarker(HandlerUtil.getActiveShell(event), Paths.get(project.getLocationURI()))) {
+            if (createMarker(shell, Paths.get(project.getLocationURI()), isMsSql)) {
                 IProjectDescription description = project.getDescription();
                 description.setNatureIds(new String[] {NATURE.ID});
                 project.setDescription(description, null);
@@ -50,14 +64,22 @@ public class ConvertProject extends AbstractHandler {
         return null;
     }
 
-    public static boolean createMarker(Shell shell, Path path) throws FileNotFoundException {
+    public static boolean createMarker(Shell shell, Path path, boolean isMsSql) throws FileNotFoundException {
         boolean isNeedCreate = true;
 
-        if (!Files.exists(path.resolve(ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.name())) ||
+        MessageBox message = new MessageBox(shell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
+        message.setMessage(Messages.ConvertProject_convert_dialog_message);
+        message.setText(Messages.ConvertProject_convert_dialog_title);
+
+        if (isMsSql) {
+            for (MS_WORK_DIR_NAMES dir : ApgdiffConsts.MS_WORK_DIR_NAMES.values()) {
+                if (!Files.exists(path.resolve(dir.getName()))) {
+                    isNeedCreate = message.open() == SWT.YES;
+                    break;
+                }
+            }
+        } else if (!Files.exists(path.resolve(ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.name())) ||
                 !Files.exists(path.resolve(ApgdiffConsts.WORK_DIR_NAMES.EXTENSION.name()))) {
-            MessageBox message = new MessageBox(shell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
-            message.setMessage(Messages.ConvertProject_convert_dialog_message);
-            message.setText(Messages.ConvertProject_convert_dialog_title);
             isNeedCreate = message.open() == SWT.YES;
         }
 
