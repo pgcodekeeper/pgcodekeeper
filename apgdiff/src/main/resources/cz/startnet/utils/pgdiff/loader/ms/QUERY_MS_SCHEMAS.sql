@@ -18,4 +18,3 @@ CROSS APPLY (
     ) cc 
     FOR XML RAW, ROOT
 ) cc (acl)
-WHERE p.name = N'dbo'
