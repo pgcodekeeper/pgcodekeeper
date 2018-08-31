@@ -26,7 +26,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class ProjectProperties extends PropertyPage {
 
@@ -45,7 +44,7 @@ public class ProjectProperties extends PropertyPage {
         super.setElement(element);
         IProject project = element.getAdapter(IProject.class);
         prefs = new ProjectScope(project).getNode(UIConsts.PLUGIN_ID.THIS);
-        isMsSql = OpenProjectUtils.checkMsSql(new PgDbProject(project));
+        isMsSql = OpenProjectUtils.checkMsSql(project);
     }
 
     @Override

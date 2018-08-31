@@ -106,7 +106,7 @@ public class DbSourceTest {
 
     private IProject createProjectInWorkspace(String projectName) throws CoreException{
         IProject project = workspaceRoot.getProject(projectName);
-        PgDbProject.createPgDbProject(project, null);
+        PgDbProject.createPgDbProject(project, null, false);
         project.getNature(NATURE.ID).deconfigure();
 
         assertNotNull("Project location cannot be determined", project.getLocation());

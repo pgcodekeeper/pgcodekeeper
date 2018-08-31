@@ -60,7 +60,7 @@ public class ProjectUpdaterTest {
     public void updateSuccessTest() throws IOException, PgCodekeeperUIException, CoreException{
         File dir = workingDir.get().toFile();
         PgDbProject proj = PgDbProject.createPgDbProject(ResourcesPlugin.getWorkspace()
-                .getRoot().getProject(dir.getName()), dir.toURI());
+                .getRoot().getProject(dir.getName()), dir.toURI(), false);
         proj.getProject().getNature(NATURE.ID).deconfigure();
         proj.getProject().open(null);
         proj.getProject().setDefaultCharset(ENCODING, null);

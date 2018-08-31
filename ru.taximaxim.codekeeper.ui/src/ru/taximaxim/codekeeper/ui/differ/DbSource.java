@@ -225,7 +225,7 @@ class DbSourceProject extends DbSource {
         IEclipsePreferences pref = proj.getPrefs();
         List<AntlrError> er = new ArrayList<>();
 
-        boolean isMsSql = OpenProjectUtils.checkAndFlushMsSql(proj);
+        boolean isMsSql = OpenProjectUtils.checkMsSql(project);
 
         PgDiffArguments arguments = getPgDiffArgs(charset,
                 pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true), isMsSql);

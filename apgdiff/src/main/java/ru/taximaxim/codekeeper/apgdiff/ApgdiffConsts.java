@@ -26,8 +26,6 @@ public interface ApgdiffConsts {
     String VERSION_PROP_NAME = "version";
     String EXPORT_CURRENT_VERSION = "0.6.0";
     String EXPORT_MIN_VERSION = "0.2.9";
-    String MSSQL_PROP_NAME = "mssql";
-    String MSSQL_TRUE_VALUE = "1";
 
     String EXTENSION_VERSION = "1.0.0";
 

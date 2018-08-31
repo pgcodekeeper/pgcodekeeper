@@ -751,6 +751,16 @@
         <builder id="ru.taximaxim.codekeeper.ui.builder">
         </builder>
     </extension>
+    <extension
+        id="ru.taximaxim.codekeeper.ui.msnature"
+        point="org.eclipse.core.resources.natures">
+        <runtime>
+            <run class="ru.taximaxim.codekeeper.ui.natures.ProjectNature">
+            </run>
+        </runtime>
+        <builder id="ru.taximaxim.codekeeper.ui.builder">
+        </builder>
+    </extension>
     <extension point="org.eclipse.ui.ide.projectNatureImages">
         <image
             icon="icons/nature_decorator.png"

@@ -123,29 +123,19 @@ implements IExecutableExtension, INewWizard {
         boolean initSuccess = false;
         try {
             props = PgDbProject.createPgDbProject(pageRepo.getProjectHandle(),
-                    pageRepo.useDefaults() ? null : pageRepo.getLocationURI());
+                    pageRepo.useDefaults() ? null : pageRepo.getLocationURI(), pageDb.isMsSql());
             props.getProject().open(null);
             props.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
 
             if (!checkMarkerExist()) {
                 String charset = pageDb.getCharset();
                 String timezone = pageDb.getTimeZone();
-                boolean isMsSql = pageDb.isMsSql();
                 if (!charset.isEmpty() && !ResourcesPlugin.getWorkspace().getRoot()
                         .getDefaultCharset().equals(charset)) {
                     props.setProjectCharset(charset);
                 }
-                if (!isMsSql && !timezone.isEmpty() && !ApgdiffConsts.UTC.equals(timezone)) {
+                if (!pageDb.isMsSql() && !timezone.isEmpty() && !ApgdiffConsts.UTC.equals(timezone)) {
                     props.getPrefs().put(PROJ_PREF.TIMEZONE, timezone);
-                    try {
-                        props.getPrefs().flush();
-                    } catch (BackingStoreException e) {
-                        Log.log(Log.LOG_WARNING, "Error while flushing project properties!", e); //$NON-NLS-1$
-                    }
-                }
-                DbInfo info = pageDb.getDbInfo();
-                if (isMsSql || (info != null && info.isMsSql())) {
-                    props.getPrefs().putBoolean(PROJ_PREF.MSSQL_MODE, true);
                     try {
                         props.getPrefs().flush();
                     } catch (BackingStoreException e) {
@@ -390,6 +380,9 @@ class PageDb extends WizardPage {
         timezoneCombo.getControl().setEnabled((!init && !isMsSql)
                 || (init && !isMsSqlDb && enable) || (init && !enable && !isMsSql));
         btnMsSql.setEnabled(!init || !enable);
+        if (!btnMsSql.getEnabled()) {
+            btnMsSql.setSelection(isMsSqlDb);
+        }
         btnGetTz.setEnabled(init && enable && !isMsSqlDb);
         storePicker.setComboEnabled(init);
         getWizard().getContainer().updateButtons();

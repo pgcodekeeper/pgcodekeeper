@@ -431,7 +431,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 // something other than just markers has changed
                 // check that it's our resource
                 if (delta.getFlags() != IResourceDelta.MARKERS &&
-                        PgUIDumpLoader.isInProject(delta, OpenProjectUtils.checkMsSql(proj)) &&
+                        PgUIDumpLoader.isInProject(delta, OpenProjectUtils.checkMsSql(proj.getProject())) &&
                         delta.getResource().getType() == IResource.FILE &&
                         delta.getResource().getProject().equals(proj.getProject())) {
                     schemaChanged[0] = true;
@@ -459,7 +459,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
 
         boolean isDbInfo = currentRemote instanceof DbInfo;
-        boolean isMsProj = OpenProjectUtils.checkMsSql(proj);
+        boolean isMsProj = OpenProjectUtils.checkMsSql(proj.getProject());
         if (isDbInfo && ((DbInfo)currentRemote).isMsSql() != isMsProj) {
             MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_INFORMATION);
             mb.setText(Messages.ProjectEditorDiffer_different_types);
@@ -674,7 +674,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         final Differ differ = new Differ(dbRemote.getDbObject(),
                 dbProject.getDbObject(), diffTree.getRevertedCopy(), false,
                 pref.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC),
-                pref.getBoolean(PROJ_PREF.MSSQL_MODE, false));
+                OpenProjectUtils.checkMsSql(proj.getProject()));
         differ.setAdditionalDepciesSource(manualDepciesSource);
         differ.setAdditionalDepciesTarget(manualDepciesTarget);
 

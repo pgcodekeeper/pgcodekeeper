@@ -157,7 +157,6 @@ public interface UIConsts {
         String DISABLE_PARSER_IN_EXTERNAL_FILES = "disableParserInExternalFiles"; //$NON-NLS-1$
         String LIB_SAFE_MODE = "libSafeMode"; //$NON-NLS-1$
         String STORAGE_LIST = "storageList"; //$NON-NLS-1$
-        String MSSQL_MODE = "mssqlMode"; //$NON-NLS-1$
     }
 
     interface PROJ_PATH {
@@ -166,6 +165,7 @@ public interface UIConsts {
 
     interface NATURE {
         String ID = PLUGIN_ID.THIS + ".nature"; //$NON-NLS-1$
+        String MS = PLUGIN_ID.THIS + ".msnature"; //$NON-NLS-1$
     }
 
     interface BUILDER {

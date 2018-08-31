@@ -21,7 +21,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.MsModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
+import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
@@ -48,7 +48,7 @@ public class ProjectUpdater {
         this.encoding = proj.getProjectCharset();
         this.dirExport = proj.getPathToProject();
 
-        this.isMsSql = proj.getPrefs().getBoolean(PROJ_PREF.MSSQL_MODE, false);
+        this.isMsSql = OpenProjectUtils.checkMsSql(proj.getProject());
     }
 
     public void updatePartial() throws IOException {
