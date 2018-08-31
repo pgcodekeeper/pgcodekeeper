@@ -24,7 +24,7 @@ CREATE TABLE [dbo].[admins] (
     [mobile] [nvarchar](40),
     [enabled] [bit] NOT NULL,
     [lastlogints] [datetimeoffset] NOT NULL,
-    [expirienced] [bit]
+    [expirienced] [bit])
 GO
    
 ALTER TABLE [dbo].[admins]

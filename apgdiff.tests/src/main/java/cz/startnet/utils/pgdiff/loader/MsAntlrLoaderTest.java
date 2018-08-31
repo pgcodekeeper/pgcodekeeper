@@ -70,7 +70,8 @@ public class MsAntlrLoaderTest {
                     // SONAR-OFF
                     {0},
                     {1},
-                    {2}
+                    {2},
+                    {3}
                     // SONAR-ON
                 });
     }
@@ -86,7 +87,8 @@ public class MsAntlrLoaderTest {
     private static final MsDatabaseObjectCreator[] DB_OBJS = {
             new MsDB0(),
             new MsDB1(),
-            new MsDB2()
+            new MsDB2(),
+            new MsDB3()
     };
 
     /**
@@ -471,6 +473,43 @@ class MsDB2 extends MsDatabaseObjectCreator {
         return d;
     }
 
+}
+
+class MsDB3 extends MsDatabaseObjectCreator {
+    @Override
+    public PgDatabase getDatabase() {
+        PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
+        AbstractSchema schema = d.getDefaultSchema();
+
+        AbstractSequence seq = new MsSequence("call_logs_id_seq", "");
+        seq.setStartWith("1");
+        seq.setMinMaxInc(1L, 1000000000L, null, null);
+        seq.setCached(true);
+        seq.setCache("1");
+        schema.addSequence(seq);
+
+        SimpleMsTable table = new SimpleMsTable("call_logs", "");
+        table.setAnsiNulls(true);
+        schema.addTable(table);
+
+        AbstractColumn col = new MsColumn("id");
+        col.setType("[bigint]");
+        col.setNullValue(false);
+        // TODO replace constraint 'constraint = new MsConstraint("DF_admins_aid", "")' by this,
+        // when default value setting will be fixed
+        // TODO fix default value setting; at this moment trying to set default value gives us:
+        //    ALTER TABLE [dbo].[call_logs] ALTER COLUMN [id] DROP CONSTRAINT null
+        //    ALTER TABLE [dbo].[call_logs] ADD CONSTRAINT [DF_call_logs_id] DEFAULT (NEXT VALUE FOR [dbo].[call_logs_id_seq]) FOR id
+        // col.setDefaultValue("(NEXT VALUE FOR [dbo].[call_logs_id_seq])");
+        table.addColumn(col);
+
+        // TODO replace constraint by 'col.setDefaultValue("(NEXT VALUE FOR [dbo].[call_logs_id_seq])")' when it will be fixed
+        AbstractConstraint constraint = new MsConstraint("DF_call_logs_id", "");
+        constraint.setDefinition("DEFAULT (NEXT VALUE FOR [dbo].[call_logs_id_seq]) FOR id");
+        table.addConstraint(constraint);
+
+        return d;
+    }
 }
 
 // SONAR-ON
