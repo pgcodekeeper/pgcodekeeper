@@ -40,12 +40,16 @@ ALTER TABLE [dbo].[faxes]
     REFERENCES [dbo].[fax_boxes](fax_box_id) ON DELETE SET NULL ON UPDATE CASCADE
 GO
 
+-- ALTER TABLE [schema_name].[table_name]
+--     ADD DEFAULT default_value FOR table_column
+-- GO
+
 ALTER TABLE [dbo].[faxes] 
-    ADD CONSTRAINT [DF_faxes] DEFAULT (getdate()) FOR time_received
+    ADD CONSTRAINT [DF_faxes_time_received] DEFAULT (getdate()) FOR time_received
 GO
 
 ALTER TABLE [dbo].[faxes] 
-    ADD CONSTRAINT [DF_faxes_2] DEFAULT 0 FOR read
+    ADD CONSTRAINT [DF_faxes_read] DEFAULT 0 FOR read
 GO
 
 SET QUOTED_IDENTIFIER ON
