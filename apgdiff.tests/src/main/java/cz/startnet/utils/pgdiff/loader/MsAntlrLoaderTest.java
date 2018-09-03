@@ -637,12 +637,11 @@ class MsDB6 extends MsDatabaseObjectCreator {
         MsFunction func = new MsFunction("t_common_casttotext", "");
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
-        func.setBody("AS\nBEGIN\n    DECLARE @Res varchar(100) = ''\n" +
-                "    SELECT  @Res = DATENAME(dw, @m_d_y)\n    RETURN  @Res\nEND");
+        func.setBody("AS\nBEGIN\n"
+                + "    DECLARE @Res varchar(100) = ''\n"
+                + "    SELECT  @Res = DATENAME(dw, '09/23/2013')\n"
+                + "    RETURN  @Res\nEND");
         func.setReturns("varchar(100)");
-
-        Argument arg = new Argument("@m_d_y", "varchar(100)");
-        func.addArgument(arg);
 
         schema.addFunction(func);
 
