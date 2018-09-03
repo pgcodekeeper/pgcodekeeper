@@ -49,7 +49,7 @@ ALTER TABLE [dbo].[faxes]
 GO
 
 ALTER TABLE [dbo].[faxes] 
-    ADD CONSTRAINT [DF_faxes_read] DEFAULT 0 FOR read
+    ADD CONSTRAINT [DF_faxes_read] DEFAULT 0 FOR [read]
 GO
 
 SET QUOTED_IDENTIFIER ON

@@ -55,4 +55,3 @@ BEGIN
     RETURN @Res + @First * @Second
 END
 GO
-*/

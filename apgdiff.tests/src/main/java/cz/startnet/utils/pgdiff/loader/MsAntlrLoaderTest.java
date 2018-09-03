@@ -266,13 +266,13 @@ class MsDB0 extends MsDatabaseObjectCreator {
         // when default value setting will be fixed
         // TODO fix default value setting; at this moment trying to set default value gives us:
         //    ALTER TABLE [dbo].[faxes] ALTER COLUMN [read] DROP CONSTRAINT null
-        //    ALTER TABLE [dbo].[faxes] ADD CONSTRAINT [DF_faxes_read] DEFAULT 0 FOR read
+        //    ALTER TABLE [dbo].[faxes] ADD CONSTRAINT [DF_faxes_read] DEFAULT 0 FOR [read]
         // col.setDefaultValue("0");
         table.addColumn(col);
 
         // TODO replace constraint by 'col.setDefaultValue("0")' when it will be fixed
         constraint = new MsConstraint("DF_faxes_read", "");
-        constraint.setDefinition("DEFAULT 0 FOR read");
+        constraint.setDefinition("DEFAULT 0 FOR [read]");
         table.addConstraint(constraint);
 
         col = new MsColumn("station_id");
