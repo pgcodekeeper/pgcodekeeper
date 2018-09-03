@@ -24,8 +24,10 @@ import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractSequence;
+import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.MsConstraint;
+import cz.startnet.utils.pgdiff.schema.MsFunction;
 import cz.startnet.utils.pgdiff.schema.MsIndex;
 import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.MsSequence;
@@ -71,7 +73,8 @@ public class MsAntlrLoaderTest {
                     {0},
                     {1},
                     {2},
-                    {3}
+                    {3},
+                    {4}
                     // SONAR-ON
                 });
     }
@@ -88,7 +91,8 @@ public class MsAntlrLoaderTest {
             new MsDB0(),
             new MsDB1(),
             new MsDB2(),
-            new MsDB3()
+            new MsDB3(),
+            new MsDB4()
     };
 
     /**
@@ -507,6 +511,70 @@ class MsDB3 extends MsDatabaseObjectCreator {
         AbstractConstraint constraint = new MsConstraint("DF_call_logs_id", "");
         constraint.setDefinition("DEFAULT (NEXT VALUE FOR [dbo].[call_logs_id_seq]) FOR id");
         table.addConstraint(constraint);
+
+        return d;
+    }
+}
+
+class MsDB4 extends MsDatabaseObjectCreator {
+    @Override
+    public PgDatabase getDatabase() {
+        PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
+        AbstractSchema schema = d.getDefaultSchema();
+
+        SimpleMsTable table = new SimpleMsTable("table1", "");
+        table.setAnsiNulls(true);
+        schema.addTable(table);
+
+        AbstractColumn col = new MsColumn("id");
+        col.setType("[int]");
+        col.setNullValue(false);
+        table.addColumn(col);
+
+        col = new MsColumn("entityId");
+        col.setType("[int]");
+        col.setNullValue(false);
+        table.addColumn(col);
+
+        MsFunction func = new MsFunction("gtsq_in", "");
+        func.setAnsiNulls(true);
+        func.setQuotedIdentified(true);
+        func.setBody("WITH RETURNS NULL ON NULL INPUT\nAS\nBEGIN\n"
+                + "    Declare @logid varchar(50);\n"
+                + "    SELECT @logid = tbl1.id from [dbo].[table1] AS tbl1\n"
+                + "    WHERE tbl1.entityId = @eid\n    RETURN  @logid\nEND");
+        func.setReturns("varchar(100)");
+        Argument arg = new Argument("@eid", "int");
+        func.addArgument(arg);
+        schema.addFunction(func);
+
+        func = new MsFunction("multiply_numbers", "");
+        func.setAnsiNulls(true);
+        func.setQuotedIdentified(true);
+        func.setBody("AS\nBEGIN\n    DECLARE @Res integer = 0\n\n"
+                + "    SET @Res = @First * @Second\n\n"
+                + "    IF @Res < 0\n"
+                + "        SET @Res = 0\n\n"
+                + "    RETURN @Res\nEND");
+        func.setReturns("integer");
+        arg = new Argument("@First", "int");
+        func.addArgument(arg);
+        arg = new Argument("@Second", "int");
+        func.addArgument(arg);
+        schema.addFunction(func);
+
+        func = new MsFunction("select_something", "");
+        func.setAnsiNulls(true);
+        func.setQuotedIdentified(true);
+        func.setBody("AS\nBEGIN\n    DECLARE @Res integer = 0\n"
+                + "    SELECT  @Res = COUNT(*) FROM [dbo].[table1];\n"
+                + "    RETURN @Res + @First * @Second\nEND");
+        func.setReturns("integer");
+        arg = new Argument("@First", "int");
+        func.addArgument(arg);
+        arg = new Argument("@Second", "int");
+        func.addArgument(arg);
+        schema.addFunction(func);
 
         return d;
     }
