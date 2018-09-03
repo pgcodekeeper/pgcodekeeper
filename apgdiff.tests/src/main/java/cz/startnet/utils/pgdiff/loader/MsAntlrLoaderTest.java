@@ -32,6 +32,7 @@ import cz.startnet.utils.pgdiff.schema.MsIndex;
 import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.MsSequence;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.SimpleMsTable;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
@@ -74,7 +75,8 @@ public class MsAntlrLoaderTest {
                     {1},
                     {2},
                     {3},
-                    {4}
+                    {4},
+                    {5}
                     // SONAR-ON
                 });
     }
@@ -92,7 +94,8 @@ public class MsAntlrLoaderTest {
             new MsDB1(),
             new MsDB2(),
             new MsDB3(),
-            new MsDB4()
+            new MsDB4(),
+            new MsDB5()
     };
 
     /**
@@ -575,6 +578,46 @@ class MsDB4 extends MsDatabaseObjectCreator {
         arg = new Argument("@Second", "int");
         func.addArgument(arg);
         schema.addFunction(func);
+
+        return d;
+    }
+}
+
+class MsDB5 extends MsDatabaseObjectCreator {
+    @Override
+    public PgDatabase getDatabase() {
+        PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
+        AbstractSchema schema = d.getDefaultSchema();
+
+        schema.addPrivilege(new PgPrivilege("REVOKE", "SELECT", "SCHEMA::[dbo]", "[ms_user]", false));
+        schema.addPrivilege(new PgPrivilege("REVOKE", "UPDATE", "SCHEMA::[dbo]", "[ms_user]", false));
+        schema.addPrivilege(new PgPrivilege("REVOKE", "DELETE", "SCHEMA::[dbo]", "[ms_user]", false));
+        schema.addPrivilege(new PgPrivilege("REVOKE", "INSERT", "SCHEMA::[dbo]", "[ms_user]", false));
+
+        schema.addPrivilege(new PgPrivilege("GRANT", "SELECT", "SCHEMA::[dbo]", "[ms_user]", false));
+        schema.addPrivilege(new PgPrivilege("GRANT", "UPDATE", "SCHEMA::[dbo]", "[ms_user]", false));
+        schema.addPrivilege(new PgPrivilege("GRANT", "DELETE", "SCHEMA::[dbo]", "[ms_user]", false));
+        schema.addPrivilege(new PgPrivilege("GRANT", "INSERT", "SCHEMA::[dbo]", "[ms_user]", false));
+
+        SimpleMsTable table = new SimpleMsTable("test_table", "");
+        table.setAnsiNulls(true);
+        schema.addTable(table);
+
+        AbstractColumn col = new MsColumn("id");
+        col.setType("[bigint]");
+        table.addColumn(col);
+
+        col = new MsColumn("date_deleted");
+        col.setType("[datetime]");
+        table.addColumn(col);
+
+        table.setOwner("ms_user");
+
+        AbstractIndex idx = new MsIndex("IX_date_deleted", "");
+        idx.setTableName("test_table");
+        idx.setDefinition("([date_deleted])");
+        idx.setWhere("(date_deleted IS NULL)");
+        table.addIndex(idx);
 
         return d;
     }
