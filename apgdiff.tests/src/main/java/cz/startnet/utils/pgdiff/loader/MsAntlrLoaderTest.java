@@ -76,7 +76,8 @@ public class MsAntlrLoaderTest {
                     {2},
                     {3},
                     {4},
-                    {5}
+                    {5},
+                    {6}
                     // SONAR-ON
                 });
     }
@@ -95,7 +96,8 @@ public class MsAntlrLoaderTest {
             new MsDB2(),
             new MsDB3(),
             new MsDB4(),
-            new MsDB5()
+            new MsDB5(),
+            new MsDB6()
     };
 
     /**
@@ -618,6 +620,31 @@ class MsDB5 extends MsDatabaseObjectCreator {
         idx.setDefinition("([date_deleted])");
         idx.setWhere("(date_deleted IS NULL)");
         table.addIndex(idx);
+
+        return d;
+    }
+}
+
+class MsDB6 extends MsDatabaseObjectCreator {
+    @Override
+    public PgDatabase getDatabase() {
+        PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
+
+        AbstractSchema schema = new MsSchema("common", "");
+        d.addSchema(schema);
+        d.setDefaultSchema("common");
+
+        MsFunction func = new MsFunction("t_common_casttotext", "");
+        func.setAnsiNulls(true);
+        func.setQuotedIdentified(true);
+        func.setBody("AS\nBEGIN\n    DECLARE @Res varchar(100) = ''\n" +
+                "    SELECT  @Res = DATENAME(dw, @m_d_y)\n    RETURN  @Res\nEND");
+        func.setReturns("varchar(100)");
+
+        Argument arg = new Argument("@m_d_y", "varchar(100)");
+        func.addArgument(arg);
+
+        schema.addFunction(func);
 
         return d;
     }
