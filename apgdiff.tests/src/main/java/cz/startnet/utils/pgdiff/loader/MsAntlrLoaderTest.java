@@ -34,6 +34,7 @@ import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.MsSequence;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import cz.startnet.utils.pgdiff.schema.MsView;
+import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.SimpleMsTable;
@@ -82,7 +83,8 @@ public class MsAntlrLoaderTest {
                     {5},
                     {6},
                     {7},
-                    {8}
+                    {8},
+                    {9}
                     // SONAR-ON
                 });
     }
@@ -104,7 +106,8 @@ public class MsAntlrLoaderTest {
             new MsDB5(),
             new MsDB6(),
             new MsDB7(),
-            new MsDB8()
+            new MsDB8(),
+            new MsDB9()
     };
 
     /**
@@ -798,6 +801,120 @@ class MsDB8 extends MsDatabaseObjectCreator {
         view.setQuotedIdentified(true);
         view.setQuery("SELECT ud.[id] AS \"   i   d   \" FROM [dbo].[user_data] ud");
         schema.addView(view);
+
+        return d;
+    }
+}
+
+class MsDB9 extends MsDatabaseObjectCreator {
+    @Override
+    public PgDatabase getDatabase() {
+        PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
+        AbstractSchema schema = new MsSchema("admin", "");
+        d.addSchema(schema);
+        d.setDefaultSchema("admin");
+
+        schema.setOwner("ms_user");
+
+        SimpleMsTable table = new SimpleMsTable("acl_role", "");
+        table.setAnsiNulls(true);
+        schema.addTable(table);
+
+        AbstractColumn col = new MsColumn("id");
+        col.setType("[bigint]");
+        col.setNullValue(false);
+        table.addColumn(col);
+
+        AbstractConstraint constraint = new PgConstraint("PK_acl_role", "");
+        constraint.setDefinition("PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]");
+        table.addConstraint(constraint);
+
+        table.setOwner("ms_user");
+
+        table = new SimpleMsTable("\"user\"", "");
+        table.setAnsiNulls(true);
+        schema.addTable(table);
+
+        col = new MsColumn("id");
+        col.setType("[bigint]");
+        col.setNullValue(false);
+        table.addColumn(col);
+
+        col = new MsColumn("email");
+        col.setType("[nvarchar](255)");
+        col.setNullValue(false);
+        table.addColumn(col);
+
+        col = new MsColumn("name");
+        col.setType("[nvarchar](255)");
+        col.setNullValue(false);
+        table.addColumn(col);
+
+        col = new MsColumn("password");
+        col.setType("[nvarchar](40)");
+        col.setNullValue(false);
+        table.addColumn(col);
+
+        col = new MsColumn("is_active");
+        col.setType("[bit]");
+        // col.setDefaultValue("0");
+        col.setNullValue(false);
+        table.addColumn(col);
+
+        // TODO replace constraint by 'col.setDefaultValue("0")' when it will be fixed
+        constraint = new MsConstraint("DF_admin_is_active", "");
+        constraint.setDefinition("DEFAULT 0 FOR is_active");
+        table.addConstraint(constraint);
+
+        col = new MsColumn("updated");
+        col.setType("[datetime]");
+        // col.setDefaultValue("getdate()");
+        col.setNullValue(false);
+        table.addColumn(col);
+
+        // TODO replace constraint by 'col.setDefaultValue("getdate()")' when it will be fixed
+        constraint = new MsConstraint("DF_admin_updated", "");
+        constraint.setDefinition("DEFAULT (getdate()) FOR updated");
+        table.addConstraint(constraint);
+
+        col = new MsColumn("created");
+        col.setType("[datetime]");
+        // col.setDefaultValue("getdate()");
+        col.setNullValue(false);
+        table.addColumn(col);
+
+        // TODO replace constraint by 'col.setDefaultValue("getdate()")' when it will be fixed
+        constraint = new MsConstraint("DF_admin_created", "");
+        constraint.setDefinition("DEFAULT (getdate()) FOR created");
+        table.addConstraint(constraint);
+
+        col = new MsColumn("role_id");
+        col.setType("[bigint]");
+        col.setNullValue(false);
+        table.addColumn(col);
+
+        col = new MsColumn("last_visit");
+        col.setType("[datetime]");
+        // col.setDefaultValue("getdate()");
+        col.setNullValue(false);
+        table.addColumn(col);
+
+        // TODO replace constraint by 'col.setDefaultValue("getdate()")' when it will be fixed
+        constraint = new MsConstraint("DF_admin_last_visit", "");
+        constraint.setDefinition("DEFAULT (getdate()) FOR last_visit");
+        table.addConstraint(constraint);
+
+        AbstractIndex idx = new MsIndex("IX_admin_role_id", "");
+        idx.setTableName("\"user\"");
+        idx.setDefinition("([role_id])");
+        table.addIndex(idx);
+
+        constraint = new MsConstraint("FK_user_fax_box_id", "");
+        constraint.setDefinition("FOREIGN KEY (role_id) \n"
+                + "    REFERENCES [admin].[acl_role](id)");
+        table.addConstraint(constraint);
+
+        table.setOwner("ms_user");
 
         return d;
     }
