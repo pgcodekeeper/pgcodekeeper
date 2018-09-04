@@ -77,7 +77,8 @@ public class MsAntlrLoaderTest {
                     {3},
                     {4},
                     {5},
-                    {6}
+                    {6},
+                    {7}
                     // SONAR-ON
                 });
     }
@@ -97,7 +98,8 @@ public class MsAntlrLoaderTest {
             new MsDB3(),
             new MsDB4(),
             new MsDB5(),
-            new MsDB6()
+            new MsDB6(),
+            new MsDB7()
     };
 
     /**
@@ -642,6 +644,47 @@ class MsDB6 extends MsDatabaseObjectCreator {
                 + "    SELECT  @Res = DATENAME(dw, '09/23/2013')\n"
                 + "    RETURN  @Res\nEND");
         func.setReturns("varchar(100)");
+
+        schema.addFunction(func);
+
+        return d;
+    }
+}
+
+class MsDB7 extends MsDatabaseObjectCreator {
+    @Override
+    public PgDatabase getDatabase() {
+        PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
+        AbstractSchema schema = d.getDefaultSchema();
+
+        // TODO uncomment and remade this for MsType when it will be supported
+        // MsType type = new MsType("testtt", MsTypeForm.COMPOSITE, "");
+        // AbstractColumn col = new MsColumn("a");
+        // col.setType("[int]");
+        // type.addAttr(col);
+        // col = new MsColumn("b");
+        // col.setType("[text]");
+        // type.addAttr(col);
+        // type.setOwner("ms_user");
+        // schema.addType(type);
+
+        schema = new MsSchema("``54'253-=9!@#$%^&*()__<>?:\"\"{};',./", "");
+        d.addSchema(schema);
+
+        MsFunction func = new MsFunction(".x\"\".\"\"\"\".", "");
+        func.setAnsiNulls(true);
+        func.setQuotedIdentified(true);
+        func.setBody("AS\nBEGIN\n" +
+                "    DECLARE @Res bit = 0\n\n" +
+                "    IF @arg1 > 1\n" +
+                "        SET @Res = 1\n\n" +
+                "    RETURN @Res\nEND");
+        func.setReturns("bit");
+
+        Argument arg = new Argument("@arg1", "int");
+        func.addArgument(arg);
+
+        func.setOwner("ms_user");
 
         schema.addFunction(func);
 
