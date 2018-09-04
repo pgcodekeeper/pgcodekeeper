@@ -24,6 +24,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractSequence;
+import cz.startnet.utils.pgdiff.schema.AbstractTrigger.TgTypes;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.MsConstraint;
@@ -31,6 +32,8 @@ import cz.startnet.utils.pgdiff.schema.MsFunction;
 import cz.startnet.utils.pgdiff.schema.MsIndex;
 import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.MsSequence;
+import cz.startnet.utils.pgdiff.schema.MsTrigger;
+import cz.startnet.utils.pgdiff.schema.MsView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.SimpleMsTable;
@@ -78,7 +81,8 @@ public class MsAntlrLoaderTest {
                     {4},
                     {5},
                     {6},
-                    {7}
+                    {7},
+                    {8}
                     // SONAR-ON
                 });
     }
@@ -99,7 +103,8 @@ public class MsAntlrLoaderTest {
             new MsDB4(),
             new MsDB5(),
             new MsDB6(),
-            new MsDB7()
+            new MsDB7(),
+            new MsDB8()
     };
 
     /**
@@ -687,6 +692,112 @@ class MsDB7 extends MsDatabaseObjectCreator {
         func.setOwner("ms_user");
 
         schema.addFunction(func);
+
+        return d;
+    }
+}
+
+class MsDB8 extends MsDatabaseObjectCreator {
+    @Override
+    public PgDatabase getDatabase() {
+        PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
+        AbstractSchema schema = d.getDefaultSchema();
+
+        MsSequence seq = new MsSequence("user_id_seq", "");
+        seq.setMinMaxInc(1L, null, null, null);
+        seq.setCached(true);
+        seq.setCache("1");
+        seq.setOwner("ms_user");
+        schema.addSequence(seq);
+
+        SimpleMsTable table = new SimpleMsTable("user_data", "");
+        table.setAnsiNulls(true);
+        table.setOwner("ms_user");
+        schema.addTable(table);
+
+        AbstractColumn col = new MsColumn("id");
+        col.setType("[bigint]");
+        col.setNullValue(false);
+        // col.setDefaultValue("(NEXT VALUE FOR [dbo].[user_id_seq])");
+        table.addColumn(col);
+
+        // TODO replace constraint by 'col.setDefaultValue("(NEXT VALUE FOR [dbo].[user_id_seq])")' when it will be fixed
+        AbstractConstraint constraint = new MsConstraint("DF_user_data_id", "");
+        constraint.setDefinition("DEFAULT (NEXT VALUE FOR [dbo].[user_id_seq]) FOR id");
+        table.addConstraint(constraint);
+
+        col = new MsColumn("email");
+        col.setType("[nvarchar](128)");
+        col.setNullValue(false);
+        table.addColumn(col);
+
+        col = new MsColumn("created");
+        col.setType("[datetimeoffset]");
+        // col.setDefaultValue("getdate()");
+        table.addColumn(col);
+
+        // TODO replace constraint by 'col.setDefaultValue("getdate()")' when it will be fixed
+        constraint = new MsConstraint("DF_user_data_created", "");
+        constraint.setDefinition("DEFAULT (getdate()) FOR created");
+        table.addConstraint(constraint);
+
+        table = new SimpleMsTable("t1", "");
+        table.setAnsiNulls(true);
+        schema.addTable(table);
+
+        col = new MsColumn("c1");
+        col.setType("[int]");
+        table.addColumn(col);
+
+        MsView view = new MsView("\"user\"", "");
+        view.setAnsiNulls(true);
+        view.setQuotedIdentified(true);
+        view.setQuery("SELECT [user_data].[id], [user_data].[email], [user_data].[created] FROM [dbo].[user_data]");
+        view.setOwner("ms_user");
+        schema.addView(view);
+
+        MsTrigger trigger = new MsTrigger("instead_of_delete", "");
+        trigger.setQuotedIdentified(true);
+        trigger.setAnsiNulls(true);
+        trigger.setType(TgTypes.INSTEAD_OF);
+        trigger.setOnDelete(true);
+        trigger.setTableName("\"user\"");
+        trigger.setQuery("BEGIN\n"
+                + "        DELETE FROM [dbo].[user_data]\n"
+                + "        WHERE id = 10  \n"
+                + "    END");
+        view.addTrigger(trigger);
+
+        trigger = new MsTrigger("instead_of_insert", "");
+        trigger.setQuotedIdentified(true);
+        trigger.setAnsiNulls(true);
+        trigger.setType(TgTypes.INSTEAD_OF);
+        trigger.setOnInsert(true);
+        trigger.setTableName("\"user\"");
+        trigger.setQuery("BEGIN\n"
+                + "        INSERT INTO [dbo].[user_data] (id, email, created)\n"
+                + "        VALUES(1, 'test@supermail.loc', getdate())\n"
+                + "    END");
+        view.addTrigger(trigger);
+
+        trigger = new MsTrigger("instead_of_update", "");
+        trigger.setQuotedIdentified(true);
+        trigger.setAnsiNulls(true);
+        trigger.setType(TgTypes.INSTEAD_OF);
+        trigger.setOnUpdate(true);
+        trigger.setTableName("\"user\"");
+        trigger.setQuery("BEGIN\n"
+                + "        UPDATE [dbo].[user_data] \n"
+                + "        SET id = 55, email = 'super@supermail.loc'\n"
+                + "        WHERE id = 4\n"
+                + "    END");
+        view.addTrigger(trigger);
+
+        view = new MsView("ws_test", "");
+        view.setAnsiNulls(true);
+        view.setQuotedIdentified(true);
+        view.setQuery("SELECT ud.[id] AS \"   i   d   \" FROM [dbo].[user_data] ud");
+        schema.addView(view);
 
         return d;
     }
