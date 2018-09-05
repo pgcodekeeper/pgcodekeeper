@@ -351,7 +351,7 @@ class MsDB1 extends MsDatabaseObjectCreator {
         col.setType("[varchar](50)");
         table.addColumn(col);
 
-        AbstractIndex idx = new MsIndex("IX_number_pool_id", "");
+        AbstractIndex idx = new MsIndex("IX_contacts_number_pool_id", "");
         table.addIndex(idx);
         idx.setTableName("contacts");
         idx.setDefinition("([number_pool_id])");
@@ -629,7 +629,7 @@ class MsDB5 extends MsDatabaseObjectCreator {
 
         table.setOwner("ms_user");
 
-        AbstractIndex idx = new MsIndex("IX_date_deleted", "");
+        AbstractIndex idx = new MsIndex("IX_test_table_date_deleted", "");
         idx.setTableName("test_table");
         idx.setDefinition("([date_deleted])");
         idx.setWhere("(date_deleted IS NULL)");
@@ -908,7 +908,7 @@ class MsDB9 extends MsDatabaseObjectCreator {
         constraint.setDefinition("DEFAULT (getdate()) FOR last_visit");
         table.addConstraint(constraint);
 
-        AbstractIndex idx = new MsIndex("IX_admin_role_id", "");
+        AbstractIndex idx = new MsIndex("IX_user_role_id", "");
         idx.setTableName("\"user\"");
         idx.setDefinition("([role_id])");
         table.addIndex(idx);

@@ -10,7 +10,7 @@ GO
 ALTER AUTHORIZATION ON OBJECT::[dbo].[test_table] TO [ms_user];    
 GO
 
-CREATE NONCLUSTERED INDEX [IX_date_deleted] ON [dbo].[test_table] ([date_deleted]) WHERE (date_deleted IS NULL)
+CREATE NONCLUSTERED INDEX [IX_test_table_date_deleted] ON [dbo].[test_table] ([date_deleted]) WHERE (date_deleted IS NULL)
 GO
 
 REVOKE SELECT ON SCHEMA::[dbo] FROM [ms_user]

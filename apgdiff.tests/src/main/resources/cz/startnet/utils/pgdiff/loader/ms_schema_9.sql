@@ -54,7 +54,7 @@ GO
 ALTER AUTHORIZATION ON OBJECT::[admin].["user"] TO [ms_user];    
 GO
 
-CREATE NONCLUSTERED INDEX [IX_admin_role_id] ON [admin].["user"] ([role_id])
+CREATE NONCLUSTERED INDEX [IX_user_role_id] ON [admin].["user"] ([role_id])
 GO
 
 ALTER TABLE [admin].["user"] 

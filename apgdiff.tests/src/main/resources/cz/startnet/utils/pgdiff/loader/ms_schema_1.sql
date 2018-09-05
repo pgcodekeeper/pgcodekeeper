@@ -11,5 +11,5 @@ CREATE TABLE [dbo].[contacts] (
     [name] [varchar](50))
 GO
 
-CREATE NONCLUSTERED INDEX [IX_number_pool_id] ON [dbo].[contacts] ([number_pool_id])
+CREATE NONCLUSTERED INDEX [IX_contacts_number_pool_id] ON [dbo].[contacts] ([number_pool_id])
 GO
