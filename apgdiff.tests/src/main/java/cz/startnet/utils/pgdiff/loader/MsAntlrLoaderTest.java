@@ -84,7 +84,8 @@ public class MsAntlrLoaderTest {
                     {6},
                     {7},
                     {8},
-                    {9}
+                    {9},
+                    {10}
                     // SONAR-ON
                 });
     }
@@ -107,7 +108,8 @@ public class MsAntlrLoaderTest {
             new MsDB6(),
             new MsDB7(),
             new MsDB8(),
-            new MsDB9()
+            new MsDB9(),
+            new MsDB10()
     };
 
     /**
@@ -915,6 +917,26 @@ class MsDB9 extends MsDatabaseObjectCreator {
         table.addConstraint(constraint);
 
         table.setOwner("ms_user");
+
+        return d;
+    }
+}
+
+class MsDB10 extends MsDatabaseObjectCreator {
+    @Override
+    public PgDatabase getDatabase() {
+        PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
+        AbstractSchema schema = d.getDefaultSchema();
+
+        MsFunction func = new MsFunction("curdate", "");
+        func.setAnsiNulls(true);
+        func.setQuotedIdentified(true);
+        func.setBody("AS\nBEGIN\n"
+                + "    Declare @textdate nvarchar(30);\n"
+                + "    SELECT @textdate = CAST(GETDATE() AS nvarchar(30));\n"
+                + "    RETURN  @textdate;\nEND");
+        func.setReturns("nvarchar(30)");
+        schema.addFunction(func);
 
         return d;
     }
