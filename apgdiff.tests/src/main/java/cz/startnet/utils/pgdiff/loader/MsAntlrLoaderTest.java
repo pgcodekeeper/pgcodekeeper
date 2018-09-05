@@ -86,7 +86,8 @@ public class MsAntlrLoaderTest {
                     {8},
                     {9},
                     {10},
-                    {11}
+                    {11},
+                    {12}
                     // SONAR-ON
                 });
     }
@@ -111,7 +112,8 @@ public class MsAntlrLoaderTest {
             new MsDB8(),
             new MsDB9(),
             new MsDB10(),
-            new MsDB11()
+            new MsDB11(),
+            new MsDB12()
     };
 
     /**
@@ -984,6 +986,51 @@ class MsDB11 extends MsDatabaseObjectCreator {
         AbstractConstraint constraint = new PgConstraint("PK_TABLE_1", "");
         constraint.setDefinition("PRIMARY KEY CLUSTERED  ([ID]) ON [PRIMARY]");
         table.addConstraint(constraint);
+
+        return d;
+    }
+}
+
+class MsDB12 extends MsDatabaseObjectCreator {
+    @Override
+    public PgDatabase getDatabase() {
+        PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
+        AbstractSchema schema = d.getDefaultSchema();
+
+        MsFunction func = new MsFunction("function_string_to_table", "");
+        func.setAnsiNulls(true);
+        func.setQuotedIdentified(true);
+        func.setBody("BEGIN\n"
+                + "    DECLARE @start INT, @end INT\n"
+                + "    SELECT @start = 1, @end = CHARINDEX(@delimiter, @string)\n\n"
+                + "    WHILE @start < LEN(@string) + 1 BEGIN\n"
+                + "        IF @end = 0 \n"
+                + "            SET @end = LEN(@string) + 1\n\n"
+                + "        INSERT INTO @output (tbldata) \n"
+                + "        VALUES(SUBSTRING(@string, @start, @end - @start))\n"
+                + "        SET @start = @end + 1\n"
+                + "        SET @end = CHARINDEX(@delimiter, @string, @start)\n"
+                + "    END\n\n"
+                + "    RETURN\nEND");
+        func.setReturns("@output TABLE(tbldata nvarchar(256))");
+        Argument arg = new Argument("@string", "nvarchar(MAX)");
+        func.addArgument(arg);
+        arg = new Argument("@delimiter", "char(1)");
+        func.addArgument(arg);
+        schema.addFunction(func);
+
+        func = new MsFunction("function_empty", "");
+        func.setAnsiNulls(true);
+        func.setQuotedIdentified(true);
+        func.setBody("BEGIN\n"
+                + "    -- aaa\n"
+                + "    RETURN\nEND");
+        func.setReturns("@output TABLE(tbldata nvarchar(256))");
+        arg = new Argument("@string", "nvarchar(MAX)");
+        func.addArgument(arg);
+        arg = new Argument("@delimiter", "char(1)");
+        func.addArgument(arg);
+        schema.addFunction(func);
 
         return d;
     }
