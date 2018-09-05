@@ -43,7 +43,7 @@ public class XmlReader {
 
     public boolean getBoolean(String columnName) throws XmlReaderException {
         String o = result.get(columnName);
-        return "1".equals(o) ? true : false;
+        return "1".equals(o);
     }
 
     public String getString(String columnName) throws XmlReaderException {
@@ -79,10 +79,11 @@ public class XmlReader {
                 throw new IOException("XML root element name is not as requested.");
             }
 
-            List<XmlReader> readers = new ArrayList<>();
             Element root = (Element) doc.getElementsByTagName(ROOT).item(0);
             NodeList nList = root.getChildNodes();
-            for (int i = 0; i < nList.getLength(); i++) {
+            int size = nList.getLength();
+            List<XmlReader> readers = new ArrayList<>(size);
+            for (int i = 0; i < size; i++) {
                 Node node = nList.item(i);
                 if (node.getNodeType() == Node.ELEMENT_NODE) {
                     readers.add(parseElement(node));
@@ -97,9 +98,10 @@ public class XmlReader {
 
     private static XmlReader parseElement(Node node) {
         NamedNodeMap params = node.getAttributes();
-        Map<String, String> attr = new HashMap<>();
+        int size = params.getLength();
+        Map<String, String> attr = new HashMap<>(size);
 
-        for (int i = 0; i < params.getLength(); i++) {
+        for (int i = 0; i < size; i++) {
             Node param = params.item(i);
             if (param.getNodeType() == Node.ATTRIBUTE_NODE) {
                 attr.put(param.getNodeName(), param.getTextContent());

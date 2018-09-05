@@ -280,7 +280,7 @@ public abstract class AbstractTrigger extends PgStatementWithSearchPath {
             AbstractTrigger trigger = (AbstractTrigger) obj;
             eq = compareWithoutComments(trigger)
                     && Objects.equals(comment, trigger.getComment())
-                    && Objects.equals(isDisable, trigger.isDisable());
+                    && isDisable == trigger.isDisable();
         }
 
         return eq;
@@ -305,10 +305,10 @@ public abstract class AbstractTrigger extends PgStatementWithSearchPath {
                 && Objects.equals(updateColumns, trigger.updateColumns)
                 && Objects.equals(options, trigger.getOptions())
                 && Objects.equals(query, trigger.getQuery())
-                && Objects.equals(isAppend, trigger.isAppend())
-                && Objects.equals(isNotForRep, trigger.isNotForRep())
-                && Objects.equals(quotedIdentified, trigger.isQuotedIdentified())
-                && Objects.equals(ansiNulls, trigger.isAnsiNulls());
+                && isAppend == trigger.isAppend()
+                && isNotForRep ==  trigger.isNotForRep()
+                && quotedIdentified == trigger.isQuotedIdentified()
+                && ansiNulls == trigger.isAnsiNulls();
     }
 
     @Override

@@ -125,7 +125,7 @@ implements PgOptionContainer {
             AbstractIndex index = (AbstractIndex) obj;
             equals = compareWithoutComments(index)
                     && Objects.equals(comment, index.getComment())
-                    && Objects.equals(clusterIndex, index.isClusterIndex())
+                    && clusterIndex == index.isClusterIndex()
                     && Objects.equals(options, index.options);
         }
 

@@ -11,7 +11,6 @@ import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
-import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -32,7 +31,7 @@ public class FunctionsReader extends JdbcReader {
         String schemaName = schema.getName();
         String functionName = res.getString("proname");
         loader.setCurrentObject(new GenericColumn(schemaName, functionName, DbObjType.FUNCTION));
-        AbstractFunction f = new PgFunction(functionName, "");
+        PgFunction f = new PgFunction(functionName, "");
 
         f.setBody(loader.args, getFunctionBody(res));
 
@@ -81,9 +80,9 @@ public class FunctionsReader extends JdbcReader {
                 break;
             }
 
-            Argument a = new Argument(aMode,
-                    argNames != null ? argNames[i] : null,
-                            loader.cachedTypesByOid.get(argTypes[i]).getFullName());
+            // these require resetHash functionality for defaults
+            Argument a = f.new PgArgument(aMode, argNames != null ? argNames[i] : null,
+                    loader.cachedTypesByOid.get(argTypes[i]).getFullName());
 
             f.addArgument(a);
         }

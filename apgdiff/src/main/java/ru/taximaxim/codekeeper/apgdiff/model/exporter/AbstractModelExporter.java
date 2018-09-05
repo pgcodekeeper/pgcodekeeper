@@ -26,7 +26,6 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -116,7 +115,6 @@ public abstract class AbstractModelExporter {
 
         while (!changeList.isEmpty()) {
             TreeElement el = changeList.pop();
-            Log.log(Log.LOG_DEBUG, "Exporting object: " + el);
             switch(el.getSide()) {
             case LEFT:
                 deleteObject(el);

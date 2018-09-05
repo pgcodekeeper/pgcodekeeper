@@ -8,7 +8,11 @@ import cz.startnet.utils.pgdiff.hashers.Hasher;
 import cz.startnet.utils.pgdiff.hashers.IHashable;
 import cz.startnet.utils.pgdiff.hashers.JavaHasher;
 
-public final class Argument implements Serializable, IHashable {
+/**
+ * Subclass when need to reset hashes
+ * (like when setting hashed fields after adding the arg to its container).
+ */
+public class Argument implements Serializable, IHashable {
 
     private static final long serialVersionUID = 7466228261754446064L;
 

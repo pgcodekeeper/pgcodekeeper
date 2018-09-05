@@ -69,7 +69,6 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
         return quotedIdentified;
     }
 
-
     /**
      * @return the returns
      */
@@ -159,9 +158,9 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
                     && arguments.equals(func.arguments)
                     && options.equals(func.options)
                     && Objects.equals(body, func.getBody())
-                    && Objects.equals(isForReplication, func.isForReplication())
+                    && isForReplication == func.isForReplication()
                     && Objects.equals(returns, func.getReturns())
-                    && Objects.equals(isCLR, func.isCLR());
+                    && isCLR == func.isCLR();
         }
         return equals;
     }
@@ -181,8 +180,8 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
                     && Objects.equals(grants, func.grants)
                     && Objects.equals(revokes, func.revokes)
                     && Objects.equals(comment, func.getComment())
-                    && Objects.equals(quotedIdentified, func.isQuotedIdentified())
-                    && Objects.equals(ansiNulls, func.isAnsiNulls());
+                    && quotedIdentified == func.isQuotedIdentified()
+                    && ansiNulls == func.isAnsiNulls();
         }
         return false;
     }
