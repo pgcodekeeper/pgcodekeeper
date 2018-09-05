@@ -85,7 +85,8 @@ public class MsAntlrLoaderTest {
                     {7},
                     {8},
                     {9},
-                    {10}
+                    {10},
+                    {11}
                     // SONAR-ON
                 });
     }
@@ -109,7 +110,8 @@ public class MsAntlrLoaderTest {
             new MsDB7(),
             new MsDB8(),
             new MsDB9(),
-            new MsDB10()
+            new MsDB10(),
+            new MsDB11()
     };
 
     /**
@@ -937,6 +939,51 @@ class MsDB10 extends MsDatabaseObjectCreator {
                 + "    RETURN  @textdate;\nEND");
         func.setReturns("nvarchar(30)");
         schema.addFunction(func);
+
+        return d;
+    }
+}
+
+class MsDB11 extends MsDatabaseObjectCreator {
+    @Override
+    public PgDatabase getDatabase() {
+        PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
+        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
+        // d.setComment("'This is my comment on this database.'");
+
+        AbstractSchema schema = d.getDefaultSchema();
+        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
+        // schema.setComment("'Contains super objects.'");
+
+        SimpleMsTable table = new SimpleMsTable("TABLE_1", "");
+        table.setAnsiNulls(true);
+        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
+        // table.setComment("'This is my table comment.'");
+        schema.addTable(table);
+
+        AbstractColumn col = new MsColumn("ID");
+        col.setType("[int]");
+        col.setNullValue(false);
+        col.setIdentity("1", "1");
+        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
+        // col.setComment("'This is the primary key comment'");
+        table.addColumn(col);
+
+        col = new MsColumn("COLUMN_1");
+        col.setType("[varchar](10)");
+        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
+        // col.setComment("'This is column one comment'");
+        table.addColumn(col);
+
+        col = new MsColumn("COLUMN_2");
+        col.setType("[varchar](10)");
+        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
+        // col.setComment("'This is column 2 comment'");
+        table.addColumn(col);
+
+        AbstractConstraint constraint = new PgConstraint("PK_TABLE_1", "");
+        constraint.setDefinition("PRIMARY KEY CLUSTERED  ([ID]) ON [PRIMARY]");
+        table.addConstraint(constraint);
 
         return d;
     }
