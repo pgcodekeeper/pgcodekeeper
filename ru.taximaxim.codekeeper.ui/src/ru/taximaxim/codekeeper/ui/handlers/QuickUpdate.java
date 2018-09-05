@@ -147,7 +147,7 @@ class QuickUpdateJob extends SingletonEditorJob {
 
     private void doRun() throws IOException, InterruptedException,
     CoreException, PgCodekeeperUIException, InvocationTargetException {
-        boolean isMsSql = OpenProjectUtils.checkMsSql(proj);
+        boolean isMsSql = OpenProjectUtils.checkMsSql(proj.getProject());
 
         if (dbinfo.isMsSql() != isMsSql) {
             throw new PgCodekeeperUIException(Messages.QuickUpdate_different_types);

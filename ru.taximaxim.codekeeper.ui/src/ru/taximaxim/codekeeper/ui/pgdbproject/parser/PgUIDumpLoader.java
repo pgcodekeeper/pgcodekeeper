@@ -42,8 +42,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
-import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
-import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.properties.PgLibrary;
 
 /**
@@ -395,7 +393,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
                 return false;
             }
 
-            if (OpenProjectUtils.checkMsSql(new PgDbProject(project))) {
+            if (project.hasNature(NATURE.MS)) {
                 return isInMsProject(resource.getProjectRelativePath());
             }
 

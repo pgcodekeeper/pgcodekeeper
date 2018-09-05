@@ -64,17 +64,28 @@ public class PgDbProject {
         this.project = newProject;
     }
 
-    public static PgDbProject createPgDbProject(IProject newProject, URI location)
-            throws CoreException {
+    public static PgDbProject createPgDbProject(IProject newProject, URI location,
+            boolean isMsSql) throws CoreException {
         if (!newProject.exists()) {
             IProjectDescription desc = newProject.getWorkspace()
                     .newProjectDescription(newProject.getName());
 
+            String [] natures;
+            if (isMsSql) {
+                natures = new String[] {NATURE.ID, NATURE.MS};
+            } else {
+                natures = new String[] {NATURE.ID};
+            }
+
             desc.setLocationURI(location);
-            desc.setNatureIds(new String[] {NATURE.ID});
+            desc.setNatureIds(natures);
             newProject.create(desc, null);
             newProject.open(IResource.BACKGROUND_REFRESH, null);
+            newProject.refreshLocal(IResource.BACKGROUND_REFRESH, null);
             newProject.getNature(NATURE.ID).configure();
+            if (isMsSql) {
+                newProject.getNature(NATURE.MS).configure();
+            }
         }
         return new PgDbProject(newProject);
     }

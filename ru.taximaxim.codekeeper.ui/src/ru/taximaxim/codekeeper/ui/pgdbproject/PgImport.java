@@ -123,7 +123,7 @@ class PgImport extends WizardPage {
 
         try {
             if (ConvertProject.createMarker(getShell(), p)) {
-                PgDbProject.createPgDbProject(project, isInWorkspaceRoot(p) ? null : p.toUri());
+                PgDbProject.createPgDbProject(project, isInWorkspaceRoot(p) ? null : p.toUri(), false);
                 addToWorkingSet(project);
             } else {
                 return false;

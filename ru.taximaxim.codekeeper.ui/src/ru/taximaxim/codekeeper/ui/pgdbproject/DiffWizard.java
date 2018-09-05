@@ -1,6 +1,5 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
@@ -48,7 +47,6 @@ import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
-import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class DiffWizard extends Wizard implements IPageChangingListener {
@@ -248,18 +246,11 @@ class PageDiff extends WizardPage implements Listener {
 
     private boolean isMsSqlDb(DbSourcePicker sourcePicer) {
         DbInfo dbInfo = sourcePicer.getSelectedDbInfo();
-        File dir = sourcePicer.getSelectedDir();
-        boolean typeIsMsSql = isMsSql();
         if (dbInfo != null) {
-            typeIsMsSql = dbInfo.isMsSql();
-        } else if (dir != null) {
-            File fileMarker = new File(dir, ApgdiffConsts.FILENAME_WORKING_DIR_MARKER);
-            if (fileMarker.exists() && !fileMarker.isDirectory()) {
-                typeIsMsSql = OpenProjectUtils.checkMsSql(fileMarker);
-            }
+            return dbInfo.isMsSql();
         }
 
-        return typeIsMsSql;
+        return isMsSql();
     }
 
     @Override

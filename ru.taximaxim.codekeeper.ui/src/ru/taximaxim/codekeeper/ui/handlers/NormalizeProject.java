@@ -42,8 +42,6 @@ public class NormalizeProject extends AbstractHandler {
             return null;
         }
 
-        OpenProjectUtils.checkAndFlushMsSql(proj);
-
         MessageBox mbSure = new MessageBox(shell, SWT.ICON_QUESTION | SWT.YES | SWT.NO);
         mbSure.setText(Messages.NormalizeProject_normalize_project);
         mbSure.setMessage(Messages.NormalizeProject_are_you_sure);

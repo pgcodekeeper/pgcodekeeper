@@ -87,10 +87,6 @@ class DbSourcePicker extends Composite {
         return storePicker.getDbInfo();
     }
 
-    public File getSelectedDir() {
-        return storePicker.getPathOfDir();
-    }
-
     public String getEncoding() {
         return cmbEncoding.getCombo().getText();
     }

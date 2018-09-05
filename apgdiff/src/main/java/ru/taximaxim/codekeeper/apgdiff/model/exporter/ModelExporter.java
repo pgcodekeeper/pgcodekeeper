@@ -386,8 +386,7 @@ public class ModelExporter extends AbstractModelExporter {
 
             // indexes, triggers, rules, constraints are dumped when tables are processed
         }
-        writeProjVersion(new File(outDir.getPath(),
-                ApgdiffConsts.FILENAME_WORKING_DIR_MARKER), false);
+        writeProjVersion(new File(outDir.getPath(), ApgdiffConsts.FILENAME_WORKING_DIR_MARKER));
     }
 
     private void dumpFunctions(List<AbstractFunction> funcs, File parentDir) throws IOException {

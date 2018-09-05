@@ -364,7 +364,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
             if (prefs != null && (
                     prefs.getBoolean(PROJ_PREF.DISABLE_PARSER_IN_EXTERNAL_FILES, false)
-                    || prefs.getBoolean(PROJ_PREF.MSSQL_MODE, false))) {
+                    || proj.hasNature(NATURE.MS))) {
                 return true;
             } else if (proj.hasNature(NATURE.ID)) {
                 parser.getObjFromProjFile(file, monitor);
