@@ -249,8 +249,6 @@ public class PgDumpLoader implements AutoCloseable {
             PgDiffArguments arguments, IProgressMonitor monitor, List<AntlrError> errors)
                     throws InterruptedException, IOException {
         PgDatabase db = new PgDatabase();
-        db.addSchema(new MsSchema(ApgdiffConsts.DBO, ""));
-        db.setDefaultSchema(ApgdiffConsts.DBO);
         db.setArguments(arguments);
         File dir = new File(dirPath);
 
@@ -258,12 +256,20 @@ public class PgDumpLoader implements AutoCloseable {
         loadSubdir(securityFolder, arguments, "Roles", db, monitor, errors);
         loadSubdir(securityFolder, arguments, "Users", db, monitor, errors);
         loadSubdir(securityFolder, arguments, "Schemas", db, monitor, errors);
+        addDboSchema(db);
 
         for (String dirSub : MS_DIR_LOAD_ORDER) {
             loadSubdir(dir, arguments, dirSub, db, monitor, errors);
         }
 
         return db;
+    }
+
+    protected static void addDboSchema(PgDatabase db) {
+        if (!db.containsSchema(ApgdiffConsts.DBO)) {
+            db.addSchema(new MsSchema(ApgdiffConsts.DBO, ""));
+            db.setDefaultSchema(ApgdiffConsts.DBO);
+        }
     }
 
     public static void loadLibraries(PgDatabase db, PgDiffArguments arguments,

@@ -139,11 +139,8 @@ public class PgUIDumpLoader extends PgDumpLoader {
         PgDatabase db = new PgDatabase();
         db.setArguments(arguments);
         for (WORK_DIR_NAMES workDirName : WORK_DIR_NAMES.values()) {
-            IFolder iFolder = iProject.getFolder(workDirName.name());
-            if (iFolder.exists()) {
-                // legacy schemas
-                loadSubdir(iFolder, db, monitor, statementBodies, errors);
-            }
+            // legacy schemas
+            loadSubdir(iProject.getFolder(workDirName.name()), db, monitor, statementBodies, errors);
         }
 
         IFolder schemasCommonDir = iProject.getFolder(WORK_DIR_NAMES.SCHEMA.name());
@@ -160,10 +157,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
                 IFolder schemaDir = (IFolder) sub;
                 loadSubdir(schemaDir, db, monitor, statementBodies, errors);
                 for (String dirSub : DIR_LOAD_ORDER) {
-                    IFolder iFolder = schemaDir.getFolder(dirSub);
-                    if (iFolder.exists()) {
-                        loadSubdir(iFolder, db, monitor, statementBodies, errors);
-                    }
+                    loadSubdir(schemaDir.getFolder(dirSub), db, monitor, statementBodies, errors);
                 }
             }
         }
@@ -184,28 +178,13 @@ public class PgUIDumpLoader extends PgDumpLoader {
         db.setArguments(arguments);
 
         IFolder securityFolder = iProject.getFolder("Security");
-
-        // skip walking SCHEMA folder if it does not exist
-        if (!securityFolder.exists()) {
-            return db;
-        }
-
-        IFolder schemasCommonDir = securityFolder.getFolder("Schemas");
-
-        // skip walking SCHEMA folder if it does not exist
-        if (!schemasCommonDir.exists()) {
-            return db;
-        }
-
-        // load schemas
-        loadSubdir(schemasCommonDir, db, monitor, statementBodies, errors);
+        loadSubdir(securityFolder.getFolder("Schemas"), db, monitor, statementBodies, errors);
+        // TODO users, roles
+        addDboSchema(db);
 
         // content
         for (String dirSub : MS_DIR_LOAD_ORDER) {
-            IFolder iFolder = iProject.getFolder(dirSub);
-            if (iFolder.exists()) {
-                loadSubdir(iFolder, db, monitor, statementBodies, errors);
-            }
+            loadSubdir(iProject.getFolder(dirSub), db, monitor, statementBodies, errors);
         }
 
         return db;
@@ -214,6 +193,9 @@ public class PgUIDumpLoader extends PgDumpLoader {
     private static void loadSubdir(IFolder folder, PgDatabase db, IProgressMonitor monitor,
             List<StatementBodyContainer> statementBodies, List<AntlrError> errors)
                     throws InterruptedException, IOException, CoreException {
+        if (!folder.exists()) {
+            return;
+        }
         for (IResource resource : folder.members()) {
             if (resource.getType() == IResource.FILE && "sql".equals(resource.getFileExtension())) { //$NON-NLS-1$
                 loadFile((IFile) resource, monitor, db, statementBodies, errors);

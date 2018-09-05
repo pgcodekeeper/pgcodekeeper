@@ -164,9 +164,12 @@ public class PgDatabase extends PgStatement {
         resetHash();
     }
 
-
     public boolean containsExtension(final String name) {
         return getExtension(name) != null;
+    }
+
+    public boolean containsSchema(final String name) {
+        return getSchema(name) != null;
     }
 
     @Override
