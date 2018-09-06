@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -22,6 +23,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.MS_WORK_DIR_NAMES;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
@@ -53,8 +55,14 @@ public class ConvertProject extends AbstractHandler {
 
         try {
             if (createMarker(shell, Paths.get(project.getLocationURI()), isMsSql)) {
+                String[] natures;
+                if (isMsSql) {
+                    natures = new String[] {NATURE.ID, NATURE.MS};
+                } else {
+                    natures = new String[] {NATURE.ID};
+                }
                 IProjectDescription description = project.getDescription();
-                description.setNatureIds(new String[] {NATURE.ID});
+                description.setNatureIds(natures);
                 project.setDescription(description, null);
             }
         } catch (CoreException | IOException e) {
@@ -65,29 +73,30 @@ public class ConvertProject extends AbstractHandler {
     }
 
     public static boolean createMarker(Shell shell, Path path, boolean isMsSql) throws FileNotFoundException {
-        boolean isNeedCreate = true;
-
-        MessageBox message = new MessageBox(shell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
-        message.setMessage(Messages.ConvertProject_convert_dialog_message);
-        message.setText(Messages.ConvertProject_convert_dialog_title);
-
+        boolean weirdProject;
         if (isMsSql) {
-            for (MS_WORK_DIR_NAMES dir : ApgdiffConsts.MS_WORK_DIR_NAMES.values()) {
-                if (!Files.exists(path.resolve(dir.getName()))) {
-                    isNeedCreate = message.open() == SWT.YES;
-                    break;
-                }
+            // MS doesn't require all dirs to exist, warn if none found
+            weirdProject = Arrays.stream(MS_WORK_DIR_NAMES.values())
+                    .map(e -> path.resolve(e.getName()))
+                    .allMatch(Files::notExists);
+        } else {
+            weirdProject = Arrays.stream(WORK_DIR_NAMES.values())
+                    .map(e -> path.resolve(e.name()))
+                    .anyMatch(Files::notExists);
+        }
+        if (weirdProject) {
+            MessageBox message = new MessageBox(shell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
+            message.setMessage(Messages.ConvertProject_convert_dialog_message);
+            message.setText(Messages.ConvertProject_convert_dialog_title);
+            if (message.open() != SWT.YES) {
+                return false;
             }
-        } else if (!Files.exists(path.resolve(ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.name())) ||
-                !Files.exists(path.resolve(ApgdiffConsts.WORK_DIR_NAMES.EXTENSION.name()))) {
-            isNeedCreate = message.open() == SWT.YES;
         }
 
         Path markerFile = path.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER);
-        if (isNeedCreate && Files.notExists(markerFile)) {
+        if (Files.notExists(markerFile)) {
             AbstractModelExporter.writeProjVersion(markerFile.toFile());
         }
-
-        return isNeedCreate;
+        return true;
     }
 }
