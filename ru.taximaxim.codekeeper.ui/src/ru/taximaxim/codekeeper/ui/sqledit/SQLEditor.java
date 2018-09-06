@@ -362,9 +362,8 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             IProject proj = file.getProject();
             IEclipsePreferences prefs = PgDbProject.getPrefs(proj);
 
-            if (prefs != null && (
-                    prefs.getBoolean(PROJ_PREF.DISABLE_PARSER_IN_EXTERNAL_FILES, false)
-                    || proj.hasNature(NATURE.MS))) {
+            if (proj.hasNature(NATURE.MS) || (prefs != null
+                    && prefs.getBoolean(PROJ_PREF.DISABLE_PARSER_IN_EXTERNAL_FILES, false))) {
                 return true;
             } else if (proj.hasNature(NATURE.ID)) {
                 parser.getObjFromProjFile(file, monitor);

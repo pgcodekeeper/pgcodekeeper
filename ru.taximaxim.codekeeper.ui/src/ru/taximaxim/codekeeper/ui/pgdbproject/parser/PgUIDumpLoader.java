@@ -39,6 +39,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.MS_WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
@@ -259,6 +260,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
                 // load all schemas, because we don't know in which schema the object
                 IProject proj = file.getProject();
                 loadSubdir(proj.getFolder(schemasPath), db, mon, statementBodies, null);
+                addDboSchema(db);
                 isLoaded = true;
             }
 
@@ -274,7 +276,8 @@ public class PgUIDumpLoader extends PgDumpLoader {
 
         // exclude empty schemas (except loaded from schema files) that have been loaded early
         db.getSchemas().stream()
-        .filter(sc -> schemaFiles.contains(sc.getName()) || sc.hasChildren())
+        .filter(sc -> schemaFiles.contains(AbstractModelExporter.getExportedFilename(sc))
+                || sc.hasChildren())
         .forEach(st -> {
             st.dropParent();
             newDb.addSchema(st);
