@@ -11,8 +11,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -39,7 +37,9 @@ class PgImport extends WizardPage {
     private static final String FILE_PROJECT = ".project"; //$NON-NLS-1$
 
     private final IStructuredSelection selection;
-    private Text txtPath, txtName;
+    private Text txtPath;
+    private Text txtName;
+    private Button btnMsSql;
     private WorkingSetGroup workingSetGroup;
 
     protected PgImport(String pageName, IStructuredSelection selection) {
@@ -60,18 +60,14 @@ class PgImport extends WizardPage {
 
         txtPath = new Text(area, SWT.BORDER);
         txtPath.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        txtPath.addModifyListener(new ModifyListener() {
-
-            @Override
-            public void modifyText(ModifyEvent e) {
-                //set project name if not given, or if project is in root of workspace
-                Path pathDir = Paths.get(txtPath.getText());
-                if (txtName.getText().isEmpty() || isInWorkspaceRoot(pathDir)) {
-                    txtName.setText(pathDir.getFileName().toString());
-                }
-
-                getWizard().getContainer().updateButtons();
+        txtPath.addModifyListener(e -> {
+            //set project name if not given, or if project is in root of workspace
+            Path pathDir = Paths.get(txtPath.getText());
+            if (txtName.getText().isEmpty() || isInWorkspaceRoot(pathDir)) {
+                txtName.setText(pathDir.getFileName().toString());
             }
+
+            getWizard().getContainer().updateButtons();
         });
 
         Button browse = new Button(area, SWT.PUSH);
@@ -88,13 +84,10 @@ class PgImport extends WizardPage {
 
         txtName = new Text(area, SWT.BORDER);
         txtName.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
-        txtName.addModifyListener(new ModifyListener() {
+        txtName.addModifyListener(e -> getWizard().getContainer().updateButtons());
 
-            @Override
-            public void modifyText(ModifyEvent e) {
-                getWizard().getContainer().updateButtons();
-            }
-        });
+        btnMsSql = new Button(area, SWT.CHECK);
+        btnMsSql.setText(Messages.PgImport_import_as_mssql);
 
         Composite workingSet = new Composite(area, SWT.NONE);
         GridLayout layout = new GridLayout();
@@ -122,8 +115,9 @@ class PgImport extends WizardPage {
         Path p = Paths.get(txtPath.getText());
 
         try {
-            if (ConvertProject.createMarker(getShell(), p)) {
-                PgDbProject.createPgDbProject(project, isInWorkspaceRoot(p) ? null : p.toUri(), false);
+            if (ConvertProject.createMarker(getShell(), p, btnMsSql.getSelection())) {
+                PgDbProject.createPgDbProject(project,
+                        isInWorkspaceRoot(p) ? null : p.toUri(), btnMsSql.getSelection());
                 addToWorkingSet(project);
             } else {
                 return false;
@@ -153,9 +147,10 @@ class PgImport extends WizardPage {
     @Override
     public boolean isPageComplete(){
         String name = txtName.getText();
+        String fullpath = txtPath.getText();
 
         //empty path: show default message
-        if (name.isEmpty()) {
+        if (fullpath.isEmpty()) {
             setErrorMessage(null);
             return false;
         }
@@ -164,7 +159,7 @@ class PgImport extends WizardPage {
         if (name.isEmpty()) {
             err = Messages.PgImport_error_no_name;
         }
-        Path path = Paths.get(name);
+        Path path = Paths.get(fullpath);
         if (Files.exists(path.resolve(FILE_PROJECT))) {
             //if has .project
             err = Messages.PgImportWizardImportPage_already_exist;

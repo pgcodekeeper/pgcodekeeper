@@ -176,6 +176,10 @@ public final class Messages extends NLS {
 
     public static String ConvertProject_convert_dialog_title;
 
+    public static String ConvertProject_select_type_desc;
+
+    public static String ConvertProject_select_type_title;
+
     public static String diffPresentationPane_getting_changes_for_diff;
     public static String project_either_closed_or_deleted;
 
@@ -559,6 +563,8 @@ public final class Messages extends NLS {
     public static String PgImport_error_metadata;
 
     public static String PgImport_error_no_name;
+
+    public static String PgImport_import_as_mssql;
 
     public static String PgImport_import_error;
 
