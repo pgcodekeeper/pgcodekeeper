@@ -18,7 +18,7 @@
     <packaging>eclipse-plugin</packaging>
 
     <properties>
-        <sonar.exclusions>**/cz/startnet/utils/pgdiff/parsers/antlr/SQL*.java, **/cz/startnet/utils/pgdiff/parsers/antlr/Ignore*.java, **/cz/startnet/utils/pgdiff/parsers/antlr/Privileges*.java</sonar.exclusions>
+        <sonar.exclusions>**/cz/startnet/utils/pgdiff/parsers/antlr/SQL*.java, **/cz/startnet/utils/pgdiff/parsers/antlr/TSQL*.java, **/cz/startnet/utils/pgdiff/parsers/antlr/Ignore*.java, **/cz/startnet/utils/pgdiff/parsers/antlr/Privileges*.java</sonar.exclusions>
     </properties>
 
     <build>
