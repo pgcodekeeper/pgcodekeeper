@@ -30,6 +30,7 @@ import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.MsConstraint;
 import cz.startnet.utils.pgdiff.schema.MsFunction;
 import cz.startnet.utils.pgdiff.schema.MsIndex;
+import cz.startnet.utils.pgdiff.schema.MsProcedure;
 import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.MsSequence;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
@@ -87,7 +88,8 @@ public class MsAntlrLoaderTest {
                     {9},
                     {10},
                     {11},
-                    {12}
+                    {12},
+                    {13}
                     // SONAR-ON
                 });
     }
@@ -113,7 +115,8 @@ public class MsAntlrLoaderTest {
             new MsDB9(),
             new MsDB10(),
             new MsDB11(),
-            new MsDB12()
+            new MsDB12(),
+            new MsDB13()
     };
 
     /**
@@ -1031,6 +1034,156 @@ class MsDB12 extends MsDatabaseObjectCreator {
         arg = new Argument("@delimiter", "char(1)");
         func.addArgument(arg);
         schema.addFunction(func);
+
+        return d;
+    }
+}
+
+class MsDB13 extends MsDatabaseObjectCreator {
+    @Override
+    public PgDatabase getDatabase() {
+        PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
+        AbstractSchema schema = d.getDefaultSchema();
+
+        schema.addPrivilege(new PgPrivilege("REVOKE", "SELECT", "SCHEMA::[dbo]", "[ms_user]", false));
+        schema.addPrivilege(new PgPrivilege("REVOKE", "UPDATE", "SCHEMA::[dbo]", "[ms_user]", false));
+        schema.addPrivilege(new PgPrivilege("REVOKE", "DELETE", "SCHEMA::[dbo]", "[ms_user]", false));
+        schema.addPrivilege(new PgPrivilege("REVOKE", "INSERT", "SCHEMA::[dbo]", "[ms_user]", false));
+
+        schema.addPrivilege(new PgPrivilege("GRANT", "SELECT", "SCHEMA::[dbo]", "[ms_user]", false));
+        schema.addPrivilege(new PgPrivilege("GRANT", "UPDATE", "SCHEMA::[dbo]", "[ms_user]", false));
+        schema.addPrivilege(new PgPrivilege("GRANT", "DELETE", "SCHEMA::[dbo]", "[ms_user]", false));
+        schema.addPrivilege(new PgPrivilege("GRANT", "INSERT", "SCHEMA::[dbo]", "[ms_user]", false));
+
+        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
+        // d.setComment("comments database");
+        // schema.setComment("dbo schema");
+
+        AbstractSequence seq = new MsSequence("test_id_seq", "");
+        seq.setStartWith("1");
+        seq.setMinMaxInc(1L, null, null, null);
+        seq.setCached(true);
+        seq.setCache("1");
+        schema.addSequence(seq);
+
+        seq.setOwner("ms_user");
+
+        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
+        // seq.setComment("test table sequence");
+
+        MsFunction func = new MsFunction("test_fnc", "");
+        func.setAnsiNulls(true);
+        func.setQuotedIdentified(true);
+        func.setBody("AS\nBEGIN\n"
+                + "    RETURN 1\nEND");
+        func.setReturns("bit");
+
+        Argument arg = new Argument("@arg", "nvarchar");
+        func.addArgument(arg);
+
+        func.setOwner("ms_user");
+
+        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
+        // func.setComment("test function");
+
+        schema.addFunction(func);
+
+        func = new MsFunction("fnc", "");
+        func.setAnsiNulls(true);
+        func.setQuotedIdentified(true);
+        func.setBody("AS\nBEGIN\n"
+                + "    RETURN 1\nEND");
+        func.setReturns("bit");
+        schema.addFunction(func);
+
+        func.setOwner("ms_user");
+
+        MsProcedure proc = new MsProcedure("trigger_proc", "");
+        proc.setAnsiNulls(true);
+        proc.setQuotedIdentified(true);
+        proc.setBody("BEGIN\n"
+                + "    -- empty procedure\n"
+                + "    RETURN\nEND");
+        schema.addFunction(proc);
+
+        proc.setOwner("ms_user");
+
+        SimpleMsTable table = new SimpleMsTable("test", "");
+        table.setAnsiNulls(true);
+        schema.addTable(table);
+
+        AbstractColumn col = new MsColumn("id");
+        col.setType("[int]");
+        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
+        // col.setComment("id column");
+        col.setNullValue(false);
+        // col.setDefaultValue("(NEXT VALUE FOR [dbo].[test_id_seq])");
+        table.addColumn(col);
+
+        // TODO replace constraint by 'col.setDefaultValue("(NEXT VALUE FOR [dbo].[admins_aid_seq])")' when it will be fixed
+        AbstractConstraint constraint = new MsConstraint("DF_test_id", "");
+        constraint.setDefinition("DEFAULT (NEXT VALUE FOR [dbo].[test_id_seq]) FOR id");
+        table.addConstraint(constraint);
+
+        col = new MsColumn("text");
+        col.setType("[nvarchar](20)");
+        col.setNullValue(false);
+        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
+        // col.setComment("text column");
+        table.addColumn(col);
+
+        constraint = new MsConstraint("text_check", "");
+        constraint.setDefinition("CHECK  ((LEN([text])>(0)))");
+        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
+        // constraint.setComment("text check");
+        table.addConstraint(constraint);
+
+        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
+        // table.setComment("test table");
+
+        constraint = new MsConstraint("PK_test", "");
+        table.addConstraint(constraint);
+        constraint.setDefinition("PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]");
+
+        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
+        // constraint.setComment("primary key");
+
+        table.setOwner("ms_user");
+
+        MsView view = new MsView("test_view", "");
+        view.setAnsiNulls(true);
+        view.setQuotedIdentified(true);
+        view.setQuery("SELECT [test].[id], [test].[text] FROM [dbo].[test]");
+        schema.addView(view);
+
+        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
+        // view.setComment("test view");
+        // view.addColumnComment("id", "view id col");
+
+        view.setOwner("ms_user");
+
+        AbstractIndex idx = new MsIndex("IX_test_id", "");
+        table.addIndex(idx);
+        idx.setTableName("test");
+        idx.setDefinition("([id])");
+
+        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
+        // idx.setComment("view id col");
+
+        MsTrigger trigger = new MsTrigger("test_trigger", "");
+        trigger.setQuotedIdentified(true);
+        trigger.setAnsiNulls(true);
+        trigger.setType(TgTypes.BEFORE);
+        trigger.setOnUpdate(true);
+        trigger.setTableName("test");
+        trigger.setQuery("BEGIN\n" +
+                "        SET NOCOUNT ON;\n" +
+                "        EXEC [dbo].[trigger_proc];\n" +
+                "    END");
+        table.addTrigger(trigger);
+
+        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
+        // trigger.setComment("test trigger");
 
         return d;
     }
