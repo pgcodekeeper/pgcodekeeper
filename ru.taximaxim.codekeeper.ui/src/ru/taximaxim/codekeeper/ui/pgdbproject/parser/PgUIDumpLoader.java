@@ -178,8 +178,8 @@ public class PgUIDumpLoader extends PgDumpLoader {
         PgDatabase db = new PgDatabase();
         db.setArguments(arguments);
 
-        IFolder securityFolder = iProject.getFolder("Security");
-        loadSubdir(securityFolder.getFolder("Schemas"), db, monitor, statementBodies, errors);
+        IFolder securityFolder = iProject.getFolder("Security"); //$NON-NLS-1$
+        loadSubdir(securityFolder.getFolder("Schemas"), db, monitor, statementBodies, errors); //$NON-NLS-1$
         // TODO users, roles
         addDboSchema(db);
 
@@ -430,7 +430,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
     private static boolean isMsSchemaFile(IPath path) {
         return path.segmentCount() == 3
                 && path.segment(0).equals(MS_WORK_DIR_NAMES.SECURITY.getName())
-                && "Schemas".equals(path.segment(1))
+                && "Schemas".equals(path.segment(1)) //$NON-NLS-1$
                 && path.segment(2).endsWith(".sql"); //$NON-NLS-1$
     }
 }
