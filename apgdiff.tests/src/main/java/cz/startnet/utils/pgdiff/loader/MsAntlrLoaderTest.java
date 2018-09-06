@@ -89,7 +89,8 @@ public class MsAntlrLoaderTest {
                     {10},
                     {11},
                     {12},
-                    {13}
+                    {13},
+                    {14}
                     // SONAR-ON
                 });
     }
@@ -116,7 +117,8 @@ public class MsAntlrLoaderTest {
             new MsDB10(),
             new MsDB11(),
             new MsDB12(),
-            new MsDB13()
+            new MsDB13(),
+            new MsDB14()
     };
 
     /**
@@ -1184,6 +1186,27 @@ class MsDB13 extends MsDatabaseObjectCreator {
 
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
         // trigger.setComment("test trigger");
+
+        return d;
+    }
+}
+
+class MsDB14 extends MsDatabaseObjectCreator {
+    @Override
+    public PgDatabase getDatabase() {
+        PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
+        AbstractSchema schema = d.getDefaultSchema();
+
+        SimpleMsTable table = new SimpleMsTable("test", "");
+        table.setAnsiNulls(true);
+        schema.addTable(table);
+
+        AbstractColumn col = new MsColumn("id");
+        col.setType("[bigint]");
+        table.addColumn(col);
+
+        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
+        // table.setComment("multiline\ncomment\n");
 
         return d;
     }
