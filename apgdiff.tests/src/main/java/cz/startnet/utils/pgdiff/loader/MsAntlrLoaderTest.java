@@ -91,7 +91,8 @@ public class MsAntlrLoaderTest {
                     {12},
                     {13},
                     {14},
-                    {15}
+                    {15},
+                    {16}
                     // SONAR-ON
                 });
     }
@@ -120,7 +121,8 @@ public class MsAntlrLoaderTest {
             new MsDB12(),
             new MsDB13(),
             new MsDB14(),
-            new MsDB15()
+            new MsDB15(),
+            new MsDB16()
     };
 
     /**
@@ -1249,6 +1251,58 @@ class MsDB15 extends MsDatabaseObjectCreator {
         view.setQuotedIdentified(true);
         view.setQuery("SELECT c.[id] AS id_t_chart, t.[id] AS id_t_work "
                 + "FROM ( SELECT [\"t_work\"].[id] FROM [dbo].[\"t_work\"]) t "
+                + "JOIN [dbo].[\"t_chart\"] c ON t.[id] = c.[id]");
+        schema.addView(view);
+
+        return d;
+    }
+}
+
+/**
+ * Tests subselect parser with double subselect
+ *
+ * @author ryabinin_av
+ *
+ */
+class MsDB16 extends MsDatabaseObjectCreator {
+    @Override
+    public PgDatabase getDatabase() {
+        PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
+        AbstractSchema schema = d.getDefaultSchema();
+
+        // table1
+        SimpleMsTable table = new SimpleMsTable("\"t_work\"", "");
+        table.setAnsiNulls(true);
+        schema.addTable(table);
+
+        AbstractColumn col = new MsColumn("id");
+        col.setType("[int]");
+        table.addColumn(col);
+
+        // table2
+        SimpleMsTable table2 = new SimpleMsTable("\"t_chart\"", "");
+        table2.setAnsiNulls(true);
+        schema.addTable(table2);
+        col = new MsColumn("id");
+        col.setType("[int]");
+        table2.addColumn(col);
+
+        // table 3
+        SimpleMsTable table3 = new SimpleMsTable("\"t_memo\"", "");
+        table3.setAnsiNulls(true);
+        schema.addTable(table3);
+        col = new MsColumn("name");
+        col.setType("[text]");
+        table3.addColumn(col);
+
+        // view
+        MsView view = new MsView("v_subselect", "");
+        view.setAnsiNulls(true);
+        view.setQuotedIdentified(true);
+        view.setQuery("SELECT c.[id] AS id_t_chart, t.[id] AS id_t_work, t.[name] FROM "
+                + "(SELECT w.[id], m.[name] FROM "
+                + "(SELECT [\"t_work\"].[id] FROM [dbo].[\"t_work\"]) w "
+                + "JOIN [dbo].[\"t_memo\"] m ON w.[id] = CONVERT(INT, CONVERT(VARCHAR(MAX), m.[name]))) t "
                 + "JOIN [dbo].[\"t_chart\"] c ON t.[id] = c.[id]");
         schema.addView(view);
 
