@@ -57,6 +57,14 @@ public class MsDiffTest {
                     // Tests scenario where MS PRIVILEGES for schema is modified.
                     {"modify_ms_schema_privileges"},
 
+                    // TODO Uncomment the code when comments will be supported.
+                    // Tests scenario where MS "COMMENT" is added.
+                    // {"add_ms_comment"},
+                    // Tests scenario where MS "COMMENT" is dropped.
+                    // {"drop_ms_comment"},
+                    // Tests scenario where MS "COMMENT" is modified.
+                    // {"modify_ms_comment"},
+
                     // Tests scenario where MS SCHEMA is added.
                     {"add_ms_schema"},
                     // Tests scenario where MS SCHEMA is dropped.
@@ -91,6 +99,8 @@ public class MsDiffTest {
                     {"drop_ms_table_with_partition"},
                     // Tests scenario where MS TABLE with partition is modified.
                     {"modify_ms_table_with_partition"},
+                    // Tests scenario where MS TABLE owner is modified.
+                    {"modify_ms_table_owner"},
 
                     // Tests scenario where MS VIEW is added.
                     {"add_ms_view"},
@@ -110,6 +120,8 @@ public class MsDiffTest {
                     // {"drop_ms_type"},
                     // Tests scenario where MS TYPE is modified.
                     // {"modify_ms_type"},
+                    // Tests scenario where MS TYPE owner is modified.
+                    // {"modify_ms_type_owner"},
 
                     // Tests scenario where MS INDEX is added.
                     {"add_ms_index"},
