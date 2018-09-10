@@ -15,13 +15,13 @@ CREATE FUNCTION [dbo].[ReturnSum](@First int, @Second int)
 RETURNS integer
 AS
 BEGIN
-  DECLARE @Res integer = 0
+  DECLARE @Res integer = 0;
   
-  SET @Res = @First + @Second
+  SET @Res = @First + @Second;
 
   IF @Res < 0
-    SET @Res = 0
+    SET @Res = 0;
   
-  RETURN @Res
+  RETURN @Res;
 END
 GO
