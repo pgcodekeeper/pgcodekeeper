@@ -127,7 +127,9 @@ public final class FullAnalyze {
     private static void unresolvRefExHandler(UnresolvedReferenceException ex,
             List<AntlrError> errors, ParserRuleContext ctx, String location) {
         if (errors != null) {
-            ex.setErrorToken(ctx.getStart());
+            if (ex.getErrorToken() == null) {
+                ex.setErrorToken(ctx.getStart());
+            }
             errors.add(CustomSQLParserListener.handleUnresolvedReference(ex, location));
         } else {
             Log.log(Log.LOG_WARNING, ex.getMessage(), ex);

@@ -9,6 +9,8 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
@@ -112,7 +114,7 @@ public abstract class AbstractExpr {
         String relationName = QNameParser.getFirstName(ids);
         if (schemaNameCtx != null) {
             schemaName = schemaNameCtx.getText();
-        } else if (db.getSchema(schema).containsRelation(relationName)) {
+        } else if (findSchema(schema, null).containsRelation(relationName)) {
             schemaName = schema;
         } else {
             for (ISchema s : systemStorage.getSchemas()) {
@@ -328,7 +330,7 @@ public abstract class AbstractExpr {
         }
 
         String functionName = QNameParser.getFirstName(ids);
-        AbstractFunction function = db.getSchema(schemaName).getFunctions().stream()
+        AbstractFunction function = findSchema(schemaName, ids.get(0)).getFunctions().stream()
                 .filter(f -> functionName.equals(f.getBareName()))
                 .findAny().orElse(null);
         if (function != null) {
@@ -346,7 +348,7 @@ public abstract class AbstractExpr {
         if (schemaNameCtx != null) {
             schemaName = schemaNameCtx.getText();
         } else {
-            if (db.getSchema(schema).containsFunction(signature)) {
+            if (findSchema(schema, null).containsFunction(signature)) {
                 schemaName = schema;
             }
             for (ISchema s : systemStorage.getSchemas()) {
@@ -383,12 +385,7 @@ public abstract class AbstractExpr {
                 foundRelations = systemStorage.getSchema(schemaName).getRelations()
                         .map(r -> (IRelation) r);
             } else {
-                AbstractSchema userSchema = db.getSchema(schemaName);
-                if (userSchema != null) {
-                    foundRelations = userSchema.getRelations();
-                } else {
-                    throw new UnresolvedReferenceException("Schema '" + schemaName + "' not found!", null);
-                }
+                foundRelations = findSchema(schemaName, null).getRelations();
             }
         } else {
             foundRelations = Stream.concat(db.getSchema(schema).getRelations(),
@@ -401,5 +398,14 @@ public abstract class AbstractExpr {
     protected boolean isSystemSchema(String schemaName) {
         return PgSystemStorage.SCHEMA_PG_CATALOG.equals(schemaName)
                 || PgSystemStorage.SCHEMA_INFORMATION_SCHEMA.equals(schemaName);
+    }
+
+    protected AbstractSchema findSchema(String schemaName, ParserRuleContext errorCtx) {
+        AbstractSchema foundSchema = db.getSchema(schemaName);
+        if (foundSchema == null) {
+            throw new UnresolvedReferenceException("Schema '" + schemaName + "' not found!",
+                    errorCtx != null ? errorCtx.getStart() : null);
+        }
+        return foundSchema;
     }
 }
