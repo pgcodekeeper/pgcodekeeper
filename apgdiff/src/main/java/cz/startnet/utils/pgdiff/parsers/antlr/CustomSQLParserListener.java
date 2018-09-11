@@ -66,9 +66,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateType;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
 public class CustomSQLParserListener extends SQLParserBaseListener {
@@ -290,7 +290,7 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
         safeParseStatement(new AlterFtsStatement(ctx, db), ctx);
     }
 
-    static AntlrError handleUnresolvedReference(UnresolvedReferenceException ex, String filename) {
+    public static AntlrError handleUnresolvedReference(UnresolvedReferenceException ex, String filename) {
         Token t = ex.getErrorToken();
         Log.log(Log.LOG_WARNING, ex.getMessage(), ex);
         return new AntlrError(t, filename, t.getLine(), t.getCharPositionInLine(), ex.getMessage());

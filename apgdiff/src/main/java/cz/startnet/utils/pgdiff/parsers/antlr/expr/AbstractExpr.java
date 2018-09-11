@@ -18,8 +18,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_args_parserCont
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.DbObjNature;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IFunction;
@@ -298,8 +300,7 @@ public abstract class AbstractExpr {
         String schemaName = QNameParser.getSchemaName(ids, schema);
         String tableName = QNameParser.getFirstName(ids);
         for (IdentifierContext col : cols) {
-            String columnName = col.getText();
-            addFilteredColumnDepcy(schemaName, tableName, columnName);
+            addFilteredColumnDepcy(schemaName, tableName, col.getText());
         }
     }
 
@@ -382,7 +383,12 @@ public abstract class AbstractExpr {
                 foundRelations = systemStorage.getSchema(schemaName).getRelations()
                         .map(r -> (IRelation) r);
             } else {
-                foundRelations = db.getSchema(schemaName).getRelations();
+                AbstractSchema userSchema = db.getSchema(schemaName);
+                if (userSchema != null) {
+                    foundRelations = userSchema.getRelations();
+                } else {
+                    throw new UnresolvedReferenceException("Schema '" + schemaName + "' not found!", null);
+                }
             }
         } else {
             foundRelations = Stream.concat(db.getSchema(schema).getRelations(),

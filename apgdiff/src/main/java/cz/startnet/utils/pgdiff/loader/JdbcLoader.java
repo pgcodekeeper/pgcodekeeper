@@ -117,7 +117,7 @@ public class JdbcLoader extends JdbcLoaderBase {
 
             d.setPostgresVersion(SupportedVersion.valueOf(version));
 
-            FullAnalyze.fullAnalyze(d);
+            FullAnalyze.fullAnalyze(d, null);
 
             Log.log(Log.LOG_INFO, "Database object has been successfully queried from JDBC");
         } catch (InterruptedException ex) {
