@@ -148,6 +148,7 @@ implements PgOptionContainer {
         dictionary.options.putAll(getOptions());
         dictionary.deps.addAll(deps);
         dictionary.setOwner(getOwner());
+        dictionary.setLocation(getLocation());
         return dictionary;
     }
 

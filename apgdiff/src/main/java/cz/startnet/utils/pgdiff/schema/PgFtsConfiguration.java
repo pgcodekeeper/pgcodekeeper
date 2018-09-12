@@ -149,6 +149,7 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
         conf.deps.addAll(deps);
         conf.setOwner(getOwner());
         conf.dictionariesMap.putAll(getDictionariesMap());
+        conf.setLocation(getLocation());
         return conf;
     }
 

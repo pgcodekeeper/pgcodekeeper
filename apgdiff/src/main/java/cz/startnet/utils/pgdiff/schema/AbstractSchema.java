@@ -562,6 +562,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         }
         schemaDst.setOwner(getOwner());
         schemaDst.deps.addAll(deps);
+        schemaDst.setLocation(getLocation());
         return schemaDst;
     }
 

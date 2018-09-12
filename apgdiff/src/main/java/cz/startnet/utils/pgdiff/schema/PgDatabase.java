@@ -288,6 +288,7 @@ public class PgDatabase extends PgStatement {
         dbDst.setArguments(getArguments());
         dbDst.setComment(getComment());
         dbDst.setPostgresVersion(getPostgresVersion());
+        dbDst.setLocation(getLocation());
         return dbDst;
     }
 

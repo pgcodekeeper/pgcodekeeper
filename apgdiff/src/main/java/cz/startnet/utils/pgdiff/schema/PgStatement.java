@@ -43,7 +43,7 @@ public abstract class PgStatement implements IStatement, IHashable {
     private PgStatement parent;
     protected final Set<GenericColumn> deps = new LinkedHashSet<>();
 
-    private String location;
+    protected String location;
     private boolean isLib;
 
     // 0 means not calculated yet and/or hash has been reset

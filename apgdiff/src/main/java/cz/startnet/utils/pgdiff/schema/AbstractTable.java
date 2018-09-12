@@ -640,6 +640,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         tableDst.setOwner(getOwner());
         tableDst.setComment(getComment());
         tableDst.deps.addAll(deps);
+        tableDst.setLocation(getLocation());
         return tableDst;
     }
 
