@@ -163,6 +163,11 @@ public interface UIConsts {
         String MIGRATION_DIR = "MIGRATION"; //$NON-NLS-1$
     }
 
+    interface TEMP_DIR_PATH {
+        String PG = "pgCodeKeeper_PG"; //$NON-NLS-1$
+        String MS = "pgCodeKeeper_MS"; //$NON-NLS-1$
+    }
+
     interface NATURE {
         String ID = PLUGIN_ID.THIS + ".nature"; //$NON-NLS-1$
         String MS = PLUGIN_ID.THIS + ".msnature"; //$NON-NLS-1$

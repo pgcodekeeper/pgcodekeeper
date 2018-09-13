@@ -97,6 +97,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.CONTEXT;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PERSPECTIVE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -796,7 +797,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 }
                 getSite().getPage().openEditor(file, EDITOR.SQL);
             } else {
-                FileUtilsUi.saveOpenTmpSqlEditor(content, filename);
+                FileUtilsUi.saveOpenTmpSqlEditor(content, filename, getProject().hasNature(NATURE.MS));
             }
         } catch (CoreException | IOException ex) {
             ExceptionNotifier.notifyDefault(

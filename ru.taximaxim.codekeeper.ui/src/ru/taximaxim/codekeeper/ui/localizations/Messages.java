@@ -472,6 +472,10 @@ public final class Messages extends NLS {
 
     public static String MockDataPage_table_name;
 
+    public static String MockDataPage_select_project;
+
+    public static String MockDataPage_select_project_msg;
+
     public static String MockDataWizard_create_data;
 
     public static String MockDataWizard_create_data_table;
