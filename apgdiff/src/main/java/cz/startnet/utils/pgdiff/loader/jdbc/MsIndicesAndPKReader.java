@@ -37,6 +37,7 @@ public class MsIndicesAndPKReader extends JdbcReader {
         boolean isPadded = res.getBoolean("is_padded");
         boolean allowRowLocks = res.getBoolean("allow_row_locks");
         boolean allowPageLocks = res.getBoolean("allow_page_locks");
+        boolean compression = res.getBoolean("data_compression");
         long fillfactor = res.getLong("fill_factor");
         String dataSpace = res.getString("data_space");
         String filter = res.getString("filter_definition");
@@ -78,7 +79,7 @@ public class MsIndicesAndPKReader extends JdbcReader {
                 sb.append(" WHERE ").append(filter);
             }
 
-            if (isPadded || !allowRowLocks || !allowPageLocks || fillfactor != 0) {
+            if (isPadded || !allowRowLocks || !allowPageLocks || fillfactor != 0 || compression) {
                 sb.append(" WITH (");
 
                 if (isPadded) {
@@ -95,6 +96,10 @@ public class MsIndicesAndPKReader extends JdbcReader {
 
                 if (fillfactor != 0) {
                     sb.append("FILLFACTOR = ").append(fillfactor).append(", ");
+                }
+
+                if (compression) {
+                    sb.append("DATA_COMPRESSION = ").append(res.getString("data_compression_desc")).append(", ");
                 }
 
                 sb.setLength(sb.length() - 2);
@@ -143,6 +148,10 @@ public class MsIndicesAndPKReader extends JdbcReader {
 
             if (fillfactor != 0) {
                 index.addOption("FILLFACTOR", Long.toString(fillfactor));
+            }
+
+            if (compression) {
+                index.addOption("DATA_COMPRESSION", res.getString("data_compression_desc"));
             }
 
             t.addIndex(index);

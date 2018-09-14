@@ -46,20 +46,22 @@ public class SchemasMsReader {
             loader.setOwner(s, owner);
         }
 
-        for (XmlReader acl : XmlReader.readXML(res.getString("acl"))) {
-            String state = acl.getString("sd");
-            boolean isWithGrantOption = false;
-            if ("GRANT_WITH_GRANT_OPTION".equals(state)) {
-                state = "GRANT";
-                isWithGrantOption = true;
+        if (!db.getArguments().isIgnorePrivileges()) {
+            for (XmlReader acl : XmlReader.readXML(res.getString("acl"))) {
+                String state = acl.getString("sd");
+                boolean isWithGrantOption = false;
+                if ("GRANT_WITH_GRANT_OPTION".equals(state)) {
+                    state = "GRANT";
+                    isWithGrantOption = true;
+                }
+
+                String permission = acl.getString("pn");
+                String role = acl.getString("r");
+
+                s.addPrivilege(new PgPrivilege(state, permission,
+                        "SCHEMA::" + MsDiffUtils.quoteName(s.getName()),
+                        MsDiffUtils.quoteName(role), isWithGrantOption));
             }
-
-            String permission = acl.getString("pn");
-            String role = acl.getString("r");
-
-            s.addPrivilege(new PgPrivilege(state, permission,
-                    "SCHEMA::" + MsDiffUtils.quoteName(s.getName()),
-                    MsDiffUtils.quoteName(role), isWithGrantOption));
         }
 
         return s;

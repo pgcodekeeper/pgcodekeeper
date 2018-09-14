@@ -44,7 +44,7 @@ public class MsProcedure extends AbstractFunction {
                     .collect(Collectors.joining(",\n"))).append('\n');
         }
         if (!options.isEmpty()) {
-            sbSQL.append(" WITH ").append(String.join(", ", options)).append('\n');
+            sbSQL.append("WITH ").append(String.join(", ", options)).append('\n');
         }
         if (isForReplication()) {
             sbSQL.append("FOR REPLICATION\n");
