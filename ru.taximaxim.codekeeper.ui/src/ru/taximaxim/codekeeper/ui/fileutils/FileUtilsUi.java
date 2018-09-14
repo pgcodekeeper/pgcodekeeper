@@ -40,7 +40,7 @@ public final class FileUtilsUi {
      */
     public static void saveOpenTmpSqlEditor(String content, String filenamePrefix, boolean isMsSql)
             throws IOException, CoreException {
-        Path tempDir = Paths.get(System.getProperty("java.io.tmpdir"))
+        Path tempDir = Paths.get(System.getProperty("java.io.tmpdir")) //$NON-NLS-1$
                 .resolve(isMsSql ? TEMP_DIR_PATH.MS : TEMP_DIR_PATH.PG);
         Files.createDirectories(tempDir);
         Log.log(Log.LOG_INFO, "Creating file " + filenamePrefix); //$NON-NLS-1$
