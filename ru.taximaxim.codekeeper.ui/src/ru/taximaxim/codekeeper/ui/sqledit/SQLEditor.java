@@ -381,7 +381,8 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             isMsSqlExternalFile = uri.getURI().getPath().contains(TEMP_DIR_PATH.MS);
             IDocument document = getDocumentProvider().getDocument(getEditorInput());
             InputStream stream = new ByteArrayInputStream(document.get().getBytes(StandardCharsets.UTF_8));
-            parser.fillRefsFromInputStream(stream, Paths.get(uri.getURI()).toString(), monitor);
+            parser.fillRefsFromInputStream(stream, Paths.get(uri.getURI()).toString(),
+                    isMsSqlExternalFile, monitor);
             return true;
         }
         return false;
