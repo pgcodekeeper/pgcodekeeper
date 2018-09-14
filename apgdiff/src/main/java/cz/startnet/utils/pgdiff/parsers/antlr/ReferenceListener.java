@@ -9,6 +9,7 @@ import org.antlr.v4.runtime.Token;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_domain_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_fts_configurationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_fts_statementContext;
@@ -45,12 +46,18 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_parametersConte
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Object_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rule_commonContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_alterContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_createContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_dropContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statement_valueContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.StatementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_of_type_column_defContext;
@@ -69,7 +76,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  * @author botov_av
  *
  */
-public class ReferenceListener extends SQLParserBaseListener {
+public class ReferenceListener implements SqlContextProcessor {
 
     private String defSchema = ApgdiffConsts.PUBLIC;
     private final String filePath;
@@ -97,153 +104,108 @@ public class ReferenceListener extends SQLParserBaseListener {
     }
 
     @Override
-    public void exitCreate_table_statement(Create_table_statementContext ctx) {
-        safeParseStatement(() -> createTable(ctx));
+    public void process(SqlContext rootCtx) {
+        for (StatementContext s : rootCtx.statement()) {
+            Schema_statementContext st = s.schema_statement();
+            if (st != null) {
+                Schema_createContext create = st.schema_create();
+                Schema_alterContext alter;
+                Schema_dropContext drop;
+                if (create != null) {
+                    create(create);
+                } else if ((alter = st.schema_alter()) != null) {
+                    alter(alter);
+                } else if ((drop = st.schema_drop()) != null) {
+                    drop(drop);
+                }
+            }
+        }
     }
 
-    @Override
-    public void exitCreate_index_statement(Create_index_statementContext ctx) {
-        safeParseStatement(() -> createIndex(ctx));
+    private void create(Schema_createContext ctx) {
+        Runnable r;
+        if (ctx.create_table_statement() != null) {
+            r = () -> createTable(ctx.create_table_statement());
+        }/* else if (ctx.create_foreign_table_statement() != null) {
+            createFTable(ctx.create_foreign_table_statement());
+        }*/ else if (ctx.create_index_statement() != null) {
+            r = () -> createIndex(ctx.create_index_statement());
+        } else if (ctx.create_extension_statement() != null) {
+            r = () -> createExtension(ctx.create_extension_statement());
+        } else if (ctx.create_trigger_statement() != null) {
+            r = () -> createTrigger(ctx.create_trigger_statement());
+        } else if (ctx.create_rewrite_statement() != null) {
+            r = () -> createRewrite(ctx.create_rewrite_statement());
+        } else if (ctx.create_function_statement() != null) {
+            r = () -> createFunction(ctx.create_function_statement());
+        } else if (ctx.create_sequence_statement() != null) {
+            r = () -> createSequence(ctx.create_sequence_statement());
+        } else if (ctx.create_schema_statement() != null) {
+            r = () -> createSchema(ctx.create_schema_statement());
+        } else if (ctx.create_view_statement() != null) {
+            r = () -> createView(ctx.create_view_statement());
+        } else if (ctx.create_type_statement() != null) {
+            r = () -> createType(ctx.create_type_statement());
+        } else if (ctx.create_domain_statement() != null) {
+            r = () -> createDomain(ctx.create_domain_statement());
+        } else if (ctx.create_fts_configuration() != null) {
+            r = () -> createFtsConfiguration(ctx.create_fts_configuration());
+        } else if (ctx.create_fts_template() != null) {
+            r = () -> createFtsTemplate(ctx.create_fts_template());
+        } else if (ctx.create_fts_parser() != null) {
+            r = () -> createFtsParser(ctx.create_fts_parser());
+        } else if (ctx.create_fts_dictionary() != null) {
+            r = () -> createFtsDictionary(ctx.create_fts_dictionary());
+        } else if (ctx.comment_on_statement() != null) {
+            r = () -> commentOn(ctx.comment_on_statement());
+        } else if (ctx.rule_common() != null) {
+            r = () -> rule(ctx.rule_common());
+        } else if (ctx.set_statement() != null) {
+            r = () -> set(ctx.set_statement());
+        } else {
+            return;
+        }
+        safeParseStatement(r);
     }
 
-    @Override
-    public void exitCreate_extension_statement(Create_extension_statementContext ctx) {
-        safeParseStatement(() -> createExtension(ctx));
+    private void alter(Schema_alterContext ctx) {
+        Runnable r;
+        if (ctx.alter_function_statement() != null) {
+            r = () -> alterFunction(ctx.alter_function_statement());
+        } else if (ctx.alter_schema_statement() != null) {
+            r = () -> alterSchema(ctx.alter_schema_statement());
+        } else if (ctx.alter_table_statement() != null) {
+            r = () -> alterTable(ctx.alter_table_statement());
+        } else if (ctx.alter_sequence_statement() != null) {
+            r = () -> alterSequence(ctx.alter_sequence_statement());
+        } else if (ctx.alter_view_statement() != null) {
+            r = () -> alterView(ctx.alter_view_statement());
+        } else if (ctx.alter_type_statement() != null) {
+            r = () -> alterType(ctx.alter_type_statement());
+        } else if (ctx.alter_domain_statement() != null) {
+            r = () -> alterDomain(ctx.alter_domain_statement());
+        } else if (ctx.alter_fts_statement() != null) {
+            r = () -> alterFts(ctx.alter_fts_statement());
+        } else {
+            return;
+        }
+        safeParseStatement(r);
     }
 
-    @Override
-    public void exitCreate_trigger_statement(Create_trigger_statementContext ctx) {
-        safeParseStatement(() -> createTrigger(ctx));
-    }
-
-    @Override
-    public void exitCreate_domain_statement(Create_domain_statementContext ctx) {
-        safeParseStatement(() -> createDomain(ctx));
-    }
-
-    @Override
-    public void exitCreate_type_statement(Create_type_statementContext ctx) {
-        safeParseStatement(() -> createType(ctx));
-    }
-
-    @Override
-    public void exitCreate_rewrite_statement(Create_rewrite_statementContext ctx) {
-        safeParseStatement(() -> createRewrite(ctx));
-    }
-
-    @Override
-    public void exitCreate_function_statement(Create_function_statementContext ctx) {
-        safeParseStatement(() -> createFunction(ctx));
-    }
-
-    @Override
-    public void exitCreate_sequence_statement(Create_sequence_statementContext ctx) {
-        safeParseStatement(() -> createSequence(ctx));
-    }
-
-    @Override
-    public void exitCreate_schema_statement(Create_schema_statementContext ctx) {
-        safeParseStatement(() -> createSchema(ctx));
-    }
-
-    @Override
-    public void exitCreate_view_statement(Create_view_statementContext ctx) {
-        safeParseStatement(() -> createView(ctx));
-    }
-
-    @Override
-    public void exitCreate_fts_parser(Create_fts_parserContext ctx) {
-        safeParseStatement(() -> createFtsParser(ctx));
-    }
-
-    @Override
-    public void exitCreate_fts_template(Create_fts_templateContext ctx) {
-        safeParseStatement(() -> createFtsTemplate(ctx));
-    }
-
-    @Override
-    public void exitCreate_fts_dictionary(Create_fts_dictionaryContext ctx) {
-        safeParseStatement(() -> createFtsDictionary(ctx));
-    }
-
-    @Override
-    public void exitCreate_fts_configuration(Create_fts_configurationContext ctx) {
-        safeParseStatement(() -> createFtsConfiguration(ctx));
-    }
-
-    @Override
-    public void exitComment_on_statement(Comment_on_statementContext ctx) {
-        safeParseStatement(() -> commentOn(ctx));
-    }
-
-    @Override
-    public void exitSet_statement(Set_statementContext ctx) {
-        safeParseStatement(() -> createSet(ctx));
-    }
-
-    @Override
-    public void exitRule_common(Rule_commonContext ctx) {
-        safeParseStatement(() -> createRule(ctx));
-    }
-
-    @Override
-    public void exitAlter_function_statement(Alter_function_statementContext ctx) {
-        safeParseStatement(() -> alterFunction(ctx));
-    }
-
-    @Override
-    public void exitAlter_schema_statement(Alter_schema_statementContext ctx) {
-        safeParseStatement(() -> alterSchema(ctx));
-    }
-
-    @Override
-    public void exitAlter_table_statement(Alter_table_statementContext ctx) {
-        safeParseStatement(() -> alterTable(ctx));
-    }
-
-    @Override
-    public void exitAlter_sequence_statement(Alter_sequence_statementContext ctx) {
-        safeParseStatement(() -> alterSequence(ctx));
-    }
-
-    @Override
-    public void exitAlter_view_statement(Alter_view_statementContext ctx) {
-        safeParseStatement(() -> alterView(ctx));
-    }
-
-    @Override
-    public void exitAlter_domain_statement(Alter_domain_statementContext ctx) {
-        safeParseStatement(() -> alterDomain(ctx));
-    }
-
-    @Override
-    public void exitAlter_type_statement(Alter_type_statementContext ctx) {
-        safeParseStatement(() -> alterType(ctx));
-    }
-
-    @Override
-    public void exitAlter_fts_statement(Alter_fts_statementContext ctx) {
-        safeParseStatement(() -> alterFts(ctx));
-    }
-
-    @Override
-    public void exitDrop_statements(Drop_statementsContext ctx) {
-        safeParseStatement(() -> drop(ctx));
-    }
-
-    @Override
-    public void exitDrop_trigger_statement(Drop_trigger_statementContext ctx) {
-        safeParseStatement(() -> dropTrigger(ctx));
-    }
-
-    @Override
-    public void exitDrop_rule_statement(Drop_rule_statementContext ctx) {
-        safeParseStatement(() -> dropRule(ctx));
-    }
-
-    @Override
-    public void exitDrop_function_statement(Drop_function_statementContext ctx) {
-        safeParseStatement(() -> dropFunction(ctx));
+    private void drop(Schema_dropContext ctx) {
+        Runnable r;
+        if (ctx.drop_function_statement() != null) {
+            r = () -> dropFunction(ctx.drop_function_statement());
+        } else if (ctx.drop_trigger_statement() != null) {
+            r = () -> dropTrigger(ctx.drop_trigger_statement());
+        } else if (ctx.drop_rule_statement() != null) {
+            r = () -> dropRule(ctx.drop_rule_statement());
+        } else if (ctx.drop_statements() != null) {
+            r = () -> drop(ctx.drop_statements());
+        } else {
+            return;
+        }
+        safeParseStatement(r);
     }
 
     private String getDefSchemaName() {
@@ -514,7 +476,7 @@ public class ReferenceListener extends SQLParserBaseListener {
         }
     }
 
-    public void createSet(Set_statementContext ctx) {
+    public void set(Set_statementContext ctx) {
         if (ctx.config_param != null && "search_path".equalsIgnoreCase(ctx.config_param.getText())) {
             for (Set_statement_valueContext value : ctx.config_param_val) {
                 addObjReference(null, value.getText(),
@@ -527,7 +489,7 @@ public class ReferenceListener extends SQLParserBaseListener {
         }
     }
 
-    public void createRule(Rule_commonContext ctx) {
+    public void rule(Rule_commonContext ctx) {
         DbObjType type = null;
         List<Schema_qualified_nameContext> obj_name = ctx.names_references().name;
         Object_typeContext typeCtx = ctx.object_type();
