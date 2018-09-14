@@ -18,6 +18,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
 import cz.startnet.utils.pgdiff.loader.callables.QueryCallable;
+import cz.startnet.utils.pgdiff.loader.callables.QueryCallableMsBatches;
 import cz.startnet.utils.pgdiff.loader.callables.ResultSetCallable;
 import cz.startnet.utils.pgdiff.loader.callables.StatementCallable;
 import ru.taximaxim.codekeeper.apgdiff.DaemonThreadFactory;
@@ -62,6 +63,15 @@ public class JdbcRunner {
         try (Connection connection = connector.getConnection();
                 Statement st = connection.createStatement()) {
             run(st, script);
+        }
+    }
+
+    public void runMsBatches(JdbcConnector connector, String script) throws SQLException, IOException, InterruptedException {
+        try (Connection connection = connector.getConnection();
+                Statement st = connection.createStatement()) {
+            connection.setAutoCommit(false);
+            runScript(new QueryCallableMsBatches(st, script));
+            connection.commit();
         }
     }
 

@@ -513,7 +513,11 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             }
 
             try {
-                new JdbcRunner(monitor).run(connector, script);
+                if (dbInfo.isMsSql()) {
+                    new JdbcRunner(monitor).runMsBatches(connector, script);
+                } else {
+                    new JdbcRunner(monitor).run(connector, script);
+                }
                 output = Messages.SqlEditor_jdbc_success;
                 ProjectEditorDiffer.notifyDbChanged(dbInfo);
                 return Status.OK_STATUS;

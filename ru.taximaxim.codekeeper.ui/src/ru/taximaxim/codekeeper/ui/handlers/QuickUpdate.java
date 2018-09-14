@@ -214,7 +214,12 @@ class QuickUpdateJob extends SingletonEditorJob {
         }
 
         try {
-            new JdbcRunner(monitor).run(connector, differ.getDiffDirect());
+            if (isMsSql) {
+                new JdbcRunner(monitor).runMsBatches(connector, differ.getDiffDirect());
+            } else {
+                new JdbcRunner(monitor).run(connector, differ.getDiffDirect());
+            }
+
         } catch (SQLException e) {
             throw new PgCodekeeperUIException(Messages.QuickUpdate_migration_failed + e.getLocalizedMessage());
         }
