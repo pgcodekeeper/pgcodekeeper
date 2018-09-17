@@ -23,6 +23,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementCont
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_domain_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_extension_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_foreign_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_configurationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_dictionaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_parserContext;
@@ -126,9 +127,9 @@ public class ReferenceListener implements SqlContextProcessor {
         Runnable r;
         if (ctx.create_table_statement() != null) {
             r = () -> createTable(ctx.create_table_statement());
-        }/* else if (ctx.create_foreign_table_statement() != null) {
-            createFTable(ctx.create_foreign_table_statement());
-        }*/ else if (ctx.create_index_statement() != null) {
+        } else if (ctx.create_foreign_table_statement() != null) {
+            r = () -> createFTable(ctx.create_foreign_table_statement());
+        } else if (ctx.create_index_statement() != null) {
             r = () -> createIndex(ctx.create_index_statement());
         } else if (ctx.create_extension_statement() != null) {
             r = () -> createExtension(ctx.create_extension_statement());
@@ -262,6 +263,13 @@ public class ReferenceListener implements SqlContextProcessor {
             }
         }
 
+        fillObjDefinition(schemaName, QNameParser.getFirstNameCtx(ids), DbObjType.TABLE);
+    }
+
+    private void createFTable(Create_foreign_table_statementContext ctx) {
+        List<IdentifierContext> ids = ctx.name.identifier();
+        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+        addReferenceOnSchema(ids, schemaName, ctx);
         fillObjDefinition(schemaName, QNameParser.getFirstNameCtx(ids), DbObjType.TABLE);
     }
 
