@@ -1,7 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_functionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Func_returnContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Procedure_paramContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
@@ -31,13 +30,18 @@ public class CreateMsFunction extends ParserAbstract {
         IdContext schemaCtx = ctx.func_proc_name().schema;
         AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
         AbstractFunction function = new MsFunction(ctx.func_proc_name().procedure.getText(), getFullCtxText(ctx.getParent()));
-        function.setAnsiNulls(ansiNulls);
-        function.setQuotedIdentified(quotedIdentifier);
+        if (ctx.func_body().func_body_return().EXTERNAL() != null) {
+            function.setAnsiNulls(false);
+            function.setQuotedIdentified(false);
+            function.setCLR(true);
+        } else {
+            function.setAnsiNulls(ansiNulls);
+            function.setQuotedIdentified(quotedIdentifier);
+        }
         fillArguments(function);
         function.setBody(db.getArguments(), getFullCtxText(ctx.func_body()));
-        Func_returnContext returns = ctx.func_return();
-        // TODO safe just necessary part
-        function.setReturns(getFullCtxText(returns).replace("\r", ""));
+        String returns = getFullCtxText(ctx.func_return());
+        function.setReturns(db.getArguments().isKeepNewlines() ? returns : returns.replace("\r", ""));
         schema.addFunction(function);
         return function;
     }

@@ -32,6 +32,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.MsConstraint;
@@ -39,7 +40,6 @@ import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class TableAbstract extends ParserAbstract {
@@ -266,7 +266,8 @@ public abstract class TableAbstract extends ParserAbstract {
     protected static void fillColumn(Column_def_table_constraintContext colCtx,
             AbstractTable table) {
         if (colCtx.table_constraint() != null) {
-            addMsConstraint(colCtx.table_constraint(), table);
+            AbstractConstraint con = getMsConstraint(colCtx.table_constraint());
+            table.addConstraint(con);
         } else {
             AbstractColumn col = new MsColumn(colCtx.id().getText());
 
@@ -281,6 +282,10 @@ public abstract class TableAbstract extends ParserAbstract {
                     col.setSparse(true);
                 } else if (option.COLLATE() != null) {
                     col.setCollation(getFullCtxText(option.collate));
+                } else if (option.PERSISTED() != null) {
+                    col.setPersisted(true);
+                } else if (option.ROWGUIDCOL() != null) {
+                    col.setRowGuidCol(true);
                 } else if (option.IDENTITY() != null) {
                     Identity_valueContext identity = option.identity_value();
                     if (identity == null) {
@@ -311,10 +316,10 @@ public abstract class TableAbstract extends ParserAbstract {
         }
     }
 
-    protected static void addMsConstraint(Table_constraintContext conCtx, AbstractTable table) {
+    protected static AbstractConstraint getMsConstraint(Table_constraintContext conCtx) {
         String conName = conCtx.id() == null ? "" : conCtx.id().getText();
         AbstractConstraint con = new MsConstraint(conName, getFullCtxText(conCtx));
         con.setDefinition(getFullCtxText(conCtx.table_constraint_body()));
-        table.addConstraint(con);
+        return con;
     }
 }

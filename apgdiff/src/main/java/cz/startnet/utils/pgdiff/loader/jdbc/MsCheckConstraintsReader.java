@@ -17,14 +17,15 @@ public class MsCheckConstraintsReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException, JsonReaderException {
+    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException {
         loader.monitor.worked(1);
         String name = res.getString("name");
-        boolean isSystemNamed = res.getBoolean("is_system_named");
         loader.setCurrentObject(new GenericColumn(schema.getName(), name, DbObjType.CONSTRAINT));
 
-        AbstractConstraint con = new MsConstraint(isSystemNamed ? "" : name, "");
-        // TODO with no check
+        AbstractConstraint con = new MsConstraint(name, "");
+
+        con.setNotValid(res.getBoolean("with_no_check"));
+        con.setDisabled(res.getBoolean("is_disabled"));
 
         StringBuilder sb = new StringBuilder();
         sb.append("CHECK ");
@@ -35,14 +36,7 @@ public class MsCheckConstraintsReader extends JdbcReader {
 
         sb.append(" (").append(res.getString("definition")).append(")");
 
-        // TODO disabled
-
         con.setDefinition(sb.toString());
         schema.getTable(res.getString("table_name")).addConstraint(con);
-    }
-
-    @Override
-    protected DbObjType getType() {
-        return DbObjType.CONSTRAINT;
     }
 }

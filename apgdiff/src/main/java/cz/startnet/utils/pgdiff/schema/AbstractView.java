@@ -282,8 +282,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
                     && Objects.equals(options, view.getOptions())
                     && Objects.equals(isWithData, view.isWithData())
                     && Objects.equals(tablespace, view.getTablespace())
-                    && Objects.equals(quotedIdentified, view.isQuotedIdentified())
-                    && Objects.equals(ansiNulls, view.isAnsiNulls());;
+                    && quotedIdentified == view.isQuotedIdentified()
+                    && ansiNulls == view.isAnsiNulls();
         }
 
         return eq;
@@ -326,7 +326,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     @Override
     public AbstractView shallowCopy() {
         AbstractView viewDst = getViewCopy();
-        viewDst.setQuery(getQuery());
+        viewDst.query = query;
+        viewDst.normalizedQuery = normalizedQuery;
         viewDst.setComment(getComment());
         viewDst.setIsWithData(isWithData());
         viewDst.setTablespace(getTablespace());
@@ -335,6 +336,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         viewDst.columnNames.addAll(columnNames);
         viewDst.defaultValues.addAll(defaultValues);
         viewDst.columnComments.addAll(columnComments);
+        viewDst.relationColumns.addAll(relationColumns);
 
         for (PgPrivilege priv : revokes) {
             viewDst.addPrivilege(priv);

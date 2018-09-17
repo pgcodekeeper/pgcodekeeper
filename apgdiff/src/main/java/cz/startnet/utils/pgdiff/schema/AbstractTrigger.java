@@ -49,6 +49,7 @@ public abstract class AbstractTrigger extends PgStatementWithSearchPath {
     private String query;
     private boolean isAppend;
     private boolean isNotForRep;
+    private boolean isDisable;
     private boolean ansiNulls;
     private boolean quotedIdentified;
 
@@ -242,6 +243,15 @@ public abstract class AbstractTrigger extends PgStatementWithSearchPath {
         resetHash();
     }
 
+    public boolean isDisable() {
+        return isDisable;
+    }
+
+    public void setDisable(boolean isDisable) {
+        this.isDisable = isDisable;
+        resetHash();
+    }
+
     public void setAnsiNulls(boolean ansiNulls) {
         this.ansiNulls = ansiNulls;
         resetHash();
@@ -269,7 +279,8 @@ public abstract class AbstractTrigger extends PgStatementWithSearchPath {
         } else if (obj instanceof AbstractTrigger) {
             AbstractTrigger trigger = (AbstractTrigger) obj;
             eq = compareWithoutComments(trigger)
-                    && Objects.equals(comment, trigger.getComment());
+                    && Objects.equals(comment, trigger.getComment())
+                    && isDisable == trigger.isDisable();
         }
 
         return eq;
@@ -294,8 +305,10 @@ public abstract class AbstractTrigger extends PgStatementWithSearchPath {
                 && Objects.equals(updateColumns, trigger.updateColumns)
                 && Objects.equals(options, trigger.getOptions())
                 && Objects.equals(query, trigger.getQuery())
-                && Objects.equals(isAppend, trigger.isAppend())
-                && Objects.equals(isNotForRep, trigger.isNotForRep());
+                && isAppend == trigger.isAppend()
+                && isNotForRep ==  trigger.isNotForRep()
+                && quotedIdentified == trigger.isQuotedIdentified()
+                && ansiNulls == trigger.isAnsiNulls();
     }
 
     @Override
@@ -321,6 +334,7 @@ public abstract class AbstractTrigger extends PgStatementWithSearchPath {
         hasher.put(query);
         hasher.put(isAppend);
         hasher.put(isNotForRep);
+        hasher.put(isDisable);
         hasher.put(quotedIdentified);
         hasher.put(ansiNulls);
     }
@@ -350,6 +364,7 @@ public abstract class AbstractTrigger extends PgStatementWithSearchPath {
         triggerDst.setQuery(getQuery());
         triggerDst.setAppend(isAppend());
         triggerDst.setNotForRep(isNotForRep());
+        triggerDst.setDisable(isDisable());
         triggerDst.setAnsiNulls(isAnsiNulls());
         triggerDst.setQuotedIdentified(isQuotedIdentified());
         return triggerDst;

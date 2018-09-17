@@ -2,6 +2,7 @@ SELECT
     o.schema_id AS schema_oid,
     o.name,
     tt.name AS space_name,
+    c.name AS part_column,
     p.name AS owner,
     ds.name AS file_stream, 
     cc.cols,
@@ -12,14 +13,18 @@ SELECT
     o.durability,
     o.durability_desc,
     sp.data_compression,
-    sp.data_compression_desc
+    sp.data_compression_desc,
+    ctt.is_track_columns_updated_on AS is_tracked
 FROM sys.tables o WITH (NOLOCK)
 LEFT JOIN sys.database_principals p WITH (NOLOCK) ON p.principal_id=o.principal_id
 LEFT JOIN sys.indexes ind WITH (NOLOCK) on ind.object_id = o.object_id AND ind.index_id = 0
 LEFT JOIN sys.data_spaces dsp WITH (NOLOCK) on dsp.data_space_id = ind.data_space_id  
 LEFT JOIN sys.data_spaces ds WITH (NOLOCK) ON o.filestream_data_space_id = ds.data_space_id
 LEFT JOIN sys.data_spaces dsx WITH (NOLOCK) ON dsx.data_space_id=o.lob_data_space_id
-LEFT JOIN sys.partitions sp WITH (NOLOCK) ON sp.object_id = o.object_id AND sp.index_id in (0,1)
+LEFT JOIN sys.partitions sp WITH (NOLOCK) ON sp.object_id = o.object_id AND sp.index_id in (0,1) AND sp.partition_number = 1
+LEFT JOIN sys.index_columns ic WITH (NOLOCK) ON ic.partition_ordinal > 0 AND ic.index_id = ind.index_id and ic.object_id = o.object_id
+LEFT JOIN sys.columns c WITH (NOLOCK) ON c.object_id = ic.object_id AND c.column_id = ic.column_id
+LEFT JOIN sys.change_tracking_tables ctt WITH (NOLOCK) ON ctt.object_id = o.object_id
 CROSS APPLY (
     SELECT * FROM (
         SELECT  
@@ -32,7 +37,7 @@ CROSS APPLY (
         LEFT JOIN sys.columns col WITH (NOLOCK) on col.object_id = perm.major_id  AND col.column_id = perm.minor_id
         WHERE major_id = o.object_id
     ) cc 
-    FOR JSON AUTO, INCLUDE_NULL_VALUES
+    FOR XML RAW, ROOT
 ) aa (acl)
 
 CROSS APPLY (
@@ -61,6 +66,8 @@ CROSS APPLY (
             ic.seed_value AS s,
             ic.increment_value AS i,
             ic.is_not_for_replication AS nfr,
+            c.is_rowguidcol,
+            cc.is_persisted,
             --t.is_user_defined AS ud,
             --t.is_table_type AS tt,
             --c.is_filestream AS fs,
@@ -73,6 +80,6 @@ CROSS APPLY (
         LEFT JOIN sys.objects so WITH (NOLOCK) ON so.object_id = c.object_id
         WHERE c.object_id = o.object_id
     ) cc ORDER BY cc.id
-FOR JSON AUTO, INCLUDE_NULL_VALUES
+    FOR XML RAW, ROOT
 ) cc (cols)
 WHERE o.type = 'U'

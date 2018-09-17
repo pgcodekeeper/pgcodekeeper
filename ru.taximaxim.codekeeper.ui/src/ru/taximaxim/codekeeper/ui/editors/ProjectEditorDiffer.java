@@ -431,7 +431,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 // something other than just markers has changed
                 // check that it's our resource
                 if (delta.getFlags() != IResourceDelta.MARKERS &&
-                        PgUIDumpLoader.isInProject(delta) &&
+                        PgUIDumpLoader.isInProject(delta, OpenProjectUtils.checkMsSql(proj.getProject())) &&
                         delta.getResource().getType() == IResource.FILE &&
                         delta.getResource().getProject().equals(proj.getProject())) {
                     schemaChanged[0] = true;
@@ -458,6 +458,16 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             return;
         }
 
+        boolean isDbInfo = currentRemote instanceof DbInfo;
+        boolean isMsProj = OpenProjectUtils.checkMsSql(proj.getProject());
+        if (isDbInfo && ((DbInfo)currentRemote).isMsSql() != isMsProj) {
+            MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_INFORMATION);
+            mb.setText(Messages.ProjectEditorDiffer_different_types);
+            mb.setMessage(Messages.ProjectEditorDiffer_different_types_msg);
+            mb.open();
+            return;
+        }
+
         String charset;
         try {
             charset = proj.getProjectCharset();
@@ -475,7 +485,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         TreeDiffer newDiffer;
         String name;
 
-        if (currentRemote instanceof DbInfo) {
+        if (isDbInfo) {
             DbInfo dbInfo = (DbInfo) currentRemote;
             newDiffer = TreeDiffer.getTree(dbProject, dbInfo, charset, forceUnixNewlines,
                     mainPrefs, projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
@@ -484,7 +494,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         } else {
             File file = (File) currentRemote;
             name = file.getName();
-            dbRemote = DbSource.fromFile(forceUnixNewlines, file, charset);
+            dbRemote = DbSource.fromFile(forceUnixNewlines, file, charset, isMsProj);
             newDiffer = new ClassicTreeDiffer(dbProject, dbRemote, false);
         }
 
@@ -663,7 +673,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         IEclipsePreferences pref = proj.getPrefs();
         final Differ differ = new Differ(dbRemote.getDbObject(),
                 dbProject.getDbObject(), diffTree.getRevertedCopy(), false,
-                pref.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
+                pref.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC),
+                OpenProjectUtils.checkMsSql(proj.getProject()));
         differ.setAdditionalDepciesSource(manualDepciesSource);
         differ.setAdditionalDepciesTarget(manualDepciesTarget);
 

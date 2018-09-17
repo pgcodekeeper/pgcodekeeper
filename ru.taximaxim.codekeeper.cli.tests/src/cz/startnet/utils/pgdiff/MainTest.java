@@ -62,6 +62,12 @@ public class MainTest {
             {new ArgumentsProvider_AllowedObjects()},
             {new ArgumentsProvider_22()},
             {new ArgumentsProvider_23()},
+            {new ArgumentsProvider_24()},
+            {new ArgumentsProvider_25()},
+            {new ArgumentsProvider_26()},
+            {new ArgumentsProvider_27()},
+            {new ArgumentsProvider_28()},
+            {new ArgumentsProvider_29()},
         });
     }
 
@@ -820,7 +826,7 @@ class ArgumentsProvider_22 extends ArgumentsProvider{
 
     @Override
     public String output() {
-        return "-C (--concurrently-mode) cannot be used with the option(s) -X (--add-transaction)\n";
+        return "-C (--concurrently-mode) cannot be used with the option(s) -X (--add-transaction) for PostgreSQL.\n";
     }
 }
 
@@ -847,3 +853,109 @@ class ArgumentsProvider_23 extends ArgumentsProvider{
                 "CREATE INDEX CONCURRENTLY testindex3 ON public.testtable USING btree (field3);\n\n";
     }
 }
+
+/**
+ * {@link ArgumentsProvider} implementation testing CREATE INDEX CONCURRENTLY
+ * options for MS SQL in TRANSACTION with output to console
+ */
+class ArgumentsProvider_24 extends ArgumentsProvider{
+
+    {
+        super.resName = "add_ms_index";
+    }
+
+    @Override
+    public String[] args() throws URISyntaxException, IOException {
+        File fNew = ApgdiffUtils.getFileFromOsgiRes(PgDiffTest.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
+        File fOriginal = ApgdiffUtils.getFileFromOsgiRes(PgDiffTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
+
+        return new String[]{"-C", "-X", "--ms-sql", fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
+    }
+
+    @Override
+    public String output() {
+        return "BEGIN TRANSACTION;\n\nCREATE NONCLUSTERED INDEX [index_c2] ON [dbo].[table1] ([c2])\n" +
+                "WITH (ONLINE = ON)\nGO\n\nCOMMIT;\n\n";
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing MS SQL database without --ms-sql mode
+ */
+class ArgumentsProvider_25 extends ArgumentsProvider{
+
+    @Override
+    public String[] args() throws URISyntaxException, IOException {
+        return new String[]{"-s", "dumb", "--target", "jdbc:sqlserver://xxx"};
+    }
+
+    @Override
+    public String output() {
+        return "Cannot work with MS SQL database without --ms-sql parameter.\n";
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing PostgreSQL database with --ms-sql mode
+ */
+class ArgumentsProvider_26 extends ArgumentsProvider{
+
+    @Override
+    public String[] args() throws URISyntaxException, IOException {
+        return new String[]{"--ms-sql", "-s", "dumb", "--target", "jdbc:postgresql://xxx"};
+    }
+
+    @Override
+    public String output() {
+        return "Cannot work with PostgreSQL database with --ms-sql parameter.\n";
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing compare PostgreSQL and MS SQL databases
+ */
+class ArgumentsProvider_27 extends ArgumentsProvider{
+
+    @Override
+    public String[] args() throws URISyntaxException, IOException {
+        return new String[]{"-s", "jdbc:sqlserver://xxx", "--target", "jdbc:postgresql://xxx"};
+    }
+
+    @Override
+    public String output() {
+        return "Cannot compare MS SQL and PostgerSQL databases.\n";
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing parse PostgreSQL database as MS SQL project
+ */
+class ArgumentsProvider_28 extends ArgumentsProvider{
+
+    @Override
+    public String[] args() throws URISyntaxException, IOException {
+        return new String[]{"--ms-sql", "--parse", "-o", "dir", "jdbc:postgresql://xxx"};
+    }
+
+    @Override
+    public String output() {
+        return "Cannot parse PostgerSQL database as MS SQL project.\n";
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing parse MS SQL database as PostgreSQL project
+ */
+class ArgumentsProvider_29 extends ArgumentsProvider{
+
+    @Override
+    public String[] args() throws URISyntaxException, IOException {
+        return new String[]{"--parse", "-o", "dir", "jdbc:sqlserver://xxx"};
+    }
+
+    @Override
+    public String output() {
+        return "Cannot parse MS SQL database as PostgerSQL project.\n";
+    }
+}
+

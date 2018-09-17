@@ -19,7 +19,7 @@ public class MsTablesReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException, JsonReaderException {
+    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException, XmlReaderException {
         loader.monitor.worked(1);
         String tableName = res.getString("name");
         loader.setCurrentObject(new GenericColumn(schema.getName(), tableName, DbObjType.TABLE));
@@ -40,8 +40,12 @@ public class MsTablesReader extends JdbcReader {
         table.setTextImage(res.getString("text_image"));
         table.setFileStream(res.getString("file_stream"));
         table.setAnsiNulls(res.getBoolean("uses_ansi_nulls"));
+        Object isTracked = res.getObject("is_tracked");
+        if (isTracked != null) {
+            table.setTracked((Boolean)isTracked);
+        }
 
-        for (JsonReader col : JsonReader.fromArray(res.getString("cols"))) {
+        for (XmlReader col : XmlReader.readXML(res.getString("cols"))) {
             AbstractColumn column = new MsColumn(col.getString("name"));
             // TODO other type with size
             String exp = col.getString("def");
@@ -60,6 +64,8 @@ public class MsTablesReader extends JdbcReader {
             }
 
             column.setSparse(col.getBoolean("sp"));
+            column.setRowGuidCol(col.getBoolean("is_rowguidcol"));
+            column.setPersisted(col.getBoolean("is_persisted"));
 
             if (col.getBoolean("ii")) {
                 column.setIdentity(Integer.toString(col.getInt("s")), Integer.toString(col.getInt("i")));
@@ -76,15 +82,16 @@ public class MsTablesReader extends JdbcReader {
             table.addColumn(column);
         }
 
-        table.setTablespace(res.getString("space_name"));
+        String tableSpace = MsDiffUtils.quoteName(res.getString("space_name"));
+        String partCol = res.getString("part_column");
+        if (partCol != null) {
+            tableSpace = tableSpace + '(' + MsDiffUtils.quoteName(partCol) + ')';
+        }
+        table.setTablespace(tableSpace);
+
         loader.setOwner(table, res.getString("owner"));
 
         schema.addTable(table);
-        loader.setPrivileges(table, JsonReader.fromArray(res.getString("acl")));
-    }
-
-    @Override
-    protected DbObjType getType() {
-        return DbObjType.TABLE;
+        loader.setPrivileges(table, XmlReader.readXML(res.getString("acl")));
     }
 }

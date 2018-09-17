@@ -21,7 +21,7 @@ public class MsAssembliesReader {
         this.db = db;
     }
 
-    public void read() throws SQLException, InterruptedException, JsonReaderException {
+    public void read() throws SQLException, InterruptedException, XmlReaderException {
         loader.setCurrentOperation("assemblies query");
         String query = JdbcQueries.QUERY_MS_ASSEMBLIES.get(null);
         try (ResultSet res = loader.runner.runScript(loader.statement, query)) {
@@ -52,7 +52,7 @@ public class MsAssembliesReader {
 
                 loader.setOwner(ass, res.getString("owner"));
 
-                for (JsonReader acl : JsonReader.fromArray(res.getString("acl"))) {
+                for (XmlReader acl : XmlReader.readXML(res.getString("acl"))) {
                     String state = acl.getString("sd");
                     boolean isWithGrantOption = false;
                     if ("GRANT_WITH_GRANT_OPTION".equals(state)) {

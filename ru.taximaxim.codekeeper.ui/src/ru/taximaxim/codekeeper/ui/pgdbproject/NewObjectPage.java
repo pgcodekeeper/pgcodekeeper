@@ -207,7 +207,7 @@ public final class NewObjectPage extends WizardPage {
         }
 
         viewerProject.addSelectionChangedListener(e -> {
-            Object object = e.getStructuredSelection().getFirstElement();
+            Object object = ((StructuredSelection) e.getSelection()).getFirstElement();
             if (object != null) {
                 currentProj = ((IProject) object);
             }
@@ -225,7 +225,7 @@ public final class NewObjectPage extends WizardPage {
         viewerType.setInput(allowedTypes);
 
         viewerType.addSelectionChangedListener(e -> {
-            type = (DbObjType) e.getStructuredSelection().getFirstElement();
+            type = (DbObjType) ((StructuredSelection) e.getSelection()).getFirstElement();
             showGroup(type == DbObjType.TRIGGER || type == DbObjType.RULE);
             setDefaultName();
             getWizard().getContainer().updateButtons();

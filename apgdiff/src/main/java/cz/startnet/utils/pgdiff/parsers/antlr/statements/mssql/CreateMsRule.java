@@ -20,11 +20,12 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_column_privileges
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_columnsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsRule extends ParserAbstract {
 
@@ -67,6 +68,9 @@ public class CreateMsRule extends ParserAbstract {
         PgStatement st = getStatement(nameCtx);
 
         if (st == null) {
+            // TODO объект не найден, расширить или создать новый класс для ошибок MS парсера
+            // throw new UnresolvedReferenceException("Cannot find object in database: "
+            //        + nameCtx.getText(), nameCtx);
             return null;
         }
 
@@ -75,6 +79,8 @@ public class CreateMsRule extends ParserAbstract {
         if (st instanceof PgStatementWithSearchPath) {
             objectName = MsDiffUtils.quoteName(((PgStatementWithSearchPath) st).getContainingSchema().getName())
                     + '.' + objectName;
+        } else if (st.getStatementType() == DbObjType.SCHEMA) {
+            objectName = "SCHEMA::" + objectName;
         }
 
         Table_columnsContext columns = nameCtx.table_columns();

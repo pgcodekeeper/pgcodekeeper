@@ -24,6 +24,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
+import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class ProjectProperties extends PropertyPage {
@@ -36,11 +37,14 @@ public class ProjectProperties extends PropertyPage {
 
     private IEclipsePreferences prefs;
 
+    private boolean isMsSql;
+
     @Override
     public void setElement(IAdaptable element) {
         super.setElement(element);
-        prefs = new ProjectScope(element.getAdapter(IProject.class))
-                .getNode(UIConsts.PLUGIN_ID.THIS);
+        IProject project = element.getAdapter(IProject.class);
+        prefs = new ProjectScope(project).getNode(UIConsts.PLUGIN_ID.THIS);
+        isMsSql = OpenProjectUtils.checkMsSql(project);
     }
 
     @Override
@@ -62,30 +66,32 @@ public class ProjectProperties extends PropertyPage {
         btnForceUnixNewlines.setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, false, false, 2, 1));
         btnForceUnixNewlines.setSelection(prefs.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true));
 
-        new Label(panel, SWT.NONE).setText(Messages.projectProperties_timezone_for_all_db_connections);
+        if (!isMsSql) {
+            new Label(panel, SWT.NONE).setText(Messages.projectProperties_timezone_for_all_db_connections);
 
-        cmbTimezone = new Combo(panel, SWT.BORDER | SWT.DROP_DOWN);
-        cmbTimezone.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        cmbTimezone.setItems(UIConsts.TIME_ZONES.toArray(new String[UIConsts.TIME_ZONES.size()]));
-        String tz = prefs.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC);
-        cmbTimezone.setText(tz);
-        cmbTimezone.addModifyListener(e -> checkSwitchWarnLbl());
+            cmbTimezone = new Combo(panel, SWT.BORDER | SWT.DROP_DOWN);
+            cmbTimezone.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            cmbTimezone.setItems(UIConsts.TIME_ZONES.toArray(new String[UIConsts.TIME_ZONES.size()]));
+            String tz = prefs.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC);
+            cmbTimezone.setText(tz);
+            cmbTimezone.addModifyListener(e -> checkSwitchWarnLbl());
 
-        lblWarn = new CLabel(panel, SWT.NONE);
-        lblWarn.setImage(Activator.getEclipseImage(ISharedImages.IMG_OBJS_WARN_TSK));
-        lblWarn.setText(Messages.ProjectProperties_change_projprefs_warn);
-        GridData gd = new GridData(SWT.FILL, SWT.DEFAULT, false, false, 2, 1);
-        gd.exclude = true;
-        lblWarn.setLayoutData(gd);
-        lblWarn.setVisible(false);
+            lblWarn = new CLabel(panel, SWT.NONE);
+            lblWarn.setImage(Activator.getEclipseImage(ISharedImages.IMG_OBJS_WARN_TSK));
+            lblWarn.setText(Messages.ProjectProperties_change_projprefs_warn);
+            GridData gd = new GridData(SWT.FILL, SWT.DEFAULT, false, false, 2, 1);
+            gd.exclude = true;
+            lblWarn.setLayoutData(gd);
+            lblWarn.setVisible(false);
 
-        lblWarnPosix = new CLabel(panel, SWT.NONE);
-        lblWarnPosix.setImage(Activator.getEclipseImage(ISharedImages.IMG_OBJS_WARN_TSK));
-        lblWarnPosix.setText(Messages.ProjectProperties_posix_is_used_warn);
-        gd = new GridData(SWT.FILL, SWT.DEFAULT, false, false, 2, 1);
-        gd.exclude = true;
-        lblWarnPosix.setLayoutData(gd);
-        timeZoneWarn(tz);
+            lblWarnPosix = new CLabel(panel, SWT.NONE);
+            lblWarnPosix.setImage(Activator.getEclipseImage(ISharedImages.IMG_OBJS_WARN_TSK));
+            lblWarnPosix.setText(Messages.ProjectProperties_posix_is_used_warn);
+            gd = new GridData(SWT.FILL, SWT.DEFAULT, false, false, 2, 1);
+            gd.exclude = true;
+            lblWarnPosix.setLayoutData(gd);
+            timeZoneWarn(tz);
+        }
 
         return panel;
     }
@@ -115,7 +121,9 @@ public class ProjectProperties extends PropertyPage {
     protected void performDefaults() {
         btnDisableParser.setSelection(false);
         btnForceUnixNewlines.setSelection(true);
-        cmbTimezone.setText(ApgdiffConsts.UTC);
+        if (!isMsSql) {
+            cmbTimezone.setText(ApgdiffConsts.UTC);
+        }
         try {
             fillPrefs();
         } catch (BackingStoreException e) {
@@ -143,7 +151,9 @@ public class ProjectProperties extends PropertyPage {
     private void fillPrefs() throws BackingStoreException {
         prefs.putBoolean(PROJ_PREF.DISABLE_PARSER_IN_EXTERNAL_FILES, btnDisableParser.getSelection());
         prefs.putBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, btnForceUnixNewlines.getSelection());
-        prefs.put(PROJ_PREF.TIMEZONE, cmbTimezone.getText());
+        if (!isMsSql) {
+            prefs.put(PROJ_PREF.TIMEZONE, cmbTimezone.getText());
+        }
         prefs.flush();
         setValid(true);
         setErrorMessage(null);

@@ -165,6 +165,7 @@ public interface UIConsts {
 
     interface NATURE {
         String ID = PLUGIN_ID.THIS + ".nature"; //$NON-NLS-1$
+        String MS = PLUGIN_ID.THIS + ".msnature"; //$NON-NLS-1$
     }
 
     interface BUILDER {

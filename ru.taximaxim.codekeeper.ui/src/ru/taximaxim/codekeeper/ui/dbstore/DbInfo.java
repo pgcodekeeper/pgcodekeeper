@@ -45,6 +45,7 @@ public class DbInfo {
     private final String dbhost;
     private final int dbport;
     private final boolean readOnly;
+    private final boolean msSql;
     private final boolean generateName;
     private final List<String> ignoreFiles;
     private final Map<String, String> properties;
@@ -77,6 +78,10 @@ public class DbInfo {
         return readOnly;
     }
 
+    public boolean isMsSql() {
+        return msSql;
+    }
+
     public boolean isGeneratedName() {
         return generateName;
     }
@@ -91,7 +96,7 @@ public class DbInfo {
 
     public DbInfo(String name, String dbname, String dbuser, String dbpass,
             String dbhost, int dbport, boolean readOnly, boolean generateName,
-            List<String> ignoreFiles, Map<String, String> properties) {
+            List<String> ignoreFiles, Map<String, String> properties, boolean msSql) {
         this.name = name;
         this.dbname = dbname;
         this.dbuser = dbuser;
@@ -102,6 +107,7 @@ public class DbInfo {
         this.generateName = generateName;
         this.ignoreFiles = ignoreFiles;
         this.properties = properties;
+        this.msSql = msSql;
     }
 
     /**
@@ -125,6 +131,7 @@ public class DbInfo {
             this.dbhost = parts[4];
             this.dbport = Integer.parseInt(parts[5]);
             this.readOnly = false;
+            this.msSql = false;
             this.generateName = false;
             this.ignoreFiles = new ArrayList<>();
             this.properties = new HashMap<>();
@@ -198,7 +205,7 @@ public class DbInfo {
      * @since 4.3.3
      */
     @Deprecated
-    public static LinkedList<DbInfo> preferenceToStore(String preference) {
+    public static List<DbInfo> preferenceToStore(String preference) {
         LinkedList<DbInfo> store = new LinkedList<>();
         String[] coordStrings = preference.split(DELIM_ENTRY);
         for(String coords : coordStrings) {

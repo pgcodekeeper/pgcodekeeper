@@ -1,0 +1,10 @@
+SET QUOTED_IDENTIFIER OFF
+GO
+SET ANSI_NULLS OFF
+GO
+ALTER PROCEDURE [dbo].[proc1]
+AS
+SET NOCOUNT ON;  
+    SELECT t.[c1]  
+    FROM [dbo].[table1] t;
+GO

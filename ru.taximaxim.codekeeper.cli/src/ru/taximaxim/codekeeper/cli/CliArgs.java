@@ -92,6 +92,10 @@ public class CliArgs extends PgDiffArguments {
     @Option(name="--out-charset", metaVar="<charset>", usage="output charset")
     private String outCharsetName;
 
+    @Option(name="-E", aliases="--error",
+            usage="print exception stacktrace")
+    private boolean isDebug;
+
     @Option(name="-P", aliases="--no-privileges",
             usage="ignore privileges and owners of database objects")
     private boolean ignorePrivileges;
@@ -108,7 +112,7 @@ public class CliArgs extends PgDiffArguments {
             usage="set check_function_bodies to false at the beginning of the script")
     private boolean disableCheckFunctionBodies;
 
-    @Option(name="-Z", aliases="--time-zone", metaVar="<timezone>", forbids="--parse",
+    @Option(name="-Z", aliases="--time-zone", metaVar="<timezone>",forbids={"--parse", "--ms-sql"},
             usage="use this timezone when working with database, also add SET TIMEZONE statement to the script")
     private String timeZone;
 
@@ -117,7 +121,7 @@ public class CliArgs extends PgDiffArguments {
     private boolean usingTypeCastOff;
 
     @Option(name="-C", aliases="--concurrently-mode", forbids="--parse",
-            usage="print CREATE INDEX with CONCURRENTLY option")
+            usage="print CREATE INDEX with CONCURRENTLY option for PostgreSQL and WITH ONLINE = ON for MS SQL")
     private boolean concurrentlyMode;
 
     @Option(name="-S", aliases="--safe-mode", forbids="--parse",
@@ -293,6 +297,14 @@ public class CliArgs extends PgDiffArguments {
         this.msSql = msSql;
     }
 
+    public boolean isDebug() {
+        return isDebug;
+    }
+
+    public void setDebug(boolean isDebug) {
+        this.isDebug = isDebug;
+    }
+
     @Override
     public String getInCharsetName() {
         return inCharsetName;
@@ -378,9 +390,8 @@ public class CliArgs extends PgDiffArguments {
         this.concurrentlyMode = concurrentlyMode;
     }
 
-    @SuppressWarnings("deprecation")
     private static void badArgs(String message) throws CmdLineException{
-        throw new CmdLineException(message);
+        throw new CmdLineException(null, message, null);
     }
 
     /**
@@ -420,6 +431,9 @@ public class CliArgs extends PgDiffArguments {
             return false;
         }
 
+        String msJdbcStart = "jdbc:sqlserver:";
+        String pgJdbcStart = "jdbc:postgresql:";
+
         if (isModeParse()) {
             if (getNewSrc() == null) {
                 badArgs("Please specify SCHEMA to parse.");
@@ -427,13 +441,31 @@ public class CliArgs extends PgDiffArguments {
             if (getOldSrc() != null) {
                 badArgs("Parser mode doesn't require DEST argument.");
             }
+            if (isMsSql() && getNewSrc().startsWith(pgJdbcStart)) {
+                badArgs("Cannot parse PostgerSQL database as MS SQL project.");
+            }
+            if (!isMsSql() && getNewSrc().startsWith(msJdbcStart)) {
+                badArgs("Cannot parse MS SQL database as PostgerSQL project.");
+            }
         } else {
             if (getOldSrc() == null || getNewSrc() == null) {
                 badArgs("Please specify both SOURCE and DEST.");
             }
-            if (isAddTransaction() && isConcurrentlyMode()) {
-                badArgs("-C (--concurrently-mode) cannot be used with the option(s) -X (--add-transaction)");
+            if (isAddTransaction() && isConcurrentlyMode() && !isMsSql()) {
+                badArgs("-C (--concurrently-mode) cannot be used with the option(s) -X (--add-transaction) for PostgreSQL.");
             }
+            if (getOldSrc().startsWith(msJdbcStart) && getNewSrc().startsWith(pgJdbcStart)
+                    || getOldSrc().startsWith(pgJdbcStart) && getNewSrc().startsWith(msJdbcStart)) {
+                badArgs("Cannot compare MS SQL and PostgerSQL databases.");
+            }
+            if ((getOldSrc().startsWith(msJdbcStart) || getNewSrc().startsWith(msJdbcStart)) && !isMsSql()) {
+                badArgs("Cannot work with MS SQL database without --ms-sql parameter.");
+            }
+            if ((getOldSrc().startsWith(pgJdbcStart) || getNewSrc().startsWith(pgJdbcStart)) && isMsSql()) {
+                badArgs("Cannot work with PostgreSQL database with --ms-sql parameter.");
+            }
+            // TODO Do we need to check DB types for dump and directories?
+
             setOldSrcFormat(parsePath(getOldSrc()));
         }
         setNewSrcFormat(parsePath(getNewSrc()));

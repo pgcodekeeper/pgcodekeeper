@@ -23,7 +23,7 @@ public class SchemasMsReader {
         this.db = db;
     }
 
-    public void read() throws SQLException, InterruptedException, JsonReaderException {
+    public void read() throws SQLException, InterruptedException, XmlReaderException {
         loader.setCurrentOperation("schemas query");
 
         String query = JdbcQueries.QUERY_MS_SCHEMAS.get(null);
@@ -36,7 +36,7 @@ public class SchemasMsReader {
         }
     }
 
-    private AbstractSchema getSchema(ResultSet res) throws SQLException, JsonReaderException {
+    private AbstractSchema getSchema(ResultSet res) throws SQLException, XmlReaderException {
         String schemaName = res.getString("name");
         loader.setCurrentObject(new GenericColumn(schemaName, DbObjType.SCHEMA));
         AbstractSchema s = new MsSchema(schemaName, "");
@@ -46,7 +46,7 @@ public class SchemasMsReader {
             loader.setOwner(s, owner);
         }
 
-        for (JsonReader acl : JsonReader.fromArray(res.getString("acl"))) {
+        for (XmlReader acl : XmlReader.readXML(res.getString("acl"))) {
             String state = acl.getString("sd");
             boolean isWithGrantOption = false;
             if ("GRANT_WITH_GRANT_OPTION".equals(state)) {

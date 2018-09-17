@@ -34,6 +34,7 @@ import org.osgi.framework.Version;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -59,6 +60,15 @@ public final class OpenProjectUtils {
             Log.log(Log.LOG_ERROR, ce.getMessage());
         }
         return null;
+    }
+
+    public static boolean checkMsSql(IProject proj) {
+        try {
+            return proj.exists() && proj.hasNature(UIConsts.NATURE.MS);
+        } catch (CoreException e) {
+            Log.log(e);
+            return false;
+        }
     }
 
     public static boolean checkVersionAndWarn(IProject proj, Shell parent,
@@ -226,7 +236,7 @@ public final class OpenProjectUtils {
             // this won't work with UTF-16+, but at least it will work with UTF-8
             // and all single-byte/ASCII compatible encodings
             String s = new String(bb, 0, size, StandardCharsets.US_ASCII);
-            return s.contains("CREATE SCHEMA");
+            return s.contains("CREATE SCHEMA"); //$NON-NLS-1$
         } catch(CoreException | IOException ex) {
             Log.log(ex);
             return false;

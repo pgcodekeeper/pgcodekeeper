@@ -1,0 +1,20 @@
+ALTER TABLE [dbo].[table1]
+	DROP CONSTRAINT [PK_table1]
+GO
+
+DROP TABLE [dbo].[table1]
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+CREATE TABLE [tester].[table1](
+	[c1] [int] NOT NULL,
+	[c2] [varchar](100) NULL
+)
+GO
+
+ALTER TABLE [tester].[table1]
+	ADD CONSTRAINT [PK_table1] PRIMARY KEY CLUSTERED  ([c1]) ON [PRIMARY]
+GO

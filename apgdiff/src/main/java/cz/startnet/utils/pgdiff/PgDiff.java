@@ -110,7 +110,7 @@ public final class PgDiff {
         } else if ("db".equals(format)) {
             String timezone = arguments.getTimeZone() == null ? ApgdiffConsts.UTC : arguments.getTimeZone();
             return arguments.isMsSql() ?
-                    new JdbcMsLoader(JdbcConnector.fromUrl(srcPath, timezone), arguments).readDb()
+                    new JdbcMsLoader(JdbcConnector.fromUrl(srcPath), arguments).readDb()
                     : new JdbcLoader(JdbcConnector.fromUrl(srcPath, timezone), arguments).getDbFromJdbc();
         }
 
@@ -153,6 +153,9 @@ public final class PgDiff {
             PgDatabase oldDbFull, PgDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget) {
+        if (arguments.isMsSql()) {
+            return diffMsDatabaseSchemas(writer, arguments, root, oldDbFull, newDbFull, null);
+        }
         return diffDatabaseSchemasAdditionalDepcies(writer, arguments, root,
                 oldDbFull, newDbFull, additionalDepciesSource, additionalDepciesTarget, null);
     }

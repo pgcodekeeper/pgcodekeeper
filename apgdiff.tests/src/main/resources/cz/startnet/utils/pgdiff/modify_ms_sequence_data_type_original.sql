@@ -1,0 +1,9 @@
+CREATE SEQUENCE [dbo].[seq1]
+    AS [bigint]
+    START WITH 1
+    INCREMENT BY 3
+    MAXVALUE 100
+    MINVALUE 1
+    CACHE 
+    CYCLE
+GO

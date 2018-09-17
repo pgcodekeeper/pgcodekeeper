@@ -56,7 +56,7 @@ public class DbSourceTest {
             File dir = exportDir.get().toFile();
             new ModelExporter(dir, dbPredefined, ApgdiffConsts.UTF_8).exportFull();
 
-            performTest(DbSource.fromDirTree(true, dir.getAbsolutePath(), ApgdiffConsts.UTF_8));
+            performTest(DbSource.fromDirTree(true, dir.getAbsolutePath(), ApgdiffConsts.UTF_8, false));
         }
     }
 
@@ -65,7 +65,7 @@ public class DbSourceTest {
     CoreException {
         URL urla = DbSourceTest.class.getResource(DUMP);
 
-        performTest(DbSource.fromFile(true, ApgdiffUtils.getFileFromOsgiRes(urla), ApgdiffConsts.UTF_8));
+        performTest(DbSource.fromFile(true, ApgdiffUtils.getFileFromOsgiRes(urla), ApgdiffConsts.UTF_8, false));
     }
 
     @Test
@@ -106,7 +106,7 @@ public class DbSourceTest {
 
     private IProject createProjectInWorkspace(String projectName) throws CoreException{
         IProject project = workspaceRoot.getProject(projectName);
-        PgDbProject.createPgDbProject(project, null);
+        PgDbProject.createPgDbProject(project, null, false);
         project.getNature(NATURE.ID).deconfigure();
 
         assertNotNull("Project location cannot be determined", project.getLocation());

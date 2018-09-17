@@ -34,10 +34,193 @@ public class MsDiffTest {
                 new Object[][] {
                     // Tests scenario where MS PRIVILEGES for columns is added.
                     {"add_ms_column_privileges"},
-                    // Tests scenario where MS COLUMN type is modified.
-                    {"modify_ms_column_type"},
+                    // Tests scenario where MS PRIVILEGES for columns is dropped.
+                    {"drop_ms_column_privileges"},
+                    // Tests scenario where MS PRIVILEGES for columns is modified.
+                    {"modify_ms_column_privileges"},
+                    // Tests scenario where MS PRIVILEGES for table is added.
+                    {"add_ms_table_privileges"},
+                    // Tests scenario where MS PRIVILEGES for table is dropped.
+                    {"drop_ms_table_privileges"},
+                    // Tests scenario where MS PRIVILEGES for table is modified.
+                    {"modify_ms_table_privileges"},
+                    // Tests scenario where MS PRIVILEGES for procedure is added.
+                    {"add_ms_procedure_privileges"},
+                    // Tests scenario where MS PRIVILEGES for procedure is dropped.
+                    {"drop_ms_procedure_privileges"},
+                    // Tests scenario where MS PRIVILEGES for procedure is modify.
+                    {"modify_ms_procedure_privileges"},
+                    // Tests scenario where MS PRIVILEGES for schema is added.
+                    {"add_ms_schema_privileges"},
+                    // Tests scenario where MS PRIVILEGES for schema is dropped.
+                    {"drop_ms_schema_privileges"},
+                    // Tests scenario where MS PRIVILEGES for schema is modified.
+                    {"modify_ms_schema_privileges"},
+
+                    // TODO Uncomment the code when comments will be supported.
+                    // Tests scenario where MS "COMMENT" is added.
+                    // {"add_ms_comment"},
+                    // Tests scenario where MS "COMMENT" is dropped.
+                    // {"drop_ms_comment"},
+                    // Tests scenario where MS "COMMENT" is modified.
+                    // {"modify_ms_comment"},
+
+                    // Tests scenario where MS SCHEMA is added.
+                    {"add_ms_schema"},
+                    // Tests scenario where MS SCHEMA is dropped.
+                    {"drop_ms_schema"},
+                    // Tests scenario where name of MS SCHEMA is modified.
+                    {"modify_ms_schema_name"},
+                    // Tests scenario where MS SCHEMA is modified.
+                    {"modify_ms_schema"},
+                    // Tests scenario where MS SCHEMA owner is modified.
+                    {"modify_ms_schema_owner"},
+
+                    // Tests scenario where MS TABLE is added.
+                    {"add_ms_table"},
+                    // Tests scenario where MS TABLE is dropped.
+                    {"drop_ms_table"},
+                    // Tests scenario where MS TABLE identity is modified.
+                    {"modify_ms_table_identity"},
+                    // Tests scenario where MS TABLE trigger state is modified.
+                    {"modify_ms_table_disable_trigger"},
+                    // Tests scenario where MS TABLE option is modified.
+                    // TODO Uncomment the code when table option will be supported.
+                    // {"modify_ms_table_option"},
+                    // Tests scenario where MS TABLE CHANGE_TRACKING is added.
+                    {"add_ms_table_tracking"},
+                    // Tests scenario where MS TABLE CHANGE_TRACKING is dropped.
+                    {"drop_ms_table_tracking"},
+                    // Tests scenario where MS TABLE CHANGE_TRACKING is modified.
+                    {"modify_ms_table_tracking"},
+                    // Tests scenario where MS TABLE with partition is added.
+                    {"add_ms_table_with_partition"},
+                    // Tests scenario where MS TABLE with partition is dropped.
+                    {"drop_ms_table_with_partition"},
+                    // Tests scenario where MS TABLE with partition is modified.
+                    {"modify_ms_table_with_partition"},
+                    // Tests scenario where MS TABLE owner is modified.
+                    {"modify_ms_table_owner"},
+
+                    // Tests scenario where MS VIEW is added.
+                    {"add_ms_view"},
+                    // Tests scenario where MS VIEW, which use table from other schema, is added.
+                    {"add_ms_view_other_schema"},
+                    // Tests scenario where MS VIEW is dropped.
+                    {"drop_ms_view"},
+                    // Tests scenario where MS VIEW is modified.
+                    {"modify_ms_view"},
+                    // Tests scenario where MS VIEW trigger state is modified.
+                    {"modify_ms_view_disable_trigger"},
+
+                    // TODO Uncomment the code when user-defined type will be supported.
+                    // Tests scenario where MS TYPE is added.
+                    // {"add_ms_type"},
+                    // Tests scenario where MS TYPE is dropped.
+                    // {"drop_ms_type"},
+                    // Tests scenario where MS TYPE is modified.
+                    // {"modify_ms_type"},
+                    // Tests scenario where MS TYPE owner is modified.
+                    // {"modify_ms_type_owner"},
+
+                    // Tests scenario where MS INDEX is added.
+                    {"add_ms_index"},
+                    // Tests scenario where MS INDEX is dropped.
+                    {"drop_ms_index"},
+                    // Tests scenario where MS INDEX definition is modified.
+                    {"modify_ms_index"},
+                    // Tests scenario where MS INDEX definition is modified.
+                    {"modify_ms_index_option"},
+
+                    // Tests scenario where MS FUNCTION without args is added.
+                    {"add_ms_function_noargs"},
+                    // Tests scenario where MS FUNCTION without args is dropped.
+                    {"drop_ms_function_noargs"},
+                    // Tests scenario where MS FUNCTION without args is modified.
+                    {"modify_ms_function_noargs"},
+
+                    // Tests scenario where MS FUNCTION with args is added.
+                    {"add_ms_function_args"},
+                    // Tests scenario where MS FUNCTION with args is dropped.
+                    {"drop_ms_function_args"},
+                    // Tests scenario where MS FUNCTION with args is modified.
+                    {"modify_ms_function_args"},
+                    // Tests scenario where MS FUNCTION with args return type is modified.
+                    {"modify_ms_function_args_return_tbl"},
+                    // Tests scenario where default argument of MS FUNCTION with args is modified.
+                    {"modify_ms_function_args_default"},
+                    // Tests scenario where with option of MS FUNCTION with args is modified.
+                    {"modify_ms_function_args_with"},
+                    // Tests scenario where external name of MS FUNCTION with args is modified.
+                    {"modify_ms_function_args_external"},
+
+                    // Tests scenario where MS TABLE CONSTRAINT of column is added.
+                    {"add_ms_constraint_column"},
+                    // Tests scenario where MS TABLE CONSTRAINT of column is dropped.
+                    {"drop_ms_constraint_column"},
+                    // Tests scenario where MS TABLE CONSTRAINT of column is modified.
+                    {"modify_ms_constraint_column"},
+                    // Tests scenario where MS TABLE CONSTRAINT, with default name, of column is dropped.
+                    // TODO Uncomment the code when the deleting of the "default constraint" will be supported.
+                    // {"drop_ms_constraint_default_column"},
+                    // Tests scenario where MS TABLE CONSTRAINT is disabled.
+                    {"disable_ms_constraint"},
+                    // Tests scenario where MS TABLE CONSTRAINT is enabled.
+                    {"enable_ms_constraint"},
+                    // Tests scenario where MS TABLE FOREIGN KEY CONSTRAINT is disabled.
+                    {"disable_ms_constraint_fk"},
+                    // Tests scenario where MS TABLE FOREIGN KEY CONSTRAINT is enabled.
+                    {"enable_ms_constraint_fk"},
+
+                    // Tests scenario where MS SEQUENCE is added.
+                    {"add_ms_sequence"},
+                    // Tests scenario where MS SEQUENCE is dropped.
+                    {"drop_ms_sequence"},
+                    // Tests scenario where MS SEQUENCE is modified.
+                    {"modify_ms_sequence"},
+                    // Tests scenario where MS SEQUENCE data type is modified.
+                    {"modify_ms_sequence_data_type"},
                     // Tests scenario where MS SEQUENCE cashe is modified.
                     {"modify_ms_sequence_cache"},
+
+                    // Tests scenario where MS TRIGGER is added.
+                    {"add_ms_trigger"},
+                    // Tests scenario where MS TRIGGER is dropped.
+                    {"drop_ms_trigger"},
+                    // Tests scenario where MS TRIGGER is modified.
+                    {"modify_ms_trigger"},
+
+                    // Tests scenario where MS PROCEDURE without args is added.
+                    {"add_ms_procedure_noargs"},
+                    // Tests scenario where MS PROCEDURE without args is dropped.
+                    {"add_ms_procedure_noargs"},
+                    // Tests scenario where MS PROCEDURE without args is modified.
+                    {"add_ms_procedure_noargs"},
+
+                    // Tests scenario where MS PROCEDURE is added.
+                    {"add_ms_procedure"},
+                    // Tests scenario where MS PROCEDURE is dropped.
+                    {"drop_ms_procedure"},
+                    // Tests scenario where MS PROCEDURE is modified.
+                    {"modify_ms_procedure"},
+                    // Tests scenario where MS PROCEDURE type is modified.
+                    {"modify_ms_procedure_type"},
+
+                    // Tests scenario where COLUMN is added to MS TABLE definition.
+                    {"add_ms_column"},
+                    // Tests scenario where COLUMN is dropped from MS TABLE.
+                    {"drop_ms_column"},
+                    // Tests scenario where COLUMN with index dependency is dropped from MS TABLE.
+                    {"drop_ms_column_with_idx"},
+                    // Tests scenario where MS COLUMN type is modified.
+                    {"modify_ms_column_type"},
+                    // Tests scenario where MS COLUMN type is modified, column has constraint.
+                    // TODO Uncomment the code when dependency columns from constraint will be supported.
+                    // {"modify_ms_column_type_with_constraint"},
+                    // Tests scenario where MS COLUMN options is added.
+                    {"add_ms_column_options"},
+                    // Tests scenario where MS COLUMN options is dropped.
+                    {"drop_ms_column_options"},
                 });
     }
 

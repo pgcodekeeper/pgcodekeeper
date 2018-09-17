@@ -32,7 +32,7 @@ public class GetSystemObjects extends AbstractHandler {
         if (part instanceof ProjectEditorDiffer){
             ProjectEditorDiffer differ = (ProjectEditorDiffer) part;
             Object db = differ.getCurrentDb();
-            if (db != null && db instanceof DbInfo) {
+            if (db != null && db instanceof DbInfo && !((DbInfo)db).isMsSql()) {
                 DbInfo info = ((DbInfo)db);
                 FileDialog fd = new FileDialog(HandlerUtil.getActiveShell(event), SWT.SAVE);
                 fd.setText(Messages.GetSystemObjects_save_dialog_title);
@@ -42,7 +42,7 @@ public class GetSystemObjects extends AbstractHandler {
                     JdbcConnector jdbcConnector = new JdbcConnector(info.getDbHost(),
                             info.getDbPort(), info.getDbUser(), info.getDbPass(),
                             info.getDbName(), info.getProperties(), info.isReadOnly(),
-                            ApgdiffConsts.UTF_8);
+                            ApgdiffConsts.UTC);
                     try {
                         PgSystemStorage storage = new JdbcSystemLoader(jdbcConnector,
                                 SubMonitor.convert(new NullProgressMonitor())).getStorageFromJdbc();

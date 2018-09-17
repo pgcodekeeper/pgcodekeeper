@@ -1,0 +1,2 @@
+ALTER TABLE [dbo].[table1] WITH CHECK CHECK CONSTRAINT [iden_fk]
+GO

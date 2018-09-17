@@ -363,14 +363,13 @@ create_index_statement
     ;
 
 index_rest
-    : index_sort table_space? index_where?
+    : index_sort with_storage_parameter? table_space? index_where?
     ;
 
 index_sort
     : (USING method=identifier)?
       LEFT_PAREN sort_specifier_list RIGHT_PAREN
       including_index?
-      with_storage_parameter?
     ;
 
 including_index

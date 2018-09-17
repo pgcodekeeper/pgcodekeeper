@@ -26,14 +26,22 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 
-
+/**
+ * Exports PgDatabase model as a directory tree with
+ * sql files with objects' code as leaves.<br><br>
+ *
+ * For historical reasons we expect a filtered user-selection-only list in {@link #exportPartial()}
+ * but we use the new API {@link TreeElement#isSelected()} for selection checks
+ * instead of calling {@link Collection#contains(Object)} for performance reasons.
+ *
+ * @author Alexander Levsha
+ */
 public abstract class AbstractModelExporter {
 
     protected static final int HASH_LENGTH = 10;
@@ -107,7 +115,6 @@ public abstract class AbstractModelExporter {
 
         while (!changeList.isEmpty()) {
             TreeElement el = changeList.pop();
-            Log.log(Log.LOG_DEBUG, "Exporting object: " + el);
             switch(el.getSide()) {
             case LEFT:
                 deleteObject(el);

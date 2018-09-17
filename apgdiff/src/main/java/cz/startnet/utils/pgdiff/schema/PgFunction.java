@@ -6,6 +6,7 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -128,7 +129,7 @@ public class PgFunction extends AbstractFunction {
         }
 
         if (!checkForChanges(newFunction)) {
-            if (needDrop(this, newFunction)) {
+            if (needDrop(newFunction)) {
                 isNeedDepcies.set(true);
                 return true;
             } else {
@@ -145,6 +146,55 @@ public class PgFunction extends AbstractFunction {
             newFunction.appendCommentSql(sb);
         }
         return sb.length() > startLength;
+    }
+
+    private boolean needDrop(AbstractFunction newFunction) {
+        if (newFunction == null ||
+                !Objects.equals(getReturns(), newFunction.getReturns())) {
+            return true;
+        }
+
+        Iterator<Argument> iOld = arguments.iterator();
+        Iterator<Argument> iNew = newFunction.arguments.iterator();
+        while (iOld.hasNext() && iNew.hasNext()) {
+            Argument argOld = iOld.next();
+            Argument argNew = iNew.next();
+
+            String oldDef = argOld.getDefaultExpression();
+            String newDef = argNew.getDefaultExpression();
+            // allow creation of defaults (old==null && new!=null)
+            if (oldDef != null && !oldDef.equals(newDef)) {
+                return true;
+            }
+
+            // [IN]OUT args that change their names implicitly change the function's
+            // return type due to it being "SETOF record" in case of
+            // multiple [IN]OUT args present
+
+            // actually any argument name change requires drop
+            if (!Objects.equals(argOld.getName(), argNew.getName())) {
+                return true;
+            }
+            // нельзя менять тип out параметров
+            if ("OUT".equalsIgnoreCase(argOld.getMode()) &&
+                    !Objects.equals(argOld.getDataType(), argNew.getDataType())) {
+                return true;
+            }
+        }
+        // Если добавляется или удаляется out параметр нужно удалить функцию,
+        // т.к. меняется её возвращаемое значение
+        while (iOld.hasNext()) {
+            if ("OUT".equalsIgnoreCase(iOld.next().getMode())) {
+                return true;
+            }
+        }
+        while (iNew.hasNext()) {
+            if ("OUT".equalsIgnoreCase(iNew.next().getMode())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -194,5 +244,20 @@ public class PgFunction extends AbstractFunction {
     @Override
     protected AbstractFunction getFunctionCopy() {
         return new PgFunction(getBareName(), getRawStatement());
+    }
+
+    public class PgArgument extends Argument {
+
+        private static final long serialVersionUID = -6351018532827424260L;
+
+        public PgArgument(String mode, String name, String dataType) {
+            super(mode, name, dataType);
+        }
+
+        @Override
+        public void setDefaultExpression(String defaultExpression) {
+            super.setDefaultExpression(defaultExpression);
+            resetHash();
+        }
     }
 }

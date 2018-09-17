@@ -37,7 +37,7 @@ ALTER TABLE public.testtable OWNER TO fordfrog;
 -- Name: testindex; Type: INDEX; Schema: public; Owner: fordfrog; Tablespace: 
 --
 
-CREATE INDEX testindex ON testtable USING btree (field1);
+CREATE INDEX """idxф.garbage=:;\""""." ON testtable USING btree (field1);
 
 
 --

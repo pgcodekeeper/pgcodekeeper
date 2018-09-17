@@ -53,7 +53,7 @@ public class JdbcConnector {
             if (url.startsWith("jdbc:postgresql:")) {
                 return new JdbcConnector(url, timezone);
             } else if (url.startsWith("jdbc:sqlserver:")) {
-                return new JdbcMsConnector(url, timezone);
+                return new JdbcMsConnector(url);
             }
         } catch (URISyntaxException ex) {
             throw new IllegalArgumentException(ex.getLocalizedMessage(), ex);
@@ -97,7 +97,10 @@ public class JdbcConnector {
         this.url = url;
         this.timezone = timezone;
 
-        String host = null, user = null, pass = null, dbName = null;
+        String host = null;
+        String user = null;
+        String pass = null;
+        String dbName = null;
         int port = -1;
         // strip jdbc:, URI doesn't understand schemas with colons
         URI uri = new URI(url.substring(5));
@@ -207,7 +210,7 @@ public class JdbcConnector {
         return timezone;
     }
 
-    private String getPgPassPassword(){
+    protected String getPgPassPassword(){
         Log.log(Log.LOG_INFO, "User provided an empty password. Reading password from pgpass file."); //$NON-NLS-1$
 
         try {

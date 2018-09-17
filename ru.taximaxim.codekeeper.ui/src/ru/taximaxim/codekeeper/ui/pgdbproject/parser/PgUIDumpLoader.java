@@ -36,8 +36,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.MS_WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
@@ -138,11 +140,8 @@ public class PgUIDumpLoader extends PgDumpLoader {
         PgDatabase db = new PgDatabase();
         db.setArguments(arguments);
         for (WORK_DIR_NAMES workDirName : WORK_DIR_NAMES.values()) {
-            IFolder iFolder = iProject.getFolder(workDirName.name());
-            if (iFolder.exists()) {
-                // legacy schemas
-                loadSubdir(iFolder, db, monitor, statementBodies, errors);
-            }
+            // legacy schemas
+            loadSubdir(iProject.getFolder(workDirName.name()), db, monitor, statementBodies, errors);
         }
 
         IFolder schemasCommonDir = iProject.getFolder(WORK_DIR_NAMES.SCHEMA.name());
@@ -159,10 +158,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
                 IFolder schemaDir = (IFolder) sub;
                 loadSubdir(schemaDir, db, monitor, statementBodies, errors);
                 for (String dirSub : DIR_LOAD_ORDER) {
-                    IFolder iFolder = schemaDir.getFolder(dirSub);
-                    if (iFolder.exists()) {
-                        loadSubdir(iFolder, db, monitor, statementBodies, errors);
-                    }
+                    loadSubdir(schemaDir.getFolder(dirSub), db, monitor, statementBodies, errors);
                 }
             }
         }
@@ -170,9 +166,37 @@ public class PgUIDumpLoader extends PgDumpLoader {
         return db;
     }
 
+    /**
+     * Loads database schema from a MsModelExporter directory tree.
+     *
+     * @return database schema
+     */
+    public static PgDatabase loadDatabaseSchemaFromMsProject(IProject iProject,
+            PgDiffArguments arguments, IProgressMonitor monitor,
+            List<StatementBodyContainer> statementBodies, List<AntlrError> errors)
+                    throws InterruptedException, IOException, CoreException {
+        PgDatabase db = new PgDatabase();
+        db.setArguments(arguments);
+
+        IFolder securityFolder = iProject.getFolder("Security"); //$NON-NLS-1$
+        loadSubdir(securityFolder.getFolder("Schemas"), db, monitor, statementBodies, errors); //$NON-NLS-1$
+        // TODO users, roles
+        addDboSchema(db);
+
+        // content
+        for (String dirSub : MS_DIR_LOAD_ORDER) {
+            loadSubdir(iProject.getFolder(dirSub), db, monitor, statementBodies, errors);
+        }
+
+        return db;
+    }
+
     private static void loadSubdir(IFolder folder, PgDatabase db, IProgressMonitor monitor,
             List<StatementBodyContainer> statementBodies, List<AntlrError> errors)
                     throws InterruptedException, IOException, CoreException {
+        if (!folder.exists()) {
+            return;
+        }
         for (IResource resource : folder.members()) {
             if (resource.getType() == IResource.FILE && "sql".equals(resource.getFileExtension())) { //$NON-NLS-1$
                 loadFile((IFile) resource, monitor, db, statementBodies, errors);
@@ -183,7 +207,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
     private static void loadFile(IFile file, IProgressMonitor monitor, PgDatabase db,
             List<StatementBodyContainer> statementBodies, List<AntlrError> errors)
                     throws IOException, CoreException, InterruptedException {
-        PgDiffArguments arguments = new PgDiffArguments();
+        PgDiffArguments arguments = db.getArguments().clone();
         arguments.setInCharsetName(file.getCharset());
 
         List<AntlrError> errList = null;
@@ -202,13 +226,68 @@ public class PgUIDumpLoader extends PgDumpLoader {
     }
 
     public static PgStatement parseStatement(IFile file, Collection<DbObjType> types) throws InterruptedException, IOException, CoreException {
-        return buildFiles(Arrays.asList(file), null, null).getDescendants().
+        return buildFiles(Arrays.asList(file), null, null, false).getDescendants().
                 filter(e -> types.contains(e.getStatementType())).findAny().orElse(null);
     }
 
     public static PgDatabase buildFiles(Collection<IFile> files, IProgressMonitor monitor,
-            List<StatementBodyContainer> statementBodies) throws InterruptedException, IOException, CoreException {
+            List<StatementBodyContainer> statementBodies, boolean isMsSql) throws InterruptedException, IOException, CoreException {
         SubMonitor mon = SubMonitor.convert(monitor, files.size());
+        return isMsSql ? buildMsFiles(files, mon, statementBodies) :
+            buildPgFiles(files, mon, statementBodies);
+    }
+
+    private static PgDatabase buildMsFiles(Collection<IFile> files, SubMonitor mon,
+            List<StatementBodyContainer> statementBodies) throws InterruptedException, IOException, CoreException {
+        PgDatabase db = new PgDatabase();
+        PgDiffArguments args = new PgDiffArguments();
+        Set<String> schemaFiles = new HashSet<>();
+        args.setMsSql(true);
+        db.setArguments(args);
+
+        IPath schemasPath = new Path(MS_WORK_DIR_NAMES.SECURITY.getName()).append("Schemas"); //$NON-NLS-1$
+        boolean isLoaded = false;
+        for (IFile file : files) {
+            IPath filePath = file.getProjectRelativePath();
+            if (!"sql".equals(file.getFileExtension()) || !isInMsProject(filePath)) { //$NON-NLS-1$
+                // skip non-sql or non-project files
+                // still report work
+                mon.worked(1);
+                continue;
+            }
+
+            if (!isLoaded) {
+                // load all schemas, because we don't know in which schema the object
+                IProject proj = file.getProject();
+                loadSubdir(proj.getFolder(schemasPath), db, mon, statementBodies, null);
+                addDboSchema(db);
+                isLoaded = true;
+            }
+
+            if (schemasPath.isPrefixOf(filePath)) {
+                schemaFiles.add(filePath.removeFileExtension().lastSegment());
+            } else {
+                loadFile(file, mon, db, statementBodies, null);
+            }
+        }
+
+        PgDatabase newDb = new PgDatabase();
+        newDb.setArguments(args);
+
+        // exclude empty schemas (except loaded from schema files) that have been loaded early
+        db.getSchemas().stream()
+        .filter(sc -> schemaFiles.contains(AbstractModelExporter.getExportedFilename(sc))
+                || sc.hasChildren())
+        .forEach(st -> {
+            st.dropParent();
+            newDb.addSchema(st);
+        });
+
+        return newDb;
+    }
+
+    private static PgDatabase buildPgFiles(Collection<IFile> files, SubMonitor mon,
+            List<StatementBodyContainer> statementBodies) throws InterruptedException, IOException, CoreException {
         Set<String> schemaDirnamesLoaded = new HashSet<>();
         IPath schemasPath = new Path(WORK_DIR_NAMES.SCHEMA.name());
         PgDatabase db = new PgDatabase();
@@ -280,23 +359,40 @@ public class PgUIDumpLoader extends PgDumpLoader {
      * @param path project relative path of checked resource
      * @return whether this resource is within the main database schema hierarchy
      */
-    public static boolean isInProject(IPath path) {
+    private static boolean isInProject(IPath path) {
         String dir = path.segment(0);
         return dir == null ? false : Arrays.stream(ApgdiffConsts.WORK_DIR_NAMES.values())
                 .map(Enum::name).anyMatch(dir::equals);
     }
 
+    private static boolean isInMsProject(IPath path) {
+        String dir = path.segment(0);
+        return dir == null ? false : Arrays.stream(ApgdiffConsts.MS_WORK_DIR_NAMES.values())
+                .map(MS_WORK_DIR_NAMES::getName).anyMatch(dir::equals);
+    }
+
     public static boolean isInProject(IResource resource) {
         try {
-            return resource.getProject().hasNature(NATURE.ID)
-                    && isInProject(resource.getProjectRelativePath());
+            IProject project = resource.getProject();
+            if (!project.hasNature(NATURE.ID)) {
+                return false;
+            }
+
+            if (project.hasNature(NATURE.MS)) {
+                return isInMsProject(resource.getProjectRelativePath());
+            }
+
+            return isInProject(resource.getProjectRelativePath());
         } catch (CoreException ex) {
             Log.log(ex);
             return false;
         }
     }
 
-    public static boolean isInProject(IResourceDelta delta) {
+    public static boolean isInProject(IResourceDelta delta, boolean isMsSql) {
+        if (isMsSql) {
+            return isInMsProject(delta.getProjectRelativePath());
+        }
         return isInProject(delta.getProjectRelativePath());
     }
 
@@ -306,23 +402,35 @@ public class PgUIDumpLoader extends PgDumpLoader {
     }
 
     /**
-     * @param editorInput
-     * @return param's {@link IResource} or null if not available or not {@link #isInProject(IPath)}
+     * @param path project relative path
+     * @param is MS project
+     * @return whether the path corresponds to a schema sql file
      */
-    public static IResource getProjectResource(IEditorInput editorInput) {
-        IResource res = ResourceUtil.getResource(editorInput);
-        return isInProject(res) ? res : null;
+    public static boolean isSchemaFile(IPath path, boolean isMsSql) {
+        return isMsSql ? isMsSchemaFile(path) : isPgSchemaFile(path);
     }
 
     /**
      * @param path project relative path
      * @return whether the path corresponds to a schema sql file
-     *          like this: /SCHEMA/schema_name.sql
+     *     like this: /SCHEMA/schema_name.sql or /SCHEMA/schema_name/schema_name.sql
      */
-    public static boolean isSchemaFile(IPath path) {
+    private static boolean isPgSchemaFile(IPath path) {
         int c = path.segmentCount();
         return (c == 2 || c == 3) // legacy or new schemas
                 && path.segment(0).equals(WORK_DIR_NAMES.SCHEMA.name())
                 && path.segment(c - 1).endsWith(".sql"); //$NON-NLS-1$
+    }
+
+    /**
+     * @param path project relative path
+     * @return whether the path corresponds to a schema sql file
+     *          like this: /Security/Schemas/schema_name.sql
+     */
+    private static boolean isMsSchemaFile(IPath path) {
+        return path.segmentCount() == 3
+                && path.segment(0).equals(MS_WORK_DIR_NAMES.SECURITY.getName())
+                && "Schemas".equals(path.segment(1)) //$NON-NLS-1$
+                && path.segment(2).endsWith(".sql"); //$NON-NLS-1$
     }
 }

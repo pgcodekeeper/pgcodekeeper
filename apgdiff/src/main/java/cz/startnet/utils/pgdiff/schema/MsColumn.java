@@ -30,6 +30,14 @@ public class MsColumn extends AbstractColumn {
             sbDefinition.append(" SPARSE");
         }
 
+        if (isRowGuidCol()) {
+            sbDefinition.append(" ROWGUIDCOL");
+        }
+
+        if (isPersisted()) {
+            sbDefinition.append(" PERSISTED");
+        }
+
         if (getExpression() == null) {
             sbDefinition.append(getNullValue() ? " NULL" : " NOT NULL");
         }
@@ -98,6 +106,20 @@ public class MsColumn extends AbstractColumn {
             sb.append(getAlterColumn(true, false, name));
             sb.append(newColumn.isSparse() ? " ADD" : " DROP" );
             sb.append(" SPARSE");
+            sb.append(GO);
+        }
+
+        if (newColumn.isRowGuidCol() != isRowGuidCol()) {
+            sb.append(getAlterColumn(true, false, name));
+            sb.append(newColumn.isRowGuidCol() ? " ADD" : " DROP" );
+            sb.append(" ROWGUIDCOL");
+            sb.append(GO);
+        }
+
+        if (newColumn.isPersisted() != isPersisted()) {
+            sb.append(getAlterColumn(true, false, name));
+            sb.append(newColumn.isPersisted() ? " ADD" : " DROP" );
+            sb.append(" PERSISTED");
             sb.append(GO);
         }
 

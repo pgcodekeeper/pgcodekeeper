@@ -173,7 +173,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
     public void getObjFromProjFiles(Collection<IFile> files, IProgressMonitor monitor)
             throws InterruptedException, IOException, CoreException {
         List<StatementBodyContainer> statementBodies = new ArrayList<>();
-        PgDatabase db = PgUIDumpLoader.buildFiles(files, monitor, statementBodies);
+        PgDatabase db = PgUIDumpLoader.buildFiles(files, monitor, statementBodies, false);
         objDefinitions.putAll(db.getObjDefinitions());
         objReferences.putAll(db.getObjReferences());
         fillStatementBodies(statementBodies);

@@ -39,10 +39,10 @@ public class MsProcedure extends AbstractFunction {
         sbSQL.append(" PROCEDURE ");
         sbSQL.append(getQualifiedName()).append('\n');
 
-        sbSQL.append(arguments.stream().map(arg -> getDeclaration(arg, true, true))
-                .collect(Collectors.joining(",\n")));
-
-        sbSQL.append('\n');
+        if (!arguments.isEmpty()) {
+            sbSQL.append(arguments.stream().map(arg -> getDeclaration(arg, true, true))
+                    .collect(Collectors.joining(",\n"))).append('\n');
+        }
         if (!options.isEmpty()) {
             sbSQL.append(" WITH ").append(String.join(", ", options)).append('\n');
         }
@@ -72,7 +72,12 @@ public class MsProcedure extends AbstractFunction {
             return false;
         }
         if (!checkForChanges(newProcedure)) {
-            sb.append(getProcedureFullSQL(false));
+            if (needDrop(newProcedure)) {
+                isNeedDepcies.set(true);
+                return true;
+            } else {
+                sb.append(newProcedure.getProcedureFullSQL(false));
+            }
         }
 
         if (!Objects.equals(getOwner(), newProcedure.getOwner())) {
@@ -82,6 +87,10 @@ public class MsProcedure extends AbstractFunction {
         alterPrivileges(newProcedure, sb);
 
         return sb.length() > startLength;
+    }
+
+    private boolean needDrop(MsProcedure newProcedure) {
+        return isCLR() != newProcedure.isCLR();
     }
 
     @Override

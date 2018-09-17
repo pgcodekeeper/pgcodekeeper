@@ -35,6 +35,7 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
     private boolean cycle;
     private String ownedBy;
     private String dataType = BIGINT;
+    private String presicion;
 
     @Override
     public DbObjType getStatementType() {
@@ -66,6 +67,15 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
 
     public boolean isCycle() {
         return cycle;
+    }
+
+    public String getPresicion() {
+        return presicion;
+    }
+
+    public void setPresicion(String presicion) {
+        this.presicion = presicion;
+        resetHash();
     }
 
     public void setMinMaxInc(long inc, Long max, Long min, String dataType) {
@@ -170,6 +180,7 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
                     && grants.equals(seq.grants)
                     && revokes.equals(seq.revokes)
                     && Objects.equals(owner, seq.getOwner())
+                    && Objects.equals(presicion, seq.getPresicion())
                     && Objects.equals(comment, seq.getComment())
                     && Objects.equals(dataType, seq.getDataType());
         }
@@ -192,6 +203,7 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
         hasher.put(owner);
         hasher.put(comment);
         hasher.put(dataType);
+        hasher.put(presicion);
         hasher.put(isCached);
     }
 
@@ -215,6 +227,7 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
             sequenceDst.addPrivilege(priv);
         }
         sequenceDst.setOwner(getOwner());
+        sequenceDst.setPresicion(getPresicion());
         sequenceDst.deps.addAll(deps);
         return sequenceDst;
     }

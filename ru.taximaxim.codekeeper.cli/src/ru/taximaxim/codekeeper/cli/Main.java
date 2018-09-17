@@ -15,6 +15,9 @@ import java.text.MessageFormat;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
 import org.kohsuke.args4j.CmdLineException;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
@@ -23,6 +26,7 @@ import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.MsModelExporter;
@@ -39,15 +43,14 @@ public final class Main {
     /**
      * @return success value
      */
-    public static boolean main(String[] args)
-            throws IOException, InterruptedException, URISyntaxException {
+    public static boolean main(String[] args) {
         PrintWriter writer = new PrintWriter(System.out, true);
         CliArgs arguments = new CliArgs();
         try {
             if (!arguments.parse(writer, args)) {
                 return true;
             }
-            if(arguments.isModeParse()) {
+            if (arguments.isModeParse()) {
                 parse(arguments);
                 return true;
             } else {
@@ -55,6 +58,18 @@ public final class Main {
             }
         } catch (CmdLineException | NotAllowedObjectException ex) {
             System.err.println(ex.getLocalizedMessage());
+            return false;
+        } catch (Exception e) {
+            if (arguments.isDebug()) {
+                e.printStackTrace(System.err);
+            } else {
+                System.err.println(e.getLocalizedMessage());
+                System.err.println("Use -E to see exception stacktrace");
+            }
+
+            Status error = new Status(IStatus.ERROR, ApgdiffConsts.APGDIFF_PLUGIN_ID,
+                    "pgCodeKeeper error", e);
+            Platform.getLog(Activator.getContext().getBundle()).log(error);
             return false;
         }
     }

@@ -176,6 +176,10 @@ public final class Messages extends NLS {
 
     public static String ConvertProject_convert_dialog_title;
 
+    public static String ConvertProject_select_type_desc;
+
+    public static String ConvertProject_select_type_title;
+
     public static String diffPresentationPane_getting_changes_for_diff;
     public static String project_either_closed_or_deleted;
 
@@ -240,6 +244,8 @@ public final class Messages extends NLS {
 
     public static String DbStoreEditorDialog_auto_generation_description;
 
+    public static String DbStoreEditorDialog_ms_sql_database;
+
     public static String DbStoreEditorDialog_select_ignore_file;
 
     public static String DbStoreEditorDialog_success;
@@ -267,8 +273,6 @@ public final class Messages extends NLS {
     public static String DbStorePrefPage_pg_pass_import_tooltip;
 
     public static String DbUpdatePrefPage_alter_seq_restart_statement;
-
-    public static String DbUpdatePrefPage_impossible_transaction_and_concurrently;
 
     public static String DbUpdatePrefPage_print_index_with_concurrently;
 
@@ -361,7 +365,11 @@ public final class Messages extends NLS {
 
     public static String DiffWizard_db_tz;
 
+    public static String DiffWizard_ms_sql_dump;
+
     public static String DiffWizard_select_db_tz;
+
+    public static String DiffWizard_different_types;
 
     public static String DiffWizard_source;
 
@@ -501,6 +509,8 @@ public final class Messages extends NLS {
     public static String NewProjWizard_select_time_zone;
 
     public static String NewProjWizard_get_from_db;
+
+    public static String NewProjWizard_ms_project;
     public static String NormalizeProject_are_you_sure;
 
     public static String NormalizeProject_error_while_updating_project;
@@ -553,6 +563,8 @@ public final class Messages extends NLS {
     public static String PgImport_error_metadata;
 
     public static String PgImport_error_no_name;
+
+    public static String PgImport_import_as_mssql;
 
     public static String PgImport_import_error;
 
@@ -630,6 +642,9 @@ public final class Messages extends NLS {
     public static String ProjectEditorDiffer_script_creation_message;
 
     public static String ProjectEditorDiffer_script_creation_title;
+
+    public static String ProjectEditorDiffer_different_types;
+    public static String ProjectEditorDiffer_different_types_msg;
 
     public static String ProjectEditorInput_pgcodekeeper_project;
 
@@ -817,6 +832,8 @@ public final class Messages extends NLS {
     // SONAR-ON
 
     public static String QuickUpdate_danger;
+
+    public static String QuickUpdate_different_types;
 
     public static String QuickUpdate_empty_script;
 

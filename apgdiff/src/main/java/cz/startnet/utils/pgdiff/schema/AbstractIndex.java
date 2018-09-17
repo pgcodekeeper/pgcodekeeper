@@ -6,7 +6,9 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -16,13 +18,21 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 /**
  * Stores table index information.
  */
-public abstract class AbstractIndex extends PgStatementWithSearchPath {
+public abstract class AbstractIndex extends PgStatementWithSearchPath
+implements PgOptionContainer {
 
+    /**
+     * Contains USING method for PG, columns and include columns for all
+     */
     private String definition;
     private String tableName;
+    private String where;
+    private String tableSpace;
     private boolean unique;
     private boolean clusterIndex;
     private final Set<String> columns = new HashSet<>();
+
+    protected final Map<String, String> options = new HashMap<>();
 
     @Override
     public DbObjType getStatementType() {
@@ -77,6 +87,34 @@ public abstract class AbstractIndex extends PgStatementWithSearchPath {
         resetHash();
     }
 
+    public String getWhere() {
+        return where;
+    }
+
+    public void setWhere(final String where) {
+        this.where = where;
+        resetHash();
+    }
+
+    public String getTableSpace() {
+        return tableSpace;
+    }
+
+    public void setTableSpace(String tableSpace) {
+        this.tableSpace = tableSpace;
+        resetHash();
+    }
+
+    @Override
+    public Map<String, String> getOptions() {
+        return Collections.unmodifiableMap(options);
+    }
+
+    @Override
+    public void addOption(String key, String value) {
+        options.put(key, value);
+    }
+
     @Override
     public boolean compare(PgStatement obj) {
         boolean equals = false;
@@ -87,7 +125,8 @@ public abstract class AbstractIndex extends PgStatementWithSearchPath {
             AbstractIndex index = (AbstractIndex) obj;
             equals = compareWithoutComments(index)
                     && Objects.equals(comment, index.getComment())
-                    && Objects.equals(clusterIndex, index.isClusterIndex());
+                    && clusterIndex == index.isClusterIndex()
+                    && Objects.equals(options, index.options);
         }
 
         return equals;
@@ -97,6 +136,8 @@ public abstract class AbstractIndex extends PgStatementWithSearchPath {
         return Objects.equals(definition, index.getDefinition())
                 && Objects.equals(name, index.getName())
                 && Objects.equals(tableName, index.getTableName())
+                && Objects.equals(where, index.getWhere())
+                && Objects.equals(tableSpace, index.getTableSpace())
                 && unique == index.isUnique();
     }
 
@@ -108,6 +149,9 @@ public abstract class AbstractIndex extends PgStatementWithSearchPath {
         hasher.put(tableName);
         hasher.put(unique);
         hasher.put(clusterIndex);
+        hasher.put(where);
+        hasher.put(tableSpace);
+        hasher.put(options);
         hasher.put(comment);
     }
 
@@ -119,8 +163,11 @@ public abstract class AbstractIndex extends PgStatementWithSearchPath {
         indexDst.setUnique(isUnique());
         indexDst.setClusterIndex(isClusterIndex());
         indexDst.setComment(getComment());
+        indexDst.setWhere(getWhere());
+        indexDst.setTableSpace(getTableSpace());
         indexDst.deps.addAll(deps);
         indexDst.columns.addAll(columns);
+        indexDst.options.putAll(options);
         return indexDst;
     }
 

@@ -167,13 +167,16 @@ public class PgDatabase extends PgStatement {
         resetHash();
     }
 
-
     public boolean containsExtension(final String name) {
         return getExtension(name) != null;
     }
 
     public boolean containsAssembly(final String name) {
         return getAssembly(name) != null;
+    }
+
+    public boolean containsSchema(final String name) {
+        return getSchema(name) != null;
     }
 
     @Override
@@ -410,13 +413,13 @@ public class PgDatabase extends PgStatement {
             copy.addSchema(schema.deepCopy());
         }
         for (MsAssembly ass : assemblies) {
-            copy.addAssembly(ass);
+            copy.addAssembly(ass.deepCopy());
         }
         for (MsRole role : roles) {
-            copy.addRole(role);
+            copy.addRole(role.deepCopy());
         }
         for (MsUser user : users) {
-            copy.addUser(user);
+            copy.addUser(user.deepCopy());
         }
         return copy;
     }

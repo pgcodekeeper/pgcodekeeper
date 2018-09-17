@@ -42,12 +42,15 @@ public class Differ implements IRunnableWithProgress {
     private final TreeElement root;
     private final boolean needTwoWay;
     private final String timezone;
+    private final boolean msSql;
 
-    private String diffDirect, diffReverse;
+    private String diffDirect;
+    private String diffReverse;
     private PgDiffScript script;
 
     private List<Entry<PgStatement, PgStatement>> additionalDepciesSource;
     private List<Entry<PgStatement, PgStatement>> additionalDepciesTarget;
+
 
     public void setAdditionalDepciesSource(
             List<Entry<PgStatement, PgStatement>> additionalDepcies) {
@@ -73,12 +76,13 @@ public class Differ implements IRunnableWithProgress {
     }
 
     public Differ(PgDatabase sourceDbFull, PgDatabase targetDbFull,
-            TreeElement root, boolean needTwoWay, String timezone) {
+            TreeElement root, boolean needTwoWay, String timezone, boolean msSql) {
         this.sourceDbFull = sourceDbFull;
         this.targetDbFull = targetDbFull;
         this.root = root;
         this.needTwoWay = needTwoWay;
         this.timezone = timezone;
+        this.msSql = msSql;
     }
 
     public Job getDifferJob() {
@@ -139,7 +143,7 @@ public class Differ implements IRunnableWithProgress {
                     new OutputStreamWriter(diffOut, StandardCharsets.UTF_8), true);
             script = PgDiff.diffDatabaseSchemasAdditionalDepcies(writer,
                     // forceUnixNewLines has no effect on diff operaiton, just pass true
-                    DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone, true),
+                    DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone, true, msSql),
                     root,
                     sourceDbFull, targetDbFull,
                     additionalDepciesSource, additionalDepciesTarget);
@@ -153,7 +157,7 @@ public class Differ implements IRunnableWithProgress {
                 pm.newChild(25).subTask(Messages.differ_reverse_diff); // 100
                 diffOut.reset();
                 PgDiff.diffDatabaseSchemasAdditionalDepcies(writer,
-                        DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone, true),
+                        DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone, true, msSql),
                         root.getRevertedCopy(),
                         targetDbFull, sourceDbFull,
                         additionalDepciesTarget, additionalDepciesSource);

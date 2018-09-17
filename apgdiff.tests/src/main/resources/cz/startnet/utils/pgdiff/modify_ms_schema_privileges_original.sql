@@ -1,0 +1,5 @@
+CREATE SCHEMA [tester]
+GO
+
+GRANT INSERT ON SCHEMA :: [tester] TO [test_user]
+GO

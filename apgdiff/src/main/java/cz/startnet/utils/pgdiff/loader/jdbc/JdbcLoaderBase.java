@@ -294,8 +294,8 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         }
     }
 
-    public void setPrivileges(PgStatementWithSearchPath st, List<JsonReader> privs) throws JsonReaderException {
-        for (JsonReader acl : privs) {
+    public void setPrivileges(PgStatementWithSearchPath st, List<XmlReader> privs) throws XmlReaderException {
+        for (XmlReader acl : privs) {
             String state = acl.getString("sd");
             boolean isWithGrantOption = false;
             if ("GRANT_WITH_GRANT_OPTION".equals(state)) {

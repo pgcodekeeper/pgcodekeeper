@@ -19,7 +19,7 @@ public class MsRolesReader {
         this.db = db;
     }
 
-    public void read() throws SQLException, InterruptedException, JsonReaderException {
+    public void read() throws SQLException, InterruptedException, XmlReaderException {
         loader.setCurrentOperation("roles query");
         String query = JdbcQueries.QUERY_MS_ROLES.get(null);
         try (ResultSet res = loader.runner.runScript(loader.statement, query)) {
@@ -30,7 +30,7 @@ public class MsRolesReader {
                 MsRole role = new MsRole(name, "");
                 loader.setOwner(role, res.getString("owner"));
 
-                for (JsonReader group : JsonReader.fromArray(res.getString("groups"))) {
+                for (XmlReader group : XmlReader.readXML(res.getString("groups"))) {
                     role.addMember(group.getString("m"));
                 }
 

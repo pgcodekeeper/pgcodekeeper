@@ -520,13 +520,20 @@ drop_symmetric_key
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/disable-trigger-transact-sql
 disable_trigger
-     : DISABLE TRIGGER ( ( COMMA? (schema_name=id DOT)? trigger_name=id )+ | ALL)         ON ((schema_id=id DOT)? object_name=id|DATABASE|ALL SERVER)
+     : DISABLE TRIGGER (trigger_names | ALL) ON (table_name|DATABASE|ALL SERVER)
      ;
+     
+trigger_names
+    : trigger_name (COMMA trigger_name)*
+    ;
 
-
+trigger_name
+    : (schema_name=id DOT)? name=id
+    ;
+    
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/enable-trigger-transact-sql
 enable_trigger
-     : ENABLE TRIGGER ( ( COMMA? (schema_name=id DOT)? trigger_name=id )+ | ALL)         ON ( (schema_id=id DOT)? object_name=id|DATABASE|ALL SERVER)
+     : ENABLE TRIGGER (trigger_names| ALL) ON (table_name|DATABASE|ALL SERVER)
      ;
 
 lock_table
@@ -1491,7 +1498,7 @@ update_statistics
 // https://msdn.microsoft.com/en-us/library/ms174979.aspx
 create_table
     : TABLE table_name '(' column_def_table_constraints ','? ')'
-    (ON tablespace=id_or_default)?
+    (ON tablespace=id_or_default ('(' partition_col_name=id ')')?)?
     (TEXTIMAGE_ON textimage=id_or_default)?
     (FILESTREAM_ON filestream=id_or_default)?
     table_options*
@@ -1528,8 +1535,9 @@ alter_table
                              | ALTER COLUMN column_definition
                              | DROP COLUMN id
                              | DROP CONSTRAINT constraint=id
-                             | CHECK CONSTRAINT constraint=id
-                             | (ENABLE | DISABLE) TRIGGER id?
+                             | (CHECK | NOCHECK) CONSTRAINT con=id
+                             | (ENABLE | DISABLE) TRIGGER trigger=id?
+                             | (ENABLE | DISABLE) CHANGE_TRACKING (WITH '(' TRACK_COLUMNS_UPDATED '=' (ON|OFF) ')')?
                              | REBUILD table_options)
 
     ;
@@ -2971,7 +2979,7 @@ data_type
     ;
     
 data_type_size
-    : ('(' (DECIMAL | MAX) (',' DECIMAL)? ')')
+    : ('(' (presicion=DECIMAL | MAX) (',' scale=DECIMAL)? ')')
     ;
 
 default_value
@@ -3412,6 +3420,7 @@ simple_id
     | TIMER
     | TINYINT
     | TORN_PAGE_DETECTION
+    | TRACK_COLUMNS_UPDATED
     | TRANSFORM_NOISE_WORDS
     | TRIPLE_DES
     | TRIPLE_DES_3KEY

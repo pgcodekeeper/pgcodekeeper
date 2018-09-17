@@ -23,23 +23,16 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.MS_WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 
 public class MsModelExporter extends AbstractModelExporter {
 
-    // move to enum?
-    private static final String TABLES_FOLDER = "Tables";
-    private static final String VIEWS_FOLDER = "Views";
-    private static final String SEQUENCES_FOLDER = "Sequences";
-    private static final String FUNCTIONS_FOLDER = "Functions";
-    private static final String PROCEDURE_FOLDER = "Stored Procedures";
-    private static final String SECURITY_FOLDER = "Security";
     private static final String SCHEMAS_FOLDER = "Schemas";
-    private static final String ASSEMBLIES_FOLDER = "Assemblies";
-    private static final String ROLES_FOLDER = "Roles";
     private static final String USERS_FOLDER = "Users";
+    private static final String ROLES_FOLDER = "Roles";
 
     public MsModelExporter(File outDir, PgDatabase db, String sqlEncoding) {
         super(outDir, db, sqlEncoding);
@@ -52,16 +45,13 @@ public class MsModelExporter extends AbstractModelExporter {
 
     @Override
     public void exportFull() throws IOException {
-        String[] dirs = new String[] { ASSEMBLIES_FOLDER,
-                SEQUENCES_FOLDER, SECURITY_FOLDER, PROCEDURE_FOLDER,
-                FUNCTIONS_FOLDER, TABLES_FOLDER, VIEWS_FOLDER};
-
         if (outDir.exists()) {
             if (!outDir.isDirectory()) {
                 throw new NotDirectoryException(outDir.getAbsolutePath());
             }
 
-            for (String subdir : dirs) {
+            for (MS_WORK_DIR_NAMES sub : MS_WORK_DIR_NAMES.values()) {
+                String subdir = sub.getName();
                 if (new File(outDir, subdir).exists()) {
                     throw new DirectoryException(MessageFormat.format(
                             "Output directory already contains {0} directory.", subdir));
@@ -74,7 +64,8 @@ public class MsModelExporter extends AbstractModelExporter {
         }
 
 
-        for (String subdir : dirs) {
+        for (MS_WORK_DIR_NAMES sub : MS_WORK_DIR_NAMES.values()) {
+            String subdir = sub.getName();
             File folder = new File(outDir, subdir);
             if (!folder.mkdir()) {
                 throw new DirectoryException(MessageFormat.format(
@@ -84,7 +75,7 @@ public class MsModelExporter extends AbstractModelExporter {
         }
 
 
-        File securityFolder = new File(outDir, SECURITY_FOLDER);
+        File securityFolder = new File(outDir, MS_WORK_DIR_NAMES.SECURITY.getName());
 
         // exporting schemas
         File schemasSharedDir = new File(securityFolder, SCHEMAS_FOLDER);
@@ -109,14 +100,14 @@ public class MsModelExporter extends AbstractModelExporter {
             dumpSQL(getDumpSql(schema), new File(schemasSharedDir, getExportedFilenameSql(schema)));
 
             dumpFunctions(schema.getFunctions());
-            dumpObjects(schema.getSequences(), new File(outDir, SEQUENCES_FOLDER));
-            dumpObjects(schema.getTables(), new File(outDir, TABLES_FOLDER));
-            dumpObjects(schema.getViews(), new File(outDir, VIEWS_FOLDER));
+            dumpObjects(schema.getSequences(), new File(outDir, MS_WORK_DIR_NAMES.SEQUENCES.getName()));
+            dumpObjects(schema.getTables(), new File(outDir, MS_WORK_DIR_NAMES.TABLES.getName()));
+            dumpObjects(schema.getViews(), new File(outDir, MS_WORK_DIR_NAMES.VIEWS.getName()));
 
             // indexes, triggers, rules, constraints are dumped when tables are processed
         }
 
-        File assembliesFolder = new File(outDir, ASSEMBLIES_FOLDER);
+        File assembliesFolder = new File(outDir, MS_WORK_DIR_NAMES.ASSEMBLIES.getName());
         for (MsAssembly assembly : newDb.getAssemblies()) {
             dumpSQL(getDumpSql(assembly), new File(assembliesFolder, getExportedFilenameSql(assembly)));
         }
@@ -130,8 +121,8 @@ public class MsModelExporter extends AbstractModelExporter {
             String schemaName = getExportedFilename(obj.getContainingSchema());
             String objectName = getExportedFilenameSql(obj);
 
-            String dirName = obj.getStatementType() == DbObjType.PROCEDURE ?
-                    PROCEDURE_FOLDER : FUNCTIONS_FOLDER;
+            String dirName = obj.getStatementType() == DbObjType.PROCEDURE ? MS_WORK_DIR_NAMES.PROCEDURES.getName()
+                    : MS_WORK_DIR_NAMES.FUNCTIONS.getName();
 
             File parentOutDir = new File(outDir, dirName);
             dumpSQL(getDumpSql(obj), new File(parentOutDir, schemaName + '.' + objectName));
@@ -232,8 +223,9 @@ public class MsModelExporter extends AbstractModelExporter {
             processViewAndContents(el, stInNew, el);
             break;
         case SEQUENCE:
+            deleteStatementIfExists(stInNew);
             dumpObjects(Arrays.asList((PgStatementWithSearchPath)stInNew),
-                    new File(outDir, SEQUENCES_FOLDER));
+                    new File(outDir, MS_WORK_DIR_NAMES.SEQUENCES.getName()));
             break;
         default:
             throw new IllegalStateException("Unsupported export type: " + stInNew.getStatementType());
@@ -273,7 +265,7 @@ public class MsModelExporter extends AbstractModelExporter {
 
         case SEQUENCE:
             dumpObjects(Arrays.asList((PgStatementWithSearchPath)stInNew),
-                    new File(outDir, SEQUENCES_FOLDER));
+                    new File(outDir, MS_WORK_DIR_NAMES.SEQUENCES.getName()));
             break;
         case FUNCTION:
         case PROCEDURE:
@@ -300,7 +292,7 @@ public class MsModelExporter extends AbstractModelExporter {
 
         case SCHEMA:
 
-            file = new File(SECURITY_FOLDER, SCHEMAS_FOLDER);
+            file = new File(MS_WORK_DIR_NAMES.SECURITY.getName(), SCHEMAS_FOLDER);
             if (!addExtension) {
                 // return schema dir path
                 return file.toString();
@@ -308,19 +300,19 @@ public class MsModelExporter extends AbstractModelExporter {
             break;
 
         case SEQUENCE:
-            file = new File(SEQUENCES_FOLDER);
+            file = new File(MS_WORK_DIR_NAMES.SEQUENCES.getName());
             break;
         case VIEW:
-            file = new File(VIEWS_FOLDER);
+            file = new File(MS_WORK_DIR_NAMES.VIEWS.getName());
             break;
         case TABLE:
-            file = new File(TABLES_FOLDER);
+            file = new File(MS_WORK_DIR_NAMES.TABLES.getName());
             break;
         case FUNCTION:
-            file = new File(FUNCTIONS_FOLDER);
+            file = new File(MS_WORK_DIR_NAMES.FUNCTIONS.getName());
             break;
         case PROCEDURE:
-            file = new File(PROCEDURE_FOLDER);
+            file = new File(MS_WORK_DIR_NAMES.PROCEDURES.getName());
             break;
 
         case CONSTRAINT:
@@ -330,7 +322,7 @@ public class MsModelExporter extends AbstractModelExporter {
         case COLUMN:
             st = parentSt;
             file = new File(parentSt.getStatementType() == DbObjType.TABLE ?
-                    TABLES_FOLDER : VIEWS_FOLDER);
+                    MS_WORK_DIR_NAMES.TABLES.getName() : MS_WORK_DIR_NAMES.VIEWS.getName());
             break;
         default:
             throw new IllegalStateException("Unsupported export type: " + type);
@@ -349,9 +341,10 @@ public class MsModelExporter extends AbstractModelExporter {
     protected void dumpContainer(PgStatement obj, List<PgStatementWithSearchPath> contents,
             AbstractSchema schema) throws IOException {
         DbObjType type = obj.getStatementType();
-        String folder = type == DbObjType.TABLE ? TABLES_FOLDER : VIEWS_FOLDER;
+        MS_WORK_DIR_NAMES folder = type == DbObjType.TABLE ?
+                MS_WORK_DIR_NAMES.TABLES : MS_WORK_DIR_NAMES.VIEWS;
 
-        File parentDir =  new File(outDir, folder);
+        File parentDir =  new File(outDir, folder.getName());
 
         mkdirObjects(null, parentDir.toString());
 

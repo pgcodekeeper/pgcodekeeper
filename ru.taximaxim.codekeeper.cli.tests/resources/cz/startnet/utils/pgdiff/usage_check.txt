@@ -18,6 +18,7 @@ Usage:
                                           directory
  --in-charset <charset>                 : input charset (default: UTF-8)
  --out-charset <charset>                : output charset (default: UTF-8)
+ -E (--error)                           : print exception stacktrace
  -P (--no-privileges)                   : ignore privileges and owners of
                                           database objects
  -L (--keep-newlines)                   : keep newline characters as is (don't
@@ -32,7 +33,8 @@ Usage:
  --using-off                            : do not print USING expression for
                                           ALTER COLUMN TYPE
  -C (--concurrently-mode)               : print CREATE INDEX with CONCURRENTLY
-                                          option
+                                          option for PostgreSQL and WITH ONLINE
+                                          = ON for MS SQL
  -S (--safe-mode)                       : do not generate scripts containing
                                           dangerous statements
                                           see: --allow-danger-ddl

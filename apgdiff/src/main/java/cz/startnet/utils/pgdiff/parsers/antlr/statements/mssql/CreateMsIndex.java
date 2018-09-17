@@ -2,6 +2,8 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_optionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_optionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_restContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_sortContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_whereContext;
@@ -43,14 +45,25 @@ public class CreateMsIndex extends ParserAbstract {
             ind.addColumn(col.getText());
         }
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(getFullCtxText(sort));
+        ind.setDefinition(getFullCtxText(sort));
 
-        if (rest.index_where() != null){
-            Index_whereContext whereCtx = rest.index_where();
-            sb.append(' ').append(getFullCtxText(whereCtx));
+        Index_whereContext wherePart = rest.index_where();
+        if (wherePart != null){
+            ind.setWhere(getFullCtxText(wherePart.where));
         }
 
-        ind.setDefinition(sb.toString());
+        Index_optionsContext options = rest.index_options();
+        if (options != null) {
+            for (Index_optionContext option : options.index_option()) {
+                String key = option.key.getText();
+                String value = option.index_option_value().getText();
+                ind.addOption(key, value);
+            }
+        }
+
+        IdContext tablespace = rest.id();
+        if (tablespace != null) {
+            ind.setTableSpace(tablespace.getText());
+        }
     }
 }

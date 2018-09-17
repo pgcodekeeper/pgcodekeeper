@@ -17,16 +17,23 @@ public class MsSequencesReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException, JsonReaderException {
+    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException, XmlReaderException {
         loader.monitor.worked(1);
         String sequenceName = res.getString("name");
         loader.setCurrentObject(new GenericColumn(schema.getName(), sequenceName, DbObjType.SEQUENCE));
         AbstractSequence s = new MsSequence(sequenceName, "");
 
+        String dataType = res.getString("data_type");
+        s.setDataType(dataType);
+
         s.setStartWith(Long.toString(res.getLong("start_value")));
         s.setMinMaxInc(res.getLong("increment"), res.getLong("maximum_value"),
-                res.getLong("minimum_value"), res.getString("data_type"));
+                res.getLong("minimum_value"), dataType);
         s.setCached(res.getBoolean("is_cached"));
+
+        if ("numeric".equals(dataType) || "decimal".equals(dataType)) {
+            s.setPresicion(Long.toString(res.getLong("precision")));
+        }
 
         // getInt convert null to 0
         Object cashe = res.getObject("cache_size");
@@ -39,11 +46,6 @@ public class MsSequencesReader extends JdbcReader {
         loader.setOwner(s, res.getString("owner"));
 
         schema.addSequence(s);
-        loader.setPrivileges(s, JsonReader.fromArray(res.getString("acl")));
-    }
-
-    @Override
-    protected DbObjType getType() {
-        return DbObjType.SEQUENCE;
+        loader.setPrivileges(s, XmlReader.readXML(res.getString("acl")));
     }
 }

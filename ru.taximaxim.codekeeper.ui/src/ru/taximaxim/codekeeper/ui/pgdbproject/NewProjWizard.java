@@ -123,7 +123,7 @@ implements IExecutableExtension, INewWizard {
         boolean initSuccess = false;
         try {
             props = PgDbProject.createPgDbProject(pageRepo.getProjectHandle(),
-                    pageRepo.useDefaults() ? null : pageRepo.getLocationURI());
+                    pageRepo.useDefaults() ? null : pageRepo.getLocationURI(), pageDb.isMsSql());
             props.getProject().open(null);
             props.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
 
@@ -134,7 +134,7 @@ implements IExecutableExtension, INewWizard {
                         .getDefaultCharset().equals(charset)) {
                     props.setProjectCharset(charset);
                 }
-                if (!timezone.isEmpty() && !ApgdiffConsts.UTC.equals(timezone)) {
+                if (!pageDb.isMsSql() && !timezone.isEmpty() && !ApgdiffConsts.UTC.equals(timezone)) {
                     props.getPrefs().put(PROJ_PREF.TIMEZONE, timezone);
                     try {
                         props.getPrefs().flush();
@@ -142,6 +142,7 @@ implements IExecutableExtension, INewWizard {
                         Log.log(Log.LOG_WARNING, "Error while flushing project properties!", e); //$NON-NLS-1$
                     }
                 }
+
                 getContainer().run(true, true, new InitProjectFromSource(
                         props, getDbSource(props)));
             }
@@ -185,12 +186,12 @@ implements IExecutableExtension, INewWizard {
         String charset = props.getProjectCharset();
         String timezone = props.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC);
 
-        if(!pageDb.isInit()){
+        if (!pageDb.isInit()) {
             src = DbSource.fromDbObject(new PgDatabase(), "Empty DB"); //$NON-NLS-1$
         } else if (dbinfo != null) {
             src = DbSource.fromDbInfo(dbinfo, mainPrefStore, forceUnixNewlines, charset, timezone);
         } else if ((dump = pageDb.getDumpPath()) != null) {
-            src = DbSource.fromFile(forceUnixNewlines, dump, charset);
+            src = DbSource.fromFile(forceUnixNewlines, dump, charset, pageDb.isMsSql());
         } else {
             // should be prevented by page completion state
             throw new IllegalStateException(Messages.initProjectFromSource_init_request_but_no_schema_source);
@@ -240,6 +241,7 @@ class PageDb extends WizardPage {
     private final IPreferenceStore mainPrefs;
     private Button btnInit;
     private Button btnGetTz;
+    private Button btnMsSql;
     private DbStorePicker storePicker;
     private ComboViewer timezoneCombo;
     private ComboViewer charsetCombo;
@@ -259,6 +261,10 @@ class PageDb extends WizardPage {
 
     public boolean isInit() {
         return btnInit.getSelection();
+    }
+
+    public boolean isMsSql() {
+        return btnMsSql.getSelection();
     }
 
     public String getTimeZone(){
@@ -282,7 +288,7 @@ class PageDb extends WizardPage {
         Group group = new Group(container, SWT.NONE);
         group.setText(Messages.NewProjWizard_initializing_title);
         group.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 3, 1));
-        group.setLayout(new GridLayout());
+        group.setLayout(new GridLayout(2, true));
 
         btnInit = new Button(group, SWT.CHECK);
         btnInit.setText(Messages.NewProjWizard_initializing_check);
@@ -291,21 +297,23 @@ class PageDb extends WizardPage {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                boolean init = btnInit.getSelection();
-                storePicker.setComboEnabled(init);
-                btnGetTz.setEnabled(init);
-                getWizard().getContainer().updateButtons();
-                getWizard().getContainer().updateMessage();
+                modifyButtons();
+            }
+        });
+
+        btnMsSql = new Button(group, SWT.CHECK);
+        btnMsSql.setText(Messages.NewProjWizard_ms_project);
+        btnMsSql.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                modifyButtons();
             }
         });
 
         storePicker = new DbStorePicker(group, mainPrefs, true, false, false);
-        storePicker.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        storePicker.addListenerToCombo(e -> {
-            btnGetTz.setEnabled(storePicker.getDbInfo() != null);
-            getWizard().getContainer().updateButtons();
-            getWizard().getContainer().updateMessage();
-        });
+        storePicker.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
+        storePicker.addListenerToCombo(e -> modifyButtons());
 
         //char sets
         new Label(container, SWT.NONE).setText(Messages.NewProjWizard_select_charset);
@@ -358,6 +366,27 @@ class PageDb extends WizardPage {
         lblWarnPosix.setLayoutData(gd);
 
         setControl(container);
+    }
+
+    private void modifyButtons() {
+        boolean init = btnInit.getSelection();
+        boolean isMsSql = btnMsSql.getSelection();
+        DbInfo info = storePicker.getDbInfo();
+        boolean enable = info != null;
+        boolean isMsSqlDb = enable && info.isMsSql();
+        // 1 - disabled init and mssql buttons
+        // 2 - enabled init button, it is database, not MS database
+        // 3 - enabled init button, it is not database, disabled mssql button
+        timezoneCombo.getControl().setEnabled((!init && !isMsSql)
+                || (init && !isMsSqlDb && enable) || (init && !enable && !isMsSql));
+        btnMsSql.setEnabled(!init || !enable);
+        if (!btnMsSql.getEnabled()) {
+            btnMsSql.setSelection(isMsSqlDb);
+        }
+        btnGetTz.setEnabled(init && enable && !isMsSqlDb);
+        storePicker.setComboEnabled(init);
+        getWizard().getContainer().updateButtons();
+        getWizard().getContainer().updateMessage();
     }
 
     private void timeZoneWarn() {

@@ -39,7 +39,6 @@ public class CreateMsView extends ParserAbstract {
 
         Select_statementContext vQuery = ctx.select_statement();
         if (vQuery != null) {
-            // TODO select analyze
             view.setQuery(getFullCtxText(vQuery));
         }
 

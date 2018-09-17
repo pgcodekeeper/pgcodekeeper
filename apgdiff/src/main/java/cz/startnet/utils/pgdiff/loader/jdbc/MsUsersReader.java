@@ -19,7 +19,7 @@ public class MsUsersReader {
         this.db = db;
     }
 
-    public void read() throws SQLException, InterruptedException, JsonReaderException {
+    public void read() throws SQLException, InterruptedException, XmlReaderException {
         loader.setCurrentOperation("users query");
         String query = JdbcQueries.QUERY_MS_USERS.get(null);
         try (ResultSet res = loader.runner.runScript(loader.statement, query)) {
