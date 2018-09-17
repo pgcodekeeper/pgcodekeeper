@@ -490,26 +490,28 @@ public class ReferenceListener implements SqlContextProcessor {
     }
 
     public void rule(Rule_commonContext ctx) {
+        if (ctx.FUNCTION() != null) {
+            for (Function_parametersContext functparam : ctx.func_name) {
+                List<IdentifierContext> ids = functparam.name.identifier();
+                String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+                String name =  QNameParser.getFirstName(ids);
+                addFullObjReference(schemaName, name, functparam.name, DbObjType.FUNCTION,
+                        StatementActions.NONE, ctx.getParent());
+            }
+            return;
+        }
+
         DbObjType type = null;
-        List<Schema_qualified_nameContext> obj_name = ctx.names_references().name;
         Object_typeContext typeCtx = ctx.object_type();
         if (typeCtx.TABLE() != null) {
             type = DbObjType.TABLE;
         } else if (typeCtx.SEQUENCE() != null) {
             type = DbObjType.SEQUENCE;
-        } else if (ctx.FUNCTION() != null) {
-            type = DbObjType.FUNCTION;
-            for (Function_parametersContext functparam : ctx.func_name) {
-                addObjReference(getDefSchemaName(), QNameParser.getFirstName(functparam.name.identifier()),
-                        DbObjType.FUNCTION, StatementActions.NONE,
-                        functparam.name.getStart().getStartIndex(), functparam.name.getStart().getLine(),
-                        ParserAbstract.getFullCtxText(ctx.getParent()));
-            }
         } else if (typeCtx.SCHEMA() != null) {
             type = DbObjType.SCHEMA;
         }
 
-        for (Schema_qualified_nameContext name : obj_name) {
+        for (Schema_qualified_nameContext name : ctx.names_references().name) {
             addToDB(name, type, ctx);
         }
     }
