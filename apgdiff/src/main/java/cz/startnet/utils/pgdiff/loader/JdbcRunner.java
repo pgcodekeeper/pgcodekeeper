@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -17,10 +18,10 @@ import java.util.concurrent.TimeoutException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
+import cz.startnet.utils.pgdiff.loader.callables.Cancelable;
 import cz.startnet.utils.pgdiff.loader.callables.QueryCallable;
-import cz.startnet.utils.pgdiff.loader.callables.QueryCallableMsBatches;
+import cz.startnet.utils.pgdiff.loader.callables.QueryCallableBatches;
 import cz.startnet.utils.pgdiff.loader.callables.ResultSetCallable;
-import cz.startnet.utils.pgdiff.loader.callables.StatementCallable;
 import ru.taximaxim.codekeeper.apgdiff.DaemonThreadFactory;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
@@ -66,11 +67,20 @@ public class JdbcRunner {
         }
     }
 
-    public void runMsBatches(JdbcConnector connector, String script) throws SQLException, IOException, InterruptedException {
+    /**
+     * execute statement by given batches with no return value
+     *
+     * @param connector contains database connection information
+     * @param batches contains queries of Statements splited by 'GO'
+     * @throws SQLException
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public void runBatches(JdbcConnector connector, List<List<String>> batches) throws SQLException, IOException, InterruptedException {
         try (Connection connection = connector.getConnection();
                 Statement st = connection.createStatement()) {
             connection.setAutoCommit(false);
-            runScript(new QueryCallableMsBatches(st, script));
+            runScript(new QueryCallableBatches(st, batches));
             connection.commit();
         }
     }
@@ -89,7 +99,7 @@ public class JdbcRunner {
         return runScript(new ResultSetCallable(st, script));
     }
 
-    private <T> T runScript(StatementCallable<T> callable) throws InterruptedException, SQLException {
+    private <T> T runScript(Cancelable<T> callable) throws InterruptedException, SQLException {
         Future<T> queryFuture = THREAD_POOL.submit(callable);
 
         while (true) {

@@ -86,6 +86,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.IPartAdapter2;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.CONTEXT;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
@@ -514,7 +515,15 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
             try {
                 if (dbInfo.isMsSql()) {
-                    new JdbcRunner(monitor).runMsBatches(connector, script);
+                    // TODO uncomment this code when list of batches will be
+                    // filled by queries of Statements splited by 'GO'.
+                    //
+                    // List<List<String>> batches = new ArrayList<>();
+                    // new JdbcRunner(monitor).runBatches(connector, batches);
+
+                    return new Status(IStatus.ERROR, PLUGIN_ID.THIS,
+                            "fill list of batches by queries of Statements splited by 'GO'",
+                            new PgCodekeeperUIException("fill list of batches by queries of Statements splited by 'GO'"));
                 } else {
                     new JdbcRunner(monitor).run(connector, script);
                 }
