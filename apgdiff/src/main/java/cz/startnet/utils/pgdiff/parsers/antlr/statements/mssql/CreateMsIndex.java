@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ClusteredContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_optionContext;
@@ -32,6 +33,8 @@ public class CreateMsIndex extends ParserAbstract {
         AbstractIndex ind = new MsIndex(name, getFullCtxText(ctx.getParent()));
         ind.setTableName(tableName);
         ind.setUnique(ctx.UNIQUE() != null);
+        ClusteredContext cluster = ctx.clustered();
+        ind.setClusterIndex(cluster != null && cluster.CLUSTERED() != null);
 
         parseIndex(ctx.index_rest(), ind);
 

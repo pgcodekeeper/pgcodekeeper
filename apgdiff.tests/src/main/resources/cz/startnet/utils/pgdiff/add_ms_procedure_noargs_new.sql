@@ -13,8 +13,9 @@ GO
 SET ANSI_NULLS ON
 GO
 CREATE PROCEDURE [dbo].[proc1]
+WITH EXECUTE AS CALLER
+FOR REPLICATION
 AS
-SET NOCOUNT ON;  
-    SELECT t.[c1], t.[c2], t.[c3]  
-    FROM [dbo].[table1] t;
+SELECT t.[c1], t.[c2], t.[c3]  
+FROM [dbo].[table1] t;
 GO
