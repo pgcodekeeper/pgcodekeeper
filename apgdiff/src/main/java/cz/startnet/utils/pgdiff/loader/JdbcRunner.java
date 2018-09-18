@@ -17,11 +17,12 @@ import java.util.concurrent.TimeoutException;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 
-import cz.startnet.utils.pgdiff.loader.callables.Cancelable;
+import cz.startnet.utils.pgdiff.loader.callables.QueriesBatchCallable;
 import cz.startnet.utils.pgdiff.loader.callables.QueryCallable;
-import cz.startnet.utils.pgdiff.loader.callables.QueryCallableBatches;
 import cz.startnet.utils.pgdiff.loader.callables.ResultSetCallable;
+import cz.startnet.utils.pgdiff.loader.callables.StatementCallable;
 import ru.taximaxim.codekeeper.apgdiff.DaemonThreadFactory;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
@@ -34,6 +35,7 @@ public class JdbcRunner {
     private static final int SLEEP_TIME = 20;
 
     private static final String MESSAGE = "Script execution interrupted by user";
+    private static final String QUERY_EXECUTION_MESSAGE = "Query execution";
 
     private final IProgressMonitor monitor;
 
@@ -79,9 +81,27 @@ public class JdbcRunner {
     public void runBatches(JdbcConnector connector, List<List<String>> batches) throws SQLException, IOException, InterruptedException {
         try (Connection connection = connector.getConnection();
                 Statement st = connection.createStatement()) {
-            connection.setAutoCommit(false);
-            runScript(new QueryCallableBatches(st, batches));
-            connection.commit();
+            SubMonitor subMonitor = SubMonitor.convert(monitor);
+            subMonitor.subTask(QUERY_EXECUTION_MESSAGE);
+
+            if (batches.size() == 1) {
+                List<String> queries = batches.get(0);
+                subMonitor.setWorkRemaining(queries.size());
+                for (String query : queries) {
+                    runScript(new QueryCallable(st, query));
+                    subMonitor.worked(1);
+                }
+            } else {
+                subMonitor.setWorkRemaining(batches.size());
+                connection.setAutoCommit(false);
+                for (List<String> queriesList : batches) {
+                    runScript(new QueriesBatchCallable(st, queriesList));
+                    subMonitor.worked(1);
+                }
+                connection.commit();
+            }
+
+            subMonitor.done();
         }
     }
 
@@ -99,7 +119,7 @@ public class JdbcRunner {
         return runScript(new ResultSetCallable(st, script));
     }
 
-    private <T> T runScript(Cancelable<T> callable) throws InterruptedException, SQLException {
+    private <T> T runScript(StatementCallable<T> callable) throws InterruptedException, SQLException {
         Future<T> queryFuture = THREAD_POOL.submit(callable);
 
         while (true) {
