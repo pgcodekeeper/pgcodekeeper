@@ -31,7 +31,8 @@ public class MsUsersReader {
                 loader.setOwner(user, res.getString("loginname"));
 
                 user.setSchema(res.getString("schema_name"));
-                // TODO privileges
+
+                loader.setPrivileges(user, XmlReader.readXML(res.getString("acl")));
                 db.addUser(user);
             }
         }

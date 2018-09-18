@@ -106,6 +106,8 @@ public class MsRole extends PgStatement {
         hasher.put(name);
         hasher.put(owner);
         hasher.put(members);
+        hasher.putOrdered(grants);
+        hasher.putOrdered(revokes);
     }
 
     @Override
@@ -113,6 +115,12 @@ public class MsRole extends PgStatement {
         MsRole roleDst = new MsRole(getName(), getRawStatement());
         roleDst.setOwner(getOwner());
         roleDst.members.addAll(members);
+        for (PgPrivilege priv : revokes) {
+            roleDst.addPrivilege(priv);
+        }
+        for (PgPrivilege priv : grants) {
+            roleDst.addPrivilege(priv);
+        }
         return roleDst;
     }
 
@@ -127,7 +135,9 @@ public class MsRole extends PgStatement {
             MsRole role = (MsRole) obj;
             return Objects.equals(members, role.members)
                     && Objects.equals(name, role.getName())
-                    && Objects.equals(owner, role.getOwner());
+                    && Objects.equals(owner, role.getOwner())
+                    && grants.equals(role.grants)
+                    && revokes.equals(role.revokes);
         }
         return false;
     }

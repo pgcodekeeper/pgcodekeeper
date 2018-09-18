@@ -34,6 +34,8 @@ public class MsRolesReader {
                     role.addMember(group.getString("m"));
                 }
 
+                loader.setPrivileges(role, XmlReader.readXML(res.getString("acl")));
+
                 db.addRole(role);
             }
         }

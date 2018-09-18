@@ -3,13 +3,11 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -46,22 +44,7 @@ public class SchemasMsReader {
             loader.setOwner(s, owner);
         }
 
-        for (XmlReader acl : XmlReader.readXML(res.getString("acl"))) {
-            String state = acl.getString("sd");
-            boolean isWithGrantOption = false;
-            if ("GRANT_WITH_GRANT_OPTION".equals(state)) {
-                state = "GRANT";
-                isWithGrantOption = true;
-            }
-
-            String permission = acl.getString("pn");
-            String role = acl.getString("r");
-
-            s.addPrivilege(new PgPrivilege(state, permission,
-                    "SCHEMA::" + MsDiffUtils.quoteName(s.getName()),
-                    MsDiffUtils.quoteName(role), isWithGrantOption));
-        }
-
+        loader.setPrivileges(s, XmlReader.readXML(res.getString("acl")));
         return s;
     }
 }

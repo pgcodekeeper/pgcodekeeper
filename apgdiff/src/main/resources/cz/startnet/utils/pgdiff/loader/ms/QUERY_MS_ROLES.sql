@@ -1,6 +1,7 @@
 SELECT dp.name,
 p.name AS owner,
-cc.groups
+cc.groups,
+aa.acl
 FROM sys.database_principals AS dp  WITH (NOLOCK)
 LEFT JOIN sys.database_principals p WITH (NOLOCK) ON p.principal_id=dp.owning_principal_id
 CROSS APPLY (
@@ -12,5 +13,17 @@ CROSS APPLY (
     ) cc
     FOR XML RAW, ROOT
 ) cc (groups)
+CROSS APPLY (
+    SELECT * FROM (
+        SELECT
+            perm.state_desc AS sd,
+            perm.permission_name AS pn,
+            roleprinc.name AS r
+        FROM sys.database_principals roleprinc WITH (NOLOCK)
+        LEFT JOIN sys.database_permissions perm WITH (NOLOCK) ON perm.grantee_principal_id = roleprinc.principal_id
+        WHERE major_id = dp.principal_id AND perm.class = 4
+    ) cc 
+    FOR XML RAW, ROOT
+) aa (acl)
 WHERE dp.type in ('R') AND dp.is_fixed_role = 0
 AND dp.name != N'public'

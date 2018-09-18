@@ -3,12 +3,10 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsAssembly;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsAssembliesReader {
@@ -44,22 +42,7 @@ public class MsAssembliesReader {
                 }
 
                 loader.setOwner(ass, res.getString("owner"));
-
-                for (XmlReader acl : XmlReader.readXML(res.getString("acl"))) {
-                    String state = acl.getString("sd");
-                    boolean isWithGrantOption = false;
-                    if ("GRANT_WITH_GRANT_OPTION".equals(state)) {
-                        state = "GRANT";
-                        isWithGrantOption = true;
-                    }
-
-                    String permission = acl.getString("pn");
-                    String role = acl.getString("r");
-
-                    ass.addPrivilege(new PgPrivilege(state, permission,
-                            "ASSEMBLY::" + MsDiffUtils.quoteName(ass.getName()),
-                            MsDiffUtils.quoteName(role), isWithGrantOption));
-                }
+                loader.setPrivileges(ass, XmlReader.readXML(res.getString("acl")));
 
                 db.addAssembly(ass);
             }

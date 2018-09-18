@@ -25,7 +25,6 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsRule extends ParserAbstract {
 
@@ -74,15 +73,13 @@ public class CreateMsRule extends ParserAbstract {
             return null;
         }
 
-        String objectName = MsDiffUtils.quoteName(st.getBareName());
+        String objectName;
 
         if (st instanceof PgStatementWithSearchPath) {
             objectName = MsDiffUtils.quoteName(((PgStatementWithSearchPath) st).getContainingSchema().getName())
-                    + '.' + objectName;
-        } else if (st.getStatementType() == DbObjType.SCHEMA) {
-            objectName = "SCHEMA::" + objectName;
-        } else if (st.getStatementType() == DbObjType.ASSEMBLY) {
-            objectName = "ASSEMBLY::" + objectName;
+                    + '.' + MsDiffUtils.quoteName(st.getBareName());
+        } else {
+            objectName = st.getStatementType() + "::" + MsDiffUtils.quoteName(st.getBareName());
         }
 
         Table_columnsContext columns = nameCtx.table_columns();

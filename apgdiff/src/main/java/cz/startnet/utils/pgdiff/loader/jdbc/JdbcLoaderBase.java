@@ -294,7 +294,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         }
     }
 
-    public void setPrivileges(PgStatementWithSearchPath st, List<XmlReader> privs) throws XmlReaderException {
+    public void setPrivileges(PgStatement st, List<XmlReader> privs) throws XmlReaderException {
         for (XmlReader acl : privs) {
             String state = acl.getString("sd");
             boolean isWithGrantOption = false;
@@ -305,14 +305,21 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
 
             String permission = acl.getString("pn");
             String role = acl.getString("r");
-            String col = acl.getString("c");
+            String col = null;
             StringBuilder sb = new StringBuilder();
 
-            sb.append(MsDiffUtils.quoteName(st.getContainingSchema().getName())).append('.')
-            .append(MsDiffUtils.quoteName(st.getBareName()));
+            if (st instanceof PgStatementWithSearchPath) {
+                col = acl.getString("c");
+                PgStatementWithSearchPath pswsp = (PgStatementWithSearchPath) st;
 
-            if (col != null) {
-                sb.append('(').append(MsDiffUtils.quoteName(col)).append(')');
+                sb.append(MsDiffUtils.quoteName(pswsp.getContainingSchema().getName()))
+                .append('.').append(MsDiffUtils.quoteName(st.getBareName()));
+
+                if (col != null) {
+                    sb.append('(').append(MsDiffUtils.quoteName(col)).append(')');
+                }
+            } else {
+                sb.append(st.getStatementType() + "::" + MsDiffUtils.quoteName(st.getName()));
             }
 
             PgPrivilege priv = new PgPrivilege(state, permission, sb.toString(),

@@ -97,6 +97,8 @@ public class MsUser extends PgStatement {
         hasher.put(name);
         hasher.put(owner);
         hasher.put(schema);
+        hasher.putOrdered(grants);
+        hasher.putOrdered(revokes);
     }
 
     @Override
@@ -104,6 +106,12 @@ public class MsUser extends PgStatement {
         MsUser userDst = new MsUser(getName(), getRawStatement());
         userDst.setOwner(getOwner());
         userDst.setSchema(getSchema());
+        for (PgPrivilege priv : revokes) {
+            userDst.addPrivilege(priv);
+        }
+        for (PgPrivilege priv : grants) {
+            userDst.addPrivilege(priv);
+        }
         return userDst;
     }
 
@@ -118,7 +126,9 @@ public class MsUser extends PgStatement {
             MsUser user = (MsUser) obj;
             return Objects.equals(schema, user.getSchema())
                     && Objects.equals(name, user.getName())
-                    && Objects.equals(owner, user.getOwner());
+                    && Objects.equals(owner, user.getOwner())
+                    && grants.equals(user.grants)
+                    && revokes.equals(user.revokes);
         }
         return false;
     }
