@@ -10,6 +10,8 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Another_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.BatchContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_procedureContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Ddl_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Disable_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_alterContext;
@@ -17,6 +19,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_createContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Security_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Set_specialContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Set_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Sql_clausesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.St_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Tsql_fileContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
@@ -87,31 +90,49 @@ public class CustomTSQLParserListener implements TSqlContextProcessor {
     @Override
     public void process(Tsql_fileContext rootCtx) {
         for (BatchContext b : rootCtx.batch()) {
-            for (St_clauseContext st : b.sql_clauses().st_clause()) {
-                Ddl_clauseContext ddl = st.ddl_clause();
-                Another_statementContext ast;
-                if (ddl != null) {
-                    Schema_createContext create = ddl.schema_create();
-                    Schema_alterContext alter;
-                    Disable_triggerContext disable;
-                    if (create != null) {
-                        create(create);
-                    } else if ((alter = ddl.schema_alter()) != null) {
-                        alter(alter);
-                    } else if ((disable = ddl.disable_trigger()) != null) {
-                        safeParseStatement(new DisableMsTrigger(disable, db), disable);
-                    }
-                } else if ((ast = st.another_statement()) != null) {
-                    Set_statementContext set = ast.set_statement();
-                    Security_statementContext security;
-                    if (set != null) {
-                        set(set);
-                    } else if ((security = ast.security_statement()) != null
-                            && security.rule_common() != null) {
-                        safeParseStatement(new CreateMsRule(security.rule_common(), db), security);
-                    }
+            Sql_clausesContext clauses = b.sql_clauses();
+            Batch_statementContext batchSt;
+            if (clauses != null) {
+                for (St_clauseContext st : clauses.st_clause()) {
+                    clause(st);
                 }
+            } else if ((batchSt = b.batch_statement()) != null) {
+                batchStatement(batchSt);
             }
+        }
+    }
+
+    private void clause(St_clauseContext st) {
+        Ddl_clauseContext ddl = st.ddl_clause();
+        Another_statementContext ast;
+        if (ddl != null) {
+            Schema_createContext create = ddl.schema_create();
+            Schema_alterContext alter;
+            Disable_triggerContext disable;
+            if (create != null) {
+                create(create);
+            } else if ((alter = ddl.schema_alter()) != null) {
+                alter(alter);
+            } else if ((disable = ddl.disable_trigger()) != null) {
+                safeParseStatement(new DisableMsTrigger(disable, db), disable);
+            }
+        } else if ((ast = st.another_statement()) != null) {
+            Set_statementContext set = ast.set_statement();
+            Security_statementContext security;
+            if (set != null) {
+                set(set);
+            } else if ((security = ast.security_statement()) != null
+                    && security.rule_common() != null) {
+                safeParseStatement(new CreateMsRule(security.rule_common(), db), security);
+            }
+        }
+    }
+
+    private void batchStatement(Batch_statementContext batchSt) {
+        Create_or_alter_procedureContext proc = batchSt.create_or_alter_procedure();
+        if (proc != null) {
+            safeParseStatement(new CreateMsProcedure(
+                    proc, db, ansiNulls, quotedIdentifier), batchSt);
         }
     }
 
@@ -129,9 +150,6 @@ public class CustomTSQLParserListener implements TSqlContextProcessor {
                     db, ansiNulls, quotedIdentifier);
         } else if (ctx.create_index() != null) {
             p = new CreateMsIndex(ctx.create_index(), db);
-        } else if (ctx.create_or_alter_procedure() != null) {
-            p = new CreateMsProcedure(ctx.create_or_alter_procedure(),
-                    db, ansiNulls, quotedIdentifier);
         } else if (ctx.create_or_alter_function() != null) {
             p = new CreateMsFunction(ctx.create_or_alter_function(),
                     db, ansiNulls, quotedIdentifier);
