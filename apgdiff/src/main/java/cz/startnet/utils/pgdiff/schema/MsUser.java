@@ -69,7 +69,7 @@ public class MsUser extends PgStatement {
 
         String newSchema = newUser.getSchema();
         if (!Objects.equals(getSchema(), newSchema)) {
-            sbSql.append("SCHEMA = ").append(MsDiffUtils.quoteName(newSchema)).append(", ");
+            sbSql.append("DEFAULT_SCHEMA = ").append(MsDiffUtils.quoteName(newSchema)).append(", ");
         }
 
         if (sbSql.length() > 0) {

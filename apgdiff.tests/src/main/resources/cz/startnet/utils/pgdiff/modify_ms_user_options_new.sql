@@ -1,0 +1,5 @@
+CREATE SCHEMA [test]
+GO
+
+CREATE USER [test_user] FOR LOGIN [test_user_2] WITH DEFAULT_SCHEMA=[test]
+GO

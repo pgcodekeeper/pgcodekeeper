@@ -214,7 +214,7 @@ REVOKE ALL ON FUNCTION public.trigger_fnc() FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.trigger_fnc() FROM botov_av;
 GRANT ALL ON FUNCTION public.trigger_fnc() TO botov_av;
 GRANT ALL ON FUNCTION public.trigger_fnc() TO PUBLIC;
-GRANT ALL ON FUNCTION public.trigger_fnc() TO maindb;
+GRANT ALL ON FUNCTION public.trigger_fnc() TO maindb WITH GRANT OPTION;
 
 
 --

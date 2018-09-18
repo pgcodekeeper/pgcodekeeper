@@ -1,0 +1,2 @@
+DROP ROLE [test]
+GO

@@ -76,6 +76,31 @@ public class MsDiffTest {
                     // Tests scenario where MS SCHEMA owner is modified.
                     {"modify_ms_schema_owner"},
 
+                    // Tests scenario where MS ASSEMBLY is added.
+                    {"add_ms_assembly"},
+                    // Tests scenario where MS ASSEMBLY is droped.
+                    {"drop_ms_assembly"},
+                    // Tests scenario where MS ASSEMBLY visibility is modified.
+                    {"modify_ms_assembly_visibility"},
+                    // Tests scenario where MS ASSEMBLY binaries is modified.
+                    {"modify_ms_assembly_binaries"},
+                    // Tests scenario where MS ASSEMBLY permission is modified.
+                    {"modify_ms_assembly_permission"},
+
+                    // Tests scenario where MS USER is added.
+                    {"add_ms_user"},
+                    // Tests scenario where MS USER is droped.
+                    {"drop_ms_user"},
+                    // Tests scenario where MS USER options is modified.
+                    {"modify_ms_user_options"},
+
+                    // Tests scenario where MS ROLE is added.
+                    {"add_ms_role"},
+                    // Tests scenario where MS ROLE is droped.
+                    {"drop_ms_role"},
+                    // Tests scenario where MS ROLE members is modified.
+                    {"modify_ms_role_members"},
+
                     // Tests scenario where MS TABLE is added.
                     {"add_ms_table"},
                     // Tests scenario where MS TABLE is dropped.

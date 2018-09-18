@@ -54,11 +54,8 @@ public class MsAssembly extends PgStatement {
         sb.append("\nFROM ");
         String bin = String.join(", ", binaries);
 
-        if (isPreview) {
-            sb.append(bin.substring(0, PREVIEW_LENGHT));
-            if (bin.length() > PREVIEW_LENGHT) {
-                sb.append("...");
-            }
+        if (isPreview && bin.length() > PREVIEW_LENGHT) {
+            sb.append(bin.substring(0, PREVIEW_LENGHT)).append("...");
         } else {
             sb.append(bin);
         }
@@ -112,7 +109,7 @@ public class MsAssembly extends PgStatement {
 
         if (!Objects.equals(newAss.getPermission(), getPermission())) {
             sb.append("\nALTER ASSEMBLY ").append(MsDiffUtils.quoteName(name))
-            .append(" WITH PERMISSION_SET = ").append(permission).append(GO);
+            .append(" WITH PERMISSION_SET = ").append(newAss.getPermission()).append(GO);
         }
 
         return sb.length() > startLength;
