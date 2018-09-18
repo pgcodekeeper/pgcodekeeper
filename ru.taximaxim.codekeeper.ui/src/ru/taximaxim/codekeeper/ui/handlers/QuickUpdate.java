@@ -215,14 +215,16 @@ class QuickUpdateJob extends SingletonEditorJob {
 
         try {
             if (isMsSql) {
-                // TODO uncomment this code when list of batches will be
-                // filled by queries of Statements splited by 'GO'.
+                // TODO uncomment and use this code for MS and PG when list of
+                // batches will be filled by splited queries of Statements.
                 //
                 // List<List<String>> batches = new ArrayList<>();
                 // new JdbcRunner(monitor).runBatches(connector, batches);
 
-                ExceptionNotifier.notifyDefault("fill list of batches by queries of Statements splited by 'GO'",
-                        new PgCodekeeperUIException("fill list of batches by queries of Statements splited by 'GO'"));
+                // TODO remove this 'ExceptionNotifier' and 'return' code when list of
+                // batches will be filled by splited queries of Statements.
+                ExceptionNotifier.notifyDefault("fill list of batches by splited queries of Statements",
+                        new PgCodekeeperUIException("fill list of batches by splited queries of Statements"));
                 return;
             } else {
                 new JdbcRunner(monitor).run(connector, differ.getDiffDirect());

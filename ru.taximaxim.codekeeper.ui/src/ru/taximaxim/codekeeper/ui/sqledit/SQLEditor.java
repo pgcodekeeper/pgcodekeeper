@@ -515,15 +515,17 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
             try {
                 if (dbInfo.isMsSql()) {
-                    // TODO uncomment this code when list of batches will be
-                    // filled by queries of Statements splited by 'GO'.
+                    // TODO uncomment and use this code for MS and PG when list of
+                    // batches will be filled by splited queries of Statements.
                     //
                     // List<List<String>> batches = new ArrayList<>();
                     // new JdbcRunner(monitor).runBatches(connector, batches);
 
+                    // TODO remove this 'return' code when list of batches will be filled
+                    // by splited queries of Statements.
                     return new Status(IStatus.ERROR, PLUGIN_ID.THIS,
-                            "fill list of batches by queries of Statements splited by 'GO'",
-                            new PgCodekeeperUIException("fill list of batches by queries of Statements splited by 'GO'"));
+                            "fill list of batches by splited queries of Statements",
+                            new PgCodekeeperUIException("fill list of batches by splited queries of Statements"));
                 } else {
                     new JdbcRunner(monitor).run(connector, script);
                 }
