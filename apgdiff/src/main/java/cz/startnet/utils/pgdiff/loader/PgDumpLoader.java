@@ -19,12 +19,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
@@ -158,9 +159,9 @@ public class PgDumpLoader implements AutoCloseable {
 
     protected PgDatabase load(PgDatabase intoDb) throws IOException, InterruptedException {
         PgDiffUtils.checkCancelled(monitor);
-        List<ParseTreeListener> listeners = new ArrayList<>();
 
         if (args.isMsSql()) {
+            List<TSqlContextProcessor> listeners = new ArrayList<>();
             if (loadSchema) {
                 listeners.add(new CustomTSQLParserListener(intoDb, inputObjectName, errors, monitor));
             }
@@ -175,6 +176,7 @@ public class PgDumpLoader implements AutoCloseable {
             AntlrParser.parseTSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
                     monitor, monitoringLevel, listeners);
         } else {
+            List<SqlContextProcessor> listeners = new ArrayList<>();
             if (loadSchema) {
                 listeners.add(new CustomSQLParserListener(intoDb, inputObjectName, errors, monitor));
             }
