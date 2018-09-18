@@ -12,6 +12,8 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsAssembly extends PgStatement {
 
+    private static final int PREVIEW_LENGHT = 20;
+
     private final List<String> binaries = new ArrayList<>();
     private String permission = "SAFE";
     private boolean isVisible = true;
@@ -32,35 +34,35 @@ public class MsAssembly extends PgStatement {
 
     @Override
     public String getCreationSQL() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("CREATE ASSEMBLY ").append(MsDiffUtils.quoteName(name));
-        if (owner != null) {
-            sb.append("\nAUTHORIZATION ").append(MsDiffUtils.quoteName(owner));
-        }
-
-        sb.append("\nFROM ").append(String.join(", ", binaries));
-        sb.append("\nWITH PERMISSION_SET = ").append(permission);
-        sb.append(GO);
-
-        if (!isVisible) {
-            sb.append("\nALTER ASSEMBLY ").append(MsDiffUtils.quoteName(name))
-            .append(" WITH VISIBILITY = OFF").append(GO);
-        }
-
-        return sb.toString();
+        return getAssemblyFullSQL(false);
     }
 
     /**
      * Returns assembly definition without full binaries
      */
     public String getPreview() {
+        return getAssemblyFullSQL(true);
+    }
+
+    private String getAssemblyFullSQL(boolean isPreview) {
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE ASSEMBLY ").append(MsDiffUtils.quoteName(name));
         if (owner != null) {
             sb.append("\nAUTHORIZATION ").append(MsDiffUtils.quoteName(owner));
         }
 
-        sb.append("\nFROM ").append(String.join(", ", binaries).substring(0, 20)).append("...");
+        sb.append("\nFROM ");
+        String bin = String.join(", ", binaries);
+
+        if (isPreview) {
+            sb.append(bin.substring(0, PREVIEW_LENGHT));
+            if (bin.length() > PREVIEW_LENGHT) {
+                sb.append("...");
+            }
+        } else {
+            sb.append(bin);
+        }
+
         sb.append("\nWITH PERMISSION_SET = ").append(permission);
         sb.append(GO);
 
@@ -68,6 +70,8 @@ public class MsAssembly extends PgStatement {
             sb.append("\nALTER ASSEMBLY ").append(MsDiffUtils.quoteName(name))
             .append(" WITH VISIBILITY = OFF").append(GO);
         }
+
+        appendPrivileges(sb);
 
         return sb.toString();
     }

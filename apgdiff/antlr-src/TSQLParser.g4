@@ -2034,7 +2034,7 @@ permission
     ;
     
 object_type
-    : ON (type=(LOGIN | DATABASE | OBJECT | ROLE | SCHEMA | USER) ':' ':')? 
+    : ON (type=(LOGIN | DATABASE | OBJECT | ROLE | SCHEMA | USER | ASSEMBLY) ':' ':')? 
     on_id=table_name table_columns?
     ; 
     

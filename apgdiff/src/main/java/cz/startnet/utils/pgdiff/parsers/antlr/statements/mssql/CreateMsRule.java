@@ -81,6 +81,8 @@ public class CreateMsRule extends ParserAbstract {
                     + '.' + objectName;
         } else if (st.getStatementType() == DbObjType.SCHEMA) {
             objectName = "SCHEMA::" + objectName;
+        } else if (st.getStatementType() == DbObjType.ASSEMBLY) {
+            objectName = "ASSEMBLY::" + objectName;
         }
 
         Table_columnsContext columns = nameCtx.table_columns();
