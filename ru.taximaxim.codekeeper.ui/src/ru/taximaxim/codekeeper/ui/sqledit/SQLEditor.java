@@ -86,7 +86,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.IPartAdapter2;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.CONTEXT;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
@@ -514,21 +513,14 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             }
 
             try {
-                if (dbInfo.isMsSql()) {
-                    // TODO uncomment and use this code for MS and PG when list of
-                    // batches will be filled by splited queries of Statements.
-                    //
-                    // List<List<String>> batches = new ArrayList<>();
-                    // new JdbcRunner(monitor).runBatches(connector, batches);
-
-                    // TODO remove this 'return' code when list of batches will be filled
-                    // by splited queries of Statements.
-                    return new Status(IStatus.ERROR, PLUGIN_ID.THIS,
-                            "fill list of batches by splited queries of Statements",
-                            new PgCodekeeperUIException("fill list of batches by splited queries of Statements"));
-                } else {
-                    new JdbcRunner(monitor).run(connector, script);
-                }
+                // TODO uncomment and use this code instead of
+                // 'new JdbcRunner(monitor).run(connector, script)' when list of
+                // batches will be filled by splited queries of Statements.
+                //
+                // List<List<String>> batches = new ArrayList<>();
+                // new JdbcRunner(monitor).runBatches(connector, batches);
+                //
+                new JdbcRunner(monitor).run(connector, script);
                 output = Messages.SqlEditor_jdbc_success;
                 ProjectEditorDiffer.notifyDbChanged(dbInfo);
                 return Status.OK_STATUS;

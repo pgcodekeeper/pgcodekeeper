@@ -214,22 +214,14 @@ class QuickUpdateJob extends SingletonEditorJob {
         }
 
         try {
-            if (isMsSql) {
-                // TODO uncomment and use this code for MS and PG when list of
-                // batches will be filled by splited queries of Statements.
-                //
-                // List<List<String>> batches = new ArrayList<>();
-                // new JdbcRunner(monitor).runBatches(connector, batches);
-
-                // TODO remove this 'ExceptionNotifier' and 'return' code when list of
-                // batches will be filled by splited queries of Statements.
-                ExceptionNotifier.notifyDefault("fill list of batches by splited queries of Statements",
-                        new PgCodekeeperUIException("fill list of batches by splited queries of Statements"));
-                return;
-            } else {
-                new JdbcRunner(monitor).run(connector, differ.getDiffDirect());
-            }
-
+            // TODO uncomment and use this code instead of
+            // 'new JdbcRunner(monitor).run(connector, differ.getDiffDirect())' when list of
+            // batches will be filled by splited queries of Statements.
+            //
+            // List<List<String>> batches = new ArrayList<>();
+            // new JdbcRunner(monitor).runBatches(connector, batches);
+            //
+            new JdbcRunner(monitor).run(connector, differ.getDiffDirect());
         } catch (SQLException e) {
             throw new PgCodekeeperUIException(Messages.QuickUpdate_migration_failed + e.getLocalizedMessage());
         }
