@@ -192,7 +192,11 @@ public class PgDatabase extends PgStatement {
 
     @Override
     public Stream<PgStatement> getChildren() {
-        return Stream.concat(getSchemas().stream(), getExtensions().stream());
+        Stream<PgStatement> stream =  Stream.concat(getSchemas().stream(), getExtensions().stream());
+        stream = Stream.concat(stream, getAssemblies().stream());
+        stream = Stream.concat(stream, getRoles().stream());
+        stream = Stream.concat(stream, getUsers().stream());
+        return stream;
     }
 
     /**

@@ -10,7 +10,7 @@ CROSS APPLY (
         INNER JOIN sys.database_principals p1  WITH (NOLOCK) ON rm.member_principal_id=p1.principal_id
         WHERE rm.role_principal_id=dp.principal_id  
     ) cc
-    FOR JSON AUTO, INCLUDE_NULL_VALUES
+    FOR XML RAW, ROOT
 ) cc (groups)
-WHERE dp.type in ('R') and dp.is_fixed_role = 0
+WHERE dp.type in ('R') AND dp.is_fixed_role = 0
 AND dp.name != N'public'

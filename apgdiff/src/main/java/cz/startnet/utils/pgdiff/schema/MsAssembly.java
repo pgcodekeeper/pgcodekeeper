@@ -14,7 +14,7 @@ public class MsAssembly extends PgStatement {
 
     private final List<String> binaries = new ArrayList<>();
     private String permission = "SAFE";
-    private boolean isVisible;
+    private boolean isVisible = true;
 
     public MsAssembly(String name, String rawStatement) {
         super(name, rawStatement);
@@ -49,6 +49,29 @@ public class MsAssembly extends PgStatement {
 
         return sb.toString();
     }
+
+    /**
+     * Returns assembly definition without full binaries
+     */
+    public String getPreview() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("CREATE ASSEMBLY ").append(MsDiffUtils.quoteName(name));
+        if (owner != null) {
+            sb.append("\nAUTHORIZATION ").append(MsDiffUtils.quoteName(owner));
+        }
+
+        sb.append("\nFROM ").append(String.join(", ", binaries).substring(0, 20)).append("...");
+        sb.append("\nWITH PERMISSION_SET = ").append(permission);
+        sb.append(GO);
+
+        if (!isVisible) {
+            sb.append("\nALTER ASSEMBLY ").append(MsDiffUtils.quoteName(name))
+            .append(" WITH VISIBILITY = OFF").append(GO);
+        }
+
+        return sb.toString();
+    }
+
 
     @Override
     public String getDropSQL() {
@@ -117,7 +140,23 @@ public class MsAssembly extends PgStatement {
 
     @Override
     public boolean compare(PgStatement obj) {
-        return false;
+        boolean eq = false;
+
+        if (this == obj) {
+            eq = true;
+        } else if (obj instanceof MsAssembly) {
+            MsAssembly schema = (MsAssembly) obj;
+
+            eq = Objects.equals(name, schema.getName())
+                    && Objects.equals(owner, schema.getOwner())
+                    && Objects.equals(binaries, schema.getBinaries())
+                    && grants.equals(schema.grants)
+                    && revokes.equals(schema.revokes)
+                    && Objects.equals(isVisible, schema.isVisible())
+                    && Objects.equals(permission, schema.getPermission());
+        }
+
+        return eq;
     }
 
     public String getPermission() {

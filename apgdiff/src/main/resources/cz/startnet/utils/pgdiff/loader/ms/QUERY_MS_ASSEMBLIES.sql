@@ -4,10 +4,9 @@ SELECT
     s.is_visible, 
     s.permission_set, 
     aa.acl,
-    af.content
+    bb.binaries
 FROM sys.assemblies AS s WITH (NOLOCK)
 LEFT JOIN sys.database_principals p WITH (NOLOCK) ON p.principal_id=s.principal_id
-LEFT JOIN sys.assembly_files af WITH (NOLOCK) ON s.assembly_id = af.assembly_id AND af.assembly_id > 65535
 CROSS APPLY (
     SELECT * FROM (
         SELECT  
@@ -20,7 +19,12 @@ CROSS APPLY (
         LEFT JOIN sys.columns col WITH (NOLOCK) on col.object_id = perm.major_id  AND col.column_id = perm.minor_id
         WHERE major_id = s.assembly_id
     ) cc 
-    FOR JSON AUTO, INCLUDE_NULL_VALUES
+    FOR XML RAW, ROOT
 ) aa (acl)
+CROSS APPLY (
+    SELECT convert(varchar(max), af.content, 1) b
+    FROM sys.assembly_files af WITH (NOLOCK) 
+    WHERE s.assembly_id = af.assembly_id AND af.assembly_id > 65535
+    FOR XML RAW, ROOT
+) bb (binaries)
 WHERE s.is_user_defined = 1
-ORDER BY file_id

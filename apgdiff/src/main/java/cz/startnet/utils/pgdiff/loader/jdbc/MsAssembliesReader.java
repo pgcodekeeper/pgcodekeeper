@@ -29,18 +29,11 @@ public class MsAssembliesReader {
                 String name = res.getString("name");
                 loader.setCurrentObject(new GenericColumn(name, DbObjType.ASSEMBLY));
 
-                //TODO add 0x to beginning if binary
-                String content = res.getString("content");
-                MsAssembly ass = db.getAssembly(name);
-
-                // problems with varbinaries in json
-                if (ass != null) {
-                    ass.addBinary(content);
-                    continue;
+                MsAssembly ass = new MsAssembly(name, "");
+                for (XmlReader bin : XmlReader.readXML(res.getString("binaries"))) {
+                    ass.addBinary(bin.getString("b"));
                 }
 
-                ass = new MsAssembly(name, "");
-                ass.addBinary(content);
                 ass.setVisible(res.getBoolean("is_visible"));
 
                 int i = res.getInt("permission_set");

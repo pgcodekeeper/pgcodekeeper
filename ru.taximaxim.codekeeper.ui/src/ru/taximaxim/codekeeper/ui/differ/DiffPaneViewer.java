@@ -10,6 +10,9 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 
+import cz.startnet.utils.pgdiff.schema.MsAssembly;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -92,7 +95,11 @@ public class DiffPaneViewer extends Composite {
     private String getElementSql(TreeElement el, boolean project) {
         if (el.getSide() == DiffSide.LEFT == project || el.getSide() == DiffSide.BOTH) {
             DbSource db = project ? dbProject : dbRemote;
-            return el.getPgStatement(db.getDbObject()).getFullSQL();
+            PgStatement st = el.getPgStatement(db.getDbObject());
+            if (st.getStatementType() == DbObjType.ASSEMBLY) {
+                return ((MsAssembly)st).getPreview();
+            }
+            return st.getFullSQL();
         } else {
             return null;
         }

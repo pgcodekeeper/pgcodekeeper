@@ -193,6 +193,9 @@ public class MsModelExporter extends AbstractModelExporter {
 
         switch (stInNew.getStatementType()) {
         case SCHEMA:
+        case ROLE:
+        case USER:
+        case ASSEMBLY:
             // delete sql file
             deleteStatementIfExists(stInNew);
 
@@ -239,7 +242,10 @@ public class MsModelExporter extends AbstractModelExporter {
 
         switch (stInNew.getStatementType()) {
         case SCHEMA:
-            // delete schema if already exists
+        case ASSEMBLY:
+        case USER:
+        case ROLE:
+            // delete statement if already exists
             deleteStatementIfExists(stInNew);
             dumpSQL(stInNew.getFullSQL(), new File (outDir, getRelativeFilePath(stInNew, true)));
             break;
@@ -291,14 +297,29 @@ public class MsModelExporter extends AbstractModelExporter {
         switch (type) {
 
         case SCHEMA:
-
             file = new File(MS_WORK_DIR_NAMES.SECURITY.getName(), SCHEMAS_FOLDER);
             if (!addExtension) {
                 // return schema dir path
                 return file.toString();
             }
             break;
-
+        case ROLE:
+            file = new File(MS_WORK_DIR_NAMES.SECURITY.getName(), ROLES_FOLDER);
+            if (!addExtension) {
+                // return schema dir path
+                return file.toString();
+            }
+            break;
+        case USER:
+            file = new File(MS_WORK_DIR_NAMES.SECURITY.getName(), USERS_FOLDER);
+            if (!addExtension) {
+                // return schema dir path
+                return file.toString();
+            }
+            break;
+        case ASSEMBLY:
+            file = new File(MS_WORK_DIR_NAMES.ASSEMBLIES.getName());
+            break;
         case SEQUENCE:
             file = new File(MS_WORK_DIR_NAMES.SEQUENCES.getName());
             break;
@@ -329,7 +350,7 @@ public class MsModelExporter extends AbstractModelExporter {
         }
 
         String fileName = addExtension ? getExportedFilenameSql(st) : getExportedFilename(st);
-        if (type != DbObjType.SCHEMA) {
+        if (st instanceof PgStatementWithSearchPath) {
             fileName = getExportedFilename(((PgStatementWithSearchPath)st)
                     .getContainingSchema().getName()) + '.' + fileName;
         }
