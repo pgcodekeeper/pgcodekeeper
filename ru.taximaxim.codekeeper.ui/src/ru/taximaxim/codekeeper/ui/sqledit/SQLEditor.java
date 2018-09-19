@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.text.MessageFormat;
@@ -378,7 +377,8 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         IEditorInput in = getEditorInput();
         if (in instanceof IURIEditorInput) {
             IURIEditorInput uri = (IURIEditorInput) in;
-            isMsSqlExternalFile = uri.getURI().getPath().contains(TEMP_DIR_PATH.MS);
+            isMsSqlExternalFile = Paths.get(uri.getURI()).getParent()
+                    .equals(Paths.get(System.getProperty("java.io.tmpdir"), TEMP_DIR_PATH.MS)); //$NON-NLS-1$
             IDocument document = getDocumentProvider().getDocument(getEditorInput());
             InputStream stream = new ByteArrayInputStream(document.get().getBytes(StandardCharsets.UTF_8));
             parser.fillRefsFromInputStream(stream, Paths.get(uri.getURI()).toString(),
@@ -616,9 +616,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         @Override
         public void run() {
             final StdStreamRedirector sr = new StdStreamRedirector();
-            Path tempDir = Paths.get(System.getProperty("java.io.tmpdir")) //$NON-NLS-1$
-                    .resolve(isMsSqlExternalFile ? TEMP_DIR_PATH.MS : TEMP_DIR_PATH.PG);
-            try (TempFile tempFile = new TempFile(tempDir, "tmp_migration_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
+            try (TempFile tempFile = new TempFile("tmp_migration_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
                 File outFile = tempFile.get().toFile();
                 try (PrintWriter writer = new PrintWriter(outFile, ApgdiffConsts.UTF_8)) {
                     writer.write(textRetrieved);
