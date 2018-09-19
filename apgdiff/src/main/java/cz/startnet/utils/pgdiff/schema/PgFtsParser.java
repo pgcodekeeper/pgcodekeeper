@@ -98,6 +98,7 @@ public class PgFtsParser extends PgStatementWithSearchPath {
         parser.setLexTypesFunction(getLexTypesFunction());
         parser.setHeadLineFunction(getHeadLineFunction());
         parser.deps.addAll(deps);
+        parser.setLocation(getLocation());
         return parser;
     }
 

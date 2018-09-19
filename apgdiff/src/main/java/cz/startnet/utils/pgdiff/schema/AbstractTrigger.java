@@ -367,6 +367,7 @@ public abstract class AbstractTrigger extends PgStatementWithSearchPath {
         triggerDst.setDisable(isDisable());
         triggerDst.setAnsiNulls(isAnsiNulls());
         triggerDst.setQuotedIdentified(isQuotedIdentified());
+        triggerDst.setLocation(getLocation());
         return triggerDst;
     }
 

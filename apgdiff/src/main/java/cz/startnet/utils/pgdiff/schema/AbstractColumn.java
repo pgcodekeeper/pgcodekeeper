@@ -232,6 +232,19 @@ public abstract class AbstractColumn extends PgStatementWithSearchPath implement
         resetHash();
     }
 
+    @Override
+    public String getLocation() {
+        if (location == null) {
+            location = getParent().getLocation();
+        }
+        return location;
+    }
+
+    @Override
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
     protected String getAlterTable() {
         return ((AbstractTable) getParent()).getAlterTable(false, false);
     }
@@ -333,6 +346,7 @@ public abstract class AbstractColumn extends PgStatementWithSearchPath implement
         }
         colDst.setComment(getComment());
         colDst.deps.addAll(deps);
+        colDst.setLocation(getLocation());
         return colDst;
     }
 

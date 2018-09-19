@@ -168,6 +168,7 @@ implements PgOptionContainer {
         indexDst.deps.addAll(deps);
         indexDst.columns.addAll(columns);
         indexDst.options.putAll(options);
+        indexDst.setLocation(getLocation());
         return indexDst;
     }
 

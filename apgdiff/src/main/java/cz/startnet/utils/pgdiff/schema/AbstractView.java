@@ -349,6 +349,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         viewDst.setOwner(getOwner());
         viewDst.deps.addAll(deps);
         viewDst.options.putAll(options);
+        viewDst.setLocation(getLocation());
         return viewDst;
     }
 
