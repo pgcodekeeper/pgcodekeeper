@@ -29,9 +29,7 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.ISchema;
-import cz.startnet.utils.pgdiff.schema.ISearchPath;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.system.PgSystemSchema;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -275,7 +273,7 @@ public abstract class AbstractExpr {
         if (DbObjNature.USER == relation.getStatementNature()) {
             // hack
             cols = cols.peek(col -> depcies.add(
-                    new GenericColumn(findContainingSchema(relation).getName(),
+                    new GenericColumn(relation.getContainingSchema().getName(),
                             relation.getName(), col.getFirst(), DbObjType.COLUMN)));
         }
         return cols;
@@ -292,7 +290,7 @@ public abstract class AbstractExpr {
             IRelation rel = relCol.getFirst();
             col = relCol.getSecond();
             if (rel.getStatementNature() == DbObjNature.USER) {
-                depcies.add(new GenericColumn(findContainingSchema(rel).getName(), rel.getName(),
+                depcies.add(new GenericColumn(rel.getContainingSchema().getName(), rel.getName(),
                         col.getFirst(), DbObjType.COLUMN));
             }
         }
@@ -310,7 +308,7 @@ public abstract class AbstractExpr {
 
     protected void addFunctionDepcy(IFunction function) {
         if (DbObjNature.USER == function.getStatementNature()) {
-            depcies.add(new GenericColumn(findContainingSchema(function).getName(),
+            depcies.add(new GenericColumn(function.getContainingSchema().getName(),
                     function.getName(), DbObjType.FUNCTION));
         }
     }
@@ -384,14 +382,14 @@ public abstract class AbstractExpr {
         Stream<IRelation> foundRelations;
         if (schemaName != null) {
             if (isSystemSchema(schemaName)) {
-                foundRelations = findSysSchema(schemaName, null).getRelations()
+                foundRelations = systemStorage.getSchema(schemaName).getRelations()
                         .map(r -> (IRelation) r);
             } else {
                 foundRelations = findSchema(schemaName, null).getRelations();
             }
         } else {
             foundRelations = Stream.concat(findSchema(schema, null).getRelations(),
-                    findSysSchema(PgSystemStorage.SCHEMA_PG_CATALOG, null).getRelations());
+                    systemStorage.getPgCatalog().getRelations());
         }
 
         return foundRelations.filter(r -> r.getName().equals(relationName));
@@ -409,23 +407,5 @@ public abstract class AbstractExpr {
                     errorCtx != null ? errorCtx.getStart() : null);
         }
         return foundSchema;
-    }
-
-    protected PgSystemSchema findSysSchema(String schemaName, ParserRuleContext errorCtx) {
-        PgSystemSchema foundSysSchema = systemStorage.getSchema(schemaName);
-        if (foundSysSchema == null) {
-            throw new UnresolvedReferenceException("System schema '" + schemaName + "' not found!",
-                    errorCtx != null ? errorCtx.getStart() : null);
-        }
-        return foundSysSchema;
-    }
-
-    private ISchema findContainingSchema(ISearchPath iSearchPath) {
-        ISchema foundContainingSchema = iSearchPath.getContainingSchema();
-        if (foundContainingSchema == null) {
-            throw new UnresolvedReferenceException("Containing schema of '"
-                    + iSearchPath.getName() + "' not found!", null);
-        }
-        return foundContainingSchema;
     }
 }
