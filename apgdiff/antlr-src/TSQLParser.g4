@@ -12,15 +12,16 @@ tsql_file
     ;
 
 batch
-    : sql_clauses go_statement*
+    : (sql_clauses | batch_statement) (go_statement+ | EOF)
+    ;
+
+// for statements that must be the only ones in an entire batch
+batch_statement
+    : CREATE create_or_alter_procedure
     ;
 
 sql_clauses
     : SEMI* (st_clause SEMI?)+
-    ;
-
-sql_clause
-    : SEMI* st_clause SEMI*
     ;
 
 st_clause
@@ -128,7 +129,7 @@ schema_create
     | create_or_alter_broker_priority
     | create_or_alter_event_session
     | create_or_alter_function
-    | create_or_alter_procedure
+    //| create_or_alter_procedure
     | create_or_alter_trigger
     | create_or_alter_view
     | create_queue
@@ -178,7 +179,7 @@ cfl_statement
     : block_statement
     | break_statement
     | continue_statement
-    | goto_statement
+    //| goto_statement
     | if_statement
     | return_statement
     | throw_statement
@@ -217,7 +218,7 @@ return_statement
 
 // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/if-else-transact-sql
 if_statement
-    : IF search_condition sql_clause (ELSE sql_clause)?
+    : IF search_condition st_clause (SEMI? ELSE st_clause)?
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/throw-transact-sql
@@ -249,7 +250,7 @@ waitfor_statement
 
 // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/while-transact-sql
 while_statement
-    : WHILE search_condition (sql_clause | BREAK  | CONTINUE )
+    : WHILE search_condition (st_clause | BREAK  | CONTINUE )
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/print-transact-sql
@@ -1436,7 +1437,7 @@ create_or_alter_trigger
     (FOR | AFTER | INSTEAD OF) trigger_operation (',' trigger_operation)*
     with_append?
     not_for_replication?
-    AS sql_clauses
+    AS st_clause
     ;
 
 not_for_replication
@@ -1991,11 +1992,6 @@ execute_statement_arg
     : (parameter=LOCAL_ID '=')? ((constant_LOCAL_ID | id) (OUTPUT | OUT)? | DEFAULT | NULL)
     ;
 
-execute_var_string
-    : LOCAL_ID
-    | STRING
-    ;
-
 // https://msdn.microsoft.com/en-us/library/ff848791.aspx
 security_statement
     // https://msdn.microsoft.com/en-us/library/ms188354.aspx
@@ -2137,23 +2133,6 @@ decryption_mechanism
     | PASSWORD EQUAL STRING
     ;
 
-grant_permission
-    : EXECUTE
-    | VIEW id // DEFINITION
-    | TAKE id // OWNERSHIP
-    | CONTROL id? // SERVER
-    | CREATE (TABLE | VIEW)
-    | SHOWPLAN
-    | IMPERSONATE
-    | SELECT
-    | DELETE
-    | UPDATE
-    | REFERENCES
-    | INSERT
-    | CONNECT
-    | ALTER (ANY? (id | DATABASE))?
-    ;
-
 // https://msdn.microsoft.com/en-us/library/ms190356.aspx
 // https://msdn.microsoft.com/en-us/library/ms189484.aspx
 set_statement
@@ -2187,7 +2166,7 @@ transaction_statement
 
 // https://msdn.microsoft.com/en-us/library/ms188037.aspx
 go_statement
-    : GO (count=DECIMAL)?
+    : GO //(count=DECIMAL)?
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms188366.aspx
@@ -2260,10 +2239,6 @@ column_constraint_body
     : (PRIMARY KEY | UNIQUE) clustered? index_options?
     | CHECK not_for_replication? '(' search_condition ')'
     | (FOREIGN KEY)? REFERENCES table_name '(' pk = column_name_list')' on_delete? on_update? not_for_replication?
-    ;
-
-materialized_column_definition
-    : id (COMPUTE | AS) expression (MATERIALIZED | NOT MATERIALIZED)?
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms188066.aspx
@@ -2554,10 +2529,6 @@ select_list
     : select_list_elem (',' select_list_elem)*
     ;
 
-udt_method_arguments
-    : '(' execute_var_string (',' execute_var_string)* ')'
-    ;
-
 select_list_elem
     : (table_name '.')? '*'
     | ('$' IDENTITY | '$' ROWGUID | expression) (AS? column_alias)?
@@ -2578,13 +2549,15 @@ table_source_item_joined
     ;
 
 table_source_item
-    : full_table_name with_table_hints? as_table_alias?
+    // column_alias_list is in conflict with deprecated form of
+    // with_table_hints which omits WITH
+    : full_table_name insert_with_table_hints? as_table_alias?
     | rowset_function             as_table_alias?
-    | derived_table              (as_table_alias column_alias_list?)?
+    | derived_table              (as_table_alias /*column_alias_list?*/)?
     | change_table                as_table_alias
     | function_call               as_table_alias?
     | LOCAL_ID                    as_table_alias?
-    | LOCAL_ID '.' function_call (as_table_alias column_alias_list?)?
+    | LOCAL_ID '.' function_call (as_table_alias /*column_alias_list?*/)?
     | open_xml
     | ':' ':' function_call       as_table_alias? // Build-in function (old syntax)
     ;

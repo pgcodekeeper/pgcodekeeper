@@ -513,6 +513,13 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             }
 
             try {
+                // TODO uncomment and use this code instead of
+                // 'new JdbcRunner(monitor).run(connector, script)' when list of
+                // batches will be filled by splited queries of Statements.
+                //
+                // List<List<String>> batches = new ArrayList<>();
+                // new JdbcRunner(monitor).runBatches(connector, batches);
+                //
                 new JdbcRunner(monitor).run(connector, script);
                 output = Messages.SqlEditor_jdbc_success;
                 ProjectEditorDiffer.notifyDbChanged(dbInfo);

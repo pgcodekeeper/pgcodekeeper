@@ -63,7 +63,7 @@ public class CreateMsTrigger extends ParserAbstract {
 
         trigger.setNotForRep(ctx.not_for_replication() != null);
         trigger.setAppend(ctx.with_append() != null);
-        String query = getFullCtxText(ctx.sql_clauses());
+        String query = getFullCtxText(ctx.st_clause());
         trigger.setQuery(db.getArguments().isKeepNewlines() ? query : query.replace("\r", ""));
 
         getSafe(schema::getTriggerContainer, QNameParser.getFirstNameCtx(ctx.table_name().id()))

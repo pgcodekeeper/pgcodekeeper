@@ -7,8 +7,8 @@ CREATE TABLE [dbo].[table1] (
 )
 GO
 
-CREATE SCHEMA [tester];  
-GO; 
+CREATE SCHEMA [tester]
+GO
 
 SET QUOTED_IDENTIFIER ON
 GO

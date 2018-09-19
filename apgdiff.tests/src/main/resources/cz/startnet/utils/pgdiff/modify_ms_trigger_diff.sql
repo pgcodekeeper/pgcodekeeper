@@ -5,5 +5,5 @@ GO
 ALTER TRIGGER [dbo].[trigger1]
 ON [dbo].[table1]
 AFTER UPDATE
-AS RAISERROR ('Edited Notify!', 16, 10);
+AS RAISERROR ('Edited Notify!', 16, 10)
 GO

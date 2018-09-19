@@ -90,8 +90,8 @@ public class MsFPVTReader extends JdbcReader {
                         cons.accept((PgStatementWithSearchPath)st, acls);
                     });
         } else if (tt == DbObjType.PROCEDURE) {
-            loader.submitMsAntlrTask(def, p -> p.tsql_file().batch(0).sql_clauses()
-                    .st_clause(0).ddl_clause().schema_create().create_or_alter_procedure(),
+            loader.submitMsAntlrTask(def, p -> p.tsql_file().batch(0).batch_statement()
+                    .create_or_alter_procedure(),
                     ctx -> {
                         PgStatement st = new CreateMsProcedure(ctx, db, an, qi).getObject();
                         loader.setOwner(st, owner);
