@@ -19,6 +19,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.callables.QueriesBatchCallable;
 import cz.startnet.utils.pgdiff.loader.callables.QueryCallable;
 import cz.startnet.utils.pgdiff.loader.callables.ResultSetCallable;
@@ -35,7 +36,6 @@ public class JdbcRunner {
     private static final int SLEEP_TIME = 20;
 
     private static final String MESSAGE = "Script execution interrupted by user";
-    private static final String QUERY_EXECUTION_MESSAGE = "Query execution";
 
     private final IProgressMonitor monitor;
 
@@ -82,12 +82,11 @@ public class JdbcRunner {
         try (Connection connection = connector.getConnection();
                 Statement st = connection.createStatement()) {
             SubMonitor subMonitor = SubMonitor.convert(monitor);
-            subMonitor.subTask(QUERY_EXECUTION_MESSAGE);
-
             if (batches.size() == 1) {
                 List<String> queries = batches.get(0);
                 subMonitor.setWorkRemaining(queries.size());
                 for (String query : queries) {
+                    PgDiffUtils.checkCancelled(monitor);
                     runScript(new QueryCallable(st, query));
                     subMonitor.worked(1);
                 }
@@ -95,13 +94,12 @@ public class JdbcRunner {
                 subMonitor.setWorkRemaining(batches.size());
                 connection.setAutoCommit(false);
                 for (List<String> queriesList : batches) {
+                    PgDiffUtils.checkCancelled(monitor);
                     runScript(new QueriesBatchCallable(st, queriesList));
                     subMonitor.worked(1);
                 }
                 connection.commit();
             }
-
-            subMonitor.done();
         }
     }
 
