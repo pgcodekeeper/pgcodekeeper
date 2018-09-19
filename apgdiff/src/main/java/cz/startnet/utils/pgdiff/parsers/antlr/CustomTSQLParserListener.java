@@ -7,24 +7,21 @@ import org.antlr.v4.runtime.Token;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_assemblyContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_authorizationContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_db_roleContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_tableContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_assemblyContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_db_roleContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_indexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_functionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Another_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.BatchContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_procedureContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_triggerContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_viewContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_schemaContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_sequenceContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_tableContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_userContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Ddl_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Disable_triggerContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Rule_commonContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_alterContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_createContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Security_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Set_specialContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Set_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Sql_clausesContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.St_clauseContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Tsql_fileContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.ObjectCreationException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
@@ -51,7 +48,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
-public class CustomTSQLParserListener extends TSQLParserBaseListener {
+public class CustomTSQLParserListener implements TSqlContextProcessor {
 
     private final PgDatabase db;
     private final List<AntlrError> errors;
@@ -68,6 +65,9 @@ public class CustomTSQLParserListener extends TSQLParserBaseListener {
         this.filename = filename;
     }
 
+    /**
+     * @param ctx statememnt's first token rule
+     */
     private void safeParseStatement(ParserAbstract p, ParserRuleContext ctx) {
         try {
             PgDiffUtils.checkCancelled(monitor);
@@ -84,7 +84,7 @@ public class CustomTSQLParserListener extends TSQLParserBaseListener {
         } catch (UnresolvedReferenceException ex) {
             errors.add(handleUnresolvedReference(ex, filename));
         } catch (ObjectCreationException ex) {
-            errors.add(handleCreationException(ex, filename, ctx.getParent()));
+            errors.add(handleCreationException(ex, filename, ctx));
         } catch (InterruptedException ex) {
             throw new MonitorCancelledRuntimeException();
         } catch (Exception e) {
@@ -93,93 +93,104 @@ public class CustomTSQLParserListener extends TSQLParserBaseListener {
     }
 
     @Override
-    public void exitCreate_sequence(Create_sequenceContext ctx) {
-        safeParseStatement(new CreateMsSequence(ctx, db), ctx);
+    public void process(Tsql_fileContext rootCtx) {
+        for (BatchContext b : rootCtx.batch()) {
+            Sql_clausesContext clauses = b.sql_clauses();
+            Batch_statementContext batchSt;
+            if (clauses != null) {
+                for (St_clauseContext st : clauses.st_clause()) {
+                    clause(st);
+                }
+            } else if ((batchSt = b.batch_statement()) != null) {
+                batchStatement(batchSt);
+            }
+        }
     }
 
-    @Override
-    public void exitCreate_schema(Create_schemaContext ctx) {
-        safeParseStatement(new CreateMsSchema(ctx, db), ctx);
+    private void clause(St_clauseContext st) {
+        Ddl_clauseContext ddl = st.ddl_clause();
+        Another_statementContext ast;
+        if (ddl != null) {
+            Schema_createContext create = ddl.schema_create();
+            Schema_alterContext alter;
+            Disable_triggerContext disable;
+            if (create != null) {
+                create(create);
+            } else if ((alter = ddl.schema_alter()) != null) {
+                alter(alter);
+            } else if ((disable = ddl.disable_trigger()) != null) {
+                safeParseStatement(new DisableMsTrigger(disable, db), disable);
+            }
+        } else if ((ast = st.another_statement()) != null) {
+            Set_statementContext set = ast.set_statement();
+            Security_statementContext security;
+            if (set != null) {
+                set(set);
+            } else if ((security = ast.security_statement()) != null
+                    && security.rule_common() != null) {
+                safeParseStatement(new CreateMsRule(security.rule_common(), db), security);
+            }
+        }
     }
 
-    @Override
-    public void exitCreate_or_alter_view(Create_or_alter_viewContext ctx) {
-        safeParseStatement(new CreateMsView(ctx, db, ansiNulls, quotedIdentifier), ctx);
+    private void batchStatement(Batch_statementContext batchSt) {
+        Create_or_alter_procedureContext proc = batchSt.create_or_alter_procedure();
+        if (proc != null) {
+            safeParseStatement(new CreateMsProcedure(
+                    proc, db, ansiNulls, quotedIdentifier), batchSt);
+        }
     }
 
-    @Override
-    public void exitAlter_authorization(Alter_authorizationContext ctx) {
-        safeParseStatement(new AlterMsAuthorization(ctx, db), ctx);
+    private void create(Schema_createContext ctx) {
+        ParserAbstract p;
+        if (ctx.create_sequence() != null) {
+            p = new CreateMsSequence(ctx.create_sequence(), db);
+        } else if (ctx.create_schema() != null) {
+            p = new CreateMsSchema(ctx.create_schema(), db);
+        } else if (ctx.create_or_alter_view() != null) {
+            p = new CreateMsView(ctx.create_or_alter_view(),
+                    db, ansiNulls, quotedIdentifier);
+        } else if (ctx.create_or_alter_trigger() != null) {
+            p = new CreateMsTrigger(ctx.create_or_alter_trigger(),
+                    db, ansiNulls, quotedIdentifier);
+        } else if (ctx.create_index() != null) {
+            p = new CreateMsIndex(ctx.create_index(), db);
+        } else if (ctx.create_or_alter_function() != null) {
+            p = new CreateMsFunction(ctx.create_or_alter_function(),
+                    db, ansiNulls, quotedIdentifier);
+        } else if (ctx.create_table() != null) {
+            p = new CreateMsTable(ctx.create_table(), db, ansiNulls);
+        } else if (ctx.create_assembly() != null) {
+            p = new CreateMsAssembly(ctx.create_assembly(), db);
+        } else if (ctx.create_db_role() != null) {
+            p = new CreateMsRole(ctx.create_db_role(), db);
+        } else if (ctx.create_user() != null) {
+            p = new CreateMsUser(ctx.create_user(), db);
+        } else {
+            return;
+        }
+        safeParseStatement(p, ctx);
     }
 
-    @Override
-    public void exitCreate_or_alter_trigger(Create_or_alter_triggerContext ctx) {
-        safeParseStatement(new CreateMsTrigger(ctx, db, ansiNulls, quotedIdentifier), ctx);
+    private void alter(Schema_alterContext ctx) {
+        ParserAbstract p;
+        if (ctx.alter_authorization() != null) {
+            p = new AlterMsAuthorization(ctx.alter_authorization(), db);
+        } else if (ctx.alter_table() != null) {
+            p = new AlterMsTable(ctx.alter_table(), db);
+        } else if (ctx.alter_assembly() != null) {
+            p = new AlterMsAssembly(ctx.alter_assembly(), db);
+        } else if (ctx.alter_db_role() != null) {
+            p = new AlterMsRole(ctx.alter_db_role(), db);
+        } else {
+            return;
+        }
+        safeParseStatement(p, ctx);
     }
 
-    @Override
-    public void exitCreate_index(Create_indexContext ctx) {
-        safeParseStatement(new CreateMsIndex(ctx, db), ctx);
-    }
-
-    @Override
-    public void enterCreate_or_alter_procedure(Create_or_alter_procedureContext ctx) {
-        safeParseStatement(new CreateMsProcedure(ctx, db, ansiNulls, quotedIdentifier), ctx);
-    }
-
-    @Override
-    public void exitCreate_or_alter_function(Create_or_alter_functionContext ctx) {
-        safeParseStatement(new CreateMsFunction(ctx, db, ansiNulls, quotedIdentifier), ctx);
-    }
-
-    @Override
-    public void exitCreate_table(Create_tableContext ctx) {
-        safeParseStatement(new CreateMsTable(ctx, db, ansiNulls), ctx);
-    }
-
-    @Override
-    public void exitCreate_assembly(Create_assemblyContext ctx) {
-        safeParseStatement(new CreateMsAssembly(ctx, db), ctx);
-    }
-
-    @Override
-    public void exitAlter_table(Alter_tableContext ctx) {
-        safeParseStatement(new AlterMsTable(ctx, db), ctx);
-    }
-
-    @Override
-    public void exitAlter_assembly(Alter_assemblyContext ctx) {
-        safeParseStatement(new AlterMsAssembly(ctx, db), ctx);
-    }
-
-    @Override
-    public void exitRule_common(Rule_commonContext ctx) {
-        safeParseStatement(new CreateMsRule(ctx, db), ctx);
-    }
-
-    @Override
-    public void exitCreate_db_role(Create_db_roleContext ctx) {
-        safeParseStatement(new CreateMsRole(ctx, db), ctx);
-    }
-
-    @Override
-    public void exitCreate_user(Create_userContext ctx) {
-        safeParseStatement(new CreateMsUser(ctx, db), ctx);
-    }
-
-    @Override
-    public void exitAlter_db_role(Alter_db_roleContext ctx) {
-        safeParseStatement(new AlterMsRole(ctx, db), ctx);
-    }
-
-    @Override
-    public void exitDisable_trigger(Disable_triggerContext ctx) {
-        safeParseStatement(new DisableMsTrigger(ctx, db), ctx);
-    }
-
-    @Override
-    public void exitSet_special(Set_specialContext ctx) {
-        if (ctx.name == null) {
+    private void set(Set_statementContext setCtx) {
+        Set_specialContext ctx = setCtx.set_special();
+        if(ctx == null || ctx.name == null) {
             return;
         }
 

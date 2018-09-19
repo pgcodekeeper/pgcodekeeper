@@ -7,35 +7,14 @@ import org.antlr.v4.runtime.Token;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_domain_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_fts_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_sequence_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_type_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_view_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_domain_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_extension_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_foreign_table_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_configurationContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_dictionaryContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_parserContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_templateContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_index_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_schema_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_sequence_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_table_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_trigger_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_type_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rule_commonContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_alterContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_createContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statement_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.StatementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.ObjectCreationException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
@@ -66,12 +45,12 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateType;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
-public class CustomSQLParserListener extends SQLParserBaseListener {
+public class CustomSQLParserListener implements SqlContextProcessor {
 
     private final PgDatabase db;
     private final List<AntlrError> errors;
@@ -88,6 +67,9 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
         this.filename = filename;
     }
 
+    /**
+     * @param ctx statememnt's first token rule
+     */
     private void safeParseStatement(ParserAbstract p, ParserRuleContext ctx) {
         try {
             PgDiffUtils.checkCancelled(monitor);
@@ -104,7 +86,7 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
         } catch (UnresolvedReferenceException ex) {
             errors.add(handleUnresolvedReference(ex, filename));
         } catch (ObjectCreationException ex) {
-            errors.add(handleCreationException(ex, filename, ctx.getParent()));
+            errors.add(handleCreationException(ex, filename, ctx));
         } catch (InterruptedException ex) {
             throw new MonitorCancelledRuntimeException();
         } catch (Exception e) {
@@ -113,78 +95,94 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     }
 
     @Override
-    public void exitSql(SqlContext ctx) {
+    public void process(SqlContext rootCtx) {
+        for (StatementContext s : rootCtx.statement()) {
+            Schema_statementContext st = s.schema_statement();
+            if (st != null) {
+                Schema_createContext create = st.schema_create();
+                Schema_alterContext alter;
+                if (create != null) {
+                    create(create);
+                } else if ((alter = st.schema_alter()) != null) {
+                    alter(alter);
+                }
+            }
+        }
         db.sortColumns();
     }
 
-    @Override
-    public void exitCreate_table_statement(Create_table_statementContext ctx) {
-        safeParseStatement(new CreateTable(ctx, db, tablespace, oids), ctx);
+    private void create(Schema_createContext ctx) {
+        ParserAbstract p;
+        if (ctx.create_table_statement() != null) {
+            p = new CreateTable(ctx.create_table_statement(), db, tablespace, oids);
+        } else if (ctx.create_foreign_table_statement() != null) {
+            p = new CreateForeignTable(ctx.create_foreign_table_statement(), db);
+        } else if (ctx.create_index_statement() != null) {
+            p = new CreateIndex(ctx.create_index_statement(), db, tablespace);
+        } else if (ctx.create_extension_statement() != null) {
+            p = new CreateExtension(ctx.create_extension_statement(), db);
+        } else if (ctx.create_trigger_statement() != null) {
+            p = new CreateTrigger(ctx.create_trigger_statement(), db);
+        } else if (ctx.create_rewrite_statement() != null) {
+            p = new CreateRewrite(ctx.create_rewrite_statement(), db);
+        } else if (ctx.create_function_statement() != null) {
+            p = new CreateFunction(ctx.create_function_statement(), db);
+        } else if (ctx.create_sequence_statement() != null) {
+            p = new CreateSequence(ctx.create_sequence_statement(), db);
+        } else if (ctx.create_schema_statement() != null) {
+            p = new CreateSchema(ctx.create_schema_statement(), db);
+        } else if (ctx.create_view_statement() != null) {
+            p = new CreateView(ctx.create_view_statement(), db);
+        } else if (ctx.create_type_statement() != null) {
+            p = new CreateType(ctx.create_type_statement(), db);
+        } else if (ctx.create_domain_statement() != null) {
+            p = new CreateDomain(ctx.create_domain_statement(), db);
+        } else if (ctx.create_fts_configuration() != null) {
+            p = new CreateFtsConfiguration(ctx.create_fts_configuration(), db);
+        } else if (ctx.create_fts_template() != null) {
+            p = new CreateFtsTemplate(ctx.create_fts_template(), db);
+        } else if (ctx.create_fts_parser() != null) {
+            p = new CreateFtsParser(ctx.create_fts_parser(), db);
+        } else if (ctx.create_fts_dictionary() != null) {
+            p = new CreateFtsDictionary(ctx.create_fts_dictionary(), db);
+        } else if (ctx.comment_on_statement() != null) {
+            p = new CommentOn(ctx.comment_on_statement(), db);
+        } else if (ctx.rule_common() != null) {
+            p = new CreateRule(ctx.rule_common(), db);
+        } else if (ctx.set_statement() != null) {
+            set(ctx.set_statement());
+            return;
+        } else {
+            return;
+        }
+        safeParseStatement(p, ctx);
     }
 
-
-    @Override
-    public void exitCreate_foreign_table_statement(Create_foreign_table_statementContext ctx) {
-        safeParseStatement(new CreateForeignTable(ctx, db), ctx);
+    private void alter(Schema_alterContext ctx) {
+        ParserAbstract p;
+        if (ctx.alter_function_statement() != null) {
+            p = new AlterFunction(ctx.alter_function_statement(), db);
+        } else if (ctx.alter_schema_statement() != null) {
+            p = new AlterSchema(ctx.alter_schema_statement(), db);
+        } else if (ctx.alter_table_statement() != null) {
+            p = new AlterTable(ctx.alter_table_statement(), db);
+        } else if (ctx.alter_sequence_statement() != null) {
+            p = new AlterSequence(ctx.alter_sequence_statement(), db);
+        } else if (ctx.alter_view_statement() != null) {
+            p = new AlterView(ctx.alter_view_statement(), db);
+        } else if (ctx.alter_type_statement() != null) {
+            p = new AlterType(ctx.alter_type_statement(), db);
+        } else if (ctx.alter_domain_statement() != null) {
+            p = new AlterDomain(ctx.alter_domain_statement(), db);
+        } else if (ctx.alter_fts_statement() != null) {
+            p = new AlterFtsStatement(ctx.alter_fts_statement(), db);
+        } else {
+            return;
+        }
+        safeParseStatement(p, ctx);
     }
 
-    @Override
-    public void exitCreate_index_statement(Create_index_statementContext ctx) {
-        safeParseStatement(new CreateIndex(ctx, db, tablespace), ctx);
-    }
-
-    @Override
-    public void exitCreate_extension_statement(Create_extension_statementContext ctx) {
-        safeParseStatement(new CreateExtension(ctx, db), ctx);
-    }
-
-    @Override
-    public void exitCreate_trigger_statement(Create_trigger_statementContext ctx) {
-        safeParseStatement(new CreateTrigger(ctx, db), ctx);
-    }
-
-    @Override
-    public void exitCreate_rewrite_statement(Create_rewrite_statementContext ctx) {
-        safeParseStatement(new CreateRewrite(ctx, db), ctx);
-    }
-
-    @Override
-    public void exitCreate_function_statement(Create_function_statementContext ctx) {
-        safeParseStatement(new CreateFunction(ctx, db), ctx);
-    }
-
-    @Override
-    public void exitCreate_sequence_statement(Create_sequence_statementContext ctx) {
-        safeParseStatement(new CreateSequence(ctx, db), ctx);
-    }
-
-    @Override
-    public void exitCreate_schema_statement(Create_schema_statementContext ctx) {
-        safeParseStatement(new CreateSchema(ctx, db), ctx);
-    }
-
-    @Override
-    public void exitCreate_view_statement(Create_view_statementContext ctx) {
-        safeParseStatement(new CreateView(ctx, db), ctx);
-    }
-
-    @Override
-    public void exitCreate_type_statement(Create_type_statementContext ctx) {
-        safeParseStatement(new CreateType(ctx, db), ctx);
-    }
-
-    @Override
-    public void exitCreate_domain_statement(Create_domain_statementContext ctx) {
-        safeParseStatement(new CreateDomain(ctx, db), ctx);
-    }
-
-    @Override
-    public void exitComment_on_statement(Comment_on_statementContext ctx) {
-        safeParseStatement(new CommentOn(ctx, db), ctx);
-    }
-
-    @Override
-    public void exitSet_statement(Set_statementContext ctx) {
+    private void set(Set_statementContext ctx) {
         if (ctx.config_param_val.isEmpty()) {
             return;
         }
@@ -223,71 +221,6 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
         default:
             break;
         }
-    }
-
-    @Override
-    public void exitRule_common(Rule_commonContext ctx) {
-        safeParseStatement(new CreateRule(ctx, db), ctx);
-    }
-
-    @Override
-    public void exitCreate_fts_parser(Create_fts_parserContext ctx) {
-        safeParseStatement(new CreateFtsParser(ctx, db), ctx);
-    }
-
-    @Override
-    public void exitCreate_fts_template(Create_fts_templateContext ctx) {
-        safeParseStatement(new CreateFtsTemplate(ctx, db), ctx);
-    }
-
-    @Override
-    public void exitCreate_fts_dictionary(Create_fts_dictionaryContext ctx) {
-        safeParseStatement(new CreateFtsDictionary(ctx, db), ctx);
-    }
-
-    @Override
-    public void exitCreate_fts_configuration(Create_fts_configurationContext ctx) {
-        safeParseStatement(new CreateFtsConfiguration(ctx, db), ctx);
-    }
-
-    @Override
-    public void exitAlter_function_statement(Alter_function_statementContext ctx) {
-        safeParseStatement(new AlterFunction(ctx, db), ctx);
-    }
-
-    @Override
-    public void exitAlter_schema_statement(Alter_schema_statementContext ctx) {
-        safeParseStatement(new AlterSchema(ctx, db), ctx);
-    }
-
-    @Override
-    public void exitAlter_table_statement(Alter_table_statementContext ctx) {
-        safeParseStatement(new AlterTable(ctx, db), ctx);
-    }
-
-    @Override
-    public void exitAlter_sequence_statement(Alter_sequence_statementContext ctx) {
-        safeParseStatement(new AlterSequence(ctx, db), ctx);
-    }
-
-    @Override
-    public void exitAlter_view_statement(Alter_view_statementContext ctx) {
-        safeParseStatement(new AlterView(ctx, db), ctx);
-    }
-
-    @Override
-    public void exitAlter_type_statement(Alter_type_statementContext ctx) {
-        safeParseStatement(new AlterType(ctx, db), ctx);
-    }
-
-    @Override
-    public void exitAlter_domain_statement(Alter_domain_statementContext ctx) {
-        safeParseStatement(new AlterDomain(ctx, db), ctx);
-    }
-
-    @Override
-    public void exitAlter_fts_statement(Alter_fts_statementContext ctx) {
-        safeParseStatement(new AlterFtsStatement(ctx, db), ctx);
     }
 
     static AntlrError handleUnresolvedReference(UnresolvedReferenceException ex, String filename) {
