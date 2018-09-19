@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.function.BiConsumer;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -45,7 +44,6 @@ import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
@@ -118,7 +116,7 @@ public class MockDataPage extends WizardPage {
      * @return true if file successfully created and opened, false otherwise
      * @see #generateInsert()
      */
-    boolean createFile(IProject proj) {
+    boolean createFile(boolean isMsSql) {
         if (!isValid()) {
             return false;
         }
@@ -127,7 +125,7 @@ public class MockDataPage extends WizardPage {
             mainPrefs.setValue(PREF.EXPLICIT_TYPE_CAST, btnCast.getSelection());
             String name = FileUtils.FILE_DATE.format(LocalDateTime.now()) + " data for " + txtTableName.getText() ; //$NON-NLS-1$
             name = FileUtils.sanitizeFilename(name);
-            FileUtilsUi.saveOpenTmpSqlEditor(generateInsert(), name, proj.hasNature(NATURE.MS));
+            FileUtilsUi.saveOpenTmpSqlEditor(generateInsert(), name, isMsSql);
             return true;
         } catch (CoreException | IOException ex) {
             ExceptionNotifier.notifyDefault(
