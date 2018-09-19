@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.text.MessageFormat;
@@ -377,11 +378,12 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         IEditorInput in = getEditorInput();
         if (in instanceof IURIEditorInput) {
             IURIEditorInput uri = (IURIEditorInput) in;
-            isMsSqlExternalFile = Paths.get(uri.getURI()).getParent()
+            Path externalTmpFile = Paths.get(uri.getURI());
+            isMsSqlExternalFile = externalTmpFile.getParent()
                     .equals(Paths.get(System.getProperty("java.io.tmpdir"), TEMP_DIR_PATH.MS)); //$NON-NLS-1$
             IDocument document = getDocumentProvider().getDocument(getEditorInput());
             InputStream stream = new ByteArrayInputStream(document.get().getBytes(StandardCharsets.UTF_8));
-            parser.fillRefsFromInputStream(stream, Paths.get(uri.getURI()).toString(),
+            parser.fillRefsFromInputStream(stream, externalTmpFile.toString(),
                     isMsSqlExternalFile, monitor);
             return true;
         }
