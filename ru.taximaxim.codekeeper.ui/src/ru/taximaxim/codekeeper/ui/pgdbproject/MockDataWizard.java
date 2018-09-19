@@ -9,9 +9,9 @@ import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
-import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class MockDataWizard extends Wizard implements INewWizard {
@@ -31,8 +31,7 @@ public class MockDataWizard extends Wizard implements INewWizard {
                 isMsSql = ((IResource)element).getProject().hasNature(NATURE.MS);
             }
         } catch (CoreException ex) {
-            ExceptionNotifier.notifyDefault(
-                    Messages.ProjectEditorDiffer_error_creating_file, ex);
+            Log.log(ex);
         }
     }
 
