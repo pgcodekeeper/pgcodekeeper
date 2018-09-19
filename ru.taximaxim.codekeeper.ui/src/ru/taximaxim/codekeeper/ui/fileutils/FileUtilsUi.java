@@ -30,6 +30,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
+import ru.taximaxim.codekeeper.ui.UIConsts.TEMP_DIR_PATH;
 
 public final class FileUtilsUi {
 
@@ -37,9 +38,13 @@ public final class FileUtilsUi {
      * Saves the content as a temp-file, opens it using SQL-editor
      * and ensures that UTF-8 is used for everything.
      */
-    public static void saveOpenTmpSqlEditor(String content, String filenamePrefix) throws IOException, CoreException {
+    public static void saveOpenTmpSqlEditor(String content, String filenamePrefix, boolean isMsSql)
+            throws IOException, CoreException {
+        Path tempDir = Paths.get(System.getProperty("java.io.tmpdir")) //$NON-NLS-1$
+                .resolve(isMsSql ? TEMP_DIR_PATH.MS : TEMP_DIR_PATH.PG);
+        Files.createDirectories(tempDir);
         Log.log(Log.LOG_INFO, "Creating file " + filenamePrefix); //$NON-NLS-1$
-        Path path = Files.createTempFile(filenamePrefix + '_', ".sql"); //$NON-NLS-1$
+        Path path = Files.createTempFile(tempDir, filenamePrefix + '_', ".sql"); //$NON-NLS-1$
         Files.write(path, content.getBytes(StandardCharsets.UTF_8));
         IFileStore externalFile = EFS.getLocalFileSystem().fromLocalFile(path.toFile());
         IEditorInput input = new FileStoreEditorInput(externalFile);

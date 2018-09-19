@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.text.MessageFormat;
@@ -94,6 +95,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PATH;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.SQL_EDITOR_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.TEMP_DIR_PATH;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
@@ -130,6 +132,8 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     private PgDbParser parser;
 
     private ScriptThreadJobWrapper scriptThreadJobWrapper;
+
+    private boolean isMsSqlExternalFile;
 
     private final Listener parserListener = e -> {
         if (parentComposite == null) {
@@ -374,9 +378,13 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         IEditorInput in = getEditorInput();
         if (in instanceof IURIEditorInput) {
             IURIEditorInput uri = (IURIEditorInput) in;
+            Path externalTmpFile = Paths.get(uri.getURI());
+            isMsSqlExternalFile = externalTmpFile.getParent()
+                    .equals(Paths.get(System.getProperty("java.io.tmpdir"), TEMP_DIR_PATH.MS)); //$NON-NLS-1$
             IDocument document = getDocumentProvider().getDocument(getEditorInput());
             InputStream stream = new ByteArrayInputStream(document.get().getBytes(StandardCharsets.UTF_8));
-            parser.fillRefsFromInputStream(stream, Paths.get(uri.getURI()).toString(), monitor);
+            parser.fillRefsFromInputStream(stream, externalTmpFile.toString(),
+                    isMsSqlExternalFile, monitor);
             return true;
         }
         return false;

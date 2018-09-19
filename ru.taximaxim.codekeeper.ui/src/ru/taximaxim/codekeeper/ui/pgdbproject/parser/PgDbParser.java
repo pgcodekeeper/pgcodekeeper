@@ -235,8 +235,9 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
     }
 
     public void fillRefsFromInputStream(InputStream input, String fileName,
-            IProgressMonitor monitor) throws InterruptedException, IOException {
+            boolean isMsSql, IProgressMonitor monitor) throws InterruptedException, IOException {
         PgDiffArguments args = new PgDiffArguments();
+        args.setMsSql(isMsSql);
         try (PgDumpLoader loader = new PgDumpLoader(input, fileName, args, monitor)) {
             loader.setLoadSchema(false);
             loader.setLoadReferences(true);
