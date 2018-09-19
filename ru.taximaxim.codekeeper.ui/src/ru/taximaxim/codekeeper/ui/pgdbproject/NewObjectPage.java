@@ -191,7 +191,7 @@ public final class NewObjectPage extends WizardPage {
 
         for (IProject project : projects) {
             try {
-                if (project.isOpen() && project.hasNature(NATURE.ID)) {
+                if (project.isOpen() && project.hasNature(NATURE.ID) && !project.hasNature(NATURE.MS)) {
                     projectList.add(project);
                 }
             } catch (CoreException ex) {

@@ -11,5 +11,5 @@ GO
 CREATE NONCLUSTERED INDEX [index_c1] ON [dbo].[table1] ([c1])
 GO
 
-CREATE NONCLUSTERED INDEX [index_c2] ON [dbo].[table1] ([c2])
+CREATE CLUSTERED INDEX [index_c2] ON [dbo].[table1] ([c2])
 GO

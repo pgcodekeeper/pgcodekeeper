@@ -104,6 +104,8 @@ public class MsDiffTest {
 
                     // Tests scenario where MS VIEW is added.
                     {"add_ms_view"},
+                    // Tests scenario where MS VIEW with columns is added.
+                    {"add_ms_view_with_columns"},
                     // Tests scenario where MS VIEW, which use table from other schema, is added.
                     {"add_ms_view_other_schema"},
                     // Tests scenario where MS VIEW is dropped.
@@ -206,14 +208,22 @@ public class MsDiffTest {
                     // Tests scenario where MS PROCEDURE type is modified.
                     {"modify_ms_procedure_type"},
 
-                    // Tests scenario where COLUMN is added to MS TABLE definition.
+                    // Tests scenario where MS COLUMN is added to MS TABLE definition.
                     {"add_ms_column"},
-                    // Tests scenario where COLUMN is dropped from MS TABLE.
+                    // Tests scenario where MS COLUMN is dropped from MS TABLE.
                     {"drop_ms_column"},
-                    // Tests scenario where COLUMN with index dependency is dropped from MS TABLE.
+                    // Tests scenario where MS COLUMN with index dependency is dropped from MS TABLE.
                     {"drop_ms_column_with_idx"},
                     // Tests scenario where MS COLUMN type is modified.
                     {"modify_ms_column_type"},
+                    // Tests scenario where MS COLUMN collation is modified.
+                    {"modify_ms_column_collation"},
+                    // Tests scenario where MS COLUMN identity replication is modified.
+                    {"modify_ms_column_replication"},
+                    // Tests scenario where MS COLUMN default is modified.
+                    {"modify_ms_column_default"},
+                    // Tests scenario where MS COLUMN expression is modified.
+                    {"modify_ms_column_expression"},
                     // Tests scenario where MS COLUMN type is modified, column has constraint.
                     // TODO Uncomment the code when dependency columns from constraint will be supported.
                     // {"modify_ms_column_type_with_constraint"},

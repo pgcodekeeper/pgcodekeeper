@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import java.util.List;
 
+import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_viewContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
@@ -44,14 +45,14 @@ public class CreateMsView extends ParserAbstract {
 
         if (ctx.column_name_list() != null) {
             for (IdContext column : ctx.column_name_list().id()) {
-                view.addColumnName(ParserAbstract.getFullCtxText(column));
+                view.addColumnName(column.getText());
             }
         }
 
         List<View_attributeContext> options = ctx.view_attribute();
         if (options != null){
             for (View_attributeContext option: options) {
-                ParserAbstract.fillOptionParams("", option.getText() , false, view::addOption);
+                view.addOption(MsDiffUtils.getQuotedName(option.getText()), "");
             }
         }
 

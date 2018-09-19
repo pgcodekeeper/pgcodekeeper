@@ -49,8 +49,8 @@ public class CustomTSQLParserListener implements TSqlContextProcessor {
     private final List<AntlrError> errors;
     private final IProgressMonitor monitor;
     private final String filename;
-    private boolean ansiNulls;
-    private boolean quotedIdentifier;
+    private boolean ansiNulls = true;
+    private boolean quotedIdentifier = true;
 
     public CustomTSQLParserListener(PgDatabase database, String filename,
             List<AntlrError> errors, IProgressMonitor monitor) {
