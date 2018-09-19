@@ -78,6 +78,7 @@ import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcMsConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
+import cz.startnet.utils.pgdiff.parsers.antlr.ScriptParser;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -521,14 +522,16 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             }
 
             try {
-                // TODO uncomment and use this code instead of
-                // 'new JdbcRunner(monitor).run(connector, script)' when list of
-                // batches will be filled by splited queries of Statements.
-                //
-                // List<List<String>> batches = new ArrayList<>();
-                // new JdbcRunner(monitor).runBatches(connector, batches);
-                //
-                new JdbcRunner(monitor).run(connector, script);
+                ScriptParser parser = new ScriptParser(getEditorInput().getName());
+                List<List<String>> batches = parser.parse(script, dbInfo.isMsSql());
+                String error = parser.getErrorMessage();
+                if (dbInfo.isMsSql() && error != null) {
+                    output = error;
+                    return new Status(IStatus.WARNING, PLUGIN_ID.THIS,
+                            Messages.sqlScriptDialog_exception_during_script_execution);
+                }
+
+                new JdbcRunner(monitor).runBatches(connector, batches);
                 output = Messages.SqlEditor_jdbc_success;
                 ProjectEditorDiffer.notifyDbChanged(dbInfo);
                 return Status.OK_STATUS;
@@ -537,7 +540,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
                 return Status.CANCEL_STATUS;
             } catch (SQLException | IOException e) {
                 output = e.getLocalizedMessage();
-                return new Status(IStatus.ERROR, PLUGIN_ID.THIS,
+                return new Status(IStatus.WARNING, PLUGIN_ID.THIS,
                         Messages.sqlScriptDialog_exception_during_script_execution, e);
             } finally {
                 afterScriptFinished(output);

@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -34,6 +35,7 @@ import org.eclipse.ui.ide.ResourceUtil;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcMsConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
+import cz.startnet.utils.pgdiff.parsers.antlr.ScriptParser;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -214,14 +216,14 @@ class QuickUpdateJob extends SingletonEditorJob {
         }
 
         try {
-            // TODO uncomment and use this code instead of
-            // 'new JdbcRunner(monitor).run(connector, differ.getDiffDirect())' when list of
-            // batches will be filled by splited queries of Statements.
-            //
-            // List<List<String>> batches = new ArrayList<>();
-            // new JdbcRunner(monitor).runBatches(connector, batches);
-            //
-            new JdbcRunner(monitor).run(connector, differ.getDiffDirect());
+            ScriptParser parser = new ScriptParser(file.getName());
+            List<List<String>> batches = parser.parse(differ.getDiffDirect(), dbinfo.isMsSql());
+            String error = parser.getErrorMessage();
+            if (dbinfo.isMsSql() && error != null) {
+                throw new PgCodekeeperUIException(error);
+            }
+
+            new JdbcRunner(monitor).runBatches(connector, batches);
         } catch (SQLException e) {
             throw new PgCodekeeperUIException(Messages.QuickUpdate_migration_failed + e.getLocalizedMessage());
         }
