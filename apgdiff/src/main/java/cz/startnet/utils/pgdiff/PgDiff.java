@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import cz.startnet.utils.pgdiff.loader.FullAnalyze;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcLoader;
 import cz.startnet.utils.pgdiff.loader.JdbcMsLoader;
@@ -77,6 +78,9 @@ public final class PgDiff {
             }
         }
 
+        FullAnalyze.fullAnalyze(oldDatabase, null);
+        FullAnalyze.fullAnalyze(newDatabase, null);
+
         IgnoreParser ignoreParser = new IgnoreParser();
         for (String listFilename : arguments.getIgnoreLists()) {
             ignoreParser.parse(Paths.get(listFilename));
@@ -100,19 +104,23 @@ public final class PgDiff {
      */
     public static PgDatabase loadDatabaseSchema(String format, String srcPath, PgDiffArguments arguments)
             throws InterruptedException, IOException, URISyntaxException {
+
+        PgDatabase db = new PgDatabase();
+        db.setArguments(arguments);
+
         if ("dump".equals(format)) {
             try (PgDumpLoader loader = new PgDumpLoader(new File(srcPath), arguments)) {
-                return loader.load();
+                return loader.load(db);
             }
         } else if ("parsed".equals(format)) {
             ProjectLoader loader = new ProjectLoader(srcPath, arguments);
             return arguments.isMsSql() ? loader.loadMsDatabaseSchemaFromDirTree() :
-                loader.loadDatabaseSchemaFromDirTree();
+                loader.loadDatabaseSchemaFromDirTree(db);
         } else if ("db".equals(format)) {
             String timezone = arguments.getTimeZone() == null ? ApgdiffConsts.UTC : arguments.getTimeZone();
             return arguments.isMsSql() ?
                     new JdbcMsLoader(JdbcConnector.fromUrl(srcPath), arguments).readDb()
-                    : new JdbcLoader(JdbcConnector.fromUrl(srcPath, timezone), arguments).getDbFromJdbc();
+                    : new JdbcLoader(JdbcConnector.fromUrl(srcPath, timezone), arguments).getDbFromJdbc(db);
         }
 
         throw new UnsupportedOperationException(

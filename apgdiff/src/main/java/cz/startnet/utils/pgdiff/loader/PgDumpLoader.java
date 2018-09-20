@@ -122,23 +122,30 @@ public class PgDumpLoader implements AutoCloseable {
     }
 
     /**
-     * The same as {@link #load(boolean)} with <code>false<code> argument.
+     * The same as {@link #loadDatabase(boolean)} with <code>false<code> argument.
      */
     public PgDatabase load() throws IOException, InterruptedException {
         PgDatabase d = new PgDatabase();
-
-        AbstractSchema schema = args.isMsSql() ? new MsSchema(ApgdiffConsts.DBO, "") :
-            new PgSchema(ApgdiffConsts.PUBLIC, "");
-        d.addSchema(schema);
-        d.setDefaultSchema(schema.getName());
         d.setArguments(args);
         load(d);
-        d.getSchema(schema.getName()).setLocation(inputObjectName);
         FullAnalyze.fullAnalyze(d, errors);
         return d;
     }
 
-    protected PgDatabase load(PgDatabase intoDb) throws IOException, InterruptedException {
+    /**
+     * The same as {@link #loadDatabase(boolean)} with <code>false<code> argument without full analyze.
+     */
+    public PgDatabase load(PgDatabase d) throws IOException, InterruptedException {
+        AbstractSchema schema = args.isMsSql() ? new MsSchema(ApgdiffConsts.DBO, "") :
+            new PgSchema(ApgdiffConsts.PUBLIC, "");
+        d.addSchema(schema);
+        d.setDefaultSchema(schema.getName());
+        loadDatabase(d);
+        d.getSchema(schema.getName()).setLocation(inputObjectName);
+        return d;
+    }
+
+    protected PgDatabase loadDatabase(PgDatabase intoDb) throws IOException, InterruptedException {
         PgDiffUtils.checkCancelled(monitor);
 
         if (args.isMsSql()) {

@@ -38,6 +38,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.properties.PgLibrary;
+import ru.taximaxim.codekeeper.ui.xmlstore.DependenciesXmlStore;
 
 public class UIProjectLoader extends ProjectLoader {
 
@@ -64,6 +65,18 @@ public class UIProjectLoader extends ProjectLoader {
             throws InterruptedException, IOException, CoreException {
         PgDatabase db = new PgDatabase();
         db.setArguments(arguments);
+        loadDatabaseSchemaFromPgProject(db);
+        FullAnalyze.fullAnalyze(db, errors);
+        return db;
+    }
+
+    /**
+     * Loads database schema from a ModelExporter directory tree without analyze.
+     *
+     * @return database schema
+     */
+    public PgDatabase loadDatabaseSchemaFromPgProject(PgDatabase db)
+            throws InterruptedException, IOException, CoreException {
         for (WORK_DIR_NAMES workDirName : WORK_DIR_NAMES.values()) {
             // legacy schemas
             loadSubdir(iProject.getFolder(workDirName.name()), db);
@@ -87,7 +100,7 @@ public class UIProjectLoader extends ProjectLoader {
                 }
             }
         }
-        FullAnalyze.fullAnalyze(db, errors);
+
         return db;
     }
 
@@ -258,18 +271,30 @@ public class UIProjectLoader extends ProjectLoader {
         return db;
     }
 
+    public PgDatabase loadDatabaseWithLibraries() throws InterruptedException, IOException, CoreException {
+        PgDatabase db = new PgDatabase();
+        db.setArguments(arguments);
+        db = arguments.isMsSql() ? loadDatabaseSchemaFromMsProject() : loadDatabaseSchemaFromPgProject(db);
+        loadLibraries(db, arguments);
+        FullAnalyze.fullAnalyze(db, errors);
+        return db;
+    }
+
+    private void loadLibraries(PgDatabase db, PgDiffArguments arguments) throws InterruptedException, IOException {
+        for (PgLibrary lib : new DependenciesXmlStore(iProject).readObjects()) {
+            try {
+                loadLibrary(db, arguments, lib.isIgnorePriv(), lib.getPath());
+            } catch (URISyntaxException ex) {
+                throw new IOException(ex.getLocalizedMessage(), ex);
+            }
+        }
+    }
+
     public static PgStatement parseStatement(IFile file, Collection<DbObjType> types)
             throws InterruptedException, IOException, CoreException {
         return new UIProjectLoader(new NullProgressMonitor(), null)
                 .buildFiles(Arrays.asList(file), false).getDescendants()
                 .filter(e -> types.contains(e.getStatementType())).findAny().orElse(null);
-    }
-
-    public static void loadLibraries(PgDatabase db, PgDiffArguments arguments,
-            Collection<PgLibrary> libs) throws InterruptedException, IOException, URISyntaxException {
-        for (PgLibrary lib : libs) {
-            loadLibrary(db, arguments, lib.isIgnorePriv(), lib.getPath());
-        }
     }
 
     public static int countFiles(IContainer container) throws CoreException {

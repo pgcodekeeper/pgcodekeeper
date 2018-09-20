@@ -54,7 +54,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
 
     public PgDatabase loadFile(PgDatabase db) throws InterruptedException, IOException {
         try {
-            load(db);
+            loadDatabase(db);
             return db;
         } finally {
             updateMarkers();

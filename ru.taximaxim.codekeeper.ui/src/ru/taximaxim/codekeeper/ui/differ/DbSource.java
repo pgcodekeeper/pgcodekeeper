@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -39,7 +38,6 @@ import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
-import ru.taximaxim.codekeeper.ui.xmlstore.DependenciesXmlStore;
 
 public abstract class DbSource {
 
@@ -225,20 +223,12 @@ class DbSourceProject extends DbSource {
         IEclipsePreferences pref = proj.getPrefs();
         List<AntlrError> er = new ArrayList<>();
 
-        boolean isMsSql = OpenProjectUtils.checkMsSql(project);
-
         PgDiffArguments arguments = getPgDiffArgs(charset,
-                pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true), isMsSql);
+                pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
+                OpenProjectUtils.checkMsSql(project));
 
-        UIProjectLoader loader = new UIProjectLoader(project, arguments, monitor, null, er);
-        PgDatabase db = isMsSql ? loader.loadDatabaseSchemaFromMsProject() : loader.loadDatabaseSchemaFromPgProject();
-
-        try {
-            UIProjectLoader.loadLibraries(db, arguments, new DependenciesXmlStore(project).readObjects());
-        } catch (URISyntaxException ex) {
-            throw new IOException(ex.getLocalizedMessage(), ex);
-        }
-
+        PgDatabase db = new UIProjectLoader(project, arguments, monitor, null, er)
+                .loadDatabaseWithLibraries();
         errors = er;
         return db;
     }

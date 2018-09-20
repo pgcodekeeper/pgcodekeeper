@@ -62,6 +62,20 @@ public class ProjectLoader {
     public PgDatabase loadDatabaseSchemaFromDirTree() throws InterruptedException, IOException {
         PgDatabase db = new PgDatabase();
         db.setArguments(arguments);
+        db = loadDatabaseSchemaFromDirTree(db);
+        FullAnalyze.fullAnalyze(db, errors);
+        return db;
+    }
+
+    /**
+     * Loads database schema from a ModelExporter directory tree without analyze.
+     *
+     * @param dirPath path to the directory tree root
+     *
+     * @return database schema
+     * @throws InterruptedException
+     */
+    public PgDatabase loadDatabaseSchemaFromDirTree(PgDatabase db) throws InterruptedException, IOException {
         File dir = new File(dirPath);
 
         // step 1
@@ -91,7 +105,6 @@ public class ProjectLoader {
             }
         }
 
-        FullAnalyze.fullAnalyze(db, errors);
         return db;
     }
 
@@ -140,7 +153,7 @@ public class ProjectLoader {
                 List<AntlrError> errList = null;
                 try (PgDumpLoader loader = new PgDumpLoader(f, arguments, monitor)) {
                     errList = loader.getErrors();
-                    loader.load(db);
+                    loader.loadDatabase(db);
                 } finally {
                     if (errors != null && errList != null && !errList.isEmpty()) {
                         errors.addAll(errList);
@@ -179,7 +192,10 @@ public class ProjectLoader {
 
         if (Files.isDirectory(p)) {
             if (Files.exists(p.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
-                return new ProjectLoader(path, args).loadDatabaseSchemaFromDirTree();
+                PgDatabase db = new PgDatabase();
+                db.setArguments(args);
+                new ProjectLoader(path, args).loadDatabaseSchemaFromDirTree(db);
+                return db;
             } else {
                 PgDatabase db = new PgDatabase();
                 db.setArguments(args);
