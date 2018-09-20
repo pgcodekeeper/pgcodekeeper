@@ -775,12 +775,16 @@ schema_definition
     ;
 
 create_view_statement
-    : (OR REPLACE)? (TEMP | TEMPORARY)? RECURSIVE? MATERIALIZED? VIEW name=schema_qualified_name column_name=column_references?
+    : (OR REPLACE)? (TEMP | TEMPORARY)? RECURSIVE? MATERIALIZED? VIEW name=schema_qualified_name column_names=view_columns?
         (WITH storage_parameter)?
         table_space?
         AS v_query=select_stmt
         with_check_option?
         (WITH NO? DATA)?
+    ;
+    
+view_columns
+    : LEFT_PAREN column_name+=identifier (COMMA column_name+=identifier)* RIGHT_PAREN
     ;
 
 with_check_option

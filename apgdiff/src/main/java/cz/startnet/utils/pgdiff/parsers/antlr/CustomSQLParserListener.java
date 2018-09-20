@@ -223,7 +223,7 @@ public class CustomSQLParserListener implements SqlContextProcessor {
         }
     }
 
-    static AntlrError handleUnresolvedReference(UnresolvedReferenceException ex, String filename) {
+    public static AntlrError handleUnresolvedReference(UnresolvedReferenceException ex, String filename) {
         Token t = ex.getErrorToken();
         Log.log(Log.LOG_WARNING, ex.getMessage(), ex);
         return new AntlrError(t, filename, t.getLine(), t.getCharPositionInLine(), ex.getMessage());

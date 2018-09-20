@@ -162,7 +162,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
                 }
             }
         }
-        FullAnalyze.fullAnalyze(db);
+        FullAnalyze.fullAnalyze(db, errors);
         return db;
     }
 

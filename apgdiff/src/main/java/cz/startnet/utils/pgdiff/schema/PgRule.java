@@ -200,6 +200,7 @@ public class PgRule extends PgStatementWithSearchPath{
         ruleDst.commands.addAll(commands);
         ruleDst.setEnabledState(getEnabledState());
         ruleDst.deps.addAll(deps);
+        ruleDst.setLocation(getLocation());
         return ruleDst;
     }
 

@@ -229,6 +229,7 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
         sequenceDst.setOwner(getOwner());
         sequenceDst.setPresicion(getPresicion());
         sequenceDst.deps.addAll(deps);
+        sequenceDst.setLocation(getLocation());
         return sequenceDst;
     }
 

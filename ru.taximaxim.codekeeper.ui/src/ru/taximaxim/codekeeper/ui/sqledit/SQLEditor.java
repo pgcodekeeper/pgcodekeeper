@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.text.MessageFormat;
@@ -77,6 +78,7 @@ import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcMsConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
+import cz.startnet.utils.pgdiff.parsers.antlr.ScriptParser;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -94,6 +96,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PATH;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.SQL_EDITOR_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.TEMP_DIR_PATH;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
@@ -130,6 +133,8 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     private PgDbParser parser;
 
     private ScriptThreadJobWrapper scriptThreadJobWrapper;
+
+    private boolean isMsSqlExternalFile;
 
     private final Listener parserListener = e -> {
         if (parentComposite == null) {
@@ -374,9 +379,13 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         IEditorInput in = getEditorInput();
         if (in instanceof IURIEditorInput) {
             IURIEditorInput uri = (IURIEditorInput) in;
+            Path externalTmpFile = Paths.get(uri.getURI());
+            isMsSqlExternalFile = externalTmpFile.getParent()
+                    .equals(Paths.get(System.getProperty("java.io.tmpdir"), TEMP_DIR_PATH.MS)); //$NON-NLS-1$
             IDocument document = getDocumentProvider().getDocument(getEditorInput());
             InputStream stream = new ByteArrayInputStream(document.get().getBytes(StandardCharsets.UTF_8));
-            parser.fillRefsFromInputStream(stream, Paths.get(uri.getURI()).toString(), monitor);
+            parser.fillRefsFromInputStream(stream, externalTmpFile.toString(),
+                    isMsSqlExternalFile, monitor);
             return true;
         }
         return false;
@@ -513,7 +522,16 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             }
 
             try {
-                new JdbcRunner(monitor).run(connector, script);
+                ScriptParser parser = new ScriptParser(getEditorInput().getName());
+                List<List<String>> batches = parser.parse(script, dbInfo.isMsSql());
+                String error = parser.getErrorMessage();
+                if (dbInfo.isMsSql() && error != null) {
+                    output = error;
+                    return new Status(IStatus.WARNING, PLUGIN_ID.THIS,
+                            Messages.sqlScriptDialog_exception_during_script_execution);
+                }
+
+                new JdbcRunner(monitor).runBatches(connector, batches);
                 output = Messages.SqlEditor_jdbc_success;
                 ProjectEditorDiffer.notifyDbChanged(dbInfo);
                 return Status.OK_STATUS;
@@ -522,7 +540,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
                 return Status.CANCEL_STATUS;
             } catch (SQLException | IOException e) {
                 output = e.getLocalizedMessage();
-                return new Status(IStatus.ERROR, PLUGIN_ID.THIS,
+                return new Status(IStatus.WARNING, PLUGIN_ID.THIS,
                         Messages.sqlScriptDialog_exception_during_script_execution, e);
             } finally {
                 afterScriptFinished(output);

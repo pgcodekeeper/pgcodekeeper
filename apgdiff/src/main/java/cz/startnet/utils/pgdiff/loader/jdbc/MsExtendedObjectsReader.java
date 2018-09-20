@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
@@ -111,7 +112,14 @@ public class MsExtendedObjectsReader extends JdbcReader {
                 if (def == null) {
                     defValue = "NULL";
                 } else if ("varbinary".equals(dataType) || dataType.endsWith("varchar")) {
-                    defValue = "N'" + def + "'";
+                    defValue = "N'" + PgDiffUtils.quoteString(def) + "'";
+                } else if ("bit".equals(dataType)) {
+                    defValue = "1".equals(def) ? "True" : "False";
+                } else if ("real".equals(dataType) || "float".equals(dataType)) {
+                    defValue = Double.toString(Double.parseDouble(def));
+                    if ("0.0".equals(defValue)) {
+                        defValue = "0";
+                    }
                 } else {
                     defValue = def;
                 }

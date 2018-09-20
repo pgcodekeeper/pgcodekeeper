@@ -545,11 +545,11 @@ public class ValueExpr extends AbstractExpr {
         if (schemaName != null) {
             ISchema schema = systemStorage.getSchema(schemaName);
             if (schema == null) {
-                schema = db.getSchema(schemaName);
+                schema = findSchema(schemaName, null);
             }
             return schema.getFunctions().stream();
         } else {
-            return Stream.concat(db.getSchema(schema).getFunctions().stream(),
+            return Stream.concat(findSchema(schema, null).getFunctions().stream(),
                     systemStorage.getPgCatalog().getFunctions().stream());
         }
     }

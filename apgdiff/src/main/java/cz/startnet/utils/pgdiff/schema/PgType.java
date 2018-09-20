@@ -614,6 +614,7 @@ public class PgType extends PgStatementWithSearchPath {
         copy.setOwner(getOwner());
         copy.setComment(getComment());
         copy.deps.addAll(deps);
+        copy.setLocation(getLocation());
         return copy;
     }
 

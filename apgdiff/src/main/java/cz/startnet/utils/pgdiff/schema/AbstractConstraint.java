@@ -113,6 +113,19 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath {
     }
 
     @Override
+    public String getLocation() {
+        if (location == null) {
+            location = getParent().getLocation();
+        }
+        return location;
+    }
+
+    @Override
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    @Override
     public boolean compare(PgStatement obj) {
         boolean eq = false;
 
@@ -158,6 +171,7 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath {
         constraintDst.deps.addAll(deps);
         constraintDst.setNotValid(isNotValid());
         constraintDst.setDisabled(isDisabled());
+        constraintDst.setLocation(getLocation());
         return constraintDst;
     }
 

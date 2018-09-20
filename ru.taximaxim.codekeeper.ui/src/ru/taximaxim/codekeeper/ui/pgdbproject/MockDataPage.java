@@ -116,7 +116,7 @@ public class MockDataPage extends WizardPage {
      * @return true if file successfully created and opened, false otherwise
      * @see #generateInsert()
      */
-    boolean createFile() {
+    boolean createFile(boolean isMsSql) {
         if (!isValid()) {
             return false;
         }
@@ -125,7 +125,7 @@ public class MockDataPage extends WizardPage {
             mainPrefs.setValue(PREF.EXPLICIT_TYPE_CAST, btnCast.getSelection());
             String name = FileUtils.FILE_DATE.format(LocalDateTime.now()) + " data for " + txtTableName.getText() ; //$NON-NLS-1$
             name = FileUtils.sanitizeFilename(name);
-            FileUtilsUi.saveOpenTmpSqlEditor(generateInsert(), name);
+            FileUtilsUi.saveOpenTmpSqlEditor(generateInsert(), name, isMsSql);
             return true;
         } catch (CoreException | IOException ex) {
             ExceptionNotifier.notifyDefault(

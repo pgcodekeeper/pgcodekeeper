@@ -26,6 +26,8 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -58,6 +60,7 @@ public class DbStorePicker extends Composite {
     private static final int MAX_FILES_HISTORY = 10;
 
     private boolean useFileSources;
+    private Boolean isMsSql;
     private final boolean useDirSources;
     private final IPreferenceStore prefStore;
     private final List<File> projects = new ArrayList<>();
@@ -129,6 +132,15 @@ public class DbStorePicker extends Composite {
                 }
             }
         }
+
+        cmbDbNames.addFilter(new ViewerFilter() {
+
+            @Override
+            public boolean select(Viewer viewer, Object parentElement, Object el) {
+                return isMsSql == null || !(el instanceof DbInfo) || ((DbInfo) el).isMsSql() == isMsSql;
+            }
+        });
+
         loadStore();
     }
 
@@ -341,5 +353,10 @@ public class DbStorePicker extends Composite {
         }
         sb.setLength(sb.length() - 1);
         return sb.toString();
+    }
+
+    public void filter(boolean isMsSql) {
+        this.isMsSql = isMsSql;
+        cmbDbNames.refresh();
     }
 }

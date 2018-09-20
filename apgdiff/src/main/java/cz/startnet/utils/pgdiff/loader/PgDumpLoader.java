@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -153,7 +154,7 @@ public class PgDumpLoader implements AutoCloseable {
         d.setArguments(args);
         load(d);
         d.getSchema(schema.getName()).setLocation(inputObjectName);
-        FullAnalyze.fullAnalyze(d);
+        FullAnalyze.fullAnalyze(d, errors);
         return d;
     }
 
@@ -166,12 +167,17 @@ public class PgDumpLoader implements AutoCloseable {
                 listeners.add(new CustomTSQLParserListener(intoDb, inputObjectName, errors, monitor));
             }
 
+            // TODO Uncomment this code and use it instead of
+            // 'statementBodyReferences = Collections.emptyList()'
+            // when references-mechanism for MSSQL will be added.
             /*
             if (loadReferences) {
                 ReferenceListener refListener = new ReferenceListener(intoDb, inputObjectName, monitor);
                 statementBodyReferences = refListener.getStatementBodies();
                 listeners.add(refListener);
-            } */
+            }
+             */
+            statementBodyReferences = Collections.emptyList();
 
             AntlrParser.parseTSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
                     monitor, monitoringLevel, listeners);
@@ -240,7 +246,7 @@ public class PgDumpLoader implements AutoCloseable {
             }
         }
 
-        FullAnalyze.fullAnalyze(db);
+        FullAnalyze.fullAnalyze(db, errors);
         return db;
     }
 

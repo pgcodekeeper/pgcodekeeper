@@ -179,7 +179,7 @@ cfl_statement
     : block_statement
     | break_statement
     | continue_statement
-    | goto_statement
+    //| goto_statement
     | if_statement
     | return_statement
     | throw_statement
@@ -2149,7 +2149,7 @@ transaction_statement
 
 // https://msdn.microsoft.com/en-us/library/ms188037.aspx
 go_statement
-    : GO (count=DECIMAL)?
+    : GO //(count=DECIMAL)?
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms188366.aspx

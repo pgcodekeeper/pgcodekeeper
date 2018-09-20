@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -17,6 +18,7 @@ import java.util.concurrent.TimeoutException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
+import cz.startnet.utils.pgdiff.loader.callables.QueriesBatchCallable;
 import cz.startnet.utils.pgdiff.loader.callables.QueryCallable;
 import cz.startnet.utils.pgdiff.loader.callables.ResultSetCallable;
 import cz.startnet.utils.pgdiff.loader.callables.StatementCallable;
@@ -62,6 +64,22 @@ public class JdbcRunner {
         try (Connection connection = connector.getConnection();
                 Statement st = connection.createStatement()) {
             run(st, script);
+        }
+    }
+
+    /**
+     * execute statement by given batches with no return value
+     *
+     * @param connector contains database connection information
+     * @param batches contains splited queries of Statements
+     * @throws SQLException
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public void runBatches(JdbcConnector connector, List<List<String>> batches) throws SQLException, IOException, InterruptedException {
+        try (Connection connection = connector.getConnection();
+                Statement st = connection.createStatement()) {
+            runScript(new QueriesBatchCallable(st, batches, monitor, connection));
         }
     }
 

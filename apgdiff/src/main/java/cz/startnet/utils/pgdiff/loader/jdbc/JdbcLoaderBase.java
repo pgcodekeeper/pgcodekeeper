@@ -295,6 +295,10 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     }
 
     public void setPrivileges(PgStatement st, List<XmlReader> privs) throws XmlReaderException {
+        if (args.isIgnorePrivileges()) {
+            return;
+        }
+
         for (XmlReader acl : privs) {
             String state = acl.getString("sd");
             boolean isWithGrantOption = false;

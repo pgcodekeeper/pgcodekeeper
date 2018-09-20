@@ -89,6 +89,7 @@ public class PgFtsTemplate extends PgStatementWithSearchPath {
         template.setInitFunction(getInitFunction());
         template.setLexizeFunction(getLexizeFunction());
         template.deps.addAll(deps);
+        template.setLocation(getLocation());
         return template;
     }
 

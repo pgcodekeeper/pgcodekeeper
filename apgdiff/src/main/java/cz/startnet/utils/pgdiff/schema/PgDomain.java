@@ -221,6 +221,7 @@ public class PgDomain extends PgStatementWithSearchPath {
             copy.addPrivilege(priv);
         }
         copy.deps.addAll(deps);
+        copy.setLocation(getLocation());
         return copy;
     }
 

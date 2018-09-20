@@ -24,7 +24,7 @@ public class CreateMsSchema extends ParserAbstract {
         }
 
         AbstractSchema schema = new MsSchema(name, getFullCtxText(ctx.getParent()));
-        if (ctx.owner_name != null) {
+        if (ctx.owner_name != null && !db.getArguments().isIgnorePrivileges()) {
             schema.setOwner(ctx.owner_name.getText());
         }
 
