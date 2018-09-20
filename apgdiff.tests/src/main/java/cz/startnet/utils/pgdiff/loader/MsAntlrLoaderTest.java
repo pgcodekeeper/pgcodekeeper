@@ -178,7 +178,7 @@ public class MsAntlrLoaderTest {
 
         PgDatabase dbPredefined = DB_OBJS[fileIndex].getDatabase();
         Path exportDir = null;
-        try{
+        try {
             exportDir = Files.createTempDirectory("pgCodekeeper-test-files");
             new ModelExporter(exportDir.toFile(), dbPredefined, encoding).exportFull();
 
@@ -186,8 +186,7 @@ public class MsAntlrLoaderTest {
             args.setInCharsetName(encoding);
             args.setKeepNewlines(true);
             args.setMsSql(true);
-            PgDatabase dbAfterExport = PgDumpLoader.loadDatabaseSchemaFromDirTree(
-                    exportDir.toString(), args, null, null);
+            PgDatabase dbAfterExport = new ProjectLoader(exportDir.toString(), args).loadDatabaseSchemaFromDirTree();
 
             // check the same db similarity before and after export
             Assert.assertEquals("ModelExporter: predefined object PgDB" + fileIndex +
@@ -195,8 +194,8 @@ public class MsAntlrLoaderTest {
 
             Assert.assertEquals("ModelExporter: exported predefined object is not "
                     + "equal to file " + filename, dbAfterExport, dbFromFile);
-        }finally{
-            if (exportDir != null){
+        } finally {
+            if (exportDir != null) {
                 deleteRecursive(exportDir.toFile());
             }
         }

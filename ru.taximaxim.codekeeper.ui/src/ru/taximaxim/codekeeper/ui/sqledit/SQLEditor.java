@@ -108,7 +108,7 @@ import ru.taximaxim.codekeeper.ui.job.SingletonEditorJob;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
-import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgUIDumpLoader;
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 import ru.taximaxim.codekeeper.ui.propertytests.UpdateDdlJobTester;
 
 public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceChangeListener {
@@ -241,7 +241,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         super.doSave(progressMonitor);
         IResource res = ResourceUtil.getResource(getEditorInput());
         try {
-            if (res == null || !PgUIDumpLoader.isInProject(res)) {
+            if (res == null || !UIProjectLoader.isInProject(res)) {
                 refreshParser(getParser(), res, progressMonitor);
             }
         } catch (Exception ex) {
@@ -343,7 +343,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         IEditorInput in = getEditorInput();
 
         IResource res = ResourceUtil.getResource(in);
-        if (res != null && PgUIDumpLoader.isInProject(res)) {
+        if (res != null && UIProjectLoader.isInProject(res)) {
             return PgDbParser.getParser(res.getProject());
         }
 

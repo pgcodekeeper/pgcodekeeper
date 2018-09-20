@@ -9,7 +9,7 @@ import org.eclipse.core.runtime.CoreException;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgUIDumpLoader;
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 
 public class MockDataPropertyTester extends PropertyTester {
 
@@ -17,9 +17,9 @@ public class MockDataPropertyTester extends PropertyTester {
     public boolean test(Object receiver, String property, Object[] args,
             Object expectedValue) {
         IFile file = (IFile) receiver;
-        if (PgUIDumpLoader.isInProject(file)) {
+        if (UIProjectLoader.isInProject(file)) {
             try {
-                return PgUIDumpLoader.parseStatement(file, Arrays.asList(DbObjType.TABLE)) != null;
+                return UIProjectLoader.parseStatement(file, Arrays.asList(DbObjType.TABLE)) != null;
             } catch (InterruptedException | IOException | CoreException e) {
                 Log.log(Log.LOG_ERROR, "Error parsing file: " + file.getName(), e); //$NON-NLS-1$
             }

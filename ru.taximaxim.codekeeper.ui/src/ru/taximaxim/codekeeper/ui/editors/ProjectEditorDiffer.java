@@ -123,7 +123,7 @@ import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.job.SingletonEditorJob;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgUIDumpLoader;
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 import ru.taximaxim.codekeeper.ui.propertytests.ChangesJobTester;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
@@ -432,7 +432,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 // something other than just markers has changed
                 // check that it's our resource
                 if (delta.getFlags() != IResourceDelta.MARKERS &&
-                        PgUIDumpLoader.isInProject(delta, OpenProjectUtils.checkMsSql(proj.getProject())) &&
+                        UIProjectLoader.isInProject(delta, OpenProjectUtils.checkMsSql(proj.getProject())) &&
                         delta.getResource().getType() == IResource.FILE &&
                         delta.getResource().getProject().equals(proj.getProject())) {
                     schemaChanged[0] = true;

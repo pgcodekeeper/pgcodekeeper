@@ -57,7 +57,7 @@ import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.job.SingletonEditorJob;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgUIDumpLoader;
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 import ru.taximaxim.codekeeper.ui.propertytests.QuickUpdateJobTester;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 
@@ -107,7 +107,7 @@ public class QuickUpdate extends AbstractHandler {
     @Override
     public boolean isEnabled() {
         IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-        return editor instanceof SQLEditor && PgUIDumpLoader.isInProject(editor.getEditorInput());
+        return editor instanceof SQLEditor && UIProjectLoader.isInProject(editor.getEditorInput());
     }
 }
 
@@ -155,12 +155,12 @@ class QuickUpdateJob extends SingletonEditorJob {
             throw new PgCodekeeperUIException(Messages.QuickUpdate_different_types);
         }
 
-        boolean isSchemaFile = PgUIDumpLoader.isSchemaFile(file.getProjectRelativePath(), isMsSql);
+        boolean isSchemaFile = UIProjectLoader.isSchemaFile(file.getProjectRelativePath(), isMsSql);
         IEclipsePreferences projPrefs = proj.getPrefs();
         String timezone = projPrefs.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC);
 
-        PgDatabase dbProjectFragment =
-                PgUIDumpLoader.buildFiles(Arrays.asList(file), monitor.newChild(1), null, isMsSql);
+        PgDatabase dbProjectFragment = new UIProjectLoader(monitor.newChild(1), null)
+                .buildFiles(Arrays.asList(file), isMsSql);
         Collection<PgStatement> listPgObjectsFragment = dbProjectFragment.getDescendants().collect(Collectors.toList());
 
         long schemaCount = dbProjectFragment.getSchemas().size();

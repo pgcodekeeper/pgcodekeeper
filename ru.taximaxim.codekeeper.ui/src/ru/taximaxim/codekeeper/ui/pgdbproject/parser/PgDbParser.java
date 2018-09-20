@@ -173,7 +173,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
     public void getObjFromProjFiles(Collection<IFile> files, IProgressMonitor monitor)
             throws InterruptedException, IOException, CoreException {
         List<StatementBodyContainer> statementBodies = new ArrayList<>();
-        PgDatabase db = PgUIDumpLoader.buildFiles(files, monitor, statementBodies, false);
+        PgDatabase db = new UIProjectLoader(monitor, statementBodies).buildFiles(files, false);
         objDefinitions.putAll(db.getObjDefinitions());
         objReferences.putAll(db.getObjReferences());
         fillStatementBodies(statementBodies);
@@ -215,12 +215,12 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
 
     public void getFullDBFromPgDbProject(IProject proj, IProgressMonitor monitor)
             throws InterruptedException, IOException, CoreException {
-        SubMonitor mon = SubMonitor.convert(monitor, PgUIDumpLoader.countFiles(proj));
+        SubMonitor mon = SubMonitor.convert(monitor, UIProjectLoader.countFiles(proj));
         List<StatementBodyContainer> statementBodies = new ArrayList<>();
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(proj.getDefaultCharset(true));
-        PgDatabase db = PgUIDumpLoader.loadDatabaseSchemaFromIProject(
-                proj, args, mon, statementBodies, null);
+        PgDatabase db = new UIProjectLoader(proj, args, mon, statementBodies, null)
+                .loadDatabaseSchemaFromPgProject();
         objDefinitions.clear();
         objDefinitions.putAll(db.getObjDefinitions());
         objReferences.clear();

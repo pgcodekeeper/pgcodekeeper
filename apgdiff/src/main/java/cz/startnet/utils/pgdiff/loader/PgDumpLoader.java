@@ -9,16 +9,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -38,7 +31,6 @@ import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 
 /**
  * Loads PostgreSQL dump into classes.
@@ -46,18 +38,6 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
  * @author fordfrog
  */
 public class PgDumpLoader implements AutoCloseable {
-
-    /**
-     * Loading order and directory names of the objects in exported DB schemas.
-     * NOTE: constraints, triggers and indexes are now stored in tables,
-     * those directories are here for backward compatibility only
-     */
-    protected static final String[] DIR_LOAD_ORDER = new String[] { "TYPE", "DOMAIN",
-            "SEQUENCE", "FUNCTION", "TABLE", "CONSTRAINT", "INDEX", "TRIGGER", "VIEW",
-            "FTS_PARSER", "FTS_TEMPLATE", "FTS_DICTIONARY", "FTS_CONFIGURATION" };
-
-    protected static final String[] MS_DIR_LOAD_ORDER = new String[] { "Assemblies",
-            "Sequences", "Stored Procedures", "Functions", "Tables", "Views"};
 
     private final InputStream input;
     private final String inputObjectName;
@@ -201,169 +181,5 @@ public class PgDumpLoader implements AutoCloseable {
     @Override
     public void close() throws IOException {
         input.close();
-    }
-
-    /**
-     * Loads database schema from a ModelExporter directory tree.
-     *
-     * @param dirPath path to the directory tree root
-     *
-     * @return database schema
-     * @throws InterruptedException
-     */
-    public static PgDatabase loadDatabaseSchemaFromDirTree(String dirPath,
-            PgDiffArguments arguments, IProgressMonitor monitor, List<AntlrError> errors)
-                    throws InterruptedException, IOException {
-        PgDatabase db = new PgDatabase();
-        db.setArguments(arguments);
-        File dir = new File(dirPath);
-
-        // step 1
-        // read files in schema folder, add schemas to db
-        for (WORK_DIR_NAMES dirEnum : WORK_DIR_NAMES.values()) {
-            // legacy schemas
-            loadSubdir(dir, arguments, dirEnum.name(), db, monitor, errors);
-        }
-
-        File schemasCommonDir = new File(dir, WORK_DIR_NAMES.SCHEMA.name());
-        // skip walking SCHEMA folder if it does not exist
-        if (!schemasCommonDir.isDirectory()) {
-            return db;
-        }
-
-        // new schemas + content
-        // step 2
-        // read out schemas names, and work in loop on each
-        try (Stream<Path> schemas = Files.list(schemasCommonDir.toPath())) {
-            for (Path schemaDir : PgDiffUtils.sIter(schemas)) {
-                if (Files.isDirectory(schemaDir)) {
-                    loadSubdir(schemasCommonDir, arguments, schemaDir.getFileName().toString(),
-                            db, monitor, errors);
-                    for (String dirSub : DIR_LOAD_ORDER) {
-                        loadSubdir(schemaDir.toFile(), arguments, dirSub, db, monitor, errors);
-                    }
-                }
-            }
-        }
-
-        FullAnalyze.fullAnalyze(db, errors);
-        return db;
-    }
-
-    /**
-     * Loads database schema from a MS SQL ModelExporter directory tree.
-     */
-    public static PgDatabase loadMsDatabaseSchemaFromDirTree(String dirPath,
-            PgDiffArguments arguments, IProgressMonitor monitor, List<AntlrError> errors)
-                    throws InterruptedException, IOException {
-        PgDatabase db = new PgDatabase();
-        db.setArguments(arguments);
-        File dir = new File(dirPath);
-
-        File securityFolder = new File(dir, "Security");
-        loadSubdir(securityFolder, arguments, "Roles", db, monitor, errors);
-        loadSubdir(securityFolder, arguments, "Users", db, monitor, errors);
-        loadSubdir(securityFolder, arguments, "Schemas", db, monitor, errors);
-        addDboSchema(db);
-
-        for (String dirSub : MS_DIR_LOAD_ORDER) {
-            loadSubdir(dir, arguments, dirSub, db, monitor, errors);
-        }
-
-        return db;
-    }
-
-    protected static void addDboSchema(PgDatabase db) {
-        if (!db.containsSchema(ApgdiffConsts.DBO)) {
-            db.addSchema(new MsSchema(ApgdiffConsts.DBO, ""));
-            db.setDefaultSchema(ApgdiffConsts.DBO);
-        }
-    }
-
-    public static void loadLibraries(PgDatabase db, PgDiffArguments arguments,
-            boolean isIgnorePriv, Collection<String> paths) throws InterruptedException, IOException, URISyntaxException {
-        for (String path : paths) {
-            loadLibrary(db, arguments, isIgnorePriv, path);
-        }
-    }
-
-    protected static void loadLibrary(PgDatabase db, PgDiffArguments arguments,
-            boolean isIgnorePriv, String path) throws InterruptedException, IOException, URISyntaxException {
-        db.addLib(getLibrary(path, arguments, isIgnorePriv));
-    }
-
-    private static PgDatabase getLibrary(String path, PgDiffArguments arguments,
-            boolean isIgnorePriv) throws InterruptedException, IOException, URISyntaxException {
-
-        PgDiffArguments args = arguments.clone();
-        args.setIgnorePrivileges(isIgnorePriv);
-
-        if (path.startsWith("jdbc:")) {
-            String timezone = args.getTimeZone() == null ? ApgdiffConsts.UTC : args.getTimeZone();
-            PgDatabase db = new JdbcLoader(JdbcConnector.fromUrl(path, timezone), args).getDbFromJdbc();
-            db.getDescendants().forEach(st -> st.setLocation(path));
-            return db;
-        }
-
-        Path p = Paths.get(path);
-
-        if (Files.isDirectory(p)) {
-            if (Files.exists(p.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
-                return PgDumpLoader.loadDatabaseSchemaFromDirTree(path,  args, null, null);
-            } else {
-                PgDatabase db = new PgDatabase();
-                db.setArguments(args);
-                readStatementsFromDirectory(p, db, args);
-                return db;
-            }
-        }
-
-        try (PgDumpLoader loader = new PgDumpLoader(new File(path), args)) {
-            return loader.load();
-        }
-    }
-
-    private static void readStatementsFromDirectory(final Path f, PgDatabase db, PgDiffArguments args)
-            throws IOException, InterruptedException, URISyntaxException {
-        if (Files.isDirectory(f)) {
-            try (Stream<Path> stream = Files.list(f)) {
-                for (Path sub : (Iterable<Path>) stream::iterator) {
-                    readStatementsFromDirectory(sub, db, args);
-                }
-            }
-        } else {
-            try (PgDumpLoader loader = new PgDumpLoader(f.toFile(), args)) {
-                db.addLib(loader.load());
-            }
-        }
-    }
-
-    private static void loadSubdir(File dir, PgDiffArguments arguments, String sub, PgDatabase db,
-            IProgressMonitor monitor, List<AntlrError> errors)
-                    throws InterruptedException, IOException {
-        File subDir = new File(dir, sub);
-        if (subDir.exists() && subDir.isDirectory()) {
-            File[] files = subDir.listFiles();
-            loadFiles(files, arguments, db, monitor, errors);
-        }
-    }
-
-    private static void loadFiles(File[] files, PgDiffArguments arguments,
-            PgDatabase db, IProgressMonitor monitor, List<AntlrError> errors)
-                    throws IOException, InterruptedException {
-        Arrays.sort(files);
-        for (File f : files) {
-            if (f.isFile() && f.getName().toLowerCase().endsWith(".sql")) {
-                List<AntlrError> errList = null;
-                try (PgDumpLoader loader = new PgDumpLoader(f, arguments, monitor)) {
-                    errList = loader.getErrors();
-                    loader.load(db);
-                } finally {
-                    if (errors != null && errList != null && !errList.isEmpty()) {
-                        errors.addAll(errList);
-                    }
-                }
-            }
-        }
     }
 }

@@ -21,6 +21,7 @@ import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcLoader;
 import cz.startnet.utils.pgdiff.loader.JdbcMsLoader;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
+import cz.startnet.utils.pgdiff.loader.ProjectLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.LibraryObjectDuplicationException;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -63,10 +64,10 @@ public final class PgDiff {
         PgDatabase newDatabase = loadDatabaseSchema(
                 arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments);
 
-        PgDumpLoader.loadLibraries(oldDatabase, arguments, false, arguments.getTargetLibs());
-        PgDumpLoader.loadLibraries(oldDatabase, arguments, true, arguments.getTargetLibsWithoutPriv());
-        PgDumpLoader.loadLibraries(newDatabase, arguments, false, arguments.getSourceLibs());
-        PgDumpLoader.loadLibraries(newDatabase, arguments, true, arguments.getSourceLibsWithoutPriv());
+        ProjectLoader.loadLibraries(oldDatabase, arguments, false, arguments.getTargetLibs());
+        ProjectLoader.loadLibraries(oldDatabase, arguments, true, arguments.getTargetLibsWithoutPriv());
+        ProjectLoader.loadLibraries(newDatabase, arguments, false, arguments.getSourceLibs());
+        ProjectLoader.loadLibraries(newDatabase, arguments, true, arguments.getSourceLibsWithoutPriv());
 
         if (arguments.isLibSafeMode()) {
             List<PgOverride> overrides = oldDatabase.getOverrides();
@@ -104,9 +105,9 @@ public final class PgDiff {
                 return loader.load();
             }
         } else if ("parsed".equals(format)) {
-            return arguments.isMsSql() ?
-                    PgDumpLoader.loadMsDatabaseSchemaFromDirTree(srcPath,  arguments, null, null) :
-                        PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,  arguments, null, null);
+            ProjectLoader loader = new ProjectLoader(srcPath, arguments);
+            return arguments.isMsSql() ? loader.loadMsDatabaseSchemaFromDirTree() :
+                loader.loadDatabaseSchemaFromDirTree();
         } else if ("db".equals(format)) {
             String timezone = arguments.getTimeZone() == null ? ApgdiffConsts.UTC : arguments.getTimeZone();
             return arguments.isMsSql() ?
