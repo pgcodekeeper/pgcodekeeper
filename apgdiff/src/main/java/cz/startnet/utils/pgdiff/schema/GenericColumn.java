@@ -104,6 +104,9 @@ public final class GenericColumn implements Serializable {
         case DATABASE: return db;
         case SCHEMA: return s;
         case EXTENSION: return db.getExtension(schema);
+        case ASSEMBLY: return db.getAssembly(schema);
+        case USER: return db.getUser(schema);
+        case ROLE: return db.getRole(schema);
 
         case TYPE: return getType(s);
         case DOMAIN: return s.getDomain(table);

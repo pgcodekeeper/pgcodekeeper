@@ -3,3 +3,6 @@ GO
 
 GRANT INSERT, UPDATE ON SCHEMA :: [tester] TO [test_user]
 GO
+
+GRANT SELECT ON SCHEMA :: [tester] TO [test_user] WITH GRANT OPTION
+GO

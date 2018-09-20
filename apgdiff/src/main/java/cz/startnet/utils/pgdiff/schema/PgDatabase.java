@@ -39,6 +39,9 @@ public class PgDatabase extends PgStatement {
 
     private final List<AbstractSchema> schemas = new ArrayList<>();
     private final List<PgExtension> extensions = new ArrayList<>();
+    private final List<MsAssembly> assemblies = new ArrayList<>();
+    private final List<MsRole> roles = new ArrayList<>();
+    private final List<MsUser> users = new ArrayList<>();
 
     // Contains object definitions
     private final Map<String, List<PgObjLocation>> objDefinitions = new HashMap<>();
@@ -168,6 +171,10 @@ public class PgDatabase extends PgStatement {
         return getExtension(name) != null;
     }
 
+    public boolean containsAssembly(final String name) {
+        return getAssembly(name) != null;
+    }
+
     public boolean containsSchema(final String name) {
         return getSchema(name) != null;
     }
@@ -185,7 +192,11 @@ public class PgDatabase extends PgStatement {
 
     @Override
     public Stream<PgStatement> getChildren() {
-        return Stream.concat(getSchemas().stream(), getExtensions().stream());
+        Stream<PgStatement> stream =  Stream.concat(getSchemas().stream(), getExtensions().stream());
+        stream = Stream.concat(stream, getAssemblies().stream());
+        stream = Stream.concat(stream, getRoles().stream());
+        stream = Stream.concat(stream, getUsers().stream());
+        return stream;
     }
 
     /**
@@ -218,6 +229,105 @@ public class PgDatabase extends PgStatement {
         assertUnique(this::getExtension, extension);
         extensions.add(extension);
         extension.setParent(this);
+        resetHash();
+    }
+
+    /**
+     * Returns assembly of given name or null if the assembly has not been found.
+     *
+     * @param name assembly name
+     *
+     * @return found assembly or null
+     */
+    public MsAssembly getAssembly(final String name) {
+        for (final MsAssembly ass : assemblies) {
+            if (ass.getName().equals(name)) {
+                return ass;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns role of given name or null if the role has not been found.
+     *
+     * @param name role name
+     *
+     * @return found role or null
+     */
+    public MsRole getRole(final String name) {
+        for (final MsRole role : roles) {
+            if (role.getName().equals(name)) {
+                return role;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns user of given name or null if the user has not been found.
+     *
+     * @param name user name
+     *
+     * @return found user or null
+     */
+    public MsUser getUser(final String name) {
+        for (final MsUser user : users) {
+            if (user.getName().equals(name)) {
+                return user;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Getter for {@link #assemblies}. The list cannot be modified.
+     *
+     * @return {@link #assemblies}
+     */
+    public List<MsAssembly> getAssemblies() {
+        return Collections.unmodifiableList(assemblies);
+    }
+
+    /**
+     * Getter for {@link #roles}. The list cannot be modified.
+     *
+     * @return {@link #roles}
+     */
+    public List<MsRole> getRoles() {
+        return Collections.unmodifiableList(roles);
+    }
+
+    /**
+     * Getter for {@link #users}. The list cannot be modified.
+     *
+     * @return {@link #users}
+     */
+    public List<MsUser> getUsers() {
+        return Collections.unmodifiableList(users);
+    }
+
+    public void addAssembly(final MsAssembly assembly) {
+        assertUnique(this::getAssembly, assembly);
+        assemblies.add(assembly);
+        assembly.setParent(this);
+        resetHash();
+    }
+
+    public void addRole(final MsRole role) {
+        assertUnique(this::getRole, role);
+        roles.add(role);
+        role.setParent(this);
+        resetHash();
+    }
+
+    public void addUser(final MsUser user) {
+        assertUnique(this::getRole, user);
+        users.add(user);
+        user.setParent(this);
         resetHash();
     }
 
@@ -266,7 +376,10 @@ public class PgDatabase extends PgStatement {
         if (obj instanceof PgDatabase) {
             PgDatabase db = (PgDatabase) obj;
             return PgDiffUtils.setlikeEquals(extensions, db.extensions)
-                    && PgDiffUtils.setlikeEquals(schemas, db.schemas);
+                    && PgDiffUtils.setlikeEquals(schemas, db.schemas)
+                    && PgDiffUtils.setlikeEquals(assemblies, db.assemblies)
+                    && PgDiffUtils.setlikeEquals(roles, db.roles)
+                    && PgDiffUtils.setlikeEquals(users, db.users);
         }
         return false;
     }
@@ -280,6 +393,9 @@ public class PgDatabase extends PgStatement {
     public void computeChildrenHash(Hasher hasher) {
         hasher.putUnordered(extensions);
         hasher.putUnordered(schemas);
+        hasher.putUnordered(assemblies);
+        hasher.putUnordered(roles);
+        hasher.putUnordered(users);
     }
 
     @Override
@@ -301,6 +417,15 @@ public class PgDatabase extends PgStatement {
         for (AbstractSchema schema : schemas) {
             copy.addSchema(schema.deepCopy());
         }
+        for (MsAssembly ass : assemblies) {
+            copy.addAssembly(ass.deepCopy());
+        }
+        for (MsRole role : roles) {
+            copy.addRole(role.deepCopy());
+        }
+        for (MsUser user : users) {
+            copy.addUser(user.deepCopy());
+        }
         return copy;
     }
 
@@ -317,6 +442,36 @@ public class PgDatabase extends PgStatement {
                 addExtension(e);
             } else if (!"plpgsql".equals(e.getName())) {
                 overrides.add(new PgOverride(ext, e));
+            }
+        }
+
+        for (MsAssembly a : database.getAssemblies()) {
+            MsAssembly ass = getAssembly(a.getName());
+            if (ass == null) {
+                a.dropParent();
+                addAssembly(a);
+            } else {
+                overrides.add(new PgOverride(ass, a));
+            }
+        }
+
+        for (MsRole r : database.getRoles()) {
+            MsRole role = getRole(r.getName());
+            if (role == null) {
+                r.dropParent();
+                addRole(r);
+            } else {
+                overrides.add(new PgOverride(role, r));
+            }
+        }
+
+        for (MsUser u : database.getUsers()) {
+            MsUser user = getUser(u.getName());
+            if (user == null) {
+                u.dropParent();
+                addUser(user);
+            } else {
+                overrides.add(new PgOverride(user, u));
             }
         }
 

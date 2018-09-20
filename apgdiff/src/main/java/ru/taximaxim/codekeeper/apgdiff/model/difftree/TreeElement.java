@@ -7,10 +7,10 @@ import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
 
 /**
@@ -130,6 +130,9 @@ public class TreeElement {
         // other elements just get from their parent, and their parent from a parent above them etc
         case EXTENSION:         return ((PgDatabase) parent.getPgStatement(db)).getExtension(name);
         case SCHEMA:            return ((PgDatabase) parent.getPgStatement(db)).getSchema(name);
+        case ASSEMBLY:          return ((PgDatabase) parent.getPgStatement(db)).getAssembly(name);
+        case USER:              return ((PgDatabase) parent.getPgStatement(db)).getUser(name);
+        case ROLE:              return ((PgDatabase) parent.getPgStatement(db)).getRole(name);
 
         case FUNCTION:          return ((AbstractSchema) parent.getPgStatement(db)).getFunction(name);
         case PROCEDURE:         return ((AbstractSchema) parent.getPgStatement(db)).getFunction(name);

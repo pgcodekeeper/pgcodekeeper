@@ -287,37 +287,11 @@ create_application_role
     ;
 
 alter_assembly
-    : ASSEMBLY assembly_name=id alter_assembly_clause
-    ;
-
-alter_assembly_clause
-    : alter_assembly_from_clause? alter_assembly_with_clause? alter_assembly_drop_clause? alter_assembly_add_clause?
-    ;
-
-alter_assembly_from_clause
-    : FROM client_assembly_specifier
-    ;
-
-alter_assembly_drop_clause
-    : DROP alter_assembly_drop_multiple_files
-    ;
-
-alter_assembly_drop_multiple_files
-    : ALL
-    | multiple_local_files
-    ;
-
-alter_assembly_add_clause
-    : ADD FILE FROM alter_assembly_client_file_clause
-    ;
-
-// need to implement
-alter_assembly_client_file_clause
-    :  STRING (AS id)?
-    ;
-
-alter_assembly_with_clause
-    : WITH assembly_option
+    : ASSEMBLY name=id 
+    (FROM client_assembly_specifier)? 
+    (WITH assembly_option (COMMA assembly_option)*)? 
+    (DROP (ALL | multiple_local_files))? 
+    (ADD FILE FROM STRING (AS id)?)?
     ;
 
 client_assembly_specifier
@@ -328,10 +302,9 @@ client_assembly_specifier
     ;
 
 assembly_option
-    : PERMISSION_SET EQUAL (SAFE|EXTERNAL_ACCESS|UNSAFE)
+    : PERMISSION_SET EQUAL assembly_permission
     | VISIBILITY EQUAL (ON | OFF)
     | UNCHECKED DATA
-    | assembly_option COMMA
     ;
 
 network_file_share
@@ -355,9 +328,19 @@ multiple_local_files
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-assembly-transact-sql
 create_assembly
     : ASSEMBLY assembly_name=id (AUTHORIZATION owner_name=id)?
-       FROM (COMMA? (STRING|BINARY) )+
-       (WITH PERMISSION_SET EQUAL (SAFE|EXTERNAL_ACCESS|UNSAFE) )?
+    FROM string_binary (COMMA string_binary)*
+    (WITH PERMISSION_SET EQUAL assembly_permission)?
+    ;
 
+string_binary
+    : STRING 
+    | BINARY
+    ;
+
+assembly_permission
+    : SAFE
+    | EXTERNAL_ACCESS
+    | UNSAFE
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/drop-assembly-transact-sql
@@ -2047,7 +2030,7 @@ permission
     ;
     
 object_type
-    : ON (type=(LOGIN | DATABASE | OBJECT | ROLE | SCHEMA | USER) ':' ':')? 
+    : ON (type=(LOGIN | DATABASE | OBJECT | ROLE | SCHEMA | USER | ASSEMBLY) ':' ':')? 
     on_id=table_name table_columns?
     ; 
     

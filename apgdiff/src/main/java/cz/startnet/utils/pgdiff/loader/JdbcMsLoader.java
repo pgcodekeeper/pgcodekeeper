@@ -9,13 +9,16 @@ import org.eclipse.core.runtime.SubMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.jdbc.JdbcLoaderBase;
+import cz.startnet.utils.pgdiff.loader.jdbc.MsAssembliesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.MsCheckConstraintsReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.MsExtendedObjectsReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.MsFKReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.MsFPVTReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.MsIndicesAndPKReader;
+import cz.startnet.utils.pgdiff.loader.jdbc.MsRolesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.MsSequencesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.MsTablesReader;
+import cz.startnet.utils.pgdiff.loader.jdbc.MsUsersReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.SchemasMsReader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
@@ -61,6 +64,9 @@ public class JdbcMsLoader extends JdbcLoaderBase {
             new MsIndicesAndPKReader(this).read();
             new MsFKReader(this).read();
             new MsCheckConstraintsReader(this).read();
+            new MsAssembliesReader(this, d).read();
+            new MsRolesReader(this, d).read();
+            new MsUsersReader(this, d).read();
 
             finishAntlr();
 

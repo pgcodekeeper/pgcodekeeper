@@ -40,7 +40,7 @@ public class PgPrivilege implements IHashable {
         sb.append(isRevoke() ? " FROM ": " TO ").append(getRole());
 
         if (isGrantOption) {
-            sb.append(WITH_GRANT_OPTION);
+            sb.append(isRevoke() ? " CASCADE" : WITH_GRANT_OPTION);
         }
 
         return sb.toString();
@@ -51,7 +51,7 @@ public class PgPrivilege implements IHashable {
             return null;
         }
 
-        return new PgPrivilege("REVOKE", permission, name, role, false).getCreationSQL();
+        return new PgPrivilege("REVOKE", permission, name, role, isGrantOption).getCreationSQL();
     }
 
     public static void appendDefaultPrivileges(PgStatement newObj, StringBuilder sb) {
