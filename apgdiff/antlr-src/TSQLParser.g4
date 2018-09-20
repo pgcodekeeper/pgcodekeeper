@@ -21,7 +21,7 @@ batch_statement
     ;
 
 sql_clauses
-    : SEMI* (st_clause SEMI?)+
+    : SEMI* (st_clause SEMI*)+
     ;
 
 st_clause
