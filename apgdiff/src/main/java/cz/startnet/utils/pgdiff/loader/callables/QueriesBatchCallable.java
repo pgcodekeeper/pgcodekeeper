@@ -1,7 +1,6 @@
 package cz.startnet.utils.pgdiff.loader.callables;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.List;
 
@@ -33,11 +32,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
             subMonitor.setWorkRemaining(queries.size());
             for (String query : queries) {
                 PgDiffUtils.checkCancelled(monitor);
-                if (st instanceof PreparedStatement) {
-                    ((PreparedStatement)st).execute();
-                } else {
-                    st.execute(query);
-                }
+                st.execute(query);
                 subMonitor.worked(1);
             }
         } else {
