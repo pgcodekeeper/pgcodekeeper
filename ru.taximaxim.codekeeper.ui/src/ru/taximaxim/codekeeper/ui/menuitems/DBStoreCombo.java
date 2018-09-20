@@ -5,6 +5,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
@@ -68,13 +69,16 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
 
     private void setSelectionFromPart(IWorkbenchPart part) {
         Object lastDb = null;
-        IProject proj;
+        IProject proj = null;
 
         if (part instanceof SQLEditor) {
             SQLEditor editor = (SQLEditor) part;
             lastDb = editor.getCurrentDb();
             storePicker.loadStore(false);
-            proj = ((FileEditorInput) editor.getEditorInput()).getFile().getProject();
+            IEditorInput input = editor.getEditorInput();
+            if (input instanceof FileEditorInput) {
+                proj = ((FileEditorInput) input).getFile().getProject();
+            }
         } else if (part instanceof ProjectEditorDiffer) {
             ProjectEditorDiffer differ = (ProjectEditorDiffer) part;
             lastDb = differ.getCurrentDb();
@@ -84,10 +88,12 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
             return;
         }
 
-        try {
-            storePicker.filter(proj.hasNature(NATURE.MS));
-        } catch (CoreException ex) {
-            Log.log(ex);
+        if (proj != null) {
+            try {
+                storePicker.filter(proj.hasNature(NATURE.MS));
+            } catch (CoreException ex) {
+                Log.log(ex);
+            }
         }
 
         if (lastDb == null) {
