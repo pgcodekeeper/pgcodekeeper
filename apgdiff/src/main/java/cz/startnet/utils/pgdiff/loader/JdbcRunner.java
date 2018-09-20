@@ -17,9 +17,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.SubMonitor;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.callables.QueriesBatchCallable;
 import cz.startnet.utils.pgdiff.loader.callables.QueryCallable;
 import cz.startnet.utils.pgdiff.loader.callables.ResultSetCallable;
@@ -73,7 +71,7 @@ public class JdbcRunner {
      * execute statement by given batches with no return value
      *
      * @param connector contains database connection information
-     * @param batches contains queries of Statements splited by 'GO'
+     * @param batches contains splited queries of Statements
      * @throws SQLException
      * @throws IOException
      * @throws InterruptedException
@@ -81,25 +79,7 @@ public class JdbcRunner {
     public void runBatches(JdbcConnector connector, List<List<String>> batches) throws SQLException, IOException, InterruptedException {
         try (Connection connection = connector.getConnection();
                 Statement st = connection.createStatement()) {
-            SubMonitor subMonitor = SubMonitor.convert(monitor);
-            if (batches.size() == 1) {
-                List<String> queries = batches.get(0);
-                subMonitor.setWorkRemaining(queries.size());
-                for (String query : queries) {
-                    PgDiffUtils.checkCancelled(monitor);
-                    runScript(new QueryCallable(st, query));
-                    subMonitor.worked(1);
-                }
-            } else {
-                subMonitor.setWorkRemaining(batches.size());
-                connection.setAutoCommit(false);
-                for (List<String> queriesList : batches) {
-                    PgDiffUtils.checkCancelled(monitor);
-                    runScript(new QueriesBatchCallable(st, queriesList));
-                    subMonitor.worked(1);
-                }
-                connection.commit();
-            }
+            runScript(new QueriesBatchCallable(st, batches, monitor, connection));
         }
     }
 
