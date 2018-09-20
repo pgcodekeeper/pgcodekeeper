@@ -76,6 +76,8 @@ public class PgTrigger extends AbstractTrigger {
             if (isImmediate() != null){
                 sbSQL.append("\n\tDEFERRABLE INITIALLY ")
                 .append(isImmediate() ? "IMMEDIATE" : "DEFERRED");
+            } else {
+                sbSQL.append("\n\tNOT DEFERRABLE INITIALLY IMMEDIATE");
             }
         }
 

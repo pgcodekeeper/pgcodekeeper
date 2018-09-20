@@ -20,6 +20,7 @@ CREATE CONSTRAINT TRIGGER test_table_trigger
 CREATE CONSTRAINT TRIGGER test_view_trigger1
 	INSTEAD OF INSERT OR UPDATE ON public.test_view
 	FROM public.test_table
+	NOT DEFERRABLE INITIALLY IMMEDIATE
 	FOR EACH ROW
 	EXECUTE PROCEDURE public.test_table_trigger();
 
