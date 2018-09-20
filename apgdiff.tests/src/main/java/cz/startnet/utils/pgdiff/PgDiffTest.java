@@ -246,6 +246,8 @@ public class PgDiffTest {
                     {"modify_trigger"},
                     // Tests scenario where CONSTRAINT TRIGGER is added.
                     {"add_constraint_trigger"},
+                    // Tests scenario where TRIGGER with 'differable initially' parameter is added.
+                    {"add_differable_initially_trigger"},
                     // Tests scenario where COLUMN CONSTRAINT is compared.
                     {"compare_column_constraints"},
                     // Tests scenario where FOREIGN TABLE COLUMN OPTIONS is compared.
@@ -414,6 +416,8 @@ public class PgDiffTest {
                     {"modify_fts_configuration"},
                     // Tests scenario where FTS CONFIGURATION OPTIONS is added, modified and deleted.
                     {"modify_fts_configuration_options"}
+
+                    ,{"add_differable_initially_trigger"}
                 });
     }
 
