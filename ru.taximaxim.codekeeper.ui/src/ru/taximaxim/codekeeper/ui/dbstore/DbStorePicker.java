@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -27,6 +26,8 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -59,6 +60,7 @@ public class DbStorePicker extends Composite {
     private static final int MAX_FILES_HISTORY = 10;
 
     private boolean useFileSources;
+    private Boolean isMsSql;
     private final boolean useDirSources;
     private final IPreferenceStore prefStore;
     private final List<File> projects = new ArrayList<>();
@@ -130,6 +132,15 @@ public class DbStorePicker extends Composite {
                 }
             }
         }
+
+        cmbDbNames.addFilter(new ViewerFilter() {
+
+            @Override
+            public boolean select(Viewer viewer, Object parentElement, Object el) {
+                return isMsSql == null || !(el instanceof DbInfo) || ((DbInfo) el).isMsSql() == isMsSql;
+            }
+        });
+
         loadStore();
     }
 
@@ -345,31 +356,7 @@ public class DbStorePicker extends Composite {
     }
 
     public void filter(boolean isMsSql) {
-        ISelection selection = cmbDbNames.getSelection();
-
-        List<DbInfo> store = DbInfo.readStoreFromXml(prefStore.getString(PREF.DB_STORE))
-                .stream().filter(i -> i.isMsSql() == isMsSql).collect(Collectors.toList());
-
-        Collection<File> files;
-        if (useFileSources) {
-            files = stringToDumpFileHistory(prefStore.getString(PREF.DB_STORE_FILES));
-        } else {
-            files = Collections.emptyList();
-        }
-
-        List<Object> input = new ArrayList<>(store.size() + files.size() + 4);
-        input.addAll(store);
-        if (useFileSources) {
-            input.add(""); //$NON-NLS-1$
-            input.add(LOAD_FILE);
-            for (File f : files) {
-                if (f.isFile()) {
-                    input.add(f);
-                }
-            }
-        }
-
-        cmbDbNames.setInput(input);
-        cmbDbNames.setSelection(selection);
+        this.isMsSql = isMsSql;
+        cmbDbNames.refresh();
     }
 }
