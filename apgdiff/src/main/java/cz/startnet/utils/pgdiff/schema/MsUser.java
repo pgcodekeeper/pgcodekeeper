@@ -112,6 +112,7 @@ public class MsUser extends PgStatement {
         for (PgPrivilege priv : grants) {
             userDst.addPrivilege(priv);
         }
+        userDst.setLocation(getLocation());
         return userDst;
     }
 

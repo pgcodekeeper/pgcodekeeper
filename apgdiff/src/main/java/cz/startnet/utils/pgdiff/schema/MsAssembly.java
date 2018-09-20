@@ -139,6 +139,7 @@ public class MsAssembly extends PgStatement {
         for (PgPrivilege priv : grants) {
             assDst.addPrivilege(priv);
         }
+        assDst.setLocation(getLocation());
         return assDst;
     }
 

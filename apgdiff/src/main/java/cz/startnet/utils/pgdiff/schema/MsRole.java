@@ -121,6 +121,7 @@ public class MsRole extends PgStatement {
         for (PgPrivilege priv : grants) {
             roleDst.addPrivilege(priv);
         }
+        roleDst.setLocation(getLocation());
         return roleDst;
     }
 
