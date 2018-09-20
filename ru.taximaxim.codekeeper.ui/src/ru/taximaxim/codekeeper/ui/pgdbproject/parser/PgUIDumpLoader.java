@@ -178,9 +178,11 @@ public class PgUIDumpLoader extends PgDumpLoader {
         PgDatabase db = new PgDatabase();
         db.setArguments(arguments);
 
-        IFolder securityFolder = iProject.getFolder("Security"); //$NON-NLS-1$
+        IFolder securityFolder = iProject.getFolder(MS_WORK_DIR_NAMES.SECURITY.getName());
         loadSubdir(securityFolder.getFolder("Schemas"), db, monitor, statementBodies, errors); //$NON-NLS-1$
-        // TODO users, roles
+        loadSubdir(securityFolder.getFolder("Roles"), db, monitor, statementBodies, errors); //$NON-NLS-1$
+        loadSubdir(securityFolder.getFolder("Users"), db, monitor, statementBodies, errors); //$NON-NLS-1$
+
         addDboSchema(db);
 
         // content

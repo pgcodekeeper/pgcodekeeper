@@ -15,5 +15,5 @@ GO
 CREATE TRIGGER [trigger1]  
 ON [dbo].[table1]  
 AFTER INSERT, UPDATE   
-AS RAISERROR ('Notify!', 16, 10);  
+AS RAISERROR ('Notify!', 16, 10)
 GO

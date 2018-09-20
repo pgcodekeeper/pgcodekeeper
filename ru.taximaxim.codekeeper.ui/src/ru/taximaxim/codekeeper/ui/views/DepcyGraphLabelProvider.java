@@ -14,8 +14,8 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.zest.core.viewers.EntityConnectionData;
 import org.eclipse.zest.core.viewers.IEntityStyleProvider;
 
-import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvider{
@@ -71,6 +71,12 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
                 return "IDX " + st.getBareName(); //$NON-NLS-1$
             case SCHEMA:
                 return st.getBareName();
+            case ASSEMBLY:
+                return "ASSEM " + st.getBareName(); //$NON-NLS-1$
+            case USER:
+                return "USER " + st.getBareName(); //$NON-NLS-1$
+            case ROLE:
+                return "ROLE " + st.getBareName(); //$NON-NLS-1$
             case SEQUENCE:
                 return "SEQ " + st.getBareName(); //$NON-NLS-1$
             case TABLE:

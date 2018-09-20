@@ -35,6 +35,7 @@ public interface ApgdiffConsts {
     }
 
     enum MS_WORK_DIR_NAMES {
+        ASSEMBLIES("Assemblies"),
         TABLES("Tables"),
         VIEWS("Views"),
         SEQUENCES("Sequences"),
@@ -52,7 +53,6 @@ public interface ApgdiffConsts {
             return name;
         }
     }
-
 
     interface JDBC_CONSTS{
         String JDBC_DRIVER = "org.postgresql.Driver";

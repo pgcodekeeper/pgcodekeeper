@@ -466,7 +466,6 @@ public class ModelExporter extends AbstractModelExporter {
         case VIEW:
         case TABLE:
         case FUNCTION:
-        case PROCEDURE:
         case FTS_TEMPLATE:
         case FTS_PARSER:
         case FTS_DICTIONARY:

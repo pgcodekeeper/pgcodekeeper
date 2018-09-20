@@ -48,7 +48,7 @@ GRANT ALL ON FUNCTION public.test_fnc(arg character varying) TO botov_av;
 GRANT ALL ON FUNCTION public.test_fnc(arg character varying) TO PUBLIC;
 GRANT ALL ON FUNCTION public.test_fnc(arg character varying) TO fordfrog;
 
-REVOKE ALL ON FUNCTION public.trigger_fnc() FROM maindb;
+REVOKE ALL ON FUNCTION public.trigger_fnc() FROM maindb CASCADE;
 
 -- FUNCTION public.trigger_fnc() GRANT
 

@@ -14,7 +14,7 @@ CROSS APPLY (
             --obj.type_desc
         FROM sys.database_principals roleprinc  WITH (NOLOCK)
         LEFT JOIN sys.database_permissions perm WITH (NOLOCK) ON perm.grantee_principal_id = roleprinc.principal_id
-        WHERE major_id = s.schema_id
+        WHERE major_id = s.schema_id AND perm.class = 3
     ) cc 
     FOR XML RAW, ROOT
 ) cc (acl)

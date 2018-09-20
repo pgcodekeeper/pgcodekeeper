@@ -26,16 +26,21 @@ import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeE
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.ObjectCreationException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.AlterMsAssembly;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.AlterMsAuthorization;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.AlterMsRole;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.AlterMsTable;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsAssembly;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsFunction;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsIndex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsProcedure;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsRole;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsRule;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsSchema;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsSequence;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsTable;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsTrigger;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsUser;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.DisableMsTrigger;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
@@ -155,6 +160,12 @@ public class CustomTSQLParserListener implements TSqlContextProcessor {
                     db, ansiNulls, quotedIdentifier);
         } else if (ctx.create_table() != null) {
             p = new CreateMsTable(ctx.create_table(), db, ansiNulls);
+        } else if (ctx.create_assembly() != null) {
+            p = new CreateMsAssembly(ctx.create_assembly(), db);
+        } else if (ctx.create_db_role() != null) {
+            p = new CreateMsRole(ctx.create_db_role(), db);
+        } else if (ctx.create_user() != null) {
+            p = new CreateMsUser(ctx.create_user(), db);
         } else {
             return;
         }
@@ -167,6 +178,10 @@ public class CustomTSQLParserListener implements TSqlContextProcessor {
             p = new AlterMsAuthorization(ctx.alter_authorization(), db);
         } else if (ctx.alter_table() != null) {
             p = new AlterMsTable(ctx.alter_table(), db);
+        } else if (ctx.alter_assembly() != null) {
+            p = new AlterMsAssembly(ctx.alter_assembly(), db);
+        } else if (ctx.alter_db_role() != null) {
+            p = new AlterMsRole(ctx.alter_db_role(), db);
         } else {
             return;
         }

@@ -8,11 +8,14 @@ package ru.taximaxim.codekeeper.apgdiff.model.difftree;
  */
 public enum DbObjType {
     DATABASE,
+    USER,
+    ROLE,
     SCHEMA,
     EXTENSION,
     TYPE,
     DOMAIN,
     SEQUENCE,
+    ASSEMBLY,
     // TODO workaround for function call dependencies from COLUMN DEFAULT
     // maybe move back after COLUMN, when proper function call dependencies are implemented
     FUNCTION,

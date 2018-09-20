@@ -263,6 +263,12 @@ public class DepcyResolver {
             return db.getExtension(statement.getName());
         case SCHEMA:
             return db.getSchema(statement.getName());
+        case ASSEMBLY:
+            return db.getAssembly(statement.getName());
+        case ROLE:
+            return db.getRole(statement.getName());
+        case USER:
+            return db.getUser(statement.getName());
         case DATABASE:
             return db;
         default:
