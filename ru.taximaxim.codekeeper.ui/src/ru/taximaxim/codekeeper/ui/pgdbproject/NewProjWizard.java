@@ -307,12 +307,14 @@ class PageDb extends WizardPage {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
+                storePicker.filter(btnMsSql.getSelection());
                 modifyButtons();
             }
         });
 
         storePicker = new DbStorePicker(group, mainPrefs, true, false, false);
         storePicker.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
+        storePicker.filter(false);
         storePicker.addListenerToCombo(e -> modifyButtons());
 
         //char sets
@@ -379,10 +381,6 @@ class PageDb extends WizardPage {
         // 3 - enabled init button, it is not database, disabled mssql button
         timezoneCombo.getControl().setEnabled((!init && !isMsSql)
                 || (init && !isMsSqlDb && enable) || (init && !enable && !isMsSql));
-        btnMsSql.setEnabled(!init || !enable);
-        if (!btnMsSql.getEnabled()) {
-            btnMsSql.setSelection(isMsSqlDb);
-        }
         btnGetTz.setEnabled(init && enable && !isMsSqlDb);
         storePicker.setComboEnabled(init);
         getWizard().getContainer().updateButtons();

@@ -1,16 +1,22 @@
 package ru.taximaxim.codekeeper.ui.menuitems;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
+import org.eclipse.ui.part.FileEditorInput;
 
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.IPartAdapter2;
+import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
@@ -63,17 +69,34 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
 
     private void setSelectionFromPart(IWorkbenchPart part) {
         Object lastDb = null;
+        IProject proj = null;
+
         if (part instanceof SQLEditor) {
-            lastDb = ((SQLEditor)part).getCurrentDb();
+            SQLEditor editor = (SQLEditor) part;
+            lastDb = editor.getCurrentDb();
             storePicker.loadStore(false);
+            IEditorInput input = editor.getEditorInput();
+            if (input instanceof FileEditorInput) {
+                proj = ((FileEditorInput) input).getFile().getProject();
+            }
         } else if (part instanceof ProjectEditorDiffer) {
-            lastDb = ((ProjectEditorDiffer)part).getCurrentDb();
+            ProjectEditorDiffer differ = (ProjectEditorDiffer) part;
+            lastDb = differ.getCurrentDb();
             storePicker.loadStore(true);
+            proj = differ.getProject();
         } else {
             return;
         }
 
-        if(lastDb == null) {
+        if (proj != null) {
+            try {
+                storePicker.filter(proj.hasNature(NATURE.MS));
+            } catch (CoreException ex) {
+                Log.log(ex);
+            }
+        }
+
+        if (lastDb == null) {
             storePicker.clearSelection();
         } else {
             StructuredSelection selection = new StructuredSelection(lastDb);
