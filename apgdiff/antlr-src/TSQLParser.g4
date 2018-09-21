@@ -2292,6 +2292,9 @@ set_special
       (READ UNCOMMITTED | READ COMMITTED | REPEATABLE READ | SNAPSHOT | SERIALIZABLE | DECIMAL)
     // https://msdn.microsoft.com/en-us/library/ms188059.aspx
     | SET IDENTITY_INSERT table_name on_off
+    | SET TEXTSIZE DECIMAL
+    | SET LANGUAGE (id | constant_LOCAL_ID)
+    | SET STATISTICS (IO | XML | PROFILE | TIME) on_off
     | SET modify_method
     ;
 
@@ -3127,6 +3130,7 @@ simple_id
     | INSENSITIVE
     | INSERTED
     | INT
+    | IO
     | IP
     | ISOLATION
     | KB
@@ -3240,6 +3244,7 @@ simple_id
     | PRIVATE_KEY
     | PRIVILEGES
     | PROCEDURE_NAME
+    | PROFILE
     | PROPERTY
     | PROVIDER
     | PROVIDER_KEY_NAME
