@@ -64,7 +64,7 @@ public class ProjectUpdater {
             try {
                 if (isMsSql) {
                     for (MS_WORK_DIR_NAMES subdir : MS_WORK_DIR_NAMES.values()) {
-                        updateFolder(dirTmp, subdir.getName());
+                        updateFolder(dirTmp, subdir.getDirName());
                     }
                     new MsModelExporter(dirExport.toFile(), dbNew, dbOld, changedObjects, encoding)
                     .exportPartial();
@@ -175,7 +175,7 @@ public class ProjectUpdater {
     private void safeCleanProjectDir(Path dirTmp) throws IOException {
         if (isMsSql) {
             for (MS_WORK_DIR_NAMES subdirName : MS_WORK_DIR_NAMES.values()) {
-                moveFolder(dirTmp, subdirName.getName());
+                moveFolder(dirTmp, subdirName.getDirName());
             }
         } else {
             for (WORK_DIR_NAMES subdirName : WORK_DIR_NAMES.values()) {
@@ -194,7 +194,7 @@ public class ProjectUpdater {
     private void restoreProjectDir(Path dirTmp) throws IOException {
         if (isMsSql) {
             for (MS_WORK_DIR_NAMES subdirName : MS_WORK_DIR_NAMES.values()) {
-                restoreFolder(dirTmp, subdirName.getName());
+                restoreFolder(dirTmp, subdirName.getDirName());
             }
         } else {
             for (WORK_DIR_NAMES subdirName : WORK_DIR_NAMES.values()) {

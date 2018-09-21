@@ -49,7 +49,7 @@ public interface ApgdiffConsts {
             this.name = name;
         }
 
-        public String getName() {
+        public String getDirName() {
             return name;
         }
     }

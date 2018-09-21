@@ -113,7 +113,7 @@ public class UIProjectLoader extends ProjectLoader {
         PgDatabase db = new PgDatabase();
         db.setArguments(arguments);
 
-        IFolder securityFolder = iProject.getFolder(MS_WORK_DIR_NAMES.SECURITY.getName());
+        IFolder securityFolder = iProject.getFolder(MS_WORK_DIR_NAMES.SECURITY.getDirName());
         loadSubdir(securityFolder.getFolder("Schemas"), db); //$NON-NLS-1$
         loadSubdir(securityFolder.getFolder("Roles"), db); //$NON-NLS-1$
         loadSubdir(securityFolder.getFolder("Users"), db); //$NON-NLS-1$
@@ -121,8 +121,8 @@ public class UIProjectLoader extends ProjectLoader {
         addDboSchema(db);
 
         // content
-        for (String dirSub : MS_DIR_LOAD_ORDER) {
-            loadSubdir(iProject.getFolder(dirSub), db);
+        for (MS_WORK_DIR_NAMES dirSub : MS_WORK_DIR_NAMES.values()) {
+            loadSubdir(iProject.getFolder(dirSub.getDirName()), db);
         }
 
         return db;
@@ -174,7 +174,7 @@ public class UIProjectLoader extends ProjectLoader {
         args.setMsSql(true);
         db.setArguments(args);
 
-        IPath schemasPath = new Path(MS_WORK_DIR_NAMES.SECURITY.getName()).append("Schemas"); //$NON-NLS-1$
+        IPath schemasPath = new Path(MS_WORK_DIR_NAMES.SECURITY.getDirName()).append("Schemas"); //$NON-NLS-1$
         boolean isLoaded = false;
         for (IFile file : files) {
             IPath filePath = file.getProjectRelativePath();
@@ -323,7 +323,7 @@ public class UIProjectLoader extends ProjectLoader {
     private static boolean isInMsProject(IPath path) {
         String dir = path.segment(0);
         return dir == null ? false : Arrays.stream(ApgdiffConsts.MS_WORK_DIR_NAMES.values())
-                .map(MS_WORK_DIR_NAMES::getName).anyMatch(dir::equals);
+                .map(MS_WORK_DIR_NAMES::getDirName).anyMatch(dir::equals);
     }
 
     public static boolean isInProject(IResource resource) {
@@ -384,7 +384,7 @@ public class UIProjectLoader extends ProjectLoader {
      */
     private static boolean isMsSchemaFile(IPath path) {
         return path.segmentCount() == 3
-                && path.segment(0).equals(MS_WORK_DIR_NAMES.SECURITY.getName())
+                && path.segment(0).equals(MS_WORK_DIR_NAMES.SECURITY.getDirName())
                 && "Schemas".equals(path.segment(1)) //$NON-NLS-1$
                 && path.segment(2).endsWith(".sql"); //$NON-NLS-1$
     }

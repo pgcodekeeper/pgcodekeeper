@@ -19,6 +19,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.MS_WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 
 public class ProjectLoader {
@@ -30,9 +31,6 @@ public class ProjectLoader {
     protected static final String[] DIR_LOAD_ORDER = new String[] { "TYPE", "DOMAIN",
             "SEQUENCE", "FUNCTION", "TABLE", "CONSTRAINT", "INDEX", "TRIGGER", "VIEW",
             "FTS_PARSER", "FTS_TEMPLATE", "FTS_DICTIONARY", "FTS_CONFIGURATION" };
-
-    protected static final String[] MS_DIR_LOAD_ORDER = new String[] { "Assemblies",
-            "Sequences", "Stored Procedures", "Functions", "Tables", "Views"};
 
     private final String dirPath;
     protected final PgDiffArguments arguments;
@@ -116,14 +114,14 @@ public class ProjectLoader {
         db.setArguments(arguments);
         File dir = new File(dirPath);
 
-        File securityFolder = new File(dir, "Security");
+        File securityFolder = new File(dir, MS_WORK_DIR_NAMES.SECURITY.getDirName());
         loadSubdir(securityFolder, "Roles", db);
         loadSubdir(securityFolder, "Users", db);
         loadSubdir(securityFolder, "Schemas", db);
         addDboSchema(db);
 
-        for (String dirSub : MS_DIR_LOAD_ORDER) {
-            loadSubdir(dir, dirSub, db);
+        for (MS_WORK_DIR_NAMES dirSub : MS_WORK_DIR_NAMES.values()) {
+            loadSubdir(dir, dirSub.getDirName(), db);
         }
 
         return db;
