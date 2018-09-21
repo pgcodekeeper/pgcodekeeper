@@ -60,7 +60,12 @@ public class JdbcLoader extends JdbcLoaderBase {
     public PgDatabase getDbFromJdbc() throws IOException, InterruptedException {
         PgDatabase d = new PgDatabase();
         d.setArguments(args);
+        getDbFromJdbc(d);
+        FullAnalyze.fullAnalyze(d, null);
+        return d;
+    }
 
+    public PgDatabase getDbFromJdbc(PgDatabase d) throws IOException, InterruptedException {
         Log.log(Log.LOG_INFO, "Reading db using JDBC.");
         setCurrentOperation("connection setup");
         try (Connection connection = connector.getConnection();
@@ -117,8 +122,6 @@ public class JdbcLoader extends JdbcLoaderBase {
 
             d.setPostgresVersion(SupportedVersion.valueOf(version));
 
-            FullAnalyze.fullAnalyze(d, null);
-
             Log.log(Log.LOG_INFO, "Database object has been successfully queried from JDBC");
         } catch (InterruptedException ex) {
             throw ex;
@@ -129,6 +132,7 @@ public class JdbcLoader extends JdbcLoaderBase {
         }
         return d;
     }
+
 
     /**
      * Checks pg_dbo_timestamp extension in database and returns its location

@@ -17,10 +17,12 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import cz.startnet.utils.pgdiff.loader.FullAnalyze;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcLoader;
 import cz.startnet.utils.pgdiff.loader.JdbcMsLoader;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
+import cz.startnet.utils.pgdiff.loader.ProjectLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.LibraryObjectDuplicationException;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -63,10 +65,10 @@ public final class PgDiff {
         PgDatabase newDatabase = loadDatabaseSchema(
                 arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments);
 
-        PgDumpLoader.loadLibraries(oldDatabase, arguments, false, arguments.getTargetLibs());
-        PgDumpLoader.loadLibraries(oldDatabase, arguments, true, arguments.getTargetLibsWithoutPriv());
-        PgDumpLoader.loadLibraries(newDatabase, arguments, false, arguments.getSourceLibs());
-        PgDumpLoader.loadLibraries(newDatabase, arguments, true, arguments.getSourceLibsWithoutPriv());
+        ProjectLoader.loadLibraries(oldDatabase, arguments, false, arguments.getTargetLibs());
+        ProjectLoader.loadLibraries(oldDatabase, arguments, true, arguments.getTargetLibsWithoutPriv());
+        ProjectLoader.loadLibraries(newDatabase, arguments, false, arguments.getSourceLibs());
+        ProjectLoader.loadLibraries(newDatabase, arguments, true, arguments.getSourceLibsWithoutPriv());
 
         if (arguments.isLibSafeMode()) {
             List<PgOverride> overrides = oldDatabase.getOverrides();
@@ -75,6 +77,9 @@ public final class PgDiff {
                 throw new LibraryObjectDuplicationException(overrides);
             }
         }
+
+        FullAnalyze.fullAnalyze(oldDatabase, null);
+        FullAnalyze.fullAnalyze(newDatabase, null);
 
         IgnoreParser ignoreParser = new IgnoreParser();
         for (String listFilename : arguments.getIgnoreLists()) {
@@ -99,19 +104,23 @@ public final class PgDiff {
      */
     public static PgDatabase loadDatabaseSchema(String format, String srcPath, PgDiffArguments arguments)
             throws InterruptedException, IOException, URISyntaxException {
+
+        PgDatabase db = new PgDatabase();
+        db.setArguments(arguments);
+
         if ("dump".equals(format)) {
             try (PgDumpLoader loader = new PgDumpLoader(new File(srcPath), arguments)) {
-                return loader.load();
+                return loader.load(db);
             }
         } else if ("parsed".equals(format)) {
-            return arguments.isMsSql() ?
-                    PgDumpLoader.loadMsDatabaseSchemaFromDirTree(srcPath,  arguments, null, null) :
-                        PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,  arguments, null, null);
+            ProjectLoader loader = new ProjectLoader(srcPath, arguments);
+            return arguments.isMsSql() ? loader.loadMsDatabaseSchemaFromDirTree() :
+                loader.loadDatabaseSchemaFromDirTree(db);
         } else if ("db".equals(format)) {
             String timezone = arguments.getTimeZone() == null ? ApgdiffConsts.UTC : arguments.getTimeZone();
             return arguments.isMsSql() ?
                     new JdbcMsLoader(JdbcConnector.fromUrl(srcPath), arguments).readDb()
-                    : new JdbcLoader(JdbcConnector.fromUrl(srcPath, timezone), arguments).getDbFromJdbc();
+                    : new JdbcLoader(JdbcConnector.fromUrl(srcPath, timezone), arguments).getDbFromJdbc(db);
         }
 
         throw new UnsupportedOperationException(

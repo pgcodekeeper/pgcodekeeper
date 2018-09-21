@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -23,6 +22,7 @@ import cz.startnet.utils.pgdiff.loader.JdbcLoader;
 import cz.startnet.utils.pgdiff.loader.JdbcMsConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcMsLoader;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
+import cz.startnet.utils.pgdiff.loader.ProjectLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -37,8 +37,7 @@ import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgUIDumpLoader;
-import ru.taximaxim.codekeeper.ui.xmlstore.DependenciesXmlStore;
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 
 public abstract class DbSource {
 
@@ -196,8 +195,8 @@ class DbSourceDirTree extends DbSource {
         monitor.subTask(Messages.dbSource_loading_tree);
 
         List<AntlrError> er = new ArrayList<>();
-        PgDatabase db = PgDumpLoader.loadDatabaseSchemaFromDirTree(dirTreePath,
-                getPgDiffArgs(encoding, forceUnixNewlines, isMsSql), monitor, er);
+        PgDatabase db = new ProjectLoader(dirTreePath, getPgDiffArgs(encoding,
+                forceUnixNewlines, isMsSql), monitor, er).loadDatabaseSchemaFromDirTree();
         errors = er;
         return db;
     }
@@ -219,32 +218,17 @@ class DbSourceProject extends DbSource {
         monitor.subTask(Messages.dbSource_loading_tree);
         IProject project = proj.getProject();
 
-        int filesCount = PgUIDumpLoader.countFiles(project);
-        monitor.setWorkRemaining(filesCount);
+        monitor.setWorkRemaining(UIProjectLoader.countFiles(project));
 
         IEclipsePreferences pref = proj.getPrefs();
         List<AntlrError> er = new ArrayList<>();
 
-        boolean isMsSql = OpenProjectUtils.checkMsSql(project);
-
         PgDiffArguments arguments = getPgDiffArgs(charset,
-                pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true), isMsSql);
+                pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
+                OpenProjectUtils.checkMsSql(project));
 
-        PgDatabase db;
-        if (isMsSql) {
-            db = PgUIDumpLoader.loadDatabaseSchemaFromMsProject(project,
-                    arguments, monitor, null, er);
-        } else {
-            db = PgUIDumpLoader.loadDatabaseSchemaFromIProject(project,
-                    arguments, monitor, null, er);
-        }
-
-        try {
-            PgUIDumpLoader.loadLibraries(db, arguments, new DependenciesXmlStore(project).readObjects());
-        } catch (URISyntaxException ex) {
-            throw new IOException(ex.getLocalizedMessage(), ex);
-        }
-
+        PgDatabase db = new UIProjectLoader(project, arguments, monitor, null, er)
+                .loadDatabaseWithLibraries();
         errors = er;
         return db;
     }

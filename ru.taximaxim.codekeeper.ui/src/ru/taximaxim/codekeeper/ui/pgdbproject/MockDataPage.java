@@ -52,7 +52,7 @@ import ru.taximaxim.codekeeper.ui.generators.PgData;
 import ru.taximaxim.codekeeper.ui.generators.PgDataGenerator;
 import ru.taximaxim.codekeeper.ui.generators.PgDataType;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgUIDumpLoader;
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 
 /**
  *  Page of the creating mock data for PostgreSql data
@@ -686,11 +686,11 @@ public class MockDataPage extends WizardPage {
      */
     private void parseSelection(IStructuredSelection selection) {
         Object source = selection.getFirstElement();
-        if (source instanceof IFile && PgUIDumpLoader.isInProject((IFile)source)) {
+        if (source instanceof IFile && UIProjectLoader.isInProject((IFile)source)) {
             IFile file = (IFile)source;
             AbstractTable table = null;
             try {
-                table = (AbstractTable) PgUIDumpLoader.parseStatement(file, Arrays.asList(DbObjType.TABLE));
+                table = (AbstractTable) UIProjectLoader.parseStatement(file, Arrays.asList(DbObjType.TABLE));
             } catch (InterruptedException | IOException | CoreException e) {
                 Log.log(Log.LOG_ERROR, "Error parsing file: " + file.getName(), e); //$NON-NLS-1$
             }

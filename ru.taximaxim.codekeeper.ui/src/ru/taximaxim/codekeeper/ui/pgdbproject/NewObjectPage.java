@@ -50,7 +50,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgUIDumpLoader;
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 
 public final class NewObjectPage extends WizardPage {
 
@@ -92,7 +92,7 @@ public final class NewObjectPage extends WizardPage {
         Object element = selection.getFirstElement();
         if (element instanceof IResource) {
             IResource resource = (IResource)element;
-            if (resource.getType() == IResource.FILE && PgUIDumpLoader.isInProject(resource)) {
+            if (resource.getType() == IResource.FILE && UIProjectLoader.isInProject(resource)) {
                 parseFile(resource);
             } else if (resource.getType() == IResource.FOLDER) {
                 parseFolder(resource);
@@ -122,7 +122,7 @@ public final class NewObjectPage extends WizardPage {
 
     private void parseFile(IResource resource) {
         try {
-            PgStatement st = PgUIDumpLoader.parseStatement((IFile)resource,
+            PgStatement st = UIProjectLoader.parseStatement((IFile)resource,
                     EnumSet.of(DbObjType.EXTENSION, DbObjType.TABLE,
                             DbObjType.VIEW, DbObjType.DOMAIN,
                             DbObjType.TYPE, DbObjType.FUNCTION));

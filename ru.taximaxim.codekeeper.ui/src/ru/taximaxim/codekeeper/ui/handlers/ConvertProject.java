@@ -77,7 +77,7 @@ public class ConvertProject extends AbstractHandler {
         if (isMsSql) {
             // MS doesn't require all dirs to exist, warn if none found
             weirdProject = Arrays.stream(MS_WORK_DIR_NAMES.values())
-                    .map(e -> path.resolve(e.getName()))
+                    .map(e -> path.resolve(e.getDirName()))
                     .allMatch(Files::notExists);
         } else {
             weirdProject = Arrays.stream(WORK_DIR_NAMES.values())
