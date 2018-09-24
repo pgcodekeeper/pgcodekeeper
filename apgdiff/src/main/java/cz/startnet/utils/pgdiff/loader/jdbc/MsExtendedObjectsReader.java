@@ -112,7 +112,7 @@ public class MsExtendedObjectsReader extends JdbcReader {
                 if (def == null) {
                     defValue = "NULL";
                 } else if ("varbinary".equals(dataType) || dataType.endsWith("varchar")) {
-                    defValue = "N'" + PgDiffUtils.quoteString(def) + "'";
+                    defValue = 'N' + PgDiffUtils.quoteString(def);
                 } else if ("bit".equals(dataType)) {
                     defValue = "1".equals(def) ? "True" : "False";
                 } else if ("real".equals(dataType) || "float".equals(dataType)) {
