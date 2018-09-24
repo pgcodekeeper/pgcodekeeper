@@ -171,7 +171,7 @@ public class DbStorePicker extends Composite {
         List<Object> input = new ArrayList<>(store.size() + files.size() + projects.size() + 4);
         input.addAll(store);
         if (useFileSources) {
-            input.add(""); //$NON-NLS-1$
+            input.add("─────────────────"); //$NON-NLS-1$
             input.add(LOAD_FILE);
             for (File f : files) {
                 if (f.isFile()) {
@@ -180,7 +180,7 @@ public class DbStorePicker extends Composite {
             }
         }
         if (useDirSources) {
-            input.add(""); //$NON-NLS-1$
+            input.add("─────────────────"); //$NON-NLS-1$
             input.add(LOAD_DIR);
             for (File f : files) {
                 if (f.isDirectory()) {
