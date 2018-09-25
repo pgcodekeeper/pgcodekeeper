@@ -49,14 +49,53 @@ data_statement
   ;
 
 script_statement
-  : START TRANSACTION transaction_mode*
-  | COMMIT (WORK | TRANSACTION)?
+  : script_transaction
+  | script_additional
+  ;
+
+script_transaction
+  : ((START TRANSACTION) | (BEGIN (WORK | TRANSACTION)?)) transaction_mode*
+  | (COMMIT | END) (WORK | TRANSACTION)?
+  | ((COMMIT PREPARED) | (PREPARE TRANSACTION)) Character_String_Literal
+  | (SAVEPOINT | (RELEASE SAVEPOINT?) )identifier
+  | ROLLBACK (
+      (PREPARED Character_String_Literal) 
+      | ((WORK | TRANSACTION)? (TO SAVEPOINT? identifier)?)
+      )
+  | LOCK TABLE? ONLY? schema_qualified_name MULTIPLY? (COMMA schema_qualified_name MULTIPLY?)* 
+    (IN (ACCESS | ROW)? ((SHARE ((UPDATE | ROW) EXCLUSIVE)?) | EXCLUSIVE) MODE)? NOWAIT?
+  | ABORT
   ;
 
 transaction_mode
   : ISOLATION LEVEL (SERIALIZABLE | REPEATABLE READ | READ COMMITTED | READ UNCOMMITTED)
   | READ WRITE | READ ONLY
   | (NOT)? DEFERRABLE
+  ;
+
+script_additional
+  : LISTEN identifier
+  | UNLISTEN (identifier | MULTIPLY)
+  | ANALYZE VERBOSE? (schema_qualified_name (LEFT_PAREN identifier (COMMA identifier)* RIGHT_PAREN)? )?
+  | SHOW (identifier | ALL)
+  | LOAD Character_String_Literal
+  | DISCARD (ALL | PLANS | SEQUENCES | TEMPORARY | TEMP)
+  | DEALLOCATE PREPARE? (identifier | ALL)
+  | (FETCH | MOVE) ( fetch_move_derection (FROM | IN)? )? identifier
+  | DO (LANGUAGE identifier)? character_string+
+  | REINDEX VERBOSE? (INDEX | TABLE | SCHEMA | DATABASE | SYSTEM) identifier
+  | RESET (identifier | ALL)
+  ;
+
+fetch_move_derection
+  : NEXT
+  | PRIOR
+  | FIRST
+  | LAST
+  | (ABSOLUTE | RELATIVE)? NUMBER_LITERAL
+  | ALL
+  | FORWARD (NUMBER_LITERAL | ALL)?
+  | BACKWARD (NUMBER_LITERAL | ALL)?
   ;
 
 schema_statement
