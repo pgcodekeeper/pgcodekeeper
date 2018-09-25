@@ -9,7 +9,6 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.MsFunction;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class CreateMsFunction extends ParserAbstract {
 
@@ -26,10 +25,14 @@ public class CreateMsFunction extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public MsFunction getObject() {
         IdContext schemaCtx = ctx.func_proc_name().schema;
         AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
-        AbstractFunction function = new MsFunction(ctx.func_proc_name().procedure.getText(), getFullCtxText(ctx.getParent()));
+        return getObject(schema);
+    }
+
+    public MsFunction getObject(AbstractSchema schema) {
+        MsFunction function = new MsFunction(ctx.func_proc_name().procedure.getText(), getFullCtxText(ctx.getParent()));
         if (ctx.func_body().func_body_return().EXTERNAL() != null) {
             function.setAnsiNulls(false);
             function.setQuotedIdentified(false);

@@ -13,7 +13,6 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.MsView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class CreateMsView extends ParserAbstract {
 
@@ -30,11 +29,15 @@ public class CreateMsView extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public MsView getObject() {
         List<IdContext> ids = ctx.simple_name().id();
         AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
-        IdContext name = QNameParser.getFirstNameCtx(ids);
-        AbstractView view = new MsView(name.getText(), getFullCtxText(ctx.getParent()));
+        return getObject(schema);
+    }
+
+    public MsView getObject(AbstractSchema schema) {
+        IdContext name = QNameParser.getFirstNameCtx(ctx.simple_name().id());
+        MsView view = new MsView(name.getText(), getFullCtxText(ctx.getParent()));
         view.setAnsiNulls(ansiNulls);
         view.setQuotedIdentified(quotedIdentifier);
 
