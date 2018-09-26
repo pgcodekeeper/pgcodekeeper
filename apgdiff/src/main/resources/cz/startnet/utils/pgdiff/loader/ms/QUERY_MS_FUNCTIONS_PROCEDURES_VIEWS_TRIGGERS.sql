@@ -28,3 +28,4 @@ CROSS APPLY (
 ) aa (acl)
 
 WHERE s.type IN (N'TR', N'V', N'IF', N'FN', N'TF', N'P')
+		AND definition IS NOT NULL
