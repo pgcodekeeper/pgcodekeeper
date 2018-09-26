@@ -194,19 +194,19 @@ public class FunctionsReader extends JdbcReader {
         float cost = res.getFloat("procost");
         if ("internal".equals(lanName) || "c".equals(lanName)) {
             /* default cost is 1 */
-            if (cost != 1) {
-                body.append(" COST ").append((int) cost);
+            if (1.0f != cost) {
+                body.append(" COST ").append(cost);
             }
         } else {
             /* default cost is 100 */
-            if (cost != DEFAULT_PROCOST) {
-                body.append(" COST ").append((int) cost);
+            if (DEFAULT_PROCOST != cost) {
+                body.append(" COST ").append(cost);
             }
         }
 
         float rows = res.getFloat("prorows");
-        if (0.0f != rows && rows != DEFAULT_PROROWS) {
-            body.append(" ROWS ").append((int) rows);
+        if (0.0f != rows && DEFAULT_PROROWS != rows) {
+            body.append(" ROWS ").append(rows);
         }
 
         String[] proconfig = getColArray(res, "proconfig");
