@@ -1532,11 +1532,11 @@ view_attribute
 // https://msdn.microsoft.com/en-us/library/ms190273.aspx
 alter_table
     : TABLE name=table_name (SET '(' LOCK_ESCALATION '=' (AUTO | TABLE | DISABLE) ')'
-                             | (WITH (CHECK | NOCHECK))? ADD column_def_table_constraint
+                             | (WITH (CHECK | nocheck_add=NOCHECK))? ADD column_def_table_constraint
                              | ALTER COLUMN column_definition
                              | DROP COLUMN id
                              | DROP CONSTRAINT constraint=id
-                             | (CHECK | NOCHECK) CONSTRAINT con=id
+                             | (WITH (CHECK | nocheck_check=NOCHECK))? (CHECK | nocheck=NOCHECK) CONSTRAINT con=id
                              | (ENABLE | DISABLE) TRIGGER trigger=id?
                              | (ENABLE | DISABLE) CHANGE_TRACKING (WITH '(' TRACK_COLUMNS_UPDATED '=' (ON|OFF) ')')?
                              | REBUILD table_options)

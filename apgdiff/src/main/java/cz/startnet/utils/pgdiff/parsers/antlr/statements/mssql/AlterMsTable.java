@@ -30,10 +30,14 @@ public class AlterMsTable extends TableAbstract {
         Column_def_table_constraintContext colCtx = ctx.column_def_table_constraint();
         if (colCtx != null && colCtx.table_constraint() != null) {
             AbstractConstraint con = getMsConstraint(colCtx.table_constraint());
-            con.setNotValid(ctx.NOCHECK() != null);
+            con.setNotValid(ctx.nocheck_add != null);
             table.addConstraint(con);
         } else if (ctx.con != null) {
-            getSafe(table::getConstraint, ctx.con).setDisabled(ctx.NOCHECK() != null);;
+            AbstractConstraint con = getSafe(table::getConstraint, ctx.con);
+            if (ctx.WITH() != null) {
+                con.setNotValid(ctx.nocheck_check != null);
+            }
+            con.setDisabled(ctx.nocheck != null);
         }
 
         IdContext triggerName = ctx.trigger;
