@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsUser extends PgStatement {
@@ -88,6 +89,9 @@ public class MsUser extends PgStatement {
     }
 
     public void setSchema(String schema) {
+        if (ApgdiffConsts.DBO.equals(schema)) {
+            return;
+        }
         this.schema = schema;
         resetHash();
     }
