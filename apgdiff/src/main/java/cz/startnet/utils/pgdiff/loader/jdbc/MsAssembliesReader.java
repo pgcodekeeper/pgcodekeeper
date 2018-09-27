@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsAssembly;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsAssembly;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -29,7 +30,7 @@ public class MsAssembliesReader {
 
                 MsAssembly ass = new MsAssembly(name, "");
                 for (XmlReader bin : XmlReader.readXML(res.getString("binaries"))) {
-                    ass.addBinary(bin.getString("b"));
+                    ass.addBinary(CreateMsAssembly.formatBinary(bin.getString("b")));
                 }
 
                 ass.setVisible(res.getBoolean("is_visible"));
