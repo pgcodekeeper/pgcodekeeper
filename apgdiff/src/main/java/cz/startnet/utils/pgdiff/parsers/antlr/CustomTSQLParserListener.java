@@ -135,7 +135,7 @@ public class CustomTSQLParserListener implements TSqlContextProcessor {
 
     private void batchStatement(Batch_statementContext batchSt) {
         Create_or_alter_procedureContext proc = batchSt.create_or_alter_procedure();
-        if (proc != null) {
+        if (proc != null && batchSt.CREATE() != null) {
             safeParseStatement(new CreateMsProcedure(
                     proc, db, ansiNulls, quotedIdentifier), batchSt);
         }
