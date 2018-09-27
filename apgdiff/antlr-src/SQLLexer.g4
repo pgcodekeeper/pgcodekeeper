@@ -606,6 +606,14 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     LC_COLLATE: [lL] [cC] UNDERLINE [cC] [oO] [lL] [lL] [aA] [tT] [eE];
     LC_CTYPE: [lL] [cC] UNDERLINE [cC] [tT] [yY] [pP] [eE]; 
     PROVIDER: [pP] [rR] [oO] [vV] [iI] [dD] [eE] [rR]; 
+    DISABLE_PAGE_SKIPPING: DISABLE UNDERLINE [pP] [aA] [gG] [eE] UNDERLINE [sS] [kK] [iI] [pP] [pP] [iI] [nN] [gG]; 
+    COSTS: [cC] [oO] [sS] [tT] [sS]; 
+    BUFFERS: [bB] [uU] [fF] [fF] [eE] [rR] [sS]; 
+    TIMING: [tT] [iI] [mM] [iI] [nN] [gG]; 
+    SUMMARY: [sS] [uU] [mM] [mM] [aA] [rR] [yY]; 
+    FORMAT: [fF] [oO] [rR] [mM] [aA] [tT]; 
+    JSON: [jJ] [sS] [oO] [nN]; 
+    YAML: [yY] [aA] [mM] [lL]; 
 
 fragment UNDERLINE : '_';
 

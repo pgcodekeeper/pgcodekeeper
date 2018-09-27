@@ -76,7 +76,9 @@ transaction_mode
 script_additional
   : LISTEN identifier
   | UNLISTEN (identifier | MULTIPLY)
-  | ANALYZE VERBOSE? (schema_qualified_name (LEFT_PAREN identifier (COMMA identifier)* RIGHT_PAREN)? )?
+  | ANALYZE VERBOSE? qualified_table_name_perhaps_with_cols?
+  | VACUUM ((FULL? FREEZE? VERBOSE? ((ANALYZE qualified_table_name_perhaps_with_cols?) | schema_qualified_name?))
+      | ((LEFT_PAREN vacuum_mode (COMMA vacuum_mode)* RIGHT_PAREN)? qualified_table_name_perhaps_with_cols?))
   | SHOW (identifier | ALL)
   | LOAD Character_String_Literal
   | DISCARD (ALL | PLANS | SEQUENCES | TEMPORARY | TEMP)
@@ -84,7 +86,36 @@ script_additional
   | (FETCH | MOVE) ( fetch_move_derection (FROM | IN)? )? identifier
   | DO (LANGUAGE identifier)? character_string+
   | REINDEX VERBOSE? (INDEX | TABLE | SCHEMA | DATABASE | SYSTEM) identifier
-  | RESET (identifier | ALL)
+  | RESET (identifier | TIME ZONE | SESSION AUTHORIZATION | ALL)
+  | DECLARE identifier BINARY? INSENSITIVE? (NO? SCROLL)? CURSOR ((WITH | WITHOUT) HOLD)? FOR select_stmt
+  | EXPLAIN ( (ANALYZE? VERBOSE?) | (LEFT_PAREN explain_option (COMMA explain_option)* RIGHT_PAREN)? ) statement
+  | REFRESH MATERIALIZED VIEW CONCURRENTLY? schema_qualified_name (WITH NO? DATA)?
+  ;
+
+explain_option
+  : ANALYZE true_or_false?
+  | VERBOSE true_or_false?
+  | COSTS true_or_false?
+  | BUFFERS true_or_false?
+  | TIMING true_or_false?
+  | SUMMARY true_or_false?
+  | FORMAT (TEXT | XML | JSON | YAML)
+  ;
+
+true_or_false
+  : TRUE | FALSE
+  ;
+
+qualified_table_name_perhaps_with_cols
+  : schema_qualified_name (LEFT_PAREN identifier (COMMA identifier)* RIGHT_PAREN)? 
+  ;
+
+vacuum_mode
+  : FULL 
+  | FREEZE 
+  | VERBOSE 
+  | ANALYZE 
+  | DISABLE_PAGE_SKIPPING
   ;
 
 fetch_move_derection
@@ -139,6 +170,7 @@ schema_alter
     | alter_schema_statement
     | alter_language_statement
     | alter_table_statement
+    | alter_index_statement
     | alter_default_privileges
     | alter_sequence_statement
     | alter_view_statement
@@ -155,7 +187,8 @@ schema_drop
     | drop_trigger_statement
     | drop_rule_statement
     | drop_statements
-    | drop_user_mapping)
+    | drop_user_mapping
+    | drop_language_statement)
     ;
 
 schema_import
@@ -284,6 +317,29 @@ function_actions_common
       | COST execution_cost=NUMBER_LITERAL
       | ROWS result_rows=NUMBER_LITERAL
       | SET configuration_parameter=identifier  (((TO | EQUAL)? (value+=set_statement_value)) | FROM CURRENT)(COMMA value+=set_statement_value)*
+    ;
+
+alter_index_statement
+    : index_def
+    | index_all_def
+    ;
+
+index_def
+    : index_if_exists_name (
+        (SET ((TABLESPACE tbl_spc=identifier) 
+              | (LEFT_PAREN dictionary_option (COMMA dictionary_option)* RIGHT_PAREN)))
+        | (RENAME TO new_name=identifier)
+        | (RESET LEFT_PAREN name+=identifier (COMMA name+=identifier)* RIGHT_PAREN)
+      )
+    ;
+
+index_all_def
+    : INDEX ALL IN TABLESPACE tbl_spc=identifier (OWNED BY rolname+=identifier (COMMA rolname+=identifier)*)?
+      SET TABLESPACE new_tbl_spc=identifier NOWAIT? 
+    ;
+
+index_if_exists_name
+    : INDEX (IF EXISTS)? schema_qualified_name
     ;
 
 alter_default_privileges
@@ -541,11 +597,11 @@ alter_collation
     ;
     
 collation_option
-    : LOCALE EQUAL character_string 
-    | LC_COLLATE EQUAL character_string
-    | LC_CTYPE EQUAL character_string 
-    | PROVIDER EQUAL character_string 
-    | VERSION EQUAL character_string 
+    : LOCALE EQUAL (Character_String_Literal | (ESC_SEQ | ~('\''))*)
+    | LC_COLLATE EQUAL (Character_String_Literal | (ESC_SEQ | ~('\''))*)
+    | LC_CTYPE EQUAL (Character_String_Literal | (ESC_SEQ | ~('\''))*) 
+    | PROVIDER EQUAL (Character_String_Literal | (ESC_SEQ | ~('\''))*) 
+    | VERSION EQUAL (Character_String_Literal | (ESC_SEQ | ~('\''))*) 
     ;
     
 create_user_mapping
@@ -563,6 +619,10 @@ drop_user_mapping
     : USER MAPPING (IF EXISTS)? FOR (identifier | USER | CURRENT_USER) SERVER identifier
     ;
 
+drop_language_statement
+    : PROCEDURAL? LANGUAGE (IF EXISTS)? name=identifier cascade_restrict?
+    ;
+
 domain_constraint
     :(CONSTRAINT name=schema_qualified_name)?
      common_constraint
@@ -577,9 +637,16 @@ create_transform_statement
     ;
 
 set_statement
-    : SET (SESSION | LOCAL)?
-    (config_param=identifier (TO | EQUAL) config_param_val+=set_statement_value (COMMA config_param_val+=set_statement_value)*
-    | TIME ZONE (timezone=identifier | (LOCAL | DEFAULT)))
+    : SET
+        (((SESSION | LOCAL)?
+            (config_param=identifier (TO | EQUAL) config_param_val+=set_statement_value (COMMA config_param_val+=set_statement_value)*
+            | TIME ZONE (timezone=Character_String_Literal | (LOCAL | DEFAULT))
+            | ROLE (name=Character_String_Literal | NONE)
+            | SESSION AUTHORIZATION (name=Character_String_Literal | DEFAULT))
+        )
+        | (CONSTRAINTS (ALL | (constr_name+=schema_qualified_name (COMMA constr_name+=schema_qualified_name)*)) (DEFERRED | IMMEDIATE))
+        | (TRANSACTION (transaction_mode+ | SNAPSHOT snapshot_id=Character_String_Literal))
+        | (SESSION CHARACTERISTICS AS TRANSACTION transaction_mode+))
     ;
 
 set_statement_value
@@ -715,8 +782,8 @@ comment_on_statement
         | FOREIGN (DATA WRAPPER | TABLE)
         | TEXT SEARCH (CONFIGURATION | DICTIONARY | PARSER | TEMPLATE)
         | (COLUMN | CONVERSION | DATABASE| DOMAIN| EXTENSION| INDEX | ROLE
-            | COLLATION| SCHEMA| SEQUENCE| SERVER| TABLE | TABLESPACE
-            | TYPE | VIEW)
+            | COLLATION| SCHEMA| SEQUENCE| SERVER| STATISTICS| TABLE | TABLESPACE
+            | TYPE | MATERIALIZED? VIEW)
           ) name=schema_qualified_name
         ) IS (comment_text=character_string | NULL)
     ;
@@ -1648,6 +1715,14 @@ tokens_nonkeyword
   | LC_COLLATE
   | LC_CTYPE 
   | PROVIDER
+  | DISABLE_PAGE_SKIPPING
+  | COSTS
+  | BUFFERS
+  | TIMING
+  | SUMMARY
+  | FORMAT
+  | JSON
+  | YAML
   ;
 
 /*
