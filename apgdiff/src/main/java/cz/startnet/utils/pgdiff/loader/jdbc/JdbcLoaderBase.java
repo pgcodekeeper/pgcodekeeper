@@ -377,7 +377,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         String loc = getCurrentLocation();
         Future<T> future = ANTLR_POOL.submit(() -> parserCtxReader.apply(
                 AntlrParser.makeBasicParser(SQLParser.class, sql, loc)));
-        antlrTasks.add(new AntlrTask<>(future, finalizer));
+        antlrTasks.add(new AntlrTask<>(future, finalizer, currentObject));
     }
 
     protected <T extends ParserRuleContext> void submitMsAntlrTask(String sql,
@@ -385,12 +385,15 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         String loc = getCurrentLocation();
         Future<T> future = ANTLR_POOL.submit(() -> parserCtxReader.apply(
                 AntlrParser.makeBasicParser(TSQLParser.class, sql, loc)));
-        antlrTasks.add(new AntlrTask<>(future, finalizer));
+        antlrTasks.add(new AntlrTask<>(future, finalizer, currentObject));
     }
 
     protected void finishAntlr() throws InterruptedException, ExecutionException {
         AntlrTask<? extends ParserRuleContext> task;
+        setCurrentOperation("finalizing antlr");
         while ((task = antlrTasks.poll()) != null) {
+            // default to operation if object is null
+            setCurrentObject(task.object);
             task.finish();
         }
     }
