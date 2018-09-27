@@ -12,7 +12,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsAssembly extends PgStatement {
 
-    private static final int PREVIEW_LENGHT = 20;
+    private static final int PREVIEW_LENGTH = 256*4;
 
     private final List<String> binaries = new ArrayList<>();
     private String permission = "SAFE";
@@ -52,10 +52,10 @@ public class MsAssembly extends PgStatement {
         }
 
         sb.append("\nFROM ");
-        String bin = String.join(", ", binaries);
+        String bin = String.join(",\n", binaries);
 
-        if (isPreview && bin.length() > PREVIEW_LENGHT) {
-            sb.append(bin.substring(0, PREVIEW_LENGHT)).append("...");
+        if (isPreview && bin.length() > PREVIEW_LENGTH) {
+            sb.append(bin.substring(0, PREVIEW_LENGTH)).append("\n<... PREVIEW TRIMMED>");
         } else {
             sb.append(bin);
         }

@@ -51,6 +51,7 @@ public class MsTablesReader extends JdbcReader {
             String exp = col.getString("def");
             column.setExpression(exp);
             if (exp == null) {
+                column.setCollation(col.getString("cn"));
                 column.setNullValue(col.getBoolean("nl"));
                 String dataType = col.getString("type");
                 String argSize = "";
@@ -78,7 +79,6 @@ public class MsTablesReader extends JdbcReader {
                 column.setDefaultName(col.getString("dn"));
             }
 
-            column.setCollation(col.getString("cn"));
             table.addColumn(column);
         }
 

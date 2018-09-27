@@ -10,7 +10,6 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.MsProcedure;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class CreateMsProcedure extends ParserAbstract {
 
@@ -27,10 +26,14 @@ public class CreateMsProcedure extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public MsProcedure getObject() {
         IdContext schemaCtx = ctx.func_proc_name().schema;
         AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
-        AbstractFunction procedure = new MsProcedure(ctx.func_proc_name().procedure.getText(), getFullCtxText(ctx.getParent()));
+        return getObject(schema);
+    }
+
+    public MsProcedure getObject(AbstractSchema schema) {
+        MsProcedure procedure = new MsProcedure(ctx.func_proc_name().procedure.getText(), getFullCtxText(ctx.getParent()));
         if (ctx.proc_body().EXTERNAL() != null) {
             procedure.setAnsiNulls(false);
             procedure.setQuotedIdentified(false);

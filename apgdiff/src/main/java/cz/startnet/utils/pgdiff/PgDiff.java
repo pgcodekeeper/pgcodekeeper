@@ -253,6 +253,7 @@ public final class PgDiff {
 
         if (arguments.isAddTransaction()) {
             script.addStatement("BEGIN TRANSACTION;");
+            script.addStatement(PgStatement.GO);
         }
 
         List<String> dbNames = new ArrayList<>();
@@ -311,6 +312,7 @@ public final class PgDiff {
 
         if (arguments.isAddTransaction()) {
             script.addStatement("COMMIT;");
+            script.addStatement(PgStatement.GO);
         }
 
         script.printStatements(writer);

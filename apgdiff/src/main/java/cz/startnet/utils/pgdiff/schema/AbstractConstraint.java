@@ -81,8 +81,8 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath {
     }
 
     public void setNotValid(boolean notValid) {
-        resetHash();
         this.notValid = notValid;
+        resetHash();
     }
 
     public boolean isDisabled() {

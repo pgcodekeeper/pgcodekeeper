@@ -874,8 +874,8 @@ class ArgumentsProvider_24 extends ArgumentsProvider{
 
     @Override
     public String output() {
-        return "BEGIN TRANSACTION;\n\nCREATE CLUSTERED INDEX [index_c2] ON [dbo].[table1] ([c2])\n" +
-                "WITH (ONLINE = ON)\nGO\n\nCOMMIT;\n\n";
+        return "BEGIN TRANSACTION;\n\nGO\n\nCREATE CLUSTERED INDEX [index_c2] ON [dbo].[table1] ([c2])\n" +
+                "WITH (ONLINE = ON)\nGO\n\nCOMMIT;\n\nGO\n\n";
     }
 }
 

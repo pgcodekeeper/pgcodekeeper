@@ -1379,14 +1379,14 @@ receive_statement
 
 // https://msdn.microsoft.com/en-us/library/ms189499.aspx
 select_statement
-    : with_expression? select_ops order_by_clause? for_clause? option_clause?
+    : with_expression? select_ops for_clause? option_clause?
     ;
 
 // select_stmt copy that doesn't consume external parens
 // for use in vex
 // we let the expression rule to consume as many parens as it can
 select_stmt_no_parens
-    : with_expression? select_ops_no_parens order_by_clause? for_clause? option_clause?
+    : with_expression? select_ops_no_parens for_clause? option_clause?
     ;
 
 select_ops
@@ -1702,11 +1702,11 @@ view_attribute
 alter_table
     : TABLE name=table_name 
     (SET LR_BRACKET LOCK_ESCALATION EQUAL (AUTO | TABLE | DISABLE) RR_BRACKET
-        | (WITH (CHECK | NOCHECK))? ADD column_def_table_constraint
+        | (WITH (CHECK | nocheck_add=NOCHECK))? ADD column_def_table_constraint
         | ALTER COLUMN column_definition
         | DROP COLUMN id
         | DROP CONSTRAINT constraint=id
-        | (CHECK | NOCHECK) CONSTRAINT con=id
+        | (WITH (CHECK | nocheck_check=NOCHECK))? (CHECK | nocheck=NOCHECK) CONSTRAINT con=id
         | (ENABLE | DISABLE) TRIGGER trigger=id?
         | (ENABLE | DISABLE) CHANGE_TRACKING (WITH LR_BRACKET TRACK_COLUMNS_UPDATED EQUAL (ON|OFF) RR_BRACKET)?
         | REBUILD table_options)
@@ -2616,6 +2616,7 @@ query_specification
     // https://msdn.microsoft.com/en-us/library/ms177673.aspx
     (GROUP BY (ALL)? expression (COMMA expression)*)?
     (HAVING having=search_condition)?
+    order_by_clause?
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms189463.aspx

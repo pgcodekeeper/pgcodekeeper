@@ -9,11 +9,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Trigger_operationContex
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Trigger_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.AbstractTrigger;
 import cz.startnet.utils.pgdiff.schema.AbstractTrigger.TgTypes;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class CreateMsTrigger extends ParserAbstract {
 
@@ -31,10 +29,15 @@ public class CreateMsTrigger extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public MsTrigger getObject() {
         List<IdContext> ids = ctx.simple_name().id();
         AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
-        AbstractTrigger trigger = new MsTrigger(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
+        return getObject(schema);
+    }
+
+    public MsTrigger getObject(AbstractSchema schema) {
+        MsTrigger trigger = new MsTrigger(QNameParser.getFirstName(ctx.simple_name().id()),
+                getFullCtxText(ctx.getParent()));
         trigger.setTableName(QNameParser.getFirstName(ctx.table_name().id()));
         trigger.setAnsiNulls(ansiNulls);
         trigger.setQuotedIdentified(quotedIdentifier);

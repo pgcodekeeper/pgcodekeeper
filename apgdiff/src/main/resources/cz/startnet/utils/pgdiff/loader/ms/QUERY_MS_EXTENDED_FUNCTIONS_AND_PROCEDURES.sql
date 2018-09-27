@@ -17,7 +17,7 @@ SELECT
     am.assembly_method
 FROM sys.objects s WITH (NOLOCK)
 LEFT JOIN sys.database_principals p WITH (NOLOCK) ON p.principal_id=s.principal_id
-LEFT JOIN sys.assembly_modules am WITH (NOLOCK) ON am.object_id=s.object_id
+JOIN sys.assembly_modules am WITH (NOLOCK) ON am.object_id=s.object_id
 LEFT JOIN sys.assemblies a WITH (NOLOCK) ON a.assembly_id=am.assembly_id
 LEFT JOIN sys.database_principals p2 WITH (NOLOCK) ON p2.principal_id=am.execute_as_principal_id
 LEFT JOIN sys.all_parameters ret_param WITH (NOLOCK) ON ret_param.object_id = s.object_id and ret_param.parameter_id = 0
