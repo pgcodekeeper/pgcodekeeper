@@ -52,7 +52,7 @@ public class MsAssembly extends PgStatement {
         }
 
         sb.append("\nFROM ");
-        String bin = String.join(",\n ", binaries);
+        String bin = String.join(",\n", binaries);
 
         if (isPreview && bin.length() > PREVIEW_LENGTH) {
             sb.append(bin.substring(0, PREVIEW_LENGTH)).append("\n<... PREVIEW TRIMMED>");
