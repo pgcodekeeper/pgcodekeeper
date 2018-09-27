@@ -2,8 +2,8 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Assembly_permissionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_assemblyContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ExpressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.String_binaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.MsAssembly;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -26,7 +26,7 @@ public class CreateMsAssembly extends ParserAbstract {
             ass.setOwner(owner.getText());
         }
 
-        for (String_binaryContext binary : ctx.string_binary()) {
+        for (ExpressionContext binary : ctx.expression()) {
             ass.addBinary(getFullCtxText(binary));
         }
 

@@ -73,6 +73,7 @@ schema_alter
     | alter_external_library
     | alter_external_resource_pool
     | alter_fulltext_catalog
+    | alter_fulltext_index
     | alter_fulltext_stoplist
     | alter_login_sql_server
     | alter_master_key_sql_server
@@ -110,7 +111,8 @@ schema_alter
     ;
 
 schema_create
-    : CREATE (create_application_role
+    : CREATE (create_aggregate
+    | create_application_role
     | create_assembly
     | create_asymmetric_key
     | create_certificate
@@ -129,6 +131,7 @@ schema_create
     | create_external_resource_pool
     | create_external_table
     | create_fulltext_catalog
+    | create_fulltext_index
     | create_fulltext_stoplist
     | create_index
     | create_key
@@ -152,6 +155,7 @@ schema_create
     | create_schema
     | create_search_property_list
     | create_security_policy
+    | create_selective_index
     | create_sequence
     | create_server_audit
     | create_server_audit_specification
@@ -163,6 +167,7 @@ schema_create
     | create_type
     | create_user
     | create_workload_group
+    | create_xml_index
     | create_xml_schema_collection)
     ;
 
@@ -282,6 +287,13 @@ another_statement
     | setuser_statement
     ;
 
+create_aggregate
+    : AGGREGATE simple_name 
+    (LR_BRACKET? procedure_param (COMMA procedure_param)* RR_BRACKET?)?
+    RETURNS data_type
+    EXTERNAL NAME assembly_name=simple_name
+    ;
+
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-application-role-transact-sql
 alter_application_role
     : APPLICATION ROLE app_role=id WITH alter_app_role_option (COMMA alter_app_role_option)*
@@ -343,13 +355,8 @@ multiple_local_files
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-assembly-transact-sql
 create_assembly
     : ASSEMBLY assembly_name=id (AUTHORIZATION owner_name=id)?
-    FROM string_binary (COMMA string_binary)*
+    FROM expression (COMMA expression)*
     (WITH PERMISSION_SET EQUAL assembly_permission)?
-    ;
-
-string_binary
-    : STRING 
-    | BINARY
     ;
 
 assembly_permission
@@ -523,13 +530,13 @@ create_column_encryption_key
 
 drop_statements
     : (AGGREGATE | APPLICATION ROLE | AVAILABILITY GROUP | BROKER PRIORITY | CERTIFICATE
-    | COLUMN (ENCRYPTION | MASTER) KEY | CONTRACT | CREDENTIAL | CRYPTOGRAPHIC PROVIDER
-    | DATABASE (AUDIT SPECIFICATION | SCOPED CREDENTIAL)? | DEFAULT | ENDPOINT
-    | EXTERNAL (DATA SOURCE | FILE FORMAT | LIBRARY | RESOURCE POOL | EXTERNAL TABLE) ( AUTHORIZATION id )?
-    | FULLTEXT (CATALOG | INDEX ON | STOPLIST) | LOGIN | MESSAGE TYPE | PARTITION? FUNCTION | PARTITION SCHEME
-    | PROC | PROCEDURE | QUEUE | REMOTE SERVICE BINDING | RESOURCE POOL | ROLE | ROUTE | RULE | SCHEMA | SEARCH PROPERTY LIST
-    | SECURITY POLICY | SEQUENCE | SERVER AUDIT SPECIFICATION? | SERVER ROLE | SERVICE | STATISTICS | SYNONYM | TABLE
-    | TYPE | TRIGGER | USER | VIEW | WORKLOAD GROUP | XML SCHEMA COLLECTION )
+        | COLUMN (ENCRYPTION | MASTER) KEY | CONTRACT | CREDENTIAL | CRYPTOGRAPHIC PROVIDER
+        | DATABASE (AUDIT SPECIFICATION | SCOPED CREDENTIAL)? | DEFAULT | ENDPOINT
+        | EXTERNAL (DATA SOURCE | FILE FORMAT | LIBRARY | RESOURCE POOL | EXTERNAL TABLE) ( AUTHORIZATION id )?
+        | FULLTEXT (CATALOG | INDEX ON | STOPLIST) | LOGIN | MESSAGE TYPE | PARTITION? FUNCTION | PARTITION SCHEME
+        | PROC | PROCEDURE | QUEUE | REMOTE SERVICE BINDING | RESOURCE POOL | ROLE | ROUTE | RULE | SCHEMA | SEARCH PROPERTY LIST
+        | SECURITY POLICY | SEQUENCE | SERVER AUDIT SPECIFICATION? | SERVER ROLE | SERVICE | STATISTICS | SYNONYM | TABLE
+        | TYPE | TRIGGER | USER | VIEW | WORKLOAD GROUP | XML SCHEMA COLLECTION)
     ( IF EXISTS )? full_table_name (COMMA full_table_name)*
     ;
 
@@ -551,7 +558,7 @@ drop_database_encryption_key
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/drop-signature-transact-sql
 drop_signature
-    : COUNTER? SIGNATURE FROM (schema_name=id DOT)? module_name=id
+    : COUNTER? SIGNATURE FROM simple_name
     BY (COMMA? CERTIFICATE cert_name=id | COMMA? ASYMMETRIC KEY Asym_key_name=id)+
     ;
 
@@ -562,20 +569,16 @@ drop_symmetric_key
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/disable-trigger-transact-sql
 disable_trigger
-    : DISABLE TRIGGER (trigger_names | ALL) ON (table_name|DATABASE|ALL SERVER)
+    : DISABLE TRIGGER (simple_names | ALL) ON (table_name|DATABASE|ALL SERVER)
     ;
      
-trigger_names
-    : trigger_name (COMMA trigger_name)*
-    ;
-
-trigger_name
-    : (schema_name=id DOT)? name=id
+simple_names
+    : simple_name (COMMA simple_name)*
     ;
     
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/enable-trigger-transact-sql
 enable_trigger
-    : ENABLE TRIGGER (trigger_names| ALL) ON (table_name|DATABASE|ALL SERVER)
+    : ENABLE TRIGGER (simple_names| ALL) ON (table_name|DATABASE|ALL SERVER)
     ;
 
 lock_table
@@ -869,7 +872,7 @@ create_or_alter_resource_pool
 alter_resource_governor
     : RESOURCE GOVERNOR 
         ((DISABLE | RECONFIGURE) 
-        | WITH LR_BRACKET CLASSIFIER_FUNCTION EQUAL ( schema_name=id DOT function_name=id | NULL ) RR_BRACKET 
+        | WITH LR_BRACKET CLASSIFIER_FUNCTION EQUAL ( simple_name | NULL ) RR_BRACKET 
         | RESET STATISTICS 
         | WITH LR_BRACKET MAX_OUTSTANDING_IO_PER_VOLUME EQUAL max_outstanding_io_per_volume=DECIMAL RR_BRACKET)
     ;
@@ -905,7 +908,7 @@ create_route
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-rule-transact-sql
 create_rule
-    : RULE (schema_name=id DOT)? rule_name=id AS search_condition
+    : RULE simple_name AS search_condition
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-schema-transact-sql
@@ -944,10 +947,10 @@ add_drop_property
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-security-policy-transact-sql
 create_security_policy
-    : SECURITY POLICY (schema_name=id DOT)? security_policy_name=id
-        (COMMA? ADD (FILTER|BLOCK)? PREDICATE tvf_schema_name=id DOT security_predicate_function_name=id
+    : SECURITY POLICY simple_name
+        (COMMA? ADD (FILTER|BLOCK)? PREDICATE simple_name
             LR_BRACKET (COMMA? column_name_or_arguments=expression)+ RR_BRACKET
-            ON table_schema_name=id DOT name=id
+            ON simple_name
                 (COMMA? AFTER (INSERT|UPDATE)
                 | COMMA? BEFORE (UPDATE|DELETE)
                 )*
@@ -956,14 +959,14 @@ create_security_policy
     ;
 
 alter_security_policy
-    : SECURITY POLICY (schema_name=id DOT)? security_policy_name=id
+    : SECURITY POLICY simple_name
     LR_BRACKET? add_alter_drop_predicate (COMMA add_alter_drop_predicate)* RR_BRACKET?
     (WITH LR_BRACKET STATE EQUAL on_off RR_BRACKET)? not_for_replication?
     ;
 
 add_alter_drop_predicate
-    : (ADD | ALTER) (FILTER | BLOCK) PREDICATE id DOT id LR_BRACKET expression (COMMA expression)* RR_BRACKET ON id DOT id block_dml_operation?
-    | DROP (FILTER | BLOCK) PREDICATE ON id DOT id
+    : (ADD | ALTER) (FILTER | BLOCK) PREDICATE simple_name LR_BRACKET expression (COMMA expression)* RR_BRACKET ON simple_name block_dml_operation?
+    | DROP (FILTER | BLOCK) PREDICATE ON simple_name
     ;
 
 block_dml_operation
@@ -1144,14 +1147,13 @@ alter_server_role_pdw
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-service-transact-sql
 alter_service
-    : SERVICE modified_service_name=id (ON QUEUE (schema_name=id DOT) queue_name=id)? (COMMA? (ADD|DROP) modified_contract_name=id)*
+    : SERVICE modified_service_name=id (ON QUEUE simple_name)? (COMMA? (ADD|DROP) modified_contract_name=id)*
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-service-transact-sql
 create_service
     : SERVICE create_service_name=id (AUTHORIZATION owner_name=id)?
-    ON QUEUE (schema_name=id DOT)? queue_name=id
-    (LR_BRACKET (COMMA? id_or_default)+ RR_BRACKET)?
+    ON QUEUE simple_name (LR_BRACKET (COMMA? id_or_default)+ RR_BRACKET)?
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-service-master-key-transact-sql
@@ -1191,15 +1193,20 @@ create_symmetric_key
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-synonym-transact-sql
 create_synonym
-    : SYNONYM (schema_name_1=id DOT )? synonym_name=id FOR 
-        ((server_name=id DOT)? (database_name=id DOT)? (schema_name_2=id DOT)? object_name=id
+    : SYNONYM simple_name FOR 
+        ((server_name=id DOT)? (database_name=id DOT)? simple_name
         | (database_or_schema2=id DOT)? (schema_id_2_or_object_name=id DOT)?)
     ;
 
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-user-transact-sql
 alter_user
-    : USER username=id WITH (COMMA? NAME EQUAL newusername=id | COMMA? DEFAULT_SCHEMA EQUAL ( schema_name=id |NULL ) | COMMA? LOGIN EQUAL loginame=id | COMMA? PASSWORD EQUAL STRING (OLD_PASSWORD EQUAL STRING)+ | COMMA? DEFAULT_LANGUAGE EQUAL (NONE| lcid=DECIMAL| language_name_or_alias=id) | COMMA? ALLOW_ENCRYPTED_VALUE_MODIFICATIONS EQUAL (ON|OFF) )+
+    : USER username=id WITH (COMMA? NAME EQUAL newusername=id 
+        | COMMA? DEFAULT_SCHEMA EQUAL ( schema_name=id |NULL ) 
+        | COMMA? LOGIN EQUAL loginame=id 
+        | COMMA? PASSWORD EQUAL STRING (OLD_PASSWORD EQUAL STRING)+ 
+        | COMMA? DEFAULT_LANGUAGE EQUAL (NONE| lcid=DECIMAL| language_name_or_alias=id) 
+        | COMMA? ALLOW_ENCRYPTED_VALUE_MODIFICATIONS EQUAL (ON|OFF) )+
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-user-transact-sql
@@ -1253,11 +1260,11 @@ create_workload_group
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-xml-schema-collection-transact-sql
 create_xml_schema_collection
-    : XML SCHEMA COLLECTION (relational_schema=id DOT)? sql_identifier=id AS (STRING|id|LOCAL_ID)
+    : XML SCHEMA COLLECTION (relational_schema=id DOT)? sql_identifier=id AS string_id_local_id
     ;
 
 alter_xml_schema_collection
-    : XML SCHEMA COLLECTION (relational_schema=id DOT)? sql_identifier=id ADD (STRING|id|LOCAL_ID) 
+    : XML SCHEMA COLLECTION (relational_schema=id DOT)? sql_identifier=id ADD string_id_local_id
     ;
 
 create_queue
@@ -1448,6 +1455,96 @@ create_database_scoped_credential
 
 create_default
     : DEFAULT table_name AS expression
+    ;
+
+alter_fulltext_index
+    : FULLTEXT INDEX ON table_name alter_fulltext_index_option
+    ;
+
+alter_fulltext_index_option
+    : ENABLE   
+    | DISABLE  
+    | SET CHANGE_TRACKING EQUAL? (MANUAL | AUTO | OFF)
+    | ADD fulltext_index_columns with_no_population?
+    | ALTER COLUMN column_name=id (ADD | DROP) STATISTICAL_SEMANTICS with_no_population?
+    | DROP LR_BRACKET id (COMMA id)* RR_BRACKET with_no_population?
+    | START (FULL | INCREMENTAL | UPDATE) POPULATION  
+    | (STOP | PAUSE | RESUME) POPULATION   
+    | SET STOPLIST EQUAL? (OFF| SYSTEM | stoplist_name=id) with_no_population?
+    | SET SEARCH PROPERTY LIST EQUAL? (OFF | property_list_name=id) with_no_population?
+    ;
+
+with_no_population
+    : WITH NO POPULATION
+    ;
+
+create_fulltext_index
+    : FULLTEXT INDEX ON table_name fulltext_index_columns?
+    KEY INDEX index_name=id 
+    (ON catalog_filegroup_option)? 
+    fulltext_index_options?
+    ;
+
+fulltext_index_columns
+    : LR_BRACKET fulltext_index_column (COMMA fulltext_index_column)* RR_BRACKET
+    ;
+
+fulltext_index_column
+    : column_name=id (TYPE COLUMN type_column_name=data_type)? (LANGUAGE (STRING|DECIMAL|BINARY))? STATISTICAL_SEMANTICS?
+    ;
+
+fulltext_index_options
+    : WITH LR_BRACKET? fulltext_index_option (COMMA fulltext_index_option)* RR_BRACKET?
+    ;
+
+catalog_filegroup_option
+    : id
+    | LR_BRACKET id COMMA FILEGROUP id RR_BRACKET
+    | LR_BRACKET FILEGROUP id COMMA id RR_BRACKET
+    | LR_BRACKET FILEGROUP id RR_BRACKET
+    ;
+
+fulltext_index_option
+    : CHANGE_TRACKING EQUAL? (MANUAL | AUTO | OFF (COMMA NO POPULATION)?)
+    | STOPLIST EQUAL? (OFF | SYSTEM | stoplist_name=id)
+    | SEARCH PROPERTY LIST EQUAL? property_list_name=id
+    ;
+
+create_selective_index
+    : SELECTIVE XML INDEX name=id ON table_name LR_BRACKET id RR_BRACKET
+    (WITH XMLNAMESPACES LR_BRACKET xmlnamespace_list RR_BRACKET)?
+    FOR LR_BRACKET promoted_node_path_list RR_BRACKET
+    index_options? 
+    ;
+
+xmlnamespace_list
+    : xmlnamespace_item (COMMA xmlnamespace_list)?
+    ;
+
+xmlnamespace_item
+    : string_id_local_id AS string_id_local_id
+    ;
+
+promoted_node_path_list
+    : named_promoted_node_path_item (COMMA named_promoted_node_path_item)*
+    ;
+
+named_promoted_node_path_item
+    : string_id_local_id EQUAL node_path=string_id_local_id (AS (XQUERY expression function_call? | SQL data_type))? SINGLETON?
+    ;
+
+string_id_local_id
+    : STRING
+    | id
+    | LOCAL_ID
+    ;
+
+create_xml_index
+    : PRIMARY? XML INDEX name=id ON table_name LR_BRACKET id RR_BRACKET xml_index_using? index_options?
+    ;
+
+xml_index_using
+    : USING XML INDEX name=id (FOR (VALUE | PATH | PROPERTY | LR_BRACKET id RR_BRACKET))?
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms188783.aspx
@@ -2093,7 +2190,7 @@ permission
     | EXECUTE
     | VIEW id // DEFINITION
     | TAKE id // OWNERSHIP
-    | CONTROL id? // SERVER
+    | CONTROL SERVER
     | CREATE (TABLE | VIEW)
     | SHOWPLAN
     | IMPERSONATE
@@ -2246,11 +2343,7 @@ setuser_statement
     ;
 
 dbcc_clause
-    : DBCC name=simple_id (LR_BRACKET expression_list RR_BRACKET)? (WITH dbcc_options)?
-    ;
-
-dbcc_options
-    :  simple_id (COMMA simple_id)?
+    : DBCC name=simple_id (LR_BRACKET expression_list RR_BRACKET)? (WITH simple_names)?
     ;
 
 execute_clause
@@ -3437,6 +3530,7 @@ simple_id
     | PARTNER
     | PASSWORD
     | PATH
+    | PAUSE
     | PER_CPU
     | PER_DB
     | PER_NODE
@@ -3446,6 +3540,7 @@ simple_id
     | POISON_MESSAGE_HANDLING
     | POLICY
     | POOL
+    | POPULATION
     | PORT
     | PRECEDING
     | PREDICATE
@@ -3545,6 +3640,7 @@ simple_id
     | SECURITY_LOG
     | SECURITY
     | SEEDING_MODE
+    | SELECTIVE
     | SELF
     | SEMI_SENSITIVE
     | SEND
@@ -3564,6 +3660,7 @@ simple_id
     | SIGNATURE
     | SIMPLE
     | SINGLE_USER
+    | SINGLETON
     | SIZE
     | SKIP_KEYWORD
     | SMALLINT
@@ -3574,6 +3671,7 @@ simple_id
     | SPATIAL_WINDOW_MAX_CELLS
     | SPECIFICATION
     | SPLIT
+    | SQL
     | SQLDUMPERFLAGS
     | SQLDUMPERPATH
     | SQLDUMPERTIMEOUT
@@ -3585,6 +3683,7 @@ simple_id
     | STARTUP_STATE
     | STATE
     | STATIC
+    | STATISTICAL_SEMANTICS
     | STATS_STREAM
     | STATS
     | STATUS
@@ -3661,6 +3760,7 @@ simple_id
     | XMLDATA
     | XMLNAMESPACES
     | XMLSCHEMA
+    | XQUERY
     | XSINIL
     ;
 
