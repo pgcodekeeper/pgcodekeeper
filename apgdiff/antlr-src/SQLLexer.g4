@@ -614,6 +614,19 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     FORMAT: [fF] [oO] [rR] [mM] [aA] [tT]; 
     JSON: [jJ] [sS] [oO] [nN]; 
     YAML: [yY] [aA] [mM] [lL]; 
+    SUPERUSER: [sS] [uU] [pP] [eE] [rR] [uU] [sS] [eE] [rR];
+    NOSUPERUSER: [nN] [oO] [sS] [uU] [pP] [eE] [rR] [uU] [sS] [eE] [rR];
+    CREATEDB: [cC] [rR] [eE] [aA] [tT] [eE] [dD] [bB];
+    NOCREATEDB: [nN] [oO] [cC] [rR] [eE] [aA] [tT] [eE] [dD] [bB];
+    CREATEROLE: [cC] [rR] [eE] [aA] [tT] [eE] [rR] [oO] [lL] [eE];
+    NOCREATEROLE: [nN] [oO] [cC] [rR] [eE] [aA] [tT] [eE] [rR] [oO] [lL] [eE];
+    NOINHERIT: [nN] [oO] [iI] [nN] [hH] [eE] [rR] [iI] [tT];
+    LOGIN: [lL] [oO] [gG] [iI] [nN];
+    NOLOGIN: [nN] [oO] [lL] [oO] [gG] [iI] [nN];
+    REPLICATION: [rR] [eE] [pP] [lL] [iI] [cC] [aA] [tT] [iI] [oO] [nN];
+    NOREPLICATION: [nN] [oO] [rR] [eE] [pP] [lL] [iI] [cC] [aA] [tT] [iI] [oO] [nN];
+    BYPASSRLS: [bB] [yY] [pP] [aA] [sS] [sS] [rR] [lL] [sS];
+    NOBYPASSRLS: [nN] [oO] [bB] [yY] [pP] [aA] [sS] [sS] [rR] [lL] [sS];
 
 fragment UNDERLINE : '_';
 

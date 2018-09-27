@@ -54,80 +54,84 @@ script_statement
   ;
 
 script_transaction
-  : ((START TRANSACTION) | (BEGIN (WORK | TRANSACTION)?)) transaction_mode*
-  | (COMMIT | END) (WORK | TRANSACTION)?
-  | ((COMMIT PREPARED) | (PREPARE TRANSACTION)) Character_String_Literal
-  | (SAVEPOINT | (RELEASE SAVEPOINT?) )identifier
-  | ROLLBACK (
-      (PREPARED Character_String_Literal) 
-      | ((WORK | TRANSACTION)? (TO SAVEPOINT? identifier)?)
-      )
-  | LOCK TABLE? ONLY? schema_qualified_name MULTIPLY? (COMMA schema_qualified_name MULTIPLY?)* 
+    : ((START TRANSACTION) | (BEGIN (WORK | TRANSACTION)?)) transaction_mode*
+    | (COMMIT | END) (WORK | TRANSACTION)?
+    | ((COMMIT PREPARED) | (PREPARE TRANSACTION)) Character_String_Literal
+    | (SAVEPOINT | (RELEASE SAVEPOINT?) )identifier
+    | ROLLBACK (
+        (PREPARED Character_String_Literal) 
+        | ((WORK | TRANSACTION)? (TO SAVEPOINT? identifier)?)
+        )
+    | LOCK TABLE? ONLY? schema_qualified_name MULTIPLY? (COMMA schema_qualified_name MULTIPLY?)* 
     (IN (ACCESS | ROW)? ((SHARE ((UPDATE | ROW) EXCLUSIVE)?) | EXCLUSIVE) MODE)? NOWAIT?
-  | ABORT
-  ;
+    | ABORT
+    ;
 
 transaction_mode
-  : ISOLATION LEVEL (SERIALIZABLE | REPEATABLE READ | READ COMMITTED | READ UNCOMMITTED)
-  | READ WRITE | READ ONLY
-  | (NOT)? DEFERRABLE
-  ;
+    : ISOLATION LEVEL (SERIALIZABLE | REPEATABLE READ | READ COMMITTED | READ UNCOMMITTED)
+    | READ WRITE | READ ONLY
+    | (NOT)? DEFERRABLE
+    ;
 
 script_additional
-  : LISTEN identifier
-  | UNLISTEN (identifier | MULTIPLY)
-  | ANALYZE VERBOSE? qualified_table_name_perhaps_with_cols?
-  | VACUUM ((FULL? FREEZE? VERBOSE? ((ANALYZE qualified_table_name_perhaps_with_cols?) | schema_qualified_name?))
-      | ((LEFT_PAREN vacuum_mode (COMMA vacuum_mode)* RIGHT_PAREN)? qualified_table_name_perhaps_with_cols?))
-  | SHOW (identifier | ALL)
-  | LOAD Character_String_Literal
-  | DISCARD (ALL | PLANS | SEQUENCES | TEMPORARY | TEMP)
-  | DEALLOCATE PREPARE? (identifier | ALL)
-  | (FETCH | MOVE) ( fetch_move_derection (FROM | IN)? )? identifier
-  | DO (LANGUAGE identifier)? character_string+
-  | REINDEX VERBOSE? (INDEX | TABLE | SCHEMA | DATABASE | SYSTEM) identifier
-  | RESET (identifier | TIME ZONE | SESSION AUTHORIZATION | ALL)
-  | DECLARE identifier BINARY? INSENSITIVE? (NO? SCROLL)? CURSOR ((WITH | WITHOUT) HOLD)? FOR select_stmt
-  | EXPLAIN ( (ANALYZE? VERBOSE?) | (LEFT_PAREN explain_option (COMMA explain_option)* RIGHT_PAREN)? ) statement
-  | REFRESH MATERIALIZED VIEW CONCURRENTLY? schema_qualified_name (WITH NO? DATA)?
-  ;
+    : LISTEN identifier
+    | UNLISTEN (identifier | MULTIPLY)
+    | ANALYZE VERBOSE? qualified_table_name_perhaps_with_cols?
+    | VACUUM ((FULL? FREEZE? VERBOSE? ((ANALYZE qualified_table_name_perhaps_with_cols?) | schema_qualified_name?))
+        | ((LEFT_PAREN vacuum_mode (COMMA vacuum_mode)* RIGHT_PAREN)? qualified_table_name_perhaps_with_cols?))
+    | SHOW (identifier | ALL)
+    | LOAD Character_String_Literal
+    | DISCARD (ALL | PLANS | SEQUENCES | TEMPORARY | TEMP)
+    | DEALLOCATE PREPARE? (identifier | ALL)
+    | (FETCH | MOVE) ( fetch_move_derection (FROM | IN)? )? identifier
+    | DO (LANGUAGE identifier)? character_string+
+    | REINDEX VERBOSE? (INDEX | TABLE | SCHEMA | DATABASE | SYSTEM) identifier
+    | RESET (identifier | TIME ZONE | SESSION AUTHORIZATION | ALL)
+    | DECLARE identifier BINARY? INSENSITIVE? (NO? SCROLL)? CURSOR ((WITH | WITHOUT) HOLD)? FOR select_stmt
+    | EXPLAIN ( (ANALYZE? VERBOSE?) | (LEFT_PAREN explain_option (COMMA explain_option)* RIGHT_PAREN)? ) statement
+    | REFRESH MATERIALIZED VIEW CONCURRENTLY? schema_qualified_name (WITH NO? DATA)?
+    | PREPARE identifier (LEFT_PAREN predefined_type (COMMA predefined_type)* RIGHT_PAREN)? AS data_statement
+    | EXECUTE identifier (LEFT_PAREN (vex | select_stmt) (COMMA (vex | select_stmt))* RIGHT_PAREN)?
+    | REASSIGN OWNED BY (identifier | CURRENT_USER | SESSION_USER) (COMMA (identifier | CURRENT_USER | SESSION_USER))* 
+      TO (identifier | CURRENT_USER | SESSION_USER)
+    ;
 
 explain_option
-  : ANALYZE true_or_false?
-  | VERBOSE true_or_false?
-  | COSTS true_or_false?
-  | BUFFERS true_or_false?
-  | TIMING true_or_false?
-  | SUMMARY true_or_false?
-  | FORMAT (TEXT | XML | JSON | YAML)
-  ;
+    : ANALYZE true_or_false?
+    | VERBOSE true_or_false?
+    | COSTS true_or_false?
+    | BUFFERS true_or_false?
+    | TIMING true_or_false?
+    | SUMMARY true_or_false?
+    | FORMAT (TEXT | XML | JSON | YAML)
+    ;
 
 true_or_false
-  : TRUE | FALSE
-  ;
+    : TRUE | FALSE
+    ;
 
 qualified_table_name_perhaps_with_cols
-  : schema_qualified_name (LEFT_PAREN identifier (COMMA identifier)* RIGHT_PAREN)? 
-  ;
+    : schema_qualified_name (LEFT_PAREN identifier (COMMA identifier)* RIGHT_PAREN)? 
+    ;
 
 vacuum_mode
-  : FULL 
-  | FREEZE 
-  | VERBOSE 
-  | ANALYZE 
-  | DISABLE_PAGE_SKIPPING
-  ;
+    : FULL 
+    | FREEZE 
+    | VERBOSE 
+    | ANALYZE 
+    | DISABLE_PAGE_SKIPPING
+    ;
 
 fetch_move_derection
-  : NEXT
-  | PRIOR
-  | FIRST
-  | LAST
-  | (ABSOLUTE | RELATIVE)? NUMBER_LITERAL
-  | ALL
-  | FORWARD (NUMBER_LITERAL | ALL)?
-  | BACKWARD (NUMBER_LITERAL | ALL)?
-  ;
+    : NEXT
+    | PRIOR
+    | FIRST
+    | LAST
+    | (ABSOLUTE | RELATIVE)? NUMBER_LITERAL
+    | ALL
+    | FORWARD (NUMBER_LITERAL | ALL)?
+    | BACKWARD (NUMBER_LITERAL | ALL)?
+    ;
 
 schema_statement
   : schema_create
@@ -157,7 +161,9 @@ schema_create
     | create_fts_dictionary
     | create_collation
     | create_user_mapping
-    | create_transform_statement)
+    | create_transform_statement
+    | create_access_method
+    | create_user_or_role)
 
     | comment_on_statement
     | rule_common
@@ -179,7 +185,8 @@ schema_alter
     | alter_server_statement
     | alter_fts_statement
     | alter_collation
-    | alter_user_mapping)
+    | alter_user_mapping
+    | alter_user_or_role)
     ;
 
 schema_drop
@@ -188,7 +195,10 @@ schema_drop
     | drop_rule_statement
     | drop_statements
     | drop_user_mapping
-    | drop_language_statement)
+    | drop_language_statement
+    | drop_owned
+    | drop_access_method
+    | drop_user_or_role)
     ;
 
 schema_import
@@ -615,12 +625,41 @@ alter_user_mapping
     define_foreign_options? 
     ;
 
+alter_user_or_role
+    : (USER | ROLE)
+    (
+        (name=identifier WITH? user_or_role_common_option user_or_role_common_option*)
+        | (old_name=identifier RENAME TO new_name=identifier)
+        | ((name=identifier | CURRENT_USER | SESSION_USER | ALL) (IN DATABASE db_name=identifier)? 
+           (
+                (SET config_param=identifier (TO | EQUAL) config_param_val=set_statement_value)
+                | (SET config_param=identifier FROM CURRENT)
+                | (RESET config_param=identifier)
+                | (RESET ALL)
+           )
+          )
+    )
+    ;
+
 drop_user_mapping
     : USER MAPPING (IF EXISTS)? FOR (identifier | USER | CURRENT_USER) SERVER identifier
     ;
 
 drop_language_statement
     : PROCEDURAL? LANGUAGE (IF EXISTS)? name=identifier cascade_restrict?
+    ;
+
+drop_owned
+    : OWNED BY (identifier | CURRENT_USER | SESSION_USER) (COMMA (identifier | CURRENT_USER | SESSION_USER))*
+      cascade_restrict?
+    ;
+
+drop_access_method
+    : ACCESS METHOD (IF EXISTS)? name=identifier cascade_restrict?
+    ;
+
+drop_user_or_role
+    : (USER | ROLE) (IF EXISTS)? name+=identifier (COMMA name+=identifier)*
     ;
 
 domain_constraint
@@ -634,6 +673,41 @@ create_transform_statement
         FROM SQL WITH FUNCTION  function_parameters COMMA
         TO SQL WITH FUNCTION function_parameters
     RIGHT_PAREN
+    ;
+
+create_access_method
+    : ACCESS METHOD name=identifier TYPE type=identifier HANDLER func_name=schema_qualified_name
+    ;
+
+create_user_or_role
+    : (USER | ROLE) name=identifier (WITH? user_or_role_option user_or_role_option*)?
+    ;
+
+user_or_role_option
+    : user_or_role_common_option
+    | user_or_role_option_for_create
+    ;
+
+user_or_role_common_option
+    : SUPERUSER | NOSUPERUSER
+    | CREATEDB | NOCREATEDB
+    | CREATEROLE | NOCREATEROLE
+    | INHERIT | NOINHERIT
+    | LOGIN | NOLOGIN
+    | REPLICATION | NOREPLICATION
+    | BYPASSRLS | NOBYPASSRLS
+    | CONNECTION LIMIT MINUS? NUMBER_LITERAL
+    | ENCRYPTED? PASSWORD password=Character_String_Literal
+    | VALID UNTIL date_time=Character_String_Literal
+    ;
+
+user_or_role_option_for_create
+    : IN ROLE option_role_name+=identifier (COMMA option_role_name+=identifier)*
+    | IN GROUP option_role_name+=identifier (COMMA option_role_name+=identifier)*
+    | ROLE option_role_name+=identifier (COMMA option_role_name+=identifier)*
+    | ADMIN option_role_name+=identifier (COMMA option_role_name+=identifier)*
+    | USER option_role_name+=identifier (COMMA option_role_name+=identifier)*
+    | SYSID vex
     ;
 
 set_statement
@@ -1723,6 +1797,19 @@ tokens_nonkeyword
   | FORMAT
   | JSON
   | YAML
+  | SUPERUSER
+  | NOSUPERUSER
+  | CREATEDB
+  | NOCREATEDB
+  | CREATEROLE
+  | NOCREATEROLE
+  | NOINHERIT
+  | LOGIN
+  | NOLOGIN
+  | REPLICATION
+  | NOREPLICATION
+  | BYPASSRLS
+  | NOBYPASSRLS
   ;
 
 /*
@@ -2133,7 +2220,7 @@ values_stmt
     ;
 
 values_values
-  : LEFT_PAREN (vex | DEFAULT) (COMMA (vex | DEFAULT))* RIGHT_PAREN
+  : LEFT_PAREN (DOLLAR? vex | DEFAULT) (COMMA (DOLLAR? vex | DEFAULT))* RIGHT_PAREN
   ;
 
 orderby_clause
