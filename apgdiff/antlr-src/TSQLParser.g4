@@ -17,7 +17,7 @@ batch
 
 // for statements that must be the only ones in an entire batch
 batch_statement
-    : CREATE create_or_alter_procedure
+    : (CREATE | ALTER) create_or_alter_procedure
     ;
 
 sql_clauses
@@ -103,7 +103,7 @@ schema_alter
     | create_or_alter_broker_priority
     | create_or_alter_event_session
     | create_or_alter_function
-    | create_or_alter_procedure
+    //| create_or_alter_procedure
     | create_or_alter_resource_pool
     | create_or_alter_trigger
     | create_or_alter_view
