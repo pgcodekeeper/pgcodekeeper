@@ -1317,14 +1317,14 @@ receive_statement
 
 // https://msdn.microsoft.com/en-us/library/ms189499.aspx
 select_statement
-    : with_expression? select_ops order_by_clause? for_clause? option_clause?
+    : with_expression? select_ops for_clause? option_clause?
     ;
 
 // select_stmt copy that doesn't consume external parens
 // for use in vex
 // we let the expression rule to consume as many parens as it can
 select_stmt_no_parens
-    : with_expression? select_ops_no_parens order_by_clause? for_clause? option_clause?
+    : with_expression? select_ops_no_parens for_clause? option_clause?
     ;
 
 select_ops
@@ -2430,6 +2430,7 @@ query_specification
       // https://msdn.microsoft.com/en-us/library/ms177673.aspx
       (GROUP BY (ALL)? expression (',' expression)*)?
       (HAVING having=search_condition)?
+      order_by_clause?
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms189463.aspx
