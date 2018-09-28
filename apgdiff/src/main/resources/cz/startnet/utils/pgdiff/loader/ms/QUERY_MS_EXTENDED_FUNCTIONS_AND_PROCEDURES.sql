@@ -16,9 +16,9 @@ SELECT
     am.assembly_class,
     am.assembly_method
 FROM sys.objects s WITH (NOLOCK)
-LEFT JOIN sys.database_principals p WITH (NOLOCK) ON p.principal_id=s.principal_id
 JOIN sys.assembly_modules am WITH (NOLOCK) ON am.object_id=s.object_id
-LEFT JOIN sys.assemblies a WITH (NOLOCK) ON a.assembly_id=am.assembly_id
+JOIN sys.assemblies a WITH (NOLOCK) ON a.assembly_id=am.assembly_id
+LEFT JOIN sys.database_principals p WITH (NOLOCK) ON p.principal_id=s.principal_id
 LEFT JOIN sys.database_principals p2 WITH (NOLOCK) ON p2.principal_id=am.execute_as_principal_id
 LEFT JOIN sys.all_parameters ret_param WITH (NOLOCK) ON ret_param.object_id = s.object_id and ret_param.parameter_id = 0
 LEFT JOIN sys.types usrt WITH (NOLOCK) ON usrt.user_type_id = ret_param.user_type_id
@@ -30,13 +30,12 @@ CROSS APPLY (
             roleprinc.name AS r,
             col.name AS c
         FROM sys.database_principals roleprinc  WITH (NOLOCK)
-        LEFT JOIN sys.database_permissions perm WITH (NOLOCK) ON perm.grantee_principal_id = roleprinc.principal_id
+        JOIN sys.database_permissions perm WITH (NOLOCK) ON perm.grantee_principal_id = roleprinc.principal_id
         LEFT JOIN sys.columns col WITH (NOLOCK) on col.object_id = perm.major_id  AND col.column_id = perm.minor_id
         WHERE major_id = s.object_id AND perm.class = 1
     ) cc 
     FOR XML RAW, ROOT
 ) aa (acl)
-
 CROSS APPLY (
     SELECT * FROM (
             SELECT 
@@ -54,8 +53,7 @@ CROSS APPLY (
             FROM sys.objects so WITH (NOLOCK)
             JOIN sys.parameters p WITH (NOLOCK) ON so.object_id = p.object_id
             JOIN sys.types t WITH (NOLOCK) ON p.user_type_id = t.user_type_id
-            WHERE p.parameter_id > 0
-            AND so.object_id = s.object_id 
+            WHERE p.parameter_id > 0 AND so.object_id = s.object_id 
     ) cc ORDER BY cc.id
     FOR XML RAW, ROOT
 ) cc (args)
@@ -83,7 +81,7 @@ CROSS APPLY (
             --c.is_filestream AS fs,
             cc.definition AS def
         FROM sys.columns as c WITH (NOLOCK)
-        LEFT JOIN sys.types t WITH (NOLOCK) ON c.user_type_id = t.user_type_id
+        JOIN sys.types t WITH (NOLOCK) ON c.user_type_id = t.user_type_id
         LEFT JOIN sys.computed_columns cc WITH (NOLOCK) ON cc.object_id = c.object_id AND c.column_id = cc.column_id
         LEFT JOIN sys.identity_columns ic WITH (NOLOCK) ON c.object_id = ic.object_id AND c.column_id = ic.column_id
         LEFT JOIN sys.default_constraints dc WITH (NOLOCK) ON dc.parent_object_id = c.object_id AND c.column_id = dc.parent_column_id AND dc.is_system_named = 0

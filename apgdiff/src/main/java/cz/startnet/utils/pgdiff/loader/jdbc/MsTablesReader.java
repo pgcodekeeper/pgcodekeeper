@@ -65,8 +65,8 @@ public class MsTablesReader extends JdbcReader {
             }
 
             column.setSparse(col.getBoolean("sp"));
-            column.setRowGuidCol(col.getBoolean("is_rowguidcol"));
-            column.setPersisted(col.getBoolean("is_persisted"));
+            column.setRowGuidCol(col.getBoolean("rgc"));
+            column.setPersisted(col.getBoolean("ps"));
 
             if (col.getBoolean("ii")) {
                 column.setIdentity(Integer.toString(col.getInt("s")), Integer.toString(col.getInt("i")));

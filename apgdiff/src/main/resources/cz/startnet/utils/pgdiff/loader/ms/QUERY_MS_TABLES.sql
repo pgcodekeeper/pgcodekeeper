@@ -16,12 +16,12 @@ SELECT
     sp.data_compression_desc,
     ctt.is_track_columns_updated_on AS is_tracked
 FROM sys.tables o WITH (NOLOCK)
+JOIN sys.partitions sp WITH (NOLOCK) ON sp.object_id = o.object_id AND sp.index_id IN (0,1) AND sp.partition_number = 1
 LEFT JOIN sys.database_principals p WITH (NOLOCK) ON p.principal_id=o.principal_id
 LEFT JOIN sys.indexes ind WITH (NOLOCK) on ind.object_id = o.object_id AND ind.index_id = 0
 LEFT JOIN sys.data_spaces dsp WITH (NOLOCK) on dsp.data_space_id = ind.data_space_id  
 LEFT JOIN sys.data_spaces ds WITH (NOLOCK) ON o.filestream_data_space_id = ds.data_space_id
 LEFT JOIN sys.data_spaces dsx WITH (NOLOCK) ON dsx.data_space_id=o.lob_data_space_id
-LEFT JOIN sys.partitions sp WITH (NOLOCK) ON sp.object_id = o.object_id AND sp.index_id in (0,1) AND sp.partition_number = 1
 LEFT JOIN sys.index_columns ic WITH (NOLOCK) ON ic.partition_ordinal > 0 AND ic.index_id = ind.index_id and ic.object_id = o.object_id
 LEFT JOIN sys.columns c WITH (NOLOCK) ON c.object_id = ic.object_id AND c.column_id = ic.column_id
 LEFT JOIN sys.change_tracking_tables ctt WITH (NOLOCK) ON ctt.object_id = o.object_id
@@ -33,8 +33,8 @@ CROSS APPLY (
             roleprinc.name AS r,
             col.name AS c
         FROM sys.database_principals roleprinc WITH (NOLOCK)
-        LEFT JOIN sys.database_permissions perm WITH (NOLOCK) ON perm.grantee_principal_id = roleprinc.principal_id
-        LEFT JOIN sys.columns col WITH (NOLOCK) on col.object_id = perm.major_id  AND col.column_id = perm.minor_id
+        JOIN sys.database_permissions perm WITH (NOLOCK) ON perm.grantee_principal_id = roleprinc.principal_id
+        LEFT JOIN sys.columns col WITH (NOLOCK) ON col.object_id = perm.major_id  AND col.column_id = perm.minor_id
         WHERE major_id = o.object_id AND perm.class = 1
     ) cc 
     FOR XML RAW, ROOT
@@ -43,7 +43,7 @@ CROSS APPLY (
 CROSS APPLY (
     SELECT TOP 1 dsp.name
     FROM sys.indexes ind WITH (NOLOCK) 
-    LEFT JOIN sys.data_spaces dsp WITH (NOLOCK) on dsp.data_space_id = ind.data_space_id  
+    JOIN sys.data_spaces dsp WITH (NOLOCK) on dsp.data_space_id = ind.data_space_id  
     WHERE ind.object_id = o.object_id
 ) tt 
 
@@ -52,7 +52,7 @@ CROSS APPLY (
         SELECT
             c.name,
             c.column_id AS id,
-            t.name as type,
+            t.name AS type,
             CASE WHEN c.max_length>=0 AND t.name IN (N'nchar', N'nvarchar') THEN c.max_length/2 ELSE c.max_length END AS size,
             c.precision AS pr,
             c.scale AS sc,
@@ -66,14 +66,14 @@ CROSS APPLY (
             ic.seed_value AS s,
             ic.increment_value AS i,
             ic.is_not_for_replication AS nfr,
-            c.is_rowguidcol,
-            cc.is_persisted,
+            c.is_rowguidcol AS rgc,
+            cc.is_persisted AS ps,
             --t.is_user_defined AS ud,
             --t.is_table_type AS tt,
             --c.is_filestream AS fs,
             cc.definition AS def
-        FROM sys.columns as c WITH (NOLOCK)
-        LEFT JOIN sys.types t WITH (NOLOCK) ON c.user_type_id = t.user_type_id
+        FROM sys.columns c WITH (NOLOCK)
+        JOIN sys.types t WITH (NOLOCK) ON c.user_type_id = t.user_type_id
         LEFT JOIN sys.computed_columns cc WITH (NOLOCK) ON cc.object_id = c.object_id AND c.column_id = cc.column_id
         LEFT JOIN sys.identity_columns ic WITH (NOLOCK) ON c.object_id = ic.object_id AND c.column_id = ic.column_id
         LEFT JOIN sys.default_constraints dc WITH (NOLOCK) ON dc.parent_object_id = c.object_id AND c.column_id = dc.parent_column_id AND dc.is_system_named = 0
