@@ -848,7 +848,7 @@ alter_schema_sql
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-schema-transact-sql
 create_schema
-    : SCHEMA (schema_name=id | schema_name=id (AUTHORIZATION owner_name=id)?)
+    : SCHEMA schema_name=id (AUTHORIZATION owner_name=id)?
         schema_def=schema_definition?
     ;
 
