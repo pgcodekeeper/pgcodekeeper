@@ -201,12 +201,7 @@ schema_drop
     | drop_rule_statement
     | drop_statements
     | drop_user_mapping
-    | drop_language_statement
-    | drop_owned
-    | drop_access_method
-    | drop_user_or_role_or_group
-    | drop_tablespace
-    | drop_statistics)
+    | drop_owned)
     ;
 
 schema_import
@@ -343,21 +338,19 @@ alter_index_statement
     ;
 
 index_def
-    : index_if_exists_name (
-        (SET ((TABLESPACE tbl_spc=identifier) 
-              | (LEFT_PAREN dictionary_option (COMMA dictionary_option)* RIGHT_PAREN)))
-        | (RENAME TO new_name=identifier)
-        | (RESET LEFT_PAREN name+=identifier (COMMA name+=identifier)* RIGHT_PAREN)
-      )
+    : index_if_exists_name (RENAME TO new_name=identifier
+        | RESET LEFT_PAREN name+=identifier (COMMA name+=identifier)* RIGHT_PAREN
+        | SET (TABLESPACE tbl_spc=identifier 
+            | LEFT_PAREN dictionary_option (COMMA dictionary_option)* RIGHT_PAREN))
+    ;
+
+index_if_exists_name
+    : INDEX (IF EXISTS)? schema_qualified_name
     ;
 
 index_all_def
     : INDEX ALL IN TABLESPACE tbl_spc=identifier (OWNED BY rolname+=identifier (COMMA rolname+=identifier)*)?
       SET TABLESPACE new_tbl_spc=identifier NOWAIT? 
-    ;
-
-index_if_exists_name
-    : INDEX (IF EXISTS)? schema_qualified_name
     ;
 
 alter_default_privileges
@@ -640,56 +633,44 @@ alter_user_mapping
     ;
 
 alter_user_or_role
-    : (USER | ROLE)
-    (
-        (name=identifier WITH? user_or_role_option_for_alter user_or_role_option_for_alter*)
+    : (USER | ROLE) (alter_user_or_role_set_reset
         | (old_name=identifier RENAME TO new_name=identifier)
-        | ((name=identifier | CURRENT_USER | SESSION_USER | ALL) (IN DATABASE db_name=identifier)? 
-           (
-                (SET config_param=identifier (TO | EQUAL) config_param_val=set_statement_value)
-                | (SET config_param=identifier FROM CURRENT)
-                | (RESET config_param=identifier)
-                | (RESET ALL)
-           )
-          )
-    )
+        | (name=identifier WITH? user_or_role_option_for_alter user_or_role_option_for_alter*))
+    ;
+
+alter_user_or_role_set_reset
+    : (name=identifier | CURRENT_USER | SESSION_USER | ALL) (IN DATABASE db_name=identifier)? 
+      (SET config_param=identifier (TO | EQUAL) config_param_val=set_statement_value
+       | SET config_param=identifier FROM CURRENT
+       | RESET config_param=identifier
+       | RESET ALL)
     ;
 
 alter_group
-    : GROUP 
-    (
-        (name=identifier RENAME TO new_name=identifier)
-        | ((name=identifier | CURRENT_USER | SESSION_USER) (ADD | DROP) 
+    : GROUP (name=identifier RENAME TO new_name=identifier
+        | (name=identifier | CURRENT_USER | SESSION_USER) (ADD | DROP) 
             USER user_name+=identifier (COMMA user_name+=identifier)*)
-    )
     ;
 
 alter_tablespace
-    : TABLESPACE name=identifier
-      ( 
-          (RENAME TO new_name=identifier)
-          | (OWNER TO (owner=identifier | CURRENT_USER | SESSION_USER))
-          | (SET LEFT_PAREN tablespace_option=identifier EQUAL value=vex 
-                (COMMA tablespace_option=identifier EQUAL value=vex)* RIGHT_PAREN)
-          | (RESET LEFT_PAREN tablespace_option=identifier  
-                (COMMA tablespace_option=identifier)* RIGHT_PAREN)
-      )
+    : TABLESPACE name=identifier (RENAME TO new_name=identifier
+        | OWNER TO (owner=identifier | CURRENT_USER | SESSION_USER)
+        | SET LEFT_PAREN tablespace_option=identifier EQUAL value=vex 
+            (COMMA tablespace_option=identifier EQUAL value=vex)* RIGHT_PAREN
+        | RESET LEFT_PAREN tablespace_option=identifier  
+            (COMMA tablespace_option=identifier)* RIGHT_PAREN)
     ;
 
 alter_statistics
-    : STATISTICS name=schema_qualified_name 
-      (
-          (OWNER TO (owner=identifier | CURRENT_USER | SESSION_USER))
-          | (RENAME TO new_name=identifier)
-          | (SET SCHEMA schema_name=identifier)
-      )
+    : STATISTICS name=schema_qualified_name (RENAME TO new_name=identifier
+        | SET SCHEMA schema_name=identifier
+        | OWNER TO (owner=identifier | CURRENT_USER | SESSION_USER))
     ;
 
 alter_foreign_data_wrapper
-    : FOREIGN DATA WRAPPER name=identifier (
-        alter_foreign_data_wrapper_handler_validator_option
-        | alter_foreign_data_wrapper_owner
-        | alter_foreign_data_wrapper_rename)
+    : FOREIGN DATA WRAPPER name=identifier (alter_foreign_data_wrapper_handler_validator_option
+        | FOREIGN DATA WRAPPER name=identifier OWNER TO (owner=identifier | CURRENT_USER | SESSION_USER)
+        | FOREIGN DATA WRAPPER name=identifier RENAME TO new_name=identifier)
     ;
 
 alter_foreign_data_wrapper_handler_validator_option
@@ -698,41 +679,13 @@ alter_foreign_data_wrapper_handler_validator_option
     define_foreign_options?
     ;
 
-alter_foreign_data_wrapper_owner
-    : FOREIGN DATA WRAPPER name=identifier OWNER TO (owner=identifier | CURRENT_USER | SESSION_USER)
-    ;
-
-alter_foreign_data_wrapper_rename
-    :  FOREIGN DATA WRAPPER name=identifier RENAME TO new_name=identifier
-    ;
-
 drop_user_mapping
     : USER MAPPING (IF EXISTS)? FOR (identifier | USER | CURRENT_USER) SERVER identifier
-    ;
-
-drop_language_statement
-    : PROCEDURAL? LANGUAGE (IF EXISTS)? name=identifier cascade_restrict?
     ;
 
 drop_owned
     : OWNED BY (identifier | CURRENT_USER | SESSION_USER) (COMMA (identifier | CURRENT_USER | SESSION_USER))*
       cascade_restrict?
-    ;
-
-drop_access_method
-    : ACCESS METHOD (IF EXISTS)? name=identifier cascade_restrict?
-    ;
-
-drop_user_or_role_or_group
-    : (USER | ROLE | GROUP) (IF EXISTS)? name+=identifier (COMMA name+=identifier)*
-    ;
-
-drop_tablespace
-    : TABLESPACE (IF EXISTS)? name=identifier
-    ;
-
-drop_statistics
-    : STATISTICS (IF EXISTS)? name+=schema_qualified_name (COMMA name+=schema_qualified_name)*
     ;
 
 domain_constraint
@@ -784,12 +737,9 @@ user_or_role_common_option
     ;
 
 user_or_role_or_group_option_for_create
-    : IN ROLE option_role_name+=identifier (COMMA option_role_name+=identifier)*
-    | IN GROUP option_role_name+=identifier (COMMA option_role_name+=identifier)*
-    | ROLE option_role_name+=identifier (COMMA option_role_name+=identifier)*
-    | ADMIN option_role_name+=identifier (COMMA option_role_name+=identifier)*
-    | USER option_role_name+=identifier (COMMA option_role_name+=identifier)*
-    | SYSID vex
+    : SYSID vex
+    | (IN ROLE | IN GROUP | ROLE | ADMIN | USER) option_role_name+=identifier 
+        (COMMA option_role_name+=identifier)*
     ;
 
 create_group
@@ -802,25 +752,22 @@ group_option
     ;
 
 create_tablespace
-    : TABLESPACE name=identifier
-        (OWNER (owner=identifier | CURRENT_USER | SESSION_USER))?
-        LOCATION directory=Character_String_Literal
-        (WITH LEFT_PAREN tablespace_option=identifier EQUAL value=vex 
-            (COMMA tablespace_option=identifier EQUAL value=vex)* RIGHT_PAREN)?
+    : TABLESPACE name=identifier (OWNER (owner=identifier | CURRENT_USER | SESSION_USER))?
+    LOCATION directory=Character_String_Literal
+    (WITH LEFT_PAREN dictionary_option (COMMA dictionary_option)* RIGHT_PAREN)?
     ;
 
 create_statistics
     : STATISTICS (IF NOT EXISTS)? name=schema_qualified_name
-      (LEFT_PAREN statistisc_type+=identifier (COMMA statistisc_type+=identifier)* RIGHT_PAREN)?
-      ON table_column+=identifier COMMA table_column+=identifier (COMMA table_column+=identifier)*
-      FROM table_name=schema_qualified_name
+    (LEFT_PAREN statistisc_type+=identifier (COMMA statistisc_type+=identifier)* RIGHT_PAREN)?
+    ON table_column+=identifier COMMA table_column+=identifier (COMMA table_column+=identifier)*
+    FROM table_name=schema_qualified_name
     ;
 
 create_foreign_data_wrapper
-    : FOREIGN DATA WRAPPER name=identifier
-      (HANDLER handler_function=identifier | NO HANDLER )?
-      (VALIDATOR validator_function=identifier | NO VALIDATOR)?
-      (OPTIONS LEFT_PAREN option_without_eqal (COMMA option_without_eqal)* RIGHT_PAREN )?
+    : FOREIGN DATA WRAPPER name=identifier (HANDLER handler_function=identifier | NO HANDLER )?
+    (VALIDATOR validator_function=identifier | NO VALIDATOR)?
+    (OPTIONS LEFT_PAREN option_without_eqal (COMMA option_without_eqal)* RIGHT_PAREN )?
     ;
 
 option_without_eqal
@@ -828,16 +775,13 @@ option_without_eqal
     ;
 
 set_statement
-    : SET
-        (((SESSION | LOCAL)?
-            (config_param=identifier (TO | EQUAL) config_param_val+=set_statement_value (COMMA config_param_val+=set_statement_value)*
+    : SET (CONSTRAINTS (ALL | (constr_name+=schema_qualified_name (COMMA constr_name+=schema_qualified_name)*)) (DEFERRED | IMMEDIATE)
+        | TRANSACTION (transaction_mode+ | SNAPSHOT snapshot_id=Character_String_Literal)
+        | SESSION CHARACTERISTICS AS TRANSACTION transaction_mode+
+        | (SESSION | LOCAL)? (SESSION AUTHORIZATION (name=Character_String_Literal | DEFAULT)
             | TIME ZONE (timezone=Character_String_Literal | (LOCAL | DEFAULT))
-            | ROLE (name=Character_String_Literal | NONE)
-            | SESSION AUTHORIZATION (name=Character_String_Literal | DEFAULT))
-        )
-        | (CONSTRAINTS (ALL | (constr_name+=schema_qualified_name (COMMA constr_name+=schema_qualified_name)*)) (DEFERRED | IMMEDIATE))
-        | (TRANSACTION (transaction_mode+ | SNAPSHOT snapshot_id=Character_String_Literal))
-        | (SESSION CHARACTERISTICS AS TRANSACTION transaction_mode+))
+            | config_param=identifier (TO | EQUAL) config_param_val+=set_statement_value (COMMA config_param_val+=set_statement_value)*
+            | ROLE (name=Character_String_Literal | NONE)))
     ;
 
 set_statement_value
@@ -1372,7 +1316,8 @@ drop_rule_statement
     ;
 
 drop_statements
-    : (COLLATION
+    : (ACCESS METHOD
+    | COLLATION
     | DATABASE 
     | DOMAIN
     | EVENT TRIGGER 
@@ -1381,9 +1326,13 @@ drop_statements
     | FOREIGN DATA WRAPPER
     | INDEX CONCURRENTLY?
     | MATERIALIZED? VIEW
+    | PROCEDURAL? LANGUAGE
+    | (ROLE | USER | GROUP)
     | SCHEMA
     | SEQUENCE
     | SERVER
+    | STATISTICS
+    | TABLESPACE
     | TYPE
     | TEXT SEARCH (CONFIGURATION | DICTIONARY | PARSER | TEMPLATE)) if_exist_names_restrict_cascade
     ;
