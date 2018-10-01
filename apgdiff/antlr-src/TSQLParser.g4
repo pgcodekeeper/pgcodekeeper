@@ -241,11 +241,15 @@ if_statement
 
 // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/throw-transact-sql
 throw_statement
-    : THROW (decimal_or_local_id COMMA decimal_or_local_id COMMA decimal_or_local_id)?
+    : THROW (decimal_or_local_id COMMA string_or_local_id COMMA decimal_or_local_id)?
     ;
 
 decimal_or_local_id
     : DECIMAL | LOCAL_ID
+    ;
+
+string_or_local_id
+    : STRING | LOCAL_ID
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/try-catch-transact-sql
@@ -1534,9 +1538,8 @@ named_promoted_node_path_item
     ;
 
 string_id_local_id
-    : STRING
-    | id
-    | LOCAL_ID
+    : id
+    | string_or_local_id
     ;
 
 create_xml_index
@@ -2821,8 +2824,6 @@ function_call
     // https://msdn.microsoft.com/en-us/library/ms179930.aspx
     | SYSTEM_USER                                       #SYSTEM_USER
     | USER                                              #USER
-    // https://msdn.microsoft.com/en-us/library/ms184325.aspx
-    | ISNULL LR_BRACKET expression COMMA expression RR_BRACKET          #ISNULL
     // https://docs.microsoft.com/en-us/sql/t-sql/xml/xml-data-type-methods
     | xml_data_type_methods                             #XML_DATA_TYPE_FUNC
     ;
@@ -3091,14 +3092,14 @@ waitfor_conversation
     ;
 
 get_conversation
-    : GET CONVERSATION GROUP conversation_group_id=(STRING | LOCAL_ID) 
+    : GET CONVERSATION GROUP conversation_group_id=string_or_local_id
     FROM (database_name=id DOT schema_name=id DOT)? name=id
     ;
 
 send_conversation
-    : SEND ON CONVERSATION conversation_handle=(STRING | LOCAL_ID)
+    : SEND ON CONVERSATION conversation_handle=string_or_local_id
     MESSAGE TYPE message_type_name=expression
-    (LR_BRACKET message_body_expression=(STRING | LOCAL_ID) RR_BRACKET )?
+    (LR_BRACKET message_body_expression=string_or_local_id RR_BRACKET )?
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms187752.aspx
@@ -3544,6 +3545,7 @@ simple_id
     | POPULATION
     | PORT
     | PRECEDING
+    | PRECISION
     | PREDICATE
     | PRIMARY_ROLE
     | PRIOR
