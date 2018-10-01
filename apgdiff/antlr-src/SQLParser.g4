@@ -89,22 +89,21 @@ script_additional
     | REFRESH MATERIALIZED VIEW CONCURRENTLY? schema_qualified_name (WITH NO? DATA)?
     | PREPARE identifier (LEFT_PAREN predefined_type (COMMA predefined_type)* RIGHT_PAREN)? AS data_statement
     | EXECUTE identifier (LEFT_PAREN (vex | select_stmt) (COMMA (vex | select_stmt))* RIGHT_PAREN)?
-    | REASSIGN OWNED BY (identifier | CURRENT_USER | SESSION_USER) (COMMA (identifier | CURRENT_USER | SESSION_USER))* 
-      TO (identifier | CURRENT_USER | SESSION_USER)
+    | REASSIGN OWNED BY user_identifer_current_session (COMMA user_identifer_current_session)* 
+      TO user_identifer_current_session
     ;
 
 explain_option
-    : ANALYZE true_or_false?
-    | VERBOSE true_or_false?
-    | COSTS true_or_false?
-    | BUFFERS true_or_false?
-    | TIMING true_or_false?
-    | SUMMARY true_or_false?
+    : (ANALYZE | VERBOSE | COSTS | BUFFERS | TIMING | SUMMARY) true_or_false?
     | FORMAT (TEXT | XML | JSON | YAML)
     ;
 
 true_or_false
     : TRUE | FALSE
+    ;
+
+user_identifer_current_session
+    : name = identifier | CURRENT_USER | SESSION_USER
     ;
 
 qualified_table_name_perhaps_with_cols
@@ -338,10 +337,10 @@ alter_index_statement
     ;
 
 index_def
-    : index_if_exists_name (RENAME TO new_name=identifier
+    : index_if_exists_name (rename_to
         | RESET LEFT_PAREN name+=identifier (COMMA name+=identifier)* RIGHT_PAREN
         | SET (TABLESPACE tbl_spc=identifier 
-            | LEFT_PAREN dictionary_option (COMMA dictionary_option)* RIGHT_PAREN))
+            | LEFT_PAREN option_with_value (COMMA option_with_value)* RIGHT_PAREN))
     ;
 
 index_if_exists_name
@@ -404,8 +403,8 @@ alter_view_statement
 
 alter_event_trigger
     : EVENT TRIGGER name=identifier (DISABLE | ENABLE (REPLICA | ALWAYS)? 
-    | OWNER TO (owner=identifier | CURRENT_USER | SESSION_USER)
-    | RENAME TO new_name=identifier)
+    | OWNER TO user_identifer_current_session
+    | rename_to)
     ;
 
 alter_type_statement
@@ -567,11 +566,11 @@ create_server_statement
 create_fts_dictionary
     : TEXT SEARCH DICTIONARY name=schema_qualified_name
     LEFT_PAREN
-        TEMPLATE EQUAL template=schema_qualified_name (COMMA dictionary_option)*
+        TEMPLATE EQUAL template=schema_qualified_name (COMMA option_with_value)*
     RIGHT_PAREN
     ;
 
-dictionary_option
+option_with_value
     : name=identifier EQUAL value=vex
     ;
 
@@ -634,12 +633,12 @@ alter_user_mapping
 
 alter_user_or_role
     : (USER | ROLE) (alter_user_or_role_set_reset
-        | (old_name=identifier RENAME TO new_name=identifier)
+        | (old_name=identifier rename_to)
         | (name=identifier WITH? user_or_role_option_for_alter user_or_role_option_for_alter*))
     ;
 
 alter_user_or_role_set_reset
-    : (name=identifier | CURRENT_USER | SESSION_USER | ALL) (IN DATABASE db_name=identifier)? 
+    : (user_identifer_current_session | ALL) (IN DATABASE db_name=identifier)? 
       (SET config_param=identifier (TO | EQUAL) config_param_val=set_statement_value
        | SET config_param=identifier FROM CURRENT
        | RESET config_param=identifier
@@ -647,14 +646,14 @@ alter_user_or_role_set_reset
     ;
 
 alter_group
-    : GROUP (name=identifier RENAME TO new_name=identifier
-        | (name=identifier | CURRENT_USER | SESSION_USER) (ADD | DROP) 
+    : GROUP (name=identifier rename_to
+        | user_identifer_current_session (ADD | DROP) 
             USER user_name+=identifier (COMMA user_name+=identifier)*)
     ;
 
 alter_tablespace
-    : TABLESPACE name=identifier (RENAME TO new_name=identifier
-        | OWNER TO (owner=identifier | CURRENT_USER | SESSION_USER)
+    : TABLESPACE name=identifier (rename_to
+        | OWNER TO user_identifer_current_session
         | SET LEFT_PAREN tablespace_option=identifier EQUAL value=vex 
             (COMMA tablespace_option=identifier EQUAL value=vex)* RIGHT_PAREN
         | RESET LEFT_PAREN tablespace_option=identifier  
@@ -662,15 +661,15 @@ alter_tablespace
     ;
 
 alter_statistics
-    : STATISTICS name=schema_qualified_name (RENAME TO new_name=identifier
+    : STATISTICS name=schema_qualified_name (rename_to
         | SET SCHEMA schema_name=identifier
-        | OWNER TO (owner=identifier | CURRENT_USER | SESSION_USER))
+        | OWNER TO user_identifer_current_session)
     ;
 
 alter_foreign_data_wrapper
     : FOREIGN DATA WRAPPER name=identifier (alter_foreign_data_wrapper_handler_validator_option
-        | FOREIGN DATA WRAPPER name=identifier OWNER TO (owner=identifier | CURRENT_USER | SESSION_USER)
-        | FOREIGN DATA WRAPPER name=identifier RENAME TO new_name=identifier)
+        | FOREIGN DATA WRAPPER name=identifier OWNER TO user_identifer_current_session
+        | FOREIGN DATA WRAPPER name=identifier rename_to)
     ;
 
 alter_foreign_data_wrapper_handler_validator_option
@@ -684,7 +683,7 @@ drop_user_mapping
     ;
 
 drop_owned
-    : OWNED BY (identifier | CURRENT_USER | SESSION_USER) (COMMA (identifier | CURRENT_USER | SESSION_USER))*
+    : OWNED BY user_identifer_current_session (COMMA user_identifer_current_session)*
       cascade_restrict?
     ;
 
@@ -752,9 +751,9 @@ group_option
     ;
 
 create_tablespace
-    : TABLESPACE name=identifier (OWNER (owner=identifier | CURRENT_USER | SESSION_USER))?
+    : TABLESPACE name=identifier (OWNER user_identifer_current_session)?
     LOCATION directory=Character_String_Literal
-    (WITH LEFT_PAREN dictionary_option (COMMA dictionary_option)* RIGHT_PAREN)?
+    (WITH LEFT_PAREN option_with_value (COMMA option_with_value)* RIGHT_PAREN)?
     ;
 
 create_statistics
