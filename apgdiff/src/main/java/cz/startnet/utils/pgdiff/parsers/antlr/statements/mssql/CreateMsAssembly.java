@@ -5,8 +5,8 @@ import java.util.regex.Pattern;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Assembly_permissionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_assemblyContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ExpressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.String_binaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.MsAssembly;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -32,10 +32,8 @@ public class CreateMsAssembly extends ParserAbstract {
             ass.setOwner(owner.getText());
         }
 
-        for (String_binaryContext binary : ctx.string_binary()) {
-            if (binary.BINARY() != null) {
-                ass.addBinary(formatBinary(getFullCtxText(binary)));
-            }
+        for (ExpressionContext binary : ctx.expression()) {
+            ass.addBinary(formatBinary(getFullCtxText(binary)));
         }
 
         Assembly_permissionContext permission = ctx.assembly_permission();

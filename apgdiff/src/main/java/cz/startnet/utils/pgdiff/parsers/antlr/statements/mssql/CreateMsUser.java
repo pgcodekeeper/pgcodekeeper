@@ -1,7 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
-import java.util.List;
-
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_userContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.User_loginContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.User_optionContext;
@@ -28,9 +26,7 @@ public class CreateMsUser extends ParserAbstract {
             user.setOwner(login.login_name.getText());
         }
 
-        List<User_optionContext> options = ctx.user_option();
-
-        for (User_optionContext option : options) {
+        for (User_optionContext option : ctx.user_option()) {
             if (option.schema_name != null) {
                 user.setSchema(option.schema_name.getText());
             }

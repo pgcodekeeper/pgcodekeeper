@@ -2,9 +2,9 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Disable_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Simple_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Simple_namesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_nameContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Trigger_nameContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Trigger_namesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -22,7 +22,7 @@ public class DisableMsTrigger extends ParserAbstract {
 
     @Override
     public PgStatement getObject() {
-        Trigger_namesContext triggers = ctx.trigger_names();
+        Simple_namesContext triggers = ctx.simple_names();
         Table_nameContext parent = ctx.table_name();
         if (triggers == null || parent == null) {
             return null;
@@ -35,7 +35,7 @@ public class DisableMsTrigger extends ParserAbstract {
             cont = getSafe(schema::getView, parent.table);
         }
 
-        for (Trigger_nameContext trigger : triggers.trigger_name()) {
+        for (Simple_nameContext trigger : triggers.simple_name()) {
             cont.getTrigger(trigger.name.getText()).setDisable(true);
         }
 

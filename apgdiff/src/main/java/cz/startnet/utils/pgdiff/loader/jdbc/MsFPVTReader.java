@@ -75,15 +75,15 @@ public class MsFPVTReader extends JdbcReader {
         };
 
         if (tt == DbObjType.TRIGGER) {
-            loader.submitMsAntlrTask(def, p -> p.tsql_file().batch(0).sql_clauses()
-                    .st_clause(0).ddl_clause().schema_create().create_or_alter_trigger(),
+            loader.submitMsAntlrTask(def, p -> p.tsql_file().batch(0).batch_statement()
+                    .create_or_alter_trigger(),
                     ctx -> {
                         MsTrigger tr = new CreateMsTrigger(ctx, db, an, qi).getObject(schema);
                         tr.setDisable(isDisable);
                     });
         } else if (tt == DbObjType.VIEW) {
-            loader.submitMsAntlrTask(def, p -> p.tsql_file().batch(0).sql_clauses()
-                    .st_clause(0).ddl_clause().schema_create().create_or_alter_view(),
+            loader.submitMsAntlrTask(def, p -> p.tsql_file().batch(0).batch_statement()
+                    .create_or_alter_view(),
                     ctx -> {
                         PgStatement st = new CreateMsView(ctx, db, an, qi).getObject();
                         loader.setOwner(st, owner);
@@ -98,8 +98,8 @@ public class MsFPVTReader extends JdbcReader {
                         cons.accept((PgStatementWithSearchPath)st, acls);
                     });
         } else {
-            loader.submitMsAntlrTask(def, p -> p.tsql_file().batch(0).sql_clauses()
-                    .st_clause(0).ddl_clause().schema_create().create_or_alter_function(),
+            loader.submitMsAntlrTask(def, p -> p.tsql_file().batch(0).batch_statement()
+                    .create_or_alter_function(),
                     ctx -> {
                         PgStatement st = new CreateMsFunction(ctx, db, an, qi).getObject(schema);
                         loader.setOwner(st, owner);

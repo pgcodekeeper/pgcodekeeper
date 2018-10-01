@@ -11,7 +11,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.TSqlContextP
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Another_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.BatchContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_procedureContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Ddl_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Disable_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_alterContext;
@@ -133,12 +132,30 @@ public class CustomTSQLParserListener implements TSqlContextProcessor {
         }
     }
 
-    private void batchStatement(Batch_statementContext batchSt) {
-        Create_or_alter_procedureContext proc = batchSt.create_or_alter_procedure();
-        if (proc != null && batchSt.CREATE() != null) {
-            safeParseStatement(new CreateMsProcedure(
-                    proc, db, ansiNulls, quotedIdentifier), batchSt);
+    private void batchStatement(Batch_statementContext ctx) {
+        if (ctx.CREATE() == null) {
+            return;
         }
+
+        ParserAbstract p;
+
+        if (ctx.create_or_alter_procedure() != null) {
+            p = new CreateMsProcedure(ctx.create_or_alter_procedure(),
+                    db, ansiNulls, quotedIdentifier);
+        } else if (ctx.create_or_alter_function() != null) {
+            p = new CreateMsFunction(ctx.create_or_alter_function(),
+                    db, ansiNulls, quotedIdentifier);
+        } else if (ctx.create_or_alter_view() != null) {
+            p = new CreateMsView(ctx.create_or_alter_view(),
+                    db, ansiNulls, quotedIdentifier);
+        } else if (ctx.create_or_alter_trigger() != null) {
+            p = new CreateMsTrigger(ctx.create_or_alter_trigger(),
+                    db, ansiNulls, quotedIdentifier);
+        } else {
+            return;
+        }
+
+        safeParseStatement(p, ctx);
     }
 
     private void create(Schema_createContext ctx) {
@@ -147,17 +164,8 @@ public class CustomTSQLParserListener implements TSqlContextProcessor {
             p = new CreateMsSequence(ctx.create_sequence(), db);
         } else if (ctx.create_schema() != null) {
             p = new CreateMsSchema(ctx.create_schema(), db);
-        } else if (ctx.create_or_alter_view() != null) {
-            p = new CreateMsView(ctx.create_or_alter_view(),
-                    db, ansiNulls, quotedIdentifier);
-        } else if (ctx.create_or_alter_trigger() != null) {
-            p = new CreateMsTrigger(ctx.create_or_alter_trigger(),
-                    db, ansiNulls, quotedIdentifier);
         } else if (ctx.create_index() != null) {
             p = new CreateMsIndex(ctx.create_index(), db);
-        } else if (ctx.create_or_alter_function() != null) {
-            p = new CreateMsFunction(ctx.create_or_alter_function(),
-                    db, ansiNulls, quotedIdentifier);
         } else if (ctx.create_table() != null) {
             p = new CreateMsTable(ctx.create_table(), db, ansiNulls);
         } else if (ctx.create_assembly() != null) {
