@@ -39,6 +39,10 @@ public interface UIConsts {
         String OVERRIDE_VIEW = PLUGIN_ID.THIS + ".pgoverrideview"; //$NON-NLS-1$
     }
 
+    interface WIZARD {
+        String NEW_PROJECT_WIZARD = PLUGIN_ID.THIS + ".newprojwizard"; //$NON-NLS-1$
+    }
+
     interface COMMAND {
         /* EGit commit command id
         (value of org.eclipse.egit.ui.internal.actions.ActionCommands.COMMIT_ACTION) */
