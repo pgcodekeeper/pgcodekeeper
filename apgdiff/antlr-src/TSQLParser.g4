@@ -17,7 +17,11 @@ batch
 
 // for statements that must be the only ones in an entire batch
 batch_statement
-    : (CREATE | ALTER) create_or_alter_procedure
+    : (CREATE | ALTER)
+        ( create_or_alter_procedure
+        | create_or_alter_function SEMI*
+        | create_or_alter_view SEMI*
+        | create_or_alter_trigger SEMI*)
     ;
 
 sql_clauses
@@ -102,11 +106,7 @@ schema_alter
     | alter_xml_schema_collection
     | create_or_alter_broker_priority
     | create_or_alter_event_session
-    | create_or_alter_function
-    //| create_or_alter_procedure
     | create_or_alter_resource_pool
-    | create_or_alter_trigger
-    | create_or_alter_view
     | create_symmetric_key)
     ;
 
@@ -141,11 +141,7 @@ schema_create
     | create_message_type
     | create_or_alter_broker_priority
     | create_or_alter_event_session
-    | create_or_alter_function
-    //| create_or_alter_procedure
     | create_or_alter_resource_pool
-    | create_or_alter_trigger
-    | create_or_alter_view
     | create_partition_function
     | create_partition_scheme
     | create_queue
