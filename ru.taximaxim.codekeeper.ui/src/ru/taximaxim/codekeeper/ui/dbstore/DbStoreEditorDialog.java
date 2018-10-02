@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.swt.SWT;
@@ -267,28 +268,30 @@ public class DbStoreEditorDialog extends TrayDialog {
         btnMsSql.setText(Messages.DbStoreEditorDialog_connect_to_ms);
         btnMsSql.addSelectionListener(msStateUpdater);
 
-        new Label(tabAreaDb, SWT.NONE).setText(Messages.DbStoreEditorDialog_win_auth);
+        if (Platform.OS_WIN32.equals(Platform.getOS())) {
+            new Label(tabAreaDb, SWT.NONE).setText(Messages.DbStoreEditorDialog_win_auth);
 
-        Composite cWinAuth = new Composite(tabAreaDb, SWT.NONE);
-        GridLayout gl = new GridLayout(2, false);
-        gl.marginWidth = 0;
-        gl.marginHeight = 0;
-        cWinAuth.setLayout(gl);
-        cWinAuth.setLayoutData(new GridData(SWT.LEFT, SWT.DEFAULT, true, false, 3, 1));
+            Composite cWinAuth = new Composite(tabAreaDb, SWT.NONE);
+            GridLayout gl = new GridLayout(2, false);
+            gl.marginWidth = 0;
+            gl.marginHeight = 0;
+            cWinAuth.setLayout(gl);
+            cWinAuth.setLayoutData(new GridData(SWT.LEFT, SWT.DEFAULT, true, false, 3, 1));
 
-        btnWinAuth = new Button(cWinAuth, SWT.CHECK);
-        btnWinAuth.setText(Messages.DbStoreEditorDialog_use_win_auth);
-        btnWinAuth.addSelectionListener(msStateUpdater);
+            btnWinAuth = new Button(cWinAuth, SWT.CHECK);
+            btnWinAuth.setText(Messages.DbStoreEditorDialog_use_win_auth);
+            btnWinAuth.addSelectionListener(msStateUpdater);
 
-        Link l = new Link(cWinAuth, SWT.NONE);
-        l.setText(Messages.DbStoreEditorDialog_learn_more);
-        l.addSelectionListener(new SelectionAdapter() {
+            Link l = new Link(cWinAuth, SWT.NONE);
+            l.setText(Messages.DbStoreEditorDialog_learn_more);
+            l.addSelectionListener(new SelectionAdapter() {
 
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                Program.launch("https://docs.microsoft.com/en-us/sql/connect/jdbc/building-the-connection-url#Connectingintegrated"); //$NON-NLS-1$
-            }
-        });
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    Program.launch("https://docs.microsoft.com/en-us/sql/connect/jdbc/building-the-connection-url#Connectingintegrated"); //$NON-NLS-1$
+                }
+            });
+        }
 
         int verticalIndent = 15;
 
