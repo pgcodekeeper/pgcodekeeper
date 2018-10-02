@@ -134,7 +134,7 @@ public abstract class DbSource {
             return DbSource.fromJdbc(dbinfo.getDbHost(), dbinfo.getDbPort(),
                     dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),
                     dbinfo.getProperties(), dbinfo.isReadOnly(), timezone,
-                    forceUnixNewlines, dbinfo.isMsSql());
+                    forceUnixNewlines, dbinfo.isMsSql(), dbinfo.isWinAuth());
         }
     }
 
@@ -148,9 +148,9 @@ public abstract class DbSource {
 
     public static DbSource fromJdbc(String host, int port, String user, String pass, String dbname,
             Map<String, String> properties, boolean readOnly, String timezone,
-            boolean forceUnixNewlines, boolean isMsSql) {
+            boolean forceUnixNewlines, boolean isMsSql, boolean winAuth) {
         return new DbSourceJdbc(host, port, user, pass, dbname, properties, readOnly, timezone,
-                forceUnixNewlines, isMsSql);
+                forceUnixNewlines, isMsSql, winAuth);
     }
 
     public static DbSource fromDbObject(PgDatabase db, String origin) {
@@ -382,14 +382,14 @@ class DbSourceJdbc extends DbSource {
 
     DbSourceJdbc(String host, int port, String user, String pass, String dbName,
             Map<String, String> properties, boolean readOnly, String timezone,
-            boolean forceUnixNewlines, boolean isMsSql) {
+            boolean forceUnixNewlines, boolean isMsSql, boolean winAuth) {
         super(dbName);
         this.dbName = dbName;
         this.forceUnixNewlines = forceUnixNewlines;
         this.isMsSql = isMsSql;
         if (isMsSql) {
             jdbcConnector = new JdbcMsConnector(host, port, user, pass, dbName, properties,
-                    readOnly);
+                    readOnly, winAuth);
         } else {
             jdbcConnector = new JdbcConnector(host, port, user, pass, dbName, properties,
                     readOnly, timezone);

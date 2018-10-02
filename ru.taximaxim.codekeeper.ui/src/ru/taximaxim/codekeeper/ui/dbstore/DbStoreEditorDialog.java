@@ -17,6 +17,7 @@ import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.events.ShellAdapter;
 import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.layout.GridData;
@@ -60,12 +61,31 @@ public class DbStoreEditorDialog extends TrayDialog {
     private Button btnReadOnly;
     private Button btnGenerateName;
     private Button btnMsSql;
+    private Button btnWinAuth;
 
     private IgnoreListEditor ignoreListEditor;
     private DbPropertyListEditor propertyListEditor;
 
+    private final SelectionListener msStateUpdater = new SelectionAdapter() {
+
+        @Override
+        public void widgetSelected(SelectionEvent e) {
+            boolean ms = btnMsSql.getSelection();
+            boolean win = ms && isWinAuth();
+            if (btnWinAuth != null) {
+                btnWinAuth.setEnabled(ms);
+            }
+            txtDbUser.setEnabled(!win);
+            txtDbPass.setEnabled(!win);
+        }
+    };
+
     public DbInfo getDbInfo(){
         return dbInfo;
+    }
+
+    private boolean isWinAuth() {
+        return btnWinAuth != null && btnWinAuth.getSelection();
     }
 
     public DbStoreEditorDialog(Shell shell, DbInfo dbInitial) {
@@ -110,6 +130,10 @@ public class DbStoreEditorDialog extends TrayDialog {
 
                     btnReadOnly.setSelection(dbInitial.isReadOnly());
                     btnMsSql.setSelection(dbInitial.isMsSql());
+                    if (btnWinAuth != null) {
+                        btnWinAuth.setSelection(dbInitial.isWinAuth());
+                    }
+                    msStateUpdater.widgetSelected(null);
                 }
 
                 txtDbHost.setText(dbHost);
@@ -184,7 +208,7 @@ public class DbStoreEditorDialog extends TrayDialog {
         new Label(tabAreaDb, SWT.NONE).setText(Messages.dbPicker_port);
 
         txtDbPort = new Text(tabAreaDb, SWT.BORDER);
-        txtDbPort.setLayoutData(new GridData(SWT.FILL, SWT.NONE, false, false));
+        txtDbPort.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, false, false));
         txtDbPort.addVerifyListener(e -> {
             try {
                 if (!e.text.isEmpty() && Integer.valueOf(e.text) < 0) {
@@ -199,19 +223,19 @@ public class DbStoreEditorDialog extends TrayDialog {
         new Label(tabAreaDb, SWT.NONE).setText(Messages.dB_name);
 
         txtDbName = new Text(tabAreaDb, SWT.BORDER);
-        txtDbName.setLayoutData(new GridData(SWT.FILL, SWT.NONE, false, false, 3, 1));
+        txtDbName.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, false, false, 3, 1));
         txtDbName.addModifyListener(modifyListener);
 
         new Label(tabAreaDb, SWT.NONE).setText(Messages.dB_user);
 
         txtDbUser = new Text(tabAreaDb, SWT.BORDER);
-        txtDbUser.setLayoutData(new GridData(SWT.FILL, SWT.NONE, false, false, 3, 1));
+        txtDbUser.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, false, false, 3, 1));
         txtDbUser.addModifyListener(modifyListener);
 
         new Label(tabAreaDb, SWT.NONE).setText(Messages.dB_password);
 
         txtDbPass = new Text(tabAreaDb, SWT.BORDER | SWT.PASSWORD);
-        txtDbPass.setLayoutData(new GridData(SWT.FILL, SWT.NONE, false, false, 3, 1));
+        txtDbPass.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, false, false, 3, 1));
         txtDbPass.addModifyListener(e -> {
             GridData data = (GridData) lblWarnDbPass.getLayoutData();
 
@@ -233,13 +257,38 @@ public class DbStoreEditorDialog extends TrayDialog {
         new Label(tabAreaDb, SWT.NONE).setText(Messages.DbStoreEditorDialog_read_only);
 
         btnReadOnly = new Button(tabAreaDb, SWT.CHECK);
-        btnReadOnly.setLayoutData(new GridData(SWT.FILL, SWT.NONE, false, false, 3, 1));
+        btnReadOnly.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, false, false, 3, 1));
         btnReadOnly.setText(Messages.DbStoreEditorDialog_read_only_description);
 
         new Label(tabAreaDb, SWT.NONE).setText(Messages.DbStoreEditorDialog_ms_sql_database);
 
         btnMsSql = new Button(tabAreaDb, SWT.CHECK);
-        btnMsSql.setLayoutData(new GridData(SWT.FILL, SWT.NONE, false, false, 3, 1));
+        btnMsSql.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, false, false, 3, 1));
+        btnMsSql.setText("connect to MS SQL Server");
+        btnMsSql.addSelectionListener(msStateUpdater);
+
+        new Label(tabAreaDb, SWT.NONE).setText("Windows auth");
+
+        Composite cWinAuth = new Composite(tabAreaDb, SWT.NONE);
+        GridLayout gl = new GridLayout(2, false);
+        gl.marginWidth = 0;
+        gl.marginHeight = 0;
+        cWinAuth.setLayout(gl);
+        cWinAuth.setLayoutData(new GridData(SWT.LEFT, SWT.DEFAULT, true, false, 3, 1));
+
+        btnWinAuth = new Button(cWinAuth, SWT.CHECK);
+        btnWinAuth.setText("use current Windows credentials for MS SQL Server");
+        btnWinAuth.addSelectionListener(msStateUpdater);
+
+        Link l = new Link(cWinAuth, SWT.NONE);
+        l.setText("<a>Learn more</a>...");
+        l.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                Program.launch("https://docs.microsoft.com/en-us/sql/connect/jdbc/building-the-connection-url#Connectingintegrated");
+            }
+        });
 
         int verticalIndent = 15;
 
@@ -284,14 +333,13 @@ public class DbStoreEditorDialog extends TrayDialog {
 
         Link linkHint = new Link(tabAreaProperties, SWT.NONE);
         String link = "https://jdbc.postgresql.org/documentation/head/connect.html"; //$NON-NLS-1$
-        linkHint.setText("<a href=\"" + link +  "\">" + link + "</a>"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        linkHint.setText("<a>" + link + "</a>"); //$NON-NLS-1$ //$NON-NLS-2$
         linkHint.addSelectionListener(new SelectionAdapter()  {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
                 Program.launch(link);
             }
-
         });
 
         propertyListEditor = new DbPropertyListEditor(tabAreaProperties);
@@ -338,7 +386,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                                 txtDbUser.getText(), txtDbPass.getText(),
                                 txtDbName.getText(), propertyListEditor.getList().stream()
                                 .collect(Collectors.toMap(Entry::getKey, Entry::getValue)),
-                                btnReadOnly.getSelection());
+                                btnReadOnly.getSelection(), isWinAuth());
                     } else {
                         connector = new JdbcConnector(txtDbHost.getText(), dbport,
                                 txtDbUser.getText(), txtDbPass.getText(),
@@ -397,7 +445,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                 btnGenerateName.getSelection(), ignoreListEditor.getList(),
                 propertyListEditor.getList().stream()
                 .collect(Collectors.toMap(Entry::getKey, Entry::getValue)),
-                btnMsSql.getSelection());
+                btnMsSql.getSelection(), isWinAuth());
         super.okPressed();
     }
 
