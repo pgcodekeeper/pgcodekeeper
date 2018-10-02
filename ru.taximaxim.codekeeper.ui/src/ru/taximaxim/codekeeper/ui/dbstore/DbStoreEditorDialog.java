@@ -264,10 +264,10 @@ public class DbStoreEditorDialog extends TrayDialog {
 
         btnMsSql = new Button(tabAreaDb, SWT.CHECK);
         btnMsSql.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, false, false, 3, 1));
-        btnMsSql.setText("connect to MS SQL Server");
+        btnMsSql.setText(Messages.DbStoreEditorDialog_connect_to_ms);
         btnMsSql.addSelectionListener(msStateUpdater);
 
-        new Label(tabAreaDb, SWT.NONE).setText("Windows auth");
+        new Label(tabAreaDb, SWT.NONE).setText(Messages.DbStoreEditorDialog_win_auth);
 
         Composite cWinAuth = new Composite(tabAreaDb, SWT.NONE);
         GridLayout gl = new GridLayout(2, false);
@@ -277,16 +277,16 @@ public class DbStoreEditorDialog extends TrayDialog {
         cWinAuth.setLayoutData(new GridData(SWT.LEFT, SWT.DEFAULT, true, false, 3, 1));
 
         btnWinAuth = new Button(cWinAuth, SWT.CHECK);
-        btnWinAuth.setText("use current Windows credentials for MS SQL Server");
+        btnWinAuth.setText(Messages.DbStoreEditorDialog_use_win_auth);
         btnWinAuth.addSelectionListener(msStateUpdater);
 
         Link l = new Link(cWinAuth, SWT.NONE);
-        l.setText("<a>Learn more</a>...");
+        l.setText(Messages.DbStoreEditorDialog_learn_more);
         l.addSelectionListener(new SelectionAdapter() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                Program.launch("https://docs.microsoft.com/en-us/sql/connect/jdbc/building-the-connection-url#Connectingintegrated");
+                Program.launch("https://docs.microsoft.com/en-us/sql/connect/jdbc/building-the-connection-url#Connectingintegrated"); //$NON-NLS-1$
             }
         });
 
