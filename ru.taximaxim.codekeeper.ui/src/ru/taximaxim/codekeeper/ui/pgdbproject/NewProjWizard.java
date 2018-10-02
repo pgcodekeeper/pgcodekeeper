@@ -52,6 +52,7 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.WIZARD;
 import ru.taximaxim.codekeeper.ui.UIConsts.WORKING_SET;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
@@ -67,6 +68,7 @@ implements IExecutableExtension, INewWizard {
     private PageDb pageDb;
 
     private final IPreferenceStore mainPrefStore;
+    private boolean isPostgres;
     private IConfigurationElement config;
     private IWorkbench workbench;
     private IStructuredSelection selection;
@@ -85,7 +87,7 @@ implements IExecutableExtension, INewWizard {
         // page names shouldn't be localized, use page titles instead
         pageRepo = new PageRepo("main", selection); //$NON-NLS-1$
         addPage(pageRepo);
-        pageDb = new PageDb("schema", mainPrefStore); //$NON-NLS-1$
+        pageDb = new PageDb(isPostgres, "schema", mainPrefStore); //$NON-NLS-1$
         addPage(pageDb);
     }
 
@@ -123,23 +125,26 @@ implements IExecutableExtension, INewWizard {
         boolean initSuccess = false;
         try {
             props = PgDbProject.createPgDbProject(pageRepo.getProjectHandle(),
-                    pageRepo.useDefaults() ? null : pageRepo.getLocationURI(), pageDb.isMsSql());
+                    pageRepo.useDefaults() ? null : pageRepo.getLocationURI(), !isPostgres);
             props.getProject().open(null);
             props.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
 
             if (!checkMarkerExist()) {
                 String charset = pageDb.getCharset();
-                String timezone = pageDb.getTimeZone();
                 if (!charset.isEmpty() && !ResourcesPlugin.getWorkspace().getRoot()
                         .getDefaultCharset().equals(charset)) {
                     props.setProjectCharset(charset);
                 }
-                if (!pageDb.isMsSql() && !timezone.isEmpty() && !ApgdiffConsts.UTC.equals(timezone)) {
-                    props.getPrefs().put(PROJ_PREF.TIMEZONE, timezone);
-                    try {
-                        props.getPrefs().flush();
-                    } catch (BackingStoreException e) {
-                        Log.log(Log.LOG_WARNING, "Error while flushing project properties!", e); //$NON-NLS-1$
+
+                if (isPostgres) {
+                    String timezone = pageDb.getTimeZone();
+                    if (!timezone.isEmpty() && !ApgdiffConsts.UTC.equals(timezone)) {
+                        props.getPrefs().put(PROJ_PREF.TIMEZONE, timezone);
+                        try {
+                            props.getPrefs().flush();
+                        } catch (BackingStoreException e) {
+                            Log.log(Log.LOG_WARNING, "Error while flushing project properties!", e); //$NON-NLS-1$
+                        }
                     }
                 }
 
@@ -191,7 +196,7 @@ implements IExecutableExtension, INewWizard {
         } else if (dbinfo != null) {
             src = DbSource.fromDbInfo(dbinfo, mainPrefStore, forceUnixNewlines, charset, timezone);
         } else if ((dump = pageDb.getDumpPath()) != null) {
-            src = DbSource.fromFile(forceUnixNewlines, dump, charset, pageDb.isMsSql());
+            src = DbSource.fromFile(forceUnixNewlines, dump, charset, !isPostgres);
         } else {
             // should be prevented by page completion state
             throw new IllegalStateException(Messages.initProjectFromSource_init_request_but_no_schema_source);
@@ -204,6 +209,7 @@ implements IExecutableExtension, INewWizard {
     public void setInitializationData(IConfigurationElement config,
             String propertyName, Object data) throws CoreException {
         this.config = config;
+        this.isPostgres = WIZARD.NEW_PROJECT_WIZARD.equals(config.getAttribute("id")); //$NON-NLS-1$
     }
 
     @Override
@@ -239,13 +245,15 @@ class PageDb extends WizardPage {
             + " WHERE pg_catalog.lower(name) = 'timezone' AND applied AND error IS NULL"; //$NON-NLS-1$
 
     private final IPreferenceStore mainPrefs;
+    private final boolean isPostgres;
+
     private Button btnInit;
     private Button btnGetTz;
-    private Button btnMsSql;
     private DbStorePicker storePicker;
     private ComboViewer timezoneCombo;
     private ComboViewer charsetCombo;
     private CLabel lblWarnPosix;
+
 
     public DbInfo getDbInfo() {
         return storePicker.getDbInfo();
@@ -263,17 +271,14 @@ class PageDb extends WizardPage {
         return btnInit.getSelection();
     }
 
-    public boolean isMsSql() {
-        return btnMsSql.getSelection();
-    }
-
     public String getTimeZone(){
         return timezoneCombo.getCombo().getText();
     }
 
-    PageDb(String pageName, IPreferenceStore mainPrefs) {
+    PageDb(boolean isPostgres, String pageName, IPreferenceStore mainPrefs) {
         super(pageName, pageName, null);
         this.mainPrefs = mainPrefs;
+        this.isPostgres = isPostgres;
 
         setTitle(Messages.NewProjWizard_proj_init);
         setDescription(Messages.NewProjWizard_proj_init_src);
@@ -301,20 +306,9 @@ class PageDb extends WizardPage {
             }
         });
 
-        btnMsSql = new Button(group, SWT.CHECK);
-        btnMsSql.setText(Messages.NewProjWizard_ms_project);
-        btnMsSql.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                storePicker.filter(btnMsSql.getSelection());
-                modifyButtons();
-            }
-        });
-
         storePicker = new DbStorePicker(group, mainPrefs, true, false, false);
         storePicker.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
-        storePicker.filter(false);
+        storePicker.filter(!isPostgres);
         storePicker.addListenerToCombo(e -> modifyButtons());
 
         //char sets
@@ -327,61 +321,56 @@ class PageDb extends WizardPage {
         charsetCombo.setSelection(new StructuredSelection(ApgdiffConsts.UTF_8));
 
         //time zones
-        new Label(container, SWT.NONE).setText(Messages.NewProjWizard_select_time_zone);
+        if (isPostgres) {
+            new Label(container, SWT.NONE).setText(Messages.NewProjWizard_select_time_zone);
 
-        timezoneCombo = new ComboViewer(container, SWT.DROP_DOWN);
-        timezoneCombo.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false));
-        timezoneCombo.setContentProvider(ArrayContentProvider.getInstance());
-        timezoneCombo.setInput(UIConsts.TIME_ZONES);
-        timezoneCombo.setSelection(new StructuredSelection(ApgdiffConsts.UTC));
-        timezoneCombo.getCombo().addModifyListener(e -> timeZoneWarn());
+            timezoneCombo = new ComboViewer(container, SWT.DROP_DOWN);
+            timezoneCombo.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false));
+            timezoneCombo.setContentProvider(ArrayContentProvider.getInstance());
+            timezoneCombo.setInput(UIConsts.TIME_ZONES);
+            timezoneCombo.setSelection(new StructuredSelection(ApgdiffConsts.UTC));
+            timezoneCombo.getCombo().addModifyListener(e -> timeZoneWarn());
 
-        btnGetTz = new Button(container, SWT.PUSH);
-        btnGetTz.setText(Messages.NewProjWizard_get_from_db);
-        btnGetTz.setEnabled(storePicker.getDbInfo() != null);
-        btnGetTz.addSelectionListener(new SelectionAdapter() {
+            btnGetTz = new Button(container, SWT.PUSH);
+            btnGetTz.setText(Messages.NewProjWizard_get_from_db);
+            btnGetTz.setEnabled(storePicker.getDbInfo() != null);
+            btnGetTz.addSelectionListener(new SelectionAdapter() {
 
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                DbInfo dbinfo = getDbInfo();
-                if (dbinfo == null) {
-                    return;
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    DbInfo dbinfo = getDbInfo();
+                    if (dbinfo == null) {
+                        return;
+                    }
+                    try {
+                        TimeZoneProgress progress = new TimeZoneProgress(dbinfo);
+                        getContainer().run(true, true, progress);
+                        String timezone = progress.timezone;
+                        timezoneCombo.getCombo().setText(timezone == null ? ApgdiffConsts.UTC : timezone);
+                    } catch (InterruptedException ex) {
+                        // cancelled
+                    } catch (InvocationTargetException ex) {
+                        ExceptionNotifier.notifyDefault(Messages.NewProjWizard_error_tz_query, ex);
+                    }
                 }
-                try {
-                    TimeZoneProgress progress = new TimeZoneProgress(dbinfo);
-                    getContainer().run(true, true, progress);
-                    String timezone = progress.timezone;
-                    timezoneCombo.getCombo().setText(timezone == null ? ApgdiffConsts.UTC : timezone);
-                } catch (InterruptedException ex) {
-                    // cancelled
-                } catch (InvocationTargetException ex) {
-                    ExceptionNotifier.notifyDefault(Messages.NewProjWizard_error_tz_query, ex);
-                }
-            }
-        });
+            });
 
-        lblWarnPosix = new CLabel(container, SWT.NONE);
-        lblWarnPosix.setImage(Activator.getEclipseImage(ISharedImages.IMG_OBJS_WARN_TSK));
-        lblWarnPosix.setText(Messages.ProjectProperties_posix_is_used_warn);
-        GridData gd = new GridData(SWT.FILL, SWT.DEFAULT, false, false, 3, 1);
-        gd.exclude = true;
-        lblWarnPosix.setLayoutData(gd);
+            lblWarnPosix = new CLabel(container, SWT.NONE);
+            lblWarnPosix.setImage(Activator.getEclipseImage(ISharedImages.IMG_OBJS_WARN_TSK));
+            lblWarnPosix.setText(Messages.ProjectProperties_posix_is_used_warn);
+            GridData gd = new GridData(SWT.FILL, SWT.DEFAULT, false, false, 3, 1);
+            gd.exclude = true;
+            lblWarnPosix.setLayoutData(gd);
+        }
 
         setControl(container);
     }
 
     private void modifyButtons() {
         boolean init = btnInit.getSelection();
-        boolean isMsSql = btnMsSql.getSelection();
-        DbInfo info = storePicker.getDbInfo();
-        boolean enable = info != null;
-        boolean isMsSqlDb = enable && info.isMsSql();
-        // 1 - disabled init and mssql buttons
-        // 2 - enabled init button, it is database, not MS database
-        // 3 - enabled init button, it is not database, disabled mssql button
-        timezoneCombo.getControl().setEnabled((!init && !isMsSql)
-                || (init && !isMsSqlDb && enable) || (init && !enable && !isMsSql));
-        btnGetTz.setEnabled(init && enable && !isMsSqlDb);
+        if (isPostgres) {
+            btnGetTz.setEnabled(init && storePicker.getDbInfo() != null);
+        }
         storePicker.setComboEnabled(init);
         getWizard().getContainer().updateButtons();
         getWizard().getContainer().updateMessage();
