@@ -180,7 +180,8 @@ public class JdbcConnector {
         }
     }
 
-    private Connection establishConnection() throws SQLException, ClassNotFoundException {
+    protected Connection establishConnection()
+            throws SQLException, ClassNotFoundException, IOException {
         Log.log(Log.LOG_INFO, "Establishing JDBC connection with host:port " +
                 host + ":" + port + ", db name " + dbName + ", username " + user);
         return DriverManager.getConnection(url, makeProperties());

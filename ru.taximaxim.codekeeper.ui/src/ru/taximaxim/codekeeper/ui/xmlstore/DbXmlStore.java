@@ -49,7 +49,8 @@ public class DbXmlStore extends XmlStore<DbInfo> {
         PROPERTY("property"), //$NON-NLS-1$
         PROPERTY_NAME("name"), //$NON-NLS-1$
         PROPERTY_VALUE("value"), //$NON-NLS-1$
-        MSSQL("mssql"); //$NON-NLS-1$
+        MSSQL("mssql"), //$NON-NLS-1$
+        WIN_AUTH("win_auth"); //$NON-NLS-1$
 
         String name;
 
@@ -105,6 +106,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
             createSubElement(xml, keyElement, Tags.READ_ONLY.toString(), String.valueOf(dbInfo.isReadOnly()));
             createSubElement(xml, keyElement, Tags.GENERATE_NAME.toString(), String.valueOf(dbInfo.isGeneratedName()));
             createSubElement(xml, keyElement, Tags.MSSQL.toString(), String.valueOf(dbInfo.isMsSql()));
+            createSubElement(xml, keyElement, Tags.WIN_AUTH.toString(), String.valueOf(dbInfo.isWinAuth()));
 
             Element ignoreList = xml.createElement(Tags.IGNORE_LIST.toString());
             keyElement.appendChild(ignoreList);
@@ -143,6 +145,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
                 case READ_ONLY:
                 case GENERATE_NAME:
                 case MSSQL:
+                case WIN_AUTH:
                     object.put(tag, param.getTextContent());
                     break;
                 case IGNORE_LIST:
@@ -163,7 +166,8 @@ public class DbXmlStore extends XmlStore<DbInfo> {
                 Boolean.parseBoolean(object.get(Tags.READ_ONLY)),
                 Boolean.parseBoolean(object.get(Tags.GENERATE_NAME)),
                 ignoreFiles, properties,
-                Boolean.parseBoolean(object.get(Tags.MSSQL)));
+                Boolean.parseBoolean(object.get(Tags.MSSQL)),
+                Boolean.parseBoolean(object.get(Tags.WIN_AUTH)));
     }
 
     private void fillIgnoreFileList(NodeList xml, List<String> list) {

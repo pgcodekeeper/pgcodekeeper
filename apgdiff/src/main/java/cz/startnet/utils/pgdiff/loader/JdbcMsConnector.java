@@ -1,7 +1,10 @@
 package cz.startnet.utils.pgdiff.loader;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -13,6 +16,8 @@ public class JdbcMsConnector extends JdbcConnector {
     private static final Pattern PATTERN_PROPERTIES =
             Pattern.compile(";(?:(\\w+)=(\\w+|\\{[^}]*\\})?)?");
 
+    private final boolean winAuth;
+
     private static String unescapeValue(String val) {
         if (val != null && val.length() > 1 && val.charAt(0) == '{') {
             // strip escape braces
@@ -21,12 +26,8 @@ public class JdbcMsConnector extends JdbcConnector {
         return val;
     }
 
-    public JdbcMsConnector(String host, int port, String user, String pass, String dbName) {
-        this(host, port, user, pass, dbName, null, false);
-    }
-
     public JdbcMsConnector(String host, int port, String user, String pass, String dbName,
-            Map<String, String> properties, boolean readOnly) {
+            Map<String, String> properties, boolean readOnly, boolean winAuth) {
         this.host = host;
         this.port = port < 1 ? DEFAULT_PORT : port;
         this.dbName = dbName;
@@ -36,6 +37,7 @@ public class JdbcMsConnector extends JdbcConnector {
 
         this.properties = properties;
         this.readOnly = readOnly;
+        this.winAuth = winAuth;
     }
 
     protected JdbcMsConnector(String url) throws URISyntaxException {
@@ -89,6 +91,8 @@ public class JdbcMsConnector extends JdbcConnector {
         if (pass == null) {
             pass = "";
         }
+        // should be provided in the connection string
+        this.winAuth = false;
     }
 
     @Override
@@ -103,10 +107,33 @@ public class JdbcMsConnector extends JdbcConnector {
         if (!isDbNameEscapable()) {
             props.setProperty("databaseName", dbName);
         }
+        if (winAuth) {
+            props.setProperty("integratedSecurity", "true");
+        }
         return props;
     }
 
     private boolean isDbNameEscapable() {
         return dbName.indexOf('}') < 0;
+    }
+
+    @Override
+    protected Connection establishConnection()
+            throws SQLException, ClassNotFoundException, IOException {
+        try {
+            return super.establishConnection();
+        } catch (SQLException ex) {
+            Throwable t = ex.getCause();
+            if (t instanceof UnsatisfiedLinkError) {
+                // give more detailed errors for win auth/other lib failures
+                throw new IOException(
+                        ex.getLocalizedMessage()
+                        + "\n\n" +
+                        t.getLocalizedMessage(),
+                        ex);
+            } else {
+                throw ex;
+            }
+        }
     }
 }
