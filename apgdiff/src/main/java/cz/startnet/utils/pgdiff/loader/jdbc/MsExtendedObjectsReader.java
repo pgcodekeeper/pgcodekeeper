@@ -79,7 +79,6 @@ public class MsExtendedObjectsReader extends JdbcReader {
                     columns.add(column.getFullDefinition());
                 }
 
-                // TODO table can have name, options and etc
                 func.setReturns("TABLE (\n" + String.join(",\n", columns) + ")");
             } else {
                 String dataType = res.getString("return_type");
