@@ -4,11 +4,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
-import org.antlr.v4.runtime.ParserRuleContext;
-
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 
-public class AntlrTask<T extends ParserRuleContext> {
+public class AntlrTask<T> {
 
     private final Future<T> future;
     private final Consumer<T> finalizer;
