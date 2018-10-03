@@ -12,9 +12,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsTrigger;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsView;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.MsFunction;
+import cz.startnet.utils.pgdiff.schema.MsProcedure;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
+import cz.startnet.utils.pgdiff.schema.MsView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -85,25 +87,25 @@ public class MsFPVTReader extends JdbcReader {
             loader.submitMsAntlrTask(def, p -> p.tsql_file().batch(0).batch_statement()
                     .create_or_alter_view(),
                     ctx -> {
-                        PgStatement st = new CreateMsView(ctx, db, an, qi).getObject();
+                        MsView st = new CreateMsView(ctx, db, an, qi).getObject(schema);
                         loader.setOwner(st, owner);
-                        cons.accept((PgStatementWithSearchPath)st, acls);
+                        cons.accept(st, acls);
                     });
         } else if (tt == DbObjType.PROCEDURE) {
             loader.submitMsAntlrTask(def, p -> p.tsql_file().batch(0).batch_statement()
                     .create_or_alter_procedure(),
                     ctx -> {
-                        PgStatement st = new CreateMsProcedure(ctx, db, an, qi).getObject(schema);
+                        MsProcedure st = new CreateMsProcedure(ctx, db, an, qi).getObject(schema);
                         loader.setOwner(st, owner);
-                        cons.accept((PgStatementWithSearchPath)st, acls);
+                        cons.accept(st, acls);
                     });
         } else {
             loader.submitMsAntlrTask(def, p -> p.tsql_file().batch(0).batch_statement()
                     .create_or_alter_function(),
                     ctx -> {
-                        PgStatement st = new CreateMsFunction(ctx, db, an, qi).getObject(schema);
+                        MsFunction st = new CreateMsFunction(ctx, db, an, qi).getObject(schema);
                         loader.setOwner(st, owner);
-                        cons.accept((PgStatementWithSearchPath)st, acls);
+                        cons.accept(st, acls);
                     });
         }
     }
