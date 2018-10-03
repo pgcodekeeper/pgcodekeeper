@@ -33,7 +33,7 @@ public class CreateMsProcedure extends ParserAbstract {
     }
 
     public MsProcedure getObject(AbstractSchema schema) {
-        MsProcedure procedure = new MsProcedure(ctx.func_proc_name().procedure.getText(), getFullCtxText(ctx.getParent()));
+        MsProcedure procedure = new MsProcedure(ctx.func_proc_name().procedure.getText(), getFullCtxText(ctx.getParent().getParent()));
         if (ctx.proc_body().EXTERNAL() != null) {
             procedure.setAnsiNulls(false);
             procedure.setQuotedIdentified(false);

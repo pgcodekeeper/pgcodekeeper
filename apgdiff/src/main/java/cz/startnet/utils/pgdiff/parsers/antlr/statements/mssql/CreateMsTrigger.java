@@ -37,7 +37,7 @@ public class CreateMsTrigger extends ParserAbstract {
 
     public MsTrigger getObject(AbstractSchema schema) {
         MsTrigger trigger = new MsTrigger(QNameParser.getFirstName(ctx.simple_name().id()),
-                getFullCtxText(ctx.getParent()));
+                getFullCtxText(ctx.getParent().getParent()));
         trigger.setTableName(QNameParser.getFirstName(ctx.table_name().id()));
         trigger.setAnsiNulls(ansiNulls);
         trigger.setQuotedIdentified(quotedIdentifier);

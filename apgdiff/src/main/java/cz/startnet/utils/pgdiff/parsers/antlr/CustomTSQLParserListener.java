@@ -11,6 +11,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.TSqlContextP
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Another_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.BatchContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statement_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Ddl_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Disable_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_alterContext;
@@ -139,17 +140,19 @@ public class CustomTSQLParserListener implements TSqlContextProcessor {
 
         ParserAbstract p;
 
-        if (ctx.create_or_alter_procedure() != null) {
-            p = new CreateMsProcedure(ctx.create_or_alter_procedure(),
+        Batch_statement_bodyContext body = ctx.batch_statement_body();
+
+        if (body.create_or_alter_procedure() != null) {
+            p = new CreateMsProcedure(body.create_or_alter_procedure(),
                     db, ansiNulls, quotedIdentifier);
-        } else if (ctx.create_or_alter_function() != null) {
-            p = new CreateMsFunction(ctx.create_or_alter_function(),
+        } else if (body.create_or_alter_function() != null) {
+            p = new CreateMsFunction(body.create_or_alter_function(),
                     db, ansiNulls, quotedIdentifier);
-        } else if (ctx.create_or_alter_view() != null) {
-            p = new CreateMsView(ctx.create_or_alter_view(),
+        } else if (body.create_or_alter_view() != null) {
+            p = new CreateMsView(body.create_or_alter_view(),
                     db, ansiNulls, quotedIdentifier);
-        } else if (ctx.create_or_alter_trigger() != null) {
-            p = new CreateMsTrigger(ctx.create_or_alter_trigger(),
+        } else if (body.create_or_alter_trigger() != null) {
+            p = new CreateMsTrigger(body.create_or_alter_trigger(),
                     db, ansiNulls, quotedIdentifier);
         } else {
             return;

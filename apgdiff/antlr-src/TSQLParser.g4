@@ -17,11 +17,14 @@ batch
 
 // for statements that must be the only ones in an entire batch
 batch_statement
-    : (CREATE | ALTER)
-        ( create_or_alter_procedure
-        | create_or_alter_function SEMI*
-        | create_or_alter_view SEMI*
-        | create_or_alter_trigger SEMI*)
+    : (CREATE (OR ALTER)? | ALTER) batch_statement_body
+    ;
+    
+batch_statement_body
+    : create_or_alter_procedure
+    | create_or_alter_function SEMI*
+    | create_or_alter_view SEMI*
+    | create_or_alter_trigger SEMI*
     ;
 
 sql_clauses
@@ -1565,7 +1568,7 @@ index_where
 
 // https://msdn.microsoft.com/en-us/library/ms187926(v=sql.120).aspx
 create_or_alter_procedure
-    : (OR ALTER)? proc=(PROC | PROCEDURE) func_proc_name (SEMI DECIMAL)?
+    : proc=(PROC | PROCEDURE) func_proc_name (SEMI DECIMAL)?
       (LR_BRACKET? procedure_param (COMMA procedure_param)* RR_BRACKET?)?
       (WITH procedure_option (COMMA procedure_option)*)?
       (FOR REPLICATION)? AS proc_body
@@ -1577,7 +1580,7 @@ create_or_alter_procedure
     ;
 
 create_or_alter_trigger
-    : (OR ALTER)? TRIGGER simple_name
+    : TRIGGER simple_name
     ON (table_name | ALL SERVER | DATABASE)
     (WITH trigger_option (COMMA trigger_option)* )?
     (FOR | AFTER | INSTEAD OF) trigger_operation (COMMA trigger_operation)*
@@ -1608,7 +1611,7 @@ trigger_operation
 
 // https://msdn.microsoft.com/en-us/library/ms186755.aspx
 create_or_alter_function
-    : (OR ALTER)? FUNCTION func_proc_name LR_BRACKET (procedure_param (COMMA procedure_param)*)?  RR_BRACKET
+    : FUNCTION func_proc_name LR_BRACKET (procedure_param (COMMA procedure_param)*)?  RR_BRACKET
     RETURNS func_return
     func_body
     ;
@@ -1684,7 +1687,7 @@ table_options
 
 // https://msdn.microsoft.com/en-us/library/ms187956.aspx
 create_or_alter_view
-    : (OR ALTER)? VIEW simple_name (LR_BRACKET column_name_list RR_BRACKET)?
+    : VIEW simple_name (LR_BRACKET column_name_list RR_BRACKET)?
     (WITH view_attribute (COMMA view_attribute)*)?
     AS select_statement with_check_option?
     ;

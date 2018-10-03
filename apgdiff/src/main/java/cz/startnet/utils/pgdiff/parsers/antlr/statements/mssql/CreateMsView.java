@@ -37,7 +37,7 @@ public class CreateMsView extends ParserAbstract {
 
     public MsView getObject(AbstractSchema schema) {
         IdContext name = QNameParser.getFirstNameCtx(ctx.simple_name().id());
-        MsView view = new MsView(name.getText(), getFullCtxText(ctx.getParent()));
+        MsView view = new MsView(name.getText(), getFullCtxText(ctx.getParent().getParent()));
         view.setAnsiNulls(ansiNulls);
         view.setQuotedIdentified(quotedIdentifier);
 

@@ -32,7 +32,7 @@ public class CreateMsFunction extends ParserAbstract {
     }
 
     public MsFunction getObject(AbstractSchema schema) {
-        MsFunction function = new MsFunction(ctx.func_proc_name().procedure.getText(), getFullCtxText(ctx.getParent()));
+        MsFunction function = new MsFunction(ctx.func_proc_name().procedure.getText(), getFullCtxText(ctx.getParent().getParent()));
         if (ctx.func_body().func_body_return().EXTERNAL() != null) {
             function.setAnsiNulls(false);
             function.setQuotedIdentified(false);

@@ -77,15 +77,15 @@ public class MsFPVTReader extends JdbcReader {
         };
 
         if (tt == DbObjType.TRIGGER) {
-            loader.submitMsAntlrTask(def, p -> p.tsql_file().batch(0).batch_statement()
-                    .create_or_alter_trigger(),
+            loader.submitMsAntlrTask(def, p -> p.tsql_file().batch(0).batch_statement().
+                    batch_statement_body().create_or_alter_trigger(),
                     ctx -> {
                         MsTrigger tr = new CreateMsTrigger(ctx, db, an, qi).getObject(schema);
                         tr.setDisable(isDisable);
                     });
         } else if (tt == DbObjType.VIEW) {
             loader.submitMsAntlrTask(def, p -> p.tsql_file().batch(0).batch_statement()
-                    .create_or_alter_view(),
+                    .batch_statement_body().create_or_alter_view(),
                     ctx -> {
                         MsView st = new CreateMsView(ctx, db, an, qi).getObject(schema);
                         loader.setOwner(st, owner);
@@ -93,7 +93,7 @@ public class MsFPVTReader extends JdbcReader {
                     });
         } else if (tt == DbObjType.PROCEDURE) {
             loader.submitMsAntlrTask(def, p -> p.tsql_file().batch(0).batch_statement()
-                    .create_or_alter_procedure(),
+                    .batch_statement_body().create_or_alter_procedure(),
                     ctx -> {
                         MsProcedure st = new CreateMsProcedure(ctx, db, an, qi).getObject(schema);
                         loader.setOwner(st, owner);
@@ -101,7 +101,7 @@ public class MsFPVTReader extends JdbcReader {
                     });
         } else {
             loader.submitMsAntlrTask(def, p -> p.tsql_file().batch(0).batch_statement()
-                    .create_or_alter_function(),
+                    .batch_statement_body().create_or_alter_function(),
                     ctx -> {
                         MsFunction st = new CreateMsFunction(ctx, db, an, qi).getObject(schema);
                         loader.setOwner(st, owner);
