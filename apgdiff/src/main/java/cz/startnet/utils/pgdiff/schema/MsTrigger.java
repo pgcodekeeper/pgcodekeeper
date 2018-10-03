@@ -1,10 +1,15 @@
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
 
 public class MsTrigger extends AbstractTrigger {
+
+    private String firstPart;
+    private String secondPart;
 
     public MsTrigger(String name, String rawStatement) {
         super(name, rawStatement);
@@ -37,70 +42,10 @@ public class MsTrigger extends AbstractTrigger {
         sbSQL.append("SET ANSI_NULLS ").append(isAnsiNulls() ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
 
-        sbSQL.append(isCreate ? "CREATE " : "ALTER ");
-        sbSQL.append("TRIGGER ");
-        sbSQL.append(MsDiffUtils.quoteName(getContainingSchema().getName()));
-        sbSQL.append('.');
-        sbSQL.append(MsDiffUtils.quoteName(getName()));
-        sbSQL.append("\nON ");
-        sbSQL.append(MsDiffUtils.quoteName(getContainingSchema().getName()));
-        sbSQL.append('.');
-        sbSQL.append(MsDiffUtils.quoteName(getTableName()));
-        sbSQL.append("\n");
+        sbSQL.append(firstPart);
+        sbSQL.append(isCreate ? "CREATE" : "ALTER");
+        sbSQL.append(secondPart);
 
-        if (!options.isEmpty()) {
-            sbSQL.append("WITH ").append(String.join(", ", options)).append('\n');
-        }
-
-        switch (getType()) {
-        case AFTER:
-            sbSQL.append("AFTER ");
-            break;
-        case BEFORE:
-            sbSQL.append("FOR ");
-            break;
-        case INSTEAD_OF:
-            sbSQL.append("INSTEAD OF ");
-            break;
-        default:
-            break;
-        }
-
-        boolean firstEvent = true;
-
-        if (isOnInsert()) {
-            sbSQL.append("INSERT");
-            firstEvent = false;
-        }
-
-        if (isOnUpdate()) {
-            if (firstEvent) {
-                firstEvent = false;
-            } else {
-                sbSQL.append(", ");
-            }
-
-            sbSQL.append("UPDATE");
-        }
-
-        if (isOnDelete()) {
-            if (!firstEvent) {
-                sbSQL.append(", ");
-            }
-
-            sbSQL.append("DELETE");
-        }
-
-        if (isAppend()) {
-            sbSQL.append("\nWITH APPEND");
-        }
-
-        if (isNotForRep()) {
-            sbSQL.append("\nNOT FOR REPLICATION");
-        }
-
-        sbSQL.append("\nAS ");
-        sbSQL.append(getQuery());
         sbSQL.append(GO);
 
         return sbSQL.toString();
@@ -112,7 +57,9 @@ public class MsTrigger extends AbstractTrigger {
         if (newCondition instanceof MsTrigger) {
             MsTrigger newTrigger = (MsTrigger) newCondition;
             final int startLength = sb.length();
-            if (!compareWithoutComments(newTrigger)) {
+
+            if (!Objects.equals(getFirstPart(), newTrigger.getFirstPart())
+                    || !Objects.equals(getSecondPart(), newTrigger.getSecondPart())) {
                 sb.append(newTrigger.getTriggerFullSQL(false));
             }
 
@@ -148,7 +95,46 @@ public class MsTrigger extends AbstractTrigger {
     }
 
     @Override
+    public boolean compare(PgStatement obj) {
+        if (obj instanceof MsTrigger && super.compare(obj)) {
+            MsTrigger trigger = (MsTrigger) obj;
+            return Objects.equals(getFirstPart(), trigger.getFirstPart())
+                    && Objects.equals(getSecondPart(), trigger.getSecondPart());
+        }
+
+        return false;
+    }
+
+    @Override
+    public void computeHash(Hasher hasher) {
+        super.computeHash(hasher);
+        hasher.put(getFirstPart());
+        hasher.put(getSecondPart());
+    }
+
+    @Override
     protected AbstractTrigger getTriggerCopy() {
-        return new MsTrigger(getName(), getRawStatement());
+        MsTrigger view = new MsTrigger(getName(), getRawStatement());
+        view.setFirstPart(getFirstPart());
+        view.setSecondPart(getSecondPart());
+        return view;
+    }
+
+    public String getFirstPart() {
+        return firstPart;
+    }
+
+    public void setFirstPart(String firstPart) {
+        this.firstPart = firstPart;
+        resetHash();
+    }
+
+    public String getSecondPart() {
+        return secondPart;
+    }
+
+    public void setSecondPart(String secondPart) {
+        this.secondPart = secondPart;
+        resetHash();
     }
 }

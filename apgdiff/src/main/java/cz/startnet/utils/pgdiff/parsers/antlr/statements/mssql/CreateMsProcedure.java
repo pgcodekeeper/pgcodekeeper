@@ -1,5 +1,8 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_procedureContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Procedure_optionContext;
@@ -18,11 +21,15 @@ public class CreateMsProcedure extends ParserAbstract {
     private final boolean ansiNulls;
     private final boolean quotedIdentifier;
 
-    public CreateMsProcedure(Create_or_alter_procedureContext ctx, PgDatabase db, boolean ansiNulls, boolean quotedIdentifier) {
+    private final CommonTokenStream stream;
+
+    public CreateMsProcedure(Create_or_alter_procedureContext ctx, PgDatabase db,
+            boolean ansiNulls, boolean quotedIdentifier, CommonTokenStream stream) {
         super(db);
         this.ctx = ctx;
         this.ansiNulls = ansiNulls;
         this.quotedIdentifier = quotedIdentifier;
+        this.stream = stream;
     }
 
     @Override
@@ -33,22 +40,29 @@ public class CreateMsProcedure extends ParserAbstract {
     }
 
     public MsProcedure getObject(AbstractSchema schema) {
-        MsProcedure procedure = new MsProcedure(ctx.func_proc_name().procedure.getText(), getFullCtxText(ctx.getParent().getParent()));
+        ParserRuleContext batchCtx = ctx.getParent().getParent();
+        MsProcedure procedure = new MsProcedure(ctx.func_proc_name().procedure.getText(), getFullCtxText(batchCtx));
         if (ctx.proc_body().EXTERNAL() != null) {
             procedure.setAnsiNulls(false);
             procedure.setQuotedIdentified(false);
             procedure.setCLR(true);
+
+            fillArguments(procedure);
+            procedure.setForReplication(ctx.REPLICATION() != null);
+            procedure.setBody(db.getArguments(), getFullCtxText(ctx.proc_body()));
+
+            for (Procedure_optionContext option : ctx.procedure_option()) {
+                procedure.addOption(getFullCtxText(option));
+            }
         } else {
             procedure.setAnsiNulls(ansiNulls);
             procedure.setQuotedIdentified(quotedIdentifier);
-        }
 
-        fillArguments(procedure);
-        procedure.setForReplication(ctx.REPLICATION() != null);
-        procedure.setBody(db.getArguments(), getFullCtxText(ctx.proc_body()));
-
-        for (Procedure_optionContext option : ctx.procedure_option()) {
-            procedure.addOption(getFullCtxText(option));
+            boolean isKeepNewLines = db.getArguments().isKeepNewlines();
+            String first = ParserAbstract.getHiddenLeftCtxText(batchCtx, stream);
+            String second = ParserAbstract.getRightCtxTextWithHidden(batchCtx, stream, true);
+            procedure.setFirstPart(isKeepNewLines ? first : first.replace("\r", ""));
+            procedure.setSecondPart(isKeepNewLines ? second : second.replace("\r", ""));
         }
 
         schema.addFunction(procedure);

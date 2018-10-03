@@ -3,6 +3,8 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.antlr.v4.runtime.CommonTokenStream;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.StatementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.BatchContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.St_clauseContext;
@@ -23,13 +25,14 @@ public class ScriptParser {
 
     private List<List<String>> parseMs(String script) {
         List<List<String>> list = new ArrayList<>();
-        List<BatchContext> batches = AntlrParser.makeBasicParser(TSQLParser.class,
-                script, name, errors).tsql_file().batch();
+        TSQLParser parser = AntlrParser.makeBasicParser(TSQLParser.class, script, name, errors);
+        List<BatchContext> batches = parser.tsql_file().batch();
+        CommonTokenStream stream = (CommonTokenStream) parser.getInputStream();
 
         for (BatchContext batch : batches) {
             List<String> l = new ArrayList<>();
             if (batch.batch_statement() != null) {
-                l.add(ParserAbstract.getFullCtxText(batch.batch_statement()));
+                l.add(ParserAbstract.getFullCtxTextWithHidden(batch.batch_statement(), stream));
             } else {
                 List<St_clauseContext> clauses = batch.sql_clauses().st_clause();
                 for (St_clauseContext clause : clauses) {

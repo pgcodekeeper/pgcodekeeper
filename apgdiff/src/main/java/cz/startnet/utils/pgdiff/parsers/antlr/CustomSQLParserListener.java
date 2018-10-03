@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 
 import java.util.List;
 
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -95,7 +96,7 @@ public class CustomSQLParserListener implements SqlContextProcessor {
     }
 
     @Override
-    public void process(SqlContext rootCtx) {
+    public void process(SqlContext rootCtx, CommonTokenStream stream) {
         for (StatementContext s : rootCtx.statement()) {
             Schema_statementContext st = s.schema_statement();
             if (st != null) {

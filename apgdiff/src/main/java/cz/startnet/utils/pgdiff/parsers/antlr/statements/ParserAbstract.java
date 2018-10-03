@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
@@ -82,6 +83,36 @@ public abstract class ParserAbstract {
     public static String getFullCtxText(Token start, Token end) {
         return start.getInputStream().getText(
                 Interval.of(start.getStartIndex(), end.getStopIndex()));
+    }
+
+    public static String getHiddenLeftCtxText(ParserRuleContext ctx, CommonTokenStream stream) {
+        List<Token> startTokens = stream.getHiddenTokensToLeft(ctx.getStart().getTokenIndex());
+        if (startTokens != null) {
+            return ctx.getStart().getInputStream().getText(Interval.of(
+                    startTokens.get(0).getStartIndex(),
+                    ctx.getStart().getStartIndex() - 1));
+        }
+
+        return "";
+    }
+
+    /**
+     * @param ctx - base rule
+     * @param stream - token stream
+     * @param exclude - if true exclude first token
+     * @return full text with hidden tokens after base rule
+     */
+    public static String getRightCtxTextWithHidden(ParserRuleContext ctx,
+            CommonTokenStream stream, boolean exclude) {
+        List<Token> endTokens = stream.getHiddenTokensToRight(ctx.getStop().getTokenIndex());
+        int lastToken = endTokens != null ? endTokens.get(endTokens.size() - 1).getStopIndex()
+                : ctx.getStop().getStopIndex();
+        int start = exclude? ctx.getStart().getStopIndex() + 1 : ctx.getStart().getStartIndex();
+        return ctx.getStart().getInputStream().getText(Interval.of(start, lastToken));
+    }
+
+    public static String getFullCtxTextWithHidden(ParserRuleContext ctx, CommonTokenStream stream) {
+        return getHiddenLeftCtxText(ctx, stream)+ getRightCtxTextWithHidden(ctx, stream, false);
     }
 
     protected AbstractColumn getColumn(Table_column_definitionContext colCtx) {

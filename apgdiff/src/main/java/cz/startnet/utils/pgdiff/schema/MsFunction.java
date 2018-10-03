@@ -5,8 +5,19 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
 
 public class MsFunction extends AbstractFunction {
+
+    private String firstPart;
+    private String secondPart;
+
+    public enum FuncTypes {
+        SCALAR, TABLE, MULTI
+    }
+
+    private FuncTypes funcType = FuncTypes.SCALAR;
+
 
     public MsFunction(String name, String rawStatement) {
         super(name, rawStatement);
@@ -28,6 +39,16 @@ public class MsFunction extends AbstractFunction {
         sbSQL.append(GO).append('\n');
         sbSQL.append("SET ANSI_NULLS ").append(isAnsiNulls() ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
+
+
+        if (!isCLR()) {
+            sbSQL.append(firstPart);
+            sbSQL.append(isCreate ? "CREATE" : "ALTER");
+            sbSQL.append(secondPart);
+            sbSQL.append(GO);
+
+            return sbSQL.toString();
+        }
 
         sbSQL.append(isCreate ? "CREATE" : "ALTER");
         sbSQL.append(" FUNCTION ");
@@ -53,7 +74,9 @@ public class MsFunction extends AbstractFunction {
             return false;
         }
 
-        if (!checkForChanges(newFunction)) {
+        if (!checkForChanges(newFunction)
+                || !Objects.equals(getFirstPart(), newFunction.getFirstPart())
+                || !Objects.equals(getSecondPart(), newFunction.getSecondPart())) {
             if (needDrop(newFunction)) {
                 isNeedDepcies.set(true);
                 return true;
@@ -76,8 +99,7 @@ public class MsFunction extends AbstractFunction {
     }
 
     private boolean needDrop(MsFunction newFunc) {
-        if (getReturns().toUpperCase().startsWith("TABLE") !=
-                newFunc.getReturns().toUpperCase().startsWith("TABLE")) {
+        if (!getFuncType().equals(newFunc.getFuncType())) {
             return true;
         }
 
@@ -125,7 +147,59 @@ public class MsFunction extends AbstractFunction {
     }
 
     @Override
-    protected AbstractFunction getFunctionCopy() {
-        return new MsFunction(getName(), getRawStatement());
+    public boolean compare(PgStatement obj) {
+        if (obj instanceof MsFunction && super.compare(obj)) {
+            MsFunction func = (MsFunction) obj;
+            return Objects.equals(getFirstPart(), func.getFirstPart())
+                    && Objects.equals(getSecondPart(), func.getSecondPart())
+                    && getFuncType() == func.getFuncType();
+        }
+
+        return false;
     }
+
+    @Override
+    public void computeHash(Hasher hasher) {
+        super.computeHash(hasher);
+        hasher.put(getFirstPart());
+        hasher.put(getSecondPart());
+        hasher.put(getFuncType());
+    }
+
+    @Override
+    protected AbstractFunction getFunctionCopy() {
+        MsFunction func = new MsFunction(getName(), getRawStatement());
+        func.setFirstPart(getFirstPart());
+        func.setSecondPart(getSecondPart());
+        func.setFuncType(getFuncType());
+        return func;
+    }
+
+    public String getFirstPart() {
+        return firstPart;
+    }
+
+    public void setFirstPart(String firstPart) {
+        this.firstPart = firstPart;
+        resetHash();
+    }
+
+    public String getSecondPart() {
+        return secondPart;
+    }
+
+    public void setSecondPart(String secondPart) {
+        this.secondPart = secondPart;
+        resetHash();
+    }
+
+    public FuncTypes getFuncType() {
+        return funcType;
+    }
+
+    public void setFuncType(FuncTypes funcType) {
+        this.funcType = funcType;
+        resetHash();
+    }
+
 }

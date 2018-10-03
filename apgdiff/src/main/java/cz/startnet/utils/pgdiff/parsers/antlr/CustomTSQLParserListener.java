@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 
 import java.util.List;
 
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -93,7 +94,7 @@ public class CustomTSQLParserListener implements TSqlContextProcessor {
     }
 
     @Override
-    public void process(Tsql_fileContext rootCtx) {
+    public void process(Tsql_fileContext rootCtx, CommonTokenStream stream) {
         for (BatchContext b : rootCtx.batch()) {
             Sql_clausesContext clauses = b.sql_clauses();
             Batch_statementContext batchSt;
@@ -102,7 +103,7 @@ public class CustomTSQLParserListener implements TSqlContextProcessor {
                     clause(st);
                 }
             } else if ((batchSt = b.batch_statement()) != null) {
-                batchStatement(batchSt);
+                batchStatement(batchSt, stream);
             }
         }
     }
@@ -133,7 +134,7 @@ public class CustomTSQLParserListener implements TSqlContextProcessor {
         }
     }
 
-    private void batchStatement(Batch_statementContext ctx) {
+    private void batchStatement(Batch_statementContext ctx, CommonTokenStream stream) {
         if (ctx.CREATE() == null) {
             return;
         }
@@ -144,16 +145,16 @@ public class CustomTSQLParserListener implements TSqlContextProcessor {
 
         if (body.create_or_alter_procedure() != null) {
             p = new CreateMsProcedure(body.create_or_alter_procedure(),
-                    db, ansiNulls, quotedIdentifier);
+                    db, ansiNulls, quotedIdentifier, stream);
         } else if (body.create_or_alter_function() != null) {
             p = new CreateMsFunction(body.create_or_alter_function(),
-                    db, ansiNulls, quotedIdentifier);
+                    db, ansiNulls, quotedIdentifier, stream);
         } else if (body.create_or_alter_view() != null) {
             p = new CreateMsView(body.create_or_alter_view(),
-                    db, ansiNulls, quotedIdentifier);
+                    db, ansiNulls, quotedIdentifier, stream);
         } else if (body.create_or_alter_trigger() != null) {
             p = new CreateMsTrigger(body.create_or_alter_trigger(),
-                    db, ansiNulls, quotedIdentifier);
+                    db, ansiNulls, quotedIdentifier, stream);
         } else {
             return;
         }
