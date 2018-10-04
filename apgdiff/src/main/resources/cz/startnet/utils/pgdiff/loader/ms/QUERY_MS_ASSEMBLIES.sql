@@ -6,7 +6,7 @@ SELECT
     aa.acl,
     bb.binaries
 FROM sys.assemblies AS s WITH (NOLOCK)
-LEFT JOIN sys.database_principals p WITH (NOLOCK) ON p.principal_id=s.principal_id
+JOIN sys.database_principals p WITH (NOLOCK) ON p.principal_id=s.principal_id
 CROSS APPLY (
     SELECT * FROM (
         SELECT  
@@ -14,7 +14,7 @@ CROSS APPLY (
             perm.permission_name AS pn,
             roleprinc.name AS r
         FROM sys.database_principals roleprinc WITH (NOLOCK)
-        LEFT JOIN sys.database_permissions perm WITH (NOLOCK) ON perm.grantee_principal_id = roleprinc.principal_id
+        JOIN sys.database_permissions perm WITH (NOLOCK) ON perm.grantee_principal_id = roleprinc.principal_id
         WHERE major_id = s.assembly_id AND perm.class = 5
     ) cc 
     FOR XML RAW, ROOT

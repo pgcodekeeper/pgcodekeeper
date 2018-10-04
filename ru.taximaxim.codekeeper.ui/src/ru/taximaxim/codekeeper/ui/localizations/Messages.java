@@ -232,6 +232,8 @@ public final class Messages extends NLS {
 
     public static String DbStoreEditorDialog_ignore_file_list;
 
+    public static String DbStoreEditorDialog_connect_to_ms;
+
     public static String DbStoreEditorDialog_connection_properties;
 
     public static String DbStoreEditorDialog_pgcodekeeperignore_files_filter;
@@ -244,6 +246,8 @@ public final class Messages extends NLS {
 
     public static String DbStoreEditorDialog_auto_generation_description;
 
+    public static String DbStoreEditorDialog_learn_more;
+
     public static String DbStoreEditorDialog_ms_sql_database;
 
     public static String DbStoreEditorDialog_select_ignore_file;
@@ -253,6 +257,10 @@ public final class Messages extends NLS {
     public static String DbStoreEditorDialog_successfull_connection;
 
     public static String DbStoreEditorDialog_test_connection;
+
+    public static String DbStoreEditorDialog_use_win_auth;
+
+    public static String DbStoreEditorDialog_win_auth;
 
     public static String DbStorePicker_choose_dir;
 

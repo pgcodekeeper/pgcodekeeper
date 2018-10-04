@@ -45,6 +45,7 @@ public class DbInfo {
     private final String dbhost;
     private final int dbport;
     private final boolean readOnly;
+    private final boolean winAuth;
     private final boolean msSql;
     private final boolean generateName;
     private final List<String> ignoreFiles;
@@ -78,6 +79,10 @@ public class DbInfo {
         return readOnly;
     }
 
+    public boolean isWinAuth() {
+        return winAuth;
+    }
+
     public boolean isMsSql() {
         return msSql;
     }
@@ -96,7 +101,7 @@ public class DbInfo {
 
     public DbInfo(String name, String dbname, String dbuser, String dbpass,
             String dbhost, int dbport, boolean readOnly, boolean generateName,
-            List<String> ignoreFiles, Map<String, String> properties, boolean msSql) {
+            List<String> ignoreFiles, Map<String, String> properties, boolean msSql, boolean winAuth) {
         this.name = name;
         this.dbname = dbname;
         this.dbuser = dbuser;
@@ -108,6 +113,7 @@ public class DbInfo {
         this.ignoreFiles = ignoreFiles;
         this.properties = properties;
         this.msSql = msSql;
+        this.winAuth = winAuth;
     }
 
     /**
@@ -132,6 +138,7 @@ public class DbInfo {
             this.dbport = Integer.parseInt(parts[5]);
             this.readOnly = false;
             this.msSql = false;
+            this.winAuth = false;
             this.generateName = false;
             this.ignoreFiles = new ArrayList<>();
             this.properties = new HashMap<>();

@@ -1664,7 +1664,7 @@ update_statistics
 
 // https://msdn.microsoft.com/en-us/library/ms174979.aspx
 create_table
-    : TABLE table_name LR_BRACKET column_def_table_constraints RR_BRACKET
+    : TABLE table_name LR_BRACKET column_def_table_constraints COMMA? RR_BRACKET
     (ON tablespace=id_or_default (LR_BRACKET partition_col_name=id RR_BRACKET)?)?
     (TEXTIMAGE_ON textimage=id_or_default)?
     (FILESTREAM_ON filestream=id_or_default)?
@@ -3342,6 +3342,7 @@ simple_id
     | FILEPATH
     | FILESTREAM_ON
     | FILESTREAM
+    | FILLFACTOR
     | FILTER
     | FIRST_VALUE
     | FIRST
