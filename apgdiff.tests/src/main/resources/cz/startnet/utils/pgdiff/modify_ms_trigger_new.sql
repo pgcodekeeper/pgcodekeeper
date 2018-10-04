@@ -12,7 +12,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 SET ANSI_NULLS ON
 GO
-CREATE TRIGGER [trigger1]  
+CREATE TRIGGER [trigger1]  --my trigger
 ON [dbo].[table1]  
 AFTER UPDATE   
 AS RAISERROR ('Edited Notify!', 16, 10)

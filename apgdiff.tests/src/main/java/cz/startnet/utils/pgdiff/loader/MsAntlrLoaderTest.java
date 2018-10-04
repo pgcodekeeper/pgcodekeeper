@@ -24,11 +24,10 @@ import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractSequence;
-import cz.startnet.utils.pgdiff.schema.AbstractTrigger.TgTypes;
-import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.MsConstraint;
 import cz.startnet.utils.pgdiff.schema.MsFunction;
+import cz.startnet.utils.pgdiff.schema.MsFunction.FuncTypes;
 import cz.startnet.utils.pgdiff.schema.MsIndex;
 import cz.startnet.utils.pgdiff.schema.MsProcedure;
 import cz.startnet.utils.pgdiff.schema.MsSchema;
@@ -153,6 +152,10 @@ public class MsAntlrLoaderTest {
 
         PgDatabase dbPredefined = DB_OBJS[fileIndex].getDatabase();
 
+        /*     final PrintWriter writer = new UnixPrintWriter(System.err, true);
+        PgDiff.diffDatabaseSchemas(writer, args, dbPredefined, d, null);
+        writer.flush();
+         */
         Assert.assertEquals("PgDumpLoader: predefined object is not equal to file "
                 + filename, dbPredefined, d);
 
@@ -568,41 +571,51 @@ class MsDB4 extends MsDatabaseObjectCreator {
         MsFunction func = new MsFunction("gtsq_in", "");
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
-        func.setBody("WITH RETURNS NULL ON NULL INPUT\nAS\nBEGIN\n"
-                + "    Declare @logid varchar(50);\n"
-                + "    SELECT @logid = tbl1.id from [dbo].[table1] AS tbl1\n"
-                + "    WHERE tbl1.entityId = @eid\n    RETURN  @logid\nEND");
-        func.setReturns("varchar(100)");
-        Argument arg = new Argument("@eid", "int");
-        func.addArgument(arg);
+        func.setFirstPart("");
+        func.setSecondPart(" FUNCTION [dbo].[gtsq_in](@eid int)\n" +
+                "RETURNS varchar(100)\n" +
+                "WITH RETURNS NULL ON NULL INPUT\n" +
+                "AS\n" +
+                "BEGIN\n" +
+                "    Declare @logid varchar(50);\n" +
+                "    SELECT @logid = tbl1.id from [dbo].[table1] AS tbl1\n" +
+                "    WHERE tbl1.entityId = @eid\n" +
+                "    RETURN  @logid\n" +
+                "END");
+
         schema.addFunction(func);
 
         func = new MsFunction("multiply_numbers", "");
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
-        func.setBody("AS\nBEGIN\n    DECLARE @Res integer = 0\n\n"
-                + "    SET @Res = @First * @Second\n\n"
-                + "    IF @Res < 0\n"
-                + "        SET @Res = 0\n\n"
-                + "    RETURN @Res\nEND");
-        func.setReturns("integer");
-        arg = new Argument("@First", "int");
-        func.addArgument(arg);
-        arg = new Argument("@Second", "int");
-        func.addArgument(arg);
+        func.setFirstPart("");
+        func.setSecondPart(" FUNCTION [dbo].[multiply_numbers](@First int, @Second int) \n" +
+                "RETURNS integer\n" +
+                "AS\n" +
+                "BEGIN\n" +
+                "    DECLARE @Res integer = 0\n" +
+                "\n" +
+                "    SET @Res = @First * @Second\n" +
+                "\n" +
+                "    IF @Res < 0\n" +
+                "        SET @Res = 0\n" +
+                "\n" +
+                "    RETURN @Res\n" +
+                "END");
         schema.addFunction(func);
 
         func = new MsFunction("select_something", "");
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
-        func.setBody("AS\nBEGIN\n    DECLARE @Res integer = 0\n"
-                + "    SELECT  @Res = COUNT(*) FROM [dbo].[table1];\n"
-                + "    RETURN @Res + @First * @Second\nEND");
-        func.setReturns("integer");
-        arg = new Argument("@First", "int");
-        func.addArgument(arg);
-        arg = new Argument("@Second", "int");
-        func.addArgument(arg);
+        func.setFirstPart("");
+        func.setSecondPart(" FUNCTION [dbo].[select_something](@First int, @Second int) \n" +
+                "RETURNS integer\n" +
+                "AS\n" +
+                "BEGIN\n" +
+                "    DECLARE @Res integer = 0\n" +
+                "    SELECT  @Res = COUNT(*) FROM [dbo].[table1];\n" +
+                "    RETURN @Res + @First * @Second\n" +
+                "END");
         schema.addFunction(func);
 
         return d;
@@ -661,11 +674,15 @@ class MsDB6 extends MsDatabaseObjectCreator {
         MsFunction func = new MsFunction("t_common_casttotext", "");
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
-        func.setBody("AS\nBEGIN\n"
-                + "    DECLARE @Res varchar(100) = ''\n"
-                + "    SELECT  @Res = DATENAME(dw, '09/23/2013')\n"
-                + "    RETURN  @Res\nEND");
-        func.setReturns("varchar(100)");
+        func.setFirstPart("");
+        func.setSecondPart(" FUNCTION [common].[t_common_casttotext]()\n" +
+                "RETURNS varchar(100)\n" +
+                "AS\n" +
+                "BEGIN\n" +
+                "    DECLARE @Res varchar(100) = ''\n" +
+                "    SELECT  @Res = DATENAME(dw, '09/23/2013')\n" +
+                "    RETURN  @Res\n" +
+                "END");
 
         schema.addFunction(func);
 
@@ -696,15 +713,18 @@ class MsDB7 extends MsDatabaseObjectCreator {
         MsFunction func = new MsFunction(".x\"\".\"\"\"\".", "");
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
-        func.setBody("AS\nBEGIN\n" +
-                "    DECLARE @Res bit = 0\n\n" +
+        func.setFirstPart("/*Name test*/\n");
+        func.setSecondPart(" FUNCTION [``54'253-=9!@#$%^&*()__<>?:\"\"{};',./].[.x\"\".\"\"\"\".](@arg1 int)\n" +
+                "RETURNS bit\n" +
+                "AS\n" +
+                "BEGIN\n" +
+                "    DECLARE @Res bit = 0\n" +
+                "\n" +
                 "    IF @arg1 > 1\n" +
-                "        SET @Res = 1\n\n" +
-                "    RETURN @Res\nEND");
-        func.setReturns("bit");
-
-        Argument arg = new Argument("@arg1", "int");
-        func.addArgument(arg);
+                "        SET @Res = 1\n" +
+                "\n" +
+                "    RETURN @Res\n" +
+                "END");
 
         func.setOwner("ms_user");
 
@@ -769,51 +789,71 @@ class MsDB8 extends MsDatabaseObjectCreator {
         MsView view = new MsView("\"user\"", "");
         view.setAnsiNulls(true);
         view.setQuotedIdentified(true);
-        view.setQuery("SELECT [user_data].[id], [user_data].[email], [user_data].[created] FROM [dbo].[user_data]");
+        view.setFirstPart("");
+        view.setSecondPart(" VIEW [dbo].[\"user\"] AS\n" +
+                "    SELECT \n" +
+                "    [user_data].[id],\n" +
+                "    [user_data].[email],\n" +
+                "    [user_data].[created]\n" +
+                "FROM [dbo].[user_data]");
+
         view.setOwner("ms_user");
         schema.addView(view);
 
         MsTrigger trigger = new MsTrigger("instead_of_delete", "");
-        trigger.setQuotedIdentified(true);
         trigger.setAnsiNulls(true);
-        trigger.setType(TgTypes.INSTEAD_OF);
-        trigger.setOnDelete(true);
+        trigger.setQuotedIdentified(true);
         trigger.setTableName("\"user\"");
-        trigger.setQuery("BEGIN\n"
-                + "        DELETE FROM [dbo].[user_data]\n"
-                + "        WHERE id = 10  \n"
-                + "    END");
+        trigger.setFirstPart("");
+        trigger.setSecondPart(" TRIGGER [dbo].[instead_of_delete] \n" +
+                "    ON [dbo].[\"user\"]\n" +
+                "    INSTEAD OF DELETE\n" +
+                "    AS\n" +
+                "    BEGIN\n" +
+                "        DELETE FROM [dbo].[user_data]\n" +
+                "        WHERE id = 10  \n" +
+                "    END");
         view.addTrigger(trigger);
 
         trigger = new MsTrigger("instead_of_insert", "");
-        trigger.setQuotedIdentified(true);
         trigger.setAnsiNulls(true);
-        trigger.setType(TgTypes.INSTEAD_OF);
-        trigger.setOnInsert(true);
+        trigger.setQuotedIdentified(true);
         trigger.setTableName("\"user\"");
-        trigger.setQuery("BEGIN\n"
-                + "        INSERT INTO [dbo].[user_data] (id, email, created)\n"
-                + "        VALUES(1, 'test@supermail.loc', getdate())\n"
-                + "    END");
+        trigger.setFirstPart("");
+        trigger.setSecondPart(" TRIGGER [dbo].[instead_of_insert] \n" +
+                "    ON [dbo].[\"user\"]\n" +
+                "    INSTEAD OF INSERT\n" +
+                "    AS\n" +
+                "    BEGIN\n" +
+                "        INSERT INTO [dbo].[user_data] (id, email, created)\n" +
+                "        VALUES(1, 'test@supermail.loc', getdate())\n" +
+                "    END");
         view.addTrigger(trigger);
 
         trigger = new MsTrigger("instead_of_update", "");
-        trigger.setQuotedIdentified(true);
         trigger.setAnsiNulls(true);
-        trigger.setType(TgTypes.INSTEAD_OF);
-        trigger.setOnUpdate(true);
+        trigger.setQuotedIdentified(true);
         trigger.setTableName("\"user\"");
-        trigger.setQuery("BEGIN\n"
-                + "        UPDATE [dbo].[user_data] \n"
-                + "        SET id = 55, email = 'super@supermail.loc'\n"
-                + "        WHERE id = 4\n"
-                + "    END");
+        trigger.setFirstPart("");
+        trigger.setSecondPart(" TRIGGER [dbo].[instead_of_update] \n" +
+                "    ON [dbo].[\"user\"]\n" +
+                "    INSTEAD OF UPDATE\n" +
+                "    AS\n" +
+                "    BEGIN\n" +
+                "        UPDATE [dbo].[user_data] \n" +
+                "        SET id = 55, email = 'super@supermail.loc'\n" +
+                "        WHERE id = 4\n" +
+                "    END");
         view.addTrigger(trigger);
 
         view = new MsView("ws_test", "");
         view.setAnsiNulls(true);
         view.setQuotedIdentified(true);
-        view.setQuery("SELECT ud.[id] AS \"   i   d   \" FROM [dbo].[user_data] ud");
+        view.setFirstPart("");
+        view.setSecondPart(" VIEW [dbo].[ws_test] AS\n" +
+                "    SELECT \n" +
+                "    ud.[id] AS \"   i   d   \"\n" +
+                "FROM [dbo].[user_data] ud");
         schema.addView(view);
 
         return d;
@@ -943,11 +983,16 @@ class MsDB10 extends MsDatabaseObjectCreator {
         MsFunction func = new MsFunction("curdate", "");
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
-        func.setBody("AS\nBEGIN\n"
-                + "    Declare @textdate nvarchar(30);\n"
-                + "    SELECT @textdate = CAST(GETDATE() AS nvarchar(30));\n"
-                + "    RETURN  @textdate;\nEND");
-        func.setReturns("nvarchar(30)");
+        func.setFirstPart("");
+        func.setSecondPart(" FUNCTION [dbo].[curdate]()\n" +
+                "RETURNS nvarchar(30)\n" +
+                "AS\n" +
+                "BEGIN\n" +
+                "    Declare @textdate nvarchar(30);\n" +
+                "    SELECT @textdate = CAST(GETDATE() AS nvarchar(30));\n" +
+                "    RETURN  @textdate;\n" +
+                "END");
+
         schema.addFunction(func);
 
         return d;
@@ -1008,36 +1053,42 @@ class MsDB12 extends MsDatabaseObjectCreator {
         MsFunction func = new MsFunction("function_string_to_table", "");
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
-        func.setBody("BEGIN\n"
-                + "    DECLARE @start INT, @end INT\n"
-                + "    SELECT @start = 1, @end = CHARINDEX(@delimiter, @string)\n\n"
-                + "    WHILE @start < LEN(@string) + 1 BEGIN\n"
-                + "        IF @end = 0 \n"
-                + "            SET @end = LEN(@string) + 1\n\n"
-                + "        INSERT INTO @output (tbldata) \n"
-                + "        VALUES(SUBSTRING(@string, @start, @end - @start))\n"
-                + "        SET @start = @end + 1\n"
-                + "        SET @end = CHARINDEX(@delimiter, @string, @start)\n"
-                + "    END\n\n"
-                + "    RETURN\nEND");
-        func.setReturns("@output TABLE(tbldata nvarchar(256))");
-        Argument arg = new Argument("@string", "nvarchar(MAX)");
-        func.addArgument(arg);
-        arg = new Argument("@delimiter", "char(1)");
-        func.addArgument(arg);
+        func.setFuncType(FuncTypes.MULTI);
+        func.setFirstPart("");
+        func.setSecondPart(" FUNCTION [dbo].[function_string_to_table]\n" +
+                "(@string nvarchar(MAX), @delimiter char(1))\n" +
+                "RETURNS @output TABLE(tbldata nvarchar(256))\n" +
+                "BEGIN\n" +
+                "    DECLARE @start INT, @end INT\n" +
+                "    SELECT @start = 1, @end = CHARINDEX(@delimiter, @string)\n" +
+                "\n" +
+                "    WHILE @start < LEN(@string) + 1 BEGIN\n" +
+                "        IF @end = 0 \n" +
+                "            SET @end = LEN(@string) + 1\n" +
+                "\n" +
+                "        INSERT INTO @output (tbldata) \n" +
+                "        VALUES(SUBSTRING(@string, @start, @end - @start))\n" +
+                "        SET @start = @end + 1\n" +
+                "        SET @end = CHARINDEX(@delimiter, @string, @start)\n" +
+                "    END\n" +
+                "\n" +
+                "    RETURN\n" +
+                "END");
         schema.addFunction(func);
 
         func = new MsFunction("function_empty", "");
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
-        func.setBody("BEGIN\n"
-                + "    -- aaa\n"
-                + "    RETURN\nEND");
-        func.setReturns("@output TABLE(tbldata nvarchar(256))");
-        arg = new Argument("@string", "nvarchar(MAX)");
-        func.addArgument(arg);
-        arg = new Argument("@delimiter", "char(1)");
-        func.addArgument(arg);
+        func.setFuncType(FuncTypes.MULTI);
+        func.setFirstPart("");
+        func.setSecondPart(" FUNCTION [dbo].[function_empty]\n" +
+                "(@string nvarchar(MAX), @delimiter char(1))\n" +
+                "RETURNS @output TABLE(tbldata nvarchar(256))\n" +
+                "BEGIN\n" +
+                "    -- aaa\n" +
+                "    RETURN\n" +
+                "END");
+
         schema.addFunction(func);
 
         return d;
@@ -1079,13 +1130,13 @@ class MsDB13 extends MsDatabaseObjectCreator {
         MsFunction func = new MsFunction("test_fnc", "");
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
-        func.setBody("AS\nBEGIN\n"
-                + "    RETURN 1\nEND");
-        func.setReturns("bit");
-
-        Argument arg = new Argument("@arg", "nvarchar");
-        func.addArgument(arg);
-
+        func.setFirstPart("");
+        func.setSecondPart(" FUNCTION [dbo].[test_fnc](@arg nvarchar) \n" +
+                "RETURNS bit\n" +
+                "AS\n" +
+                "BEGIN\n" +
+                "    RETURN 1\n" +
+                "END");
         func.setOwner("ms_user");
 
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
@@ -1096,9 +1147,15 @@ class MsDB13 extends MsDatabaseObjectCreator {
         func = new MsFunction("fnc", "");
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
-        func.setBody("AS\nBEGIN\n"
-                + "    RETURN 1\nEND");
-        func.setReturns("bit");
+        func.setFirstPart("");
+        func.setSecondPart(" FUNCTION [dbo].[fnc]() \n" +
+                "RETURNS bit\n" +
+                "AS\n" +
+                "BEGIN\n" +
+                "    RETURN 1\n" +
+                "END");
+
+
         schema.addFunction(func);
 
         func.setOwner("ms_user");
@@ -1106,9 +1163,13 @@ class MsDB13 extends MsDatabaseObjectCreator {
         MsProcedure proc = new MsProcedure("trigger_proc", "");
         proc.setAnsiNulls(true);
         proc.setQuotedIdentified(true);
-        proc.setBody("BEGIN\n"
-                + "    -- empty procedure\n"
-                + "    RETURN\nEND");
+        proc.setFirstPart("");
+        proc.setSecondPart(" PROCEDURE [dbo].[trigger_proc]\n" +
+                "AS\n" +
+                "BEGIN\n" +
+                "    -- empty procedure\n" +
+                "    RETURN\n" +
+                "END");
         schema.addFunction(proc);
 
         proc.setOwner("ms_user");
@@ -1158,7 +1219,12 @@ class MsDB13 extends MsDatabaseObjectCreator {
         MsView view = new MsView("test_view", "");
         view.setAnsiNulls(true);
         view.setQuotedIdentified(true);
-        view.setQuery("SELECT [test].[id], [test].[text] FROM [dbo].[test]");
+        view.setFirstPart("");
+        view.setSecondPart(" VIEW [dbo].[test_view] AS\n" +
+                "    SELECT \n" +
+                "    [test].[id],\n" +
+                "    [test].[text]\n" +
+                "FROM [dbo].[test]");
         schema.addView(view);
 
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
@@ -1178,10 +1244,13 @@ class MsDB13 extends MsDatabaseObjectCreator {
         MsTrigger trigger = new MsTrigger("test_trigger", "");
         trigger.setQuotedIdentified(true);
         trigger.setAnsiNulls(true);
-        trigger.setType(TgTypes.BEFORE);
-        trigger.setOnUpdate(true);
         trigger.setTableName("test");
-        trigger.setQuery("BEGIN\n" +
+        trigger.setFirstPart("");
+        trigger.setSecondPart(" TRIGGER [dbo].[test_trigger]\n" +
+                "ON [dbo].[test]\n" +
+                "FOR UPDATE\n" +
+                "AS \n" +
+                "    BEGIN\n" +
                 "        SET NOCOUNT ON;\n" +
                 "        EXEC [dbo].[trigger_proc];\n" +
                 "    END");
@@ -1248,9 +1317,15 @@ class MsDB15 extends MsDatabaseObjectCreator {
         MsView view = new MsView("v_subselect", "");
         view.setAnsiNulls(true);
         view.setQuotedIdentified(true);
-        view.setQuery("SELECT c.[id] AS id_t_chart, t.[id] AS id_t_work "
-                + "FROM ( SELECT [\"t_work\"].[id] FROM [dbo].[\"t_work\"]) t "
-                + "JOIN [dbo].[\"t_chart\"] c ON t.[id] = c.[id]");
+        view.setFirstPart("");
+        view.setSecondPart(" VIEW [dbo].[v_subselect] AS\n" +
+                "    SELECT \n" +
+                "        c.[id] AS id_t_chart, \n" +
+                "        t.[id] AS id_t_work \n" +
+                "    FROM ( SELECT \n" +
+                "               [\"t_work\"].[id] \n" +
+                "           FROM [dbo].[\"t_work\"]) t \n" +
+                "JOIN [dbo].[\"t_chart\"] c ON t.[id] = c.[id]");
         schema.addView(view);
 
         return d;
@@ -1298,11 +1373,20 @@ class MsDB16 extends MsDatabaseObjectCreator {
         MsView view = new MsView("v_subselect", "");
         view.setAnsiNulls(true);
         view.setQuotedIdentified(true);
-        view.setQuery("SELECT c.[id] AS id_t_chart, t.[id] AS id_t_work, t.[name] FROM "
-                + "(SELECT w.[id], m.[name] FROM "
-                + "(SELECT [\"t_work\"].[id] FROM [dbo].[\"t_work\"]) w "
-                + "JOIN [dbo].[\"t_memo\"] m ON w.[id] = CONVERT(INT, CONVERT(VARCHAR(MAX), m.[name]))) t "
-                + "JOIN [dbo].[\"t_chart\"] c ON t.[id] = c.[id]");
+        view.setFirstPart("");
+        view.setSecondPart(" VIEW [dbo].[v_subselect] AS\n" +
+                "    SELECT \n" +
+                "        c.[id] AS id_t_chart, \n" +
+                "        t.[id] AS id_t_work, \n" +
+                "        t.[name]\n" +
+                "    FROM (SELECT \n" +
+                "              w.[id], \n" +
+                "              m.[name] \n" +
+                "          FROM (SELECT \n" +
+                "                    [\"t_work\"].[id]\n" +
+                "                FROM [dbo].[\"t_work\"]) w \n" +
+                "          JOIN [dbo].[\"t_memo\"] m ON w.[id] = CONVERT(INT, CONVERT(VARCHAR(MAX), m.[name]))) t\n" +
+                "    JOIN [dbo].[\"t_chart\"] c ON t.[id] = c.[id]");
         schema.addView(view);
 
         return d;

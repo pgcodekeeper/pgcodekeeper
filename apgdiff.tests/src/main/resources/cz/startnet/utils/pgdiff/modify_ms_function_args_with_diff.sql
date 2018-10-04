@@ -2,7 +2,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 SET ANSI_NULLS ON
 GO
-ALTER FUNCTION [dbo].[findPerson](@Condition INTEGER) 
+ALTER FUNCTION [dbo].[findPerson] (@Condition INTEGER)  
 RETURNS @retFindReports TABLE   
 (  
     FindId int primary key NOT NULL,  
