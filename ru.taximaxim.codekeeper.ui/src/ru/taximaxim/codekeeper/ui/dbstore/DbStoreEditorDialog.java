@@ -288,7 +288,7 @@ public class DbStoreEditorDialog extends TrayDialog {
 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    Program.launch("https://pgcodekeeper.readthedocs.io/ru/latest/windowsauth.html"); //$NON-NLS-1$
+                    Program.launch("https://pgcodekeeper.readthedocs.io/ru/latest/windowsauth.html#id2"); //$NON-NLS-1$
                 }
             });
         }
