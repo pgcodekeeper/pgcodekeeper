@@ -415,9 +415,13 @@ public class PgDiffTest {
                     // Tests scenario where FTS CONFIGURATION is added, modified and deleted.
                     {"modify_fts_configuration"},
                     // Tests scenario where FTS CONFIGURATION OPTIONS is added, modified and deleted.
-                    {"modify_fts_configuration_options"}
-
-                    ,{"add_differable_initially_trigger"}
+                    {"modify_fts_configuration_options"},
+                    // Tests scenario where differable initially trigger is added.
+                    {"add_differable_initially_trigger"},
+                    // Tests scenario where COLUMN type and default is modified.
+                    {"modify_column_type_and_default"},
+                    // Tests scenario where COLUMN type is modified and default is deleted.
+                    {"modify_column_type_and_drop_default"},
                 });
     }
 

@@ -18,5 +18,8 @@ ALTER TABLE public.testtable
 ALTER TABLE ONLY public.testtable
 	ALTER COLUMN field7 SET DEFAULT 1;
 
+UPDATE ONLY public.testtable
+	SET field7 = DEFAULT WHERE field7 IS NULL;
+
 ALTER TABLE ONLY public.testtable
 	ALTER COLUMN field7 SET NOT NULL;
