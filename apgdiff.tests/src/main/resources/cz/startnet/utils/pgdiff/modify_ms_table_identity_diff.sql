@@ -3,5 +3,9 @@ ALTER TABLE [dbo].[testtable]
 GO
 
 ALTER TABLE [dbo].[testtable]
-	ADD [c1] [int] NOT NULL IDENTITY (2,1) NOT FOR REPLICATION
+	ADD [c1] [int] IDENTITY (2,1) NOT FOR REPLICATION
+GO
+
+ALTER TABLE [dbo].[testtable]
+	ALTER COLUMN [c1] [int] NOT NULL
 GO

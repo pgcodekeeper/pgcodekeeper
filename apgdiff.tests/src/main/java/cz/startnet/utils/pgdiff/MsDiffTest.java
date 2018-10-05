@@ -235,10 +235,20 @@ public class MsDiffTest {
 
                     // Tests scenario where MS COLUMN is added to MS TABLE definition.
                     {"add_ms_column"},
-                    // Tests scenario where MS COLUMN is dropped from MS TABLE.
+                    // Tests scenario where MS COLUMN with default and not null is added.
+                    {"add_ms_column_with_default_not_null"},
+                    // Tests scenario where MS COLUMN is dropped from #MS TABLE.
                     {"drop_ms_column"},
                     // Tests scenario where MS COLUMN with index dependency is dropped from MS TABLE.
                     {"drop_ms_column_with_idx"},
+                    // Tests scenario where MS COLUMN not null value is added.
+                    {"modify_ms_column_add_not_null"},
+                    // Tests scenario where MS COLUMN not null value is dropped.
+                    {"modify_ms_column_drop_not_null"},
+                    // Tests scenario where MS COLUMN type is modified and default is dropped.
+                    {"modify_ms_column_type_drop_default"},
+                    // Tests scenario where MS COLUMN type, default, not null is modified.
+                    {"modify_ms_column_type_default_not_null"},
                     // Tests scenario where MS COLUMN type is modified.
                     {"modify_ms_column_type"},
                     // Tests scenario where MS COLUMN collation is modified.
