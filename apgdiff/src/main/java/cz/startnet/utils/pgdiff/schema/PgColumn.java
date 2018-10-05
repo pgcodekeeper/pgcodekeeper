@@ -104,7 +104,7 @@ public class PgColumn extends AbstractColumn {
 
         StringBuilder sb = new StringBuilder();
 
-        compareDefaults(getDefaultValue(), null, new AtomicBoolean(), sb);
+        compareDefaults(getDefaultValue(), null, null, sb);
         compareNullValues(getNullValue(), true, false, sb);
         compareStorages(getStorage(), null, sb);
 
@@ -138,7 +138,7 @@ public class PgColumn extends AbstractColumn {
                 && !Objects.equals(getDefaultValue(), newColumn.getDefaultValue());
 
         if (isNeedDropDefault) {
-            sb.append(getAlterColumn(true, true, PgDiffUtils.getQuotedName(name))).append(" DROP DEFAULT;");
+            compareDefaults(getDefaultValue(), null, null, sb);
         }
 
         compareTypes(this, newColumn, isNeedDepcies, sb);
