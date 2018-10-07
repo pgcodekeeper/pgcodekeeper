@@ -3,33 +3,35 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_procedureContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Procedure_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Procedure_paramContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.MsProcedure;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
-public class CreateMsProcedure extends ParserAbstract {
+public class CreateMsProcedure extends BatchContextProcessor {
 
     private final Create_or_alter_procedureContext ctx;
 
     private final boolean ansiNulls;
     private final boolean quotedIdentifier;
 
-    private final CommonTokenStream stream;
-
-    public CreateMsProcedure(Create_or_alter_procedureContext ctx, PgDatabase db,
+    public CreateMsProcedure(Batch_statementContext ctx, PgDatabase db,
             boolean ansiNulls, boolean quotedIdentifier, CommonTokenStream stream) {
-        super(db);
-        this.ctx = ctx;
+        super(db, ctx, stream);
+        this.ctx = ctx.batch_statement_body().create_or_alter_procedure();
         this.ansiNulls = ansiNulls;
         this.quotedIdentifier = quotedIdentifier;
-        this.stream = stream;
+    }
+
+    @Override
+    protected ParserRuleContext getDelimiterCtx() {
+        return ctx.func_proc_name();
     }
 
     @Override
@@ -57,12 +59,7 @@ public class CreateMsProcedure extends ParserAbstract {
         } else {
             procedure.setAnsiNulls(ansiNulls);
             procedure.setQuotedIdentified(quotedIdentifier);
-
-            boolean isKeepNewLines = db.getArguments().isKeepNewlines();
-            String first = ParserAbstract.getHiddenLeftCtxText(batchCtx, stream);
-            String second = ParserAbstract.getRightCtxTextWithHidden(batchCtx, stream, true);
-            procedure.setFirstPart(isKeepNewLines ? first : first.replace("\r", ""));
-            procedure.setSecondPart(isKeepNewLines ? second : second.replace("\r", ""));
+            setSourceParts(procedure);
         }
 
         schema.addFunction(procedure);

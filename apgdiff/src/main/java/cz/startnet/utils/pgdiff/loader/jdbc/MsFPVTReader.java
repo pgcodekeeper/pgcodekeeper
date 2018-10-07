@@ -8,10 +8,7 @@ import java.util.function.BiConsumer;
 import org.antlr.v4.runtime.CommonTokenStream;
 
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_functionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_procedureContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_triggerContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_viewContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsFunction;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsProcedure;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsTrigger;
@@ -84,8 +81,7 @@ public class MsFPVTReader extends JdbcReader {
 
         if (tt == DbObjType.TRIGGER) {
             loader.submitMsAntlrTask(def, p -> {
-                Create_or_alter_triggerContext ctx = p.tsql_file().batch(0)
-                        .batch_statement().batch_statement_body().create_or_alter_trigger();
+                Batch_statementContext ctx = p.tsql_file().batch(0).batch_statement();
                 return new CreateMsTrigger(ctx, db, an, qi, (CommonTokenStream) p.getInputStream());
             }, creator -> {
                 MsTrigger tr = creator.getObject(schema);
@@ -93,8 +89,7 @@ public class MsFPVTReader extends JdbcReader {
             });
         } else if (tt == DbObjType.VIEW) {
             loader.submitMsAntlrTask(def, p -> {
-                Create_or_alter_viewContext ctx = p.tsql_file().batch(0)
-                        .batch_statement().batch_statement_body().create_or_alter_view();
+                Batch_statementContext ctx = p.tsql_file().batch(0).batch_statement();
                 return new CreateMsView(ctx, db, an, qi, (CommonTokenStream) p.getInputStream());
             }, creator -> {
                 MsView st = creator.getObject(schema);
@@ -103,8 +98,7 @@ public class MsFPVTReader extends JdbcReader {
             });
         } else if (tt == DbObjType.PROCEDURE) {
             loader.submitMsAntlrTask(def, p -> {
-                Create_or_alter_procedureContext ctx = p.tsql_file().batch(0)
-                        .batch_statement().batch_statement_body().create_or_alter_procedure();
+                Batch_statementContext ctx = p.tsql_file().batch(0).batch_statement();
                 return new CreateMsProcedure(ctx, db, an, qi, (CommonTokenStream) p.getInputStream());
             }, creator -> {
                 MsProcedure st = creator.getObject(schema);
@@ -113,8 +107,7 @@ public class MsFPVTReader extends JdbcReader {
             });
         } else {
             loader.submitMsAntlrTask(def, p -> {
-                Create_or_alter_functionContext ctx = p.tsql_file().batch(0)
-                        .batch_statement().batch_statement_body().create_or_alter_function();
+                Batch_statementContext ctx = p.tsql_file().batch(0).batch_statement();
                 return new CreateMsFunction(ctx, db, an, qi, (CommonTokenStream) p.getInputStream());
             }, creator -> {
                 MsFunction st = creator.getObject(schema);

@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class MsProcedure extends AbstractFunction {
+public class MsProcedure extends AbstractFunction implements SourceStatement {
 
     private String firstPart;
     private String secondPart;
@@ -40,9 +40,7 @@ public class MsProcedure extends AbstractFunction {
         sbSQL.append(GO).append('\n');
 
         if (!isCLR()) {
-            sbSQL.append(firstPart);
-            sbSQL.append(isCreate ? "CREATE" : "ALTER");
-            sbSQL.append(secondPart);
+            appendSourceStatement(isCreate, sbSQL);
             sbSQL.append(GO);
 
             return sbSQL.toString();
@@ -172,19 +170,23 @@ public class MsProcedure extends AbstractFunction {
         return proc;
     }
 
+    @Override
     public String getFirstPart() {
         return firstPart;
     }
 
+    @Override
     public void setFirstPart(String firstPart) {
         this.firstPart = firstPart;
         resetHash();
     }
 
+    @Override
     public String getSecondPart() {
         return secondPart;
     }
 
+    @Override
     public void setSecondPart(String secondPart) {
         this.secondPart = secondPart;
         resetHash();

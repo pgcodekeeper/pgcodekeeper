@@ -8,7 +8,7 @@
 -- GO
 
 
-CREATE SCHEMA [``54'253-=9!@#$%^&*()__<>?:""{};',./]
+CREATE SCHEMA [``54'253-=9!@#$%^&*()__<>?:""{]]};',./]
 GO
 
 SET ANSI_NULLS ON
@@ -16,7 +16,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 /*Name test*/
-Create FUNCTION [``54'253-=9!@#$%^&*()__<>?:""{};',./].[.x""."""".](@arg1 int)
+Create FUNCTION [``54'253-=9!@#$%^&*()__<>?:""{]]};',./].[.x""."""".](@arg1 int)
 RETURNS bit
 AS
 BEGIN
@@ -29,5 +29,5 @@ BEGIN
 END
 GO
 
-ALTER AUTHORIZATION ON OBJECT::[``54'253-=9!@#$%^&*()__<>?:""{};',./].[.x""."""".] TO [ms_user];    
+ALTER AUTHORIZATION ON OBJECT::[``54'253-=9!@#$%^&*()__<>?:""{]]};',./].[.x""."""".] TO [ms_user];    
 GO

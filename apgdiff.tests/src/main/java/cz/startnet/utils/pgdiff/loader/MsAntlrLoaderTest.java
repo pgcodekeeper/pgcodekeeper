@@ -152,10 +152,6 @@ public class MsAntlrLoaderTest {
 
         PgDatabase dbPredefined = DB_OBJS[fileIndex].getDatabase();
 
-        /*     final PrintWriter writer = new UnixPrintWriter(System.err, true);
-        PgDiff.diffDatabaseSchemas(writer, args, dbPredefined, d, null);
-        writer.flush();
-         */
         Assert.assertEquals("PgDumpLoader: predefined object is not equal to file "
                 + filename, dbPredefined, d);
 
@@ -572,7 +568,7 @@ class MsDB4 extends MsDatabaseObjectCreator {
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
         func.setFirstPart("");
-        func.setSecondPart(" FUNCTION [dbo].[gtsq_in](@eid int)\n" +
+        func.setSecondPart("(@eid int)\n" +
                 "RETURNS varchar(100)\n" +
                 "WITH RETURNS NULL ON NULL INPUT\n" +
                 "AS\n" +
@@ -589,7 +585,7 @@ class MsDB4 extends MsDatabaseObjectCreator {
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
         func.setFirstPart("");
-        func.setSecondPart(" FUNCTION [dbo].[multiply_numbers](@First int, @Second int) \n" +
+        func.setSecondPart("(@First int, @Second int) \n" +
                 "RETURNS integer\n" +
                 "AS\n" +
                 "BEGIN\n" +
@@ -608,7 +604,7 @@ class MsDB4 extends MsDatabaseObjectCreator {
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
         func.setFirstPart("");
-        func.setSecondPart(" FUNCTION [dbo].[select_something](@First int, @Second int) \n" +
+        func.setSecondPart("(@First int, @Second int) \n" +
                 "RETURNS integer\n" +
                 "AS\n" +
                 "BEGIN\n" +
@@ -675,7 +671,7 @@ class MsDB6 extends MsDatabaseObjectCreator {
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
         func.setFirstPart("");
-        func.setSecondPart(" FUNCTION [common].[t_common_casttotext]()\n" +
+        func.setSecondPart("()\n" +
                 "RETURNS varchar(100)\n" +
                 "AS\n" +
                 "BEGIN\n" +
@@ -707,14 +703,14 @@ class MsDB7 extends MsDatabaseObjectCreator {
         // type.setOwner("ms_user");
         // schema.addType(type);
 
-        schema = new MsSchema("``54'253-=9!@#$%^&*()__<>?:\"\"{};',./", "");
+        schema = new MsSchema("``54'253-=9!@#$%^&*()__<>?:\"\"{]};',./", "");
         d.addSchema(schema);
 
         MsFunction func = new MsFunction(".x\"\".\"\"\"\".", "");
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
         func.setFirstPart("/*Name test*/\n");
-        func.setSecondPart(" FUNCTION [``54'253-=9!@#$%^&*()__<>?:\"\"{};',./].[.x\"\".\"\"\"\".](@arg1 int)\n" +
+        func.setSecondPart("(@arg1 int)\n" +
                 "RETURNS bit\n" +
                 "AS\n" +
                 "BEGIN\n" +
@@ -790,7 +786,7 @@ class MsDB8 extends MsDatabaseObjectCreator {
         view.setAnsiNulls(true);
         view.setQuotedIdentified(true);
         view.setFirstPart("");
-        view.setSecondPart(" VIEW [dbo].[\"user\"] AS\n" +
+        view.setSecondPart(" AS\n" +
                 "    SELECT \n" +
                 "    [user_data].[id],\n" +
                 "    [user_data].[email],\n" +
@@ -805,8 +801,7 @@ class MsDB8 extends MsDatabaseObjectCreator {
         trigger.setQuotedIdentified(true);
         trigger.setTableName("\"user\"");
         trigger.setFirstPart("");
-        trigger.setSecondPart(" TRIGGER [dbo].[instead_of_delete] \n" +
-                "    ON [dbo].[\"user\"]\n" +
+        trigger.setSecondPart("\n" +
                 "    INSTEAD OF DELETE\n" +
                 "    AS\n" +
                 "    BEGIN\n" +
@@ -820,8 +815,7 @@ class MsDB8 extends MsDatabaseObjectCreator {
         trigger.setQuotedIdentified(true);
         trigger.setTableName("\"user\"");
         trigger.setFirstPart("");
-        trigger.setSecondPart(" TRIGGER [dbo].[instead_of_insert] \n" +
-                "    ON [dbo].[\"user\"]\n" +
+        trigger.setSecondPart("\n" +
                 "    INSTEAD OF INSERT\n" +
                 "    AS\n" +
                 "    BEGIN\n" +
@@ -835,8 +829,7 @@ class MsDB8 extends MsDatabaseObjectCreator {
         trigger.setQuotedIdentified(true);
         trigger.setTableName("\"user\"");
         trigger.setFirstPart("");
-        trigger.setSecondPart(" TRIGGER [dbo].[instead_of_update] \n" +
-                "    ON [dbo].[\"user\"]\n" +
+        trigger.setSecondPart("\n" +
                 "    INSTEAD OF UPDATE\n" +
                 "    AS\n" +
                 "    BEGIN\n" +
@@ -850,7 +843,7 @@ class MsDB8 extends MsDatabaseObjectCreator {
         view.setAnsiNulls(true);
         view.setQuotedIdentified(true);
         view.setFirstPart("");
-        view.setSecondPart(" VIEW [dbo].[ws_test] AS\n" +
+        view.setSecondPart(" AS\n" +
                 "    SELECT \n" +
                 "    ud.[id] AS \"   i   d   \"\n" +
                 "FROM [dbo].[user_data] ud");
@@ -984,7 +977,7 @@ class MsDB10 extends MsDatabaseObjectCreator {
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
         func.setFirstPart("");
-        func.setSecondPart(" FUNCTION [dbo].[curdate]()\n" +
+        func.setSecondPart("()\n" +
                 "RETURNS nvarchar(30)\n" +
                 "AS\n" +
                 "BEGIN\n" +
@@ -1055,7 +1048,7 @@ class MsDB12 extends MsDatabaseObjectCreator {
         func.setQuotedIdentified(true);
         func.setFuncType(FuncTypes.MULTI);
         func.setFirstPart("");
-        func.setSecondPart(" FUNCTION [dbo].[function_string_to_table]\n" +
+        func.setSecondPart("\n" +
                 "(@string nvarchar(MAX), @delimiter char(1))\n" +
                 "RETURNS @output TABLE(tbldata nvarchar(256))\n" +
                 "BEGIN\n" +
@@ -1081,7 +1074,7 @@ class MsDB12 extends MsDatabaseObjectCreator {
         func.setQuotedIdentified(true);
         func.setFuncType(FuncTypes.MULTI);
         func.setFirstPart("");
-        func.setSecondPart(" FUNCTION [dbo].[function_empty]\n" +
+        func.setSecondPart("\n" +
                 "(@string nvarchar(MAX), @delimiter char(1))\n" +
                 "RETURNS @output TABLE(tbldata nvarchar(256))\n" +
                 "BEGIN\n" +
@@ -1131,7 +1124,7 @@ class MsDB13 extends MsDatabaseObjectCreator {
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
         func.setFirstPart("");
-        func.setSecondPart(" FUNCTION [dbo].[test_fnc](@arg nvarchar) \n" +
+        func.setSecondPart("(@arg nvarchar) \n" +
                 "RETURNS bit\n" +
                 "AS\n" +
                 "BEGIN\n" +
@@ -1148,7 +1141,7 @@ class MsDB13 extends MsDatabaseObjectCreator {
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
         func.setFirstPart("");
-        func.setSecondPart(" FUNCTION [dbo].[fnc]() \n" +
+        func.setSecondPart("() \n" +
                 "RETURNS bit\n" +
                 "AS\n" +
                 "BEGIN\n" +
@@ -1164,7 +1157,7 @@ class MsDB13 extends MsDatabaseObjectCreator {
         proc.setAnsiNulls(true);
         proc.setQuotedIdentified(true);
         proc.setFirstPart("");
-        proc.setSecondPart(" PROCEDURE [dbo].[trigger_proc]\n" +
+        proc.setSecondPart("\n" +
                 "AS\n" +
                 "BEGIN\n" +
                 "    -- empty procedure\n" +
@@ -1220,7 +1213,7 @@ class MsDB13 extends MsDatabaseObjectCreator {
         view.setAnsiNulls(true);
         view.setQuotedIdentified(true);
         view.setFirstPart("");
-        view.setSecondPart(" VIEW [dbo].[test_view] AS\n" +
+        view.setSecondPart(" AS\n" +
                 "    SELECT \n" +
                 "    [test].[id],\n" +
                 "    [test].[text]\n" +
@@ -1246,8 +1239,7 @@ class MsDB13 extends MsDatabaseObjectCreator {
         trigger.setAnsiNulls(true);
         trigger.setTableName("test");
         trigger.setFirstPart("");
-        trigger.setSecondPart(" TRIGGER [dbo].[test_trigger]\n" +
-                "ON [dbo].[test]\n" +
+        trigger.setSecondPart("\n" +
                 "FOR UPDATE\n" +
                 "AS \n" +
                 "    BEGIN\n" +
@@ -1318,7 +1310,7 @@ class MsDB15 extends MsDatabaseObjectCreator {
         view.setAnsiNulls(true);
         view.setQuotedIdentified(true);
         view.setFirstPart("");
-        view.setSecondPart(" VIEW [dbo].[v_subselect] AS\n" +
+        view.setSecondPart(" AS\n" +
                 "    SELECT \n" +
                 "        c.[id] AS id_t_chart, \n" +
                 "        t.[id] AS id_t_work \n" +
@@ -1374,7 +1366,7 @@ class MsDB16 extends MsDatabaseObjectCreator {
         view.setAnsiNulls(true);
         view.setQuotedIdentified(true);
         view.setFirstPart("");
-        view.setSecondPart(" VIEW [dbo].[v_subselect] AS\n" +
+        view.setSecondPart(" AS\n" +
                 "    SELECT \n" +
                 "        c.[id] AS id_t_chart, \n" +
                 "        t.[id] AS id_t_work, \n" +

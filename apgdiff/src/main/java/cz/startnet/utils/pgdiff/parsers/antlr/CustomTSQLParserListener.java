@@ -144,17 +144,13 @@ public class CustomTSQLParserListener implements TSqlContextProcessor {
         Batch_statement_bodyContext body = ctx.batch_statement_body();
 
         if (body.create_or_alter_procedure() != null) {
-            p = new CreateMsProcedure(body.create_or_alter_procedure(),
-                    db, ansiNulls, quotedIdentifier, stream);
+            p = new CreateMsProcedure(ctx, db, ansiNulls, quotedIdentifier, stream);
         } else if (body.create_or_alter_function() != null) {
-            p = new CreateMsFunction(body.create_or_alter_function(),
-                    db, ansiNulls, quotedIdentifier, stream);
+            p = new CreateMsFunction(ctx, db, ansiNulls, quotedIdentifier, stream);
         } else if (body.create_or_alter_view() != null) {
-            p = new CreateMsView(body.create_or_alter_view(),
-                    db, ansiNulls, quotedIdentifier, stream);
+            p = new CreateMsView(ctx, db, ansiNulls, quotedIdentifier, stream);
         } else if (body.create_or_alter_trigger() != null) {
-            p = new CreateMsTrigger(body.create_or_alter_trigger(),
-                    db, ansiNulls, quotedIdentifier, stream);
+            p = new CreateMsTrigger(ctx, db, ansiNulls, quotedIdentifier, stream);
         } else {
             return;
         }

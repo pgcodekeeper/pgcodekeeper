@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 
-public class MsTrigger extends AbstractTrigger {
+public class MsTrigger extends AbstractTrigger implements SourceStatement {
 
     private String firstPart;
     private String secondPart;
@@ -42,13 +42,22 @@ public class MsTrigger extends AbstractTrigger {
         sbSQL.append("SET ANSI_NULLS ").append(isAnsiNulls() ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
 
-        sbSQL.append(firstPart);
-        sbSQL.append(isCreate ? "CREATE" : "ALTER");
-        sbSQL.append(secondPart);
-
+        appendSourceStatement(isCreate, sbSQL);
         sbSQL.append(GO);
 
         return sbSQL.toString();
+    }
+
+    @Override
+    public StringBuilder appendName(StringBuilder sb) {
+        sb.append(MsDiffUtils.quoteName(getContainingSchema().getName()))
+        .append('.')
+        .append(MsDiffUtils.quoteName(getName()))
+        .append(" ON ")
+        .append(MsDiffUtils.quoteName(getContainingSchema().getName()))
+        .append('.')
+        .append(MsDiffUtils.quoteName(getTableName()));
+        return sb;
     }
 
     @Override
@@ -120,19 +129,23 @@ public class MsTrigger extends AbstractTrigger {
         return view;
     }
 
+    @Override
     public String getFirstPart() {
         return firstPart;
     }
 
+    @Override
     public void setFirstPart(String firstPart) {
         this.firstPart = firstPart;
         resetHash();
     }
 
+    @Override
     public String getSecondPart() {
         return secondPart;
     }
 
+    @Override
     public void setSecondPart(String secondPart) {
         this.secondPart = secondPart;
         resetHash();

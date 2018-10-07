@@ -96,23 +96,12 @@ public abstract class ParserAbstract {
         return "";
     }
 
-    /**
-     * @param ctx - base rule
-     * @param stream - token stream
-     * @param exclude - if true exclude first token
-     * @return full text with hidden tokens after base rule
-     */
-    public static String getRightCtxTextWithHidden(ParserRuleContext ctx,
-            CommonTokenStream stream, boolean exclude) {
-        List<Token> endTokens = stream.getHiddenTokensToRight(ctx.getStop().getTokenIndex());
-        int lastToken = endTokens != null ? endTokens.get(endTokens.size() - 1).getStopIndex()
-                : ctx.getStop().getStopIndex();
-        int start = exclude? ctx.getStart().getStopIndex() + 1 : ctx.getStart().getStartIndex();
-        return ctx.getStart().getInputStream().getText(Interval.of(start, lastToken));
-    }
-
     public static String getFullCtxTextWithHidden(ParserRuleContext ctx, CommonTokenStream stream) {
-        return getHiddenLeftCtxText(ctx, stream)+ getRightCtxTextWithHidden(ctx, stream, false);
+        List<Token> startTokens = stream.getHiddenTokensToLeft(ctx.getStart().getTokenIndex());
+        List<Token> stopTokens = stream.getHiddenTokensToRight(ctx.getStop().getTokenIndex());
+        Token start = startTokens != null ? startTokens.get(0) : ctx.getStart();
+        Token stop = stopTokens != null ? stopTokens.get(stopTokens.size() - 1) : ctx.getStop();
+        return getFullCtxText(start, stop);
     }
 
     protected AbstractColumn getColumn(Table_column_definitionContext colCtx) {

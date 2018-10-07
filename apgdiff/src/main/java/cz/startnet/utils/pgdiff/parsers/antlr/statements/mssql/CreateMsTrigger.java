@@ -6,29 +6,31 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
-public class CreateMsTrigger extends ParserAbstract {
+public class CreateMsTrigger extends BatchContextProcessor {
 
     private final Create_or_alter_triggerContext ctx;
 
     private final boolean ansiNulls;
     private final boolean quotedIdentifier;
 
-    private final CommonTokenStream stream;
-
-    public CreateMsTrigger(Create_or_alter_triggerContext ctx, PgDatabase db,
+    public CreateMsTrigger(Batch_statementContext ctx, PgDatabase db,
             boolean ansiNulls, boolean quotedIdentifier, CommonTokenStream stream) {
-        super(db);
-        this.ctx = ctx;
+        super(db, ctx, stream);
+        this.ctx = ctx.batch_statement_body().create_or_alter_trigger();
         this.ansiNulls = ansiNulls;
         this.quotedIdentifier = quotedIdentifier;
-        this.stream = stream;
+    }
+
+    @Override
+    protected ParserRuleContext getDelimiterCtx() {
+        return ctx.table_name();
     }
 
     @Override
@@ -45,12 +47,7 @@ public class CreateMsTrigger extends ParserAbstract {
         trigger.setTableName(QNameParser.getFirstName(ctx.table_name().id()));
         trigger.setAnsiNulls(ansiNulls);
         trigger.setQuotedIdentified(quotedIdentifier);
-
-        boolean isKeepNewLines = db.getArguments().isKeepNewlines();
-        String first = ParserAbstract.getHiddenLeftCtxText(batchCtx, stream);
-        String second = ParserAbstract.getRightCtxTextWithHidden(batchCtx, stream, true);
-        trigger.setFirstPart(isKeepNewLines ? first : first.replace("\r", ""));
-        trigger.setSecondPart(isKeepNewLines ? second : second.replace("\r", ""));
+        setSourceParts(trigger);
 
         getSafe(schema::getTriggerContainer, QNameParser.getFirstNameCtx(ctx.table_name().id()))
         .addTrigger(trigger);

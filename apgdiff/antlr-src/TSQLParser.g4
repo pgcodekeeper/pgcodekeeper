@@ -24,7 +24,7 @@ batch_statement_body
     : create_or_alter_procedure
     | create_or_alter_function SEMI*
     | create_or_alter_view SEMI*
-    | create_or_alter_trigger SEMI*
+    | create_or_alter_trigger
     ;
 
 sql_clauses
@@ -1586,7 +1586,7 @@ create_or_alter_trigger
     (FOR | AFTER | INSTEAD OF) trigger_operation (COMMA trigger_operation)*
     with_append?
     not_for_replication?
-    AS st_clause
+    AS sql_clauses
     ;
 
 not_for_replication

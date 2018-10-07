@@ -6,29 +6,31 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_viewContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
-public class CreateMsView extends ParserAbstract {
+public class CreateMsView extends BatchContextProcessor {
 
     private final Create_or_alter_viewContext ctx;
 
     private final boolean ansiNulls;
     private final boolean quotedIdentifier;
 
-    private final CommonTokenStream stream;
-
-    public CreateMsView(Create_or_alter_viewContext ctx, PgDatabase db,
+    public CreateMsView(Batch_statementContext ctx, PgDatabase db,
             boolean ansiNulls, boolean quotedIdentifier, CommonTokenStream stream) {
-        super(db);
-        this.ctx = ctx;
+        super(db, ctx, stream);
+        this.ctx = ctx.batch_statement_body().create_or_alter_view();
         this.ansiNulls = ansiNulls;
         this.quotedIdentifier = quotedIdentifier;
-        this.stream = stream;
+    }
+
+    @Override
+    protected ParserRuleContext getDelimiterCtx() {
+        return ctx.simple_name();
     }
 
     @Override
@@ -44,11 +46,7 @@ public class CreateMsView extends ParserAbstract {
         MsView view = new MsView(name.getText(), getFullCtxText(batchCtx));
         view.setAnsiNulls(ansiNulls);
         view.setQuotedIdentified(quotedIdentifier);
-        boolean isKeepNewLines = db.getArguments().isKeepNewlines();
-        String first = ParserAbstract.getHiddenLeftCtxText(batchCtx, stream);
-        String second = ParserAbstract.getRightCtxTextWithHidden(batchCtx, stream, true);
-        view.setFirstPart(isKeepNewLines ? first : first.replace("\r", ""));
-        view.setSecondPart(isKeepNewLines ? second : second.replace("\r", ""));
+        setSourceParts(view);
         schema.addView(view);
         return view;
     }

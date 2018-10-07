@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 
-public class MsView extends AbstractView {
+public class MsView extends AbstractView implements SourceStatement {
 
     private String firstPart;
     private String secondPart;
@@ -31,9 +31,7 @@ public class MsView extends AbstractView {
         sbSQL.append("SET ANSI_NULLS ").append(isAnsiNulls() ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
 
-        sbSQL.append(firstPart);
-        sbSQL.append(isCreate ? "CREATE" : "ALTER");
-        sbSQL.append(secondPart);
+        appendSourceStatement(isCreate, sbSQL);
         sbSQL.append(GO);
 
         return sbSQL.toString();
@@ -99,19 +97,23 @@ public class MsView extends AbstractView {
         return view;
     }
 
+    @Override
     public String getFirstPart() {
         return firstPart;
     }
 
+    @Override
     public void setFirstPart(String firstPart) {
         this.firstPart = firstPart;
         resetHash();
     }
 
+    @Override
     public String getSecondPart() {
         return secondPart;
     }
 
+    @Override
     public void setSecondPart(String secondPart) {
         this.secondPart = secondPart;
         resetHash();

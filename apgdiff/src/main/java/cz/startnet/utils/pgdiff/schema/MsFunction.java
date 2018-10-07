@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 
-public class MsFunction extends AbstractFunction {
+public class MsFunction extends AbstractFunction implements SourceStatement {
 
     private String firstPart;
     private String secondPart;
@@ -42,9 +42,7 @@ public class MsFunction extends AbstractFunction {
 
 
         if (!isCLR()) {
-            sbSQL.append(firstPart);
-            sbSQL.append(isCreate ? "CREATE" : "ALTER");
-            sbSQL.append(secondPart);
+            appendSourceStatement(isCreate, sbSQL);
             sbSQL.append(GO);
 
             return sbSQL.toString();
@@ -175,19 +173,23 @@ public class MsFunction extends AbstractFunction {
         return func;
     }
 
+    @Override
     public String getFirstPart() {
         return firstPart;
     }
 
+    @Override
     public void setFirstPart(String firstPart) {
         this.firstPart = firstPart;
         resetHash();
     }
 
+    @Override
     public String getSecondPart() {
         return secondPart;
     }
 
+    @Override
     public void setSecondPart(String secondPart) {
         this.secondPart = secondPart;
         resetHash();
