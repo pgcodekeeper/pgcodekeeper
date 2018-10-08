@@ -701,6 +701,10 @@ REAL_NUMBER
     |   Digit+ EXPONENT
     ;
 
+DOLLAR_NUMBER
+    : DOLLAR NUMBER_LITERAL
+    ;
+
 /*
 ===============================================================================
  Identifiers

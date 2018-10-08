@@ -54,13 +54,12 @@ script_statement
   ;
 
 script_transaction
-    : (START TRANSACTION | BEGIN (WORK | TRANSACTION)?) transaction_mode*
+    : (START TRANSACTION | BEGIN (WORK | TRANSACTION)?) (transaction_mode (COMMA transaction_mode)*)?
     | (COMMIT | END) (WORK | TRANSACTION)?
     | (COMMIT PREPARED | PREPARE TRANSACTION) Character_String_Literal
     | (SAVEPOINT | RELEASE SAVEPOINT?) identifier
     | ROLLBACK (PREPARED Character_String_Literal | (WORK | TRANSACTION)? (TO SAVEPOINT? identifier)?)
-    | LOCK TABLE? ONLY? schema_qualified_name MULTIPLY? (COMMA schema_qualified_name MULTIPLY?)* 
-      (IN (ACCESS | ROW)? (SHARE ((UPDATE | ROW) EXCLUSIVE)? | EXCLUSIVE) MODE)? NOWAIT?
+    | lock_table
     | ABORT
     ;
 
@@ -68,6 +67,22 @@ transaction_mode
     : ISOLATION LEVEL (SERIALIZABLE | REPEATABLE READ | READ COMMITTED | READ UNCOMMITTED)
     | READ WRITE | READ ONLY
     | (NOT)? DEFERRABLE
+    ;
+
+lock_table
+    : LOCK TABLE? ONLY? schema_qualified_name MULTIPLY? (COMMA schema_qualified_name MULTIPLY?)*
+     (IN lock_mode MODE)? NOWAIT?
+    ;
+
+lock_mode
+    : ACCESS SHARE 
+    | ROW SHARE 
+    | ROW EXCLUSIVE 
+    | SHARE UPDATE EXCLUSIVE
+    | SHARE 
+    | SHARE ROW EXCLUSIVE 
+    | EXCLUSIVE 
+    | ACCESS EXCLUSIVE
     ;
 
 script_additional
@@ -612,7 +627,7 @@ create_fts_parser
     
 create_collation
     : COLLATION (IF NOT EXISTS)? name=schema_qualified_name 
-      (FROM copy=schema_qualified_name | LEFT_PAREN collation_option* RIGHT_PAREN)
+      (FROM copy=schema_qualified_name | LEFT_PAREN (collation_option (COMMA collation_option)*)? RIGHT_PAREN)
     ;
 
 alter_collation
@@ -620,11 +635,7 @@ alter_collation
     ;
     
 collation_option
-    : LOCALE EQUAL (Character_String_Literal | (ESC_SEQ | ~('\''))*)
-    | LC_COLLATE EQUAL (Character_String_Literal | (ESC_SEQ | ~('\''))*)
-    | LC_CTYPE EQUAL (Character_String_Literal | (ESC_SEQ | ~('\''))*) 
-    | PROVIDER EQUAL (Character_String_Literal | (ESC_SEQ | ~('\''))*) 
-    | VERSION EQUAL (Character_String_Literal | (ESC_SEQ | ~('\''))*) 
+    : (LOCALE | LC_COLLATE | LC_CTYPE | PROVIDER | VERSION) EQUAL (character_string | identifier) 
     ;
     
 create_user_mapping
@@ -2046,6 +2057,7 @@ value_expression_primary
 unsigned_value_specification
   : unsigned_numeric_literal
   | general_literal
+  | DOLLAR_NUMBER
   ;
 
 unsigned_numeric_literal
@@ -2317,7 +2329,7 @@ values_stmt
     ;
 
 values_values
-  : LEFT_PAREN (DOLLAR? vex | DEFAULT) (COMMA (DOLLAR? vex | DEFAULT))* RIGHT_PAREN
+  : LEFT_PAREN (vex | DEFAULT) (COMMA (vex | DEFAULT))* RIGHT_PAREN
   ;
 
 orderby_clause
