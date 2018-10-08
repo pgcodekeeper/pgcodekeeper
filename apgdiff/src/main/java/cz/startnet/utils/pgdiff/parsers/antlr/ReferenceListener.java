@@ -57,6 +57,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_no
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Session_local_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statement_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
@@ -501,8 +502,9 @@ public class ReferenceListener implements SqlContextProcessor {
     }
 
     public void set(Set_statementContext ctx) {
-        if (ctx.config_param != null && "search_path".equalsIgnoreCase(ctx.config_param.getText())) {
-            for (Set_statement_valueContext value : ctx.config_param_val) {
+        Session_local_optionContext sesLocOpt = ctx.set_action().session_local_option();
+        if (sesLocOpt.config_param != null && "search_path".equalsIgnoreCase(sesLocOpt.config_param.getText())) {
+            for (Set_statement_valueContext value : sesLocOpt.config_param_val) {
                 addObjReference(null, value.getText(),
                         DbObjType.SCHEMA, StatementActions.NONE,
                         value.getStart().getStartIndex(), value.getStart().getLine(),

@@ -4,8 +4,8 @@ import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_dictionaryContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Dictionary_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Option_with_valueContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -28,7 +28,7 @@ public class CreateFtsDictionary extends ParserAbstract {
         AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         String name = QNameParser.getFirstName(ids);
         PgFtsDictionary dictionary = new PgFtsDictionary(name, getFullCtxText(ctx.getParent()));
-        for (Dictionary_optionContext option : ctx.dictionary_option()) {
+        for (Option_with_valueContext option : ctx.option_with_value()) {
             fillOptionParams(option.value.getText(), option.name.getText(), false, dictionary::addOption);
         }
 
