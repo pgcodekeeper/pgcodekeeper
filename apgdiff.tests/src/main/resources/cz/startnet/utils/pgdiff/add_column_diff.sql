@@ -6,5 +6,8 @@ ALTER TABLE public.testtable
 ALTER TABLE ONLY public.testtable
 	ALTER COLUMN field5 SET DEFAULT false;
 
+UPDATE ONLY public.testtable
+	SET field5 = DEFAULT WHERE field5 IS NULL;
+
 ALTER TABLE ONLY public.testtable
 	ALTER COLUMN field5 SET NOT NULL;

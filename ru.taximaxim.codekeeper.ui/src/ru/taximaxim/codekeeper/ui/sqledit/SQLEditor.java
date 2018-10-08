@@ -214,7 +214,9 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         IAnnotationModel model = getSourceViewer().getAnnotationModel();
         for (PgObjLocation loc : refs) {
             String annotationMsg = null;
-            if (loc.getAction() == StatementActions.DROP && loc.getObjType() == DbObjType.TABLE){
+            if (loc.getAction() == StatementActions.UPDATE) {
+                annotationMsg = "UPDATE statement"; //$NON-NLS-1$
+            } else if (loc.getAction() == StatementActions.DROP && loc.getObjType() == DbObjType.TABLE){
                 annotationMsg = "DROP TABLE statement"; //$NON-NLS-1$
             } else if (loc.getAction() == StatementActions.ALTER){
                 String text = loc.getText();

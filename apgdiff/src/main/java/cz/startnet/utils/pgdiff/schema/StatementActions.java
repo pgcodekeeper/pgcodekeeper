@@ -5,5 +5,6 @@ public enum StatementActions {
     ALTER,
     DROP,
     COMMENT,
+    UPDATE,
     NONE
 }

@@ -32,7 +32,7 @@ class PgDiffStatement {
     }
 
     public boolean isDangerStatement(DangerStatement dst) {
-        return dst.getRegex().matcher(statement).matches();
+        return dst.getRegex().matcher(statement).find();
     }
 
     @Override

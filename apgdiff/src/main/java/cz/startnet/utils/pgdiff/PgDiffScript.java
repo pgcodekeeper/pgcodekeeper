@@ -29,7 +29,7 @@ public class PgDiffScript {
     private final Set<PgDiffStatement> unique = new HashSet<>();
 
     public boolean isDangerDdl(boolean ignoreDropCol, boolean ignoreAlterCol,
-            boolean ignoreDropTable, boolean ignoreRestartWith) {
+            boolean ignoreDropTable, boolean ignoreRestartWith, boolean ignoreUpdate) {
         Set<DangerStatement> allowedDangers = EnumSet.noneOf(DangerStatement.class);
         if (ignoreDropCol) {
             allowedDangers.add(DangerStatement.DROP_COLUMN);
@@ -42,6 +42,9 @@ public class PgDiffScript {
         }
         if (ignoreRestartWith) {
             allowedDangers.add(DangerStatement.RESTART_WITH);
+        }
+        if (ignoreUpdate) {
+            allowedDangers.add(DangerStatement.UPDATE);
         }
 
         return !findDangers(allowedDangers).isEmpty();

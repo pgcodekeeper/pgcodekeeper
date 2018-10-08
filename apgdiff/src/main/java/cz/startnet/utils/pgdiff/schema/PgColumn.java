@@ -69,12 +69,10 @@ public class PgColumn extends AbstractColumn {
                 sb.append(" COLLATE ").append(getCollation());
             }
             sb.append(';');
-            // TODO need full definition here
-            // https://github.com/pgcodekeeper/pgcodekeeper/issues/12
         }
 
         compareDefaults(null, getDefaultValue(), new AtomicBoolean(), sb);
-        compareNullValues(true, getNullValue(), sb);
+        compareNullValues(true, getNullValue(), getDefaultValue() != null, sb);
         compareStorages(null, getStorage(), sb);
 
         appendPrivileges(sb);
@@ -106,8 +104,8 @@ public class PgColumn extends AbstractColumn {
 
         StringBuilder sb = new StringBuilder();
 
-        compareDefaults(getDefaultValue(), null, new AtomicBoolean(), sb);
-        compareNullValues(getNullValue(), true, sb);
+        compareDefaults(getDefaultValue(), null, null, sb);
+        compareNullValues(getNullValue(), true, false, sb);
         compareStorages(getStorage(), null, sb);
 
         alterPrivileges(new PgColumn(name), sb);
@@ -136,10 +134,18 @@ public class PgColumn extends AbstractColumn {
             return false;
         }
 
+        boolean isNeedDropDefault = !Objects.equals(getType(), newColumn.getType())
+                && !Objects.equals(getDefaultValue(), newColumn.getDefaultValue());
+
+        if (isNeedDropDefault) {
+            compareDefaults(getDefaultValue(), null, null, sb);
+        }
+
         compareTypes(this, newColumn, isNeedDepcies, sb);
 
-        compareDefaults(getDefaultValue(), newColumn.getDefaultValue(), isNeedDepcies, sb);
-        compareNullValues(getNullValue(), newColumn.getNullValue(), sb);
+        String oldDefault = isNeedDropDefault ? null : getDefaultValue();
+        compareDefaults(oldDefault, newColumn.getDefaultValue(), isNeedDepcies, sb);
+        compareNullValues(getNullValue(), newColumn.getNullValue(), newColumn.getDefaultValue() != null, sb);
         compareStorages(getStorage(), newColumn.getStorage(), sb);
 
         alterPrivileges(newColumn, sb);
@@ -309,14 +315,22 @@ public class PgColumn extends AbstractColumn {
      *
      * @param oldNull - old column null value
      * @param newNull - new column null value
+     * @param hasDefault - true if new column has default value
      * @param sb - StringBuilder for difference
      */
-    private void compareNullValues(boolean oldNull, boolean newNull, StringBuilder sb) {
+    private void compareNullValues(boolean oldNull, boolean newNull, boolean hasDefault, StringBuilder sb) {
         if (oldNull != newNull) {
-            sb.append(getAlterColumn(true, true, PgDiffUtils.getQuotedName(name)));
             if (newNull) {
+                sb.append(getAlterColumn(true, true, PgDiffUtils.getQuotedName(name)));
                 sb.append(" DROP NOT NULL;");
             } else {
+                if (hasDefault) {
+                    sb.append("\n\nUPDATE ONLY ").append(getParent().getQualifiedName())
+                    .append("\n\tSET ").append(PgDiffUtils.getQuotedName(name))
+                    .append(" = DEFAULT WHERE ")
+                    .append(PgDiffUtils.getQuotedName(name)).append(" IS NULL;");
+                }
+                sb.append(getAlterColumn(true, true, PgDiffUtils.getQuotedName(name)));
                 sb.append(" SET NOT NULL;");
             }
         }

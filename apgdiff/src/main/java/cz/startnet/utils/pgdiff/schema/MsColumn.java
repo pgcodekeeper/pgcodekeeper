@@ -66,12 +66,60 @@ public class MsColumn extends AbstractColumn {
         StringBuilder sb = new StringBuilder();
 
         sb.append(getAlterTable());
-        sb.append("\n\tADD ");
-        sb.append(getFullDefinition());
+        sb.append("\n\tADD ").append(MsDiffUtils.quoteName(name)).append(' ');
+        if (getExpression() != null) {
+            sb.append("AS ").append(getExpression());
+        } else {
+            sb.append(getType());
+        }
+
+        if (getCollation() != null) {
+            sb.append(" COLLATE ").append(getCollation());
+        }
+
+        if (isIdentity()) {
+            sb.append(" IDENTITY (").append(getSeed()).append(',').append(getIncrement()).append(")");
+            if (isNotForRep()) {
+                sb.append(" NOT FOR REPLICATION");
+            }
+        }
+
         sb.append(GO);
+
+        compareDefaults(null, null, getDefaultName(), getDefaultValue(), sb);
+
+        if (getExpression() == null && !getNullValue()) {
+            if (getDefaultValue() != null) {
+                appendUpdate(sb);
+            }
+
+            sb.append(getAlterColumn(true, false, getName()))
+            .append(' ').append(getType());
+
+            if (getCollation() != null) {
+                sb.append(" COLLATE ").append(getCollation());
+            }
+
+            sb.append(" NOT NULL");
+            sb.append(GO);
+        }
+
+        compareOption(false, isSparse(), "SPARSE", sb);
+        compareOption(false, isRowGuidCol(), "ROWGUIDCOL", sb);
+        compareOption(false, isPersisted(), "PERSISTED", sb);
 
         appendPrivileges(sb);
         return sb.toString();
+    }
+
+    private void compareOption(boolean oldOption, boolean newOption,
+            String optionName, StringBuilder sb) {
+        if (oldOption != newOption) {
+            sb.append(getAlterColumn(true, false, name));
+            sb.append(newOption ? " ADD " : " DROP ");
+            sb.append(optionName);
+            sb.append(GO);
+        }
     }
 
     @Override
@@ -93,65 +141,58 @@ public class MsColumn extends AbstractColumn {
             return true;
         }
 
+
+        boolean isNeedDropDefault = !Objects.equals(getType(), newColumn.getType())
+                && (!Objects.equals(getDefaultValue(), newColumn.getDefaultValue())
+                        || !Objects.equals(getDefaultName(), newColumn.getDefaultName()));
+
+        if (isNeedDropDefault) {
+            compareDefaults(getDefaultName(), getDefaultValue(), null, null, sb);
+        }
+
         compareTypes(newColumn, sb);
 
-        if (newColumn.isNotForRep() != isNotForRep()) {
-            sb.append(getAlterColumn(true, false, name));
-            sb.append(newColumn.isNotForRep() ? " ADD" : " DROP" );
-            sb.append(" NOT FOR REPLICATION");
-            sb.append(GO);
-        }
+        String oldDefaultName = isNeedDropDefault ? null : getDefaultName();
+        String oldDefault = isNeedDropDefault ? null : getDefaultValue();
+        compareDefaults(oldDefaultName, oldDefault, newColumn.getDefaultName(),
+                newColumn.getDefaultValue(), sb);
 
-        if (newColumn.isSparse() != isSparse()) {
-            sb.append(getAlterColumn(true, false, name));
-            sb.append(newColumn.isSparse() ? " ADD" : " DROP" );
-            sb.append(" SPARSE");
-            sb.append(GO);
-        }
+        compareNullValues(newColumn, sb);
 
-        if (newColumn.isRowGuidCol() != isRowGuidCol()) {
-            sb.append(getAlterColumn(true, false, name));
-            sb.append(newColumn.isRowGuidCol() ? " ADD" : " DROP" );
-            sb.append(" ROWGUIDCOL");
-            sb.append(GO);
-        }
-
-        if (newColumn.isPersisted() != isPersisted()) {
-            sb.append(getAlterColumn(true, false, name));
-            sb.append(newColumn.isPersisted() ? " ADD" : " DROP" );
-            sb.append(" PERSISTED");
-            sb.append(GO);
-        }
-
-        String newDefault = newColumn.getDefaultValue();
-        if (!Objects.equals(newDefault, getDefaultValue())
-                || !Objects.equals(getDefaultName(), newColumn.getDefaultName())) {
-            if (getDefaultValue() != null) {
-                sb.append(getAlterColumn(true, false, name));
-                sb.append(" DROP CONSTRAINT ").append(getDefaultName());
-                sb.append(GO);
-            }
-
-            if (newDefault != null) {
-                sb.append(getAlterColumn(true, false, name));
-                sb.append(" ADD CONSTRAINT ");
-                sb.append(MsDiffUtils.quoteName(newColumn.getDefaultName()));
-                sb.append(" DEFAULT ");
-                sb.append(newDefault);
-                sb.append(GO);
-            }
-        }
+        compareOption(isNotForRep(), newColumn.isNotForRep(), "NOT FOR REPLICATION", sb);
+        compareOption(isSparse(), newColumn.isSparse(), "SPARSE", sb);
+        compareOption(isRowGuidCol(), newColumn.isRowGuidCol(), "ROWGUIDCOL", sb);
+        compareOption(isPersisted(), newColumn.isPersisted(), "PERSISTED", sb);
 
         alterPrivileges(newColumn, sb);
 
         return sb.length() > startLength;
     }
 
+    private void compareDefaults(String oldDefaultName, String oldDefault,
+            String newDefaultName, String newDefault, StringBuilder sb) {
+        if (!Objects.equals(oldDefault, newDefault)
+                || !Objects.equals(oldDefaultName, newDefaultName)) {
+            if (oldDefault != null) {
+                sb.append(((AbstractTable)this.getParent()).getAlterTable(true, false));
+                sb.append(" DROP CONSTRAINT ").append(MsDiffUtils.quoteName(oldDefaultName));
+                sb.append(GO);
+            }
+
+            if (newDefault != null) {
+                sb.append(((AbstractTable)this.getParent()).getAlterTable(true, false));
+                sb.append(" ADD CONSTRAINT ").append(MsDiffUtils.quoteName(newDefaultName));
+                sb.append(" DEFAULT ").append(newDefault);
+                sb.append(" FOR ").append(MsDiffUtils.quoteName(name));
+                sb.append(GO);
+            }
+        }
+    }
+
     private void compareTypes(MsColumn newColumn, StringBuilder sb) {
         String newCollation = newColumn.getCollation();
         if (!Objects.equals(getType(), newColumn.getType())
-                || !Objects.equals(newCollation, getCollation())
-                || newColumn.getNullValue() != getNullValue()) {
+                || !Objects.equals(newCollation, getCollation())) {
 
             sb.append(getAlterColumn(true, false, newColumn.getName()))
             .append(' ').append(newColumn.getType());
@@ -160,9 +201,37 @@ public class MsColumn extends AbstractColumn {
                 sb.append(" COLLATE ").append(newCollation);
             }
 
+            if (getNullValue() == newColumn.getNullValue()) {
+                sb.append(newColumn.getNullValue() ? " NULL" : " NOT NULL");
+            }
+            sb.append(GO);
+        }
+    }
+
+    private void compareNullValues(MsColumn newColumn, StringBuilder sb) {
+        if (newColumn.getNullValue() != getNullValue()) {
+            if (newColumn.getDefaultValue() != null && getNullValue() && !newColumn.getNullValue()) {
+                appendUpdate(sb);
+            }
+
+            sb.append(getAlterColumn(true, false, newColumn.getName()))
+            .append(' ').append(newColumn.getType());
+
+            if (newColumn.getCollation() != null) {
+                sb.append(" COLLATE ").append(newColumn.getCollation());
+            }
+
             sb.append(newColumn.getNullValue() ? " NULL" : " NOT NULL");
             sb.append(GO);
         }
+    }
+
+    private void appendUpdate(StringBuilder sb) {
+        sb.append("\n\nUPDATE ").append(getParent().getQualifiedName())
+        .append("\n\tSET ").append(MsDiffUtils.quoteName(name))
+        .append(" = DEFAULT WHERE ")
+        .append(MsDiffUtils.quoteName(name)).append(" IS NULL");
+        sb.append(GO);
     }
 
     private String getAlterColumn(boolean newLine, boolean only, String column) {

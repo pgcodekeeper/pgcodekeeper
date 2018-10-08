@@ -49,6 +49,7 @@ public class DbUpdatePrefPage extends FieldEditorPreferencePage implements IWork
         pref.put(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT, Messages.dBUpdatePrefPage_alter_column_statement);
         pref.put(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT, Messages.dBUpdatePrefPage_drop_column_statement);
         pref.put(DB_UPDATE_PREF.RESTART_WITH_STATEMENT, Messages.DbUpdatePrefPage_alter_seq_restart_statement);
+        pref.put(DB_UPDATE_PREF.UPDATE_STATEMENT, Messages.DbUpdatePrefPage_update_statement);
         GroupFieldsEditor gfe = new GroupFieldsEditor(pref,
                 Messages.dBUpdatePrefPage_set_warning_when_next_statements_present,
                 getFieldEditorParent());

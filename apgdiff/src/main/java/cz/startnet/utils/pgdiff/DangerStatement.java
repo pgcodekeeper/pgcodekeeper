@@ -16,7 +16,9 @@ public enum DangerStatement {
             // but *not* 'DROP CONSTRAINT constraint_name'
             + "DROP[\\s]+(?!CONSTRAINT[\\s]+)([\\w]+).*"),
 
-    RESTART_WITH("^ALTER[\\s]+SEQUENCE.*[\\s]+RESTART[\\s]+.*");
+    RESTART_WITH("^ALTER[\\s]+SEQUENCE.*[\\s]+RESTART[\\s]+.*"),
+
+    UPDATE("^UPDATE[\\s].+");
 
     private static class AlterTableStatic {
 
@@ -31,7 +33,7 @@ public enum DangerStatement {
     private final Pattern regex;
 
     private DangerStatement(String regex) {
-        this.regex = Pattern.compile(regex, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+        this.regex = Pattern.compile(regex, Pattern.CASE_INSENSITIVE | Pattern.DOTALL | Pattern.MULTILINE);
     }
 
     public Pattern getRegex() {

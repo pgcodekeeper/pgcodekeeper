@@ -1,7 +1,5 @@
-ALTER TABLE [dbo].[testtable]
-	ALTER COLUMN [c1] DROP CONSTRAINT DF_testtable
+ALTER TABLE [dbo].[testtable] DROP CONSTRAINT [DF_testtable]
 GO
 
-ALTER TABLE [dbo].[testtable]
-	ALTER COLUMN [c1] ADD CONSTRAINT [DF_testtable] DEFAULT ((2))
+ALTER TABLE [dbo].[testtable] ADD CONSTRAINT [DF_testtable] DEFAULT ((2)) FOR [c1]
 GO
