@@ -86,7 +86,7 @@ script_additional
     : LISTEN identifier
     | UNLISTEN (identifier | MULTIPLY)
     | ANALYZE VERBOSE? table_cols?
-    | VACUUM (LEFT_PAREN vacuum_mode (COMMA vacuum_mode)* RIGHT_PAREN | vacuum_mode*)? table_cols?
+    | VACUUM (LEFT_PAREN vacuum_mode (COMMA vacuum_mode)* RIGHT_PAREN | vacuum_mode+)? table_cols?
     | SHOW (identifier | ALL)
     | LOAD Character_String_Literal
     | DISCARD (ALL | PLANS | SEQUENCES | TEMPORARY | TEMP)
