@@ -2054,7 +2054,6 @@ value_expression_primary
 unsigned_value_specification
   : unsigned_numeric_literal
   | general_literal
-  | DOLLAR_NUMBER
   ;
 
 unsigned_numeric_literal
@@ -2065,6 +2064,7 @@ unsigned_numeric_literal
 general_literal
   : character_string
   | truth_value
+  | DOLLAR_NUMBER
   ;
 
 truth_value
