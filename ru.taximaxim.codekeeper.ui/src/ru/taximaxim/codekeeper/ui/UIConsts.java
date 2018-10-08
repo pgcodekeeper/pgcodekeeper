@@ -95,6 +95,7 @@ public interface UIConsts {
         String ALTER_COLUMN_STATEMENT = "prefAlterColumnStatement"; //$NON-NLS-1$
         String DROP_COLUMN_STATEMENT = "prefDropColumnStatement"; //$NON-NLS-1$
         String RESTART_WITH_STATEMENT = "prefRestartWithStatement"; //$NON-NLS-1$
+        String UPDATE_STATEMENT = "prefUpdateStatement"; //$NON-NLS-1$
         String SCRIPT_IN_TRANSACTION = "prefScriptInTransaction"; //$NON-NLS-1$
         String CHECK_FUNCTION_BODIES = "prefCheckFunctionBodies"; //$NON-NLS-1$
         String USING_ON_OFF = "prefUsingOnOff"; //$NON-NLS-1$;

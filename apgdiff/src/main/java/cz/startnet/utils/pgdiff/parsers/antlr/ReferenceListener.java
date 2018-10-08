@@ -37,6 +37,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_table_statementCo
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_trigger_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_type_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_columnsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_function_statementContext;
@@ -63,6 +64,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_of_type_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -108,6 +110,7 @@ public class ReferenceListener implements SqlContextProcessor {
     public void process(SqlContext rootCtx) {
         for (StatementContext s : rootCtx.statement()) {
             Schema_statementContext st = s.schema_statement();
+            Data_statementContext ds;
             if (st != null) {
                 Schema_createContext create = st.schema_create();
                 Schema_alterContext alter;
@@ -119,6 +122,8 @@ public class ReferenceListener implements SqlContextProcessor {
                 } else if ((drop = st.schema_drop()) != null) {
                     drop(drop);
                 }
+            } else if ((ds = s.data_statement()) != null) {
+                data(ds);
             }
         }
     }
@@ -203,6 +208,16 @@ public class ReferenceListener implements SqlContextProcessor {
             r = () -> dropRule(ctx.drop_rule_statement());
         } else if (ctx.drop_statements() != null) {
             r = () -> drop(ctx.drop_statements());
+        } else {
+            return;
+        }
+        safeParseStatement(r);
+    }
+
+    private void data(Data_statementContext ctx) {
+        Runnable r;
+        if (ctx.update_stmt_for_psql() != null) {
+            r = () -> update(ctx.update_stmt_for_psql());
         } else {
             return;
         }
@@ -704,6 +719,13 @@ public class ReferenceListener implements SqlContextProcessor {
         addFullObjReference(QNameParser.getSchemaName(ids, getDefSchemaName()),
                 QNameParser.getFirstName(ids), ctx.function_parameters().name,
                 DbObjType.FUNCTION, StatementActions.DROP, ctx.getParent());
+    }
+
+    private void update(Update_stmt_for_psqlContext ctx) {
+        List<IdentifierContext> ids = ctx.update_table_name.identifier();
+        addFullObjReference(QNameParser.getSchemaName(ids, getDefSchemaName()),
+                QNameParser.getFirstName(ids), ctx.update_table_name,
+                DbObjType.TABLE, StatementActions.UPDATE, ctx);
     }
 
 

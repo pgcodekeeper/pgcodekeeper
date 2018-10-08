@@ -116,6 +116,10 @@ public class PgObjLocation implements Serializable {
     }
 
     public boolean isDanger() {
+        if (action == StatementActions.UPDATE) {
+            return true;
+        }
+
         if (action == StatementActions.DROP && type == DbObjType.TABLE){
             return true;
         }

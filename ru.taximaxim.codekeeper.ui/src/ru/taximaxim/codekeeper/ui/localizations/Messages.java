@@ -284,6 +284,8 @@ public final class Messages extends NLS {
 
     public static String DbUpdatePrefPage_print_index_with_concurrently;
 
+    public static String DbUpdatePrefPage_update_statement;
+
     public static String dbUpdatePrefPage_create_script_project_directory;
 
     public static String dbUpdatePrefPage_status_alway_create;

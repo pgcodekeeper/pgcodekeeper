@@ -196,7 +196,7 @@ class QuickUpdateJob extends SingletonEditorJob {
                 treeFull, false, timezone, isMsSql);
         differ.run(monitor.newChild(1));
 
-        if (differ.getScript().isDangerDdl(false, false, false, false)) {
+        if (differ.getScript().isDangerDdl(false, false, false, false, false)) {
             throw new PgCodekeeperUIException(Messages.QuickUpdate_danger);
         }
 
