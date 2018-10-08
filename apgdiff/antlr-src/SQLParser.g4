@@ -74,8 +74,7 @@ script_additional
     : LISTEN identifier
     | UNLISTEN (identifier | MULTIPLY)
     | ANALYZE VERBOSE? qualified_table_name_perhaps_with_cols?
-    | VACUUM (FULL? FREEZE? VERBOSE? (ANALYZE qualified_table_name_perhaps_with_cols? | schema_qualified_name?)
-        | (LEFT_PAREN vacuum_mode (COMMA vacuum_mode)* RIGHT_PAREN)? qualified_table_name_perhaps_with_cols?)
+    | VACUUM (LEFT_PAREN vacuum_mode (COMMA vacuum_mode)* RIGHT_PAREN | vacuum_mode*)? qualified_table_name_perhaps_with_cols?
     | SHOW (identifier | ALL)
     | LOAD Character_String_Literal
     | DISCARD (ALL | PLANS | SEQUENCES | TEMPORARY | TEMP)
@@ -337,14 +336,17 @@ alter_index_statement
     ;
 
 index_def
-    : index_if_exists_name (rename_to
-        | RESET LEFT_PAREN name+=identifier (COMMA name+=identifier)* RIGHT_PAREN
-        | SET (TABLESPACE tbl_spc=identifier 
-            | LEFT_PAREN option_with_value (COMMA option_with_value)* RIGHT_PAREN))
+    : index_if_exists_name index_def_action
     ;
 
 index_if_exists_name
     : INDEX (IF EXISTS)? schema_qualified_name
+    ;
+
+index_def_action
+    : rename_to
+    | RESET LEFT_PAREN name+=identifier (COMMA name+=identifier)* RIGHT_PAREN
+    | SET (TABLESPACE tbl_spc=identifier | LEFT_PAREN option_with_value (COMMA option_with_value)* RIGHT_PAREN)
     ;
 
 index_all_def
@@ -402,9 +404,14 @@ alter_view_statement
     ;
 
 alter_event_trigger
-    : EVENT TRIGGER name=identifier (DISABLE | ENABLE (REPLICA | ALWAYS)? 
+    : EVENT TRIGGER name=identifier alter_event_trigger_action
+    ;
+
+alter_event_trigger_action
+    : DISABLE 
+    | ENABLE (REPLICA | ALWAYS)?
     | OWNER TO user_identifer_current_session
-    | rename_to)
+    | rename_to
     ;
 
 alter_type_statement
@@ -638,26 +645,37 @@ alter_user_or_role
     ;
 
 alter_user_or_role_set_reset
-    : (user_identifer_current_session | ALL) (IN DATABASE db_name=identifier)? 
-      (SET config_param=identifier (TO | EQUAL) config_param_val=set_statement_value
-       | SET config_param=identifier FROM CURRENT
-       | RESET config_param=identifier
-       | RESET ALL)
+    : (user_identifer_current_session | ALL) (IN DATABASE db_name=identifier)? user_or_role_set_reset
+    ;
+
+user_or_role_set_reset
+    : SET config_param=identifier (TO | EQUAL) config_param_val=set_statement_value
+    | SET config_param=identifier FROM CURRENT
+    | RESET config_param=identifier
+    | RESET ALL
     ;
 
 alter_group
-    : GROUP (name=identifier rename_to
-        | user_identifer_current_session (ADD | DROP) 
-            USER user_name+=identifier (COMMA user_name+=identifier)*)
+    : GROUP alter_group_action
+    ;
+
+alter_group_action
+    : name=identifier rename_to
+    | user_identifer_current_session (ADD | DROP) 
+        USER user_name+=identifier (COMMA user_name+=identifier)*
     ;
 
 alter_tablespace
-    : TABLESPACE name=identifier (rename_to
-        | OWNER TO user_identifer_current_session
-        | SET LEFT_PAREN tablespace_option=identifier EQUAL value=vex 
+    : TABLESPACE name=identifier alter_tablespace_action
+    ;
+
+alter_tablespace_action
+    : rename_to
+    | OWNER TO user_identifer_current_session
+    | SET LEFT_PAREN tablespace_option=identifier EQUAL value=vex 
             (COMMA tablespace_option=identifier EQUAL value=vex)* RIGHT_PAREN
-        | RESET LEFT_PAREN tablespace_option=identifier  
-            (COMMA tablespace_option=identifier)* RIGHT_PAREN)
+    | RESET LEFT_PAREN tablespace_option=identifier  
+            (COMMA tablespace_option=identifier)* RIGHT_PAREN
     ;
 
 alter_statistics
@@ -667,9 +685,13 @@ alter_statistics
     ;
 
 alter_foreign_data_wrapper
-    : FOREIGN DATA WRAPPER name=identifier (alter_foreign_data_wrapper_handler_validator_option
-        | FOREIGN DATA WRAPPER name=identifier OWNER TO user_identifer_current_session
-        | FOREIGN DATA WRAPPER name=identifier rename_to)
+    : FOREIGN DATA WRAPPER name=identifier alter_foreign_data_wrapper_action
+    ;
+
+alter_foreign_data_wrapper_action
+    : alter_foreign_data_wrapper_handler_validator_option
+    | OWNER TO user_identifer_current_session
+    | rename_to
     ;
 
 alter_foreign_data_wrapper_handler_validator_option
@@ -742,7 +764,7 @@ user_or_role_or_group_option_for_create
     ;
 
 create_group
-    : GROUP name=identifier (WITH? group_option group_option*)?
+    : GROUP name=identifier (WITH? group_option+)?
     ;
 
 group_option
@@ -766,21 +788,29 @@ create_statistics
 create_foreign_data_wrapper
     : FOREIGN DATA WRAPPER name=identifier (HANDLER handler_function=identifier | NO HANDLER )?
     (VALIDATOR validator_function=identifier | NO VALIDATOR)?
-    (OPTIONS LEFT_PAREN option_without_eqal (COMMA option_without_eqal)* RIGHT_PAREN )?
+    (OPTIONS LEFT_PAREN option_without_equal (COMMA option_without_equal)* RIGHT_PAREN )?
     ;
 
-option_without_eqal
+option_without_equal
     : name=identifier value=Character_String_Literal
     ;
 
 set_statement
-    : SET (CONSTRAINTS (ALL | (constr_name+=schema_qualified_name (COMMA constr_name+=schema_qualified_name)*)) (DEFERRED | IMMEDIATE)
-        | TRANSACTION (transaction_mode+ | SNAPSHOT snapshot_id=Character_String_Literal)
-        | SESSION CHARACTERISTICS AS TRANSACTION transaction_mode+
-        | (SESSION | LOCAL)? (SESSION AUTHORIZATION (name=Character_String_Literal | DEFAULT)
-            | TIME ZONE (timezone=Character_String_Literal | (LOCAL | DEFAULT))
-            | config_param=identifier (TO | EQUAL) config_param_val+=set_statement_value (COMMA config_param_val+=set_statement_value)*
-            | ROLE (name=Character_String_Literal | NONE)))
+    : SET set_action
+    ;
+
+set_action
+    : CONSTRAINTS (ALL | (constr_name+=schema_qualified_name (COMMA constr_name+=schema_qualified_name)*)) (DEFERRED | IMMEDIATE)
+    | TRANSACTION (transaction_mode+ | SNAPSHOT snapshot_id=Character_String_Literal)
+    | SESSION CHARACTERISTICS AS TRANSACTION transaction_mode+
+    | (SESSION | LOCAL)? session_local_option
+    ;
+
+session_local_option
+    : SESSION AUTHORIZATION (name=Character_String_Literal | DEFAULT)
+    | TIME ZONE (timezone=Character_String_Literal | (LOCAL | DEFAULT))
+    | config_param=identifier (TO | EQUAL) config_param_val+=set_statement_value (COMMA config_param_val+=set_statement_value)*
+    | ROLE (name=Character_String_Literal | NONE)
     ;
 
 set_statement_value

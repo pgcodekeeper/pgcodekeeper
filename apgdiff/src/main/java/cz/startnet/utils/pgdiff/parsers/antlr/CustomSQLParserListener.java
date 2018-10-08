@@ -11,6 +11,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.SqlContextPr
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_alterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_createContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Session_local_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statement_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
@@ -183,13 +184,14 @@ public class CustomSQLParserListener implements SqlContextProcessor {
     }
 
     private void set(Set_statementContext ctx) {
-        if (ctx.config_param_val.isEmpty()) {
+        Session_local_optionContext sesLocOpt = ctx.set_action().session_local_option();
+        if (sesLocOpt != null && sesLocOpt.config_param_val.isEmpty()) {
             return;
         }
-        String confParam = ctx.config_param.getText();
+        String confParam = sesLocOpt.config_param.getText();
         // TODO set param values can be identifiers, quoted identifiers, string
         // or other literals: improve handling
-        Set_statement_valueContext confValueCtx = ctx.config_param_val.get(0);
+        Set_statement_valueContext confValueCtx = sesLocOpt.config_param_val.get(0);
         String confValue = confValueCtx.getText();
 
         switch (confParam.toLowerCase()) {
