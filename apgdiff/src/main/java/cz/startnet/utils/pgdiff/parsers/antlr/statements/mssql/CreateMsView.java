@@ -2,30 +2,35 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import java.util.List;
 
-import cz.startnet.utils.pgdiff.MsDiffUtils;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_viewContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Select_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.View_attributeContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.MsView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
-public class CreateMsView extends ParserAbstract {
+public class CreateMsView extends BatchContextProcessor {
 
     private final Create_or_alter_viewContext ctx;
 
     private final boolean ansiNulls;
     private final boolean quotedIdentifier;
 
-    public CreateMsView(Create_or_alter_viewContext ctx, PgDatabase db, boolean ansiNulls, boolean quotedIdentifier) {
-        super(db);
-        this.ctx = ctx;
+    public CreateMsView(Batch_statementContext ctx, PgDatabase db,
+            boolean ansiNulls, boolean quotedIdentifier, CommonTokenStream stream) {
+        super(db, ctx, stream);
+        this.ctx = ctx.batch_statement_body().create_or_alter_view();
         this.ansiNulls = ansiNulls;
         this.quotedIdentifier = quotedIdentifier;
+    }
+
+    @Override
+    protected ParserRuleContext getDelimiterCtx() {
+        return ctx.simple_name();
     }
 
     @Override
@@ -37,32 +42,11 @@ public class CreateMsView extends ParserAbstract {
 
     public MsView getObject(AbstractSchema schema) {
         IdContext name = QNameParser.getFirstNameCtx(ctx.simple_name().id());
-        MsView view = new MsView(name.getText(), getFullCtxText(ctx.getParent()));
+        ParserRuleContext batchCtx = ctx.getParent().getParent();
+        MsView view = new MsView(name.getText(), getFullCtxText(batchCtx));
         view.setAnsiNulls(ansiNulls);
         view.setQuotedIdentified(quotedIdentifier);
-
-        Select_statementContext vQuery = ctx.select_statement();
-        if (vQuery != null) {
-            view.setQuery(getFullCtxText(vQuery));
-        }
-
-        if (ctx.column_name_list() != null) {
-            for (IdContext column : ctx.column_name_list().id()) {
-                view.addColumnName(column.getText());
-            }
-        }
-
-        List<View_attributeContext> options = ctx.view_attribute();
-        if (options != null){
-            for (View_attributeContext option: options) {
-                view.addOption(MsDiffUtils.getQuotedName(option.getText()), "");
-            }
-        }
-
-        if (ctx.with_check_option() != null){
-            view.addOption(AbstractView.CHECK_OPTION, "");
-        }
-
+        setSourceParts(view);
         schema.addView(view);
         return view;
     }

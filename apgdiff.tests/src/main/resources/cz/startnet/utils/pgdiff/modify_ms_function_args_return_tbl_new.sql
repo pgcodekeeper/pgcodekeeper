@@ -16,6 +16,6 @@ RETURNS TABLE
 AS
 RETURN   
 (  
-    SELECT @First AS 'First', @Second AS 'Second', (@First + @Second) AS 'Sum';  
+    SELECT @First AS 'First', @Second AS 'Second', (@First + @Second) AS 'Sum'  
 )
 GO

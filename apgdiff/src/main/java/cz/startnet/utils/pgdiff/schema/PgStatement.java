@@ -509,6 +509,7 @@ public abstract class PgStatement implements IStatement, IHashable {
      * @return fully qualified (up to schema) dot-delimited object name.
      *          Identifiers are quoted.
      */
+    @Override
     public String getQualifiedName() {
         Function<String, String> quoter = isPostgres() ? PgDiffUtils::getQuotedName : MsDiffUtils::quoteName;
         StringBuilder sb = new StringBuilder(quoter.apply(getName()));

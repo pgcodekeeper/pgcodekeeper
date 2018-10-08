@@ -2,12 +2,16 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 
 import java.util.List;
 
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Another_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.BatchContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statement_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Ddl_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Disable_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_alterContext;
@@ -50,7 +54,7 @@ implements TSqlContextProcessor {
     }
 
     @Override
-    public void process(Tsql_fileContext rootCtx) {
+    public void process(Tsql_fileContext rootCtx, CommonTokenStream stream) {
         for (BatchContext b : rootCtx.batch()) {
             Sql_clausesContext clauses = b.sql_clauses();
             Batch_statementContext batchSt;
@@ -59,7 +63,7 @@ implements TSqlContextProcessor {
                     clause(st);
                 }
             } else if ((batchSt = b.batch_statement()) != null) {
-                batchStatement(batchSt);
+                batchStatement(batchSt, stream);
             }
         }
     }
@@ -90,25 +94,23 @@ implements TSqlContextProcessor {
         }
     }
 
-    private void batchStatement(Batch_statementContext ctx) {
+    private void batchStatement(Batch_statementContext ctx, CommonTokenStream stream) {
         if (ctx.CREATE() == null) {
             return;
         }
 
         ParserAbstract p;
 
-        if (ctx.create_or_alter_procedure() != null) {
-            p = new CreateMsProcedure(ctx.create_or_alter_procedure(),
-                    db, ansiNulls, quotedIdentifier);
-        } else if (ctx.create_or_alter_function() != null) {
-            p = new CreateMsFunction(ctx.create_or_alter_function(),
-                    db, ansiNulls, quotedIdentifier);
-        } else if (ctx.create_or_alter_view() != null) {
-            p = new CreateMsView(ctx.create_or_alter_view(),
-                    db, ansiNulls, quotedIdentifier);
-        } else if (ctx.create_or_alter_trigger() != null) {
-            p = new CreateMsTrigger(ctx.create_or_alter_trigger(),
-                    db, ansiNulls, quotedIdentifier);
+        Batch_statement_bodyContext body = ctx.batch_statement_body();
+
+        if (body.create_or_alter_procedure() != null) {
+            p = new CreateMsProcedure(ctx, db, ansiNulls, quotedIdentifier, stream);
+        } else if (body.create_or_alter_function() != null) {
+            p = new CreateMsFunction(ctx, db, ansiNulls, quotedIdentifier, stream);
+        } else if (body.create_or_alter_view() != null) {
+            p = new CreateMsView(ctx, db, ansiNulls, quotedIdentifier, stream);
+        } else if (body.create_or_alter_trigger() != null) {
+            p = new CreateMsTrigger(ctx, db, ansiNulls, quotedIdentifier, stream);
         } else {
             return;
         }

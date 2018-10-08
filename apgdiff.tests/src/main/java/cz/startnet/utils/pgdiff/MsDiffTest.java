@@ -180,6 +180,8 @@ public class MsDiffTest {
                     {"modify_ms_function_args_with"},
                     // Tests scenario where external name of MS FUNCTION with args is modified.
                     {"modify_ms_function_args_external"},
+                    // Tests scenario where type of MS FUNCTION is modified.
+                    {"modify_ms_function_type"},
 
                     // Tests scenario where MS TABLE CONSTRAINT of column is added.
                     {"add_ms_constraint_column"},

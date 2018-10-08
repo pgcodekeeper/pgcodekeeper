@@ -1,0 +1,11 @@
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE FUNCTION [dbo].[func](@storeid int) 
+RETURNS TABLE
+AS  
+RETURN   
+(  
+    SELECT @storeid as test
+)

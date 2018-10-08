@@ -103,7 +103,7 @@ public class AntlrParser {
         try {
             SqlContext ctx = parser.sql();
             for (SqlContextProcessor listener : listeners) {
-                listener.process(ctx);
+                listener.process(ctx, null);
             }
         } catch (MonitorCancelledRuntimeException mcre){
             throw new InterruptedException();
@@ -121,7 +121,7 @@ public class AntlrParser {
         try {
             Tsql_fileContext ctx = parser.tsql_file();
             for (TSqlContextProcessor listener : listeners) {
-                listener.process(ctx);
+                listener.process(ctx, (CommonTokenStream) parser.getInputStream());
             }
         } catch (MonitorCancelledRuntimeException mcre){
             throw new InterruptedException();

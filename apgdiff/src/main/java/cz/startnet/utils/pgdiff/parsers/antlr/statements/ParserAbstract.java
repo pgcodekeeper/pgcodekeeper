@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
@@ -82,6 +83,25 @@ public abstract class ParserAbstract {
     public static String getFullCtxText(Token start, Token end) {
         return start.getInputStream().getText(
                 Interval.of(start.getStartIndex(), end.getStopIndex()));
+    }
+
+    public static String getHiddenLeftCtxText(ParserRuleContext ctx, CommonTokenStream stream) {
+        List<Token> startTokens = stream.getHiddenTokensToLeft(ctx.getStart().getTokenIndex());
+        if (startTokens != null) {
+            return ctx.getStart().getInputStream().getText(Interval.of(
+                    startTokens.get(0).getStartIndex(),
+                    ctx.getStart().getStartIndex() - 1));
+        }
+
+        return "";
+    }
+
+    public static String getFullCtxTextWithHidden(ParserRuleContext ctx, CommonTokenStream stream) {
+        List<Token> startTokens = stream.getHiddenTokensToLeft(ctx.getStart().getTokenIndex());
+        List<Token> stopTokens = stream.getHiddenTokensToRight(ctx.getStop().getTokenIndex());
+        Token start = startTokens != null ? startTokens.get(0) : ctx.getStart();
+        Token stop = stopTokens != null ? stopTokens.get(stopTokens.size() - 1) : ctx.getStop();
+        return getFullCtxText(start, stop);
     }
 
     protected AbstractColumn getColumn(Table_column_definitionContext colCtx) {

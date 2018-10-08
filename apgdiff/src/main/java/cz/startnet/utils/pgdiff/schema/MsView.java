@@ -1,13 +1,14 @@
 package cz.startnet.utils.pgdiff.schema;
 
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import cz.startnet.utils.pgdiff.MsDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
 
-public class MsView extends AbstractView {
+public class MsView extends AbstractView implements SourceStatement {
+
+    private String firstPart;
+    private String secondPart;
 
     public MsView(String name, String rawStatement) {
         super(name, rawStatement);
@@ -24,50 +25,13 @@ public class MsView extends AbstractView {
     }
 
     private String getViewFullSQL(boolean isCreate) {
-        final StringBuilder sbSQL = new StringBuilder(getQuery().length() * 2);
+        final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("SET QUOTED_IDENTIFIER ").append(isQuotedIdentified() ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
         sbSQL.append("SET ANSI_NULLS ").append(isAnsiNulls() ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
 
-        sbSQL.append(isCreate ? "CREATE" : "ALTER");
-
-        sbSQL.append(" VIEW ");
-        sbSQL.append(getQualifiedName());
-
-        List<String> columnNames = getColumnNames();
-        if (!columnNames.isEmpty()) {
-            sbSQL.append(" (");
-
-            for (int i = 0; i < columnNames.size(); i++) {
-                if (i > 0) {
-                    sbSQL.append(", ");
-                }
-
-                sbSQL.append(MsDiffUtils.quoteName(columnNames.get(i)));
-            }
-            sbSQL.append(')');
-        }
-
-        Map<String, String> options = getOptions();
-        StringBuilder sb = new StringBuilder();
-        for (Map.Entry<String, String> entry : options.entrySet()) {
-            if (!CHECK_OPTION.equals(entry.getKey())){
-                sb.append(entry.getKey());
-                sb.append(", ");
-            }
-        }
-
-        if (sb.length() > 0) {
-            sb.setLength(sb.length() - 2);
-            sbSQL.append("\nWITH ").append(sb);
-        }
-
-        sbSQL.append(" AS\n\t");
-        sbSQL.append(getQuery());
-        if (options.containsKey(CHECK_OPTION)) {
-            sbSQL.append("\nWITH CHECK OPTION");
-        }
+        appendSourceStatement(isCreate, sbSQL);
         sbSQL.append(GO);
 
         return sbSQL.toString();
@@ -84,7 +48,8 @@ public class MsView extends AbstractView {
             return false;
         }
 
-        if (isViewModified(newView) || !Objects.equals(getOptions(), newView.getOptions())) {
+        if (!Objects.equals(getFirstPart(), newView.getFirstPart())
+                || !Objects.equals(getSecondPart(), newView.getSecondPart())) {
             sb.append(newView.getViewFullSQL(false));
         }
 
@@ -107,7 +72,50 @@ public class MsView extends AbstractView {
     }
 
     @Override
+    public boolean compare(PgStatement obj) {
+        if (obj instanceof MsView && super.compare(obj)) {
+            MsView view = (MsView) obj;
+            return Objects.equals(getFirstPart(), view.getFirstPart())
+                    && Objects.equals(getSecondPart(), view.getSecondPart());
+        }
+
+        return false;
+    }
+
+    @Override
+    public void computeHash(Hasher hasher) {
+        super.computeHash(hasher);
+        hasher.put(getFirstPart());
+        hasher.put(getSecondPart());
+    }
+
+    @Override
     protected AbstractView getViewCopy() {
-        return new MsView(getName(), getRawStatement());
+        MsView view = new MsView(getName(), getRawStatement());
+        view.setFirstPart(getFirstPart());
+        view.setSecondPart(getSecondPart());
+        return view;
+    }
+
+    @Override
+    public String getFirstPart() {
+        return firstPart;
+    }
+
+    @Override
+    public void setFirstPart(String firstPart) {
+        this.firstPart = firstPart;
+        resetHash();
+    }
+
+    @Override
+    public String getSecondPart() {
+        return secondPart;
+    }
+
+    @Override
+    public void setSecondPart(String secondPart) {
+        this.secondPart = secondPart;
+        resetHash();
     }
 }

@@ -4,9 +4,13 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
+import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class MsProcedure extends AbstractFunction {
+public class MsProcedure extends AbstractFunction implements SourceStatement {
+
+    private String firstPart;
+    private String secondPart;
 
     public MsProcedure(String name, String rawStatement) {
         super(name, rawStatement);
@@ -34,6 +38,13 @@ public class MsProcedure extends AbstractFunction {
         sbSQL.append(GO).append('\n');
         sbSQL.append("SET ANSI_NULLS ").append(isAnsiNulls() ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
+
+        if (!isCLR()) {
+            appendSourceStatement(isCreate, sbSQL);
+            sbSQL.append(GO);
+
+            return sbSQL.toString();
+        }
 
         sbSQL.append(isCreate ? "CREATE" : "ALTER");
         sbSQL.append(" PROCEDURE ");
@@ -71,8 +82,11 @@ public class MsProcedure extends AbstractFunction {
         } else {
             return false;
         }
-        if (!checkForChanges(newProcedure)) {
-            if (needDrop(newProcedure)) {
+
+        if (!checkForChanges(newProcedure)
+                || !Objects.equals(getFirstPart(), newProcedure.getFirstPart())
+                || !Objects.equals(getSecondPart(), newProcedure.getSecondPart())) {
+            if (isCLR() != newProcedure.isCLR()) {
                 isNeedDepcies.set(true);
                 return true;
             } else {
@@ -87,10 +101,6 @@ public class MsProcedure extends AbstractFunction {
         alterPrivileges(newProcedure, sb);
 
         return sb.length() > startLength;
-    }
-
-    private boolean needDrop(MsProcedure newProcedure) {
-        return isCLR() != newProcedure.isCLR();
     }
 
     @Override
@@ -135,7 +145,50 @@ public class MsProcedure extends AbstractFunction {
     }
 
     @Override
+    public boolean compare(PgStatement obj) {
+        if (obj instanceof MsProcedure && super.compare(obj)) {
+            MsProcedure proc = (MsProcedure) obj;
+            return Objects.equals(getFirstPart(), proc.getFirstPart())
+                    && Objects.equals(getSecondPart(), proc.getSecondPart());
+        }
+
+        return false;
+    }
+
+    @Override
+    public void computeHash(Hasher hasher) {
+        super.computeHash(hasher);
+        hasher.put(getFirstPart());
+        hasher.put(getSecondPart());
+    }
+
+    @Override
     protected AbstractFunction getFunctionCopy() {
-        return new MsProcedure(getName(), getRawStatement());
+        MsProcedure proc = new MsProcedure(getName(), getRawStatement());
+        proc.setFirstPart(getFirstPart());
+        proc.setSecondPart(getSecondPart());
+        return proc;
+    }
+
+    @Override
+    public String getFirstPart() {
+        return firstPart;
+    }
+
+    @Override
+    public void setFirstPart(String firstPart) {
+        this.firstPart = firstPart;
+        resetHash();
+    }
+
+    @Override
+    public String getSecondPart() {
+        return secondPart;
+    }
+
+    @Override
+    public void setSecondPart(String secondPart) {
+        this.secondPart = secondPart;
+        resetHash();
     }
 }

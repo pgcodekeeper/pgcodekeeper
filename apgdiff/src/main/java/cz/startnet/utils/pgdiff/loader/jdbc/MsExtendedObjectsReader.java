@@ -15,6 +15,7 @@ import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.MsFunction;
+import cz.startnet.utils.pgdiff.schema.MsFunction.FuncTypes;
 import cz.startnet.utils.pgdiff.schema.MsProcedure;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -79,8 +80,8 @@ public class MsExtendedObjectsReader extends JdbcReader {
                     columns.add(column.getFullDefinition());
                 }
 
-                // TODO table can have name, options and etc
                 func.setReturns("TABLE (\n" + String.join(",\n", columns) + ")");
+                ((MsFunction)func).setFuncType(FuncTypes.TABLE);
             } else {
                 String dataType = res.getString("return_type");
                 int size = res.getInt("return_type_size");

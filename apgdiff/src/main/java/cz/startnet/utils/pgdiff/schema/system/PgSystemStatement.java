@@ -42,4 +42,11 @@ public abstract class PgSystemStatement implements IStatement, Serializable {
     public DbObjNature getStatementNature() {
         return DbObjNature.SYSTEM;
     }
+
+    @Override
+    @Deprecated
+    public String getQualifiedName() {
+        // TODO implement when/if needed, remove @Deprecated
+        return null;
+    }
 }

@@ -4,5 +4,5 @@ SET ANSI_NULLS ON
 GO
 CREATE VIEW [dbo].[view1] ([c1], [c2])
 WITH VIEW_METADATA AS
-	SELECT a.[c1], a.[c2] FROM [dbo].[table1] a
+    SELECT a.[c1], a.[c2] FROM [dbo].[table1] a
 GO

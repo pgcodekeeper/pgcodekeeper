@@ -2,9 +2,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 SET ANSI_NULLS ON
 GO
-ALTER PROCEDURE [dbo].[proc1]
-@first integer,
-@second integer
+ALTER PROCEDURE [dbo].[proc1] @first integer, @second integer
 AS
 SET NOCOUNT ON;  
     SELECT t.[c1], t.[c2], t.[c3], (@first - @second) AS val  

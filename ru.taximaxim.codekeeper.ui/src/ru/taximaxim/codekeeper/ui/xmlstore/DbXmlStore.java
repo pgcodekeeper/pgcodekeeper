@@ -134,7 +134,13 @@ public class DbXmlStore extends XmlStore<DbInfo> {
         for (int i = 0; i < params.getLength(); i++) {
             Node param = params.item(i);
             if (param.getNodeType() == Node.ELEMENT_NODE) {
-                Tags tag = Tags.valueOf(param.getNodeName().toUpperCase());
+                Tags tag;
+                try {
+                    tag = Tags.valueOf(param.getNodeName().toUpperCase());
+                } catch (IllegalArgumentException ex) {
+                    Log.log(ex);
+                    continue;
+                }
                 switch (tag) {
                 case NAME:
                 case DBNAME:

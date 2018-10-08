@@ -3,7 +3,7 @@ GO
 SET ANSI_NULLS ON
 GO
 ALTER VIEW [dbo].[view1] AS
-	SELECT 
+    SELECT 
     a.[c1]
 FROM [dbo].[table1] a
 GO

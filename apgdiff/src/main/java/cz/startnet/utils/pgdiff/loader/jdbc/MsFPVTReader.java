@@ -5,16 +5,21 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.function.BiConsumer;
 
+import org.antlr.v4.runtime.CommonTokenStream;
+
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsFunction;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsProcedure;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsTrigger;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsView;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.MsFunction;
+import cz.startnet.utils.pgdiff.schema.MsProcedure;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
+import cz.startnet.utils.pgdiff.schema.MsView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -75,36 +80,40 @@ public class MsFPVTReader extends JdbcReader {
         };
 
         if (tt == DbObjType.TRIGGER) {
-            loader.submitMsAntlrTask(def, p -> p.tsql_file().batch(0).batch_statement()
-                    .create_or_alter_trigger(),
-                    ctx -> {
-                        MsTrigger tr = new CreateMsTrigger(ctx, db, an, qi).getObject(schema);
-                        tr.setDisable(isDisable);
-                    });
+            loader.submitMsAntlrTask(def, p -> {
+                Batch_statementContext ctx = p.tsql_file().batch(0).batch_statement();
+                return new CreateMsTrigger(ctx, db, an, qi, (CommonTokenStream) p.getInputStream());
+            }, creator -> {
+                MsTrigger tr = creator.getObject(schema);
+                tr.setDisable(isDisable);
+            });
         } else if (tt == DbObjType.VIEW) {
-            loader.submitMsAntlrTask(def, p -> p.tsql_file().batch(0).batch_statement()
-                    .create_or_alter_view(),
-                    ctx -> {
-                        PgStatement st = new CreateMsView(ctx, db, an, qi).getObject();
-                        loader.setOwner(st, owner);
-                        cons.accept((PgStatementWithSearchPath)st, acls);
-                    });
+            loader.submitMsAntlrTask(def, p -> {
+                Batch_statementContext ctx = p.tsql_file().batch(0).batch_statement();
+                return new CreateMsView(ctx, db, an, qi, (CommonTokenStream) p.getInputStream());
+            }, creator -> {
+                MsView st = creator.getObject(schema);
+                loader.setOwner(st, owner);
+                cons.accept(st, acls);
+            });
         } else if (tt == DbObjType.PROCEDURE) {
-            loader.submitMsAntlrTask(def, p -> p.tsql_file().batch(0).batch_statement()
-                    .create_or_alter_procedure(),
-                    ctx -> {
-                        PgStatement st = new CreateMsProcedure(ctx, db, an, qi).getObject(schema);
-                        loader.setOwner(st, owner);
-                        cons.accept((PgStatementWithSearchPath)st, acls);
-                    });
+            loader.submitMsAntlrTask(def, p -> {
+                Batch_statementContext ctx = p.tsql_file().batch(0).batch_statement();
+                return new CreateMsProcedure(ctx, db, an, qi, (CommonTokenStream) p.getInputStream());
+            }, creator -> {
+                MsProcedure st = creator.getObject(schema);
+                loader.setOwner(st, owner);
+                cons.accept(st, acls);
+            });
         } else {
-            loader.submitMsAntlrTask(def, p -> p.tsql_file().batch(0).batch_statement()
-                    .create_or_alter_function(),
-                    ctx -> {
-                        PgStatement st = new CreateMsFunction(ctx, db, an, qi).getObject(schema);
-                        loader.setOwner(st, owner);
-                        cons.accept((PgStatementWithSearchPath)st, acls);
-                    });
+            loader.submitMsAntlrTask(def, p -> {
+                Batch_statementContext ctx = p.tsql_file().batch(0).batch_statement();
+                return new CreateMsFunction(ctx, db, an, qi, (CommonTokenStream) p.getInputStream());
+            }, creator -> {
+                MsFunction st = creator.getObject(schema);
+                loader.setOwner(st, owner);
+                cons.accept(st, acls);
+            });
         }
     }
 }
