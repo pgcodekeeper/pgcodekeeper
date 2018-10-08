@@ -8,8 +8,6 @@ import java.util.Map.Entry;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.antlr.v4.runtime.ParserRuleContext;
-
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alias_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_itemContext;
@@ -44,7 +42,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
-public class Select extends AbstractExprWithNmspc<SelectStmt> {
+public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
 
     /**
      * Flags for proper FROM (subquery) analysis.<br>
@@ -73,17 +71,15 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         return !inFrom || lateralAllowed ? super.findReferenceInNmspc(schema, name, column) : null;
     }
 
-    public List<Pair<String, String>> analyze(ParserRuleContext ruleCtx) {
-        if (ruleCtx instanceof Select_stmtContext) {
-            return analyze(new SelectStmt((Select_stmtContext) ruleCtx));
-        } else if (ruleCtx instanceof Select_stmt_no_parensContext) {
-            return analyze(new SelectStmt((Select_stmt_no_parensContext) ruleCtx));
-        } else {
-            throw new IllegalStateException("Not a select ctx");
-        }
+    @Override
+    public List<Pair<String, String>> analyze(Select_stmtContext ruleCtx) {
+        return analyze(new SelectStmt(ruleCtx));
     }
 
-    @Override
+    public List<Pair<String, String>> analyze(Select_stmt_no_parensContext ruleCtx) {
+        return analyze(new SelectStmt(ruleCtx));
+    }
+
     public List<Pair<String, String>> analyze(SelectStmt select) {
         return analyze(select, null);
     }

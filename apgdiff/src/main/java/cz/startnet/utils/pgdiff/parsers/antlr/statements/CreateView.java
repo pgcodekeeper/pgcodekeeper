@@ -99,7 +99,7 @@ public class CreateView extends ParserAbstract {
             String schemaName, PgDatabase db) {
         if (ctx instanceof Select_stmtContext) {
             Select select = new Select(schemaName, db);
-            view.addRelationColumns(select.analyze(ctx));
+            view.addRelationColumns(select.analyze((Select_stmtContext) ctx));
             view.addAllDeps(select.getDepcies());
         } else {
             UtilAnalyzeExpr.analyze((VexContext) ctx, new ValueExpr(schemaName, db), view);

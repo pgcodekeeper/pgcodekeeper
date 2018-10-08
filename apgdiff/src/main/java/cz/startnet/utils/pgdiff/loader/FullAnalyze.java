@@ -10,6 +10,7 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
+import cz.startnet.utils.pgdiff.parsers.antlr.CustomParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_restContext;
@@ -28,7 +29,6 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
-import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 
@@ -73,7 +73,7 @@ public final class FullAnalyze {
                             schemaName, db);
                     break;
                 case CONSTRAINT:
-                    TableAbstract.analyzeConstraintCtx(ctx, statement, schemaName, db);
+                    TableAbstract.analyzeConstraintCtx((VexContext) ctx, statement, schemaName, db);
                     break;
                 case DOMAIN:
                 case FUNCTION:
@@ -89,6 +89,9 @@ public final class FullAnalyze {
 
             } catch (UnresolvedReferenceException ex) {
                 unresolvRefExHandler(ex, errors, ctx, statement.getLocation());
+            } catch (Exception ex) {
+                addError(errors, CustomParserListener.handleParserContextException(
+                        ex, statement.getLocation(), ctx));
             }
         }
 
@@ -117,6 +120,9 @@ public final class FullAnalyze {
                                 stmt.getParent().getName(), db);
                     } catch (UnresolvedReferenceException ex) {
                         unresolvRefExHandler(ex, errors, ctx, stmt.getLocation());
+                    } catch (Exception ex) {
+                        addError(errors, CustomParserListener.handleParserContextException(
+                                ex, stmt.getLocation(), ctx));
                     }
                 });
             }
@@ -126,13 +132,15 @@ public final class FullAnalyze {
 
     private static void unresolvRefExHandler(UnresolvedReferenceException ex,
             List<AntlrError> errors, ParserRuleContext ctx, String location) {
+        if (ex.getErrorToken() == null) {
+            ex.setErrorToken(ctx.getStart());
+        }
+        addError(errors, CustomSQLParserListener.handleUnresolvedReference(ex, location));
+    }
+
+    private static void addError(List<AntlrError> errors, AntlrError err) {
         if (errors != null) {
-            if (ex.getErrorToken() == null) {
-                ex.setErrorToken(ctx.getStart());
-            }
-            errors.add(CustomSQLParserListener.handleUnresolvedReference(ex, location));
-        } else {
-            Log.log(Log.LOG_WARNING, ex.getMessage(), ex);
+            errors.add(err);
         }
     }
 

@@ -257,7 +257,7 @@ public abstract class TableAbstract extends ParserAbstract {
         }
     }
 
-    public static void analyzeConstraintCtx(ParserRuleContext ctx, PgStatement statement,
+    public static void analyzeConstraintCtx(VexContext ctx, PgStatement statement,
             String schemaName, PgDatabase db) {
         UtilAnalyzeExpr.analyzeWithNmspc(ctx, statement, schemaName,
                 statement.getParent().getName(), db);
