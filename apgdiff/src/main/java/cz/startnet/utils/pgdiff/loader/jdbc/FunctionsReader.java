@@ -195,18 +195,34 @@ public class FunctionsReader extends JdbcReader {
         if ("internal".equals(lanName) || "c".equals(lanName)) {
             /* default cost is 1 */
             if (1.0f != cost) {
-                body.append(" COST ").append(cost);
+                body.append(" COST ");
+                if (cost % 1 == 0) {
+                    body.append((int)cost);
+                } else {
+                    body.append(cost);
+                }
             }
         } else {
             /* default cost is 100 */
             if (DEFAULT_PROCOST != cost) {
-                body.append(" COST ").append(cost);
+                body.append(" COST ");
+                if (cost % 1 == 0) {
+                    body.append((int)cost);
+                } else {
+                    body.append(cost);
+                }
             }
         }
 
         float rows = res.getFloat("prorows");
         if (0.0f != rows && DEFAULT_PROROWS != rows) {
-            body.append(" ROWS ").append(rows);
+            body.append(" ROWS ");
+
+            if (rows % 1 == 0) {
+                body.append((int)rows);
+            } else {
+                body.append(rows);
+            }
         }
 
         String[] proconfig = getColArray(res, "proconfig");
