@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alias_clauseContext;
@@ -31,7 +33,7 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
  *
  * @param <T> analyzed expression, should be extension of ParserRuleContext or a rulectx wrapper class
  */
-public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
+public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends AbstractExpr {
 
     /**
      * The local namespace of this Select.<br>

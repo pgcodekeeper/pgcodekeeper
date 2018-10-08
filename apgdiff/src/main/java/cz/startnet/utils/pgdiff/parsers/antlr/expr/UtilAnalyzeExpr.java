@@ -11,7 +11,8 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class UtilAnalyzeExpr {
 
-    public static <T> void analyze(T ctx, AbstractExprWithNmspc<T> analyzer, PgStatement pg) {
+    public static <T extends ParserRuleContext> void analyze(
+            T ctx, AbstractExprWithNmspc<T> analyzer, PgStatement pg) {
         analyzer.analyze(ctx);
         pg.addAllDeps(analyzer.getDepcies());
     }
@@ -21,12 +22,12 @@ public class UtilAnalyzeExpr {
         pg.addAllDeps(analyzer.getDepcies());
     }
 
-    public static void analyzeWithNmspc(ParserRuleContext ctx, PgStatement statement,
+    public static void analyzeWithNmspc(VexContext ctx, PgStatement statement,
             String schemaName, String rawTableReference, PgDatabase db) {
         ValueExprWithNmspc valExptWithNmspc = new ValueExprWithNmspc(schemaName, db);
         valExptWithNmspc.addRawTableReference(new GenericColumn(schemaName,
                 rawTableReference, DbObjType.TABLE));
-        analyze(new Vex((VexContext)ctx), valExptWithNmspc, statement);
+        analyze(ctx, valExptWithNmspc, statement);
     }
 
     private UtilAnalyzeExpr() {

@@ -16,7 +16,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.When_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc;
-import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTrigger;
 import cz.startnet.utils.pgdiff.schema.AbstractTrigger.TgTypes;
@@ -134,6 +133,6 @@ public class CreateTrigger extends ParserAbstract {
                 trigger.getParent().getName(), DbObjType.TABLE);
         vex.addReference("new", implicitTable);
         vex.addReference("old", implicitTable);
-        UtilAnalyzeExpr.analyze(new Vex(ctx), vex, trigger);
+        UtilAnalyzeExpr.analyze(ctx, vex, trigger);
     }
 }

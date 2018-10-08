@@ -2,11 +2,8 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 
 import java.util.List;
 
-import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.Token;
 import org.eclipse.core.runtime.IProgressMonitor;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_alterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_createContext;
@@ -15,9 +12,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statement_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.StatementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
-import cz.startnet.utils.pgdiff.parsers.antlr.exception.ObjectCreationException;
-import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterDomain;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterFtsStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterFunction;
@@ -45,53 +39,17 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateType;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
-import ru.taximaxim.codekeeper.apgdiff.Log;
 
-public class CustomSQLParserListener implements SqlContextProcessor {
+public class CustomSQLParserListener extends CustomParserListener
+implements SqlContextProcessor {
 
-    private final PgDatabase db;
-    private final List<AntlrError> errors;
-    private final IProgressMonitor monitor;
-    private final String filename;
     private String tablespace;
     private String oids;
 
     public CustomSQLParserListener(PgDatabase database, String filename,
             List<AntlrError> errors, IProgressMonitor monitor) {
-        this.db = database;
-        this.errors = errors;
-        this.monitor = monitor;
-        this.filename = filename;
-    }
-
-    /**
-     * @param ctx statememnt's first token rule
-     */
-    private void safeParseStatement(ParserAbstract p, ParserRuleContext ctx) {
-        try {
-            PgDiffUtils.checkCancelled(monitor);
-            PgStatement st = p.getObject();
-            if (st != null) {
-                st.setLocation(filename);
-
-                if (st instanceof AbstractTable) {
-                    ((AbstractTable) st).getConstraints().stream()
-                    .filter(con -> con.getLocation() == null)
-                    .forEach(con -> con.setLocation(filename));
-                }
-            }
-        } catch (UnresolvedReferenceException ex) {
-            errors.add(handleUnresolvedReference(ex, filename));
-        } catch (ObjectCreationException ex) {
-            errors.add(handleCreationException(ex, filename, ctx));
-        } catch (InterruptedException ex) {
-            throw new MonitorCancelledRuntimeException();
-        } catch (Exception e) {
-            Log.log(e);
-        }
+        super(database, filename, errors, monitor);
     }
 
     @Override
@@ -221,17 +179,5 @@ public class CustomSQLParserListener implements SqlContextProcessor {
         default:
             break;
         }
-    }
-
-    public static AntlrError handleUnresolvedReference(UnresolvedReferenceException ex, String filename) {
-        Token t = ex.getErrorToken();
-        Log.log(Log.LOG_WARNING, ex.getMessage(), ex);
-        return new AntlrError(t, filename, t.getLine(), t.getCharPositionInLine(), ex.getMessage());
-    }
-
-    static AntlrError handleCreationException(ObjectCreationException ex, String filename, ParserRuleContext ctx) {
-        Token t = ctx.getStart();
-        Log.log(Log.LOG_WARNING, ex.getMessage(), ex);
-        return new AntlrError(t, filename, t.getLine(), t.getCharPositionInLine(),  ex.getMessage());
     }
 }
