@@ -60,7 +60,7 @@ script_transaction
     | (SAVEPOINT | RELEASE SAVEPOINT?) identifier
     | ROLLBACK (PREPARED Character_String_Literal | (WORK | TRANSACTION)? (TO SAVEPOINT? identifier)?)
     | lock_table
-    | ABORT
+    | ABORT (WORK | TRANSACTION)?
     ;
 
 transaction_mode
@@ -75,34 +75,31 @@ lock_table
     ;
 
 lock_mode
-    : ACCESS SHARE 
-    | ROW SHARE 
+    : (ROW | ACCESS) SHARE 
     | ROW EXCLUSIVE 
-    | SHARE UPDATE EXCLUSIVE
+    | SHARE (ROW | UPDATE) EXCLUSIVE
     | SHARE 
-    | SHARE ROW EXCLUSIVE 
-    | EXCLUSIVE 
-    | ACCESS EXCLUSIVE
+    | ACCESS? EXCLUSIVE
     ;
 
 script_additional
     : LISTEN identifier
     | UNLISTEN (identifier | MULTIPLY)
-    | ANALYZE VERBOSE? qualified_table_name_perhaps_with_cols?
-    | VACUUM (LEFT_PAREN vacuum_mode (COMMA vacuum_mode)* RIGHT_PAREN | vacuum_mode*)? qualified_table_name_perhaps_with_cols?
+    | ANALYZE VERBOSE? table_cols?
+    | VACUUM (LEFT_PAREN vacuum_mode (COMMA vacuum_mode)* RIGHT_PAREN | vacuum_mode*)? table_cols?
     | SHOW (identifier | ALL)
     | LOAD Character_String_Literal
     | DISCARD (ALL | PLANS | SEQUENCES | TEMPORARY | TEMP)
     | DEALLOCATE PREPARE? (identifier | ALL)
     | (FETCH | MOVE) (fetch_move_derection (FROM | IN)?)? identifier
-    | DO (LANGUAGE identifier)? character_string+
-    | REINDEX VERBOSE? (INDEX | TABLE | SCHEMA | DATABASE | SYSTEM) identifier
+    | DO (LANGUAGE identifier)? character_string
+    | REINDEX (LEFT_PAREN VERBOSE RIGHT_PAREN)? (INDEX | TABLE | SCHEMA | DATABASE | SYSTEM) identifier
     | RESET (identifier | TIME ZONE | SESSION AUTHORIZATION | ALL)
     | DECLARE identifier BINARY? INSENSITIVE? (NO? SCROLL)? CURSOR ((WITH | WITHOUT) HOLD)? FOR select_stmt
     | EXPLAIN (ANALYZE? VERBOSE? | (LEFT_PAREN explain_option (COMMA explain_option)* RIGHT_PAREN)?) statement
     | REFRESH MATERIALIZED VIEW CONCURRENTLY? schema_qualified_name (WITH NO? DATA)?
-    | PREPARE identifier (LEFT_PAREN predefined_type (COMMA predefined_type)* RIGHT_PAREN)? AS data_statement
-    | EXECUTE identifier (LEFT_PAREN (vex | select_stmt) (COMMA (vex | select_stmt))* RIGHT_PAREN)?
+    | PREPARE identifier (LEFT_PAREN data_type (COMMA data_type)* RIGHT_PAREN)? AS data_statement
+    | EXECUTE identifier (LEFT_PAREN vex (COMMA vex)* RIGHT_PAREN)?
     | REASSIGN OWNED BY user_identifer_current_session (COMMA user_identifer_current_session)* 
       TO user_identifer_current_session
     ;
@@ -120,7 +117,7 @@ user_identifer_current_session
     : name = identifier | CURRENT_USER | SESSION_USER
     ;
 
-qualified_table_name_perhaps_with_cols
+table_cols
     : schema_qualified_name (LEFT_PAREN identifier (COMMA identifier)* RIGHT_PAREN)? 
     ;
 
