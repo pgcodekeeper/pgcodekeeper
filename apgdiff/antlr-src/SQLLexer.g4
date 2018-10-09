@@ -627,6 +627,12 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     NOREPLICATION: [nN] [oO] [rR] [eE] [pP] [lL] [iI] [cC] [aA] [tT] [iI] [oO] [nN];
     BYPASSRLS: [bB] [yY] [pP] [aA] [sS] [sS] [rR] [lL] [sS];
     NOBYPASSRLS: [nN] [oO] [bB] [yY] [pP] [aA] [sS] [sS] [rR] [lL] [sS];
+    LEFTARG: [lL] [eE] [fF] [tT] [aA] [rR] [gG];
+    RIGHTARG: [rR] [iI] [gG] [hH] [tT] [aA] [rR] [gG];
+    COMMUTATOR: [cC] [oO] [mM] [mM] [uU] [tT] [aA] [tT] [oO] [rR];
+    NEGATOR: [nN] [eE] [gG] [aA] [tT] [oO] [rR];
+    HASHES: [hH] [aA] [sS] [hH] [eE] [sS];
+    MERGES: [mM] [eE] [rR] [gG] [eE] [sS];
 
 fragment UNDERLINE : '_';
 

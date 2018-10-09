@@ -174,7 +174,8 @@ schema_create
     | create_group
     | create_tablespace
     | create_statistics
-    | create_foreign_data_wrapper)
+    | create_foreign_data_wrapper
+    | create_operator)
 
     | comment_on_statement
     | rule_common
@@ -202,7 +203,8 @@ schema_alter
     | alter_group
     | alter_tablespace
     | alter_statistics
-    | alter_foreign_data_wrapper)
+    | alter_foreign_data_wrapper
+    | alter_operator)
     ;
 
 schema_drop
@@ -211,7 +213,8 @@ schema_drop
     | drop_rule_statement
     | drop_statements
     | drop_user_mapping
-    | drop_owned)
+    | drop_owned
+    | drop_operator)
     ;
 
 schema_import
@@ -708,6 +711,24 @@ alter_foreign_data_wrapper_handler_validator_option
     define_foreign_options?
     ;
 
+alter_operator
+    : OPERATOR target_operator alter_operator_action
+    ;
+
+alter_operator_action
+    : OWNER TO user_identifer_current_session
+    | SET oparator_action_set
+    ;
+
+oparator_action_set
+    : SCHEMA new_schema=identifier
+    | LEFT_PAREN oparator_set_restrict_join (COMMA oparator_set_restrict_join)* RIGHT_PAREN
+    ;
+
+oparator_set_restrict_join
+    : (RESTRICT | JOIN) EQUAL (func_name=identifier | NONE)
+    ;
+
 drop_user_mapping
     : USER MAPPING (IF EXISTS)? FOR (identifier | USER | CURRENT_USER) SERVER identifier
     ;
@@ -715,6 +736,14 @@ drop_user_mapping
 drop_owned
     : OWNED BY user_identifer_current_session (COMMA user_identifer_current_session)*
       cascade_restrict?
+    ;
+
+drop_operator
+    : OPERATOR (IF EXISTS)? target_operator (COMMA target_operator)* cascade_restrict?
+    ;
+
+target_operator
+    : name=operator_name LEFT_PAREN (left_type=data_type | NONE) COMMA (right_type=data_type | NONE) RIGHT_PAREN
     ;
 
 domain_constraint
@@ -801,6 +830,22 @@ create_foreign_data_wrapper
 
 option_without_equal
     : name=identifier value=Character_String_Literal
+    ;
+
+create_operator
+    :   OPERATOR name=operator_name LEFT_PAREN operator_option (COMMA operator_option)* RIGHT_PAREN
+    ;
+
+operator_name
+    : (schema_name=identifier DOT)? operator=OP_CHARS
+    ;
+
+operator_option
+    : (PROCEDURE | RESTRICT | JOIN) EQUAL func_name=identifier
+    | (LEFTARG | RIGHTARG) EQUAL type=data_type
+    | (COMMUTATOR | NEGATOR) EQUAL addition_oper_name=OP_CHARS
+    | HASHES
+    | MERGES
     ;
 
 set_statement
@@ -1915,6 +1960,12 @@ tokens_nonkeyword
   | NOREPLICATION
   | BYPASSRLS
   | NOBYPASSRLS
+  | LEFTARG
+  | RIGHTARG
+  | COMMUTATOR
+  | NEGATOR
+  | HASHES
+  | MERGES
   ;
 
 /*
