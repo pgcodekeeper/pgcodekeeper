@@ -2,6 +2,8 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
@@ -18,7 +20,8 @@ public class MsFKReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException {
+    protected void processResult(ResultSet res, AbstractSchema schema)
+            throws SQLException, XmlReaderException {
         loader.monitor.worked(1);
         String name = res.getString("name");
         loader.setCurrentObject(new GenericColumn(schema.getName(), name, DbObjType.CONSTRAINT));
@@ -29,14 +32,40 @@ public class MsFKReader extends JdbcReader {
         con.setDisabled(res.getBoolean("is_disabled"));
 
         StringBuilder sb = new StringBuilder();
+
+        String fschema = res.getString("referenced_schema_name");
+        String ftable = res.getString("referenced_table_name");
+
+        /*
+        GenericColumn ftableRef = new GenericColumn(fschema, ftable, DbObjType.TABLE);
+        con.setForeignTable(ftableRef);
+        con.addDep(ftableRef);
+         */
+
+        List<String> fields = new ArrayList<>();
+        List<String> references = new ArrayList<>();
+
+        for (XmlReader col : XmlReader.readXML(res.getString("cols"))) {
+            String field = col.getString("f");
+            String reference = col.getString("r");
+
+            /*
+            con.addForeignColumn(reference);
+            con.addDep(new GenericColumn(fschema, ftable, reference, DbObjType.COLUMN));
+             */
+
+            fields.add(MsDiffUtils.quoteName(field));
+            references.add(MsDiffUtils.quoteName(reference));
+        }
+
         sb.append("FOREIGN KEY (");
-        sb.append(MsDiffUtils.quoteName(res.getString("field_name")));
+        sb.append(String.join(", ", fields));
         sb.append(") REFERENCES ");
-        sb.append(MsDiffUtils.quoteName(res.getString("referenced_schema_name")));
+        sb.append(MsDiffUtils.quoteName(fschema));
         sb.append('.');
-        sb.append(MsDiffUtils.quoteName(res.getString("referenced_table_name")));
+        sb.append(MsDiffUtils.quoteName(ftable));
         sb.append(" (");
-        sb.append(MsDiffUtils.quoteName(res.getString("referenced_field_name")));
+        sb.append(String.join(", ", references));
         sb.append(")");
 
         int del = res.getInt("delete_referential_action");
