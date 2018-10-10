@@ -30,7 +30,7 @@ public class PgOperator extends AbstractFunction {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE OPERATOR ");
         sbSQL.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
-        sbSQL.append(getBareName());
+        sbSQL.append(PgDiffUtils.getQuotedName(getBareName()));
         sbSQL.append('(');
         sbSQL.append("\n\tPROCEDURE = ");
         sbSQL.append(procedure);
@@ -92,7 +92,7 @@ public class PgOperator extends AbstractFunction {
         final StringBuilder sbString = new StringBuilder();
         sbString.append("DROP OPERATOR ");
         sbString.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
-        sbString.append(getBareName());
+        sbString.append(PgDiffUtils.getQuotedName(getBareName()));
         sbString.append(" (");
         arguments.stream().map(Argument::getDataType).collect(Collectors.joining(","));
         sbString.append(");");
