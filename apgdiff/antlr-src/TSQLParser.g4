@@ -431,6 +431,7 @@ class_type
     | SERVER ROLE
     | SERVICE
     | SYMMETRIC KEY
+    | USER
     | XML SCHEMA COLLECTION
     ;
 
@@ -2206,9 +2207,8 @@ permission
     ;
     
 object_type
-    : ON (type=(LOGIN | DATABASE | OBJECT | ROLE | SCHEMA | USER | ASSEMBLY) COLON COLON)? 
-    on_id=table_name table_columns?
-    ; 
+    : ON (type=class_type COLON COLON)? table_name table_columns?
+    ;
     
 role_names
     : to_principal+=id (COMMA to_principal+=id)*
