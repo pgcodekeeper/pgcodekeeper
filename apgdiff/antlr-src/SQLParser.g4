@@ -726,7 +726,7 @@ oparator_action_set
     ;
 
 oparator_set_restrict_join
-    : (RESTRICT | JOIN) EQUAL (func_name=identifier | NONE)
+    : (RESTRICT | JOIN) EQUAL (restr_join_name=identifier | NONE)
     ;
 
 drop_user_mapping
@@ -841,9 +841,11 @@ operator_name
     ;
 
 operator_option
-    : (PROCEDURE | RESTRICT | JOIN) EQUAL func_name=identifier
+    : PROCEDURE EQUAL func_name=schema_qualified_name
+    | RESTRICT EQUAL restr_name=identifier
+    | JOIN EQUAL join_name=identifier
     | (LEFTARG | RIGHTARG) EQUAL type=data_type
-    | (COMMUTATOR | NEGATOR) EQUAL addition_oper_name=OP_CHARS
+    | (COMMUTATOR | NEGATOR) EQUAL addition_oper_name=op
     | HASHES
     | MERGES
     ;
