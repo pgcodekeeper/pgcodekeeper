@@ -123,7 +123,7 @@ public class CreateMsRule extends ParserAbstract {
         } else if (type.ROLE() != null) {
             st = getSafe(db::getRole, nameCtx);
         } else if (type.USER() != null) {
-            st = getSafe(db::getSchema, nameCtx);
+            st = getSafe(db::getUser, nameCtx);
         } else if (type.SCHEMA() != null) {
             st = getSafe(db::getSchema, nameCtx);
         } else {
