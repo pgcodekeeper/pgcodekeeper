@@ -717,15 +717,15 @@ alter_operator
 
 alter_operator_action
     : OWNER TO user_identifer_current_session
-    | SET oparator_action_set
+    | SET operator_action_set
     ;
 
-oparator_action_set
+operator_action_set
     : SCHEMA new_schema=identifier
-    | LEFT_PAREN oparator_set_restrict_join (COMMA oparator_set_restrict_join)* RIGHT_PAREN
+    | LEFT_PAREN operator_set_restrict_join (COMMA operator_set_restrict_join)* RIGHT_PAREN
     ;
 
-oparator_set_restrict_join
+operator_set_restrict_join
     : (RESTRICT | JOIN) EQUAL (restr_join_name=identifier | NONE)
     ;
 
