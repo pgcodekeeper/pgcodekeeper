@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Class_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Columns_permissionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Object_typeContext;
@@ -67,9 +67,6 @@ public class CreateMsRule extends ParserAbstract {
         PgStatement st = getStatement(nameCtx);
 
         if (st == null) {
-            // TODO объект не найден, расширить или создать новый класс для ошибок MS парсера
-            // throw new UnresolvedReferenceException("Cannot find object in database: "
-            //        + nameCtx.getText(), nameCtx);
             return null;
         }
 
@@ -109,21 +106,31 @@ public class CreateMsRule extends ParserAbstract {
         return null;
     }
 
-    private PgStatement getStatement(Object_typeContext nameCtx) {
-        IdContext schemaName = nameCtx.table_name().schema;
-        String schema = schemaName != null ? schemaName.getText() : null;
-        String name = nameCtx.table_name().table.getText();
+    private PgStatement getStatement(Object_typeContext object) {
 
-        Stream<PgStatement> stream;
+        IdContext nameCtx = object.table_name().table;
+        Class_typeContext type = object.class_type();
 
-        if (schema != null) {
-            AbstractSchema s = db.getSchema(schema);
-            stream = s != null ? s.getChildren() : Stream.empty();
+        PgStatement st;
+        if (type == null || type.OBJECT() != null) {
+            IdContext schemaName = object.table_name().schema;
+            AbstractSchema schema = schemaName != null ? getSafe(db::getSchema, schemaName) : db.getDefaultSchema();
+            st = getSafe(name -> schema.getChildren().filter(
+                    e -> e.getBareName().equals(name))
+                    .findAny().orElse(null), nameCtx);
+        } else if (type.ASSEMBLY() != null) {
+            st = getSafe(db::getAssembly, nameCtx);
+        } else if (type.ROLE() != null) {
+            st = getSafe(db::getRole, nameCtx);
+        } else if (type.USER() != null) {
+            st = getSafe(db::getUser, nameCtx);
+        } else if (type.SCHEMA() != null) {
+            st = getSafe(db::getSchema, nameCtx);
         } else {
-            stream = db.getChildren();
+            return null;
         }
 
-        return stream.filter(e -> e.getBareName().equals(name)).findAny().orElse(null);
+        return st;
     }
 
     private void parseColumns(Columns_permissionsContext columnsCtx,

@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsConstraint;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -22,6 +23,11 @@ public class MsCheckConstraintsReader extends JdbcReader {
         String name = res.getString("name");
         loader.setCurrentObject(new GenericColumn(schema.getName(), name, DbObjType.CONSTRAINT));
 
+        AbstractTable table = schema.getTable(res.getString("table_name"));
+        if (table == null) {
+            return;
+        }
+
         AbstractConstraint con = new MsConstraint(name, "");
 
         con.setNotValid(res.getBoolean("with_no_check"));
@@ -37,6 +43,6 @@ public class MsCheckConstraintsReader extends JdbcReader {
         sb.append(" (").append(res.getString("definition")).append(")");
 
         con.setDefinition(sb.toString());
-        schema.getTable(res.getString("table_name")).addConstraint(con);
+        table.addConstraint(con);
     }
 }

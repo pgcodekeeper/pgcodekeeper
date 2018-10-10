@@ -233,22 +233,24 @@ public abstract class PgStatement implements IStatement, IHashable {
             return sb;
         }
 
-        sb.append("\n\n-- ")
-        .append(getStatementType())
-        .append(' ');
-        if (DbObjType.SCHEMA != getStatementType()) {
-            if (this instanceof PgStatementWithSearchPath) {
-                sb.append(((PgStatementWithSearchPath)this).getContainingSchema().getName())
-                .append('.');
-            }
+        if (isPostgres()) {
+            sb.append("\n\n-- ")
+            .append(getStatementType())
+            .append(' ');
+            if (DbObjType.SCHEMA != getStatementType()) {
+                if (this instanceof PgStatementWithSearchPath) {
+                    sb.append(((PgStatementWithSearchPath)this).getContainingSchema().getName())
+                    .append('.');
+                }
 
-            if (DbObjType.COLUMN == getStatementType()) {
-                sb.append(getParent().getName()).append('.');
+                if (DbObjType.COLUMN == getStatementType()) {
+                    sb.append(getParent().getName()).append('.');
+                }
             }
+            sb.append(getName())
+            .append(' ')
+            .append("GRANT\n");
         }
-        sb.append(getName())
-        .append(' ')
-        .append("GRANT\n");
 
         for (PgPrivilege priv : revokes) {
             sb.append('\n').append(priv.getCreationSQL()).append(isPostgres() ? ';' : "\nGO");

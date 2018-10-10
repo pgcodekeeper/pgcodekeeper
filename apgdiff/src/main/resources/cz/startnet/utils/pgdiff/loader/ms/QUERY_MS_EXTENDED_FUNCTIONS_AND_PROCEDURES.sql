@@ -4,7 +4,7 @@ SELECT
     s.type,
     aa.acl,
     usrt.name AS return_type,
-    CASE WHEN usrt.max_length>=0 AND usrt.name IN (N'nchar', N'nvarchar') THEN usrt.max_length/2 ELSE usrt.max_length END AS return_type_size,
+    CASE WHEN ret_param.max_length>=0 AND usrt.name IN (N'nchar', N'nvarchar') THEN ret_param.max_length/2 ELSE ret_param.max_length END AS return_type_size,
     usrt.precision AS return_type_pr,
     usrt.scale AS return_type_sc,
     am.null_on_null_input,

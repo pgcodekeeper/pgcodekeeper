@@ -1,8 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
-import java.util.stream.Stream;
-
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_authorizationContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Class_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
@@ -26,24 +25,27 @@ public class AlterMsAuthorization extends ParserAbstract {
         }
         String owner = ownerId.getText();
 
-        IdContext schemaName = ctx.entity.schema;
-        String schema = schemaName != null ? schemaName.getText() : null;
-        String name = ctx.entity.table.getText();
+        Class_typeContext type = ctx.class_type();
+        IdContext nameCtx = ctx.entity.table;
 
-        Stream<PgStatement> stream;
-
-        if (schema != null) {
-            AbstractSchema s = db.getSchema(schema);
-            stream = s != null ? s.getChildren() : Stream.empty();
+        PgStatement st;
+        if (type == null || type.OBJECT() != null) {
+            IdContext schemaName = ctx.entity.schema;
+            AbstractSchema schema = schemaName != null ? getSafe(db::getSchema, schemaName) : db.getDefaultSchema();
+            st = getSafe(name -> schema.getChildren().filter(
+                    e -> e.getBareName().equals(name))
+                    .findAny().orElse(null), nameCtx);
+        } else if (type.ASSEMBLY() != null) {
+            st = getSafe(db::getAssembly, nameCtx);
+        } else if (type.ROLE() != null) {
+            st = getSafe(db::getRole, nameCtx);
+        } else if (type.SCHEMA() != null) {
+            st = getSafe(db::getSchema, nameCtx);
         } else {
-            stream = db.getChildren();
+            return null;
         }
 
-        PgStatement st = stream.filter(e -> e.getBareName().equals(name)).findAny().orElse(null);
-        if (st != null) {
-            st.setOwner(owner);
-        }
-
+        st.setOwner(owner);
         return null;
     }
 }

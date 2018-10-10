@@ -52,7 +52,6 @@ public class MsFunction extends AbstractFunction implements SourceStatement {
         sbSQL.append(" FUNCTION ");
         sbSQL.append(MsDiffUtils.quoteName(getContainingSchema().getName())).append('.');
         appendFunctionSignature(sbSQL);
-        sbSQL.append(' ');
         sbSQL.append("\nRETURNS ").append(getReturns());
         sbSQL.append("\n");
         sbSQL.append(getBody());

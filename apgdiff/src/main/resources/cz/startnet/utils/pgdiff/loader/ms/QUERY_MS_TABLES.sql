@@ -76,7 +76,7 @@ CROSS APPLY (
         JOIN sys.types t WITH (NOLOCK) ON c.user_type_id = t.user_type_id
         LEFT JOIN sys.computed_columns cc WITH (NOLOCK) ON cc.object_id = c.object_id AND c.column_id = cc.column_id
         LEFT JOIN sys.identity_columns ic WITH (NOLOCK) ON c.object_id = ic.object_id AND c.column_id = ic.column_id
-        LEFT JOIN sys.default_constraints dc WITH (NOLOCK) ON dc.parent_object_id = c.object_id AND c.column_id = dc.parent_column_id AND dc.is_system_named = 0
+        LEFT JOIN sys.default_constraints dc WITH (NOLOCK) ON dc.parent_object_id = c.object_id AND c.column_id = dc.parent_column_id
         LEFT JOIN sys.objects so WITH (NOLOCK) ON so.object_id = c.object_id
         WHERE c.object_id = o.object_id
     ) cc ORDER BY cc.id
