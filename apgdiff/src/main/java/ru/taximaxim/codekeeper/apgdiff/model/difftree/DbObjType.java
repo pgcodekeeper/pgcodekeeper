@@ -30,5 +30,6 @@ public enum DbObjType {
     INDEX,
     VIEW,
     TRIGGER,
-    RULE
+    RULE,
+    OPERATOR
 }

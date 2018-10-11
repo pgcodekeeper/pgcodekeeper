@@ -2,18 +2,20 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class PgOperator extends AbstractFunction {
+public class PgOperator extends PgStatementWithSearchPath {
 
-    public static final String LEFTARG = "LEFTARG";
-    public static final String RIGHTARG = "RIGHTARG";
-    public static final String TYPE_NONE = "NONE";
+    private static final String LEFTARG = "LEFTARG";
+    private static final String RIGHTARG = "RIGHTARG";
+    private static final String TYPE_NONE = "NONE";
 
     private String procedure;
+    private Argument leftArg = new Argument(LEFTARG, TYPE_NONE);
+    private Argument rightArg = new Argument(RIGHTARG, TYPE_NONE);
     private String commutator;
     private String negator;
     private boolean isMerges;
@@ -26,6 +28,11 @@ public class PgOperator extends AbstractFunction {
     }
 
     @Override
+    public DbObjType getStatementType() {
+        return DbObjType.OPERATOR;
+    }
+
+    @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE OPERATOR ");
@@ -35,13 +42,18 @@ public class PgOperator extends AbstractFunction {
         sbSQL.append("\n\tPROCEDURE = ");
         sbSQL.append(procedure);
 
-        for (Argument arg : arguments) {
-            if (!TYPE_NONE.equals(arg.getDataType())) {
-                sbSQL.append(",\n\t");
-                sbSQL.append(arg.getName());
-                sbSQL.append(" = ");
-                sbSQL.append(arg.getDataType());
-            }
+        if (!TYPE_NONE.equals(leftArg.getDataType())) {
+            sbSQL.append(",\n\t");
+            sbSQL.append(leftArg.getName());
+            sbSQL.append(" = ");
+            sbSQL.append(leftArg.getDataType());
+        }
+
+        if (!TYPE_NONE.equals(rightArg.getDataType())) {
+            sbSQL.append(",\n\t");
+            sbSQL.append(rightArg.getName());
+            sbSQL.append(" = ");
+            sbSQL.append(rightArg.getDataType());
         }
 
         if (commutator != null) {
@@ -94,7 +106,9 @@ public class PgOperator extends AbstractFunction {
         sbString.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
         sbString.append(PgDiffUtils.getQuotedName(getBareName()));
         sbString.append(" (");
-        arguments.stream().map(Argument::getDataType).collect(Collectors.joining(","));
+        sbString.append(leftArg.getDataType());
+        sbString.append(", ");
+        sbString.append(rightArg.getDataType());
         sbString.append(");");
         return sbString.toString();
     }
@@ -126,61 +140,61 @@ public class PgOperator extends AbstractFunction {
         return sb.length() > startLength;
     }
 
-    @Override
-    public String getDeclaration(Argument arg, boolean includeDefaultValue, boolean includeArgName) {
-        final StringBuilder sbString = new StringBuilder();
+    public boolean checkForChanges(PgOperator oper) {
+        boolean equals = false;
 
-        String name = arg.getName();
-
-        if (name != null && !name.isEmpty() && includeArgName) {
-            sbString.append(PgDiffUtils.getQuotedName(name));
-            sbString.append(' ');
+        if (this == oper) {
+            equals = true;
+        } else {
+            equals = Objects.equals(name, oper.getBareName())
+                    && Objects.equals(procedure, oper.getProcedure())
+                    && leftArg.equals(oper.getLeftArg())
+                    && rightArg.equals(oper.getRightArg())
+                    && Objects.equals(commutator, oper.getCommutator())
+                    && Objects.equals(negator, oper.getNegator())
+                    && isMerges == oper.isMerges()
+                    && isHashes == oper.isHashes()
+                    && Objects.equals(restrict, oper.getRestrict())
+                    && Objects.equals(join, oper.getJoin());
         }
-
-        sbString.append(arg.getDataType());
-
-        return sbString.toString();
+        return equals;
     }
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof PgOperator && super.compare(obj)) {
-            PgOperator oper = (PgOperator) obj;
-            return Objects.equals(getProcedure(), oper.getProcedure())
-                    && Objects.equals(getCommutator(), oper.getCommutator())
-                    && Objects.equals(getNegator(), oper.getNegator())
-                    && isMerges == oper.isMerges()
-                    && isHashes == oper.isHashes()
-                    && Objects.equals(getRestrict(), oper.getRestrict())
-                    && Objects.equals(getJoin(), oper.getJoin());
+        if (this == obj) {
+            return true;
         }
 
+        if (obj instanceof PgOperator) {
+            PgOperator oper  = (PgOperator) obj;
+            if (!checkForChanges(oper)) {
+                return false;
+            }
+            return Objects.equals(owner, oper.getOwner())
+                    && Objects.equals(grants, oper.grants)
+                    && Objects.equals(revokes, oper.revokes)
+                    && Objects.equals(comment, oper.getComment());
+        }
         return false;
     }
 
     @Override
     public void computeHash(Hasher hasher) {
-        super.computeHash(hasher);
+        hasher.putOrdered(getGrants());
+        hasher.putOrdered(getRevokes());
+        hasher.put(getBareName());
         hasher.put(getProcedure());
+        hasher.put(getLeftArg());
+        hasher.put(getRightArg());
         hasher.put(getCommutator());
         hasher.put(getNegator());
         hasher.put(isMerges());
         hasher.put(isHashes());
         hasher.put(getRestrict());
         hasher.put(getJoin());
-    }
-
-    @Override
-    protected AbstractFunction getFunctionCopy() {
-        PgOperator oper = new PgOperator(getBareName(), getRawStatement());
-        oper.setProcedure(getProcedure());
-        oper.setCommutator(getCommutator());
-        oper.setNegator(getNegator());
-        oper.setMerges(isMerges());
-        oper.setHashes(isHashes());
-        oper.setRestrict(getRestrict());
-        oper.setJoin(getJoin());
-        return oper;
+        hasher.put(getOwner());
+        hasher.put(getComment());
     }
 
     public String getProcedure() {
@@ -189,6 +203,24 @@ public class PgOperator extends AbstractFunction {
 
     public void setProcedure(String procedure) {
         this.procedure = procedure;
+        resetHash();
+    }
+
+    public Argument getLeftArg() {
+        return leftArg;
+    }
+
+    public void setLeftArg(Argument leftArg) {
+        this.leftArg = leftArg;
+        resetHash();
+    }
+
+    public Argument getRightArg() {
+        return rightArg;
+    }
+
+    public void setRightArg(Argument rightArg) {
+        this.rightArg = rightArg;
         resetHash();
     }
 
@@ -244,5 +276,41 @@ public class PgOperator extends AbstractFunction {
     public void setJoin(String join) {
         this.join = join;
         resetHash();
+    }
+
+    @Override
+    public PgStatement shallowCopy() {
+        PgOperator copy = new PgOperator(getBareName(), getRawStatement());
+        copy.setProcedure(getProcedure());
+        copy.setLeftArg(getLeftArg());
+        copy.setRightArg(getRightArg());
+        copy.setCommutator(getCommutator());
+        copy.setNegator(getNegator());
+        copy.setMerges(isMerges());
+        copy.setHashes(isHashes());
+        copy.setRestrict(getRestrict());
+        copy.setJoin(getJoin());
+        copy.setComment(getComment());
+        for (PgPrivilege priv : revokes) {
+            copy.addPrivilege(priv);
+        }
+        for (PgPrivilege priv : grants) {
+            copy.addPrivilege(priv);
+        }
+        copy.setOwner(getOwner());
+        copy.deps.addAll(deps);
+        copy.setLocation(getLocation());
+
+        return copy;
+    }
+
+    @Override
+    public PgStatement deepCopy() {
+        return shallowCopy();
+    }
+
+    @Override
+    public AbstractSchema getContainingSchema() {
+        return (AbstractSchema) getParent();
     }
 }
