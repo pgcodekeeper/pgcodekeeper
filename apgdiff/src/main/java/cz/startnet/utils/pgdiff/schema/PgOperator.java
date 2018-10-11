@@ -9,8 +9,8 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgOperator extends PgStatementWithSearchPath {
 
-    private static final String LEFTARG = "LEFTARG";
-    private static final String RIGHTARG = "RIGHTARG";
+    public static final String LEFTARG = "LEFTARG";
+    public static final String RIGHTARG = "RIGHTARG";
     private static final String TYPE_NONE = "NONE";
 
     private String procedure;
@@ -279,7 +279,7 @@ public class PgOperator extends PgStatementWithSearchPath {
     }
 
     @Override
-    public PgStatement shallowCopy() {
+    public PgOperator shallowCopy() {
         PgOperator copy = new PgOperator(getBareName(), getRawStatement());
         copy.setProcedure(getProcedure());
         copy.setLeftArg(getLeftArg());
@@ -305,7 +305,7 @@ public class PgOperator extends PgStatementWithSearchPath {
     }
 
     @Override
-    public PgStatement deepCopy() {
+    public PgOperator deepCopy() {
         return shallowCopy();
     }
 

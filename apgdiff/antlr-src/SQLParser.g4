@@ -175,7 +175,7 @@ schema_create
     | create_tablespace
     | create_statistics
     | create_foreign_data_wrapper
-    | create_operator)
+    | create_operator_statement)
 
     | comment_on_statement
     | rule_common
@@ -832,7 +832,7 @@ option_without_equal
     : name=identifier value=Character_String_Literal
     ;
 
-create_operator
+create_operator_statement
     :   OPERATOR name=operator_name LEFT_PAREN operator_option (COMMA operator_option)* RIGHT_PAREN
     ;
 
