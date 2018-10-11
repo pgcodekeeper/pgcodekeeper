@@ -47,8 +47,6 @@ public class CreateMsProcedure extends BatchContextProcessor {
         ParserRuleContext batchCtx = ctx.getParent().getParent();
         MsProcedure procedure = new MsProcedure(ctx.func_proc_name().procedure.getText(), getFullCtxText(batchCtx));
         if (ctx.proc_body().EXTERNAL() != null) {
-            procedure.setAnsiNulls(false);
-            procedure.setQuotedIdentified(false);
             procedure.setCLR(true);
 
             String assemblyName = ctx.proc_body().assembly_specifier().assembly_name.getText();

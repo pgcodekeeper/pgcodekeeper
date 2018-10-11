@@ -49,8 +49,6 @@ public class CreateMsFunction extends BatchContextProcessor {
         MsFunction function = new MsFunction(ctx.func_proc_name().procedure.getText(), getFullCtxText(batchCtx));
         boolean isKeepNewlines = db.getArguments().isKeepNewlines();
         if (ctx.func_body().func_body_return().EXTERNAL() != null) {
-            function.setAnsiNulls(false);
-            function.setQuotedIdentified(false);
             function.setCLR(true);
 
             String assemblyName = ctx.func_body().func_body_return().assembly_specifier().assembly_name.getText();

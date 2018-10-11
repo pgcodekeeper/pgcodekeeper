@@ -230,6 +230,7 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
         functionDst.setOwner(getOwner());
         functionDst.deps.addAll(deps);
         functionDst.setLocation(getLocation());
+        functionDst.options.addAll(options);
 
         return functionDst;
     }
