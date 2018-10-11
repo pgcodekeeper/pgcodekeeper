@@ -11,9 +11,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Procedure_paramContext;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsFunction;
 import cz.startnet.utils.pgdiff.schema.MsFunction.FuncTypes;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsFunction extends BatchContextProcessor {
 
@@ -51,6 +53,8 @@ public class CreateMsFunction extends BatchContextProcessor {
             function.setQuotedIdentified(false);
             function.setCLR(true);
 
+            String assemblyName = ctx.func_body().func_body_return().assembly_specifier().assembly_name.getText();
+            function.addDep(new GenericColumn(assemblyName, DbObjType.ASSEMBLY));
             fillArguments(function);
             function.setBody(db.getArguments(), getFullCtxText(ctx.func_body()));
             String returns = getFullCtxText(ctx.func_return());

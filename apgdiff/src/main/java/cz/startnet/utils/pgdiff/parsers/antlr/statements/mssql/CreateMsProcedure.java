@@ -11,8 +11,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Procedure_paramContext;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsProcedure;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsProcedure extends BatchContextProcessor {
 
@@ -49,6 +51,8 @@ public class CreateMsProcedure extends BatchContextProcessor {
             procedure.setQuotedIdentified(false);
             procedure.setCLR(true);
 
+            String assemblyName = ctx.proc_body().assembly_specifier().assembly_name.getText();
+            procedure.addDep(new GenericColumn(assemblyName, DbObjType.ASSEMBLY));
             fillArguments(procedure);
             procedure.setForReplication(ctx.REPLICATION() != null);
             procedure.setBody(db.getArguments(), getFullCtxText(ctx.proc_body()));

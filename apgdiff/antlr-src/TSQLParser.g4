@@ -1577,7 +1577,7 @@ create_or_alter_procedure
 
  proc_body
     : sql_clauses
-    | EXTERNAL NAME full_table_name
+    | EXTERNAL NAME assembly_specifier
     ;
 
 create_or_alter_trigger
@@ -1631,7 +1631,11 @@ func_body
 func_body_return
     : RETURN select_statement
     | BEGIN sql_clauses? RETURN ret=expression? SEMI? END
-    | EXTERNAL NAME full_table_name
+    | EXTERNAL NAME assembly_specifier
+    ;
+    
+assembly_specifier
+    : assembly_name=id DOT class_name=id DOT method_name=id
     ;
 
 procedure_param
