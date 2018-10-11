@@ -2400,7 +2400,7 @@ identity_value
 column_constraint_body
     : (PRIMARY KEY | UNIQUE) clustered? index_options?
     | CHECK not_for_replication? LR_BRACKET search_condition RR_BRACKET
-    | (FOREIGN KEY)? REFERENCES table_name LR_BRACKET pk = column_name_list RR_BRACKET on_delete? on_update? not_for_replication?
+    | (FOREIGN KEY)? REFERENCES table_name (LR_BRACKET id RR_BRACKET)? on_delete? on_update? not_for_replication?
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms188066.aspx

@@ -36,11 +36,9 @@ public class MsFKReader extends JdbcReader {
         String fschema = res.getString("referenced_schema_name");
         String ftable = res.getString("referenced_table_name");
 
-        /*
         GenericColumn ftableRef = new GenericColumn(fschema, ftable, DbObjType.TABLE);
         con.setForeignTable(ftableRef);
         con.addDep(ftableRef);
-         */
 
         List<String> fields = new ArrayList<>();
         List<String> references = new ArrayList<>();
@@ -49,10 +47,8 @@ public class MsFKReader extends JdbcReader {
             String field = col.getString("f");
             String reference = col.getString("r");
 
-            /*
             con.addForeignColumn(reference);
             con.addDep(new GenericColumn(fschema, ftable, reference, DbObjType.COLUMN));
-             */
 
             fields.add(MsDiffUtils.quoteName(field));
             references.add(MsDiffUtils.quoteName(reference));
