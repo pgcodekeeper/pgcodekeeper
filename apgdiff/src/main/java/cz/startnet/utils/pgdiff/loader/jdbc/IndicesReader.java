@@ -8,9 +8,9 @@ import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class IndicesReader extends JdbcReader {
@@ -53,8 +53,6 @@ public class IndicesReader extends JdbcReader {
         if (comment != null && !comment.isEmpty()) {
             i.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
-
-        i.addDep(new GenericColumn(schemaName, tableName, DbObjType.TABLE));
 
         return i;
     }

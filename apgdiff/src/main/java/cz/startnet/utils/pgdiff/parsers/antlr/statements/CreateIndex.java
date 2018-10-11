@@ -18,11 +18,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_storage_parameterCo
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateIndex extends ParserAbstract {
     private final Create_index_statementContext ctx;
@@ -49,8 +47,6 @@ public class CreateIndex extends ParserAbstract {
             getSafe(schema::getTable, QNameParser.getFirstNameCtx(ids))
             .addIndex(ind);
         }
-
-        ind.addDep(new GenericColumn(schemaName, tableName, DbObjType.TABLE));
 
         return ind;
     }
