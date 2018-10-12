@@ -84,11 +84,18 @@ public class MsColumn extends AbstractColumn {
             }
         }
 
+        boolean isJoinNotNull = getExpression() == null && getDefaultValue() == null
+                && !getNullValue();
+
+        if (isJoinNotNull) {
+            sb.append(" NOT NULL");
+        }
+
         sb.append(GO);
 
         compareDefaults(null, null, getDefaultName(), getDefaultValue(), sb);
 
-        if (getExpression() == null && !getNullValue()) {
+        if (!isJoinNotNull && getExpression() == null && !getNullValue()) {
             if (getDefaultValue() != null) {
                 appendUpdate(sb);
             }
