@@ -166,6 +166,20 @@ public class PgOperator extends PgStatementWithSearchPath {
         return equals;
     }
 
+    /**
+     * Alias for {@link #getSignature()} which provides a unique operator ID.
+     *
+     * Use {@link #getBareName()} to get just the operator name.
+     */
+    @Override
+    public String getName() {
+        return getSignature();
+    }
+
+    private String getSignature() {
+        return appendOperatorSignature(new StringBuilder()).toString();
+    }
+
     @Override
     public boolean compare(PgStatement obj) {
         if (this == obj) {
