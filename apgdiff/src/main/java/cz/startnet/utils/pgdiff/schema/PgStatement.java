@@ -164,6 +164,11 @@ public abstract class PgStatement implements IStatement, IHashable {
             .append('.');
             ((PgFunction) this).appendFunctionSignature(sb, false, true);
             break;
+        case OPERATOR:
+            sb.append(PgDiffUtils.getQuotedName(getParent().getName()))
+            .append('.');
+            ((PgOperator) this).appendOperatorSignature(sb);
+            break;
 
         case CONSTRAINT:
         case TRIGGER:
@@ -305,6 +310,8 @@ public abstract class PgStatement implements IStatement, IHashable {
                 sb.append(PgDiffUtils.getQuotedName(getParent().getName())).append('.');
                 if (type == DbObjType.FUNCTION) {
                     ((PgFunction) this).appendFunctionSignature(sb, false, true);
+                } else if (type == DbObjType.OPERATOR) {
+                    ((PgOperator) this).appendOperatorSignature(sb);
                 } else {
                     sb.append(PgDiffUtils.getQuotedName(getName()));
                 }

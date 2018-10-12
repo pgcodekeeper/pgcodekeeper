@@ -104,13 +104,19 @@ public class PgOperator extends PgStatementWithSearchPath {
         final StringBuilder sbString = new StringBuilder();
         sbString.append("DROP OPERATOR ");
         sbString.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
-        sbString.append(PgDiffUtils.getQuotedName(getBareName()));
-        sbString.append(" (");
-        sbString.append(leftArg.getDataType());
-        sbString.append(", ");
-        sbString.append(rightArg.getDataType());
-        sbString.append(");");
+        appendOperatorSignature(sbString);
+        sbString.append(';');
         return sbString.toString();
+    }
+
+    public StringBuilder appendOperatorSignature(StringBuilder sb) {
+        sb.append(PgDiffUtils.getQuotedName(getBareName()));
+        sb.append(" (");
+        sb.append(leftArg.getDataType());
+        sb.append(", ");
+        sb.append(rightArg.getDataType());
+        sb.append(')');
+        return sb;
     }
 
     @Override
