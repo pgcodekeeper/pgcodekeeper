@@ -51,7 +51,21 @@ public class MsRole extends PgStatement {
 
     @Override
     public String getDropSQL() {
-        return "DROP ROLE " + MsDiffUtils.quoteName(name) + GO;
+        StringBuilder sb = new StringBuilder();
+
+        for (String member : members) {
+            sb.append("\nALTER ROLE ").append(MsDiffUtils.quoteName(name));
+            sb.append(" DROP MEMBER ").append(MsDiffUtils.quoteName(member));
+            sb.append(GO);
+        }
+
+        if (sb.length() > 0) {
+            sb.append('\n');
+        }
+
+        sb.append("DROP ROLE ").append(MsDiffUtils.quoteName(name)).append(GO);
+
+        return sb.toString();
     }
 
     @Override
