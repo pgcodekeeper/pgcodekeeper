@@ -2500,7 +2500,7 @@ constant_LOCAL_ID
 // Operator precendence: https://docs.microsoft.com/en-us/sql/t-sql/language-elements/operator-precedence-transact-sql
 expression
     : LR_BRACKET expression RR_BRACKET
-    | (PLUS | MINUS | BIT_NOT) expression
+    | op=(PLUS | MINUS | BIT_NOT) expression
     | expression op=(STAR | DIVIDE | MODULE) expression
     | expression op=(PLUS | MINUS | BIT_AND | BIT_XOR | BIT_OR | DOUBLE_BAR) expression
     | expression comparison_operator expression
@@ -2508,10 +2508,9 @@ expression
     | function_call
     | expression COLLATE id
     | object_expression DOT function_call
-    | full_column_name COLON COLON function_call
+    | full_column_name (COLON COLON function_call)?
     | id COLON COLON id
     | case_expression
-    | full_column_name
     | over_clause
     | date_expression
     | sequence_call
@@ -2798,37 +2797,37 @@ derived_table
     ;
 
 function_call
-    : ranking_windowed_function                         #RANKING_WINDOWED_FUNC
-    | aggregate_windowed_function                       #AGGREGATE_WINDOWED_FUNC
-    | analytic_windowed_function                        #ANALYTIC_WINDOWED_FUNC
-    | scalar_function_name LR_BRACKET expression_list? RR_BRACKET     #SCALAR_FUNCTION
+    : ranking_windowed_function
+    | aggregate_windowed_function
+    | analytic_windowed_function
+    | scalar_function_name LR_BRACKET expression_list? RR_BRACKET
     // https://msdn.microsoft.com/en-us/library/ms173784.aspx
-    | BINARY_CHECKSUM LR_BRACKET STAR RR_BRACKET                       #BINARY_CHECKSUM
+    | BINARY_CHECKSUM LR_BRACKET STAR RR_BRACKET
     // https://msdn.microsoft.com/en-us/library/hh231076.aspx
     // https://msdn.microsoft.com/en-us/library/ms187928.aspx
-    | CAST LR_BRACKET expression AS data_type RR_BRACKET              #CAST
-    | CONVERT LR_BRACKET convert_data_type=data_type COMMA convert_expression=expression (COMMA style=expression)? RR_BRACKET                              #CONVERT
+    | CAST LR_BRACKET expression AS data_type RR_BRACKET
+    | CONVERT LR_BRACKET convert_data_type=data_type COMMA convert_expression=expression (COMMA style=expression)? RR_BRACKET
     // https://msdn.microsoft.com/en-us/library/ms189788.aspx
-    | CHECKSUM LR_BRACKET STAR RR_BRACKET                              #CHECKSUM
+    | CHECKSUM LR_BRACKET STAR RR_BRACKET
     // https://msdn.microsoft.com/en-us/library/ms190349.aspx
-    | COALESCE LR_BRACKET expression_list RR_BRACKET                  #COALESCE
+    | COALESCE LR_BRACKET expression_list RR_BRACKET
     // https://msdn.microsoft.com/en-us/library/ms188751.aspx
-    | CURRENT_TIMESTAMP                                 #CURRENT_TIMESTAMP
+    | CURRENT_TIMESTAMP
     // https://msdn.microsoft.com/en-us/library/ms176050.aspx
-    | CURRENT_USER                                      #CURRENT_USER
+    | CURRENT_USER
     // https://msdn.microsoft.com/en-us/library/ms189838.aspx
-    | IDENTITY LR_BRACKET data_type (COMMA seed=DECIMAL)? (COMMA increment=DECIMAL)? RR_BRACKET                                                           #IDENTITY
+    | IDENTITY LR_BRACKET data_type (COMMA seed=DECIMAL)? (COMMA increment=DECIMAL)? RR_BRACKET
     // https://msdn.microsoft.com/en-us/library/bb839514.aspx
-    | MIN_ACTIVE_ROWVERSION                             #MIN_ACTIVE_ROWVERSION
+    | MIN_ACTIVE_ROWVERSION
     // https://msdn.microsoft.com/en-us/library/ms177562.aspx
-    | NULLIF LR_BRACKET expression COMMA expression RR_BRACKET          #NULLIF
+    | NULLIF LR_BRACKET expression COMMA expression RR_BRACKET
     // https://msdn.microsoft.com/en-us/library/ms177587.aspx
-    | SESSION_USER                                      #SESSION_USER
+    | SESSION_USER
     // https://msdn.microsoft.com/en-us/library/ms179930.aspx
-    | SYSTEM_USER                                       #SYSTEM_USER
-    | USER                                              #USER
+    | SYSTEM_USER
+    | USER
     // https://docs.microsoft.com/en-us/sql/t-sql/xml/xml-data-type-methods
-    | xml_data_type_methods                             #XML_DATA_TYPE_FUNC
+    | xml_data_type_methods
     ;
 
 xml_data_type_methods
@@ -3024,10 +3023,10 @@ ddl_object
     : full_table_name
     | LOCAL_ID
     ;
-/*  There are some RESERVED WORDS that can be column names */
+
 full_column_name
-    : (table_name DOT)? (COMPATIBILITY_LEVEL | QUOTED_IDENTIFIER | ARITHABORT | ANSI_WARNINGS | ANSI_PADDING | ANSI_NULLS | id)
-    ;
+    : (table_name DOT)? id
+    ; 
 
 column_name_list_with_order
     : id (ASC | DESC)? (COMMA id (ASC | DESC)?)*
