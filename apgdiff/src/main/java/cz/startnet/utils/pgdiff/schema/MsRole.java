@@ -54,13 +54,9 @@ public class MsRole extends PgStatement {
         StringBuilder sb = new StringBuilder();
 
         for (String member : members) {
-            sb.append("\nALTER ROLE ").append(MsDiffUtils.quoteName(name));
+            sb.append("ALTER ROLE ").append(MsDiffUtils.quoteName(name));
             sb.append(" DROP MEMBER ").append(MsDiffUtils.quoteName(member));
-            sb.append(GO);
-        }
-
-        if (sb.length() > 0) {
-            sb.append('\n');
+            sb.append(GO).append('\n');
         }
 
         sb.append("DROP ROLE ").append(MsDiffUtils.quoteName(name)).append(GO);
