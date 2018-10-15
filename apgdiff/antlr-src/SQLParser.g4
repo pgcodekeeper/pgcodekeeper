@@ -23,6 +23,10 @@ function_args_parser
   : schema_qualified_name? function_args EOF
   ;
 
+operator_args_parser
+  : target_operator EOF
+  ;
+
 object_identity_parser
   : name=identifier ON parent=schema_qualified_name EOF
   ;

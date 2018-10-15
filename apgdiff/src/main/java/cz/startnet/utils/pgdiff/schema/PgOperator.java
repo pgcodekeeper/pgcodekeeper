@@ -11,7 +11,7 @@ public class PgOperator extends PgStatementWithSearchPath {
 
     public static final String LEFTARG = "LEFTARG";
     public static final String RIGHTARG = "RIGHTARG";
-    private static final String TYPE_NONE = "NONE";
+    public static final String TYPE_NONE = "NONE";
 
     private String procedure;
     private Argument leftArg = new Argument(LEFTARG, TYPE_NONE);
@@ -176,7 +176,7 @@ public class PgOperator extends PgStatementWithSearchPath {
         return getSignature();
     }
 
-    private String getSignature() {
+    public String getSignature() {
         return appendOperatorSignature(new StringBuilder()).toString();
     }
 

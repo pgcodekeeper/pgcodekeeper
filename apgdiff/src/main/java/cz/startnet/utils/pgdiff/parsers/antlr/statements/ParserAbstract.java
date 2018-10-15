@@ -19,6 +19,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Including_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
@@ -28,6 +29,7 @@ import cz.startnet.utils.pgdiff.schema.IStatement;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
+import cz.startnet.utils.pgdiff.schema.PgOperator;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -135,6 +137,41 @@ public abstract class ParserAbstract {
             function.addArgument(arg);
         }
         return function.getSignature();
+    }
+
+    public static String parseSignature(String name, Target_operatorContext targerOperCtx) {
+        PgOperator oper = new PgOperator(name, null);
+        setOperArg(PgOperator.LEFTARG, targerOperCtx.left_type, oper);
+        setOperArg(PgOperator.RIGHTARG, targerOperCtx.right_type, oper);
+        return oper.getSignature();
+    }
+
+    private static void setOperArg(String argName, Data_typeContext typeCtx, PgOperator oper) {
+        String argType;
+        if (typeCtx != null) {
+            argType = getFullCtxText(typeCtx);
+            // operator identity types from pg_dbo_timestamp extension have
+            // names qualified by pg_catalog schema, delete them to have
+            // equal signatures in project and in extension
+            Schema_qualified_name_nontypeContext sqnn = typeCtx.predefined_type().schema_qualified_name_nontype();
+            if (sqnn != null) {
+                IdentifierContext schema = sqnn.schema;
+                if (schema != null && "pg_catalog".equals(schema.getText())) {
+                    argType = argType.substring("pg_catalog.".length());
+                }
+            }
+        } else {
+            argType = PgOperator.TYPE_NONE;
+        }
+
+        if (!PgOperator.TYPE_NONE.equals(argType)) {
+            Argument arg = new Argument(argName, argType);
+            if (PgOperator.LEFTARG.equals(argName)) {
+                oper.setLeftArg(arg);
+            } else {
+                oper.setRightArg(arg);
+            }
+        }
     }
 
     public static <T extends IStatement> T getSafe(Function <String, T> getter,
