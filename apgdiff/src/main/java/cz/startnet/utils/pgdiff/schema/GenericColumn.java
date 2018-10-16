@@ -113,6 +113,7 @@ public final class GenericColumn implements Serializable {
         case SEQUENCE: return s.getSequence(table);
         case FUNCTION:
         case PROCEDURE: return resolveFunctionCall(s);
+        case OPERATOR: return resolveOperatorCall(s);
         case TABLE: return getRelation(s);
         case VIEW: return s.getView(table);
 
@@ -218,6 +219,25 @@ public final class GenericColumn implements Serializable {
         // TODO right now we don't have means to resolve overloaded function calls
         // to avoid false dependencies skip resolving overloaded calls completely
         return found == 1 ? func : null;
+    }
+
+    private PgOperator resolveOperatorCall(AbstractSchema schema) {
+        PgOperator oper = null;
+        if (table.indexOf('(') != -1) {
+            oper = schema.getOperator(table);
+        }
+        if (oper != null) {
+            return oper;
+        }
+
+        int found = 0;
+        for (PgOperator o : schema.getOperators()) {
+            if (o.getBareName().equals(table)) {
+                ++found;
+                oper = o;
+            }
+        }
+        return found == 1 ? oper : null;
     }
 
     @Override

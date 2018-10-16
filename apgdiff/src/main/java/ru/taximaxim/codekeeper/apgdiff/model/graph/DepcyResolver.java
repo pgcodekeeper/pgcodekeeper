@@ -326,6 +326,8 @@ public class DepcyResolver {
         case FUNCTION:
         case PROCEDURE:
             return oldSchema.getFunction(statement.getName());
+        case OPERATOR:
+            return oldSchema.getOperator(statement.getName());
         case TYPE:
             return oldSchema.getType(statement.getName());
         case DOMAIN:

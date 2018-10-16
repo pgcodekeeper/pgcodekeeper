@@ -136,6 +136,7 @@ public class TreeElement {
 
         case FUNCTION:          return ((AbstractSchema) parent.getPgStatement(db)).getFunction(name);
         case PROCEDURE:         return ((AbstractSchema) parent.getPgStatement(db)).getFunction(name);
+        case OPERATOR:          return ((AbstractSchema) parent.getPgStatement(db)).getOperator(name);
         case SEQUENCE:          return ((AbstractSchema) parent.getPgStatement(db)).getSequence(name);
         case TYPE:              return ((AbstractSchema) parent.getPgStatement(db)).getType(name);
         case DOMAIN:            return ((AbstractSchema) parent.getPgStatement(db)).getDomain(name);

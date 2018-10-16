@@ -208,7 +208,7 @@ schema_alter
     | alter_tablespace
     | alter_statistics
     | alter_foreign_data_wrapper
-    | alter_operator)
+    | alter_operator_statement)
     ;
 
 schema_drop
@@ -218,7 +218,7 @@ schema_drop
     | drop_statements
     | drop_user_mapping
     | drop_owned
-    | drop_operator)
+    | drop_operator_statement)
     ;
 
 schema_import
@@ -715,7 +715,7 @@ alter_foreign_data_wrapper_handler_validator_option
     define_foreign_options?
     ;
 
-alter_operator
+alter_operator_statement
     : OPERATOR target_operator alter_operator_action
     ;
 
@@ -742,7 +742,7 @@ drop_owned
       cascade_restrict?
     ;
 
-drop_operator
+drop_operator_statement
     : OPERATOR (IF EXISTS)? target_operator (COMMA target_operator)* cascade_restrict?
     ;
 
@@ -997,7 +997,7 @@ comment_on_statement
         | CAST LEFT_PAREN source_type=data_type AS target_type=data_type RIGHT_PAREN
         | (CONSTRAINT | RULE | TRIGGER) name=schema_qualified_name ON table_name=schema_qualified_name
         | FUNCTION name=schema_qualified_name function_args
-        | OPERATOR name=schema_qualified_name LEFT_PAREN left_type=data_type COMMA right_type=data_type RIGHT_PAREN
+        | OPERATOR target_operator
         | OPERATOR (FAMILY| CLASS) name=schema_qualified_name USING index_method=identifier
         | (TEXT SEARCH (CONFIGURATION | DICTIONARY | PARSER | TEMPLATE )
         | PROCEDURAL? LANGUAGE

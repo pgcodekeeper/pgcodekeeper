@@ -330,15 +330,15 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     }
 
     /**
-     * Finds operator according to specified operator {@code name}.
+     * Finds operator according to specified operator {@code signature}.
      *
-     * @param name name of the operator to be searched
+     * @param signature signature of the operator to be searched
      *
      * @return found operator or null if no such operator has been found
      */
-    public PgOperator getOperator(final String name) {
+    public PgOperator getOperator(final String signature) {
         for (PgOperator oper : operators) {
-            if (oper.getName().equals(name)) {
+            if (oper.getName().equals(signature)) {
                 return oper;
             }
         }
