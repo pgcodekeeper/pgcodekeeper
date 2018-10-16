@@ -141,13 +141,13 @@ public abstract class ParserAbstract {
 
     public static String parseSignature(String name, Target_operatorContext targerOperCtx) {
         PgOperator oper = new PgOperator(name, null);
-        setOperArg(PgOperator.LEFTARG, targerOperCtx.left_type, oper);
-        setOperArg(PgOperator.RIGHTARG, targerOperCtx.right_type, oper);
+        oper.setLeftArg(getOperArg(targerOperCtx.left_type));
+        oper.setRightArg(getOperArg(targerOperCtx.right_type));
         return oper.getSignature();
     }
 
-    private static void setOperArg(String argName, Data_typeContext typeCtx, PgOperator oper) {
-        String argType;
+    private static String getOperArg(Data_typeContext typeCtx) {
+        String argType = null;
         if (typeCtx != null) {
             argType = getFullCtxText(typeCtx);
             // operator identity types from pg_dbo_timestamp extension have
@@ -160,18 +160,9 @@ public abstract class ParserAbstract {
                     argType = argType.substring("pg_catalog.".length());
                 }
             }
-        } else {
-            argType = PgOperator.TYPE_NONE;
         }
 
-        if (!PgOperator.TYPE_NONE.equals(argType)) {
-            Argument arg = new Argument(argName, argType);
-            if (PgOperator.LEFTARG.equals(argName)) {
-                oper.setLeftArg(arg);
-            } else {
-                oper.setRightArg(arg);
-            }
-        }
+        return argType;
     }
 
     public static <T extends IStatement> T getSafe(Function <String, T> getter,

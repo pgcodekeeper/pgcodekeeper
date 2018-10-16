@@ -1,5 +1,5 @@
 SELECT o.oprname AS name, 
-       n.nspname AS oper_nsp,
+       n.oid AS schema_oid,
        prc.proname AS procedure,
        prc_n.nspname AS procedure_nsp,
        o.oprleft::bigint AS leftArg,
@@ -26,3 +26,4 @@ LEFT JOIN pg_catalog.pg_namespace neg_n ON neg.oprnamespace = neg_n.oid
 LEFT JOIN pg_catalog.pg_proc prc_r ON o.oprrest = prc_r.oid
 LEFT JOIN pg_catalog.pg_proc prc_j ON o.oprjoin = prc_j.oid
 WHERE (n.nspname NOT LIKE 'pg\_%' OR n.nspname = 'information_schema')
+AND prc.proname IS NOT NULL

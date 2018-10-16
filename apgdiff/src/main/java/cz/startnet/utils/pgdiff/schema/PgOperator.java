@@ -9,13 +9,9 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgOperator extends PgStatementWithSearchPath {
 
-    public static final String LEFTARG = "LEFTARG";
-    public static final String RIGHTARG = "RIGHTARG";
-    public static final String TYPE_NONE = "NONE";
-
     private String procedure;
-    private Argument leftArg = new Argument(LEFTARG, TYPE_NONE);
-    private Argument rightArg = new Argument(RIGHTARG, TYPE_NONE);
+    private String leftArg;
+    private String rightArg;
     private String commutator;
     private String negator;
     private boolean isMerges;
@@ -37,35 +33,28 @@ public class PgOperator extends PgStatementWithSearchPath {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE OPERATOR ");
         sbSQL.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
-        sbSQL.append(PgDiffUtils.getQuotedName(getBareName()));
-        sbSQL.append('(');
-        sbSQL.append("\n\tPROCEDURE = ");
+        sbSQL.append(getBareName());
+        sbSQL.append(" (\n\tPROCEDURE = ");
         sbSQL.append(procedure);
 
-        if (!TYPE_NONE.equals(leftArg.getDataType())) {
-            sbSQL.append(",\n\t");
-            sbSQL.append(leftArg.getName());
-            sbSQL.append(" = ");
-            sbSQL.append(leftArg.getDataType());
+        if (leftArg != null) {
+            sbSQL.append(",\n\tLEFTARG = ");
+            sbSQL.append(leftArg);
         }
 
-        if (!TYPE_NONE.equals(rightArg.getDataType())) {
-            sbSQL.append(",\n\t");
-            sbSQL.append(rightArg.getName());
-            sbSQL.append(" = ");
-            sbSQL.append(rightArg.getDataType());
+        if (rightArg != null) {
+            sbSQL.append(",\n\tRIGHTARG = ");
+            sbSQL.append(rightArg);
         }
 
         if (commutator != null) {
-            sbSQL.append(",\n\tCOMMUTATOR = OPERATOR(");
+            sbSQL.append(",\n\tCOMMUTATOR = ");
             sbSQL.append(commutator);
-            sbSQL.append(')');
         }
 
         if (negator != null) {
-            sbSQL.append(",\n\tNEGATOR = OPERATOR(");
+            sbSQL.append(",\n\tNEGATOR = ");
             sbSQL.append(negator);
-            sbSQL.append(')');
         }
 
         if (isMerges) {
@@ -110,11 +99,11 @@ public class PgOperator extends PgStatementWithSearchPath {
     }
 
     public StringBuilder appendOperatorSignature(StringBuilder sb) {
-        sb.append(PgDiffUtils.getQuotedName(getBareName()));
+        sb.append(getBareName());
         sb.append(" (");
-        sb.append(leftArg.getDataType());
+        sb.append(leftArg == null ? "NONE" : leftArg);
         sb.append(", ");
-        sb.append(rightArg.getDataType());
+        sb.append(rightArg == null ? "NONE" : rightArg);
         sb.append(')');
         return sb;
     }
@@ -226,20 +215,20 @@ public class PgOperator extends PgStatementWithSearchPath {
         resetHash();
     }
 
-    public Argument getLeftArg() {
+    public String getLeftArg() {
         return leftArg;
     }
 
-    public void setLeftArg(Argument leftArg) {
+    public void setLeftArg(String leftArg) {
         this.leftArg = leftArg;
         resetHash();
     }
 
-    public Argument getRightArg() {
+    public String getRightArg() {
         return rightArg;
     }
 
-    public void setRightArg(Argument rightArg) {
+    public void setRightArg(String rightArg) {
         this.rightArg = rightArg;
         resetHash();
     }

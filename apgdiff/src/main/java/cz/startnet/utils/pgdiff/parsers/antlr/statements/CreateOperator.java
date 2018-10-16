@@ -4,16 +4,17 @@ import java.util.List;
 
 import org.antlr.v4.runtime.Token;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_operator_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.OpContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgOperator;
@@ -35,22 +36,39 @@ public class CreateOperator extends ParserAbstract {
         for (Operator_optionContext option : ctx.operator_option()) {
             if (option.PROCEDURE() != null) {
                 Schema_qualified_nameContext procFuncNameCtx = option.func_name;
-                oper.setProcedure(procFuncNameCtx.getText());
                 List<IdentifierContext> ids = procFuncNameCtx.identifier();
-                oper.addDep(new GenericColumn(QNameParser.getSchemaName(ids, schema.getName()),
-                        QNameParser.getFirstNameCtx(ids).getText(), DbObjType.FUNCTION));
+                String schemaName = QNameParser.getSchemaName(ids, schema.getName());
+                String procName = QNameParser.getFirstName(ids);
+                oper.setProcedure(PgDiffUtils.getQuotedName(schemaName) + '.'
+                        + PgDiffUtils.getQuotedName(procName));
+                oper.addDep(new GenericColumn(schemaName, procName, DbObjType.FUNCTION));
             } else if (option.LEFTARG() != null) {
                 Data_typeContext leftArgTypeCtx = option.type;
-                oper.setLeftArg(new Argument(PgOperator.LEFTARG, leftArgTypeCtx.getText()));
+                oper.setLeftArg(leftArgTypeCtx.getText());
                 addTypeAsDepcy(leftArgTypeCtx, oper, schema.getName());
             } else if (option.RIGHTARG() != null) {
                 Data_typeContext rightArgTypeCtx = option.type;
-                oper.setRightArg(new Argument(PgOperator.RIGHTARG, rightArgTypeCtx.getText()));
+                oper.setRightArg(rightArgTypeCtx.getText());
                 addTypeAsDepcy(rightArgTypeCtx, oper, schema.getName());
-            } else if (option.COMMUTATOR() != null) {
-                oper.setCommutator(option.addition_oper_name.getText());
-            } else if (option.NEGATOR() != null) {
-                oper.setNegator(option.addition_oper_name.getText());
+            } else if (option.COMMUTATOR() != null || option.NEGATOR() != null) {
+                OpContext comutNameCtx = option.addition_oper_name;
+                IdentifierContext schemaNameCxt = comutNameCtx.identifier();
+                StringBuilder sb = new StringBuilder();
+                if (schemaNameCxt != null) {
+                    sb.append("OPERATOR(")
+                    .append(PgDiffUtils.getQuotedName(schemaNameCxt.getText()))
+                    .append('.');
+                }
+                sb.append(comutNameCtx.OP_CHARS().getText());
+                if (schemaNameCxt != null) {
+                    sb.append(')');
+                }
+
+                if (option.COMMUTATOR() != null) {
+                    oper.setCommutator(sb.toString());
+                } else {
+                    oper.setNegator(sb.toString());
+                }
             } else if (option.MERGES() != null) {
                 oper.setMerges(true);
             } else if (option.HASHES() != null) {
