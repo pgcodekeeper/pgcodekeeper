@@ -1,4 +1,8 @@
 @echo off
 SET DIR=%~dp0
-for /f "Tokens=1* Delims=" %%F in ('dir /b %DIR%plugins\org.eclipse.equinox.launcher_*') do set File=%%F
-java -Dosgi.logfile=%USERPROFILE%/.pgcodekeeper-cli.log -jar %DIR%plugins/%File% %* 
+SET JARSEARCH=%DIR%plugins\org.eclipse.equinox.launcher_*
+for /f "Tokens=1* Delims=" %%F in ('dir /b "%JARSEARCH%"') do set File=%%F
+
+SET LOGFILE=%USERPROFILE%\.pgcodekeeper-cli.log
+SET JARFILE=%DIR%plugins\%File%
+java -Dosgi.logfile="%LOGFILE%" -jar "%JARFILE%" %* 
