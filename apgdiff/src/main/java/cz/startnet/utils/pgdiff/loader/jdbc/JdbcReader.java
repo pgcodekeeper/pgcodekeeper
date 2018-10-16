@@ -19,6 +19,7 @@ import cz.startnet.utils.pgdiff.schema.PgFtsDictionary;
 import cz.startnet.utils.pgdiff.schema.PgFtsParser;
 import cz.startnet.utils.pgdiff.schema.PgFtsTemplate;
 import cz.startnet.utils.pgdiff.schema.PgType;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class JdbcReader implements PgCatalogStrings {
@@ -53,7 +54,13 @@ public abstract class JdbcReader implements PgCatalogStrings {
         loader.setCurrentOperation(getClass().getSimpleName() + " query");
         try (ResultSet result = loader.statement.executeQuery(query)) {
             while (result.next()) {
-                processResult(result, loader.schemaIds.get(result.getLong("schema_oid")));
+                long schemaId = result.getLong("schema_oid");
+                AbstractSchema schema = loader.schemaIds.get(schemaId);
+                if (schema != null) {
+                    processResult(result, schema);
+                } else {
+                    Log.log(Log.LOG_WARNING, "No schema found for id " + schemaId);
+                }
             }
         }
     }
