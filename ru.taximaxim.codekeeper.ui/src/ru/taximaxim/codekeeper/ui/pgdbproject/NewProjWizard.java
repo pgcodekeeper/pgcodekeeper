@@ -3,7 +3,6 @@ package ru.taximaxim.codekeeper.ui.pgdbproject;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -216,22 +215,14 @@ class PageRepo extends WizardNewProjectCreationPage {
 
     @Override
     public boolean isPageComplete() {
-        String err = null;
-
-        String name = getProjectName();
-
-        if (name == null || name.isEmpty()) {
+        if (!super.isPageComplete()) {
             return false;
-        } else {
-            URI uri = getLocationURI();
-            if (uri.getScheme() != null) {
-                Path path = Paths.get(uri);
-                if (Files.exists(path) && path.toFile().list().length > 0) {
-                    err = Messages.NewProjWizard_not_empty_dir;
-                }
-            } else {
-                return false;
-            }
+        }
+
+        String err = null;
+        Path path = Paths.get(getLocationURI());
+        if (Files.exists(path) && path.toFile().list().length > 0) {
+            err = Messages.NewProjWizard_not_empty_dir;
         }
 
         setErrorMessage(err);
