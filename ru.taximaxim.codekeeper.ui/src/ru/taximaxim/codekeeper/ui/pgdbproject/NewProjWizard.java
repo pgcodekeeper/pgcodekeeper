@@ -3,6 +3,10 @@ package ru.taximaxim.codekeeper.ui.pgdbproject;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,7 +25,6 @@ import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -92,34 +95,6 @@ implements IExecutableExtension, INewWizard {
     }
 
     @Override
-    public IWizardPage getNextPage(IWizardPage page) {
-        if(page == pageRepo) {
-            if (!checkMarkerExist()) {
-                return pageDb;
-            } else {
-                return null;
-            }
-        }
-        return super.getNextPage(page);
-    }
-    /**
-     * Проверяет на наличие файла маркера в директории проекта
-     * @return существует ли маркер
-     */
-    private boolean checkMarkerExist() {
-        return new File(pageRepo.getLocationPath().toFile(), ApgdiffConsts.FILENAME_WORKING_DIR_MARKER)
-                .exists();
-    }
-
-    @Override
-    public boolean canFinish() {
-        if (getContainer().getCurrentPage() == pageRepo && checkMarkerExist()) {
-            return true;
-        }
-        return super.canFinish();
-    }
-
-    @Override
     public boolean performFinish() {
         PgDbProject props = null;
         boolean initSuccess = false;
@@ -129,28 +104,26 @@ implements IExecutableExtension, INewWizard {
             props.getProject().open(null);
             props.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
 
-            if (!checkMarkerExist()) {
-                String charset = pageDb.getCharset();
-                if (!charset.isEmpty() && !ResourcesPlugin.getWorkspace().getRoot()
-                        .getDefaultCharset().equals(charset)) {
-                    props.setProjectCharset(charset);
-                }
+            String charset = pageDb.getCharset();
+            if (!charset.isEmpty() && !ResourcesPlugin.getWorkspace().getRoot()
+                    .getDefaultCharset().equals(charset)) {
+                props.setProjectCharset(charset);
+            }
 
-                if (isPostgres) {
-                    String timezone = pageDb.getTimeZone();
-                    if (!timezone.isEmpty() && !ApgdiffConsts.UTC.equals(timezone)) {
-                        props.getPrefs().put(PROJ_PREF.TIMEZONE, timezone);
-                        try {
-                            props.getPrefs().flush();
-                        } catch (BackingStoreException e) {
-                            Log.log(Log.LOG_WARNING, "Error while flushing project properties!", e); //$NON-NLS-1$
-                        }
+            if (isPostgres) {
+                String timezone = pageDb.getTimeZone();
+                if (!timezone.isEmpty() && !ApgdiffConsts.UTC.equals(timezone)) {
+                    props.getPrefs().put(PROJ_PREF.TIMEZONE, timezone);
+                    try {
+                        props.getPrefs().flush();
+                    } catch (BackingStoreException e) {
+                        Log.log(Log.LOG_WARNING, "Error while flushing project properties!", e); //$NON-NLS-1$
                     }
                 }
-
-                getContainer().run(true, true, new InitProjectFromSource(
-                        props, getDbSource(props)));
             }
+
+            getContainer().run(true, true, new InitProjectFromSource(
+                    props, getDbSource(props)));
             initSuccess = true;
 
             props.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
@@ -210,6 +183,9 @@ implements IExecutableExtension, INewWizard {
             String propertyName, Object data) throws CoreException {
         this.config = config;
         this.isPostgres = WIZARD.NEW_PROJECT_WIZARD.equals(config.getAttribute("id")); //$NON-NLS-1$
+        if (!isPostgres) {
+            setWindowTitle(Messages.NewProjWizard_new_ms_project);
+        }
     }
 
     @Override
@@ -236,6 +212,30 @@ class PageRepo extends WizardNewProjectCreationPage {
         super.createControl(parent);
         createWorkingSetGroup((Composite) getControl(), selection,
                 new String[] { WORKING_SET.RESOURCE_WORKING_SET });
+    }
+
+    @Override
+    public boolean isPageComplete() {
+        String err = null;
+
+        String name = getProjectName();
+
+        if (name == null || name.isEmpty()) {
+            return false;
+        } else {
+            URI uri = getLocationURI();
+            if (uri.getScheme() != null) {
+                Path path = Paths.get(uri);
+                if (Files.exists(path) && path.toFile().list().length > 0) {
+                    err = Messages.NewProjWizard_not_empty_dir;
+                }
+            } else {
+                return false;
+            }
+        }
+
+        setErrorMessage(err);
+        return err == null;
     }
 }
 
