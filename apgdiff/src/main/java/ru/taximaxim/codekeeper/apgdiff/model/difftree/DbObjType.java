@@ -20,6 +20,7 @@ public enum DbObjType {
     // maybe move back after COLUMN, when proper function call dependencies are implemented
     FUNCTION,
     PROCEDURE,
+    OPERATOR,
     FTS_PARSER,
     FTS_TEMPLATE,
     FTS_DICTIONARY,
@@ -30,6 +31,5 @@ public enum DbObjType {
     INDEX,
     VIEW,
     TRIGGER,
-    RULE,
-    OPERATOR
+    RULE
 }
