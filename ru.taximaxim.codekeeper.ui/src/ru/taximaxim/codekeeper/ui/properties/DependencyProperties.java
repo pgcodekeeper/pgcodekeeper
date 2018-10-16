@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
@@ -180,9 +181,12 @@ public class DependencyProperties extends PropertyPage {
 
             ignorePriv.setEditingSupport(new IgnorePrivCheckEditingSupport(viewer));
 
-            int width = (int)(viewer.getTable().getSize().x * 0.33f);
-            path.getColumn().setWidth(Math.max(width * 2, 500));
-            ignorePriv.getColumn().setWidth(Math.max(width, 200));
+            viewer.getTable().addListener(SWT.Resize, event -> {
+                Table table = (Table)event.widget;
+                int width = (int)(table.getClientArea().width * 0.33f);
+                table.getColumns()[0].setWidth(width * 2);
+                table.getColumns()[1].setWidth(width);
+            });
         }
 
         @Override
