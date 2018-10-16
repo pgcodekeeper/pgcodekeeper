@@ -1395,17 +1395,23 @@ select_stmt_no_parens
 
 select_ops
     : LR_BRACKET select_statement RR_BRACKET //  parens can be used to apply "global" clauses (WITH etc) to a particular select in UNION expr
-    | select_ops (INTERSECT | UNION | EXCEPT) (DISTINCT | ALL)? select_ops
+    | select_ops (INTERSECT | UNION | EXCEPT) set_qualifier? select_ops
     | query_specification
     ;
 
 select_ops_no_parens
-    : select_ops (INTERSECT | UNION | EXCEPT) (DISTINCT | ALL)? select_ops
+    : select_ops (INTERSECT | UNION | EXCEPT) set_qualifier? select_ops
     | query_specification
     ;
 
+set_qualifier
+    : DISTINCT 
+    | ALL
+    ;
+
 time
-    : (LOCAL_ID | constant)
+    : LOCAL_ID 
+    | constant
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms177523.aspx
@@ -2612,7 +2618,7 @@ predicate
 
 // https://msdn.microsoft.com/en-us/library/ms176104.aspx
 query_specification
-    : SELECT (ALL | DISTINCT)? top_clause?
+    : SELECT set_qualifier? top_clause?
     select_list
     // https://msdn.microsoft.com/en-us/library/ms188029.aspx
     (INTO table_name)?
