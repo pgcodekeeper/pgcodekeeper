@@ -2575,7 +2575,7 @@ constant_expression
 // https://msdn.microsoft.com/en-us/library/ms175972.aspx
 with_expression
     : WITH (XMLNAMESPACES COMMA)? common_table_expression (COMMA common_table_expression)*
-    | WITH BLOCKING_HIERARCHY (LR_BRACKET full_column_name_list RR_BRACKET)? AS LR_BRACKET select_statement RR_BRACKET
+    //| WITH BLOCKING_HIERARCHY (LR_BRACKET full_column_name_list RR_BRACKET)? AS LR_BRACKET select_statement RR_BRACKET
     ;
 
 common_table_expression
@@ -2632,17 +2632,14 @@ query_specification
 
 // https://msdn.microsoft.com/en-us/library/ms189463.aspx
 top_clause
-    : TOP (top_percent | top_count) (WITH TIES)?
-    ;
-
-top_percent
-    : (REAL | FLOAT) PERCENT
-    | LR_BRACKET expression RR_BRACKET PERCENT
+    : TOP top_count (WITH TIES)?
     ;
 
 top_count
-    : DECIMAL
+    : (REAL | FLOAT) PERCENT
+    | DECIMAL
     | LR_BRACKET expression RR_BRACKET
+    | LR_BRACKET expression RR_BRACKET PERCENT
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms188385.aspx
@@ -2765,16 +2762,8 @@ join_part
     | CROSS JOIN table_source_item
     | CROSS APPLY table_source_item
     | OUTER APPLY table_source_item
-    | PIVOT pivot_clause as_table_alias
-    | UNPIVOT unpivot_clause as_table_alias
-    ;
-
-pivot_clause
-    : LR_BRACKET aggregate_windowed_function FOR full_column_name IN column_alias_list RR_BRACKET
-    ;
-
-unpivot_clause
-    : LR_BRACKET expression FOR full_column_name IN LR_BRACKET full_column_name_list RR_BRACKET RR_BRACKET
+    | PIVOT LR_BRACKET aggregate_windowed_function FOR full_column_name IN column_alias_list RR_BRACKET as_table_alias
+    | UNPIVOT LR_BRACKET expression FOR full_column_name IN LR_BRACKET full_column_name_list RR_BRACKET RR_BRACKET as_table_alias
     ;
 
 full_column_name_list

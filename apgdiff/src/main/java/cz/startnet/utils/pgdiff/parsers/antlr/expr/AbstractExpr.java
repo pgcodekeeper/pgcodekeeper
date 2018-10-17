@@ -313,14 +313,6 @@ public abstract class AbstractExpr {
         }
     }
 
-    protected void addFunctionDepcy(String schemaName, String functionName) {
-        depcies.add(new GenericColumn(schemaName, functionName, DbObjType.FUNCTION));
-    }
-
-    protected void addSequenceDepcy(String schemaName, String sequenceName) {
-        depcies.add(new GenericColumn(schemaName, sequenceName, DbObjType.SEQUENCE));
-    }
-
     /**
      * Use only in contexts where function can be pinpointed only by its name.
      * Such as ::regproc casts.
