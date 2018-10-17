@@ -3,8 +3,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 import java.util.List;
 
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.Token;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
@@ -34,6 +32,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateFtsParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateFtsTemplate;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateFunction;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateIndex;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateOperator;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateRewrite;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateRule;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateSchema;
@@ -89,6 +88,8 @@ implements SqlContextProcessor {
             p = new CreateRewrite(ctx.create_rewrite_statement(), db);
         } else if (ctx.create_function_statement() != null) {
             p = new CreateFunction(ctx.create_function_statement(), db);
+        } else if (ctx.create_operator_statement() != null) {
+            p = new CreateOperator(ctx.create_operator_statement(), db);
         } else if (ctx.create_sequence_statement() != null) {
             p = new CreateSequence(ctx.create_sequence_statement(), db);
         } else if (ctx.create_schema_statement() != null) {
