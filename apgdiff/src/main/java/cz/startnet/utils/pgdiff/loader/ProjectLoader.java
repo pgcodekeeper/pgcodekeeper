@@ -29,7 +29,7 @@ public class ProjectLoader {
      * those directories are here for backward compatibility only
      */
     protected static final String[] DIR_LOAD_ORDER = new String[] { "TYPE", "DOMAIN",
-            "SEQUENCE", "FUNCTION", "TABLE", "CONSTRAINT", "INDEX", "TRIGGER", "VIEW",
+            "SEQUENCE", "FUNCTION", "OPERATOR", "TABLE", "CONSTRAINT", "INDEX", "TRIGGER", "VIEW",
             "FTS_PARSER", "FTS_TEMPLATE", "FTS_DICTIONARY", "FTS_CONFIGURATION" };
 
     private final String dirPath;
