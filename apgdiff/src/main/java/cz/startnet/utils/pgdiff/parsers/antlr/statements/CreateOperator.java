@@ -31,8 +31,9 @@ public class CreateOperator extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         Operator_nameContext operNameCtx = ctx.name;
-        AbstractSchema schema = getSchemaSafe(operNameCtx, db.getDefaultSchema());
-        PgOperator oper = new PgOperator(operNameCtx.operator.getText(), getFullCtxText(ctx.getParent()));
+        AbstractSchema schema = getSchemaSafe(operNameCtx, db.getDefaultSchema(), db);
+        PgOperator oper = new PgOperator(operNameCtx.operator.getText(),
+                getFullCtxText(ctx.getParent()));
         for (Operator_optionContext option : ctx.operator_option()) {
             if (option.PROCEDURE() != null) {
                 Schema_qualified_nameContext procFuncNameCtx = option.func_name;
@@ -84,9 +85,11 @@ public class CreateOperator extends ParserAbstract {
         return oper;
     }
 
-    private AbstractSchema getSchemaSafe(Operator_nameContext operNameCtx, AbstractSchema defaultSchema) {
+    public static AbstractSchema getSchemaSafe(Operator_nameContext operNameCtx,
+            AbstractSchema defaultSchema, PgDatabase db) {
         IdentifierContext schemaCtx = operNameCtx.schema_name;
-        AbstractSchema foundSchema = schemaCtx == null ? defaultSchema : getSafe(db::getSchema, schemaCtx);
+        AbstractSchema foundSchema = schemaCtx == null ?
+                defaultSchema : getSafe(db::getSchema, schemaCtx);
         if (foundSchema != null) {
             return foundSchema;
         }

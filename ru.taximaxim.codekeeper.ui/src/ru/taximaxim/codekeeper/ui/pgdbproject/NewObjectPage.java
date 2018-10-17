@@ -283,6 +283,7 @@ public final class NewObjectPage extends WizardPage {
             break;
         case DOMAIN:
         case FUNCTION:
+        case OPERATOR:
         case TABLE:
         case VIEW:
         case TYPE:
@@ -443,6 +444,11 @@ public final class NewObjectPage extends WizardPage {
             case FUNCTION:
                 sb.append(" OR REPLACE FUNCTION ").append(schema).append('.') //$NON-NLS-1$
                 .append(objectName).append("() RETURNS void\n\tLANGUAGE sql\n    AS $$\n\t--function body \n$$;\n"); //$NON-NLS-1$
+                break;
+            case OPERATOR:
+                sb.append(" OPERATOR ").append(schema).append('.') //$NON-NLS-1$
+                .append(objectName).append(" (\n\tPROCEDURE = procedure_func,") //$NON-NLS-1$
+                .append("\n\tLEFTARG = left_argument_type,\n\tRIGHTARG = right_argument_type\n);"); //$NON-NLS-1$
                 break;
             case TABLE:
                 sb.append(type).append(' ').append(schema).append('.')

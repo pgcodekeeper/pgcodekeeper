@@ -700,7 +700,7 @@ public class ReferenceListener implements SqlContextProcessor {
         IdentifierContext schemaCtx = operNameCtx.schema_name;
         addFullObjReference(schemaCtx != null ? schemaCtx.getText() : getDefSchemaName(),
                 operNameCtx.operator.getText(), ctx.target_operator(),
-                DbObjType.FUNCTION, StatementActions.ALTER, ctx.getParent());
+                DbObjType.OPERATOR, StatementActions.ALTER, ctx.getParent());
     }
 
     public void drop(Drop_statementsContext ctx) {
