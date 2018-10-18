@@ -38,14 +38,6 @@ public abstract class MsAbstractExprWithNmspc<T> extends MsAbstractExpr {
      */
     protected final Set<GenericColumn> unaliasedNamespace = new HashSet<>();
     /**
-     * Column alias' are in a separate sets (per table) since they have two
-     * values as the Key. This is not a Map because we don't connect column
-     * aliases with their columns.<br>
-     * Columns of non-dereferenceable objects are aliases by default and need
-     * not to be added to this set.
-     */
-    protected final Map<String, Set<String>> columnAliases = new HashMap<>();
-    /**
      * CTE names that current level of FROM has access to.
      */
     protected final Set<String> cte = new HashSet<>();
@@ -64,12 +56,12 @@ public abstract class MsAbstractExprWithNmspc<T> extends MsAbstractExpr {
     }
 
     @Override
-    protected Entry<String, GenericColumn> findReference(String schema, String name, String column) {
-        Entry<String, GenericColumn> ref = findReferenceInNmspc(schema, name, column);
-        return ref == null ? super.findReference(schema, name, column) : ref;
+    protected Entry<String, GenericColumn> findReference(String schema, String name) {
+        Entry<String, GenericColumn> ref = findReferenceInNmspc(schema, name);
+        return ref == null ? super.findReference(schema, name) : ref;
     }
 
-    protected Entry<String, GenericColumn> findReferenceInNmspc(String schema, String name, String column) {
+    protected Entry<String, GenericColumn> findReferenceInNmspc(String schema, String name) {
         boolean found;
         GenericColumn dereferenced = null;
         if (schema == null && namespace.containsKey(name)) {
@@ -97,23 +89,7 @@ public abstract class MsAbstractExprWithNmspc<T> extends MsAbstractExpr {
             found = false;
         }
 
-        if (found) {
-            // column aliases imply there must be a corresponding table alias
-            // so we may defer their lookup until here
-
-            // also, if we cannot dereference an existing name it's safe to assume
-            // all its columns are aliases
-            // this saves a lookup and extra space in columnAliases
-            if (column != null && dereferenced != null) {
-                Set<String> columns = columnAliases.get(name);
-                if (columns != null && columns.contains(column)) {
-                    dereferenced = null;
-                }
-            }
-            return new SimpleEntry<>(name, dereferenced);
-        } else {
-            return null;
-        }
+        return found ? new SimpleEntry<>(name, dereferenced) : null;
     }
 
     /**
@@ -138,19 +114,6 @@ public abstract class MsAbstractExprWithNmspc<T> extends MsAbstractExpr {
         return !exists;
     }
 
-    protected boolean addColumnReference(String alias, String column) {
-        Set<String> columns = columnAliases.get(alias);
-        if (columns == null) {
-            columns = new HashSet<>();
-            columnAliases.put(alias, columns);
-        }
-        boolean exists = !columns.add(column);
-        if (exists) {
-            Log.log(Log.LOG_WARNING, "Duplicate column alias: " + alias + ' ' + column);
-        }
-        return !exists;
-    }
-
     protected void addNameReference(Full_table_nameContext name, As_table_aliasContext alias) {
         String firstName = name.table.getText();
 
@@ -162,12 +125,7 @@ public abstract class MsAbstractExprWithNmspc<T> extends MsAbstractExpr {
 
         if (alias != null) {
             String aliasName = alias.id().getText();
-            boolean added = addReference(aliasName, depcy);
-            if (!added && !isCte && columnAliases != null && !columnAliases.isEmpty()) {
-                /*for (IdentifierContext columnAlias : columnAliases) {
-                    addColumnReference(aliasName, columnAlias.getText());
-                }*/
-            }
+            addReference(aliasName, depcy);
         } else if (isCte) {
             addReference(firstName, null);
         } else {

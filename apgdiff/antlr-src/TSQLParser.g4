@@ -1327,7 +1327,7 @@ create_message_type
 merge_statement
     : with_expression? MERGE (TOP LR_BRACKET expression RR_BRACKET PERCENT?)?
     INTO? ddl_object insert_with_table_hints? as_table_alias?
-    USING table_sources ON search_condition
+    USING from_item (COMMA from_item)* ON search_condition
     (WHEN MATCHED (AND search_condition)? THEN merge_matched)*
     (WHEN NOT MATCHED (BY TARGET)? (AND search_condition)? THEN merge_not_matched)?
     (WHEN NOT MATCHED BY SOURCE (AND search_condition)? THEN merge_matched)*
@@ -1346,7 +1346,7 @@ merge_not_matched
 // https://msdn.microsoft.com/en-us/library/ms189835.aspx
 delete_statement
     : with_expression? DELETE (TOP LR_BRACKET expression RR_BRACKET PERCENT? | TOP DECIMAL)?
-    FROM? delete_statement_from insert_with_table_hints? output_clause? (FROM table_sources)?
+    FROM? delete_statement_from insert_with_table_hints? output_clause? (FROM from_item (COMMA from_item)*)?
     (WHERE (search_condition | CURRENT OF (GLOBAL? cursor_name | cursor_var=LOCAL_ID)))?
     for_clause? option_clause?
     ;
@@ -1370,7 +1370,7 @@ insert_statement
     ;
 
 insert_statement_value
-    : derived_table
+    : select_statement
     | execute_statement
     | DEFAULT VALUES
     ;
@@ -1422,7 +1422,7 @@ update_statement
     with_table_hints?
     SET update_elem (COMMA update_elem)*
     output_clause?
-    (FROM table_sources)?
+    (FROM from_item (COMMA from_item)*)?
     (WHERE (search_condition_list | CURRENT OF (GLOBAL? cursor_name | cursor_var=LOCAL_ID)))?
     for_clause? option_clause?
     ;
@@ -2622,12 +2622,40 @@ query_specification
     select_list
     // https://msdn.microsoft.com/en-us/library/ms188029.aspx
     (INTO table_name)?
-    (FROM table_sources)?
+    (FROM from_item (COMMA from_item)*)?
     (WHERE where=search_condition)?
     // https://msdn.microsoft.com/en-us/library/ms177673.aspx
     (GROUP BY (ALL)? expression (COMMA expression)*)?
     (HAVING having=search_condition)?
     order_by_clause?
+    | table_value_constructor
+    ;
+
+from_item
+    : LR_BRACKET from_item RR_BRACKET as_table_alias?
+    | from_item (INNER? |
+       join_type=(LEFT | RIGHT | FULL) OUTER?) (join_hint=(LOOP | HASH | MERGE | REMOTE))?
+       JOIN from_item ON search_condition
+    | from_item CROSS JOIN from_item
+    | from_item CROSS APPLY from_item
+    | from_item OUTER APPLY from_item
+    | from_item PIVOT LR_BRACKET aggregate_windowed_function FOR full_column_name IN column_alias_list RR_BRACKET as_table_alias
+    | from_item UNPIVOT LR_BRACKET expression FOR full_column_name IN LR_BRACKET full_column_name_list RR_BRACKET RR_BRACKET as_table_alias
+    | from_primary
+    ;
+
+from_primary
+     // column_alias_list is in conflict with deprecated form of
+    // with_table_hints which omits WITH
+    : full_table_name             as_table_alias? insert_with_table_hints?
+    | rowset_function             as_table_alias?
+    | derived_table               as_table_alias
+    | change_table                as_table_alias
+    | function_call               as_table_alias?
+    | LOCAL_ID                    as_table_alias?
+    | LOCAL_ID DOT function_call  as_table_alias?
+    | open_xml                    as_table_alias?
+    | COLON COLON function_call   as_table_alias? // Build-in function (old syntax)
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms189463.aspx
@@ -2707,34 +2735,6 @@ select_list_elem
     | (DOLLAR IDENTITY | DOLLAR ROWGUID | expression) (AS? column_alias)?
     ;
 
-table_sources
-    : table_source (COMMA table_source)*
-    ;
-
-// https://msdn.microsoft.com/en-us/library/ms177634.aspx
-table_source
-    : table_source_item_joined
-    | LR_BRACKET table_source_item_joined RR_BRACKET
-    ;
-
-table_source_item_joined
-    : table_source_item join_part*
-    ;
-
-table_source_item
-    // column_alias_list is in conflict with deprecated form of
-    // with_table_hints which omits WITH
-    : full_table_name insert_with_table_hints? as_table_alias?
-    | rowset_function             as_table_alias?
-    | derived_table              (as_table_alias /*column_alias_list?*/)?
-    | change_table                as_table_alias
-    | function_call               as_table_alias?
-    | LOCAL_ID                    as_table_alias?
-    | LOCAL_ID DOT function_call (as_table_alias /*column_alias_list?*/)?
-    | open_xml
-    | COLON COLON function_call       as_table_alias? // Build-in function (old syntax)
-    ;
-
 // https://docs.microsoft.com/en-us/sql/t-sql/functions/openxml-transact-sql
 open_xml
     : OPENXML LR_BRACKET expression COMMA expression (COMMA expression)? RR_BRACKET
@@ -2751,19 +2751,6 @@ column_declaration
 
 change_table
     : CHANGETABLE LR_BRACKET CHANGES table_name COMMA (NULL | DECIMAL | LOCAL_ID) RR_BRACKET
-    ;
-
-// https://msdn.microsoft.com/en-us/library/ms191472.aspx
-join_part
-    // https://msdn.microsoft.com/en-us/library/ms173815(v=sql.120).aspx
-    : (INNER? |
-       join_type=(LEFT | RIGHT | FULL) OUTER?) (join_hint=(LOOP | HASH | MERGE | REMOTE))?
-       JOIN table_source ON search_condition
-    | CROSS JOIN table_source_item
-    | CROSS APPLY table_source_item
-    | OUTER APPLY table_source_item
-    | PIVOT LR_BRACKET aggregate_windowed_function FOR full_column_name IN column_alias_list RR_BRACKET as_table_alias
-    | UNPIVOT LR_BRACKET expression FOR full_column_name IN LR_BRACKET full_column_name_list RR_BRACKET RR_BRACKET as_table_alias
     ;
 
 full_column_name_list
@@ -2786,9 +2773,7 @@ bulk_option
     ;
 
 derived_table
-    : select_statement
-    | table_value_constructor
-    | LR_BRACKET table_value_constructor RR_BRACKET
+    : LR_BRACKET select_statement RR_BRACKET
     ;
 
 function_call
@@ -2864,7 +2849,7 @@ switch_search_condition_section
     ;
 
 as_table_alias
-    : AS? id with_table_hints?
+    : AS? id column_alias_list?
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms187373.aspx

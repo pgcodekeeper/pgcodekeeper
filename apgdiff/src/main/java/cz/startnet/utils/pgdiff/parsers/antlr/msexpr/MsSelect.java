@@ -1,18 +1,17 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.msexpr;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_itemContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.As_table_aliasContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Derived_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ExpressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Expression_listContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.From_itemContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.From_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Full_table_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Function_callContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Join_partContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Open_xmlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Order_by_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Order_by_expressionContext;
@@ -21,10 +20,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Search_conditionContext
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Select_list_elemContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Select_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Select_stmt_no_parensContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_sourceContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_source_itemContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_source_item_joinedContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_sourcesContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_value_constructorContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Top_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.With_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.MsSelectOps;
@@ -57,8 +53,8 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
     }
 
     @Override
-    protected Entry<String, GenericColumn> findReferenceInNmspc(String schema, String name, String column) {
-        return !inFrom || lateralAllowed ? super.findReferenceInNmspc(schema, name, column) : null;
+    protected Entry<String, GenericColumn> findReferenceInNmspc(String schema, String name) {
+        return !inFrom || lateralAllowed ? super.findReferenceInNmspc(schema, name) : null;
     }
 
     @Override
@@ -92,63 +88,13 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
             ret = new MsSelect(this).selectOps(selectOps.selectOps(0));
             new MsSelect(this).selectOps(selectOps.selectOps(1));
         } else if ((query = selectOps.querySpecification()) != null) {
-            // from defines the namespace so it goes before everything else
-            if (query.FROM() != null) {
-                boolean oldFrom = inFrom;
-                try {
-                    inFrom = true;
-                    Table_sourcesContext sources = query.table_sources();
-                    if (sources != null) {
-                        for (Table_sourceContext ctx : sources.table_source()) {
-                            source(ctx);
-                        }
-                    }
-                } finally {
-                    inFrom = oldFrom;
+            Table_value_constructorContext values = query.table_value_constructor();
+            if (values != null) {
+                for (Expression_listContext list : values.expression_list()) {
+                    new MsValueExpr(this).expressionList(list);
                 }
-            }
-
-            ret = new ArrayList<>();
-            MsValueExpr vex = new MsValueExpr(this);
-            for (Select_list_elemContext target : query.select_list().select_list_elem()) {
-                ExpressionContext exp = target.expression();
-                if (exp != null) {
-                    /*String column =*/ vex.analyze(exp);
-                    /*ret.add(target.column_alias() == null ? column : target.column_alias().getText());*/
-                }
-            }
-
-            // TODO select into
-            // https://msdn.microsoft.com/en-us/library/ms188029.aspx
-
-            if (query.HAVING() != null || query.WHERE() != null) {
-                for (Search_conditionContext search : query.search_condition()) {
-                    vex.search(search);
-                }
-            }
-
-            if (query.GROUP() != null) {
-                for (ExpressionContext exp : query.expression()) {
-                    vex.analyze(exp);
-                }
-            }
-
-            Top_clauseContext tc = query.top_clause();
-            if (tc != null) {
-                ExpressionContext exp = tc.top_count().expression();
-                if (exp != null) {
-                    vex.analyze(exp);
-                }
-            }
-
-            Order_by_clauseContext order = query.order_by_clause();
-            if (order != null) {
-                for (Order_by_expressionContext orderExp : order.order_by_expression()) {
-                    vex.analyze(orderExp.expression());
-                }
-                for (ExpressionContext exp : order.expression()) {
-                    vex.analyze(exp);
-                }
+            } else {
+                select(query, ret);
             }
         } else {
             Log.log(Log.LOG_WARNING, "No alternative in SelectOps!");
@@ -156,37 +102,125 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
         return ret;
     }
 
-    private void source(Table_sourceContext sourceCtx) {
-        Table_source_item_joinedContext source = sourceCtx.table_source_item_joined();
-        // first of all JOIN?
-        from(source.table_source_item());
-        for (Join_partContext join : source.join_part()) {
-            join(join);
-        }
-    }
-
-    private void join(Join_partContext join) {
-        Table_sourceContext source = join.table_source();
-        Table_source_itemContext item;
+    private void select(Query_specificationContext query, List<String> ret) {
         MsValueExpr vex = new MsValueExpr(this);
 
-        if (source != null) {
-            source(source);
-            vex.search(join.search_condition());
-        } else if ((item = join.table_source_item()) != null) {
-            from(item);
-        } else if (join.PIVOT() != null) {
-            vex.aggregate(join.aggregate_windowed_function());
-            addReference(join.as_table_alias().id().getText(), null);
-        } else if (join.UNPIVOT() != null) {
-            vex.analyze(join.expression());
-            addReference(join.as_table_alias().id().getText(), null);
-        } else {
-            Log.log(Log.LOG_WARNING, "No alternative in join!");
+        // from defines the namespace so it goes before everything else
+        if (query.FROM() != null) {
+            boolean oldFrom = inFrom;
+            try {
+                inFrom = true;
+                if (query.FROM() != null) {
+                    for (From_itemContext item : query.from_item()) {
+                        from(item);
+                    }
+                }
+            } finally {
+                inFrom = oldFrom;
+            }
+        }
+
+        for (Select_list_elemContext target : query.select_list().select_list_elem()) {
+            ExpressionContext exp = target.expression();
+            if (exp != null) {
+                /*String column =*/ vex.analyze(exp);
+                /*ret.add(target.column_alias() == null ? column : target.column_alias().getText());*/
+            }
+        }
+
+        // TODO select into
+        // https://msdn.microsoft.com/en-us/library/ms188029.aspx
+
+        if (query.HAVING() != null || query.WHERE() != null) {
+            for (Search_conditionContext search : query.search_condition()) {
+                vex.search(search);
+            }
+        }
+
+        if (query.GROUP() != null) {
+            for (ExpressionContext exp : query.expression()) {
+                vex.analyze(exp);
+            }
+        }
+
+        Top_clauseContext tc = query.top_clause();
+        if (tc != null) {
+            ExpressionContext exp = tc.top_count().expression();
+            if (exp != null) {
+                vex.analyze(exp);
+            }
+        }
+
+        Order_by_clauseContext order = query.order_by_clause();
+        if (order != null) {
+            for (Order_by_expressionContext orderExp : order.order_by_expression()) {
+                vex.analyze(orderExp.expression());
+            }
+
+            for (ExpressionContext exp : order.expression()) {
+                vex.analyze(exp);
+            }
         }
     }
 
-    private void from(Table_source_itemContext item) {
+    private void from(From_itemContext item) {
+        From_primaryContext primary;
+
+        MsValueExpr vex = new MsValueExpr(this);
+
+        if (item.LR_BRACKET() != null) {
+            As_table_aliasContext joinAlias = item.as_table_alias();
+            if (joinAlias != null) {
+                // we simplify this case by analyzing joined ranges in an isolated scope
+                // this way we get dependencies and don't pollute this scope with names hidden by the join alias
+                // the only name this form of FROM clause exposes is the join alias
+
+                // consequence of this method: no way to connect column references with the tables inside the join
+                // that would require analyzing the table schemas and actually "performing" the join
+                MsSelect fromProcessor = new MsSelect(this);
+                fromProcessor.inFrom = true;
+                fromProcessor.from(item.from_item(0));
+                addReference(joinAlias.id().getText(), null);
+            } else {
+                from(item.from_item(0));
+            }
+        } else if (item.PIVOT() != null) {
+            vex.aggregate(item.aggregate_windowed_function());
+            addReference(item.as_table_alias().id().getText(), null);
+            from(item.from_item(0));
+        } else if (item.UNPIVOT() != null) {
+            vex.analyze(item.expression());
+            addReference(item.as_table_alias().id().getText(), null);
+            from(item.from_item(0));
+        } else if (item.JOIN() != null || item.APPLY() != null) {
+            from(item.from_item(0));
+            from(item.from_item(1));
+
+            if (item.ON() != null) {
+                boolean oldLateral = lateralAllowed;
+                // technically incorrect simplification
+                // joinOn expr only does not have access to anything in this FROM
+                // except JOIN operand subtrees
+                // but since we're not doing expression validity checks
+                // we pretend that joinOn has access to everything
+                // that a usual LATERAL expr has access to
+                // this greatly simplifies analysis logic here
+                try {
+                    lateralAllowed = true;
+                    MsValueExpr vexOn = new MsValueExpr(this);
+                    vexOn.search(item.search_condition());
+                } finally {
+                    lateralAllowed = oldLateral;
+                }
+            }
+        } else if ((primary = item.from_primary()) != null) {
+            primary(primary);
+        } else {
+            Log.log(Log.LOG_WARNING, "No alternative in from_item!");
+        }
+    }
+
+    private void primary(From_primaryContext item) {
         Function_callContext call = item.function_call();
         As_table_aliasContext alias = item.as_table_alias();
         Derived_tableContext der;
@@ -211,22 +245,17 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
             for (ExpressionContext exp : xml.expression()) {
                 vex.analyze(exp);
             }
-        } else if ((der = item.derived_table()) != null) {
-            Select_statementContext sel = der.select_statement();
-            if (sel != null) {
-                new MsSelect(this).analyze(sel);
-            } else {
-                for (Expression_listContext list : der.table_value_constructor().expression_list()) {
-                    vex.expressionList(list);
-                }
-            }
             if (alias != null) {
                 addReference(alias.id().getText(), null);
             }
+        } else if ((der = item.derived_table()) != null) {
+            new MsSelect(this).analyze(der.select_statement());
+            addReference(alias.id().getText(), null);
         } else if ((table = item.full_table_name()) != null) {
             addNameReference(table, alias);
         } else if (alias != null) {
             addReference(alias.id().getText(), null);
         }
+        //change_table
     }
 }

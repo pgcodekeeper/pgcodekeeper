@@ -50,8 +50,8 @@ public abstract class MsAbstractExpr {
      *          and is not a reference to external table.<br>
      *          null if the name is not found
      */
-    protected Entry<String, GenericColumn> findReference(String schema, String name, String column) {
-        return parent == null ? null : parent.findReference(schema, name, column);
+    protected Entry<String, GenericColumn> findReference(String schema, String name) {
+        return parent == null ? null : parent.findReference(schema, name);
     }
 
     protected GenericColumn addObjectDepcy(Full_table_nameContext tableName, DbObjType type) {
