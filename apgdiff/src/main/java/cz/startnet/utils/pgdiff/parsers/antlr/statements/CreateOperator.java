@@ -79,7 +79,7 @@ public class CreateOperator extends ParserAbstract {
             } else if (option.RESTRICT() != null) {
                 oper.setRestrict(option.restr_name.getText());
             } else if (option.JOIN() != null) {
-                oper.setRestrict(option.join_name.getText());
+                oper.setJoin(option.join_name.getText());
             }
         }
 
