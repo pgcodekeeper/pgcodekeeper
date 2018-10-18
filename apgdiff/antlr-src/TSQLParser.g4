@@ -2632,7 +2632,7 @@ query_specification
     ;
 
 from_item
-    : LR_BRACKET from_item RR_BRACKET as_table_alias?
+    : LR_BRACKET sub_item=from_item RR_BRACKET as_table_alias?
     | from_item (INNER? |
        join_type=(LEFT | RIGHT | FULL) OUTER?) (join_hint=(LOOP | HASH | MERGE | REMOTE))?
        JOIN from_item ON search_condition

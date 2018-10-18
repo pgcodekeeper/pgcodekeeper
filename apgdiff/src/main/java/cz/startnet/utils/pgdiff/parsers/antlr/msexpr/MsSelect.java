@@ -168,7 +168,7 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
 
         MsValueExpr vex = new MsValueExpr(this);
 
-        if (item.LR_BRACKET() != null) {
+        if (item.sub_item != null) {
             As_table_aliasContext joinAlias = item.as_table_alias();
             if (joinAlias != null) {
                 // we simplify this case by analyzing joined ranges in an isolated scope
@@ -179,10 +179,10 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
                 // that would require analyzing the table schemas and actually "performing" the join
                 MsSelect fromProcessor = new MsSelect(this);
                 fromProcessor.inFrom = true;
-                fromProcessor.from(item.from_item(0));
+                fromProcessor.from(item.sub_item);
                 addReference(joinAlias.id().getText(), null);
             } else {
-                from(item.from_item(0));
+                from(item.sub_item);
             }
         } else if (item.PIVOT() != null) {
             vex.aggregate(item.aggregate_windowed_function());
