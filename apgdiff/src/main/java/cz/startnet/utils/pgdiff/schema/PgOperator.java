@@ -100,7 +100,11 @@ public class PgOperator extends PgStatementWithSearchPath {
 
     public StringBuilder appendOperatorSignature(StringBuilder sb) {
         sb.append(getBareName());
-        sb.append(" (");
+        return appendOperatorArgs(sb);
+    }
+
+    public StringBuilder appendOperatorArgs(StringBuilder sb) {
+        sb.append('(');
         sb.append(leftArg == null ? "NONE" : leftArg);
         sb.append(", ");
         sb.append(rightArg == null ? "NONE" : rightArg);
@@ -143,8 +147,8 @@ public class PgOperator extends PgStatementWithSearchPath {
         } else {
             equals = Objects.equals(name, oper.getBareName())
                     && Objects.equals(procedure, oper.getProcedure())
-                    && leftArg.equals(oper.getLeftArg())
-                    && rightArg.equals(oper.getRightArg())
+                    && Objects.equals(leftArg, oper.getLeftArg())
+                    && Objects.equals(rightArg, oper.getRightArg())
                     && Objects.equals(commutator, oper.getCommutator())
                     && Objects.equals(negator, oper.getNegator())
                     && isMerges == oper.isMerges()

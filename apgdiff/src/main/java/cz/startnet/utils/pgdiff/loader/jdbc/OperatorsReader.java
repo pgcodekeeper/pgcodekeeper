@@ -18,9 +18,9 @@ public class OperatorsReader extends JdbcReader {
 
     @Override
     protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException {
-        String schemaName = schema.getName();
+        String operSchemaName = schema.getName();
         String operName = res.getString("name");
-        loader.setCurrentObject(new GenericColumn(schemaName, operName, DbObjType.OPERATOR));
+        loader.setCurrentObject(new GenericColumn(operSchemaName, operName, DbObjType.OPERATOR));
         PgOperator oper = new PgOperator(operName, "");
 
         // OWNER
@@ -32,25 +32,27 @@ public class OperatorsReader extends JdbcReader {
             oper.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
 
-        String procName = res.getString("procedure");
-        String procSchema = res.getString("procedure_nsp");
-        oper.setProcedure(new StringBuilder(PgDiffUtils.getQuotedName(procSchema))
-                .append('.').append(PgDiffUtils.getQuotedName(procName)).toString());
-        oper.addDep(new GenericColumn(procSchema, procName, DbObjType.FUNCTION));
-
         long leftArgType = res.getLong("leftArg");
         if (leftArgType > 0) {
             JdbcType leftType = loader.cachedTypesByOid.get(leftArgType);
-            oper.setLeftArg(leftType.getFullName(schemaName));
+            oper.setLeftArg(leftType.getFullName(operSchemaName));
             leftType.addTypeDepcy(oper);
         }
 
         long rightArgType = res.getLong("rightArg");
         if (rightArgType > 0) {
             JdbcType rightType = loader.cachedTypesByOid.get(rightArgType);
-            oper.setRightArg(rightType.getFullName(schemaName));
+            oper.setRightArg(rightType.getFullName(operSchemaName));
             rightType.addTypeDepcy(oper);
         }
+
+        String procFuncName = res.getString("procedure");
+        String procFuncSchemaName = res.getString("procedure_nsp");
+        oper.setProcedure(new StringBuilder(PgDiffUtils.getQuotedName(procFuncSchemaName))
+                .append('.').append(PgDiffUtils.getQuotedName(procFuncName)).toString());
+        oper.addDep(new GenericColumn(procFuncSchemaName,
+                procFuncName + oper.appendOperatorArgs(new StringBuilder()).toString(),
+                DbObjType.FUNCTION));
 
         String commutator = res.getString("commutator");
         if (comment != null) {

@@ -31,26 +31,28 @@ public class CreateOperator extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         Operator_nameContext operNameCtx = ctx.name;
-        AbstractSchema schema = getSchemaSafe(operNameCtx, db.getDefaultSchema(), db);
+        AbstractSchema operSchema = getSchemaSafe(operNameCtx, db.getDefaultSchema(), db);
+        String operSchemaName = operSchema.getName();
         PgOperator oper = new PgOperator(operNameCtx.operator.getText(),
                 getFullCtxText(ctx.getParent()));
+        String procFuncSchemaName = null;
+        String procFuncName = null;
         for (Operator_optionContext option : ctx.operator_option()) {
             if (option.PROCEDURE() != null) {
                 Schema_qualified_nameContext procFuncNameCtx = option.func_name;
                 List<IdentifierContext> ids = procFuncNameCtx.identifier();
-                String schemaName = QNameParser.getSchemaName(ids, schema.getName());
-                String procName = QNameParser.getFirstName(ids);
-                oper.setProcedure(PgDiffUtils.getQuotedName(schemaName) + '.'
-                        + PgDiffUtils.getQuotedName(procName));
-                oper.addDep(new GenericColumn(schemaName, procName, DbObjType.FUNCTION));
+                procFuncSchemaName = QNameParser.getSchemaName(ids, operSchemaName);
+                procFuncName = QNameParser.getFirstName(ids);
+                oper.setProcedure(PgDiffUtils.getQuotedName(procFuncSchemaName) + '.'
+                        + PgDiffUtils.getQuotedName(procFuncName));
             } else if (option.LEFTARG() != null) {
                 Data_typeContext leftArgTypeCtx = option.type;
                 oper.setLeftArg(leftArgTypeCtx.getText());
-                addTypeAsDepcy(leftArgTypeCtx, oper, schema.getName());
+                addTypeAsDepcy(leftArgTypeCtx, oper, operSchemaName);
             } else if (option.RIGHTARG() != null) {
                 Data_typeContext rightArgTypeCtx = option.type;
                 oper.setRightArg(rightArgTypeCtx.getText());
-                addTypeAsDepcy(rightArgTypeCtx, oper, schema.getName());
+                addTypeAsDepcy(rightArgTypeCtx, oper, operSchemaName);
             } else if (option.COMMUTATOR() != null || option.NEGATOR() != null) {
                 OpContext comutNameCtx = option.addition_oper_name;
                 IdentifierContext schemaNameCxt = comutNameCtx.identifier();
@@ -81,9 +83,14 @@ public class CreateOperator extends ParserAbstract {
             }
         }
 
-        schema.addOperator(oper);
+        oper.addDep(new GenericColumn(procFuncSchemaName,
+                procFuncName + oper.appendOperatorArgs(new StringBuilder()).toString(),
+                DbObjType.FUNCTION));
+
+        operSchema.addOperator(oper);
         return oper;
     }
+
 
     public static AbstractSchema getSchemaSafe(Operator_nameContext operNameCtx,
             AbstractSchema defaultSchema, PgDatabase db) {
