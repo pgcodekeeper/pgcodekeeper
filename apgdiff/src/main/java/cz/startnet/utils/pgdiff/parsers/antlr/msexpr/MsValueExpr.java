@@ -26,6 +26,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Sequence_callContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Switch_search_condition_sectionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Switch_sectionContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsValueExpr extends MsAbstractExpr {
 
@@ -59,7 +60,7 @@ public class MsValueExpr extends MsAbstractExpr {
         } else if ((de = exp.date_expression()) != null) {
             analyze(de.expression());
         } else if ((sc = exp.sequence_call()) != null) {
-            addSequenceDepcy(sc.qualified_name());
+            addObjectDepcy(sc.qualified_name(), DbObjType.SEQUENCE);
         } else if ((fc = exp.function_call()) != null) {
             functionCall(fc);
             objectExp(exp.object_expression());
@@ -174,7 +175,7 @@ public class MsValueExpr extends MsAbstractExpr {
     private GenericColumn function(Scalar_function_nameContext sfn) {
         Qualified_nameContext fullName = sfn.qualified_name();
         if (fullName != null) {
-            return addFunctionDepcy(fullName);
+            return addObjectDepcy(fullName, DbObjType.FUNCTION);
         }
         return null;
     }

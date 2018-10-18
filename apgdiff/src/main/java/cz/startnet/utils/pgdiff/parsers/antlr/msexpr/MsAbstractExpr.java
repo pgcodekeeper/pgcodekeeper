@@ -52,9 +52,9 @@ public abstract class MsAbstractExpr {
         return parent == null ? null : parent.findReference(schema, name);
     }
 
-    protected GenericColumn addObjectDepcy(Qualified_nameContext tableName, DbObjType type) {
-        String relationName = tableName.name.getText();
-        IdContext schemaCtx = tableName.schema;
+    protected GenericColumn addObjectDepcy(Qualified_nameContext qualifiedName, DbObjType type) {
+        String relationName = qualifiedName.name.getText();
+        IdContext schemaCtx = qualifiedName.schema;
         String schemaName = schemaCtx == null ? schema : schemaCtx.getText();
         GenericColumn depcy = new GenericColumn(schemaName, relationName, type);
         depcies.add(depcy);
@@ -79,20 +79,5 @@ public abstract class MsAbstractExpr {
         IdContext schemaCtx = tableName.schema;
         String schemaName = schemaCtx == null ? schema : schemaCtx.getText();
         depcies.add(new GenericColumn(schemaName, relationName, colName, DbObjType.COLUMN));
-    }
-
-    protected GenericColumn addFunctionDepcy(Qualified_nameContext fullName) {
-        String functionName = fullName.name.getText();
-        IdContext schemaCtx = fullName.schema;
-        String schemaName = schemaCtx == null ? schema : schemaCtx.getText();
-        GenericColumn depcy = new GenericColumn(schemaName, functionName, DbObjType.FUNCTION);
-        depcies.add(depcy);
-        return depcy;
-    }
-
-    protected void addSequenceDepcy(Qualified_nameContext name) {
-        IdContext schemaCtx = name.schema;
-        String schemaName = schemaCtx == null ? schema : schemaCtx.getText();
-        depcies.add(new GenericColumn(schemaName, name.name.getText(), DbObjType.SEQUENCE));
     }
 }
