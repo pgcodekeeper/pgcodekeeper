@@ -230,6 +230,10 @@ public class ModelExporter extends AbstractModelExporter {
                 .stream().map(funcOrOper -> (PgStatement) funcOrOper).collect(Collectors.toList());
     }
 
+    private PgStatement getFuncOrOper(AbstractSchema schema, String name, boolean isFunc) {
+        return isFunc ? schema.getFunction(name) : schema.getOperator(name);
+    }
+
     private void processFuncOrOper(TreeElement el, PgStatement st) throws IOException {
         TreeElement elParent = el.getParent();
         if (elParent.getSide() == DiffSide.LEFT && elParent.isSelected()) {
@@ -269,10 +273,9 @@ public class ModelExporter extends AbstractModelExporter {
             }
 
             // final required functionOrOperator state
-            AbstractSchema defSch = elFuncOrOper.getSide() == DiffSide.LEFT ?
-                    oldParentSchema : newParentSchema;
             String elName = elFuncOrOper.getName();
-            PgStatement funcOperPrimary = isFunc ? defSch.getFunction(elName) : defSch.getOperator(elName);
+            PgStatement funcOperPrimary = getFuncOrOper(elFuncOrOper.getSide() == DiffSide.LEFT ?
+                    oldParentSchema : newParentSchema, elName, isFunc);
             if (funcOperPrimary == null || !funcOperPrimary.getBareName().equals(st.getBareName())
                     || !funcOperPrimary.getParent().getName().equals(elFuncOrOper.getParent().getName())) {
                 continue;
@@ -287,7 +290,7 @@ public class ModelExporter extends AbstractModelExporter {
                 break;
             case BOTH:
                 funcOrOpersToDump.set(
-                        funcOrOpersToDump.indexOf(oldParentSchema.getOperator(elFuncOrOper.getName())),
+                        funcOrOpersToDump.indexOf(getFuncOrOper(oldParentSchema, elName, isFunc)),
                         funcOperPrimary);
                 break;
             }
