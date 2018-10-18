@@ -23,9 +23,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_unique_prkeyContex
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_name_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraint_bodyContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
@@ -270,10 +270,10 @@ public abstract class TableAbstract extends ParserAbstract {
         con.setUnique(body.UNIQUE() != null);
 
         if (body.REFERENCES() != null) {
-            Table_nameContext ref = body.table_name();
+            Qualified_nameContext ref = body.qualified_name();
             IdContext schCtx = ref.schema;
             String fschema = schCtx == null ? getDefSchemaName() : schCtx.getText();
-            String ftable = ref.table.getText();
+            String ftable = ref.name.getText();
 
             GenericColumn ftableRef = new GenericColumn(fschema, ftable, DbObjType.TABLE);
             con.setForeignTable(ftableRef);

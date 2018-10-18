@@ -26,9 +26,9 @@ public class CreateMsIndex extends ParserAbstract {
 
     @Override
     public PgStatement getObject() {
-        IdContext schemaCtx = ctx.table_name().schema;
+        IdContext schemaCtx = ctx.qualified_name().schema;
         AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
-        String tableName = ctx.table_name().table.getText();
+        String tableName = ctx.qualified_name().name.getText();
         String name = ctx.name.getText();
         AbstractIndex ind = new MsIndex(name, getFullCtxText(ctx.getParent()));
         ind.setTableName(tableName);
@@ -38,7 +38,7 @@ public class CreateMsIndex extends ParserAbstract {
 
         parseIndex(ctx.index_rest(), ind);
 
-        getSafe(schema::getTable, ctx.table_name().table).addIndex(ind);
+        getSafe(schema::getTable, ctx.qualified_name().name).addIndex(ind);
         return ind;
     }
 

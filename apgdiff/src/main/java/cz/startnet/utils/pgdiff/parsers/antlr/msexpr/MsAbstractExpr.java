@@ -4,10 +4,8 @@ import java.util.LinkedHashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Full_table_nameContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Func_proc_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -54,8 +52,8 @@ public abstract class MsAbstractExpr {
         return parent == null ? null : parent.findReference(schema, name);
     }
 
-    protected GenericColumn addObjectDepcy(Full_table_nameContext tableName, DbObjType type) {
-        String relationName = tableName.table.getText();
+    protected GenericColumn addObjectDepcy(Qualified_nameContext tableName, DbObjType type) {
+        String relationName = tableName.name.getText();
         IdContext schemaCtx = tableName.schema;
         String schemaName = schemaCtx == null ? schema : schemaCtx.getText();
         GenericColumn depcy = new GenericColumn(schemaName, relationName, type);
@@ -76,15 +74,15 @@ public abstract class MsAbstractExpr {
         }
     }*/
 
-    protected void addColumnDepcy(Table_nameContext tableName, String colName) {
-        String relationName = tableName.table.getText();
+    protected void addColumnDepcy(Qualified_nameContext tableName, String colName) {
+        String relationName = tableName.name.getText();
         IdContext schemaCtx = tableName.schema;
         String schemaName = schemaCtx == null ? schema : schemaCtx.getText();
         depcies.add(new GenericColumn(schemaName, relationName, colName, DbObjType.COLUMN));
     }
 
-    protected GenericColumn addFunctionDepcy(Func_proc_nameContext fullName) {
-        String functionName = fullName.procedure.getText();
+    protected GenericColumn addFunctionDepcy(Qualified_nameContext fullName) {
+        String functionName = fullName.name.getText();
         IdContext schemaCtx = fullName.schema;
         String schemaName = schemaCtx == null ? schema : schemaCtx.getText();
         GenericColumn depcy = new GenericColumn(schemaName, functionName, DbObjType.FUNCTION);
@@ -92,9 +90,9 @@ public abstract class MsAbstractExpr {
         return depcy;
     }
 
-    protected void addSequenceDepcy(Full_table_nameContext name) {
+    protected void addSequenceDepcy(Qualified_nameContext name) {
         IdContext schemaCtx = name.schema;
         String schemaName = schemaCtx == null ? schema : schemaCtx.getText();
-        depcies.add(new GenericColumn(schemaName, name.table.getText(), DbObjType.SEQUENCE));
+        depcies.add(new GenericColumn(schemaName, name.name.getText(), DbObjType.SEQUENCE));
     }
 }

@@ -11,11 +11,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ExpressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Expression_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.From_itemContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.From_primaryContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Full_table_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Function_callContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Open_xmlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Order_by_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Order_by_expressionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Query_specificationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Search_conditionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Select_list_elemContext;
@@ -134,7 +134,7 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
         }
 
         if (query.INTO() != null) {
-            addObjectDepcy(query.full_table_name(), DbObjType.TABLE);
+            addObjectDepcy(query.qualified_name(), DbObjType.TABLE);
         }
 
         // HAVING and WHERE parts
@@ -226,7 +226,7 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
         As_table_aliasContext alias = item.as_table_alias();
         Derived_tableContext der;
         Open_xmlContext xml;
-        Full_table_nameContext table;
+        Qualified_nameContext table;
 
         if (call != null) {
             boolean oldLateral = lateralAllowed;
@@ -250,7 +250,7 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
         } else if ((der = item.derived_table()) != null) {
             new MsSelect(this).analyze(der.select_statement());
             addReference(alias.id().getText(), null);
-        } else if ((table = item.full_table_name()) != null) {
+        } else if ((table = item.qualified_name()) != null) {
             addNameReference(table, alias);
         } else if (alias != null) {
             addReference(alias.id().getText(), null);

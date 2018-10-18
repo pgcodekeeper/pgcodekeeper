@@ -34,19 +34,19 @@ public class CreateMsFunction extends BatchContextProcessor {
 
     @Override
     protected ParserRuleContext getDelimiterCtx() {
-        return ctx.func_proc_name();
+        return ctx.qualified_name();
     }
 
     @Override
     public MsFunction getObject() {
-        IdContext schemaCtx = ctx.func_proc_name().schema;
+        IdContext schemaCtx = ctx.qualified_name().schema;
         AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
         return getObject(schema);
     }
 
     public MsFunction getObject(AbstractSchema schema) {
         ParserRuleContext batchCtx = ctx.getParent().getParent();
-        MsFunction function = new MsFunction(ctx.func_proc_name().procedure.getText(), getFullCtxText(batchCtx));
+        MsFunction function = new MsFunction(ctx.qualified_name().name.getText(), getFullCtxText(batchCtx));
         boolean isKeepNewlines = db.getArguments().isKeepNewlines();
         if (ctx.func_body().func_body_return().EXTERNAL() != null) {
             function.setCLR(true);

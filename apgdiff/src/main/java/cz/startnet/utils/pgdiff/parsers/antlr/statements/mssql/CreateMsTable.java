@@ -10,7 +10,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Identity_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_optionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_optionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.TableAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
@@ -40,9 +40,9 @@ public class CreateMsTable extends TableAbstract {
 
     @Override
     public PgStatement getObject() {
-        IdContext schemaCtx = ctx.table_name().schema;
+        IdContext schemaCtx = ctx.qualified_name().schema;
         AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
-        String tableName = ctx.table_name().table.getText();
+        String tableName = ctx.qualified_name().name.getText();
 
         SimpleMsTable table = new SimpleMsTable(tableName, getFullCtxText(ctx.getParent()));
 
@@ -141,10 +141,10 @@ public class CreateMsTable extends TableAbstract {
         con.setUnique(body.UNIQUE() != null);
 
         if (body.REFERENCES() != null) {
-            Table_nameContext ref = body.table_name();
+            Qualified_nameContext ref = body.qualified_name();
             IdContext schCtx = ref.schema;
             String fschema = schCtx == null ? getDefSchemaName() : schCtx.getText();
-            String ftable = ref.table.getText();
+            String ftable = ref.name.getText();
 
             GenericColumn ftableRef = new GenericColumn(fschema, ftable, DbObjType.TABLE);
             con.setForeignTable(ftableRef);

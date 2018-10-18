@@ -33,19 +33,19 @@ public class CreateMsProcedure extends BatchContextProcessor {
 
     @Override
     protected ParserRuleContext getDelimiterCtx() {
-        return ctx.func_proc_name();
+        return ctx.qualified_name();
     }
 
     @Override
     public MsProcedure getObject() {
-        IdContext schemaCtx = ctx.func_proc_name().schema;
+        IdContext schemaCtx = ctx.qualified_name().schema;
         AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
         return getObject(schema);
     }
 
     public MsProcedure getObject(AbstractSchema schema) {
         ParserRuleContext batchCtx = ctx.getParent().getParent();
-        MsProcedure procedure = new MsProcedure(ctx.func_proc_name().procedure.getText(), getFullCtxText(batchCtx));
+        MsProcedure procedure = new MsProcedure(ctx.qualified_name().name.getText(), getFullCtxText(batchCtx));
         if (ctx.proc_body().EXTERNAL() != null) {
             procedure.setCLR(true);
 

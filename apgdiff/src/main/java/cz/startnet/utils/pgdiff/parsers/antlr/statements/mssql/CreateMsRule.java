@@ -108,12 +108,12 @@ public class CreateMsRule extends ParserAbstract {
 
     private PgStatement getStatement(Object_typeContext object) {
 
-        IdContext nameCtx = object.table_name().table;
+        IdContext nameCtx = object.qualified_name().name;
         Class_typeContext type = object.class_type();
 
         PgStatement st;
         if (type == null || type.OBJECT() != null) {
-            IdContext schemaName = object.table_name().schema;
+            IdContext schemaName = object.qualified_name().schema;
             AbstractSchema schema = schemaName != null ? getSafe(db::getSchema, schemaName) : db.getDefaultSchema();
             st = getSafe(name -> schema.getChildren().filter(
                     e -> e.getBareName().equals(name))

@@ -8,13 +8,13 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Date_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ExpressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Expression_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Full_column_nameContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Func_proc_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Function_callContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Object_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Order_by_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Order_by_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Over_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.PredicateContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Ranking_windowed_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Scalar_function_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Search_conditionContext;
@@ -25,7 +25,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Select_stmt_no_parensCo
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Sequence_callContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Switch_search_condition_sectionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Switch_sectionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_nameContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 
 public class MsValueExpr extends MsAbstractExpr {
@@ -60,7 +59,7 @@ public class MsValueExpr extends MsAbstractExpr {
         } else if ((de = exp.date_expression()) != null) {
             analyze(de.expression());
         } else if ((sc = exp.sequence_call()) != null) {
-            addSequenceDepcy(sc.full_table_name());
+            addSequenceDepcy(sc.qualified_name());
         } else if ((fc = exp.function_call()) != null) {
             functionCall(fc);
             objectExp(exp.object_expression());
@@ -173,7 +172,7 @@ public class MsValueExpr extends MsAbstractExpr {
     }
 
     private GenericColumn function(Scalar_function_nameContext sfn) {
-        Func_proc_nameContext fullName = sfn.func_proc_name();
+        Qualified_nameContext fullName = sfn.qualified_name();
         if (fullName != null) {
             return addFunctionDepcy(fullName);
         }
@@ -182,7 +181,7 @@ public class MsValueExpr extends MsAbstractExpr {
 
     private void column(Full_column_nameContext fullName) {
         if (fullName != null) {
-            Table_nameContext tableName = fullName.table_name();
+            Qualified_nameContext tableName = fullName.qualified_name();
             if (tableName != null) {
                 addColumnDepcy(tableName, fullName.id().getText());
             }

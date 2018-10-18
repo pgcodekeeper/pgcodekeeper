@@ -10,7 +10,7 @@ import java.util.Set;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.As_table_aliasContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Common_table_expressionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Full_table_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.With_expressionContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import ru.taximaxim.codekeeper.apgdiff.Log;
@@ -114,8 +114,8 @@ public abstract class MsAbstractExprWithNmspc<T> extends MsAbstractExpr {
         return !exists;
     }
 
-    protected void addNameReference(Full_table_nameContext name, As_table_aliasContext alias) {
-        String firstName = name.table.getText();
+    protected void addNameReference(Qualified_nameContext name, As_table_aliasContext alias) {
+        String firstName = name.name.getText();
 
         boolean isCte = name.DOT().isEmpty() && hasCte(firstName);
         GenericColumn depcy = null;

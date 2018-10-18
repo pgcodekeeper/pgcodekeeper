@@ -402,7 +402,7 @@ drop_asymmetric_key
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-authorization-transact-sql
 alter_authorization
-    : AUTHORIZATION ON (class_type COLON COLON)? entity=full_table_name TO authorization_grantee
+    : AUTHORIZATION ON (class_type COLON COLON)? entity=qualified_name TO authorization_grantee
     ;
 
 authorization_grantee
@@ -541,7 +541,7 @@ drop_statements
         | PROC | PROCEDURE | QUEUE | REMOTE SERVICE BINDING | RESOURCE POOL | ROLE | ROUTE | RULE | SCHEMA | SEARCH PROPERTY LIST
         | SECURITY POLICY | SEQUENCE | SERVER AUDIT SPECIFICATION? | SERVER ROLE | SERVICE | STATISTICS | SYNONYM | TABLE
         | TYPE | TRIGGER | USER | VIEW | WORKLOAD GROUP | XML SCHEMA COLLECTION)
-    ( IF EXISTS )? full_table_name (COMMA full_table_name)*
+    ( IF EXISTS )? qualified_name (COMMA qualified_name)*
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/drop-event-notification-transact-sql
@@ -573,7 +573,7 @@ drop_symmetric_key
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/disable-trigger-transact-sql
 disable_trigger
-    : DISABLE TRIGGER (simple_names | ALL) ON (table_name|DATABASE|ALL SERVER)
+    : DISABLE TRIGGER (simple_names | ALL) ON (qualified_name|DATABASE|ALL SERVER)
     ;
      
 simple_names
@@ -582,16 +582,16 @@ simple_names
     
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/enable-trigger-transact-sql
 enable_trigger
-    : ENABLE TRIGGER (simple_names| ALL) ON (table_name|DATABASE|ALL SERVER)
+    : ENABLE TRIGGER (simple_names| ALL) ON (qualified_name|DATABASE|ALL SERVER)
     ;
 
 lock_table
-    : LOCK TABLE table_name IN (SHARE | EXCLUSIVE) MODE (WAIT seconds=DECIMAL | NOWAIT)? ?
+    : LOCK TABLE qualified_name IN (SHARE | EXCLUSIVE) MODE (WAIT seconds=DECIMAL | NOWAIT)? ?
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/truncate-table-transact-sql
 truncate_table
-    : TRUNCATE TABLE full_table_name ( WITH LR_BRACKET PARTITIONS LR_BRACKET (COMMA? (DECIMAL|DECIMAL TO DECIMAL) )+ RR_BRACKET RR_BRACKET )?
+    : TRUNCATE TABLE qualified_name ( WITH LR_BRACKET PARTITIONS LR_BRACKET (COMMA? (DECIMAL|DECIMAL TO DECIMAL) )+ RR_BRACKET RR_BRACKET )?
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-column-master-key-transact-sql
@@ -734,7 +734,7 @@ create_external_resource_pool
     ;
 
 create_external_table
-    : EXTERNAL TABLE table_name LR_BRACKET column_def_table_constraints RR_BRACKET
+    : EXTERNAL TABLE qualified_name LR_BRACKET column_def_table_constraints RR_BRACKET
     WITH LR_BRACKET external_table_option (COMMA external_table_option)* RR_BRACKET
     ;
 
@@ -1272,14 +1272,14 @@ alter_xml_schema_collection
     ;
 
 create_queue
-    : QUEUE (full_table_name | queue_name=id) queue_settings? (ON filegroup=id | DEFAULT)?
+    : QUEUE (qualified_name | queue_name=id) queue_settings? (ON filegroup=id | DEFAULT)?
     ;
 
 queue_settings
     : WITH (STATUS EQUAL (ON | OFF) COMMA?)? (RETENTION EQUAL (ON | OFF) COMMA?)?
     (ACTIVATION LR_BRACKET 
         ((STATUS EQUAL (ON | OFF) COMMA? )?
-        (PROCEDURE_NAME EQUAL func_proc_name COMMA?)?
+        (PROCEDURE_NAME EQUAL qualified_name COMMA?)?
         (MAX_QUEUE_READERS EQUAL max_readers=DECIMAL COMMA?)?
         (EXECUTE AS (SELF | user_name=STRING | OWNER) COMMA?)?
         | DROP)
@@ -1288,7 +1288,7 @@ queue_settings
     ;
 
 alter_queue
-    : QUEUE (full_table_name | queue_name=id) (queue_settings | queue_action)
+    : QUEUE (qualified_name | queue_name=id) (queue_settings | queue_action)
     ;
 
 queue_action
@@ -1377,7 +1377,7 @@ insert_statement_value
 
 receive_statement
     : LR_BRACKET? RECEIVE (ALL | DISTINCT | top_clause | STAR)
-    (LOCAL_ID EQUAL expression COMMA?)* FROM full_table_name
+    (LOCAL_ID EQUAL expression COMMA?)* FROM qualified_name
     (INTO table_variable=id (WHERE where=search_condition))? RR_BRACKET?
     ;
 
@@ -1430,7 +1430,7 @@ update_statement
 // https://msdn.microsoft.com/en-us/library/ms177564.aspx
 output_clause
     : OUTPUT output_dml_list_elem (COMMA output_dml_list_elem)*
-    (INTO (LOCAL_ID | table_name) (LR_BRACKET column_name_list RR_BRACKET)? )?
+    (INTO (LOCAL_ID | qualified_name) (LR_BRACKET column_name_list RR_BRACKET)? )?
     ;
 
 output_dml_list_elem
@@ -1438,7 +1438,7 @@ output_dml_list_elem
     ;
 
 output_column_name
-    : (DELETED | INSERTED | table_name) DOT (STAR | id)
+    : (DELETED | INSERTED | qualified_name) DOT (STAR | id)
     | DOLLAR_ACTION
     ;
 
@@ -1464,11 +1464,11 @@ create_database_scoped_credential
     ;
 
 create_default
-    : DEFAULT table_name AS expression
+    : DEFAULT qualified_name AS expression
     ;
 
 alter_fulltext_index
-    : FULLTEXT INDEX ON table_name alter_fulltext_index_option
+    : FULLTEXT INDEX ON qualified_name alter_fulltext_index_option
     ;
 
 alter_fulltext_index_option
@@ -1489,7 +1489,7 @@ with_no_population
     ;
 
 create_fulltext_index
-    : FULLTEXT INDEX ON table_name fulltext_index_columns?
+    : FULLTEXT INDEX ON qualified_name fulltext_index_columns?
     KEY INDEX index_name=id 
     (ON catalog_filegroup_option)? 
     fulltext_index_options?
@@ -1521,7 +1521,7 @@ fulltext_index_option
     ;
 
 create_selective_index
-    : SELECTIVE XML INDEX name=id ON table_name LR_BRACKET id RR_BRACKET
+    : SELECTIVE XML INDEX name=id ON qualified_name LR_BRACKET id RR_BRACKET
     (WITH XMLNAMESPACES LR_BRACKET xmlnamespace_list RR_BRACKET)?
     FOR LR_BRACKET promoted_node_path_list RR_BRACKET
     index_options? 
@@ -1549,7 +1549,7 @@ string_id_local_id
     ;
 
 create_xml_index
-    : PRIMARY? XML INDEX name=id ON table_name LR_BRACKET id RR_BRACKET xml_index_using? index_options?
+    : PRIMARY? XML INDEX name=id ON qualified_name LR_BRACKET id RR_BRACKET xml_index_using? index_options?
     ;
 
 xml_index_using
@@ -1558,7 +1558,7 @@ xml_index_using
 
 // https://msdn.microsoft.com/en-us/library/ms188783.aspx
 create_index
-    : UNIQUE? clustered? INDEX name=id ON table_name index_rest;
+    : UNIQUE? clustered? INDEX name=id ON qualified_name index_rest;
 
 index_rest
     : index_sort index_where? index_options? (ON id)?
@@ -1575,7 +1575,7 @@ index_where
 
 // https://msdn.microsoft.com/en-us/library/ms187926(v=sql.120).aspx
 create_or_alter_procedure
-    : proc=(PROC | PROCEDURE) func_proc_name (SEMI DECIMAL)?
+    : proc=(PROC | PROCEDURE) qualified_name (SEMI DECIMAL)?
       (LR_BRACKET? procedure_param (COMMA procedure_param)* RR_BRACKET?)?
       (WITH procedure_option (COMMA procedure_option)*)?
       (FOR REPLICATION)? AS proc_body
@@ -1588,7 +1588,7 @@ create_or_alter_procedure
 
 create_or_alter_trigger
     : TRIGGER simple_name
-    ON (table_name | ALL SERVER | DATABASE)
+    ON (qualified_name | ALL SERVER | DATABASE)
     (WITH trigger_option (COMMA trigger_option)* )?
     (FOR | AFTER | INSTEAD OF) trigger_operation (COMMA trigger_operation)*
     with_append?
@@ -1618,7 +1618,7 @@ trigger_operation
 
 // https://msdn.microsoft.com/en-us/library/ms186755.aspx
 create_or_alter_function
-    : FUNCTION func_proc_name LR_BRACKET (procedure_param (COMMA procedure_param)*)?  RR_BRACKET
+    : FUNCTION qualified_name LR_BRACKET (procedure_param (COMMA procedure_param)*)?  RR_BRACKET
     RETURNS func_return
     func_body
     ;
@@ -1670,12 +1670,12 @@ create_statistics
     ;
 
 update_statistics
-    : UPDATE (INDEX | ALL)? STATISTICS full_table_name id?  (USING DECIMAL VALUES)?
+    : UPDATE (INDEX | ALL)? STATISTICS qualified_name id?  (USING DECIMAL VALUES)?
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms174979.aspx
 create_table
-    : TABLE table_name LR_BRACKET column_def_table_constraints COMMA? RR_BRACKET
+    : TABLE qualified_name LR_BRACKET column_def_table_constraints COMMA? RR_BRACKET
     (ON tablespace=id_or_default (LR_BRACKET partition_col_name=id RR_BRACKET)?)?
     (TEXTIMAGE_ON textimage=id_or_default)?
     (FILESTREAM_ON filestream=id_or_default)?
@@ -1713,7 +1713,7 @@ view_attribute
 
 // https://msdn.microsoft.com/en-us/library/ms190273.aspx
 alter_table
-    : TABLE name=table_name 
+    : TABLE name=qualified_name 
     (SET LR_BRACKET LOCK_ESCALATION EQUAL (AUTO | TABLE | DISABLE) RR_BRACKET
         | (WITH (CHECK | nocheck_add=NOCHECK))? ADD column_def_table_constraint
         | ALTER COLUMN column_definition
@@ -1743,7 +1743,7 @@ alter_database_scoped_credential
 // https://msdn.microsoft.com/en-us/library/bb522682.aspx
 // Runtime check.
 database_optionspec
-    :  auto_option
+    : auto_option
     | change_tracking_option
     | containment_option
     | cursor_option
@@ -1973,7 +1973,7 @@ drop_index
     ;
 
 drop_relational_or_xml_or_spatial_index
-    : index_name=id ON full_table_name
+    : index_name=id ON qualified_name
     ;
 
 drop_backward_compatible_index
@@ -2217,7 +2217,7 @@ permission
     ;
     
 object_type
-    : ON (type=class_type COLON COLON)? table_name table_columns?
+    : ON (type=class_type COLON COLON)? qualified_name table_columns?
     ;
     
 role_names
@@ -2259,7 +2259,7 @@ close_key
     ;
 
 add_signature
-    : ADD COUNTER? SIGNATURE TO (class_type COLON COLON)? full_table_name
+    : ADD COUNTER? SIGNATURE TO (class_type COLON COLON)? qualified_name
     BY cripto_list (COMMA cripto_list)*
     ;
 
@@ -2410,7 +2410,7 @@ identity_value
 column_constraint_body
     : (PRIMARY KEY | UNIQUE) clustered? index_options?
     | CHECK not_for_replication? LR_BRACKET search_condition RR_BRACKET
-    | (FOREIGN KEY)? REFERENCES table_name (LR_BRACKET id RR_BRACKET)? on_delete? on_update? not_for_replication?
+    | (FOREIGN KEY)? REFERENCES qualified_name (LR_BRACKET id RR_BRACKET)? on_delete? on_update? not_for_replication?
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms188066.aspx
@@ -2422,7 +2422,7 @@ table_constraint_body
     : (PRIMARY KEY | UNIQUE) clustered? LR_BRACKET column_name_list_with_order RR_BRACKET index_options? (ON id)?
     | CHECK not_for_replication? LR_BRACKET search_condition RR_BRACKET
     | DEFAULT expression FOR id
-    | FOREIGN KEY LR_BRACKET fk = column_name_list RR_BRACKET REFERENCES table_name (LR_BRACKET pk = column_name_list RR_BRACKET)? on_delete? on_update? not_for_replication?
+    | FOREIGN KEY LR_BRACKET fk = column_name_list RR_BRACKET REFERENCES qualified_name (LR_BRACKET pk = column_name_list RR_BRACKET)? on_delete? on_update? not_for_replication?
     ;
 
 on_delete
@@ -2488,7 +2488,7 @@ set_special
     | SET TRANSACTION ISOLATION LEVEL
       (READ UNCOMMITTED | READ COMMITTED | REPEATABLE READ | SNAPSHOT | SERIALIZABLE | DECIMAL)
     // https://msdn.microsoft.com/en-us/library/ms188059.aspx
-    | SET IDENTITY_INSERT table_name on_off
+    | SET IDENTITY_INSERT qualified_name on_off
     | SET TEXTSIZE DECIMAL
     | SET LANGUAGE (id | constant_LOCAL_ID)
     | SET STATISTICS (IO | XML | PROFILE | TIME) on_off
@@ -2536,7 +2536,7 @@ object_expression
     ;
 
 sequence_call
-    : NEXT VALUE FOR full_table_name
+    : NEXT VALUE FOR qualified_name
     ;
 
 date_expression
@@ -2621,7 +2621,7 @@ query_specification
     : SELECT set_qualifier? top_clause?
     select_list
     // https://msdn.microsoft.com/en-us/library/ms188029.aspx
-    (INTO full_table_name)?
+    (INTO qualified_name)?
     (FROM from_item (COMMA from_item)*)?
     (WHERE where=search_condition)?
     // https://msdn.microsoft.com/en-us/library/ms177673.aspx
@@ -2644,7 +2644,7 @@ from_item
     ;
 
 from_primary
-    : full_table_name             as_table_alias? insert_with_table_hints?
+    : qualified_name              as_table_alias? insert_with_table_hints?
     | rowset_function             as_table_alias?
     | derived_table               as_table_alias
     | change_table                as_table_alias
@@ -2728,7 +2728,7 @@ select_list
     ;
 
 select_list_elem
-    : (table_name DOT)? STAR
+    : (qualified_name DOT)? STAR
     | (DOLLAR IDENTITY | DOLLAR ROWGUID | expression) (AS? column_alias)?
     ;
 
@@ -2747,7 +2747,7 @@ column_declaration
     ;
 
 change_table
-    : CHANGETABLE LR_BRACKET CHANGES table_name COMMA (NULL | DECIMAL | LOCAL_ID) RR_BRACKET
+    : CHANGETABLE LR_BRACKET CHANGES qualified_name COMMA (NULL | DECIMAL | LOCAL_ID) RR_BRACKET
     ;
 
 full_column_name_list
@@ -2755,7 +2755,7 @@ full_column_name_list
     ;
 
 table_name_with_hint
-    : table_name with_table_hints?
+    : qualified_name with_table_hints?
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms190312.aspx
@@ -2822,7 +2822,7 @@ value_method
     ;
 
 query_method
-    : (LOCAL_ID | ID | full_table_name) DOT (ROW DOT)? QUERY LR_BRACKET xquery=STRING RR_BRACKET
+    : (LOCAL_ID | ID | qualified_name) DOT (ROW DOT)? QUERY LR_BRACKET xquery=STRING RR_BRACKET
     ;
 
 exist_method
@@ -2976,33 +2976,23 @@ file_spec
     (FILEGROWTH EQUAL file_size COMMA?)? RR_BRACKET
     ;
 
-full_table_name
+qualified_name
     : (server=id DOT database=id DOT  schema=id   DOT
       |              database=id DOT (schema=id)? DOT
-      |                               schema=id   DOT)? table=id
-    ;
-
-table_name
-    : (database=id DOT (schema=id)? DOT | schema=id DOT)? table=id
-   // | (database=id DOT (schema=id)? DOT | schema=id DOT)? BLOCKING_HIERARCHY
+      |                               schema=id   DOT)? name=id
     ;
 
 simple_name
     : (schema=id DOT)? name=id
     ;
 
-func_proc_name
-    : (database=id DOT (schema=id)? DOT | (schema=id) DOT)? procedure=id
-    | server=id DOT database=id DOT (schema=id)? DOT procedure=id
-    ;
-
 ddl_object
-    : full_table_name
+    : qualified_name
     | LOCAL_ID
     ;
 
 full_column_name
-    : (table_name DOT)? id
+    : (qualified_name DOT)? id
     ; 
 
 column_name_list_with_order
@@ -3031,7 +3021,7 @@ null_notnull
     ;
 
 scalar_function_name
-    : func_proc_name
+    : qualified_name
     | RIGHT
     | LEFT
     | BINARY_CHECKSUM

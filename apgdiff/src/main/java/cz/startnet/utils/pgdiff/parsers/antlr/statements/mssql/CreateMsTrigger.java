@@ -30,7 +30,7 @@ public class CreateMsTrigger extends BatchContextProcessor {
 
     @Override
     protected ParserRuleContext getDelimiterCtx() {
-        return ctx.table_name();
+        return ctx.qualified_name();
     }
 
     @Override
@@ -44,12 +44,12 @@ public class CreateMsTrigger extends BatchContextProcessor {
         ParserRuleContext batchCtx = ctx.getParent().getParent();
         MsTrigger trigger = new MsTrigger(QNameParser.getFirstName(ctx.simple_name().id()),
                 getFullCtxText(batchCtx));
-        trigger.setTableName(QNameParser.getFirstName(ctx.table_name().id()));
+        trigger.setTableName(QNameParser.getFirstName(ctx.qualified_name().id()));
         trigger.setAnsiNulls(ansiNulls);
         trigger.setQuotedIdentified(quotedIdentifier);
         setSourceParts(trigger);
 
-        getSafe(schema::getTriggerContainer, QNameParser.getFirstNameCtx(ctx.table_name().id()))
+        getSafe(schema::getTriggerContainer, QNameParser.getFirstNameCtx(ctx.qualified_name().id()))
         .addTrigger(trigger);
         return trigger;
     }
