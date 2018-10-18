@@ -16,13 +16,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
-import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
-import cz.startnet.utils.pgdiff.schema.PgOperator;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -69,11 +68,8 @@ public class ModelExporter extends AbstractModelExporter {
             break;
 
         case FUNCTION:
-            processFunction(el, st);
-            break;
-
         case OPERATOR:
-            processOperator(el, st);
+            processFuncOrOper(el, st);
             break;
 
         case CONSTRAINT:
@@ -114,13 +110,9 @@ public class ModelExporter extends AbstractModelExporter {
             break;
 
         case FUNCTION:
-            createParentSchema(elParent);
-            processFunction(el, stInNew);
-            break;
-
         case OPERATOR:
             createParentSchema(elParent);
-            processOperator(el, stInNew);
+            processFuncOrOper(el, stInNew);
             break;
 
         case CONSTRAINT:
@@ -191,13 +183,9 @@ public class ModelExporter extends AbstractModelExporter {
             break;
 
         case FUNCTION:
-            createParentSchema(elParent);
-            processFunction(el, stInNew);
-            break;
-
         case OPERATOR:
             createParentSchema(elParent);
-            processOperator(el, stInNew);
+            processFuncOrOper(el, stInNew);
             break;
 
         case CONSTRAINT:
@@ -237,89 +225,32 @@ public class ModelExporter extends AbstractModelExporter {
         }
     }
 
-    private void processFunction(TreeElement el, PgStatement st) throws IOException {
-        TreeElement elParent = el.getParent();
-        if (elParent.getSide() == DiffSide.LEFT && elParent.isSelected()) {
-            // if the whole parent schema is to be deleted
-            return;
-        }
-        // delete function sql file
-        deleteStatementIfExists(st);
-
-        List<AbstractFunction> funcsToDump = new LinkedList<>();
-        AbstractSchema newParentSchema = newDb.getSchema(st.getParent().getName());
-        AbstractSchema oldParentSchema = oldDb.getSchema(st.getParent().getName());
-
-        // prepare the overloaded function list as if there are no changes
-        if (oldParentSchema != null) {
-            for (AbstractFunction oldFunc : oldParentSchema.getFunctions()) {
-                if (oldFunc.getBareName().equals(st.getBareName())) {
-                    funcsToDump.add(oldFunc);
-                }
-            }
-        }
-
-        // current element is pop()'d from the changeList before processing
-        // this is a somewhat ugly workaround
-        // this element will be removed in the iterator loop
-        changeList.push(el);
-
-        // apply changes based on the tree selection: remove LEFTs, replace BOTHs, add RIGHTs
-        Iterator<TreeElement> it = changeList.iterator();
-        while (it.hasNext()) {
-            TreeElement elFunc = it.next();
-            if (elFunc.getType() != DbObjType.FUNCTION) {
-                continue;
-            }
-            // final required function state
-            AbstractFunction funcPrimary = (elFunc.getSide() == DiffSide.LEFT ?
-                    oldParentSchema : newParentSchema).getFunction(elFunc.getName());
-            if (funcPrimary == null || !funcPrimary.getBareName().equals(st.getBareName())
-                    || !funcPrimary.getParent().getName().equals(elFunc.getParent().getName())) {
-                continue;
-            }
-
-            switch (elFunc.getSide()) {
-            case LEFT:
-                funcsToDump.remove(funcPrimary);
-                break;
-            case RIGHT:
-                funcsToDump.add(funcPrimary);
-                break;
-            case BOTH:
-                funcsToDump.set(
-                        funcsToDump.indexOf(oldParentSchema.getFunction(elFunc.getName())),
-                        funcPrimary);
-                break;
-            }
-
-            // no further actions required after this processing
-            // all overloads are processed in bulk and removed from the changes list
-            it.remove();
-        }
-
-        dumpFunctions(funcsToDump, new File(outDir, getRelativeFilePath(
-                newParentSchema == null ? oldParentSchema : newParentSchema, false)));
+    private List<PgStatement> getFuncsOrOpers(AbstractSchema schema, boolean isFunc) {
+        return (isFunc ? schema.getFunctions() : schema.getOperators())
+                .stream().map(funcOrOper -> (PgStatement) funcOrOper).collect(Collectors.toList());
     }
 
-    private void processOperator(TreeElement el, PgStatement st) throws IOException {
+    private void processFuncOrOper(TreeElement el, PgStatement st) throws IOException {
         TreeElement elParent = el.getParent();
         if (elParent.getSide() == DiffSide.LEFT && elParent.isSelected()) {
             // if the whole parent schema is to be deleted
             return;
         }
-        // delete operator sql file
+        // delete functionOrOperator sql file
         deleteStatementIfExists(st);
 
-        List<PgOperator> opersToDump = new LinkedList<>();
+        List<PgStatement> funcOrOpersToDump = new LinkedList<>();
         AbstractSchema newParentSchema = newDb.getSchema(st.getParent().getName());
         AbstractSchema oldParentSchema = oldDb.getSchema(st.getParent().getName());
 
-        // prepare the overloaded function list as if there are no changes
+        DbObjType type = st.getStatementType();
+        boolean isFunc = DbObjType.FUNCTION == type;
+
+        // prepare the overloaded functionOrOperator list as if there are no changes
         if (oldParentSchema != null) {
-            for (PgOperator oldOper : oldParentSchema.getOperators()) {
-                if (oldOper.getBareName().equals(st.getBareName())) {
-                    opersToDump.add(oldOper);
+            for (PgStatement oldFuncOrOper : getFuncsOrOpers(oldParentSchema, isFunc)) {
+                if (oldFuncOrOper.getBareName().equals(st.getBareName())) {
+                    funcOrOpersToDump.add(oldFuncOrOper);
                 }
             }
         }
@@ -332,29 +263,32 @@ public class ModelExporter extends AbstractModelExporter {
         // apply changes based on the tree selection: remove LEFTs, replace BOTHs, add RIGHTs
         Iterator<TreeElement> it = changeList.iterator();
         while (it.hasNext()) {
-            TreeElement elOper = it.next();
-            if (elOper.getType() != DbObjType.OPERATOR) {
-                continue;
-            }
-            // final required operator state
-            PgOperator operPrimary = (elOper.getSide() == DiffSide.LEFT ?
-                    oldParentSchema : newParentSchema).getOperator(elOper.getName());
-            if (operPrimary == null || !operPrimary.getBareName().equals(st.getBareName())
-                    || !operPrimary.getParent().getName().equals(elOper.getParent().getName())) {
+            TreeElement elFuncOrOper = it.next();
+            if (elFuncOrOper.getType() != type) {
                 continue;
             }
 
-            switch (elOper.getSide()) {
+            // final required functionOrOperator state
+            AbstractSchema defSch = elFuncOrOper.getSide() == DiffSide.LEFT ?
+                    oldParentSchema : newParentSchema;
+            String elName = elFuncOrOper.getName();
+            PgStatement funcOperPrimary = isFunc ? defSch.getFunction(elName) : defSch.getOperator(elName);
+            if (funcOperPrimary == null || !funcOperPrimary.getBareName().equals(st.getBareName())
+                    || !funcOperPrimary.getParent().getName().equals(elFuncOrOper.getParent().getName())) {
+                continue;
+            }
+
+            switch (elFuncOrOper.getSide()) {
             case LEFT:
-                opersToDump.remove(operPrimary);
+                funcOrOpersToDump.remove(funcOperPrimary);
                 break;
             case RIGHT:
-                opersToDump.add(operPrimary);
+                funcOrOpersToDump.add(funcOperPrimary);
                 break;
             case BOTH:
-                opersToDump.set(
-                        opersToDump.indexOf(oldParentSchema.getOperator(elOper.getName())),
-                        operPrimary);
+                funcOrOpersToDump.set(
+                        funcOrOpersToDump.indexOf(oldParentSchema.getOperator(elFuncOrOper.getName())),
+                        funcOperPrimary);
                 break;
             }
 
@@ -363,8 +297,8 @@ public class ModelExporter extends AbstractModelExporter {
             it.remove();
         }
 
-        dumpOperators(opersToDump, new File(outDir, getRelativeFilePath(
-                newParentSchema == null ? oldParentSchema : newParentSchema, false)));
+        dumpFunctionsOrOperators(funcOrOpersToDump, new File(outDir, getRelativeFilePath(
+                newParentSchema == null ? oldParentSchema : newParentSchema, false)), type);
     }
 
     @Override
@@ -453,8 +387,8 @@ public class ModelExporter extends AbstractModelExporter {
             File schemaSQL = new File(schemaDir, getExportedFilenameSql(schema));
             dumpSQL(schema.getCreationSQL(), schemaSQL);
 
-            dumpFunctions(schema.getFunctions(), schemaDir);
-            dumpOperators(schema.getOperators(), schemaDir);
+            dumpFunctionsOrOperators(getFuncsOrOpers(schema, true), schemaDir, DbObjType.FUNCTION);
+            dumpFunctionsOrOperators(getFuncsOrOpers(schema, false), schemaDir, DbObjType.OPERATOR);
             dumpObjects(schema.getSequences(), schemaDir);
             dumpObjects(schema.getTypes(), schemaDir);
             dumpObjects(schema.getDomains(), schemaDir);
@@ -470,45 +404,23 @@ public class ModelExporter extends AbstractModelExporter {
         writeProjVersion(new File(outDir.getPath(), ApgdiffConsts.FILENAME_WORKING_DIR_MARKER));
     }
 
-    private void dumpFunctions(List<AbstractFunction> funcs, File parentDir) throws IOException {
-        if (funcs.isEmpty()) {
+    private void dumpFunctionsOrOperators(List<PgStatement> funcsOrOpers,
+            File parentDir, DbObjType type) throws IOException {
+        if (funcsOrOpers.isEmpty()) {
             return;
         }
         mkdirObjects(null, parentDir.getAbsolutePath());
-        File funcDir = mkdirObjects(parentDir, "FUNCTION");
+        File funcDir = mkdirObjects(parentDir, type.name());
 
-        Map<String, StringBuilder> dumps = new HashMap<>(funcs.size());
-        for (AbstractFunction f : funcs) {
-            String fileName = getExportedFilenameSql(f);
+        Map<String, StringBuilder> dumps = new HashMap<>(funcsOrOpers.size());
+        for (PgStatement stmt : funcsOrOpers) {
+            String fileName = getExportedFilenameSql(stmt);
             StringBuilder groupedDump = dumps.get(fileName);
             if (groupedDump == null) {
-                groupedDump = new StringBuilder(getDumpSql(f));
+                groupedDump = new StringBuilder(getDumpSql(stmt));
                 dumps.put(fileName, groupedDump);
             } else {
-                groupedDump.append(GROUP_DELIMITER).append(getDumpSql(f));
-            }
-        }
-        for (Entry<String, StringBuilder> dump : dumps.entrySet()) {
-            dumpSQL(dump.getValue(), new File(funcDir, dump.getKey()));
-        }
-    }
-
-    private void dumpOperators(List<PgOperator> opers, File parentDir) throws IOException {
-        if (opers.isEmpty()) {
-            return;
-        }
-        mkdirObjects(null, parentDir.getAbsolutePath());
-        File funcDir = mkdirObjects(parentDir, "OPERATOR");
-
-        Map<String, StringBuilder> dumps = new HashMap<>(opers.size());
-        for (PgOperator o : opers) {
-            String fileName = getExportedFilenameSql(o);
-            StringBuilder groupedDump = dumps.get(fileName);
-            if (groupedDump == null) {
-                groupedDump = new StringBuilder(getDumpSql(o));
-                dumps.put(fileName, groupedDump);
-            } else {
-                groupedDump.append(GROUP_DELIMITER).append(getDumpSql(o));
+                groupedDump.append(GROUP_DELIMITER).append(getDumpSql(stmt));
             }
         }
         for (Entry<String, StringBuilder> dump : dumps.entrySet()) {
