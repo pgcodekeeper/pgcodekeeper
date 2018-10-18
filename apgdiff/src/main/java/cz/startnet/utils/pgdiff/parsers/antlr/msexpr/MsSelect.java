@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.msexpr;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
@@ -27,6 +28,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.MsSelectOps;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.MsSelectStmt;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
 
@@ -94,7 +96,7 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
                     new MsValueExpr(this).expressionList(list);
                 }
             } else {
-                select(query, ret);
+                ret = select(query);
             }
         } else {
             Log.log(Log.LOG_WARNING, "No alternative in SelectOps!");
@@ -102,9 +104,7 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
         return ret;
     }
 
-    private void select(Query_specificationContext query, List<String> ret) {
-        MsValueExpr vex = new MsValueExpr(this);
-
+    private List<String> select(Query_specificationContext query) {
         // from defines the namespace so it goes before everything else
         if (query.FROM() != null) {
             boolean oldFrom = inFrom;
@@ -120,27 +120,31 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
             }
         }
 
+        MsValueExpr vex = new MsValueExpr(this);
+        List<String> ret = new ArrayList<>();
+
         for (Select_list_elemContext target : query.select_list().select_list_elem()) {
             ExpressionContext exp = target.expression();
             if (exp != null) {
                 /*String column =*/ vex.analyze(exp);
                 /*ret.add(target.column_alias() == null ? column : target.column_alias().getText());*/
+            } else {
+                //TODO star, difficult
             }
         }
 
-        // TODO select into
-        // https://msdn.microsoft.com/en-us/library/ms188029.aspx
-
-        if (query.HAVING() != null || query.WHERE() != null) {
-            for (Search_conditionContext search : query.search_condition()) {
-                vex.search(search);
-            }
+        if (query.INTO() != null) {
+            addObjectDepcy(query.full_table_name(), DbObjType.TABLE);
         }
 
-        if (query.GROUP() != null) {
-            for (ExpressionContext exp : query.expression()) {
-                vex.analyze(exp);
-            }
+        // HAVING and WHERE parts
+        for (Search_conditionContext search : query.search_condition()) {
+            vex.search(search);
+        }
+
+        // GROUP part
+        for (ExpressionContext exp : query.expression()) {
+            vex.analyze(exp);
         }
 
         Top_clauseContext tc = query.top_clause();
@@ -161,40 +165,37 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
                 vex.analyze(exp);
             }
         }
+
+        return ret;
     }
 
     private void from(From_itemContext item) {
         From_primaryContext primary;
 
-        MsValueExpr vex = new MsValueExpr(this);
-
         if (item.sub_item != null) {
-            As_table_aliasContext joinAlias = item.as_table_alias();
-            if (joinAlias != null) {
-                // we simplify this case by analyzing joined ranges in an isolated scope
-                // this way we get dependencies and don't pollute this scope with names hidden by the join alias
-                // the only name this form of FROM clause exposes is the join alias
-
-                // consequence of this method: no way to connect column references with the tables inside the join
-                // that would require analyzing the table schemas and actually "performing" the join
-                MsSelect fromProcessor = new MsSelect(this);
-                fromProcessor.inFrom = true;
-                fromProcessor.from(item.sub_item);
-                addReference(joinAlias.id().getText(), null);
-            } else {
-                from(item.sub_item);
-            }
+            from(item.sub_item);
         } else if (item.PIVOT() != null) {
-            vex.aggregate(item.aggregate_windowed_function());
+            new MsValueExpr(this).aggregate(item.aggregate_windowed_function());
             addReference(item.as_table_alias().id().getText(), null);
             from(item.from_item(0));
+            // addColumnDepcy
         } else if (item.UNPIVOT() != null) {
-            vex.analyze(item.expression());
+            new MsValueExpr(this).analyze(item.expression());
             addReference(item.as_table_alias().id().getText(), null);
             from(item.from_item(0));
         } else if (item.JOIN() != null || item.APPLY() != null) {
             from(item.from_item(0));
-            from(item.from_item(1));
+            if (item.APPLY() != null) {
+                boolean oldLateral = lateralAllowed;
+                try {
+                    lateralAllowed = true;
+                    from(item.from_item(1));
+                } finally {
+                    lateralAllowed = oldLateral;
+                }
+            } else {
+                from(item.from_item(1));
+            }
 
             if (item.ON() != null) {
                 boolean oldLateral = lateralAllowed;
@@ -227,13 +228,11 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
         Open_xmlContext xml;
         Full_table_nameContext table;
 
-        MsValueExpr vex = new MsValueExpr(this);
-
         if (call != null) {
             boolean oldLateral = lateralAllowed;
             try {
                 lateralAllowed = true;
-                GenericColumn func = vex.functionCall(call);
+                GenericColumn func = new MsValueExpr(this).functionCall(call);
                 if (func != null) {
                     String funcAlias = alias == null ? func.table : alias.getText();
                     addReference(funcAlias, null);
@@ -243,7 +242,7 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
             }
         } else if ((xml = item.open_xml()) != null) {
             for (ExpressionContext exp : xml.expression()) {
-                vex.analyze(exp);
+                new MsValueExpr(this).analyze(exp);
             }
             if (alias != null) {
                 addReference(alias.id().getText(), null);

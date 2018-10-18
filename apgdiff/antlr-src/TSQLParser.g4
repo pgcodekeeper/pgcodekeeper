@@ -2621,7 +2621,7 @@ query_specification
     : SELECT set_qualifier? top_clause?
     select_list
     // https://msdn.microsoft.com/en-us/library/ms188029.aspx
-    (INTO table_name)?
+    (INTO full_table_name)?
     (FROM from_item (COMMA from_item)*)?
     (WHERE where=search_condition)?
     // https://msdn.microsoft.com/en-us/library/ms177673.aspx
@@ -2632,9 +2632,8 @@ query_specification
     ;
 
 from_item
-    : LR_BRACKET sub_item=from_item RR_BRACKET as_table_alias?
-    | from_item (INNER? |
-       join_type=(LEFT | RIGHT | FULL) OUTER?) (join_hint=(LOOP | HASH | MERGE | REMOTE))?
+    : LR_BRACKET sub_item=from_item RR_BRACKET
+    | from_item ((INNER | (LEFT | RIGHT | FULL) OUTER?) (LOOP | HASH | MERGE | REMOTE)?)?
        JOIN from_item ON search_condition
     | from_item CROSS JOIN from_item
     | from_item CROSS APPLY from_item
@@ -2645,8 +2644,6 @@ from_item
     ;
 
 from_primary
-     // column_alias_list is in conflict with deprecated form of
-    // with_table_hints which omits WITH
     : full_table_name             as_table_alias? insert_with_table_hints?
     | rowset_function             as_table_alias?
     | derived_table               as_table_alias
