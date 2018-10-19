@@ -95,7 +95,11 @@ public final class GenericColumn implements Serializable {
         }
 
         AbstractSchema s = db.getSchema(schema);
-        if (s == null && type != DbObjType.DATABASE && type != DbObjType.EXTENSION) {
+        if (s == null && type != DbObjType.DATABASE
+                && type != DbObjType.EXTENSION
+                && type != DbObjType.ASSEMBLY
+                && type != DbObjType.ROLE
+                && type != DbObjType.USER) {
             return null;
         }
 

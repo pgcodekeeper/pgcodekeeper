@@ -2,9 +2,9 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Disable_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Simple_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Simple_namesContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -23,16 +23,16 @@ public class DisableMsTrigger extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         Simple_namesContext triggers = ctx.simple_names();
-        Table_nameContext parent = ctx.table_name();
+        Qualified_nameContext parent = ctx.qualified_name();
         if (triggers == null || parent == null) {
             return null;
         }
 
         IdContext schemaCtx = parent.schema;
         AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
-        PgTriggerContainer cont = schema.getTable(parent.table.getText());
+        PgTriggerContainer cont = schema.getTable(parent.name.getText());
         if (cont == null) {
-            cont = getSafe(schema::getView, parent.table);
+            cont = getSafe(schema::getView, parent.name);
         }
 
         for (Simple_nameContext trigger : triggers.simple_name()) {

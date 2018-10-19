@@ -117,6 +117,12 @@ public class ValueExpr extends AbstractExpr {
 
             ret = operandsList.get(0);
             ret.setSecond(ParserAbstract.getFullCtxText(dataType));
+        } else if (vex.in() != null) {
+            Select_stmt_no_parensContext selectStmt = vex.selectStmt();
+            if (selectStmt != null) {
+                new Select(this).analyze(selectStmt);
+            }
+            ret = new Pair<>(null, TypesSetManually.BOOLEAN);
         } else if (vex.leftParen() != null && vex.rightParen() != null) {
             if (operandsList.size() == 1) {
                 ret = operandsList.get(0);
@@ -134,12 +140,6 @@ public class ValueExpr extends AbstractExpr {
             ret = operandsList.get(0);
         } else if (vex.timeZone() != null) {
             ret = operandsList.get(0);
-        } else if (vex.in() != null) {
-            Select_stmt_no_parensContext selectStmt = vex.selectStmt();
-            if (selectStmt != null) {
-                new Select(this).analyze(selectStmt);
-            }
-            ret = new Pair<>(null, TypesSetManually.BOOLEAN);
         } else if ((overlaps = vex.datetimeOverlaps()) != null) {
             for (VexContext v : overlaps.vex()) {
                 analyze(new Vex(v));

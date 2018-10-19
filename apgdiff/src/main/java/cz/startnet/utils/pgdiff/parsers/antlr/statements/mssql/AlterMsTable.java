@@ -25,7 +25,7 @@ public class AlterMsTable extends TableAbstract {
     public PgStatement getObject() {
         IdContext schemaCtx = ctx.name.schema;
         AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
-        AbstractTable table = getSafe(schema::getTable, ctx.name.table);
+        AbstractTable table = getSafe(schema::getTable, ctx.name.name);
 
         Column_def_table_constraintContext colCtx = ctx.column_def_table_constraint();
         if (colCtx != null && colCtx.table_constraint() != null) {

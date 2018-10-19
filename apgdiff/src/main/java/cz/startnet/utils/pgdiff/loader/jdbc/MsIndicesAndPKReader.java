@@ -47,18 +47,20 @@ public class MsIndicesAndPKReader extends JdbcReader {
 
         StringBuilder sb = new StringBuilder();
 
-
+        List<String> cols = new ArrayList<>();
         List<String> columns = new ArrayList<>();
         List<String> includes = new ArrayList<>();
 
         for (XmlReader col : XmlReader.readXML(res.getString("cols"))) {
             boolean isDesc = col.getBoolean("is_desc");
-            String column = MsDiffUtils.quoteName(col.getString("name")) + (isDesc ? " DESC" : "");
+            String colName = col.getString("name");
+            String column = MsDiffUtils.quoteName(colName) + (isDesc ? " DESC" : "");
 
             if (col.getBoolean("is_inc")) {
                 includes.add(column);
             } else {
                 columns.add(column);
+                cols.add(colName);
             }
         }
 
@@ -112,8 +114,10 @@ public class MsIndicesAndPKReader extends JdbcReader {
             StringBuilder definition = new StringBuilder();
             if (!isUniqueConstraint) {
                 definition.append("PRIMARY KEY ");
+                constraint.setPrimaryKey(true);
             } else if (isUnique) {
                 definition.append("UNIQUE ");
+                constraint.setUnique(true);
             }
 
             if (!isClustered) {
@@ -124,6 +128,12 @@ public class MsIndicesAndPKReader extends JdbcReader {
             definition.append(sb.toString());
 
             constraint.setDefinition(definition.toString());
+
+            if (constraint.isUnique() || constraint.isPrimaryKey()) {
+                for (String column: cols) {
+                    constraint.addColumn(column);
+                }
+            }
             t.addConstraint(constraint);
         } else {
             AbstractIndex index = new MsIndex(name, "");

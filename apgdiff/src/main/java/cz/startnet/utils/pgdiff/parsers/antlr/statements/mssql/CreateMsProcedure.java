@@ -11,8 +11,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Procedure_paramContext;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsProcedure;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsProcedure extends BatchContextProcessor {
 
@@ -31,24 +33,24 @@ public class CreateMsProcedure extends BatchContextProcessor {
 
     @Override
     protected ParserRuleContext getDelimiterCtx() {
-        return ctx.func_proc_name();
+        return ctx.qualified_name();
     }
 
     @Override
     public MsProcedure getObject() {
-        IdContext schemaCtx = ctx.func_proc_name().schema;
+        IdContext schemaCtx = ctx.qualified_name().schema;
         AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
         return getObject(schema);
     }
 
     public MsProcedure getObject(AbstractSchema schema) {
         ParserRuleContext batchCtx = ctx.getParent().getParent();
-        MsProcedure procedure = new MsProcedure(ctx.func_proc_name().procedure.getText(), getFullCtxText(batchCtx));
+        MsProcedure procedure = new MsProcedure(ctx.qualified_name().name.getText(), getFullCtxText(batchCtx));
         if (ctx.proc_body().EXTERNAL() != null) {
-            procedure.setAnsiNulls(false);
-            procedure.setQuotedIdentified(false);
             procedure.setCLR(true);
 
+            String assemblyName = ctx.proc_body().assembly_specifier().assembly_name.getText();
+            procedure.addDep(new GenericColumn(assemblyName, DbObjType.ASSEMBLY));
             fillArguments(procedure);
             procedure.setForReplication(ctx.REPLICATION() != null);
             procedure.setBody(db.getArguments(), getFullCtxText(ctx.proc_body()));

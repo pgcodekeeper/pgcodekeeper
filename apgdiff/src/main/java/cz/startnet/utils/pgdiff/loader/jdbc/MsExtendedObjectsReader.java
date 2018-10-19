@@ -33,10 +33,10 @@ public class MsExtendedObjectsReader extends JdbcReader {
         DbObjType type = "PC".equals(funcType) ? DbObjType.PROCEDURE : DbObjType.FUNCTION;
         loader.setCurrentObject(new GenericColumn(schema.getName(), name, type));
 
-        String assembly = MsDiffUtils.quoteName(res.getString("assembly"));
+        String assembly = res.getString("assembly");
         String assemblyClass = MsDiffUtils.quoteName(res.getString("assembly_class"));
         String assemblyMethod = MsDiffUtils.quoteName(res.getString("assembly_method"));
-        String body = "EXTERNAL NAME " + assembly + '.' + assemblyClass + '.' + assemblyMethod;
+        String body = "EXTERNAL NAME " + MsDiffUtils.quoteName(assembly) + '.' + assemblyClass + '.' + assemblyMethod;
         boolean nullOnNullInput = res.getBoolean("null_on_null_input");
         String executeAs = res.getString("execute_as");
         String owner = res.getString("owner");
@@ -134,6 +134,8 @@ public class MsExtendedObjectsReader extends JdbcReader {
 
         loader.setOwner(func, owner);
         func.setCLR(true);
+        func.addDep(new GenericColumn(assembly, DbObjType.ASSEMBLY));
+
         schema.addFunction(func);
         loader.setPrivileges(func, XmlReader.readXML(res.getString("acl")));
     }

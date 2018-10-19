@@ -26,7 +26,7 @@ public class AlterMsAuthorization extends ParserAbstract {
         String owner = ownerId.getText();
 
         Class_typeContext type = ctx.class_type();
-        IdContext nameCtx = ctx.entity.table;
+        IdContext nameCtx = ctx.entity.name;
 
         PgStatement st;
         if (type == null || type.OBJECT() != null) {

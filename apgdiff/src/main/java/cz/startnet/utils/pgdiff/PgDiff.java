@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.loader.FullAnalyze;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
@@ -148,7 +147,7 @@ public final class PgDiff {
         TreeElement root = DiffTree.create(oldDbFull, newDbFull, null);
         root.setAllChecked();
         return arguments.isMsSql() ? diffMsDatabaseSchemas(writer, arguments,
-                root, oldDbFull, newDbFull, ignoreList) :
+                root, oldDbFull, newDbFull, null, null, ignoreList) :
                     diffDatabaseSchemasAdditionalDepcies(writer, arguments,
                             root, oldDbFull, newDbFull, null, null, ignoreList);
     }
@@ -163,7 +162,8 @@ public final class PgDiff {
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget) {
         if (arguments.isMsSql()) {
-            return diffMsDatabaseSchemas(writer, arguments, root, oldDbFull, newDbFull, null);
+            return diffMsDatabaseSchemas(writer, arguments, root,
+                    oldDbFull, newDbFull, additionalDepciesSource, additionalDepciesTarget, null);
         }
         return diffDatabaseSchemasAdditionalDepcies(writer, arguments, root,
                 oldDbFull, newDbFull, additionalDepciesSource, additionalDepciesTarget, null);
@@ -191,6 +191,55 @@ public final class PgDiff {
         }
 
         DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull);
+        createScript(depRes, arguments, root, oldDbFull, newDbFull,
+                additionalDepciesSource, additionalDepciesTarget, ignoreList);
+
+        if (!depRes.getActions().isEmpty()) {
+            script.addStatement("SET search_path = pg_catalog;");
+        }
+        new ActionsToScriptConverter(depRes.getActions(), arguments).fillScript(script);
+        if (arguments.isAddTransaction()) {
+            script.addStatement("COMMIT TRANSACTION;");
+        }
+
+        script.printStatements(writer);
+
+        return script;
+    }
+
+    private static PgDiffScript diffMsDatabaseSchemas(PrintWriter writer,
+            PgDiffArguments arguments, TreeElement root,
+            PgDatabase oldDbFull, PgDatabase newDbFull,
+            List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
+            List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
+            IgnoreList ignoreList) {
+        PgDiffScript script = new PgDiffScript();
+
+        if (arguments.isAddTransaction()) {
+            script.addStatement("BEGIN TRANSACTION\nGO");
+        }
+
+        DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull);
+        createScript(depRes, arguments, root, oldDbFull, newDbFull,
+                additionalDepciesSource, additionalDepciesTarget, ignoreList);
+
+        new ActionsToScriptConverter(depRes.getActions(), arguments).fillScript(script);
+
+        if (arguments.isAddTransaction()) {
+            script.addStatement("COMMIT\nGO");
+        }
+
+        script.printStatements(writer);
+
+        return script;
+    }
+
+    private static void createScript(DepcyResolver depRes,
+            PgDiffArguments arguments, TreeElement root,
+            PgDatabase oldDbFull, PgDatabase newDbFull,
+            List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
+            List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
+            IgnoreList ignoreList) {
         if (additionalDepciesSource != null) {
             depRes.addCustomDepciesToOld(additionalDepciesSource);
         }
@@ -231,105 +280,8 @@ public final class PgDiff {
             }
         }
         depRes.recreateDrops();
-
-        if (!depRes.getActions().isEmpty()) {
-            script.addStatement("SET search_path = pg_catalog;");
-        }
-        new ActionsToScriptConverter(depRes.getActions(), arguments).fillScript(script);
-        if (arguments.isAddTransaction()) {
-            script.addStatement("COMMIT TRANSACTION;");
-        }
-
-        script.printStatements(writer);
-
-        return script;
     }
 
-
-    private static PgDiffScript diffMsDatabaseSchemas(PrintWriter writer,
-            PgDiffArguments arguments, TreeElement root, PgDatabase oldDbFull,
-            PgDatabase newDbFull, IgnoreList ignoreList) {
-        PgDiffScript script = new PgDiffScript();
-
-        if (arguments.isAddTransaction()) {
-            script.addStatement("BEGIN TRANSACTION\nGO");
-        }
-
-        List<String> dbNames = new ArrayList<>();
-
-        if ("db".equals(arguments.getNewSrcFormat())) {
-            dbNames.add(JdbcConnector.dbNameFromUrl(arguments.getNewSrc()));
-        }
-
-        if ("db".equals(arguments.getOldSrcFormat())) {
-            dbNames.add(JdbcConnector.dbNameFromUrl(arguments.getOldSrc()));
-        }
-
-        List<TreeElement> selected = new TreeFlattener()
-                .onlySelected()
-                .useIgnoreList(ignoreList)
-                .onlyTypes(arguments.getAllowedTypes())
-                .flatten(root);
-        //TODO----------КОСТЫЛЬ колонки добавляются как выбранные если выбрана таблица-----------
-        addColumnsAsElements(oldDbFull, newDbFull, selected);
-        // ---КОСТЫЛЬ-----------
-
-        Collections.sort(selected, new CompareTree());
-
-        for (TreeElement st : selected) {
-            switch (st.getSide()) {
-            case LEFT:
-                if (st.getType() != DbObjType.COLUMN || !isTableRecreated(st.getParent(), oldDbFull, newDbFull)) {
-                    script.addStatement(st.getPgStatement(oldDbFull).getDropSQL());
-                }
-                break;
-            case BOTH:
-                AtomicBoolean isNeedDepcies = new AtomicBoolean();
-                StringBuilder sb = new StringBuilder();
-                PgStatement oldObj = st.getPgStatement(oldDbFull);
-                PgStatement newObj = st.getPgStatement(newDbFull);
-
-                if (st.getType() == DbObjType.COLUMN && isTableRecreated(st.getParent(), oldDbFull, newDbFull)) {
-                    continue;
-                }
-
-                if (oldObj.appendAlterSQL(newObj, sb, isNeedDepcies)) {
-                    if (isNeedDepcies.get()) {
-                        script.addStatement(oldObj.getDropSQL());
-                        script.addStatement(newObj.getCreationSQL());
-                    }
-                    script.addStatement(sb.toString());
-                }
-                break;
-            case RIGHT:
-                if (st.getType() != DbObjType.COLUMN || !isTableRecreated(st.getParent(), oldDbFull, newDbFull)) {
-                    script.addStatement(st.getPgStatement(newDbFull).getCreationSQL());
-                }
-                break;
-            }
-        }
-
-        if (arguments.isAddTransaction()) {
-            script.addStatement("COMMIT\nGO");
-        }
-
-        script.printStatements(writer);
-
-        return script;
-    }
-
-    private static boolean isTableRecreated(TreeElement table, PgDatabase oldDb, PgDatabase newDb) {
-        PgStatement oldSt = table.getSide() != DiffSide.RIGHT ? table.getPgStatement(oldDb) : null;
-        PgStatement newSt = table.getSide() != DiffSide.LEFT  ? table.getPgStatement(newDb) : null;
-        if (oldSt == null || newSt == null) {
-            return true;
-        }
-
-        AtomicBoolean isRecreate = new AtomicBoolean();
-        oldSt.appendAlterSQL(newSt, new StringBuilder(), isRecreate);
-
-        return isRecreate.get();
-    }
 
     /**
      * После реализации колонок как подэлементов таблицы выпилить метод!

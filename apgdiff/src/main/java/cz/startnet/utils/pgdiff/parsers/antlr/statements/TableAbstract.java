@@ -2,8 +2,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
-import org.antlr.v4.runtime.ParserRuleContext;
-
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Check_boolean_expressionContext;
@@ -23,10 +21,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_of_type_column_def
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_unique_prkeyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_optionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Identity_valueContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_name_listContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraintContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraint_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
@@ -34,7 +33,6 @@ import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.MsConstraint;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -263,62 +261,38 @@ public abstract class TableAbstract extends ParserAbstract {
                 statement.getParent().getName(), db);
     }
 
-    protected static void fillColumn(Column_def_table_constraintContext colCtx,
-            AbstractTable table) {
-        if (colCtx.table_constraint() != null) {
-            AbstractConstraint con = getMsConstraint(colCtx.table_constraint());
-            table.addConstraint(con);
-        } else {
-            AbstractColumn col = new MsColumn(colCtx.id().getText());
-
-            if (colCtx.data_type() != null) {
-                col.setType(getFullCtxText(colCtx.data_type()));
-            } else {
-                col.setExpression(getFullCtxText(colCtx.expression()));
-            }
-
-            for (Column_optionContext option : colCtx.column_option()) {
-                if (option.SPARSE() != null) {
-                    col.setSparse(true);
-                } else if (option.COLLATE() != null) {
-                    col.setCollation(getFullCtxText(option.collate));
-                } else if (option.PERSISTED() != null) {
-                    col.setPersisted(true);
-                } else if (option.ROWGUIDCOL() != null) {
-                    col.setRowGuidCol(true);
-                } else if (option.IDENTITY() != null) {
-                    Identity_valueContext identity = option.identity_value();
-                    if (identity == null) {
-                        col.setIdentity("1", "1");
-                    } else {
-                        col.setIdentity(identity.seed.getText(), identity.increment.getText());
-                    }
-
-                    if (option.not_for_rep != null) {
-                        col.setNotForRep(true);
-                    }
-                } else if (option.NULL() != null) {
-                    col.setNullValue(option.NOT() == null);
-                } else if (option.DEFAULT() != null) {
-                    if (option.id() != null) {
-                        col.setDefaultName(option.id().getText());
-                    }
-                    col.setDefaultValue(getFullCtxText(option.expression()));
-                } else if (option.column_constraint_body() != null) {
-                    String conName = option.id() == null ? "" : getFullCtxText(option.id());
-                    AbstractConstraint con = new MsConstraint(conName, getFullCtxText(option));
-                    con.setDefinition(getFullCtxText(option.column_constraint_body()));
-                    table.addConstraint(con);
-                }
-            }
-
-            table.addColumn(col);
-        }
-    }
-
-    protected static AbstractConstraint getMsConstraint(Table_constraintContext conCtx) {
+    protected AbstractConstraint getMsConstraint(Table_constraintContext conCtx) {
         String conName = conCtx.id() == null ? "" : conCtx.id().getText();
         AbstractConstraint con = new MsConstraint(conName, getFullCtxText(conCtx));
+
+        Table_constraint_bodyContext body = conCtx.table_constraint_body();
+        con.setPrimaryKey(body.PRIMARY() != null);
+        con.setUnique(body.UNIQUE() != null);
+
+        if (body.REFERENCES() != null) {
+            Qualified_nameContext ref = body.qualified_name();
+            IdContext schCtx = ref.schema;
+            String fschema = schCtx == null ? getDefSchemaName() : schCtx.getText();
+            String ftable = ref.name.getText();
+
+            GenericColumn ftableRef = new GenericColumn(fschema, ftable, DbObjType.TABLE);
+            con.setForeignTable(ftableRef);
+            con.addDep(ftableRef);
+
+            Column_name_listContext columns = body.pk;
+            if (columns != null) {
+                for (IdContext column : columns.id()) {
+                    String col = column.getText();
+                    con.addForeignColumn(col);
+                    con.addDep(new GenericColumn(fschema, ftable, col, DbObjType.COLUMN));
+                }
+            }
+        } else if (body.column_name_list_with_order() != null) {
+            for (IdContext column : body.column_name_list_with_order().id()) {
+                con.addColumn(column.getText());
+            }
+        }
+
         con.setDefinition(getFullCtxText(conCtx.table_constraint_body()));
         return con;
     }

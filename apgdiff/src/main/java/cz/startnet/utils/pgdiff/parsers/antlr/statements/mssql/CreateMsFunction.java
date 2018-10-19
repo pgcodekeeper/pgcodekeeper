@@ -11,9 +11,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Procedure_paramContext;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsFunction;
 import cz.startnet.utils.pgdiff.schema.MsFunction.FuncTypes;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsFunction extends BatchContextProcessor {
 
@@ -32,25 +34,25 @@ public class CreateMsFunction extends BatchContextProcessor {
 
     @Override
     protected ParserRuleContext getDelimiterCtx() {
-        return ctx.func_proc_name();
+        return ctx.qualified_name();
     }
 
     @Override
     public MsFunction getObject() {
-        IdContext schemaCtx = ctx.func_proc_name().schema;
+        IdContext schemaCtx = ctx.qualified_name().schema;
         AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
         return getObject(schema);
     }
 
     public MsFunction getObject(AbstractSchema schema) {
         ParserRuleContext batchCtx = ctx.getParent().getParent();
-        MsFunction function = new MsFunction(ctx.func_proc_name().procedure.getText(), getFullCtxText(batchCtx));
+        MsFunction function = new MsFunction(ctx.qualified_name().name.getText(), getFullCtxText(batchCtx));
         boolean isKeepNewlines = db.getArguments().isKeepNewlines();
         if (ctx.func_body().func_body_return().EXTERNAL() != null) {
-            function.setAnsiNulls(false);
-            function.setQuotedIdentified(false);
             function.setCLR(true);
 
+            String assemblyName = ctx.func_body().func_body_return().assembly_specifier().assembly_name.getText();
+            function.addDep(new GenericColumn(assemblyName, DbObjType.ASSEMBLY));
             fillArguments(function);
             function.setBody(db.getArguments(), getFullCtxText(ctx.func_body()));
             String returns = getFullCtxText(ctx.func_return());
