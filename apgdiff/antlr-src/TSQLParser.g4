@@ -2747,7 +2747,15 @@ column_declaration
     ;
 
 change_table
-    : CHANGETABLE LR_BRACKET CHANGES qualified_name COMMA (NULL | DECIMAL | LOCAL_ID) RR_BRACKET
+    : CHANGETABLE LR_BRACKET 
+        (CHANGES qualified_name COMMA (NULL | DECIMAL | LOCAL_ID)
+        | VERSION qualified_name COMMA primary_key_values) 
+    RR_BRACKET
+    ;
+
+primary_key_values
+    : LR_BRACKET full_column_name_list RR_BRACKET COMMA 
+    LR_BRACKET expression_list RR_BRACKET
     ;
 
 full_column_name_list
@@ -2914,7 +2922,7 @@ analytic_windowed_function
     ;
 
 all_distinct_expression
-    : (ALL | DISTINCT) expression
+    : (ALL | DISTINCT)? expression
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms189461.aspx
@@ -3718,6 +3726,7 @@ simple_id
     | VAR
     | VARP
     | VERBOSELOGGING
+    | VERSION
     | VIEW_METADATA
     | VIEWS
     | VISIBILITY

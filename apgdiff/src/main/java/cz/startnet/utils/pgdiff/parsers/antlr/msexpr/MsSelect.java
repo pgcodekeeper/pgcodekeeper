@@ -6,15 +6,18 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.As_table_aliasContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Change_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Derived_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ExpressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Expression_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.From_itemContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.From_primaryContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Full_column_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Function_callContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Open_xmlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Order_by_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Order_by_expressionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Primary_key_valuesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Query_specificationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Search_conditionContext;
@@ -178,11 +181,15 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
             new MsValueExpr(this).aggregate(item.aggregate_windowed_function());
             addReference(item.as_table_alias().id().getText(), null);
             from(item.from_item(0));
-            // addColumnDepcy
+            addColumnDepcy(item.full_column_name());
         } else if (item.UNPIVOT() != null) {
             new MsValueExpr(this).analyze(item.expression());
             addReference(item.as_table_alias().id().getText(), null);
             from(item.from_item(0));
+            addColumnDepcy(item.full_column_name());
+            for (Full_column_nameContext fcn : item.full_column_name_list().full_column_name()) {
+                addColumnDepcy(fcn);
+            }
         } else if (item.JOIN() != null || item.APPLY() != null) {
             from(item.from_item(0));
             if (item.APPLY() != null) {
@@ -226,6 +233,7 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
         As_table_aliasContext alias = item.as_table_alias();
         Derived_tableContext der;
         Open_xmlContext xml;
+        Change_tableContext ct;
         Qualified_nameContext table;
 
         if (call != null) {
@@ -252,9 +260,17 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
             addReference(alias.id().getText(), null);
         } else if ((table = item.qualified_name()) != null) {
             addNameReference(table, alias);
+        } else if ((ct = item.change_table()) != null) {
+            addNameReference(ct.qualified_name(), alias);
+            Primary_key_valuesContext values = ct.primary_key_values();
+            if (values != null) {
+                for (Full_column_nameContext fcn : values.full_column_name_list().full_column_name()) {
+                    addColumnDepcy(fcn);
+                }
+                new MsValueExpr(this).expressionList(values.expression_list());
+            }
         } else if (alias != null) {
             addReference(alias.id().getText(), null);
         }
-        //change_table
     }
 }

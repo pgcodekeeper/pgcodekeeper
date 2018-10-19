@@ -63,15 +63,20 @@ public class MsValueExpr extends MsAbstractExpr {
             addObjectDepcy(sc.qualified_name(), DbObjType.SEQUENCE);
         } else if ((fc = exp.function_call()) != null) {
             functionCall(fc);
-            objectExp(exp.object_expression());
-            column(exp.full_column_name());
+
+            Full_column_nameContext fcn = exp.full_column_name();
+            Object_expressionContext object = exp.object_expression();
+
+            if (object != null) {
+                objectExp(exp.object_expression());
+            }
+            if (fcn != null) {
+                addColumnDepcy(fcn);
+            }
         }
     }
 
     public GenericColumn functionCall(Function_callContext functionCall) {
-        if (functionCall == null) {
-            return null;
-        }
         Ranking_windowed_functionContext rwf;
         Analytic_windowed_functionContext awf;
         Aggregate_windowed_functionContext agg;
@@ -135,9 +140,6 @@ public class MsValueExpr extends MsAbstractExpr {
     }
 
     private void objectExp(Object_expressionContext object) {
-        if (object == null) {
-            return;
-        }
         Select_stmt_no_parensContext ssnp;
         Case_expressionContext ce;
         Over_clauseContext oc;
@@ -149,9 +151,21 @@ public class MsValueExpr extends MsAbstractExpr {
         } else if ((oc = object.over_clause()) != null) {
             overClause(oc);
         } else {
-            objectExp(object.object_expression());
-            functionCall(object.function_call());
-            column(object.full_column_name());
+            Function_callContext fc = object.function_call();
+            Full_column_nameContext fcn = object.full_column_name();
+            Object_expressionContext subObject = object.object_expression();
+
+            if (fc != null) {
+                functionCall(fc);
+            }
+
+            if (subObject != null) {
+                objectExp(subObject);
+            }
+
+            if (fcn != null) {
+                addColumnDepcy(fcn);
+            }
         }
     }
 
@@ -178,15 +192,6 @@ public class MsValueExpr extends MsAbstractExpr {
             return addObjectDepcy(fullName, DbObjType.FUNCTION);
         }
         return null;
-    }
-
-    private void column(Full_column_nameContext fullName) {
-        if (fullName != null) {
-            Qualified_nameContext tableName = fullName.qualified_name();
-            if (tableName != null) {
-                addColumnDepcy(tableName, fullName.id().getText());
-            }
-        }
     }
 
     private void overClause(Over_clauseContext oc) {

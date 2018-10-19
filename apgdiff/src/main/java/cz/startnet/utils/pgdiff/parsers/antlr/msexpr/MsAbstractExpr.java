@@ -4,6 +4,7 @@ import java.util.LinkedHashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Full_column_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -74,10 +75,14 @@ public abstract class MsAbstractExpr {
         }
     }*/
 
-    protected void addColumnDepcy(Qualified_nameContext tableName, String colName) {
-        String relationName = tableName.name.getText();
-        IdContext schemaCtx = tableName.schema;
-        String schemaName = schemaCtx == null ? schema : schemaCtx.getText();
-        depcies.add(new GenericColumn(schemaName, relationName, colName, DbObjType.COLUMN));
+
+    protected void addColumnDepcy(Full_column_nameContext fcn) {
+        Qualified_nameContext tableName = fcn.qualified_name();
+        if (tableName != null) {
+            String relationName = tableName.name.getText();
+            IdContext schemaCtx = tableName.schema;
+            String schemaName = schemaCtx == null ? schema : schemaCtx.getText();
+            depcies.add(new GenericColumn(schemaName, relationName, fcn.id().getText(), DbObjType.COLUMN));
+        }
     }
 }
