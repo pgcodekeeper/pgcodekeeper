@@ -730,7 +730,7 @@ operator_action_set
     ;
 
 operator_set_restrict_join
-    : (RESTRICT | JOIN) EQUAL (restr_join_name=identifier | NONE)
+    : (RESTRICT | JOIN) EQUAL restr_join_name=schema_qualified_name
     ;
 
 drop_user_mapping
@@ -846,8 +846,8 @@ operator_name
 
 operator_option
     : (FUNCTION | PROCEDURE) EQUAL func_name=schema_qualified_name
-    | RESTRICT EQUAL restr_name=identifier
-    | JOIN EQUAL join_name=identifier
+    | RESTRICT EQUAL restr_name=schema_qualified_name
+    | JOIN EQUAL join_name=schema_qualified_name
     | (LEFTARG | RIGHTARG) EQUAL type=data_type
     | (COMMUTATOR | NEGATOR) EQUAL addition_oper_name=op
     | HASHES

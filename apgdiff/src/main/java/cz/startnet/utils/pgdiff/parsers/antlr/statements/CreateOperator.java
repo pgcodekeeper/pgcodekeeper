@@ -1,25 +1,19 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.List;
-
 import org.antlr.v4.runtime.Token;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_operator_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.OpContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_optionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgOperator;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateOperator extends ParserAbstract {
     private final Create_operator_statementContext ctx;
@@ -35,16 +29,9 @@ public class CreateOperator extends ParserAbstract {
         String operSchemaName = operSchema.getName();
         PgOperator oper = new PgOperator(operNameCtx.operator.getText(),
                 getFullCtxText(ctx.getParent()));
-        String procFuncSchemaName = null;
-        String procFuncName = null;
         for (Operator_optionContext option : ctx.operator_option()) {
             if (option.PROCEDURE() != null || option.FUNCTION() != null) {
-                Schema_qualified_nameContext procFuncNameCtx = option.func_name;
-                List<IdentifierContext> ids = procFuncNameCtx.identifier();
-                procFuncSchemaName = QNameParser.getSchemaName(ids, operSchemaName);
-                procFuncName = QNameParser.getFirstName(ids);
-                oper.setProcedure(PgDiffUtils.getQuotedName(procFuncSchemaName) + '.'
-                        + PgDiffUtils.getQuotedName(procFuncName));
+                oper.setProcedure(option.func_name.getText());
             } else if (option.LEFTARG() != null) {
                 Data_typeContext leftArgTypeCtx = option.type;
                 oper.setLeftArg(leftArgTypeCtx.getText());
@@ -83,14 +70,9 @@ public class CreateOperator extends ParserAbstract {
             }
         }
 
-        oper.addDep(new GenericColumn(procFuncSchemaName,
-                procFuncName + oper.appendOperatorArgs(new StringBuilder()).toString(),
-                DbObjType.FUNCTION));
-
         operSchema.addOperator(oper);
         return oper;
     }
-
 
     public static AbstractSchema getSchemaSafe(Operator_nameContext operNameCtx,
             AbstractSchema defaultSchema, PgDatabase db) {

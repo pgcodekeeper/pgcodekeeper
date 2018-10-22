@@ -8,6 +8,7 @@ import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgOperator;
+import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class OperatorsReader extends JdbcReader {
@@ -46,13 +47,8 @@ public class OperatorsReader extends JdbcReader {
             rightType.addTypeDepcy(oper);
         }
 
-        String procFuncName = res.getString("procedure");
-        String procFuncSchemaName = res.getString("procedure_nsp");
-        oper.setProcedure(new StringBuilder(PgDiffUtils.getQuotedName(procFuncSchemaName))
-                .append('.').append(PgDiffUtils.getQuotedName(procFuncName)).toString());
-        oper.addDep(new GenericColumn(procFuncSchemaName,
-                procFuncName + oper.appendOperatorArgs(new StringBuilder()).toString(),
-                DbObjType.FUNCTION));
+        oper.setProcedure(getProcessedName(res.getString("procedure_nsp"),
+                res.getString("procedure")));
 
         String commutator = res.getString("commutator");
         if (comment != null) {
@@ -78,17 +74,26 @@ public class OperatorsReader extends JdbcReader {
             oper.setHashes(true);
         }
 
-        String restrict = res.getString("restrict");
-        if (restrict != null) {
-            oper.setRestrict(restrict);
+        String restrFuncName = res.getString("restrict");
+        if (restrFuncName != null) {
+            oper.setRestrict(getProcessedName(res.getString("restrict_nsp"), restrFuncName));
         }
 
-        String join = res.getString("join");
-        if (join != null) {
-            oper.setJoin(join);
+        String joinFuncName = res.getString("join");
+        if (joinFuncName != null) {
+            oper.setJoin(getProcessedName(res.getString("join_nsp"), joinFuncName));
         }
 
         schema.addOperator(oper);
+    }
+
+    private String getProcessedName(String schemaName, String funcName) {
+        StringBuilder sb = new StringBuilder();
+        if (!PgSystemStorage.SCHEMA_PG_CATALOG.equalsIgnoreCase(schemaName)) {
+            sb.append(PgDiffUtils.getQuotedName(schemaName)).append('.');
+        }
+        sb.append(PgDiffUtils.getQuotedName(funcName));
+        return sb.toString();
     }
 
     @Override
