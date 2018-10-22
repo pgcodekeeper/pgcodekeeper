@@ -123,14 +123,16 @@ public class PgOperator extends PgStatementWithSearchPath {
             return false;
         }
 
-        if (!checkAllExRestrAndJoin(newOperator)) {
+        if (!checkForChanges(newOperator)) {
             isNeedDepcies.set(true);
             return true;
-        } else if (!checkForChangesRestrAndJoin(newOperator)) {
-            String newOperRestr = newOperator.getRestrict();
-            String newOperJoin = newOperator.getJoin();
-            boolean restrChanged = !Objects.equals(restrict, newOperRestr);
-            boolean joinChanged = !Objects.equals(join, newOperJoin);
+        }
+
+        String newOperRestr = newOperator.getRestrict();
+        String newOperJoin = newOperator.getJoin();
+        boolean restrChanged = !Objects.equals(restrict, newOperRestr);
+        boolean joinChanged = !Objects.equals(join, newOperJoin);
+        if (restrChanged || joinChanged) {
             sb.append("\n\nALTER OPERATOR ")
             .append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.')
             .append(getName())
@@ -158,12 +160,7 @@ public class PgOperator extends PgStatementWithSearchPath {
         return sb.length() > startLength;
     }
 
-    public boolean checkForChanges(PgOperator oper) {
-        return checkAllExRestrAndJoin(oper)
-                && checkForChangesRestrAndJoin(oper);
-    }
-
-    private boolean checkAllExRestrAndJoin(PgOperator oper) {
+    private boolean checkForChanges(PgOperator oper) {
         boolean equals = false;
         if (this == oper) {
             equals = true;
@@ -178,11 +175,6 @@ public class PgOperator extends PgStatementWithSearchPath {
                     && isHashes == oper.isHashes();
         }
         return equals;
-    }
-
-    private boolean checkForChangesRestrAndJoin(PgOperator oper) {
-        return Objects.equals(restrict, oper.getRestrict())
-                && Objects.equals(join, oper.getJoin());
     }
 
     /**
@@ -210,7 +202,9 @@ public class PgOperator extends PgStatementWithSearchPath {
             if (!checkForChanges(oper)) {
                 return false;
             }
-            return Objects.equals(owner, oper.getOwner())
+            return Objects.equals(restrict, oper.getRestrict())
+                    && Objects.equals(join, oper.getJoin())
+                    && Objects.equals(owner, oper.getOwner())
                     && Objects.equals(grants, oper.grants)
                     && Objects.equals(revokes, oper.revokes)
                     && Objects.equals(comment, oper.getComment());
