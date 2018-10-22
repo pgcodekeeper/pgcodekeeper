@@ -845,7 +845,7 @@ operator_name
     ;
 
 operator_option
-    : PROCEDURE EQUAL func_name=schema_qualified_name
+    : (FUNCTION | PROCEDURE) EQUAL func_name=schema_qualified_name
     | RESTRICT EQUAL restr_name=identifier
     | JOIN EQUAL join_name=identifier
     | (LEFTARG | RIGHTARG) EQUAL type=data_type

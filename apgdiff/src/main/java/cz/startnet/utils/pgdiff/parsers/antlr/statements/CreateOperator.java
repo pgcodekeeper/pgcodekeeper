@@ -38,7 +38,7 @@ public class CreateOperator extends ParserAbstract {
         String procFuncSchemaName = null;
         String procFuncName = null;
         for (Operator_optionContext option : ctx.operator_option()) {
-            if (option.PROCEDURE() != null) {
+            if (option.PROCEDURE() != null || option.FUNCTION() != null) {
                 Schema_qualified_nameContext procFuncNameCtx = option.func_name;
                 List<IdentifierContext> ids = procFuncNameCtx.identifier();
                 procFuncSchemaName = QNameParser.getSchemaName(ids, operSchemaName);
