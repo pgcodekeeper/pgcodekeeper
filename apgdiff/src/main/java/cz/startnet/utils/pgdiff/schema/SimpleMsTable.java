@@ -104,12 +104,16 @@ public class SimpleMsTable extends AbstractRegularTable {
 
     @Override
     protected boolean isNeedRecreate(AbstractTable newTable) {
-        return  !(newTable instanceof SimpleMsTable)
-                || !Objects.equals(((SimpleMsTable)newTable).getTablespace(), getTablespace())
-                || !Objects.equals(((SimpleMsTable)newTable).getTextImage(), getTextImage())
-                || !Objects.equals(((SimpleMsTable)newTable).getFileStream(), getFileStream())
-                // TODO some option can be altered by rebuild syntax
-                || !Objects.equals(((SimpleMsTable)newTable).getOptions(), getOptions());
+        if (newTable instanceof SimpleMsTable) {
+            SimpleMsTable smt = (SimpleMsTable) newTable;
+            return !Objects.equals(smt.getTablespace(), getTablespace())
+                    || !Objects.equals(smt.getOptions(), getOptions())
+                    || !Objects.equals(smt.getFileStream(), getFileStream())
+                    || (smt.getTextImage() != null && getTextImage() != null
+                        && !Objects.equals(smt.getTextImage(), getTextImage()));
+        }
+
+        return true;
     }
 
     @Override

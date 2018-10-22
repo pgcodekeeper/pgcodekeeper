@@ -37,7 +37,6 @@ public class MsTablesReader extends JdbcReader {
             table.addOption("DATA_COMPRESSION", res.getString("data_compression_desc"));
         }
 
-        table.setTextImage(res.getString("text_image"));
         table.setFileStream(res.getString("file_stream"));
         table.setAnsiNulls(res.getBoolean("uses_ansi_nulls"));
         Object isTracked = res.getObject("is_tracked");
@@ -45,6 +44,7 @@ public class MsTablesReader extends JdbcReader {
             table.setTracked((Boolean)isTracked);
         }
 
+        boolean isTextImage = false;
         for (XmlReader col : XmlReader.readXML(res.getString("cols"))) {
             AbstractColumn column = new MsColumn(col.getString("name"));
             // TODO other type with size
@@ -79,7 +79,12 @@ public class MsTablesReader extends JdbcReader {
                 column.setDefaultName(col.getString("dn"));
             }
 
+            isTextImage = isTextImage || col.getBoolean("ti");
             table.addColumn(column);
+        }
+
+        if (isTextImage) {
+            table.setTextImage(res.getString("text_image"));
         }
 
         String tableSpace = MsDiffUtils.quoteName(res.getString("space_name"));
