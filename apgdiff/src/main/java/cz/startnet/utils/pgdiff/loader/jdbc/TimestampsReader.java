@@ -16,6 +16,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_args_parserContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Object_identity_parserContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_args_parserContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -83,6 +86,10 @@ public class TimestampsReader implements PgCatalogStrings {
             loader.submitAntlrTask(identity, SQLParser::function_args_parser,
                     ctx -> parseFunctionName(ctx, lastModified, time, objId, author, acl, colAcls));
             break;
+        case "operator":
+            loader.submitAntlrTask(identity, SQLParser::operator_args_parser,
+                    ctx -> parseOperName(schema, ctx, lastModified, time, objId, author, acl, colAcls));
+            break;
         case "index":
             column = new GenericColumn(schema, null, name, DbObjType.INDEX);
             break;
@@ -131,6 +138,20 @@ public class TimestampsReader implements PgCatalogStrings {
             String name = QNameParser.getFirstName(object);
             GenericColumn gc = new GenericColumn(schema, ParserAbstract
                     .parseSignature(name, ctx.function_args()), DbObjType.FUNCTION);
+            time.addObject(gc, objId, lastModified, author, acl, colAcls);
+        }
+    }
+
+    private void parseOperName(String schemaName, Operator_args_parserContext ctx,
+            Instant lastModified, DBTimestamp time, long objId, String author, String acl,
+            Map<String, String> colAcls) {
+        if (ctx != null) {
+            Target_operatorContext targerOperCtx = ctx.target_operator();
+            Operator_nameContext operNameCtx = targerOperCtx.operator_name();
+            IdentifierContext schemaCtx = operNameCtx.schema_name;
+            GenericColumn gc = new GenericColumn(schemaCtx != null ? schemaCtx.getText() : schemaName,
+                    ParserAbstract.parseSignature(operNameCtx.operator.getText(), targerOperCtx),
+                    DbObjType.OPERATOR);
             time.addObject(gc, objId, lastModified, author, acl, colAcls);
         }
     }

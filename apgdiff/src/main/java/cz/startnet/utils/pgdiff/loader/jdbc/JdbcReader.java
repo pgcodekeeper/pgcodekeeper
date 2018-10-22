@@ -18,6 +18,7 @@ import cz.startnet.utils.pgdiff.schema.PgFtsConfiguration;
 import cz.startnet.utils.pgdiff.schema.PgFtsDictionary;
 import cz.startnet.utils.pgdiff.schema.PgFtsParser;
 import cz.startnet.utils.pgdiff.schema.PgFtsTemplate;
+import cz.startnet.utils.pgdiff.schema.PgOperator;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -144,6 +145,10 @@ public abstract class JdbcReader implements PgCatalogStrings {
                     break;
                 case FTS_CONFIGURATION:
                     sc.addFtsConfiguration((PgFtsConfiguration) obj.copyStatement(projDb, loader));
+                    sbOids.append(obj.getObjId()).append(',');
+                    break;
+                case OPERATOR:
+                    sc.addOperator((PgOperator) obj.copyStatement(projDb, loader));
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 default:

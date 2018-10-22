@@ -18,7 +18,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
-import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
@@ -68,7 +67,8 @@ public class ModelExporter extends AbstractModelExporter {
             break;
 
         case FUNCTION:
-            processFunction(el, st);
+        case OPERATOR:
+            processFuncOrOper(el, st);
             break;
 
         case CONSTRAINT:
@@ -109,8 +109,9 @@ public class ModelExporter extends AbstractModelExporter {
             break;
 
         case FUNCTION:
+        case OPERATOR:
             createParentSchema(elParent);
-            processFunction(el, stInNew);
+            processFuncOrOper(el, stInNew);
             break;
 
         case CONSTRAINT:
@@ -181,8 +182,9 @@ public class ModelExporter extends AbstractModelExporter {
             break;
 
         case FUNCTION:
+        case OPERATOR:
             createParentSchema(elParent);
-            processFunction(el, stInNew);
+            processFuncOrOper(el, stInNew);
             break;
 
         case CONSTRAINT:
@@ -222,24 +224,35 @@ public class ModelExporter extends AbstractModelExporter {
         }
     }
 
-    private void processFunction(TreeElement el, PgStatement st) throws IOException {
+    private List<? extends PgStatement> getFuncsOrOpers(AbstractSchema schema, boolean isFunc) {
+        return isFunc ? schema.getFunctions() : schema.getOperators();
+    }
+
+    private PgStatement getFuncOrOper(AbstractSchema schema, String name, boolean isFunc) {
+        return isFunc ? schema.getFunction(name) : schema.getOperator(name);
+    }
+
+    private void processFuncOrOper(TreeElement el, PgStatement st) throws IOException {
         TreeElement elParent = el.getParent();
         if (elParent.getSide() == DiffSide.LEFT && elParent.isSelected()) {
             // if the whole parent schema is to be deleted
             return;
         }
-        // delete function sql file
+        // delete functionOrOperator sql file
         deleteStatementIfExists(st);
 
-        List<AbstractFunction> funcsToDump = new LinkedList<>();
+        List<PgStatement> funcOrOpersToDump = new LinkedList<>();
         AbstractSchema newParentSchema = newDb.getSchema(st.getParent().getName());
         AbstractSchema oldParentSchema = oldDb.getSchema(st.getParent().getName());
 
-        // prepare the overloaded function list as if there are no changes
+        DbObjType type = st.getStatementType();
+        boolean isFunc = DbObjType.FUNCTION == type;
+
+        // prepare the overloaded functionOrOperator list as if there are no changes
         if (oldParentSchema != null) {
-            for (AbstractFunction oldFunc : oldParentSchema.getFunctions()) {
-                if (oldFunc.getBareName().equals(st.getBareName())) {
-                    funcsToDump.add(oldFunc);
+            for (PgStatement oldFuncOrOper : getFuncsOrOpers(oldParentSchema, isFunc)) {
+                if (oldFuncOrOper.getBareName().equals(st.getBareName())) {
+                    funcOrOpersToDump.add(oldFuncOrOper);
                 }
             }
         }
@@ -252,29 +265,31 @@ public class ModelExporter extends AbstractModelExporter {
         // apply changes based on the tree selection: remove LEFTs, replace BOTHs, add RIGHTs
         Iterator<TreeElement> it = changeList.iterator();
         while (it.hasNext()) {
-            TreeElement elFunc = it.next();
-            if (elFunc.getType() != DbObjType.FUNCTION) {
-                continue;
-            }
-            // final required function state
-            AbstractFunction funcPrimary = (elFunc.getSide() == DiffSide.LEFT ?
-                    oldParentSchema : newParentSchema).getFunction(elFunc.getName());
-            if (funcPrimary == null || !funcPrimary.getBareName().equals(st.getBareName())
-                    || !funcPrimary.getParent().getName().equals(elFunc.getParent().getName())) {
+            TreeElement elFuncOrOper = it.next();
+            if (elFuncOrOper.getType() != type) {
                 continue;
             }
 
-            switch (elFunc.getSide()) {
+            // final required functionOrOperator state
+            String elName = elFuncOrOper.getName();
+            PgStatement funcOperPrimary = getFuncOrOper(elFuncOrOper.getSide() == DiffSide.LEFT ?
+                    oldParentSchema : newParentSchema, elName, isFunc);
+            if (funcOperPrimary == null || !funcOperPrimary.getBareName().equals(st.getBareName())
+                    || !funcOperPrimary.getParent().getName().equals(elFuncOrOper.getParent().getName())) {
+                continue;
+            }
+
+            switch (elFuncOrOper.getSide()) {
             case LEFT:
-                funcsToDump.remove(funcPrimary);
+                funcOrOpersToDump.remove(funcOperPrimary);
                 break;
             case RIGHT:
-                funcsToDump.add(funcPrimary);
+                funcOrOpersToDump.add(funcOperPrimary);
                 break;
             case BOTH:
-                funcsToDump.set(
-                        funcsToDump.indexOf(oldParentSchema.getFunction(elFunc.getName())),
-                        funcPrimary);
+                funcOrOpersToDump.set(
+                        funcOrOpersToDump.indexOf(getFuncOrOper(oldParentSchema, elName, isFunc)),
+                        funcOperPrimary);
                 break;
             }
 
@@ -283,8 +298,8 @@ public class ModelExporter extends AbstractModelExporter {
             it.remove();
         }
 
-        dumpFunctions(funcsToDump, new File(outDir, getRelativeFilePath(
-                newParentSchema == null ? oldParentSchema : newParentSchema, false)));
+        dumpFunctionsOrOperators(funcOrOpersToDump, new File(outDir, getRelativeFilePath(
+                newParentSchema == null ? oldParentSchema : newParentSchema, false)), type);
     }
 
     @Override
@@ -373,7 +388,8 @@ public class ModelExporter extends AbstractModelExporter {
             File schemaSQL = new File(schemaDir, getExportedFilenameSql(schema));
             dumpSQL(schema.getCreationSQL(), schemaSQL);
 
-            dumpFunctions(schema.getFunctions(), schemaDir);
+            dumpFunctionsOrOperators(getFuncsOrOpers(schema, true), schemaDir, DbObjType.FUNCTION);
+            dumpFunctionsOrOperators(getFuncsOrOpers(schema, false), schemaDir, DbObjType.OPERATOR);
             dumpObjects(schema.getSequences(), schemaDir);
             dumpObjects(schema.getTypes(), schemaDir);
             dumpObjects(schema.getDomains(), schemaDir);
@@ -389,22 +405,23 @@ public class ModelExporter extends AbstractModelExporter {
         writeProjVersion(new File(outDir.getPath(), ApgdiffConsts.FILENAME_WORKING_DIR_MARKER));
     }
 
-    private void dumpFunctions(List<AbstractFunction> funcs, File parentDir) throws IOException {
-        if (funcs.isEmpty()) {
+    private void dumpFunctionsOrOperators(List<? extends PgStatement> funcsOrOpers,
+            File parentDir, DbObjType type) throws IOException {
+        if (funcsOrOpers.isEmpty()) {
             return;
         }
         mkdirObjects(null, parentDir.getAbsolutePath());
-        File funcDir = mkdirObjects(parentDir, "FUNCTION");
+        File funcDir = mkdirObjects(parentDir, type.name());
 
-        Map<String, StringBuilder> dumps = new HashMap<>(funcs.size());
-        for (AbstractFunction f : funcs) {
-            String fileName = getExportedFilenameSql(f);
+        Map<String, StringBuilder> dumps = new HashMap<>(funcsOrOpers.size());
+        for (PgStatement stmt : funcsOrOpers) {
+            String fileName = getExportedFilenameSql(stmt);
             StringBuilder groupedDump = dumps.get(fileName);
             if (groupedDump == null) {
-                groupedDump = new StringBuilder(getDumpSql(f));
+                groupedDump = new StringBuilder(getDumpSql(stmt));
                 dumps.put(fileName, groupedDump);
             } else {
-                groupedDump.append(GROUP_DELIMITER).append(getDumpSql(f));
+                groupedDump.append(GROUP_DELIMITER).append(getDumpSql(stmt));
             }
         }
         for (Entry<String, StringBuilder> dump : dumps.entrySet()) {
@@ -466,6 +483,7 @@ public class ModelExporter extends AbstractModelExporter {
         case VIEW:
         case TABLE:
         case FUNCTION:
+        case OPERATOR:
         case FTS_TEMPLATE:
         case FTS_PARSER:
         case FTS_DICTIONARY:

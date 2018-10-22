@@ -422,6 +422,21 @@ public class PgDiffTest {
                     {"modify_column_type_and_default"},
                     // Tests scenario where COLUMN type is modified and default is deleted.
                     {"modify_column_type_and_drop_default"},
+                    // Tests scenario where new OPERATOR is added.
+                    {"add_operator"},
+                    // Tests scenario where new overloaded OPERATOR is added.
+                    {"add_operator_overloaded"},
+                    // Tests scenario where new OPERATOR with using elements from other schemas is added.
+                    {"add_operator_use_other_schema"},
+                    // Tests scenario where OPERATOR is dropped.
+                    {"drop_operator"},
+                    // Tests scenario where options of OPERATOR is modified.
+                    {"modify_operator"},
+                    // Tests scenario where only RESTRICT and JOIN options of OPERATOR is modified.
+                    {"modify_operator_restr_join"},
+                    // Tests scenario where function (from other schema) of OPERATOR is modified.
+                    // TODO uncomment this code when dependencies for OPERATOR will be fixed
+                    // {"modify_operator_use_other_schema"},
                 });
     }
 

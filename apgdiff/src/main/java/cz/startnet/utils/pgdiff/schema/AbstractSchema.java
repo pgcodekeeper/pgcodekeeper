@@ -26,6 +26,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     private final List<PgFtsTemplate> templates = new ArrayList<>();
     private final List<PgFtsDictionary> dictionaries = new ArrayList<>();
     private final List<PgFtsConfiguration> configurations = new ArrayList<>();
+    private final List<PgOperator> operators = new ArrayList<>();
 
     private String definition;
 
@@ -146,6 +147,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         stream = Stream.concat(stream, getFtsTemplates().stream());
         stream = Stream.concat(stream, getFtsDictionaries().stream());
         stream = Stream.concat(stream, getFtsConfigurations().stream());
+        stream = Stream.concat(stream, getOperators().stream());
         return stream;
     }
 
@@ -328,6 +330,23 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     }
 
     /**
+     * Finds operator according to specified operator {@code signature}.
+     *
+     * @param signature signature of the operator to be searched
+     *
+     * @return found operator or null if no such operator has been found
+     */
+    public PgOperator getOperator(final String signature) {
+        for (PgOperator oper : operators) {
+            if (oper.getName().equals(signature)) {
+                return oper;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Getter for {@link #types}. The list cannot be modified.
      *
      * @return {@link #types}
@@ -370,6 +389,15 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      */
     public List<PgFtsConfiguration> getFtsConfigurations() {
         return Collections.unmodifiableList(configurations);
+    }
+
+    /**
+     * Getter for {@link #operators}. The list cannot be modified.
+     *
+     * @return {@link #operators}
+     */
+    public List<PgOperator> getOperators() {
+        return Collections.unmodifiableList(operators);
     }
 
     public AbstractTable getTableByIndex(String name) {
@@ -451,6 +479,13 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         resetHash();
     }
 
+    public void addOperator(final PgOperator oper) {
+        assertUnique(this::getOperator, oper);
+        operators.add(oper);
+        oper.setParent(this);
+        resetHash();
+    }
+
     public boolean containsSequence(final String name) {
         return getSequence(name) != null;
     }
@@ -487,6 +522,10 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         return getFtsConfiguration(name) != null;
     }
 
+    public boolean containsOperator(final String name) {
+        return getOperator(name) != null;
+    }
+
     @Override
     public boolean compare(PgStatement obj) {
         boolean eq = false;
@@ -520,7 +559,8 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
                     && PgDiffUtils.setlikeEquals(parsers, schema.parsers)
                     && PgDiffUtils.setlikeEquals(templates, schema.templates)
                     && PgDiffUtils.setlikeEquals(dictionaries, schema.dictionaries)
-                    && PgDiffUtils.setlikeEquals(configurations, schema.configurations);
+                    && PgDiffUtils.setlikeEquals(configurations, schema.configurations)
+                    && PgDiffUtils.setlikeEquals(operators, schema.operators);
         }
         return false;
     }
@@ -547,6 +587,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         hasher.putUnordered(templates);
         hasher.putUnordered(dictionaries);
         hasher.putUnordered(configurations);
+        hasher.putUnordered(operators);
     }
 
     @Override
@@ -601,6 +642,9 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         }
         for (PgFtsConfiguration configuration : configurations) {
             copy.addFtsConfiguration(configuration.deepCopy());
+        }
+        for (PgOperator oper : operators) {
+            copy.addOperator(oper.deepCopy());
         }
         return copy;
     }

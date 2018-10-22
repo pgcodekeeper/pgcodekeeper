@@ -50,6 +50,7 @@ public final class JdbcQueries {
     public static Map <SupportedVersion, String> QUERY_FTS_TEMPLATES_PER_SCHEMA;
     public static Map <SupportedVersion, String> QUERY_FTS_DICTIONARIES_PER_SCHEMA;
     public static Map <SupportedVersion, String> QUERY_FTS_CONFIGURATIONS_PER_SCHEMA;
+    public static Map <SupportedVersion, String> QUERY_OPERATORS_PER_SCHEMA;
 
     public static String QUERY_SCHEMAS_ACCESS;
     public static String QUERY_SEQUENCES_ACCESS;

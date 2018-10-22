@@ -23,6 +23,10 @@ function_args_parser
   : schema_qualified_name? function_args EOF
   ;
 
+operator_args_parser
+  : target_operator EOF
+  ;
+
 object_identity_parser
   : name=identifier ON parent=schema_qualified_name EOF
   ;
@@ -174,7 +178,8 @@ schema_create
     | create_group
     | create_tablespace
     | create_statistics
-    | create_foreign_data_wrapper)
+    | create_foreign_data_wrapper
+    | create_operator_statement)
 
     | comment_on_statement
     | rule_common
@@ -202,7 +207,8 @@ schema_alter
     | alter_group
     | alter_tablespace
     | alter_statistics
-    | alter_foreign_data_wrapper)
+    | alter_foreign_data_wrapper
+    | alter_operator_statement)
     ;
 
 schema_drop
@@ -211,7 +217,8 @@ schema_drop
     | drop_rule_statement
     | drop_statements
     | drop_user_mapping
-    | drop_owned)
+    | drop_owned
+    | drop_operator_statement)
     ;
 
 schema_import
@@ -708,6 +715,24 @@ alter_foreign_data_wrapper_handler_validator_option
     define_foreign_options?
     ;
 
+alter_operator_statement
+    : OPERATOR target_operator alter_operator_action
+    ;
+
+alter_operator_action
+    : OWNER TO user_identifer_current_session
+    | SET operator_action_set
+    ;
+
+operator_action_set
+    : SCHEMA new_schema=identifier
+    | LEFT_PAREN operator_set_restrict_join (COMMA operator_set_restrict_join)* RIGHT_PAREN
+    ;
+
+operator_set_restrict_join
+    : (RESTRICT | JOIN) EQUAL restr_join_name=schema_qualified_name
+    ;
+
 drop_user_mapping
     : USER MAPPING (IF EXISTS)? FOR (identifier | USER | CURRENT_USER) SERVER identifier
     ;
@@ -715,6 +740,14 @@ drop_user_mapping
 drop_owned
     : OWNED BY user_identifer_current_session (COMMA user_identifer_current_session)*
       cascade_restrict?
+    ;
+
+drop_operator_statement
+    : OPERATOR (IF EXISTS)? target_operator (COMMA target_operator)* cascade_restrict?
+    ;
+
+target_operator
+    : name=operator_name LEFT_PAREN (left_type=data_type | NONE) COMMA (right_type=data_type | NONE) RIGHT_PAREN
     ;
 
 domain_constraint
@@ -801,6 +834,24 @@ create_foreign_data_wrapper
 
 option_without_equal
     : name=identifier value=Character_String_Literal
+    ;
+
+create_operator_statement
+    :   OPERATOR name=operator_name LEFT_PAREN operator_option (COMMA operator_option)* RIGHT_PAREN
+    ;
+
+operator_name
+    : (schema_name=identifier DOT)? operator=OP_CHARS
+    ;
+
+operator_option
+    : (FUNCTION | PROCEDURE) EQUAL func_name=schema_qualified_name
+    | RESTRICT EQUAL restr_name=schema_qualified_name
+    | JOIN EQUAL join_name=schema_qualified_name
+    | (LEFTARG | RIGHTARG) EQUAL type=data_type
+    | (COMMUTATOR | NEGATOR) EQUAL addition_oper_name=op
+    | HASHES
+    | MERGES
     ;
 
 set_statement
@@ -946,7 +997,7 @@ comment_on_statement
         | CAST LEFT_PAREN source_type=data_type AS target_type=data_type RIGHT_PAREN
         | (CONSTRAINT | RULE | TRIGGER) name=schema_qualified_name ON table_name=schema_qualified_name
         | FUNCTION name=schema_qualified_name function_args
-        | OPERATOR name=schema_qualified_name LEFT_PAREN left_type=data_type COMMA right_type=data_type RIGHT_PAREN
+        | OPERATOR target_operator
         | OPERATOR (FAMILY| CLASS) name=schema_qualified_name USING index_method=identifier
         | (TEXT SEARCH (CONFIGURATION | DICTIONARY | PARSER | TEMPLATE )
         | PROCEDURAL? LANGUAGE
@@ -1033,7 +1084,7 @@ sequence_body
         | START WITH? start_val=signed_numerical_literal
         | CACHE cache_val=signed_numerical_literal
         | cycle_true=NO? cycle_val=CYCLE
-        | OWNED BY (col_name=schema_qualified_name | NONE)
+        | OWNED BY col_name=schema_qualified_name
     ;
 
 signed_numerical_literal
@@ -1915,6 +1966,12 @@ tokens_nonkeyword
   | NOREPLICATION
   | BYPASSRLS
   | NOBYPASSRLS
+  | LEFTARG
+  | RIGHTARG
+  | COMMUTATOR
+  | NEGATOR
+  | HASHES
+  | MERGES
   ;
 
 /*
