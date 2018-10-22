@@ -71,7 +71,11 @@ CROSS APPLY (
             --t.is_user_defined AS ud,
             --t.is_table_type AS tt,
             --c.is_filestream AS fs,
-            cc.definition AS def
+            cc.definition AS def,
+            CASE WHEN t.name IN ('GEOMETRY', 'GEOGRAPHY')
+                OR TYPE_NAME(t.system_type_id) IN ('TEXT', 'NTEXT','IMAGE' ,'XML')
+                OR (TYPE_NAME(t.system_type_id) IN ('VARCHAR', 'NVARCHAR', 'VARBINARY') AND c.max_length = -1)
+                THEN 1 ELSE 0 END AS ti
         FROM sys.columns c WITH (NOLOCK)
         JOIN sys.types t WITH (NOLOCK) ON c.user_type_id = t.user_type_id
         LEFT JOIN sys.computed_columns cc WITH (NOLOCK) ON cc.object_id = c.object_id AND c.column_id = cc.column_id
