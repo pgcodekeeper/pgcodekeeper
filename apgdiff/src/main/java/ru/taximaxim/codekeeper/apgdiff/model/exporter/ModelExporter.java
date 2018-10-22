@@ -16,7 +16,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
@@ -225,9 +224,8 @@ public class ModelExporter extends AbstractModelExporter {
         }
     }
 
-    private List<PgStatement> getFuncsOrOpers(AbstractSchema schema, boolean isFunc) {
-        return (isFunc ? schema.getFunctions() : schema.getOperators())
-                .stream().map(funcOrOper -> (PgStatement) funcOrOper).collect(Collectors.toList());
+    private List<? extends PgStatement> getFuncsOrOpers(AbstractSchema schema, boolean isFunc) {
+        return isFunc ? schema.getFunctions() : schema.getOperators();
     }
 
     private PgStatement getFuncOrOper(AbstractSchema schema, String name, boolean isFunc) {
@@ -407,7 +405,7 @@ public class ModelExporter extends AbstractModelExporter {
         writeProjVersion(new File(outDir.getPath(), ApgdiffConsts.FILENAME_WORKING_DIR_MARKER));
     }
 
-    private void dumpFunctionsOrOperators(List<PgStatement> funcsOrOpers,
+    private void dumpFunctionsOrOperators(List<? extends PgStatement> funcsOrOpers,
             File parentDir, DbObjType type) throws IOException {
         if (funcsOrOpers.isEmpty()) {
             return;

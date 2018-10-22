@@ -1084,7 +1084,7 @@ sequence_body
         | START WITH? start_val=signed_numerical_literal
         | CACHE cache_val=signed_numerical_literal
         | cycle_true=NO? cycle_val=CYCLE
-        | OWNED BY (col_name=schema_qualified_name | NONE)
+        | OWNED BY col_name=schema_qualified_name
     ;
 
 signed_numerical_literal
