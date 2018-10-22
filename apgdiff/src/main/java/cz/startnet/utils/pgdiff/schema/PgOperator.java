@@ -123,15 +123,34 @@ public class PgOperator extends PgStatementWithSearchPath {
             return false;
         }
 
-        if (!checkForChanges(newOperator)) {
+        if (!checkAllExRestrAndJoin(newOperator)) {
             isNeedDepcies.set(true);
             return true;
+        } else if (!checkForChangesRestrAndJoin(newOperator)) {
+            String newOperRestr = newOperator.getRestrict();
+            String newOperJoin = newOperator.getJoin();
+            boolean restrChanged = !Objects.equals(restrict, newOperRestr);
+            boolean joinChanged = !Objects.equals(join, newOperJoin);
+            sb.append("\n\nALTER OPERATOR ")
+            .append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.')
+            .append(getName())
+            .append("\n\tSET (");
+            if (restrChanged) {
+                sb.append("RESTRICT = ").append(newOperRestr != null ? newOperRestr : "NONE");
+                if (joinChanged) {
+                    sb.append(", ");
+                }
+            }
+            if (joinChanged) {
+                sb.append("JOIN = ").append(newOperJoin != null ? newOperJoin : "NONE");
+            }
+            sb.append(");");
         }
 
         if (!Objects.equals(getOwner(), newOperator.getOwner())) {
             sb.append(newOperator.getOwnerSQL());
         }
-        alterPrivileges(newOperator, sb);
+
         if (!Objects.equals(getComment(), newOperator.getComment())) {
             sb.append("\n\n");
             newOperator.appendCommentSql(sb);
@@ -140,8 +159,12 @@ public class PgOperator extends PgStatementWithSearchPath {
     }
 
     public boolean checkForChanges(PgOperator oper) {
-        boolean equals = false;
+        return checkAllExRestrAndJoin(oper)
+                && checkForChangesRestrAndJoin(oper);
+    }
 
+    private boolean checkAllExRestrAndJoin(PgOperator oper) {
+        boolean equals = false;
         if (this == oper) {
             equals = true;
         } else {
@@ -152,11 +175,14 @@ public class PgOperator extends PgStatementWithSearchPath {
                     && Objects.equals(commutator, oper.getCommutator())
                     && Objects.equals(negator, oper.getNegator())
                     && isMerges == oper.isMerges()
-                    && isHashes == oper.isHashes()
-                    && Objects.equals(restrict, oper.getRestrict())
-                    && Objects.equals(join, oper.getJoin());
+                    && isHashes == oper.isHashes();
         }
         return equals;
+    }
+
+    private boolean checkForChangesRestrAndJoin(PgOperator oper) {
+        return Objects.equals(restrict, oper.getRestrict())
+                && Objects.equals(join, oper.getJoin());
     }
 
     /**

@@ -432,6 +432,8 @@ public class PgDiffTest {
                     {"drop_operator"},
                     // Tests scenario where options of OPERATOR is modified.
                     {"modify_operator"},
+                    // Tests scenario where only RESTRICT and JOIN options of OPERATOR is modified.
+                    {"modify_operator_restr_join"},
                     // Tests scenario where function (from other schema) of OPERATOR is modified.
                     // TODO uncomment this code when dependencies for OPERATOR will be fixed
                     // {"modify_operator_use_other_schema"},
