@@ -1326,7 +1326,7 @@ create_message_type
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/merge-transact-sql
 merge_statement
     : with_expression? MERGE (TOP LR_BRACKET expression RR_BRACKET PERCENT?)?
-    INTO? ddl_object insert_with_table_hints? as_table_alias?
+    INTO? (qualified_name | LOCAL_ID) insert_with_table_hints? as_table_alias?
     USING from_item (COMMA from_item)* ON search_condition
     (WHEN MATCHED (AND search_condition)? THEN merge_matched)*
     (WHEN NOT MATCHED (BY TARGET)? (AND search_condition)? THEN merge_not_matched)?
@@ -1345,34 +1345,25 @@ merge_not_matched
 
 // https://msdn.microsoft.com/en-us/library/ms189835.aspx
 delete_statement
-    : with_expression? DELETE (TOP LR_BRACKET expression RR_BRACKET PERCENT? | TOP DECIMAL)?
-    FROM? delete_statement_from insert_with_table_hints? output_clause? (FROM from_item (COMMA from_item)*)?
+    : with_expression? DELETE (TOP top_count)?
+    FROM? (qualified_name | rowset_function_limited | LOCAL_ID)
+    insert_with_table_hints? 
+    output_clause? 
+    (FROM from_item (COMMA from_item)*)?
     (WHERE (search_condition | CURRENT OF (GLOBAL? cursor_name | cursor_var=LOCAL_ID)))?
     for_clause? option_clause?
-    ;
-
-delete_statement_from
-    : ddl_object
-    | id with_table_hints
-    | rowset_function_limited
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms174335.aspx
 insert_statement
     : with_expression?
     INSERT (TOP LR_BRACKET expression RR_BRACKET PERCENT?)?
-    INTO? (ddl_object | rowset_function_limited)
+    INTO? (qualified_name | rowset_function_limited | LOCAL_ID)
     insert_with_table_hints?
     (LR_BRACKET column_name_list RR_BRACKET)?
     output_clause?
-    insert_statement_value
+    (select_statement | execute_statement | DEFAULT VALUES)
     for_clause? option_clause?
-    ;
-
-insert_statement_value
-    : select_statement
-    | execute_statement
-    | DEFAULT VALUES
     ;
 
 receive_statement
@@ -1418,12 +1409,12 @@ time
 update_statement
     : with_expression?
     UPDATE (TOP LR_BRACKET expression RR_BRACKET PERCENT?)?
-    (ddl_object | rowset_function_limited)
+    (qualified_name | rowset_function_limited | LOCAL_ID)
     with_table_hints?
     SET update_elem (COMMA update_elem)*
     output_clause?
     (FROM from_item (COMMA from_item)*)?
-    (WHERE (search_condition_list | CURRENT OF (GLOBAL? cursor_name | cursor_var=LOCAL_ID)))?
+    (WHERE (search_condition | CURRENT OF (GLOBAL? cursor_name | cursor_var=LOCAL_ID)))?
     for_clause? option_clause?
     ;
 
@@ -2148,14 +2139,10 @@ backup_service_master_key
     : BACKUP SERVICE MASTER KEY TO FILE EQUAL service_master_key_backup_file=STRING ENCRYPTION BY PASSWORD EQUAL encryption_password=STRING
     ;
 
-
 // https://msdn.microsoft.com/en-us/library/ms188332.aspx
 execute_statement
-    : EXECUTE execute_body
-    ;
-
-execute_body
-    : expression (execute_statement_arg (COMMA execute_statement_arg)*)? (AS? (LOGIN | USER) EQUAL STRING)?
+    : EXECUTE expression (execute_statement_arg (COMMA execute_statement_arg)*)? 
+    (AS? (LOGIN | USER) EQUAL STRING)?
     ;
 
 execute_statement_arg
@@ -2589,10 +2576,6 @@ update_elem
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms173545.aspx
-search_condition_list
-    : search_condition (COMMA search_condition)*
-    ;
-
 search_condition
     : search_condition_and (OR search_condition_and)*
     ;
@@ -2992,11 +2975,6 @@ qualified_name
 
 simple_name
     : (schema=id DOT)? name=id
-    ;
-
-ddl_object
-    : qualified_name
-    | LOCAL_ID
     ;
 
 full_column_name
