@@ -377,7 +377,7 @@ class MsDB2 extends MsDatabaseObjectCreator {
 
         AbstractSequence seq = new MsSequence("admins_aid_seq", "");
         seq.setStartWith("1");
-        seq.setMinMaxInc(1L, 1000000000L, null, null);
+        seq.setMinMaxInc(1L, 1000000000L, 1L, null);
         seq.setCached(true);
         seq.setCache("1");
         schema.addSequence(seq);
@@ -515,7 +515,7 @@ class MsDB3 extends MsDatabaseObjectCreator {
 
         AbstractSequence seq = new MsSequence("call_logs_id_seq", "");
         seq.setStartWith("1");
-        seq.setMinMaxInc(1L, 1000000000L, null, null);
+        seq.setMinMaxInc(1L, 1000000000L, 1L, null);
         seq.setCached(true);
         seq.setCache("1");
         schema.addSequence(seq);

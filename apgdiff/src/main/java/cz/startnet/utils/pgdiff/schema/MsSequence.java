@@ -176,6 +176,14 @@ public class MsSequence extends AbstractSequence {
     }
 
     @Override
+    public void setMinMaxInc(long inc, Long max, Long min, String dataType) {
+        String type = dataType != null ? dataType : BIGINT;
+        this.increment = Long.toString(inc);
+        this.maxValue = max == null ? Long.toString(getBoundaryTypeVal(type, true)) : "" + max;
+        this.minValue = min == null ? Long.toString(getBoundaryTypeVal(type, false)) : "" + min;
+    }
+
+    @Override
     public boolean isPostgres() {
         return false;
     }
