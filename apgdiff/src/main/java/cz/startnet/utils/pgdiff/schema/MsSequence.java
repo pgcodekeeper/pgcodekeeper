@@ -44,23 +44,11 @@ public class MsSequence extends AbstractSequence {
             sbSQL.append(getIncrement());
         }
 
-        sbSQL.append("\n\t");
+        sbSQL.append("\n\tMAXVALUE ");
+        sbSQL.append(getMaxValue());
 
-        if (getMaxValue() == null) {
-            sbSQL.append("NO MAXVALUE");
-        } else {
-            sbSQL.append("MAXVALUE ");
-            sbSQL.append(getMaxValue());
-        }
-
-        sbSQL.append("\n\t");
-
-        if (getMinValue() == null) {
-            sbSQL.append("NO MINVALUE");
-        } else {
-            sbSQL.append("MINVALUE ");
-            sbSQL.append(getMinValue());
-        }
+        sbSQL.append("\n\tMINVALUE ");
+        sbSQL.append(getMinValue());
 
         if (isCached()) {
             sbSQL.append("\n\tCACHE ");
