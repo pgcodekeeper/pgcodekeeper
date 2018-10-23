@@ -1,6 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Disable_triggerContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Enable_disable_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Names_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
@@ -12,9 +12,9 @@ import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
 
 public class DisableMsTrigger extends ParserAbstract {
 
-    private final Disable_triggerContext ctx;
+    private final Enable_disable_triggerContext ctx;
 
-    public DisableMsTrigger(Disable_triggerContext ctx, PgDatabase db) {
+    public DisableMsTrigger(Enable_disable_triggerContext ctx, PgDatabase db) {
         super(db);
         this.ctx = ctx;
     }

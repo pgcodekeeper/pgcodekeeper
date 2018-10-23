@@ -51,13 +51,12 @@ dml_clause
 
 // Data Definition Language: https://msdn.microsoft.com/en-us/library/ff848799.aspx)
 ddl_clause
-    : disable_trigger
-    | enable_trigger
+    : schema_create
     | schema_alter
-    | schema_create
     | schema_drop
     | lock_table
     | truncate_table
+    | enable_disable_trigger
     | update_statistics
     ;
 
@@ -572,17 +571,13 @@ drop_symmetric_key
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/disable-trigger-transact-sql
-disable_trigger
-    : DISABLE TRIGGER (names_references | ALL) ON (qualified_name|DATABASE|ALL SERVER)
+// https://docs.microsoft.com/en-us/sql/t-sql/statements/enable-trigger-transact-sql
+enable_disable_trigger
+    : (ENABLE | DISABLE) TRIGGER (names_references | ALL) ON (qualified_name|DATABASE|ALL SERVER)
     ;
     
 names_references
     : name+=qualified_name (COMMA name+=qualified_name)*
-    ;
-
-// https://docs.microsoft.com/en-us/sql/t-sql/statements/enable-trigger-transact-sql
-enable_trigger
-    : ENABLE TRIGGER (names_references| ALL) ON (qualified_name|DATABASE|ALL SERVER)
     ;
 
 lock_table
