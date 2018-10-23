@@ -19,7 +19,7 @@ public class CreateMsRole extends ParserAbstract {
     public PgStatement getObject() {
         String name = ctx.role_name.getText();
         MsRole role = new MsRole(name, getFullCtxText(ctx.getParent()));
-        if (ctx.owner_name != null) {
+        if (ctx.owner_name != null && !db.getArguments().isIgnorePrivileges()) {
             role.setOwner(ctx.owner_name.getText());
         }
 

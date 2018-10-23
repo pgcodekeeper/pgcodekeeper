@@ -21,7 +21,8 @@ public class CreateSchema extends ParserAbstract {
             return null;
         }
         AbstractSchema schema = new PgSchema(name, getFullCtxText(ctx.getParent()));
-        if (ctx.user_name != null && !name.equals(ApgdiffConsts.PUBLIC)) {
+        if (ctx.user_name != null && !db.getArguments().isIgnorePrivileges()
+                && !name.equals(ApgdiffConsts.PUBLIC)) {
             schema.setOwner(ctx.user_name.getText());
         }
         if (ctx.schema_def != null) {
