@@ -43,7 +43,7 @@ public class MsUpdate extends MsAbstractExprWithNmspc<Update_statementContext> {
             MsValueExpr vex = new MsValueExpr(this);
             ExpressionContext expr = elem.expression();
             if (expr != null) {
-                vex.analyze(exp);
+                vex.analyze(expr);
                 Full_column_nameContext fcn = elem.full_column_name();
                 if (fcn != null) {
                     addColumnDepcy(fcn);

@@ -34,7 +34,7 @@ public class MsValueExpr extends MsAbstractExpr {
         super(parent);
     }
 
-    protected MsValueExpr(String schema) {
+    public MsValueExpr(String schema) {
         super(schema);
     }
 

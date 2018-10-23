@@ -9,6 +9,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSqlClauses;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -48,6 +49,10 @@ public class CreateMsTrigger extends BatchContextProcessor {
         trigger.setAnsiNulls(ansiNulls);
         trigger.setQuotedIdentified(quotedIdentifier);
         setSourceParts(trigger);
+
+        MsSqlClauses clauses = new MsSqlClauses(schema.getName());
+        clauses.analyze(ctx.sql_clauses());
+        trigger.addAllDeps(clauses.getDepcies());
 
         getSafe(schema::getTriggerContainer, QNameParser.getFirstNameCtx(ctx.qualified_name().id()))
         .addTrigger(trigger);
