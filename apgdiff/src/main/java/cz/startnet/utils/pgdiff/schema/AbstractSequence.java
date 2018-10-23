@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.hashers.Hasher;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -81,20 +82,22 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
     public abstract void setMinMaxInc(long inc, Long max, Long min, String dataType);
 
     protected long getBoundaryTypeVal(String type, boolean needMaxVal) {
-        long boundaryTypeVal;
-        switch(type) {
+        switch (type) {
         case "smallint":
-            boundaryTypeVal = needMaxVal ? Short.MAX_VALUE : Short.MIN_VALUE;
-            break;
+            return needMaxVal ? Short.MAX_VALUE : Short.MIN_VALUE;
         case "integer":
-            boundaryTypeVal = needMaxVal ? Integer.MAX_VALUE : Integer.MIN_VALUE;
-            break;
-        case BIGINT:
+            return needMaxVal ? Integer.MAX_VALUE : Integer.MIN_VALUE;
+        case "numeric":
+        case "decimal":
+            // It used for MS SQL.
+            long boundaryTypeVal = (long) (Math.pow(10, Long.parseLong(presicion))) - 1;
+            return needMaxVal ? boundaryTypeVal : - boundaryTypeVal;
         default:
-            boundaryTypeVal = needMaxVal ? Long.MAX_VALUE : Long.MIN_VALUE;
-            break;
+            Log.log(Log.LOG_WARNING, "Unsupported sequence type: " + type);
+            // $FALL-THROUGH$
+        case BIGINT:
+            return needMaxVal ? Long.MAX_VALUE : Long.MIN_VALUE;
         }
-        return boundaryTypeVal;
     }
 
     public String getIncrement() {
