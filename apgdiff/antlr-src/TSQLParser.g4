@@ -1656,7 +1656,7 @@ create_statistics
 
 update_statistics
     : UPDATE STATISTICS table_name=qualified_name 
-    (qualified_name | LR_BRACKET names_references RR_BRACKET)?
+    (index_name=qualified_name | LR_BRACKET names_references RR_BRACKET)?
     (WITH update_statistics_with_option (COMMA update_statistics_with_option)*)?
     ;
 

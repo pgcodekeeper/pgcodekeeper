@@ -9,12 +9,20 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Dbcc_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Ddl_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Delete_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Dml_clauseContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Enable_disable_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Insert_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Lock_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Merge_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Names_referencesContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Select_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Sql_clausesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.St_clauseContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Truncate_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Update_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Update_statisticsContext;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsSqlClauses extends MsAbstractExprWithNmspc<Sql_clausesContext> {
 
@@ -76,7 +84,49 @@ public class MsSqlClauses extends MsAbstractExprWithNmspc<Sql_clausesContext> {
     }
 
     private void ddl(Ddl_clauseContext ddl) {
+        Lock_tableContext lt = ddl.lock_table();
+        Truncate_tableContext tt;
+        Enable_disable_triggerContext edt;
+        Update_statisticsContext us;
 
+        if (lt != null) {
+            addObjectDepcy(lt.qualified_name(), DbObjType.TABLE);
+        } else if ((tt = ddl.truncate_table()) != null) {
+            addObjectDepcy(tt.qualified_name(), DbObjType.TABLE);
+        } else if ((edt = ddl.enable_disable_trigger()) != null) {
+            enableDisableTrigger(edt);
+        } else if ((us = ddl.update_statistics()) != null) {
+            updateStatistics(us);
+        }
+    }
+
+    private void enableDisableTrigger(Enable_disable_triggerContext edt) {
+        Qualified_nameContext qualifiedName = edt.qualified_name();
+        if (qualifiedName != null) {
+            GenericColumn cont = addObjectDepcy(qualifiedName, DbObjType.TABLE);
+            Names_referencesContext names = edt.names_references();
+            if (names != null) {
+                for (Qualified_nameContext trig : names.qualified_name()) {
+                    addDepcy(new GenericColumn(cont.schema,
+                            cont.table, trig.name.getText(), DbObjType.TRIGGER));
+                }
+            }
+        }
+    }
+
+    private void updateStatistics(Update_statisticsContext us) {
+        GenericColumn cont = addObjectDepcy(us.table_name, DbObjType.TABLE);
+        Qualified_nameContext index = us.index_name;
+        Names_referencesContext names;
+        if (index != null) {
+            addDepcy(new GenericColumn(cont.schema,
+                    cont.table, index.name.getText(), DbObjType.TRIGGER));
+        } else if ((names = us.names_references()) != null) {
+            for (Qualified_nameContext ind : names.qualified_name()) {
+                addDepcy(new GenericColumn(cont.schema,
+                        cont.table, ind.name.getText(), DbObjType.TRIGGER));
+            }
+        }
     }
 
     private void cfl(Cfl_statementContext cfl) {
