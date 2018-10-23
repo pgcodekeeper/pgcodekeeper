@@ -13,7 +13,7 @@
 
     <groupId>ru.taximaxim.codeKeeper</groupId>
     <artifactId>ru.taximaxim.codekeeper.updatesite</artifactId>
-    <version>5.1.5-SNAPSHOT</version>
+    <version>5.1.6-SNAPSHOT</version>
     <packaging>eclipse-repository</packaging>
 
     <properties>
