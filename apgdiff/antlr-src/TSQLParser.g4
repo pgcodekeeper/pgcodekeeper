@@ -36,9 +36,9 @@ st_clause
     | ddl_clause
     | cfl_statement
     | dbcc_clause
-    //| empty_statement
     | another_statement
-    | backup_statement;
+    | backup_statement
+    ;
 
 // Data Manipulation Language: https://msdn.microsoft.com/en-us/library/ff848766(v=sql.120).aspx
 dml_clause
@@ -291,10 +291,10 @@ another_statement
     ;
 
 create_aggregate
-    : AGGREGATE simple_name 
+    : AGGREGATE qualified_name 
     (LR_BRACKET? procedure_param (COMMA procedure_param)* RR_BRACKET?)?
     RETURNS data_type
-    EXTERNAL NAME assembly_name=simple_name
+    EXTERNAL NAME assembly_name=qualified_name
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-application-role-transact-sql
@@ -562,7 +562,7 @@ drop_database_encryption_key
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/drop-signature-transact-sql
 drop_signature
-    : COUNTER? SIGNATURE FROM simple_name
+    : COUNTER? SIGNATURE FROM qualified_name
     BY (COMMA? CERTIFICATE cert_name=id | COMMA? ASYMMETRIC KEY Asym_key_name=id)+
     ;
 
@@ -573,16 +573,16 @@ drop_symmetric_key
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/disable-trigger-transact-sql
 disable_trigger
-    : DISABLE TRIGGER (simple_names | ALL) ON (qualified_name|DATABASE|ALL SERVER)
-    ;
-     
-simple_names
-    : simple_name (COMMA simple_name)*
+    : DISABLE TRIGGER (names_references | ALL) ON (qualified_name|DATABASE|ALL SERVER)
     ;
     
+names_references
+    : name+=qualified_name (COMMA name+=qualified_name)*
+    ;
+
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/enable-trigger-transact-sql
 enable_trigger
-    : ENABLE TRIGGER (simple_names| ALL) ON (qualified_name|DATABASE|ALL SERVER)
+    : ENABLE TRIGGER (names_references| ALL) ON (qualified_name|DATABASE|ALL SERVER)
     ;
 
 lock_table
@@ -876,7 +876,7 @@ create_or_alter_resource_pool
 alter_resource_governor
     : RESOURCE GOVERNOR 
         ((DISABLE | RECONFIGURE) 
-        | WITH LR_BRACKET CLASSIFIER_FUNCTION EQUAL ( simple_name | NULL ) RR_BRACKET 
+        | WITH LR_BRACKET CLASSIFIER_FUNCTION EQUAL ( qualified_name | NULL ) RR_BRACKET 
         | RESET STATISTICS 
         | WITH LR_BRACKET MAX_OUTSTANDING_IO_PER_VOLUME EQUAL max_outstanding_io_per_volume=DECIMAL RR_BRACKET)
     ;
@@ -912,7 +912,7 @@ create_route
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-rule-transact-sql
 create_rule
-    : RULE simple_name AS search_condition
+    : RULE qualified_name AS search_condition
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-schema-transact-sql
@@ -951,10 +951,10 @@ add_drop_property
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-security-policy-transact-sql
 create_security_policy
-    : SECURITY POLICY simple_name
-        (COMMA? ADD (FILTER|BLOCK)? PREDICATE simple_name
+    : SECURITY POLICY qualified_name
+        (COMMA? ADD (FILTER|BLOCK)? PREDICATE qualified_name
             LR_BRACKET (COMMA? column_name_or_arguments=expression)+ RR_BRACKET
-            ON simple_name
+            ON qualified_name
                 (COMMA? AFTER (INSERT|UPDATE)
                 | COMMA? BEFORE (UPDATE|DELETE)
                 )*
@@ -963,14 +963,14 @@ create_security_policy
     ;
 
 alter_security_policy
-    : SECURITY POLICY simple_name
+    : SECURITY POLICY qualified_name
     LR_BRACKET? add_alter_drop_predicate (COMMA add_alter_drop_predicate)* RR_BRACKET?
     (WITH LR_BRACKET STATE EQUAL on_off RR_BRACKET)? not_for_replication?
     ;
 
 add_alter_drop_predicate
-    : (ADD | ALTER) (FILTER | BLOCK) PREDICATE simple_name LR_BRACKET expression (COMMA expression)* RR_BRACKET ON simple_name block_dml_operation?
-    | DROP (FILTER | BLOCK) PREDICATE ON simple_name
+    : (ADD | ALTER) (FILTER | BLOCK) PREDICATE qualified_name LR_BRACKET expression (COMMA expression)* RR_BRACKET ON qualified_name block_dml_operation?
+    | DROP (FILTER | BLOCK) PREDICATE ON qualified_name
     ;
 
 block_dml_operation
@@ -980,12 +980,12 @@ block_dml_operation
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-sequence-transact-sql
 alter_sequence
-    : SEQUENCE simple_name (sequence_body | RESTART (WITH restart=signed_numerical_literal)?) *
+    : SEQUENCE qualified_name (sequence_body | RESTART (WITH restart=signed_numerical_literal)?) *
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-sequence-transact-sql
 create_sequence
-    : SEQUENCE simple_name (sequence_body)*
+    : SEQUENCE qualified_name (sequence_body)*
     ;
 
 sequence_body
@@ -1151,13 +1151,13 @@ alter_server_role_pdw
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-service-transact-sql
 alter_service
-    : SERVICE modified_service_name=id (ON QUEUE simple_name)? (COMMA? (ADD|DROP) modified_contract_name=id)*
+    : SERVICE modified_service_name=id (ON QUEUE qualified_name)? (COMMA? (ADD|DROP) modified_contract_name=id)*
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-service-transact-sql
 create_service
     : SERVICE create_service_name=id (AUTHORIZATION owner_name=id)?
-    ON QUEUE simple_name (LR_BRACKET (COMMA? id_or_default)+ RR_BRACKET)?
+    ON QUEUE qualified_name (LR_BRACKET (COMMA? id_or_default)+ RR_BRACKET)?
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-service-master-key-transact-sql
@@ -1197,8 +1197,8 @@ create_symmetric_key
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-synonym-transact-sql
 create_synonym
-    : SYNONYM simple_name FOR 
-        ((server_name=id DOT)? (database_name=id DOT)? simple_name
+    : SYNONYM qualified_name FOR 
+        ((server_name=id DOT)? (database_name=id DOT)? qualified_name
         | (database_or_schema2=id DOT)? (schema_id_2_or_object_name=id DOT)?)
     ;
 
@@ -1578,8 +1578,8 @@ create_or_alter_procedure
     ;
 
 create_or_alter_trigger
-    : TRIGGER simple_name
-    ON (qualified_name | ALL SERVER | DATABASE)
+    : TRIGGER trigger_name=qualified_name
+    ON (table_name=qualified_name | ALL SERVER | DATABASE)
     (WITH trigger_option (COMMA trigger_option)* )?
     (FOR | AFTER | INSTEAD OF) trigger_operation (COMMA trigger_operation)*
     with_append?
@@ -1689,7 +1689,7 @@ table_options
 
 // https://msdn.microsoft.com/en-us/library/ms187956.aspx
 create_or_alter_view
-    : VIEW simple_name (LR_BRACKET column_name_list RR_BRACKET)?
+    : VIEW qualified_name (LR_BRACKET column_name_list RR_BRACKET)?
     (WITH view_attribute (COMMA view_attribute)*)?
     AS select_statement with_check_option?
     ;
@@ -1973,13 +1973,13 @@ drop_backward_compatible_index
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/drop-trigger-transact-sql
 drop_ddl_trigger
-    : TRIGGER (IF EXISTS)? simple_name (COMMA simple_name)* ON (DATABASE | ALL SERVER)
+    : TRIGGER (IF EXISTS)? qualified_name (COMMA qualified_name)* ON (DATABASE | ALL SERVER)
     ;
 
 create_type
-    : TYPE name = simple_name
+    : TYPE name = qualified_name
     (FROM data_type default_value)?
-    (EXTERNAL NAME assembly_name=simple_name)?
+    (EXTERNAL NAME assembly_name=qualified_name)?
     (AS TABLE LR_BRACKET column_def_table_constraints RR_BRACKET)?
     ;
 
@@ -2342,7 +2342,7 @@ setuser_statement
     ;
 
 dbcc_clause
-    : DBCC name=simple_id (LR_BRACKET expression_list RR_BRACKET)? (WITH simple_names)?
+    : DBCC name=simple_id (LR_BRACKET expression_list RR_BRACKET)? (WITH names_references)?
     ;
 
 execute_clause
@@ -2973,10 +2973,6 @@ qualified_name
       |                               schema=id   DOT)? name=id
     ;
 
-simple_name
-    : (schema=id DOT)? name=id
-    ;
-
 full_column_name
     : (qualified_name DOT)? id
     ; 
@@ -3060,7 +3056,7 @@ send_conversation
 // https://msdn.microsoft.com/en-us/library/ms187752.aspx
 // TODO: implement runtime check or add new tokens.
 data_type
-    : simple_name size=data_type_size?
+    : qualified_name size=data_type_size?
     | DOUBLE PRECISION
     ;
     

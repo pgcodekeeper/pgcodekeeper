@@ -2,13 +2,13 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import java.util.List;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_sequenceContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Data_type_sizeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Sequence_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractSequence;
 import cz.startnet.utils.pgdiff.schema.MsSequence;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -25,10 +25,12 @@ public class CreateMsSequence extends ParserAbstract {
 
     @Override
     public PgStatement getObject() {
-        List<IdContext> ids = ctx.simple_name().id();
-        AbstractSequence sequence = new MsSequence(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
+        String name = ctx.qualified_name().name.getText();
+        AbstractSequence sequence = new MsSequence(name, getFullCtxText(ctx.getParent()));
         fillSequence(sequence, ctx.sequence_body());
-        getSchemaSafe(ids, db.getDefaultSchema()).addSequence(sequence);
+        IdContext schemaCtx = ctx.qualified_name().schema;
+        AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
+        schema.addSequence(sequence);
         return sequence;
     }
 
@@ -40,7 +42,7 @@ public class CreateMsSequence extends ParserAbstract {
         for (Sequence_bodyContext body : list) {
             if (body.data_type() != null) {
                 Data_typeContext data = body.data_type();
-                dataType = data.simple_name().getText().toLowerCase();
+                dataType = data.qualified_name().getText().toLowerCase();
                 sequence.setDataType(dataType);
                 Data_type_sizeContext size = data.size;
                 if (size != null && size.presicion != null) {
