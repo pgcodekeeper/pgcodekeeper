@@ -1651,12 +1651,22 @@ function_option
 // https://msdn.microsoft.com/en-us/library/ms188038.aspx
 create_statistics
     : STATISTICS id ON table_name_with_hint LR_BRACKET column_name_list RR_BRACKET
-    (WITH (FULLSCAN | SAMPLE DECIMAL (PERCENT | ROWS) | STATS_STREAM)
-    (COMMA NORECOMPUTE)? (COMMA INCREMENTAL EQUAL on_off)? )?
+    (WITH update_statistics_with_option (COMMA update_statistics_with_option)*)?
     ;
 
 update_statistics
-    : UPDATE (INDEX | ALL)? STATISTICS qualified_name id?  (USING DECIMAL VALUES)?
+    : UPDATE STATISTICS table_name=qualified_name 
+    (qualified_name | LR_BRACKET names_references RR_BRACKET)?
+    (WITH update_statistics_with_option (COMMA update_statistics_with_option)*)?
+    ;
+
+update_statistics_with_option
+    : FULLSCAN (COMMA PERSIST_SAMPLE_PERSENT EQUAL on_off)?
+    | SAMPLE DECIMAL (PERCENT | ROWS) (COMMA PERSIST_SAMPLE_PERSENT EQUAL on_off)?
+    | RESAMPLE (ON PARTITIONS LR_BRACKET (COMMA? (DECIMAL | DECIMAL TO DECIMAL))+ RR_BRACKET)
+    | NORECOMPUTE
+    | INCREMENTAL EQUAL on_off
+    | MAXDOP EQUAL DECIMAL
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms174979.aspx
@@ -3484,6 +3494,7 @@ simple_id
     | PER_DB
     | PER_NODE
     | PERMISSION_SET
+    | PERSIST_SAMPLE_PERSENT
     | PERSISTED
     | PLATFORM
     | POISON_MESSAGE_HANDLING
@@ -3548,6 +3559,7 @@ simple_id
     | REQUEST_MEMORY_GRANT_TIMEOUT_SEC
     | REQUIRED_SYNCHRONIZED_SECONDARIES_TO_COMMIT
     | REQUIRED
+    | RESAMPLE
     | RESERVE_DISK_SPACE
     | RESET
     | RESOURCE_MANAGER_LOCATION
