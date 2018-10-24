@@ -217,17 +217,18 @@ public class PgSequence extends AbstractSequence {
     }
 
     @Override
-    public void setMinMaxInc(long inc, Long max, Long min, String dataType) {
+    public void setMinMaxInc(long inc, Long max, Long min, String dataType,
+            String precision) {
         String type = dataType != null ? dataType : BIGINT;
         this.increment = Long.toString(inc);
-        if (max == null || (inc > 0 && max == getBoundaryTypeVal(type, true))
+        if (max == null || (inc > 0 && max == getBoundaryTypeVal(type, true, null))
                 || (inc < 0 && max == -1)) {
             this.maxValue = null;
         } else {
             this.maxValue = "" + max;
         }
         if (min == null || (inc > 0 && min == 1)
-                || (inc < 0 && min == getBoundaryTypeVal(type, false))) {
+                || (inc < 0 && min == getBoundaryTypeVal(type, false, null))) {
             this.minValue = null;
         } else {
             this.minValue = "" + min;

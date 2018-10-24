@@ -377,7 +377,7 @@ class MsDB2 extends MsDatabaseObjectCreator {
 
         AbstractSequence seq = new MsSequence("admins_aid_seq", "");
         seq.setStartWith("1");
-        seq.setMinMaxInc(1L, 1000000000L, 1L, null);
+        seq.setMinMaxInc(1L, 1000000000L, 1L, null, null);
         seq.setCached(true);
         seq.setCache("1");
         schema.addSequence(seq);
@@ -515,7 +515,7 @@ class MsDB3 extends MsDatabaseObjectCreator {
 
         AbstractSequence seq = new MsSequence("call_logs_id_seq", "");
         seq.setStartWith("1");
-        seq.setMinMaxInc(1L, 1000000000L, 1L, null);
+        seq.setMinMaxInc(1L, 1000000000L, 1L, null, null);
         seq.setCached(true);
         seq.setCache("1");
         schema.addSequence(seq);
@@ -737,7 +737,7 @@ class MsDB8 extends MsDatabaseObjectCreator {
         AbstractSchema schema = d.getDefaultSchema();
 
         MsSequence seq = new MsSequence("user_id_seq", "");
-        seq.setMinMaxInc(1L, null, null, null);
+        seq.setMinMaxInc(1L, null, null, null, null);
         seq.setCached(true);
         seq.setCache("1");
         seq.setOwner("ms_user");
@@ -1110,7 +1110,7 @@ class MsDB13 extends MsDatabaseObjectCreator {
 
         AbstractSequence seq = new MsSequence("test_id_seq", "");
         seq.setStartWith("1");
-        seq.setMinMaxInc(1L, null, null, null);
+        seq.setMinMaxInc(1L, null, null, null, null);
         seq.setCached(true);
         seq.setCache("1");
         schema.addSequence(seq);

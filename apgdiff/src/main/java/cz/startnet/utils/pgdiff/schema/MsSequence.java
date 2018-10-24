@@ -164,11 +164,14 @@ public class MsSequence extends AbstractSequence {
     }
 
     @Override
-    public void setMinMaxInc(long inc, Long max, Long min, String dataType) {
+    public void setMinMaxInc(long inc, Long max, Long min, String dataType,
+            String precision) {
         String type = dataType != null ? dataType : BIGINT;
         this.increment = Long.toString(inc);
-        this.maxValue = Long.toString(max == null ? getBoundaryTypeVal(type, true) : max);
-        this.minValue = Long.toString(min == null ? getBoundaryTypeVal(type, false) : min);
+        this.maxValue = Long.toString(max == null ?
+                getBoundaryTypeVal(type, true, precision) : max);
+        this.minValue = Long.toString(min == null ?
+                getBoundaryTypeVal(type, false, precision) : min);
         resetHash();
     }
 

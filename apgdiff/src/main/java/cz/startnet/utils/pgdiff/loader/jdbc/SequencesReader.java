@@ -15,11 +15,11 @@ import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractSequence;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class SequencesReader extends JdbcReader {
@@ -71,7 +71,8 @@ public class SequencesReader extends JdbcReader {
             s.setStartWith(Long.toString(res.getLong("seqstart")));
             String dataType = identityType != null ? null :
                 loader.cachedTypesByOid.get(res.getLong("data_type")).getFullName();
-            s.setMinMaxInc(res.getLong("seqincrement"), res.getLong("seqmax"), res.getLong("seqmin"), dataType);
+            s.setMinMaxInc(res.getLong("seqincrement"), res.getLong("seqmax"),
+                    res.getLong("seqmin"), dataType, null);
             s.setCache(Long.toString(res.getLong("seqcache")));
             s.setCycle(res.getBoolean("seqcycle"));
             if (identityType == null) {
@@ -174,7 +175,8 @@ public class SequencesReader extends JdbcReader {
             while (res.next()) {
                 AbstractSequence seq = seqs.get(res.getString("qname"));
                 seq.setStartWith(res.getString("start_value"));
-                seq.setMinMaxInc(res.getLong("increment_by"), res.getLong("max_value"), res.getLong("min_value"), null);
+                seq.setMinMaxInc(res.getLong("increment_by"), res.getLong("max_value"),
+                        res.getLong("min_value"), null, null);
                 seq.setCache(res.getString("cache_value"));
                 seq.setCycle(res.getBoolean("is_cycled"));
             }

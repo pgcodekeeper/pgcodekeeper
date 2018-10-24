@@ -26,14 +26,17 @@ public class MsSequencesReader extends JdbcReader {
         String dataType = res.getString("data_type");
         s.setDataType(dataType);
 
+        String precision = null;
+        if ("numeric".equals(dataType) || "decimal".equals(dataType)) {
+            precision = Long.toString(res.getLong("precision"));
+        }
+
         s.setStartWith(Long.toString(res.getLong("start_value")));
         s.setMinMaxInc(res.getLong("increment"), res.getLong("maximum_value"),
-                res.getLong("minimum_value"), dataType);
+                res.getLong("minimum_value"), dataType, precision);
         s.setCached(res.getBoolean("is_cached"));
 
-        if ("numeric".equals(dataType) || "decimal".equals(dataType)) {
-            s.setPresicion(Long.toString(res.getLong("precision")));
-        }
+        s.setPresicion(precision);
 
         // getInt convert null to 0
         Object cashe = res.getObject("cache_size");
