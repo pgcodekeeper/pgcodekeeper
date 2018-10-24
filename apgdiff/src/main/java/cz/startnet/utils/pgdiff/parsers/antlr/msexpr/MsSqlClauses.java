@@ -4,23 +4,35 @@ import java.util.Collections;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Another_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Block_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Cfl_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Dbcc_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Ddl_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Delete_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Dml_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Enable_disable_triggerContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ExpressionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.If_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Insert_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Lock_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Merge_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Names_referencesContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Print_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Receive_column_specifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Receive_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Return_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Select_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Sql_clausesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.St_clauseContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Top_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Truncate_tableContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Try_catch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Update_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Update_statisticsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Waitfor_receiveContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Waitfor_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.While_statementContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -130,7 +142,69 @@ public class MsSqlClauses extends MsAbstractExprWithNmspc<Sql_clausesContext> {
     }
 
     private void cfl(Cfl_statementContext cfl) {
+        Block_statementContext block = cfl.block_statement();
+        If_statementContext is;
+        Return_statementContext rs;
+        Try_catch_statementContext tcs;
+        Waitfor_statementContext wfs;
+        While_statementContext ws;
+        Print_statementContext ps;
 
+        if (block != null) {
+            analyze(block.sql_clauses());
+        } else if ((is = cfl.if_statement()) != null) {
+            new MsValueExpr(this).search(is.search_condition());
+
+            for (St_clauseContext clause : is.st_clause()) {
+                clause(clause);
+            }
+        } else if ((rs = cfl.return_statement()) != null) {
+            ExpressionContext exp = rs.expression();
+            if (exp != null) {
+                new MsValueExpr(this).analyze(rs.expression());
+            }
+        } else if ((tcs = cfl.try_catch_statement()) != null) {
+            for (Sql_clausesContext clauses : tcs.sql_clauses()) {
+                analyze(clauses);
+            }
+        } else if ((wfs = cfl.waitfor_statement()) != null) {
+            Waitfor_receiveContext rec = wfs.waitfor_receive();
+            if (rec != null) {
+                receive(rec.receive_statement());
+            }
+        } else if ((ws = cfl.while_statement()) != null) {
+            new MsValueExpr(this).search(ws.search_condition());
+            St_clauseContext clause = ws.st_clause();
+            if (clause != null) {
+                clause(clause);
+            }
+        } else if ((ps = cfl.print_statement()) != null) {
+            ExpressionContext exp = ps.expression();
+            if (exp != null) {
+                new MsValueExpr(this).analyze(exp);
+            }
+        }
+    }
+
+    private void receive(Receive_statementContext receive) {
+        Top_clauseContext top = receive.top_clause();
+        if (top != null) {
+            ExpressionContext exp = top.top_count().expression();
+            if (exp != null) {
+                new MsValueExpr(this).analyze(exp);
+            }
+        }
+
+        for (Receive_column_specifierContext col : receive.receive_column_specifier()) {
+            ExpressionContext exp = col.expression();
+            if (exp != null) {
+                new MsValueExpr(this).analyze(exp);
+            }
+        }
+
+        if (receive.WHERE() != null) {
+            new MsValueExpr(this).search(receive.search_condition());
+        }
     }
 
     private void dbcc(Dbcc_clauseContext dbcc) {
