@@ -2031,10 +2031,11 @@ declare_statement
 cursor_statement
     // https://msdn.microsoft.com/en-us/library/ms175035(v=sql.120).aspx
     : (CLOSE | OPEN | DEALLOCATE) GLOBAL? cursor_name
-    // https://msdn.microsoft.com/en-us/library/ms180169(v=sql.120).aspx
-    | declare_cursor
+    // https://msdn.microsoft.com/en-us/library/ms180169.aspx
+    | DECLARE cursor_name (SEMI_SENSITIVE | INSENSITIVE)? SCROLL? cursor_common
     // https://msdn.microsoft.com/en-us/library/ms180152(v=sql.120).aspx
-    | fetch_cursor
+    | FETCH ((NEXT | PRIOR | FIRST | LAST | (ABSOLUTE | RELATIVE) expression)? FROM)? 
+    GLOBAL? cursor_name (INTO LOCAL_ID (COMMA LOCAL_ID)*)?
     ;
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/backup-transact-sql
 backup_database
@@ -2320,8 +2321,7 @@ decryption_mechanism
 set_statement
     : SET LOCAL_ID (DOT member_name=id)? EQUAL expression
     | SET LOCAL_ID assignment_operator expression
-    | SET LOCAL_ID EQUAL
-      CURSOR declare_set_cursor_common (FOR (READ ONLY | UPDATE (OF column_name_list)?))?
+    | SET LOCAL_ID EQUAL cursor_common
     // https://msdn.microsoft.com/en-us/library/ms189837.aspx
     | set_special
     ;
@@ -2456,17 +2456,12 @@ index_option_value
     | DECIMAL
     ;
 
-// https://msdn.microsoft.com/en-us/library/ms180169.aspx
-declare_cursor
-    : DECLARE cursor_name (SEMI_SENSITIVE | INSENSITIVE)? SCROLL? CURSOR declare_set_cursor_common_partial*
-    FOR select_statement (FOR (READ ONLY | UPDATE) (OF column_name_list)?)?
+cursor_common
+    : CURSOR declare_cursor_partial* FOR select_statement 
+    (FOR (READ ONLY | UPDATE (OF column_name_list)?))?
     ;
 
-declare_set_cursor_common
-    : declare_set_cursor_common_partial* FOR select_statement
-    ;
-
-declare_set_cursor_common_partial
+declare_cursor_partial
     : LOCAL 
     | GLOBAL
     | FORWARD_ONLY 
@@ -2479,11 +2474,6 @@ declare_set_cursor_common_partial
     | SCROLL_LOCKS 
     | OPTIMISTIC
     | TYPE_WARNING
-    ;
-
-fetch_cursor
-    : FETCH ((NEXT | PRIOR | FIRST | LAST | (ABSOLUTE | RELATIVE) expression)? FROM)?
-      GLOBAL? cursor_name (INTO LOCAL_ID (COMMA LOCAL_ID)*)?
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms190356.aspx

@@ -6,11 +6,16 @@ import java.util.List;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Another_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Block_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Cfl_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Cursor_commonContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Cursor_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Dbcc_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Ddl_clauseContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Declare_localContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Declare_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Delete_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Dml_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Enable_disable_triggerContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Execute_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ExpressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Expression_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.If_statementContext;
@@ -24,6 +29,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Receive_column_specifie
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Receive_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Return_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Select_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Set_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Sql_clausesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.St_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Top_clauseContext;
@@ -216,7 +222,52 @@ public class MsSqlClauses extends MsAbstractExprWithNmspc<Sql_clausesContext> {
     }
 
     private void another(Another_statementContext another) {
+        Declare_statementContext dec = another.declare_statement();
+        Cursor_statementContext cursor;
+        Receive_statementContext receive;
+        Execute_statementContext exec;
+        Set_statementContext set;
 
+        if (dec != null) {
+            declare(dec);
+        } else if ((cursor = another.cursor_statement()) != null) {
+            cursor(cursor);
+        } else if ((receive = another.receive_statement())!= null) {
+            receive(receive);
+        } else if ((exec = another.execute_statement())!= null) {
+            new MsValueExpr(this).analyze(exec.expression());
+        } else if ((set = another.set_statement()) != null) {
+            set(set);
+        }
     }
 
+    private void set(Set_statementContext set) {
+        ExpressionContext exp = set.expression();
+        Cursor_commonContext cc;
+
+        if (exp != null) {
+            new MsValueExpr(this).analyze(exp);
+        } else if ((cc = set.cursor_common()) != null) {
+            new MsSelect(this).analyze(cc.select_statement());
+        }
+    }
+
+    private void cursor(Cursor_statementContext cursor) {
+        ExpressionContext exp = cursor.expression();
+        Cursor_commonContext cc;
+        if (exp != null) {
+            new MsValueExpr(this).analyze(exp);
+        } else if ((cc = cursor.cursor_common()) != null) {
+            new MsSelect(this).analyze(cc.select_statement());
+        }
+    }
+
+    private void declare(Declare_statementContext dec) {
+        for (Declare_localContext local : dec.declare_local()) {
+            ExpressionContext exp = local.expression();
+            if (exp != null) {
+                new MsValueExpr(this).analyze(exp);
+            }
+        }
+    }
 }
