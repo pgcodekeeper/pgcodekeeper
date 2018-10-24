@@ -257,7 +257,7 @@ try_catch_statement
 
 // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/waitfor-transact-sql
 waitfor_statement
-    : WAITFOR receive_statement? COMMA? ((DELAY | TIME | TIMEOUT) time)?  expression?
+    : WAITFOR (waitfor_receive | (DELAY | TIME) time)
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/while-transact-sql
@@ -281,6 +281,7 @@ another_statement
     : declare_statement
     | cursor_statement
     | conversation_statement
+    | receive_statement
     | execute_statement
     | security_statement
     | set_statement
@@ -1361,10 +1362,23 @@ insert_statement
     for_clause? option_clause?
     ;
 
+waitfor_receive
+    : LR_BRACKET receive_statement RR_BRACKET (COMMA TIMEOUT timeout=time)?
+    ;
+
 receive_statement
-    : LR_BRACKET? RECEIVE (ALL | DISTINCT | top_clause | STAR)
-    (LOCAL_ID EQUAL expression COMMA?)* FROM qualified_name
-    (INTO table_variable=id (WHERE where=search_condition))? RR_BRACKET?
+    : RECEIVE top_clause? 
+    receive_column_specifier (COMMA receive_column_specifier)* 
+    FROM qualified_name
+    (INTO table_variable=LOCAL_ID)? 
+    (WHERE where=search_condition)?
+    ;
+
+receive_column_specifier
+    : STAR
+    | id AS? column_alias?
+    | expression AS? column_alias?
+    | LOCAL_ID EQUAL expression
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms189499.aspx
@@ -3049,7 +3063,7 @@ waitfor_conversation
 
 get_conversation
     : GET CONVERSATION GROUP conversation_group_id=string_or_local_id
-    FROM (database_name=id DOT schema_name=id DOT)? name=id
+    FROM qualified_name
     ;
 
 send_conversation
