@@ -232,6 +232,7 @@ public class PgSequence extends AbstractSequence {
         } else {
             this.minValue = "" + min;
         }
+        resetHash();
     }
 
     @Override
