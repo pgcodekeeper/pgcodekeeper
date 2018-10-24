@@ -12,6 +12,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Delete_statementContext
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Dml_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Enable_disable_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ExpressionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Expression_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.If_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Insert_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Lock_tableContext;
@@ -208,7 +209,10 @@ public class MsSqlClauses extends MsAbstractExprWithNmspc<Sql_clausesContext> {
     }
 
     private void dbcc(Dbcc_clauseContext dbcc) {
-
+        Expression_listContext list = dbcc.expression_list();
+        if (list != null) {
+            new MsValueExpr(this).expressionList(list);
+        }
     }
 
     private void another(Another_statementContext another) {
