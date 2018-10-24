@@ -165,7 +165,7 @@ public class MsSequence extends AbstractSequence {
 
     @Override
     public void setMinMaxInc(long inc, Long max, Long min, String dataType,
-            String precision) {
+            long precision) {
         String type = dataType != null ? dataType : BIGINT;
         this.increment = Long.toString(inc);
         this.maxValue = Long.toString(max == null ?

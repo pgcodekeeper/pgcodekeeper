@@ -56,6 +56,6 @@ public class CreateSequence extends ParserAbstract {
                 sequence.setOwnedBy(ParserAbstract.getFullCtxText(body.col_name));
             }
         }
-        sequence.setMinMaxInc(inc, maxValue, minValue, dataType, null);
+        sequence.setMinMaxInc(inc, maxValue, minValue, dataType, 0L);
     }
 }

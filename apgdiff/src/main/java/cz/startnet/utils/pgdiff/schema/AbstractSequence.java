@@ -80,9 +80,9 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
     }
 
     public abstract void setMinMaxInc(long inc, Long max, Long min, String dataType,
-            String presicion);
+            long presicion);
 
-    protected long getBoundaryTypeVal(String type, boolean needMaxVal, String presicion) {
+    protected long getBoundaryTypeVal(String type, boolean needMaxVal, long presicion) {
         switch (type) {
         case "smallint":
             return needMaxVal ? Short.MAX_VALUE : Short.MIN_VALUE;
@@ -91,12 +91,8 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
         case "numeric":
         case "decimal":
             // It used for MS SQL.
-            if (presicion != null) {
-                long boundaryTypeVal = (long) (Math.pow(10, Long.parseLong(presicion))) - 1;
-                return needMaxVal ? boundaryTypeVal : - boundaryTypeVal;
-            }
-            Log.log(Log.LOG_WARNING, "Presicion wasn't set.");
-            return needMaxVal ? Long.MAX_VALUE : Long.MIN_VALUE;
+            long boundaryTypeVal = (long) (Math.pow(10, presicion)) - 1;
+            return needMaxVal ? boundaryTypeVal : - boundaryTypeVal;
         default:
             Log.log(Log.LOG_WARNING, "Unsupported sequence type: " + type);
             // $FALL-THROUGH$
