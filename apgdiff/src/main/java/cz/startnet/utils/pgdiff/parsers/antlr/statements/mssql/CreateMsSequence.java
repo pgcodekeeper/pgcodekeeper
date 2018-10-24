@@ -37,6 +37,7 @@ public class CreateMsSequence extends ParserAbstract {
         Long maxValue = null;
         Long minValue = null;
         String dataType = null;
+        String precision = null;
         for (Sequence_bodyContext body : list) {
             if (body.data_type() != null) {
                 Data_typeContext data = body.data_type();
@@ -44,7 +45,8 @@ public class CreateMsSequence extends ParserAbstract {
                 sequence.setDataType(dataType);
                 Data_type_sizeContext size = data.size;
                 if (size != null && size.presicion != null) {
-                    sequence.setPresicion(size.presicion.getText());
+                    precision = size.presicion.getText();
+                    sequence.setPresicion(precision);
                 }
             } else if (body.start_val != null) {
                 sequence.setStartWith(body.start_val.getText());
@@ -64,6 +66,7 @@ public class CreateMsSequence extends ParserAbstract {
             }
         }
 
-        sequence.setMinMaxInc(inc, maxValue, minValue, dataType);
+        sequence.setMinMaxInc(inc, maxValue, minValue, dataType,
+                precision == null ? 0L : Long.parseLong(precision));
     }
 }
