@@ -66,6 +66,7 @@ public class CreateMsSequence extends ParserAbstract {
             }
         }
 
-        sequence.setMinMaxInc(inc, maxValue, minValue, dataType, Long.parseLong(precision));
+        sequence.setMinMaxInc(inc, maxValue, minValue, dataType,
+                precision == null ? 0L : Long.parseLong(precision));
     }
 }
