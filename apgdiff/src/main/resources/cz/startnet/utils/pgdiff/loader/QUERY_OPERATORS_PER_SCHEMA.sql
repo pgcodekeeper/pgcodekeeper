@@ -1,5 +1,17 @@
+WITH sys_schemas AS (
+    SELECT n.oid
+    FROM pg_catalog.pg_namespace n
+    WHERE n.nspname LIKE 'pg\_%'
+        OR n.nspname = 'information_schema'    
+), extension_deps AS (
+    SELECT dep.objid 
+    FROM pg_catalog.pg_depend dep 
+    WHERE refclassid = 'pg_catalog.pg_extension'::pg_catalog.regclass 
+        AND dep.deptype = 'e'
+)
+
 SELECT o.oprname AS name, 
-       n.oid AS schema_oid,
+       o.oprnamespace AS schema_oid,
        prc.proname AS procedure,
        prc_n.nspname AS procedure_nsp,
        o.oprleft::bigint AS leftArg,
@@ -17,9 +29,8 @@ SELECT o.oprname AS name,
        o.oprowner AS owner,
        d.description AS comment
 FROM pg_catalog.pg_operator o
-LEFT JOIN pg_catalog.pg_namespace n ON o.oprnamespace = n.oid
 LEFT JOIN pg_catalog.pg_description d ON d.objoid = o.oid
-LEFT JOIN pg_catalog.pg_proc prc ON o.oprcode = prc.oid
+JOIN pg_catalog.pg_proc prc ON o.oprcode = prc.oid
 LEFT JOIN pg_catalog.pg_namespace prc_n ON prc.pronamespace = prc_n.oid
 LEFT JOIN pg_catalog.pg_operator com ON o.oprcom = com.oid
 LEFT JOIN pg_catalog.pg_namespace com_n ON com.oprnamespace = com_n.oid
@@ -29,5 +40,5 @@ LEFT JOIN pg_catalog.pg_proc prc_r ON o.oprrest = prc_r.oid
 LEFT JOIN pg_catalog.pg_namespace prc_r_n ON prc_r.pronamespace = prc_r_n.oid
 LEFT JOIN pg_catalog.pg_proc prc_j ON o.oprjoin = prc_j.oid
 LEFT JOIN pg_catalog.pg_namespace prc_j_n ON prc_j.pronamespace = prc_j_n.oid
-WHERE (n.nspname NOT LIKE 'pg\_%' OR n.nspname = 'information_schema')
-AND prc.proname IS NOT NULL
+WHERE o.oprnamespace NOT IN (SELECT oid FROM sys_schemas)
+    AND o.oid NOT IN (SELECT objid FROM extension_deps)
