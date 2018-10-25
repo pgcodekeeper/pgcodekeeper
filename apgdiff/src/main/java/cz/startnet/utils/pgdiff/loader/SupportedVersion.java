@@ -6,10 +6,8 @@ public enum SupportedVersion {
     VERSION_9_4 (90400, "9.4"),
     VERSION_9_5 (90500, "9.5"),
     VERSION_9_6 (90600, "9.6"),
-    VERSION_10 (100000, "10.0"),/*,
-    //TODO check version from postgresPRO
-    VERSION_9_5_P (91500),
-    VERSION_9_6_P (91600)*/;
+    VERSION_10 (100000, "10.0"),
+    VERSION_11 (110000, "10.0");
 
     private final int version;
     private final String text;

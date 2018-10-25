@@ -28,6 +28,9 @@ public class FunctionsReader extends JdbcReader {
 
     @Override
     protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException {
+        if (res.getBoolean("proisspecial")) {
+            return;
+        }
         String schemaName = schema.getName();
         String functionName = res.getString("proname");
         loader.setCurrentObject(new GenericColumn(schemaName, functionName, DbObjType.FUNCTION));
