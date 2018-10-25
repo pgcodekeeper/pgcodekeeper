@@ -113,7 +113,7 @@ public class JdbcLoader extends JdbcLoaderBase {
 
             new ExtensionsReader(this, d).read();
 
-            if (!SupportedVersion.VERSION_10.checkVersion(version)) {
+            if (!SupportedVersion.VERSION_10.isLE(version)) {
                 SequencesReader.querySequencesData(d, this);
             }
 

@@ -6,8 +6,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.HashMap;
-import java.util.Map;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.Log;
@@ -34,23 +32,23 @@ public final class JdbcQueries {
     public static String QUERY_CHECK_LAST_SYS_OID;
     public static String QUERY_CHECK_TIMESTAMPS;
 
-    public static Map <SupportedVersion, String> QUERY_EXTENSIONS;
-    public static Map <SupportedVersion, String> QUERY_SCHEMAS;
+    public static final JdbcQuery QUERY_EXTENSIONS = new JdbcQuery();
+    public static final JdbcQuery QUERY_SCHEMAS = new JdbcQuery();
 
-    public static Map <SupportedVersion, String> QUERY_TABLES_PER_SCHEMA;
-    public static Map <SupportedVersion, String> QUERY_FUNCTIONS_PER_SCHEMA;
-    public static Map <SupportedVersion, String> QUERY_SEQUENCES_PER_SCHEMA;
-    public static Map <SupportedVersion, String> QUERY_INDICES_PER_SCHEMA;
-    public static Map <SupportedVersion, String> QUERY_CONSTRAINTS_PER_SCHEMA;
-    public static Map <SupportedVersion, String> QUERY_TRIGGERS_PER_SCHEMA;
-    public static Map <SupportedVersion, String> QUERY_VIEWS_PER_SCHEMA;
-    public static Map <SupportedVersion, String> QUERY_TYPES_PER_SCHEMA;
-    public static Map <SupportedVersion, String> QUERY_RULES_PER_SCHEMA;
-    public static Map <SupportedVersion, String> QUERY_FTS_PARSERS_PER_SCHEMA;
-    public static Map <SupportedVersion, String> QUERY_FTS_TEMPLATES_PER_SCHEMA;
-    public static Map <SupportedVersion, String> QUERY_FTS_DICTIONARIES_PER_SCHEMA;
-    public static Map <SupportedVersion, String> QUERY_FTS_CONFIGURATIONS_PER_SCHEMA;
-    public static Map <SupportedVersion, String> QUERY_OPERATORS_PER_SCHEMA;
+    public static final JdbcQuery QUERY_TABLES_PER_SCHEMA = new JdbcQuery();
+    public static final JdbcQuery QUERY_FUNCTIONS_PER_SCHEMA = new JdbcQuery();
+    public static final JdbcQuery QUERY_SEQUENCES_PER_SCHEMA = new JdbcQuery();
+    public static final JdbcQuery QUERY_INDICES_PER_SCHEMA = new JdbcQuery();
+    public static final JdbcQuery QUERY_CONSTRAINTS_PER_SCHEMA = new JdbcQuery();
+    public static final JdbcQuery QUERY_TRIGGERS_PER_SCHEMA = new JdbcQuery();
+    public static final JdbcQuery QUERY_VIEWS_PER_SCHEMA = new JdbcQuery();
+    public static final JdbcQuery QUERY_TYPES_PER_SCHEMA = new JdbcQuery();
+    public static final JdbcQuery QUERY_RULES_PER_SCHEMA = new JdbcQuery();
+    public static final JdbcQuery QUERY_FTS_PARSERS_PER_SCHEMA = new JdbcQuery();
+    public static final JdbcQuery QUERY_FTS_TEMPLATES_PER_SCHEMA = new JdbcQuery();
+    public static final JdbcQuery QUERY_FTS_DICTIONARIES_PER_SCHEMA = new JdbcQuery();
+    public static final JdbcQuery QUERY_FTS_CONFIGURATIONS_PER_SCHEMA = new JdbcQuery();
+    public static final JdbcQuery QUERY_OPERATORS_PER_SCHEMA = new JdbcQuery();
 
     public static String QUERY_SCHEMAS_ACCESS;
     public static String QUERY_SEQUENCES_ACCESS;
@@ -61,18 +59,18 @@ public final class JdbcQueries {
     public static String QUERY_SYSTEM_OPERATORS;
     public static String QUERY_SYSTEM_CASTS;
 
-    public static Map <SupportedVersion, String> QUERY_MS_SCHEMAS;
+    public static final JdbcQuery QUERY_MS_SCHEMAS = new JdbcQuery();
 
-    public static Map <SupportedVersion, String> QUERY_MS_TABLES;
-    public static Map <SupportedVersion, String> QUERY_MS_FUNCTIONS_PROCEDURES_VIEWS_TRIGGERS;
-    public static Map <SupportedVersion, String> QUERY_MS_EXTENDED_FUNCTIONS_AND_PROCEDURES;
-    public static Map <SupportedVersion, String> QUERY_MS_SEQUENCES;
-    public static Map <SupportedVersion, String> QUERY_MS_INDICES_AND_PK;
-    public static Map <SupportedVersion, String> QUERY_MS_FK;
-    public static Map <SupportedVersion, String> QUERY_MS_CHECK_CONSTRAINTS;
-    public static Map <SupportedVersion, String> QUERY_MS_ASSEMBLIES;
-    public static Map <SupportedVersion, String> QUERY_MS_ROLES;
-    public static Map <SupportedVersion, String> QUERY_MS_USERS;
+    public static final JdbcQuery QUERY_MS_TABLES = new JdbcQuery();
+    public static final JdbcQuery QUERY_MS_FUNCTIONS_PROCEDURES_VIEWS_TRIGGERS = new JdbcQuery();
+    public static final JdbcQuery QUERY_MS_EXTENDED_FUNCTIONS_AND_PROCEDURES = new JdbcQuery();
+    public static final JdbcQuery QUERY_MS_SEQUENCES = new JdbcQuery();
+    public static final JdbcQuery QUERY_MS_INDICES_AND_PK = new JdbcQuery();
+    public static final JdbcQuery QUERY_MS_FK = new JdbcQuery();
+    public static final JdbcQuery QUERY_MS_CHECK_CONSTRAINTS = new JdbcQuery();
+    public static final JdbcQuery QUERY_MS_ASSEMBLIES = new JdbcQuery();
+    public static final JdbcQuery QUERY_MS_ROLES = new JdbcQuery();
+    public static final JdbcQuery QUERY_MS_USERS = new JdbcQuery();
 
     // SONAR-ON
 
@@ -82,12 +80,11 @@ public final class JdbcQueries {
                 continue;
             }
             try {
-                if (Map.class.isAssignableFrom(f.getType())) {
-                    fillMaps(f);
-                } else if (f.getName().startsWith("QUERY_SYSTEM")) {
-                    f.set(null, readResource("system/" + f.getName()));
+                if (JdbcQuery.class.isAssignableFrom(f.getType())) {
+                    fillQueries(f);
                 } else if (String.class.isAssignableFrom(f.getType())) {
-                    f.set(null, readResource(f.getName()));
+                    String res = f.getName().startsWith("QUERY_SYSTEM") ? "system/" + f.getName() : f.getName();
+                    f.set(null, readResource(res));
                 }
             } catch (Exception ex) {
                 Log.log(Log.LOG_ERROR,
@@ -96,21 +93,27 @@ public final class JdbcQueries {
         }
     }
 
-    private static void fillMaps (Field f) throws Exception {
-        Map <SupportedVersion, String> map  = new HashMap<>();
-        f.set(null, map);
+    private static void fillQueries (Field f) throws Exception {
+        JdbcQuery query = (JdbcQuery) f.get(null);
 
         if (f.getName().startsWith("QUERY_MS")) {
-            map.put(null, readResource("ms/" + f.getName()));
+            query.setQuery(readResource("ms/" + f.getName()));
             return;
         }
 
-        map.put(null, readResource(f.getName()));
+        query.setQuery(readResource(f.getName()));
 
         for (SupportedVersion version : SupportedVersion.values()) {
             URL url = JdbcQueries.class.getResource(f.getName() + '_' + version + ".sql");
             if (url != null) {
-                map.put(version, readResource(url));
+                query.addSinceQuery(version, readResource(url));
+            }
+            for (SupportedVersion v2 : SupportedVersion.values()) {
+                URL urlInterval = JdbcQueries.class.getResource(f.getName() + '_'
+                        + version.getVersion() + '_' + v2.getVersion() + ".sql");
+                if (urlInterval != null) {
+                    query.addIntervalQuery(version, v2, readResource(urlInterval));
+                }
             }
         }
     }

@@ -27,8 +27,8 @@ public enum SupportedVersion {
         return text;
     }
 
-    public boolean checkVersion(int version) {
-        return version >= this.version;
+    public boolean isLE(int version) {
+        return this.version <= version;
     }
 
     public static SupportedVersion valueOf(int checkVersion) {
@@ -36,7 +36,7 @@ public enum SupportedVersion {
 
         for (int i = set.length - 1; i >= 0; i--) {
             SupportedVersion verEnum = set[i];
-            if (verEnum.checkVersion(checkVersion)) {
+            if (verEnum.isLE(checkVersion)) {
                 return verEnum;
             }
         }

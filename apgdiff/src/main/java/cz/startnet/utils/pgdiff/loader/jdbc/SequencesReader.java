@@ -41,7 +41,7 @@ public class SequencesReader extends JdbcReader {
         String refColumn = res.getString("ref_col_name");
 
         String identityType = null;
-        if (SupportedVersion.VERSION_10.checkVersion(loader.version)) {
+        if (SupportedVersion.VERSION_10.isLE(loader.version)) {
             identityType = res.getString("attidentity");
             if (identityType != null && identityType.isEmpty()) {
                 // treat lack of table dependency and no identityType as a single case
@@ -67,7 +67,7 @@ public class SequencesReader extends JdbcReader {
             s.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
 
-        if (SupportedVersion.VERSION_10.checkVersion(loader.version)) {
+        if (SupportedVersion.VERSION_10.isLE(loader.version)) {
             s.setStartWith(Long.toString(res.getLong("seqstart")));
             String dataType = identityType != null ? null :
                 loader.cachedTypesByOid.get(res.getLong("data_type")).getFullName();
