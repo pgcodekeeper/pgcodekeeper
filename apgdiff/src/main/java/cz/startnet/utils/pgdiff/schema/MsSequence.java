@@ -44,23 +44,11 @@ public class MsSequence extends AbstractSequence {
             sbSQL.append(getIncrement());
         }
 
-        sbSQL.append("\n\t");
+        sbSQL.append("\n\tMAXVALUE ");
+        sbSQL.append(getMaxValue());
 
-        if (getMaxValue() == null) {
-            sbSQL.append("NO MAXVALUE");
-        } else {
-            sbSQL.append("MAXVALUE ");
-            sbSQL.append(getMaxValue());
-        }
-
-        sbSQL.append("\n\t");
-
-        if (getMinValue() == null) {
-            sbSQL.append("NO MINVALUE");
-        } else {
-            sbSQL.append("MINVALUE ");
-            sbSQL.append(getMinValue());
-        }
+        sbSQL.append("\n\tMINVALUE ");
+        sbSQL.append(getMinValue());
 
         if (isCached()) {
             sbSQL.append("\n\tCACHE ");
@@ -173,6 +161,18 @@ public class MsSequence extends AbstractSequence {
     @Override
     public String getDropSQL() {
         return "DROP SEQUENCE " + getQualifiedName() + GO;
+    }
+
+    @Override
+    public void setMinMaxInc(long inc, Long max, Long min, String dataType,
+            long precision) {
+        String type = dataType != null ? dataType : BIGINT;
+        this.increment = Long.toString(inc);
+        this.maxValue = Long.toString(max == null ?
+                getBoundaryTypeVal(type, true, precision) : max);
+        this.minValue = Long.toString(min == null ?
+                getBoundaryTypeVal(type, false, precision) : min);
+        resetHash();
     }
 
     @Override
