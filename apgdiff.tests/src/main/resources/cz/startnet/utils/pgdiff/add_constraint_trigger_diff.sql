@@ -1,12 +1,12 @@
 SET search_path = pg_catalog;
 
 CREATE OR REPLACE FUNCTION public.test_table_trigger() RETURNS "trigger"
+    LANGUAGE plpgsql
     AS $$
 begin
 	return NEW;
 end;
-$$
-    LANGUAGE plpgsql;
+$$;
 
 ALTER FUNCTION public.test_table_trigger() OWNER TO fordfrog;
 

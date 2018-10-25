@@ -13,16 +13,32 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class AbstractFunction extends PgStatementWithSearchPath implements IFunction {
 
-    protected final List<Argument> arguments = new ArrayList<>();
-    private String body;
-    private String returns;
-    protected final Map<String, String> returnsColumns = new LinkedHashMap<>();
-    protected final List<String> options = new ArrayList<>();
+    public static final String FROM_CURRENT = "FROM CURRENT";
 
+    protected static final float DEFAULT_PROCOST = 100.0f;
+    protected static final float DEFAULT_PROROWS = 1000.0f;
+
+    protected final List<String> options = new ArrayList<>();
+    protected final List<String> transforms = new ArrayList<>();
+    protected final List<Argument> arguments = new ArrayList<>();
+    protected final Map<String, String> configurations = new LinkedHashMap<>();
+    protected final Map<String, String> returnsColumns = new LinkedHashMap<>();
+
+    private float cost = DEFAULT_PROCOST;
+    private float rows = DEFAULT_PROROWS;
     private boolean isForReplication;
     private boolean ansiNulls;
     private boolean quotedIdentified;
     private boolean isCLR;
+    private boolean isWindow;
+    private boolean isStrict;
+    private boolean isLeakproof;
+    private boolean isSecurityDefiner;
+    private String body;
+    private String returns;
+    private String language;
+    private String parallel;
+    private String volatileType;
 
     @Override
     public DbObjType getStatementType() {
@@ -49,6 +65,105 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
 
     public String getBody() {
         return body;
+    }
+
+    public boolean isWindow() {
+        return isWindow;
+    }
+
+    public void setWindow(boolean isWindow) {
+        this.isWindow = isWindow;
+        resetHash();
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
+        resetHash();
+    }
+
+    public String getVolatileType() {
+        return volatileType;
+    }
+
+    public void setVolatileType(String volatileType) {
+        this.volatileType = volatileType;
+        resetHash();
+    }
+
+    public boolean isStrict() {
+        return isStrict;
+    }
+
+    public void setStrict(boolean isStrict) {
+        this.isStrict = isStrict;
+        resetHash();
+    }
+
+    public boolean isSecurityDefiner() {
+        return isSecurityDefiner;
+    }
+
+    public void setSecurityDefiner(boolean isSecurityDefiner) {
+        this.isSecurityDefiner = isSecurityDefiner;
+        resetHash();
+    }
+
+    public boolean isLeakproof() {
+        return isLeakproof;
+    }
+
+    public void setLeakproof(boolean isLeakproof) {
+        this.isLeakproof = isLeakproof;
+        resetHash();
+    }
+
+    public float getCost() {
+        return cost;
+    }
+
+    public void setCost(float cost) {
+        this.cost = cost;
+        resetHash();
+    }
+
+    public float getRows() {
+        return rows;
+    }
+
+    public void setRows(float rows) {
+        this.rows = rows;
+        resetHash();
+    }
+
+    public String getParallel() {
+        return parallel;
+    }
+
+    public void setParallel(String parallel) {
+        this.parallel = parallel;
+        resetHash();
+    }
+
+    public List<String> getTransform() {
+        return Collections.unmodifiableList(transforms);
+    }
+
+    public void addTransform(String datatype) {
+        transforms.add(datatype);
+        resetHash();
+    }
+
+    public Map<String, String> getConfigurations() {
+        return Collections.unmodifiableMap(configurations);
+    }
+
+    public void addConfiguration(String par, String val) {
+        configurations.put(par, val);
+        resetHash();
     }
 
     public void setAnsiNulls(boolean ansiNulls) {
@@ -157,7 +272,18 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
             equals = Objects.equals(name, func.getBareName())
                     && arguments.equals(func.arguments)
                     && options.equals(func.options)
+                    && transforms.equals(func.transforms)
+                    && configurations.equals(func.configurations)
                     && Objects.equals(body, func.getBody())
+                    && isWindow == func.isWindow()
+                    && Objects.equals(language, func.getLanguage())
+                    && Objects.equals(parallel, func.getParallel())
+                    && Objects.equals(volatileType, func.getVolatileType())
+                    && isStrict == func.isStrict()
+                    && isSecurityDefiner == func.isSecurityDefiner()
+                    && isLeakproof == func.isLeakproof()
+                    && rows == func.getRows()
+                    && cost == func.getCost()
                     && isForReplication == func.isForReplication()
                     && Objects.equals(returns, func.getReturns())
                     && isCLR == func.isCLR();
@@ -193,12 +319,23 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
         hasher.putOrdered(arguments);
         hasher.put(returns);
         hasher.put(body);
+        hasher.put(isWindow);
+        hasher.put(language);
+        hasher.put(volatileType);
+        hasher.put(isStrict);
+        hasher.put(isSecurityDefiner);
+        hasher.put(isLeakproof);
+        hasher.put(rows);
+        hasher.put(cost);
+        hasher.put(parallel);
         hasher.put(name);
         hasher.put(owner);
         hasher.put(comment);
         hasher.put(quotedIdentified);
         hasher.put(ansiNulls);
         hasher.put(options);
+        hasher.put(transforms);
+        hasher.put(configurations);
         hasher.put(isForReplication);
         hasher.put(isCLR);
     }
@@ -211,9 +348,19 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
         functionDst.setQuotedIdentified(isQuotedIdentified());
         functionDst.setForReplication(isForReplication());
         functionDst.setCLR(isCLR());
-        functionDst.returnsColumns.putAll(returnsColumns);
         functionDst.setBody(getBody());
+        functionDst.setWindow(isWindow());
+        functionDst.setLanguage(getLanguage());
+        functionDst.setVolatileType(getVolatileType());
+        functionDst.setStrict(isStrict());
+        functionDst.setSecurityDefiner(isSecurityDefiner());
+        functionDst.setLeakproof(isLeakproof());
+        functionDst.setRows(getRows());
+        functionDst.setCost(getCost());
         functionDst.setComment(getComment());
+        functionDst.setParallel(getParallel());
+        functionDst.setOwner(getOwner());
+        functionDst.setLocation(getLocation());
         for (Argument argSrc : arguments) {
             Argument argDst = new Argument(argSrc.getMode(), argSrc.getName(), argSrc.getDataType());
             argDst.setDefaultExpression(argSrc.getDefaultExpression());
@@ -221,16 +368,13 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
             argDst.setVarying(argSrc.isVarying());
             functionDst.addArgument(argDst);
         }
-        for (PgPrivilege priv : revokes) {
-            functionDst.addPrivilege(priv);
-        }
-        for (PgPrivilege priv : grants) {
-            functionDst.addPrivilege(priv);
-        }
-        functionDst.setOwner(getOwner());
+        functionDst.revokes.addAll(revokes);
+        functionDst.grants.addAll(grants);
         functionDst.deps.addAll(deps);
-        functionDst.setLocation(getLocation());
         functionDst.options.addAll(options);
+        functionDst.transforms.addAll(transforms);
+        functionDst.returnsColumns.putAll(returnsColumns);
+        functionDst.configurations.putAll(configurations);
 
         return functionDst;
     }

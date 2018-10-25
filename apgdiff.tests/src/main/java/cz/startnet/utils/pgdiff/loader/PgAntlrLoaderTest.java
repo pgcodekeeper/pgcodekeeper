@@ -473,7 +473,9 @@ class PgDB5 extends PgDatabaseObjectCreator {
         AbstractSchema schema = d.getDefaultSchema();
 
         AbstractFunction func = new PgFunction("gtsq_in", "");
-        func.setBody("AS '$libdir/tsearch2', 'gtsq_in'\n    LANGUAGE c STRICT");
+        func.setLanguage("c");
+        func.setStrict(true);
+        func.setBody("'$libdir/tsearch2', 'gtsq_in'");
         func.setReturns("gtsq");
 
         Argument arg = new Argument(null, "cstring");
@@ -482,7 +484,9 @@ class PgDB5 extends PgDatabaseObjectCreator {
         schema.addFunction(func);
 
         func = new PgFunction("multiply_numbers", "");
-        func.setBody("AS $$\r\nbegin\r\n\treturn number1 * number2;\r\nend;\r\n$$\r\n    LANGUAGE plpgsql STRICT");
+        func.setLanguage("plpgsql");
+        func.setStrict(true);
+        func.setBody("$$\r\nbegin\r\n\treturn number1 * number2;\r\nend;\r\n$$");
         func.setReturns("integer");
 
         arg = new Argument("number1", "integer");
@@ -494,7 +498,8 @@ class PgDB5 extends PgDatabaseObjectCreator {
         schema.addFunction(func);
 
         func = new PgFunction("select_something", "");
-        func.setBody("AS $_$SELECT number1 * number2$_$ LANGUAGE plpgsql");
+        func.setLanguage("plpgsql");
+        func.setBody("$_$SELECT number1 * number2$_$");
         func.setReturns("integer");
 
         arg = new Argument("number1", "integer");
@@ -506,7 +511,8 @@ class PgDB5 extends PgDatabaseObjectCreator {
         schema.addFunction(func);
 
         func = new PgFunction("select_something2", "");
-        func.setBody("AS 'SELECT number1 * number2 || ''text''' LANGUAGE plpgsql");
+        func.setLanguage("plpgsql");
+        func.setBody("'SELECT number1 * number2 || ''text'''");
         func.setReturns("integer");
 
         arg = new Argument("number1", "integer");
@@ -518,7 +524,8 @@ class PgDB5 extends PgDatabaseObjectCreator {
         schema.addFunction(func);
 
         func = new PgFunction("select_something3", "");
-        func.setBody("AS '\nSELECT number1 * number2 || ''text''\n' LANGUAGE plpgsql");
+        func.setLanguage("plpgsql");
+        func.setBody("'\nSELECT number1 * number2 || ''text''\n'");
         func.setReturns("integer");
 
         arg = new Argument("number1", "integer");
@@ -578,7 +585,10 @@ class PgDB7 extends PgDatabaseObjectCreator {
         d.setDefaultSchema("common");
 
         AbstractFunction func = new PgFunction("t_common_casttotext", "");
-        func.setBody("AS $_$SELECT textin(timetz_out($1));$_$\n    LANGUAGE sql IMMUTABLE STRICT");
+        func.setLanguage("sql");
+        func.setVolatileType("IMMUTABLE");
+        func.setStrict(true);
+        func.setBody("$_$SELECT textin(timetz_out($1));$_$");
         func.setReturns("text");
 
         Argument arg = new Argument(null, "time with time zone");
@@ -587,7 +597,10 @@ class PgDB7 extends PgDatabaseObjectCreator {
         schema.addFunction(func);
 
         func = new PgFunction("t_common_casttotext", "");
-        func.setBody("AS $_$SELECT textin(time_out($1));$_$\n    LANGUAGE sql IMMUTABLE STRICT");
+        func.setLanguage("sql");
+        func.setVolatileType("IMMUTABLE");
+        func.setStrict(true);
+        func.setBody("$_$SELECT textin(time_out($1));$_$");
         func.setReturns("text");
 
         arg = new Argument(null, "time without time zone");
@@ -596,7 +609,10 @@ class PgDB7 extends PgDatabaseObjectCreator {
         schema.addFunction(func);
 
         func = new PgFunction("t_common_casttotext", "");
-        func.setBody("AS $_$SELECT textin(timestamptz_out($1));$_$\n    LANGUAGE sql IMMUTABLE STRICT");
+        func.setLanguage("sql");
+        func.setVolatileType("IMMUTABLE");
+        func.setStrict(true);
+        func.setBody("$_$SELECT textin(timestamptz_out($1));$_$");
         func.setReturns("text");
 
         arg = new Argument(null, "timestamp with time zone");
@@ -605,7 +621,10 @@ class PgDB7 extends PgDatabaseObjectCreator {
         schema.addFunction(func);
 
         func = new PgFunction("t_common_casttotext", "");
-        func.setBody("AS $_$SELECT textin(timestamp_out($1));$_$\n    LANGUAGE sql IMMUTABLE STRICT");
+        func.setLanguage("sql");
+        func.setVolatileType("IMMUTABLE");
+        func.setStrict(true);
+        func.setBody("$_$SELECT textin(timestamp_out($1));$_$");
         func.setReturns("text");
 
         arg = new Argument(null, "timestamp without time zone");
@@ -638,7 +657,8 @@ class PgDB8 extends PgDatabaseObjectCreator {
         d.addSchema(schema);
 
         AbstractFunction func = new PgFunction(".x\".\"\".", "");
-        func.setBody("AS $_$\ndeclare\nbegin\nraise notice 'inside: %', $1;\nreturn true;\nend;\n$_$\n    LANGUAGE plpgsql");
+        func.setLanguage("plpgsql");
+        func.setBody("$_$\ndeclare\nbegin\nraise notice 'inside: %', $1;\nreturn true;\nend;\n$_$");
         func.setReturns("boolean");
 
         Argument arg = new Argument(null, "integer");
@@ -828,7 +848,8 @@ class PgDB11 extends PgDatabaseObjectCreator {
         AbstractSchema schema = d.getDefaultSchema();
 
         AbstractFunction func = new PgFunction("curdate", "");
-        func.setBody("LANGUAGE sql\n    AS $$SELECT CAST('now' AS date);\n$$");
+        func.setLanguage("sql");
+        func.setBody("$$SELECT CAST('now' AS date);\n$$");
         func.setReturns("date");
         schema.addFunction(func);
 
@@ -854,7 +875,8 @@ class PgDB13 extends PgDatabaseObjectCreator {
         AbstractSchema schema = d.getDefaultSchema();
 
         AbstractFunction func = new PgFunction("drop_fk_except_for", "");
-        func.setBody("LANGUAGE plpgsql\n    AS $$\nDECLARE\nBEGIN\n  -- aaa\nEND;\n$$");
+        func.setLanguage("plpgsql");
+        func.setBody("$$\nDECLARE\nBEGIN\n  -- aaa\nEND;\n$$");
         func.setReturns("SETOF character varying");
 
         Argument arg = new Argument("tables_in", "character varying[]");
@@ -881,7 +903,8 @@ class PgDB14 extends PgDatabaseObjectCreator {
         //    schema.setComment("'public schema'");
 
         AbstractFunction func = new PgFunction("test_fnc", "");
-        func.setBody("LANGUAGE plpgsql\n    AS $$BEGIN\nRETURN true;\nEND;$$");
+        func.setLanguage("plpgsql");
+        func.setBody("$$BEGIN\nRETURN true;\nEND;$$");
         func.setReturns("boolean");
 
         Argument arg = new Argument("arg", "character varying");
@@ -894,7 +917,8 @@ class PgDB14 extends PgDatabaseObjectCreator {
         schema.addFunction(func);
 
         func = new PgFunction("trigger_fnc", "");
-        func.setBody("LANGUAGE plpgsql\n    AS $$begin\nend;$$");
+        func.setLanguage("plpgsql");
+        func.setBody("$$begin\nend;$$");
         func.setReturns("trigger");
         schema.addFunction(func);
 
