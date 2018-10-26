@@ -22,7 +22,7 @@ public class MsAssembliesReader {
 
     public void read() throws SQLException, InterruptedException, XmlReaderException {
         loader.setCurrentOperation("assemblies query");
-        String query = JdbcQueries.QUERY_MS_ASSEMBLIES.get(null);
+        String query = JdbcQueries.QUERY_MS_ASSEMBLIES.getQuery();
         try (ResultSet res = loader.runner.runScript(loader.statement, query)) {
             while (res.next()) {
                 String name = res.getString("name");

@@ -6,10 +6,8 @@ public enum SupportedVersion {
     VERSION_9_4 (90400, "9.4"),
     VERSION_9_5 (90500, "9.5"),
     VERSION_9_6 (90600, "9.6"),
-    VERSION_10 (100000, "10.0"),/*,
-    //TODO check version from postgresPRO
-    VERSION_9_5_P (91500),
-    VERSION_9_6_P (91600)*/;
+    VERSION_10 (100000, "10.0"),
+    VERSION_11 (110000, "11.0");
 
     private final int version;
     private final String text;
@@ -27,8 +25,8 @@ public enum SupportedVersion {
         return text;
     }
 
-    public boolean checkVersion(int version) {
-        return version >= this.version;
+    public boolean isLE(int version) {
+        return this.version <= version;
     }
 
     public static SupportedVersion valueOf(int checkVersion) {
@@ -36,7 +34,7 @@ public enum SupportedVersion {
 
         for (int i = set.length - 1; i >= 0; i--) {
             SupportedVersion verEnum = set[i];
-            if (verEnum.checkVersion(checkVersion)) {
+            if (verEnum.isLE(checkVersion)) {
                 return verEnum;
             }
         }
