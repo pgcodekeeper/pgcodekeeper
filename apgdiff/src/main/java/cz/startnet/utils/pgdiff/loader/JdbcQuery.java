@@ -42,7 +42,6 @@ public class JdbcQuery {
         .forEach(e -> appendQuery(sb, e.getValue(),
                 e.getKey().getFirst().getVersion() + "_" + e.getKey().getSecond().getVersion()));
 
-        System.err.println(sb);
         return sb.toString();
     }
 

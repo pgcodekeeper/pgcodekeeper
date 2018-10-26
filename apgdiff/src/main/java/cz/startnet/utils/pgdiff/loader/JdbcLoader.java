@@ -108,7 +108,9 @@ public class JdbcLoader extends JdbcLoaderBase {
             new FtsParsersReader(this).read();
             new FtsTemplatesReader(this).read();
             new FtsDictionariesReader(this).read();
-            new FtsConfigurationsReader(this).read();
+            if (SupportedVersion.VERSION_9_3.isLE(version)) {
+                new FtsConfigurationsReader(this).read();
+            }
             new OperatorsReader(this).read();
 
             new ExtensionsReader(this, d).read();
