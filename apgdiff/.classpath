@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry exported="true" kind="lib" path="lib/PgPass-0.0.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/postgresql-42.0.0.jre7.jar" sourcepath="lib/postgresql-42.0.0.jre7-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/postgresql-42.2.5.jar" sourcepath="lib/postgresql-42.2.5-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/antlr-runtime-4.6.jar" sourcepath="lib/antlr-runtime-4.6-sources.zip"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry exported="true" kind="lib" path="lib/jgrapht-core-0.9.0.jar" sourcepath="lib/jgrapht-core-0.9.0-sources.jar"/>
