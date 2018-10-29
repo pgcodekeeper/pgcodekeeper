@@ -360,7 +360,7 @@ class PgDB3 extends PgDatabaseObjectCreator {
 
         AbstractSequence seq = new PgSequence("admins_aid_seq", "");
         seq.setStartWith("1");
-        seq.setMinMaxInc(1L, 1000000000L, null, null);
+        seq.setMinMaxInc(1L, 1000000000L, null, null, 0L);
         seq.setCache("1");
         schema.addSequence(seq);
 
@@ -704,7 +704,7 @@ class PgDB9 extends PgDatabaseObjectCreator {
         table.addRule(rule);
 
         AbstractSequence seq = new PgSequence("user_id_seq", "");
-        seq.setMinMaxInc(1L, null, null, null);
+        seq.setMinMaxInc(1L, null, null, null, 0L);
         seq.setCache("1");
         seq.setOwnedBy("public.user_data.id");
         schema.addSequence(seq);
@@ -957,7 +957,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
 
         AbstractSequence seq = new PgSequence("test_id_seq", "");
         seq.setStartWith("1");
-        seq.setMinMaxInc(1L, null, null, null);
+        seq.setMinMaxInc(1L, null, null, null, 0L);
         seq.setCache("1");
         schema.addSequence(seq);
 

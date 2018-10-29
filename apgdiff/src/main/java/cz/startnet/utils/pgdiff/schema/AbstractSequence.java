@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.hashers.Hasher;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -16,7 +17,7 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
  */
 public abstract class AbstractSequence extends PgStatementWithSearchPath implements IRelation {
 
-    private static final String BIGINT = "bigint";
+    protected static final String BIGINT = "bigint";
 
     private static final List<Pair<String, String>> relationColumns = Collections
             .unmodifiableList(new ArrayList<>(Arrays.asList(
@@ -28,9 +29,9 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
 
     private boolean isCached;
     private String cache;
-    private String increment;
-    private String maxValue;
-    private String minValue;
+    protected String increment;
+    protected String maxValue;
+    protected String minValue;
     private String startWith;
     private boolean cycle;
     private String ownedBy;
@@ -78,37 +79,25 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
         resetHash();
     }
 
-    public void setMinMaxInc(long inc, Long max, Long min, String dataType) {
-        String type = dataType != null ? dataType : BIGINT;
+    public abstract void setMinMaxInc(long inc, Long max, Long min, String dataType,
+            long presicion);
 
-        long maxTypeVal;
-        long minTypeVal;
-        switch(type) {
+    protected long getBoundaryTypeVal(String type, boolean needMaxVal, long presicion) {
+        switch (type) {
         case "smallint":
-            maxTypeVal = Short.MAX_VALUE;
-            minTypeVal = Short.MIN_VALUE;
-            break;
+            return needMaxVal ? Short.MAX_VALUE : Short.MIN_VALUE;
         case "integer":
-            maxTypeVal = Integer.MAX_VALUE;
-            minTypeVal = Integer.MIN_VALUE;
-            break;
-        case BIGINT:
+            return needMaxVal ? Integer.MAX_VALUE : Integer.MIN_VALUE;
+        case "numeric":
+        case "decimal":
+            // It used for MS SQL.
+            long boundaryTypeVal = (long) (Math.pow(10, presicion)) - 1;
+            return needMaxVal ? boundaryTypeVal : - boundaryTypeVal;
         default:
-            maxTypeVal = Long.MAX_VALUE;
-            minTypeVal = Long.MIN_VALUE;
-            break;
-        }
-
-        this.increment = Long.toString(inc);
-        if (max == null || (inc > 0 && max == maxTypeVal) || (inc < 0 && max == -1)) {
-            this.maxValue = null;
-        } else {
-            this.maxValue = "" + max;
-        }
-        if (min == null || (inc > 0 && min == 1) || (inc < 0 && min == minTypeVal)) {
-            this.minValue = null;
-        } else {
-            this.minValue = "" + min;
+            Log.log(Log.LOG_WARNING, "Unsupported sequence type: " + type);
+            // $FALL-THROUGH$
+        case BIGINT:
+            return needMaxVal ? Long.MAX_VALUE : Long.MIN_VALUE;
         }
     }
 

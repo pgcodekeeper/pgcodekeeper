@@ -25,6 +25,9 @@ public class FunctionsReader extends JdbcReader {
 
     @Override
     protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException {
+        if (res.getBoolean("proisspecial")) {
+            return;
+        }
         String schemaName = schema.getName();
         String functionName = res.getString("proname");
         loader.setCurrentObject(new GenericColumn(schemaName, functionName, DbObjType.FUNCTION));
@@ -128,7 +131,7 @@ public class FunctionsReader extends JdbcReader {
         function.setLanguage(res.getString("lang_name"));
 
         // since 9.5 PostgreSQL
-        if (SupportedVersion.VERSION_9_5.checkVersion(loader.version)) {
+        if (SupportedVersion.VERSION_9_5.isLE(loader.version)) {
             Long[] protrftypes = getColArray(res, "protrftypes");
             if (protrftypes != null) {
                 for (Long s : protrftypes) {
@@ -157,7 +160,7 @@ public class FunctionsReader extends JdbcReader {
 
         // since 9.6 PostgreSQL
         // parallel mode: s - safe, r - restricted, u - unsafe
-        if (SupportedVersion.VERSION_9_6.checkVersion(loader.version)) {
+        if (SupportedVersion.VERSION_9_6.isLE(loader.version)) {
             String parMode = res.getString("proparallel");
             switch (parMode) {
             case "s":

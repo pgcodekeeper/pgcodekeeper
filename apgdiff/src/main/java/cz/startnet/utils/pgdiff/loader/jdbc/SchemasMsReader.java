@@ -24,7 +24,7 @@ public class SchemasMsReader {
     public void read() throws SQLException, InterruptedException, XmlReaderException {
         loader.setCurrentOperation("schemas query");
 
-        String query = JdbcQueries.QUERY_MS_SCHEMAS.get(null);
+        String query = JdbcQueries.QUERY_MS_SCHEMAS.getQuery();
         try (ResultSet result = loader.runner.runScript(loader.statement, query)) {
             while (result.next()) {
                 AbstractSchema schema = getSchema(result);

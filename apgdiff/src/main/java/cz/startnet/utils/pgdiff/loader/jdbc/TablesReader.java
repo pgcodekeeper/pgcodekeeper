@@ -39,7 +39,7 @@ public class TablesReader extends JdbcReader {
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, DbObjType.TABLE));
         String partitionBound = null;
 
-        if (SupportedVersion.VERSION_10.checkVersion(loader.version) && res.getBoolean("relispartition")) {
+        if (SupportedVersion.VERSION_10.isLE(loader.version) && res.getBoolean("relispartition")) {
             partitionBound = res.getString("partition_bound");
             checkObjectValidity(partitionBound, getType(), tableName);
         }
@@ -116,13 +116,13 @@ public class TablesReader extends JdbcReader {
             }
 
             // since 9.5 PostgreSQL
-            if (SupportedVersion.VERSION_9_5.checkVersion(loader.version)) {
+            if (SupportedVersion.VERSION_9_5.isLE(loader.version)) {
                 regTable.setRowSecurity(res.getBoolean("row_security"));
                 regTable.setForceSecurity(res.getBoolean("force_security"));
             }
 
             // since 10 PostgreSQL
-            if (SupportedVersion.VERSION_10.checkVersion(loader.version) && "p".equals(res.getString("relkind"))) {
+            if (SupportedVersion.VERSION_10.isLE(loader.version) && "p".equals(res.getString("relkind"))) {
                 String partitionBy = res.getString("partition_by");
                 checkObjectValidity(partitionBy, getType(), tableName);
                 regTable.setPartitionBy(partitionBy);

@@ -21,7 +21,7 @@ public class MsUsersReader {
 
     public void read() throws SQLException, InterruptedException, XmlReaderException {
         loader.setCurrentOperation("users query");
-        String query = JdbcQueries.QUERY_MS_USERS.get(null);
+        String query = JdbcQueries.QUERY_MS_USERS.getQuery();
         try (ResultSet res = loader.runner.runScript(loader.statement, query)) {
             while (res.next()) {
                 String name = res.getString("name");
