@@ -1,9 +1,12 @@
 package cz.startnet.utils.pgdiff.loader;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -11,9 +14,6 @@ import java.util.Collection;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Platform;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -25,9 +25,11 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 public class LibraryLoader {
 
     private final PgDatabase db;
+    private final Path metaPath;
 
-    public LibraryLoader(PgDatabase db) {
+    public LibraryLoader(PgDatabase db, Path metaPath) {
         this.db = db;
+        this.metaPath = metaPath;
     }
 
     public void loadLibraries(PgDiffArguments args, boolean isIgnorePriv,
@@ -62,6 +64,15 @@ public class LibraryLoader {
             return db;
         }
 
+        try {
+            URI uri = new URI(path);
+            if (uri.getScheme() != null) {
+                return loadURI(uri, args, isIgnorePriv);
+            }
+        } catch (URISyntaxException e) {
+            // not URI, try to folder or file
+        }
+
         Path p = Paths.get(path);
 
         if (Files.isDirectory(p)) {
@@ -78,7 +89,7 @@ public class LibraryLoader {
             }
         }
 
-        if (path.endsWith("zip")) {
+        if (path.endsWith(".zip")) {
             return loadZip(p, args, isIgnorePriv);
         }
 
@@ -87,50 +98,78 @@ public class LibraryLoader {
         }
     }
 
-    private PgDatabase loadZip(Path p, PgDiffArguments args, boolean isIgnorePriv)
+    private PgDatabase loadZip(Path path, PgDiffArguments args, boolean isIgnorePriv)
             throws InterruptedException, IOException {
-        String name = p.getFileName().toString() + '_' + PgDiffUtils.shaString(p.toString());
+        String name = path.getFileName().toString() + '_'
+                + PgDiffUtils.md5(path.toString()).substring(0, 10);
 
-        IPath iPath = getLocation().append("dependencies");
-
-        File file = iPath.toFile();
-        if (!file.exists()) {
-            file.mkdirs();
-        }
-
-        PgDatabase db = getLibrary(unzip(p.toFile(), new File(file, name)).toString(),
+        PgDatabase db = getLibrary(unzip(path, metaPath.resolve(name)),
                 args, isIgnorePriv);
 
-        db.getDescendants().forEach(st -> st.setLocation(p.toString()));
-
+        db.getDescendants().forEach(st -> st.setLocation(path.toString()));
         return db;
     }
 
-    protected IPath getLocation() {
-        return Platform.getLocation();
+    private PgDatabase loadURI(URI uri, PgDiffArguments args, boolean isIgnorePriv)
+            throws InterruptedException, IOException {
+        String path = uri.getPath();
+        String fileName = Paths.get(path).getFileName().toString();
+        String name = fileName + '_' + PgDiffUtils.md5(path).substring(0, 10);
+
+        PgDatabase db = getLibrary(download(uri, metaPath.resolve(name), fileName),
+                args, isIgnorePriv);
+
+        db.getDescendants().forEach(st -> st.setLocation(path));
+        return db;
     }
 
-    private File unzip(File zipFile, File dir) {
+    private String download(URI uri, Path dir, String fileName) throws IOException {
+        createMetaFolder();
         // create output directory if it doesn't exist
-        if (!dir.exists()) {
-            dir.mkdirs();
-        } else {
-            return dir;
+        if (Files.exists(dir)) {
+            return dir.toString();
         }
+
+        Files.createDirectories(dir);
+
+        InputStream in = uri.toURL().openStream();
+        Files.copy(in, dir.resolve(fileName));
+
+        return dir.toString();
+    }
+
+    private void createMetaFolder() throws IOException {
+        if (!Files.exists(metaPath)) {
+            Files.createDirectories(metaPath);
+        }
+    }
+
+    private String unzip(Path zip, Path dir) throws FileNotFoundException, IOException {
+        createMetaFolder();
+        // create output directory if it doesn't exist
+        if (Files.exists(dir)) {
+            return dir.toString();
+        }
+
+        Files.createDirectories(dir);
+
         //buffer for read and write data to file
         byte[] buffer = new byte[1024];
-        try (FileInputStream fis = new FileInputStream(zipFile);
+        try (InputStream fis = Files.newInputStream(zip);
                 ZipInputStream zis = new ZipInputStream(fis)) {
             ZipEntry ze = zis.getNextEntry();
             while (ze != null) {
-                String fileName = ze.getName();
-                File newFile = new File(dir, fileName);
+                Path newFile = dir.resolve(ze.getName());
+
                 //create directories for sub directories in zip
-                new File(newFile.getParent()).mkdirs();
-                try (FileOutputStream fos = new FileOutputStream(newFile)) {
-                    int len;
-                    while ((len = zis.read(buffer)) > 0) {
-                        fos.write(buffer, 0, len);
+                if (!ze.isDirectory()) {
+                    Files.createDirectories(newFile.getParent());
+
+                    try (OutputStream fos = Files.newOutputStream(newFile)) {
+                        int len;
+                        while ((len = zis.read(buffer)) > 0) {
+                            fos.write(buffer, 0, len);
+                        }
                     }
                 }
                 //close this ZipEntry
@@ -140,11 +179,9 @@ public class LibraryLoader {
 
             //close last ZipEntry
             zis.closeEntry();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
 
-        return dir;
+        return dir.toString();
     }
 
     private void readStatementsFromDirectory(final Path f, PgDatabase db, PgDiffArguments args)
@@ -155,6 +192,8 @@ public class LibraryLoader {
                     readStatementsFromDirectory(sub, db, args);
                 }
             }
+        } else if (f.toString().endsWith(".zip")) {
+            db.addLib(getLibrary(f.toString(), args, args.isIgnorePrivileges()));
         } else {
             try (PgDumpLoader loader = new PgDumpLoader(f.toFile(), args)) {
                 db.addLib(loader.load());

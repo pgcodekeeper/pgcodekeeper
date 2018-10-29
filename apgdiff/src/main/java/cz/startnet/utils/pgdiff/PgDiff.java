@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -66,7 +67,10 @@ public final class PgDiff {
         PgDatabase newDatabase = loadDatabaseSchema(
                 arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments);
 
-        LibraryLoader oldLib = new LibraryLoader(oldDatabase);
+        Path metaPath = Paths.get(System.getProperty("user.home")).resolve(".pgcodekeeper-cli")
+                .resolve("dependencies");
+
+        LibraryLoader oldLib = new LibraryLoader(oldDatabase, metaPath);
 
         for (String xml : arguments.getSourceLibXmls()) {
             oldLib.loadXml(new DependenciesXmlStore(Paths.get(xml)), arguments);
@@ -75,7 +79,7 @@ public final class PgDiff {
         oldLib.loadLibraries(arguments, false, arguments.getTargetLibs());
         oldLib.loadLibraries(arguments, false, arguments.getTargetLibsWithoutPriv());
 
-        LibraryLoader newLib = new LibraryLoader(newDatabase);
+        LibraryLoader newLib = new LibraryLoader(newDatabase, metaPath);
 
         for (String xml : arguments.getTargetLibXmls()) {
             newLib.loadXml(new DependenciesXmlStore(Paths.get(xml)), arguments);

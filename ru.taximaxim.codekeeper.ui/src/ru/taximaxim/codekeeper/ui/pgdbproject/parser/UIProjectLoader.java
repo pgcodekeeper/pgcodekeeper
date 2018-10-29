@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject.parser;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -284,14 +285,8 @@ public class UIProjectLoader extends ProjectLoader {
     }
 
     private void loadLibraries(PgDatabase db, PgDiffArguments arguments) throws InterruptedException, IOException {
-        LibraryLoader ll = new LibraryLoader(db) {
-
-            @Override
-            protected IPath getLocation() {
-                return Platform.getStateLocation(Activator.getContext().getBundle());
-            }
-        };
-
+        LibraryLoader ll = new LibraryLoader(db,
+                Paths.get(Platform.getStateLocation(Activator.getContext().getBundle()).toString()));
         ll.loadXml(new DependenciesXmlStore(iProject.getLocation()), arguments);
     }
 
