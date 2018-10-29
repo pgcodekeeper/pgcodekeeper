@@ -9,6 +9,7 @@ public interface Hasher {
     public void put(boolean b);
     public void put(Boolean b);
     public void put(String s);
+    public void put(float f);
     public void put(int i);
     public void put(Integer i);
     public void put(IHashable hashable);

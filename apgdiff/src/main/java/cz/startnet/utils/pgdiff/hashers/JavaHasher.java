@@ -32,6 +32,11 @@ public class JavaHasher implements Hasher {
     }
 
     @Override
+    public void put(float f) {
+        result = PRIME * result + Float.hashCode(f);
+    }
+
+    @Override
     public void put(Integer i) {
         result = PRIME * result + ((i == null) ? 0 : i.hashCode());
     }

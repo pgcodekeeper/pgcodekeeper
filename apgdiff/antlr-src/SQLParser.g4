@@ -340,13 +340,24 @@ table_initialy_immed
 
 function_actions_common
     : (CALLED | RETURNS NULL) ON NULL INPUT
-      | TRANSFORM transform_for_type (COMMA transform_for_type)*
-      | (STRICT | IMMUTABLE | VOLATILE | STABLE)
-      | (EXTERNAL)? SECURITY (INVOKER | DEFINER)
-      | PARALLEL identifier
-      | COST execution_cost=unsigned_numeric_literal
-      | ROWS result_rows=unsigned_numeric_literal
-      | SET configuration_parameter=identifier  (((TO | EQUAL)? (value+=set_statement_value)) | FROM CURRENT)(COMMA value+=set_statement_value)*
+    | TRANSFORM transform_for_type (COMMA transform_for_type)*
+    | STRICT 
+    | IMMUTABLE 
+    | VOLATILE 
+    | STABLE
+    | LEAKPROOF
+    | (EXTERNAL)? SECURITY (INVOKER | DEFINER)
+    | PARALLEL (SAFE | UNSAFE | RESTRICTED)
+    | COST execution_cost=unsigned_numeric_literal
+    | ROWS result_rows=unsigned_numeric_literal
+    | SET configuration_parameter=identifier (((TO | EQUAL) value+=set_statement_value) | FROM CURRENT)(COMMA value+=set_statement_value)*
+    | LANGUAGE lang_name=identifier
+    | WINDOW
+    | AS function_def
+    ;
+
+function_def
+    : character_string (COMMA character_string)*
     ;
 
 alter_index_statement
@@ -1023,12 +1034,7 @@ create_function_statement
     ;
 
 create_funct_params
-    :(LANGUAGE lang_name=identifier
-            | WINDOW
-            | function_actions_common
-            | AS character_string (COMMA character_string)*
-          )+
-      with_storage_parameter?
+    : function_actions_common+ with_storage_parameter?
     ;
 
 transform_for_type
@@ -1660,6 +1666,7 @@ tokens_nonreserved
   | RESET
   | RESTART
   | RESTRICT
+  | RESTRICTED
   | RETURNS
   | REVOKE
   | ROLE
@@ -1667,6 +1674,7 @@ tokens_nonreserved
   | ROLLUP
   | ROWS
   | RULE
+  | SAFE
   | SAVEPOINT
   | SCHEMA
   | SCHEMAS
@@ -1719,6 +1727,7 @@ tokens_nonreserved
   | UNKNOWN
   | UNLISTEN
   | UNLOGGED
+  | UNSAFE
   | UNTIL
   | UPDATE
   | VACUUM
