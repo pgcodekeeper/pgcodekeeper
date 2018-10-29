@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -18,7 +17,9 @@ import org.eclipse.core.runtime.Platform;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.libraries.PgLibrary;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
 public class LibraryLoader {
@@ -30,19 +31,26 @@ public class LibraryLoader {
     }
 
     public void loadLibraries(PgDiffArguments args, boolean isIgnorePriv,
-            Collection<String> paths) throws InterruptedException, IOException, URISyntaxException {
+            Collection<String> paths) throws InterruptedException, IOException {
         for (String path : paths) {
             loadLibrary(args, isIgnorePriv, path);
         }
     }
 
-    public void loadLibrary(PgDiffArguments args, boolean isIgnorePriv, String path)
-            throws InterruptedException, IOException, URISyntaxException {
+    public void loadXml(DependenciesXmlStore xmlStore, PgDiffArguments args)
+            throws InterruptedException, IOException {
+        for (PgLibrary lib : xmlStore.readObjects()) {
+            loadLibrary(args, lib.isIgnorePriv(), lib.getPath());
+        }
+    }
+
+    private void loadLibrary(PgDiffArguments args, boolean isIgnorePriv, String path)
+            throws InterruptedException, IOException {
         db.addLib(getLibrary(path, args, isIgnorePriv));
     }
 
     private PgDatabase getLibrary(String path, PgDiffArguments arguments, boolean isIgnorePriv)
-            throws InterruptedException, IOException, URISyntaxException {
+            throws InterruptedException, IOException {
 
         PgDiffArguments args = arguments.clone();
         args.setIgnorePrivileges(isIgnorePriv);
@@ -80,7 +88,7 @@ public class LibraryLoader {
     }
 
     private PgDatabase loadZip(Path p, PgDiffArguments args, boolean isIgnorePriv)
-            throws InterruptedException, IOException, URISyntaxException {
+            throws InterruptedException, IOException {
         String name = p.getFileName().toString() + '_' + PgDiffUtils.shaString(p.toString());
 
         IPath iPath = getLocation().append("dependencies");
@@ -140,7 +148,7 @@ public class LibraryLoader {
     }
 
     private void readStatementsFromDirectory(final Path f, PgDatabase db, PgDiffArguments args)
-            throws IOException, InterruptedException, URISyntaxException {
+            throws IOException, InterruptedException {
         if (Files.isDirectory(f)) {
             try (Stream<Path> stream = Files.list(f)) {
                 for (Path sub : (Iterable<Path>) stream::iterator) {

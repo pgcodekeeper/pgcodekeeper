@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.ui.xmlstore;
+package cz.startnet.utils.pgdiff.xmlstore;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,7 +23,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.eclipse.core.runtime.Platform;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -31,8 +30,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 
 public abstract class XmlStore<T> {
 
@@ -51,11 +49,7 @@ public abstract class XmlStore<T> {
         return newElement;
     }
 
-    protected File getXmlFile() throws IOException {
-        File fileHistory = Platform.getStateLocation(Activator.getContext().getBundle()).toFile();
-        fileHistory = new File(fileHistory, fileName);
-        return fileHistory;
-    }
+    protected abstract File getXmlFile() throws IOException;
 
     public List<T> readObjects() throws IOException {
         try (Reader xmlReader = new InputStreamReader(new FileInputStream(
@@ -65,7 +59,7 @@ public abstract class XmlStore<T> {
             return new ArrayList<>();
         } catch (IOException | SAXException ex) {
             throw new IOException(MessageFormat.format(
-                    Messages.XmlHistory_read_error, ex.getLocalizedMessage()), ex);
+                    Messages.XmlStore_read_error, ex.getLocalizedMessage()), ex);
         }
     }
 
@@ -100,7 +94,7 @@ public abstract class XmlStore<T> {
 
         } catch (IOException | ParserConfigurationException | TransformerException ex) {
             throw new IOException(MessageFormat.format(
-                    Messages.XmlHistory_write_error, ex.getLocalizedMessage()), ex);
+                    Messages.XmlStore_write_error, ex.getLocalizedMessage()), ex);
         }
     }
 
@@ -117,7 +111,7 @@ public abstract class XmlStore<T> {
             xml.normalize();
 
             if (!xml.getDocumentElement().getNodeName().equals(rootTag)) {
-                throw new IOException(Messages.XmlStringList_root_name_invalid);
+                throw new IOException(Messages.XmlStore_root_error);
             }
 
             return xml;

@@ -9,10 +9,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 
+import cz.startnet.utils.pgdiff.libraries.PgLibrary;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.properties.PgLibrary;
 
 public class LibraryContainer {
 

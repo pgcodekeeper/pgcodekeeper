@@ -85,9 +85,11 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.ISharedImages;
 
+import cz.startnet.utils.pgdiff.libraries.PgLibrary;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -111,8 +113,6 @@ import ru.taximaxim.codekeeper.ui.differ.filters.SchemaFilter;
 import ru.taximaxim.codekeeper.ui.differ.filters.UserFilter;
 import ru.taximaxim.codekeeper.ui.fileutils.GitUserReader;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.properties.PgLibrary;
-import ru.taximaxim.codekeeper.ui.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.ui.xmlstore.ListXmlStore;
 
 /**

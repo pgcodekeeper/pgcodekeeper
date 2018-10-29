@@ -1,7 +1,6 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject.parser;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -32,6 +31,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.MS_WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
@@ -40,8 +40,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
-import ru.taximaxim.codekeeper.ui.properties.PgLibrary;
-import ru.taximaxim.codekeeper.ui.xmlstore.DependenciesXmlStore;
 
 public class UIProjectLoader extends ProjectLoader {
 
@@ -294,13 +292,7 @@ public class UIProjectLoader extends ProjectLoader {
             }
         };
 
-        for (PgLibrary lib : new DependenciesXmlStore(iProject).readObjects()) {
-            try {
-                ll.loadLibrary(arguments, lib.isIgnorePriv(), lib.getPath());
-            } catch (URISyntaxException ex) {
-                throw new IOException(ex.getLocalizedMessage(), ex);
-            }
-        }
+        ll.loadXml(new DependenciesXmlStore(iProject.getLocation()), arguments);
     }
 
     public static PgStatement parseStatement(IFile file, Collection<DbObjType> types)

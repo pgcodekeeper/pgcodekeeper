@@ -8,6 +8,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import cz.startnet.utils.pgdiff.xmlstore.XmlStore;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 
 public class IgnoreListsXmlStore extends XmlStore<String> {

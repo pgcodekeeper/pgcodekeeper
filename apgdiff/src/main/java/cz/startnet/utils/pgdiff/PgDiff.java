@@ -28,6 +28,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgOverride;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ignoreparser.IgnoreParser;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
@@ -66,10 +67,20 @@ public final class PgDiff {
                 arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments);
 
         LibraryLoader oldLib = new LibraryLoader(oldDatabase);
+
+        for (String xml : arguments.getSourceLibXmls()) {
+            oldLib.loadXml(new DependenciesXmlStore(Paths.get(xml)), arguments);
+        }
+
         oldLib.loadLibraries(arguments, false, arguments.getTargetLibs());
         oldLib.loadLibraries(arguments, false, arguments.getTargetLibsWithoutPriv());
 
         LibraryLoader newLib = new LibraryLoader(newDatabase);
+
+        for (String xml : arguments.getTargetLibXmls()) {
+            newLib.loadXml(new DependenciesXmlStore(Paths.get(xml)), arguments);
+        }
+
         newLib.loadLibraries(arguments, false, arguments.getSourceLibs());
         newLib.loadLibraries(arguments, true, arguments.getSourceLibsWithoutPriv());
 

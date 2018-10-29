@@ -35,6 +35,8 @@ import org.eclipse.ui.dialogs.PropertyPage;
 import org.eclipse.ui.navigator.CommonNavigator;
 import org.osgi.service.prefs.BackingStoreException;
 
+import cz.startnet.utils.pgdiff.libraries.PgLibrary;
+import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.CommonEditingSupport;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -44,7 +46,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.PrefListEditor;
-import ru.taximaxim.codekeeper.ui.xmlstore.DependenciesXmlStore;
 
 public class DependencyProperties extends PropertyPage {
 
@@ -60,7 +61,7 @@ public class DependencyProperties extends PropertyPage {
     public void setElement(IAdaptable element) {
         super.setElement(element);
         proj = element.getAdapter(IProject.class);
-        store = new DependenciesXmlStore(proj);
+        store = new DependenciesXmlStore(proj.getLocation());
         prefs = new ProjectScope(proj).getNode(UIConsts.PLUGIN_ID.THIS);
     }
 

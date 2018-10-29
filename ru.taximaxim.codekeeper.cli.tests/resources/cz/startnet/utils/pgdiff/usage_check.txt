@@ -50,20 +50,32 @@ Usage:
                                           objects from diff
                                           specify multiple times to use several
                                           lists
- --src-lib <path or JDBC>               : add library dependency to source
+ --src-lib-xml <path or JDBC>           : add xml with library dependencies to
+                                          source
+                                          specify multiple times to use several
+                                          libraries
+ --src-lib <path or JDBC>               : add library dependency to source,
+                                          --src-lib-xml option has higher
+                                          priority
                                           specify multiple times to use several
                                           libraries
  --src-lib-no-priv <path or JDBC>       : add library dependency to source
-                                          without privileges, --src-lib option
-                                          has higher priority
+                                          without privileges, --src-lib-xml and
+                                          --src-lib option has higher priority
                                           specify multiple times to use several
                                           libraries
- --tgt-lib <path or JDBC>               : add library dependency to destination
+ --tgt-lib-xml <path or JDBC>           : add xml with library dependencies to
+                                          target
+                                          specify multiple times to use several
+                                          libraries
+ --tgt-lib <path or JDBC>               : add library dependency to
+                                          destination, --tgt-lib-xml option has
+                                          higher priority
                                           specify multiple times to use several
                                           libraries
  --tgt-lib-no-priv <path or JDBC>       : add library dependency to destination
-                                          without privileges, --tgt-lib option
-                                          has higher priority
+                                          without privileges, --tgt-lib-xml and
+                                          --tgt-lib option has higher priority
                                           specify multiple times to use several
                                           libraries
  --lib-safe-mode                        : exit with an error if a library

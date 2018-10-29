@@ -22,6 +22,12 @@ public final class Messages extends NLS {
     public static String Table_TypeParameterChange;
     public static String Storage_WarningUnableToDetermineStorageType;
 
+    public static String XmlStore_read_error;
+
+    public static String XmlStore_root_error;
+
+    public static String XmlStore_write_error;
+
     // SONAR-ON
 
     static {
