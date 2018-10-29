@@ -9,7 +9,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -25,7 +24,6 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.URIUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -33,7 +31,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
+import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public abstract class XmlStore<T> {
@@ -54,15 +52,7 @@ public abstract class XmlStore<T> {
     }
 
     protected File getXmlFile() throws IOException {
-        File fileHistory;
-        try {
-            fileHistory = new File(URIUtil.toURI(Platform.getInstanceLocation().getURL()));
-        } catch (URISyntaxException ex) {
-            throw new IOException(ex.getLocalizedMessage(), ex);
-        }
-        fileHistory = new File(fileHistory, ".metadata"); //$NON-NLS-1$
-        fileHistory = new File(fileHistory, ".plugins"); //$NON-NLS-1$
-        fileHistory = new File(fileHistory, PLUGIN_ID.THIS);
+        File fileHistory = Platform.getStateLocation(Activator.getContext().getBundle()).toFile();
         fileHistory = new File(fileHistory, fileName);
         return fileHistory;
     }
