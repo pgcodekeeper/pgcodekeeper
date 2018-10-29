@@ -64,8 +64,6 @@ public class CreateFunction extends ParserAbstract {
                 function.setStrict(true);
             } else if (action.DEFINER() != null) {
                 function.setSecurityDefiner(true);
-            } else if (action.DEFINER() != null) {
-                function.setSecurityDefiner(true);
             } else if (action.LEAKPROOF() != null) {
                 function.setLeakproof(true);
             } else if (action.LANGUAGE() != null) {
