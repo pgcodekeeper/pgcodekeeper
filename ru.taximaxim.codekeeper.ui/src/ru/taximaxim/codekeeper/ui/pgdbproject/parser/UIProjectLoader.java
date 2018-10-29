@@ -19,12 +19,14 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.ide.ResourceUtil;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.FullAnalyze;
+import cz.startnet.utils.pgdiff.loader.LibraryLoader;
 import cz.startnet.utils.pgdiff.loader.ProjectLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
@@ -35,6 +37,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.MS_WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.AbstractModelExporter;
+import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.properties.PgLibrary;
@@ -283,9 +286,17 @@ public class UIProjectLoader extends ProjectLoader {
     }
 
     private void loadLibraries(PgDatabase db, PgDiffArguments arguments) throws InterruptedException, IOException {
+        LibraryLoader ll = new LibraryLoader(db) {
+
+            @Override
+            protected IPath getLocation() {
+                return Platform.getStateLocation(Activator.getContext().getBundle());
+            }
+        };
+
         for (PgLibrary lib : new DependenciesXmlStore(iProject).readObjects()) {
             try {
-                loadLibrary(db, arguments, lib.isIgnorePriv(), lib.getPath());
+                ll.loadLibrary(arguments, lib.isIgnorePriv(), lib.getPath());
             } catch (URISyntaxException ex) {
                 throw new IOException(ex.getLocalizedMessage(), ex);
             }

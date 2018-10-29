@@ -20,6 +20,7 @@ import cz.startnet.utils.pgdiff.loader.FullAnalyze;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcLoader;
 import cz.startnet.utils.pgdiff.loader.JdbcMsLoader;
+import cz.startnet.utils.pgdiff.loader.LibraryLoader;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.loader.ProjectLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.LibraryObjectDuplicationException;
@@ -64,10 +65,13 @@ public final class PgDiff {
         PgDatabase newDatabase = loadDatabaseSchema(
                 arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments);
 
-        ProjectLoader.loadLibraries(oldDatabase, arguments, false, arguments.getTargetLibs());
-        ProjectLoader.loadLibraries(oldDatabase, arguments, true, arguments.getTargetLibsWithoutPriv());
-        ProjectLoader.loadLibraries(newDatabase, arguments, false, arguments.getSourceLibs());
-        ProjectLoader.loadLibraries(newDatabase, arguments, true, arguments.getSourceLibsWithoutPriv());
+        LibraryLoader oldLib = new LibraryLoader(oldDatabase);
+        oldLib.loadLibraries(arguments, false, arguments.getTargetLibs());
+        oldLib.loadLibraries(arguments, false, arguments.getTargetLibsWithoutPriv());
+
+        LibraryLoader newLib = new LibraryLoader(newDatabase);
+        newLib.loadLibraries(arguments, false, arguments.getSourceLibs());
+        newLib.loadLibraries(arguments, true, arguments.getSourceLibsWithoutPriv());
 
         if (arguments.isLibSafeMode()) {
             List<PgOverride> overrides = oldDatabase.getOverrides();

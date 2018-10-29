@@ -194,7 +194,7 @@ public class DependencyProperties extends PropertyPage {
             createButton(parent, ADD_ID, Messages.DependencyProperties_add_directory,
                     Activator.getEclipseImage(ISharedImages.IMG_OBJ_FOLDER));
 
-            Button btnAddDump = createButton(parent, CLIENT_ID, Messages.DependencyProperties_add_dump,
+            Button btnAddDump = createButton(parent, CLIENT_ID, Messages.DependencyProperties_add_file,
                     Activator.getEclipseImage(ISharedImages.IMG_OBJ_FILE));
             btnAddDump.addSelectionListener(new SelectionAdapter() {
 
@@ -202,9 +202,10 @@ public class DependencyProperties extends PropertyPage {
                 public void widgetSelected(SelectionEvent e) {
                     FileDialog dialog = new FileDialog(getShell());
                     dialog.setText(Messages.choose_dump_file_with_changes);
-                    dialog.setFilterExtensions(new String[] {"*.sql", "*"}); //$NON-NLS-1$ //$NON-NLS-2$
+                    dialog.setFilterExtensions(new String[] {"*.sql", "*.zip", "*"}); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                     dialog.setFilterNames(new String[] {
                             Messages.DiffPresentationPane_sql_file_filter,
+                            Messages.DiffPresentationPane_zip_file_filter,
                             Messages.DiffPresentationPane_any_file_filter});
                     dialog.setFilterPath(defaultPath);
                     String value = dialog.open();

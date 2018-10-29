@@ -856,7 +856,7 @@ public class DiffTableViewer extends Composite {
                         type = Messages.DiffTableViewer_directory;
                         loc = lib.relativize(location).toString();
                     } else {
-                        type = Messages.DiffTableViewer_dump;
+                        type = Messages.DiffTableViewer_file;
                         loc = null;
                     }
                 }
