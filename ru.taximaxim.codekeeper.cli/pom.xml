@@ -11,6 +11,6 @@
 
     <groupId>ru.taximaxim.codeKeeper</groupId>
     <artifactId>ru.taximaxim.codekeeper.cli</artifactId>
-    <version>5.1.5-SNAPSHOT</version>
+    <version>5.1.7-SNAPSHOT</version>
     <packaging>eclipse-plugin</packaging>
 </project>

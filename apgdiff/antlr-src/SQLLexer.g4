@@ -261,6 +261,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     RESET: [rR] [eE] [sS] [eE] [tT];
     RESTART: [rR] [eE] [sS] [tT] [aA] [rR] [tT];
     RESTRICT: [rR] [eE] [sS] [tT] [rR] [iI] [cC] [tT];
+    RESTRICTED: [rR] [eE] [sS] [tT] [rR] [iI] [cC] [tT] [eE] [dD];
     RETURNS: [rR] [eE] [tT] [uU] [rR] [nN] [sS];
     REVOKE: [rR] [eE] [vV] [oO] [kK] [eE];
     ROLE: [rR] [oO] [lL] [eE];
@@ -269,6 +270,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     ROWS: [rR] [oO] [wW] [sS];
     RULE: [rR] [uU] [lL] [eE];
     
+    SAFE: [sS] [aA] [fF] [eE];
     SAVEPOINT: [sS] [aA] [vV] [eE] [pP] [oO] [iI] [nN] [tT];
     SCHEMA: [sS] [cC] [hH] [eE] [mM] [aA];
     SCHEMAS: [sS] [cC] [hH] [eE] [mM] [aA] [sS];
@@ -324,6 +326,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     UNKNOWN: [uU] [nN] [kK] [nN] [oO] [wW] [nN];
     UNLISTEN: [uU] [nN] [lL] [iI] [sS] [tT] [eE] [nN];
     UNLOGGED: [uU] [nN] [lL] [oO] [gG] [gG] [eE] [dD];
+    UNSAFE: [uU] [nN] [sS] [aA] [fF] [eE];
     UNTIL: [uU] [nN] [tT] [iI] [lL];
     UPDATE: [uU] [pP] [dD] [aA] [tT] [eE];
     
@@ -627,6 +630,12 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     NOREPLICATION: [nN] [oO] [rR] [eE] [pP] [lL] [iI] [cC] [aA] [tT] [iI] [oO] [nN];
     BYPASSRLS: [bB] [yY] [pP] [aA] [sS] [sS] [rR] [lL] [sS];
     NOBYPASSRLS: [nN] [oO] [bB] [yY] [pP] [aA] [sS] [sS] [rR] [lL] [sS];
+    LEFTARG: [lL] [eE] [fF] [tT] [aA] [rR] [gG];
+    RIGHTARG: [rR] [iI] [gG] [hH] [tT] [aA] [rR] [gG];
+    COMMUTATOR: [cC] [oO] [mM] [mM] [uU] [tT] [aA] [tT] [oO] [rR];
+    NEGATOR: [nN] [eE] [gG] [aA] [tT] [oO] [rR];
+    HASHES: [hH] [aA] [sS] [hH] [eE] [sS];
+    MERGES: [mM] [eE] [rR] [gG] [eE] [sS];
 
 fragment UNDERLINE : '_';
 

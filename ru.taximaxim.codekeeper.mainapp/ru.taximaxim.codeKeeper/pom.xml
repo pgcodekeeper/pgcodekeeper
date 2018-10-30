@@ -52,7 +52,8 @@ to update all relevant poms and metadatas
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <tycho.version>1.0.0</tycho.version>
+        <tycho.version>1.2.0</tycho.version>
+        <target.definition.file>app</target.definition.file>
 
         <sonar.language>java</sonar.language>
         <sonar.java.binaries>${project.basedir}/target/classes</sonar.java.binaries>
@@ -106,6 +107,15 @@ to update all relevant poms and metadatas
                 <module>../../../codekeeper-internal/ru.taximaxim.codekeeper.internal.ui.tests</module>
             </modules>
         </profile>
+        <profile>
+            <id>neon</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <target.definition.file>app_neon</target.definition.file>
+            </properties>
+        </profile>
     </profiles>
 
     <build>
@@ -138,7 +148,7 @@ to update all relevant poms and metadatas
                             <groupId>ru.taximaxim.codeKeeper</groupId>
                             <artifactId>ru.taximaxim.codeKeeper</artifactId>
                             <version>0.0.1-SNAPSHOT</version>
-                            <classifier>../app</classifier>
+                            <classifier>../${target.definition.file}</classifier>
                         </artifact>
                     </target>
                     <pomDependencies>consider</pomDependencies>

@@ -15,6 +15,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_domain_statementCo
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_fts_configurationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_fts_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_operator_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_sequence_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
@@ -29,8 +30,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_configuration
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_dictionaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_parserContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_templateContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_funct_paramsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_index_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_operator_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_schema_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_sequence_statementContext;
@@ -42,12 +45,15 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_columnsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_function_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_operator_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_rule_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_statementsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_trigger_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_actions_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_parametersContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Object_typeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rule_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_alterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_createContext;
@@ -66,6 +72,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_of_type_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
@@ -164,6 +171,8 @@ public class ReferenceListener implements SqlContextProcessor {
             r = () -> createFtsParser(ctx.create_fts_parser());
         } else if (ctx.create_fts_dictionary() != null) {
             r = () -> createFtsDictionary(ctx.create_fts_dictionary());
+        } else if (ctx.create_operator_statement() != null) {
+            r = () -> createOperator(ctx.create_operator_statement());
         } else if (ctx.comment_on_statement() != null) {
             r = () -> commentOn(ctx.comment_on_statement());
         } else if (ctx.rule_common() != null) {
@@ -194,6 +203,8 @@ public class ReferenceListener implements SqlContextProcessor {
             r = () -> alterDomain(ctx.alter_domain_statement());
         } else if (ctx.alter_fts_statement() != null) {
             r = () -> alterFts(ctx.alter_fts_statement());
+        } else if (ctx.alter_operator_statement() != null) {
+            r = () -> alterOperator(ctx.alter_operator_statement());
         } else {
             return;
         }
@@ -210,6 +221,8 @@ public class ReferenceListener implements SqlContextProcessor {
             r = () -> dropRule(ctx.drop_rule_statement());
         } else if (ctx.drop_statements() != null) {
             r = () -> drop(ctx.drop_statements());
+        } else if (ctx.drop_operator_statement() != null) {
+            r = () -> dropOperator(ctx.drop_operator_statement());
         } else {
             return;
         }
@@ -234,6 +247,17 @@ public class ReferenceListener implements SqlContextProcessor {
             ParserRuleContext ctx) {
         if (schemaName != null) {
             Token startSchemaToken = QNameParser.getSchemaNameCtx(ids).getStart();
+            addObjReference(null, schemaName,
+                    DbObjType.SCHEMA, StatementActions.NONE,
+                    startSchemaToken.getStartIndex(), startSchemaToken.getLine(),
+                    ParserAbstract.getFullCtxText(ctx.getParent()));
+        }
+    }
+
+    private void addReferenceOnSchema(IdentifierContext schemaCtx, String schemaName,
+            ParserRuleContext ctx) {
+        if (schemaName != null) {
+            Token startSchemaToken = schemaCtx.getStart();
             addObjReference(null, schemaName,
                     DbObjType.SCHEMA, StatementActions.NONE,
                     startSchemaToken.getStartIndex(), startSchemaToken.getLine(),
@@ -358,8 +382,18 @@ public class ReferenceListener implements SqlContextProcessor {
         List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         addReferenceOnSchema(ids, schemaName, ctx);
-        statementBodies.add(new StatementBodyContainer(filePath, ctx.funct_body));
+        statementBodies.add(new StatementBodyContainer(filePath, getFunctionDefinition(ctx.funct_body)));
         fillObjDefinition(schemaName, QNameParser.getFirstNameCtx(ids), DbObjType.FUNCTION);
+    }
+
+    private ParserRuleContext getFunctionDefinition(Create_funct_paramsContext params) {
+        for (Function_actions_commonContext s : params.function_actions_common()) {
+            if (s.AS() != null) {
+                return s.function_def();
+            }
+        }
+
+        return params;
     }
 
     public void createSequence(Create_sequence_statementContext ctx) {
@@ -425,6 +459,19 @@ public class ReferenceListener implements SqlContextProcessor {
         fillObjDefinition(schemaName, QNameParser.getFirstNameCtx(ids), DbObjType.FTS_CONFIGURATION);
     }
 
+    private void createOperator(Create_operator_statementContext ctx) {
+        Operator_nameContext operNameCtx = ctx.operator_name();
+        IdentifierContext schemaCtx = operNameCtx.schema_name;
+        String schemaName;
+        if (schemaCtx != null) {
+            schemaName = schemaCtx.getText();
+            addReferenceOnSchema(schemaCtx, schemaName, ctx);
+        } else {
+            schemaName = getDefSchemaName();
+        }
+        fillObjDefinition(schemaName, operNameCtx.operator, DbObjType.OPERATOR);
+    }
+
     public void commentOn(Comment_on_statementContext ctx) {
         if (ctx.name == null) {
             return;
@@ -439,6 +486,12 @@ public class ReferenceListener implements SqlContextProcessor {
         DbObjType type = null;
         if (ctx.FUNCTION() != null) {
             type = DbObjType.FUNCTION;
+        } else if (ctx.OPERATOR() != null && ctx.target_operator() != null) {
+            type = DbObjType.OPERATOR;
+            Operator_nameContext operNameCtx =  ctx.target_operator().operator_name();
+            IdentifierContext schemaCtx = operNameCtx.schema_name;
+            schemaName = schemaCtx != null ? schemaCtx.getText() : getDefSchemaName();
+            name = operNameCtx.operator.getText();
         } else if (ctx.COLUMN() != null) {
             String tableName = QNameParser.getSecondName(ids);
             if (schemaName.equals(tableName)) {
@@ -496,7 +549,9 @@ public class ReferenceListener implements SqlContextProcessor {
         }
 
         if (type != null) {
-            addFullObjReference(schemaName, name, ctx.name, type, StatementActions.COMMENT, ctx.getParent());
+            addFullObjReference(schemaName, name,
+                    DbObjType.OPERATOR == type ? ctx.target_operator().operator_name() : ctx.name,
+                            type, StatementActions.COMMENT, ctx.getParent());
             setCommentToDefinition(name, type, comment);
         }
     }
@@ -652,6 +707,14 @@ public class ReferenceListener implements SqlContextProcessor {
         }
     }
 
+    private void alterOperator(Alter_operator_statementContext ctx) {
+        Operator_nameContext operNameCtx = ctx.target_operator().operator_name();
+        IdentifierContext schemaCtx = operNameCtx.schema_name;
+        addFullObjReference(schemaCtx != null ? schemaCtx.getText() : getDefSchemaName(),
+                operNameCtx.operator.getText(), ctx.target_operator(),
+                DbObjType.OPERATOR, StatementActions.ALTER, ctx.getParent());
+    }
+
     public void drop(Drop_statementsContext ctx) {
         DbObjType type = null;
         if (ctx.DATABASE()!= null) {
@@ -724,6 +787,16 @@ public class ReferenceListener implements SqlContextProcessor {
                 DbObjType.FUNCTION, StatementActions.DROP, ctx.getParent());
     }
 
+    public void dropOperator(Drop_operator_statementContext ctx) {
+        for (Target_operatorContext targetOperCtx : ctx.target_operator()) {
+            Operator_nameContext operNameCtx = targetOperCtx.operator_name();
+            IdentifierContext schemaCtx = operNameCtx.schema_name;
+            addFullObjReference(schemaCtx != null ? schemaCtx.getText() : getDefSchemaName(),
+                    operNameCtx.operator.getText(), targetOperCtx,
+                    DbObjType.OPERATOR, StatementActions.DROP, ctx.getParent());
+        }
+    }
+
     private void update(Update_stmt_for_psqlContext ctx) {
         List<IdentifierContext> ids = ctx.update_table_name.identifier();
         addFullObjReference(QNameParser.getSchemaName(ids, getDefSchemaName()),
@@ -747,6 +820,34 @@ public class ReferenceListener implements SqlContextProcessor {
 
         PgObjLocation loc = new PgObjLocation(schemaName, name, null,
                 start, filePath, ctx.getStart().getLine());
+        loc.setAction(StatementActions.CREATE);
+        loc.setObjType(objType);
+        List<PgObjLocation> defs = definitions.get(filePath);
+        if (defs == null) {
+            defs = new ArrayList<>();
+            definitions.put(filePath, defs);
+        }
+        defs.add(loc);
+        List<PgObjLocation> refs = references.get(filePath);
+        if (refs == null) {
+            refs = new ArrayList<>();
+            references.put(filePath, refs);
+        }
+        refs.add(loc);
+    }
+
+    /**
+     * Add object with start position to db object location List
+     * @param schemaName - object schema name
+     * @param ctx - object context
+     * @param objType - object type
+     */
+    private void fillObjDefinition(String schemaName, Token tkn, DbObjType objType) {
+        int start = tkn.getStartIndex();
+        String name = tkn.getText();
+
+        PgObjLocation loc = new PgObjLocation(schemaName, name, null,
+                start, filePath, tkn.getLine());
         loc.setAction(StatementActions.CREATE);
         loc.setObjType(objType);
         List<PgObjLocation> defs = definitions.get(filePath);

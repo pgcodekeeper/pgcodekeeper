@@ -15,12 +15,12 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import cz.startnet.utils.pgdiff.hashers.ShaHasher;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -178,6 +178,7 @@ public class DBTimestamp implements Serializable {
         case TYPE:
         case SEQUENCE:
         case FUNCTION:
+        case OPERATOR:
         case TABLE:
         case VIEW:
         case FTS_PARSER:

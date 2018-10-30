@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: apgdiff;singleton:=true
-Bundle-Version: 5.1.5.qualifier
+Bundle-Version: 5.2.1.qualifier
 Export-Package: cz.startnet.utils.pgdiff,
  cz.startnet.utils.pgdiff.loader,
  cz.startnet.utils.pgdiff.loader.timestamps,
@@ -24,7 +24,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: lib/jgrapht-core-0.9.0.jar,
  .,
  lib/antlr-runtime-4.6.jar,
- lib/postgresql-42.0.0.jre7.jar,
+ lib/postgresql-42.2.5.jar,
  lib/PgPass-0.0.2.jar,
  lib/mssql-jdbc-7.0.0.jre8.jar
 Bundle-ActivationPolicy: lazy

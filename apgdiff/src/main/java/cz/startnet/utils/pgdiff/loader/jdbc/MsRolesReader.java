@@ -21,7 +21,7 @@ public class MsRolesReader {
 
     public void read() throws SQLException, InterruptedException, XmlReaderException {
         loader.setCurrentOperation("roles query");
-        String query = JdbcQueries.QUERY_MS_ROLES.get(null);
+        String query = JdbcQueries.QUERY_MS_ROLES.getQuery();
         try (ResultSet res = loader.runner.runScript(loader.statement, query)) {
             while (res.next()) {
                 String name = res.getString("name");

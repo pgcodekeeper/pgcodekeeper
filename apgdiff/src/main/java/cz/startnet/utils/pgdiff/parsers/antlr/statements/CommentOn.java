@@ -5,18 +5,19 @@ import java.util.List;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
 import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
@@ -33,9 +34,16 @@ public class CommentOn extends ParserAbstract {
             // maybe NULL if drop comment
             return null;
         }
-        List<IdentifierContext> ids = ctx.name.identifier();
-        IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
-        String name = nameCtx.getText();
+
+        List<IdentifierContext> ids = null;
+        IdentifierContext nameCtx = null;
+        String name = null;
+        if (ctx.OPERATOR() == null) {
+            ids = ctx.name.identifier();
+            nameCtx = QNameParser.getFirstNameCtx(ids);
+            name = nameCtx.getText();
+        }
+
         String comment = ctx.comment_text.getText();
 
         // column (separately because of schema qualification)
@@ -78,6 +86,8 @@ public class CommentOn extends ParserAbstract {
         AbstractSchema schema;
         if (ctx.TRIGGER() != null || ctx.RULE() != null || ctx.CONSTRAINT() != null) {
             schema = getSchemaSafe(ctx.table_name.identifier(), db.getDefaultSchema());
+        } else if (ctx.OPERATOR() != null) {
+            schema = CreateOperator.getSchemaSafe(ctx.target_operator().name, db.getDefaultSchema(), db);
         } else {
             schema = (ctx.EXTENSION() != null || ctx.SCHEMA() != null) ? null
                     : getSchemaSafe(ids, db.getDefaultSchema());
@@ -87,6 +97,11 @@ public class CommentOn extends ParserAbstract {
         if (ctx.FUNCTION() != null) {
             getSafe(schema::getFunction, parseSignature(name, ctx.function_args()), nameCtx.getStart())
             .setComment(db.getArguments(), comment);
+            // operator
+        }  else if (ctx.OPERATOR() != null) {
+            Target_operatorContext targetOperCtx = ctx.target_operator();
+            getSafe(schema::getOperator, parseSignature(targetOperCtx.name.operator.getText(),
+                    targetOperCtx), targetOperCtx.getStart()).setComment(db.getArguments(), comment);
             //extension
         }  else if (ctx.EXTENSION() != null) {
             getSafe(db::getExtension, nameCtx).setComment(db.getArguments(), comment);

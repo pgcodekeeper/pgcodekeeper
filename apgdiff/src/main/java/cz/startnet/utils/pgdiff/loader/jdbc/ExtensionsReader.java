@@ -24,7 +24,7 @@ public class ExtensionsReader implements PgCatalogStrings {
 
     public void read() throws SQLException, InterruptedException {
         loader.setCurrentOperation("extensions query");
-        String query = JdbcQueries.QUERY_EXTENSIONS.get(null);
+        String query = JdbcQueries.QUERY_EXTENSIONS.getQuery();
 
         List<ObjectTimestamp> objects = loader.getTimestampEqualObjects();
         if (objects != null && !objects.isEmpty()) {

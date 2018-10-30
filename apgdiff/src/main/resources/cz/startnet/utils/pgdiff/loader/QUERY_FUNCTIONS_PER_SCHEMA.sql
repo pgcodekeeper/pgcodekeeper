@@ -15,7 +15,6 @@ SELECT  p.oid::bigint,
         p.proowner::bigint,
         l.lanname AS lang_name,
         p.prosrc,
-        p.proiswindow,
         p.provolatile,
         p.proleakproof,
         p.proisstrict,
@@ -38,6 +37,5 @@ FROM pg_catalog.pg_proc p
 LEFT JOIN pg_catalog.pg_description d ON d.objoid = p.oid
 LEFT JOIN pg_catalog.pg_language l ON l.oid = p.prolang
 WHERE p.pronamespace NOT IN (SELECT oid FROM sys_schemas)
-    AND proisagg = FALSE
     AND NOT EXISTS (SELECT 1 FROM pg_catalog.pg_depend dp WHERE dp.classid = 'pg_catalog.pg_proc'::pg_catalog.regclass AND dp.objid = p.oid AND dp.deptype = 'i')
     AND p.oid NOT IN (SELECT objid FROM extension_deps)

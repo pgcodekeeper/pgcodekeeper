@@ -125,7 +125,7 @@ public class TriggersReader extends JdbcReader {
         }
 
         //after Postgresql 10
-        if (SupportedVersion.VERSION_10.checkVersion(loader.version)) {
+        if (SupportedVersion.VERSION_10.isLE(loader.version)) {
             t.setOldTable(res.getString("tgoldtable"));
             t.setNewTable(res.getString("tgnewtable"));
         }

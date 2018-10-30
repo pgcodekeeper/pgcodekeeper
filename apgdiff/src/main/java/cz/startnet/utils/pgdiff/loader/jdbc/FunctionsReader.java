@@ -19,21 +19,21 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class FunctionsReader extends JdbcReader {
 
-    private static final float DEFAULT_PROCOST = 100.0f;
-    private static final float DEFAULT_PROROWS = 1000.0f;
-
     public FunctionsReader(JdbcLoaderBase loader) {
         super(JdbcQueries.QUERY_FUNCTIONS_PER_SCHEMA, loader);
     }
 
     @Override
     protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException {
+        if (res.getBoolean("proisspecial")) {
+            return;
+        }
         String schemaName = schema.getName();
         String functionName = res.getString("proname");
         loader.setCurrentObject(new GenericColumn(schemaName, functionName, DbObjType.FUNCTION));
         PgFunction f = new PgFunction(functionName, "");
 
-        f.setBody(loader.args, getFunctionBody(res));
+        fillFunction(f, res);
 
         // OWNER
         loader.setOwner(f, res.getLong("proowner"));
@@ -125,118 +125,92 @@ public class FunctionsReader extends JdbcReader {
         schema.addFunction(f);
     }
 
-    private String getFunctionBody(ResultSet res) throws SQLException {
+    private void fillFunction(PgFunction function, ResultSet res) throws SQLException {
         StringBuilder body = new StringBuilder();
 
-        String lanName = res.getString("lang_name");
-        body.append("LANGUAGE ").append(PgDiffUtils.getQuotedName(lanName));
+        function.setLanguage(res.getString("lang_name"));
 
         // since 9.5 PostgreSQL
-        if (SupportedVersion.VERSION_9_5.checkVersion(loader.version)) {
+        if (SupportedVersion.VERSION_9_5.isLE(loader.version)) {
             Long[] protrftypes = getColArray(res, "protrftypes");
             if (protrftypes != null) {
-                body.append(" TRANSFORM ");
                 for (Long s : protrftypes) {
-                    body.append("FOR TYPE ")
-                    .append(loader.cachedTypesByOid.get(s).getFullName());
-                    body.append(", ");
+                    function.addTransform(loader.cachedTypesByOid.get(s).getFullName());
                 }
-                body.setLength(body.length() - 2);
             }
         }
 
-        if (res.getBoolean("proiswindow")) {
-            body.append(" WINDOW");
-        }
+        function.setWindow(res.getBoolean("proiswindow"));
 
         // VOLATILE is default
         switch (res.getString("provolatile")) {
         case "i":
-            body.append(" IMMUTABLE");
+            function.setVolatileType("IMMUTABLE");
             break;
         case "s":
-            body.append(" STABLE");
+            function.setVolatileType("STABLE");
             break;
         default :
             break;
         }
 
-        // CALLED ON NULL INPUT is default
-        if (res.getBoolean("proisstrict")) {
-            body.append(" STRICT");
-        }
-
-        // SECURITY INVOKER is default
-        if (res.getBoolean("prosecdef")) {
-            body.append(" SECURITY DEFINER");
-        }
-
-        if (res.getBoolean("proleakproof")) {
-            body.append(" LEAKPROOF");
-        }
+        function.setStrict(res.getBoolean("proisstrict"));
+        function.setSecurityDefiner(res.getBoolean("prosecdef"));
+        function.setLeakproof(res.getBoolean("proleakproof"));
 
         // since 9.6 PostgreSQL
         // parallel mode: s - safe, r - restricted, u - unsafe
-        if (SupportedVersion.VERSION_9_6.checkVersion(loader.version)) {
+        if (SupportedVersion.VERSION_9_6.isLE(loader.version)) {
             String parMode = res.getString("proparallel");
             switch (parMode) {
             case "s":
-                body.append(" PARALLEL SAFE");
+                function.setParallel("SAFE");
                 break;
             case "r":
-                body.append(" PARALLEL RESTRICTED");
+                function.setParallel("RESTRICTED");
                 break;
             default :
                 break;
             }
         }
 
-        float cost = res.getFloat("procost");
-        if ("internal".equals(lanName) || "c".equals(lanName)) {
-            /* default cost is 1 */
-            if (1.0f != cost) {
-                body.append(" COST ");
-                if (cost % 1 == 0) {
-                    body.append((int)cost);
-                } else {
-                    body.append(cost);
-                }
-            }
-        } else {
-            /* default cost is 100 */
-            if (DEFAULT_PROCOST != cost) {
-                body.append(" COST ");
-                if (cost % 1 == 0) {
-                    body.append((int)cost);
-                } else {
-                    body.append(cost);
-                }
-            }
-        }
-
         float rows = res.getFloat("prorows");
-        if (0.0f != rows && DEFAULT_PROROWS != rows) {
-            body.append(" ROWS ");
-
-            if (rows % 1 == 0) {
-                body.append((int)rows);
-            } else {
-                body.append(rows);
-            }
+        if (0.0f != rows) {
+            function.setRows(rows);
         }
+        function.setCost(res.getFloat("procost"));
 
         String[] proconfig = getColArray(res, "proconfig");
         if (proconfig != null) {
             for (String param : proconfig) {
-                String[] params = param.split("=");
-                String par = params[0];
-                String val = params[1];
-                if (!"DateStyle".equals(par) && !"search_path".equals(par)) {
-                    par = PgDiffUtils.getQuotedName(par);
+                int eq = param.indexOf('=');
+                final String par = param.substring(0, eq);
+                String val = param.substring(eq + 1);
+
+                switch (par) {
+                case "temp_tablespaces":
+                case "session_preload_libraries":
+                case "shared_preload_libraries":
+                case "local_preload_libraries":
+                case "search_path":
+                    function.addConfiguration(par, null);
+                    loader.submitAntlrTask(val, SQLParser::vex_eof,
+                            ctx -> {
+                                StringBuilder sb = new StringBuilder();
+                                for (VexContext vex : ctx.vex()) {
+                                    sb.append(PgDiffUtils.quoteString(
+                                            vex.getText()));
+                                    sb.append(", ");
+                                }
+                                sb.setLength(sb.length() - 2);
+                                function.addConfiguration(par, sb.toString());
+                            });
+                    break;
+                default :
                     val = PgDiffUtils.quoteString(val);
+                    function.addConfiguration(PgDiffUtils.getQuotedName(par), val);
+                    break;
                 }
-                body.append("\n    SET ").append(par).append(" TO ")
-                .append(val);
             }
         }
 
@@ -244,7 +218,7 @@ public class FunctionsReader extends JdbcReader {
         String quote = getStringLiteralDollarQuote(definition);
         String probin = res.getString("probin");
         if (probin != null && !probin.isEmpty()) {
-            body.append("\n    AS ").append(PgDiffUtils.quoteString(probin));
+            body.append(PgDiffUtils.quoteString(probin));
             if (!"-".equals(definition)) {
                 body.append(", ");
                 if (!definition.contains("\'") && !definition.contains("\\")) {
@@ -253,12 +227,11 @@ public class FunctionsReader extends JdbcReader {
                     body.append(quote).append(definition).append(quote);
                 }
             }
-        } else {
-            if (!"-".equals(definition)) {
-                body.append("\n    AS ").append(quote).append(definition).append(quote);
-            }
+        } else if (!"-".equals(definition)) {
+            body.append(quote).append(definition).append(quote);
         }
-        return body.toString();
+
+        function.setBody(loader.args, body.toString());
     }
 
     /**

@@ -4,9 +4,8 @@ import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 
-import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.loader.JdbcQuery;
 import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
@@ -18,22 +17,23 @@ import cz.startnet.utils.pgdiff.schema.PgFtsConfiguration;
 import cz.startnet.utils.pgdiff.schema.PgFtsDictionary;
 import cz.startnet.utils.pgdiff.schema.PgFtsParser;
 import cz.startnet.utils.pgdiff.schema.PgFtsTemplate;
+import cz.startnet.utils.pgdiff.schema.PgOperator;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class JdbcReader implements PgCatalogStrings {
 
-    protected final Map<SupportedVersion, String> queries;
+    protected final JdbcQuery queries;
     protected final JdbcLoaderBase loader;
 
-    protected JdbcReader(Map<SupportedVersion, String> queries, JdbcLoaderBase loader) {
+    protected JdbcReader(JdbcQuery queries, JdbcLoaderBase loader) {
         this.queries = queries;
         this.loader = loader;
     }
 
     public void read() throws SQLException, InterruptedException, XmlReaderException {
-        String query = makeQuery(loader.version);
+        String query = queries.makeQuery(loader.version);
 
         List<ObjectTimestamp> objects = loader.getTimestampEqualObjects();
         if (objects != null && !objects.isEmpty()) {
@@ -63,20 +63,6 @@ public abstract class JdbcReader implements PgCatalogStrings {
                 }
             }
         }
-    }
-
-    public String makeQuery(int version) {
-        StringBuilder sb = new StringBuilder("SELECT * FROM (");
-        sb.append(queries.get(null));
-        sb.append(") t1 ");
-
-        queries.entrySet().stream()
-        .filter(e -> e.getKey() != null && e.getKey().checkVersion(version))
-        .forEach(e -> sb.append("LEFT JOIN (").append(e.getValue())
-                .append(") t").append(e.getKey().getVersion())
-                .append(" USING (oid) "));
-
-        return sb.toString();
     }
 
     private void fillOldObjects(List<ObjectTimestamp> objects, AbstractSchema sc, PgDatabase projDb, StringBuilder sbOids) {
@@ -144,6 +130,10 @@ public abstract class JdbcReader implements PgCatalogStrings {
                     break;
                 case FTS_CONFIGURATION:
                     sc.addFtsConfiguration((PgFtsConfiguration) obj.copyStatement(projDb, loader));
+                    sbOids.append(obj.getObjId()).append(',');
+                    break;
+                case OPERATOR:
+                    sc.addOperator((PgOperator) obj.copyStatement(projDb, loader));
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 default:

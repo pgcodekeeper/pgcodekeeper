@@ -12,6 +12,7 @@ public class MsUser extends PgStatement {
 
     // TODO PASSWORD, DEFAULT_LANGUAGE, ALLOW_ENCRYPTED_VALUE_MODIFICATIONS
     private String schema;
+    private String login;
 
     public MsUser(String name, String rawStatement) {
         super(name, rawStatement);
@@ -32,8 +33,8 @@ public class MsUser extends PgStatement {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE USER ");
         sbSQL.append(MsDiffUtils.quoteName(getName()));
-        if (owner != null) {
-            sbSQL.append(" FOR LOGIN ").append(MsDiffUtils.quoteName(owner));
+        if (login != null) {
+            sbSQL.append(" FOR LOGIN ").append(MsDiffUtils.quoteName(login));
         }
         if (schema != null) {
             sbSQL.append(" WITH DEFAULT_SCHEMA=").append(MsDiffUtils.quoteName(schema));
@@ -64,8 +65,8 @@ public class MsUser extends PgStatement {
 
         StringBuilder sbSql = new StringBuilder();
 
-        if (!Objects.equals(getOwner(), newUser.getOwner())) {
-            sbSql.append("LOGIN = ").append(MsDiffUtils.quoteName(newUser.getOwner())).append(", ");
+        if (!Objects.equals(getLogin(), newUser.getLogin())) {
+            sbSql.append("LOGIN = ").append(MsDiffUtils.quoteName(newUser.getLogin())).append(", ");
         }
 
         String newSchema = newUser.getSchema();
@@ -99,11 +100,21 @@ public class MsUser extends PgStatement {
         resetHash();
     }
 
+    public String getLogin() {
+        return login;
+    }
+
+    public void setLogin(String login) {
+        this.login = login;
+        resetHash();
+    }
+
     @Override
     public void computeHash(Hasher hasher) {
         hasher.put(name);
         hasher.put(owner);
         hasher.put(schema);
+        hasher.put(login);
         hasher.putOrdered(grants);
         hasher.putOrdered(revokes);
     }
@@ -113,6 +124,7 @@ public class MsUser extends PgStatement {
         MsUser userDst = new MsUser(getName(), getRawStatement());
         userDst.setOwner(getOwner());
         userDst.setSchema(getSchema());
+        userDst.setLogin(getLogin());
         for (PgPrivilege priv : revokes) {
             userDst.addPrivilege(priv);
         }
@@ -133,6 +145,7 @@ public class MsUser extends PgStatement {
         if (obj instanceof MsUser) {
             MsUser user = (MsUser) obj;
             return Objects.equals(schema, user.getSchema())
+                    && Objects.equals(login, user.getLogin())
                     && Objects.equals(name, user.getName())
                     && Objects.equals(owner, user.getOwner())
                     && grants.equals(user.grants)

@@ -23,7 +23,7 @@ public class CreateMsUser extends ParserAbstract {
         MsUser user = new MsUser(name, getFullCtxText(ctx.getParent()));
         User_loginContext login = ctx.user_login();
         if (login != null) {
-            user.setOwner(login.login_name.getText());
+            user.setLogin(login.login_name.getText());
         }
 
         for (User_optionContext option : ctx.user_option()) {
