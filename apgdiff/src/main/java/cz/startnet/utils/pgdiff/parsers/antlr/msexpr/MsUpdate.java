@@ -6,6 +6,7 @@ import java.util.List;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ExpressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.From_itemContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Full_column_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Search_conditionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Update_elemContext;
@@ -29,18 +30,32 @@ public class MsUpdate extends MsAbstractExprWithNmspc<Update_statementContext> {
             analyzeCte(with);
         }
 
-        ExpressionContext exp = update.expression();
-        if (exp != null) {
-            new MsValueExpr(this).analyze(exp);
+        Qualified_nameContext tableName = update.qualified_name();
+
+        MsSelect select = new MsSelect(this);
+        for (From_itemContext item : update.from_item()) {
+            select.from(item);
         }
 
-        Qualified_nameContext tableName = update.qualified_name();
-        if (tableName != null) {
+        IdContext schemaCtx = tableName == null ? null : tableName.schema;
+        boolean isAlias = false;
+
+        if (schemaCtx == null) {
+            isAlias = select.findReference(null, tableName.name.getText()) != null;
+        }
+
+        if (tableName != null && !isAlias) {
             addNameReference(tableName, null);
         }
 
+        MsValueExpr vex = new MsValueExpr(select);
+
+        ExpressionContext exp = update.expression();
+        if (exp != null) {
+            vex.analyze(exp);
+        }
+
         for (Update_elemContext elem : update.update_elem()) {
-            MsValueExpr vex = new MsValueExpr(this);
             ExpressionContext expr = elem.expression();
             if (expr != null) {
                 vex.analyze(expr);
@@ -55,12 +70,7 @@ public class MsUpdate extends MsAbstractExprWithNmspc<Update_statementContext> {
 
         Search_conditionContext search = update.search_condition();
         if (search != null) {
-            new MsValueExpr(this).search(search);
-        }
-
-        for (From_itemContext item : update.from_item()) {
-            //TODO collect to current namespace
-            new MsSelect(this).from(item);
+            vex.search(search);
         }
 
         return Collections.emptyList();

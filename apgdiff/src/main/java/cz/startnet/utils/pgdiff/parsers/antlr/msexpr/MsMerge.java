@@ -33,26 +33,27 @@ public class MsMerge extends MsAbstractExprWithNmspc<Merge_statementContext> {
             analyzeCte(with);
         }
 
-        ExpressionContext exp = merge.expression();
-        if (exp != null) {
-            new MsValueExpr(this).analyze(exp);
-        }
-
         Qualified_nameContext tableName = merge.qualified_name();
         if (tableName != null) {
             addNameReference(tableName, merge.as_table_alias());
         }
 
+        MsSelect select = new MsSelect(this);
+
         for (From_itemContext item : merge.from_item()) {
-            //TODO collect to current namespace
-            new MsSelect(this).from(item);
+            select.from(item);
         }
 
-        MsValueExpr vex = new MsValueExpr(this);
+        MsValueExpr vex = new MsValueExpr(select);
+
+        ExpressionContext exp = merge.expression();
+        if (exp != null) {
+            vex.analyze(exp);
+        }
+
         for (Search_conditionContext search : merge.search_condition()) {
             vex.search(search);
         }
-
 
         Merge_not_matchedContext notMatched = merge.merge_not_matched();
         if (notMatched != null) {
