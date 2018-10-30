@@ -1,15 +1,18 @@
 package cz.startnet.utils.pgdiff.loader;
 
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -67,13 +70,20 @@ public class LibraryLoader {
         try {
             URI uri = new URI(path);
             if (uri.getScheme() != null) {
-                return loadURI(uri, args, isIgnorePriv);
+                PgDatabase db = loadURI(uri, args, isIgnorePriv);
+                db.getDescendants().forEach(st -> st.setLocation(path));
+                return db;
             }
         } catch (URISyntaxException e) {
             // not URI, try to folder or file
         }
 
         Path p = Paths.get(path);
+
+        if (!Files.exists(p)) {
+            throw new IOException(MessageFormat.format(
+                    "Error while read library : {0} - File not found", path));
+        }
 
         if (Files.isDirectory(p)) {
             if (Files.exists(p.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
@@ -89,13 +99,26 @@ public class LibraryLoader {
             }
         }
 
-        if (path.endsWith(".zip")) {
+        if (isZipFile(path)) {
             return loadZip(p, args, isIgnorePriv);
         }
 
         try (PgDumpLoader loader = new PgDumpLoader(new File(path), args)) {
             return loader.load();
         }
+    }
+
+    private boolean isZipFile(String path) throws IOException {
+        int fileSignature = 0;
+        try (RandomAccessFile raf = new RandomAccessFile(path, "r")) {
+            fileSignature = raf.readInt();
+        } catch (EOFException e) {
+            // empty file
+            return false;
+        }
+
+        return fileSignature == 0x504B0304 || fileSignature == 0x504B0506
+                || fileSignature == 0x504B0708;
     }
 
     private PgDatabase loadZip(Path path, PgDiffArguments args, boolean isIgnorePriv)
@@ -116,26 +139,25 @@ public class LibraryLoader {
         String fileName = Paths.get(path).getFileName().toString();
         String name = fileName + '_' + PgDiffUtils.md5(path).substring(0, 10);
 
-        PgDatabase db = getLibrary(download(uri, metaPath.resolve(name), fileName),
-                args, isIgnorePriv);
+        Path dir = metaPath.resolve(name);
 
-        db.getDescendants().forEach(st -> st.setLocation(path));
-        return db;
-    }
-
-    private String download(URI uri, Path dir, String fileName) throws IOException {
         createMetaFolder();
-        // create output directory if it doesn't exist
-        if (Files.exists(dir)) {
-            return dir.toString();
+
+        if (!Files.exists(dir)) {
+            Files.createDirectories(dir);
+
+            try {
+                InputStream in = uri.toURL().openStream();
+                Files.copy(in, dir.resolve(fileName));
+            } catch (IOException e) {
+                Files.deleteIfExists(dir);
+                throw new IOException(
+                        MessageFormat.format("Error while read library from URI : {0} - {1} ",
+                                uri, e.getLocalizedMessage()), e);
+            }
         }
 
-        Files.createDirectories(dir);
-
-        InputStream in = uri.toURL().openStream();
-        Files.copy(in, dir.resolve(fileName));
-
-        return dir.toString();
+        return getLibrary(dir.toString(), args, isIgnorePriv);
     }
 
     private void createMetaFolder() throws IOException {
@@ -146,7 +168,7 @@ public class LibraryLoader {
 
     private String unzip(Path zip, Path dir) throws FileNotFoundException, IOException {
         createMetaFolder();
-        // create output directory if it doesn't exist
+        // return output directory if it exists
         if (Files.exists(dir)) {
             return dir.toString();
         }
