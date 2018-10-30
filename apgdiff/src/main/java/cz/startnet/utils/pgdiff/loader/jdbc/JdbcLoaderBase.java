@@ -7,6 +7,7 @@ import java.sql.Statement;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -177,7 +178,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         String owner = st.getOwner();
         if (owner == null && st.getStatementType() == DbObjType.SCHEMA
                 && ApgdiffConsts.PUBLIC.equals(st.getName())) {
-            owner = "postgres";
+            return;
         }
 
         setPrivileges(st, signature, aclItemsArrayAsString, owner,
@@ -258,7 +259,6 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         String qualStSignature = schemaName == null ? stSignature
                 : PgDiffUtils.getQuotedName(schemaName) + '.' + stSignature;
         String column = (columnId != null && !columnId.isEmpty()) ? "(" + columnId + ")" : "";
-        st.addPrivilege(new PgPrivilege("REVOKE", "ALL" + column, stType + " " + qualStSignature, "PUBLIC", false));
 
         List<Privilege> grants = JdbcAclParser.parse(
                 aclItemsArrayAsString, possiblePrivilegeCount, order, owner);
@@ -270,8 +270,10 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             }
         }
 
+        List<PgPrivilege> privileges = new ArrayList<>();
+
         if (!metDefaultOwnersGrants) {
-            st.addPrivilege(new PgPrivilege("REVOKE", "ALL" + column,
+            privileges.add(new PgPrivilege("REVOKE", "ALL" + column,
                     stType + " " + qualStSignature, PgDiffUtils.getQuotedName(owner), false));
         }
 
@@ -288,9 +290,43 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
                 }
             }
 
-            st.addPrivilege(new PgPrivilege("GRANT", String.join(",", grantValues),
+            privileges.add(new PgPrivilege("GRANT", String.join(",", grantValues),
                     stType + " " + qualStSignature, grant.grantee, grant.isGO));
         }
+
+        removePairedPrivileges(privileges).stream().forEach(st::addPrivilege);
+    }
+
+    /**
+     * Removes privileges that revokes and immediately grants rights to the same
+     * objects and the same roles. Such privileges were excluded from the new
+     * versions of the pg_dump dump-files.
+     *
+     * Example :
+     * REVOKE ALL ON SCHEMA schema1 FROM user1;
+     * GRANT ALL ON SCHEMA schema1 TO user1;
+     *
+     * @param privileges list of object privileges
+     * @return list of object privileges without paired privileges
+     */
+    private List<PgPrivilege> removePairedPrivileges(List<PgPrivilege> privileges) {
+        List<PgPrivilege> privsForDel = new ArrayList<>();
+        Iterator<PgPrivilege> privIter = privileges.iterator();
+        PgPrivilege privComparable = privIter.next();
+        PgPrivilege privforCompare;
+        while (privIter.hasNext()) {
+            privforCompare = privIter.next();
+            if (!privComparable.getState().equals(privforCompare.getState())
+                    && privComparable.getName().equals(privforCompare.getName())
+                    && privComparable.getRole().equals(privforCompare.getRole())
+                    && privComparable.getPermission().equals(privforCompare.getPermission())) {
+                privsForDel.add(privComparable);
+                privsForDel.add(privforCompare);
+            }
+            privComparable = privforCompare;
+        }
+        privileges.removeAll(privsForDel);
+        return privileges;
     }
 
     public void setPrivileges(PgStatement st, List<XmlReader> privs) throws XmlReaderException {

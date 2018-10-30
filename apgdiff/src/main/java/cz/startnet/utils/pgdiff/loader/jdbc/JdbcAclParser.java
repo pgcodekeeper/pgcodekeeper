@@ -77,7 +77,7 @@ final class JdbcAclParser {
             grantee = PgDiffUtils.getQuotedName(grantee);
 
             if (grantee.isEmpty()) {
-                grantee = "PUBLIC";
+                continue;
             }
 
             // reorder chars according to order, split to two lists based on WITH GRANT OPTION
