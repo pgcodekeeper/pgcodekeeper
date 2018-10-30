@@ -1,6 +1,8 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -857,6 +859,15 @@ public class DiffTableViewer extends Composite {
                         loc = lib.relativize(location).toString();
                     } else {
                         type = Messages.DiffTableViewer_file;
+
+                        try {
+                            if (new URI(loc).getScheme() != null) {
+                                type = Messages.DiffTableViewer_uri;
+                            }
+                        } catch (URISyntaxException e) {
+                            // do nothing, it is file
+                        }
+
                         loc = null;
                     }
                 }

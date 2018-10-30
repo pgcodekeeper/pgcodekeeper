@@ -304,7 +304,15 @@ public final class Messages extends NLS {
 
     public static String DependencyProperties_add_file;
 
+    public static String DependencyProperties_add_uri;
+
+    public static String DependencyProperties_connection_start;
+
+    public static String DependencyProperties_empty_scheme;
+
     public static String DependencyProperties_enter_connection_string;
+
+    public static String DependencyProperties_enter_uri;
 
     public static String DependencyProperties_ignore_privileges;
 
@@ -372,6 +380,8 @@ public final class Messages extends NLS {
     public static String DiffTableViewer_to_project;
 
     public static String DiffTableViewer_type;
+
+    public static String DiffTableViewer_uri;
 
     public static String DiffTableViewer_user;
 

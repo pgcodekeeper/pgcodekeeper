@@ -1,6 +1,8 @@
 package ru.taximaxim.codekeeper.ui.properties;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +12,7 @@ import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckboxCellEditor;
@@ -145,7 +148,7 @@ public class DependencyProperties extends PropertyPage {
 
             addColumns(viewer);
 
-            GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 6);
+            GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 7);
             gd.widthHint = PREF_PAGE.WIDTH_HINT_PX;
             viewer.getTable().setLayoutData(gd);
             viewer.getTable().setLinesVisible(true);
@@ -225,7 +228,49 @@ public class DependencyProperties extends PropertyPage {
                 public void widgetSelected(SelectionEvent e) {
                     InputDialog dialog = new InputDialog(getShell(),
                             Messages.DependencyProperties_add_database,
-                            Messages.DependencyProperties_enter_connection_string, "", null); //$NON-NLS-1$
+                            Messages.DependencyProperties_enter_connection_string, "jdbc:",  //$NON-NLS-1$
+                            new IInputValidator() {
+
+                        @Override
+                        public String isValid(String newText) {
+                            if (newText.startsWith("jdbc:")) {  //$NON-NLS-1$
+                                return null;
+                            }
+
+                            return Messages.DependencyProperties_connection_start;
+                        }
+                    });
+
+                    if (dialog.open() == Window.OK) {
+                        getList().add(new PgLibrary(dialog.getValue()));
+                        getViewer().refresh();
+                    }
+                }
+            });
+
+            Button btnAddURI = createButton(parent, CLIENT_ID,
+                    Messages.DependencyProperties_add_uri, FILE.ICONCLOUD);
+            btnAddURI.addSelectionListener(new SelectionAdapter() {
+
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    InputDialog dialog = new InputDialog(getShell(),
+                            Messages.DependencyProperties_add_uri,
+                            Messages.DependencyProperties_enter_uri, "",   //$NON-NLS-1$
+                            new IInputValidator() {
+
+                        @Override
+                        public String isValid(String newText) {
+                            try {
+                                if (new URI(newText).getScheme() == null) {
+                                    return Messages.DependencyProperties_empty_scheme;
+                                }
+                                return null;
+                            } catch (URISyntaxException e) {
+                                return e.getLocalizedMessage();
+                            }
+                        }
+                    });
 
                     if (dialog.open() == Window.OK) {
                         getList().add(new PgLibrary(dialog.getValue()));

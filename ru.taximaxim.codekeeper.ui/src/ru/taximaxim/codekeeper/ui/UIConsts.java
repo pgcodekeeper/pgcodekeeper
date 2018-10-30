@@ -218,6 +218,7 @@ public interface UIConsts {
         String ICONALERT = "/icons/alert_obj.gif"; //$NON-NLS-1$
         String ICONSORT = "/icons/alpha_mode.gif"; //$NON-NLS-1$
         String ICONLIB = "/icons/lib.gif"; //$NON-NLS-1$
+        String ICONCLOUD = "/icons/cloud.png"; //$NON-NLS-1$
     }
 
     interface WORKING_SET {
