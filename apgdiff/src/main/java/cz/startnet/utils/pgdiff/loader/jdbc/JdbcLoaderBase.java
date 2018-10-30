@@ -7,7 +7,6 @@ import java.sql.Statement;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -294,39 +293,20 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
                     stType + " " + qualStSignature, grant.grantee, grant.isGO));
         }
 
-        removePairedPrivileges(privileges).stream().forEach(st::addPrivilege);
-    }
-
-    /**
-     * Removes privileges that revokes and immediately grants rights to the same
-     * objects and the same roles. Such privileges were excluded from the new
-     * versions of the pg_dump dump-files.
-     *
-     * Example :
-     * REVOKE ALL ON SCHEMA schema1 FROM user1;
-     * GRANT ALL ON SCHEMA schema1 TO user1;
-     *
-     * @param privileges list of object privileges
-     * @return list of object privileges without paired privileges
-     */
-    private List<PgPrivilege> removePairedPrivileges(List<PgPrivilege> privileges) {
-        List<PgPrivilege> privsForDel = new ArrayList<>();
-        Iterator<PgPrivilege> privIter = privileges.iterator();
-        PgPrivilege privComparable = privIter.next();
-        PgPrivilege privforCompare;
-        while (privIter.hasNext()) {
-            privforCompare = privIter.next();
-            if (!privComparable.getState().equals(privforCompare.getState())
-                    && privComparable.getName().equals(privforCompare.getName())
-                    && privComparable.getRole().equals(privforCompare.getRole())
-                    && privComparable.getPermission().equals(privforCompare.getPermission())) {
-                privsForDel.add(privComparable);
-                privsForDel.add(privforCompare);
+        // Removing privileges that revokes and immediately grants rights to the same
+        // objects and the same roles. Such privileges were excluded from the new
+        // versions of the pg_dump dump-files.
+        // Example :
+        //      REVOKE ALL ON SCHEMA schema1 FROM user1;
+        //      GRANT ALL ON SCHEMA schema1 TO user1;
+        for (PgPrivilege priv : privileges) {
+            if (privileges.stream().noneMatch(p -> !p.getState().equals(priv.getState())
+                    && p.getName().equals(priv.getName())
+                    && p.getRole().equals(priv.getRole())
+                    && p.getPermission().equals(priv.getPermission()))) {
+                st.addPrivilege(priv);
             }
-            privComparable = privforCompare;
         }
-        privileges.removeAll(privsForDel);
-        return privileges;
     }
 
     public void setPrivileges(PgStatement st, List<XmlReader> privs) throws XmlReaderException {
