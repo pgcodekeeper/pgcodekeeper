@@ -269,10 +269,8 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             }
         }
 
-        List<PgPrivilege> privileges = new ArrayList<>();
-
         if (!metDefaultOwnersGrants) {
-            privileges.add(new PgPrivilege("REVOKE", "ALL" + column,
+            st.addPrivilege(new PgPrivilege("REVOKE", "ALL" + column,
                     stType + " " + qualStSignature, PgDiffUtils.getQuotedName(owner), false));
         }
 
@@ -289,23 +287,8 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
                 }
             }
 
-            privileges.add(new PgPrivilege("GRANT", String.join(",", grantValues),
+            st.addPrivilege(new PgPrivilege("GRANT", String.join(",", grantValues),
                     stType + " " + qualStSignature, grant.grantee, grant.isGO));
-        }
-
-        // Removing privileges that revokes and immediately grants rights to the same
-        // objects and the same roles. Such privileges were excluded from the new
-        // versions of the pg_dump dump-files.
-        // Example :
-        //      REVOKE ALL ON SCHEMA schema1 FROM user1;
-        //      GRANT ALL ON SCHEMA schema1 TO user1;
-        for (PgPrivilege priv : privileges) {
-            if (privileges.stream().noneMatch(p -> !p.getState().equals(priv.getState())
-                    && p.getName().equals(priv.getName())
-                    && p.getRole().equals(priv.getRole())
-                    && p.getPermission().equals(priv.getPermission()))) {
-                st.addPrivilege(priv);
-            }
         }
     }
 
