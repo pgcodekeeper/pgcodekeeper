@@ -40,6 +40,7 @@ import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcMsConnector;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.properties.IgnoreListProperties.IgnoreListEditor;
@@ -408,6 +409,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                             port);
                     style = SWT.ICON_ERROR;
                 } catch (SQLException | IOException ex) {
+                    Log.log(Log.LOG_INFO, "Connection test error", ex);
                     message = Messages.DbStoreEditorDialog_failed_connection_reason + ex.getLocalizedMessage();
                     style = SWT.ICON_ERROR;
                 }
