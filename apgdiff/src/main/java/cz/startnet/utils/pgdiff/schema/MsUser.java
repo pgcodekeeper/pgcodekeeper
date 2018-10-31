@@ -125,12 +125,8 @@ public class MsUser extends PgStatement {
         userDst.setOwner(getOwner());
         userDst.setSchema(getSchema());
         userDst.setLogin(getLogin());
-        for (PgPrivilege priv : revokes) {
-            userDst.addPrivilege(priv);
-        }
-        for (PgPrivilege priv : grants) {
-            userDst.addPrivilege(priv);
-        }
+        userDst.grants.addAll(grants);
+        userDst.revokes.addAll(revokes);
         userDst.setLocation(getLocation());
         return userDst;
     }

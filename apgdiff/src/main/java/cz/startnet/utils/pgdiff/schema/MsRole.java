@@ -125,12 +125,8 @@ public class MsRole extends PgStatement {
         MsRole roleDst = new MsRole(getName(), getRawStatement());
         roleDst.setOwner(getOwner());
         roleDst.members.addAll(members);
-        for (PgPrivilege priv : revokes) {
-            roleDst.addPrivilege(priv);
-        }
-        for (PgPrivilege priv : grants) {
-            roleDst.addPrivilege(priv);
-        }
+        roleDst.grants.addAll(grants);
+        roleDst.revokes.addAll(revokes);
         roleDst.setLocation(getLocation());
         return roleDst;
     }

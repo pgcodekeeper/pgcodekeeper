@@ -338,12 +338,8 @@ public abstract class AbstractColumn extends PgStatementWithSearchPath implement
         colDst.setIdentityType(getIdentityType());
         colDst.setSequence(getSequence());
         colDst.setInherit(isInherit());
-        for (PgPrivilege priv : grants) {
-            colDst.addPrivilege(priv);
-        }
-        for (PgPrivilege priv : revokes) {
-            colDst.addPrivilege(priv);
-        }
+        colDst.grants.addAll(grants);
+        colDst.revokes.addAll(revokes);
         colDst.setComment(getComment());
         colDst.deps.addAll(deps);
         colDst.setLocation(getLocation());

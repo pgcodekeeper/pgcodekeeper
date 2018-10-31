@@ -595,12 +595,8 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         AbstractSchema schemaDst = getSchemaCopy();
         schemaDst.setDefinition(getDefinition());
         schemaDst.setComment(getComment());
-        for (PgPrivilege priv : revokes) {
-            schemaDst.addPrivilege(priv);
-        }
-        for (PgPrivilege priv : grants) {
-            schemaDst.addPrivilege(priv);
-        }
+        schemaDst.grants.addAll(grants);
+        schemaDst.revokes.addAll(revokes);
         schemaDst.setOwner(getOwner());
         schemaDst.deps.addAll(deps);
         schemaDst.setLocation(getLocation());

@@ -337,15 +337,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         viewDst.defaultValues.addAll(defaultValues);
         viewDst.columnComments.addAll(columnComments);
         viewDst.relationColumns.addAll(relationColumns);
-
-        for (PgPrivilege priv : revokes) {
-            viewDst.addPrivilege(priv);
-        }
-
-        for (PgPrivilege priv : grants) {
-            viewDst.addPrivilege(priv);
-        }
-
+        viewDst.grants.addAll(grants);
+        viewDst.revokes.addAll(revokes);
         viewDst.setOwner(getOwner());
         viewDst.deps.addAll(deps);
         viewDst.options.putAll(options);
