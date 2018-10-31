@@ -8,6 +8,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_procedu
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Procedure_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Procedure_paramContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSqlClauses;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
@@ -62,6 +63,10 @@ public class CreateMsProcedure extends BatchContextProcessor {
             procedure.setAnsiNulls(ansiNulls);
             procedure.setQuotedIdentified(quotedIdentifier);
             setSourceParts(procedure);
+
+            MsSqlClauses clauses = new MsSqlClauses(schema.getName());
+            clauses.analyze(ctx.proc_body().sql_clauses());
+            procedure.addAllDeps(clauses.getDepcies());
         }
 
         schema.addFunction(procedure);

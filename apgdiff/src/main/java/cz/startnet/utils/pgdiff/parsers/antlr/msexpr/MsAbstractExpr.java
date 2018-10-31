@@ -76,6 +76,10 @@ public abstract class MsAbstractExpr {
     }*/
 
 
+    protected void addDepcy(GenericColumn depcy) {
+        depcies.add(depcy);
+    }
+
     protected void addColumnDepcy(Full_column_nameContext fcn) {
         Qualified_nameContext tableName = fcn.qualified_name();
         if (tableName != null) {

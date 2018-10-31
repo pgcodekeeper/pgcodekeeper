@@ -114,7 +114,7 @@ public abstract class MsAbstractExprWithNmspc<T> extends MsAbstractExpr {
         return !exists;
     }
 
-    protected void addNameReference(Qualified_nameContext name, As_table_aliasContext alias) {
+    protected GenericColumn addNameReference(Qualified_nameContext name, As_table_aliasContext alias) {
         String firstName = name.name.getText();
 
         boolean isCte = name.DOT().isEmpty() && hasCte(firstName);
@@ -131,6 +131,8 @@ public abstract class MsAbstractExprWithNmspc<T> extends MsAbstractExpr {
         } else {
             addRawTableReference(depcy);
         }
+
+        return depcy;
     }
 
     protected void analyzeCte(With_expressionContext with) {

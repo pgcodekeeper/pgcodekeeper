@@ -3,8 +3,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 import java.util.List;
 
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.Token;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
@@ -13,7 +11,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.BatchContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statement_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Ddl_clauseContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Disable_triggerContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Enable_disable_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_alterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_createContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Security_statementContext;
@@ -74,12 +72,12 @@ implements TSqlContextProcessor {
         if (ddl != null) {
             Schema_createContext create = ddl.schema_create();
             Schema_alterContext alter;
-            Disable_triggerContext disable;
+            Enable_disable_triggerContext disable;
             if (create != null) {
                 create(create);
             } else if ((alter = ddl.schema_alter()) != null) {
                 alter(alter);
-            } else if ((disable = ddl.disable_trigger()) != null) {
+            } else if ((disable = ddl.enable_disable_trigger()) != null && disable.DISABLE() != null) {
                 safeParseStatement(new DisableMsTrigger(disable, db), disable);
             }
         } else if ((ast = st.another_statement()) != null) {
