@@ -20,7 +20,6 @@ public class Argument implements Serializable, IHashable {
     private final String name;
     private final String dataType;
     private String defaultExpression;
-    private boolean isVarying;
     private boolean isReadOnly;
 
     public Argument(String name, String dataType) {
@@ -43,14 +42,6 @@ public class Argument implements Serializable, IHashable {
 
     public void setDefaultExpression(final String defaultExpression) {
         this.defaultExpression = defaultExpression;
-    }
-
-    public boolean isVarying() {
-        return isVarying;
-    }
-
-    public void setVarying(final boolean isVarying) {
-        this.isVarying = isVarying;
     }
 
     public boolean isReadOnly() {
@@ -106,7 +97,6 @@ public class Argument implements Serializable, IHashable {
                     && Objects.equals(defaultExpression, arg.getDefaultExpression())
                     && Objects.equals(mode, arg.getMode())
                     && isReadOnly == arg.isReadOnly()
-                    && isVarying == arg.isVarying()
                     && Objects.equals(name, arg.getName());
         }
 
@@ -127,6 +117,5 @@ public class Argument implements Serializable, IHashable {
         hasher.put(mode);
         hasher.put(name);
         hasher.put(isReadOnly);
-        hasher.put(isVarying);
     }
 }

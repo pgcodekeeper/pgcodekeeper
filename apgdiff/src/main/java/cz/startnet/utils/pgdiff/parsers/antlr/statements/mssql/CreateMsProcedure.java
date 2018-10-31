@@ -52,7 +52,6 @@ public class CreateMsProcedure extends BatchContextProcessor {
             String assemblyName = ctx.proc_body().assembly_specifier().assembly_name.getText();
             procedure.addDep(new GenericColumn(assemblyName, DbObjType.ASSEMBLY));
             fillArguments(procedure);
-            procedure.setForReplication(ctx.REPLICATION() != null);
             procedure.setBody(db.getArguments(), getFullCtxText(ctx.proc_body()));
 
             for (Procedure_optionContext option : ctx.procedure_option()) {

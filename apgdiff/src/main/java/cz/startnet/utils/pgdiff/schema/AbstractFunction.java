@@ -26,7 +26,6 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
 
     private float cost = DEFAULT_PROCOST;
     private float rows = DEFAULT_PROROWS;
-    private boolean isForReplication;
     private boolean ansiNulls;
     private boolean quotedIdentified;
     private boolean isCLR;
@@ -221,14 +220,6 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
         resetHash();
     }
 
-    public boolean isForReplication() {
-        return isForReplication;
-    }
-
-    public void setForReplication(boolean isForReplication) {
-        this.isForReplication = isForReplication;
-    }
-
     public boolean isCLR() {
         return isCLR;
     }
@@ -284,7 +275,6 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
                     && isLeakproof == func.isLeakproof()
                     && rows == func.getRows()
                     && cost == func.getCost()
-                    && isForReplication == func.isForReplication()
                     && Objects.equals(returns, func.getReturns())
                     && isCLR == func.isCLR();
         }
@@ -336,7 +326,6 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
         hasher.put(options);
         hasher.put(transforms);
         hasher.put(configurations);
-        hasher.put(isForReplication);
         hasher.put(isCLR);
     }
 
@@ -346,7 +335,6 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
         functionDst.setReturns(getReturns());
         functionDst.setAnsiNulls(isAnsiNulls());
         functionDst.setQuotedIdentified(isQuotedIdentified());
-        functionDst.setForReplication(isForReplication());
         functionDst.setCLR(isCLR());
         functionDst.setBody(getBody());
         functionDst.setWindow(isWindow());
@@ -365,7 +353,6 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
             Argument argDst = new Argument(argSrc.getMode(), argSrc.getName(), argSrc.getDataType());
             argDst.setDefaultExpression(argSrc.getDefaultExpression());
             argDst.setReadOnly(argSrc.isReadOnly());
-            argDst.setVarying(argSrc.isVarying());
             functionDst.addArgument(argDst);
         }
         functionDst.revokes.addAll(revokes);
