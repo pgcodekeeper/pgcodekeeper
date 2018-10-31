@@ -43,7 +43,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.While_statementContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class MsSqlClauses extends MsAbstractExprWithNmspc<Sql_clausesContext> {
+public class MsSqlClauses extends MsAbstractExpr {
 
     protected MsSqlClauses(MsAbstractExpr parent) {
         super(parent);
@@ -53,7 +53,6 @@ public class MsSqlClauses extends MsAbstractExprWithNmspc<Sql_clausesContext> {
         super(schema);
     }
 
-    @Override
     public List<String> analyze(Sql_clausesContext sql) {
         for (St_clauseContext st : sql.st_clause()) {
             clause(st);

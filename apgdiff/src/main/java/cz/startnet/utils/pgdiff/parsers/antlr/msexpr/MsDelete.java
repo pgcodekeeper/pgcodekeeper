@@ -51,7 +51,7 @@ public class MsDelete extends MsAbstractExprWithNmspc<Delete_statementContext> {
         if (top != null) {
             ExpressionContext exp = top.expression();
             if (exp != null) {
-                new MsValueExpr(this).analyze(exp);
+                new MsValueExpr(select).analyze(exp);
             }
         }
 
