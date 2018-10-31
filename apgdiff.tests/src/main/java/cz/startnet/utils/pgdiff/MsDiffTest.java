@@ -228,10 +228,14 @@ public class MsDiffTest {
 
                     // Tests scenario where MS PROCEDURE is added.
                     {"add_ms_procedure"},
+                    // Tests scenario where external MS PROCEDURE is added.
+                    {"add_external_ms_procedure"},
                     // Tests scenario where MS PROCEDURE is dropped.
                     {"drop_ms_procedure"},
                     // Tests scenario where MS PROCEDURE is modified.
                     {"modify_ms_procedure"},
+                    // Tests scenario where external MS PROCEDURE is modified.
+                    {"modify_external_ms_procedure"},
                     // Tests scenario where MS PROCEDURE type is modified.
                     {"modify_ms_procedure_type"},
 

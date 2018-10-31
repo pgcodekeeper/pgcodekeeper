@@ -329,6 +329,10 @@ public class PgDiffTest {
                     {"add_type_range"},
                     {"drop_type_range"},
                     {"type_range_chg"},
+                    //Test base type
+                    {"add_type_base"},
+                    {"drop_type_base"},
+                    {"type_base_chg"},
                     //Test domain
                     {"add_domain"},
                     {"drop_domain"},
