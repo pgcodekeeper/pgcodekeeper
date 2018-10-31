@@ -181,10 +181,7 @@ public class MsSqlClauses extends MsAbstractExprWithNmspc<Sql_clausesContext> {
             }
         } else if ((ws = cfl.while_statement()) != null) {
             new MsValueExpr(this).search(ws.search_condition());
-            St_clauseContext clause = ws.st_clause();
-            if (clause != null) {
-                clause(clause);
-            }
+            clause(ws.st_clause());
         } else if ((ps = cfl.print_statement()) != null) {
             ExpressionContext exp = ps.expression();
             if (exp != null) {
