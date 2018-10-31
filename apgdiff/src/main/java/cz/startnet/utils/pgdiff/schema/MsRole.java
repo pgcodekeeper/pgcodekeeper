@@ -1,7 +1,7 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -12,7 +12,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsRole extends PgStatement {
 
-    private final Set<String> members = new HashSet<>();
+    private final Set<String> members = new LinkedHashSet<>();
 
     public MsRole(String name, String rawStatement) {
         super(name, rawStatement);
