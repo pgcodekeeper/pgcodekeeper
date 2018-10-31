@@ -608,8 +608,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         hasher.putOrdered(inherits);
         hasher.put(options);
         hasher.put(hasOids);
-        hasher.putOrdered(grants);
-        hasher.putOrdered(revokes);
+        hasher.putUnordered(grants);
+        hasher.putUnordered(revokes);
         hasher.put(owner);
         hasher.put(comment);
     }

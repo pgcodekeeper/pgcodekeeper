@@ -115,8 +115,8 @@ public class MsUser extends PgStatement {
         hasher.put(owner);
         hasher.put(schema);
         hasher.put(login);
-        hasher.putOrdered(grants);
-        hasher.putOrdered(revokes);
+        hasher.putUnordered(grants);
+        hasher.putUnordered(revokes);
     }
 
     @Override

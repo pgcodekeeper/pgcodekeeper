@@ -122,8 +122,8 @@ public class MsAssembly extends PgStatement {
         hasher.put(binaries);
         hasher.put(isVisible);
         hasher.put(permission);
-        hasher.putOrdered(grants);
-        hasher.putOrdered(revokes);
+        hasher.putUnordered(grants);
+        hasher.putUnordered(revokes);
     }
 
     @Override

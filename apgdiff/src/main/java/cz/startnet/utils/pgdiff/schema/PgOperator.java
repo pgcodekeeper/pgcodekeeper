@@ -214,8 +214,8 @@ public class PgOperator extends PgStatementWithSearchPath {
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.putOrdered(getGrants());
-        hasher.putOrdered(getRevokes());
+        hasher.putUnordered(getGrants());
+        hasher.putUnordered(getRevokes());
         hasher.put(getBareName());
         hasher.put(getProcedure());
         hasher.put(getLeftArg());

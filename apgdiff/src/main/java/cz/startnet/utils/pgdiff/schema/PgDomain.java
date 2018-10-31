@@ -260,8 +260,8 @@ public class PgDomain extends PgStatementWithSearchPath {
         hasher.put(notNull);
         hasher.putUnordered(constraints);
         hasher.put(owner);
-        hasher.putOrdered(grants);
-        hasher.putOrdered(revokes);
+        hasher.putUnordered(grants);
+        hasher.putUnordered(revokes);
         hasher.put(comment);
     }
 

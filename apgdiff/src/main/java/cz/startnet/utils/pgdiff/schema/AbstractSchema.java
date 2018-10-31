@@ -570,8 +570,8 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         hasher.put(name);
         hasher.put(owner);
         hasher.put(definition);
-        hasher.putOrdered(grants);
-        hasher.putOrdered(revokes);
+        hasher.putUnordered(grants);
+        hasher.putUnordered(revokes);
         hasher.put(comment);
     }
 

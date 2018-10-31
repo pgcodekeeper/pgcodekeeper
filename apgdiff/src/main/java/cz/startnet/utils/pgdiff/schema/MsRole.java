@@ -116,8 +116,8 @@ public class MsRole extends PgStatement {
         hasher.put(name);
         hasher.put(owner);
         hasher.put(members);
-        hasher.putOrdered(grants);
-        hasher.putOrdered(revokes);
+        hasher.putUnordered(grants);
+        hasher.putUnordered(revokes);
     }
 
     @Override

@@ -695,8 +695,8 @@ public class PgType extends PgStatementWithSearchPath {
         hasher.put(delimiter);
         hasher.put(collatable);
         hasher.put(owner);
-        hasher.putOrdered(grants);
-        hasher.putOrdered(revokes);
+        hasher.putUnordered(grants);
+        hasher.putUnordered(revokes);
         hasher.put(comment);
     }
 

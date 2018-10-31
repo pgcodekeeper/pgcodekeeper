@@ -179,8 +179,8 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.putOrdered(grants);
-        hasher.putOrdered(revokes);
+        hasher.putUnordered(grants);
+        hasher.putUnordered(revokes);
         hasher.put(cache);
         hasher.put(cycle);
         hasher.put(increment);

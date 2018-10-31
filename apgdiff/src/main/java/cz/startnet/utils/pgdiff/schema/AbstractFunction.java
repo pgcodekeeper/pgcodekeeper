@@ -314,8 +314,8 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.putOrdered(grants);
-        hasher.putOrdered(revokes);
+        hasher.putUnordered(grants);
+        hasher.putUnordered(revokes);
         hasher.putOrdered(arguments);
         hasher.put(returns);
         hasher.put(body);

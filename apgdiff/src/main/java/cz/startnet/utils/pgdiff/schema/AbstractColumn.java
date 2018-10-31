@@ -301,8 +301,8 @@ public abstract class AbstractColumn extends PgStatementWithSearchPath implement
         hasher.put(sequence);
         hasher.put(identityType);
         hasher.put(isInherit);
-        hasher.putOrdered(grants);
-        hasher.putOrdered(revokes);
+        hasher.putUnordered(grants);
+        hasher.putUnordered(revokes);
         hasher.put(comment);
         hasher.put(isSparse);
         hasher.put(isRowGuidCol);
