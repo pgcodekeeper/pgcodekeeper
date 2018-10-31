@@ -301,8 +301,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.putOrdered(grants);
-        hasher.putOrdered(revokes);
+        hasher.putUnordered(grants);
+        hasher.putUnordered(revokes);
         hasher.put(columnNames);
         hasher.putUnordered(defaultValues);
         hasher.put(name);
@@ -337,15 +337,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         viewDst.defaultValues.addAll(defaultValues);
         viewDst.columnComments.addAll(columnComments);
         viewDst.relationColumns.addAll(relationColumns);
-
-        for (PgPrivilege priv : revokes) {
-            viewDst.addPrivilege(priv);
-        }
-
-        for (PgPrivilege priv : grants) {
-            viewDst.addPrivilege(priv);
-        }
-
+        viewDst.grants.addAll(grants);
+        viewDst.revokes.addAll(revokes);
         viewDst.setOwner(getOwner());
         viewDst.deps.addAll(deps);
         viewDst.options.putAll(options);

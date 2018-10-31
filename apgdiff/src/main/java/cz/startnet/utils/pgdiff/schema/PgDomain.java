@@ -214,12 +214,8 @@ public class PgDomain extends PgStatementWithSearchPath {
         for (AbstractConstraint constr : constraints) {
             copy.addConstraint(constr.deepCopy());
         }
-        for (PgPrivilege priv : grants) {
-            copy.addPrivilege(priv);
-        }
-        for (PgPrivilege priv : revokes) {
-            copy.addPrivilege(priv);
-        }
+        copy.grants.addAll(grants);
+        copy.revokes.addAll(revokes);
         copy.deps.addAll(deps);
         copy.setLocation(getLocation());
         return copy;
@@ -260,8 +256,8 @@ public class PgDomain extends PgStatementWithSearchPath {
         hasher.put(notNull);
         hasher.putUnordered(constraints);
         hasher.put(owner);
-        hasher.putOrdered(grants);
-        hasher.putOrdered(revokes);
+        hasher.putUnordered(grants);
+        hasher.putUnordered(revokes);
         hasher.put(comment);
     }
 

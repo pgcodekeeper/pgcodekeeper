@@ -582,12 +582,8 @@ public class PgType extends PgStatementWithSearchPath {
             copy.addAttr(attr.deepCopy());
         }
         copy.enums.addAll(enums);
-        for (PgPrivilege priv : grants) {
-            copy.addPrivilege(priv);
-        }
-        for (PgPrivilege priv : revokes) {
-            copy.addPrivilege(priv);
-        }
+        copy.grants.addAll(grants);
+        copy.revokes.addAll(revokes);
         copy.setSubtype(getSubtype());
         copy.setSubtypeOpClass(getSubtypeOpClass());
         copy.setCollation(getCollation());
@@ -695,8 +691,8 @@ public class PgType extends PgStatementWithSearchPath {
         hasher.put(delimiter);
         hasher.put(collatable);
         hasher.put(owner);
-        hasher.putOrdered(grants);
-        hasher.putOrdered(revokes);
+        hasher.putUnordered(grants);
+        hasher.putUnordered(revokes);
         hasher.put(comment);
     }
 

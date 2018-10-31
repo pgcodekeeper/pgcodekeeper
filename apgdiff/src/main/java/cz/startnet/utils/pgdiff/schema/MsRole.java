@@ -1,7 +1,7 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -12,7 +12,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsRole extends PgStatement {
 
-    private final Set<String> members = new HashSet<>();
+    private final Set<String> members = new LinkedHashSet<>();
 
     public MsRole(String name, String rawStatement) {
         super(name, rawStatement);
@@ -116,8 +116,8 @@ public class MsRole extends PgStatement {
         hasher.put(name);
         hasher.put(owner);
         hasher.put(members);
-        hasher.putOrdered(grants);
-        hasher.putOrdered(revokes);
+        hasher.putUnordered(grants);
+        hasher.putUnordered(revokes);
     }
 
     @Override
@@ -125,12 +125,8 @@ public class MsRole extends PgStatement {
         MsRole roleDst = new MsRole(getName(), getRawStatement());
         roleDst.setOwner(getOwner());
         roleDst.members.addAll(members);
-        for (PgPrivilege priv : revokes) {
-            roleDst.addPrivilege(priv);
-        }
-        for (PgPrivilege priv : grants) {
-            roleDst.addPrivilege(priv);
-        }
+        roleDst.grants.addAll(grants);
+        roleDst.revokes.addAll(revokes);
         roleDst.setLocation(getLocation());
         return roleDst;
     }
