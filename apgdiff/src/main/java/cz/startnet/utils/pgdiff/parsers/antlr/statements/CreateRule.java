@@ -175,10 +175,10 @@ public class CreateRule extends ParserAbstract {
             StringBuilder permission = new StringBuilder();
             for (String priv : colPriv.getValue().getValue()) {
                 permission.append(priv).append('(')
-                .append(colPriv.getValue().getKey().getText()).append("), ");
+                .append(colPriv.getValue().getKey().getText()).append("),");
             }
 
-            permission.setLength(permission.length() - 2);
+            permission.setLength(permission.length() - 1);
 
             for (String role : roles) {
                 PgPrivilege priv = new PgPrivilege(state, permission.toString(),
