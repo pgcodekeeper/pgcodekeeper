@@ -437,6 +437,10 @@ public class PgDiffTest {
                     // Tests scenario where function (from other schema) of OPERATOR is modified.
                     // TODO uncomment this code when dependencies for OPERATOR will be fixed
                     // {"modify_operator_use_other_schema"},
+                    // Tests scenario where COLUMN is added to middle of TABLE definition.
+                    {"add_column_middle"},
+                    // Tests scenario where COLUMNS order is modified.
+                    {"modify_column_order"},
                 });
     }
 

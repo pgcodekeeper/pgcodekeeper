@@ -268,6 +268,8 @@ public class MsDiffTest {
                     {"add_ms_column_options"},
                     // Tests scenario where MS COLUMN options is dropped.
                     {"drop_ms_column_options"},
+                    // Tests scenario where MS COLUMNS added to recreated table.
+                    {"add_ms_column_and_recreate"},
                 });
     }
 
