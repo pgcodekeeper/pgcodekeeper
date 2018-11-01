@@ -150,33 +150,33 @@ public class CliArgs extends PgDiffArguments {
                     + "\nspecify multiple times to use several lists")
     private List<String> ignoreLists;
 
-    @Option(name="--src-lib-xml", metaVar="<path or JDBC>", forbids="--parse",
+    @Option(name="--src-lib-xml", metaVar="<path>", forbids="--parse",
             usage="add xml with library dependencies to source"
-                    + "\nspecify multiple times to use several libraries")
+                    + "\nspecify multiple times to use several library xml's")
     private List<String> sourceLibXmls;
 
     @Option(name="--src-lib", metaVar="<path or JDBC>", forbids="--parse",
-            usage="add library dependency to source, --src-lib-xml option has higher priority"
+            usage="add library dependency to source"
                     + "\nspecify multiple times to use several libraries")
     private List<String> sourceLibs;
 
     @Option(name="--src-lib-no-priv", metaVar="<path or JDBC>", forbids="--parse",
-            usage="add library dependency to source without privileges, --src-lib-xml and --src-lib option has higher priority"
+            usage="add library dependency to source without privileges"
                     + "\nspecify multiple times to use several libraries")
     private List<String> sourceLibsWithoutPriv;
 
-    @Option(name="--tgt-lib-xml", metaVar="<path or JDBC>", forbids="--parse",
+    @Option(name="--tgt-lib-xml", metaVar="<path>", forbids="--parse",
             usage="add xml with library dependencies to target"
-                    + "\nspecify multiple times to use several libraries")
+                    + "\nspecify multiple times to use several library xml's")
     private List<String> targetLibXmls;
 
     @Option(name="--tgt-lib", metaVar="<path or JDBC>", forbids="--parse",
-            usage="add library dependency to destination, --tgt-lib-xml option has higher priority"
+            usage="add library dependency to destination"
                     + "\nspecify multiple times to use several libraries")
     private List<String> targetLibs;
 
     @Option(name="--tgt-lib-no-priv", metaVar="<path or JDBC>", forbids="--parse",
-            usage="add library dependency to destination without privileges, --tgt-lib-xml and --tgt-lib option has higher priority"
+            usage="add library dependency to destination without privileges"
                     + "\nspecify multiple times to use several libraries")
     private List<String> targetLibsWithoutPriv;
 

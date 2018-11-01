@@ -1,4 +1,4 @@
-Usage:
+Usage
 	pgcodekeeper-cli [option]... SOURCE DEST
 	pgcodekeeper-cli -s SOURCE -t DEST [option]...
 	pgcodekeeper-cli --parse -o OUTDIR [option]... SCHEMA
@@ -50,32 +50,26 @@ Usage:
                                           objects from diff
                                           specify multiple times to use several
                                           lists
- --src-lib-xml <path or JDBC>           : add xml with library dependencies to
+ --src-lib-xml <path>                   : add xml with library dependencies to
                                           source
                                           specify multiple times to use several
-                                          libraries
- --src-lib <path or JDBC>               : add library dependency to source,
-                                          --src-lib-xml option has higher
-                                          priority
+                                          library xml's
+ --src-lib <path or JDBC>               : add library dependency to source
                                           specify multiple times to use several
                                           libraries
  --src-lib-no-priv <path or JDBC>       : add library dependency to source
-                                          without privileges, --src-lib-xml and
-                                          --src-lib option has higher priority
+                                          without privileges
                                           specify multiple times to use several
                                           libraries
- --tgt-lib-xml <path or JDBC>           : add xml with library dependencies to
+ --tgt-lib-xml <path>                   : add xml with library dependencies to
                                           target
                                           specify multiple times to use several
-                                          libraries
- --tgt-lib <path or JDBC>               : add library dependency to
-                                          destination, --tgt-lib-xml option has
-                                          higher priority
+                                          library xml's
+ --tgt-lib <path or JDBC>               : add library dependency to destination
                                           specify multiple times to use several
                                           libraries
  --tgt-lib-no-priv <path or JDBC>       : add library dependency to destination
-                                          without privileges, --tgt-lib-xml and
-                                          --tgt-lib option has higher priority
+                                          without privileges
                                           specify multiple times to use several
                                           libraries
  --lib-safe-mode                        : exit with an error if a library
@@ -88,6 +82,16 @@ Usage:
 DANGER_STATEMENT : [DROP_TABLE | ALTER_COLUMN | DROP_COLUMN | RESTART_WITH | UPDATE]
 OBJECT_TYPE : [USER | ROLE | SCHEMA | EXTENSION | TYPE | DOMAIN | SEQUENCE | ASSEMBLY | FUNCTION | PROCEDURE | OPERATOR | FTS_PARSER | FTS_TEMPLATE | FTS_DICTIONARY | FTS_CONFIGURATION | TABLE | CONSTRAINT | INDEX | VIEW | TRIGGER | RULE]
 
-NOTE: use JDBC connection URL to specify live database,
-	see https://jdbc.postgresql.org/documentation/head/connect.html
+Library load order
+	Libraries are loaded in the following order:
+		1. Libraries in specified XML lists.
+		2. Explicitly specified libraries.
+		3. Explicitly specified libraries without privileges.
+	In each group order is defined by the given argument order. Within XMLs entry order is used.
+	Objects loaded later in this sequence may override ones loaded earlier (if --lib-safe-mode is off).
+
+Live database connections
+	Use JDBC connection URL to specify live databases
+		PostgreSQL: https://jdbc.postgresql.org/documentation/head/connect.html
+		MS SQL: https://docs.microsoft.com/sql/connect/jdbc/building-the-connection-url
 
