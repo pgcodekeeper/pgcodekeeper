@@ -1,6 +1,7 @@
 SET search_path = pg_catalog;
 
 CREATE OR REPLACE FUNCTION public.afunction(text, text, numeric) RETURNS numeric
+    LANGUAGE plpgsql IMMUTABLE
     AS '
 DECLARE
   param1 ALIAS FOR $1;
@@ -36,5 +37,4 @@ BEGIN
 
   RAISE EXCEPTION ''No info'';
 END;
-'
-    LANGUAGE plpgsql IMMUTABLE;
+';

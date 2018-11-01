@@ -1,14 +1,12 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
-import java.util.List;
-
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSqlClauses;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -30,27 +28,30 @@ public class CreateMsTrigger extends BatchContextProcessor {
 
     @Override
     protected ParserRuleContext getDelimiterCtx() {
-        return ctx.qualified_name();
+        return ctx.table_name;
     }
 
     @Override
     public MsTrigger getObject() {
-        List<IdContext> ids = ctx.simple_name().id();
-        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
+        IdContext schemaCtx = ctx.trigger_name.schema;
+        AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
         return getObject(schema);
     }
 
     public MsTrigger getObject(AbstractSchema schema) {
         ParserRuleContext batchCtx = ctx.getParent().getParent();
-        MsTrigger trigger = new MsTrigger(QNameParser.getFirstName(ctx.simple_name().id()),
+        MsTrigger trigger = new MsTrigger(ctx.trigger_name.name.getText(),
                 getFullCtxText(batchCtx));
-        trigger.setTableName(QNameParser.getFirstName(ctx.qualified_name().id()));
+        trigger.setTableName(ctx.table_name.name.getText());
         trigger.setAnsiNulls(ansiNulls);
         trigger.setQuotedIdentified(quotedIdentifier);
         setSourceParts(trigger);
 
-        getSafe(schema::getTriggerContainer, QNameParser.getFirstNameCtx(ctx.qualified_name().id()))
-        .addTrigger(trigger);
+        MsSqlClauses clauses = new MsSqlClauses(schema.getName());
+        clauses.analyze(ctx.sql_clauses());
+        trigger.addAllDeps(clauses.getDepcies());
+
+        getSafe(schema::getTriggerContainer, ctx.table_name.name).addTrigger(trigger);
         return trigger;
     }
 }

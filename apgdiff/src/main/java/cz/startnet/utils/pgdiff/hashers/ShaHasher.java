@@ -84,6 +84,12 @@ public class ShaHasher implements Hasher {
     }
 
     @Override
+    public void put(float f) {
+        bb.putFloat(0, f);
+        md.update(bb.array(), 0, 4);
+    }
+
+    @Override
     public void put(int i) {
         bb.putInt(0, i);
         md.update(bb.array(), 0, 4);

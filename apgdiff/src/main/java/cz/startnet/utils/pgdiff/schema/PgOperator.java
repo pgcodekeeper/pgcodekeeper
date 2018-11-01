@@ -205,8 +205,6 @@ public class PgOperator extends PgStatementWithSearchPath {
             return Objects.equals(restrict, oper.getRestrict())
                     && Objects.equals(join, oper.getJoin())
                     && Objects.equals(owner, oper.getOwner())
-                    && Objects.equals(grants, oper.grants)
-                    && Objects.equals(revokes, oper.revokes)
                     && Objects.equals(comment, oper.getComment());
         }
         return false;
@@ -214,8 +212,6 @@ public class PgOperator extends PgStatementWithSearchPath {
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.putOrdered(getGrants());
-        hasher.putOrdered(getRevokes());
         hasher.put(getBareName());
         hasher.put(getProcedure());
         hasher.put(getLeftArg());
@@ -324,12 +320,6 @@ public class PgOperator extends PgStatementWithSearchPath {
         copy.setRestrict(getRestrict());
         copy.setJoin(getJoin());
         copy.setComment(getComment());
-        for (PgPrivilege priv : revokes) {
-            copy.addPrivilege(priv);
-        }
-        for (PgPrivilege priv : grants) {
-            copy.addPrivilege(priv);
-        }
         copy.setOwner(getOwner());
         copy.deps.addAll(deps);
         copy.setLocation(getLocation());

@@ -8,6 +8,7 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -35,6 +36,88 @@ public class PgFunction extends AbstractFunction {
         sbSQL.append("RETURNS ");
         sbSQL.append(getReturns());
         sbSQL.append("\n    ");
+
+        if (getLanguage() != null) {
+            sbSQL.append("LANGUAGE ").append(PgDiffUtils.getQuotedName(getLanguage()));
+        }
+
+        if (!transforms.isEmpty()) {
+            sbSQL.append(" TRANSFORM ");
+            for (String tran : transforms) {
+                sbSQL.append("FOR TYPE ").append(tran).append(", ");
+            }
+
+            sbSQL.setLength(sbSQL.length() - 2);
+        }
+
+        if (isWindow()) {
+            sbSQL.append(" WINDOW");
+        }
+
+        if (getVolatileType() != null) {
+            sbSQL.append(' ').append(getVolatileType());
+        }
+
+        if (isStrict()) {
+            sbSQL.append(" STRICT");
+        }
+
+        if (isSecurityDefiner()) {
+            sbSQL.append(" SECURITY DEFINER");
+        }
+
+        if (isLeakproof()) {
+            sbSQL.append(" LEAKPROOF");
+        }
+
+        if (getParallel() != null) {
+            sbSQL.append(" PARALLEL ").append(getParallel());
+        }
+
+        if ("internal".equals(getLanguage()) || "c".equals(getLanguage())) {
+            /* default cost is 1 */
+            if (1.0f != getCost()) {
+                sbSQL.append(" COST ");
+                if (getCost() % 1 == 0) {
+                    sbSQL.append((int)getCost());
+                } else {
+                    sbSQL.append(getCost());
+                }
+            }
+        } else {
+            /* default cost is 100 */
+            if (DEFAULT_PROCOST != getCost()) {
+                sbSQL.append(" COST ");
+                if (getCost() % 1 == 0) {
+                    sbSQL.append((int)getCost());
+                } else {
+                    sbSQL.append(getCost());
+                }
+            }
+        }
+
+        if (DEFAULT_PROROWS != getRows()) {
+            sbSQL.append(" ROWS ");
+            if (getRows() % 1 == 0) {
+                sbSQL.append((int)getRows());
+            } else {
+                sbSQL.append(getRows());
+            }
+        }
+
+        if (!configurations.isEmpty()) {
+            for (Entry<String, String> param : configurations.entrySet()) {
+                String val = param.getValue();
+                sbSQL.append("\n    SET ").append(param.getKey());
+                if (FROM_CURRENT.equals(val)) {
+                    sbSQL.append(val);
+                } else {
+                    sbSQL.append(" TO ").append(val);
+                }
+            }
+        }
+
+        sbSQL.append("\n    AS ");
         sbSQL.append(getBody());
         sbSQL.append(';');
 

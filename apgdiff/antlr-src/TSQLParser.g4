@@ -36,9 +36,9 @@ st_clause
     | ddl_clause
     | cfl_statement
     | dbcc_clause
-    //| empty_statement
     | another_statement
-    | backup_statement;
+    | backup_statement
+    ;
 
 // Data Manipulation Language: https://msdn.microsoft.com/en-us/library/ff848766(v=sql.120).aspx
 dml_clause
@@ -51,13 +51,12 @@ dml_clause
 
 // Data Definition Language: https://msdn.microsoft.com/en-us/library/ff848799.aspx)
 ddl_clause
-    : disable_trigger
-    | enable_trigger
+    : schema_create
     | schema_alter
-    | schema_create
     | schema_drop
     | lock_table
     | truncate_table
+    | enable_disable_trigger
     | update_statistics
     ;
 
@@ -258,12 +257,12 @@ try_catch_statement
 
 // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/waitfor-transact-sql
 waitfor_statement
-    : WAITFOR receive_statement? COMMA? ((DELAY | TIME | TIMEOUT) time)?  expression?
+    : WAITFOR (waitfor_receive | (DELAY | TIME) time)
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/while-transact-sql
 while_statement
-    : WHILE search_condition (st_clause | BREAK | CONTINUE )
+    : WHILE search_condition st_clause
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/print-transact-sql
@@ -282,6 +281,7 @@ another_statement
     : declare_statement
     | cursor_statement
     | conversation_statement
+    | receive_statement
     | execute_statement
     | security_statement
     | set_statement
@@ -291,10 +291,10 @@ another_statement
     ;
 
 create_aggregate
-    : AGGREGATE simple_name 
+    : AGGREGATE qualified_name 
     (LR_BRACKET? procedure_param (COMMA procedure_param)* RR_BRACKET?)?
     RETURNS data_type
-    EXTERNAL NAME assembly_name=simple_name
+    EXTERNAL NAME assembly_name=qualified_name
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-application-role-transact-sql
@@ -562,7 +562,7 @@ drop_database_encryption_key
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/drop-signature-transact-sql
 drop_signature
-    : COUNTER? SIGNATURE FROM simple_name
+    : COUNTER? SIGNATURE FROM qualified_name
     BY (COMMA? CERTIFICATE cert_name=id | COMMA? ASYMMETRIC KEY Asym_key_name=id)+
     ;
 
@@ -572,17 +572,13 @@ drop_symmetric_key
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/disable-trigger-transact-sql
-disable_trigger
-    : DISABLE TRIGGER (simple_names | ALL) ON (qualified_name|DATABASE|ALL SERVER)
-    ;
-     
-simple_names
-    : simple_name (COMMA simple_name)*
+// https://docs.microsoft.com/en-us/sql/t-sql/statements/enable-trigger-transact-sql
+enable_disable_trigger
+    : (ENABLE | DISABLE) TRIGGER (names_references | ALL) ON (qualified_name|DATABASE|ALL SERVER)
     ;
     
-// https://docs.microsoft.com/en-us/sql/t-sql/statements/enable-trigger-transact-sql
-enable_trigger
-    : ENABLE TRIGGER (simple_names| ALL) ON (qualified_name|DATABASE|ALL SERVER)
+names_references
+    : name+=qualified_name (COMMA name+=qualified_name)*
     ;
 
 lock_table
@@ -876,7 +872,7 @@ create_or_alter_resource_pool
 alter_resource_governor
     : RESOURCE GOVERNOR 
         ((DISABLE | RECONFIGURE) 
-        | WITH LR_BRACKET CLASSIFIER_FUNCTION EQUAL ( simple_name | NULL ) RR_BRACKET 
+        | WITH LR_BRACKET CLASSIFIER_FUNCTION EQUAL ( qualified_name | NULL ) RR_BRACKET 
         | RESET STATISTICS 
         | WITH LR_BRACKET MAX_OUTSTANDING_IO_PER_VOLUME EQUAL max_outstanding_io_per_volume=DECIMAL RR_BRACKET)
     ;
@@ -912,7 +908,7 @@ create_route
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-rule-transact-sql
 create_rule
-    : RULE simple_name AS search_condition
+    : RULE qualified_name AS search_condition
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-schema-transact-sql
@@ -951,10 +947,10 @@ add_drop_property
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-security-policy-transact-sql
 create_security_policy
-    : SECURITY POLICY simple_name
-        (COMMA? ADD (FILTER|BLOCK)? PREDICATE simple_name
+    : SECURITY POLICY qualified_name
+        (COMMA? ADD (FILTER|BLOCK)? PREDICATE qualified_name
             LR_BRACKET (COMMA? column_name_or_arguments=expression)+ RR_BRACKET
-            ON simple_name
+            ON qualified_name
                 (COMMA? AFTER (INSERT|UPDATE)
                 | COMMA? BEFORE (UPDATE|DELETE)
                 )*
@@ -963,14 +959,14 @@ create_security_policy
     ;
 
 alter_security_policy
-    : SECURITY POLICY simple_name
+    : SECURITY POLICY qualified_name
     LR_BRACKET? add_alter_drop_predicate (COMMA add_alter_drop_predicate)* RR_BRACKET?
     (WITH LR_BRACKET STATE EQUAL on_off RR_BRACKET)? not_for_replication?
     ;
 
 add_alter_drop_predicate
-    : (ADD | ALTER) (FILTER | BLOCK) PREDICATE simple_name LR_BRACKET expression (COMMA expression)* RR_BRACKET ON simple_name block_dml_operation?
-    | DROP (FILTER | BLOCK) PREDICATE ON simple_name
+    : (ADD | ALTER) (FILTER | BLOCK) PREDICATE qualified_name LR_BRACKET expression (COMMA expression)* RR_BRACKET ON qualified_name block_dml_operation?
+    | DROP (FILTER | BLOCK) PREDICATE ON qualified_name
     ;
 
 block_dml_operation
@@ -980,12 +976,12 @@ block_dml_operation
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-sequence-transact-sql
 alter_sequence
-    : SEQUENCE simple_name (sequence_body | RESTART (WITH restart=signed_numerical_literal)?) *
+    : SEQUENCE qualified_name (sequence_body | RESTART (WITH restart=signed_numerical_literal)?) *
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-sequence-transact-sql
 create_sequence
-    : SEQUENCE simple_name (sequence_body)*
+    : SEQUENCE qualified_name (sequence_body)*
     ;
 
 sequence_body
@@ -1151,13 +1147,13 @@ alter_server_role_pdw
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-service-transact-sql
 alter_service
-    : SERVICE modified_service_name=id (ON QUEUE simple_name)? (COMMA? (ADD|DROP) modified_contract_name=id)*
+    : SERVICE modified_service_name=id (ON QUEUE qualified_name)? (COMMA? (ADD|DROP) modified_contract_name=id)*
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-service-transact-sql
 create_service
     : SERVICE create_service_name=id (AUTHORIZATION owner_name=id)?
-    ON QUEUE simple_name (LR_BRACKET (COMMA? id_or_default)+ RR_BRACKET)?
+    ON QUEUE qualified_name (LR_BRACKET (COMMA? id_or_default)+ RR_BRACKET)?
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-service-master-key-transact-sql
@@ -1197,8 +1193,8 @@ create_symmetric_key
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-synonym-transact-sql
 create_synonym
-    : SYNONYM simple_name FOR 
-        ((server_name=id DOT)? (database_name=id DOT)? simple_name
+    : SYNONYM qualified_name FOR 
+        ((server_name=id DOT)? (database_name=id DOT)? qualified_name
         | (database_or_schema2=id DOT)? (schema_id_2_or_object_name=id DOT)?)
     ;
 
@@ -1326,7 +1322,7 @@ create_message_type
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/merge-transact-sql
 merge_statement
     : with_expression? MERGE (TOP LR_BRACKET expression RR_BRACKET PERCENT?)?
-    INTO? ddl_object insert_with_table_hints? as_table_alias?
+    INTO? (qualified_name | LOCAL_ID) insert_with_table_hints? as_table_alias?
     USING from_item (COMMA from_item)* ON search_condition
     (WHEN MATCHED (AND search_condition)? THEN merge_matched)*
     (WHEN NOT MATCHED (BY TARGET)? (AND search_condition)? THEN merge_not_matched)?
@@ -1345,40 +1341,44 @@ merge_not_matched
 
 // https://msdn.microsoft.com/en-us/library/ms189835.aspx
 delete_statement
-    : with_expression? DELETE (TOP LR_BRACKET expression RR_BRACKET PERCENT? | TOP DECIMAL)?
-    FROM? delete_statement_from insert_with_table_hints? output_clause? (FROM from_item (COMMA from_item)*)?
+    : with_expression? DELETE (TOP top_count)?
+    FROM? (qualified_name | rowset_function_limited | LOCAL_ID)
+    insert_with_table_hints? 
+    output_clause? 
+    (FROM from_item (COMMA from_item)*)?
     (WHERE (search_condition | CURRENT OF (GLOBAL? cursor_name | cursor_var=LOCAL_ID)))?
     for_clause? option_clause?
-    ;
-
-delete_statement_from
-    : ddl_object
-    | id with_table_hints
-    | rowset_function_limited
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms174335.aspx
 insert_statement
     : with_expression?
     INSERT (TOP LR_BRACKET expression RR_BRACKET PERCENT?)?
-    INTO? (ddl_object | rowset_function_limited)
+    INTO? (qualified_name | rowset_function_limited | LOCAL_ID)
     insert_with_table_hints?
     (LR_BRACKET column_name_list RR_BRACKET)?
     output_clause?
-    insert_statement_value
+    (select_statement | execute_statement | DEFAULT VALUES)
     for_clause? option_clause?
     ;
 
-insert_statement_value
-    : select_statement
-    | execute_statement
-    | DEFAULT VALUES
+waitfor_receive
+    : LR_BRACKET receive_statement RR_BRACKET (COMMA TIMEOUT timeout=time)?
     ;
 
 receive_statement
-    : LR_BRACKET? RECEIVE (ALL | DISTINCT | top_clause | STAR)
-    (LOCAL_ID EQUAL expression COMMA?)* FROM qualified_name
-    (INTO table_variable=id (WHERE where=search_condition))? RR_BRACKET?
+    : RECEIVE top_clause? 
+    receive_column_specifier (COMMA receive_column_specifier)* 
+    FROM qualified_name
+    (INTO table_variable=LOCAL_ID)? 
+    (WHERE where=search_condition)?
+    ;
+
+receive_column_specifier
+    : STAR
+    | id AS? column_alias?
+    | expression AS? column_alias?
+    | LOCAL_ID EQUAL expression
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms189499.aspx
@@ -1418,12 +1418,12 @@ time
 update_statement
     : with_expression?
     UPDATE (TOP LR_BRACKET expression RR_BRACKET PERCENT?)?
-    (ddl_object | rowset_function_limited)
+    (qualified_name | rowset_function_limited | LOCAL_ID)
     with_table_hints?
     SET update_elem (COMMA update_elem)*
     output_clause?
     (FROM from_item (COMMA from_item)*)?
-    (WHERE (search_condition_list | CURRENT OF (GLOBAL? cursor_name | cursor_var=LOCAL_ID)))?
+    (WHERE (search_condition | CURRENT OF (GLOBAL? cursor_name | cursor_var=LOCAL_ID)))?
     for_clause? option_clause?
     ;
 
@@ -1587,8 +1587,8 @@ create_or_alter_procedure
     ;
 
 create_or_alter_trigger
-    : TRIGGER simple_name
-    ON (qualified_name | ALL SERVER | DATABASE)
+    : TRIGGER trigger_name=qualified_name
+    ON (table_name=qualified_name | ALL SERVER | DATABASE)
     (WITH trigger_option (COMMA trigger_option)* )?
     (FOR | AFTER | INSTEAD OF) trigger_operation (COMMA trigger_operation)*
     with_append?
@@ -1665,12 +1665,22 @@ function_option
 // https://msdn.microsoft.com/en-us/library/ms188038.aspx
 create_statistics
     : STATISTICS id ON table_name_with_hint LR_BRACKET column_name_list RR_BRACKET
-    (WITH (FULLSCAN | SAMPLE DECIMAL (PERCENT | ROWS) | STATS_STREAM)
-    (COMMA NORECOMPUTE)? (COMMA INCREMENTAL EQUAL on_off)? )?
+    (WITH update_statistics_with_option (COMMA update_statistics_with_option)*)?
     ;
 
 update_statistics
-    : UPDATE (INDEX | ALL)? STATISTICS qualified_name id?  (USING DECIMAL VALUES)?
+    : UPDATE STATISTICS table_name=qualified_name 
+    (index_name=qualified_name | LR_BRACKET names_references RR_BRACKET)?
+    (WITH update_statistics_with_option (COMMA update_statistics_with_option)*)?
+    ;
+
+update_statistics_with_option
+    : FULLSCAN (COMMA PERSIST_SAMPLE_PERSENT EQUAL on_off)?
+    | SAMPLE DECIMAL (PERCENT | ROWS) (COMMA PERSIST_SAMPLE_PERSENT EQUAL on_off)?
+    | RESAMPLE (ON PARTITIONS LR_BRACKET (COMMA? (DECIMAL | DECIMAL TO DECIMAL))+ RR_BRACKET)
+    | NORECOMPUTE
+    | INCREMENTAL EQUAL on_off
+    | MAXDOP EQUAL DECIMAL
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms174979.aspx
@@ -1698,7 +1708,7 @@ table_options
 
 // https://msdn.microsoft.com/en-us/library/ms187956.aspx
 create_or_alter_view
-    : VIEW simple_name (LR_BRACKET column_name_list RR_BRACKET)?
+    : VIEW qualified_name (LR_BRACKET column_name_list RR_BRACKET)?
     (WITH view_attribute (COMMA view_attribute)*)?
     AS select_statement with_check_option?
     ;
@@ -1982,13 +1992,13 @@ drop_backward_compatible_index
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/drop-trigger-transact-sql
 drop_ddl_trigger
-    : TRIGGER (IF EXISTS)? simple_name (COMMA simple_name)* ON (DATABASE | ALL SERVER)
+    : TRIGGER (IF EXISTS)? qualified_name (COMMA qualified_name)* ON (DATABASE | ALL SERVER)
     ;
 
 create_type
-    : TYPE name = simple_name
+    : TYPE name = qualified_name
     (FROM data_type default_value)?
-    (EXTERNAL NAME assembly_name=simple_name)?
+    (EXTERNAL NAME assembly_name=qualified_name)?
     (AS TABLE LR_BRACKET column_def_table_constraints RR_BRACKET)?
     ;
 
@@ -2021,10 +2031,11 @@ declare_statement
 cursor_statement
     // https://msdn.microsoft.com/en-us/library/ms175035(v=sql.120).aspx
     : (CLOSE | OPEN | DEALLOCATE) GLOBAL? cursor_name
-    // https://msdn.microsoft.com/en-us/library/ms180169(v=sql.120).aspx
-    | declare_cursor
+    // https://msdn.microsoft.com/en-us/library/ms180169.aspx
+    | DECLARE cursor_name (SEMI_SENSITIVE | INSENSITIVE)? SCROLL? cursor_common
     // https://msdn.microsoft.com/en-us/library/ms180152(v=sql.120).aspx
-    | fetch_cursor
+    | FETCH ((NEXT | PRIOR | FIRST | LAST | (ABSOLUTE | RELATIVE) expression)? FROM)? 
+    GLOBAL? cursor_name (INTO LOCAL_ID (COMMA LOCAL_ID)*)?
     ;
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/backup-transact-sql
 backup_database
@@ -2148,14 +2159,10 @@ backup_service_master_key
     : BACKUP SERVICE MASTER KEY TO FILE EQUAL service_master_key_backup_file=STRING ENCRYPTION BY PASSWORD EQUAL encryption_password=STRING
     ;
 
-
 // https://msdn.microsoft.com/en-us/library/ms188332.aspx
 execute_statement
-    : EXECUTE execute_body
-    ;
-
-execute_body
-    : expression (execute_statement_arg (COMMA execute_statement_arg)*)? (AS? (LOGIN | USER) EQUAL STRING)?
+    : EXECUTE expression (execute_statement_arg (COMMA execute_statement_arg)*)? 
+    (AS? (LOGIN | USER) EQUAL STRING)?
     ;
 
 execute_statement_arg
@@ -2314,8 +2321,7 @@ decryption_mechanism
 set_statement
     : SET LOCAL_ID (DOT member_name=id)? EQUAL expression
     | SET LOCAL_ID assignment_operator expression
-    | SET LOCAL_ID EQUAL
-      CURSOR declare_set_cursor_common (FOR (READ ONLY | UPDATE (OF column_name_list)?))?
+    | SET LOCAL_ID EQUAL cursor_common
     // https://msdn.microsoft.com/en-us/library/ms189837.aspx
     | set_special
     ;
@@ -2355,7 +2361,7 @@ setuser_statement
     ;
 
 dbcc_clause
-    : DBCC name=simple_id (LR_BRACKET expression_list RR_BRACKET)? (WITH simple_names)?
+    : DBCC name=simple_id (LR_BRACKET expression_list RR_BRACKET)? (WITH names_references)?
     ;
 
 execute_clause
@@ -2450,17 +2456,12 @@ index_option_value
     | DECIMAL
     ;
 
-// https://msdn.microsoft.com/en-us/library/ms180169.aspx
-declare_cursor
-    : DECLARE cursor_name (SEMI_SENSITIVE | INSENSITIVE)? SCROLL? CURSOR declare_set_cursor_common_partial*
-    FOR select_statement (FOR (READ ONLY | UPDATE) (OF column_name_list)?)?
+cursor_common
+    : CURSOR declare_cursor_partial* FOR select_statement 
+    (FOR (READ ONLY | UPDATE (OF column_name_list)?))?
     ;
 
-declare_set_cursor_common
-    : declare_set_cursor_common_partial* FOR select_statement
-    ;
-
-declare_set_cursor_common_partial
+declare_cursor_partial
     : LOCAL 
     | GLOBAL
     | FORWARD_ONLY 
@@ -2473,11 +2474,6 @@ declare_set_cursor_common_partial
     | SCROLL_LOCKS 
     | OPTIMISTIC
     | TYPE_WARNING
-    ;
-
-fetch_cursor
-    : FETCH ((NEXT | PRIOR | FIRST | LAST | (ABSOLUTE | RELATIVE) expression)? FROM)?
-      GLOBAL? cursor_name (INTO LOCAL_ID (COMMA LOCAL_ID)*)?
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms190356.aspx
@@ -2589,10 +2585,6 @@ update_elem
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms173545.aspx
-search_condition_list
-    : search_condition (COMMA search_condition)*
-    ;
-
 search_condition
     : search_condition_and (OR search_condition_and)*
     ;
@@ -2990,15 +2982,6 @@ qualified_name
       |                               schema=id   DOT)? name=id
     ;
 
-simple_name
-    : (schema=id DOT)? name=id
-    ;
-
-ddl_object
-    : qualified_name
-    | LOCAL_ID
-    ;
-
 full_column_name
     : (qualified_name DOT)? id
     ; 
@@ -3070,7 +3053,7 @@ waitfor_conversation
 
 get_conversation
     : GET CONVERSATION GROUP conversation_group_id=string_or_local_id
-    FROM (database_name=id DOT schema_name=id DOT)? name=id
+    FROM qualified_name
     ;
 
 send_conversation
@@ -3082,7 +3065,7 @@ send_conversation
 // https://msdn.microsoft.com/en-us/library/ms187752.aspx
 // TODO: implement runtime check or add new tokens.
 data_type
-    : simple_name size=data_type_size?
+    : qualified_name size=data_type_size?
     | DOUBLE PRECISION
     ;
     
@@ -3515,6 +3498,7 @@ simple_id
     | PER_DB
     | PER_NODE
     | PERMISSION_SET
+    | PERSIST_SAMPLE_PERSENT
     | PERSISTED
     | PLATFORM
     | POISON_MESSAGE_HANDLING
@@ -3579,6 +3563,7 @@ simple_id
     | REQUEST_MEMORY_GRANT_TIMEOUT_SEC
     | REQUIRED_SYNCHRONIZED_SECONDARIES_TO_COMMIT
     | REQUIRED
+    | RESAMPLE
     | RESERVE_DISK_SPACE
     | RESET
     | RESOURCE_MANAGER_LOCATION

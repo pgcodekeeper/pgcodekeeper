@@ -30,6 +30,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_configuration
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_dictionaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_parserContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_templateContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_funct_paramsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_index_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_operator_statementContext;
@@ -48,6 +49,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_operator_statementC
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_rule_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_statementsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_trigger_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_actions_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_parametersContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Object_typeContext;
@@ -380,8 +382,18 @@ public class ReferenceListener implements SqlContextProcessor {
         List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         addReferenceOnSchema(ids, schemaName, ctx);
-        statementBodies.add(new StatementBodyContainer(filePath, ctx.funct_body));
+        statementBodies.add(new StatementBodyContainer(filePath, getFunctionDefinition(ctx.funct_body)));
         fillObjDefinition(schemaName, QNameParser.getFirstNameCtx(ids), DbObjType.FUNCTION);
+    }
+
+    private ParserRuleContext getFunctionDefinition(Create_funct_paramsContext params) {
+        for (Function_actions_commonContext s : params.function_actions_common()) {
+            if (s.AS() != null) {
+                return s.function_def();
+            }
+        }
+
+        return params;
     }
 
     public void createSequence(Create_sequence_statementContext ctx) {
