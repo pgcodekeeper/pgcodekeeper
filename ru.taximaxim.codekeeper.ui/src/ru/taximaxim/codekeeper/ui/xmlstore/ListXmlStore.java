@@ -1,7 +1,8 @@
 package ru.taximaxim.codekeeper.ui.xmlstore;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import org.eclipse.core.runtime.Platform;
@@ -42,10 +43,9 @@ public class ListXmlStore extends XmlStore<String> {
     }
 
     @Override
-    protected File getXmlFile() throws IOException {
-        File fileHistory = Platform.getStateLocation(Activator.getContext().getBundle()).toFile();
-        fileHistory = new File(fileHistory, fileName);
-        return fileHistory;
+    protected Path getXmlFile() throws IOException {
+        return Paths.get(Platform.getStateLocation(Activator.getContext().getBundle())
+                .append(fileName).toString());
     }
 
     @Override

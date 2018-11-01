@@ -3,6 +3,7 @@ package ru.taximaxim.codekeeper.ui.properties;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,8 +65,8 @@ public class DependencyProperties extends PropertyPage {
     public void setElement(IAdaptable element) {
         super.setElement(element);
         proj = element.getAdapter(IProject.class);
-        store = new DependenciesXmlStore(proj.getLocation()
-                .append(DependenciesXmlStore.FILE_NAME).toFile());
+        store = new DependenciesXmlStore(Paths.get(proj.getLocation()
+                .append(DependenciesXmlStore.FILE_NAME).toString()));
         prefs = new ProjectScope(proj).getNode(UIConsts.PLUGIN_ID.THIS);
     }
 

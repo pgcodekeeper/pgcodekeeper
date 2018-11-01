@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.xmlstore;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -20,20 +19,16 @@ public class DependenciesXmlStore extends XmlStore<PgLibrary> {
     private static final String IGNORE_PRIV = "ignorePriv"; //$NON-NLS-1$
     private static final String ROOT_TAG = "dependencies"; //$NON-NLS-1$
 
-    private final File file;
-
-    public DependenciesXmlStore(File file) {
-        super(file.getName(), ROOT_TAG);
-        this.file = file;
-    }
+    private final Path path;
 
     public DependenciesXmlStore(Path path) {
-        this(path.toFile());
+        super(path.getFileName().toString(), ROOT_TAG);
+        this.path = path;
     }
 
     @Override
-    protected File getXmlFile() {
-        return file;
+    protected Path getXmlFile() {
+        return path;
     }
 
     @Override

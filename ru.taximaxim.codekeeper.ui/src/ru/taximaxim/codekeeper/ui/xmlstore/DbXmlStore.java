@@ -1,11 +1,11 @@
 package ru.taximaxim.codekeeper.ui.xmlstore;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -73,17 +73,15 @@ public class DbXmlStore extends XmlStore<DbInfo> {
     }
 
     @Override
-    protected File getXmlFile() throws IOException {
-        File fileHistory = Platform.getStateLocation(Activator.getContext().getBundle()).toFile();
-        fileHistory = new File(fileHistory, fileName);
-        return fileHistory;
+    protected Path getXmlFile() throws IOException {
+        return Paths.get(Platform.getStateLocation(Activator.getContext().getBundle())
+                .append(fileName).toString());
     }
 
     // TODO suppress this override when legacy preference support is removed
     @Override
     public List<DbInfo> readObjects() throws IOException {
-        try (Reader xmlReader = new InputStreamReader(new FileInputStream(
-                getXmlFile()), StandardCharsets.UTF_8)) {
+        try (Reader xmlReader = Files.newBufferedReader(getXmlFile(), StandardCharsets.UTF_8)) {
             return getObjects(readXml(xmlReader));
         } catch (IOException | SAXException ex) {
             throw new IOException(MessageFormat.format(

@@ -288,8 +288,8 @@ public class UIProjectLoader extends ProjectLoader {
         LibraryLoader ll = new LibraryLoader(db,
                 Paths.get(Platform.getStateLocation(Activator.getContext().getBundle())
                         .append("dependencies").toString())); //$NON-NLS-1$
-        ll.loadXml(new DependenciesXmlStore(iProject.getLocation()
-                .append(DependenciesXmlStore.FILE_NAME).toFile()), arguments);
+        ll.loadXml(new DependenciesXmlStore(Paths.get(iProject.getLocation()
+                .append(DependenciesXmlStore.FILE_NAME).toString())), arguments);
     }
 
     public static PgStatement parseStatement(IFile file, Collection<DbObjType> types)

@@ -1,15 +1,12 @@
 package cz.startnet.utils.pgdiff.xmlstore;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,11 +46,10 @@ public abstract class XmlStore<T> {
         return newElement;
     }
 
-    protected abstract File getXmlFile() throws IOException;
+    protected abstract Path getXmlFile() throws IOException;
 
     public List<T> readObjects() throws IOException {
-        try (Reader xmlReader = new InputStreamReader(new FileInputStream(
-                getXmlFile()), StandardCharsets.UTF_8)) {
+        try (Reader xmlReader = Files.newBufferedReader(getXmlFile(), StandardCharsets.UTF_8)) {
             return getObjects(readXml(xmlReader));
         } catch (FileNotFoundException ex) {
             return new ArrayList<>();
@@ -80,10 +76,10 @@ public abstract class XmlStore<T> {
 
     public void writeObjects(List<T> list) throws IOException {
         try {
-            File file = getXmlFile();
-            file.getParentFile().mkdirs();
-            file.createNewFile();
-            try (Writer xmlWriter = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)) {
+            Path path = getXmlFile();
+            Files.createDirectories(path.getParent());
+            Files.createFile(path);
+            try (Writer xmlWriter = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
                 Document xml = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
                 Element root = xml.createElement(rootTag);
                 xml.appendChild(root);

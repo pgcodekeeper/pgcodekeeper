@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.views.navigator;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
@@ -21,9 +22,9 @@ public class NavigationLibrariesContentProvider implements ITreeContentProvider 
     public Object[] getChildren(Object parent) {
         if (parent instanceof IProject) {
             try {
-                List<PgLibrary> libs = new DependenciesXmlStore(
-                        ((IProject)parent).getLocation()
-                        .append(DependenciesXmlStore.FILE_NAME).toFile()).readObjects();
+                IProject proj = ((IProject)parent);
+                List<PgLibrary> libs = new DependenciesXmlStore(Paths.get(proj.getLocation()
+                        .append(DependenciesXmlStore.FILE_NAME).toString())).readObjects();
                 return new Object[] {LibraryContainer.create(libs)};
             } catch (IOException e) {
                 Log.log(e);

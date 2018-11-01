@@ -828,7 +828,7 @@ public class DiffTableViewer extends Composite {
 
         List<PgLibrary> libs;
         try {
-            libs = new DependenciesXmlStore(p.toFile()).readObjects();
+            libs = new DependenciesXmlStore(p).readObjects();
         } catch (IOException e) {
             Log.log(e);
             return;
