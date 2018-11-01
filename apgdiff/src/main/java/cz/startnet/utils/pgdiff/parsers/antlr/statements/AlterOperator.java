@@ -23,7 +23,7 @@ public class AlterOperator extends ParserAbstract {
         PgOperator oper = getSafe(
                 CreateOperator.getSchemaSafe(operNameCtx, db.getDefaultSchema(), db)::getOperator,
                 parseSignature(operNameCtx.operator.getText(), targetOperCtx),
-                operNameCtx.getStart());
+                operNameCtx.operator.getStart());
 
         // filling of owner
         if (!db.getArguments().isIgnorePrivileges()) {

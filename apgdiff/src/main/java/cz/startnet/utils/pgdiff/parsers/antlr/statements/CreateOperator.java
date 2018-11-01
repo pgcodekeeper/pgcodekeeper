@@ -1,12 +1,11 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import org.antlr.v4.runtime.Token;
-
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.All_opContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.All_op_refContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_operator_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.OpContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
@@ -41,7 +40,7 @@ public class CreateOperator extends ParserAbstract {
                 oper.setRightArg(rightArgTypeCtx.getText());
                 addTypeAsDepcy(rightArgTypeCtx, oper, operSchemaName);
             } else if (option.COMMUTATOR() != null || option.NEGATOR() != null) {
-                OpContext comutNameCtx = option.addition_oper_name;
+                All_op_refContext comutNameCtx = option.addition_oper_name;
                 IdentifierContext schemaNameCxt = comutNameCtx.identifier();
                 StringBuilder sb = new StringBuilder();
                 if (schemaNameCxt != null) {
@@ -49,7 +48,7 @@ public class CreateOperator extends ParserAbstract {
                     .append(PgDiffUtils.getQuotedName(schemaNameCxt.getText()))
                     .append('.');
                 }
-                sb.append(comutNameCtx.OP_CHARS().getText());
+                sb.append(comutNameCtx.all_op().getText());
                 if (schemaNameCxt != null) {
                     sb.append(')');
                 }
@@ -83,8 +82,8 @@ public class CreateOperator extends ParserAbstract {
             return foundSchema;
         }
 
-        Token opChars = operNameCtx.operator;
+        All_opContext opChars = operNameCtx.operator;
         throw new UnresolvedReferenceException("Schema not found for " +
-                opChars.getText(), opChars);
+                opChars.getText(), opChars.getStart());
     }
 }
