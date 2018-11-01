@@ -141,8 +141,6 @@ public class LibraryLoader {
 
         Path dir = metaPath.resolve(name);
 
-        createMetaFolder();
-
         if (!Files.exists(dir)) {
             Files.createDirectories(dir);
 
@@ -160,14 +158,7 @@ public class LibraryLoader {
         return getLibrary(dir.toString(), args, isIgnorePriv);
     }
 
-    private void createMetaFolder() throws IOException {
-        if (!Files.exists(metaPath)) {
-            Files.createDirectories(metaPath);
-        }
-    }
-
     private String unzip(Path zip, Path dir) throws FileNotFoundException, IOException {
-        createMetaFolder();
         // return output directory if it exists
         if (Files.exists(dir)) {
             return dir.toString();

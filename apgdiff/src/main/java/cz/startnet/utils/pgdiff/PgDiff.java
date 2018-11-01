@@ -77,7 +77,7 @@ public final class PgDiff {
         }
 
         oldLib.loadLibraries(arguments, false, arguments.getTargetLibs());
-        oldLib.loadLibraries(arguments, false, arguments.getTargetLibsWithoutPriv());
+        oldLib.loadLibraries(arguments, true, arguments.getTargetLibsWithoutPriv());
 
         LibraryLoader newLib = new LibraryLoader(newDatabase, metaPath);
 
