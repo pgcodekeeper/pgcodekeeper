@@ -8,6 +8,7 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -32,6 +33,7 @@ implements PgOptionContainer {
     private boolean clusterIndex;
     private final Set<String> columns = new HashSet<>();
 
+    protected final Set<String> includes = new LinkedHashSet<>();
     protected final Map<String, String> options = new LinkedHashMap<>();
 
     @Override
@@ -67,6 +69,14 @@ implements PgOptionContainer {
 
     public Set<String> getColumns(){
         return Collections.unmodifiableSet(columns);
+    }
+
+    public void addInclude(String column) {
+        includes.add(column);
+    }
+
+    public Set<String> getIncludes(){
+        return Collections.unmodifiableSet(includes);
     }
 
     public void setTableName(final String tableName) {
@@ -138,6 +148,7 @@ implements PgOptionContainer {
                 && Objects.equals(tableName, index.getTableName())
                 && Objects.equals(where, index.getWhere())
                 && Objects.equals(tableSpace, index.getTableSpace())
+                && Objects.equals(includes, index.includes)
                 && unique == index.isUnique();
     }
 
@@ -152,6 +163,7 @@ implements PgOptionContainer {
         hasher.put(where);
         hasher.put(tableSpace);
         hasher.put(options);
+        hasher.put(includes);
         hasher.put(comment);
     }
 
@@ -168,6 +180,7 @@ implements PgOptionContainer {
         indexDst.deps.addAll(deps);
         indexDst.columns.addAll(columns);
         indexDst.options.putAll(options);
+        indexDst.includes.addAll(includes);
         indexDst.setLocation(getLocation());
         return indexDst;
     }
