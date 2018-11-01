@@ -22,7 +22,8 @@ public class NavigationLibrariesContentProvider implements ITreeContentProvider 
         if (parent instanceof IProject) {
             try {
                 List<PgLibrary> libs = new DependenciesXmlStore(
-                        ((IProject)parent).getLocation()).readObjects();
+                        ((IProject)parent).getLocation()
+                        .append(DependenciesXmlStore.FILE_NAME).toFile()).readObjects();
                 return new Object[] {LibraryContainer.create(libs)};
             } catch (IOException e) {
                 Log.log(e);

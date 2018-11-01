@@ -64,7 +64,8 @@ public class DependencyProperties extends PropertyPage {
     public void setElement(IAdaptable element) {
         super.setElement(element);
         proj = element.getAdapter(IProject.class);
-        store = new DependenciesXmlStore(proj.getLocation());
+        store = new DependenciesXmlStore(proj.getLocation()
+                .append(DependenciesXmlStore.FILE_NAME).toFile());
         prefs = new ProjectScope(proj).getNode(UIConsts.PLUGIN_ID.THIS);
     }
 

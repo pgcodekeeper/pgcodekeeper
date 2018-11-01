@@ -4,7 +4,6 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 
-import org.eclipse.core.runtime.IPath;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -30,10 +29,6 @@ public class DependenciesXmlStore extends XmlStore<PgLibrary> {
 
     public DependenciesXmlStore(Path path) {
         this(path.toFile());
-    }
-
-    public DependenciesXmlStore(IPath path) {
-        this(path.append(FILE_NAME).toFile());
     }
 
     @Override
