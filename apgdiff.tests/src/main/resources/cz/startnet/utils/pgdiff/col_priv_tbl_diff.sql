@@ -13,7 +13,7 @@ GRANT SELECT ON TABLE public.t2 TO levsha_aa;
 
 -- COLUMN public.t2.c1 GRANT
 
-GRANT INSERT(c1), REFERENCES(c1), UPDATE(c1) ON TABLE public.t2 TO levsha_aa;
+GRANT INSERT(c1),REFERENCES(c1),UPDATE(c1) ON TABLE public.t2 TO levsha_aa;
 
 -- COLUMN public.t2.c2 GRANT
 
@@ -33,10 +33,9 @@ GRANT INSERT(c2) ON TABLE public.t1 TO levsha_aa;
 
 -- COLUMN public.t1.c1 GRANT
 
-REVOKE ALL(c1) ON TABLE public.t1 FROM PUBLIC;
 REVOKE ALL(c1) ON TABLE public.t1 FROM botov_av;
 GRANT ALL(c1) ON TABLE public.t1 TO maindb;
-GRANT INSERT(c1), REFERENCES(c1), UPDATE(c1) ON TABLE public.t1 TO levsha_aa;
+GRANT INSERT(c1),REFERENCES(c1),UPDATE(c1) ON TABLE public.t1 TO levsha_aa;
 
 CREATE VIEW public.v1 AS
 	SELECT t1.c1
@@ -44,6 +43,5 @@ CREATE VIEW public.v1 AS
 
 -- VIEW public.v1 GRANT
 
-REVOKE ALL(c1) ON TABLE public.v1 FROM PUBLIC;
 REVOKE ALL(c1) ON TABLE public.v1 FROM levsha_aa;
 GRANT UPDATE(c1) ON TABLE public.v1 TO maindb;

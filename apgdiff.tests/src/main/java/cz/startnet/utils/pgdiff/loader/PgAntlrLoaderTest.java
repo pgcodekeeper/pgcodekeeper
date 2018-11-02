@@ -36,7 +36,6 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
-import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgRule.PgRuleEventType;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -547,11 +546,6 @@ class PgDB6 extends PgDatabaseObjectCreator {
         AbstractSchema schema = d.getDefaultSchema();
         //    schema.setComment("'Standard public schema'");
 
-        schema.addPrivilege(new PgPrivilege("REVOKE", "ALL", "SCHEMA public", "PUBLIC", false));
-        schema.addPrivilege(new PgPrivilege("REVOKE", "ALL", "SCHEMA public", "postgres", false));
-        schema.addPrivilege(new PgPrivilege("GRANT", "ALL", "SCHEMA public", "postgres", false));
-        schema.addPrivilege(new PgPrivilege("GRANT", "ALL", "SCHEMA public", "PUBLIC", false));
-
         AbstractTable table = new SimplePgTable("test_table", "");
         schema.addTable(table);
 
@@ -893,11 +887,6 @@ class PgDB14 extends PgDatabaseObjectCreator {
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpDB();
         AbstractSchema schema = d.getDefaultSchema();
-
-        schema.addPrivilege(new PgPrivilege("REVOKE", "ALL", "SCHEMA public", "PUBLIC", false));
-        schema.addPrivilege(new PgPrivilege("REVOKE", "ALL", "SCHEMA public", "postgres", false));
-        schema.addPrivilege(new PgPrivilege("GRANT", "ALL", "SCHEMA public", "postgres", false));
-        schema.addPrivilege(new PgPrivilege("GRANT", "ALL", "SCHEMA public", "PUBLIC", false));
 
         d.setComment("'comments database'");
         //    schema.setComment("'public schema'");
