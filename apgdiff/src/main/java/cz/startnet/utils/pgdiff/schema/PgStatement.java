@@ -219,10 +219,15 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     public void addPrivilege(PgPrivilege privilege) {
+        // (owner != null) - used to exclude default privileges of 'schema public';
+        // (DbObjType.COLUMN == getStatementType()) - use because in this
+        // step of 'jdbc-loader', PgColumn has no 'parent' and has no 'owner'.
         if (isPostgres() && (owner != null || DbObjType.COLUMN == getStatementType())) {
             addPrivilegePG(privilege);
-        } else {
+        } else if (!isPostgres()){
             addPrivilegeMS(privilege);
+        } else {
+            return;
         }
         resetHash();
     }
