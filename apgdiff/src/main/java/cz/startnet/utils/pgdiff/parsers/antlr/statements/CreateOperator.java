@@ -1,8 +1,8 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.All_opContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.All_op_refContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.All_simple_opContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_operator_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -48,7 +48,7 @@ public class CreateOperator extends ParserAbstract {
                     .append(PgDiffUtils.getQuotedName(schemaNameCxt.getText()))
                     .append('.');
                 }
-                sb.append(comutNameCtx.all_op().getText());
+                sb.append(comutNameCtx.all_simple_op().getText());
                 if (schemaNameCxt != null) {
                     sb.append(')');
                 }
@@ -82,7 +82,7 @@ public class CreateOperator extends ParserAbstract {
             return foundSchema;
         }
 
-        All_opContext opChars = operNameCtx.operator;
+        All_simple_opContext opChars = operNameCtx.operator;
         throw new UnresolvedReferenceException("Schema not found for " +
                 opChars.getText(), opChars.getStart());
     }

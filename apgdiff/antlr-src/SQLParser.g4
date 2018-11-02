@@ -852,7 +852,7 @@ create_operator_statement
     ;
 
 operator_name
-    : (schema_name=identifier DOT)? operator=all_op
+    : (schema_name=identifier DOT)? operator=all_simple_op
     ;
 
 operator_option
@@ -1280,6 +1280,12 @@ constr_body
 
 all_op
     : op
+    | EQUAL | NOT_EQUAL | LTH | LEQ | GTH | GEQ
+    | PLUS | MINUS | MULTIPLY | DIVIDE | MODULAR | EXP
+    ;
+
+all_simple_op
+    : OP_CHARS
     | EQUAL | NOT_EQUAL | LTH | LEQ | GTH | GEQ
     | PLUS | MINUS | MULTIPLY | DIVIDE | MODULAR | EXP
     ;
@@ -2091,12 +2097,12 @@ vex_b
 
 op
   : OP_CHARS
-  | OPERATOR LEFT_PAREN identifier DOT all_op RIGHT_PAREN
+  | OPERATOR LEFT_PAREN identifier DOT all_simple_op RIGHT_PAREN
   ;
 
 all_op_ref
-  : all_op
-  | OPERATOR LEFT_PAREN identifier DOT all_op RIGHT_PAREN
+  : all_simple_op
+  | OPERATOR LEFT_PAREN identifier DOT all_simple_op RIGHT_PAREN
   ;
 
 datetime_overlaps
