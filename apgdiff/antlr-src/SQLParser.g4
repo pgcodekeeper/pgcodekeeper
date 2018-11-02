@@ -852,7 +852,7 @@ create_operator_statement
     ;
 
 operator_name
-    : (schema_name=identifier DOT)? operator=OP_CHARS
+    : (schema_name=identifier DOT)? operator=all_simple_op
     ;
 
 operator_option
@@ -860,7 +860,7 @@ operator_option
     | RESTRICT EQUAL restr_name=schema_qualified_name
     | JOIN EQUAL join_name=schema_qualified_name
     | (LEFTARG | RIGHTARG) EQUAL type=data_type
-    | (COMMUTATOR | NEGATOR) EQUAL addition_oper_name=op
+    | (COMMUTATOR | NEGATOR) EQUAL addition_oper_name=all_op_ref
     | HASHES
     | MERGES
     ;
@@ -1279,7 +1279,13 @@ constr_body
     ;
 
 all_op
-    :op
+    : op
+    | EQUAL | NOT_EQUAL | LTH | LEQ | GTH | GEQ
+    | PLUS | MINUS | MULTIPLY | DIVIDE | MODULAR | EXP
+    ;
+
+all_simple_op
+    : OP_CHARS
     | EQUAL | NOT_EQUAL | LTH | LEQ | GTH | GEQ
     | PLUS | MINUS | MULTIPLY | DIVIDE | MODULAR | EXP
     ;
@@ -2091,7 +2097,12 @@ vex_b
 
 op
   : OP_CHARS
-  | OPERATOR LEFT_PAREN identifier DOT OP_CHARS RIGHT_PAREN
+  | OPERATOR LEFT_PAREN identifier DOT all_simple_op RIGHT_PAREN
+  ;
+
+all_op_ref
+  : all_simple_op
+  | OPERATOR LEFT_PAREN identifier DOT all_simple_op RIGHT_PAREN
   ;
 
 datetime_overlaps

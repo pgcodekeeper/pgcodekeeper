@@ -469,7 +469,7 @@ public class ReferenceListener implements SqlContextProcessor {
         } else {
             schemaName = getDefSchemaName();
         }
-        fillObjDefinition(schemaName, operNameCtx.operator, DbObjType.OPERATOR);
+        fillObjDefinition(schemaName, operNameCtx.operator.getStart(), DbObjType.OPERATOR);
     }
 
     public void commentOn(Comment_on_statementContext ctx) {
