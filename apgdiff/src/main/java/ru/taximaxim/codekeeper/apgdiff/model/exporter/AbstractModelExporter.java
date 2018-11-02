@@ -14,11 +14,9 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.AbstractView;
@@ -44,7 +42,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
  */
 public abstract class AbstractModelExporter {
 
-    protected static final int HASH_LENGTH = 10;
     protected static final String GROUP_DELIMITER =
             "\n\n--------------------------------------------------------------------------------\n\n";
 
@@ -383,19 +380,6 @@ public abstract class AbstractModelExporter {
      */
     protected abstract void deleteStatementIfExists(PgStatement st) throws IOException;
 
-
-    public static String getExportedFilename(String name) {
-        Matcher m = FileUtils.INVALID_FILENAME.matcher(name);
-        if (m.find()) {
-            String hash = PgDiffUtils.md5(name)
-                    // 2^40 variants, should be enough for this purpose
-                    .substring(0, HASH_LENGTH);
-            return m.replaceAll("") + '_' + hash; //$NON-NLS-1$
-        } else {
-            return name;
-        }
-    }
-
     protected File mkdirObjects(File parentOutDir, String outDirName)
             throws NotDirectoryException, DirectoryException {
         File objectDir = new File(parentOutDir, outDirName);
@@ -420,7 +404,7 @@ public abstract class AbstractModelExporter {
      * @return a statement's exported file name
      */
     public static String getExportedFilename(PgStatement statement) {
-        return getExportedFilename(statement.getBareName());
+        return  FileUtils.getValidFilename(statement.getBareName());
     }
 
     public static String getExportedFilenameSql(PgStatement statement) {
@@ -428,7 +412,7 @@ public abstract class AbstractModelExporter {
     }
 
     public static String getExportedFilenameSql(String name) {
-        return getExportedFilename(name) + ".sql"; //$NON-NLS-1$
+        return FileUtils.getValidFilename(name) + ".sql"; //$NON-NLS-1$
     }
 
     public static void writeProjVersion(File f) throws FileNotFoundException {

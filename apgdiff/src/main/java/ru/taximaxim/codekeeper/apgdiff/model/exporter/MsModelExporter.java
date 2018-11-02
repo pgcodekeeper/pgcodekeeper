@@ -25,6 +25,7 @@ import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.MS_WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 
@@ -351,7 +352,7 @@ public class MsModelExporter extends AbstractModelExporter {
 
         String fileName = addExtension ? getExportedFilenameSql(st) : getExportedFilename(st);
         if (st instanceof PgStatementWithSearchPath) {
-            fileName = getExportedFilename(((PgStatementWithSearchPath)st)
+            fileName = FileUtils.getValidFilename(((PgStatementWithSearchPath)st)
                     .getContainingSchema().getName()) + '.' + fileName;
         }
 
@@ -379,7 +380,7 @@ public class MsModelExporter extends AbstractModelExporter {
             groupSql.append(GROUP_DELIMITER).append(getDumpSql(st));
         }
 
-        dumpSQL(groupSql, new File(parentDir, getExportedFilename(
+        dumpSQL(groupSql, new File(parentDir, FileUtils.getValidFilename(
                 obj.getParent().getName()) + '.' + getExportedFilenameSql(obj)));
     }
 

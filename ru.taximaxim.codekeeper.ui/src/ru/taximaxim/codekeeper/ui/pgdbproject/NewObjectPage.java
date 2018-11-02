@@ -43,6 +43,7 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -395,7 +396,7 @@ public final class NewObjectPage extends WizardPage {
         if (!projectFolder.exists()) {
             projectFolder.create(false, true, null);
         }
-        IFolder schemaFolder = projectFolder.getFolder(AbstractModelExporter.getExportedFilename(name));
+        IFolder schemaFolder = projectFolder.getFolder(FileUtils.getValidFilename(name));
         if (!schemaFolder.exists()) {
             schemaFolder.create(false, true, null);
         }
