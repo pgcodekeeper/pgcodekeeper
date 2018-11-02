@@ -41,6 +41,8 @@ CREATE VIEW public.v1 AS
 	SELECT t1.c1
    FROM public.t1;
 
+ALTER VIEW public.v1 OWNER TO botov_av;
+
 -- VIEW public.v1 GRANT
 
 REVOKE ALL(c1) ON TABLE public.v1 FROM levsha_aa;

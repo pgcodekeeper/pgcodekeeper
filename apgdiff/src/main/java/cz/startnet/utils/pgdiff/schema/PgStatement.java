@@ -7,7 +7,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
@@ -220,17 +219,7 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     public void addPrivilege(PgPrivilege privilege) {
-        DbObjType lType = getStatementType();
-        Predicate<String> viewSpecCase = (lOwner) -> DbObjType.VIEW == lType && lOwner == null;
-
-        String localOwner;
-        if (DbObjType.COLUMN == lType) {
-            localOwner = getParent().getOwner();
-        } else {
-            localOwner = owner;
-        }
-
-        if (isPostgres() && (localOwner != null || viewSpecCase.test(localOwner))) {
+        if (isPostgres() && (owner != null || DbObjType.COLUMN == getStatementType())) {
             addPrivilegePG(privilege);
         } else {
             addPrivilegeMS(privilege);
