@@ -6,7 +6,6 @@ import java.util.List;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Delete_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ExpressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.From_itemContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Search_conditionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Top_countContext;
@@ -36,10 +35,9 @@ public class MsDelete extends MsAbstractExprWithNmspc<Delete_statementContext> {
             select.from(item);
         }
 
-        IdContext schemaCtx = tableName == null ? null : tableName.schema;
         boolean isAlias = false;
 
-        if (schemaCtx == null) {
+        if (tableName != null && tableName.schema == null) {
             isAlias = select.findReference(null, tableName.name.getText()) != null;
         }
 
