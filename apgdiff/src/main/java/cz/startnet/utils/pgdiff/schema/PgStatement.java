@@ -219,23 +219,32 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     public void addPrivilege(PgPrivilege privilege) {
-        if (privilege.isRevoke()) {
-            if ("PUBLIC".equals(privilege.getRole())) {
-                return;
+        if (isPostgres()) {
+            if (privilege.isRevoke()) {
+                if ("PUBLIC".equals(privilege.getRole())) {
+                    return;
+                }
+                revokes.add(privilege);
+            } else {
+                PgPrivilege delRevoke = revokes.stream()
+                        .filter(p -> p.getName().equals(privilege.getName())
+                                && p.getRole().equals(privilege.getRole())
+                                && p.getRole().equals(getOwner())
+                                && p.getPermission().equals(privilege.getPermission()))
+                        .findAny().orElse(null);
+                if (delRevoke != null) {
+                    revokes.remove(delRevoke);
+                } else {
+                    grants.add(privilege);
+                }
             }
-            revokes.add(privilege);
         } else {
-            PgPrivilege delRevoke = revokes.stream()
-                    .filter(p -> p.getName().equals(privilege.getName())
-                            && p.getRole().equals(privilege.getRole())
-                            && p.getRole().equals(getOwner())
-                            && p.getPermission().equals(privilege.getPermission()))
-                    .findAny().orElse(null);
-            if (delRevoke != null) {
-                revokes.remove(delRevoke);
+            if (privilege.isRevoke()) {
+                revokes.add(privilege);
             } else {
                 grants.add(privilege);
             }
+
         }
         resetHash();
     }
