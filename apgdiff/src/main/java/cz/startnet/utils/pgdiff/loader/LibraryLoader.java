@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -24,6 +23,7 @@ import cz.startnet.utils.pgdiff.libraries.PgLibrary;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
 
 public class LibraryLoader {
 
@@ -123,8 +123,16 @@ public class LibraryLoader {
 
     private PgDatabase loadZip(Path path, PgDiffArguments args, boolean isIgnorePriv)
             throws InterruptedException, IOException {
+
+        String hash;
+        if (path.startsWith(metaPath)) {
+            hash = metaPath.relativize(path).toString();
+        } else {
+            hash = path.toString();
+        }
+
         String name = path.getFileName().toString() + '_'
-                + PgDiffUtils.md5(path.toString()).substring(0, 10);
+                + PgDiffUtils.md5(hash).substring(0, 10);
 
         PgDatabase db = getLibrary(unzip(path, metaPath.resolve(name)),
                 args, isIgnorePriv);
@@ -136,22 +144,37 @@ public class LibraryLoader {
     private PgDatabase loadURI(URI uri, PgDiffArguments args, boolean isIgnorePriv)
             throws InterruptedException, IOException {
         String path = uri.getPath();
-        String fileName = Paths.get(path).getFileName().toString();
+        String fileName = FileUtils.getValidFilename(Paths.get(path).getFileName().toString());
         String name = fileName + '_' + PgDiffUtils.md5(path).substring(0, 10);
 
         Path dir = metaPath.resolve(name);
 
+        // do nothing if directory already exists
         if (!Files.exists(dir)) {
-            Files.createDirectories(dir);
 
-            try {
-                InputStream in = uri.toURL().openStream();
-                Files.copy(in, dir.resolve(fileName));
+            Path file = dir.resolve(fileName);
+
+            try (InputStream in = uri.toURL().openStream()) {
+                Files.createDirectories(dir);
+                Files.copy(in, file);
             } catch (IOException e) {
-                Files.deleteIfExists(dir);
-                throw new IOException(
+                IOException ioe = new IOException(
                         MessageFormat.format("Error while read library from URI : {0} - {1} ",
                                 uri, e.getLocalizedMessage()), e);
+
+                try {
+                    Files.deleteIfExists(file);
+                } catch (IOException ex) {
+                    ioe.addSuppressed(ex);
+                }
+
+                try {
+                    Files.deleteIfExists(dir);
+                } catch (IOException ex) {
+                    ioe.addSuppressed(ex);
+                }
+
+                throw ioe;
             }
         }
 
@@ -166,8 +189,6 @@ public class LibraryLoader {
 
         Files.createDirectories(dir);
 
-        //buffer for read and write data to file
-        byte[] buffer = new byte[1024];
         try (InputStream fis = Files.newInputStream(zip);
                 ZipInputStream zis = new ZipInputStream(fis)) {
             ZipEntry ze = zis.getNextEntry();
@@ -177,13 +198,7 @@ public class LibraryLoader {
                 //create directories for sub directories in zip
                 if (!ze.isDirectory()) {
                     Files.createDirectories(newFile.getParent());
-
-                    try (OutputStream fos = Files.newOutputStream(newFile)) {
-                        int len;
-                        while ((len = zis.read(buffer)) > 0) {
-                            fos.write(buffer, 0, len);
-                        }
-                    }
+                    Files.copy(zis, newFile);
                 }
                 //close this ZipEntry
                 zis.closeEntry();
