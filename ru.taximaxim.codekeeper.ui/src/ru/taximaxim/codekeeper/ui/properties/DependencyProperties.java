@@ -13,7 +13,6 @@ import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckboxCellEditor;
@@ -231,17 +230,8 @@ public class DependencyProperties extends PropertyPage {
                     InputDialog dialog = new InputDialog(getShell(),
                             Messages.DependencyProperties_add_database,
                             Messages.DependencyProperties_enter_connection_string, "jdbc:",  //$NON-NLS-1$
-                            new IInputValidator() {
-
-                        @Override
-                        public String isValid(String newText) {
-                            if (newText.startsWith("jdbc:")) {  //$NON-NLS-1$
-                                return null;
-                            }
-
-                            return Messages.DependencyProperties_connection_start;
-                        }
-                    });
+                            newText -> newText.startsWith("jdbc:") ?
+                                    null : Messages.DependencyProperties_connection_start);
 
                     if (dialog.open() == Window.OK) {
                         getList().add(new PgLibrary(dialog.getValue()));
@@ -259,20 +249,7 @@ public class DependencyProperties extends PropertyPage {
                     InputDialog dialog = new InputDialog(getShell(),
                             Messages.DependencyProperties_add_uri,
                             Messages.DependencyProperties_enter_uri, "",   //$NON-NLS-1$
-                            new IInputValidator() {
-
-                        @Override
-                        public String isValid(String newText) {
-                            try {
-                                if (new URI(newText).getScheme() == null) {
-                                    return Messages.DependencyProperties_empty_scheme;
-                                }
-                                return null;
-                            } catch (URISyntaxException e) {
-                                return e.getLocalizedMessage();
-                            }
-                        }
-                    });
+                            DependencyProperties.this::validateUrl);
 
                     if (dialog.open() == Window.OK) {
                         getList().add(new PgLibrary(dialog.getValue()));
@@ -284,6 +261,17 @@ public class DependencyProperties extends PropertyPage {
             createButton(parent, DELETE_ID, Messages.delete, Activator.getEclipseImage(ISharedImages.IMG_ETOOL_DELETE));
             createButton(parent, UP_ID, null, FILE.ICONUP);
             createButton(parent, DOWN_ID, null, FILE.ICONDOWN);
+        }
+    }
+
+    private String validateUrl(String newText) {
+        try {
+            if (new URI(newText).getScheme() == null) {
+                return Messages.DependencyProperties_empty_scheme;
+            }
+            return null;
+        } catch (URISyntaxException ex) {
+            return ex.getLocalizedMessage();
         }
     }
 

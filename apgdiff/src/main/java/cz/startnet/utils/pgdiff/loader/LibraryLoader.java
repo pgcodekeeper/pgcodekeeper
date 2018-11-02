@@ -2,7 +2,6 @@ package cz.startnet.utils.pgdiff.loader;
 
 import java.io.EOFException;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
@@ -181,7 +180,7 @@ public class LibraryLoader {
         return getLibrary(dir.toString(), args, isIgnorePriv);
     }
 
-    private String unzip(Path zip, Path dir) throws FileNotFoundException, IOException {
+    private String unzip(Path zip, Path dir) throws IOException {
         // return output directory if it exists
         if (Files.exists(dir)) {
             return dir.toString();

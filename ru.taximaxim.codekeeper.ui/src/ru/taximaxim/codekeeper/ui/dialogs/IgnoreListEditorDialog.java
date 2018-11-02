@@ -5,7 +5,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -99,12 +98,7 @@ public class IgnoreListEditorDialog extends Dialog {
         }
 
         try {
-            if (!Files.exists(path)) {
-                Files.createFile(path);
-            }
-
-            Files.write(path, ignoreList.getListCode().getBytes(StandardCharsets.UTF_8),
-                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            Files.write(path, ignoreList.getListCode().getBytes(StandardCharsets.UTF_8));
         } catch (IOException ex) {
             ExceptionNotifier.notifyDefault(MessageFormat.format(
                     Messages.IgnoreListEditorDialog_error_file, path), ex);

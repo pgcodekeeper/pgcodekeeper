@@ -78,9 +78,6 @@ public abstract class XmlStore<T> {
         try {
             Path path = getXmlFile();
             Files.createDirectories(path.getParent());
-            if (!Files.exists(path)) {
-                Files.createFile(path);
-            }
             try (Writer xmlWriter = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
                 Document xml = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
                 Element root = xml.createElement(rootTag);
