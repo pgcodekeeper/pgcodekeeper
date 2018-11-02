@@ -230,7 +230,7 @@ public class CreateRule extends ParserAbstract {
         default:
             break;
         }
-        if (statement != null && statement.getOwner() != null) {
+        if (statement != null){
             statement.addPrivilege(pgPrivilege);
         }
     }

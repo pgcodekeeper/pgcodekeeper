@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
@@ -219,34 +220,51 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     public void addPrivilege(PgPrivilege privilege) {
-        if (isPostgres()) {
-            if (privilege.isRevoke()) {
-                if ("PUBLIC".equals(privilege.getRole())) {
-                    return;
-                }
-                revokes.add(privilege);
-            } else {
-                PgPrivilege delRevoke = revokes.stream()
-                        .filter(p -> p.getName().equals(privilege.getName())
-                                && p.getRole().equals(privilege.getRole())
-                                && p.getRole().equals(getOwner())
-                                && p.getPermission().equals(privilege.getPermission()))
-                        .findAny().orElse(null);
-                if (delRevoke != null) {
-                    revokes.remove(delRevoke);
-                } else {
-                    grants.add(privilege);
-                }
-            }
+        DbObjType lType = getStatementType();
+        Predicate<String> viewSpecCase = (lOwner) -> DbObjType.VIEW == lType && lOwner == null;
+
+        String localOwner;
+        if (DbObjType.COLUMN == lType) {
+            localOwner = getParent().getOwner();
         } else {
-            if (privilege.isRevoke()) {
-                revokes.add(privilege);
+            localOwner = owner;
+        }
+
+        if (isPostgres() && (localOwner != null || viewSpecCase.test(localOwner))) {
+            addPrivilegePG(privilege);
+        } else {
+            addPrivilegeMS(privilege);
+        }
+        resetHash();
+    }
+
+    private void addPrivilegePG(PgPrivilege privilege) {
+        if (privilege.isRevoke()) {
+            if ("PUBLIC".equals(privilege.getRole())) {
+                return;
+            }
+            revokes.add(privilege);
+        } else {
+            PgPrivilege delRevoke = revokes.stream()
+                    .filter(p -> p.getName().equals(privilege.getName())
+                            && p.getRole().equals(privilege.getRole())
+                            && p.getRole().equals(getOwner())
+                            && p.getPermission().equals(privilege.getPermission()))
+                    .findAny().orElse(null);
+            if (delRevoke != null) {
+                revokes.remove(delRevoke);
             } else {
                 grants.add(privilege);
             }
-
         }
-        resetHash();
+    }
+
+    private void addPrivilegeMS(PgPrivilege privilege) {
+        if (privilege.isRevoke()) {
+            revokes.add(privilege);
+        } else {
+            grants.add(privilege);
+        }
     }
 
     public void clearPrivileges() {
