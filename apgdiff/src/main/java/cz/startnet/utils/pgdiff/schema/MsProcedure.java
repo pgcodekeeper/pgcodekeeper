@@ -57,9 +57,6 @@ public class MsProcedure extends AbstractFunction implements SourceStatement {
         if (!options.isEmpty()) {
             sbSQL.append("WITH ").append(String.join(", ", options)).append('\n');
         }
-        if (isForReplication()) {
-            sbSQL.append("FOR REPLICATION\n");
-        }
         sbSQL.append("AS\n");
         sbSQL.append(getBody());
         sbSQL.append(GO);
@@ -114,10 +111,6 @@ public class MsProcedure extends AbstractFunction implements SourceStatement {
         }
 
         sbString.append(arg.getDataType());
-
-        if (arg.isVarying()) {
-            sbString.append(" VARYING");
-        }
 
         String def = arg.getDefaultExpression();
 

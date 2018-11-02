@@ -107,3 +107,30 @@ COMMENT ON TRIGGER test_trigger ON test IS 'test trigger';
 CREATE RULE test_rule AS ON DELETE TO test DO NOTHING;
 
 COMMENT ON RULE test_rule ON test IS 'test rule';
+
+CREATE TEXT SEARCH TEMPLATE public.test_template (
+    LEXIZE = dsnowball_lexize );
+
+COMMENT ON TEXT SEARCH TEMPLATE public.test_template IS 'test_template';
+
+CREATE TEXT SEARCH PARSER public.test_parser (
+    START = prsd_start,
+    GETTOKEN = prsd_nexttoken,
+    END = prsd_end,
+    HEADLINE = prsd_headline,
+    LEXTYPES = prsd_lextype );
+
+COMMENT ON TEXT SEARCH PARSER public.test_parser IS 'test_parser';
+
+CREATE TEXT SEARCH DICTIONARY public.test_dictionary (
+    TEMPLATE = snowball,
+    language = 'english',
+    stopwords = 'english' );
+
+COMMENT ON TEXT SEARCH DICTIONARY public.test_dictionary IS 'test_dictionary';
+
+CREATE TEXT SEARCH CONFIGURATION public.test_config (
+    PARSER = pg_catalog."default" );
+
+COMMENT ON TEXT SEARCH CONFIGURATION public.test_config IS 'test_config';
+

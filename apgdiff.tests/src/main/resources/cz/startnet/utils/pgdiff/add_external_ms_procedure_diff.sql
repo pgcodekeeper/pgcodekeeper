@@ -1,0 +1,20 @@
+CREATE ASSEMBLY [Hi]
+AUTHORIZATION [dbo]
+FROM 0x4d5a900003
+WITH PERMISSION_SET = SAFE
+GO
+
+SET QUOTED_IDENTIFIER OFF
+GO
+SET ANSI_NULLS OFF
+GO
+CREATE PROCEDURE [dbo].[ext]
+@i1 [int] = 0,
+@b1 [bit] = False,
+@b2 [bit] = False,
+@f1 [float] READONLY,
+@f2 [float] = 0
+WITH EXECUTE AS CALLER
+AS
+EXTERNAL NAME [Hi].[Hello].[returnValue]
+GO

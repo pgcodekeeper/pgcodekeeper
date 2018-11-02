@@ -3,7 +3,6 @@ package cz.startnet.utils.pgdiff.schema;
 import java.io.Serializable;
 import java.util.Objects;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import cz.startnet.utils.pgdiff.hashers.IHashable;
 import cz.startnet.utils.pgdiff.hashers.JavaHasher;
@@ -20,7 +19,6 @@ public class Argument implements Serializable, IHashable {
     private final String name;
     private final String dataType;
     private String defaultExpression;
-    private boolean isVarying;
     private boolean isReadOnly;
 
     public Argument(String name, String dataType) {
@@ -45,14 +43,6 @@ public class Argument implements Serializable, IHashable {
         this.defaultExpression = defaultExpression;
     }
 
-    public boolean isVarying() {
-        return isVarying;
-    }
-
-    public void setVarying(final boolean isVarying) {
-        this.isVarying = isVarying;
-    }
-
     public boolean isReadOnly() {
         return isReadOnly;
     }
@@ -69,44 +59,18 @@ public class Argument implements Serializable, IHashable {
         return name;
     }
 
-
-    public String getDeclaration(boolean includeDefaultValue, boolean includeArgName) {
-        final StringBuilder sbString = new StringBuilder();
-
-        if (mode != null && !"IN".equalsIgnoreCase(mode)) {
-            sbString.append(mode);
-            sbString.append(' ');
-        }
-
-        if (name != null && !name.isEmpty() && includeArgName) {
-            sbString.append(PgDiffUtils.getQuotedName(name));
-            sbString.append(' ');
-        }
-
-        sbString.append(dataType);
-
-        if (includeDefaultValue && defaultExpression != null
-                && !defaultExpression.isEmpty()) {
-            sbString.append(" = ");
-            sbString.append(defaultExpression);
-        }
-
-        return sbString.toString();
-    }
-
     @Override
     public boolean equals(Object obj) {
         boolean eq = false;
 
-        if(this == obj) {
+        if (this == obj) {
             eq = true;
-        } else if(obj instanceof Argument) {
+        } else if (obj instanceof Argument) {
             final Argument arg = (Argument) obj;
             eq = Objects.equals(dataType, arg.getDataType())
                     && Objects.equals(defaultExpression, arg.getDefaultExpression())
                     && Objects.equals(mode, arg.getMode())
                     && isReadOnly == arg.isReadOnly()
-                    && isVarying == arg.isVarying()
                     && Objects.equals(name, arg.getName());
         }
 
@@ -127,6 +91,5 @@ public class Argument implements Serializable, IHashable {
         hasher.put(mode);
         hasher.put(name);
         hasher.put(isReadOnly);
-        hasher.put(isVarying);
     }
 }

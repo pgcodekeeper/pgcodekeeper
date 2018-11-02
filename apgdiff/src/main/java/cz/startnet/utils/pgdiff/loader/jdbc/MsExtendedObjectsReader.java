@@ -48,7 +48,6 @@ public class MsExtendedObjectsReader extends JdbcReader {
             func = new MsProcedure(name, "");
             func.setBody(body);
             func.addOption("EXECUTE AS " + (executeAs == null ? "CALLER" : executeAs));
-            // TODO add to query proc.setForReplication(i);
         } else {
             func = new MsFunction(name, "");
 

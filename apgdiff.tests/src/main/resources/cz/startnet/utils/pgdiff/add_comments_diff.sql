@@ -14,6 +14,14 @@ COMMENT ON SEQUENCE public.test_id_seq IS 'test table sequence';
 
 COMMENT ON FUNCTION public.test_fnc(arg character varying) IS 'test function';
 
+COMMENT ON TEXT SEARCH PARSER public.test_parser IS 'test_parser';
+
+COMMENT ON TEXT SEARCH TEMPLATE public.test_template IS 'test_template';
+
+COMMENT ON TEXT SEARCH DICTIONARY public.test_dictionary IS 'test_dictionary';
+
+COMMENT ON TEXT SEARCH CONFIGURATION public.test_config IS 'test_config';
+
 COMMENT ON TABLE public.test IS 'test table';
 
 COMMENT ON COLUMN public.test.id IS 'id column';

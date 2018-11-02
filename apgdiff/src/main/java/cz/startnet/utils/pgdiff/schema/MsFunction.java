@@ -18,7 +18,6 @@ public class MsFunction extends AbstractFunction implements SourceStatement {
 
     private FuncTypes funcType = FuncTypes.SCALAR;
 
-
     public MsFunction(String name, String rawStatement) {
         super(name, rawStatement);
     }
@@ -87,10 +86,6 @@ public class MsFunction extends AbstractFunction implements SourceStatement {
         }
 
         alterPrivileges(newFunction, sb);
-        if (!Objects.equals(getComment(), newFunction.getComment())) {
-            sb.append("\n\n");
-            newFunction.appendCommentSql(sb);
-        }
 
         return sb.length() > startLength;
     }
