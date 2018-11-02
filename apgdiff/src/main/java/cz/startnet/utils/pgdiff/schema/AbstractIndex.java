@@ -6,8 +6,8 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -32,7 +32,7 @@ implements PgOptionContainer {
     private boolean clusterIndex;
     private final Set<String> columns = new HashSet<>();
 
-    protected final Map<String, String> options = new HashMap<>();
+    protected final Map<String, String> options = new LinkedHashMap<>();
 
     @Override
     public DbObjType getStatementType() {

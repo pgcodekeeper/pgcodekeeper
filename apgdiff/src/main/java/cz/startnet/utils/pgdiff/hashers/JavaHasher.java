@@ -63,12 +63,12 @@ public class JavaHasher implements Hasher {
 
     @Override
     public void put(Set<String> col) {
-        result = PRIME * result + unordered(col);
+        result = PRIME * result + col.hashCode();
     }
 
     @Override
     public void putOrdered(Collection<? extends IHashable> col) {
-        result = PRIME * result + col.hashCode();
+        result = PRIME * result + ordered(col);
     }
 
     @Override
@@ -84,6 +84,14 @@ public class JavaHasher implements Hasher {
         int h = 0;
         for (Object el : c) {
             h ^= el.hashCode();
+        }
+        return h;
+    }
+
+    private int ordered(Collection<?> c) {
+        int h = 1;
+        for (Object el : c) {
+            h = PRIME * h + el.hashCode();
         }
         return h;
     }

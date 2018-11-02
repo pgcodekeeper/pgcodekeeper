@@ -172,7 +172,7 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
         return ret;
     }
 
-    private void from(From_itemContext item) {
+    void from(From_itemContext item) {
         From_primaryContext primary;
 
         if (item.sub_item != null) {

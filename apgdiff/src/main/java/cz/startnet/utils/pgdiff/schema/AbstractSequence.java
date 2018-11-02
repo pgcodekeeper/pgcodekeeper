@@ -179,8 +179,8 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.putOrdered(grants);
-        hasher.putOrdered(revokes);
+        hasher.putUnordered(grants);
+        hasher.putUnordered(revokes);
         hasher.put(cache);
         hasher.put(cycle);
         hasher.put(increment);
@@ -209,12 +209,8 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
         sequenceDst.setCached(isCached());
         sequenceDst.setStartWith(getStartWith());
         sequenceDst.setComment(getComment());
-        for (PgPrivilege priv : revokes) {
-            sequenceDst.addPrivilege(priv);
-        }
-        for (PgPrivilege priv : grants) {
-            sequenceDst.addPrivilege(priv);
-        }
+        sequenceDst.grants.addAll(grants);
+        sequenceDst.revokes.addAll(revokes);
         sequenceDst.setOwner(getOwner());
         sequenceDst.setPresicion(getPresicion());
         sequenceDst.deps.addAll(deps);

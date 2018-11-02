@@ -1,11 +1,8 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
-import java.util.List;
-
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_viewContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
@@ -33,20 +30,20 @@ public class CreateMsView extends BatchContextProcessor {
 
     @Override
     protected ParserRuleContext getDelimiterCtx() {
-        return ctx.simple_name();
+        return ctx.qualified_name();
     }
 
     @Override
     public MsView getObject() {
-        List<IdContext> ids = ctx.simple_name().id();
-        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
+        IdContext schemaCtx = ctx.qualified_name().schema;
+        AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
         return getObject(schema);
     }
 
     public MsView getObject(AbstractSchema schema) {
-        IdContext name = QNameParser.getFirstNameCtx(ctx.simple_name().id());
+        String name = ctx.qualified_name().name.getText();
         ParserRuleContext batchCtx = ctx.getParent().getParent();
-        MsView view = new MsView(name.getText(), getFullCtxText(batchCtx));
+        MsView view = new MsView(name, getFullCtxText(batchCtx));
         view.setAnsiNulls(ansiNulls);
         view.setQuotedIdentified(quotedIdentifier);
         setSourceParts(view);

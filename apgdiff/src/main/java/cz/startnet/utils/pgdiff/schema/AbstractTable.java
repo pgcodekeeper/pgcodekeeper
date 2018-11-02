@@ -608,8 +608,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         hasher.putOrdered(inherits);
         hasher.put(options);
         hasher.put(hasOids);
-        hasher.putOrdered(grants);
-        hasher.putOrdered(revokes);
+        hasher.putUnordered(grants);
+        hasher.putUnordered(revokes);
         hasher.put(owner);
         hasher.put(comment);
     }
@@ -631,12 +631,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         tableDst.inherits.addAll(inherits);
         tableDst.options.putAll(options);
         tableDst.setHasOids(getHasOids());
-        for (PgPrivilege priv : revokes) {
-            tableDst.addPrivilege(priv);
-        }
-        for (PgPrivilege priv : grants) {
-            tableDst.addPrivilege(priv);
-        }
+        tableDst.grants.addAll(grants);
+        tableDst.revokes.addAll(revokes);
         tableDst.setOwner(getOwner());
         tableDst.setComment(getComment());
         tableDst.deps.addAll(deps);

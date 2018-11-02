@@ -9,12 +9,12 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.EdgeReversedGraph;
 import org.jgrapht.graph.SimpleDirectedGraph;
 
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class DepcyGraph {
@@ -76,7 +76,7 @@ public class DepcyGraph {
     private void processDeps(PgStatement st) {
         for (GenericColumn dep : st.getDeps()) {
             PgStatement depSt = dep.getStatement(db);
-            if (depSt != null) {
+            if (depSt != null && !st.equals(depSt)) {
                 graph.addEdge(st, depSt);
             }
         }
