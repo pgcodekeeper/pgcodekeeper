@@ -20,7 +20,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public class FunctionsReader extends JdbcReader {
 
     public FunctionsReader(JdbcLoaderBase loader) {
-        super(JdbcQueries.QUERY_FUNCTIONS_PER_SCHEMA, loader);
+        super(JdbcQueries.QUERY_FUNCTIONS, loader);
     }
 
     @Override

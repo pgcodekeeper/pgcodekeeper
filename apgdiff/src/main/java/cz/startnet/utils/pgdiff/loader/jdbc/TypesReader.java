@@ -24,7 +24,7 @@ public class TypesReader extends JdbcReader {
     static final String ADD_CONSTRAINT = "ALTER DOMAIN noname ADD CONSTRAINT noname ";
 
     public TypesReader(JdbcLoaderBase loader) {
-        super(JdbcQueries.QUERY_TYPES_PER_SCHEMA, loader);
+        super(JdbcQueries.QUERY_TYPES, loader);
     }
 
     @Override

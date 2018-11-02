@@ -16,7 +16,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public class RulesReader extends JdbcReader {
 
     public RulesReader(JdbcLoaderBase loader) {
-        super(JdbcQueries.QUERY_RULES_PER_SCHEMA, loader);
+        super(JdbcQueries.QUERY_RULES, loader);
     }
 
     @Override

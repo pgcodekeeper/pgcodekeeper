@@ -18,7 +18,7 @@ public class ConstraintsReader extends JdbcReader {
     static final String ADD_CONSTRAINT = "ALTER TABLE noname ADD CONSTRAINT noname ";
 
     public ConstraintsReader(JdbcLoaderBase loader) {
-        super(JdbcQueries.QUERY_CONSTRAINTS_PER_SCHEMA, loader);
+        super(JdbcQueries.QUERY_CONSTRAINTS, loader);
     }
 
     @Override

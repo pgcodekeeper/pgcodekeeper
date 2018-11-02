@@ -30,7 +30,7 @@ public class TriggersReader extends JdbcReader {
     // SONAR-ON
 
     public TriggersReader(JdbcLoaderBase loader) {
-        super(JdbcQueries.QUERY_TRIGGERS_PER_SCHEMA, loader);
+        super(JdbcQueries.QUERY_TRIGGERS, loader);
     }
 
     @Override

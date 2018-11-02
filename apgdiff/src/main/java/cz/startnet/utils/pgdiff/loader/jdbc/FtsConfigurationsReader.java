@@ -17,7 +17,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public class FtsConfigurationsReader extends JdbcReader {
 
     public FtsConfigurationsReader(JdbcLoaderBase loader) {
-        super(JdbcQueries.QUERY_FTS_CONFIGURATIONS_PER_SCHEMA, loader);
+        super(JdbcQueries.QUERY_FTS_CONFIGURATIONS, loader);
     }
 
     @Override
