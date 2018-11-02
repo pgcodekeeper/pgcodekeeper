@@ -69,6 +69,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     BY: [bB] [yY];
     
     CACHE: [cC] [aA] [cC] [hH] [eE];
+    CALL: [cC] [aA] [lL] [lL];
     CALLED: [cC] [aA] [lL] [lL] [eE] [dD];
     CASCADE: [cC] [aA] [sS] [cC] [aA] [dD] [eE];
     CASCADED: [cC] [aA] [sS] [cC] [aA] [dD] [eE] [dD];
@@ -146,7 +147,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     GENERATED: [gG] [eE] [nN] [eE] [rR] [aA] [tT] [eE] [dD];
     GLOBAL: [gG] [lL] [oO] [bB] [aA] [lL];
     GRANTED: [gG] [rR] [aA] [nN] [tT] [eE] [dD];
-    
+    GROUPS: [gG] [rR] [oO] [uU] [pP] [sS];
     HANDLER: [hH] [aA] [nN] [dD] [lL] [eE] [rR];
     HEADER: [hH] [eE] [aA] [dD] [eE] [rR];
     HOLD: [hH] [oO] [lL] [dD];
@@ -158,6 +159,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     IMMUTABLE: [iI] [mM] [mM] [uU] [tT] [aA] [bB] [lL] [eE];
     IMPLICIT: [iI] [mM] [pP] [lL] [iI] [cC] [iI] [tT];
     IMPORT: [iI] [mM] [pP] [oO] [rR] [tT];
+    INCLUDE: [iI] [nN] [cC] [lL] [uU] [dD] [eE];
     INCLUDING: [iI] [nN] [cC] [lL] [uU] [dD] [iI] [nN] [gG];
     INCREMENT: [iI] [nN] [cC] [rR] [eE] [mM] [eE] [nN] [tT];
     INDEX: [iI] [nN] [dD] [eE] [xX];
@@ -218,6 +220,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     OPTION: [oO] [pP] [tT] [iI] [oO] [nN];
     OPTIONS: [oO] [pP] [tT] [iI] [oO] [nN] [sS];
     ORDINALITY: [oO] [rR] [dD] [iI] [nN] [aA] [lL] [iI] [tT] [yY];
+    OTHERS: [oO] [tT] [hH] [eE] [rR] [sS];
     OVER: [oO] [vV] [eE] [rR];
     OVERRIDING: [oO] [vV] [eE] [rR] [rR] [iI] [dD] [iI] [nN] [gG];
     OWNED: [oO] [wW] [nN] [eE] [dD];
@@ -239,6 +242,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     PRIVILEGES: [pP] [rR] [iI] [vV] [iI] [lL] [eE] [gG] [eE] [sS];
     PROCEDURAL: [pP] [rR] [oO] [cC] [eE] [dD] [uU] [rR] [aA] [lL];
     PROCEDURE: [pP] [rR] [oO] [cC] [eE] [dD] [uU] [rR] [eE];
+    PROCEDURES: [pP] [rR] [oO] [cC] [eE] [dD] [uU] [rR] [eE] [sS];
     PROGRAM: [pP] [rR] [oO] [gG] [rR] [aA] [mM];
     PUBLICATION: [pP] [uU] [bB] [lL] [iI] [cC] [aA] [tT] [iI] [oO] [nN];
     QUOTE: [qQ] [uU] [oO] [tT] [eE];
@@ -261,16 +265,16 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     RESET: [rR] [eE] [sS] [eE] [tT];
     RESTART: [rR] [eE] [sS] [tT] [aA] [rR] [tT];
     RESTRICT: [rR] [eE] [sS] [tT] [rR] [iI] [cC] [tT];
-    RESTRICTED: [rR] [eE] [sS] [tT] [rR] [iI] [cC] [tT] [eE] [dD];
     RETURNS: [rR] [eE] [tT] [uU] [rR] [nN] [sS];
     REVOKE: [rR] [eE] [vV] [oO] [kK] [eE];
     ROLE: [rR] [oO] [lL] [eE];
     ROLLBACK: [rR] [oO] [lL] [lL] [bB] [aA] [cC] [kK];
     ROLLUP: [rR] [oO] [lL] [lL] [uU] [pP];
+    ROUTINE: [rR] [oO] [uU] [tT] [iI] [nN] [eE];
+    ROUTINES: [rR] [oO] [uU] [tT] [iI] [nN] [eE] [sS];
     ROWS: [rR] [oO] [wW] [sS];
     RULE: [rR] [uU] [lL] [eE];
     
-    SAFE: [sS] [aA] [fF] [eE];
     SAVEPOINT: [sS] [aA] [vV] [eE] [pP] [oO] [iI] [nN] [tT];
     SCHEMA: [sS] [cC] [hH] [eE] [mM] [aA];
     SCHEMAS: [sS] [cC] [hH] [eE] [mM] [aA] [sS];
@@ -312,6 +316,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     TEMPLATE: [tT] [eE] [mM] [pP] [lL] [aA] [tT] [eE];
     TEMPORARY: [tT] [eE] [mM] [pP] [oO] [rR] [aA] [rR] [yY];
     TEXT: [tT] [eE] [xX] [tT];
+    TIES: [tT] [iI] [eE] [sS];
     TRANSACTION: [tT] [rR] [aA] [nN] [sS] [aA] [cC] [tT] [iI] [oO] [nN];
     TRANSFORM: [tT] [rR] [aA] [nN] [sS] [fF] [oO] [rR] [mM];
     TRIGGER: [tT] [rR] [iI] [gG] [gG] [eE] [rR];
@@ -326,7 +331,6 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     UNKNOWN: [uU] [nN] [kK] [nN] [oO] [wW] [nN];
     UNLISTEN: [uU] [nN] [lL] [iI] [sS] [tT] [eE] [nN];
     UNLOGGED: [uU] [nN] [lL] [oO] [gG] [gG] [eE] [dD];
-    UNSAFE: [uU] [nN] [sS] [aA] [fF] [eE];
     UNTIL: [uU] [nN] [tT] [iI] [lL];
     UPDATE: [uU] [pP] [dD] [aA] [tT] [eE];
     
@@ -576,7 +580,6 @@ private final Deque<String> _tags = new ArrayDeque<String>();
      * Some sql words/data types are not keywords but we need a token to be able to parse them.
      */
     
-    INCLUDE: [iI] [nN] [cC] [lL] [uU] [dD] [eE];
     PLAIN: [pP] [lL] [aA] [iI]  [nN];
     EXTENDED: [eE] [xX] [tT] [eE] [nN] [dD] [eE] [dD];
     MAIN: [mM] [aA] [iI]  [nN];
@@ -636,6 +639,9 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     NEGATOR: [nN] [eE] [gG] [aA] [tT] [oO] [rR];
     HASHES: [hH] [aA] [sS] [hH] [eE] [sS];
     MERGES: [mM] [eE] [rR] [gG] [eE] [sS];
+    SAFE: [sS] [aA] [fF] [eE];
+    RESTRICTED: [rR] [eE] [sS] [tT] [rR] [iI] [cC] [tT] [eE] [dD];
+    UNSAFE: [uU] [nN] [sS] [aA] [fF] [eE];
 
 fragment UNDERLINE : '_';
 

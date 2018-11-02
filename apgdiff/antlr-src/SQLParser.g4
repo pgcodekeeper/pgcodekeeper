@@ -1486,6 +1486,7 @@ tokens_nonreserved
   | BEGIN
   | BY
   | CACHE
+  | CALL
   | CALLED
   | CASCADE
   | CASCADED
@@ -1560,6 +1561,7 @@ tokens_nonreserved
   | GENERATED
   | GLOBAL
   | GRANTED
+  | GROUPS
   | HANDLER
   | HEADER
   | HOLD
@@ -1570,6 +1572,7 @@ tokens_nonreserved
   | IMMUTABLE
   | IMPLICIT
   | IMPORT
+  | INCLUDE
   | INCLUDING
   | INCREMENT
   | INDEX
@@ -1625,6 +1628,7 @@ tokens_nonreserved
   | OPTION
   | OPTIONS
   | ORDINALITY
+  | OTHERS
   | OVER
   | OVERRIDING
   | OWNED
@@ -1645,6 +1649,7 @@ tokens_nonreserved
   | PRIVILEGES
   | PROCEDURAL
   | PROCEDURE
+  | PROCEDURES
   | PROGRAM
   | PUBLICATION
   | QUOTE
@@ -1666,15 +1671,15 @@ tokens_nonreserved
   | RESET
   | RESTART
   | RESTRICT
-  | RESTRICTED
   | RETURNS
   | REVOKE
   | ROLE
   | ROLLBACK
   | ROLLUP
+  | ROUTINE
+  | ROUTINES
   | ROWS
   | RULE
-  | SAFE
   | SAVEPOINT
   | SCHEMA
   | SCHEMAS
@@ -1714,6 +1719,7 @@ tokens_nonreserved
   | TEMPLATE
   | TEMPORARY
   | TEXT
+  | TIES
   | TRANSACTION
   | TRANSFORM
   | TRIGGER
@@ -1727,7 +1733,6 @@ tokens_nonreserved
   | UNKNOWN
   | UNLISTEN
   | UNLOGGED
-  | UNSAFE
   | UNTIL
   | UPDATE
   | VACUUM
@@ -1922,8 +1927,7 @@ tokens_reserved
   ;
 
 tokens_nonkeyword
-  : INCLUDE
-  | PLAIN
+  : PLAIN
   | EXTENDED
   | MAIN
   | SUBTYPE
@@ -1981,6 +1985,9 @@ tokens_nonkeyword
   | NEGATOR
   | HASHES
   | MERGES
+  | SAFE
+  | RESTRICTED
+  | UNSAFE
   ;
 
 /*
