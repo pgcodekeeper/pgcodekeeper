@@ -32,3 +32,4 @@ Import-Package: org.jgrapht,
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
 Bundle-Vendor: %Bundle-Vendor
+Automatic-Module-Name: ru.taximaxim.codekeeper.ui
