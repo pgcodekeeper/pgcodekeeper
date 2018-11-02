@@ -45,10 +45,6 @@ to update all relevant poms and metadatas
         <module>../product</module>
     </modules>
 
-    <prerequisites>
-        <maven>3.0</maven>
-    </prerequisites>
-
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -159,6 +155,17 @@ to update all relevant poms and metadatas
                             <arch>x86_64</arch>
                         </environment>
                     </environments>
+                    <dependency-resolution>
+                        <!-- workaround for split package import
+                             allows apgdiff to not require any bundles -->
+                        <extraRequirements>
+                            <requirement>
+                                <type>eclipse-plugin</type>
+                                <id>org.eclipse.core.runtime</id>
+                                <versionRange>[3.4.0,4.0.0)</versionRange>
+                            </requirement>
+                        </extraRequirements>
+                    </dependency-resolution>
                 </configuration>
             </plugin>
             
