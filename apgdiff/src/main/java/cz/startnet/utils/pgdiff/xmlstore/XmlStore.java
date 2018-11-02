@@ -1,11 +1,11 @@
 package cz.startnet.utils.pgdiff.xmlstore;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -46,12 +46,12 @@ public abstract class XmlStore<T> {
         return newElement;
     }
 
-    protected abstract Path getXmlFile() throws IOException;
+    protected abstract Path getXmlFile();
 
     public List<T> readObjects() throws IOException {
         try (Reader xmlReader = Files.newBufferedReader(getXmlFile(), StandardCharsets.UTF_8)) {
             return getObjects(readXml(xmlReader));
-        } catch (FileNotFoundException ex) {
+        } catch (NoSuchFileException ex) {
             return new ArrayList<>();
         } catch (IOException | SAXException ex) {
             throw new IOException(MessageFormat.format(

@@ -73,7 +73,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
     }
 
     @Override
-    protected Path getXmlFile() throws IOException {
+    protected Path getXmlFile() {
         return Paths.get(Platform.getStateLocation(Activator.getContext().getBundle())
                 .append(fileName).toString());
     }
