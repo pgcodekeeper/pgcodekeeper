@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,7 +31,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.core.runtime.URIUtil;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
@@ -50,6 +48,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
+import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -101,10 +100,9 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         return p;
     }
 
-    private static Path getPathToObject(String name) throws URISyntaxException {
-        return Paths.get(URIUtil.toURI(Platform.getInstanceLocation().getURL()))
-                .resolve(".metadata").resolve(".plugins").resolve(PLUGIN_ID.THIS) //$NON-NLS-1$ //$NON-NLS-2$
-                .resolve("projects").resolve(name + ".ser"); //$NON-NLS-1$ //$NON-NLS-2$
+    private static Path getPathToObject(String name) {
+        return Paths.get(Platform.getStateLocation(Activator.getContext().getBundle())
+                .append("projects").append(name + ".ser").toString()); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     public void serialize(String name) {
@@ -112,7 +110,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
             Path path = getPathToObject(name);
             Files.createDirectories(path.getParent());
             ApgdiffUtils.serialize(path, this);
-        } catch (URISyntaxException | IOException e) {
+        } catch (IOException e) {
             Log.log(Log.LOG_DEBUG, "Error while serialize parser!", e); //$NON-NLS-1$
         }
     }
@@ -132,7 +130,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
                     return true;
                 }
             }
-        } catch (ClassNotFoundException | IOException | ClassCastException | URISyntaxException e) {
+        } catch (ClassNotFoundException | IOException | ClassCastException e) {
             Log.log(Log.LOG_DEBUG, "Error while deserialize parser!", e); //$NON-NLS-1$
         }
         return false;
@@ -142,7 +140,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         try {
             Path path = getPathToObject(name);
             Files.deleteIfExists(path);
-        } catch (URISyntaxException | IOException e) {
+        } catch (IOException e) {
             Log.log(Log.LOG_DEBUG, "Error while clean parser!", e); //$NON-NLS-1$
         }
     }

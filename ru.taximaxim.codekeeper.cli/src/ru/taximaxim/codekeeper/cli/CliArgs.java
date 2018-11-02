@@ -44,8 +44,10 @@ public class CliArgs extends PgDiffArguments {
         this.allowedDangers = new ArrayList<>();
         this.allowedTypes = new ArrayList<>();
         this.ignoreLists = new ArrayList<>();
+        this.sourceLibXmls = new ArrayList<>();
         this.sourceLibs = new ArrayList<>();
         this.sourceLibsWithoutPriv = new ArrayList<>();
+        this.targetLibXmls = new ArrayList<>();
         this.targetLibs = new ArrayList<>();
         this.targetLibsWithoutPriv = new ArrayList<>();
         this.inCharsetName = ApgdiffConsts.UTF_8;
@@ -148,15 +150,25 @@ public class CliArgs extends PgDiffArguments {
                     + "\nspecify multiple times to use several lists")
     private List<String> ignoreLists;
 
+    @Option(name="--src-lib-xml", metaVar="<path>", forbids="--parse",
+            usage="add xml with library dependencies to source"
+                    + "\nspecify multiple times to use several library xml's")
+    private List<String> sourceLibXmls;
+
     @Option(name="--src-lib", metaVar="<path or JDBC>", forbids="--parse",
             usage="add library dependency to source"
                     + "\nspecify multiple times to use several libraries")
     private List<String> sourceLibs;
 
     @Option(name="--src-lib-no-priv", metaVar="<path or JDBC>", forbids="--parse",
-            usage="add library dependency to source without privileges, --src-lib option has higher priority"
+            usage="add library dependency to source without privileges"
                     + "\nspecify multiple times to use several libraries")
     private List<String> sourceLibsWithoutPriv;
+
+    @Option(name="--tgt-lib-xml", metaVar="<path>", forbids="--parse",
+            usage="add xml with library dependencies to target"
+                    + "\nspecify multiple times to use several library xml's")
+    private List<String> targetLibXmls;
 
     @Option(name="--tgt-lib", metaVar="<path or JDBC>", forbids="--parse",
             usage="add library dependency to destination"
@@ -164,7 +176,7 @@ public class CliArgs extends PgDiffArguments {
     private List<String> targetLibs;
 
     @Option(name="--tgt-lib-no-priv", metaVar="<path or JDBC>", forbids="--parse",
-            usage="add library dependency to destination without privileges, --tgt-lib option has higher priority"
+            usage="add library dependency to destination without privileges"
                     + "\nspecify multiple times to use several libraries")
     private List<String> targetLibsWithoutPriv;
 
@@ -258,6 +270,11 @@ public class CliArgs extends PgDiffArguments {
     }
 
     @Override
+    public Collection<String> getSourceLibXmls() {
+        return Collections.unmodifiableCollection(sourceLibXmls);
+    }
+
+    @Override
     public Collection<String> getSourceLibs() {
         return Collections.unmodifiableCollection(sourceLibs);
     }
@@ -265,6 +282,11 @@ public class CliArgs extends PgDiffArguments {
     @Override
     public Collection<String> getSourceLibsWithoutPriv() {
         return Collections.unmodifiableCollection(sourceLibsWithoutPriv);
+    }
+
+    @Override
+    public Collection<String> getTargetLibXmls() {
+        return Collections.unmodifiableCollection(targetLibXmls);
     }
 
     @Override

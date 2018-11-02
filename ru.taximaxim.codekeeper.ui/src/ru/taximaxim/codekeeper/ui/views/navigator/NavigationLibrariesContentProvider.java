@@ -1,14 +1,15 @@
 package ru.taximaxim.codekeeper.ui.views.navigator;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 
+import cz.startnet.utils.pgdiff.libraries.PgLibrary;
+import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.apgdiff.Log;
-import ru.taximaxim.codekeeper.ui.properties.PgLibrary;
-import ru.taximaxim.codekeeper.ui.xmlstore.DependenciesXmlStore;
 
 public class NavigationLibrariesContentProvider implements ITreeContentProvider {
 
@@ -21,7 +22,9 @@ public class NavigationLibrariesContentProvider implements ITreeContentProvider 
     public Object[] getChildren(Object parent) {
         if (parent instanceof IProject) {
             try {
-                List<PgLibrary> libs = new DependenciesXmlStore((IProject)parent).readObjects();
+                IProject proj = ((IProject)parent);
+                List<PgLibrary> libs = new DependenciesXmlStore(Paths.get(proj.getLocation()
+                        .append(DependenciesXmlStore.FILE_NAME).toString())).readObjects();
                 return new Object[] {LibraryContainer.create(libs)};
             } catch (IOException e) {
                 Log.log(e);

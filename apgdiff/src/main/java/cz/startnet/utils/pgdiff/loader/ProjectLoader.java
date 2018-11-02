@@ -2,12 +2,9 @@ package cz.startnet.utils.pgdiff.loader;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -157,67 +154,6 @@ public class ProjectLoader {
                         errors.addAll(errList);
                     }
                 }
-            }
-        }
-    }
-
-    public static void loadLibraries(PgDatabase db, PgDiffArguments arguments, boolean isIgnorePriv,
-            Collection<String> paths) throws InterruptedException, IOException, URISyntaxException {
-        for (String path : paths) {
-            loadLibrary(db, arguments, isIgnorePriv, path);
-        }
-    }
-
-    protected static void loadLibrary(PgDatabase db, PgDiffArguments arguments, boolean isIgnorePriv,
-            String path) throws InterruptedException, IOException, URISyntaxException {
-        db.addLib(getLibrary(path, arguments, isIgnorePriv));
-    }
-
-    private static PgDatabase getLibrary(String path, PgDiffArguments arguments,
-            boolean isIgnorePriv) throws InterruptedException, IOException, URISyntaxException {
-
-        PgDiffArguments args = arguments.clone();
-        args.setIgnorePrivileges(isIgnorePriv);
-
-        if (path.startsWith("jdbc:")) {
-            String timezone = args.getTimeZone() == null ? ApgdiffConsts.UTC : args.getTimeZone();
-            PgDatabase db = new JdbcLoader(JdbcConnector.fromUrl(path, timezone), args).getDbFromJdbc();
-            db.getDescendants().forEach(st -> st.setLocation(path));
-            return db;
-        }
-
-        Path p = Paths.get(path);
-
-        if (Files.isDirectory(p)) {
-            if (Files.exists(p.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
-                PgDatabase db = new PgDatabase();
-                db.setArguments(args);
-                new ProjectLoader(path, args).loadDatabaseSchemaFromDirTree(db);
-                return db;
-            } else {
-                PgDatabase db = new PgDatabase();
-                db.setArguments(args);
-                readStatementsFromDirectory(p, db, args);
-                return db;
-            }
-        }
-
-        try (PgDumpLoader loader = new PgDumpLoader(new File(path), args)) {
-            return loader.load();
-        }
-    }
-
-    private static void readStatementsFromDirectory(final Path f, PgDatabase db, PgDiffArguments args)
-            throws IOException, InterruptedException, URISyntaxException {
-        if (Files.isDirectory(f)) {
-            try (Stream<Path> stream = Files.list(f)) {
-                for (Path sub : (Iterable<Path>) stream::iterator) {
-                    readStatementsFromDirectory(sub, db, args);
-                }
-            }
-        } else {
-            try (PgDumpLoader loader = new PgDumpLoader(f.toFile(), args)) {
-                db.addLib(loader.load());
             }
         }
     }

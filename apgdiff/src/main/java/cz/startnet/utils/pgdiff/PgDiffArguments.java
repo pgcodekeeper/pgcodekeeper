@@ -36,7 +36,9 @@ public class PgDiffArguments implements Cloneable {
     private boolean stopNotAllowed;
     private final List<String> ignoreLists = new ArrayList<>();
     private final List<String> sourceLibs = new ArrayList<>();
+    private final List<String> sourceLibXmls = new ArrayList<>();
     private final List<String> sourceLibsWithoutPriv = new ArrayList<>();
+    private final List<String> targetLibXmls = new ArrayList<>();
     private final List<String> targetLibs = new ArrayList<>();
     private final List<String> targetLibsWithoutPriv = new ArrayList<>();
     private boolean libSafeMode;
@@ -122,12 +124,20 @@ public class PgDiffArguments implements Cloneable {
         return Collections.unmodifiableCollection(ignoreLists);
     }
 
+    public Collection<String> getSourceLibXmls() {
+        return Collections.unmodifiableCollection(sourceLibXmls);
+    }
+
     public Collection<String> getSourceLibs() {
         return Collections.unmodifiableCollection(sourceLibs);
     }
 
     public Collection<String> getSourceLibsWithoutPriv() {
         return Collections.unmodifiableCollection(sourceLibsWithoutPriv);
+    }
+
+    public Collection<String> getTargetLibXmls() {
+        return Collections.unmodifiableCollection(targetLibXmls);
     }
 
     public Collection<String> getTargetLibs() {

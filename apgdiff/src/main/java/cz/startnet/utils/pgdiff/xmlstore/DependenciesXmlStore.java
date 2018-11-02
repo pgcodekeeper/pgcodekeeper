@@ -1,15 +1,14 @@
-package ru.taximaxim.codekeeper.ui.xmlstore;
+package cz.startnet.utils.pgdiff.xmlstore;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 
-import org.eclipse.core.resources.IProject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
-import ru.taximaxim.codekeeper.ui.properties.PgLibrary;
+import cz.startnet.utils.pgdiff.libraries.PgLibrary;
 
 public class DependenciesXmlStore extends XmlStore<PgLibrary> {
 
@@ -20,20 +19,16 @@ public class DependenciesXmlStore extends XmlStore<PgLibrary> {
     private static final String IGNORE_PRIV = "ignorePriv"; //$NON-NLS-1$
     private static final String ROOT_TAG = "dependencies"; //$NON-NLS-1$
 
-    private final File file;
+    private final Path path;
 
-    public DependenciesXmlStore(File file) {
-        super(file.getName(), ROOT_TAG);
-        this.file = file;
-    }
-
-    public DependenciesXmlStore(IProject project) {
-        this(new File(project.getLocation().toFile(), FILE_NAME));
+    public DependenciesXmlStore(Path path) {
+        super(path.getFileName().toString(), ROOT_TAG);
+        this.path = path;
     }
 
     @Override
-    protected File getXmlFile() {
-        return file;
+    protected Path getXmlFile() {
+        return path;
     }
 
     @Override

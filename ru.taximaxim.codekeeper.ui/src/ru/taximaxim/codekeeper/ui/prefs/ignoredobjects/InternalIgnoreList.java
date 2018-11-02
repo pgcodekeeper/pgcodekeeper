@@ -2,7 +2,6 @@ package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -10,12 +9,11 @@ import java.text.MessageFormat;
 
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.URIUtil;
 
 import ru.taximaxim.codekeeper.apgdiff.ignoreparser.IgnoreParser;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
+import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
-import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -81,19 +79,12 @@ public final class InternalIgnoreList {
 
     /**
      * Returns path to %workspace%/.metadata/.plugins/%this_plugin%/.pgcodekeeperignore.<br>
-     * Handles {@link URISyntaxException} using {@link ExceptionNotifier}.
      *
-     * @return path or null in case {@link URISyntaxException} has been handled.
+     * @return path
      */
     static Path getInternalIgnoreFile() {
-        try {
-            return Paths.get(URIUtil.toURI(Platform.getInstanceLocation().getURL()))
-                    .resolve(".metadata").resolve(".plugins").resolve(PLUGIN_ID.THIS) //$NON-NLS-1$ //$NON-NLS-2$
-                    .resolve(FILE.IGNORED_OBJECTS);
-        } catch (URISyntaxException ex) {
-            ExceptionNotifier.notifyDefault(Messages.InternalIgnoreList_error_workspace_path, ex);
-            return null;
-        }
+        return Paths.get(Platform.getStateLocation(Activator.getContext().getBundle())
+                .append(FILE.IGNORED_OBJECTS).toString());
     }
 
     private InternalIgnoreList() {

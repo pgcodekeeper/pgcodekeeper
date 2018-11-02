@@ -1,6 +1,9 @@
 package ru.taximaxim.codekeeper.ui.properties;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +38,8 @@ import org.eclipse.ui.dialogs.PropertyPage;
 import org.eclipse.ui.navigator.CommonNavigator;
 import org.osgi.service.prefs.BackingStoreException;
 
+import cz.startnet.utils.pgdiff.libraries.PgLibrary;
+import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.CommonEditingSupport;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -44,7 +49,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.PrefListEditor;
-import ru.taximaxim.codekeeper.ui.xmlstore.DependenciesXmlStore;
 
 public class DependencyProperties extends PropertyPage {
 
@@ -60,7 +64,8 @@ public class DependencyProperties extends PropertyPage {
     public void setElement(IAdaptable element) {
         super.setElement(element);
         proj = element.getAdapter(IProject.class);
-        store = new DependenciesXmlStore(proj);
+        store = new DependenciesXmlStore(Paths.get(proj.getLocation()
+                .append(DependenciesXmlStore.FILE_NAME).toString()));
         prefs = new ProjectScope(proj).getNode(UIConsts.PLUGIN_ID.THIS);
     }
 
@@ -144,7 +149,7 @@ public class DependencyProperties extends PropertyPage {
 
             addColumns(viewer);
 
-            GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 6);
+            GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 7);
             gd.widthHint = PREF_PAGE.WIDTH_HINT_PX;
             viewer.getTable().setLayoutData(gd);
             viewer.getTable().setLinesVisible(true);
@@ -194,7 +199,7 @@ public class DependencyProperties extends PropertyPage {
             createButton(parent, ADD_ID, Messages.DependencyProperties_add_directory,
                     Activator.getEclipseImage(ISharedImages.IMG_OBJ_FOLDER));
 
-            Button btnAddDump = createButton(parent, CLIENT_ID, Messages.DependencyProperties_add_dump,
+            Button btnAddDump = createButton(parent, CLIENT_ID, Messages.DependencyProperties_add_file,
                     Activator.getEclipseImage(ISharedImages.IMG_OBJ_FILE));
             btnAddDump.addSelectionListener(new SelectionAdapter() {
 
@@ -202,9 +207,10 @@ public class DependencyProperties extends PropertyPage {
                 public void widgetSelected(SelectionEvent e) {
                     FileDialog dialog = new FileDialog(getShell());
                     dialog.setText(Messages.choose_dump_file_with_changes);
-                    dialog.setFilterExtensions(new String[] {"*.sql", "*"}); //$NON-NLS-1$ //$NON-NLS-2$
+                    dialog.setFilterExtensions(new String[] {"*.sql", "*.zip", "*"}); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                     dialog.setFilterNames(new String[] {
                             Messages.DiffPresentationPane_sql_file_filter,
+                            Messages.DiffPresentationPane_zip_file_filter,
                             Messages.DiffPresentationPane_any_file_filter});
                     dialog.setFilterPath(defaultPath);
                     String value = dialog.open();
@@ -223,7 +229,27 @@ public class DependencyProperties extends PropertyPage {
                 public void widgetSelected(SelectionEvent e) {
                     InputDialog dialog = new InputDialog(getShell(),
                             Messages.DependencyProperties_add_database,
-                            Messages.DependencyProperties_enter_connection_string, "", null); //$NON-NLS-1$
+                            Messages.DependencyProperties_enter_connection_string, "jdbc:",  //$NON-NLS-1$
+                            newText -> newText.startsWith("jdbc:") ?
+                                    null : Messages.DependencyProperties_connection_start);
+
+                    if (dialog.open() == Window.OK) {
+                        getList().add(new PgLibrary(dialog.getValue()));
+                        getViewer().refresh();
+                    }
+                }
+            });
+
+            Button btnAddURI = createButton(parent, CLIENT_ID,
+                    Messages.DependencyProperties_add_uri, FILE.ICONCLOUD);
+            btnAddURI.addSelectionListener(new SelectionAdapter() {
+
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    InputDialog dialog = new InputDialog(getShell(),
+                            Messages.DependencyProperties_add_uri,
+                            Messages.DependencyProperties_enter_uri, "",   //$NON-NLS-1$
+                            DependencyProperties.this::validateUrl);
 
                     if (dialog.open() == Window.OK) {
                         getList().add(new PgLibrary(dialog.getValue()));
@@ -235,6 +261,17 @@ public class DependencyProperties extends PropertyPage {
             createButton(parent, DELETE_ID, Messages.delete, Activator.getEclipseImage(ISharedImages.IMG_ETOOL_DELETE));
             createButton(parent, UP_ID, null, FILE.ICONUP);
             createButton(parent, DOWN_ID, null, FILE.ICONDOWN);
+        }
+    }
+
+    private String validateUrl(String newText) {
+        try {
+            if (new URI(newText).getScheme() == null) {
+                return Messages.DependencyProperties_empty_scheme;
+            }
+            return null;
+        } catch (URISyntaxException ex) {
+            return ex.getLocalizedMessage();
         }
     }
 

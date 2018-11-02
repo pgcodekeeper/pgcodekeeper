@@ -1,11 +1,17 @@
 package ru.taximaxim.codekeeper.ui.xmlstore;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
+import org.eclipse.core.runtime.Platform;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
+import cz.startnet.utils.pgdiff.xmlstore.XmlStore;
+import ru.taximaxim.codekeeper.ui.Activator;
 
 public class ListXmlStore extends XmlStore<String> {
 
@@ -34,6 +40,12 @@ public class ListXmlStore extends XmlStore<String> {
 
             writeObjects(historyEntries);
         }
+    }
+
+    @Override
+    protected Path getXmlFile() {
+        return Paths.get(Platform.getStateLocation(Activator.getContext().getBundle())
+                .append(fileName).toString());
     }
 
     @Override

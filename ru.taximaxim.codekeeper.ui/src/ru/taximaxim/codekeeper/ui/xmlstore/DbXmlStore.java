@@ -1,10 +1,11 @@
 package ru.taximaxim.codekeeper.ui.xmlstore;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -20,6 +22,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import cz.startnet.utils.pgdiff.xmlstore.XmlStore;
+import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -68,12 +72,16 @@ public class DbXmlStore extends XmlStore<DbInfo> {
         super(FILE_NAME, Tags.DB_STORE.toString());
     }
 
+    @Override
+    protected Path getXmlFile() {
+        return Paths.get(Platform.getStateLocation(Activator.getContext().getBundle())
+                .append(fileName).toString());
+    }
 
     // TODO suppress this override when legacy preference support is removed
     @Override
     public List<DbInfo> readObjects() throws IOException {
-        try (Reader xmlReader = new InputStreamReader(new FileInputStream(
-                getXmlFile()), StandardCharsets.UTF_8)) {
+        try (Reader xmlReader = Files.newBufferedReader(getXmlFile(), StandardCharsets.UTF_8)) {
             return getObjects(readXml(xmlReader));
         } catch (IOException | SAXException ex) {
             throw new IOException(MessageFormat.format(

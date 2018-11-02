@@ -1,6 +1,8 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -85,9 +87,11 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.ISharedImages;
 
+import cz.startnet.utils.pgdiff.libraries.PgLibrary;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -111,8 +115,6 @@ import ru.taximaxim.codekeeper.ui.differ.filters.SchemaFilter;
 import ru.taximaxim.codekeeper.ui.differ.filters.UserFilter;
 import ru.taximaxim.codekeeper.ui.fileutils.GitUserReader;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.properties.PgLibrary;
-import ru.taximaxim.codekeeper.ui.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.ui.xmlstore.ListXmlStore;
 
 /**
@@ -826,7 +828,7 @@ public class DiffTableViewer extends Composite {
 
         List<PgLibrary> libs;
         try {
-            libs = new DependenciesXmlStore(p.toFile()).readObjects();
+            libs = new DependenciesXmlStore(p).readObjects();
         } catch (IOException e) {
             Log.log(e);
             return;
@@ -856,7 +858,16 @@ public class DiffTableViewer extends Composite {
                         type = Messages.DiffTableViewer_directory;
                         loc = lib.relativize(location).toString();
                     } else {
-                        type = Messages.DiffTableViewer_dump;
+                        type = Messages.DiffTableViewer_file;
+
+                        try {
+                            if (new URI(loc).getScheme() != null) {
+                                type = Messages.DiffTableViewer_uri;
+                            }
+                        } catch (URISyntaxException e) {
+                            // do nothing, it is file
+                        }
+
                         loc = null;
                     }
                 }

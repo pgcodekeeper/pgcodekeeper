@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -20,6 +21,7 @@ import cz.startnet.utils.pgdiff.loader.FullAnalyze;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcLoader;
 import cz.startnet.utils.pgdiff.loader.JdbcMsLoader;
+import cz.startnet.utils.pgdiff.loader.LibraryLoader;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.loader.ProjectLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.LibraryObjectDuplicationException;
@@ -27,6 +29,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgOverride;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ignoreparser.IgnoreParser;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
@@ -64,10 +67,26 @@ public final class PgDiff {
         PgDatabase newDatabase = loadDatabaseSchema(
                 arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments);
 
-        ProjectLoader.loadLibraries(oldDatabase, arguments, false, arguments.getTargetLibs());
-        ProjectLoader.loadLibraries(oldDatabase, arguments, true, arguments.getTargetLibsWithoutPriv());
-        ProjectLoader.loadLibraries(newDatabase, arguments, false, arguments.getSourceLibs());
-        ProjectLoader.loadLibraries(newDatabase, arguments, true, arguments.getSourceLibsWithoutPriv());
+        Path metaPath = Paths.get(System.getProperty("user.home")).resolve(".pgcodekeeper-cli")
+                .resolve("dependencies");
+
+        LibraryLoader oldLib = new LibraryLoader(oldDatabase, metaPath);
+
+        for (String xml : arguments.getSourceLibXmls()) {
+            oldLib.loadXml(new DependenciesXmlStore(Paths.get(xml)), arguments);
+        }
+
+        oldLib.loadLibraries(arguments, false, arguments.getTargetLibs());
+        oldLib.loadLibraries(arguments, true, arguments.getTargetLibsWithoutPriv());
+
+        LibraryLoader newLib = new LibraryLoader(newDatabase, metaPath);
+
+        for (String xml : arguments.getTargetLibXmls()) {
+            newLib.loadXml(new DependenciesXmlStore(Paths.get(xml)), arguments);
+        }
+
+        newLib.loadLibraries(arguments, false, arguments.getSourceLibs());
+        newLib.loadLibraries(arguments, true, arguments.getSourceLibsWithoutPriv());
 
         if (arguments.isLibSafeMode()) {
             List<PgOverride> overrides = oldDatabase.getOverrides();

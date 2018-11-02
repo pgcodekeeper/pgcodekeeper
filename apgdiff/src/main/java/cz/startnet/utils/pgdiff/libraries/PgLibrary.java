@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.ui.properties;
+package cz.startnet.utils.pgdiff.libraries;
 
 public class PgLibrary {
     private final String path;

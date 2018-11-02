@@ -302,9 +302,17 @@ public final class Messages extends NLS {
 
     public static String DependencyProperties_add_directory;
 
-    public static String DependencyProperties_add_dump;
+    public static String DependencyProperties_add_file;
+
+    public static String DependencyProperties_add_uri;
+
+    public static String DependencyProperties_connection_start;
+
+    public static String DependencyProperties_empty_scheme;
 
     public static String DependencyProperties_enter_connection_string;
+
+    public static String DependencyProperties_enter_uri;
 
     public static String DependencyProperties_ignore_privileges;
 
@@ -332,6 +340,8 @@ public final class Messages extends NLS {
 
     public static String DiffPresentationPane_sql_file_filter;
 
+    public static String DiffPresentationPane_zip_file_filter;
+
     public static String DiffTableViewer_collapse_all;
     public static String DiffTableViewer_apply_to;
 
@@ -343,7 +353,7 @@ public final class Messages extends NLS {
 
     public static String DiffTableViewer_directory;
 
-    public static String DiffTableViewer_dump;
+    public static String DiffTableViewer_file;
 
     public static String DiffTableViewer_error_reading_git_history;
 
@@ -370,6 +380,8 @@ public final class Messages extends NLS {
     public static String DiffTableViewer_to_project;
 
     public static String DiffTableViewer_type;
+
+    public static String DiffTableViewer_uri;
 
     public static String DiffTableViewer_user;
 

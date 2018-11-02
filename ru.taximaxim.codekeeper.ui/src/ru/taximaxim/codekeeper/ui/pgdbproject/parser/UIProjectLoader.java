@@ -1,7 +1,7 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject.parser;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -19,26 +19,28 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.ide.ResourceUtil;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.FullAnalyze;
+import cz.startnet.utils.pgdiff.loader.LibraryLoader;
 import cz.startnet.utils.pgdiff.loader.ProjectLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.MS_WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.AbstractModelExporter;
+import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
-import ru.taximaxim.codekeeper.ui.properties.PgLibrary;
-import ru.taximaxim.codekeeper.ui.xmlstore.DependenciesXmlStore;
 
 public class UIProjectLoader extends ProjectLoader {
 
@@ -283,13 +285,11 @@ public class UIProjectLoader extends ProjectLoader {
     }
 
     private void loadLibraries(PgDatabase db, PgDiffArguments arguments) throws InterruptedException, IOException {
-        for (PgLibrary lib : new DependenciesXmlStore(iProject).readObjects()) {
-            try {
-                loadLibrary(db, arguments, lib.isIgnorePriv(), lib.getPath());
-            } catch (URISyntaxException ex) {
-                throw new IOException(ex.getLocalizedMessage(), ex);
-            }
-        }
+        LibraryLoader ll = new LibraryLoader(db,
+                Paths.get(Platform.getStateLocation(Activator.getContext().getBundle())
+                        .append("dependencies").toString())); //$NON-NLS-1$
+        ll.loadXml(new DependenciesXmlStore(Paths.get(iProject.getLocation()
+                .append(DependenciesXmlStore.FILE_NAME).toString())), arguments);
     }
 
     public static PgStatement parseStatement(IFile file, Collection<DbObjType> types)
