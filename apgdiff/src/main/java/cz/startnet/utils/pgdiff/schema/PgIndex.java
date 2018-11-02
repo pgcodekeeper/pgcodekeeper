@@ -37,7 +37,7 @@ public class PgIndex extends AbstractIndex {
         sbSQL.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
         sbSQL.append(PgDiffUtils.getQuotedName(getTableName()));
         if (getMethod() != null) {
-            sbSQL.append(" USING ").append(getMethod());
+            sbSQL.append(" USING ").append(PgDiffUtils.getQuotedName(getMethod()));
         }
         sbSQL.append(' ');
         sbSQL.append(getDefinition());
