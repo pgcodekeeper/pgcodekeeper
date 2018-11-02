@@ -36,8 +36,20 @@ public class PgIndex extends AbstractIndex {
         sbSQL.append(" ON ");
         sbSQL.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
         sbSQL.append(PgDiffUtils.getQuotedName(getTableName()));
+        if (getMethod() != null) {
+            sbSQL.append(" USING ").append(getMethod());
+        }
         sbSQL.append(' ');
         sbSQL.append(getDefinition());
+
+        if (!includes.isEmpty()) {
+            sbSQL.append(" INCLUDE (");
+            for (String col : includes) {
+                sbSQL.append(PgDiffUtils.getQuotedName(col)).append(", ");
+            }
+            sbSQL.setLength(sbSQL.length() - 2);
+            sbSQL.append(')');
+        }
 
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, String> entry : options.entrySet()) {

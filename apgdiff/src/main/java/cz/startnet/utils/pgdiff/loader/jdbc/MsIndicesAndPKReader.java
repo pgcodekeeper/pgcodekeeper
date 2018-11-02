@@ -70,15 +70,6 @@ public class MsIndicesAndPKReader extends JdbcReader {
         if (type == DbObjType.CONSTRAINT) {
             AbstractConstraint constraint = new MsConstraint(name, "");
 
-            if (!includes.isEmpty()) {
-                sb.append(" INCLUDE (");
-                for (String col : includes) {
-                    sb.append(MsDiffUtils.quoteName(col)).append(", ");
-                }
-                sb.setLength(sb.length() - 2);
-                sb.append(')');
-            }
-
             if (filter != null) {
                 sb.append(" WHERE ").append(filter);
             }
