@@ -8,6 +8,7 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -28,10 +29,12 @@ implements PgOptionContainer {
     private String tableName;
     private String where;
     private String tableSpace;
+    private String method;
     private boolean unique;
     private boolean clusterIndex;
     private final Set<String> columns = new HashSet<>();
 
+    protected final Set<String> includes = new LinkedHashSet<>();
     protected final Map<String, String> options = new LinkedHashMap<>();
 
     @Override
@@ -69,6 +72,14 @@ implements PgOptionContainer {
         return Collections.unmodifiableSet(columns);
     }
 
+    public void addInclude(String column) {
+        includes.add(column);
+    }
+
+    public Set<String> getIncludes(){
+        return Collections.unmodifiableSet(includes);
+    }
+
     public void setTableName(final String tableName) {
         this.tableName = tableName;
         resetHash();
@@ -94,6 +105,14 @@ implements PgOptionContainer {
     public void setWhere(final String where) {
         this.where = where;
         resetHash();
+    }
+
+    public String getMethod() {
+        return method;
+    }
+
+    public void setMethod(String method) {
+        this.method = method;
     }
 
     public String getTableSpace() {
@@ -138,6 +157,8 @@ implements PgOptionContainer {
                 && Objects.equals(tableName, index.getTableName())
                 && Objects.equals(where, index.getWhere())
                 && Objects.equals(tableSpace, index.getTableSpace())
+                && Objects.equals(includes, index.includes)
+                && Objects.equals(method, index.method)
                 && unique == index.isUnique();
     }
 
@@ -145,6 +166,7 @@ implements PgOptionContainer {
     @Override
     public void computeHash(Hasher hasher) {
         hasher.put(definition);
+        hasher.put(method);
         hasher.put(name);
         hasher.put(tableName);
         hasher.put(unique);
@@ -152,6 +174,7 @@ implements PgOptionContainer {
         hasher.put(where);
         hasher.put(tableSpace);
         hasher.put(options);
+        hasher.put(includes);
         hasher.put(comment);
     }
 
@@ -161,6 +184,7 @@ implements PgOptionContainer {
         indexDst.setDefinition(getDefinition());
         indexDst.setTableName(getTableName());
         indexDst.setUnique(isUnique());
+        indexDst.setMethod(getMethod());
         indexDst.setClusterIndex(isClusterIndex());
         indexDst.setComment(getComment());
         indexDst.setWhere(getWhere());
@@ -168,6 +192,7 @@ implements PgOptionContainer {
         indexDst.deps.addAll(deps);
         indexDst.columns.addAll(columns);
         indexDst.options.putAll(options);
+        indexDst.includes.addAll(includes);
         indexDst.setLocation(getLocation());
         return indexDst;
     }

@@ -1561,12 +1561,15 @@ create_index
     : UNIQUE? clustered? INDEX name=id ON qualified_name index_rest;
 
 index_rest
-    : index_sort index_where? index_options? (ON id)?
+    : index_sort index_include? index_where? index_options? (ON id)?
     ;
 
 index_sort
-    : with_table_hints? LR_BRACKET column_name_list_with_order RR_BRACKET
-    (INCLUDE LR_BRACKET column_name_list RR_BRACKET )?
+    : LR_BRACKET column_name_list_with_order RR_BRACKET
+    ;
+
+index_include
+    : INCLUDE LR_BRACKET column_name_list RR_BRACKET
     ;
 
 index_where

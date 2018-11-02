@@ -58,9 +58,16 @@ public class CreateIndex extends ParserAbstract {
         Index_sortContext sort = rest.index_sort();
         parseColumns(sort, ind);
 
-        Including_indexContext incl = sort.including_index();
+        if (rest.method != null) {
+            ind.setMethod(rest.method.getText());
+        }
+
+        Including_indexContext incl = rest.including_index();
         if (incl != null) {
             fillIncludingDepcy(incl, ind, schemaName, tableName);
+            for (IdentifierContext col : incl.identifier()) {
+                ind.addInclude(col.getText());
+            }
         }
 
         ind.setDefinition(getFullCtxText(sort));

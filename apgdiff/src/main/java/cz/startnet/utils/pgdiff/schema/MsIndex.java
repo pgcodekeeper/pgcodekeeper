@@ -33,6 +33,16 @@ public class MsIndex extends AbstractIndex {
         sbSQL.append('.').append(MsDiffUtils.quoteName(getTableName()));
         sbSQL.append(' ');
         sbSQL.append(getDefinition());
+
+        if (!includes.isEmpty()) {
+            sbSQL.append(" INCLUDE (");
+            for (String col : includes) {
+                sbSQL.append(MsDiffUtils.quoteName(col)).append(", ");
+            }
+            sbSQL.setLength(sbSQL.length() - 2);
+            sbSQL.append(')');
+        }
+
         if (getWhere() != null) {
             sbSQL.append("\nWHERE ").append(getWhere());
         }
@@ -51,7 +61,7 @@ public class MsIndex extends AbstractIndex {
             sb.append("ONLINE = ON, ");
         }
 
-        if (sb.length() > 0){
+        if (sb.length() > 0) {
             sb.setLength(sb.length() - 2);
             sbSQL.append("\nWITH (").append(sb).append(')');
         }

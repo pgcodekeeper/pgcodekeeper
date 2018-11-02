@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ClusteredContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_includeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_optionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_restContext;
@@ -49,6 +50,13 @@ public class CreateMsIndex extends ParserAbstract {
         }
 
         ind.setDefinition(getFullCtxText(sort));
+
+        Index_includeContext include = rest.index_include();
+        if (include != null) {
+            for (IdContext col : include.column_name_list().id()) {
+                ind.addInclude(col.getText());
+            }
+        }
 
         Index_whereContext wherePart = rest.index_where();
         if (wherePart != null){
