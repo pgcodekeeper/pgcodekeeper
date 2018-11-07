@@ -17,6 +17,7 @@ import cz.startnet.utils.pgdiff.hashers.IHashable;
 import cz.startnet.utils.pgdiff.hashers.JavaHasher;
 import cz.startnet.utils.pgdiff.hashers.ShaHasher;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.ObjectCreationException;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -219,12 +220,56 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     public void addPrivilege(PgPrivilege privilege) {
+        if (isPostgres()) {
+            String locOwner;
+            if (owner == null && getStatementType() == DbObjType.SCHEMA
+                    && ApgdiffConsts.PUBLIC.equals(getName())) {
+                locOwner = "postgres";
+            } else {
+                locOwner = owner;
+            }
+
+            if (privilege.getPermission().startsWith("ALL")) {
+                addPrivilegeFiltered(privilege, locOwner);
+            } else {
+                addPrivilegeCommon(privilege);
+            }
+
+        } else {
+            addPrivilegeCommon(privilege);
+        }
+        resetHash();
+    }
+
+    private void addPrivilegeFiltered(PgPrivilege privilege, String locOwner) {
+        if (privilege.isRevoke()) {
+            if ("PUBLIC".equals(privilege.getRole())) {
+                return;
+            }
+            revokes.add(privilege);
+        } else {
+            if (!privilege.getRole().equals(locOwner)) {
+                grants.add(privilege);
+            } else {
+                PgPrivilege delRevoke = revokes.stream()
+                        .filter(p -> p.getRole().equals(privilege.getRole())
+                                && p.getPermission().equals(privilege.getPermission()))
+                        .findAny().orElse(null);
+                if (delRevoke != null) {
+                    revokes.remove(delRevoke);
+                } else {
+                    grants.add(privilege);
+                }
+            }
+        }
+    }
+
+    private void addPrivilegeCommon(PgPrivilege privilege) {
         if (privilege.isRevoke()) {
             revokes.add(privilege);
         } else {
             grants.add(privilege);
         }
-        resetHash();
     }
 
     public void clearPrivileges() {

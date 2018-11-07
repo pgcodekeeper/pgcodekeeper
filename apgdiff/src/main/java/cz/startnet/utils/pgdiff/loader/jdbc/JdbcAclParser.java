@@ -96,11 +96,11 @@ final class JdbcAclParser {
 
             if (grantTypeCharsWithoutGo.size() == maxTypes) {
                 adder.accept(new Privilege(grantee, Arrays.asList("ALL"),
-                        false, false));
+                        false, grantee.equals(owner) && grantor.equals(owner)));
 
             } else if (grantTypeCharsWithGo.size() == maxTypes) {
                 adder.accept(new Privilege(grantee, Arrays.asList("ALL"),
-                        true, grantee.equals(owner) && grantor.equals(owner)));
+                        true, false));
 
             } else if (grantTypeCharsWithoutGo.size() < maxTypes && grantTypeCharsWithGo.size() < maxTypes) {
                 // add all grants without grant option
