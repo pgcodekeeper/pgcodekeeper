@@ -177,7 +177,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         String owner = st.getOwner();
         if (owner == null && st.getStatementType() == DbObjType.SCHEMA
                 && ApgdiffConsts.PUBLIC.equals(st.getName())) {
-            return;
+            owner = "postgres";
         }
 
         setPrivileges(st, signature, aclItemsArrayAsString, owner,

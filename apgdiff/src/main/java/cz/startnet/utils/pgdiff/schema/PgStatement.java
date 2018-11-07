@@ -17,6 +17,7 @@ import cz.startnet.utils.pgdiff.hashers.IHashable;
 import cz.startnet.utils.pgdiff.hashers.JavaHasher;
 import cz.startnet.utils.pgdiff.hashers.ShaHasher;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.ObjectCreationException;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -219,20 +220,20 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     public void addPrivilege(PgPrivilege privilege) {
-        // (owner != null) - used to exclude default privileges of 'schema public';
-        // (DbObjType.COLUMN == getStatementType()) - use because in this
-        // step of 'jdbc-loader', PgColumn has no 'parent' and has no 'owner'.
-        if (isPostgres() && (owner != null || DbObjType.COLUMN == getStatementType())) {
+        if (isPostgres()) {
             addPrivilegePG(privilege);
-        } else if (!isPostgres()){
-            addPrivilegeMS(privilege);
         } else {
-            return;
+            addPrivilegeMS(privilege);
         }
         resetHash();
     }
 
     private void addPrivilegePG(PgPrivilege privilege) {
+        if (owner == null && getStatementType() == DbObjType.SCHEMA
+                && ApgdiffConsts.PUBLIC.equals(getName())) {
+            owner = "postgres";
+        }
+
         if (privilege.isRevoke()) {
             if ("PUBLIC".equals(privilege.getRole())) {
                 return;
