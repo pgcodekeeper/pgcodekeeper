@@ -65,6 +65,11 @@ public class TypedPgTable extends AbstractRegularTable {
     }
 
     @Override
+    protected boolean isColumnsOrderChanged(AbstractTable newTable) {
+        return false;
+    }
+
+    @Override
     protected AbstractTable getTableCopy() {
         return new TypedPgTable(name, getRawStatement(), getOfType());
     }

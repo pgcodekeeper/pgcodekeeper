@@ -54,12 +54,11 @@ public class MsIndicesAndPKReader extends JdbcReader {
         for (XmlReader col : XmlReader.readXML(res.getString("cols"))) {
             boolean isDesc = col.getBoolean("is_desc");
             String colName = col.getString("name");
-            String column = MsDiffUtils.quoteName(colName) + (isDesc ? " DESC" : "");
 
             if (col.getBoolean("is_inc")) {
-                includes.add(column);
+                includes.add(colName);
             } else {
-                columns.add(column);
+                columns.add(MsDiffUtils.quoteName(colName) + (isDesc ? " DESC" : ""));
                 cols.add(colName);
             }
         }
@@ -67,12 +66,6 @@ public class MsIndicesAndPKReader extends JdbcReader {
         sb.append("(");
         sb.append(String.join(", ", columns));
         sb.append(")");
-
-        if (!includes.isEmpty()) {
-            sb.append(" INCLUDE (");
-            sb.append(String.join(", ", includes));
-            sb.append(")");
-        }
 
         if (type == DbObjType.CONSTRAINT) {
             AbstractConstraint constraint = new MsConstraint(name, "");
@@ -143,6 +136,10 @@ public class MsIndicesAndPKReader extends JdbcReader {
             index.setTableName(t.getName());
             index.setWhere(filter);
             index.setTableSpace(dataSpace);
+
+            for (String include : includes) {
+                index.addInclude(include);
+            }
 
             if (isPadded) {
                 index.addOption("PAD_INDEX", "ON");

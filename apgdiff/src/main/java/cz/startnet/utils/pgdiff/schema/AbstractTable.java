@@ -302,7 +302,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
         AbstractTable newTable = (AbstractTable)newCondition;
 
-        if (isNeedRecreate(newTable)) {
+        if (isNeedRecreate(newTable) || isColumnsOrderChanged(newTable)) {
             isNeedDepcies.set(true);
             return true;
         }
@@ -316,6 +316,84 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         compareComment(newTable,sb);
 
         return sb.length() > startLength;
+    }
+
+    public boolean isRecreated(AbstractTable newTable) {
+        return isNeedRecreate(newTable) || isColumnsOrderChanged(newTable);
+    }
+
+
+    /** Checks if the order of the table columns has changed.<br><br>
+     *
+     * <b>Example:</b><br><br>
+     *
+     * original columns : c1, c2, c3<br>
+     * new columns      : c2, c3, c1<br><br>
+     *
+     * Column c1 was moved to last index and method will return true<br><br>
+     *
+     * <b>Example:</b><br><br>
+     *
+     * original columns : c1, c2, c3<br>
+     * new columns      : c2, c3, c4<br><br>
+     *
+     * Column c1 was deleted and column c4 was added. Method will return false.<br><br>
+     *
+     * <b>Example:</b><br><br>
+     *
+     * original columns : c1, c2, c3<br>
+     * new columns      : c1, c4, c2, c3<br><br>
+     *
+     * Column c4 was added between old columns: c1 and c2. Method will return true.<br><br>
+     *
+     * <b>Example:</b><br><br>
+     *
+     * original columns : c2, c3, inherit(some table)<br>
+     * new columns      : c1, c2, c3<br><br>
+     *
+     * Some table is no longer inherited. If table did not have a column c1,
+     * we must return true, but we cannot track this right now. Method will return false. <br><br>
+     *
+     * @param newTable - new table
+     * @return true if order was changed
+     * @since 5.1.7
+     */
+    protected boolean isColumnsOrderChanged(AbstractTable newTable) {
+        // broken inherit algorithm
+        if (!inherits.isEmpty() || !newTable.inherits.isEmpty()
+                || newTable instanceof TypedPgTable) {
+            return false;
+        }
+
+        // last founded column
+        int i = -1;
+        for (AbstractColumn col : newTable.getColumns()) {
+            // old column index
+            int index = 0;
+            // search old column index by new column name
+            for ( ; index < columns.size(); index++) {
+                if (col.getName().equals(columns.get(index).getName())) {
+                    break;
+                }
+            }
+
+            if (index == columns.size()) {
+                // New column was not found in original table.
+                // After this column can be only new columns.
+                i = Integer.MAX_VALUE;
+            } else if (index < i) {
+                // New column was found in original table
+                // but one of previous columns was not found
+                // or was located on more later index
+                return true;
+            } else {
+                // New column was found in original table.
+                // Safe index of column in original table.
+                i = index;
+            }
+        }
+
+        return false;
     }
 
     /**

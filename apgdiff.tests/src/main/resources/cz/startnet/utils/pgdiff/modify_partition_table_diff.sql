@@ -37,9 +37,6 @@ CREATE TABLE public.tab_of_type OF public.comp (
 
 ALTER TABLE public.tab_of_type OWNER TO galiev_mr;
 
-ALTER TABLE ONLY public.tab_of_type
-	ALTER COLUMN f3 SET NOT NULL;
-
 ALTER TABLE public.cities_ab
 	DROP CONSTRAINT constr_check;
 

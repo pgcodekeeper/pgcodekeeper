@@ -567,7 +567,8 @@ class PgDB6 extends PgDatabaseObjectCreator {
 
         AbstractIndex idx = new PgIndex("test_table_deleted", "");
         idx.setTableName("test_table");
-        idx.setDefinition("USING btree (date_deleted)");
+        idx.setMethod("btree");
+        idx.setDefinition("(date_deleted)");
         idx.setWhere("(date_deleted IS NULL)");
         table.addIndex(idx);
 
@@ -828,7 +829,8 @@ class PgDB10 extends PgDatabaseObjectCreator {
 
         AbstractIndex idx = new PgIndex("fki_user_role_id_fkey", "");
         idx.setTableName("user");
-        idx.setDefinition("USING btree (role_id)");
+        idx.setMethod("btree");
+        idx.setDefinition("(role_id)");
         table.addIndex(idx);
 
         constraint = new PgConstraint("user_role_id_fkey", "");
