@@ -220,20 +220,24 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     public void addPrivilege(PgPrivilege privilege) {
-        if (isPostgres() && privilege.getPermission().contains("ALL")) {
-            addPrivilegePG(privilege);
+        if (isPostgres()) {
+            if (owner == null && getStatementType() == DbObjType.SCHEMA
+                    && ApgdiffConsts.PUBLIC.equals(getName())) {
+                owner = "postgres";
+            }
+
+            if (privilege.getPermission().contains("ALL")) {
+                addPrivilegeFiltered(privilege);
+            } else {
+                addPrivilegeCommon(privilege);
+            }
         } else {
             addPrivilegeCommon(privilege);
         }
         resetHash();
     }
 
-    private void addPrivilegePG(PgPrivilege privilege) {
-        if (owner == null && getStatementType() == DbObjType.SCHEMA
-                && ApgdiffConsts.PUBLIC.equals(getName())) {
-            owner = "postgres";
-        }
-
+    private void addPrivilegeFiltered(PgPrivilege privilege) {
         if (privilege.isRevoke()) {
             if ("PUBLIC".equals(privilege.getRole())) {
                 return;
