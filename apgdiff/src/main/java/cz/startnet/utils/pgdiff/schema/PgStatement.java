@@ -220,10 +220,10 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     public void addPrivilege(PgPrivilege privilege) {
-        if (isPostgres()) {
+        if (isPostgres() && privilege.getPermission().contains("ALL")) {
             addPrivilegePG(privilege);
         } else {
-            addPrivilegeMS(privilege);
+            addPrivilegeCommon(privilege);
         }
         resetHash();
     }
@@ -254,7 +254,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         }
     }
 
-    private void addPrivilegeMS(PgPrivilege privilege) {
+    private void addPrivilegeCommon(PgPrivilege privilege) {
         if (privilege.isRevoke()) {
             revokes.add(privilege);
         } else {
