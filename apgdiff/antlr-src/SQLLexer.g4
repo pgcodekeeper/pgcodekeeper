@@ -144,10 +144,12 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     FORWARD: [fF] [oO] [rR] [wW] [aA] [rR] [dD];
     FUNCTION: [fF] [uU] [nN] [cC] [tT] [iI] [oO] [nN];
     FUNCTIONS: [fF] [uU] [nN] [cC] [tT] [iI] [oO] [nN] [sS];
+    
     GENERATED: [gG] [eE] [nN] [eE] [rR] [aA] [tT] [eE] [dD];
     GLOBAL: [gG] [lL] [oO] [bB] [aA] [lL];
     GRANTED: [gG] [rR] [aA] [nN] [tT] [eE] [dD];
     GROUPS: [gG] [rR] [oO] [uU] [pP] [sS];
+    
     HANDLER: [hH] [aA] [nN] [dD] [lL] [eE] [rR];
     HEADER: [hH] [eE] [aA] [dD] [eE] [rR];
     HOLD: [hH] [oO] [lL] [dD];
@@ -245,6 +247,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     PROCEDURES: [pP] [rR] [oO] [cC] [eE] [dD] [uU] [rR] [eE] [sS];
     PROGRAM: [pP] [rR] [oO] [gG] [rR] [aA] [mM];
     PUBLICATION: [pP] [uU] [bB] [lL] [iI] [cC] [aA] [tT] [iI] [oO] [nN];
+    
     QUOTE: [qQ] [uU] [oO] [tT] [eE];
     
     RANGE: [rR] [aA] [nN] [gG] [eE];
@@ -579,69 +582,92 @@ private final Deque<String> _tags = new ArrayDeque<String>();
      * Other tokens.
      * Some sql words/data types are not keywords but we need a token to be able to parse them.
      */
-    
-    PLAIN: [pP] [lL] [aA] [iI]  [nN];
-    EXTENDED: [eE] [xX] [tT] [eE] [nN] [dD] [eE] [dD];
-    MAIN: [mM] [aA] [iI]  [nN];
-    SUBTYPE: [sS] [uU] [bB] [tT] [yY] [pP] [eE];
-    SUBTYPE_OPCLASS: [sS] [uU] [bB] [tT] [yY] [pP] [eE] UNDERLINE [oO] [pP] [cC] [lL] [aA] [sS] [sS];
-    SUBTYPE_DIFF: [sS] [uU] [bB] [tT] [yY] [pP] [eE] UNDERLINE [dD] [iI] [fF] [fF];
-    CANONICAL: [cC] [aA] [nN] [oO] [nN] [iI] [cC] [aA] [lL];
-    RECEIVE: [rR] [eE] [cC] [eE] [iI] [vV] [eE];
-    SEND: [sS] [eE] [nN] [dD];
-    TYPMOD_IN: [tT] [yY] [pP] [mM] [oO] [dD] UNDERLINE [iI]  [nN];
-    TYPMOD_OUT: [tT] [yY] [pP] [mM] [oO] [dD] UNDERLINE [oO] [uU] [tT];
-    INTERNALLENGTH: [iI] [nN] [tT] [eE] [rR] [nN] [aA] [lL] [lL] [eE] [nN] [gG] [tT] [hH];
-    PASSEDBYVALUE: [pP] [aA] [sS] [sS] [eE] [dD] [bB] [yY] [vV] [aA] [lL] [uU] [eE];
+
     ALIGNMENT: [aA] [lL] [iI] [gG] [nN] [mM] [eE] [nN] [tT];
+
+    BUFFERS: [bB] [uU] [fF] [fF] [eE] [rR] [sS]; 
+    BYPASSRLS: [bB] [yY] [pP] [aA] [sS] [sS] [rR] [lL] [sS];
+    
+    CANONICAL: [cC] [aA] [nN] [oO] [nN] [iI] [cC] [aA] [lL];
     CATEGORY: [cC] [aA] [tT] [eE] [gG] [oO] [rR] [yY];
-    PREFERRED: [pP] [rR] [eE] [fF] [eE] [rR] [rR] [eE] [dD];
     COLLATABLE: [cC] [oO] [lL] [lL] [aA] [tT] [aA] [bB] [lL] [eE];
-    VARIABLE: [vV] [aA] [rR] [iI] [aA] [bB] [lL] [eE];
-    OUTPUT: [oO] [uU] [tT] [pP] [uU] [tT];
-    ELEMENT: [eE] [lL] [eE] [mM] [eE] [nN] [tT];
-    USAGE: [uU] [sS] [aA] [gG] [eE];
+    COMMUTATOR: [cC] [oO] [mM] [mM] [uU] [tT] [aA] [tT] [oO] [rR];
     CONNECT: [cC] [oO] [nN] [nN] [eE] [cC] [tT];
-    LIST: [lL] [iI] [sS] [tT];
-    INIT: [iI] [nN] [iI] [tT];
-    LEXIZE: [lL] [eE] [xX] [iI] [zZ] [eE];
+    COSTS: [cC] [oO] [sS] [tT] [sS]; 
+    CREATEDB: [cC] [rR] [eE] [aA] [tT] [eE] [dD] [bB];
+    CREATEROLE: [cC] [rR] [eE] [aA] [tT] [eE] [rR] [oO] [lL] [eE];
+    
+    DISABLE_PAGE_SKIPPING: DISABLE UNDERLINE [pP] [aA] [gG] [eE] UNDERLINE [sS] [kK] [iI] [pP] [pP] [iI] [nN] [gG]; 
+    
+    ELEMENT: [eE] [lL] [eE] [mM] [eE] [nN] [tT];
+    EXTENDED: [eE] [xX] [tT] [eE] [nN] [dD] [eE] [dD];
+    
+    FORMAT: [fF] [oO] [rR] [mM] [aA] [tT]; 
+    
     GETTOKEN: [gG] [eE] [tT] [tT] [oO] [kK] [eE] [nN];
+    
+    HASH: [hH] [aA] [sS] [hH];
+    HASHES: [hH] [aA] [sS] [hH] [eE] [sS];
     HEADLINE: [hH] [eE] [aA] [dD] [lL] [iI] [nN] [eE];
-    LEXTYPES: [lL] [eE] [xX] [tT] [yY] [pP] [eE] [sS];
-    LOCALE: [lL] [oO] [cC] [aA] [lL] [eE]; 
+    
+    INIT: [iI] [nN] [iI] [tT];
+    INTERNALLENGTH: [iI] [nN] [tT] [eE] [rR] [nN] [aA] [lL] [lL] [eE] [nN] [gG] [tT] [hH];
+    
+    JSON: [jJ] [sS] [oO] [nN]; 
+    
     LC_COLLATE: [lL] [cC] UNDERLINE [cC] [oO] [lL] [lL] [aA] [tT] [eE];
     LC_CTYPE: [lL] [cC] UNDERLINE [cC] [tT] [yY] [pP] [eE]; 
-    PROVIDER: [pP] [rR] [oO] [vV] [iI] [dD] [eE] [rR]; 
-    DISABLE_PAGE_SKIPPING: DISABLE UNDERLINE [pP] [aA] [gG] [eE] UNDERLINE [sS] [kK] [iI] [pP] [pP] [iI] [nN] [gG]; 
-    COSTS: [cC] [oO] [sS] [tT] [sS]; 
-    BUFFERS: [bB] [uU] [fF] [fF] [eE] [rR] [sS]; 
-    TIMING: [tT] [iI] [mM] [iI] [nN] [gG]; 
-    SUMMARY: [sS] [uU] [mM] [mM] [aA] [rR] [yY]; 
-    FORMAT: [fF] [oO] [rR] [mM] [aA] [tT]; 
-    JSON: [jJ] [sS] [oO] [nN]; 
-    YAML: [yY] [aA] [mM] [lL]; 
-    SUPERUSER: [sS] [uU] [pP] [eE] [rR] [uU] [sS] [eE] [rR];
-    NOSUPERUSER: [nN] [oO] [sS] [uU] [pP] [eE] [rR] [uU] [sS] [eE] [rR];
-    CREATEDB: [cC] [rR] [eE] [aA] [tT] [eE] [dD] [bB];
+    LEFTARG: [lL] [eE] [fF] [tT] [aA] [rR] [gG];
+    LEXIZE: [lL] [eE] [xX] [iI] [zZ] [eE];
+    LEXTYPES: [lL] [eE] [xX] [tT] [yY] [pP] [eE] [sS];
+    LIST: [lL] [iI] [sS] [tT];
+    LOCALE: [lL] [oO] [cC] [aA] [lL] [eE]; 
+    LOGIN: [lL] [oO] [gG] [iI] [nN];
+    
+    MAIN: [mM] [aA] [iI]  [nN];
+    MERGES: [mM] [eE] [rR] [gG] [eE] [sS];
+    MODULUS: [mM] [oO] [dD] [uU] [lL] [uU] [sS]; 
+    
+    NEGATOR: [nN] [eE] [gG] [aA] [tT] [oO] [rR];
+    NOBYPASSRLS: [nN] [oO] [bB] [yY] [pP] [aA] [sS] [sS] [rR] [lL] [sS];
     NOCREATEDB: [nN] [oO] [cC] [rR] [eE] [aA] [tT] [eE] [dD] [bB];
-    CREATEROLE: [cC] [rR] [eE] [aA] [tT] [eE] [rR] [oO] [lL] [eE];
     NOCREATEROLE: [nN] [oO] [cC] [rR] [eE] [aA] [tT] [eE] [rR] [oO] [lL] [eE];
     NOINHERIT: [nN] [oO] [iI] [nN] [hH] [eE] [rR] [iI] [tT];
-    LOGIN: [lL] [oO] [gG] [iI] [nN];
     NOLOGIN: [nN] [oO] [lL] [oO] [gG] [iI] [nN];
-    REPLICATION: [rR] [eE] [pP] [lL] [iI] [cC] [aA] [tT] [iI] [oO] [nN];
     NOREPLICATION: [nN] [oO] [rR] [eE] [pP] [lL] [iI] [cC] [aA] [tT] [iI] [oO] [nN];
-    BYPASSRLS: [bB] [yY] [pP] [aA] [sS] [sS] [rR] [lL] [sS];
-    NOBYPASSRLS: [nN] [oO] [bB] [yY] [pP] [aA] [sS] [sS] [rR] [lL] [sS];
-    LEFTARG: [lL] [eE] [fF] [tT] [aA] [rR] [gG];
-    RIGHTARG: [rR] [iI] [gG] [hH] [tT] [aA] [rR] [gG];
-    COMMUTATOR: [cC] [oO] [mM] [mM] [uU] [tT] [aA] [tT] [oO] [rR];
-    NEGATOR: [nN] [eE] [gG] [aA] [tT] [oO] [rR];
-    HASHES: [hH] [aA] [sS] [hH] [eE] [sS];
-    MERGES: [mM] [eE] [rR] [gG] [eE] [sS];
-    SAFE: [sS] [aA] [fF] [eE];
+    NOSUPERUSER: [nN] [oO] [sS] [uU] [pP] [eE] [rR] [uU] [sS] [eE] [rR];
+    
+    OUTPUT: [oO] [uU] [tT] [pP] [uU] [tT];
+    
+    PASSEDBYVALUE: [pP] [aA] [sS] [sS] [eE] [dD] [bB] [yY] [vV] [aA] [lL] [uU] [eE];
+    PLAIN: [pP] [lL] [aA] [iI]  [nN];
+    PREFERRED: [pP] [rR] [eE] [fF] [eE] [rR] [rR] [eE] [dD];
+    PROVIDER: [pP] [rR] [oO] [vV] [iI] [dD] [eE] [rR]; 
+    
+    RECEIVE: [rR] [eE] [cC] [eE] [iI] [vV] [eE];
+    REMAINDER: [rR] [eE] [mM] [aA] [iI] [nN] [dD] [eE] [rR];
+    REPLICATION: [rR] [eE] [pP] [lL] [iI] [cC] [aA] [tT] [iI] [oO] [nN];
     RESTRICTED: [rR] [eE] [sS] [tT] [rR] [iI] [cC] [tT] [eE] [dD];
+    RIGHTARG: [rR] [iI] [gG] [hH] [tT] [aA] [rR] [gG];
+    
+    SAFE: [sS] [aA] [fF] [eE];
+    SEND: [sS] [eE] [nN] [dD];
+    SUBTYPE_DIFF: [sS] [uU] [bB] [tT] [yY] [pP] [eE] UNDERLINE [dD] [iI] [fF] [fF];
+    SUBTYPE_OPCLASS: [sS] [uU] [bB] [tT] [yY] [pP] [eE] UNDERLINE [oO] [pP] [cC] [lL] [aA] [sS] [sS];
+    SUBTYPE: [sS] [uU] [bB] [tT] [yY] [pP] [eE];
+    SUMMARY: [sS] [uU] [mM] [mM] [aA] [rR] [yY]; 
+    SUPERUSER: [sS] [uU] [pP] [eE] [rR] [uU] [sS] [eE] [rR];
+    
+    TIMING: [tT] [iI] [mM] [iI] [nN] [gG]; 
+    TYPMOD_IN: [tT] [yY] [pP] [mM] [oO] [dD] UNDERLINE [iI]  [nN];
+    TYPMOD_OUT: [tT] [yY] [pP] [mM] [oO] [dD] UNDERLINE [oO] [uU] [tT];
+    
     UNSAFE: [uU] [nN] [sS] [aA] [fF] [eE];
+    USAGE: [uU] [sS] [aA] [gG] [eE];
+    
+    VARIABLE: [vV] [aA] [rR] [iI] [aA] [bB] [lL] [eE];
+    
+    YAML: [yY] [aA] [mM] [lL]; 
 
 fragment UNDERLINE : '_';
 
