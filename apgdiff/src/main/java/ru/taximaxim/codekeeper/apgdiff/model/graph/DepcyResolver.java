@@ -540,12 +540,12 @@ public class DepcyResolver {
             if (newObj.getStatementType() == DbObjType.COLUMN) {
                 PgStatement oldTable = getObjectFromDB(newObj.getParent(),
                         oldDb);
-                if (oldTable == null) {
+                AbstractTable newTable = (AbstractTable) newObj.getParent();
+                if (oldTable == null || ((AbstractTable)oldTable).isRecreated(newTable)) {
                     // columns are integrated into CREATE TABLE
                     return true;
                 }
 
-                AbstractTable newTable = (AbstractTable)newObj.getParent();
                 // columns are integrated into CREATE TABLE OF TYPE
                 if (newTable instanceof TypedPgTable) {
                     TypedPgTable newTypedTable = (TypedPgTable) newTable;
