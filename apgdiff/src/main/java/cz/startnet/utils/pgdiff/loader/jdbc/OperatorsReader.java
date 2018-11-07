@@ -14,7 +14,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public class OperatorsReader extends JdbcReader {
 
     public OperatorsReader(JdbcLoaderBase loader) {
-        super(JdbcQueries.QUERY_OPERATORS_PER_SCHEMA, loader);
+        super(JdbcQueries.QUERY_OPERATORS, loader);
     }
 
     @Override

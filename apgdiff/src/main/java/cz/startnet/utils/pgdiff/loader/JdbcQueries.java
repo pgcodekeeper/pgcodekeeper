@@ -35,20 +35,20 @@ public final class JdbcQueries {
     public static final JdbcQuery QUERY_EXTENSIONS = new JdbcQuery();
     public static final JdbcQuery QUERY_SCHEMAS = new JdbcQuery();
 
-    public static final JdbcQuery QUERY_TABLES_PER_SCHEMA = new JdbcQuery();
-    public static final JdbcQuery QUERY_FUNCTIONS_PER_SCHEMA = new JdbcQuery();
-    public static final JdbcQuery QUERY_SEQUENCES_PER_SCHEMA = new JdbcQuery();
-    public static final JdbcQuery QUERY_INDICES_PER_SCHEMA = new JdbcQuery();
-    public static final JdbcQuery QUERY_CONSTRAINTS_PER_SCHEMA = new JdbcQuery();
-    public static final JdbcQuery QUERY_TRIGGERS_PER_SCHEMA = new JdbcQuery();
-    public static final JdbcQuery QUERY_VIEWS_PER_SCHEMA = new JdbcQuery();
-    public static final JdbcQuery QUERY_TYPES_PER_SCHEMA = new JdbcQuery();
-    public static final JdbcQuery QUERY_RULES_PER_SCHEMA = new JdbcQuery();
-    public static final JdbcQuery QUERY_FTS_PARSERS_PER_SCHEMA = new JdbcQuery();
-    public static final JdbcQuery QUERY_FTS_TEMPLATES_PER_SCHEMA = new JdbcQuery();
-    public static final JdbcQuery QUERY_FTS_DICTIONARIES_PER_SCHEMA = new JdbcQuery();
-    public static final JdbcQuery QUERY_FTS_CONFIGURATIONS_PER_SCHEMA = new JdbcQuery();
-    public static final JdbcQuery QUERY_OPERATORS_PER_SCHEMA = new JdbcQuery();
+    public static final JdbcQuery QUERY_TABLES = new JdbcQuery();
+    public static final JdbcQuery QUERY_FUNCTIONS = new JdbcQuery();
+    public static final JdbcQuery QUERY_SEQUENCES = new JdbcQuery();
+    public static final JdbcQuery QUERY_INDICES = new JdbcQuery();
+    public static final JdbcQuery QUERY_CONSTRAINTS = new JdbcQuery();
+    public static final JdbcQuery QUERY_TRIGGERS = new JdbcQuery();
+    public static final JdbcQuery QUERY_VIEWS = new JdbcQuery();
+    public static final JdbcQuery QUERY_TYPES = new JdbcQuery();
+    public static final JdbcQuery QUERY_RULES = new JdbcQuery();
+    public static final JdbcQuery QUERY_FTS_PARSERS = new JdbcQuery();
+    public static final JdbcQuery QUERY_FTS_TEMPLATES = new JdbcQuery();
+    public static final JdbcQuery QUERY_FTS_DICTIONARIES = new JdbcQuery();
+    public static final JdbcQuery QUERY_FTS_CONFIGURATIONS = new JdbcQuery();
+    public static final JdbcQuery QUERY_OPERATORS = new JdbcQuery();
 
     public static String QUERY_SCHEMAS_ACCESS;
     public static String QUERY_SEQUENCES_ACCESS;

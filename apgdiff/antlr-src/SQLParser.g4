@@ -12,50 +12,50 @@ options {
 /******* Start symbols *******/
 
 sql
-  : BOM? (statement SEMI_COLON)* EOF
-  ;
+    : BOM? (statement SEMI_COLON)* EOF
+    ;
 
 qname_parser
-  : schema_qualified_name EOF
-  ;
+    : schema_qualified_name EOF
+    ;
 
 function_args_parser
-  : schema_qualified_name? function_args EOF
-  ;
+    : schema_qualified_name? function_args EOF
+    ;
 
 operator_args_parser
-  : target_operator EOF
-  ;
+    : target_operator EOF
+    ;
 
 object_identity_parser
-  : name=identifier ON parent=schema_qualified_name EOF
-  ;
+    : name=identifier ON parent=schema_qualified_name EOF
+    ;
 
 vex_eof
-  : vex (COMMA vex)* EOF
-  ;
+    : vex (COMMA vex)* EOF
+    ;
 
 /******* END Start symbols *******/
 
 statement
-  : data_statement
-  | schema_statement
-  | script_statement
-  ;
+    : data_statement
+    | schema_statement
+    | script_statement
+    ;
 
 data_statement
-  : select_stmt
-  | insert_stmt_for_psql
-  | update_stmt_for_psql
-  | delete_stmt_for_psql
-  | notify_stmt
-  | truncate_stmt
-  ;
+    : select_stmt
+    | insert_stmt_for_psql
+    | update_stmt_for_psql
+    | delete_stmt_for_psql
+    | notify_stmt
+    | truncate_stmt
+    ;
 
 script_statement
-  : script_transaction
-  | script_additional
-  ;
+    : script_transaction
+    | script_additional
+    ;
 
 script_transaction
     : (START TRANSACTION | BEGIN (WORK | TRANSACTION)?) (transaction_mode (COMMA transaction_mode)*)?
@@ -145,10 +145,10 @@ fetch_move_derection
     ;
 
 schema_statement
-  : schema_create
+    : schema_create
     | schema_alter
     | schema_drop
-  ;
+    ;
 
 schema_create
     : CREATE (create_table_statement
@@ -375,6 +375,9 @@ index_if_exists_name
 
 index_def_action
     : rename_to
+    | ATTACH PARTITION index=schema_qualified_name
+    | DEPENDS ON EXTENSION extension=schema_qualified_name
+    | ALTER COLUMN? sign? NUMBER_LITERAL SET STATISTICS NUMBER_LITERAL
     | RESET LEFT_PAREN name+=identifier (COMMA name+=identifier)* RIGHT_PAREN
     | SET (TABLESPACE tbl_spc=identifier | LEFT_PAREN option_with_value (COMMA option_with_value)* RIGHT_PAREN)
     ;
@@ -506,7 +509,7 @@ drop_def
     ;
 
 create_index_statement
-    : unique_value=UNIQUE? INDEX CONCURRENTLY? name=identifier? ON table_name=schema_qualified_name
+    : unique_value=UNIQUE? INDEX CONCURRENTLY? name=identifier? ON ONLY? table_name=schema_qualified_name
         index_rest
     ;
 
@@ -911,7 +914,7 @@ create_trigger_statement
     (REFERENCING trigger_referencing trigger_referencing?)?
     (for_each_true=FOR EACH? (ROW | STATEMENT))?
     when_trigger?
-    EXECUTE PROCEDURE func_name=function_call
+    EXECUTE (FUNCTION | PROCEDURE) func_name=function_call
     ;
 
 trigger_referencing
@@ -1171,11 +1174,13 @@ define_partition
 
 for_values_bound
     : FOR VALUES partition_bound_spec
+    | DEFAULT
     ;
 
 partition_bound_spec
     : IN LEFT_PAREN (unsigned_value_specification | NULL) (COMMA unsigned_value_specification | NULL)* RIGHT_PAREN
     | FROM partition_bound_part TO partition_bound_part
+    | WITH LEFT_PAREN MODULUS NUMBER_LITERAL COMMA REMAINDER NUMBER_LITERAL RIGHT_PAREN
     ;
 
 partition_bound_part
@@ -1200,7 +1205,7 @@ partition_by
     ;
 
 partition_method
-    : (RANGE | LIST) LEFT_PAREN partition_column (COMMA partition_column)* RIGHT_PAREN
+    : (RANGE | LIST | HASH) LEFT_PAREN partition_column (COMMA partition_column)* RIGHT_PAREN
     ;
 
 partition_column
@@ -1931,67 +1936,70 @@ tokens_reserved
   ;
 
 tokens_nonkeyword
-  : PLAIN
-  | EXTENDED
-  | MAIN
-  | SUBTYPE
-  | SUBTYPE_OPCLASS
-  | SUBTYPE_DIFF
+  : ALIGNMENT
+  | BUFFERS
+  | BYPASSRLS
   | CANONICAL
-  | RECEIVE
-  | SEND
-  | TYPMOD_IN
-  | TYPMOD_OUT
-  | INTERNALLENGTH
-  | PASSEDBYVALUE
-  | ALIGNMENT
   | CATEGORY
-  | PREFERRED
   | COLLATABLE
-  | VARIABLE
-  | OUTPUT
-  | ELEMENT
-  | USAGE
+  | COMMUTATOR
   | CONNECT
-  | INIT
-  | LEXIZE
+  | COSTS
+  | CREATEDB
+  | CREATEROLE
+  | DISABLE_PAGE_SKIPPING
+  | ELEMENT
+  | EXTENDED
+  | FORMAT
   | GETTOKEN
+  | HASH
+  | HASHES
   | HEADLINE
-  | LEXTYPES
-  | LOCALE 
+  | INIT
+  | INTERNALLENGTH
+  | JSON
   | LC_COLLATE
   | LC_CTYPE 
-  | PROVIDER
-  | DISABLE_PAGE_SKIPPING
-  | COSTS
-  | BUFFERS
-  | TIMING
-  | SUMMARY
-  | FORMAT
-  | JSON
-  | YAML
-  | SUPERUSER
-  | NOSUPERUSER
-  | CREATEDB
+  | LEFTARG
+  | LEXIZE
+  | LEXTYPES
+  | LOCALE 
+  | LOGIN
+  | MAIN
+  | MERGES
+  | MODULUS
+  | NEGATOR
+  | NOBYPASSRLS
   | NOCREATEDB
-  | CREATEROLE
   | NOCREATEROLE
   | NOINHERIT
-  | LOGIN
   | NOLOGIN
-  | REPLICATION
   | NOREPLICATION
-  | BYPASSRLS
-  | NOBYPASSRLS
-  | LEFTARG
-  | RIGHTARG
-  | COMMUTATOR
-  | NEGATOR
-  | HASHES
-  | MERGES
-  | SAFE
+  | NOSUPERUSER
+  | OUTPUT
+  | PASSEDBYVALUE
+  | PLAIN
+  | PREFERRED
+  | PROVIDER
+  | RECEIVE
+  | REPLICATION
+  | REMAINDER
   | RESTRICTED
+  | RIGHTARG
+  | SAFE
+  | SEND
+  | SUBTYPE
+  | SUBTYPE_DIFF
+  | SUBTYPE_OPCLASS
+  | SUMMARY
+  | SUPERUSER
+  | TIMING
+  | TYPMOD_IN
+  | TYPMOD_OUT
   | UNSAFE
+  | USAGE
+  | VARIABLE
+  | YAML
   ;
 
 /*
@@ -2233,7 +2241,8 @@ window_definition
   ;
 
 frame_clause
-  : (RANGE | ROWS) (frame_bound | BETWEEN frame_bound AND frame_bound)
+  : (RANGE | ROWS | GROUPS) (frame_bound | BETWEEN frame_bound AND frame_bound)
+  (EXCLUDE (CURRENT ROW | GROUP | TIES | NO OTHERS))?
   ;
 
 frame_bound

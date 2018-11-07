@@ -23,7 +23,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public class TablesReader extends JdbcReader {
 
     public TablesReader(JdbcLoaderBase loader) {
-        super(JdbcQueries.QUERY_TABLES_PER_SCHEMA, loader);
+        super(JdbcQueries.QUERY_TABLES, loader);
     }
 
     @Override

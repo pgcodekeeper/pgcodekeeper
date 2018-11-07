@@ -27,7 +27,7 @@ public class SequencesReader extends JdbcReader {
     private static final int DATA_SELECT_LENGTH;
 
     public SequencesReader(JdbcLoaderBase loader) {
-        super(JdbcQueries.QUERY_SEQUENCES_PER_SCHEMA, loader);
+        super(JdbcQueries.QUERY_SEQUENCES, loader);
     }
 
     @Override

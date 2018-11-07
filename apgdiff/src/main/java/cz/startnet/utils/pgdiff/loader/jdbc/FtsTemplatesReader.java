@@ -12,7 +12,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public class FtsTemplatesReader extends JdbcReader {
 
     public FtsTemplatesReader(JdbcLoaderBase loader) {
-        super(JdbcQueries.QUERY_FTS_TEMPLATES_PER_SCHEMA, loader);
+        super(JdbcQueries.QUERY_FTS_TEMPLATES, loader);
     }
 
     @Override

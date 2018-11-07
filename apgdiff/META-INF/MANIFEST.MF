@@ -38,3 +38,4 @@ Import-Package: org.eclipse.core.runtime;version="[3.4.0,4.0.0)",
  org.osgi.util.tracker;version="[1.5.0,2.0.0)"
 Bundle-Vendor: %Bundle-Vendor
 Eclipse-ExtensibleAPI: true
+Automatic-Module-Name: apgdiff

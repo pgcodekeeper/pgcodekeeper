@@ -16,7 +16,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public class IndicesReader extends JdbcReader {
 
     public IndicesReader(JdbcLoaderBase loader) {
-        super(JdbcQueries.QUERY_INDICES_PER_SCHEMA, loader);
+        super(JdbcQueries.QUERY_INDICES, loader);
     }
 
     @Override

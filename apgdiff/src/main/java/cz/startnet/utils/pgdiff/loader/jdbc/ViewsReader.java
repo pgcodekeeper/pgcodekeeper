@@ -18,7 +18,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public class ViewsReader extends JdbcReader {
 
     public ViewsReader(JdbcLoaderBase loader) {
-        super(JdbcQueries.QUERY_VIEWS_PER_SCHEMA, loader);
+        super(JdbcQueries.QUERY_VIEWS, loader);
     }
 
     @Override
