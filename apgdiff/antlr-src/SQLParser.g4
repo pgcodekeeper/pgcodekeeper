@@ -929,7 +929,7 @@ rule_common
     : (GRANT | REVOKE grant_opt_for=grant_option_for?)
     (permissions | columns_permissions)
     ON ((object_type | all_objects)? obj_name=names_references
-    | FUNCTION func_name+=function_parameters (COMMA func_name+=function_parameters)*)
+    | (FUNCTION | PROCEDURE) func_name+=function_parameters (COMMA func_name+=function_parameters)*)
     (TO | FROM) roles_names (WITH GRANT OPTION | cascade_restrict)?
     | other_rules
     ;

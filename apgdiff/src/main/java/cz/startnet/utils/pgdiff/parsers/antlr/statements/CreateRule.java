@@ -23,7 +23,6 @@ import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -68,7 +67,7 @@ public class CreateRule extends ParserAbstract {
         String permissions = ctx.permissions().permission().stream().map(ParserAbstract::getFullCtxText)
                 .collect(Collectors.joining(","));
 
-        if (ctx.FUNCTION() != null) {
+        if (ctx.FUNCTION() != null || ctx.PROCEDURE() != null) {
             for (Function_parametersContext funct : ctx.func_name) {
                 List<IdentifierContext> funcIds = funct.name.identifier();
                 IdentifierContext functNameCtx = QNameParser.getFirstNameCtx(funcIds);
@@ -78,9 +77,10 @@ public class CreateRule extends ParserAbstract {
                         functNameCtx.getStart());
 
                 StringBuilder sb = new StringBuilder();
-                sb.append(DbObjType.FUNCTION).append(' ');
+                sb.append(ctx.PROCEDURE() == null ?
+                        DbObjType.FUNCTION : DbObjType.PROCEDURE).append(' ');
                 sb.append(PgDiffUtils.getQuotedName(schema.getName())).append('.');
-                ((PgFunction)func).appendFunctionSignature(sb, false, true);
+                func.appendFunctionSignature(sb, false, true);
 
                 for (String role : roles) {
                     func.addPrivilege(new PgPrivilege(state, permissions,
