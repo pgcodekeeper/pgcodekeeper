@@ -5,9 +5,7 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -264,39 +262,8 @@ public class PgFunction extends AbstractFunction {
         return getParent().getQualifiedName() + '.' + getName();
     }
 
-    /**
-     * Getter for {@link #arguments}. List cannot be modified.
-     *
-     * @return {@link #arguments}
-     */
-    @Override
-    public List<Argument> getArguments() {
-        return Collections.unmodifiableList(arguments);
-    }
-
-    @Override
-    public void addArgument(final Argument argument) {
-        arguments.add(argument);
-        resetHash();
-    }
-
     @Override
     protected AbstractFunction getFunctionCopy() {
         return new PgFunction(getBareName(), getRawStatement());
-    }
-
-    public class PgArgument extends Argument {
-
-        private static final long serialVersionUID = -6351018532827424260L;
-
-        public PgArgument(String mode, String name, String dataType) {
-            super(mode, name, dataType);
-        }
-
-        @Override
-        public void setDefaultExpression(String defaultExpression) {
-            super.setDefaultExpression(defaultExpression);
-            resetHash();
-        }
     }
 }

@@ -5,9 +5,7 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -16,11 +14,9 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
- * Stores Postgres function information.
+ * Stores Postgres procedure information.
  */
 public class PgProcedure extends AbstractFunction {
-
-    private String signatureCache;
 
     public PgProcedure(String name, String rawStatement) {
         super(name, rawStatement);
@@ -187,53 +183,8 @@ public class PgProcedure extends AbstractFunction {
         return getParent().getQualifiedName() + '.' + getName();
     }
 
-    /**
-     * Getter for {@link #arguments}. List cannot be modified.
-     *
-     * @return {@link #arguments}
-     */
-    @Override
-    public List<Argument> getArguments() {
-        return Collections.unmodifiableList(arguments);
-    }
-
-    @Override
-    public void addArgument(final Argument argument) {
-        arguments.add(argument);
-        resetHash();
-    }
-
-    /**
-     * Returns function signature. It consists of unquoted name and argument
-     * data types.
-     *
-     * @return function signature
-     */
-    @Override
-    public String getSignature() {
-        if (signatureCache == null) {
-            signatureCache = appendFunctionSignature(new StringBuilder(), false, false).toString();
-        }
-        return signatureCache;
-    }
-
     @Override
     protected AbstractFunction getFunctionCopy() {
         return new PgProcedure(getBareName(), getRawStatement());
-    }
-
-    public class PgArgument extends Argument {
-
-        private static final long serialVersionUID = -6351018532827424260L;
-
-        public PgArgument(String mode, String name, String dataType) {
-            super(mode, name, dataType);
-        }
-
-        @Override
-        public void setDefaultExpression(String defaultExpression) {
-            super.setDefaultExpression(defaultExpression);
-            resetHash();
-        }
     }
 }

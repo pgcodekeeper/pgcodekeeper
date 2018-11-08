@@ -422,4 +422,19 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
     public AbstractSchema getContainingSchema() {
         return (AbstractSchema) getParent();
     }
+
+    public class PgArgument extends Argument {
+
+        private static final long serialVersionUID = -6351018532827424260L;
+
+        public PgArgument(String mode, String name, String dataType) {
+            super(mode, name, dataType);
+        }
+
+        @Override
+        public void setDefaultExpression(String defaultExpression) {
+            super.setDefaultExpression(defaultExpression);
+            resetHash();
+        }
+    }
 }
