@@ -383,7 +383,8 @@ public class ReferenceListener implements SqlContextProcessor {
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         addReferenceOnSchema(ids, schemaName, ctx);
         statementBodies.add(new StatementBodyContainer(filePath, getFunctionDefinition(ctx.funct_body)));
-        fillObjDefinition(schemaName, QNameParser.getFirstNameCtx(ids), DbObjType.FUNCTION);
+        fillObjDefinition(schemaName, QNameParser.getFirstNameCtx(ids),
+                ctx.PROCEDURE() == null ? DbObjType.FUNCTION : DbObjType.PROCEDURE);
     }
 
     private ParserRuleContext getFunctionDefinition(Create_funct_paramsContext params) {
@@ -614,7 +615,8 @@ public class ReferenceListener implements SqlContextProcessor {
         List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
         addFullObjReference(QNameParser.getSchemaName(ids, getDefSchemaName()),
                 QNameParser.getFirstName(ids), ctx.function_parameters().name,
-                DbObjType.FUNCTION, StatementActions.ALTER, ctx.getParent());
+                ctx.PROCEDURE() == null ? DbObjType.FUNCTION : DbObjType.PROCEDURE,
+                        StatementActions.ALTER, ctx.getParent());
     }
 
     public void alterSchema(Alter_schema_statementContext ctx) {
@@ -784,7 +786,8 @@ public class ReferenceListener implements SqlContextProcessor {
         List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
         addFullObjReference(QNameParser.getSchemaName(ids, getDefSchemaName()),
                 QNameParser.getFirstName(ids), ctx.function_parameters().name,
-                DbObjType.FUNCTION, StatementActions.DROP, ctx.getParent());
+                ctx.PROCEDURE() == null ? DbObjType.FUNCTION : DbObjType.PROCEDURE,
+                        StatementActions.DROP, ctx.getParent());
     }
 
     public void dropOperator(Drop_operator_statementContext ctx) {

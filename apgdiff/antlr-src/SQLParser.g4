@@ -230,7 +230,7 @@ schema_import
     ;
 
 alter_function_statement
-    : FUNCTION function_parameters?
+    : (FUNCTION | PROCEDURE) function_parameters?
       ((function_actions_common | RESET (configuration_parameter=identifier | ALL))+ RESTRICT?
     | rename_to
     | owner_to
@@ -1025,11 +1025,11 @@ comment_on_statement
 
 /*
 ===============================================================================
-  Function Definition
+  Function and Procedure Definition
 ===============================================================================
 */
 create_function_statement
-    : (OR REPLACE)? FUNCTION function_parameters
+    : (OR REPLACE)? (FUNCTION | PROCEDURE) function_parameters
         (RETURNS (rettype_data=data_type | ret_table=function_ret_table))?
           funct_body=create_funct_params
     ;
@@ -1407,7 +1407,7 @@ indirection_identifier
 */
 
 drop_function_statement
-    : FUNCTION (IF EXISTS)? function_parameters cascade_restrict?
+    : (FUNCTION | PROCEDURE) (IF EXISTS)? function_parameters cascade_restrict?
     ;
 
 drop_trigger_statement
