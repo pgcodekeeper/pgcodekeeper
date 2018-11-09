@@ -19,6 +19,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
+import cz.startnet.utils.pgdiff.schema.PgProcedure;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class CreateFunction extends ParserAbstract {
@@ -32,7 +33,12 @@ public class CreateFunction extends ParserAbstract {
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
         AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
-        AbstractFunction function = new PgFunction(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
+
+        String name = QNameParser.getFirstName(ids);
+        String rawStatement = getFullCtxText(ctx.getParent());
+        AbstractFunction function = ctx.PROCEDURE() != null ? new PgProcedure(name, rawStatement)
+                : new PgFunction(name, rawStatement);
+
         fillArguments(function);
         function.setBody(db.getArguments(), getFullCtxText(ctx.funct_body));
         fillFunction(ctx.funct_body, function);
@@ -43,7 +49,7 @@ public class CreateFunction extends ParserAbstract {
                 addTypeAsDepcy(ret_col.column_type, function, getDefSchemaName());
                 function.addReturnsColumn(ret_col.column_name.getText(), getFullCtxText(ret_col.column_type));
             }
-        } else if(ctx.rettype_data != null) {
+        } else if (ctx.rettype_data != null) {
             function.setReturns(getFullCtxText(ctx.rettype_data));
             addTypeAsDepcy(ctx.rettype_data, function, getDefSchemaName());
         }
@@ -110,7 +116,6 @@ public class CreateFunction extends ParserAbstract {
                 }
             }
         }
-
     }
 
     private void fillArguments(AbstractFunction function) {

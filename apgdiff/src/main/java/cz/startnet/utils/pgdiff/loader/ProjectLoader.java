@@ -25,9 +25,10 @@ public class ProjectLoader {
      * NOTE: constraints, triggers and indexes are now stored in tables,
      * those directories are here for backward compatibility only
      */
-    protected static final String[] DIR_LOAD_ORDER = new String[] { "TYPE", "DOMAIN",
-            "SEQUENCE", "FUNCTION", "OPERATOR", "TABLE", "CONSTRAINT", "INDEX", "TRIGGER", "VIEW",
-            "FTS_PARSER", "FTS_TEMPLATE", "FTS_DICTIONARY", "FTS_CONFIGURATION" };
+    protected static final String[] DIR_LOAD_ORDER = new String[] { "TYPE",
+            "DOMAIN", "SEQUENCE", "FUNCTION", "PROCEDURE", "OPERATOR", "TABLE",
+            "CONSTRAINT", "INDEX", "TRIGGER", "VIEW", "FTS_PARSER", "FTS_TEMPLATE",
+            "FTS_DICTIONARY", "FTS_CONFIGURATION" };
 
     private final String dirPath;
     protected final PgDiffArguments arguments;
