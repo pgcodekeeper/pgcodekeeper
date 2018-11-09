@@ -457,6 +457,8 @@ public class PgDiffTest {
                     {"modify_procedure_count_args"},
                     // Tests scenario where body of PROCEDURE is modified.
                     {"modify_procedure"},
+                    // Tests scenario where configuration of PROCEDURE is modified.
+                    {"modify_procedure_configuration"},
                 });
     }
 
