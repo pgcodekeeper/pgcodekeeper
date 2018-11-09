@@ -2,12 +2,6 @@
 -- PostgreSQL database dump
 --
 
-SET client_encoding = 'UTF8';
-SET check_function_bodies = false;
-SET client_min_messages = warning;
-
-SET search_path = pg_catalog;
-
 --
 -- Name: insert_data(integer, integer); Type: PROCEDURE; Schema: public; Owner: shamsutdinov_lr
 --

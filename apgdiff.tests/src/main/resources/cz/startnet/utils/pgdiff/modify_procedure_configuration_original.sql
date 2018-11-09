@@ -2,8 +2,6 @@
 -- PostgreSQL database dump
 --
 
-SET search_path = pg_catalog;
-
 --
 -- Name: insert_data(); Type: PROCEDURE; Schema: public; Owner: shamsutdinov_lr
 --
