@@ -445,10 +445,10 @@ public class PgDiffTest {
                     {"add_column_middle"},
                     // Tests scenario where COLUMNS order is modified.
                     {"modify_column_order"},
-                    // Tests scenario where new PROCEDURE without args is added.
-                    {"add_procedure_noargs"},
                     // Tests scenario where new PROCEDURE is added.
                     {"add_procedure"},
+                    // Tests scenario where new PROCEDURE without args is added.
+                    {"add_procedure_noargs"},
                     // Tests scenario where new overloaded PROCEDURE is added.
                     {"add_procedure_overloaded"},
                     // Tests scenario where PROCEDURE is dropped.
