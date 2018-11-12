@@ -81,8 +81,8 @@ public final class NewObjectPage extends WizardPage {
     private boolean parentIsTable = true;
     private final EnumSet<DbObjType> allowedTypes = EnumSet.complementOf(
             EnumSet.of(DbObjType.COLUMN, DbObjType.DATABASE, DbObjType.SEQUENCE,
-                    DbObjType.PROCEDURE, DbObjType.ASSEMBLY, DbObjType.ROLE,
-                    DbObjType.USER, DbObjType.OPERATOR));
+                    DbObjType.ASSEMBLY, DbObjType.ROLE, DbObjType.USER,
+                    DbObjType.OPERATOR));
 
     private ComboViewer viewerProject;
     private ComboViewer viewerType;
@@ -127,7 +127,8 @@ public final class NewObjectPage extends WizardPage {
             PgStatement st = UIProjectLoader.parseStatement((IFile)resource,
                     EnumSet.of(DbObjType.EXTENSION, DbObjType.TABLE,
                             DbObjType.VIEW, DbObjType.DOMAIN,
-                            DbObjType.TYPE, DbObjType.FUNCTION));
+                            DbObjType.TYPE, DbObjType.FUNCTION,
+                            DbObjType.PROCEDURE));
             if (st != null) {
                 type = st.getStatementType();
                 if (st instanceof PgStatementWithSearchPath) {
@@ -285,6 +286,7 @@ public final class NewObjectPage extends WizardPage {
             break;
         case DOMAIN:
         case FUNCTION:
+        case PROCEDURE:
         case TABLE:
         case VIEW:
         case TYPE:
@@ -445,6 +447,10 @@ public final class NewObjectPage extends WizardPage {
             case FUNCTION:
                 sb.append(" OR REPLACE FUNCTION ").append(schema).append('.') //$NON-NLS-1$
                 .append(objectName).append("() RETURNS void\n\tLANGUAGE sql\n    AS $$\n\t--function body \n$$;\n"); //$NON-NLS-1$
+                break;
+            case PROCEDURE:
+                sb.append(" OR REPLACE PROCEDURE ").append(schema).append('.') //$NON-NLS-1$
+                .append(objectName).append("()\n\tLANGUAGE sql\n    AS $$\n--procedure body \n$$;\n"); //$NON-NLS-1$
                 break;
             case TABLE:
                 sb.append(type).append(' ').append(schema).append('.')

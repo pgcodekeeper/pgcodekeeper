@@ -11,10 +11,12 @@ import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
+import cz.startnet.utils.pgdiff.schema.PgProcedure;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class FunctionsReader extends JdbcReader {
@@ -25,13 +27,18 @@ public class FunctionsReader extends JdbcReader {
 
     @Override
     protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException {
-        if (res.getBoolean("proisspecial")) {
+        if (res.getBoolean("proisagg")) {
             return;
         }
         String schemaName = schema.getName();
-        String functionName = res.getString("proname");
-        loader.setCurrentObject(new GenericColumn(schemaName, functionName, DbObjType.FUNCTION));
-        PgFunction f = new PgFunction(functionName, "");
+        String funcName = res.getString("proname");
+
+        boolean isProc = SupportedVersion.VERSION_11.isLE(loader.version)
+                && (res.getBoolean("proisproc"));
+
+        loader.setCurrentObject(new GenericColumn(schemaName, funcName,
+                isProc ? DbObjType.PROCEDURE : DbObjType.FUNCTION));
+        AbstractFunction f = isProc ? new PgProcedure(funcName, "") : new PgFunction(funcName, "");
 
         fillFunction(f, res);
 
@@ -87,15 +94,17 @@ public class FunctionsReader extends JdbcReader {
             f.addArgument(a);
         }
 
-        // RETURN TYPE
-        if (returnedTableArguments.length() != 0) {
-            returnedTableArguments.setLength(returnedTableArguments.length() - 2);
-            f.setReturns("TABLE(" + returnedTableArguments + ")");
-        } else {
-            JdbcType returnType = loader.cachedTypesByOid.get(res.getLong("prorettype"));
-            String retType = returnType.getFullName();
-            f.setReturns(res.getBoolean("proretset") ? "SETOF " + retType : retType);
-            returnType.addTypeDepcy(f);
+        if (!isProc) {
+            // RETURN TYPE
+            if (returnedTableArguments.length() != 0) {
+                returnedTableArguments.setLength(returnedTableArguments.length() - 2);
+                f.setReturns("TABLE(" + returnedTableArguments + ")");
+            } else {
+                JdbcType returnType = loader.cachedTypesByOid.get(res.getLong("prorettype"));
+                String retType = returnType.getFullName();
+                f.setReturns(res.getBoolean("proretset") ? "SETOF " + retType : retType);
+                returnType.addTypeDepcy(f);
+            }
         }
 
         String defaultValuesAsString = res.getString("default_values_as_string");
@@ -125,7 +134,7 @@ public class FunctionsReader extends JdbcReader {
         schema.addFunction(f);
     }
 
-    private void fillFunction(PgFunction function, ResultSet res) throws SQLException {
+    private void fillFunction(AbstractFunction function, ResultSet res) throws SQLException {
         StringBuilder body = new StringBuilder();
 
         function.setLanguage(res.getString("lang_name"));

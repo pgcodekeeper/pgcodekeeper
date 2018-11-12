@@ -9,7 +9,6 @@ import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class AbstractFunction extends PgStatementWithSearchPath implements IFunction {
 
@@ -38,11 +37,6 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
     private String language;
     private String parallel;
     private String volatileType;
-
-    @Override
-    public DbObjType getStatementType() {
-        return DbObjType.FUNCTION;
-    }
 
     public AbstractFunction(String name, String rawStatement) {
         super(name, rawStatement);
@@ -376,5 +370,20 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
     @Override
     public AbstractSchema getContainingSchema() {
         return (AbstractSchema) getParent();
+    }
+
+    public class PgArgument extends Argument {
+
+        private static final long serialVersionUID = -6351018532827424260L;
+
+        public PgArgument(String mode, String name, String dataType) {
+            super(mode, name, dataType);
+        }
+
+        @Override
+        public void setDefaultExpression(String defaultExpression) {
+            super.setDefaultExpression(defaultExpression);
+            resetHash();
+        }
     }
 }
