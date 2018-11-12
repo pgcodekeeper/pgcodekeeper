@@ -7,11 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class AbstractFunction extends PgStatementWithSearchPath implements IFunction {
 
@@ -41,59 +38,11 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
     private String parallel;
     private String volatileType;
 
-    private String signatureCache;
-
-    @Override
-    public DbObjType getStatementType() {
-        return DbObjType.FUNCTION;
-    }
-
     public AbstractFunction(String name, String rawStatement) {
         super(name, rawStatement);
     }
 
-    public StringBuilder appendFunctionSignature(StringBuilder sb,
-            boolean includeDefaultValues, boolean includeArgNames) {
-        boolean cache = !includeDefaultValues && !includeArgNames;
-        if (cache && signatureCache != null) {
-            return sb.append(signatureCache);
-        }
-        final int sigStart = sb.length();
-
-        sb.append(isPostgres() ? PgDiffUtils.getQuotedName(name) : MsDiffUtils.quoteName(name)).append('(');
-        boolean addComma = false;
-        for (final Argument argument : arguments) {
-            if (!includeArgNames && "OUT".equalsIgnoreCase(argument.getMode())) {
-                continue;
-            }
-            if (addComma) {
-                sb.append(", ");
-            }
-            sb.append(getDeclaration(argument, includeDefaultValues, includeArgNames));
-            addComma = true;
-        }
-        sb.append(')');
-
-        if (cache) {
-            signatureCache = sb.substring(sigStart, sb.length());
-        }
-        return sb;
-    }
-
     protected abstract String getDeclaration(Argument arg, boolean includeDefaultValue, boolean includeArgName);
-
-    /**
-     * Returns function signature. It consists of unquoted name and argument
-     * data types.
-     *
-     * @return function signature
-     */
-    public String getSignature() {
-        if (signatureCache == null) {
-            signatureCache = appendFunctionSignature(new StringBuilder(), false, false).toString();
-        }
-        return signatureCache;
-    }
 
     public void setBody(final String body) {
         this.body = body;

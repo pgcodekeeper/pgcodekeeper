@@ -11,11 +11,17 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
  * Stores Postgres function information.
  */
-public class PgFunction extends AbstractFunction {
+public class PgFunction extends AbstractPgFunction {
+
+    @Override
+    public DbObjType getStatementType() {
+        return DbObjType.FUNCTION;
+    }
 
     public PgFunction(String name, String rawStatement) {
         super(name, rawStatement);

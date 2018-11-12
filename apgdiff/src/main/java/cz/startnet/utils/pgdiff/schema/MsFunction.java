@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsFunction extends AbstractFunction implements SourceStatement {
 
@@ -17,6 +18,11 @@ public class MsFunction extends AbstractFunction implements SourceStatement {
     }
 
     private FuncTypes funcType = FuncTypes.SCALAR;
+
+    @Override
+    public DbObjType getStatementType() {
+        return DbObjType.FUNCTION;
+    }
 
     public MsFunction(String name, String rawStatement) {
         super(name, rawStatement);

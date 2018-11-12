@@ -16,7 +16,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 /**
  * Stores Postgres procedure information.
  */
-public class PgProcedure extends AbstractFunction {
+public class PgProcedure extends AbstractPgFunction {
 
     public PgProcedure(String name, String rawStatement) {
         super(name, rawStatement);

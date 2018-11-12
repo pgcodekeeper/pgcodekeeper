@@ -32,7 +32,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
-import cz.startnet.utils.pgdiff.schema.AbstractFunction;
+import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -167,7 +167,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         switch (st.getStatementType()) {
         case FUNCTION:
         case PROCEDURE:
-            signature = ((AbstractFunction) st).appendFunctionSignature(
+            signature = ((AbstractPgFunction) st).appendFunctionSignature(
                     new StringBuilder(), false, true).toString();
             break;
         default:

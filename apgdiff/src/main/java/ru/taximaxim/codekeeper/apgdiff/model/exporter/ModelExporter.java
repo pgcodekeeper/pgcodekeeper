@@ -18,7 +18,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import cz.startnet.utils.pgdiff.NotAllowedObjectException;
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -237,7 +236,7 @@ public class ModelExporter extends AbstractModelExporter {
         case OPERATOR:
             return schema.getOperators();
         default:
-            throw new NotAllowedObjectException(type.name() + " type is not allowed.");
+            throw new IllegalArgumentException(type.name() + " type is not allowed.");
         }
     }
 
@@ -249,10 +248,9 @@ public class ModelExporter extends AbstractModelExporter {
                     .filter(s -> type == s.getStatementType() && name.equals(s.getName()))
                     .findAny().orElse(null);
         case OPERATOR:
-            return schema.getOperators().stream()
-                    .filter(s -> name.equals(s.getName())).findAny().orElse(null);
+            return schema.getOperator(name);
         default:
-            throw new NotAllowedObjectException(type.name() + " type is not allowed.");
+            throw new IllegalArgumentException(type.name() + " type is not allowed.");
         }
     }
 

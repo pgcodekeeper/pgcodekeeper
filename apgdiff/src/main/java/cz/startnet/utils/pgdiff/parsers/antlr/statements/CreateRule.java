@@ -20,6 +20,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_privilegesContext;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
+import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -80,7 +81,7 @@ public class CreateRule extends ParserAbstract {
                 sb.append(ctx.PROCEDURE() == null ?
                         DbObjType.FUNCTION : DbObjType.PROCEDURE).append(' ');
                 sb.append(PgDiffUtils.getQuotedName(schema.getName())).append('.');
-                func.appendFunctionSignature(sb, false, true);
+                ((AbstractPgFunction) func).appendFunctionSignature(sb, false, true);
 
                 for (String role : roles) {
                     func.addPrivilege(new PgPrivilege(state, permissions,
