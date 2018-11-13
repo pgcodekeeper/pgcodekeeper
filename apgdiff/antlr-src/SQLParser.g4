@@ -179,7 +179,8 @@ schema_create
     | create_tablespace
     | create_statistics
     | create_foreign_data_wrapper
-    | create_operator_statement)
+    | create_operator_statement
+    | create_aggregate_statement)
 
     | comment_on_statement
     | rule_common
@@ -208,7 +209,8 @@ schema_alter
     | alter_tablespace
     | alter_statistics
     | alter_foreign_data_wrapper
-    | alter_operator_statement)
+    | alter_operator_statement
+    | alter_aggregate_statement)
     ;
 
 schema_drop
@@ -236,6 +238,13 @@ alter_function_statement
     | owner_to
     | set_schema
     | DEPENDS ON EXTENSION identifier)
+    ;
+
+alter_aggregate_statement
+    : AGGREGATE function_parameters?
+      (rename_to
+    | owner_to
+    | set_schema)
     ;
 
 alter_schema_statement
@@ -866,6 +875,41 @@ operator_option
     | MERGES
     ;
 
+create_aggregate_statement
+    : AGGREGATE function_parameters LEFT_PAREN
+    aggregate_param (COMMA aggregate_param)+
+    (COMMA aggregate_param_optional)*
+    RIGHT_PAREN
+    ;
+
+aggregate_param
+    : BASETYPE EQUAL base_type=data_type
+    | SFUNC EQUAL sfunc_name=schema_qualified_name
+    | STYPE EQUAL type=data_type
+    ;
+
+aggregate_param_optional
+    : SSPACE EQUAL s_space=NUMBER_LITERAL
+    | FINALFUNC EQUAL final_func=schema_qualified_name
+    | FINALFUNC_EXTRA
+    | FINALFUNC_MODIFY EQUAL (READ_ONLY | SHAREABLE | READ_WRITE)
+    | COMBINEFUNC EQUAL combine_func=schema_qualified_name
+    | SERIALFUNC EQUAL serial_func=schema_qualified_name
+    | DESERIALFUNC EQUAL deserial_func=schema_qualified_name
+    | INITCOND EQUAL init_cond=Character_String_Literal
+    | MSFUNC EQUAL ms_func=schema_qualified_name
+    | MINVFUNC EQUAL minv_func=schema_qualified_name
+    | MSTYPE EQUAL ms_type=data_type
+    | MSSPACE EQUAL ms_space=NUMBER_LITERAL
+    | MFINALFUNC EQUAL mfinal_func=schema_qualified_name
+    | MFINALFUNC_EXTRA
+    | MFINALFUNC_MODIFY EQUAL (READ_ONLY | SHAREABLE | READ_WRITE)
+    | MINITCOND EQUAL minit_cond=Character_String_Literal
+    | SORTOP EQUAL oper_name=operator_name
+    | PARALLEL EQUAL (SAFE | RESTRICTED | UNSAFE)
+    | HYPOTHETICAL
+    ;
+
 set_statement
     : SET set_action
     ;
@@ -1050,7 +1094,7 @@ function_column_name_type
     ;
 
 function_parameters
-    : name=schema_qualified_name function_args
+    : name=schema_qualified_name function_args?
     ;
 
 function_args
@@ -1407,7 +1451,7 @@ indirection_identifier
 */
 
 drop_function_statement
-    : (FUNCTION | PROCEDURE) (IF EXISTS)? function_parameters cascade_restrict?
+    : (FUNCTION | PROCEDURE | AGGREGATE) (IF EXISTS)? function_parameters cascade_restrict?
     ;
 
 drop_trigger_statement
@@ -1937,25 +1981,33 @@ tokens_reserved
 
 tokens_nonkeyword
   : ALIGNMENT
+  | BASETYPE
   | BUFFERS
   | BYPASSRLS
   | CANONICAL
   | CATEGORY
   | COLLATABLE
+  | COMBINEFUNC
   | COMMUTATOR
   | CONNECT
   | COSTS
   | CREATEDB
   | CREATEROLE
+  | DESERIALFUNC
   | DISABLE_PAGE_SKIPPING
   | ELEMENT
   | EXTENDED
+  | FINALFUNC
+  | FINALFUNC_EXTRA
+  | FINALFUNC_MODIFY
   | FORMAT
   | GETTOKEN
   | HASH
   | HASHES
   | HEADLINE
+  | HYPOTHETICAL
   | INIT
+  | INITCOND
   | INTERNALLENGTH
   | JSON
   | LC_COLLATE
@@ -1967,7 +2019,15 @@ tokens_nonkeyword
   | LOGIN
   | MAIN
   | MERGES
+  | MFINALFUNC
+  | MFINALFUNC_EXTRA
+  | MFINALFUNC_MODIFY
+  | MINITCOND
+  | MINVFUNC
   | MODULUS
+  | MSFUNC
+  | MSSPACE
+  | MSTYPE
   | NEGATOR
   | NOBYPASSRLS
   | NOCREATEDB
@@ -1981,6 +2041,8 @@ tokens_nonkeyword
   | PLAIN
   | PREFERRED
   | PROVIDER
+  | READ_ONLY
+  | READ_WRITE
   | RECEIVE
   | REPLICATION
   | REMAINDER
@@ -1988,6 +2050,12 @@ tokens_nonkeyword
   | RIGHTARG
   | SAFE
   | SEND
+  | SERIALFUNC
+  | SFUNC
+  | SHAREABLE
+  | SORTOP
+  | SSPACE
+  | STYPE
   | SUBTYPE
   | SUBTYPE_DIFF
   | SUBTYPE_OPCLASS

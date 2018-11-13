@@ -585,23 +585,29 @@ private final Deque<String> _tags = new ArrayDeque<String>();
 
     ALIGNMENT: [aA] [lL] [iI] [gG] [nN] [mM] [eE] [nN] [tT];
 
+    BASETYPE: [bB] [aA] [sS] [eE] [tT] [yY] [pP] [eE];
     BUFFERS: [bB] [uU] [fF] [fF] [eE] [rR] [sS]; 
     BYPASSRLS: [bB] [yY] [pP] [aA] [sS] [sS] [rR] [lL] [sS];
     
     CANONICAL: [cC] [aA] [nN] [oO] [nN] [iI] [cC] [aA] [lL];
     CATEGORY: [cC] [aA] [tT] [eE] [gG] [oO] [rR] [yY];
     COLLATABLE: [cC] [oO] [lL] [lL] [aA] [tT] [aA] [bB] [lL] [eE];
+    COMBINEFUNC: [cC] [oO] [mM] [bB] [iI] [nN] [eE] [fF] [uU] [nN] [cC];
     COMMUTATOR: [cC] [oO] [mM] [mM] [uU] [tT] [aA] [tT] [oO] [rR];
     CONNECT: [cC] [oO] [nN] [nN] [eE] [cC] [tT];
     COSTS: [cC] [oO] [sS] [tT] [sS]; 
     CREATEDB: [cC] [rR] [eE] [aA] [tT] [eE] [dD] [bB];
     CREATEROLE: [cC] [rR] [eE] [aA] [tT] [eE] [rR] [oO] [lL] [eE];
     
+    DESERIALFUNC: [dD] [eE] [sS] [eE] [rR] [iI] [aA] [lL] [fF] [uU] [nN] [cC];
     DISABLE_PAGE_SKIPPING: DISABLE UNDERLINE [pP] [aA] [gG] [eE] UNDERLINE [sS] [kK] [iI] [pP] [pP] [iI] [nN] [gG]; 
     
     ELEMENT: [eE] [lL] [eE] [mM] [eE] [nN] [tT];
     EXTENDED: [eE] [xX] [tT] [eE] [nN] [dD] [eE] [dD];
     
+    FINALFUNC: [fF] [iI] [nN] [aA] [lL] [fF] [uU] [nN] [cC];
+    FINALFUNC_EXTRA: FINALFUNC UNDERLINE  [eE] [xX] [tT] [rR] [aA];
+    FINALFUNC_MODIFY: FINALFUNC UNDERLINE [mM] [oO] [dD] [iI] [fF] [yY];
     FORMAT: [fF] [oO] [rR] [mM] [aA] [tT]; 
     
     GETTOKEN: [gG] [eE] [tT] [tT] [oO] [kK] [eE] [nN];
@@ -609,8 +615,10 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     HASH: [hH] [aA] [sS] [hH];
     HASHES: [hH] [aA] [sS] [hH] [eE] [sS];
     HEADLINE: [hH] [eE] [aA] [dD] [lL] [iI] [nN] [eE];
+    HYPOTHETICAL: [hH] [yY] [pP] [oO] [tT] [hH] [eE] [tT] [iI] [cC] [aA] [lL];
     
     INIT: [iI] [nN] [iI] [tT];
+    INITCOND: [iI] [nN] [iI] [tT] [cC] [oO] [nN] [dD];
     INTERNALLENGTH: [iI] [nN] [tT] [eE] [rR] [nN] [aA] [lL] [lL] [eE] [nN] [gG] [tT] [hH];
     
     JSON: [jJ] [sS] [oO] [nN]; 
@@ -626,7 +634,15 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     
     MAIN: [mM] [aA] [iI]  [nN];
     MERGES: [mM] [eE] [rR] [gG] [eE] [sS];
-    MODULUS: [mM] [oO] [dD] [uU] [lL] [uU] [sS]; 
+    MFINALFUNC: [mM] [fF] [iI] [nN] [aA] [lL] [fF] [uU] [nN] [cC];
+    MFINALFUNC_EXTRA: MFINALFUNC UNDERLINE [eE] [xX] [tT] [rR] [aA];
+    MFINALFUNC_MODIFY: MFINALFUNC UNDERLINE [mM] [oO] [dD] [iI] [fF] [yY];
+    MINITCOND: [mM] [iI] [nN] [iI] [tT] [cC] [oO] [nN] [dD];
+    MINVFUNC: [mM] [iI] [nN] [vV] [fF] [uU] [nN] [cC];
+    MODULUS: [mM] [oO] [dD] [uU] [lL] [uU] [sS];
+    MSFUNC: [mM] [sS] [fF] [uU] [nN] [cC];
+    MSSPACE: [mM] [sS] [sS] [pP] [aA] [cC] [eE];
+    MSTYPE: [mM] [sS] [tT] [yY] [pP] [eE];
     
     NEGATOR: [nN] [eE] [gG] [aA] [tT] [oO] [rR];
     NOBYPASSRLS: [nN] [oO] [bB] [yY] [pP] [aA] [sS] [sS] [rR] [lL] [sS];
@@ -644,6 +660,8 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     PREFERRED: [pP] [rR] [eE] [fF] [eE] [rR] [rR] [eE] [dD];
     PROVIDER: [pP] [rR] [oO] [vV] [iI] [dD] [eE] [rR]; 
     
+    READ_ONLY: READ UNDERLINE ONLY;
+    READ_WRITE: READ UNDERLINE WRITE;
     RECEIVE: [rR] [eE] [cC] [eE] [iI] [vV] [eE];
     REMAINDER: [rR] [eE] [mM] [aA] [iI] [nN] [dD] [eE] [rR];
     REPLICATION: [rR] [eE] [pP] [lL] [iI] [cC] [aA] [tT] [iI] [oO] [nN];
@@ -652,6 +670,12 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     
     SAFE: [sS] [aA] [fF] [eE];
     SEND: [sS] [eE] [nN] [dD];
+    SERIALFUNC: [sS] [eE] [rR] [iI] [aA] [lL] [fF] [uU] [nN] [cC];
+    SFUNC: [sS] [fF] [uU] [nN] [cC];
+    SHAREABLE: [sS] [hH] [aA] [rR] [eE] [aA] [bB] [lL] [eE];
+    SORTOP: [sS] [oO] [rR] [tT] [oO] [pP];
+    SSPACE: [sS] [sS] [pP] [aA] [cC] [eE];
+    STYPE: [sS] [tT] [yY] [pP] [eE];
     SUBTYPE_DIFF: [sS] [uU] [bB] [tT] [yY] [pP] [eE] UNDERLINE [dD] [iI] [fF] [fF];
     SUBTYPE_OPCLASS: [sS] [uU] [bB] [tT] [yY] [pP] [eE] UNDERLINE [oO] [pP] [cC] [lL] [aA] [sS] [sS];
     SUBTYPE: [sS] [uU] [bB] [tT] [yY] [pP] [eE];
