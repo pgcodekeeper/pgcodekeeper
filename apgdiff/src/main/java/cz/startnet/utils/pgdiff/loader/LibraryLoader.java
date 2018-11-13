@@ -11,7 +11,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -93,7 +95,7 @@ public class LibraryLoader {
             } else {
                 PgDatabase db = new PgDatabase();
                 db.setArguments(args);
-                readStatementsFromDirectory(p, db, args);
+                readStatementsFromDirectory(p, db);
                 return db;
             }
         }
@@ -211,19 +213,27 @@ public class LibraryLoader {
         return dir.toString();
     }
 
-    private void readStatementsFromDirectory(final Path f, PgDatabase db, PgDiffArguments args)
+    private void readStatementsFromDirectory(Path f, PgDatabase db)
             throws IOException, InterruptedException {
-        if (Files.isDirectory(f)) {
-            try (Stream<Path> stream = Files.list(f)) {
-                for (Path sub : (Iterable<Path>) stream::iterator) {
-                    readStatementsFromDirectory(sub, db, args);
+        try (Stream<Path> stream = Files.list(f)) {
+            List<Path> dirs = new ArrayList<>();
+            for (Path sub : (Iterable<Path>) stream::iterator) {
+                if (Files.isDirectory(sub)) {
+                    dirs.add(sub);
+                } else {
+                    String filePath = sub.toString();
+                    PgDiffArguments args = db.getArguments();
+                    if (filePath.endsWith(".zip")) {
+                        db.addLib(getLibrary(filePath, args, args.isIgnorePrivileges()));
+                    } else if (filePath.endsWith(".sql")) {
+                        try (PgDumpLoader loader = new PgDumpLoader(sub.toFile(), args)) {
+                            loader.loadDatabase(db);
+                        }
+                    }
                 }
             }
-        } else if (f.toString().endsWith(".zip")) {
-            db.addLib(getLibrary(f.toString(), args, args.isIgnorePrivileges()));
-        } else {
-            try (PgDumpLoader loader = new PgDumpLoader(f.toFile(), args)) {
-                db.addLib(loader.load());
+            for (Path sub : dirs) {
+                readStatementsFromDirectory(sub, db);
             }
         }
     }

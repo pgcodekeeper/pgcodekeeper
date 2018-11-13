@@ -121,9 +121,6 @@ public class PgDumpLoader implements AutoCloseable {
         this(inputFile, args, new NullProgressMonitor(), 0);
     }
 
-    /**
-     * The same as {@link #loadDatabase(boolean)} with <code>false<code> argument.
-     */
     public PgDatabase load() throws IOException, InterruptedException {
         PgDatabase d = new PgDatabase();
         d.setArguments(args);
@@ -132,9 +129,6 @@ public class PgDumpLoader implements AutoCloseable {
         return d;
     }
 
-    /**
-     * The same as {@link #loadDatabase(boolean)} with <code>false<code> argument without full analyze.
-     */
     public PgDatabase load(PgDatabase d) throws IOException, InterruptedException {
         AbstractSchema schema = args.isMsSql() ? new MsSchema(ApgdiffConsts.DBO, "") :
             new PgSchema(ApgdiffConsts.PUBLIC, "");
