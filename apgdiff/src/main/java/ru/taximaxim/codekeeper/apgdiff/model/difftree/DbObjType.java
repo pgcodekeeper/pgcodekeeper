@@ -21,6 +21,7 @@ public enum DbObjType {
     FUNCTION,
     PROCEDURE,
     OPERATOR,
+    AGGREGATE,
     FTS_PARSER,
     FTS_TEMPLATE,
     FTS_DICTIONARY,
