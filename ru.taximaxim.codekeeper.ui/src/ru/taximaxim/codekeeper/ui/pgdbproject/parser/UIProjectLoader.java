@@ -81,29 +81,63 @@ public class UIProjectLoader extends ProjectLoader {
             throws InterruptedException, IOException, CoreException {
         for (WORK_DIR_NAMES workDirName : WORK_DIR_NAMES.values()) {
             // legacy schemas
-            loadSubdir(iProject.getFolder(workDirName.name()), db);
+            loadSubdir(iProject.getFolder(workDirName.name()), db, false);
         }
 
         IFolder schemasCommonDir = iProject.getFolder(WORK_DIR_NAMES.SCHEMA.name());
         // skip walking SCHEMA folder if it does not exist
-        if (!schemasCommonDir.exists()) {
-            return db;
-        }
-
-        // new schemas + content
-        // step 2
-        // read out schemas names, and work in loop on each
-        for (IResource sub : schemasCommonDir.members()) {
-            if (sub.getType() == IResource.FOLDER) {
-                IFolder schemaDir = (IFolder) sub;
-                loadSubdir(schemaDir, db);
-                for (String dirSub : DIR_LOAD_ORDER) {
-                    loadSubdir(schemaDir.getFolder(dirSub), db);
+        if (schemasCommonDir.exists()) {
+            // new schemas + content
+            // step 2
+            // read out schemas names, and work in loop on each
+            for (IResource sub : schemasCommonDir.members()) {
+                if (sub.getType() == IResource.FOLDER) {
+                    IFolder schemaDir = (IFolder) sub;
+                    loadSubdir(schemaDir, db, false);
+                    for (String dirSub : DIR_LOAD_ORDER) {
+                        loadSubdir(schemaDir.getFolder(dirSub), db, false);
+                    }
                 }
             }
         }
 
+        // step 3
+        // read additional privileges from special folder
+        loadPrivs(iProject.getFolder(ApgdiffConsts.PRIVILEGES_DIR), db);
+
+
         return db;
+    }
+
+    private void loadPrivs(IFolder privileges, PgDatabase db)
+            throws InterruptedException, IOException, CoreException {
+        if (!privileges.exists()) {
+            return;
+        }
+
+        for (WORK_DIR_NAMES workDirName : WORK_DIR_NAMES.values()) {
+            // legacy schemas
+            loadSubdir(privileges.getFolder(workDirName.name()), db, true);
+        }
+
+        IFolder schemasCommonDir = privileges.getFolder(WORK_DIR_NAMES.SCHEMA.name());
+        // skip walking SCHEMA folder if it does not exist
+        if (schemasCommonDir.exists()) {
+            // new schemas + content
+            // step 2
+            // read out schemas names, and work in loop on each
+            for (IResource sub : schemasCommonDir.members()) {
+                if (sub.getType() == IResource.FOLDER) {
+                    IFolder schemaDir = (IFolder) sub;
+                    loadSubdir(schemaDir, db, true);
+                    for (String dirSub : DIR_LOAD_ORDER) {
+                        loadSubdir(schemaDir.getFolder(dirSub), db, true);
+                    }
+                }
+            }
+        }
+
+        replacePrivileges();
     }
 
     /**
@@ -116,32 +150,54 @@ public class UIProjectLoader extends ProjectLoader {
         db.setArguments(arguments);
 
         IFolder securityFolder = iProject.getFolder(MS_WORK_DIR_NAMES.SECURITY.getDirName());
-        loadSubdir(securityFolder.getFolder("Schemas"), db); //$NON-NLS-1$
-        loadSubdir(securityFolder.getFolder("Roles"), db); //$NON-NLS-1$
-        loadSubdir(securityFolder.getFolder("Users"), db); //$NON-NLS-1$
+        loadSubdir(securityFolder.getFolder("Schemas"), db, false); //$NON-NLS-1$
+        loadSubdir(securityFolder.getFolder("Roles"), db, false); //$NON-NLS-1$
+        loadSubdir(securityFolder.getFolder("Users"), db, false); //$NON-NLS-1$
 
         addDboSchema(db);
 
         // content
         for (MS_WORK_DIR_NAMES dirSub : MS_WORK_DIR_NAMES.values()) {
-            loadSubdir(iProject.getFolder(dirSub.getDirName()), db);
+            loadSubdir(iProject.getFolder(dirSub.getDirName()), db, false);
         }
+
+        // read additional privileges from special folder
+        loadMsPrivs(iProject.getFolder(ApgdiffConsts.PRIVILEGES_DIR), db);
 
         return db;
     }
 
-    private void loadSubdir(IFolder folder, PgDatabase db) throws InterruptedException, IOException, CoreException {
+    private void loadMsPrivs(IFolder privileges, PgDatabase db)
+            throws InterruptedException, IOException, CoreException {
+        if (!privileges.exists()) {
+            return;
+        }
+
+        IFolder securityFolder = privileges.getFolder(MS_WORK_DIR_NAMES.SECURITY.getDirName());
+        loadSubdir(securityFolder.getFolder("Schemas"), db, true); //$NON-NLS-1$
+        loadSubdir(securityFolder.getFolder("Roles"), db, true); //$NON-NLS-1$
+        loadSubdir(securityFolder.getFolder("Users"), db, true); //$NON-NLS-1$
+
+        for (MS_WORK_DIR_NAMES dirSub : MS_WORK_DIR_NAMES.values()) {
+            loadSubdir(privileges.getFolder(dirSub.getDirName()), db, true);
+        }
+
+        replacePrivileges();
+    }
+
+    private void loadSubdir(IFolder folder, PgDatabase db, boolean loadPrivileges)
+            throws InterruptedException, IOException, CoreException {
         if (!folder.exists()) {
             return;
         }
         for (IResource resource : folder.members()) {
             if (resource.getType() == IResource.FILE && "sql".equals(resource.getFileExtension())) { //$NON-NLS-1$
-                loadFile((IFile) resource, monitor, db);
+                loadFile((IFile) resource, monitor, db, loadPrivileges);
             }
         }
     }
 
-    private void loadFile(IFile file, IProgressMonitor monitor, PgDatabase db)
+    private void loadFile(IFile file, IProgressMonitor monitor, PgDatabase db, boolean loadPrivileges)
             throws IOException, CoreException, InterruptedException {
         PgDiffArguments arguments = db.getArguments().clone();
         arguments.setInCharsetName(file.getCharset());
@@ -150,6 +206,9 @@ public class UIProjectLoader extends ProjectLoader {
         try (PgUIDumpLoader loader = new PgUIDumpLoader(file, arguments, monitor)) {
             errList = loader.getErrors();
             loader.setLoadReferences(statementBodies != null);
+            if (loadPrivileges) {
+                loader.setPrivilegesMap(privileges);
+            }
             loader.loadFile(db);
             if (statementBodies != null) {
                 statementBodies.addAll(loader.getStatementBodyReferences());
@@ -190,7 +249,7 @@ public class UIProjectLoader extends ProjectLoader {
             if (!isLoaded) {
                 // load all schemas, because we don't know in which schema the object
                 IProject proj = file.getProject();
-                loadSubdir(proj.getFolder(schemasPath), db);
+                loadSubdir(proj.getFolder(schemasPath), db, false);
                 addDboSchema(db);
                 isLoaded = true;
             }
@@ -198,7 +257,7 @@ public class UIProjectLoader extends ProjectLoader {
             if (schemasPath.isPrefixOf(filePath)) {
                 schemaFiles.add(filePath.removeFileExtension().lastSegment());
             } else {
-                loadFile(file, mon, db);
+                loadFile(file, mon, db, false);
             }
         }
 
@@ -266,11 +325,11 @@ public class UIProjectLoader extends ProjectLoader {
                         schemaPath = schemasPath.append(schemaFilename);
                     }
 
-                    loadFile(proj.getFile(schemaPath), null, db);
+                    loadFile(proj.getFile(schemaPath), null, db, false);
                 }
             }
 
-            loadFile(file, mon, db);
+            loadFile(file, mon, db, false);
         }
         return db;
     }
@@ -351,6 +410,10 @@ public class UIProjectLoader extends ProjectLoader {
         return isInProject(delta.getProjectRelativePath());
     }
 
+    public static boolean isPrivilegeFolder(IResourceDelta delta) {
+        return ApgdiffConsts.PRIVILEGES_DIR.equals(delta.getProjectRelativePath().segment(0));
+    }
+
     public static boolean isInProject(IEditorInput editorInput) {
         IResource res = ResourceUtil.getResource(editorInput);
         return res == null ? false : isInProject(res);
@@ -358,7 +421,7 @@ public class UIProjectLoader extends ProjectLoader {
 
     /**
      * @param path project relative path
-     * @param is MS project
+     * @param isMsSql is MS project
      * @return whether the path corresponds to a schema sql file
      */
     public static boolean isSchemaFile(IPath path, boolean isMsSql) {

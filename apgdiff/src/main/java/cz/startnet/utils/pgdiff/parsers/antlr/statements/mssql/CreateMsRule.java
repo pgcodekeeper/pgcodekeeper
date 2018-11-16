@@ -31,10 +31,16 @@ public class CreateMsRule extends ParserAbstract {
     private final Rule_commonContext ctx;
     private final String state;
     private final boolean isGO;
+    private final Map<PgStatement, List<PgPrivilege>> privs;
 
     public CreateMsRule(Rule_commonContext ctx, PgDatabase db) {
+        this(ctx, db, null);
+    }
+
+    public CreateMsRule(Rule_commonContext ctx, PgDatabase db, Map<PgStatement, List<PgPrivilege>> privs) {
         super(db);
         this.ctx = ctx;
+        this.privs = privs;
         if (ctx.DENY() != null) {
             state = "DENY";
         } else {
@@ -92,13 +98,13 @@ public class CreateMsRule extends ParserAbstract {
                         PgPrivilege priv = new PgPrivilege(state, per, name, role, isGO);
                         // table column privileges to columns, other columns to statement
                         if (st instanceof AbstractTable) {
-                            getSafe(((AbstractTable)st)::getColumn, column).addPrivilege(priv);
+                            addPrivilege(getSafe(((AbstractTable)st)::getColumn, column), priv);
                         } else {
-                            st.addPrivilege(priv);
+                            addPrivilege(st, priv);
                         }
                     }
                 } else {
-                    st.addPrivilege(new PgPrivilege(state, per, objectName, role, isGO));
+                    addPrivilege(st, new PgPrivilege(state, per, objectName, role, isGO));
                 }
             }
         }
@@ -176,12 +182,26 @@ public class CreateMsRule extends ParserAbstract {
                 for (String role : roles) {
                     PgPrivilege priv = new PgPrivilege(state, pr, objectName, role, isGO);
                     if (st instanceof AbstractTable) {
-                        getSafe(((AbstractTable)st)::getColumn, col).addPrivilege(priv);
+                        addPrivilege(getSafe(((AbstractTable)st)::getColumn, col), priv);
                     } else {
-                        st.addPrivilege(priv);
+                        addPrivilege(st, priv);
                     }
                 }
             }
+        }
+    }
+
+    private void addPrivilege(PgStatement st, PgPrivilege privilege) {
+        if (privs == null) {
+            st.addPrivilege(privilege);
+        } else {
+            List<PgPrivilege> newPrivileges = new ArrayList<>();
+            List<PgPrivilege> privileges = privs.putIfAbsent(st, newPrivileges);
+            if (privileges == null) {
+                privileges = newPrivileges;
+            }
+
+            privileges.add(privilege);
         }
     }
 }

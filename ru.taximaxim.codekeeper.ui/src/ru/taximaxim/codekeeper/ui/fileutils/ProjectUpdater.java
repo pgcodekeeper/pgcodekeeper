@@ -13,13 +13,17 @@ import java.util.Collection;
 import org.eclipse.core.runtime.CoreException;
 
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.MS_WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.TempDir;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.MsModelExporter;
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.MsPrivilegesModelExporter;
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.PgPrivilegesModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -34,21 +38,24 @@ public class ProjectUpdater {
     private final String encoding;
     private final Path dirExport;
     private final boolean isMsSql;
+    private final boolean privilegesOnly;
 
-    /**
-     * dbOld, changedObjects are necessary only for partial update
-     * @throws CoreException
-     */
-    public ProjectUpdater(PgDatabase dbNew, PgDatabase dbOld, Collection<TreeElement> checked, PgDbProject proj) throws CoreException {
+    public ProjectUpdater(PgDatabase dbNew, PgDbProject proj) throws CoreException {
+        this(dbNew, null, null, proj, false);
+    }
+
+    public ProjectUpdater(PgDatabase dbNew, PgDatabase dbOld, Collection<TreeElement> changedObjects,
+            PgDbProject proj, boolean privilegesOnly) throws CoreException {
         this.dbNew = dbNew;
         this.dbOld = dbOld;
 
-        this.changedObjects = checked;
+        this.changedObjects = changedObjects;
 
         this.encoding = proj.getProjectCharset();
         this.dirExport = proj.getPathToProject();
 
         this.isMsSql = OpenProjectUtils.checkMsSql(proj.getProject());
+        this.privilegesOnly = privilegesOnly;
     }
 
     public void updatePartial() throws IOException {
@@ -62,19 +69,33 @@ public class ProjectUpdater {
             Path dirTmp = tmp.get();
 
             try {
+                AbstractModelExporter exporter;
                 if (isMsSql) {
                     for (MS_WORK_DIR_NAMES subdir : MS_WORK_DIR_NAMES.values()) {
                         updateFolder(dirTmp, subdir.getDirName());
                     }
-                    new MsModelExporter(dirExport.toFile(), dbNew, dbOld, changedObjects, encoding)
-                    .exportPartial();
+                    if (privilegesOnly) {
+                        exporter = new MsPrivilegesModelExporter(dirExport, dbNew, dbOld,
+                                changedObjects, encoding);
+                    } else {
+                        exporter = new MsModelExporter(dirExport, dbNew, dbOld,
+                                changedObjects, encoding);
+                    }
                 } else {
                     for (WORK_DIR_NAMES subdir : WORK_DIR_NAMES.values()) {
                         updateFolder(dirTmp, subdir.toString());
                     }
-                    new ModelExporter(dirExport.toFile(), dbNew, dbOld, changedObjects, encoding)
-                    .exportPartial();
+
+                    if (privilegesOnly) {
+                        exporter = new PgPrivilegesModelExporter(dirExport, dbNew, dbOld,
+                                changedObjects, encoding);
+                    } else {
+                        exporter = new ModelExporter(dirExport, dbNew, dbOld,
+                                changedObjects, encoding);
+                    }
                 }
+                updateFolder(dirTmp, ApgdiffConsts.PRIVILEGES_DIR);
+                exporter.exportPartial();
             } catch (Exception ex) {
                 caughtProcessingEx = true;
 
@@ -136,9 +157,9 @@ public class ProjectUpdater {
             try {
                 safeCleanProjectDir(dirTmp);
                 if (isMsSql) {
-                    new MsModelExporter(dirExport.toFile(), dbNew, encoding).exportFull();
+                    new MsModelExporter(dirExport, dbNew, encoding).exportFull();
                 } else {
-                    new ModelExporter(dirExport.toFile(), dbNew, encoding).exportFull();
+                    new ModelExporter(dirExport, dbNew, encoding).exportFull();
                 }
             } catch (Exception ex) {
                 caughtProcessingEx = true;
@@ -182,6 +203,8 @@ public class ProjectUpdater {
                 moveFolder(dirTmp, subdirName.toString());
             }
         }
+
+        moveFolder(dirTmp, ApgdiffConsts.PRIVILEGES_DIR);
     }
 
     private void moveFolder(Path dirTmp, String folder) throws IOException {
@@ -201,6 +224,8 @@ public class ProjectUpdater {
                 restoreFolder(dirTmp, subdirName.toString());
             }
         }
+
+        restoreFolder(dirTmp, ApgdiffConsts.PRIVILEGES_DIR);
     }
 
     private void restoreFolder(Path dirTmp, String folder) throws IOException {

@@ -53,7 +53,7 @@ public class ProjectUpdaterTest {
         workingDir = new TempDir("test_new"); //$NON-NLS-1$
         referenceDir = new TempDir("test_old"); //$NON-NLS-1$
 
-        new ModelExporter(workingDir.get().toFile(), dbOld, ENCODING).exportFull();
+        new ModelExporter(workingDir.get(), dbOld, ENCODING).exportFull();
     }
 
     @Test
@@ -64,9 +64,9 @@ public class ProjectUpdaterTest {
         proj.getProject().getNature(NATURE.ID).deconfigure();
         proj.getProject().open(null);
         proj.getProject().setDefaultCharset(ENCODING, null);
-        new ProjectUpdater(dbNew, null, null, proj).updateFull();
+        new ProjectUpdater(dbNew, proj).updateFull();
 
-        new ModelExporter(referenceDir.get().toFile(), dbOld, ENCODING).exportFull();
+        new ModelExporter(referenceDir.get(), dbOld, ENCODING).exportFull();
         if (compareFilesInPaths(workingDir.get(), referenceDir.get())){
             fail("ProjectUpdate fail: expected bases to differ");
         }

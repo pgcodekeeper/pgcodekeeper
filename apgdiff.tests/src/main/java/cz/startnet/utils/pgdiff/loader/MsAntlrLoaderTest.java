@@ -179,7 +179,7 @@ public class MsAntlrLoaderTest {
         Path exportDir = null;
         try {
             exportDir = Files.createTempDirectory("pgCodekeeper-test-files");
-            new ModelExporter(exportDir.toFile(), dbPredefined, encoding).exportFull();
+            new ModelExporter(exportDir, dbPredefined, encoding).exportFull();
 
             args = new PgDiffArguments();
             args.setInCharsetName(encoding);

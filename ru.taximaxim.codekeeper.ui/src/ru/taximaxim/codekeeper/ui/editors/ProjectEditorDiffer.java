@@ -200,7 +200,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         IStatusLineManager manager = getEditorSite().getActionBars().getStatusLineManager();
 
-        diffTable = new DiffTableViewer(sashOuter, false, manager, Paths.get(proj.getProject().getLocationURI())) {
+        diffTable = new DiffTableViewer(sashOuter, false, manager,
+                Paths.get(proj.getProject().getLocationURI()), OpenProjectUtils.checkMsSql(proj.getProject())) {
 
             @Override
             public void createRightSide(Composite container) {
@@ -432,7 +433,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 // something other than just markers has changed
                 // check that it's our resource
                 if (delta.getFlags() != IResourceDelta.MARKERS &&
-                        UIProjectLoader.isInProject(delta, OpenProjectUtils.checkMsSql(proj.getProject())) &&
+                        (UIProjectLoader.isInProject(delta, OpenProjectUtils.checkMsSql(proj.getProject()))
+                                || UIProjectLoader.isPrivilegeFolder(delta)) &&
                         delta.getResource().getType() == IResource.FILE &&
                         delta.getResource().getProject().equals(proj.getProject())) {
                     schemaChanged[0] = true;
@@ -860,9 +862,30 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     public void commit() throws PgCodekeeperException {
         Log.log(Log.LOG_INFO, "Started project update"); //$NON-NLS-1$
         if (warnCheckedElements() < 1
-                || !OpenProjectUtils.checkVersionAndWarn(proj.getProject(), parent.getShell(), true)
-                || warnLibChange()) {
+                || !OpenProjectUtils.checkVersionAndWarn(proj.getProject(), parent.getShell(), true)) {
             return;
+        }
+
+        boolean forceSave = false;
+
+        if (diffTable.checkLibChange()) {
+            if (proj.getPrefs().getBoolean(PROJ_PREF.LIB_SAFE_MODE, true)) {
+                MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_WARNING | SWT.YES | SWT.NO);
+                mb.setMessage(Messages.ProjectEditorDiffer_lib_change_error_message);
+                mb.setText(Messages.ProjectEditorDiffer_lib_change_warning_title);
+                if (mb.open() != SWT.YES) {
+                    forceSave = true;
+                } else {
+                    return;
+                }
+            } else {
+                MessageBox mb = new MessageBox(getEditorSite().getShell(), SWT.ICON_WARNING | SWT.YES | SWT.NO);
+                mb.setText(Messages.ProjectEditorDiffer_lib_change_warning_title);
+                mb.setMessage(Messages.ProjectEditorDiffer_lib_change_warning_message);
+                if (SWT.YES != mb.open()) {
+                    return;
+                }
+            }
         }
 
         boolean considerDepcy = mainPrefs.getBoolean(COMMIT_PREF.CONSIDER_DEPCY_IN_COMMIT);
@@ -875,14 +898,15 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         Log.log(Log.LOG_INFO, "Querying user for project update"); //$NON-NLS-1$
         // display commit dialog
-        CommitDialog cd = new CommitDialog(parent.getShell(), sumNewAndDelete, dbProject, dbRemote,
-                diffTree, mainPrefs, isCommitCommandAvailable);
+        CommitDialog cd = new CommitDialog(parent.getShell(), sumNewAndDelete,
+                dbProject, dbRemote, diffTree, mainPrefs, isCommitCommandAvailable,
+                forceSave);
         if (cd.open() != CommitDialog.OK) {
             return;
         }
 
         Log.log(Log.LOG_INFO, "Updating project " + proj.getProjectName()); //$NON-NLS-1$
-        Job job = new JobProjectUpdater(Messages.projectEditorDiffer_save_project, diffTree);
+        Job job = new JobProjectUpdater(Messages.projectEditorDiffer_save_project, diffTree, cd.isPrivOnly());
         job.addJobChangeListener(new JobChangeAdapter() {
 
             @Override
@@ -952,31 +976,15 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         return checked;
     }
 
-    private boolean warnLibChange() {
-        if (diffTable.checkLibChange()) {
-            if (proj.getPrefs().getBoolean(PROJ_PREF.LIB_SAFE_MODE, true)) {
-                MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_INFORMATION);
-                mb.setMessage(Messages.ProjectEditorDiffer_lib_change_error_message);
-                mb.setText(Messages.ProjectEditorDiffer_lib_change_warning_title);
-                mb.open();
-                return true;
-            }
-
-            MessageBox mb = new MessageBox(getEditorSite().getShell(), SWT.ICON_WARNING | SWT.YES | SWT.NO);
-            mb.setText(Messages.ProjectEditorDiffer_lib_change_warning_title);
-            mb.setMessage(Messages.ProjectEditorDiffer_lib_change_warning_message);
-            return mb.open() != SWT.YES;
-        }
-        return false;
-    }
-
     private class JobProjectUpdater extends Job {
 
         private final TreeElement tree;
+        private final boolean isPrivOnly;
 
-        JobProjectUpdater(String name, TreeElement tree) {
+        JobProjectUpdater(String name, TreeElement tree, boolean isPrivOnly) {
             super(name);
             this.tree = tree;
+            this.isPrivOnly = isPrivOnly;
         }
 
         @Override
@@ -994,7 +1002,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                         .onlyEdits(dbProject.getDbObject(), dbRemote.getDbObject())
                         .flatten(tree);
                 new ProjectUpdater(dbRemote.getDbObject(), dbProject.getDbObject(),
-                        checked, proj).updatePartial();
+                        checked, proj, isPrivOnly).updatePartial();
                 monitor.done();
             } catch (IOException | CoreException e) {
                 return new Status(Status.ERROR, PLUGIN_ID.THIS,

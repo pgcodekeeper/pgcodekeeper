@@ -1,15 +1,17 @@
 package ru.taximaxim.codekeeper.apgdiff.model.exporter;
 
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NotDirectoryException;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -17,6 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
+import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.AbstractView;
@@ -24,6 +27,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -48,7 +52,7 @@ public abstract class AbstractModelExporter {
     /**
      * Objects of the export directory;
      */
-    protected final File outDir;
+    protected final Path outDir;
 
     /**
      * Database to export.
@@ -78,21 +82,17 @@ public abstract class AbstractModelExporter {
      * @param outDir outDir, directory should be empty or not exist
      * @param newDb database
      */
-    public AbstractModelExporter(File outDir, PgDatabase db, String sqlEncoding) {
-        this.outDir = outDir;
-        this.newDb = db;
-        this.oldDb = null;
-        this.sqlEncoding = sqlEncoding;
-        this.changeList = null;
+    public AbstractModelExporter(Path outDir, PgDatabase db, String sqlEncoding) {
+        this(outDir, db, null, null, sqlEncoding);
     }
 
-    public AbstractModelExporter(File outDir, PgDatabase newDb, PgDatabase oldDb,
-            Collection<TreeElement> changedObjects, String sqlEncoding){
+    public AbstractModelExporter(Path outDir, PgDatabase newDb, PgDatabase oldDb,
+            Collection<TreeElement> changedObjects, String sqlEncoding) {
         this.outDir = outDir;
         this.newDb = newDb;
         this.oldDb = oldDb;
         this.sqlEncoding = sqlEncoding;
-        this.changeList = new LinkedList<>(changedObjects);
+        this.changeList = changedObjects == null ? null : new LinkedList<>(changedObjects);
     }
 
     /**
@@ -104,10 +104,10 @@ public abstract class AbstractModelExporter {
         if (oldDb == null){
             throw new PgCodekeeperException("Old database should not be null for partial export.");
         }
-        if (!outDir.exists() || !outDir.isDirectory()) {
+        if (Files.notExists(outDir) || !Files.isDirectory(outDir)) {
             throw new DirectoryException(MessageFormat.format(
                     "Output directory does not exist: {0}",
-                    outDir.getAbsolutePath()));
+                    outDir.toAbsolutePath()));
         }
 
         while (!changeList.isEmpty()) {
@@ -124,7 +124,7 @@ public abstract class AbstractModelExporter {
                 break;
             }
         }
-        writeProjVersion(new File(outDir.getPath(), ApgdiffConsts.FILENAME_WORKING_DIR_MARKER));
+        writeProjVersion(outDir.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER));
     }
 
     protected abstract void deleteObject(TreeElement el) throws IOException;
@@ -133,9 +133,9 @@ public abstract class AbstractModelExporter {
 
     protected abstract void createObject(TreeElement el) throws IOException, PgCodekeeperException;
 
-    protected void dumpSQL(CharSequence sql, File file) throws IOException {
-        Files.createDirectories(file.toPath().getParent());
-        try (PrintWriter outFile = new UnixPrintWriter(Files.newOutputStream(file.toPath(),
+    protected void dumpSQL(CharSequence sql, Path path) throws IOException {
+        Files.createDirectories(path.getParent());
+        try (PrintWriter outFile = new UnixPrintWriter(Files.newOutputStream(path,
                 StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE), sqlEncoding)) {
             outFile.println(sql);
         }
@@ -165,7 +165,7 @@ public abstract class AbstractModelExporter {
         // we need to have every related element on the list
         changeList.push(elCause);
 
-        deleteStatementIfExists(st);
+        deleteStatementIfExists(st, false);
 
         // prepare the dump data, old state
         List<PgStatementWithSearchPath> contents = new LinkedList<>();
@@ -248,8 +248,7 @@ public abstract class AbstractModelExporter {
             it.remove();
         }
 
-        dumpContainer(viewPrimary, contents,
-                newParentSchema == null ? oldParentSchema : newParentSchema);
+        dumpContainer(viewPrimary, contents);
     }
 
     /**
@@ -272,7 +271,7 @@ public abstract class AbstractModelExporter {
         // we need to have every related element on the list
         changeList.push(elCause);
 
-        deleteStatementIfExists(st);
+        deleteStatementIfExists(st, false);
 
         // prepare the dump data, old state
         List<PgStatementWithSearchPath> contents = new LinkedList<>();
@@ -369,16 +368,61 @@ public abstract class AbstractModelExporter {
             it.remove();
         }
 
-        dumpContainer(tablePrimary, contents, newParentSchema == null ? oldParentSchema : newParentSchema);
+        dumpContainer(tablePrimary, contents);
     }
 
-    protected abstract void dumpContainer(PgStatement obj, List<PgStatementWithSearchPath> contents,
-            AbstractSchema schema) throws IOException;
+    protected void dumpContainer(PgStatement obj, List<PgStatementWithSearchPath> contents)
+            throws IOException {
+        Collections.sort(contents, ExportTableOrder.INSTANCE);
+
+        StringBuilder groupSql = new StringBuilder(getDumpSql(obj));
+
+        for (PgStatementWithSearchPath st : contents) {
+            groupSql.append(GROUP_DELIMITER).append(getDumpSql(st));
+        }
+
+        dumpSQL(groupSql, outDir.resolve(getRelativeFilePath(obj, true)));
+    }
+
+    protected void dumpPrivileges(PgStatement st) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        st.appendPrivileges(sb);
+        if (sb.length() > 0) {
+            // replace first new line symbol
+            sb.replace(0, 1, "");
+
+            if (DbObjType.TABLE == st.getStatementType()) {
+                for (AbstractColumn col : ((AbstractTable)st).getColumns()) {
+                    col.appendPrivileges(sb);
+                }
+            }
+
+            dumpSQL(sb.toString(), outDir.resolve(getRelativeFilePath(st, true)));
+        }
+    }
 
     /**
      * Removes file if it exists.
      */
-    protected abstract void deleteStatementIfExists(PgStatement st) throws IOException;
+    protected void deleteStatementIfExists(PgStatement st, boolean fullDelete) throws IOException {
+        Path toDelete = outDir.resolve(getRelativeFilePath(st, true));
+
+        if (Files.exists(toDelete) && fullDelete) {
+            Log.log(Log.LOG_INFO, "Deleting file " + toDelete +
+                    " for object " + st.getStatementType() + ' ' + st.getName());
+        }
+
+        Files.deleteIfExists(toDelete);
+    }
+
+
+    /**
+     * @param addExtension whether to add .sql extension to the path
+     *      for schemas, no extension also means to get schema dir path,
+     *      one segment shorter than file location since schema files
+     *      are now stored in schema dirs
+     */
+    protected abstract Path getRelativeFilePath(PgStatement st, boolean addExtension);
 
     protected File mkdirObjects(File parentOutDir, String outDirName)
             throws NotDirectoryException, DirectoryException {
@@ -388,12 +432,10 @@ public abstract class AbstractModelExporter {
             if (!objectDir.isDirectory()) {
                 throw new NotDirectoryException(objectDir.getAbsolutePath());
             }
-        } else {
-            if (!objectDir.mkdir()) {
-                throw new DirectoryException(MessageFormat.format(
-                        "Could not create objects directory: {0}",
-                        objectDir.getAbsolutePath()));
-            }
+        } else if (!objectDir.mkdir()) {
+            throw new DirectoryException(MessageFormat.format(
+                    "Could not create objects directory: {0}",
+                    objectDir.getAbsolutePath()));
         }
 
         return objectDir;
@@ -415,11 +457,18 @@ public abstract class AbstractModelExporter {
         return FileUtils.getValidFilename(name) + ".sql"; //$NON-NLS-1$
     }
 
-    public static void writeProjVersion(File f) throws FileNotFoundException {
-        try (PrintWriter pw = new UnixPrintWriter(f, StandardCharsets.UTF_8)) {
-            pw.println(ApgdiffConsts.VERSION_PROP_NAME + " = " //$NON-NLS-1$
+    public static void writeProjVersion(Path path) throws IOException {
+        try (BufferedWriter pw = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
+            pw.write(ApgdiffConsts.VERSION_PROP_NAME + " = " //$NON-NLS-1$
                     + ApgdiffConsts.EXPORT_CURRENT_VERSION);
         }
+    }
+
+    public static Path getRelativeFilePath(PgStatement st, boolean addExtension, boolean isMsSql) {
+        AbstractModelExporter exporter = isMsSql ? new MsModelExporter(null, null, null)
+                : new ModelExporter(null, null, null);
+
+        return exporter.getRelativeFilePath(st, true);
     }
 }
 

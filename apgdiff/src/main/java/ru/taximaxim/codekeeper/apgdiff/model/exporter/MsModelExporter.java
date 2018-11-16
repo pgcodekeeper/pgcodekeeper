@@ -1,15 +1,12 @@
 package ru.taximaxim.codekeeper.apgdiff.model.exporter;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -24,7 +21,6 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.MS_WORK_DIR_NAMES;
-import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
@@ -35,103 +31,81 @@ public class MsModelExporter extends AbstractModelExporter {
     private static final String USERS_FOLDER = "Users";
     private static final String ROLES_FOLDER = "Roles";
 
-    public MsModelExporter(File outDir, PgDatabase db, String sqlEncoding) {
+    public MsModelExporter(Path outDir, PgDatabase db, String sqlEncoding) {
         super(outDir, db, sqlEncoding);
     }
 
-    public MsModelExporter(File outDir, PgDatabase newDb, PgDatabase oldDb,
+    public MsModelExporter(Path outDir, PgDatabase newDb, PgDatabase oldDb,
             Collection<TreeElement> changedObjects, String sqlEncoding) {
         super(outDir, newDb, oldDb, changedObjects, sqlEncoding);
     }
 
     @Override
     public void exportFull() throws IOException {
-        if (outDir.exists()) {
-            if (!outDir.isDirectory()) {
-                throw new NotDirectoryException(outDir.getAbsolutePath());
+        if (Files.exists(outDir)) {
+            if (!Files.isDirectory(outDir)) {
+                throw new NotDirectoryException(outDir.toString());
             }
 
             for (MS_WORK_DIR_NAMES sub : MS_WORK_DIR_NAMES.values()) {
                 String subdir = sub.getDirName();
-                if (new File(outDir, subdir).exists()) {
+                if (Files.exists(outDir.resolve(subdir))) {
                     throw new DirectoryException(MessageFormat.format(
                             "Output directory already contains {0} directory.", subdir));
                 }
             }
-        } else if (!outDir.mkdirs()) {
-            throw new DirectoryException(MessageFormat.format(
-                    "Could not create output directory: {0}",
-                    outDir.getAbsolutePath()));
+        } else {
+            Files.createDirectories(outDir);
         }
 
 
         for (MS_WORK_DIR_NAMES sub : MS_WORK_DIR_NAMES.values()) {
             String subdir = sub.getDirName();
-            File folder = new File(outDir, subdir);
-            if (!folder.mkdir()) {
-                throw new DirectoryException(MessageFormat.format(
-                        "Could not create {0} folder: {1}", subdir,
-                        folder.getAbsolutePath()));
-            }
+            Path folder = outDir.resolve(subdir);
+            Files.createDirectories(folder);
         }
 
 
-        File securityFolder = new File(outDir, MS_WORK_DIR_NAMES.SECURITY.getDirName());
+        Path securityFolder = outDir.resolve(MS_WORK_DIR_NAMES.SECURITY.getDirName());
 
         // exporting schemas
-        File schemasSharedDir = new File(securityFolder, SCHEMAS_FOLDER);
-        if (!schemasSharedDir.mkdir()) {
-            throw new DirectoryException(MessageFormat.format(
-                    "Could not create schemas directory: {0}",
-                    schemasSharedDir.getAbsolutePath()));
-        }
+        Path schemasSharedDir = securityFolder.resolve(SCHEMAS_FOLDER);
 
-        File usersFolder = new File(securityFolder, USERS_FOLDER);
+        Path usersFolder = securityFolder.resolve(USERS_FOLDER);
         for (MsUser user : newDb.getUsers()) {
-            dumpSQL(getDumpSql(user), new File(usersFolder, getExportedFilenameSql(user)));
+            dumpSQL(getDumpSql(user), usersFolder.resolve(getExportedFilenameSql(user)));
         }
 
-        File rolesFolder = new File(securityFolder, ROLES_FOLDER);
+        Path rolesFolder = securityFolder.resolve(ROLES_FOLDER);
         for (MsRole role : newDb.getRoles()) {
-            dumpSQL(getDumpSql(role), new File(rolesFolder, getExportedFilenameSql(role)));
+            dumpSQL(getDumpSql(role), rolesFolder.resolve(getExportedFilenameSql(role)));
         }
 
         // exporting schemas contents
         for (AbstractSchema schema : newDb.getSchemas()) {
-            dumpSQL(getDumpSql(schema), new File(schemasSharedDir, getExportedFilenameSql(schema)));
+            dumpSQL(getDumpSql(schema), schemasSharedDir.resolve(getExportedFilenameSql(schema)));
 
-            dumpFunctions(schema.getFunctions());
-            dumpObjects(schema.getSequences(), new File(outDir, MS_WORK_DIR_NAMES.SEQUENCES.getDirName()));
-            dumpObjects(schema.getTables(), new File(outDir, MS_WORK_DIR_NAMES.TABLES.getDirName()));
-            dumpObjects(schema.getViews(), new File(outDir, MS_WORK_DIR_NAMES.VIEWS.getDirName()));
+            for (AbstractFunction func : schema.getFunctions()) {
+                dumpSQL(getDumpSql(schema), outDir.resolve(getRelativeFilePath(func, true)));
+            }
+
+            dumpObjects(schema.getSequences(), outDir.resolve(MS_WORK_DIR_NAMES.SEQUENCES.getDirName()));
+            dumpObjects(schema.getTables(), outDir.resolve(MS_WORK_DIR_NAMES.TABLES.getDirName()));
+            dumpObjects(schema.getViews(), outDir.resolve(MS_WORK_DIR_NAMES.VIEWS.getDirName()));
 
             // indexes, triggers, rules, constraints are dumped when tables are processed
         }
 
-        File assembliesFolder = new File(outDir, MS_WORK_DIR_NAMES.ASSEMBLIES.getDirName());
+        Path assembliesFolder = outDir.resolve(MS_WORK_DIR_NAMES.ASSEMBLIES.getDirName());
         for (MsAssembly assembly : newDb.getAssemblies()) {
-            dumpSQL(getDumpSql(assembly), new File(assembliesFolder, getExportedFilenameSql(assembly)));
+            dumpSQL(getDumpSql(assembly), assembliesFolder.resolve(getExportedFilenameSql(assembly)));
         }
 
-        writeProjVersion(new File(outDir.getPath(),
-                ApgdiffConsts.FILENAME_WORKING_DIR_MARKER));
-    }
-
-    private void dumpFunctions(List<AbstractFunction> funcs) throws IOException {
-        for (PgStatementWithSearchPath obj : funcs) {
-            String schemaName = getExportedFilename(obj.getContainingSchema());
-            String objectName = getExportedFilenameSql(obj);
-
-            String dirName = obj.getStatementType() == DbObjType.PROCEDURE ? MS_WORK_DIR_NAMES.PROCEDURES.getDirName()
-                    : MS_WORK_DIR_NAMES.FUNCTIONS.getDirName();
-
-            File parentOutDir = new File(outDir, dirName);
-            dumpSQL(getDumpSql(obj), new File(parentOutDir, schemaName + '.' + objectName));
-        }
+        writeProjVersion(outDir.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER));
     }
 
     private void dumpObjects(List<? extends PgStatementWithSearchPath> objects,
-            File parentOutDir) throws IOException {
+            Path parentOutDir) throws IOException {
         for (PgStatementWithSearchPath obj : objects) {
             String dump = getDumpSql(obj);
             if (obj.hasChildren()) {
@@ -145,7 +119,7 @@ public class MsModelExporter extends AbstractModelExporter {
             String schemaName = getExportedFilename(obj.getContainingSchema());
             String objectName = getExportedFilenameSql(obj);
 
-            dumpSQL(dump, new File(parentOutDir, schemaName + '.' + objectName));
+            dumpSQL(dump, parentOutDir.resolve(schemaName + '.' + objectName));
         }
     }
 
@@ -156,22 +130,19 @@ public class MsModelExporter extends AbstractModelExporter {
         switch (st.getStatementType()) {
         case SCHEMA:
             // delete schema sql file
-            deleteStatementIfExists(st);
+            deleteStatementIfExists(st, true);
 
             // delete other statements
             Iterator<PgStatement> iter = st.getChildren().iterator();
             while (iter.hasNext()) {
-                deleteStatementIfExists(iter.next());
+                deleteStatementIfExists(iter.next(), true);
             }
-
             break;
-
         case CONSTRAINT:
         case INDEX:
             TreeElement elParent = el.getParent();
             processTableAndContents(elParent, elParent.getPgStatement(oldDb), el);
             break;
-
         case TRIGGER:
         case RULE:
             elParent = el.getParent();
@@ -181,9 +152,8 @@ public class MsModelExporter extends AbstractModelExporter {
                 processViewAndContents(elParent, elParent.getPgStatement(oldDb), el);
             }
             break;
-
         default:
-            deleteStatementIfExists(st);
+            deleteStatementIfExists(st, true);
         }
     }
 
@@ -197,12 +167,15 @@ public class MsModelExporter extends AbstractModelExporter {
         case ROLE:
         case USER:
         case ASSEMBLY:
+        case SEQUENCE:
+        case PROCEDURE:
+        case FUNCTION:
             // delete sql file
-            deleteStatementIfExists(stInNew);
+            deleteStatementIfExists(stInNew, false);
 
             // dump new version
-            dumpSQL(stInNew.getFullSQL(),
-                    new File(outDir, getRelativeFilePath(stInNew, true)));
+            dumpSQL(getDumpSql(stInNew),
+                    outDir.resolve(getRelativeFilePath(stInNew, true)));
             break;
 
         case CONSTRAINT:
@@ -215,21 +188,11 @@ public class MsModelExporter extends AbstractModelExporter {
                 processViewAndContents(elParent, elParent.getPgStatement(newDb), el);
             }
             break;
-        case PROCEDURE:
-        case FUNCTION:
-            deleteStatementIfExists(stInNew);
-            dumpFunctions(Arrays.asList((AbstractFunction)stInNew));
-            break;
         case TABLE:
             processTableAndContents(el, stInNew, el);
             break;
         case VIEW:
             processViewAndContents(el, stInNew, el);
-            break;
-        case SEQUENCE:
-            deleteStatementIfExists(stInNew);
-            dumpObjects(Arrays.asList((PgStatementWithSearchPath)stInNew),
-                    new File(outDir, MS_WORK_DIR_NAMES.SEQUENCES.getDirName()));
             break;
         default:
             throw new IllegalStateException("Unsupported export type: " + stInNew.getStatementType());
@@ -246,11 +209,14 @@ public class MsModelExporter extends AbstractModelExporter {
         case ASSEMBLY:
         case USER:
         case ROLE:
+        case SEQUENCE:
+        case FUNCTION:
+        case PROCEDURE:
             // delete statement if already exists
-            deleteStatementIfExists(stInNew);
-            dumpSQL(stInNew.getFullSQL(), new File (outDir, getRelativeFilePath(stInNew, true)));
+            deleteStatementIfExists(stInNew, false);
+            dumpSQL(getDumpSql(stInNew),
+                    outDir.resolve(getRelativeFilePath(stInNew, true)));
             break;
-
         case CONSTRAINT:
         case INDEX:
         case TRIGGER:
@@ -261,80 +227,60 @@ public class MsModelExporter extends AbstractModelExporter {
                 processViewAndContents(elParent, elParent.getPgStatement(newDb), el);
             }
             break;
-
         case TABLE:
             processTableAndContents(el, stInNew, el);
             break;
-
         case VIEW:
             processViewAndContents(el, stInNew, el);
-            break;
-
-        case SEQUENCE:
-            dumpObjects(Arrays.asList((PgStatementWithSearchPath)stInNew),
-                    new File(outDir, MS_WORK_DIR_NAMES.SEQUENCES.getDirName()));
-            break;
-        case FUNCTION:
-        case PROCEDURE:
-            dumpFunctions(Arrays.asList((AbstractFunction)stInNew));
             break;
         default:
             throw new IllegalStateException("Unsupported export type: " + stInNew.getStatementType());
         }
     }
 
-
-    /**
-     * @param addExtension whether to add .sql extension to the path
-     *      for schemas, no extension also means to get schema dir path,
-     *      one segment shorter than file location since schema files
-     *      are now stored in schema dirs
-     */
-    public static String getRelativeFilePath(PgStatement st, boolean addExtension){
+    @Override
+    protected Path getRelativeFilePath(PgStatement st, boolean addExtension){
         PgStatement parentSt = st.getParent();
 
-        File file;
+        Path path;
         DbObjType type = st.getStatementType();
         switch (type) {
 
         case SCHEMA:
-            file = new File(MS_WORK_DIR_NAMES.SECURITY.getDirName(), SCHEMAS_FOLDER);
+            path = Paths.get(MS_WORK_DIR_NAMES.SECURITY.getDirName(), SCHEMAS_FOLDER);
             if (!addExtension) {
-                // return schema dir path
-                return file.toString();
+                return path;
             }
             break;
         case ROLE:
-            file = new File(MS_WORK_DIR_NAMES.SECURITY.getDirName(), ROLES_FOLDER);
+            path = Paths.get(MS_WORK_DIR_NAMES.SECURITY.getDirName(), ROLES_FOLDER);
             if (!addExtension) {
-                // return schema dir path
-                return file.toString();
+                return path;
             }
             break;
         case USER:
-            file = new File(MS_WORK_DIR_NAMES.SECURITY.getDirName(), USERS_FOLDER);
+            path = Paths.get(MS_WORK_DIR_NAMES.SECURITY.getDirName(), USERS_FOLDER);
             if (!addExtension) {
-                // return schema dir path
-                return file.toString();
+                return path;
             }
             break;
         case ASSEMBLY:
-            file = new File(MS_WORK_DIR_NAMES.ASSEMBLIES.getDirName());
+            path =  Paths.get(MS_WORK_DIR_NAMES.ASSEMBLIES.getDirName());
             break;
         case SEQUENCE:
-            file = new File(MS_WORK_DIR_NAMES.SEQUENCES.getDirName());
+            path = Paths.get(MS_WORK_DIR_NAMES.SEQUENCES.getDirName());
             break;
         case VIEW:
-            file = new File(MS_WORK_DIR_NAMES.VIEWS.getDirName());
+            path = Paths.get(MS_WORK_DIR_NAMES.VIEWS.getDirName());
             break;
         case TABLE:
-            file = new File(MS_WORK_DIR_NAMES.TABLES.getDirName());
+            path = Paths.get(MS_WORK_DIR_NAMES.TABLES.getDirName());
             break;
         case FUNCTION:
-            file = new File(MS_WORK_DIR_NAMES.FUNCTIONS.getDirName());
+            path = Paths.get(MS_WORK_DIR_NAMES.FUNCTIONS.getDirName());
             break;
         case PROCEDURE:
-            file = new File(MS_WORK_DIR_NAMES.PROCEDURES.getDirName());
+            path = Paths.get(MS_WORK_DIR_NAMES.PROCEDURES.getDirName());
             break;
 
         case CONSTRAINT:
@@ -343,7 +289,7 @@ public class MsModelExporter extends AbstractModelExporter {
         case TRIGGER:
         case COLUMN:
             st = parentSt;
-            file = new File(parentSt.getStatementType() == DbObjType.TABLE ?
+            path = Paths.get(parentSt.getStatementType() == DbObjType.TABLE ?
                     MS_WORK_DIR_NAMES.TABLES.getDirName() : MS_WORK_DIR_NAMES.VIEWS.getDirName());
             break;
         default:
@@ -356,39 +302,6 @@ public class MsModelExporter extends AbstractModelExporter {
                     .getContainingSchema().getName()) + '.' + fileName;
         }
 
-        return new File(file, fileName).toString();
-    }
-
-    @Override
-    protected void dumpContainer(PgStatement obj, List<PgStatementWithSearchPath> contents,
-            AbstractSchema schema) throws IOException {
-        DbObjType type = obj.getStatementType();
-        MS_WORK_DIR_NAMES folder = type == DbObjType.TABLE ?
-                MS_WORK_DIR_NAMES.TABLES : MS_WORK_DIR_NAMES.VIEWS;
-
-        File parentDir =  new File(outDir, folder.getDirName());
-
-        mkdirObjects(null, parentDir.toString());
-
-        if (type == DbObjType.TABLE) {
-            Collections.sort(contents, ExportTableOrder.INSTANCE);
-        }
-
-        StringBuilder groupSql = new StringBuilder(getDumpSql(obj));
-
-        for (PgStatementWithSearchPath st : contents) {
-            groupSql.append(GROUP_DELIMITER).append(getDumpSql(st));
-        }
-
-        dumpSQL(groupSql, new File(parentDir, FileUtils.getValidFilename(
-                obj.getParent().getName()) + '.' + getExportedFilenameSql(obj)));
-    }
-
-    @Override
-    protected void deleteStatementIfExists(PgStatement st) throws IOException {
-        Path toDelete = Paths.get(outDir.getCanonicalPath(), getRelativeFilePath(st, true));
-        Log.log(Log.LOG_INFO, "Deleting file " + toDelete.toString() +
-                " for object " + st.getStatementType() + ' ' + st.getName());
-        Files.deleteIfExists(toDelete);
+        return path.resolve(fileName);
     }
 }

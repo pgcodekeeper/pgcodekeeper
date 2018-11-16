@@ -63,7 +63,13 @@ public class LibraryLoader {
 
         if (path.startsWith("jdbc:")) {
             String timezone = args.getTimeZone() == null ? ApgdiffConsts.UTC : args.getTimeZone();
-            PgDatabase db = new JdbcLoader(JdbcConnector.fromUrl(path, timezone), args).getDbFromJdbc();
+            PgDatabase db;
+            if (path.startsWith("jdbc:sqlserver")) {
+                db = new JdbcMsLoader(JdbcConnector.fromUrl(path, timezone), args).readDb();
+            } else {
+                db = new JdbcLoader(JdbcConnector.fromUrl(path, timezone), args).getDbFromJdbc();
+            }
+
             db.getDescendants().forEach(st -> st.setLocation(path));
             return db;
         }

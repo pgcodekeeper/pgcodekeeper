@@ -158,14 +158,14 @@ public class PartialExporterTest {
 
         Path exportDirFull = null;
         Path exportDirPartial = null;
-        try{
+        try {
             exportDirFull = Files.createTempDirectory("pgCodekeeper-test-export-full");
             exportDirPartial = Files.createTempDirectory("pgCodekeeper-test-export-partial");
 
             // full export of source
-            new ModelExporter(exportDirFull.toFile(), dbSource, UTF_8).exportFull();
+            new ModelExporter(exportDirFull, dbSource, UTF_8).exportFull();
             // full export of source to target directory
-            new ModelExporter(exportDirPartial.toFile(), dbSource, UTF_8).exportFull();
+            new ModelExporter(exportDirPartial, dbSource, UTF_8).exportFull();
 
             // get new db with selected changes
             preset.setUserSelection();
@@ -174,15 +174,15 @@ public class PartialExporterTest {
                     .onlyEdits(dbSource, dbTarget)
                     .flatten(preset.getDiffTree());
             // накатываем на полную базу частичные изменения
-            new ModelExporter(exportDirPartial.toFile(), dbTarget, dbSource,
+            new ModelExporter(exportDirPartial, dbTarget, dbSource,
                     list, UTF_8).exportPartial();
 
             walkAndComare(exportDirFull, exportDirPartial, preset);
-        }finally{
-            if (exportDirFull != null){
+        } finally {
+            if (exportDirFull != null) {
                 deleteRecursive(exportDirFull.toFile());
             }
-            if (exportDirPartial != null){
+            if (exportDirPartial != null) {
                 deleteRecursive(exportDirPartial.toFile());
             }
         }

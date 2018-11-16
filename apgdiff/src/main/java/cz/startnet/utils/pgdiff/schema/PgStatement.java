@@ -279,7 +279,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         resetHash();
     }
 
-    protected StringBuilder appendPrivileges(StringBuilder sb) {
+    public StringBuilder appendPrivileges(StringBuilder sb) {
         if (grants.isEmpty() && revokes.isEmpty()) {
             return sb;
         }

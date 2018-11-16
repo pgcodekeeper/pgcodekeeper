@@ -99,7 +99,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
-import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.AggregatingListener;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
@@ -130,6 +130,7 @@ public class DiffTableViewer extends Composite {
     private static final ListXmlStore XML_HISTORY = new ListXmlStore(200, "fhistory.xml", "history", "element"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
     private final boolean showGitUser;
+    private final boolean isMsSql;
     private boolean showDbUser;
 
     private final Image iSideBoth;
@@ -182,11 +183,17 @@ public class DiffTableViewer extends Composite {
         return Collections.unmodifiableCollection(elements);
     }
 
-    public DiffTableViewer(Composite parent, boolean viewOnly, IStatusLineManager lineManager, Path location) {
+    public DiffTableViewer(Composite parent, boolean viewOnly) {
+        this(parent, viewOnly, null, null, false);
+    }
+
+    public DiffTableViewer(Composite parent, boolean viewOnly, IStatusLineManager lineManager,
+            Path location, boolean isMsSql) {
         super(parent, SWT.NONE);
         this.viewOnly = viewOnly;
         this.lineManager = lineManager;
         this.location = location;
+        this.isMsSql = isMsSql;
         showGitUser = location!= null
                 && Activator.getDefault().getPreferenceStore().getBoolean(PG_EDIT_PREF.SHOW_GIT_USER)
                 && GitUserReader.checkRepo(location);
@@ -847,7 +854,8 @@ public class DiffTableViewer extends Composite {
                 if (loc.startsWith("jdbc:")) { //$NON-NLS-1$
                     type = Messages.DiffTableViewer_database;
                     name = JdbcConnector.dbNameFromUrl(loc);
-                    loc = ModelExporter.getRelativeFilePath(st, false);
+                    loc = AbstractModelExporter.getRelativeFilePath(st, false,
+                            loc.startsWith("jdbc:sqlserver")).toString(); //$NON-NLS-1$
                 } else {
                     Path lib = libs.stream().map(PgLibrary::getPath)
                             .filter(loc::startsWith).findFirst().map(Paths::get).get();
@@ -896,8 +904,8 @@ public class DiffTableViewer extends Composite {
                     Map<String, List<ElementMetaInfo>> metas = new HashMap<>();
                     elementInfoMap.forEach((k,v) -> {
                         if (k.getSide() != DiffSide.RIGHT) {
-                            Path fullPath = location.resolve(Paths.get(ModelExporter.getRelativeFilePath(
-                                    k.getPgStatement(dbProject.getDbObject()), true)));
+                            Path fullPath = location.resolve(AbstractModelExporter.getRelativeFilePath(
+                                    k.getPgStatement(dbProject.getDbObject()), true, isMsSql));
                             // git always uses linux paths
                             // since all paths here are relative it's ok to simply
                             // join their elements with forward slashes

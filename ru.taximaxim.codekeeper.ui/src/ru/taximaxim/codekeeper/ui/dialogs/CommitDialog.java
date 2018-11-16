@@ -30,6 +30,7 @@ public class CommitDialog extends TrayDialog {
 
     private final IPreferenceStore prefs;
     private final boolean egitCommitAvailable;
+    private final boolean forceSave;
 
     private final DbSource dbProject;
     private final DbSource dbRemote;
@@ -37,11 +38,14 @@ public class CommitDialog extends TrayDialog {
     private final Set<TreeElement> depcyElementsSet;
     private DiffTableViewer dtvBottom;
     private Button btnAutocommit;
+    private Button btnSavePriv;
     private Label warningLbl;
+    private boolean isPrivOnly;
 
     public CommitDialog(Shell parentShell, Set<TreeElement> depcyElementsSet,
             DbSource dbProject, DbSource dbRemote, TreeElement diffTree,
-            IPreferenceStore mainPrefs, boolean egitCommitAvailable) {
+            IPreferenceStore mainPrefs, boolean egitCommitAvailable,
+            boolean forceSave) {
         super(parentShell);
         this.depcyElementsSet = depcyElementsSet;
         this.dbProject = dbProject;
@@ -49,6 +53,7 @@ public class CommitDialog extends TrayDialog {
         this.diffTree = diffTree;
         this.prefs = mainPrefs;
         this.egitCommitAvailable = egitCommitAvailable;
+        this.forceSave = forceSave;
 
         setShellStyle(getShellStyle() | SWT.RESIZE);
     }
@@ -78,7 +83,7 @@ public class CommitDialog extends TrayDialog {
         gTop.setLayoutData(gd);
         gTop.setText(Messages.commitDialog_user_selected_elements);
 
-        DiffTableViewer dtvTop = new DiffTableViewer(gTop, true, null, null);
+        DiffTableViewer dtvTop = new DiffTableViewer(gTop, true);
         gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 300;
         gd.widthHint = 1000;
@@ -96,7 +101,7 @@ public class CommitDialog extends TrayDialog {
             gBottom.setLayoutData(gd);
             gBottom.setText(Messages.commitDialog_depcy_elements);
 
-            dtvBottom = new DiffTableViewer(gBottom, false, null, null);
+            dtvBottom = new DiffTableViewer(gBottom, false);
             gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 300;
             gd.widthHint = 1000;
@@ -127,11 +132,24 @@ public class CommitDialog extends TrayDialog {
             }
         });
         btnAutocommit.setEnabled(egitCommitAvailable);
+
+        btnSavePriv = new Button(container, SWT.CHECK);
+        btnSavePriv.setText(Messages.CommitDialog_save_privileges);
+        btnSavePriv.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                isPrivOnly = btnSavePriv.getSelection();
+            }
+        });
+
+        btnSavePriv.setSelection(forceSave);
+
         return area;
     }
 
-    public DiffTableViewer getBottomTableViewer(){
-        return dtvBottom;
+    public boolean isPrivOnly() {
+        return isPrivOnly;
     }
 
     @Override
@@ -182,6 +200,14 @@ public class CommitDialog extends TrayDialog {
                     }
                 }
             }
+
+            if (showWarning) {
+                warningLbl.setText(Messages.CommitDialog_unchecked_objects_can_occur_unexpected_errors);
+            } else if (forceSave && !btnSavePriv.getSelection()) {
+                showWarning = true;
+                warningLbl.setText(Messages.CommitDialog_privileges_must_be_saved);
+            }
+
             warningLbl.setVisible(showWarning);
             getButton(OK).setEnabled(!showWarning);
         }
