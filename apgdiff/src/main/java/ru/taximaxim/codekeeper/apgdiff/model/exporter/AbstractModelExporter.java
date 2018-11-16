@@ -1,12 +1,10 @@
 package ru.taximaxim.codekeeper.apgdiff.model.exporter;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.text.MessageFormat;
@@ -423,24 +421,6 @@ public abstract class AbstractModelExporter {
      *      are now stored in schema dirs
      */
     protected abstract Path getRelativeFilePath(PgStatement st, boolean addExtension);
-
-    protected File mkdirObjects(File parentOutDir, String outDirName)
-            throws NotDirectoryException, DirectoryException {
-        File objectDir = new File(parentOutDir, outDirName);
-
-        if (objectDir.exists()) {
-            if (!objectDir.isDirectory()) {
-                throw new NotDirectoryException(objectDir.getAbsolutePath());
-            }
-        } else if (!objectDir.mkdir()) {
-            throw new DirectoryException(MessageFormat.format(
-                    "Could not create objects directory: {0}",
-                    objectDir.getAbsolutePath()));
-        }
-
-        return objectDir;
-    }
-
 
     /**
      * @return a statement's exported file name
