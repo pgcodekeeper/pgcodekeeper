@@ -1,8 +1,6 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -841,16 +839,23 @@ public class DiffTableViewer extends Composite {
                     return;
                 }
 
-                String name;
-                String type;
+                String name = null;
+                String type = null;
                 String loc = st.getLocation();
-                if (loc.startsWith("jdbc:")) { //$NON-NLS-1$
+                switch (PgLibrary.getSource(loc)) {
+                case JDBC:
                     type = Messages.DiffTableViewer_database;
                     name = JdbcConnector.dbNameFromUrl(loc);
                     loc = ModelExporter.getRelativeFilePath(st, false);
-                } else {
+                    break;
+                case URL:
+                    type = Messages.DiffTableViewer_uri;
+                    name = loc;
+                    loc = null;
+                    break;
+                case LOCAL:
                     Path lib = libs.stream().map(PgLibrary::getPath)
-                            .filter(loc::startsWith).findFirst().map(Paths::get).get();
+                    .filter(loc::startsWith).findFirst().map(Paths::get).get();
                     Path location = Paths.get(loc);
                     name = lib.getFileName().toString();
 
@@ -859,17 +864,9 @@ public class DiffTableViewer extends Composite {
                         loc = lib.relativize(location).toString();
                     } else {
                         type = Messages.DiffTableViewer_file;
-
-                        try {
-                            if (new URI(loc).getScheme() != null) {
-                                type = Messages.DiffTableViewer_uri;
-                            }
-                        } catch (URISyntaxException e) {
-                            // do nothing, it is file
-                        }
-
                         loc = null;
                     }
+                    break;
                 }
 
                 v.setLibLocation(Messages.DiffTableViewer_library + name + '\n' + Messages.DiffTableViewer_type + type

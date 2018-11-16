@@ -61,24 +61,27 @@ public class LibraryLoader {
         PgDiffArguments args = arguments.clone();
         args.setIgnorePrivileges(isIgnorePriv);
 
-        if (path.startsWith("jdbc:")) {
+        switch (PgLibrary.getSource(path)) {
+        case JDBC:
             String timezone = args.getTimeZone() == null ? ApgdiffConsts.UTC : args.getTimeZone();
             PgDatabase db = new JdbcLoader(JdbcConnector.fromUrl(path, timezone), args).getDbFromJdbc();
             db.getDescendants().forEach(st -> st.setLocation(path));
             return db;
-        }
 
-        try {
-            URI uri = new URI(path);
-            if (uri.getScheme() != null) {
-                PgDatabase db = loadURI(uri, args, isIgnorePriv);
+        case URL:
+            try {
+                URI uri = new URI(path);
+                db = loadURI(uri, args, isIgnorePriv);
                 db.getDescendants().forEach(st -> st.setLocation(path));
                 return db;
+            } catch (URISyntaxException ex) {
+                // shouldn't happen, already checked by getSource
+                // not URI, try to folder or file
+                break;
             }
-        } catch (URISyntaxException e) {
-            // not URI, try to folder or file
+        case LOCAL:
+            // continue below
         }
-
         Path p = Paths.get(path);
 
         if (!Files.exists(p)) {
@@ -87,17 +90,14 @@ public class LibraryLoader {
         }
 
         if (Files.isDirectory(p)) {
+            PgDatabase db = new PgDatabase();
+            db.setArguments(args);
             if (Files.exists(p.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
-                PgDatabase db = new PgDatabase();
-                db.setArguments(args);
                 new ProjectLoader(path, args).loadDatabaseSchemaFromDirTree(db);
-                return db;
             } else {
-                PgDatabase db = new PgDatabase();
-                db.setArguments(args);
                 readStatementsFromDirectory(p, db);
-                return db;
             }
+            return db;
         }
 
         if (isZipFile(path)) {
