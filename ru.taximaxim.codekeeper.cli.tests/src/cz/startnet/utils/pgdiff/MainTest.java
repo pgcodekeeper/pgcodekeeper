@@ -99,7 +99,6 @@ public class MainTest {
             Main.main(args.args());
             assertTrue(".pgcodekeeper doesn't exist", new File(args.getParseResultDir(), ".pgcodekeeper").isFile());
             assertTrue("SCHEMA doesn't exist", new File(args.getParseResultDir(), "SCHEMA").isDirectory());
-            assertTrue("EXTENSION doesn't exist", new File(args.getParseResultDir(), "EXTENSION").isDirectory());
             break;
         case TEST_OUTPUT:
             PrintStream old = System.out;
