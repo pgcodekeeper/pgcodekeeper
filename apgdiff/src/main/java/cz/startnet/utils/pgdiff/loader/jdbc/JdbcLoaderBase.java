@@ -216,10 +216,11 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         if (aclItemsArrayAsString == null || args.isIgnorePrivileges()) {
             return;
         }
+        DbObjType type = st.getStatementType();
         String stType = null;
         boolean isFunctionOrTypeOrDomain = false;
         String order;
-        switch (st.getStatementType()) {
+        switch (type) {
         case SEQUENCE:
             order = "rUw";
             break;
@@ -285,15 +286,21 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
                     stType + " " + qualStSignature, "PUBLIC", false));
         }
 
-        if (!metDefaultOwnersGrants) {
+        // 'REVOKE ALL' for COLUMN never happened, because of the overlapping
+        // privileges from the table.
+        if (DbObjType.COLUMN != type && !metDefaultOwnersGrants) {
             st.addPrivilege(new PgPrivilege("REVOKE", "ALL" + column,
                     stType + " " + qualStSignature, PgDiffUtils.getQuotedName(owner), false));
         }
 
         for (Privilege grant : grants) {
-            // skip if default owner's privileges
+            // Skip if statement type is COLUMN, because of the specific
+            // relationship with table privileges.
+            //
+            // Skip if default owner's privileges
             // or if it is 'GRANT ALL ON FUNCTION/TYPE/DOMAIN schema.name TO PUBLIC'
-            if (grant.isDefault || (isFunctionOrTypeOrDomain && grant.isGrantAllToPublic())) {
+            if (DbObjType.COLUMN != type && (grant.isDefault
+                    || (isFunctionOrTypeOrDomain && grant.isGrantAllToPublic()))) {
                 continue;
             }
             List<String> grantValues = grant.grantValues;

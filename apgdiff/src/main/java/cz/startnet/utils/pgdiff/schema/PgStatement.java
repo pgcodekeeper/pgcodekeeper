@@ -230,7 +230,10 @@ public abstract class PgStatement implements IStatement, IHashable {
                 locOwner = owner;
             }
 
-            if (privilege.getPermission().startsWith("ALL")) {
+            // Skip filtering if statement type is COLUMN, because of the
+            // specific relationship with table privileges.
+            if (DbObjType.COLUMN != getStatementType()
+                    && privilege.getPermission().startsWith("ALL")) {
                 addPrivilegeFiltered(privilege, locOwner);
             } else {
                 addPrivilegeCommon(privilege);
