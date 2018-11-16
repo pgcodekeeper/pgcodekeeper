@@ -64,6 +64,7 @@ public class PgPrivilege implements IHashable {
         String name = newObj.getName();
         String column = "";
 
+        boolean isFunctionOrTypeOrDomain = false;
         if (type == DbObjType.COLUMN) {
             column = '(' + PgDiffUtils.getQuotedName(name) + ')';
             name = PgDiffUtils.getQuotedName(newObj.getParent().getParent().getName())
@@ -73,12 +74,18 @@ public class PgPrivilege implements IHashable {
             name = PgDiffUtils.getQuotedName(name);
         } else {
             name = PgDiffUtils.getQuotedName(newObj.getParent().getName()) + '.' + name;
+            isFunctionOrTypeOrDomain = (DbObjType.FUNCTION == type) || (DbObjType.TYPE == type)
+                    || (DbObjType.DOMAIN == type);
         }
 
         owner =  PgDiffUtils.getQuotedName(owner);
 
-        PgPrivilege priv = new PgPrivilege("REVOKE", "ALL" + column, type + " " + name, "PUBLIC", false);
+        // FUNCTION/TYPE/DOMAIN by default has "GRANT ALL to PUBLIC".
+        // That's why for them set "GRANT ALL to PUBLIC".
+        PgPrivilege priv = new PgPrivilege(isFunctionOrTypeOrDomain ? "GRANT" : "REVOKE",
+                "ALL" + column, type + " " + name, "PUBLIC", false);
         sb.append('\n').append(priv.getCreationSQL()).append(';');
+
         priv = new PgPrivilege("REVOKE", "ALL" + column, type + " " + name, owner, false);
         sb.append('\n').append(priv.getCreationSQL()).append(';');
         priv = new PgPrivilege("GRANT", "ALL" + column, type + " " + name, owner, false);

@@ -217,6 +217,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             return;
         }
         String stType = null;
+        boolean isFunctionOrTypeOrDomain = false;
         String order;
         switch (st.getStatementType()) {
         case SEQUENCE:
@@ -236,6 +237,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
 
         case FUNCTION:
             order = "X";
+            isFunctionOrTypeOrDomain = true;
             break;
 
         case SCHEMA:
@@ -246,6 +248,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         case DOMAIN:
             stType = "TYPE";
             order = "U";
+            isFunctionOrTypeOrDomain = true;
             break;
 
         default:
@@ -263,11 +266,23 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         List<Privilege> grants = JdbcAclParser.parse(
                 aclItemsArrayAsString, possiblePrivilegeCount, order, owner);
 
+        boolean metPublicRoleGrants = false;
         boolean metDefaultOwnersGrants = false;
         for (Privilege p : grants) {
+            if (p.isGrantAllToPublic()) {
+                metPublicRoleGrants = true;
+            }
             if (p.isDefault) {
                 metDefaultOwnersGrants = true;
             }
+        }
+
+        // FUNCTION/TYPE/DOMAIN by default has "GRANT ALL to PUBLIC".
+        // If "GRANT ALL to PUBLIC" for FUNCTION/TYPE/DOMAIN is absent, then
+        // in this case for them explicitly added "REVOKE ALL from PUBLIC".
+        if (!metPublicRoleGrants && isFunctionOrTypeOrDomain) {
+            st.addPrivilege(new PgPrivilege("REVOKE", "ALL" + column,
+                    stType + " " + qualStSignature, "PUBLIC", false));
         }
 
         if (!metDefaultOwnersGrants) {
@@ -277,7 +292,8 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
 
         for (Privilege grant : grants) {
             // skip if default owner's privileges
-            if (grant.isDefault) {
+            // or if it is 'GRANT ALL ON FUNCTION/TYPE/DOMAIN schema.name TO PUBLIC'
+            if (grant.isDefault || (isFunctionOrTypeOrDomain && grant.isGrantAllToPublic())) {
                 continue;
             }
             List<String> grantValues = grant.grantValues;
