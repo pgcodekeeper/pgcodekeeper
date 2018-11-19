@@ -64,12 +64,14 @@ public class PgPrivilege implements IHashable {
         String name = newObj.getName();
         String column = "";
 
+        boolean isColumn = false;
         boolean isFunctionOrTypeOrDomain = false;
         if (type == DbObjType.COLUMN) {
             column = '(' + PgDiffUtils.getQuotedName(name) + ')';
             name = PgDiffUtils.getQuotedName(newObj.getParent().getParent().getName())
                     + '.' + PgDiffUtils.getQuotedName(newObj.getParent().getName());
             type = DbObjType.TABLE;
+            isColumn = true;
         } else if (type == DbObjType.SCHEMA) {
             name = PgDiffUtils.getQuotedName(name);
         } else {
@@ -88,7 +90,11 @@ public class PgPrivilege implements IHashable {
 
         priv = new PgPrivilege("REVOKE", "ALL" + column, type + " " + name, owner, false);
         sb.append('\n').append(priv.getCreationSQL()).append(';');
-        priv = new PgPrivilege("GRANT", "ALL" + column, type + " " + name, owner, false);
+
+        // Set "REVOKE", if statement type is COLUMN, because the privileges of
+        // columns for role are not set lower than for the same role in the
+        // parent table, they may be the same or higher.
+        priv = new PgPrivilege(isColumn ? "REVOKE" : "GRANT", "ALL" + column, type + " " + name, owner, false);
         sb.append('\n').append(priv.getCreationSQL()).append(';');
     }
 

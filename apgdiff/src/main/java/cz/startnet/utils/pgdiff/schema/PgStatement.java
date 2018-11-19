@@ -232,6 +232,8 @@ public abstract class PgStatement implements IStatement, IHashable {
 
             // Skip filtering if statement type is COLUMN, because of the
             // specific relationship with table privileges.
+            // The privileges of columns for role are not set lower than for the
+            // same role in the parent table, they may be the same or higher.
             if (DbObjType.COLUMN != getStatementType()
                     && privilege.getPermission().startsWith("ALL")) {
                 addPrivilegeFiltered(privilege, locOwner);
