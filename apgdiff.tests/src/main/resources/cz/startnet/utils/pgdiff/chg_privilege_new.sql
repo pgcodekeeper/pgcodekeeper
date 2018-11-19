@@ -167,9 +167,6 @@ GRANT ALL ON SCHEMA public TO PUBLIC;
 -- Name: test_schema; Type: ACL; Schema: -; Owner: botov_av
 --
 
-REVOKE ALL ON SCHEMA test_schema FROM PUBLIC;
-REVOKE ALL ON SCHEMA test_schema FROM botov_av;
-GRANT ALL ON SCHEMA test_schema TO botov_av;
 GRANT ALL ON SCHEMA test_schema TO fordfrog;
 
 
@@ -177,10 +174,6 @@ GRANT ALL ON SCHEMA test_schema TO fordfrog;
 -- Name: dom; Type: ACL; Schema: public; Owner: botov_av
 --
 
-REVOKE ALL ON TYPE public.dom FROM PUBLIC;
-REVOKE ALL ON TYPE public.dom FROM botov_av;
-GRANT ALL ON TYPE public.dom TO botov_av;
-GRANT ALL ON TYPE public.dom TO PUBLIC;
 GRANT ALL ON TYPE public.dom TO fordfrog;
 
 
@@ -188,10 +181,6 @@ GRANT ALL ON TYPE public.dom TO fordfrog;
 -- Name: typ_composite; Type: ACL; Schema: public; Owner: botov_av
 --
 
-REVOKE ALL ON TYPE public.typ_composite FROM PUBLIC;
-REVOKE ALL ON TYPE public.typ_composite FROM botov_av;
-GRANT ALL ON TYPE public.typ_composite TO botov_av;
-GRANT ALL ON TYPE public.typ_composite TO PUBLIC;
 GRANT ALL ON TYPE public.typ_composite TO fordfrog;
 
 
@@ -199,10 +188,6 @@ GRANT ALL ON TYPE public.typ_composite TO fordfrog;
 -- Name: test_fnc(character varying); Type: ACL; Schema: public; Owner: botov_av
 --
 
-REVOKE ALL ON FUNCTION public.test_fnc(arg character varying) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.test_fnc(arg character varying) FROM botov_av;
-GRANT ALL ON FUNCTION public.test_fnc(arg character varying) TO botov_av;
-GRANT ALL ON FUNCTION public.test_fnc(arg character varying) TO PUBLIC;
 GRANT ALL ON FUNCTION public.test_fnc(arg character varying) TO fordfrog;
 
 
@@ -210,10 +195,6 @@ GRANT ALL ON FUNCTION public.test_fnc(arg character varying) TO fordfrog;
 -- Name: trigger_fnc(); Type: ACL; Schema: public; Owner: botov_av
 --
 
-REVOKE ALL ON FUNCTION public.trigger_fnc() FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.trigger_fnc() FROM botov_av;
-GRANT ALL ON FUNCTION public.trigger_fnc() TO botov_av;
-GRANT ALL ON FUNCTION public.trigger_fnc() TO PUBLIC;
 GRANT ALL ON FUNCTION public.trigger_fnc() TO fordfrog;
 
 
@@ -221,9 +202,6 @@ GRANT ALL ON FUNCTION public.trigger_fnc() TO fordfrog;
 -- Name: test; Type: ACL; Schema: public; Owner: botov_av
 --
 
-REVOKE ALL ON TABLE public.test FROM PUBLIC;
-REVOKE ALL ON TABLE public.test FROM botov_av;
-GRANT ALL ON TABLE public.test TO botov_av;
 GRANT ALL ON TABLE public.test TO fordfrog;
 
 
@@ -231,8 +209,6 @@ GRANT ALL ON TABLE public.test TO fordfrog;
 -- Name: test.id; Type: ACL; Schema: public; Owner: botov_av
 --
 
-REVOKE ALL(id) ON TABLE public.test FROM PUBLIC;
-REVOKE ALL(id) ON TABLE public.test FROM botov_av;
 GRANT ALL(id) ON TABLE public.test TO fordfrog;
 
 
@@ -240,9 +216,6 @@ GRANT ALL(id) ON TABLE public.test TO fordfrog;
 -- Name: test_id_seq; Type: ACL; Schema: public; Owner: botov_av
 --
 
-REVOKE ALL ON SEQUENCE public.test_id_seq FROM PUBLIC;
-REVOKE ALL ON SEQUENCE public.test_id_seq FROM botov_av;
-GRANT ALL ON SEQUENCE public.test_id_seq TO botov_av;
 GRANT ALL ON SEQUENCE public.test_id_seq TO fordfrog;
 
 
@@ -250,9 +223,6 @@ GRANT ALL ON SEQUENCE public.test_id_seq TO fordfrog;
 -- Name: test_view; Type: ACL; Schema: public; Owner: botov_av
 --
 
-REVOKE ALL ON TABLE public.test_view FROM PUBLIC;
-REVOKE ALL ON TABLE public.test_view FROM botov_av;
-GRANT ALL ON TABLE public.test_view TO botov_av;
 GRANT ALL ON TABLE public.test_view TO fordfrog;
 
 

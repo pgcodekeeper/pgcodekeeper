@@ -56,31 +56,37 @@ public class PgPrivilege implements IHashable {
 
     public static void appendDefaultPrivileges(PgStatement newObj, StringBuilder sb) {
         DbObjType type = newObj.getStatementType();
-        String owner = type != DbObjType.COLUMN ? newObj.getOwner() : newObj.getParent().getOwner();
-        if (owner == null) {
+        String owner = newObj.getOwner();
+        if (type == DbObjType.COLUMN || owner == null) {
             return;
         }
 
         String name = newObj.getName();
         String column = "";
 
-        if (type == DbObjType.COLUMN) {
-            column = '(' + PgDiffUtils.getQuotedName(name) + ')';
-            name = PgDiffUtils.getQuotedName(newObj.getParent().getParent().getName())
-                    + '.' + PgDiffUtils.getQuotedName(newObj.getParent().getName());
-            type = DbObjType.TABLE;
-        } else if (type == DbObjType.SCHEMA) {
+        boolean isFunctionOrTypeOrDomain = false;
+        if (type == DbObjType.SCHEMA) {
             name = PgDiffUtils.getQuotedName(name);
         } else {
             name = PgDiffUtils.getQuotedName(newObj.getParent().getName()) + '.' + name;
+            isFunctionOrTypeOrDomain = (DbObjType.FUNCTION == type) || (DbObjType.TYPE == type)
+                    || (DbObjType.DOMAIN == type);
+            if (type == DbObjType.VIEW) {
+                type = DbObjType.TABLE;
+            }
         }
 
         owner =  PgDiffUtils.getQuotedName(owner);
 
-        PgPrivilege priv = new PgPrivilege("REVOKE", "ALL" + column, type + " " + name, "PUBLIC", false);
+        // FUNCTION/TYPE/DOMAIN by default has "GRANT ALL to PUBLIC".
+        // That's why for them set "GRANT ALL to PUBLIC".
+        PgPrivilege priv = new PgPrivilege(isFunctionOrTypeOrDomain ? "GRANT" : "REVOKE",
+                "ALL" + column, type + " " + name, "PUBLIC", false);
         sb.append('\n').append(priv.getCreationSQL()).append(';');
+
         priv = new PgPrivilege("REVOKE", "ALL" + column, type + " " + name, owner, false);
         sb.append('\n').append(priv.getCreationSQL()).append(';');
+
         priv = new PgPrivilege("GRANT", "ALL" + column, type + " " + name, owner, false);
         sb.append('\n').append(priv.getCreationSQL()).append(';');
     }

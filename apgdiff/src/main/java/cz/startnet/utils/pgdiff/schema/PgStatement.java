@@ -230,7 +230,12 @@ public abstract class PgStatement implements IStatement, IHashable {
                 locOwner = owner;
             }
 
-            if (privilege.getPermission().startsWith("ALL")) {
+            // Skip filtering if statement type is COLUMN, because of the
+            // specific relationship with table privileges.
+            // The privileges of columns for role are not set lower than for the
+            // same role in the parent table, they may be the same or higher.
+            if (DbObjType.COLUMN != getStatementType()
+                    && privilege.getPermission().startsWith("ALL")) {
                 addPrivilegeFiltered(privilege, locOwner);
             } else {
                 addPrivilegeCommon(privilege);
@@ -245,7 +250,15 @@ public abstract class PgStatement implements IStatement, IHashable {
     private void addPrivilegeFiltered(PgPrivilege privilege, String locOwner) {
         if (privilege.isRevoke()) {
             if ("PUBLIC".equals(privilege.getRole())) {
-                return;
+                switch (getStatementType()) {
+                // revoke public is non-default for these
+                case FUNCTION:
+                case DOMAIN:
+                case TYPE:
+                    break;
+                default:
+                    return;
+                }
             }
             revokes.add(privilege);
         } else {
