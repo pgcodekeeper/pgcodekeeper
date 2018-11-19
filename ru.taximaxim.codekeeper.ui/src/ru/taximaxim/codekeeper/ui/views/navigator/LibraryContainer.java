@@ -41,15 +41,21 @@ public class LibraryContainer {
 
         for (PgLibrary lib : libs) {
             String path = lib.getPath();
-            if (path.startsWith("jdbc:")) { //$NON-NLS-1$
+            switch (lib.getSource()) {
+            case JDBC:
                 new LibraryContainer(root, null, JdbcConnector.dbNameFromUrl(path));
-            } else {
+                break;
+            case URL:
+                new LibraryContainer(root, null, path);
+                break;
+            case LOCAL:
                 Path p = Paths.get(path);
                 if (Files.isDirectory(p) && Files.exists(p.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
                     readProject(root, p);
                 } else {
                     readFile(root, p);
                 }
+                break;
             }
         }
 
