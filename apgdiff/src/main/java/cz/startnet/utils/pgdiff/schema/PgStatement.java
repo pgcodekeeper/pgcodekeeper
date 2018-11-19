@@ -166,15 +166,15 @@ public abstract class PgStatement implements IStatement, IHashable {
             .append('.');
             ((AbstractPgFunction) this).appendFunctionSignature(sb, false, true);
             break;
-        case OPERATOR:
-            sb.append(PgDiffUtils.getQuotedName(getParent().getName()))
-            .append('.');
-            ((PgOperator) this).appendOperatorSignature(sb);
-            break;
         case AGGREGATE:
             sb.append(PgDiffUtils.getQuotedName(getParent().getName()))
             .append('.');
             ((PgAggregate) this).appendAggregateSignature(sb, true);
+            break;
+        case OPERATOR:
+            sb.append(PgDiffUtils.getQuotedName(getParent().getName()))
+            .append('.');
+            ((PgOperator) this).appendOperatorSignature(sb);
             break;
 
         case CONSTRAINT:
@@ -363,10 +363,10 @@ public abstract class PgStatement implements IStatement, IHashable {
                 sb.append(PgDiffUtils.getQuotedName(getParent().getName())).append('.');
                 if (type == DbObjType.FUNCTION || type == DbObjType.PROCEDURE) {
                     ((AbstractPgFunction) this).appendFunctionSignature(sb, false, true);
-                } else if (type == DbObjType.OPERATOR) {
-                    ((PgOperator) this).appendOperatorSignature(sb);
                 } else if (type == DbObjType.AGGREGATE) {
                     ((PgAggregate) this).appendAggregateSignature(sb, true);
+                } else if (type == DbObjType.OPERATOR) {
+                    ((PgOperator) this).appendOperatorSignature(sb);
                 } else {
                     sb.append(PgDiffUtils.getQuotedName(getName()));
                 }
