@@ -36,9 +36,6 @@ REVOKE ALL ON TABLE public.test FROM botov_av;
 GRANT ALL ON TABLE public.test TO botov_av;
 
 REVOKE ALL(id) ON TABLE public.test FROM maindb;
-REVOKE ALL(id) ON TABLE public.test FROM PUBLIC;
-REVOKE ALL(id) ON TABLE public.test FROM botov_av;
-REVOKE ALL(id) ON TABLE public.test FROM botov_av;
 
 REVOKE ALL ON TABLE public.test_view FROM maindb;
 REVOKE ALL ON TABLE public.test_view FROM PUBLIC;
