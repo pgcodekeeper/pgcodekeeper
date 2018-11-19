@@ -249,6 +249,17 @@ public abstract class PgStatement implements IStatement, IHashable {
 
     private void addPrivilegeFiltered(PgPrivilege privilege, String locOwner) {
         if (privilege.isRevoke()) {
+            if ("PUBLIC".equals(privilege.getRole())) {
+                switch (getStatementType()) {
+                // revoke public is non-default for these
+                case FUNCTION:
+                case DOMAIN:
+                case TYPE:
+                    break;
+                default:
+                    return;
+                }
+            }
             revokes.add(privilege);
         } else {
             if (!privilege.getRole().equals(locOwner)) {
