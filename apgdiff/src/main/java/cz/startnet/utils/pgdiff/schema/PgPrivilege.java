@@ -78,6 +78,9 @@ public class PgPrivilege implements IHashable {
             name = PgDiffUtils.getQuotedName(newObj.getParent().getName()) + '.' + name;
             isFunctionOrTypeOrDomain = (DbObjType.FUNCTION == type) || (DbObjType.TYPE == type)
                     || (DbObjType.DOMAIN == type);
+            if (type == DbObjType.VIEW) {
+                type = DbObjType.TABLE;
+            }
         }
 
         owner =  PgDiffUtils.getQuotedName(owner);

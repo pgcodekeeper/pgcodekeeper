@@ -294,6 +294,12 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         }
 
         for (Privilege grant : grants) {
+            boolean isViewWithColPrivil = DbObjType.VIEW == type
+                    && column != null && !column.isEmpty();
+
+            // Skip if statement is VIEW with column privilege, because
+            // such case is shown in pg_dumn.
+            //
             // Skip if statement type is COLUMN, because of the specific
             // relationship with table privileges.
             // The privileges of columns for role are not set lower than for the
@@ -301,8 +307,8 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             //
             // Skip if default owner's privileges
             // or if it is 'GRANT ALL ON FUNCTION/TYPE/DOMAIN schema.name TO PUBLIC'
-            if (DbObjType.COLUMN != type && (grant.isDefault
-                    || (isFunctionOrTypeOrDomain && grant.isGrantAllToPublic()))) {
+            if (!isViewWithColPrivil && DbObjType.COLUMN != type
+                    && (grant.isDefault || (isFunctionOrTypeOrDomain && grant.isGrantAllToPublic()))) {
                 continue;
             }
             List<String> grantValues = grant.grantValues;
