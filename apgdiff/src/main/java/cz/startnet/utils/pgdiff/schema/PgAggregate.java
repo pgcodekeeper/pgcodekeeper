@@ -285,7 +285,7 @@ public class PgAggregate extends PgStatementWithSearchPath {
                     && arguments.equals(aggr.getArguments())
                     && orderByArgs.equals(aggr.getOrderByArgs())
                     && Objects.equals(baseType, aggr.getBaseType())
-                    && Objects.equals(sFunc, aggr.getsFunc())
+                    && Objects.equals(sFunc, aggr.getSFunc())
                     && Objects.equals(sType, aggr.getSType())
                     && sSpace == aggr.getSSpace()
                     && Objects.equals(finalFunc, aggr.getFinalFunc())
@@ -402,11 +402,11 @@ public class PgAggregate extends PgStatementWithSearchPath {
         resetHash();
     }
 
-    public String getsFunc() {
+    public String getSFunc() {
         return sFunc;
     }
 
-    public void setsFunc(String sFunc) {
+    public void setSFunc(String sFunc) {
         this.sFunc = sFunc;
         resetHash();
     }
@@ -592,18 +592,20 @@ public class PgAggregate extends PgStatementWithSearchPath {
     }
 
     @Override
-    public PgStatement shallowCopy() {
+    public PgAggregate shallowCopy() {
         PgAggregate copy = new PgAggregate(getBareName(), getRawStatement());
         for (Argument argSrc : arguments) {
-            Argument argDst = new Argument(argSrc.getMode(), argSrc.getName(), argSrc.getDataType());
+            Argument argDst = new Argument(argSrc.getMode(), argSrc.getName(),
+                    argSrc.getDataType());
             copy.addArgument(argDst);
         }
         for (Argument argSrc : orderByArgs) {
-            Argument orderByArgDst = new Argument(argSrc.getMode(), argSrc.getName(), argSrc.getDataType());
+            Argument orderByArgDst = new Argument(argSrc.getMode(), argSrc.getName(),
+                    argSrc.getDataType());
             copy.addArgument(orderByArgDst);
         }
         copy.setBaseType(getBaseType());
-        copy.setsFunc(getsFunc());
+        copy.setSFunc(getSFunc());
         copy.setSType(getSType());
         copy.setSSpace(getSSpace());
         copy.setFinalFunc(getFinalFunc());
@@ -636,7 +638,7 @@ public class PgAggregate extends PgStatementWithSearchPath {
     }
 
     @Override
-    public PgStatement deepCopy() {
+    public PgAggregate deepCopy() {
         return shallowCopy();
     }
 

@@ -27,6 +27,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     private final List<PgFtsDictionary> dictionaries = new ArrayList<>();
     private final List<PgFtsConfiguration> configurations = new ArrayList<>();
     private final List<PgOperator> operators = new ArrayList<>();
+    private final List<PgAggregate> aggregates = new ArrayList<>();
 
     private String definition;
 
@@ -148,6 +149,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         stream = Stream.concat(stream, getFtsDictionaries().stream());
         stream = Stream.concat(stream, getFtsConfigurations().stream());
         stream = Stream.concat(stream, getOperators().stream());
+        stream = Stream.concat(stream, getAggregates().stream());
         return stream;
     }
 
@@ -347,6 +349,23 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     }
 
     /**
+     * Finds aggregate according to specified aggregate {@code signature}.
+     *
+     * @param signature signature of the aggregate to be searched
+     *
+     * @return found aggregate or null if no such aggregate has been found
+     */
+    public PgAggregate getAggregate(final String signature) {
+        for (PgAggregate aggr : aggregates) {
+            if (aggr.getName().equals(signature)) {
+                return aggr;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Getter for {@link #types}. The list cannot be modified.
      *
      * @return {@link #types}
@@ -398,6 +417,15 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      */
     public List<PgOperator> getOperators() {
         return Collections.unmodifiableList(operators);
+    }
+
+    /**
+     * Getter for {@link #aggregates}. The list cannot be modified.
+     *
+     * @return {@link #aggregates}
+     */
+    public List<PgAggregate> getAggregates() {
+        return Collections.unmodifiableList(aggregates);
     }
 
     public AbstractTable getTableByIndex(String name) {
@@ -486,6 +514,13 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         resetHash();
     }
 
+    public void addAggregate(final PgAggregate aggr) {
+        assertUnique(this::getAggregate, aggr);
+        aggregates.add(aggr);
+        aggr.setParent(this);
+        resetHash();
+    }
+
     public boolean containsSequence(final String name) {
         return getSequence(name) != null;
     }
@@ -560,7 +595,8 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
                     && PgDiffUtils.setlikeEquals(templates, schema.templates)
                     && PgDiffUtils.setlikeEquals(dictionaries, schema.dictionaries)
                     && PgDiffUtils.setlikeEquals(configurations, schema.configurations)
-                    && PgDiffUtils.setlikeEquals(operators, schema.operators);
+                    && PgDiffUtils.setlikeEquals(operators, schema.operators)
+                    && PgDiffUtils.setlikeEquals(aggregates, schema.aggregates);
         }
         return false;
     }
@@ -588,6 +624,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         hasher.putUnordered(dictionaries);
         hasher.putUnordered(configurations);
         hasher.putUnordered(operators);
+        hasher.putUnordered(aggregates);
     }
 
     @Override
@@ -641,6 +678,9 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         }
         for (PgOperator oper : operators) {
             copy.addOperator(oper.deepCopy());
+        }
+        for (PgAggregate aggr : aggregates) {
+            copy.addAggregate(aggr.deepCopy());
         }
         return copy;
     }

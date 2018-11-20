@@ -14,6 +14,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statement_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.StatementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterAggregate;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterDomain;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterFtsStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterFunction;
@@ -24,6 +25,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterTable;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterType;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CommentOn;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateAggregate;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateDomain;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateExtension;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateForeignTable;
@@ -89,6 +91,8 @@ implements SqlContextProcessor {
             p = new CreateRewrite(ctx.create_rewrite_statement(), db);
         } else if (ctx.create_function_statement() != null) {
             p = new CreateFunction(ctx.create_function_statement(), db);
+        } else if (ctx.create_aggregate_statement() != null) {
+            p = new CreateAggregate(ctx.create_aggregate_statement(), db);
         } else if (ctx.create_operator_statement() != null) {
             p = new CreateOperator(ctx.create_operator_statement(), db);
         } else if (ctx.create_sequence_statement() != null) {
@@ -126,6 +130,8 @@ implements SqlContextProcessor {
         ParserAbstract p;
         if (ctx.alter_function_statement() != null) {
             p = new AlterFunction(ctx.alter_function_statement(), db);
+        } else if (ctx.alter_aggregate_statement() != null) {
+            p = new AlterAggregate(ctx.alter_aggregate_statement(), db);
         } else if (ctx.alter_operator_statement() != null) {
             p = new AlterOperator(ctx.alter_operator_statement(), db);
         } else if (ctx.alter_schema_statement() != null) {

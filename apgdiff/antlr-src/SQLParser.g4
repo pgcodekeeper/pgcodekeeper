@@ -241,7 +241,7 @@ alter_function_statement
     ;
 
 alter_aggregate_statement
-    : AGGREGATE function_parameters?
+    : AGGREGATE function_parameters
       (rename_to
     | owner_to
     | set_schema)
@@ -1049,10 +1049,9 @@ role_name_with_group
 
 comment_on_statement
     : COMMENT ON(
-        AGGREGATE name=schema_qualified_name LEFT_PAREN (agg_type+=data_type(COMMA agg_type+=data_type)*)? RIGHT_PAREN
+        (AGGREGATE | FUNCTION) name=schema_qualified_name function_args
         | CAST LEFT_PAREN source_type=data_type AS target_type=data_type RIGHT_PAREN
         | (CONSTRAINT | RULE | TRIGGER) name=schema_qualified_name ON table_name=schema_qualified_name
-        | FUNCTION name=schema_qualified_name function_args
         | OPERATOR target_operator
         | OPERATOR (FAMILY| CLASS) name=schema_qualified_name USING index_method=identifier
         | (TEXT SEARCH (CONFIGURATION | DICTIONARY | PARSER | TEMPLATE )
