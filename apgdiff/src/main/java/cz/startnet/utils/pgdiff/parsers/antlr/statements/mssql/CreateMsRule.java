@@ -195,10 +195,9 @@ public class CreateMsRule extends ParserAbstract {
         if (privs == null) {
             st.addPrivilege(privilege);
         } else {
-            List<PgPrivilege> newPrivileges = new ArrayList<>();
-            List<PgPrivilege> privileges = privs.putIfAbsent(st, newPrivileges);
+            List<PgPrivilege> privileges = privs.get(st);
             if (privileges == null) {
-                privileges = newPrivileges;
+                privileges = privs.put(st, new ArrayList<>());
             }
 
             privileges.add(privilege);

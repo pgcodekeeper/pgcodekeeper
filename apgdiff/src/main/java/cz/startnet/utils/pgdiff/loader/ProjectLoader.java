@@ -200,14 +200,14 @@ public class ProjectLoader {
         Iterator<Entry<PgStatement, List<PgPrivilege>>> iterator = privileges.entrySet().iterator();
         while (iterator.hasNext()) {
             Entry<PgStatement, List<PgPrivilege>> entry = iterator.next();
+            iterator.remove();
+
             PgStatement st = entry.getKey();
             st.clearPrivileges();
 
             for (PgPrivilege privilege : entry.getValue()) {
                 st.addPrivilege(privilege);
             }
-
-            iterator.remove();
         }
     }
 }
