@@ -70,6 +70,7 @@ public final class JdbcQueries {
     public static final JdbcQuery QUERY_MS_CHECK_CONSTRAINTS = new JdbcQuery();
     public static final JdbcQuery QUERY_MS_ASSEMBLIES = new JdbcQuery();
     public static final JdbcQuery QUERY_MS_ROLES = new JdbcQuery();
+    public static final JdbcQuery QUERY_MS_TYPES = new JdbcQuery();
     public static final JdbcQuery QUERY_MS_USERS = new JdbcQuery();
 
     // SONAR-ON
