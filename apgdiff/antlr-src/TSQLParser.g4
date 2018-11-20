@@ -1999,10 +1999,13 @@ drop_ddl_trigger
     ;
 
 create_type
-    : TYPE name = qualified_name
-    (FROM data_type default_value)?
-    (EXTERNAL NAME assembly_name=qualified_name)?
-    (AS TABLE LR_BRACKET column_def_table_constraints RR_BRACKET)?
+    : TYPE name = qualified_name type_definition    
+    ;
+
+type_definition
+    : FROM data_type null_notnull?
+    | EXTERNAL NAME assembly_name=id (DOT class_name=id)?
+    | AS TABLE LR_BRACKET column_def_table_constraints RR_BRACKET
     ;
 
 rowset_function_limited
@@ -2394,6 +2397,11 @@ column_def_table_constraints
 column_def_table_constraint
     : id (data_type | AS expression) column_option* (MATERIALIZED | NOT MATERIALIZED)?
     | table_constraint
+    | table_index
+    ;
+ 
+table_index
+    : INDEX index_name=id clustered? index_rest
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms187742.aspx
