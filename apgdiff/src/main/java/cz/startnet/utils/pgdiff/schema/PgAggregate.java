@@ -53,21 +53,9 @@ public class PgAggregate extends PgStatementWithSearchPath {
         sbSQL.append("CREATE AGGREGATE ");
         sbSQL.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
 
-        if (baseType == null) {
-            appendAggregateSignature(sbSQL, true);
-        } else {
-            sbSQL.append(getBareName());
-        }
+        appendAggregateSignature(sbSQL, true);
 
-        sbSQL.append(" (\n\t");
-
-        if (baseType != null) {
-            sbSQL.append("BASETYPE = ");
-            sbSQL.append(baseType);
-            sbSQL.append(",\n\t");
-        }
-
-        sbSQL.append("SFUNC = ");
+        sbSQL.append(" (\n\tSFUNC = ");
         sbSQL.append(sFunc);
         sbSQL.append(",\n\tSTYPE = ");
         sbSQL.append(sType);
@@ -238,13 +226,17 @@ public class PgAggregate extends PgStatementWithSearchPath {
 
     public StringBuilder appendAggregateSignature(StringBuilder sb, boolean includeArgNames) {
         sb.append(PgDiffUtils.getQuotedName(name)).append('(');
-        appendArguments(sb, arguments, includeArgNames);
-        if (!orderByArgs.isEmpty()) {
-            if (!arguments.isEmpty()) {
-                sb.append(' ');
+        if (arguments.isEmpty() && orderByArgs.isEmpty()) {
+            sb.append('*');
+        } else {
+            appendArguments(sb, arguments, includeArgNames);
+            if (!orderByArgs.isEmpty()) {
+                if (!arguments.isEmpty()) {
+                    sb.append(' ');
+                }
+                sb.append("ORDER BY ");
+                appendArguments(sb, orderByArgs, includeArgNames);
             }
-            sb.append("ORDER BY ");
-            appendArguments(sb, orderByArgs, includeArgNames);
         }
         sb.append(')');
         return sb;
@@ -404,6 +396,9 @@ public class PgAggregate extends PgStatementWithSearchPath {
 
     public void setBaseType(String baseType) {
         this.baseType = baseType;
+        if (!"ANY".equals(baseType)) {
+            arguments.add(new Argument(null, baseType));
+        }
         resetHash();
     }
 
