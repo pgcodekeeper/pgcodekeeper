@@ -485,8 +485,8 @@ public class PgDatabase extends PgStatement {
                     || !s.compareChildren(new PgSchema(ApgdiffConsts.PUBLIC, ""))) {
                 overrides.add(new PgOverride(schema, s));
 
-                for (PgType ty : s.getTypes()) {
-                    PgType type = schema.getType(ty.getName());
+                for (AbstractType ty : s.getTypes()) {
+                    AbstractType type = schema.getType(ty.getName());
                     if (type == null) {
                         ty.dropParent();
                         schema.addType(ty);

@@ -9,9 +9,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import cz.startnet.utils.pgdiff.PgDiffTypes;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class PgType extends PgStatementWithSearchPath {
+public class PgType extends AbstractType {
 
     public enum PgTypeForm {
         COMPOSITE, ENUM, RANGE, BASE, SHELL
@@ -296,11 +295,6 @@ public class PgType extends PgStatementWithSearchPath {
     }
 
     @Override
-    public DbObjType getStatementType() {
-        return DbObjType.TYPE;
-    }
-
-    @Override
     public String getCreationSQL() {
         StringBuilder sb = new StringBuilder("CREATE TYPE ")
                 .append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.')
@@ -576,14 +570,12 @@ public class PgType extends PgStatementWithSearchPath {
     }
 
     @Override
-    public PgType shallowCopy() {
+    protected AbstractType getTypeCopy() {
         PgType copy = new PgType(getName(), getForm(), getRawStatement());
         for (AbstractColumn attr : attrs) {
             copy.addAttr(attr.deepCopy());
         }
         copy.enums.addAll(enums);
-        copy.grants.addAll(grants);
-        copy.revokes.addAll(revokes);
         copy.setSubtype(getSubtype());
         copy.setSubtypeOpClass(getSubtypeOpClass());
         copy.setCollation(getCollation());
@@ -607,16 +599,7 @@ public class PgType extends PgStatementWithSearchPath {
         copy.setElement(getElement());
         copy.setDelimiter(getDelimiter());
         copy.setCollatable(getCollatable());
-        copy.setOwner(getOwner());
-        copy.setComment(getComment());
-        copy.deps.addAll(deps);
-        copy.setLocation(getLocation());
         return copy;
-    }
-
-    @Override
-    public PgType deepCopy() {
-        return shallowCopy();
     }
 
     @Override
@@ -624,46 +607,45 @@ public class PgType extends PgStatementWithSearchPath {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof PgType)) {
-            return false;
+
+        if (obj instanceof PgType) {
+            PgType type = (PgType) obj;
+
+            return super.compare(type)
+                    && form == type.getForm()
+                    && attrs.equals(type.attrs)
+                    && enums.equals(type.enums)
+                    && Objects.equals(subtype, type.getSubtype())
+                    && Objects.equals(subtypeOpClass, type.getSubtypeOpClass())
+                    && Objects.equals(collation, type.getCollation())
+                    && Objects.equals(canonical, type.getCanonical())
+                    && Objects.equals(subtypeDiff, type.getSubtypeDiff())
+                    && Objects.equals(inputFunction, type.getInputFunction())
+                    && Objects.equals(outputFunction, type.getOutputFunction())
+                    && Objects.equals(receiveFunction, type.getReceiveFunction())
+                    && Objects.equals(sendFunction, type.getSendFunction())
+                    && Objects.equals(typmodInputFunction, type.getTypmodInputFunction())
+                    && Objects.equals(typmodOutputFunction, type.getTypmodOutputFunction())
+                    && Objects.equals(analyzeFunction, type.getAnalyzeFunction())
+                    && Objects.equals(internalLength, type.getInternalLength())
+                    && passedByValue == type.isPassedByValue()
+                    && Objects.equals(alignment, type.getAlignment())
+                    && Objects.equals(storage, type.getStorage())
+                    && Objects.equals(likeType, type.getLikeType())
+                    && Objects.equals(category, type.getCategory())
+                    && Objects.equals(preferred, type.getPreferred())
+                    && Objects.equals(defaultValue, type.getDefaultValue())
+                    && Objects.equals(element, type.getElement())
+                    && Objects.equals(delimiter, type.getDelimiter())
+                    && Objects.equals(collatable, type.getCollatable());
         }
-        PgType type = (PgType) obj;
-        return Objects.equals(name, type.getName())
-                && form == type.getForm()
-                && attrs.equals(type.attrs)
-                && enums.equals(type.enums)
-                && Objects.equals(subtype, type.getSubtype())
-                && Objects.equals(subtypeOpClass, type.getSubtypeOpClass())
-                && Objects.equals(collation, type.getCollation())
-                && Objects.equals(canonical, type.getCanonical())
-                && Objects.equals(subtypeDiff, type.getSubtypeDiff())
-                && Objects.equals(inputFunction, type.getInputFunction())
-                && Objects.equals(outputFunction, type.getOutputFunction())
-                && Objects.equals(receiveFunction, type.getReceiveFunction())
-                && Objects.equals(sendFunction, type.getSendFunction())
-                && Objects.equals(typmodInputFunction, type.getTypmodInputFunction())
-                && Objects.equals(typmodOutputFunction, type.getTypmodOutputFunction())
-                && Objects.equals(analyzeFunction, type.getAnalyzeFunction())
-                && Objects.equals(internalLength, type.getInternalLength())
-                && passedByValue == type.isPassedByValue()
-                && Objects.equals(alignment, type.getAlignment())
-                && Objects.equals(storage, type.getStorage())
-                && Objects.equals(likeType, type.getLikeType())
-                && Objects.equals(category, type.getCategory())
-                && Objects.equals(preferred, type.getPreferred())
-                && Objects.equals(defaultValue, type.getDefaultValue())
-                && Objects.equals(element, type.getElement())
-                && Objects.equals(delimiter, type.getDelimiter())
-                && Objects.equals(collatable, type.getCollatable())
-                && Objects.equals(owner, type.getOwner())
-                && grants.equals(type.grants)
-                && revokes.equals(type.revokes)
-                && Objects.equals(comment, type.getComment());
+
+        return false;
     }
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(name);
+        super.computeHash(hasher);
         hasher.put(form);
         hasher.putOrdered(attrs);
         hasher.put(enums);
@@ -690,10 +672,6 @@ public class PgType extends PgStatementWithSearchPath {
         hasher.put(element);
         hasher.put(delimiter);
         hasher.put(collatable);
-        hasher.put(owner);
-        hasher.putUnordered(grants);
-        hasher.putUnordered(revokes);
-        hasher.put(comment);
     }
 
     @Override
