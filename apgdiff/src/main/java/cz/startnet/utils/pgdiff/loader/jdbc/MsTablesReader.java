@@ -47,21 +47,17 @@ public class MsTablesReader extends JdbcReader {
         boolean isTextImage = false;
         for (XmlReader col : XmlReader.readXML(res.getString("cols"))) {
             AbstractColumn column = new MsColumn(col.getString("name"));
-            // TODO other type with size
             String exp = col.getString("def");
             column.setExpression(exp);
             if (exp == null) {
-                column.setCollation(col.getString("cn"));
-                column.setNullValue(col.getBoolean("nl"));
-                String dataType = col.getString("type");
-                String argSize = "";
-                int size = col.getInt("size");
-                if ("varbinary".equals(dataType) || dataType.endsWith("varchar")) {
-                    argSize = size == -1 ? " (max)" : (" (" + size + ")");
-                } else if ("decimal".equals(dataType) || "numeric".equals(dataType)) {
-                    argSize = " (" + col.getInt("pr") + ", " + col.getInt("sc") + ')';
+                boolean isUserDefined = col.getBoolean("ud");
+                if (!isUserDefined) {
+                    column.setCollation(col.getString("cn"));
                 }
-                column.setType(MsDiffUtils.quoteName(dataType) + argSize);
+
+                column.setType(getMsType(column, col.getString("st"), col.getString("type"),
+                        isUserDefined, col.getInt("size"), col.getInt("pr"), col.getInt("sc")));
+                column.setNullValue(col.getBoolean("nl"));
             }
 
             column.setSparse(col.getBoolean("sp"));

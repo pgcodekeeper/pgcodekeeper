@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQuery;
 import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
@@ -12,12 +13,14 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractSequence;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.AbstractView;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFtsConfiguration;
 import cz.startnet.utils.pgdiff.schema.PgFtsDictionary;
 import cz.startnet.utils.pgdiff.schema.PgFtsParser;
 import cz.startnet.utils.pgdiff.schema.PgFtsTemplate;
 import cz.startnet.utils.pgdiff.schema.PgOperator;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -197,5 +200,31 @@ public abstract class JdbcReader implements PgCatalogStrings {
     protected DbObjType getType() {
         // PG subclasses must override
         return null;
+    }
+
+
+    protected String getMsType(PgStatement statement, String schema, String dataType,
+            boolean isUserDefined, int size, int precision, int scale) {
+        StringBuilder sb = new StringBuilder();
+
+        if (isUserDefined) {
+            statement.addDep(new GenericColumn(schema, dataType, DbObjType.TYPE));
+            sb.append(MsDiffUtils.quoteName(schema)).append('.');
+        }
+
+        sb.append(MsDiffUtils.quoteName(dataType));
+
+        if ("varbinary".equals(dataType) || "nvarchar".equals(dataType)
+                || "varchar".equals(dataType)) {
+            if (size == -1) {
+                sb.append(" (max)");
+            } else {
+                sb.append(" (").append(size).append(')');
+            }
+        } else if ("decimal".equals(dataType) || "numeric".equals(dataType)) {
+            sb.append(" (").append(precision).append(", ").append(scale).append(')');
+        }
+
+        return sb.toString();
     }
 }

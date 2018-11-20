@@ -52,16 +52,19 @@ public class MsExtendedObjectsReader extends JdbcReader {
             func = new MsFunction(name, "");
 
             if ("FT".equals(funcType)) {
-
                 List<String> columns = new ArrayList<>();
 
                 for (XmlReader col : XmlReader.readXML(res.getString("cols"))) {
                     AbstractColumn column = new MsColumn(col.getString("name"));
-                    String dataType = col.getString("type");
-                    int size = col.getInt("size");
-                    column.setType(MsDiffUtils.quoteName(dataType) + getArgSize(dataType, size, res));
-                    column.setSparse(col.getBoolean("sp"));
+                    boolean isUserDefined = col.getBoolean("ud");
+                    if (!isUserDefined) {
+                        column.setCollation(col.getString("cn"));
+                    }
+
+                    column.setType(getMsType(func, col.getString("st"), col.getString("type"),
+                            isUserDefined, col.getInt("size"), col.getInt("pr"), col.getInt("sc")));
                     column.setNullValue(col.getBoolean("nl"));
+                    column.setSparse(col.getBoolean("sp"));
                     if (col.getBoolean("ii")) {
                         column.setIdentity(Integer.toString(col.getInt("s")), Integer.toString(col.getInt("i")));
                         column.setNotForRep(col.getBoolean("nfr"));
@@ -82,9 +85,10 @@ public class MsExtendedObjectsReader extends JdbcReader {
                 func.setReturns("TABLE (\n" + String.join(",\n", columns) + ")");
                 ((MsFunction)func).setFuncType(FuncTypes.TABLE);
             } else {
-                String dataType = res.getString("return_type");
-                int size = res.getInt("return_type_size");
-                func.setReturns(MsDiffUtils.quoteName(dataType) +  getArgSize(dataType, size, res));
+                func.setReturns(getMsType(func, res.getString("return_type_sh"),
+                        res.getString("return_type"), res.getBoolean("return_type_ud"),
+                        res.getInt("return_type_size"), res.getInt("return_type_pr"),
+                        res.getInt("return_type_sc")));
             }
 
             StringBuilder sb = new StringBuilder();
@@ -100,22 +104,24 @@ public class MsExtendedObjectsReader extends JdbcReader {
         }
 
         for (XmlReader arg : args) {
-            String dataType = arg.getString("type");
-            int size = arg.getInt("size");
-
+            boolean isUserDefined = arg.getBoolean("ud");
             Argument argDst = new Argument(arg.getBoolean("ou") ? "OUTPUT" : null,
-                    arg.getString("name"), MsDiffUtils.quoteName(dataType) + getArgSize(dataType, size, res));
+                    arg.getString("name"), getMsType(func, arg.getString("st"),
+                            arg.getString("type"), isUserDefined, arg.getInt("size"),
+                            arg.getInt("pr"), arg.getInt("sc")));
 
             if (arg.getBoolean("hd")) {
                 String def = arg.getString("dv");
                 String defValue;
+                String baseType = arg.getString("bt");
                 if (def == null) {
                     defValue = "NULL";
-                } else if ("varbinary".equals(dataType) || dataType.endsWith("varchar")) {
+                } if ("varbinary".equals(baseType) || "nvarchar".equals(baseType)
+                        || "varchar".equals(baseType) ) {
                     defValue = 'N' + PgDiffUtils.quoteString(def);
-                } else if ("bit".equals(dataType)) {
+                } else if ("bit".equals(baseType)) {
                     defValue = "1".equals(def) ? "True" : "False";
-                } else if ("real".equals(dataType) || "float".equals(dataType)) {
+                } else if ("real".equals(baseType) || "float".equals(baseType)) {
                     defValue = Double.toString(Double.parseDouble(def));
                     if ("0.0".equals(defValue)) {
                         defValue = "0";
@@ -137,16 +143,5 @@ public class MsExtendedObjectsReader extends JdbcReader {
 
         schema.addFunction(func);
         loader.setPrivileges(func, XmlReader.readXML(res.getString("acl")));
-    }
-
-    private String getArgSize(String dataType, int size, ResultSet res) throws SQLException {
-        // TODO other type with size
-        if ("varbinary".equals(dataType) || dataType.endsWith("varchar")) {
-            return size == -1 ? " (max)" : (" (" + size + ")");
-        } else if ("decimal".equals(dataType) || "numeric".equals(dataType)) {
-            return " (" + res.getInt("pr") + ", " + res.getInt("sc") + ')';
-        }
-
-        return "";
     }
 }
