@@ -1,0 +1,256 @@
+package cz.startnet.utils.pgdiff.schema;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import cz.startnet.utils.pgdiff.MsDiffUtils;
+import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
+
+public class MsType extends AbstractType {
+
+    // base type
+    private String baseType;
+    private boolean isNotNull;
+
+    // assembly type
+    private String assemblyName;
+    private String assemblyClass;
+
+    // table type
+    private boolean isMemoryOptimazed;
+    private final List<String> columns = new ArrayList<>();
+    private final List<String> checks = new ArrayList<>();
+    private final List<String> constraints = new ArrayList<>();
+    private final List<String> indices = new ArrayList<>();
+
+
+    public MsType(String name, String rawStatement) {
+        super(name, rawStatement);
+    }
+
+    @Override
+    public String getCreationSQL() {
+        StringBuilder sb = new StringBuilder("CREATE TYPE ")
+                .append(MsDiffUtils.quoteName(getContainingSchema().getName())).append('.')
+                .append(MsDiffUtils.quoteName(getName()));
+
+        if (getBaseType() != null) {
+            sb.append(" FROM ").append(getBaseType());
+            if (!isNotNull()) {
+                sb.append(" NOT NULL");
+            }
+        } else if (getAssemblyName() != null) {
+            sb.append(" EXTERNAL NAME ").append(MsDiffUtils.quoteName(getAssemblyName()))
+            .append('.').append(MsDiffUtils.quoteName(getAssemblyClass()));
+        } else {
+            sb.append(" AS TABLE (");
+            for (String col : columns) {
+                sb.append("\n\t");
+                sb.append(col);
+                sb.append(",");
+            }
+
+            if (!columns.isEmpty()) {
+                sb.setLength(sb.length() - 1);
+            }
+
+            for (String ind : indices) {
+                sb.append(",\n").append(ind);
+            }
+
+            for (String con : constraints) {
+                sb.append(",\n").append(con);
+            }
+
+            for (String ch : checks) {
+                sb.append(",\n").append(ch);
+            }
+
+            sb.append(')');
+
+            if (isMemoryOptimazed()) {
+                sb.append("\nWITH ( MEMORY_OPTIMIZED = ON )");
+            }
+        }
+
+        sb.append(GO);
+
+        appendOwnerSQL(sb);
+        appendPrivileges(sb);
+
+        return sb.toString();
+    }
+
+    @Override
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+            AtomicBoolean isNeedDepcies) {
+        final int startLength = sb.length();
+        MsType newType;
+        if (newCondition instanceof MsType) {
+            newType = (MsType) newCondition;
+        } else {
+            return false;
+        }
+
+        if (!checkForChanges(newType)) {
+            isNeedDepcies.set(true);
+            return true;
+        }
+
+        if (!Objects.equals(getOwner(), newType.getOwner())) {
+            sb.append(newType.getOwnerSQL());
+        }
+        alterPrivileges(newType, sb);
+
+        return sb.length() > startLength;
+    }
+
+    private boolean checkForChanges(MsType newType) {
+        boolean equals = false;
+
+        if (this == newType) {
+            equals = true;
+        } else {
+            equals = isNotNull() == newType.isNotNull()
+                    && isMemoryOptimazed() == newType.isMemoryOptimazed()
+                    && Objects.equals(getBaseType(), newType.getBaseType())
+                    && Objects.equals(getAssemblyName(), newType.getAssemblyName())
+                    && Objects.equals(getAssemblyClass(), newType.getAssemblyClass())
+                    && Objects.equals(getColumns(), newType.getColumns())
+                    && PgDiffUtils.setlikeEquals(getIndices(), newType.getIndices())
+                    && PgDiffUtils.setlikeEquals(getConstraints(), newType.getConstraints())
+                    && PgDiffUtils.setlikeEquals(getChecks(), newType.getChecks());
+        }
+
+        return equals;
+    }
+
+    @Override
+    public String getDropSQL() {
+        return "DROP TYPE " + MsDiffUtils.quoteName(getContainingSchema().getName()) + '.'
+                + MsDiffUtils.quoteName(getName()) + ';';
+    }
+
+    @Override
+    protected AbstractType getTypeCopy() {
+        MsType copy = new MsType(getName(), getRawStatement());
+        copy.setNotNull(isNotNull());
+        copy.setMemoryOptimazed(isMemoryOptimazed());
+        copy.setBaseType(getBaseType());
+        copy.setAssemblyName(getAssemblyName(), getAssemblyClass());
+        copy.columns.addAll(columns);
+        copy.indices.addAll(indices);
+        copy.constraints.addAll(constraints);
+        copy.checks.addAll(checks);
+        return copy;
+    }
+
+    @Override
+    public boolean compare(PgStatement obj) {
+        if (this == obj) {
+            return true;
+        }
+
+        if (obj instanceof MsType) {
+            MsType type = (MsType) obj;
+            return super.compare(type) && checkForChanges(type);
+        }
+
+        return false;
+    }
+
+    @Override
+    public void computeHash(Hasher hasher) {
+        super.computeHash(hasher);
+        hasher.put(isNotNull);
+        hasher.put(isMemoryOptimazed);
+        hasher.put(baseType);
+        hasher.put(assemblyName);
+        hasher.put(assemblyClass);
+        hasher.put(columns);
+        hasher.put(indices);
+        hasher.put(constraints);
+        hasher.put(checks);
+    }
+
+    public String getBaseType() {
+        return baseType;
+    }
+
+    public void setBaseType(String baseType) {
+        this.baseType = baseType;
+        resetHash();
+    }
+
+    public boolean isNotNull() {
+        return isNotNull;
+    }
+
+    public void setNotNull(boolean isNotNull) {
+        this.isNotNull = isNotNull;
+        resetHash();
+    }
+
+    public String getAssemblyName() {
+        return assemblyName;
+    }
+
+    public String getAssemblyClass() {
+        return assemblyClass;
+    }
+
+    public void setAssemblyName(String assemblyName, String assemblyClass) {
+        this.assemblyName = assemblyName;
+        this.assemblyClass = assemblyClass == null ? name : assemblyClass;
+        resetHash();
+    }
+
+    public boolean isMemoryOptimazed() {
+        return isMemoryOptimazed;
+    }
+
+    public void setMemoryOptimazed(boolean isMemoryOptimazed) {
+        this.isMemoryOptimazed = isMemoryOptimazed;
+        resetHash();
+    }
+
+    public List<String> getColumns() {
+        return Collections.unmodifiableList(columns);
+    }
+
+    public void addColumn(String column) {
+        columns.add(column);
+        resetHash();
+    }
+
+    public List<String> getChecks() {
+        return Collections.unmodifiableList(checks);
+    }
+
+    public void addCheck(String check) {
+        checks.add(check);
+        resetHash();
+    }
+
+    public List<String> getConstraints() {
+        return Collections.unmodifiableList(constraints);
+    }
+
+    public void addConstraint(String constraint) {
+        constraints.add(constraint);
+        resetHash();
+    }
+
+    public List<String> getIndices() {
+        return Collections.unmodifiableList(indices);
+    }
+
+    public void addIndex(String index) {
+        indices.add(index);
+        resetHash();
+    }
+}
