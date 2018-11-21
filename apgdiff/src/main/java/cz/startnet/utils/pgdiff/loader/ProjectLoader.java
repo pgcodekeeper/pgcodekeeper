@@ -82,7 +82,27 @@ public class ProjectLoader {
      */
     public PgDatabase loadDatabaseSchemaFromDirTree(PgDatabase db) throws InterruptedException, IOException {
         File dir = new File(dirPath);
+        loadPgStrucure(dir, db);
 
+        isPrivilegeMode = true;
+
+        // read additional privileges from special folder
+        loadPrivilegesFromDirTree(new File(dir, ApgdiffConsts.PRIVILEGES_DIR), db);
+
+        isPrivilegeMode = false;
+
+        return db;
+    }
+
+    private void loadPrivilegesFromDirTree(File dir, PgDatabase db)
+            throws InterruptedException, IOException {
+        if (dir.exists() && dir.isDirectory()) {
+            loadPgStrucure(dir, db);
+            replacePrivileges();
+        }
+    }
+
+    private void loadPgStrucure(File dir, PgDatabase db) throws InterruptedException, IOException {
         // step 1
         // read files in schema folder, add schemas to db
         for (WORK_DIR_NAMES dirEnum : WORK_DIR_NAMES.values()) {
@@ -92,25 +112,21 @@ public class ProjectLoader {
 
         File schemasCommonDir = new File(dir, WORK_DIR_NAMES.SCHEMA.name());
         // skip walking SCHEMA folder if it does not exist
-        if (!schemasCommonDir.isDirectory()) {
-            return db;
-        }
-
-        // new schemas + content
-        // step 2
-        // read out schemas names, and work in loop on each
-        try (Stream<Path> schemas = Files.list(schemasCommonDir.toPath())) {
-            for (Path schemaDir : PgDiffUtils.sIter(schemas)) {
-                if (Files.isDirectory(schemaDir)) {
-                    loadSubdir(schemasCommonDir, schemaDir.getFileName().toString(), db);
-                    for (String dirSub : DIR_LOAD_ORDER) {
-                        loadSubdir(schemaDir.toFile(), dirSub, db);
+        if (schemasCommonDir.isDirectory()) {
+            // new schemas + content
+            // step 2
+            // read out schemas names, and work in loop on each
+            try (Stream<Path> schemas = Files.list(schemasCommonDir.toPath())) {
+                for (Path schemaDir : PgDiffUtils.sIter(schemas)) {
+                    if (Files.isDirectory(schemaDir)) {
+                        loadSubdir(schemasCommonDir, schemaDir.getFileName().toString(), db);
+                        for (String dirSub : DIR_LOAD_ORDER) {
+                            loadSubdir(schemaDir.toFile(), dirSub, db);
+                        }
                     }
                 }
             }
         }
-
-        return db;
     }
 
     /**
@@ -121,15 +137,7 @@ public class ProjectLoader {
         db.setArguments(arguments);
         File dir = new File(dirPath);
 
-        File securityFolder = new File(dir, MS_WORK_DIR_NAMES.SECURITY.getDirName());
-        loadSubdir(securityFolder, "Roles", db);
-        loadSubdir(securityFolder, "Users", db);
-        loadSubdir(securityFolder, "Schemas", db);
-        addDboSchema(db);
-
-        for (MS_WORK_DIR_NAMES dirSub : MS_WORK_DIR_NAMES.values()) {
-            loadSubdir(dir, dirSub.getDirName(), db);
-        }
+        loadMsStructure(dir, db);
 
         isPrivilegeMode = true;
 
@@ -141,22 +149,24 @@ public class ProjectLoader {
         return db;
     }
 
-    private void loadMsPrivilegesFromDirTree(File file, PgDatabase db)
+    private void loadMsPrivilegesFromDirTree(File dir, PgDatabase db)
             throws InterruptedException, IOException {
-        if (!file.exists() || !file.isDirectory()) {
-            return;
+        if (dir.exists() && dir.isDirectory()) {
+            loadMsStructure(dir, db);
+            replacePrivileges();
         }
+    }
 
-        File securityFolder = new File(file, MS_WORK_DIR_NAMES.SECURITY.getDirName());
+    private void loadMsStructure(File dir, PgDatabase db) throws InterruptedException, IOException {
+        File securityFolder = new File(dir, MS_WORK_DIR_NAMES.SECURITY.getDirName());
         loadSubdir(securityFolder, "Roles", db);
         loadSubdir(securityFolder, "Users", db);
         loadSubdir(securityFolder, "Schemas", db);
+        addDboSchema(db);
 
         for (MS_WORK_DIR_NAMES dirSub : MS_WORK_DIR_NAMES.values()) {
-            loadSubdir(file, dirSub.getDirName(), db);
+            loadSubdir(dir, dirSub.getDirName(), db);
         }
-
-        replacePrivileges();
     }
 
     protected void addDboSchema(PgDatabase db) {
