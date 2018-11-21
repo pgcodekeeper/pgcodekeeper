@@ -1951,8 +1951,8 @@ service_broker_option
 
 snapshot_option
     : ALLOW_SNAPSHOT_ISOLATION on_off
-    | READ_COMMITTED_SNAPSHOT (ON | OFF )
-    | MEMORY_OPTIMIZED_ELEVATE_TO_SNAPSHOT = (ON | OFF )
+    | READ_COMMITTED_SNAPSHOT on_off
+    | MEMORY_OPTIMIZED_ELEVATE_TO_SNAPSHOT EQUAL on_off
     ;
 
 sql_option
@@ -2005,7 +2005,7 @@ create_type
 type_definition
     : FROM data_type null_notnull?
     | EXTERNAL NAME assembly_name=id (DOT class_name=id)?
-    | AS TABLE LR_BRACKET column_def_table_constraints RR_BRACKET
+    | AS TABLE LR_BRACKET column_def_table_constraints RR_BRACKET (WITH LR_BRACKET MEMORY_OPTIMIZED EQUAL on_off RR_BRACKET)?
     ;
 
 rowset_function_limited
@@ -3429,6 +3429,8 @@ simple_id
     | MEDIUM
     | MEMBER
     | MEMORY_OPTIMIZED_DATA
+    | MEMORY_OPTIMIZED_ELEVATE_TO_SNAPSHOT
+    | MEMORY_OPTIMIZED
     | MEMORY_PARTITION_MODE
     | MESSAGE_FORWARD_SIZE
     | MESSAGE_FORWARDING

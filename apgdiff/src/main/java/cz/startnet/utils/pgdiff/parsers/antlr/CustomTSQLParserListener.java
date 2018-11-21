@@ -35,6 +35,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsSchema;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsSequence;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsTable;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsTrigger;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsType;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsUser;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.DisableMsTrigger;
@@ -132,6 +133,8 @@ implements TSqlContextProcessor {
             p = new CreateMsRole(ctx.create_db_role(), db);
         } else if (ctx.create_user() != null) {
             p = new CreateMsUser(ctx.create_user(), db);
+        } else if (ctx.create_type() != null) {
+            p = new CreateMsType(ctx.create_type(), db);
         } else {
             return;
         }

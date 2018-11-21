@@ -23,7 +23,6 @@ public class MsType extends AbstractType {
     // table type
     private boolean isMemoryOptimazed;
     private final List<String> columns = new ArrayList<>();
-    private final List<String> checks = new ArrayList<>();
     private final List<String> constraints = new ArrayList<>();
     private final List<String> indices = new ArrayList<>();
 
@@ -64,10 +63,6 @@ public class MsType extends AbstractType {
 
             for (String con : constraints) {
                 sb.append(",\n").append(con);
-            }
-
-            for (String ch : checks) {
-                sb.append(",\n").append(ch);
             }
 
             sb.append(')');
@@ -122,8 +117,7 @@ public class MsType extends AbstractType {
                     && Objects.equals(getAssemblyClass(), newType.getAssemblyClass())
                     && Objects.equals(getColumns(), newType.getColumns())
                     && PgDiffUtils.setlikeEquals(getIndices(), newType.getIndices())
-                    && PgDiffUtils.setlikeEquals(getConstraints(), newType.getConstraints())
-                    && PgDiffUtils.setlikeEquals(getChecks(), newType.getChecks());
+                    && PgDiffUtils.setlikeEquals(getConstraints(), newType.getConstraints());
         }
 
         return equals;
@@ -145,7 +139,6 @@ public class MsType extends AbstractType {
         copy.columns.addAll(columns);
         copy.indices.addAll(indices);
         copy.constraints.addAll(constraints);
-        copy.checks.addAll(checks);
         return copy;
     }
 
@@ -174,7 +167,6 @@ public class MsType extends AbstractType {
         hasher.put(columns);
         hasher.put(indices);
         hasher.put(constraints);
-        hasher.put(checks);
     }
 
     public String getBaseType() {
@@ -224,15 +216,6 @@ public class MsType extends AbstractType {
 
     public void addColumn(String column) {
         columns.add(column);
-        resetHash();
-    }
-
-    public List<String> getChecks() {
-        return Collections.unmodifiableList(checks);
-    }
-
-    public void addCheck(String check) {
-        checks.add(check);
         resetHash();
     }
 
