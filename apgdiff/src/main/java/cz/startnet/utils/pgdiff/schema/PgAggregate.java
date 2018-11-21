@@ -4,15 +4,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class PgAggregate extends PgStatementWithSearchPath {
+public class PgAggregate extends AbstractPgFunction {
 
-    private final List<Argument> arguments = new ArrayList<>();
     private final List<Argument> orderByArgs = new ArrayList<>();
 
     private String baseType;
@@ -35,7 +33,6 @@ public class PgAggregate extends PgStatementWithSearchPath {
     private String mFinalFuncModify;
     private String mInitCond;
     private String sortOp;
-    private String parallel;
     private boolean isHypothetical;
 
     public PgAggregate(String name, String rawStatement) {
@@ -53,7 +50,7 @@ public class PgAggregate extends PgStatementWithSearchPath {
         sbSQL.append("CREATE AGGREGATE ");
         sbSQL.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
 
-        appendAggregateSignature(sbSQL, true);
+        appendFunctionSignature(sbSQL, false, true);
 
         sbSQL.append(" (\n\tSFUNC = ");
         sbSQL.append(sFunc);
@@ -143,9 +140,9 @@ public class PgAggregate extends PgStatementWithSearchPath {
             sbSQL.append(sortOp);
         }
 
-        if (parallel != null) {
+        if (getParallel() != null) {
             sbSQL.append(",\n\tPARALLEL = ");
-            sbSQL.append(parallel);
+            sbSQL.append(getParallel());
         }
 
         if (isHypothetical) {
@@ -166,65 +163,14 @@ public class PgAggregate extends PgStatementWithSearchPath {
     }
 
     @Override
-    public String getDropSQL() {
-        final StringBuilder sbString = new StringBuilder();
-        sbString.append("DROP AGGREGATE ");
-        sbString.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
-        appendAggregateSignature(sbString, true);
-        sbString.append(';');
-
-        return sbString.toString();
-    }
-
-    @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
-        PgAggregate newAggregate;
-        if (newCondition instanceof PgAggregate) {
-            newAggregate = (PgAggregate)newCondition;
-        } else {
-            return false;
+    public StringBuilder appendFunctionSignature(StringBuilder sb,
+            boolean includeDefaultValues, boolean includeArgNames) {
+        boolean cache = !includeArgNames;
+        if (cache && signatureCache != null) {
+            return sb.append(signatureCache);
         }
+        final int sigStart = sb.length();
 
-        if (!checkForChanges(newAggregate)) {
-            isNeedDepcies.set(true);
-            return true;
-        }
-
-        if (!Objects.equals(getOwner(), newAggregate.getOwner())) {
-            sb.append(newAggregate.getOwnerSQL());
-        }
-        alterPrivileges(newAggregate, sb);
-        if (!Objects.equals(getComment(), newAggregate.getComment())) {
-            sb.append("\n\n");
-            newAggregate.appendCommentSql(sb);
-        }
-        return sb.length() > startLength;
-
-    }
-
-    /**
-     * Alias for {@link #getSignature()} which provides a unique aggregate ID.
-     *
-     * Use {@link #getBareName()} to get just the aggregate name.
-     */
-    @Override
-    public String getName() {
-        return getSignature();
-    }
-
-    /**
-     * Returns aggregate signature. It consists of unquoted name and argument
-     * data types.
-     *
-     * @return aggregate signature
-     */
-    public String getSignature() {
-        return appendAggregateSignature(new StringBuilder(), true).toString();
-    }
-
-    public StringBuilder appendAggregateSignature(StringBuilder sb, boolean includeArgNames) {
         sb.append(PgDiffUtils.getQuotedName(name)).append('(');
         if (arguments.isEmpty() && orderByArgs.isEmpty()) {
             sb.append('*');
@@ -239,6 +185,10 @@ public class PgAggregate extends PgStatementWithSearchPath {
             }
         }
         sb.append(')');
+
+        if (cache) {
+            signatureCache = sb.substring(sigStart, sb.length());
+        }
         return sb;
     }
 
@@ -249,40 +199,20 @@ public class PgAggregate extends PgStatementWithSearchPath {
             if (addComma) {
                 sb.append(", ");
             }
-            sb.append(getDeclaration(arg, includeArgNames));
+            sb.append(getDeclaration(arg, false, includeArgNames));
             addComma = true;
         }
     }
 
-    private String getDeclaration(Argument arg, boolean includeArgName) {
-        final StringBuilder sbString = new StringBuilder();
-
-        String mode = arg.getMode();
-        if (mode != null && !"IN".equalsIgnoreCase(mode)) {
-            sbString.append(mode);
-            sbString.append(' ');
-        }
-
-        String name = arg.getName();
-
-        if (name != null && !name.isEmpty() && includeArgName) {
-            sbString.append(PgDiffUtils.getQuotedName(name));
-            sbString.append(' ');
-        }
-
-        sbString.append(arg.getDataType());
-
-        return sbString.toString();
-    }
-
-    private boolean checkForChanges(PgAggregate aggr) {
+    @Override
+    public boolean checkForChanges(AbstractFunction func) {
         boolean equals = false;
 
-        if (this == aggr) {
+        if (this == func) {
             equals = true;
         } else {
-            equals = Objects.equals(name, aggr.getBareName())
-                    && arguments.equals(aggr.getArguments())
+            PgAggregate aggr = (PgAggregate)func;
+            equals = super.checkForChanges(aggr)
                     && orderByArgs.equals(aggr.getOrderByArgs())
                     && Objects.equals(baseType, aggr.getBaseType())
                     && Objects.equals(sFunc, aggr.getSFunc())
@@ -304,35 +234,14 @@ public class PgAggregate extends PgStatementWithSearchPath {
                     && Objects.equals(mFinalFuncModify, aggr.getMFinalFuncModify())
                     && Objects.equals(mInitCond, aggr.getMInitCond())
                     && Objects.equals(sortOp, aggr.getSortOp())
-                    && Objects.equals(parallel, aggr.getParallel())
                     && isHypothetical == aggr.isHypothetical();
         }
         return equals;
     }
 
     @Override
-    public boolean compare(PgStatement obj) {
-        if (this == obj) {
-            return true;
-        }
-
-        if (obj instanceof PgAggregate) {
-            PgAggregate aggr  = (PgAggregate) obj;
-            if (!checkForChanges(aggr)) {
-                return false;
-            }
-            return  Objects.equals(owner, aggr.getOwner())
-                    && Objects.equals(grants, aggr.grants)
-                    && Objects.equals(revokes, aggr.revokes)
-                    && Objects.equals(comment, aggr.getComment());
-        }
-        return false;
-    }
-
-    @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(name);
-        hasher.putOrdered(arguments);
+        super.computeHash(hasher);
         hasher.putOrdered(orderByArgs);
         hasher.put(baseType);
         hasher.put(sFunc);
@@ -354,26 +263,7 @@ public class PgAggregate extends PgStatementWithSearchPath {
         hasher.put(mFinalFuncModify);
         hasher.put(mInitCond);
         hasher.put(sortOp);
-        hasher.put(parallel);
         hasher.put(isHypothetical);
-        hasher.put(owner);
-        hasher.putUnordered(grants);
-        hasher.putUnordered(revokes);
-        hasher.put(comment);
-    }
-
-    /**
-     * Getter for {@link #arguments}. List cannot be modified.
-     *
-     * @return {@link #arguments}
-     */
-    public List<Argument> getArguments() {
-        return Collections.unmodifiableList(arguments);
-    }
-
-    public void addArgument(final Argument argument) {
-        arguments.add(argument);
-        resetHash();
     }
 
     /**
@@ -573,15 +463,6 @@ public class PgAggregate extends PgStatementWithSearchPath {
         resetHash();
     }
 
-    public String getParallel() {
-        return parallel;
-    }
-
-    public void setParallel(String parallel) {
-        this.parallel = parallel;
-        resetHash();
-    }
-
     public boolean isHypothetical() {
         return isHypothetical;
     }
@@ -592,13 +473,8 @@ public class PgAggregate extends PgStatementWithSearchPath {
     }
 
     @Override
-    public PgAggregate shallowCopy() {
+    protected AbstractFunction getFunctionCopy() {
         PgAggregate copy = new PgAggregate(getBareName(), getRawStatement());
-        for (Argument argSrc : arguments) {
-            Argument argDst = new Argument(argSrc.getMode(), argSrc.getName(),
-                    argSrc.getDataType());
-            copy.addArgument(argDst);
-        }
         for (Argument argSrc : orderByArgs) {
             Argument orderByArgDst = new Argument(argSrc.getMode(), argSrc.getName(),
                     argSrc.getDataType());
@@ -626,24 +502,6 @@ public class PgAggregate extends PgStatementWithSearchPath {
         copy.setSortOp(getSortOp());
         copy.setParallel(getParallel());
         copy.setHypothetical(isHypothetical());
-        copy.setComment(getComment());
-        copy.setParallel(getParallel());
-        copy.setOwner(getOwner());
-        copy.setLocation(getLocation());
-        copy.revokes.addAll(revokes);
-        copy.grants.addAll(grants);
-        copy.deps.addAll(deps);
-
         return copy;
-    }
-
-    @Override
-    public PgAggregate deepCopy() {
-        return shallowCopy();
-    }
-
-    @Override
-    public AbstractSchema getContainingSchema() {
-        return (AbstractSchema) getParent();
     }
 }

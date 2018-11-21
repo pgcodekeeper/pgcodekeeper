@@ -27,7 +27,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     private final List<PgFtsDictionary> dictionaries = new ArrayList<>();
     private final List<PgFtsConfiguration> configurations = new ArrayList<>();
     private final List<PgOperator> operators = new ArrayList<>();
-    private final List<PgAggregate> aggregates = new ArrayList<>();
+    private final List<AbstractFunction> aggregates = new ArrayList<>();
 
     private String definition;
 
@@ -355,8 +355,8 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      *
      * @return found aggregate or null if no such aggregate has been found
      */
-    public PgAggregate getAggregate(final String signature) {
-        for (PgAggregate aggr : aggregates) {
+    public AbstractFunction getAggregate(final String signature) {
+        for (AbstractFunction aggr : aggregates) {
             if (aggr.getName().equals(signature)) {
                 return aggr;
             }
@@ -424,7 +424,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      *
      * @return {@link #aggregates}
      */
-    public List<PgAggregate> getAggregates() {
+    public List<AbstractFunction> getAggregates() {
         return Collections.unmodifiableList(aggregates);
     }
 
@@ -514,7 +514,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         resetHash();
     }
 
-    public void addAggregate(final PgAggregate aggr) {
+    public void addAggregate(final AbstractFunction aggr) {
         assertUnique(this::getAggregate, aggr);
         aggregates.add(aggr);
         aggr.setParent(this);
@@ -679,7 +679,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         for (PgOperator oper : operators) {
             copy.addOperator(oper.deepCopy());
         }
-        for (PgAggregate aggr : aggregates) {
+        for (AbstractFunction aggr : aggregates) {
             copy.addAggregate(aggr.deepCopy());
         }
         return copy;
