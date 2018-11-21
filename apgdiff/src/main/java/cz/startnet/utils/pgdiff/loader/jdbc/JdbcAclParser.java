@@ -144,4 +144,8 @@ class Privilege {
         this.isGO = isGO;
         this.isDefault = isDefault;
     }
+
+    public boolean isGrantAllToPublic() {
+        return "PUBLIC".equals(grantee) && "ALL".equals(grantValues.get(0));
+    }
 }

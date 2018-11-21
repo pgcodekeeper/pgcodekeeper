@@ -73,7 +73,6 @@ GRANT ALL ON SCHEMA public TO PUBLIC;
 -- Name: t1.c1; Type: ACL; Schema: public; Owner: botov_av
 --
 
-REVOKE ALL(c1) ON TABLE public.t1 FROM PUBLIC;
 REVOKE ALL(c1) ON TABLE public.t1 FROM botov_av;
 GRANT ALL(c1, c2) ON TABLE public.t1 TO maindb;
 GRANT INSERT(c1,c2),REFERENCES(c1),UPDATE(c1) ON TABLE public.t1,public.t2 TO levsha_aa;
@@ -83,7 +82,6 @@ GRANT SELECT ON TABLE public.t1,public.t2 TO levsha_aa;
 -- Name: v1.c1; Type: ACL; Schema: public; Owner: levsha_aa
 --
 
-REVOKE ALL(c1) ON TABLE public.v1 FROM PUBLIC;
 REVOKE ALL(c1) ON TABLE public.v1 FROM levsha_aa;
 GRANT UPDATE(c1) ON TABLE public.v1 TO maindb;
 --
