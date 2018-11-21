@@ -248,7 +248,8 @@ public class CreateRule extends ParserAbstract {
         } else {
             List<PgPrivilege> privileges = privs.get(st);
             if (privileges == null) {
-                privileges = privs.put(st, new ArrayList<>());
+                privileges = new ArrayList<>();
+                privs.put(st, privileges);
             }
 
             privileges.add(privilege);
