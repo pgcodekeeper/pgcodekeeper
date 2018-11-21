@@ -3,28 +3,22 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_constraint_bodyContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ClusteredContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Identity_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_optionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_optionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.TableAbstract;
-import cz.startnet.utils.pgdiff.schema.AbstractColumn;
-import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
-import cz.startnet.utils.pgdiff.schema.AbstractRegularTable;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
-import cz.startnet.utils.pgdiff.schema.MsConstraint;
+import cz.startnet.utils.pgdiff.schema.MsIndex;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.SimpleMsTable;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsTable extends TableAbstract {
 
@@ -77,14 +71,19 @@ public class CreateMsTable extends TableAbstract {
         return table;
     }
 
-    private void fillColumn(Column_def_table_constraintContext colCtx,
-            AbstractTable table) {
+    private void fillColumn(Column_def_table_constraintContext colCtx, SimpleMsTable table) {
         if (colCtx.table_constraint() != null) {
-            AbstractConstraint con = getMsConstraint(colCtx.table_constraint());
-            table.addConstraint(con);
+            table.addConstraint(getMsConstraint(colCtx.table_constraint()));
+        } else if (colCtx.table_index() != null) {
+            Table_indexContext indCtx = colCtx.table_index();
+            MsIndex index = new MsIndex(indCtx.index_name.getText(), "");
+            index.setTableName(table.getName());
+            ClusteredContext cluster = indCtx.clustered();
+            index.setClusterIndex(cluster != null && cluster.CLUSTERED() != null);
+            CreateMsIndex.parseIndex(indCtx.index_rest(), index);
+            table.addIndex(index);
         } else {
-            AbstractColumn col = new MsColumn(colCtx.id().getText());
-
+            MsColumn col = new MsColumn(colCtx.id().getText());
             if (colCtx.data_type() != null) {
                 col.setType(getFullCtxText(colCtx.data_type()));
             } else {
@@ -92,15 +91,14 @@ public class CreateMsTable extends TableAbstract {
             }
 
             for (Column_optionContext option : colCtx.column_option()) {
-                fillColumnOption(option, col, table);
+                fillColumnOption(option, col);
             }
 
             table.addColumn(col);
         }
     }
 
-    private void fillColumnOption(Column_optionContext option,
-            AbstractColumn col, AbstractTable table) {
+    private void fillColumnOption(Column_optionContext option, MsColumn col) {
         if (option.SPARSE() != null) {
             col.setSparse(true);
         } else if (option.COLLATE() != null) {
@@ -127,43 +125,10 @@ public class CreateMsTable extends TableAbstract {
                 col.setDefaultName(option.id().getText());
             }
             col.setDefaultValue(getFullCtxText(option.expression()));
-        } else if (option.column_constraint_body() != null) {
-            fillColumnConstraint(option, col, table);
         }
     }
 
-    private void fillColumnConstraint(Column_optionContext option,
-            AbstractColumn col, AbstractTable table) {
-        String conName = option.id() == null ? "" : getFullCtxText(option.id());
-        AbstractConstraint con = new MsConstraint(conName, getFullCtxText(option));
-        Column_constraint_bodyContext body = option.column_constraint_body();
-        con.setPrimaryKey(body.PRIMARY() != null);
-        con.setUnique(body.UNIQUE() != null);
-
-        if (body.REFERENCES() != null) {
-            Qualified_nameContext ref = body.qualified_name();
-            IdContext schCtx = ref.schema;
-            String fschema = schCtx == null ? getDefSchemaName() : schCtx.getText();
-            String ftable = ref.name.getText();
-
-            GenericColumn ftableRef = new GenericColumn(fschema, ftable, DbObjType.TABLE);
-            con.setForeignTable(ftableRef);
-            con.addDep(ftableRef);
-
-            if (body.id() != null) {
-                String rcol = body.id().getText();
-                con.addForeignColumn(rcol);
-                con.addDep(new GenericColumn(fschema, ftable, rcol, DbObjType.COLUMN));
-            }
-        } else if (con.isUnique() || con.isPrimaryKey()) {
-            con.addColumn(col.getName());
-        }
-
-        con.setDefinition(getFullCtxText(body));
-        table.addConstraint(con);
-    }
-
-    private void parseOptions(List<Index_optionContext> options, AbstractRegularTable table){
+    private void parseOptions(List<Index_optionContext> options, SimpleMsTable table) {
         for (Index_optionContext option : options) {
             String key = option.key.getText();
             String value = option.index_option_value().getText();
