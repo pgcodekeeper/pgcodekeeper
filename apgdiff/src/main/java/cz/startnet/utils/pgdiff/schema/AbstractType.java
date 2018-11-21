@@ -19,6 +19,7 @@ public abstract class AbstractType extends PgStatementWithSearchPath {
     @Override
     public AbstractType shallowCopy() {
         AbstractType copy = getTypeCopy();
+        copy.setOwner(getOwner());
         copy.grants.addAll(grants);
         copy.revokes.addAll(revokes);
         copy.setComment(getComment());
