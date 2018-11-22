@@ -241,7 +241,6 @@ public class ModelExporter extends AbstractModelExporter {
             // if the whole parent schema is to be deleted
             return;
         }
-        // delete functionOrOperator sql file
 
         List<PgStatement> toDump = new LinkedList<>();
         AbstractSchema newParentSchema = newDb.getSchema(st.getParent().getName());
@@ -417,17 +416,21 @@ public class ModelExporter extends AbstractModelExporter {
     }
 
     @Override
-    protected Path getRelativeFilePath(PgStatement st, boolean addExtension){
+    protected Path getRelativeFilePath(PgStatement st, boolean addExtension) {
+        return getRelativeFilePath(st, Paths.get(""), addExtension);
+    }
+
+    static Path getRelativeFilePath(PgStatement st, Path baseDir, boolean addExtension) {
         PgStatement parentSt = st.getParent();
         String parentExportedFileName = parentSt == null ?
                 null : ModelExporter.getExportedFilename(parentSt);
 
-        Path path = Paths.get("SCHEMA");
+        Path path = baseDir.resolve("SCHEMA");
         DbObjType type = st.getStatementType();
         String schemaName;
         switch (type) {
         case EXTENSION:
-            path = Paths.get(type.name());
+            path = baseDir.resolve(type.name());
             break;
 
         case SCHEMA:

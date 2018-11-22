@@ -239,57 +239,60 @@ public class MsModelExporter extends AbstractModelExporter {
     }
 
     @Override
-    protected Path getRelativeFilePath(PgStatement st, boolean addExtension){
+    protected Path getRelativeFilePath(PgStatement st, boolean addExtension) {
+        return getRelativeFilePath(st, Paths.get(""), addExtension);
+    }
+
+    static Path getRelativeFilePath(PgStatement st, Path baseDir, boolean addExtension){
         PgStatement parentSt = st.getParent();
 
-        Path path;
+        Path path = baseDir;
         DbObjType type = st.getStatementType();
         switch (type) {
 
         case SCHEMA:
-            path = Paths.get(MS_WORK_DIR_NAMES.SECURITY.getDirName(), SCHEMAS_FOLDER);
+            path = path.resolve(MS_WORK_DIR_NAMES.SECURITY.getDirName()).resolve(SCHEMAS_FOLDER);
             if (!addExtension) {
                 return path;
             }
             break;
         case ROLE:
-            path = Paths.get(MS_WORK_DIR_NAMES.SECURITY.getDirName(), ROLES_FOLDER);
+            path = path.resolve(MS_WORK_DIR_NAMES.SECURITY.getDirName()).resolve(ROLES_FOLDER);
             if (!addExtension) {
                 return path;
             }
             break;
         case USER:
-            path = Paths.get(MS_WORK_DIR_NAMES.SECURITY.getDirName(), USERS_FOLDER);
+            path = path.resolve(MS_WORK_DIR_NAMES.SECURITY.getDirName()).resolve(USERS_FOLDER);
             if (!addExtension) {
                 return path;
             }
             break;
         case ASSEMBLY:
-            path =  Paths.get(MS_WORK_DIR_NAMES.ASSEMBLIES.getDirName());
+            path = path.resolve(MS_WORK_DIR_NAMES.ASSEMBLIES.getDirName());
             break;
         case SEQUENCE:
-            path = Paths.get(MS_WORK_DIR_NAMES.SEQUENCES.getDirName());
+            path = path.resolve(MS_WORK_DIR_NAMES.SEQUENCES.getDirName());
             break;
         case VIEW:
-            path = Paths.get(MS_WORK_DIR_NAMES.VIEWS.getDirName());
+            path = path.resolve(MS_WORK_DIR_NAMES.VIEWS.getDirName());
             break;
         case TABLE:
-            path = Paths.get(MS_WORK_DIR_NAMES.TABLES.getDirName());
+            path = path.resolve(MS_WORK_DIR_NAMES.TABLES.getDirName());
             break;
         case FUNCTION:
-            path = Paths.get(MS_WORK_DIR_NAMES.FUNCTIONS.getDirName());
+            path = path.resolve(MS_WORK_DIR_NAMES.FUNCTIONS.getDirName());
             break;
         case PROCEDURE:
-            path = Paths.get(MS_WORK_DIR_NAMES.PROCEDURES.getDirName());
+            path = path.resolve(MS_WORK_DIR_NAMES.PROCEDURES.getDirName());
             break;
 
         case CONSTRAINT:
         case INDEX:
-        case RULE:
         case TRIGGER:
         case COLUMN:
             st = parentSt;
-            path = Paths.get(parentSt.getStatementType() == DbObjType.TABLE ?
+            path = path.resolve(parentSt.getStatementType() == DbObjType.TABLE ?
                     MS_WORK_DIR_NAMES.TABLES.getDirName() : MS_WORK_DIR_NAMES.VIEWS.getDirName());
             break;
         default:

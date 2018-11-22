@@ -854,8 +854,6 @@ public class DiffTableViewer extends Composite {
                 case JDBC:
                     type = Messages.DiffTableViewer_database;
                     name = JdbcConnector.dbNameFromUrl(loc);
-                    loc = AbstractModelExporter.getRelativeFilePath(st, false,
-                            loc.startsWith("jdbc:sqlserver")).toString();
                     break;
                 case URL:
                     type = Messages.DiffTableViewer_uri;
@@ -903,7 +901,7 @@ public class DiffTableViewer extends Composite {
                     elementInfoMap.forEach((k,v) -> {
                         if (k.getSide() != DiffSide.RIGHT) {
                             Path fullPath = location.resolve(AbstractModelExporter.getRelativeFilePath(
-                                    k.getPgStatement(dbProject.getDbObject()), true, isMsSql));
+                                    k.getPgStatement(dbProject.getDbObject())));
                             // git always uses linux paths
                             // since all paths here are relative it's ok to simply
                             // join their elements with forward slashes

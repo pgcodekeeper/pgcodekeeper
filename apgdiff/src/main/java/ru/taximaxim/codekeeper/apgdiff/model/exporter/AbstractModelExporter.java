@@ -439,9 +439,9 @@ public abstract class AbstractModelExporter {
         }
     }
 
-    public static Path getRelativeFilePath(PgStatement st, boolean addExtension, boolean isMsSql) {
-        AbstractModelExporter exporter = isMsSql ? new MsModelExporter(null, null, null)
-                : new ModelExporter(null, null, null);
+    public static Path getRelativeFilePath(PgStatement st) {
+        AbstractModelExporter exporter = st.isPostgres() ? new ModelExporter(null, null, null)
+                : new MsModelExporter(null, null, null);
 
         return exporter.getRelativeFilePath(st, true);
     }
