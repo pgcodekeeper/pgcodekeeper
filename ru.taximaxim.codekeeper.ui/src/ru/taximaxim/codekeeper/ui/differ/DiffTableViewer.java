@@ -129,7 +129,6 @@ public class DiffTableViewer extends Composite {
     private static final ListXmlStore XML_HISTORY = new ListXmlStore(200, "fhistory.xml", "history", "element"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
     private final boolean showGitUser;
-    private final boolean isMsSql;
     private boolean showDbUser;
 
     private final Image iSideBoth;
@@ -183,17 +182,15 @@ public class DiffTableViewer extends Composite {
     }
 
     public DiffTableViewer(Composite parent, boolean viewOnly) {
-        this(parent, viewOnly, null, null, false);
+        this(parent, viewOnly, null, null);
     }
 
-    public DiffTableViewer(Composite parent, boolean viewOnly, IStatusLineManager lineManager,
-            Path location, boolean isMsSql) {
+    public DiffTableViewer(Composite parent, boolean viewOnly, IStatusLineManager lineManager, Path location) {
         super(parent, SWT.NONE);
         this.viewOnly = viewOnly;
         this.lineManager = lineManager;
         this.location = location;
-        this.isMsSql = isMsSql;
-        showGitUser = location!= null
+        showGitUser = location != null
                 && Activator.getDefault().getPreferenceStore().getBoolean(PG_EDIT_PREF.SHOW_GIT_USER)
                 && GitUserReader.checkRepo(location);
 

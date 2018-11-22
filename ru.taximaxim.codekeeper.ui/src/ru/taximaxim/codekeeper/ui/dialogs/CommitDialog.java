@@ -30,7 +30,7 @@ public class CommitDialog extends TrayDialog {
 
     private final IPreferenceStore prefs;
     private final boolean egitCommitAvailable;
-    private final boolean forceSave;
+    private final boolean forcePrivOnly;
 
     private final DbSource dbProject;
     private final DbSource dbRemote;
@@ -45,7 +45,7 @@ public class CommitDialog extends TrayDialog {
     public CommitDialog(Shell parentShell, Set<TreeElement> depcyElementsSet,
             DbSource dbProject, DbSource dbRemote, TreeElement diffTree,
             IPreferenceStore mainPrefs, boolean egitCommitAvailable,
-            boolean forceSave) {
+            boolean forcePrivOnly) {
         super(parentShell);
         this.depcyElementsSet = depcyElementsSet;
         this.dbProject = dbProject;
@@ -53,7 +53,7 @@ public class CommitDialog extends TrayDialog {
         this.diffTree = diffTree;
         this.prefs = mainPrefs;
         this.egitCommitAvailable = egitCommitAvailable;
-        this.forceSave = forceSave;
+        this.forcePrivOnly = forcePrivOnly;
 
         setShellStyle(getShellStyle() | SWT.RESIZE);
     }
@@ -143,7 +143,7 @@ public class CommitDialog extends TrayDialog {
             }
         });
 
-        btnSavePriv.setSelection(forceSave);
+        btnSavePriv.setSelection(forcePrivOnly);
 
         return area;
     }
@@ -203,7 +203,7 @@ public class CommitDialog extends TrayDialog {
 
             if (showWarning) {
                 warningLbl.setText(Messages.CommitDialog_unchecked_objects_can_occur_unexpected_errors);
-            } else if (forceSave && !btnSavePriv.getSelection()) {
+            } else if (forcePrivOnly && !btnSavePriv.getSelection()) {
                 showWarning = true;
                 warningLbl.setText(Messages.CommitDialog_privileges_must_be_saved);
             }

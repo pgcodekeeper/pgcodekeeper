@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -79,50 +80,31 @@ public class UIProjectLoader extends ProjectLoader {
      */
     public PgDatabase loadDatabaseSchemaFromPgProject(PgDatabase db)
             throws InterruptedException, IOException, CoreException {
-        for (WORK_DIR_NAMES workDirName : WORK_DIR_NAMES.values()) {
-            // legacy schemas
-            loadSubdir(iProject.getFolder(workDirName.name()), db);
-        }
-
-        IFolder schemasCommonDir = iProject.getFolder(WORK_DIR_NAMES.SCHEMA.name());
-        // skip walking SCHEMA folder if it does not exist
-        if (schemasCommonDir.exists()) {
-            // new schemas + content
-            // step 2
-            // read out schemas names, and work in loop on each
-            for (IResource sub : schemasCommonDir.members()) {
-                if (sub.getType() == IResource.FOLDER) {
-                    IFolder schemaDir = (IFolder) sub;
-                    loadSubdir(schemaDir, db);
-                    for (String dirSub : DIR_LOAD_ORDER) {
-                        loadSubdir(schemaDir.getFolder(dirSub), db);
-                    }
-                }
-            }
-        }
+        loadPgStructure(iProject, iProject::getFolder, db);
 
         isPrivilegeMode = true;
         // step 3
         // read additional privileges from special folder
-        loadPrivs(iProject.getFolder(ApgdiffConsts.PRIVILEGES_DIR), db);
-
+        IFolder privs = iProject.getFolder(ApgdiffConsts.PRIVILEGES_DIR);
+        loadPgStructure(privs, privs::getFolder, db);
+        replacePrivileges();
         isPrivilegeMode = false;
 
         return db;
     }
 
-    private void loadPrivs(IFolder privileges, PgDatabase db)
-            throws InterruptedException, IOException, CoreException {
-        if (!privileges.exists()) {
+    private void loadPgStructure(IContainer baseDir, Function<String, IFolder> folderGetter,
+            PgDatabase db) throws InterruptedException, IOException, CoreException {
+        if (!baseDir.exists()) {
             return;
         }
 
         for (WORK_DIR_NAMES workDirName : WORK_DIR_NAMES.values()) {
             // legacy schemas
-            loadSubdir(privileges.getFolder(workDirName.name()), db);
+            loadSubdir(folderGetter.apply(workDirName.name()), db);
         }
 
-        IFolder schemasCommonDir = privileges.getFolder(WORK_DIR_NAMES.SCHEMA.name());
+        IFolder schemasCommonDir = folderGetter.apply(WORK_DIR_NAMES.SCHEMA.name());
         // skip walking SCHEMA folder if it does not exist
         if (schemasCommonDir.exists()) {
             // new schemas + content
@@ -138,8 +120,6 @@ public class UIProjectLoader extends ProjectLoader {
                 }
             }
         }
-
-        replacePrivileges();
     }
 
     /**
@@ -151,43 +131,33 @@ public class UIProjectLoader extends ProjectLoader {
         PgDatabase db = new PgDatabase();
         db.setArguments(arguments);
 
-        IFolder securityFolder = iProject.getFolder(MS_WORK_DIR_NAMES.SECURITY.getDirName());
+        loadMsStructure(iProject, iProject::getFolder, db);
+
+        isPrivilegeMode = true;
+        // read additional privileges from special folder
+        IFolder privs = iProject.getFolder(ApgdiffConsts.PRIVILEGES_DIR);
+        loadMsStructure(privs, privs::getFolder, db);
+        replacePrivileges();
+        isPrivilegeMode = false;
+        return db;
+    }
+
+    private void loadMsStructure(IContainer baseDir, Function<String, IFolder> folderGetter,
+            PgDatabase db) throws InterruptedException, IOException, CoreException {
+        if (!baseDir.exists()) {
+            return;
+        }
+
+        IFolder securityFolder = folderGetter.apply(MS_WORK_DIR_NAMES.SECURITY.getDirName());
         loadSubdir(securityFolder.getFolder("Schemas"), db); //$NON-NLS-1$
         loadSubdir(securityFolder.getFolder("Roles"), db); //$NON-NLS-1$
         loadSubdir(securityFolder.getFolder("Users"), db); //$NON-NLS-1$
 
         addDboSchema(db);
 
-        // content
         for (MS_WORK_DIR_NAMES dirSub : MS_WORK_DIR_NAMES.values()) {
-            loadSubdir(iProject.getFolder(dirSub.getDirName()), db);
+            loadSubdir(folderGetter.apply(dirSub.getDirName()), db);
         }
-
-        isPrivilegeMode = true;
-
-        // read additional privileges from special folder
-        loadMsPrivs(iProject.getFolder(ApgdiffConsts.PRIVILEGES_DIR), db);
-
-        isPrivilegeMode = false;
-        return db;
-    }
-
-    private void loadMsPrivs(IFolder privileges, PgDatabase db)
-            throws InterruptedException, IOException, CoreException {
-        if (!privileges.exists()) {
-            return;
-        }
-
-        IFolder securityFolder = privileges.getFolder(MS_WORK_DIR_NAMES.SECURITY.getDirName());
-        loadSubdir(securityFolder.getFolder("Schemas"), db); //$NON-NLS-1$
-        loadSubdir(securityFolder.getFolder("Roles"), db); //$NON-NLS-1$
-        loadSubdir(securityFolder.getFolder("Users"), db); //$NON-NLS-1$
-
-        for (MS_WORK_DIR_NAMES dirSub : MS_WORK_DIR_NAMES.values()) {
-            loadSubdir(privileges.getFolder(dirSub.getDirName()), db);
-        }
-
-        replacePrivileges();
     }
 
     private void loadSubdir(IFolder folder, PgDatabase db)

@@ -201,7 +201,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         IStatusLineManager manager = getEditorSite().getActionBars().getStatusLineManager();
 
         diffTable = new DiffTableViewer(sashOuter, false, manager,
-                Paths.get(proj.getProject().getLocationURI()), OpenProjectUtils.checkMsSql(proj.getProject())) {
+                Paths.get(proj.getProject().getLocationURI())) {
 
             @Override
             public void createRightSide(Composite container) {
@@ -880,8 +880,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 }
             } else {
                 MessageBox mb = new MessageBox(getEditorSite().getShell(), SWT.ICON_WARNING | SWT.YES | SWT.NO);
-                mb.setText(Messages.ProjectEditorDiffer_lib_change_warning_title);
                 mb.setMessage(Messages.ProjectEditorDiffer_lib_change_warning_message);
+                mb.setText(Messages.ProjectEditorDiffer_lib_change_warning_title);
                 if (SWT.YES != mb.open()) {
                     return;
                 }
