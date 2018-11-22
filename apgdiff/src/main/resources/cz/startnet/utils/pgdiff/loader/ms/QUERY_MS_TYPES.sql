@@ -1,20 +1,20 @@
 SELECT
 --general
 t.schema_id AS schema_oid,
-t.name AS name,
+t.name,
 p.name AS owner,
 aa.acl,
 
 -- assembly type
-ay.assembly_class,
 a.name AS assembly,
+ay.assembly_class,
 
 -- wrapper type
 t.is_nullable,
-basetypes.name AS type,
+basetypes.name AS base_type,
 CASE WHEN basetypes.name IN (N'nchar', N'nvarchar') AND t.max_length >= 0 THEN t.max_length/2 ELSE t.max_length END AS size,
-t.precision AS prec,
-t.scale AS scale,
+t.precision,
+t.scale,
 
 -- type table
 cc.cols,
@@ -35,7 +35,7 @@ CROSS APPLY (
         SELECT
             c.name,
             c.column_id AS id,
-            ss.name AS ts,
+            ss.name AS st,
             usrt.name AS type,
             usrt.is_user_defined AS ud,
             CASE WHEN c.max_length >= 0 AND baset.name IN (N'nchar', N'nvarchar') THEN c.max_length/2 ELSE c.max_length END AS size,
@@ -65,7 +65,7 @@ CROSS APPLY (
 
 -- type table check constraints
 CROSS APPLY ( 
-    SELECT c.definition
+    SELECT c.definition AS def
     FROM sys.check_constraints c WITH (NOLOCK)    
     WHERE c.parent_object_id=ttt.type_table_object_id
     FOR XML RAW, ROOT
@@ -76,14 +76,16 @@ CROSS APPLY (
     SELECT * FROM (
         SELECT
             si.name,
-            si.is_primary_key,
-            si.is_unique,
-            si.is_unique_constraint,
-            INDEXPROPERTY(si.object_id, si.name, 'IsClustered') AS is_clustered,
+            si.is_primary_key AS pk,
+            si.is_unique_constraint AS uc,
+            si.ignore_dup_key AS dk,
+            INDEXPROPERTY(si.object_id, si.name, 'IsClustered') AS cl,
+            hi.bucket_count AS bc,
             ccc.cols,
-            si.filter_definition
-        FROM sys.indexes AS si
+            si.filter_definition AS def
+        FROM sys.indexes AS si WITH (NOLOCK)
         LEFT JOIN sys.objects o WITH (NOLOCK) ON si.object_id = o.object_id
+        LEFT JOIN sys.hash_indexes hi WITH (NOLOCK) ON hi.object_id = si.object_id AND hi.index_id = si.index_id
         CROSS APPLY ( 
             SELECT * FROM (
                 SELECT

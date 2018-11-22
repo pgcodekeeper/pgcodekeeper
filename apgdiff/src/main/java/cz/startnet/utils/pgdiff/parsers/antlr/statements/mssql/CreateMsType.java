@@ -5,16 +5,22 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ClusteredContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_typeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Identity_valueContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_optionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_optionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_restContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_whereContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Type_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.MsType;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsType extends ParserAbstract {
 
@@ -27,19 +33,29 @@ public class CreateMsType extends ParserAbstract {
 
     @Override
     public PgStatement getObject() {
-        MsType type = new MsType(ctx.name.getText(), getFullCtxText(ctx.getParent()));
+        MsType type = new MsType(ctx.qualified_name().name.getText(), getFullCtxText(ctx.getParent()));
+
+        IdContext schemaCtx = ctx.qualified_name().schema;
+        AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
 
         Type_definitionContext def = ctx.type_definition();
 
         if (def.FROM() != null) {
             type.setBaseType(getFullCtxText(def.data_type()));
             type.setNotNull(def.null_notnull() != null && def.null_notnull().NOT() != null);
-        } if (def.EXTERNAL() != null) {
-            String assemblyClass = null;
-            if (def.class_name == null) {
+        } else if (def.EXTERNAL() != null) {
+            String assemblyName = def.assembly_name.getText();
+            type.setAssemblyName(assemblyName);
+            type.addDep(new GenericColumn(assemblyName, DbObjType.ASSEMBLY));
+
+            String assemblyClass;
+            if (def.class_name != null) {
                 assemblyClass = def.class_name.getText();
+            } else {
+                assemblyClass = type.getName();
             }
-            type.setAssemblyName(def.assembly_name.getText(), assemblyClass);
+
+            type.setAssemblyClass(assemblyClass);
         } else {
             for (Column_def_table_constraintContext con :
                 def.column_def_table_constraints().column_def_table_constraint()) {
@@ -48,6 +64,7 @@ public class CreateMsType extends ParserAbstract {
             type.setMemoryOptimazed(def.WITH() != null && def.on_off().ON() != null);
         }
 
+        schema.addType(type);
         return type;
     }
 
@@ -84,12 +101,31 @@ public class CreateMsType extends ParserAbstract {
         }
         sb.append("CLUSTERED ");
 
+        if (indCtx.HASH() != null) {
+            sb.append("HASH ");
+        }
+
         Index_restContext rest = indCtx.index_rest();
 
         sb.append(getFullCtxText(rest.index_sort()));
         Index_whereContext wherePart = rest.index_where();
         if (wherePart != null) {
-            sb.append("\nWHERE ").append(getFullCtxText(wherePart.where));
+            sb.append(" WHERE ").append(getFullCtxText(wherePart.where));
+        }
+
+        Index_optionsContext options = rest.index_options();
+        if (options != null) {
+            for (Index_optionContext option : options.index_option()) {
+                String key = option.key.getText();
+                String value = option.index_option_value().getText();
+                if ("BUCKET_COUNT".equals(key)) {
+                    if (wherePart != null) {
+                        sb.append('\n');
+                    }
+                    sb.append("WITH ( BUCKET_COUNT = ").append(value).append(')');
+                    break;
+                }
+            }
         }
 
         type.addIndex(sb.toString());

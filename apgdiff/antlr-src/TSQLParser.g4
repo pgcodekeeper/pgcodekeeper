@@ -2401,7 +2401,7 @@ column_def_table_constraint
     ;
  
 table_index
-    : INDEX index_name=id clustered? index_rest
+    : INDEX index_name=id clustered? HASH? index_rest
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms187742.aspx
@@ -2425,7 +2425,7 @@ identity_value
     ;
 
 column_constraint_body
-    : (PRIMARY KEY | UNIQUE) clustered? index_options?
+    : (PRIMARY KEY | UNIQUE) clustered? HASH? index_options?
     | CHECK not_for_replication? LR_BRACKET search_condition RR_BRACKET
     | (FOREIGN KEY)? REFERENCES qualified_name (LR_BRACKET id RR_BRACKET)? on_delete? on_update? not_for_replication?
     ;
@@ -2436,7 +2436,7 @@ table_constraint
     ;
 
 table_constraint_body
-    : (PRIMARY KEY | UNIQUE) clustered? LR_BRACKET column_name_list_with_order RR_BRACKET index_options? (ON id)?
+    : (PRIMARY KEY | UNIQUE) clustered? HASH? LR_BRACKET column_name_list_with_order RR_BRACKET index_options? (ON id)?
     | CHECK not_for_replication? LR_BRACKET search_condition RR_BRACKET
     | DEFAULT expression FOR id
     | FOREIGN KEY LR_BRACKET fk = column_name_list RR_BRACKET REFERENCES qualified_name (LR_BRACKET pk = column_name_list RR_BRACKET)? on_delete? on_update? not_for_replication?

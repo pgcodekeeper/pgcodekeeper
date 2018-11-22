@@ -46,7 +46,7 @@ public class MsType extends AbstractType {
             sb.append(" EXTERNAL NAME ").append(MsDiffUtils.quoteName(getAssemblyName()))
             .append('.').append(MsDiffUtils.quoteName(getAssemblyClass()));
         } else {
-            sb.append(" AS TABLE (");
+            sb.append(" AS TABLE(");
             for (String col : columns) {
                 sb.append("\n\t");
                 sb.append(col);
@@ -58,14 +58,14 @@ public class MsType extends AbstractType {
             }
 
             for (String ind : indices) {
-                sb.append(",\n").append(ind);
+                sb.append(",\n\t").append(ind);
             }
 
             for (String con : constraints) {
-                sb.append(",\n").append(con);
+                sb.append(",\n\t").append(con);
             }
 
-            sb.append(')');
+            sb.append("\n)");
 
             if (isMemoryOptimazed()) {
                 sb.append("\nWITH ( MEMORY_OPTIMIZED = ON )");
@@ -135,7 +135,8 @@ public class MsType extends AbstractType {
         copy.setNotNull(isNotNull());
         copy.setMemoryOptimazed(isMemoryOptimazed());
         copy.setBaseType(getBaseType());
-        copy.setAssemblyName(getAssemblyName(), getAssemblyClass());
+        copy.setAssemblyName(getAssemblyName());
+        copy.setAssemblyClass(getAssemblyClass());
         copy.columns.addAll(columns);
         copy.indices.addAll(indices);
         copy.constraints.addAll(constraints);
@@ -191,13 +192,17 @@ public class MsType extends AbstractType {
         return assemblyName;
     }
 
+    public void setAssemblyName(String assemblyName) {
+        this.assemblyName = assemblyName;
+        resetHash();
+    }
+
     public String getAssemblyClass() {
         return assemblyClass;
     }
 
-    public void setAssemblyName(String assemblyName, String assemblyClass) {
-        this.assemblyName = assemblyName;
-        this.assemblyClass = assemblyClass == null ? name : assemblyClass;
+    public void setAssemblyClass(String assemblyClass) {
+        this.assemblyClass = assemblyClass;
         resetHash();
     }
 
@@ -235,5 +240,10 @@ public class MsType extends AbstractType {
     public void addIndex(String index) {
         indices.add(index);
         resetHash();
+    }
+
+    @Override
+    public boolean isPostgres() {
+        return false;
     }
 }
