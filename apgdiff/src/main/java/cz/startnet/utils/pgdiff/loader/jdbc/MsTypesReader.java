@@ -98,7 +98,7 @@ public class MsTypesReader extends JdbcReader {
                 definition.append("CLUSTERED ");
 
                 if (bucketCount > 0) {
-                    definition.append("HASH ");
+                    definition.append("HASH");
                 }
 
                 definition.append('\n');
@@ -138,7 +138,7 @@ public class MsTypesReader extends JdbcReader {
             }
 
             for (XmlReader check : XmlReader.readXML(res.getString("checks"))) {
-                type.addConstraint(" CHECK (" + check.getString("def") + ")");
+                type.addConstraint("CHECK (" + check.getString("def") + ')');
             }
 
             type.setMemoryOptimazed(res.getBoolean("is_memory_optimized"));

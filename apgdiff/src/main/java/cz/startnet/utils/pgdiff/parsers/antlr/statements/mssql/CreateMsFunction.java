@@ -98,10 +98,10 @@ public class CreateMsFunction extends BatchContextProcessor {
         }
 
         Func_returnContext ret = ctx.func_return();
-        if (ret.TABLE() != null) {
-            function.setFuncType(FuncTypes.TABLE);
-        } else if  (ret.LOCAL_ID() != null) {
+        if (ret.LOCAL_ID() != null) {
             function.setFuncType(FuncTypes.MULTI);
+        } else if (ret.data_type() == null) {
+            function.setFuncType(FuncTypes.TABLE);
         }
 
         schema.addFunction(function);

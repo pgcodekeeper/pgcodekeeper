@@ -1648,7 +1648,7 @@ assembly_specifier
     ;
 
 procedure_param
-    : name=LOCAL_ID (id DOT)? AS? data_type VARYING? (EQUAL default_val=default_value)? arg_mode=(OUT | OUTPUT | READONLY)?
+    : name=LOCAL_ID AS? data_type VARYING? (EQUAL default_val=default_value)? arg_mode=(OUT | OUTPUT | READONLY)?
     ;
 
 procedure_option

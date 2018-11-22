@@ -39,7 +39,7 @@ public class MsType extends AbstractType {
 
         if (getBaseType() != null) {
             sb.append(" FROM ").append(getBaseType());
-            if (!isNotNull()) {
+            if (isNotNull()) {
                 sb.append(" NOT NULL");
             }
         } else if (getAssemblyName() != null) {

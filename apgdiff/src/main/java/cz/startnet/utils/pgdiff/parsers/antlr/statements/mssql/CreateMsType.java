@@ -95,16 +95,18 @@ public class CreateMsType extends ParserAbstract {
         final StringBuilder sb = new StringBuilder();
         sb.append("INDEX ");
         sb.append(MsDiffUtils.quoteName(indCtx.index_name.getText()));
+        sb.append(" ");
 
         ClusteredContext cluster = indCtx.clustered();
-        if (cluster != null && cluster.CLUSTERED() != null) {
+        if (cluster != null && cluster.NONCLUSTERED() != null) {
             sb.append("NON");
         }
         sb.append("CLUSTERED ");
 
         if (indCtx.HASH() != null) {
-            sb.append("HASH ");
+            sb.append("HASH");
         }
+        sb.append('\n');
 
         Index_restContext rest = indCtx.index_rest();
 
