@@ -42,6 +42,8 @@ public class ProjectLoader {
     protected final List<AntlrError> errors;
     protected final Map<PgStatement, List<PgPrivilege>> privileges = new LinkedHashMap<>();
 
+    protected boolean isPrivilegeMode;
+
     public ProjectLoader(String dirPath, PgDiffArguments arguments) {
         this(dirPath, arguments, null, null);
     }
@@ -80,35 +82,51 @@ public class ProjectLoader {
      */
     public PgDatabase loadDatabaseSchemaFromDirTree(PgDatabase db) throws InterruptedException, IOException {
         File dir = new File(dirPath);
+        loadPgStrucure(dir, db);
 
+        isPrivilegeMode = true;
+
+        // read additional privileges from special folder
+        loadPrivilegesFromDirTree(new File(dir, ApgdiffConsts.PRIVILEGES_DIR), db);
+
+        isPrivilegeMode = false;
+
+        return db;
+    }
+
+    private void loadPrivilegesFromDirTree(File dir, PgDatabase db)
+            throws InterruptedException, IOException {
+        if (dir.exists() && dir.isDirectory()) {
+            loadPgStrucure(dir, db);
+            replacePrivileges();
+        }
+    }
+
+    private void loadPgStrucure(File dir, PgDatabase db) throws InterruptedException, IOException {
         // step 1
         // read files in schema folder, add schemas to db
         for (WORK_DIR_NAMES dirEnum : WORK_DIR_NAMES.values()) {
             // legacy schemas
-            loadSubdir(dir, dirEnum.name(), db, false);
+            loadSubdir(dir, dirEnum.name(), db);
         }
 
         File schemasCommonDir = new File(dir, WORK_DIR_NAMES.SCHEMA.name());
         // skip walking SCHEMA folder if it does not exist
-        if (!schemasCommonDir.isDirectory()) {
-            return db;
-        }
-
-        // new schemas + content
-        // step 2
-        // read out schemas names, and work in loop on each
-        try (Stream<Path> schemas = Files.list(schemasCommonDir.toPath())) {
-            for (Path schemaDir : PgDiffUtils.sIter(schemas)) {
-                if (Files.isDirectory(schemaDir)) {
-                    loadSubdir(schemasCommonDir, schemaDir.getFileName().toString(), db, false);
-                    for (String dirSub : DIR_LOAD_ORDER) {
-                        loadSubdir(schemaDir.toFile(), dirSub, db, false);
+        if (schemasCommonDir.isDirectory()) {
+            // new schemas + content
+            // step 2
+            // read out schemas names, and work in loop on each
+            try (Stream<Path> schemas = Files.list(schemasCommonDir.toPath())) {
+                for (Path schemaDir : PgDiffUtils.sIter(schemas)) {
+                    if (Files.isDirectory(schemaDir)) {
+                        loadSubdir(schemasCommonDir, schemaDir.getFileName().toString(), db);
+                        for (String dirSub : DIR_LOAD_ORDER) {
+                            loadSubdir(schemaDir.toFile(), dirSub, db);
+                        }
                     }
                 }
             }
         }
-
-        return db;
     }
 
     /**
@@ -119,38 +137,36 @@ public class ProjectLoader {
         db.setArguments(arguments);
         File dir = new File(dirPath);
 
-        File securityFolder = new File(dir, MS_WORK_DIR_NAMES.SECURITY.getDirName());
-        loadSubdir(securityFolder, "Roles", db, false);
-        loadSubdir(securityFolder, "Users", db, false);
-        loadSubdir(securityFolder, "Schemas", db, false);
-        addDboSchema(db);
+        loadMsStructure(dir, db);
 
-        for (MS_WORK_DIR_NAMES dirSub : MS_WORK_DIR_NAMES.values()) {
-            loadSubdir(dir, dirSub.getDirName(), db, false);
-        }
+        isPrivilegeMode = true;
 
         // read additional privileges from special folder
         loadMsPrivilegesFromDirTree(new File(dir, ApgdiffConsts.PRIVILEGES_DIR), db);
 
+        isPrivilegeMode = false;
+
         return db;
     }
 
-    private void loadMsPrivilegesFromDirTree(File file, PgDatabase db)
+    private void loadMsPrivilegesFromDirTree(File dir, PgDatabase db)
             throws InterruptedException, IOException {
-        if (!file.exists() || !file.isDirectory()) {
-            return;
+        if (dir.exists() && dir.isDirectory()) {
+            loadMsStructure(dir, db);
+            replacePrivileges();
         }
+    }
 
-        File securityFolder = new File(file, MS_WORK_DIR_NAMES.SECURITY.getDirName());
-        loadSubdir(securityFolder, "Roles", db, true);
-        loadSubdir(securityFolder, "Users", db, true);
-        loadSubdir(securityFolder, "Schemas", db, true);
+    private void loadMsStructure(File dir, PgDatabase db) throws InterruptedException, IOException {
+        File securityFolder = new File(dir, MS_WORK_DIR_NAMES.SECURITY.getDirName());
+        loadSubdir(securityFolder, "Roles", db);
+        loadSubdir(securityFolder, "Users", db);
+        loadSubdir(securityFolder, "Schemas", db);
+        addDboSchema(db);
 
         for (MS_WORK_DIR_NAMES dirSub : MS_WORK_DIR_NAMES.values()) {
-            loadSubdir(file, dirSub.getDirName(), db, true);
+            loadSubdir(dir, dirSub.getDirName(), db);
         }
-
-        replacePrivileges();
     }
 
     protected void addDboSchema(PgDatabase db) {
@@ -160,23 +176,23 @@ public class ProjectLoader {
         }
     }
 
-    private void loadSubdir(File dir, String sub, PgDatabase db, boolean loadPrivileges)
+    private void loadSubdir(File dir, String sub, PgDatabase db)
             throws InterruptedException, IOException {
         File subDir = new File(dir, sub);
         if (subDir.exists() && subDir.isDirectory()) {
             File[] files = subDir.listFiles();
-            loadFiles(files, db, loadPrivileges);
+            loadFiles(files, db);
         }
     }
 
-    private void loadFiles(File[] files, PgDatabase db, boolean loadPrivileges)
+    private void loadFiles(File[] files, PgDatabase db)
             throws IOException, InterruptedException {
         Arrays.sort(files);
         for (File f : files) {
             if (f.isFile() && f.getName().toLowerCase().endsWith(".sql")) {
                 List<AntlrError> errList = null;
                 try (PgDumpLoader loader = new PgDumpLoader(f, arguments, monitor)) {
-                    if (loadPrivileges) {
+                    if (isPrivilegeMode) {
                         loader.setPrivilegesMap(privileges);
                     }
                     errList = loader.getErrors();
@@ -192,7 +208,9 @@ public class ProjectLoader {
 
     public Map<PgStatement, List<PgPrivilege>> getPrivilegesFromPath(Path path, PgDatabase db)
             throws IOException, InterruptedException {
-        loadFiles(new File[] {path.toFile()}, db, true);
+        isPrivilegeMode = true;
+        loadFiles(new File[] {path.toFile()}, db);
+        isPrivilegeMode = false;
         return privileges;
     }
 
@@ -200,14 +218,14 @@ public class ProjectLoader {
         Iterator<Entry<PgStatement, List<PgPrivilege>>> iterator = privileges.entrySet().iterator();
         while (iterator.hasNext()) {
             Entry<PgStatement, List<PgPrivilege>> entry = iterator.next();
+            iterator.remove();
+
             PgStatement st = entry.getKey();
             st.clearPrivileges();
 
             for (PgPrivilege privilege : entry.getValue()) {
                 st.addPrivilege(privilege);
             }
-
-            iterator.remove();
         }
     }
 }

@@ -9,6 +9,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -853,8 +854,6 @@ public class DiffTableViewer extends Composite {
                 case JDBC:
                     type = Messages.DiffTableViewer_database;
                     name = JdbcConnector.dbNameFromUrl(loc);
-                    loc = AbstractModelExporter.getRelativeFilePath(st, false,
-                            loc.startsWith("jdbc:sqlserver")).toString();
                     break;
                 case URL:
                     type = Messages.DiffTableViewer_uri;
@@ -902,7 +901,7 @@ public class DiffTableViewer extends Composite {
                     elementInfoMap.forEach((k,v) -> {
                         if (k.getSide() != DiffSide.RIGHT) {
                             Path fullPath = location.resolve(AbstractModelExporter.getRelativeFilePath(
-                                    k.getPgStatement(dbProject.getDbObject()), true, isMsSql));
+                                    k.getPgStatement(dbProject.getDbObject())));
                             // git always uses linux paths
                             // since all paths here are relative it's ok to simply
                             // join their elements with forward slashes
@@ -1238,7 +1237,7 @@ public class DiffTableViewer extends Composite {
             }
         }
 
-        private final LinkedList<SortingColumn> sortOrder = new LinkedList<>();
+        private final Deque<SortingColumn> sortOrder = new LinkedList<>();
 
         public void clearSortList() {
             sortOrder.clear();

@@ -10,14 +10,12 @@ REVOKE ALL ON TYPE public.typ_composite FROM maindb;
 
 -- TYPE public.typ_composite GRANT
 
-GRANT ALL ON TYPE public.typ_composite TO PUBLIC;
 GRANT ALL ON TYPE public.typ_composite TO fordfrog;
 
 REVOKE ALL ON TYPE public.dom FROM maindb;
 
 -- DOMAIN public.dom GRANT
 
-GRANT ALL ON TYPE public.dom TO PUBLIC;
 GRANT ALL ON TYPE public.dom TO fordfrog;
 
 REVOKE ALL ON SEQUENCE public.test_id_seq FROM maindb;
@@ -30,14 +28,12 @@ REVOKE ALL ON FUNCTION public.test_fnc(arg character varying) FROM maindb;
 
 -- FUNCTION public.test_fnc(character varying) GRANT
 
-GRANT ALL ON FUNCTION public.test_fnc(arg character varying) TO PUBLIC;
 GRANT ALL ON FUNCTION public.test_fnc(arg character varying) TO fordfrog;
 
 REVOKE ALL ON FUNCTION public.trigger_fnc() FROM maindb CASCADE;
 
 -- FUNCTION public.trigger_fnc() GRANT
 
-GRANT ALL ON FUNCTION public.trigger_fnc() TO PUBLIC;
 GRANT ALL ON FUNCTION public.trigger_fnc() TO fordfrog;
 
 REVOKE ALL ON TABLE public.test FROM maindb;
@@ -50,7 +46,6 @@ REVOKE ALL(id) ON TABLE public.test FROM maindb;
 
 -- COLUMN public.test.id GRANT
 
-REVOKE ALL(id) ON TABLE public.test FROM botov_av;
 GRANT ALL(id) ON TABLE public.test TO fordfrog;
 
 REVOKE ALL ON TABLE public.test_view FROM maindb;

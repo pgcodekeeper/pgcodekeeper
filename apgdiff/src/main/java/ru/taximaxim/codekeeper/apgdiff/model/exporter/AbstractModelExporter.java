@@ -1,6 +1,5 @@
 package ru.taximaxim.codekeeper.apgdiff.model.exporter;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -11,6 +10,7 @@ import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -71,7 +71,7 @@ public abstract class AbstractModelExporter {
      * Objects that we need to operate on.<br>
      * Remove the entry from this list after it has been processed.
      */
-    protected final LinkedList<TreeElement> changeList;
+    protected final Deque<TreeElement> changeList;
 
     /**
      * Creates a new ModelExporter object with set {@link #outDir} and {@link #newDb}
@@ -163,7 +163,7 @@ public abstract class AbstractModelExporter {
         // we need to have every related element on the list
         changeList.push(elCause);
 
-        deleteStatementIfExists(st, false);
+        deleteStatementIfExists(st);
 
         // prepare the dump data, old state
         List<PgStatementWithSearchPath> contents = new LinkedList<>();
@@ -269,7 +269,7 @@ public abstract class AbstractModelExporter {
         // we need to have every related element on the list
         changeList.push(elCause);
 
-        deleteStatementIfExists(st, false);
+        deleteStatementIfExists(st);
 
         // prepare the dump data, old state
         List<PgStatementWithSearchPath> contents = new LinkedList<>();
@@ -385,16 +385,14 @@ public abstract class AbstractModelExporter {
     protected void dumpPrivileges(PgStatement st) throws IOException {
         StringBuilder sb = new StringBuilder();
         st.appendPrivileges(sb);
-        if (sb.length() > 0) {
-            // replace first new line symbol
-            sb.replace(0, 1, "");
 
-            if (DbObjType.TABLE == st.getStatementType()) {
-                for (AbstractColumn col : ((AbstractTable)st).getColumns()) {
-                    col.appendPrivileges(sb);
-                }
+        if (DbObjType.TABLE == st.getStatementType()) {
+            for (AbstractColumn col : ((AbstractTable)st).getColumns()) {
+                col.appendPrivileges(sb);
             }
+        }
 
+        if (sb.length() > 0) {
             dumpSQL(sb.toString(), outDir.resolve(getRelativeFilePath(st, true)));
         }
     }
@@ -402,17 +400,14 @@ public abstract class AbstractModelExporter {
     /**
      * Removes file if it exists.
      */
-    protected void deleteStatementIfExists(PgStatement st, boolean fullDelete) throws IOException {
+    protected void deleteStatementIfExists(PgStatement st) throws IOException {
         Path toDelete = outDir.resolve(getRelativeFilePath(st, true));
 
-        if (Files.exists(toDelete) && fullDelete) {
-            Log.log(Log.LOG_INFO, "Deleting file " + toDelete +
+        if (Files.deleteIfExists(toDelete)) {
+            Log.log(Log.LOG_INFO, "Deleted file " + toDelete +
                     " for object " + st.getStatementType() + ' ' + st.getName());
         }
-
-        Files.deleteIfExists(toDelete);
     }
-
 
     /**
      * @param addExtension whether to add .sql extension to the path
@@ -438,15 +433,15 @@ public abstract class AbstractModelExporter {
     }
 
     public static void writeProjVersion(Path path) throws IOException {
-        try (BufferedWriter pw = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
-            pw.write(ApgdiffConsts.VERSION_PROP_NAME + " = " //$NON-NLS-1$
+        try (UnixPrintWriter pw = new UnixPrintWriter(Files.newBufferedWriter(path, StandardCharsets.UTF_8))) {
+            pw.println(ApgdiffConsts.VERSION_PROP_NAME + " = " //$NON-NLS-1$
                     + ApgdiffConsts.EXPORT_CURRENT_VERSION);
         }
     }
 
-    public static Path getRelativeFilePath(PgStatement st, boolean addExtension, boolean isMsSql) {
-        AbstractModelExporter exporter = isMsSql ? new MsModelExporter(null, null, null)
-                : new ModelExporter(null, null, null);
+    public static Path getRelativeFilePath(PgStatement st) {
+        AbstractModelExporter exporter = st.isPostgres() ? new ModelExporter(null, null, null)
+                : new MsModelExporter(null, null, null);
 
         return exporter.getRelativeFilePath(st, true);
     }
