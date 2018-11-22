@@ -74,7 +74,7 @@ public class CreateRule extends ParserAbstract {
                 IdentifierContext functNameCtx = QNameParser.getFirstNameCtx(funcIds);
                 AbstractSchema schema = getSchemaSafe(funcIds, db.getDefaultSchema());
                 AbstractFunction func = getSafe(schema::getFunction,
-                        parseSignature(functNameCtx.getText(), funct.function_args()),
+                        parseSignature(functNameCtx.getText(), funct.function_args(), false),
                         functNameCtx.getStart());
 
                 StringBuilder sb = new StringBuilder();

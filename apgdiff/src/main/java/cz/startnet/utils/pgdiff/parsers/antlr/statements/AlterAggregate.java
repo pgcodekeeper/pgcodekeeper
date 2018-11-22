@@ -25,7 +25,7 @@ public class AlterAggregate extends ParserAbstract {
         IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
 
         AbstractFunction arrg = getSafe(schema::getAggregate,
-                parseSignatureAggr(nameCtx.getText(), ctx.function_parameters().function_args()),
+                parseSignature(nameCtx.getText(), ctx.function_parameters().function_args(), true),
                 nameCtx.getStart());
         fillOwnerTo(ctx.owner_to(), arrg);
         return null;

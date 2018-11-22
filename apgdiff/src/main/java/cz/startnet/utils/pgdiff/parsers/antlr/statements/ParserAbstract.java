@@ -22,6 +22,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionC
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
+import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -117,8 +118,11 @@ public abstract class ParserAbstract {
         return col;
     }
 
-    public static String parseSignature(String name, Function_argsContext argsContext) {
-        PgFunction function = new PgFunction(name, null);
+    public static String parseSignature(String name, Function_argsContext argsContext,
+            boolean isAggregate) {
+        AbstractPgFunction function = isAggregate ? new PgAggregate(name, null)
+                : new PgFunction(name, null);
+
         for (Function_argumentsContext argument : argsContext.function_arguments()) {
             String type = getFullCtxText(argument.argtype_data);
 
@@ -138,29 +142,6 @@ public abstract class ParserAbstract {
             function.addArgument(arg);
         }
         return function.getSignature();
-    }
-
-    public static String parseSignatureAggr(String name, Function_argsContext argsContext) {
-        PgAggregate aggr = new PgAggregate(name, null);
-        for (Function_argumentsContext argument : argsContext.function_arguments()) {
-            String type = getFullCtxText(argument.argtype_data);
-
-            // function identity types from pg_dbo_timestamp extension have
-            // names qualified by pg_catalog schema, delete them to have
-            // equal signatures in project and in extension
-            Schema_qualified_name_nontypeContext sqnn = argument.argtype_data.predefined_type().schema_qualified_name_nontype();
-            if (sqnn != null) {
-                IdentifierContext schema = sqnn.schema;
-                if (schema != null && "pg_catalog".equals(schema.getText())) {
-                    type = type.substring("pg_catalog.".length());
-                }
-            }
-
-            Argument arg = new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
-                    argument.argname != null ? argument.argname.getText() : null, type);
-            aggr.addArgument(arg);
-        }
-        return aggr.getSignature();
     }
 
     public static String parseSignature(String name, Target_operatorContext targerOperCtx) {

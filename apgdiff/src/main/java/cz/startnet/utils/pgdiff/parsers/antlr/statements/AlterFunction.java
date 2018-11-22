@@ -25,7 +25,7 @@ public class AlterFunction extends ParserAbstract {
         IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
 
         AbstractFunction func = getSafe(schema::getFunction,
-                parseSignature(nameCtx.getText(), ctx.function_parameters().function_args()),
+                parseSignature(nameCtx.getText(), ctx.function_parameters().function_args(), false),
                 nameCtx.getStart());
         fillOwnerTo(ctx.owner_to(), func);
         return null;

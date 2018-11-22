@@ -137,7 +137,7 @@ public class TimestampsReader implements PgCatalogStrings {
             String schema = QNameParser.getSchemaNameCtx(object).getText();
             String name = QNameParser.getFirstName(object);
             GenericColumn gc = new GenericColumn(schema, ParserAbstract
-                    .parseSignature(name, ctx.function_args()), DbObjType.FUNCTION);
+                    .parseSignature(name, ctx.function_args(), false), DbObjType.FUNCTION);
             time.addObject(gc, objId, lastModified, author, acl, colAcls);
         }
     }
