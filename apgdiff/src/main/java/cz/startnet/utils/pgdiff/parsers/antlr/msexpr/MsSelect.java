@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.As_table_aliasContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Change_tableContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_declarationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Derived_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ExpressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Expression_listContext;
@@ -20,6 +21,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Order_by_expressionCont
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Primary_key_valuesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Query_specificationContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_declarationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Search_conditionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Select_list_elemContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Select_statementContext;
@@ -251,6 +253,12 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
         } else if ((xml = item.open_xml()) != null) {
             for (ExpressionContext exp : xml.expression()) {
                 new MsValueExpr(this).analyze(exp);
+            }
+            Schema_declarationContext dec = xml.schema_declaration();
+            if (dec != null) {
+                for (Column_declarationContext col : dec.column_declaration()) {
+                    addTypeDepcy(col.data_type());
+                }
             }
             if (alias != null) {
                 addReference(alias.id().getText(), null);

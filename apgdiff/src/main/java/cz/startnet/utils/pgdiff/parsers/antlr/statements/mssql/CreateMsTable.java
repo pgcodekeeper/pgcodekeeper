@@ -7,6 +7,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ClusteredContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_tableContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Identity_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_optionContext;
@@ -85,7 +86,9 @@ public class CreateMsTable extends TableAbstract {
         } else {
             MsColumn col = new MsColumn(colCtx.id().getText());
             if (colCtx.data_type() != null) {
-                col.setType(getFullCtxText(colCtx.data_type()));
+                Data_typeContext dt = colCtx.data_type();
+                addTypeAsDepcy(dt, col);
+                col.setType(getFullCtxText(dt));
             } else {
                 col.setExpression(getFullCtxText(colCtx.expression()));
             }

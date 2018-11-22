@@ -1628,7 +1628,7 @@ create_or_alter_function
 
 func_return
     : TABLE (LR_BRACKET column_def_table_constraints RR_BRACKET)?
-    | LOCAL_ID table_type_definition
+    | LOCAL_ID TABLE LR_BRACKET column_def_table_constraints RR_BRACKET
     | data_type
     ;
 
@@ -2027,7 +2027,7 @@ opendatasource
 
 // https://msdn.microsoft.com/en-us/library/ms188927.aspx
 declare_statement
-    : DECLARE LOCAL_ID AS? table_type_definition
+    : DECLARE LOCAL_ID AS? TABLE LR_BRACKET column_def_table_constraints RR_BRACKET
     | DECLARE declare_local (COMMA declare_local)*
     | DECLARE LOCAL_ID AS? xml_type_definition
     | WITH XMLNAMESPACES LR_BRACKET xml_namespace_uri=STRING COMMA? AS id RR_BRACKET
@@ -2376,10 +2376,6 @@ execute_clause
 
 declare_local
     : LOCAL_ID AS? data_type (EQUAL expression)?
-    ;
-
-table_type_definition
-    : TABLE LR_BRACKET column_def_table_constraints RR_BRACKET
     ;
 
 xml_type_definition

@@ -4,7 +4,10 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_functionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ExpressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Func_body_returnContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Func_returnContext;
@@ -64,6 +67,7 @@ public class CreateMsFunction extends BatchContextProcessor {
             fillArguments(function);
             function.setBody(db.getArguments(), getFullCtxText(ctx.func_body()));
             String returns = getFullCtxText(ctx.func_return());
+            analyzeReturn(ctx.func_return(), function);
             function.setReturns(isKeepNewlines ? returns : returns.replace("\r", ""));
         } else {
             function.setAnsiNulls(ansiNulls);
@@ -104,12 +108,26 @@ public class CreateMsFunction extends BatchContextProcessor {
         return function;
     }
 
+    private void analyzeReturn(Func_returnContext ret, AbstractFunction function) {
+        Column_def_table_constraintsContext cons = ret.column_def_table_constraints();
+        if (cons != null) {
+            for (Column_def_table_constraintContext con : cons.column_def_table_constraint()) {
+                Data_typeContext dt = con.data_type();
+                if (dt != null) {
+                    addTypeAsDepcy(dt, function);
+                }
+            }
+        } else {
+            addTypeAsDepcy(ret.data_type(), function);
+        }
+    }
+
     private void fillArguments(AbstractFunction function) {
         for (Procedure_paramContext argument : ctx.procedure_param()) {
             Argument arg = new Argument(
                     argument.arg_mode != null ? argument.arg_mode.getText() : null,
                             argument.name.getText(), getFullCtxText(argument.data_type()));
-
+            addTypeAsDepcy(argument.data_type(), function);
             if (argument.default_val != null) {
                 arg.setDefaultExpression(getFullCtxText(argument.default_val));
             }

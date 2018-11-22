@@ -4,6 +4,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Aggregate_windowed_func
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.All_distinct_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Analytic_windowed_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Case_expressionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Date_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ExpressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Expression_listContext;
@@ -81,6 +82,7 @@ public class MsValueExpr extends MsAbstractExpr {
         Analytic_windowed_functionContext awf;
         Aggregate_windowed_functionContext agg;
         Scalar_function_nameContext sfn;
+        Data_typeContext dt;
 
         for (ExpressionContext exp : functionCall.expression()) {
             analyze(exp);
@@ -102,6 +104,8 @@ public class MsValueExpr extends MsAbstractExpr {
         } else if ((sfn = functionCall.scalar_function_name()) != null) {
             expressionList(functionCall.expression_list());
             return function(sfn);
+        } else if ((dt = functionCall.data_type()) != null) {
+            addTypeDepcy(dt);
         } else {
             expressionList(functionCall.expression_list());
         }

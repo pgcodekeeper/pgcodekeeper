@@ -78,6 +78,7 @@ public class CreateMsType extends ParserAbstract {
 
             if (colCtx.data_type() != null) {
                 col.setType(getFullCtxText(colCtx.data_type()));
+                addTypeAsDepcy(colCtx.data_type(), type);
             } else {
                 col.setExpression(getFullCtxText(colCtx.expression()));
             }
