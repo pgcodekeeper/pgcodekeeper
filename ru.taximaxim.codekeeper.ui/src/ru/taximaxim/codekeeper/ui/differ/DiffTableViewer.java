@@ -9,6 +9,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1238,7 +1239,7 @@ public class DiffTableViewer extends Composite {
             }
         }
 
-        private final LinkedList<SortingColumn> sortOrder = new LinkedList<>();
+        private final Deque<SortingColumn> sortOrder = new LinkedList<>();
 
         public void clearSortList() {
             sortOrder.clear();

@@ -46,7 +46,7 @@ public class ModelExporter extends AbstractModelExporter {
         switch (st.getStatementType()) {
         case SCHEMA:
             // delete schema sql file
-            deleteStatementIfExists(st, true);
+            deleteStatementIfExists(st);
 
             // delete schema's folder content
             Path schemaFolder = outDir.resolve(getRelativeFilePath(st, false));
@@ -75,7 +75,7 @@ public class ModelExporter extends AbstractModelExporter {
             }
             break;
         default:
-            deleteStatementIfExists(st, true);
+            deleteStatementIfExists(st);
         }
     }
 
@@ -88,7 +88,7 @@ public class ModelExporter extends AbstractModelExporter {
         case SCHEMA:
         case EXTENSION:
             // delete sql file
-            deleteStatementIfExists(stInNew, false);
+            deleteStatementIfExists(stInNew);
 
             // dump new version
             dumpSQL(stInNew.getFullSQL(),
@@ -124,7 +124,7 @@ public class ModelExporter extends AbstractModelExporter {
             break;
         default:
             // remove old version
-            deleteStatementIfExists(stInNew, false);
+            deleteStatementIfExists(stInNew);
 
             createParentSchema(elParent);
             // dump new version
@@ -160,7 +160,7 @@ public class ModelExporter extends AbstractModelExporter {
         switch (stInNew.getStatementType()) {
         case SCHEMA:
             // delete schema if already exists
-            deleteStatementIfExists(stInNew, false);
+            deleteStatementIfExists(stInNew);
             // $FALL-THROUGH$
         case EXTENSION:
             // export schema/extension sql file
@@ -300,7 +300,7 @@ public class ModelExporter extends AbstractModelExporter {
         }
 
         // delete functionOrOperator sql file
-        deleteStatementIfExists(st, toDump.isEmpty());
+        deleteStatementIfExists(st);
 
         Path path = outDir.resolve(getRelativeFilePath(
                 newParentSchema == null ? oldParentSchema : newParentSchema, false));

@@ -49,7 +49,7 @@ public class MsPrivilegesModelExporter extends AbstractModelExporter {
         case FUNCTION:
         case PROCEDURE:
         case TABLE:
-            deleteStatementIfExists(st, true);
+            deleteStatementIfExists(st);
             dumpPrivileges(st);
             break;
         case CONSTRAINT:

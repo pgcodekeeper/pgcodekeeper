@@ -130,12 +130,12 @@ public class MsModelExporter extends AbstractModelExporter {
         switch (st.getStatementType()) {
         case SCHEMA:
             // delete schema sql file
-            deleteStatementIfExists(st, true);
+            deleteStatementIfExists(st);
 
             // delete other statements
             Iterator<PgStatement> iter = st.getChildren().iterator();
             while (iter.hasNext()) {
-                deleteStatementIfExists(iter.next(), true);
+                deleteStatementIfExists(iter.next());
             }
             break;
         case CONSTRAINT:
@@ -153,7 +153,7 @@ public class MsModelExporter extends AbstractModelExporter {
             }
             break;
         default:
-            deleteStatementIfExists(st, true);
+            deleteStatementIfExists(st);
         }
     }
 
@@ -171,7 +171,7 @@ public class MsModelExporter extends AbstractModelExporter {
         case PROCEDURE:
         case FUNCTION:
             // delete sql file
-            deleteStatementIfExists(stInNew, false);
+            deleteStatementIfExists(stInNew);
 
             // dump new version
             dumpSQL(getDumpSql(stInNew),
@@ -213,7 +213,7 @@ public class MsModelExporter extends AbstractModelExporter {
         case FUNCTION:
         case PROCEDURE:
             // delete statement if already exists
-            deleteStatementIfExists(stInNew, false);
+            deleteStatementIfExists(stInNew);
             dumpSQL(getDumpSql(stInNew),
                     outDir.resolve(getRelativeFilePath(stInNew, true)));
             break;

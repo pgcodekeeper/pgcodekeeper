@@ -53,7 +53,7 @@ public class PgPrivilegesModelExporter extends AbstractModelExporter {
             dumpFuncPriv(el, st);
             break;
         default:
-            deleteStatementIfExists(st, true);
+            deleteStatementIfExists(st);
             dumpPrivileges(st);
         }
     }
@@ -112,7 +112,7 @@ public class PgPrivilegesModelExporter extends AbstractModelExporter {
                 }
             }
 
-            deleteStatementIfExists(st, dumps.isEmpty());
+            deleteStatementIfExists(st);
 
             if (!dumps.isEmpty()) {
                 String sql = String.join(GROUP_DELIMITER, dumps);
