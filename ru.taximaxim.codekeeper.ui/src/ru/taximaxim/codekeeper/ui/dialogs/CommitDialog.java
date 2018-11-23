@@ -208,6 +208,7 @@ public class CommitDialog extends TrayDialog {
                 warningLbl.setText(Messages.CommitDialog_privileges_must_be_saved);
             }
 
+            warningLbl.getParent().layout();
             warningLbl.setVisible(showWarning);
             getButton(OK).setEnabled(!showWarning);
         }
