@@ -321,7 +321,7 @@ public class UIProjectLoader extends ProjectLoader {
     private void loadLibraries(PgDatabase db, PgDiffArguments arguments) throws InterruptedException, IOException {
         LibraryLoader ll = new LibraryLoader(db,
                 Paths.get(Platform.getStateLocation(Activator.getContext().getBundle())
-                        .append("dependencies").toString())); //$NON-NLS-1$
+                        .append("dependencies").toString()), errors); //$NON-NLS-1$
         ll.loadXml(new DependenciesXmlStore(Paths.get(iProject.getLocation()
                 .append(DependenciesXmlStore.FILE_NAME).toString())), arguments);
     }

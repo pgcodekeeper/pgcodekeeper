@@ -21,6 +21,7 @@ import java.util.zip.ZipInputStream;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.libraries.PgLibrary;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -30,10 +31,16 @@ public class LibraryLoader {
 
     private final PgDatabase db;
     private final Path metaPath;
+    private final List<AntlrError> errors;
 
     public LibraryLoader(PgDatabase db, Path metaPath) {
+        this(db, metaPath, null);
+    }
+
+    public LibraryLoader(PgDatabase db, Path metaPath, List<AntlrError> errors) {
         this.db = db;
         this.metaPath = metaPath;
+        this.errors = errors;
     }
 
     public void loadLibraries(PgDiffArguments args, boolean isIgnorePriv,
@@ -110,8 +117,14 @@ public class LibraryLoader {
             return loadZip(p, args, isIgnorePriv);
         }
 
+        List<AntlrError> errList = null;
         try (PgDumpLoader loader = new PgDumpLoader(new File(path), args)) {
+            errList = loader.getErrors();
             return loader.load();
+        } finally {
+            if (errors != null && errList != null && !errList.isEmpty()) {
+                errors.addAll(errList);
+            }
         }
     }
 
@@ -232,8 +245,14 @@ public class LibraryLoader {
                     if (filePath.endsWith(".zip")) {
                         db.addLib(getLibrary(filePath, args, args.isIgnorePrivileges()));
                     } else if (filePath.endsWith(".sql")) {
+                        List<AntlrError> errList = null;
                         try (PgDumpLoader loader = new PgDumpLoader(sub.toFile(), args)) {
+                            errList = loader.getErrors();
                             loader.loadDatabase(db);
+                        } finally {
+                            if (errors != null && errList != null && !errList.isEmpty()) {
+                                errors.addAll(errList);
+                            }
                         }
                     }
                 }
