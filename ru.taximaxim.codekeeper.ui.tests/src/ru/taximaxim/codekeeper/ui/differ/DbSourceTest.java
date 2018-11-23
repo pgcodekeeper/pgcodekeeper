@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Path;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -53,10 +54,10 @@ public class DbSourceTest {
     @Test
     public void testDirTree() throws IOException, InterruptedException, CoreException {
         try(TempDir exportDir = new TempDir("pgcodekeeper-test")){
-            File dir = exportDir.get().toFile();
+            Path dir = exportDir.get();
             new ModelExporter(dir, dbPredefined, ApgdiffConsts.UTF_8).exportFull();
 
-            performTest(DbSource.fromDirTree(true, dir.getAbsolutePath(), ApgdiffConsts.UTF_8, false));
+            performTest(DbSource.fromDirTree(true, dir.toAbsolutePath().toString(), ApgdiffConsts.UTF_8, false));
         }
     }
 
@@ -72,16 +73,16 @@ public class DbSourceTest {
     public void testProject() throws CoreException, IOException, PgCodekeeperUIException,
     InterruptedException{
         try(TempDir tempDir = new TempDir(workspacePath.toPath(), "dbSourceProjectTest")){
-            File dir = tempDir.get().toFile();
+            Path dir = tempDir.get();
             // create empty project in temp dir
-            IProject project = createProjectInWorkspace(dir.getName());
+            IProject project = createProjectInWorkspace(dir.getFileName().toString());
 
             // populate project with data
             new ModelExporter(dir, dbPredefined, ApgdiffConsts.UTF_8).exportFull();
             project.refreshLocal(IResource.DEPTH_INFINITE, null);
 
             // testing itself
-            assertEquals("Project name differs", dir.getName(), project.getName());
+            assertEquals("Project name differs", dir.getFileName().toString(), project.getName());
             performTest(DbSource.fromProject(new PgDbProject(project)));
             project.delete(false, true, null);
         }

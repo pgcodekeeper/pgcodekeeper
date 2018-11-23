@@ -245,8 +245,8 @@ class QuickUpdateJob extends SingletonEditorJob {
         checkFileModified();
 
         monitor.newChild(1).subTask(Messages.QuickUpdate_updating_project);
-        ProjectUpdater updater = new ProjectUpdater(
-                dbRemote.getDbObject(), dbProject.getDbObject(), checkedAfter, proj);
+        ProjectUpdater updater = new ProjectUpdater(dbRemote.getDbObject(),
+                dbProject.getDbObject(), checkedAfter, proj, false);
         updater.updatePartial();
 
         file.refreshLocal(IResource.DEPTH_INFINITE, monitor.newChild(1));

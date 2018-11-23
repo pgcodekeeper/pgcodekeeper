@@ -5,12 +5,12 @@
  */
 package ru.taximaxim.codekeeper.cli;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -111,10 +111,10 @@ public final class Main {
                 arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments);
 
         if (arguments.isMsSql()) {
-            new MsModelExporter(new File(arguments.getOutputTarget()),
+            new MsModelExporter(Paths.get(arguments.getOutputTarget()),
                     d, arguments.getOutCharsetName()).exportFull();
         } else {
-            new ModelExporter(new File(arguments.getOutputTarget()),
+            new ModelExporter(Paths.get(arguments.getOutputTarget()),
                     d, arguments.getOutCharsetName()).exportFull();
         }
     }

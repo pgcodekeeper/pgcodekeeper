@@ -169,6 +169,10 @@ public final class Messages extends NLS {
     public static String copy;
     public static String CodeFilter_search_by_code;
 
+    public static String CommitDialog_privileges_must_be_saved;
+
+    public static String CommitDialog_save_privileges;
+
     public static String CommitDialog_unchecked_objects_can_occur_unexpected_errors;
 
     public static String ConsoleFactory_error_opening_console;

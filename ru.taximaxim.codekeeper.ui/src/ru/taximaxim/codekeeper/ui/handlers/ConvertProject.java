@@ -1,6 +1,5 @@
 package ru.taximaxim.codekeeper.ui.handlers;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -72,7 +71,7 @@ public class ConvertProject extends AbstractHandler {
         return null;
     }
 
-    public static boolean createMarker(Shell shell, Path path, boolean isMsSql) throws FileNotFoundException {
+    public static boolean createMarker(Shell shell, Path path, boolean isMsSql) throws IOException {
         boolean weirdProject;
         if (isMsSql) {
             // MS doesn't require all dirs to exist, warn if none found
@@ -95,7 +94,7 @@ public class ConvertProject extends AbstractHandler {
 
         Path markerFile = path.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER);
         if (Files.notExists(markerFile)) {
-            AbstractModelExporter.writeProjVersion(markerFile.toFile());
+            AbstractModelExporter.writeProjVersion(markerFile);
         }
         return true;
     }

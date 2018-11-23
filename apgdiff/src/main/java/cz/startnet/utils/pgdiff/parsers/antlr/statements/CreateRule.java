@@ -32,10 +32,16 @@ public class CreateRule extends ParserAbstract {
     private final Rule_commonContext ctx;
     private final String state;
     private final boolean isGO;
+    private final Map<PgStatement, List<PgPrivilege>> privs;
 
     public CreateRule(Rule_commonContext ctx, PgDatabase db) {
+        this(ctx, db, null);
+    }
+
+    public CreateRule(Rule_commonContext ctx, PgDatabase db, Map<PgStatement, List<PgPrivilege>> privs) {
         super(db);
         this.ctx = ctx;
+        this.privs = privs;
         state = ctx.REVOKE() != null ? "REVOKE" : "GRANT";
         isGO = ctx.OPTION() != null;
     }
@@ -84,7 +90,7 @@ public class CreateRule extends ParserAbstract {
                 ((AbstractPgFunction) func).appendFunctionSignature(sb, false, true);
 
                 for (String role : roles) {
-                    func.addPrivilege(new PgPrivilege(state, permissions,
+                    addPrivilege(func, new PgPrivilege(state, permissions,
                             sb.toString(), role, isGO));
                 }
             }
@@ -185,10 +191,10 @@ public class CreateRule extends ParserAbstract {
                 PgPrivilege priv = new PgPrivilege(state, permission.toString(),
                         "TABLE " + tableName, role, isGO);
                 if (tblSt == null) {
-                    st.addPrivilege(priv);
+                    addPrivilege(st, priv);
                 } else {
                     AbstractColumn col = getSafe(tblSt::getColumn, colPriv.getValue().getKey());
-                    col.addPrivilege(priv);
+                    addPrivilege(col, priv);
                 }
             }
         }
@@ -232,7 +238,21 @@ public class CreateRule extends ParserAbstract {
             break;
         }
         if (statement != null){
-            statement.addPrivilege(pgPrivilege);
+            addPrivilege(statement, pgPrivilege);
+        }
+    }
+
+    private void addPrivilege(PgStatement st, PgPrivilege privilege) {
+        if (privs == null) {
+            st.addPrivilege(privilege);
+        } else {
+            List<PgPrivilege> privileges = privs.get(st);
+            if (privileges == null) {
+                privileges = new ArrayList<>();
+                privs.put(st, privileges);
+            }
+
+            privileges.add(privilege);
         }
     }
 }
