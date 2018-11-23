@@ -43,7 +43,7 @@ public class MsType extends AbstractType {
                 sb.append(" NOT NULL");
             }
         } else if (getAssemblyName() != null) {
-            sb.append(" EXTERNAL NAME ").append(MsDiffUtils.quoteName(getAssemblyName()))
+            sb.append("\nEXTERNAL NAME ").append(MsDiffUtils.quoteName(getAssemblyName()))
             .append('.').append(MsDiffUtils.quoteName(getAssemblyClass()));
         } else {
             sb.append(" AS TABLE(");
@@ -97,7 +97,10 @@ public class MsType extends AbstractType {
         }
 
         if (!Objects.equals(getOwner(), newType.getOwner())) {
-            sb.append(newType.getOwnerSQL());
+            String newOwner = newType.getOwner();
+            sb.append("ALTER AUTHORIZATION ON TYPE::")
+            .append(newType.getQualifiedName()).append(" TO ")
+            .append(newOwner == null ? "SCHEMA OWNER" : MsDiffUtils.quoteName(newOwner)).append(GO);
         }
         alterPrivileges(newType, sb);
 
@@ -126,7 +129,7 @@ public class MsType extends AbstractType {
     @Override
     public String getDropSQL() {
         return "DROP TYPE " + MsDiffUtils.quoteName(getContainingSchema().getName()) + '.'
-                + MsDiffUtils.quoteName(getName()) + ';';
+                + MsDiffUtils.quoteName(getName()) + GO;
     }
 
     @Override

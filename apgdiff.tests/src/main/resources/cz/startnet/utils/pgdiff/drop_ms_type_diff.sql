@@ -1,2 +1,2 @@
-DROP TYPE [dbo].[type1]  
+DROP TYPE [dbo].[type1]
 GO

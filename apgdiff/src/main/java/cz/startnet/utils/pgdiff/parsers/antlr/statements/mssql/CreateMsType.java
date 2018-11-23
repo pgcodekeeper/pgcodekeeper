@@ -124,6 +124,8 @@ public class CreateMsType extends ParserAbstract {
                 if ("BUCKET_COUNT".equals(key)) {
                     if (wherePart != null) {
                         sb.append('\n');
+                    } else {
+                        sb.append(" ");
                     }
                     sb.append("WITH ( BUCKET_COUNT = ").append(value).append(')');
                     break;

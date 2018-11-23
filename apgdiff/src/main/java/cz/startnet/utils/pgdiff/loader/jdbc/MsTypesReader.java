@@ -126,6 +126,8 @@ public class MsTypesReader extends JdbcReader {
                 } else if (bucketCount > 0) {
                     if (filter != null) {
                         definition.append('\n');
+                    } else {
+                        definition.append(" ");
                     }
                     definition.append("WITH ( BUCKET_COUNT = ").append(bucketCount).append(')');
                 }
