@@ -906,7 +906,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
 
         Log.log(Log.LOG_INFO, "Updating project " + proj.getProjectName()); //$NON-NLS-1$
-        Job job = new JobProjectUpdater(Messages.projectEditorDiffer_save_project, diffTree, cd.isPrivOnly());
+        Job job = new JobProjectUpdater(Messages.projectEditorDiffer_save_project, diffTree, cd.isOverridesOnly());
         job.addJobChangeListener(new JobChangeAdapter() {
 
             @Override
@@ -979,12 +979,12 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private class JobProjectUpdater extends Job {
 
         private final TreeElement tree;
-        private final boolean isPrivOnly;
+        private final boolean overridesOnly;
 
-        JobProjectUpdater(String name, TreeElement tree, boolean isPrivOnly) {
+        JobProjectUpdater(String name, TreeElement tree, boolean overridesOnly) {
             super(name);
             this.tree = tree;
-            this.isPrivOnly = isPrivOnly;
+            this.overridesOnly = overridesOnly;
         }
 
         @Override
@@ -1002,7 +1002,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                         .onlyEdits(dbProject.getDbObject(), dbRemote.getDbObject())
                         .flatten(tree);
                 new ProjectUpdater(dbRemote.getDbObject(), dbProject.getDbObject(),
-                        checked, proj, isPrivOnly).updatePartial();
+                        checked, proj, overridesOnly).updatePartial();
                 monitor.done();
             } catch (IOException | CoreException e) {
                 return new Status(Status.ERROR, PLUGIN_ID.THIS,

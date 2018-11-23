@@ -14,18 +14,18 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.StatementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateRule;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.StatementOverride;
 
-public class SQLPrivilegesListener extends CustomParserListener
+public class SQLOverridesListener extends CustomParserListener
 implements SqlContextProcessor {
 
-    private final Map<PgStatement, List<PgPrivilege>> privs;
+    private final Map<PgStatement, StatementOverride> overrides;
 
-    public SQLPrivilegesListener(PgDatabase db, String filename, List<AntlrError> errors,
-            IProgressMonitor mon, Map<PgStatement, List<PgPrivilege>> privs) {
+    public SQLOverridesListener(PgDatabase db, String filename, List<AntlrError> errors,
+            IProgressMonitor mon, Map<PgStatement, StatementOverride> overrides) {
         super(db, filename, errors, mon);
-        this.privs = privs;
+        this.overrides = overrides;
     }
 
     @Override
@@ -37,7 +37,7 @@ implements SqlContextProcessor {
                 if (create != null) {
                     Rule_commonContext rule = create.rule_common();
                     if (rule != null) {
-                        safeParseStatement(new CreateRule(rule, db, privs), create);
+                        safeParseStatement(new CreateRule(rule, db, overrides), create);
                     }
                 }
             }

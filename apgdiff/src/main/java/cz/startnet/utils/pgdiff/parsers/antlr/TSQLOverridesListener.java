@@ -15,18 +15,18 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.St_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Tsql_fileContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsRule;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.StatementOverride;
 
-public class TSQLPrivilegesListener extends CustomParserListener
+public class TSQLOverridesListener extends CustomParserListener
 implements TSqlContextProcessor {
 
-    private final Map<PgStatement, List<PgPrivilege>> privs;
+    private final Map<PgStatement, StatementOverride> overrides;
 
-    public TSQLPrivilegesListener(PgDatabase db, String filename, List<AntlrError> errors,
-            IProgressMonitor mon, Map<PgStatement, List<PgPrivilege>> privs) {
+    public TSQLOverridesListener(PgDatabase db, String filename, List<AntlrError> errors,
+            IProgressMonitor mon, Map<PgStatement, StatementOverride> overrides) {
         super(db, filename, errors, mon);
-        this.privs = privs;
+        this.overrides = overrides;
     }
 
     @Override
@@ -45,9 +45,8 @@ implements TSqlContextProcessor {
         Another_statementContext ast;
         if ((ast = st.another_statement()) != null) {
             Security_statementContext ss;
-            if ((ss = ast.security_statement()) != null
-                    && ss.rule_common() != null) {
-                safeParseStatement(new CreateMsRule(ss.rule_common(), db, privs), ss);
+            if ((ss = ast.security_statement()) != null && ss.rule_common() != null) {
+                safeParseStatement(new CreateMsRule(ss.rule_common(), db, overrides), ss);
             }
         }
     }

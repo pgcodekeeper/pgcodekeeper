@@ -82,13 +82,16 @@ public class UIProjectLoader extends ProjectLoader {
             throws InterruptedException, IOException, CoreException {
         loadPgStructure(iProject, iProject::getFolder, db);
 
-        isPrivilegeMode = true;
+        isOverrideMode = true;
         // step 3
-        // read additional privileges from special folder
-        IFolder privs = iProject.getFolder(ApgdiffConsts.PRIVILEGES_DIR);
-        loadPgStructure(privs, privs::getFolder, db);
-        replacePrivileges();
-        isPrivilegeMode = false;
+        // read overrides from special folder
+        IFolder privs = iProject.getFolder(ApgdiffConsts.OVERRIDES_DIR);
+        try {
+            loadPgStructure(privs, privs::getFolder, db);
+            replaceOverrides();
+        } finally {
+            isOverrideMode = false;
+        }
 
         return db;
     }
@@ -133,12 +136,15 @@ public class UIProjectLoader extends ProjectLoader {
 
         loadMsStructure(iProject, iProject::getFolder, db);
 
-        isPrivilegeMode = true;
-        // read additional privileges from special folder
-        IFolder privs = iProject.getFolder(ApgdiffConsts.PRIVILEGES_DIR);
-        loadMsStructure(privs, privs::getFolder, db);
-        replacePrivileges();
-        isPrivilegeMode = false;
+        isOverrideMode = true;
+        // read overrides from special folder
+        IFolder privs = iProject.getFolder(ApgdiffConsts.OVERRIDES_DIR);
+        try {
+            loadMsStructure(privs, privs::getFolder, db);
+            replaceOverrides();
+        } finally {
+            isOverrideMode = false;
+        }
         return db;
     }
 
@@ -181,8 +187,8 @@ public class UIProjectLoader extends ProjectLoader {
         try (PgUIDumpLoader loader = new PgUIDumpLoader(file, arguments, monitor)) {
             errList = loader.getErrors();
             loader.setLoadReferences(statementBodies != null);
-            if (isPrivilegeMode) {
-                loader.setPrivilegesMap(privileges);
+            if (isOverrideMode) {
+                loader.setOverridesMap(overrides);
             }
             loader.loadFile(db);
             if (statementBodies != null) {
@@ -386,7 +392,7 @@ public class UIProjectLoader extends ProjectLoader {
     }
 
     public static boolean isPrivilegeFolder(IResourceDelta delta) {
-        return ApgdiffConsts.PRIVILEGES_DIR.equals(delta.getProjectRelativePath().segment(0));
+        return ApgdiffConsts.OVERRIDES_DIR.equals(delta.getProjectRelativePath().segment(0));
     }
 
     public static boolean isInProject(IEditorInput editorInput) {

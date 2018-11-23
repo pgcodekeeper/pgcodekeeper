@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -14,12 +13,13 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
+import cz.startnet.utils.pgdiff.schema.StatementOverride;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 
-public class PgPrivilegesModelExporter extends AbstractModelExporter {
+public class PgOverridesModelExporter extends AbstractModelExporter {
 
-    public PgPrivilegesModelExporter(Path outDir, PgDatabase newDb, PgDatabase oldDb,
+    public PgOverridesModelExporter(Path outDir, PgDatabase newDb, PgDatabase oldDb,
             Collection<TreeElement> changedObjects, String sqlEncoding) {
         super(outDir, newDb, oldDb, changedObjects, sqlEncoding);
     }
@@ -48,11 +48,11 @@ public class PgPrivilegesModelExporter extends AbstractModelExporter {
         case FUNCTION:
         case PROCEDURE:
         case OPERATOR:
-            dumpFuncPriv(el, st);
+            dumpFuncOverrides(el, st);
             break;
         default:
             deleteStatementIfExists(st);
-            dumpPrivileges(st);
+            dumpOverrides(st);
         }
     }
 
@@ -61,12 +61,12 @@ public class PgPrivilegesModelExporter extends AbstractModelExporter {
         // no impl
     }
 
-    private void dumpFuncPriv(TreeElement el, PgStatement st) throws IOException {
+    private void dumpFuncOverrides(TreeElement el, PgStatement st) throws IOException {
         PgDiffArguments args = new PgDiffArguments();
         Path path = outDir.resolve(getRelativeFilePath(st, true));
         StringBuilder sb = new StringBuilder();
 
-        Map<PgStatement, List<PgPrivilege>> privs;
+        Map<PgStatement, StatementOverride> privs;
         try {
             privs = new ProjectLoader(outDir.toString(), args)
                     .getPrivilegesFromPath(path, oldDb);
@@ -75,14 +75,18 @@ public class PgPrivilegesModelExporter extends AbstractModelExporter {
             throw new IllegalStateException(e);
         }
         boolean isFound = false;
-        for (Entry<PgStatement, List<PgPrivilege>> entry : privs.entrySet()) {
+        for (Entry<PgStatement, StatementOverride> entry : privs.entrySet()) {
             PgStatement oldSt = entry.getKey();
             if (st.getName().equals(oldSt.getName())) {
                 isFound = true;
                 // new state
+                PgStatement.appendOwnerSQL(st, st.getOwner(), sb);
                 st.appendPrivileges(sb);
             } else {
                 // we can't change oldSt
+                StatementOverride override = entry.getValue();
+                PgStatement.appendOwnerSQL(oldSt, override.getOwner(), sb);
+
                 sb.append("\n\n-- ")
                 .append(oldSt.getStatementType())
                 .append(' ');
@@ -93,7 +97,7 @@ public class PgPrivilegesModelExporter extends AbstractModelExporter {
                 .append("GRANT\n");
 
                 // old state
-                for (PgPrivilege priv : entry.getValue()) {
+                for (PgPrivilege priv : override.getPrivileges()) {
                     sb.append('\n').append(priv.getCreationSQL()).append(';');
                 }
             }
@@ -102,6 +106,7 @@ public class PgPrivilegesModelExporter extends AbstractModelExporter {
 
         if (!isFound) {
             // add new privileges to end if not found
+            PgStatement.appendOwnerSQL(st, st.getOwner(), sb);
             st.appendPrivileges(sb);
         } else if (sb.length() > 0) {
             // remove trailing delimiter from loop above
@@ -118,6 +123,6 @@ public class PgPrivilegesModelExporter extends AbstractModelExporter {
     @Override
     protected Path getRelativeFilePath(PgStatement st, boolean addExtension) {
         return ModelExporter.getRelativeFilePath(
-                st, Paths.get(ApgdiffConsts.PRIVILEGES_DIR), addExtension);
+                st, Paths.get(ApgdiffConsts.OVERRIDES_DIR), addExtension);
     }
 }

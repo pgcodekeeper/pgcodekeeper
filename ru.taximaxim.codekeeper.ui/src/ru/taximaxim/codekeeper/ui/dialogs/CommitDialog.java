@@ -30,7 +30,7 @@ public class CommitDialog extends TrayDialog {
 
     private final IPreferenceStore prefs;
     private final boolean egitCommitAvailable;
-    private final boolean forcePrivOnly;
+    private final boolean forceOverridesOnly;
 
     private final DbSource dbProject;
     private final DbSource dbRemote;
@@ -38,14 +38,14 @@ public class CommitDialog extends TrayDialog {
     private final Set<TreeElement> depcyElementsSet;
     private DiffTableViewer dtvBottom;
     private Button btnAutocommit;
-    private Button btnSavePriv;
+    private Button btnSaveOverrides;
     private Label warningLbl;
-    private boolean isPrivOnly;
+    private boolean isOverridesOnly;
 
     public CommitDialog(Shell parentShell, Set<TreeElement> depcyElementsSet,
             DbSource dbProject, DbSource dbRemote, TreeElement diffTree,
             IPreferenceStore mainPrefs, boolean egitCommitAvailable,
-            boolean forcePrivOnly) {
+            boolean forceOverridesOnly) {
         super(parentShell);
         this.depcyElementsSet = depcyElementsSet;
         this.dbProject = dbProject;
@@ -53,7 +53,7 @@ public class CommitDialog extends TrayDialog {
         this.diffTree = diffTree;
         this.prefs = mainPrefs;
         this.egitCommitAvailable = egitCommitAvailable;
-        this.forcePrivOnly = forcePrivOnly;
+        this.forceOverridesOnly = forceOverridesOnly;
 
         setShellStyle(getShellStyle() | SWT.RESIZE);
     }
@@ -133,23 +133,23 @@ public class CommitDialog extends TrayDialog {
         });
         btnAutocommit.setEnabled(egitCommitAvailable);
 
-        btnSavePriv = new Button(container, SWT.CHECK);
-        btnSavePriv.setText(Messages.CommitDialog_save_privileges);
-        btnSavePriv.addSelectionListener(new SelectionAdapter() {
+        btnSaveOverrides = new Button(container, SWT.CHECK);
+        btnSaveOverrides.setText(Messages.CommitDialog_save_privileges);
+        btnSaveOverrides.addSelectionListener(new SelectionAdapter() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                isPrivOnly = btnSavePriv.getSelection();
+                isOverridesOnly = btnSaveOverrides.getSelection();
             }
         });
 
-        btnSavePriv.setSelection(forcePrivOnly);
+        btnSaveOverrides.setSelection(forceOverridesOnly);
 
         return area;
     }
 
-    public boolean isPrivOnly() {
-        return isPrivOnly;
+    public boolean isOverridesOnly() {
+        return isOverridesOnly;
     }
 
     @Override
@@ -203,7 +203,7 @@ public class CommitDialog extends TrayDialog {
 
             if (showWarning) {
                 warningLbl.setText(Messages.CommitDialog_unchecked_objects_can_occur_unexpected_errors);
-            } else if (forcePrivOnly && !btnSavePriv.getSelection()) {
+            } else if (forceOverridesOnly && !btnSaveOverrides.getSelection()) {
                 showWarning = true;
                 warningLbl.setText(Messages.CommitDialog_privileges_must_be_saved);
             }
