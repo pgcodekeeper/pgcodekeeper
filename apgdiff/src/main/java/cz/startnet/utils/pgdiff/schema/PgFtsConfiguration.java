@@ -67,15 +67,6 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
     }
 
     @Override
-    protected StringBuilder appendOwnerSQL(StringBuilder sb) {
-        return owner == null ? sb
-                : sb.append("\n\nALTER TEXT SEARCH CONFIGURATION ")
-                .append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
-                .append('.').append(PgDiffUtils.getQuotedName(getName()))
-                .append(" OWNER TO ").append(PgDiffUtils.getQuotedName(owner)).append(';');
-    }
-
-    @Override
     public String getDropSQL() {
         return "DROP TEXT SEARCH CONFIGURATION " + PgDiffUtils.getQuotedName(getContainingSchema().getName())
         + '.' + PgDiffUtils.getQuotedName(getName()) + ';';

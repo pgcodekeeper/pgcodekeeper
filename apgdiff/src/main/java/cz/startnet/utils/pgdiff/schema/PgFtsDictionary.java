@@ -61,15 +61,6 @@ implements PgOptionContainer {
     }
 
     @Override
-    protected StringBuilder appendOwnerSQL(StringBuilder sb) {
-        return owner == null ? sb
-                : sb.append("\n\nALTER TEXT SEARCH DICTIONARY ")
-                .append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
-                .append('.').append(PgDiffUtils.getQuotedName(getName()))
-                .append(" OWNER TO ").append(PgDiffUtils.getQuotedName(owner)).append(';');
-    }
-
-    @Override
     public String getDropSQL() {
         return "DROP TEXT SEARCH DICTIONARY " + PgDiffUtils.getQuotedName(getContainingSchema().getName())
         + '.' + PgDiffUtils.getQuotedName(getName()) + ';';

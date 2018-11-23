@@ -357,35 +357,7 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     protected StringBuilder appendOwnerSQL(StringBuilder sb) {
-        if (owner == null) {
-            return sb;
-        }
-        sb.append("\n\nALTER ");
-
-        if (isPostgres()) {
-            DbObjType type = getStatementType();
-            sb.append(type).append(' ');
-            if (type == DbObjType.SCHEMA) {
-                sb.append(PgDiffUtils.getQuotedName(getName()));
-            } else {
-                sb.append(PgDiffUtils.getQuotedName(getParent().getName())).append('.');
-                if (type == DbObjType.FUNCTION || type == DbObjType.PROCEDURE) {
-                    ((AbstractPgFunction) this).appendFunctionSignature(sb, false, true);
-                } else if (type == DbObjType.OPERATOR) {
-                    ((PgOperator) this).appendOperatorSignature(sb);
-                } else {
-                    sb.append(PgDiffUtils.getQuotedName(getName()));
-                }
-            }
-            sb.append(" OWNER TO ")
-            .append(PgDiffUtils.getQuotedName(owner))
-            .append(';');
-        } else {
-            sb.append("AUTHORIZATION ON ").append(getQualifiedName())
-            .append(" TO ").append(MsDiffUtils.quoteName(owner)).append(GO);
-        }
-
-        return sb;
+        return appendOwnerSQL(this, owner, sb);
     }
 
     public String getOwnerSQL() {
@@ -393,6 +365,69 @@ public abstract class PgStatement implements IStatement, IHashable {
             return "\n\nALTER AUTHORIZATION ON " + getQualifiedName() + " TO SCHEMA OWNER" + GO;
         }
         return appendOwnerSQL(new StringBuilder()).toString();
+    }
+
+    public static StringBuilder appendOwnerSQL(PgStatement st, String owner, StringBuilder sb) {
+        if (owner == null) {
+            return sb;
+        }
+        sb.append("\n\nALTER ");
+        if (st.isPostgres()) {
+            DbObjType type = st.getStatementType();
+            switch (type) {
+            case FTS_CONFIGURATION:
+                sb.append("TEXT SEARCH CONFIGURATION ");
+                break;
+            case FTS_DICTIONARY:
+                sb.append("TEXT SEARCH DICTIONARY ");
+                break;
+            case TABLE:
+                if (st instanceof AbstractForeignTable) {
+                    sb.append("FOREIGN ");
+                }
+                sb.append("TABLE ");
+                break;
+            case VIEW:
+                if (((PgView) st).isMatView()) {
+                    sb.append("MATERIALIZED ");
+                }
+                sb.append("VIEW ");
+                break;
+            case SCHEMA:
+            case FUNCTION:
+            case OPERATOR:
+            case PROCEDURE:
+            case SEQUENCE:
+            case TYPE:
+            case DOMAIN:
+                sb.append(type).append(' ');
+                break;
+            default :
+                // other types cannot have owner
+                return sb;
+            }
+
+            if (type == DbObjType.SCHEMA) {
+                sb.append(PgDiffUtils.getQuotedName(st.getName()));
+            } else {
+                sb.append(PgDiffUtils.getQuotedName(st.getParent().getName())).append('.');
+                if (type == DbObjType.FUNCTION || type == DbObjType.PROCEDURE) {
+                    ((AbstractPgFunction) st).appendFunctionSignature(sb, false, true);
+                } else if (type == DbObjType.OPERATOR) {
+                    ((PgOperator) st).appendOperatorSignature(sb);
+                } else {
+                    sb.append(PgDiffUtils.getQuotedName(st.getName()));
+                }
+            }
+            sb.append(" OWNER TO ")
+            .append(PgDiffUtils.getQuotedName(owner))
+            .append(';');
+        } else {
+            sb.append("AUTHORIZATION ON ").append(st.getQualifiedName())
+            .append(" TO ").append(MsDiffUtils.quoteName(owner)).append(GO);
+        }
+
+        return sb;
     }
 
     public abstract String getCreationSQL();
