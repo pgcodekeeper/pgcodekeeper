@@ -167,6 +167,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         switch (st.getStatementType()) {
         case FUNCTION:
         case PROCEDURE:
+        case AGGREGATE:
             signature = ((AbstractPgFunction) st).appendFunctionSignature(
                     new StringBuilder(), false, true).toString();
             break;
@@ -235,6 +236,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             break;
 
         case FUNCTION:
+        case AGGREGATE:
             order = "X";
             break;
 
