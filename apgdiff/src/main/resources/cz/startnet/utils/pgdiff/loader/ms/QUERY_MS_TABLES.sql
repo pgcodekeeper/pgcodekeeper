@@ -52,6 +52,7 @@ CROSS APPLY (
         SELECT
             c.name,
             c.column_id AS id,
+            SCHEMA_NAME(t.schema_id) AS st,
             t.name AS type,
             CASE WHEN c.max_length>=0 AND t.name IN (N'nchar', N'nvarchar') THEN c.max_length/2 ELSE c.max_length END AS size,
             c.precision AS pr,
@@ -68,7 +69,7 @@ CROSS APPLY (
             ic.is_not_for_replication AS nfr,
             c.is_rowguidcol AS rgc,
             cc.is_persisted AS ps,
-            --t.is_user_defined AS ud,
+            t.is_user_defined AS ud,
             --t.is_table_type AS tt,
             --c.is_filestream AS fs,
             cc.definition AS def,

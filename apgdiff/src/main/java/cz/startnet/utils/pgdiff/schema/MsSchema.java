@@ -40,8 +40,10 @@ public class MsSchema extends AbstractSchema {
         }
 
         if (!Objects.equals(getOwner(), newSchema.getOwner())) {
-            sb.append("ALTER AUTHORIZATION ON SCHEMA::").append(newSchema.getQualifiedName())
-            .append(" TO ").append(MsDiffUtils.quoteName(newSchema.getOwner())).append(GO);
+            String newOwner = newSchema.getOwner();
+            sb.append("ALTER AUTHORIZATION ON SCHEMA::")
+            .append(newSchema.getQualifiedName()).append(" TO ")
+            .append(MsDiffUtils.quoteName(newOwner == null ? "dbo" : newOwner)).append(GO);
         }
 
         alterPrivileges(newSchema, sb);

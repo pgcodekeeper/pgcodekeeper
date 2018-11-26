@@ -38,6 +38,7 @@ public interface ApgdiffConsts {
 
     enum MS_WORK_DIR_NAMES {
         ASSEMBLIES("Assemblies"),
+        TYPES("Types"),
         TABLES("Tables"),
         VIEWS("Views"),
         SEQUENCES("Sequences"),

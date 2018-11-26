@@ -41,7 +41,7 @@ public class CreateType extends ParserAbstract {
         PgType type = null;
         PgType newType = null;
         if (form == PgTypeForm.BASE) {
-            type = schema.getType(name);
+            type = (PgType) schema.getType(name);
             if (type != null && type.getForm() != PgTypeForm.SHELL) {
                 throw new IllegalStateException("Duplicate type but existing is not SHELL type!");
             }

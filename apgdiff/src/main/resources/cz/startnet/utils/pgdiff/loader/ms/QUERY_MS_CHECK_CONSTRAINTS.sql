@@ -8,3 +8,4 @@ SELECT
     cc.definition
 FROM sys.check_constraints cc WITH (NOLOCK) 
 INNER JOIN sys.objects so WITH (NOLOCK) ON so.object_id=cc.parent_object_id
+WHERE SCHEMA_NAME(so.schema_id) <> 'sys'

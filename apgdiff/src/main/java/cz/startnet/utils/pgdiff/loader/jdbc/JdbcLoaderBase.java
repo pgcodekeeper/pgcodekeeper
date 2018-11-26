@@ -334,6 +334,9 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             if (st instanceof PgStatementWithSearchPath) {
                 col = acl.getString("c");
                 PgStatementWithSearchPath pswsp = (PgStatementWithSearchPath) st;
+                if (st.getStatementType() == DbObjType.TYPE) {
+                    sb.append("TYPE::");
+                }
 
                 sb.append(MsDiffUtils.quoteName(pswsp.getContainingSchema().getName()))
                 .append('.').append(MsDiffUtils.quoteName(st.getBareName()));
@@ -354,6 +357,31 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
                 st.addPrivilege(priv);
             }
         }
+    }
+
+    protected static String getMsType(PgStatement statement, String schema, String dataType,
+            boolean isUserDefined, int size, int precision, int scale) {
+        StringBuilder sb = new StringBuilder();
+
+        if (isUserDefined) {
+            statement.addDep(new GenericColumn(schema, dataType, DbObjType.TYPE));
+            sb.append(MsDiffUtils.quoteName(schema)).append('.');
+        }
+
+        sb.append(MsDiffUtils.quoteName(dataType));
+
+        if ("varbinary".equals(dataType) || "nvarchar".equals(dataType)
+                || "varchar".equals(dataType)) {
+            if (size == -1) {
+                sb.append(" (max)");
+            } else {
+                sb.append(" (").append(size).append(')');
+            }
+        } else if ("decimal".equals(dataType) || "numeric".equals(dataType)) {
+            sb.append(" (").append(precision).append(", ").append(scale).append(')');
+        }
+
+        return sb.toString();
     }
 
     protected void queryTypesForCache() throws SQLException, InterruptedException {
