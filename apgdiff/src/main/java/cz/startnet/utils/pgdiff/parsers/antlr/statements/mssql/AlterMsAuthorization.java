@@ -30,7 +30,7 @@ public class AlterMsAuthorization extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         IdContext ownerId = ctx.authorization_grantee().principal_name;
-        if (ownerId == null) {
+        if (db.getArguments().isIgnorePrivileges() || ownerId == null) {
             return null;
         }
         String owner = ownerId.getText();
