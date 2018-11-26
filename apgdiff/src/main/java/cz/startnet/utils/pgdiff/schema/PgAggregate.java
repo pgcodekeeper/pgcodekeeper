@@ -11,8 +11,13 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgAggregate extends AbstractPgFunction {
 
+    public static final String NORMAL = "n";
+    public static final String ORDERED = "o";
+    public static final String HYPOTHETICAL = "h";
+
     private final List<Argument> orderByArgs = new ArrayList<>();
 
+    private String kind;
     private String baseType;
     private String sFunc;
     private String sType;
@@ -72,8 +77,7 @@ public class PgAggregate extends AbstractPgFunction {
         }
 
         if (finalFuncModify != null) {
-            sbSQL.append(",\n\tFINALFUNC_MODIFY = ");
-            sbSQL.append(finalFuncModify);
+            appendFuncModify(finalFuncModify, sbSQL, false);
         }
 
         if (combineFunc != null) {
@@ -126,8 +130,7 @@ public class PgAggregate extends AbstractPgFunction {
         }
 
         if (mFinalFuncModify != null) {
-            sbSQL.append(",\n\tMFINALFUNC_MODIFY = ");
-            sbSQL.append(mFinalFuncModify);
+            appendFuncModify(mFinalFuncModify, sbSQL, true);
         }
 
         if (mInitCond != null) {
@@ -160,6 +163,35 @@ public class PgAggregate extends AbstractPgFunction {
         }
 
         return sbSQL.toString();
+    }
+
+    private void appendFuncModify(String funcModifier, StringBuilder sbSQL, boolean isMovingAgg) {
+        // The default is READ_ONLY, except for ordered-set aggregates, for which the default is READ_WRITE.
+        boolean appendModifier = false;
+        switch (kind.toLowerCase()) {
+        case NORMAL:
+        case HYPOTHETICAL:
+            if (!"READ_ONLY".equalsIgnoreCase(funcModifier)) {
+                appendModifier = true;
+            }
+            break;
+
+        case ORDERED:
+            if (!"READ_WRITE".equalsIgnoreCase(funcModifier)) {
+                appendModifier = true;
+            }
+            break;
+
+        default:
+            throw new IllegalStateException(kind + " doesn't support by AGGREGATE!");
+        }
+
+        if (appendModifier) {
+            sbSQL.append(",\n\t");
+            sbSQL.append(isMovingAgg ? "M" : "");
+            sbSQL.append("FINALFUNC_MODIFY = ");
+            sbSQL.append(funcModifier);
+        }
     }
 
     @Override
@@ -214,6 +246,7 @@ public class PgAggregate extends AbstractPgFunction {
             PgAggregate aggr = (PgAggregate)func;
             equals = super.checkForChanges(aggr)
                     && orderByArgs.equals(aggr.getOrderByArgs())
+                    && Objects.equals(kind, aggr.getKind())
                     && Objects.equals(baseType, aggr.getBaseType())
                     && Objects.equals(sFunc, aggr.getSFunc())
                     && Objects.equals(sType, aggr.getSType())
@@ -243,6 +276,7 @@ public class PgAggregate extends AbstractPgFunction {
     public void computeHash(Hasher hasher) {
         super.computeHash(hasher);
         hasher.putOrdered(orderByArgs);
+        hasher.put(kind);
         hasher.put(baseType);
         hasher.put(sFunc);
         hasher.put(sType);
@@ -277,6 +311,15 @@ public class PgAggregate extends AbstractPgFunction {
 
     public void addOrderByArg(final Argument orderByArg) {
         orderByArgs.add(orderByArg);
+        resetHash();
+    }
+
+    public String getKind() {
+        return kind;
+    }
+
+    public void setKind(String kind) {
+        this.kind = kind;
         resetHash();
     }
 
@@ -480,6 +523,7 @@ public class PgAggregate extends AbstractPgFunction {
                     argSrc.getDataType());
             copy.addArgument(orderByArgDst);
         }
+        copy.setKind(getKind());
         copy.setBaseType(getBaseType());
         copy.setSFunc(getSFunc());
         copy.setSType(getSType());

@@ -111,6 +111,48 @@ public class CreateAggregate extends ParserAbstract {
                 }
             }
         }
+
+        checkFinalFuncModifiers(aggregate);
+    }
+
+    private void checkFinalFuncModifiers(PgAggregate aggr) {
+        String kind = PgAggregate.NORMAL;
+        if (aggr.isHypothetical()) {
+            kind = PgAggregate.HYPOTHETICAL;
+        } else if (!aggr.getOrderByArgs().isEmpty()){
+            kind = PgAggregate.ORDERED;
+        }
+        aggr.setKind(kind);
+
+        String finalFuncModify = aggr.getFinalFuncModify();
+        String mFinalFuncModify = aggr.getMFinalFuncModify();
+        if (finalFuncModify != null && mFinalFuncModify != null) {
+            return;
+        }
+
+        // The default is READ_ONLY, except for ordered-set aggregates, for which the default is READ_WRITE.
+        String defaultModifier = null;
+        switch (kind.toLowerCase()) {
+        case PgAggregate.NORMAL:
+        case PgAggregate.HYPOTHETICAL:
+            defaultModifier = "READ_ONLY";
+            break;
+
+        case PgAggregate.ORDERED:
+            defaultModifier = "READ_WRITE";
+            break;
+
+        default:
+            throw new IllegalStateException(kind + " doesn't support by AGGREGATE!");
+        }
+
+
+        if (finalFuncModify == null) {
+            aggr.setFinalFuncModify(defaultModifier);
+        }
+        if (mFinalFuncModify == null) {
+            aggr.setMFinalFuncModify(defaultModifier);
+        }
     }
 
     private String getModifyParam(Aggregate_param_optionalContext paramOpt) {

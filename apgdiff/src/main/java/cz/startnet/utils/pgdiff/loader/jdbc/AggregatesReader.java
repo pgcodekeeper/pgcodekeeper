@@ -92,6 +92,15 @@ public class AggregatesReader extends JdbcReader {
 
         aggregate.setSFunc(getProcessedName(res.getString("sfunc_nsp"), res.getString("sfunc")));
         aggregate.setSType(res.getString("stype"));
+        aggregate.setFinalFuncModify(res.getString("finalfunc_modify"));
+        aggregate.setMFinalFuncModify(res.getString("mfinalfunc_modify"));
+
+        String kind = res.getString("aggkind");
+        aggregate.setKind(kind);
+
+        if ("h".equals(kind)) {
+            aggregate.setHypothetical(true);
+        }
 
         String sspace = res.getString("sspace");
         if (sspace != null) {
@@ -107,11 +116,6 @@ public class AggregatesReader extends JdbcReader {
             aggregate.setFinalFuncExtra(true);
         }
 
-        String finalFuncModify = res.getString("finalfunc_modify");
-        if (finalFuncModify != null) {
-            aggregate.setFinalFuncModify(finalFuncModify);
-        }
-
         String combinefunc = res.getString("combinefunc");
         if (combinefunc != null) {
             aggregate.setCombineFunc(getProcessedName(res.getString("combinefunc_nsp"), combinefunc));
@@ -121,7 +125,6 @@ public class AggregatesReader extends JdbcReader {
         if (serialfanc != null) {
             aggregate.setSerialFunc(getProcessedName(res.getString("serialfanc_nsp"), serialfanc));
         }
-
 
         String deserialfunc = res.getString("deserialfunc");
         if (deserialfunc != null) {
@@ -162,11 +165,6 @@ public class AggregatesReader extends JdbcReader {
             aggregate.setMFinalFuncExtra(true);
         }
 
-        String mFinalFuncModify = res.getString("mfinalfunc_modify");
-        if (mFinalFuncModify != null) {
-            aggregate.setMFinalFuncModify(mFinalFuncModify);
-        }
-
         String mInitCond = res.getString("minitcond");
         if (mInitCond != null) {
             aggregate.setMInitCond(mInitCond);
@@ -175,11 +173,6 @@ public class AggregatesReader extends JdbcReader {
         String sortOp = res.getString("sortop");
         if (mfinalfunc != null) {
             aggregate.setSortOp(getProcessedName(res.getString("sortop_nsp"), sortOp));
-        }
-
-        String aggKind = res.getString("aggkind");
-        if ("h".equals(aggKind)) {
-            aggregate.setHypothetical(true);
         }
     }
 
