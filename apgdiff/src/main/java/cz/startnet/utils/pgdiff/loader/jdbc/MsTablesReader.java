@@ -46,41 +46,8 @@ public class MsTablesReader extends JdbcReader {
 
         boolean isTextImage = false;
         for (XmlReader col : XmlReader.readXML(res.getString("cols"))) {
-            AbstractColumn column = new MsColumn(col.getString("name"));
-            // TODO other type with size
-            String exp = col.getString("def");
-            column.setExpression(exp);
-            if (exp == null) {
-                column.setCollation(col.getString("cn"));
-                column.setNullValue(col.getBoolean("nl"));
-                String dataType = col.getString("type");
-                String argSize = "";
-                int size = col.getInt("size");
-                if ("varbinary".equals(dataType) || dataType.endsWith("varchar")) {
-                    argSize = size == -1 ? " (max)" : (" (" + size + ")");
-                } else if ("decimal".equals(dataType) || "numeric".equals(dataType)) {
-                    argSize = " (" + col.getInt("pr") + ", " + col.getInt("sc") + ')';
-                }
-                column.setType(MsDiffUtils.quoteName(dataType) + argSize);
-            }
-
-            column.setSparse(col.getBoolean("sp"));
-            column.setRowGuidCol(col.getBoolean("rgc"));
-            column.setPersisted(col.getBoolean("ps"));
-
-            if (col.getBoolean("ii")) {
-                column.setIdentity(Integer.toString(col.getInt("s")), Integer.toString(col.getInt("i")));
-                column.setNotForRep(col.getBoolean("nfr"));
-            }
-
-            String def = col.getString("dv");
-            if (def != null) {
-                column.setDefaultValue(def);
-                column.setDefaultName(col.getString("dn"));
-            }
-
             isTextImage = isTextImage || col.getBoolean("ti");
-            table.addColumn(column);
+            table.addColumn(getColumn(col));
         }
 
         if (isTextImage) {
@@ -98,5 +65,37 @@ public class MsTablesReader extends JdbcReader {
 
         schema.addTable(table);
         loader.setPrivileges(table, XmlReader.readXML(res.getString("acl")));
+    }
+
+    static AbstractColumn getColumn(XmlReader col) throws XmlReaderException {
+        AbstractColumn column = new MsColumn(col.getString("name"));
+        String exp = col.getString("def");
+        column.setExpression(exp);
+        if (exp == null) {
+            boolean isUserDefined = col.getBoolean("ud");
+            if (!isUserDefined) {
+                column.setCollation(col.getString("cn"));
+            }
+
+            column.setType(JdbcLoaderBase.getMsType(column, col.getString("st"), col.getString("type"),
+                    isUserDefined, col.getInt("size"), col.getInt("pr"), col.getInt("sc")));
+            column.setNullValue(col.getBoolean("nl"));
+        }
+
+        column.setSparse(col.getBoolean("sp"));
+        column.setRowGuidCol(col.getBoolean("rgc"));
+        column.setPersisted(col.getBoolean("ps"));
+
+        if (col.getBoolean("ii")) {
+            column.setIdentity(Integer.toString(col.getInt("s")), Integer.toString(col.getInt("i")));
+            column.setNotForRep(col.getBoolean("nfr"));
+        }
+
+        String def = col.getString("dv");
+        if (def != null) {
+            column.setDefaultValue(def);
+            column.setDefaultName(col.getString("dn"));
+        }
+        return column;
     }
 }

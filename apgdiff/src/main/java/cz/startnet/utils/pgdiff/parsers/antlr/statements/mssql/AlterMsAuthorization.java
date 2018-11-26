@@ -39,7 +39,7 @@ public class AlterMsAuthorization extends ParserAbstract {
         IdContext nameCtx = ctx.entity.name;
 
         PgStatement st;
-        if (type == null || type.OBJECT() != null) {
+        if (type == null || type.OBJECT() != null || type.TYPE() != null) {
             IdContext schemaName = ctx.entity.schema;
             AbstractSchema schema = schemaName != null ? getSafe(db::getSchema, schemaName) : db.getDefaultSchema();
             st = getSafe(name -> schema.getChildren().filter(

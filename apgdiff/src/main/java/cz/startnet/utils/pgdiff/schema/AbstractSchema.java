@@ -21,7 +21,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     private final List<AbstractSequence> sequences = new ArrayList<>();
     private final List<AbstractTable> tables = new ArrayList<>();
     private final List<AbstractView> views = new ArrayList<>();
-    private final List<PgType> types = new ArrayList<>();
+    private final List<AbstractType> types = new ArrayList<>();
     private final List<PgFtsParser> parsers = new ArrayList<>();
     private final List<PgFtsTemplate> templates = new ArrayList<>();
     private final List<PgFtsDictionary> dictionaries = new ArrayList<>();
@@ -252,8 +252,8 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      *
      * @return found type or null if no such type has been found
      */
-    public PgType getType(final String name) {
-        for (PgType type : types) {
+    public AbstractType getType(final String name) {
+        for (AbstractType type : types) {
             if (type.getName().equals(name)) {
                 return type;
             }
@@ -351,7 +351,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      *
      * @return {@link #types}
      */
-    public List<PgType> getTypes() {
+    public List<AbstractType> getTypes() {
         return Collections.unmodifiableList(types);
     }
 
@@ -444,7 +444,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         resetHash();
     }
 
-    public void addType(final PgType type) {
+    public void addType(final AbstractType type) {
         assertUnique(this::getType, type);
         types.add(type);
         type.setParent(this);
@@ -624,7 +624,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         for (AbstractTable table : tables) {
             copy.addTable(table.deepCopy());
         }
-        for (PgType type : types) {
+        for (AbstractType type : types) {
             copy.addType(type.deepCopy());
         }
         for (PgFtsParser parser : parsers) {
