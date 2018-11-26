@@ -1,8 +1,6 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -11,6 +9,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -99,7 +98,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
-import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.AggregatingListener;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
@@ -182,12 +181,16 @@ public class DiffTableViewer extends Composite {
         return Collections.unmodifiableCollection(elements);
     }
 
+    public DiffTableViewer(Composite parent, boolean viewOnly) {
+        this(parent, viewOnly, null, null);
+    }
+
     public DiffTableViewer(Composite parent, boolean viewOnly, IStatusLineManager lineManager, Path location) {
         super(parent, SWT.NONE);
         this.viewOnly = viewOnly;
         this.lineManager = lineManager;
         this.location = location;
-        showGitUser = location!= null
+        showGitUser = location != null
                 && Activator.getDefault().getPreferenceStore().getBoolean(PG_EDIT_PREF.SHOW_GIT_USER)
                 && GitUserReader.checkRepo(location);
 
@@ -841,16 +844,22 @@ public class DiffTableViewer extends Composite {
                     return;
                 }
 
-                String name;
-                String type;
+                String name = null;
+                String type = null;
                 String loc = st.getLocation();
-                if (loc.startsWith("jdbc:")) { //$NON-NLS-1$
+                switch (PgLibrary.getSource(loc)) {
+                case JDBC:
                     type = Messages.DiffTableViewer_database;
                     name = JdbcConnector.dbNameFromUrl(loc);
-                    loc = ModelExporter.getRelativeFilePath(st, false);
-                } else {
+                    break;
+                case URL:
+                    type = Messages.DiffTableViewer_uri;
+                    name = loc;
+                    loc = null;
+                    break;
+                case LOCAL:
                     Path lib = libs.stream().map(PgLibrary::getPath)
-                            .filter(loc::startsWith).findFirst().map(Paths::get).get();
+                    .filter(loc::startsWith).findFirst().map(Paths::get).get();
                     Path location = Paths.get(loc);
                     name = lib.getFileName().toString();
 
@@ -859,17 +868,9 @@ public class DiffTableViewer extends Composite {
                         loc = lib.relativize(location).toString();
                     } else {
                         type = Messages.DiffTableViewer_file;
-
-                        try {
-                            if (new URI(loc).getScheme() != null) {
-                                type = Messages.DiffTableViewer_uri;
-                            }
-                        } catch (URISyntaxException e) {
-                            // do nothing, it is file
-                        }
-
                         loc = null;
                     }
+                    break;
                 }
 
                 v.setLibLocation(Messages.DiffTableViewer_library + name + '\n' + Messages.DiffTableViewer_type + type
@@ -896,8 +897,8 @@ public class DiffTableViewer extends Composite {
                     Map<String, List<ElementMetaInfo>> metas = new HashMap<>();
                     elementInfoMap.forEach((k,v) -> {
                         if (k.getSide() != DiffSide.RIGHT) {
-                            Path fullPath = location.resolve(Paths.get(ModelExporter.getRelativeFilePath(
-                                    k.getPgStatement(dbProject.getDbObject()), true)));
+                            Path fullPath = location.resolve(AbstractModelExporter.getRelativeFilePath(
+                                    k.getPgStatement(dbProject.getDbObject())));
                             // git always uses linux paths
                             // since all paths here are relative it's ok to simply
                             // join their elements with forward slashes
@@ -1233,7 +1234,7 @@ public class DiffTableViewer extends Composite {
             }
         }
 
-        private final LinkedList<SortingColumn> sortOrder = new LinkedList<>();
+        private final Deque<SortingColumn> sortOrder = new LinkedList<>();
 
         public void clearSortList() {
             sortOrder.clear();

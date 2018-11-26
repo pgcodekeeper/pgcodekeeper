@@ -16,6 +16,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.SubMonitor;
 
@@ -217,9 +218,11 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         if (aclItemsArrayAsString == null || args.isIgnorePrivileges()) {
             return;
         }
+        DbObjType type = st.getStatementType();
         String stType = null;
+        boolean isFunctionOrTypeOrDomain = false;
         String order;
-        switch (st.getStatementType()) {
+        switch (type) {
         case SEQUENCE:
             order = "rUw";
             break;
@@ -238,6 +241,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         case FUNCTION:
         case AGGREGATE:
             order = "X";
+            isFunctionOrTypeOrDomain = true;
             break;
 
         case SCHEMA:
@@ -248,10 +252,11 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         case DOMAIN:
             stType = "TYPE";
             order = "U";
+            isFunctionOrTypeOrDomain = true;
             break;
 
         default:
-            throw new IllegalStateException(st.getStatementType() + " doesn't support privileges!");
+            throw new IllegalStateException(type + " doesn't support privileges!");
         }
         int possiblePrivilegeCount = order.length();
         if (stType == null) {
@@ -260,37 +265,52 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
 
         String qualStSignature = schemaName == null ? stSignature
                 : PgDiffUtils.getQuotedName(schemaName) + '.' + stSignature;
-        String column = (columnId != null && !columnId.isEmpty()) ? "(" + columnId + ")" : "";
+        String column = columnId != null ? "(" + columnId + ")" : "";
 
         List<Privilege> grants = JdbcAclParser.parse(
                 aclItemsArrayAsString, possiblePrivilegeCount, order, owner);
 
+        boolean metPublicRoleGrants = false;
         boolean metDefaultOwnersGrants = false;
         for (Privilege p : grants) {
+            if (p.isGrantAllToPublic()) {
+                metPublicRoleGrants = true;
+            }
             if (p.isDefault) {
                 metDefaultOwnersGrants = true;
             }
         }
 
-        if (!metDefaultOwnersGrants) {
+        // FUNCTION/TYPE/DOMAIN by default has "GRANT ALL to PUBLIC".
+        // If "GRANT ALL to PUBLIC" for FUNCTION/TYPE/DOMAIN is absent, then
+        // in this case for them explicitly added "REVOKE ALL from PUBLIC".
+        if (!metPublicRoleGrants && isFunctionOrTypeOrDomain) {
+            st.addPrivilege(new PgPrivilege("REVOKE", "ALL" + column,
+                    stType + " " + qualStSignature, "PUBLIC", false));
+        }
+
+        // 'REVOKE ALL' for COLUMN never happened, because of the overlapping
+        // privileges from the table.
+        if (column.isEmpty() && !metDefaultOwnersGrants) {
             st.addPrivilege(new PgPrivilege("REVOKE", "ALL" + column,
                     stType + " " + qualStSignature, PgDiffUtils.getQuotedName(owner), false));
         }
 
         for (Privilege grant : grants) {
-            // skip if default owner's privileges
-            if (grant.isDefault) {
+            // Always add if statement type is COLUMN, because of the specific
+            // relationship with table privileges.
+            // The privileges of columns for role are not set lower than for the
+            // same role in the parent table, they may be the same or higher.
+            //
+            // Skip if default owner's privileges
+            // or if it is 'GRANT ALL ON FUNCTION/TYPE/DOMAIN schema.name TO PUBLIC'
+            if (column.isEmpty() && (grant.isDefault ||
+                    (isFunctionOrTypeOrDomain && grant.isGrantAllToPublic()))) {
                 continue;
             }
-            List<String> grantValues = grant.grantValues;
-            if (column != null && !column.isEmpty()) {
-                grantValues = new ArrayList<>(grant.grantValues.size());
-                for (String plainGrant : grant.grantValues) {
-                    grantValues.add(plainGrant + column);
-                }
-            }
-
-            st.addPrivilege(new PgPrivilege("GRANT", String.join(",", grantValues),
+            String grantString = grant.grantValues.stream()
+                    .collect(Collectors.joining(column + ',', "", column));
+            st.addPrivilege(new PgPrivilege("GRANT", grantString,
                     stType + " " + qualStSignature, grant.grantee, grant.isGO));
         }
     }

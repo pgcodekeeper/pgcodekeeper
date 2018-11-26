@@ -54,6 +54,6 @@ public class InitProjectFromSource implements IRunnableWithProgress {
 
         PgDatabase db = src.get(taskpm);
         pm.newChild(25).subTask(Messages.initProjectFromSource_exporting_db_model); // 75
-        new ProjectUpdater(db, null, null, proj).updateFull();
+        new ProjectUpdater(db, proj).updateFull();
     }
 }

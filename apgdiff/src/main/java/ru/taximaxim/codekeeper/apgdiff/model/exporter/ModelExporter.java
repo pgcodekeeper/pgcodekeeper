@@ -1,15 +1,12 @@
 package ru.taximaxim.codekeeper.apgdiff.model.exporter;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -33,21 +30,13 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 
 public class ModelExporter extends AbstractModelExporter {
 
-    public ModelExporter(File outDir, PgDatabase db, String sqlEncoding) {
+    public ModelExporter(Path outDir, PgDatabase db, String sqlEncoding) {
         super(outDir, db, sqlEncoding);
     }
 
-    public ModelExporter(File outDir, PgDatabase newDb, PgDatabase oldDb,
+    public ModelExporter(Path outDir, PgDatabase newDb, PgDatabase oldDb,
             Collection<TreeElement> changedObjects, String sqlEncoding) {
         super(outDir, newDb, oldDb, changedObjects, sqlEncoding);
-    }
-
-    @Override
-    protected void deleteStatementIfExists(PgStatement st) throws IOException {
-        Path toDelete = Paths.get(outDir.getCanonicalPath(), getRelativeFilePath(st, true));
-        Log.log(Log.LOG_INFO, "Deleting file " + toDelete.toString() +
-                " for object " + st.getStatementType() + ' ' + st.getName());
-        Files.deleteIfExists(toDelete);
     }
 
     @Override
@@ -60,24 +49,22 @@ public class ModelExporter extends AbstractModelExporter {
             deleteStatementIfExists(st);
 
             // delete schema's folder content
-            File schemaFolder = new File(outDir, getRelativeFilePath(st, false));
-            if (schemaFolder.exists()) {
+            Path schemaFolder = outDir.resolve(getRelativeFilePath(st, false));
+            if (Files.exists(schemaFolder)) {
                 Log.log(Log.LOG_INFO, "Deleting schema folder for schema " + el.getName()); //$NON-NLS-1$
-                FileUtils.deleteRecursive(schemaFolder.toPath());
+                FileUtils.deleteRecursive(schemaFolder);
             }
             break;
-
         case FUNCTION:
+        case PROCEDURE:
         case OPERATOR:
             processFuncOrOper(el, st);
             break;
-
         case CONSTRAINT:
         case INDEX:
             TreeElement elParent = el.getParent();
             processTableAndContents(elParent, elParent.getPgStatement(oldDb), el);
             break;
-
         case TRIGGER:
         case RULE:
             elParent = el.getParent();
@@ -87,7 +74,6 @@ public class ModelExporter extends AbstractModelExporter {
                 processViewAndContents(elParent, elParent.getPgStatement(oldDb), el);
             }
             break;
-
         default:
             deleteStatementIfExists(st);
         }
@@ -106,21 +92,19 @@ public class ModelExporter extends AbstractModelExporter {
 
             // dump new version
             dumpSQL(stInNew.getFullSQL(),
-                    new File(outDir, getRelativeFilePath(stInNew, true)));
+                    outDir.resolve(getRelativeFilePath(stInNew, true)));
             break;
-
         case FUNCTION:
+        case PROCEDURE:
         case OPERATOR:
             createParentSchema(elParent);
             processFuncOrOper(el, stInNew);
             break;
-
         case CONSTRAINT:
         case INDEX:
             createParentSchema(elParent.getParent());
             processTableAndContents(elParent, elParent.getPgStatement(newDb), el);
             break;
-
         case TRIGGER:
         case RULE:
             createParentSchema(elParent.getParent());
@@ -130,20 +114,21 @@ public class ModelExporter extends AbstractModelExporter {
                 processViewAndContents(elParent, elParent.getPgStatement(newDb), el);
             }
             break;
-
-
         case TABLE:
             createParentSchema(elParent);
             processTableAndContents(el, stInNew, el);
             break;
-
+        case VIEW:
+            createParentSchema(elParent);
+            processViewAndContents(el, stInNew, el);
+            break;
         default:
             // remove old version
             deleteStatementIfExists(stInNew);
 
             createParentSchema(elParent);
             // dump new version
-            dumpSQL(getDumpSql(stInNew), new File(outDir, getRelativeFilePath(stInNew, true)));
+            dumpSQL(getDumpSql(stInNew), outDir.resolve(getRelativeFilePath(stInNew, true)));
         }
     }
 
@@ -161,9 +146,9 @@ public class ModelExporter extends AbstractModelExporter {
         }
 
         PgStatement st = el.getPgStatement(newDb);
-        File file = new File(outDir, getRelativeFilePath(st, true));
-        if (!file.exists()) {
-            dumpSQL(st.getCreationSQL(), file);
+        Path path = outDir.resolve(getRelativeFilePath(st, true));
+        if (Files.notExists(path)) {
+            dumpSQL(st.getCreationSQL(), path);
         }
     }
 
@@ -179,9 +164,8 @@ public class ModelExporter extends AbstractModelExporter {
             // $FALL-THROUGH$
         case EXTENSION:
             // export schema/extension sql file
-            dumpSQL(stInNew.getFullSQL(), new File (outDir, getRelativeFilePath(stInNew, true)));
+            dumpSQL(stInNew.getFullSQL(), outDir.resolve(getRelativeFilePath(stInNew, true)));
             break;
-
         case FUNCTION:
         case PROCEDURE:
         case OPERATOR:
@@ -213,16 +197,13 @@ public class ModelExporter extends AbstractModelExporter {
             createParentSchema(elParent);
             processTableAndContents(el, stInNew, el);
             break;
-
         case VIEW:
             createParentSchema(elParent);
             processViewAndContents(el, stInNew, el);
             break;
-
         default:
             createParentSchema(elParent);
-            dumpObjects(Arrays.asList((PgStatementWithSearchPath)stInNew),
-                    new File(new File(outDir, "SCHEMA"), getExportedFilename(stInNew.getParent())));
+            dumpSQL(getDumpSql(stInNew), outDir.resolve(getRelativeFilePath(stInNew, true)));
         }
     }
 
@@ -260,10 +241,8 @@ public class ModelExporter extends AbstractModelExporter {
             // if the whole parent schema is to be deleted
             return;
         }
-        // delete functionOrOperator sql file
-        deleteStatementIfExists(st);
 
-        List<PgStatement> abstrFuncsOrOpersToDump = new LinkedList<>();
+        List<PgStatement> toDump = new LinkedList<>();
         AbstractSchema newParentSchema = newDb.getSchema(st.getParent().getName());
         AbstractSchema oldParentSchema = oldDb.getSchema(st.getParent().getName());
 
@@ -273,7 +252,7 @@ public class ModelExporter extends AbstractModelExporter {
         if (oldParentSchema != null) {
             for (PgStatement oldFuncOrOper : getAbstrFuncsOrOpers(oldParentSchema, type)) {
                 if (oldFuncOrOper.getBareName().equals(st.getBareName())) {
-                    abstrFuncsOrOpersToDump.add(oldFuncOrOper);
+                    toDump.add(oldFuncOrOper);
                 }
             }
         }
@@ -293,24 +272,24 @@ public class ModelExporter extends AbstractModelExporter {
 
             // final required abstrFunctionOrOperator state
             String elName = elAbstrFuncOrOper.getName();
-            PgStatement abstrFuncOperPrimary = getAbstrFuncOrOper(elAbstrFuncOrOper.getSide() == DiffSide.LEFT ?
+            PgStatement primary = getAbstrFuncOrOper(elAbstrFuncOrOper.getSide() == DiffSide.LEFT ?
                     oldParentSchema : newParentSchema, elName, type);
-            if (abstrFuncOperPrimary == null || !abstrFuncOperPrimary.getBareName().equals(st.getBareName())
-                    || !abstrFuncOperPrimary.getParent().getName().equals(elAbstrFuncOrOper.getParent().getName())) {
+            if (primary == null || !primary.getBareName().equals(st.getBareName())
+                    || !primary.getParent().getName().equals(elAbstrFuncOrOper.getParent().getName())) {
                 continue;
             }
 
             switch (elAbstrFuncOrOper.getSide()) {
             case LEFT:
-                abstrFuncsOrOpersToDump.remove(abstrFuncOperPrimary);
+                toDump.remove(primary);
                 break;
             case RIGHT:
-                abstrFuncsOrOpersToDump.add(abstrFuncOperPrimary);
+                toDump.add(primary);
                 break;
             case BOTH:
-                abstrFuncsOrOpersToDump.set(
-                        abstrFuncsOrOpersToDump.indexOf(getAbstrFuncOrOper(oldParentSchema, elName, type)),
-                        abstrFuncOperPrimary);
+                toDump.set(
+                        toDump.indexOf(getAbstrFuncOrOper(oldParentSchema, elName, type)),
+                        primary);
                 break;
             }
 
@@ -319,31 +298,13 @@ public class ModelExporter extends AbstractModelExporter {
             it.remove();
         }
 
-        dumpAbstrFunctionsOrOperators(abstrFuncsOrOpersToDump, new File(outDir, getRelativeFilePath(
-                newParentSchema == null ? oldParentSchema : newParentSchema, false)), type);
-    }
+        // delete functionOrOperator sql file
+        deleteStatementIfExists(st);
 
-    @Override
-    protected void dumpContainer(PgStatement obj, List<PgStatementWithSearchPath> contents,
-            AbstractSchema schema) throws IOException {
-        File parentDir =  new File(outDir, getRelativeFilePath(schema, false));
+        Path path = outDir.resolve(getRelativeFilePath(
+                newParentSchema == null ? oldParentSchema : newParentSchema, false));
 
-        mkdirObjects(null, parentDir.toString());
-        DbObjType type = obj.getStatementType();
-
-        File tablesDir = mkdirObjects(parentDir, type.name());
-
-        if (type == DbObjType.TABLE) {
-            Collections.sort(contents, ExportTableOrder.INSTANCE);
-        }
-
-        StringBuilder groupSql = new StringBuilder(getDumpSql(obj));
-
-        for (PgStatementWithSearchPath st : contents) {
-            groupSql.append(GROUP_DELIMITER).append(getDumpSql(st));
-        }
-
-        dumpSQL(groupSql, new File(tablesDir, getExportedFilenameSql(obj)));
+        dumpAbstrFunctionsOrOperators(toDump, path, type);
     }
 
     /*
@@ -356,57 +317,39 @@ public class ModelExporter extends AbstractModelExporter {
      */
     @Override
     public void exportFull() throws IOException {
-        if (outDir.exists()) {
-            if (!outDir.isDirectory()) {
-                throw new NotDirectoryException(outDir.getAbsolutePath());
+        if (Files.exists(outDir)) {
+            if (!Files.isDirectory(outDir)) {
+                throw new NotDirectoryException(outDir.toString());
             }
 
             for (ApgdiffConsts.WORK_DIR_NAMES subdirName : ApgdiffConsts.WORK_DIR_NAMES.values()) {
-                if (new File(outDir, subdirName.name()).exists()) {
+                if (Files.exists(outDir.resolve(subdirName.name()))) {
                     throw new DirectoryException(MessageFormat.format(
                             "Output directory already contains {0} directory.",
                             subdirName));
                 }
             }
-        } else if (!outDir.mkdirs()) {
-            throw new DirectoryException(MessageFormat.format(
-                    "Could not create output directory: {0}",
-                    outDir.getAbsolutePath()));
+        } else {
+            Files.createDirectories(outDir);
         }
 
         // exporting extensions
-        File extensionsDir = new File(outDir,
+        Path extensionsDir = outDir.resolve(
                 ApgdiffConsts.WORK_DIR_NAMES.EXTENSION.name());
-        if (!extensionsDir.mkdir()) {
-            throw new DirectoryException(MessageFormat.format(
-                    "Could not create extensions directory: {0}",
-                    extensionsDir.getAbsolutePath()));
-        }
 
         for (PgExtension ext : newDb.getExtensions()) {
-            File extSQL = new File(extensionsDir, getExportedFilenameSql(ext));
-            dumpSQL(ext.getCreationSQL(), extSQL);
+            dumpSQL(ext.getCreationSQL(), extensionsDir.resolve(getExportedFilenameSql(ext)));
         }
 
         // exporting schemas
-        File schemasSharedDir = new File(outDir,
-                ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.name());
-        if (!schemasSharedDir.mkdir()) {
-            throw new DirectoryException(MessageFormat.format(
-                    "Could not create schemas directory: {0}",
-                    schemasSharedDir.getAbsolutePath()));
-        }
+        Path schemasSharedDir = outDir.resolve(ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.name());
 
         // exporting schemas contents
         for (AbstractSchema schema : newDb.getSchemas()) {
-            File schemaDir = new File(schemasSharedDir, getExportedFilename(schema));
-            if (!schemaDir.mkdir()) {
-                throw new DirectoryException(MessageFormat.format(
-                        "Could not create schema directory: {0}",
-                        schemaDir.getAbsolutePath()));
-            }
 
-            File schemaSQL = new File(schemaDir, getExportedFilenameSql(schema));
+            Path schemaDir = schemasSharedDir.resolve(getExportedFilename(schema));
+
+            Path schemaSQL = schemaDir.resolve(getExportedFilenameSql(schema));
             dumpSQL(schema.getCreationSQL(), schemaSQL);
 
             dumpAbstrFunctionsOrOperators(getAbstrFuncsOrOpers(schema, DbObjType.FUNCTION), schemaDir, DbObjType.FUNCTION);
@@ -424,16 +367,14 @@ public class ModelExporter extends AbstractModelExporter {
 
             // indexes, triggers, rules, constraints are dumped when tables are processed
         }
-        writeProjVersion(new File(outDir.getPath(), ApgdiffConsts.FILENAME_WORKING_DIR_MARKER));
+        writeProjVersion(outDir.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER));
     }
 
     private void dumpAbstrFunctionsOrOperators(List<? extends PgStatement> abstrFuncsOrOpers,
-            File parentDir, DbObjType type) throws IOException {
+            Path parentDir, DbObjType type) throws IOException {
         if (abstrFuncsOrOpers.isEmpty()) {
             return;
         }
-        mkdirObjects(null, parentDir.getAbsolutePath());
-        File funcDir = mkdirObjects(parentDir, type.name());
 
         Map<String, StringBuilder> dumps = new HashMap<>(abstrFuncsOrOpers.size());
         for (PgStatement stmt : abstrFuncsOrOpers) {
@@ -446,16 +387,18 @@ public class ModelExporter extends AbstractModelExporter {
                 groupedDump.append(GROUP_DELIMITER).append(getDumpSql(stmt));
             }
         }
+
+        Path folder = parentDir.resolve(type.name());
+
         for (Entry<String, StringBuilder> dump : dumps.entrySet()) {
-            dumpSQL(dump.getValue(), new File(funcDir, dump.getKey()));
+            dumpSQL(dump.getValue(), folder.resolve(dump.getKey()));
         }
     }
 
     private void dumpObjects(List<? extends PgStatementWithSearchPath> objects,
-            File parentOutDir) throws IOException {
+            Path parentOutDir) throws IOException {
         if (!objects.isEmpty()) {
-            mkdirObjects(null, parentOutDir.toString());
-            File objectDir = mkdirObjects(parentOutDir, objects.get(0).getStatementType().name());
+            Path objectDir = parentOutDir.resolve(objects.get(0).getStatementType().name());
 
             for (PgStatementWithSearchPath obj : objects) {
                 String dump = getDumpSql(obj);
@@ -467,35 +410,34 @@ public class ModelExporter extends AbstractModelExporter {
                     dump = groupSql.toString();
                 }
 
-                dumpSQL(dump, new File(objectDir, getExportedFilenameSql(obj)));
+                dumpSQL(dump, objectDir.resolve(getExportedFilenameSql(obj)));
             }
         }
     }
 
-    /**
-     * @param addExtension whether to add .sql extension to the path
-     *      for schemas, no extension also means to get schema dir path,
-     *      one segment shorter than file location since schema files
-     *      are now stored in schema dirs
-     */
-    public static String getRelativeFilePath(PgStatement st, boolean addExtension){
+    @Override
+    protected Path getRelativeFilePath(PgStatement st, boolean addExtension) {
+        return getRelativeFilePath(st, Paths.get(""), addExtension);
+    }
+
+    static Path getRelativeFilePath(PgStatement st, Path baseDir, boolean addExtension) {
         PgStatement parentSt = st.getParent();
         String parentExportedFileName = parentSt == null ?
                 null : ModelExporter.getExportedFilename(parentSt);
 
-        File file = new File("SCHEMA");
+        Path path = baseDir.resolve("SCHEMA");
         DbObjType type = st.getStatementType();
         String schemaName;
         switch (type) {
         case EXTENSION:
-            file = new File(type.name());
+            path = baseDir.resolve(type.name());
             break;
 
         case SCHEMA:
-            file = new File(file, getExportedFilename(st));
+            path = path.resolve(getExportedFilename(st));
             if (!addExtension) {
                 // return schema dir path
-                return file.toString();
+                return path;
             }
             break;
 
@@ -511,7 +453,7 @@ public class ModelExporter extends AbstractModelExporter {
         case FTS_PARSER:
         case FTS_DICTIONARY:
         case FTS_CONFIGURATION:
-            file = new File(new File(file, parentExportedFileName), type.name());
+            path = path.resolve(parentExportedFileName).resolve(type.name());
             break;
 
         case CONSTRAINT:
@@ -521,13 +463,13 @@ public class ModelExporter extends AbstractModelExporter {
         case COLUMN:
             st = parentSt;
             schemaName = ModelExporter.getExportedFilename(parentSt.getParent());
-            file = new File(new File(file, schemaName), parentSt.getStatementType().name());
+            path = path.resolve(schemaName).resolve(parentSt.getStatementType().name());
             break;
         default:
             break;
         }
 
-        return new File(file, addExtension ?
-                getExportedFilenameSql(st) : getExportedFilename(st)).toString();
+        return path.resolve(addExtension ?
+                getExportedFilenameSql(st) : getExportedFilename(st));
     }
 }
