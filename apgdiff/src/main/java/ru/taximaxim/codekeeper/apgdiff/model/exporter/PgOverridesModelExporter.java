@@ -87,18 +87,20 @@ public class PgOverridesModelExporter extends AbstractModelExporter {
                 StatementOverride override = entry.getValue();
                 PgStatement.appendOwnerSQL(oldSt, override.getOwner(), sb);
 
-                sb.append("\n\n-- ")
-                .append(oldSt.getStatementType())
-                .append(' ');
-                sb.append(((PgStatementWithSearchPath)oldSt).getContainingSchema().getName())
-                .append('.');
-                sb.append(oldSt.getName())
-                .append(' ')
-                .append("GRANT\n");
+                if (!override.getPrivileges().isEmpty()) {
+                    sb.append("\n\n-- ")
+                    .append(oldSt.getStatementType())
+                    .append(' ');
+                    sb.append(((PgStatementWithSearchPath)oldSt).getContainingSchema().getName())
+                    .append('.');
+                    sb.append(oldSt.getName())
+                    .append(' ')
+                    .append("GRANT\n");
 
-                // old state
-                for (PgPrivilege priv : override.getPrivileges()) {
-                    sb.append('\n').append(priv.getCreationSQL()).append(';');
+                    // old state
+                    for (PgPrivilege priv : override.getPrivileges()) {
+                        sb.append('\n').append(priv.getCreationSQL()).append(';');
+                    }
                 }
             }
             sb.append(GROUP_DELIMITER);

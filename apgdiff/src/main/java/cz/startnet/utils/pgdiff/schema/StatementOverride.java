@@ -7,13 +7,6 @@ public class StatementOverride {
     private String owner;
     private final List<PgPrivilege> privileges = new ArrayList<>();
 
-    public StatementOverride() {
-    }
-
-    public StatementOverride(String owner) {
-        this.owner = owner;
-    }
-
     public void addPrivilege(PgPrivilege privilege) {
         privileges.add(privilege);
     }

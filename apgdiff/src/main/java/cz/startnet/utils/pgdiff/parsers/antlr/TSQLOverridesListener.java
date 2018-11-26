@@ -59,7 +59,7 @@ implements TSqlContextProcessor {
             Schema_createContext create = ddl.schema_create();
             Schema_alterContext alter;
             if (create != null) {
-                create(create);
+                safeParseStatement(() -> create(create), create);
             } else if ((alter = ddl.schema_alter()) != null) {
                 alter(alter);
             }
@@ -74,13 +74,25 @@ implements TSqlContextProcessor {
     private void create(Schema_createContext ctx) {
         Create_schemaContext schema = ctx.create_schema();
         Create_assemblyContext ass;
+        PgStatement st;
+        String owner;
         if (schema != null && schema.owner_name != null) {
-            PgStatement st = ParserAbstract.getSafe(db::getSchema, schema.schema_name);
-            overrides.put(st, new StatementOverride(schema.owner_name.getText()));
+            st = ParserAbstract.getSafe(db::getSchema, schema.schema_name);
+            owner = schema.owner_name.getText();
         } else if ((ass = ctx.create_assembly()) != null && ass.owner_name != null) {
-            PgStatement st = ParserAbstract.getSafe(db::getAssembly, ass.assembly_name);
-            overrides.put(st, new StatementOverride(ass.owner_name.getText()));
+            st = ParserAbstract.getSafe(db::getAssembly, ass.assembly_name);
+            owner = ass.owner_name.getText();
+        } else {
+            return;
         }
+
+        StatementOverride override = overrides.get(st);
+        if (override == null) {
+            override = new StatementOverride();
+            overrides.put(st, override);
+        }
+
+        override.setOwner(owner);
     }
 
     private void alter(Schema_alterContext ctx) {

@@ -56,6 +56,19 @@ public class CustomParserListener {
         }
     }
 
+    protected void safeParseStatement(Runnable r, ParserRuleContext ctx) {
+        try {
+            PgDiffUtils.checkCancelled(monitor);
+            r.run();
+        } catch (UnresolvedReferenceException ex) {
+            errors.add(handleUnresolvedReference(ex, filename));
+        } catch (InterruptedException ex) {
+            throw new MonitorCancelledRuntimeException();
+        } catch (Exception e) {
+            errors.add(handleParserContextException(e, filename, ctx));
+        }
+    }
+
     public static AntlrError handleUnresolvedReference(UnresolvedReferenceException ex, String filename) {
         Token t = ex.getErrorToken();
         AntlrError err = new AntlrError(t, filename, t.getLine(), t.getCharPositionInLine(), ex.getMessage());
