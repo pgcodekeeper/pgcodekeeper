@@ -112,23 +112,25 @@ public class CreateAggregate extends ParserAbstract {
             }
         }
 
+        String kind = PgAggregate.NORMAL;
+        if (aggregate.isHypothetical()) {
+            kind = PgAggregate.HYPOTHETICAL;
+        } else if (!aggregate.getOrderByArgs().isEmpty()){
+            kind = PgAggregate.ORDERED;
+        }
+        aggregate.setKind(kind);
+
         checkFinalFuncModifiers(aggregate);
     }
 
     private void checkFinalFuncModifiers(PgAggregate aggr) {
-        String kind = PgAggregate.NORMAL;
-        if (aggr.isHypothetical()) {
-            kind = PgAggregate.HYPOTHETICAL;
-        } else if (!aggr.getOrderByArgs().isEmpty()){
-            kind = PgAggregate.ORDERED;
-        }
-        aggr.setKind(kind);
-
         String finalFuncModify = aggr.getFinalFuncModify();
         String mFinalFuncModify = aggr.getMFinalFuncModify();
         if (finalFuncModify != null && mFinalFuncModify != null) {
             return;
         }
+
+        String kind = aggr.getKind();
 
         // The default is READ_ONLY, except for ordered-set aggregates, for which the default is READ_WRITE.
         String defaultModifier = null;
