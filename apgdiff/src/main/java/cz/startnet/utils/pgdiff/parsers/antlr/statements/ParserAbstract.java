@@ -201,7 +201,7 @@ public abstract class ParserAbstract {
         if (db.getArguments().isIgnorePrivileges()) {
             return;
         }
-        if (ctx != null) {
+        if (ctx != null && ctx.name != null) {
             st.setOwner(ctx.name.getText());
         }
     }

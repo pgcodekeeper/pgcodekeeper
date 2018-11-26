@@ -23,7 +23,6 @@ public class AlterView extends ParserAbstract {
         List<IdentifierContext> ids = ctx.name.identifier();
         AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         AbstractView dbView = getSafe(schema::getView, QNameParser.getFirstNameCtx(ids));
-        fillOwnerTo(ctx.owner_to(), dbView);
         if (ctx.set_def_column() != null) {
             VexContext exp = ctx.set_def_column().expression;
             dbView.addColumnDefaultValue(getFullCtxText(ctx.column_name), getFullCtxText(exp));

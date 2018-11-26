@@ -25,7 +25,6 @@ public class AlterSequence extends ParserAbstract {
         AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         AbstractSequence sequence = getSafe(schema::getSequence, QNameParser.getFirstNameCtx(ids));
 
-        fillOwnerTo(ctx.owner_to(), sequence);
         for (Sequence_bodyContext seqbody : ctx.sequence_body()) {
             if (seqbody.OWNED() != null && seqbody.col_name != null) {
                 List<IdentifierContext> col = seqbody.col_name.identifier();
