@@ -140,6 +140,7 @@ public class CommitDialog extends TrayDialog {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 isOverridesOnly = btnSaveOverrides.getSelection();
+                checkSate();
             }
         });
 
@@ -169,6 +170,51 @@ public class CommitDialog extends TrayDialog {
         return true;
     }
 
+    private void checkSate() {
+        boolean showWarning = false;
+        for (TreeElement el : depcyElementsSet) {
+            if (!el.isSelected()) {
+                switch (el.getSide()) {
+                // удаляется
+                case LEFT:
+                    showWarning = hasSelectedParent(el);
+                    break;
+                    // создается
+                case RIGHT:
+                    showWarning = el.isSubTreeSelected();
+                    break;
+                default:
+                    break;
+                }
+                if (showWarning) {
+                    break;
+                }
+            }
+        }
+
+        if (showWarning) {
+            warningLbl.setText(Messages.CommitDialog_unchecked_objects_can_occur_unexpected_errors);
+        } else if (forceOverridesOnly && !btnSaveOverrides.getSelection()) {
+            showWarning = true;
+            warningLbl.setText(Messages.CommitDialog_privileges_must_be_saved);
+        }
+
+        warningLbl.getParent().layout();
+        warningLbl.setVisible(showWarning);
+        getButton(OK).setEnabled(!showWarning);
+    }
+
+    private boolean hasSelectedParent(TreeElement el) {
+        TreeElement parent = el.getParent();
+        while (parent != null) {
+            if (parent.isSelected()) {
+                return true;
+            }
+            parent = parent.getParent();
+        }
+        return false;
+    }
+
     /**
      * Задача этого класса - смотреть на снятие галочки с элемента и если
      * галочка снимается то проверить следующее: <br>
@@ -180,48 +226,7 @@ public class CommitDialog extends TrayDialog {
 
         @Override
         public void checkStateChanged(CheckStateChangedEvent event) {
-            boolean showWarning = false;
-            for (TreeElement el : depcyElementsSet) {
-                if (!el.isSelected()) {
-                    switch (el.getSide()) {
-                    // удаляется
-                    case LEFT:
-                        showWarning = hasSelectedParent(el);
-                        break;
-                        // создается
-                    case RIGHT:
-                        showWarning = el.isSubTreeSelected();
-                        break;
-                    default:
-                        break;
-                    }
-                    if (showWarning) {
-                        break;
-                    }
-                }
-            }
-
-            if (showWarning) {
-                warningLbl.setText(Messages.CommitDialog_unchecked_objects_can_occur_unexpected_errors);
-            } else if (forceOverridesOnly && !btnSaveOverrides.getSelection()) {
-                showWarning = true;
-                warningLbl.setText(Messages.CommitDialog_privileges_must_be_saved);
-            }
-
-            warningLbl.getParent().layout();
-            warningLbl.setVisible(showWarning);
-            getButton(OK).setEnabled(!showWarning);
-        }
-
-        private boolean hasSelectedParent(TreeElement el) {
-            TreeElement parent = el.getParent();
-            while (parent != null) {
-                if (parent.isSelected()) {
-                    return true;
-                }
-                parent = parent.getParent();
-            }
-            return false;
+            checkSate();
         }
     }
 }

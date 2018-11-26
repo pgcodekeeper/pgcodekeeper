@@ -873,7 +873,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_WARNING | SWT.YES | SWT.NO);
                 mb.setMessage(Messages.ProjectEditorDiffer_lib_change_error_message);
                 mb.setText(Messages.ProjectEditorDiffer_lib_change_warning_title);
-                if (mb.open() != SWT.YES) {
+                if (mb.open() == SWT.YES) {
                     forceSave = true;
                 } else {
                     return;
@@ -890,7 +890,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         boolean considerDepcy = mainPrefs.getBoolean(COMMIT_PREF.CONSIDER_DEPCY_IN_COMMIT);
         Set<TreeElement> sumNewAndDelete = null;
-        if(considerDepcy){
+        if (considerDepcy) {
             Log.log(Log.LOG_INFO, "Processing depcies for project update"); //$NON-NLS-1$
             sumNewAndDelete = new DepcyTreeExtender(dbProject.getDbObject(),
                     dbRemote.getDbObject(), diffTree).getDepcies();
