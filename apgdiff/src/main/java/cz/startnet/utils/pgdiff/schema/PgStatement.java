@@ -361,10 +361,28 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     public String getOwnerSQL() {
+        StringBuilder sb = new StringBuilder();
         if (!isPostgres() && owner == null) {
-            return "\n\nALTER AUTHORIZATION ON " + getQualifiedName() + " TO SCHEMA OWNER" + GO;
+            sb.append("\n\nALTER AUTHORIZATION ON ");
+            DbObjType type = getStatementType();
+            if (DbObjType.TYPE == type || DbObjType.SCHEMA == type
+                    || DbObjType.ASSEMBLY == type) {
+                sb.append(type).append("::");
+            }
+
+            sb.append(getQualifiedName()).append(" TO ");
+
+            if (DbObjType.SCHEMA == type || DbObjType.ASSEMBLY == type) {
+                sb.append("[dbo]");
+            } else {
+                sb.append("SCHEMA OWNER");
+            }
+
+            sb.append(GO);
+        } else {
+            appendOwnerSQL(sb);
         }
-        return appendOwnerSQL(new StringBuilder()).toString();
+        return sb.toString();
     }
 
     public static StringBuilder appendOwnerSQL(PgStatement st, String owner, StringBuilder sb) {
@@ -423,8 +441,15 @@ public abstract class PgStatement implements IStatement, IHashable {
             .append(PgDiffUtils.getQuotedName(owner))
             .append(';');
         } else {
-            sb.append("AUTHORIZATION ON ").append(st.getQualifiedName())
-            .append(" TO ").append(MsDiffUtils.quoteName(owner)).append(GO);
+            sb.append("AUTHORIZATION ON ");
+            DbObjType type = st.getStatementType();
+            if (DbObjType.TYPE == type || DbObjType.SCHEMA == type
+                    || DbObjType.ASSEMBLY == type) {
+                sb.append(type).append("::");
+            }
+
+            sb.append(st.getQualifiedName()).append(" TO ")
+            .append(MsDiffUtils.quoteName(owner)).append(GO);
         }
 
         return sb;
