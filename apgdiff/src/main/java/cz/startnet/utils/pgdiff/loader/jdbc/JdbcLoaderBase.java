@@ -359,6 +359,31 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         }
     }
 
+    protected static String getMsType(PgStatement statement, String schema, String dataType,
+            boolean isUserDefined, int size, int precision, int scale) {
+        StringBuilder sb = new StringBuilder();
+
+        if (isUserDefined) {
+            statement.addDep(new GenericColumn(schema, dataType, DbObjType.TYPE));
+            sb.append(MsDiffUtils.quoteName(schema)).append('.');
+        }
+
+        sb.append(MsDiffUtils.quoteName(dataType));
+
+        if ("varbinary".equals(dataType) || "nvarchar".equals(dataType)
+                || "varchar".equals(dataType)) {
+            if (size == -1) {
+                sb.append(" (max)");
+            } else {
+                sb.append(" (").append(size).append(')');
+            }
+        } else if ("decimal".equals(dataType) || "numeric".equals(dataType)) {
+            sb.append(" (").append(precision).append(", ").append(scale).append(')');
+        }
+
+        return sb.toString();
+    }
+
     protected void queryTypesForCache() throws SQLException, InterruptedException {
         cachedTypesByOid = new HashMap<>();
         setCurrentOperation("type cache query");

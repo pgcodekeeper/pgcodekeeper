@@ -10,7 +10,6 @@ import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.MsType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -35,41 +34,15 @@ public class MsTypesReader extends JdbcReader {
             type.setAssemblyClass(res.getString("assembly_class"));
             type.addDep(new GenericColumn(assembly, DbObjType.ASSEMBLY));
         } else if (baseType != null) {
-            type.setBaseType(getMsType(type, null, baseType, false, res.getInt("size"),
+            type.setBaseType(JdbcLoaderBase.getMsType(type, null, baseType, false, res.getInt("size"),
                     res.getInt("precision"), res.getInt("scale")));
             type.setNotNull(!res.getBoolean("is_nullable"));
         } else {
             for (XmlReader col : XmlReader.readXML(res.getString("cols"))) {
-                AbstractColumn column = new MsColumn(col.getString("name"));
-                String exp = col.getString("def");
-                column.setExpression(exp);
-                if (exp == null) {
-                    boolean isUserDefined = col.getBoolean("ud");
-                    if (!isUserDefined) {
-                        column.setCollation(col.getString("cn"));
-                    }
-
-                    column.setType(getMsType(type, col.getString("st"), col.getString("type"),
-                            isUserDefined, col.getInt("size"), col.getInt("pr"), col.getInt("sc")));
-                    column.setNullValue(col.getBoolean("nl"));
-                }
-
-                column.setSparse(col.getBoolean("sp"));
-                column.setRowGuidCol(col.getBoolean("rgc"));
-                column.setPersisted(col.getBoolean("ps"));
-
-                if (col.getBoolean("ii")) {
-                    column.setIdentity(Integer.toString(col.getInt("s")), Integer.toString(col.getInt("i")));
-                    column.setNotForRep(col.getBoolean("nfr"));
-                }
-
-                String def = col.getString("dv");
-                if (def != null) {
-                    column.setDefaultValue(def);
-                    column.setDefaultName(col.getString("dn"));
-                }
-
+                AbstractColumn column = MsTablesReader.getColumn(col);
                 type.addColumn(column.getFullDefinition());
+                // extract type depcy from column object since it is temporary
+                type.addAllDeps(column.getDeps());
             }
 
             for (XmlReader index : XmlReader.readXML(res.getString("indices"))) {
@@ -143,7 +116,7 @@ public class MsTypesReader extends JdbcReader {
                 type.addConstraint("CHECK (" + check.getString("def") + ')');
             }
 
-            type.setMemoryOptimazed(res.getBoolean("is_memory_optimized"));
+            type.setMemoryOptimized(res.getBoolean("is_memory_optimized"));
         }
 
         loader.setOwner(type, res.getString("owner"));

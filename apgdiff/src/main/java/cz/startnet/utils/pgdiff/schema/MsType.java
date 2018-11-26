@@ -21,7 +21,7 @@ public class MsType extends AbstractType {
     private String assemblyClass;
 
     // table type
-    private boolean isMemoryOptimazed;
+    private boolean isMemoryOptimized;
     private final List<String> columns = new ArrayList<>();
     private final List<String> constraints = new ArrayList<>();
     private final List<String> indices = new ArrayList<>();
@@ -67,7 +67,7 @@ public class MsType extends AbstractType {
 
             sb.append("\n)");
 
-            if (isMemoryOptimazed()) {
+            if (isMemoryOptimized()) {
                 sb.append("\nWITH ( MEMORY_OPTIMIZED = ON )");
             }
         }
@@ -114,7 +114,7 @@ public class MsType extends AbstractType {
             equals = true;
         } else {
             equals = isNotNull() == newType.isNotNull()
-                    && isMemoryOptimazed() == newType.isMemoryOptimazed()
+                    && isMemoryOptimized() == newType.isMemoryOptimized()
                     && Objects.equals(getBaseType(), newType.getBaseType())
                     && Objects.equals(getAssemblyName(), newType.getAssemblyName())
                     && Objects.equals(getAssemblyClass(), newType.getAssemblyClass())
@@ -136,7 +136,7 @@ public class MsType extends AbstractType {
     protected AbstractType getTypeCopy() {
         MsType copy = new MsType(getName(), getRawStatement());
         copy.setNotNull(isNotNull());
-        copy.setMemoryOptimazed(isMemoryOptimazed());
+        copy.setMemoryOptimized(isMemoryOptimized());
         copy.setBaseType(getBaseType());
         copy.setAssemblyName(getAssemblyName());
         copy.setAssemblyClass(getAssemblyClass());
@@ -164,7 +164,7 @@ public class MsType extends AbstractType {
     public void computeHash(Hasher hasher) {
         super.computeHash(hasher);
         hasher.put(isNotNull);
-        hasher.put(isMemoryOptimazed);
+        hasher.put(isMemoryOptimized);
         hasher.put(baseType);
         hasher.put(assemblyName);
         hasher.put(assemblyClass);
@@ -209,12 +209,12 @@ public class MsType extends AbstractType {
         resetHash();
     }
 
-    public boolean isMemoryOptimazed() {
-        return isMemoryOptimazed;
+    public boolean isMemoryOptimized() {
+        return isMemoryOptimized;
     }
 
-    public void setMemoryOptimazed(boolean isMemoryOptimazed) {
-        this.isMemoryOptimazed = isMemoryOptimazed;
+    public void setMemoryOptimized(boolean isMemoryOptimized) {
+        this.isMemoryOptimized = isMemoryOptimized;
         resetHash();
     }
 

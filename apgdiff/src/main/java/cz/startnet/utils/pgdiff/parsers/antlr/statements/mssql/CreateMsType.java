@@ -61,7 +61,7 @@ public class CreateMsType extends ParserAbstract {
                 def.column_def_table_constraints().column_def_table_constraint()) {
                 fillTableType(con, type);
             }
-            type.setMemoryOptimazed(def.WITH() != null && def.on_off().ON() != null);
+            type.setMemoryOptimized(def.WITH() != null && def.on_off().ON() != null);
         }
 
         schema.addType(type);

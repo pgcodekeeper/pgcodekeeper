@@ -61,7 +61,7 @@ public class MsExtendedObjectsReader extends JdbcReader {
                         column.setCollation(col.getString("cn"));
                     }
 
-                    column.setType(getMsType(func, col.getString("st"), col.getString("type"),
+                    column.setType(JdbcLoaderBase.getMsType(func, col.getString("st"), col.getString("type"),
                             isUserDefined, col.getInt("size"), col.getInt("pr"), col.getInt("sc")));
                     column.setNullValue(col.getBoolean("nl"));
                     column.setSparse(col.getBoolean("sp"));
@@ -85,7 +85,7 @@ public class MsExtendedObjectsReader extends JdbcReader {
                 func.setReturns("TABLE (\n" + String.join(",\n", columns) + ")");
                 ((MsFunction)func).setFuncType(FuncTypes.TABLE);
             } else {
-                func.setReturns(getMsType(func, res.getString("return_type_sh"),
+                func.setReturns(JdbcLoaderBase.getMsType(func, res.getString("return_type_sh"),
                         res.getString("return_type"), res.getBoolean("return_type_ud"),
                         res.getInt("return_type_size"), res.getInt("return_type_pr"),
                         res.getInt("return_type_sc")));
@@ -106,7 +106,7 @@ public class MsExtendedObjectsReader extends JdbcReader {
         for (XmlReader arg : args) {
             boolean isUserDefined = arg.getBoolean("ud");
             Argument argDst = new Argument(arg.getBoolean("ou") ? "OUTPUT" : null,
-                    arg.getString("name"), getMsType(func, arg.getString("st"),
+                    arg.getString("name"), JdbcLoaderBase.getMsType(func, arg.getString("st"),
                             arg.getString("type"), isUserDefined, arg.getInt("size"),
                             arg.getInt("pr"), arg.getInt("sc")));
 

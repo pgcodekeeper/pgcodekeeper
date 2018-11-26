@@ -51,7 +51,7 @@ CROSS APPLY (
             c.is_rowguidcol AS rgc,
             cc.is_persisted AS ps,
             cc.definition AS def
-        FROM sys.all_columns c
+        FROM sys.all_columns c WITH (NOLOCK)
         LEFT OUTER JOIN sys.computed_columns cc WITH (NOLOCK) ON cc.object_id = c.object_id AND cc.column_id = c.column_id
         LEFT OUTER JOIN sys.identity_columns ic WITH (NOLOCK) ON ic.object_id = c.object_id AND ic.column_id = c.column_id
         LEFT OUTER JOIN sys.types usrt WITH (NOLOCK) ON usrt.user_type_id = c.user_type_id
