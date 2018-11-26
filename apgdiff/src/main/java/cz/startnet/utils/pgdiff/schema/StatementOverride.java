@@ -10,11 +10,15 @@ public class StatementOverride {
     public StatementOverride() {
     }
 
+    public StatementOverride(String owner) {
+        this.owner = owner;
+    }
+
     public void addPrivilege(PgPrivilege privilege) {
         privileges.add(privilege);
     }
 
-    public void addOwner(String owner) {
+    public void setOwner(String owner) {
         this.owner = owner;
     }
 

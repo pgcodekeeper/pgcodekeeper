@@ -384,6 +384,7 @@ public abstract class AbstractModelExporter {
 
     protected void dumpOverrides(PgStatement st) throws IOException {
         StringBuilder sb = new StringBuilder();
+        PgStatement.appendOwnerSQL(st, st.getOwner(), sb);
         st.appendPrivileges(sb);
 
         if (DbObjType.TABLE == st.getStatementType()) {
