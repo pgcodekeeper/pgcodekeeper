@@ -140,7 +140,7 @@ public class CommitDialog extends TrayDialog {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 isOverridesOnly = btnSaveOverrides.getSelection();
-                checkSate();
+                checkState();
             }
         });
 
@@ -170,7 +170,7 @@ public class CommitDialog extends TrayDialog {
         return true;
     }
 
-    private void checkSate() {
+    private void checkState() {
         boolean showWarning = false;
         for (TreeElement el : depcyElementsSet) {
             if (!el.isSelected()) {
@@ -226,7 +226,7 @@ public class CommitDialog extends TrayDialog {
 
         @Override
         public void checkStateChanged(CheckStateChangedEvent event) {
-            checkSate();
+            checkState();
         }
     }
 }

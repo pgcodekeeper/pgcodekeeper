@@ -154,7 +154,7 @@ public class PgView extends AbstractView {
         diffDefaultValues(sb, newView);
 
         if (!Objects.equals(getOwner(), newView.getOwner())) {
-            sb.append(newView.getOwnerSQL());
+            newView.alterOwnerSQL(sb);
         }
 
         alterPrivileges(newView, sb);

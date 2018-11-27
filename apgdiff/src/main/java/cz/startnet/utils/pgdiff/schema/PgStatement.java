@@ -360,8 +360,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         return appendOwnerSQL(this, owner, sb);
     }
 
-    public String getOwnerSQL() {
-        StringBuilder sb = new StringBuilder();
+    public StringBuilder alterOwnerSQL(StringBuilder sb) {
         if (!isPostgres() && owner == null) {
             sb.append("\n\nALTER AUTHORIZATION ON ");
             DbObjType type = getStatementType();
@@ -382,7 +381,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         } else {
             appendOwnerSQL(sb);
         }
-        return sb.toString();
+        return sb;
     }
 
     public static StringBuilder appendOwnerSQL(PgStatement st, String owner, StringBuilder sb) {

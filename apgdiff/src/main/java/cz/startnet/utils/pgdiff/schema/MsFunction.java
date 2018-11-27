@@ -88,7 +88,7 @@ public class MsFunction extends AbstractFunction implements SourceStatement {
         }
 
         if (!Objects.equals(getOwner(), newFunction.getOwner())) {
-            sb.append(newFunction.getOwnerSQL());
+            newFunction.alterOwnerSQL(sb);
         }
 
         alterPrivileges(newFunction, sb);

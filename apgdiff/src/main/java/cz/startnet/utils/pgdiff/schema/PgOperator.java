@@ -150,7 +150,7 @@ public class PgOperator extends PgStatementWithSearchPath {
         }
 
         if (!Objects.equals(getOwner(), newOperator.getOwner())) {
-            sb.append(newOperator.getOwnerSQL());
+            newOperator.alterOwnerSQL(sb);
         }
 
         if (!Objects.equals(getComment(), newOperator.getComment())) {

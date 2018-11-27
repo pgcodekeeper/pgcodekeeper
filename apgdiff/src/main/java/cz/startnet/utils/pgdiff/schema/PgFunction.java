@@ -194,7 +194,7 @@ public class PgFunction extends AbstractPgFunction {
         }
 
         if (!Objects.equals(getOwner(), newFunction.getOwner())) {
-            sb.append(newFunction.getOwnerSQL());
+            newFunction.alterOwnerSQL(sb);
         }
         alterPrivileges(newFunction, sb);
         if (!Objects.equals(getComment(), newFunction.getComment())) {

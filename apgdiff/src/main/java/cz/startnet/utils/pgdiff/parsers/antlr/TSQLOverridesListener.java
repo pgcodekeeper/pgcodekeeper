@@ -38,10 +38,6 @@ implements TSqlContextProcessor {
 
     @Override
     public void process(Tsql_fileContext rootCtx, CommonTokenStream stream) {
-        // delete if anything except privileges is added
-        if (db.getArguments().isIgnorePrivileges()) {
-            return;
-        }
         for (BatchContext b : rootCtx.batch()) {
             Sql_clausesContext clauses = b.sql_clauses();
             if (clauses != null) {

@@ -137,7 +137,7 @@ public class PgSequence extends AbstractSequence {
         }
 
         if (!Objects.equals(oldSequence.getOwner(), newSequence.getOwner())) {
-            sb.append(newSequence.getOwnerSQL());
+            newSequence.alterOwnerSQL(sb);
         }
 
         alterPrivileges(newSequence, sb);

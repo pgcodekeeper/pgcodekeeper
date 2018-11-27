@@ -97,7 +97,7 @@ public class MsType extends AbstractType {
         }
 
         if (!Objects.equals(getOwner(), newType.getOwner())) {
-            sb.append(newType.getOwnerSQL());
+            newType.alterOwnerSQL(sb);
         }
         alterPrivileges(newType, sb);
 
