@@ -22,8 +22,8 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.AbstractModelExporter;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.MsModelExporter;
-import ru.taximaxim.codekeeper.apgdiff.model.exporter.MsPrivilegesModelExporter;
-import ru.taximaxim.codekeeper.apgdiff.model.exporter.PgPrivilegesModelExporter;
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.MsOverridesModelExporter;
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.PgOverridesModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -38,14 +38,14 @@ public class ProjectUpdater {
     private final String encoding;
     private final Path dirExport;
     private final boolean isMsSql;
-    private final boolean privilegesOnly;
+    private final boolean overridesOnly;
 
     public ProjectUpdater(PgDatabase dbNew, PgDbProject proj) throws CoreException {
         this(dbNew, null, null, proj, false);
     }
 
     public ProjectUpdater(PgDatabase dbNew, PgDatabase dbOld, Collection<TreeElement> changedObjects,
-            PgDbProject proj, boolean privilegesOnly) throws CoreException {
+            PgDbProject proj, boolean overridesOnly) throws CoreException {
         this.dbNew = dbNew;
         this.dbOld = dbOld;
 
@@ -55,7 +55,7 @@ public class ProjectUpdater {
         this.dirExport = proj.getPathToProject();
 
         this.isMsSql = OpenProjectUtils.checkMsSql(proj.getProject());
-        this.privilegesOnly = privilegesOnly;
+        this.overridesOnly = overridesOnly;
     }
 
     public void updatePartial() throws IOException {
@@ -74,8 +74,8 @@ public class ProjectUpdater {
                     for (MS_WORK_DIR_NAMES subdir : MS_WORK_DIR_NAMES.values()) {
                         updateFolder(dirTmp, subdir.getDirName());
                     }
-                    if (privilegesOnly) {
-                        exporter = new MsPrivilegesModelExporter(dirExport, dbNew, dbOld,
+                    if (overridesOnly) {
+                        exporter = new MsOverridesModelExporter(dirExport, dbNew, dbOld,
                                 changedObjects, encoding);
                     } else {
                         exporter = new MsModelExporter(dirExport, dbNew, dbOld,
@@ -86,15 +86,15 @@ public class ProjectUpdater {
                         updateFolder(dirTmp, subdir.toString());
                     }
 
-                    if (privilegesOnly) {
-                        exporter = new PgPrivilegesModelExporter(dirExport, dbNew, dbOld,
+                    if (overridesOnly) {
+                        exporter = new PgOverridesModelExporter(dirExport, dbNew, dbOld,
                                 changedObjects, encoding);
                     } else {
                         exporter = new ModelExporter(dirExport, dbNew, dbOld,
                                 changedObjects, encoding);
                     }
                 }
-                updateFolder(dirTmp, ApgdiffConsts.PRIVILEGES_DIR);
+                updateFolder(dirTmp, ApgdiffConsts.OVERRIDES_DIR);
                 exporter.exportPartial();
             } catch (Exception ex) {
                 caughtProcessingEx = true;
@@ -204,7 +204,7 @@ public class ProjectUpdater {
             }
         }
 
-        moveFolder(dirTmp, ApgdiffConsts.PRIVILEGES_DIR);
+        moveFolder(dirTmp, ApgdiffConsts.OVERRIDES_DIR);
     }
 
     private void moveFolder(Path dirTmp, String folder) throws IOException {
@@ -225,7 +225,7 @@ public class ProjectUpdater {
             }
         }
 
-        restoreFolder(dirTmp, ApgdiffConsts.PRIVILEGES_DIR);
+        restoreFolder(dirTmp, ApgdiffConsts.OVERRIDES_DIR);
     }
 
     private void restoreFolder(Path dirTmp, String folder) throws IOException {

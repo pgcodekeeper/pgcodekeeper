@@ -11,9 +11,9 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 
-public class MsPrivilegesModelExporter extends AbstractModelExporter {
+public class MsOverridesModelExporter extends AbstractModelExporter {
 
-    public MsPrivilegesModelExporter(Path outDir, PgDatabase newDb, PgDatabase oldDb,
+    public MsOverridesModelExporter(Path outDir, PgDatabase newDb, PgDatabase oldDb,
             Collection<TreeElement> changedObjects, String sqlEncoding) {
         super(outDir, newDb, oldDb, changedObjects, sqlEncoding);
     }
@@ -44,7 +44,7 @@ public class MsPrivilegesModelExporter extends AbstractModelExporter {
         case TABLE:
         case VIEW:
             deleteStatementIfExists(st);
-            dumpPrivileges(st);
+            dumpOverrides(st);
             break;
         case CONSTRAINT:
         case INDEX:
@@ -64,6 +64,6 @@ public class MsPrivilegesModelExporter extends AbstractModelExporter {
     @Override
     protected Path getRelativeFilePath(PgStatement st, boolean addExtension) {
         return MsModelExporter.getRelativeFilePath(
-                st, Paths.get(ApgdiffConsts.PRIVILEGES_DIR), addExtension);
+                st, Paths.get(ApgdiffConsts.OVERRIDES_DIR), addExtension);
     }
 }

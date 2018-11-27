@@ -16,12 +16,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.StatementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterDomain;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterFtsStatement;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterFunction;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterOperator;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterSchema;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterOwner;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterSequence;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterTable;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterType;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CommentOn;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateDomain;
@@ -124,24 +121,18 @@ implements SqlContextProcessor {
 
     private void alter(Schema_alterContext ctx) {
         ParserAbstract p;
-        if (ctx.alter_function_statement() != null) {
-            p = new AlterFunction(ctx.alter_function_statement(), db);
-        } else if (ctx.alter_operator_statement() != null) {
-            p = new AlterOperator(ctx.alter_operator_statement(), db);
-        } else if (ctx.alter_schema_statement() != null) {
-            p = new AlterSchema(ctx.alter_schema_statement(), db);
-        } else if (ctx.alter_table_statement() != null) {
+        if (ctx.alter_table_statement() != null) {
             p = new AlterTable(ctx.alter_table_statement(), db);
         } else if (ctx.alter_sequence_statement() != null) {
             p = new AlterSequence(ctx.alter_sequence_statement(), db);
         } else if (ctx.alter_view_statement() != null) {
             p = new AlterView(ctx.alter_view_statement(), db);
-        } else if (ctx.alter_type_statement() != null) {
-            p = new AlterType(ctx.alter_type_statement(), db);
         } else if (ctx.alter_domain_statement() != null) {
             p = new AlterDomain(ctx.alter_domain_statement(), db);
         } else if (ctx.alter_fts_statement() != null) {
             p = new AlterFtsStatement(ctx.alter_fts_statement(), db);
+        } else if (ctx.alter_owner() != null) {
+            p = new AlterOwner(ctx.alter_owner(), db);
         } else {
             return;
         }

@@ -99,10 +99,7 @@ public class MsAssembly extends PgStatement {
 
 
         if (!Objects.equals(getOwner(), newAss.getOwner())) {
-            String newOwner = newAss.getOwner();
-            sb.append("ALTER AUTHORIZATION ON ASSEMBLY::")
-            .append(newAss.getQualifiedName()).append(" TO ")
-            .append(MsDiffUtils.quoteName(newOwner == null ? "dbo" : newOwner)).append(GO);
+            newAss.alterOwnerSQL(sb);
         }
 
         if (newAss.isVisible() != isVisible()) {

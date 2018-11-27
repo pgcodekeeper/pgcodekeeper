@@ -30,7 +30,7 @@ public class CommitDialog extends TrayDialog {
 
     private final IPreferenceStore prefs;
     private final boolean egitCommitAvailable;
-    private final boolean forcePrivOnly;
+    private final boolean forceOverridesOnly;
 
     private final DbSource dbProject;
     private final DbSource dbRemote;
@@ -38,14 +38,14 @@ public class CommitDialog extends TrayDialog {
     private final Set<TreeElement> depcyElementsSet;
     private DiffTableViewer dtvBottom;
     private Button btnAutocommit;
-    private Button btnSavePriv;
+    private Button btnSaveOverrides;
     private Label warningLbl;
-    private boolean isPrivOnly;
+    private boolean isOverridesOnly;
 
     public CommitDialog(Shell parentShell, Set<TreeElement> depcyElementsSet,
             DbSource dbProject, DbSource dbRemote, TreeElement diffTree,
             IPreferenceStore mainPrefs, boolean egitCommitAvailable,
-            boolean forcePrivOnly) {
+            boolean forceOverridesOnly) {
         super(parentShell);
         this.depcyElementsSet = depcyElementsSet;
         this.dbProject = dbProject;
@@ -53,7 +53,7 @@ public class CommitDialog extends TrayDialog {
         this.diffTree = diffTree;
         this.prefs = mainPrefs;
         this.egitCommitAvailable = egitCommitAvailable;
-        this.forcePrivOnly = forcePrivOnly;
+        this.forceOverridesOnly = forceOverridesOnly;
 
         setShellStyle(getShellStyle() | SWT.RESIZE);
     }
@@ -133,23 +133,24 @@ public class CommitDialog extends TrayDialog {
         });
         btnAutocommit.setEnabled(egitCommitAvailable);
 
-        btnSavePriv = new Button(container, SWT.CHECK);
-        btnSavePriv.setText(Messages.CommitDialog_save_privileges);
-        btnSavePriv.addSelectionListener(new SelectionAdapter() {
+        btnSaveOverrides = new Button(container, SWT.CHECK);
+        btnSaveOverrides.setText(Messages.CommitDialog_save_privileges);
+        btnSaveOverrides.addSelectionListener(new SelectionAdapter() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                isPrivOnly = btnSavePriv.getSelection();
+                isOverridesOnly = btnSaveOverrides.getSelection();
+                checkState();
             }
         });
 
-        btnSavePriv.setSelection(forcePrivOnly);
+        btnSaveOverrides.setSelection(forceOverridesOnly);
 
         return area;
     }
 
-    public boolean isPrivOnly() {
-        return isPrivOnly;
+    public boolean isOverridesOnly() {
+        return isOverridesOnly;
     }
 
     @Override
@@ -169,6 +170,51 @@ public class CommitDialog extends TrayDialog {
         return true;
     }
 
+    private void checkState() {
+        boolean showWarning = false;
+        for (TreeElement el : depcyElementsSet) {
+            if (!el.isSelected()) {
+                switch (el.getSide()) {
+                // удаляется
+                case LEFT:
+                    showWarning = hasSelectedParent(el);
+                    break;
+                    // создается
+                case RIGHT:
+                    showWarning = el.isSubTreeSelected();
+                    break;
+                default:
+                    break;
+                }
+                if (showWarning) {
+                    break;
+                }
+            }
+        }
+
+        if (showWarning) {
+            warningLbl.setText(Messages.CommitDialog_unchecked_objects_can_occur_unexpected_errors);
+        } else if (forceOverridesOnly && !btnSaveOverrides.getSelection()) {
+            showWarning = true;
+            warningLbl.setText(Messages.CommitDialog_privileges_must_be_saved);
+        }
+
+        warningLbl.getParent().layout();
+        warningLbl.setVisible(showWarning);
+        getButton(OK).setEnabled(!showWarning);
+    }
+
+    private boolean hasSelectedParent(TreeElement el) {
+        TreeElement parent = el.getParent();
+        while (parent != null) {
+            if (parent.isSelected()) {
+                return true;
+            }
+            parent = parent.getParent();
+        }
+        return false;
+    }
+
     /**
      * Задача этого класса - смотреть на снятие галочки с элемента и если
      * галочка снимается то проверить следующее: <br>
@@ -180,48 +226,7 @@ public class CommitDialog extends TrayDialog {
 
         @Override
         public void checkStateChanged(CheckStateChangedEvent event) {
-            boolean showWarning = false;
-            for (TreeElement el : depcyElementsSet) {
-                if (!el.isSelected()) {
-                    switch (el.getSide()) {
-                    // удаляется
-                    case LEFT:
-                        showWarning = hasSelectedParent(el);
-                        break;
-                        // создается
-                    case RIGHT:
-                        showWarning = el.isSubTreeSelected();
-                        break;
-                    default:
-                        break;
-                    }
-                    if (showWarning) {
-                        break;
-                    }
-                }
-            }
-
-            if (showWarning) {
-                warningLbl.setText(Messages.CommitDialog_unchecked_objects_can_occur_unexpected_errors);
-            } else if (forcePrivOnly && !btnSavePriv.getSelection()) {
-                showWarning = true;
-                warningLbl.setText(Messages.CommitDialog_privileges_must_be_saved);
-            }
-
-            warningLbl.getParent().layout();
-            warningLbl.setVisible(showWarning);
-            getButton(OK).setEnabled(!showWarning);
-        }
-
-        private boolean hasSelectedParent(TreeElement el) {
-            TreeElement parent = el.getParent();
-            while (parent != null) {
-                if (parent.isSelected()) {
-                    return true;
-                }
-                parent = parent.getParent();
-            }
-            return false;
+            checkState();
         }
     }
 }

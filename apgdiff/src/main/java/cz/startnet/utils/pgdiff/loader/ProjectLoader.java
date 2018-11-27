@@ -21,6 +21,7 @@ import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.StatementOverride;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.MS_WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
@@ -40,9 +41,9 @@ public class ProjectLoader {
     protected final PgDiffArguments arguments;
     protected final IProgressMonitor monitor;
     protected final List<AntlrError> errors;
-    protected final Map<PgStatement, List<PgPrivilege>> privileges = new LinkedHashMap<>();
+    protected final Map<PgStatement, StatementOverride> overrides = new LinkedHashMap<>();
 
-    protected boolean isPrivilegeMode;
+    protected boolean isOverrideMode;
 
     public ProjectLoader(String dirPath, PgDiffArguments arguments) {
         this(dirPath, arguments, null, null);
@@ -84,21 +85,26 @@ public class ProjectLoader {
         File dir = new File(dirPath);
         loadPgStrucure(dir, db);
 
-        isPrivilegeMode = true;
+        if (arguments.isIgnorePrivileges()) {
+            return db;
+        }
 
-        // read additional privileges from special folder
-        loadPrivilegesFromDirTree(new File(dir, ApgdiffConsts.PRIVILEGES_DIR), db);
-
-        isPrivilegeMode = false;
+        isOverrideMode = true;
+        try {
+            // read additional privileges from special folder
+            loadOverridesFromDirTree(new File(dir, ApgdiffConsts.OVERRIDES_DIR), db);
+        } finally {
+            isOverrideMode = false;
+        }
 
         return db;
     }
 
-    private void loadPrivilegesFromDirTree(File dir, PgDatabase db)
+    private void loadOverridesFromDirTree(File dir, PgDatabase db)
             throws InterruptedException, IOException {
         if (dir.exists() && dir.isDirectory()) {
             loadPgStrucure(dir, db);
-            replacePrivileges();
+            replaceOverrides();
         }
     }
 
@@ -139,21 +145,26 @@ public class ProjectLoader {
 
         loadMsStructure(dir, db);
 
-        isPrivilegeMode = true;
+        if (arguments.isIgnorePrivileges()) {
+            return db;
+        }
 
-        // read additional privileges from special folder
-        loadMsPrivilegesFromDirTree(new File(dir, ApgdiffConsts.PRIVILEGES_DIR), db);
-
-        isPrivilegeMode = false;
+        isOverrideMode = true;
+        try {
+            // read additional privileges from special folder
+            loadMsOverridesFromDirTree(new File(dir, ApgdiffConsts.OVERRIDES_DIR), db);
+        } finally {
+            isOverrideMode = false;
+        }
 
         return db;
     }
 
-    private void loadMsPrivilegesFromDirTree(File dir, PgDatabase db)
+    private void loadMsOverridesFromDirTree(File dir, PgDatabase db)
             throws InterruptedException, IOException {
         if (dir.exists() && dir.isDirectory()) {
             loadMsStructure(dir, db);
-            replacePrivileges();
+            replaceOverrides();
         }
     }
 
@@ -192,8 +203,8 @@ public class ProjectLoader {
             if (f.isFile() && f.getName().toLowerCase().endsWith(".sql")) {
                 List<AntlrError> errList = null;
                 try (PgDumpLoader loader = new PgDumpLoader(f, arguments, monitor)) {
-                    if (isPrivilegeMode) {
-                        loader.setPrivilegesMap(privileges);
+                    if (isOverrideMode) {
+                        loader.setOverridesMap(overrides);
                     }
                     errList = loader.getErrors();
                     loader.loadDatabase(db);
@@ -206,24 +217,29 @@ public class ProjectLoader {
         }
     }
 
-    public Map<PgStatement, List<PgPrivilege>> getPrivilegesFromPath(Path path, PgDatabase db)
+    public Map<PgStatement, StatementOverride> getPrivilegesFromPath(Path path, PgDatabase db)
             throws IOException, InterruptedException {
-        isPrivilegeMode = true;
-        loadFiles(new File[] {path.toFile()}, db);
-        isPrivilegeMode = false;
-        return privileges;
+        isOverrideMode = true;
+        try {
+            loadFiles(new File[] {path.toFile()}, db);
+        } finally {
+            isOverrideMode = false;
+        }
+        return overrides;
     }
 
-    protected void replacePrivileges() {
-        Iterator<Entry<PgStatement, List<PgPrivilege>>> iterator = privileges.entrySet().iterator();
+    protected void replaceOverrides() {
+        Iterator<Entry<PgStatement, StatementOverride>> iterator = overrides.entrySet().iterator();
         while (iterator.hasNext()) {
-            Entry<PgStatement, List<PgPrivilege>> entry = iterator.next();
+            Entry<PgStatement, StatementOverride> entry = iterator.next();
             iterator.remove();
 
             PgStatement st = entry.getKey();
             st.clearPrivileges();
+            StatementOverride override = entry.getValue();
+            st.setOwner(override.getOwner());
 
-            for (PgPrivilege privilege : entry.getValue()) {
+            for (PgPrivilege privilege : override.getPrivileges()) {
                 st.addPrivilege(privilege);
             }
         }

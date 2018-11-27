@@ -140,7 +140,7 @@ public class PgProcedure extends AbstractPgFunction {
         }
 
         if (!Objects.equals(getOwner(), newProcedure.getOwner())) {
-            sb.append(newProcedure.getOwnerSQL());
+            newProcedure.alterOwnerSQL(sb);
         }
         alterPrivileges(newProcedure, sb);
         if (!Objects.equals(getComment(), newProcedure.getComment())) {

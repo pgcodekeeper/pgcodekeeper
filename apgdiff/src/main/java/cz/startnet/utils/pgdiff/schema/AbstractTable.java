@@ -420,7 +420,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
     protected void compareOwners(AbstractTable newTable, StringBuilder sb) {
         if (!Objects.equals(owner, newTable.getOwner())) {
-            sb.append(newTable.getOwnerSQL());
+            newTable.alterOwnerSQL(sb);
         }
     }
 

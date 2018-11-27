@@ -382,8 +382,9 @@ public abstract class AbstractModelExporter {
         dumpSQL(groupSql, outDir.resolve(getRelativeFilePath(obj, true)));
     }
 
-    protected void dumpPrivileges(PgStatement st) throws IOException {
+    protected void dumpOverrides(PgStatement st) throws IOException {
         StringBuilder sb = new StringBuilder();
+        PgStatement.appendOwnerSQL(st, st.getOwner(), sb);
         st.appendPrivileges(sb);
 
         if (DbObjType.TABLE == st.getStatementType()) {

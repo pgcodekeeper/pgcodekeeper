@@ -97,10 +97,7 @@ public class MsType extends AbstractType {
         }
 
         if (!Objects.equals(getOwner(), newType.getOwner())) {
-            String newOwner = newType.getOwner();
-            sb.append("ALTER AUTHORIZATION ON TYPE::")
-            .append(newType.getQualifiedName()).append(" TO ")
-            .append(newOwner == null ? "SCHEMA OWNER" : MsDiffUtils.quoteName(newOwner)).append(GO);
+            newType.alterOwnerSQL(sb);
         }
         alterPrivileges(newType, sb);
 

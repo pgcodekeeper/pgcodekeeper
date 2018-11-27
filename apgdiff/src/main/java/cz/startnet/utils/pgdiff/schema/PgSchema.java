@@ -55,7 +55,7 @@ public class PgSchema extends AbstractSchema {
         }
 
         if (!Objects.equals(getOwner(), newSchema.getOwner())) {
-            sb.append(newSchema.getOwnerSQL());
+            newSchema.alterOwnerSQL(sb);
         }
 
         alterPrivileges(newSchema, sb);

@@ -208,7 +208,8 @@ schema_alter
     | alter_tablespace
     | alter_statistics
     | alter_foreign_data_wrapper
-    | alter_operator_statement)
+    | alter_operator_statement
+    | alter_owner)
     ;
 
 schema_drop
@@ -233,13 +234,12 @@ alter_function_statement
     : (FUNCTION | PROCEDURE) function_parameters?
       ((function_actions_common | RESET (configuration_parameter=identifier | ALL))+ RESTRICT?
     | rename_to
-    | owner_to
     | set_schema
     | DEPENDS ON EXTENSION identifier)
     ;
 
 alter_schema_statement
-    : schema_with_name (rename_to | owner_to)
+    : schema_with_name rename_to
     ;
 
 alter_language_statement
@@ -422,7 +422,6 @@ alter_sequence_statement
     : SEQUENCE (IF EXISTS)? name=schema_qualified_name
      ( (sequence_body | RESTART (WITH? restart=NUMBER_LITERAL)?)*
     | set_schema
-    | owner_to
     | rename_to)
     ;
 
@@ -430,7 +429,6 @@ alter_view_statement
     : MATERIALIZED? VIEW (IF EXISTS)? name=schema_qualified_name
      (ALTER COLUMN? column_name=schema_qualified_name  (set_def_column | drop_def)
     | set_schema
-    | owner_to
     | rename_to
     | SET LEFT_PAREN view_option_name=identifier (EQUAL view_option_value=vex)?(COMMA view_option_name=identifier (EQUAL view_option_value=vex)?)*  RIGHT_PAREN
     | RESET LEFT_PAREN view_option_name=identifier (COMMA view_option_name=identifier)*  RIGHT_PAREN)
@@ -443,14 +441,13 @@ alter_event_trigger
 alter_event_trigger_action
     : DISABLE 
     | ENABLE (REPLICA | ALWAYS)?
-    | OWNER TO user_identifer_current_session
+    | owner_to
     | rename_to
     ;
 
 alter_type_statement
     : TYPE name=schema_qualified_name
       (set_schema
-      | owner_to
       | rename_to
       | ADD VALUE (IF NOT EXISTS)? new_enum_value=character_string ((BEFORE | AFTER) existing_enum_value=character_string)?
       | RENAME ATTRIBUTE attribute_name=identifier TO new_attribute_name=identifier cascade_restrict?
@@ -467,7 +464,6 @@ alter_domain_statement
     | drop_constraint
     | RENAME CONSTRAINT dom_old_constraint=schema_qualified_name TO dom_new_constraint=schema_qualified_name
     | validate_constraint
-    | owner_to
     | rename_to
     | set_schema)
     ;
@@ -482,7 +478,6 @@ alter_server_statement
 alter_fts_statement
     : TEXT SEARCH
     ((TEMPLATE | DICTIONARY | CONFIGURATION | PARSER) name=schema_qualified_name (rename_to | set_schema)
-    | (DICTIONARY | CONFIGURATION) name=schema_qualified_name owner_to
     | DICTIONARY name=schema_qualified_name storage_parameter
     | CONFIGURATION name=schema_qualified_name alter_fts_configuration)
     ;
@@ -696,9 +691,16 @@ alter_tablespace
     : TABLESPACE name=identifier alter_tablespace_action
     ;
 
+alter_owner
+    : (OPERATOR target_operator
+    | (FUNCTION | PROCEDURE) name=schema_qualified_name function_args 
+    | (TEXT SEARCH DICTIONARY | TEXT SEARCH CONFIGURATION | DOMAIN | SCHEMA | SEQUENCE | TYPE | MATERIALIZED? VIEW) 
+    (IF EXISTS)? name=schema_qualified_name) owner_to
+    ;
+
 alter_tablespace_action
     : rename_to
-    | OWNER TO user_identifer_current_session
+    | owner_to
     | SET LEFT_PAREN tablespace_option=identifier EQUAL value=vex 
             (COMMA tablespace_option=identifier EQUAL value=vex)* RIGHT_PAREN
     | RESET LEFT_PAREN tablespace_option=identifier  
@@ -708,7 +710,7 @@ alter_tablespace_action
 alter_statistics
     : STATISTICS name=schema_qualified_name (rename_to
         | SET SCHEMA schema_name=identifier
-        | OWNER TO user_identifer_current_session)
+        | owner_to)
     ;
 
 alter_foreign_data_wrapper
@@ -717,7 +719,7 @@ alter_foreign_data_wrapper
 
 alter_foreign_data_wrapper_action
     : alter_foreign_data_wrapper_handler_validator_option
-    | OWNER TO user_identifer_current_session
+    | owner_to
     | rename_to
     ;
 
@@ -732,13 +734,8 @@ alter_operator_statement
     ;
 
 alter_operator_action
-    : OWNER TO user_identifer_current_session
-    | SET operator_action_set
-    ;
-
-operator_action_set
-    : SCHEMA new_schema=identifier
-    | LEFT_PAREN operator_set_restrict_join (COMMA operator_set_restrict_join)* RIGHT_PAREN
+    : set_schema
+    | SET LEFT_PAREN operator_set_restrict_join (COMMA operator_set_restrict_join)* RIGHT_PAREN
     ;
 
 operator_set_restrict_join
@@ -1361,7 +1358,7 @@ action
     ;
 
 owner_to
-    : OWNER TO name=identifier
+    : OWNER TO name=identifier | CURRENT_USER | SESSION_USER
     ;
 
 rename_to

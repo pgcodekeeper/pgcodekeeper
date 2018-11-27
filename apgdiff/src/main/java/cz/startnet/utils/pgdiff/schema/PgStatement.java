@@ -357,42 +357,101 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     protected StringBuilder appendOwnerSQL(StringBuilder sb) {
+        return appendOwnerSQL(this, owner, sb);
+    }
+
+    public StringBuilder alterOwnerSQL(StringBuilder sb) {
+        if (!isPostgres() && owner == null) {
+            sb.append("\n\nALTER AUTHORIZATION ON ");
+            DbObjType type = getStatementType();
+            if (DbObjType.TYPE == type || DbObjType.SCHEMA == type
+                    || DbObjType.ASSEMBLY == type) {
+                sb.append(type).append("::");
+            }
+
+            sb.append(getQualifiedName()).append(" TO ");
+
+            if (DbObjType.SCHEMA == type || DbObjType.ASSEMBLY == type) {
+                sb.append("[dbo]");
+            } else {
+                sb.append("SCHEMA OWNER");
+            }
+
+            sb.append(GO);
+        } else {
+            appendOwnerSQL(sb);
+        }
+        return sb;
+    }
+
+    public static StringBuilder appendOwnerSQL(PgStatement st, String owner, StringBuilder sb) {
         if (owner == null) {
             return sb;
         }
         sb.append("\n\nALTER ");
+        if (st.isPostgres()) {
+            DbObjType type = st.getStatementType();
+            switch (type) {
+            case FTS_CONFIGURATION:
+                sb.append("TEXT SEARCH CONFIGURATION ");
+                break;
+            case FTS_DICTIONARY:
+                sb.append("TEXT SEARCH DICTIONARY ");
+                break;
+            case TABLE:
+                if (st instanceof AbstractForeignTable) {
+                    sb.append("FOREIGN ");
+                }
+                sb.append("TABLE ");
+                break;
+            case VIEW:
+                if (((PgView) st).isMatView()) {
+                    sb.append("MATERIALIZED ");
+                }
+                sb.append("VIEW ");
+                break;
+            case SCHEMA:
+            case FUNCTION:
+            case OPERATOR:
+            case PROCEDURE:
+            case SEQUENCE:
+            case TYPE:
+            case DOMAIN:
+                sb.append(type).append(' ');
+                break;
+            default :
+                // other types cannot have owner
+                return sb;
+            }
 
-        if (isPostgres()) {
-            DbObjType type = getStatementType();
-            sb.append(type).append(' ');
             if (type == DbObjType.SCHEMA) {
-                sb.append(PgDiffUtils.getQuotedName(getName()));
+                sb.append(PgDiffUtils.getQuotedName(st.getName()));
             } else {
-                sb.append(PgDiffUtils.getQuotedName(getParent().getName())).append('.');
+                sb.append(PgDiffUtils.getQuotedName(st.getParent().getName())).append('.');
                 if (type == DbObjType.FUNCTION || type == DbObjType.PROCEDURE) {
-                    ((AbstractPgFunction) this).appendFunctionSignature(sb, false, true);
+                    ((AbstractPgFunction) st).appendFunctionSignature(sb, false, true);
                 } else if (type == DbObjType.OPERATOR) {
-                    ((PgOperator) this).appendOperatorSignature(sb);
+                    ((PgOperator) st).appendOperatorSignature(sb);
                 } else {
-                    sb.append(PgDiffUtils.getQuotedName(getName()));
+                    sb.append(PgDiffUtils.getQuotedName(st.getName()));
                 }
             }
             sb.append(" OWNER TO ")
             .append(PgDiffUtils.getQuotedName(owner))
             .append(';');
         } else {
-            sb.append("AUTHORIZATION ON ").append(getQualifiedName())
-            .append(" TO ").append(MsDiffUtils.quoteName(owner)).append(GO);
+            sb.append("AUTHORIZATION ON ");
+            DbObjType type = st.getStatementType();
+            if (DbObjType.TYPE == type || DbObjType.SCHEMA == type
+                    || DbObjType.ASSEMBLY == type) {
+                sb.append(type).append("::");
+            }
+
+            sb.append(st.getQualifiedName()).append(" TO ")
+            .append(MsDiffUtils.quoteName(owner)).append(GO);
         }
 
         return sb;
-    }
-
-    public String getOwnerSQL() {
-        if (!isPostgres() && owner == null) {
-            return "\n\nALTER AUTHORIZATION ON " + getQualifiedName() + " TO SCHEMA OWNER" + GO;
-        }
-        return appendOwnerSQL(new StringBuilder()).toString();
     }
 
     public abstract String getCreationSQL();

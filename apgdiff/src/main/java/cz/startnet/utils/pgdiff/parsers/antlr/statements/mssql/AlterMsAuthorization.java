@@ -1,5 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
+import java.util.Map;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_authorizationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Class_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
@@ -7,20 +9,28 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.StatementOverride;
 
 public class AlterMsAuthorization extends ParserAbstract {
 
     private final Alter_authorizationContext ctx;
+    private final Map<PgStatement, StatementOverride> overrides;
 
     public AlterMsAuthorization(Alter_authorizationContext ctx, PgDatabase db) {
+        this(ctx, db, null);
+    }
+
+    public AlterMsAuthorization(Alter_authorizationContext ctx, PgDatabase db,
+            Map<PgStatement, StatementOverride> overrides) {
         super(db);
         this.ctx = ctx;
+        this.overrides = overrides;
     }
 
     @Override
     public PgStatement getObject() {
         IdContext ownerId = ctx.authorization_grantee().principal_name;
-        if (ownerId == null) {
+        if (db.getArguments().isIgnorePrivileges() || ownerId == null) {
             return null;
         }
         String owner = ownerId.getText();
@@ -45,7 +55,21 @@ public class AlterMsAuthorization extends ParserAbstract {
             return null;
         }
 
-        st.setOwner(owner);
+        setOwner(st, owner);
         return null;
+    }
+
+    private void setOwner(PgStatement st, String owner) {
+        if (overrides == null) {
+            st.setOwner(owner);
+        } else {
+            StatementOverride override = overrides.get(st);
+            if (override == null) {
+                override = new StatementOverride();
+                overrides.put(st, override);
+            }
+
+            override.setOwner(owner);
+        }
     }
 }

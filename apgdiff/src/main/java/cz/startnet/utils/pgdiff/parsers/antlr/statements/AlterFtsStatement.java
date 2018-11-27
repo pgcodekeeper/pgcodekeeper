@@ -28,33 +28,27 @@ public class AlterFtsStatement extends ParserAbstract {
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
         AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
-        PgStatement st = null;
-        if (ctx.DICTIONARY() != null) {
-            st = getSafe(schema::getFtsDictionary, QNameParser.getFirstNameCtx(ids));
-        } else if (ctx.CONFIGURATION() != null) {
-            PgFtsConfiguration config;
-            config = getSafe(schema::getFtsConfiguration, QNameParser.getFirstNameCtx(ids));
+        if (ctx.CONFIGURATION() == null) {
+            return null;
+        }
 
-            Alter_fts_configurationContext afc = ctx.alter_fts_configuration();
-            if (afc != null && afc.ADD() != null) {
-                for (IdentifierContext type : afc.types) {
-                    List<String> dics = new ArrayList<>();
-                    for (Schema_qualified_nameContext dictionary : afc.dictionaries) {
-                        List<IdentifierContext> dIds = dictionary.identifier();
-                        dics.add(getFullCtxText(dictionary));
-                        config.addDep(new GenericColumn(QNameParser.getSchemaName(dIds, getDefSchemaName()),
-                                QNameParser.getFirstName(dIds), DbObjType.FTS_DICTIONARY));
-                    }
-                    config.addDictionary(getFullCtxText(type), dics);
+        PgFtsConfiguration config = getSafe(schema::getFtsConfiguration,
+                QNameParser.getFirstNameCtx(ids));
+
+        Alter_fts_configurationContext afc = ctx.alter_fts_configuration();
+        if (afc != null && afc.ADD() != null) {
+            for (IdentifierContext type : afc.types) {
+                List<String> dics = new ArrayList<>();
+                for (Schema_qualified_nameContext dictionary : afc.dictionaries) {
+                    List<IdentifierContext> dIds = dictionary.identifier();
+                    dics.add(getFullCtxText(dictionary));
+                    config.addDep(new GenericColumn(QNameParser.getSchemaName(dIds, getDefSchemaName()),
+                            QNameParser.getFirstName(dIds), DbObjType.FTS_DICTIONARY));
                 }
+                config.addDictionary(getFullCtxText(type), dics);
             }
-            st = config;
         }
 
-        if (st != null) {
-            fillOwnerTo(ctx.owner_to(), st);
-        }
-
-        return st;
+        return null;
     }
 }
