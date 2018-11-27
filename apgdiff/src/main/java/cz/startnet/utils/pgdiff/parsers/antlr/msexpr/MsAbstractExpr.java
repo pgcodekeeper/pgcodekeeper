@@ -64,9 +64,9 @@ public abstract class MsAbstractExpr {
     }
 
     protected void addTypeDepcy(Data_typeContext dt) {
-        IdContext schCtx = dt.qualified_name().schema;
-        if (schCtx != null && !"sys".equals(schCtx.getText())) {
-            addObjectDepcy(dt.qualified_name(), DbObjType.TYPE);
+        Qualified_nameContext name = dt.qualified_name();
+        if (name != null && name.schema != null && !"sys".equals(name.schema.getText())) {
+            addObjectDepcy(name, DbObjType.TYPE);
         }
     }
 

@@ -263,10 +263,13 @@ public class MsSqlClauses extends MsAbstractExpr {
 
     private void declare(Declare_statementContext dec) {
         for (Declare_localContext local : dec.declare_local()) {
+            Data_typeContext type = local.data_type();
+            if (type != null) {
+                addTypeDepcy(type);
+            }
             ExpressionContext exp = local.expression();
             if (exp != null) {
                 new MsValueExpr(this).analyze(exp);
-                addTypeDepcy(local.data_type());
             }
         }
 
