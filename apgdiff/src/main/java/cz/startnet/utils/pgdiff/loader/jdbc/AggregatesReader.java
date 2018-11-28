@@ -48,7 +48,7 @@ public class AggregatesReader extends JdbcReader {
         // PRIVILEGES
         loader.setPrivileges(aggr, res.getString("aclarray"), schemaName);
 
-        schema.addAggregate(aggr);
+        schema.addFunction(aggr);
     }
 
     private void fillArguments(PgAggregate aggregate, ResultSet res) throws SQLException {

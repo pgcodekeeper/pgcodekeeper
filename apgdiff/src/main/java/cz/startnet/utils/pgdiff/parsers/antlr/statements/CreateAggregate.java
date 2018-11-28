@@ -33,7 +33,7 @@ public class CreateAggregate extends ParserAbstract {
         fillArguments(aggregate);
         fillAggregate(ctx.aggregate_param(), ctx.aggregate_param_optional(), aggregate);
 
-        schema.addAggregate(aggregate);
+        schema.addFunction(aggregate);
         return aggregate;
     }
 

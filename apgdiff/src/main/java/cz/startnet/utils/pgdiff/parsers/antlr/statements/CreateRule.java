@@ -81,13 +81,14 @@ public class CreateRule extends ParserAbstract {
                 IdentifierContext functNameCtx = QNameParser.getFirstNameCtx(funcIds);
                 AbstractSchema schema = getSchemaSafe(funcIds, db.getDefaultSchema());
 
+                // TODO How to determine is this function is aggregate?
                 AbstractFunction func;
                 try {
                     func = getSafe(schema::getFunction,
                             parseSignature(functNameCtx.getText(), funct.function_args(), false),
                             functNameCtx.getStart());
                 } catch (UnresolvedReferenceException urEx) {
-                    func = getSafe(schema::getAggregate,
+                    func = getSafe(schema::getFunction,
                             parseSignature(functNameCtx.getText(), funct.function_args(), true),
                             functNameCtx.getStart());
                 }
