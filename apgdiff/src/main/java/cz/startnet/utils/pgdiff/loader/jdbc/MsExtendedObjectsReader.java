@@ -116,7 +116,7 @@ public class MsExtendedObjectsReader extends JdbcReader {
                 String baseType = arg.getString("bt");
                 if (def == null) {
                     defValue = "NULL";
-                } if ("varbinary".equals(baseType) || "nvarchar".equals(baseType)
+                } else if ("varbinary".equals(baseType) || "nvarchar".equals(baseType)
                         || "varchar".equals(baseType) ) {
                     defValue = 'N' + PgDiffUtils.quoteString(def);
                 } else if ("bit".equals(baseType)) {
