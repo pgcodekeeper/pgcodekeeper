@@ -8,11 +8,15 @@ import cz.startnet.utils.pgdiff.hashers.Hasher;
 
 public class MsTrigger extends AbstractTrigger implements SourceStatement {
 
+    private boolean ansiNulls;
+    private boolean quotedIdentified;
+    private boolean isDisable;
+
     private String firstPart;
     private String secondPart;
 
-    public MsTrigger(String name) {
-        super(name);
+    public MsTrigger(String name, String tableName) {
+        super(name, tableName);
     }
 
     @Override
@@ -108,7 +112,10 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
         if (obj instanceof MsTrigger && super.compare(obj)) {
             MsTrigger trigger = (MsTrigger) obj;
             return Objects.equals(getFirstPart(), trigger.getFirstPart())
-                    && Objects.equals(getSecondPart(), trigger.getSecondPart());
+                    && Objects.equals(getSecondPart(), trigger.getSecondPart())
+                    && isQuotedIdentified() == trigger.isQuotedIdentified()
+                    && isAnsiNulls() == trigger.isAnsiNulls()
+                    && isDisable() == trigger.isDisable();
         }
 
         return false;
@@ -119,14 +126,47 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
         super.computeHash(hasher);
         hasher.put(getFirstPart());
         hasher.put(getSecondPart());
+        hasher.put(isQuotedIdentified());
+        hasher.put(isAnsiNulls());
+        hasher.put(isDisable());
     }
 
     @Override
     protected AbstractTrigger getTriggerCopy() {
-        MsTrigger view = new MsTrigger(getName());
-        view.setFirstPart(getFirstPart());
-        view.setSecondPart(getSecondPart());
-        return view;
+        MsTrigger trigger = new MsTrigger(getName(), getTableName());
+        trigger.setFirstPart(getFirstPart());
+        trigger.setSecondPart(getSecondPart());
+        trigger.setAnsiNulls(isAnsiNulls());
+        trigger.setQuotedIdentified(isQuotedIdentified());
+        trigger.setDisable(isDisable());
+        return trigger;
+    }
+
+    public void setAnsiNulls(boolean ansiNulls) {
+        this.ansiNulls = ansiNulls;
+        resetHash();
+    }
+
+    public boolean isAnsiNulls() {
+        return ansiNulls;
+    }
+
+    public void setQuotedIdentified(boolean quotedIdentified) {
+        this.quotedIdentified = quotedIdentified;
+        resetHash();
+    }
+
+    public boolean isQuotedIdentified() {
+        return quotedIdentified;
+    }
+
+    public boolean isDisable() {
+        return isDisable;
+    }
+
+    public void setDisable(boolean isDisable) {
+        this.isDisable = isDisable;
+        resetHash();
     }
 
     @Override

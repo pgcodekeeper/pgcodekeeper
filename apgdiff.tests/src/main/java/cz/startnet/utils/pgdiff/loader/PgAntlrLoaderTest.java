@@ -26,8 +26,6 @@ import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractSequence;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
-import cz.startnet.utils.pgdiff.schema.AbstractTrigger;
-import cz.startnet.utils.pgdiff.schema.AbstractTrigger.TgTypes;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -41,6 +39,7 @@ import cz.startnet.utils.pgdiff.schema.PgRule.PgRuleEventType;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
+import cz.startnet.utils.pgdiff.schema.PgTrigger.TgTypes;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgType.PgTypeForm;
 import cz.startnet.utils.pgdiff.schema.PgView;
@@ -974,10 +973,9 @@ class PgDB14 extends PgDatabaseObjectCreator {
 
         view.setOwner("fordfrog");
 
-        AbstractTrigger trigger = new PgTrigger("test_trigger");
+        PgTrigger trigger = new PgTrigger("test_trigger", "public.test");
         trigger.setType(TgTypes.BEFORE);
         trigger.setOnUpdate(true);
-        trigger.setTableName("public.test");
         trigger.setForEachRow(false);
         trigger.setFunction("public.trigger_fnc()");
         table.addTrigger(trigger);

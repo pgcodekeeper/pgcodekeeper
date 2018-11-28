@@ -794,10 +794,9 @@ class MsDB8 extends MsDatabaseObjectCreator {
         view.setOwner("ms_user");
         schema.addView(view);
 
-        MsTrigger trigger = new MsTrigger("instead_of_delete");
+        MsTrigger trigger = new MsTrigger("instead_of_delete", "\"user\"");
         trigger.setAnsiNulls(true);
         trigger.setQuotedIdentified(true);
-        trigger.setTableName("\"user\"");
         trigger.setFirstPart("");
         trigger.setSecondPart("\n" +
                 "    INSTEAD OF DELETE\n" +
@@ -808,10 +807,9 @@ class MsDB8 extends MsDatabaseObjectCreator {
                 "    END");
         view.addTrigger(trigger);
 
-        trigger = new MsTrigger("instead_of_insert");
+        trigger = new MsTrigger("instead_of_insert", "\"user\"");
         trigger.setAnsiNulls(true);
         trigger.setQuotedIdentified(true);
-        trigger.setTableName("\"user\"");
         trigger.setFirstPart("");
         trigger.setSecondPart("\n" +
                 "    INSTEAD OF INSERT\n" +
@@ -822,10 +820,9 @@ class MsDB8 extends MsDatabaseObjectCreator {
                 "    END");
         view.addTrigger(trigger);
 
-        trigger = new MsTrigger("instead_of_update");
+        trigger = new MsTrigger("instead_of_update", "\"user\"");
         trigger.setAnsiNulls(true);
         trigger.setQuotedIdentified(true);
-        trigger.setTableName("\"user\"");
         trigger.setFirstPart("");
         trigger.setSecondPart("\n" +
                 "    INSTEAD OF UPDATE\n" +
@@ -1230,10 +1227,9 @@ class MsDB13 extends MsDatabaseObjectCreator {
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
         // idx.setComment("view id col");
 
-        MsTrigger trigger = new MsTrigger("test_trigger");
+        MsTrigger trigger = new MsTrigger("test_trigger", "test");
         trigger.setQuotedIdentified(true);
         trigger.setAnsiNulls(true);
-        trigger.setTableName("test");
         trigger.setFirstPart("");
         trigger.setSecondPart("\n" +
                 "FOR UPDATE\n" +

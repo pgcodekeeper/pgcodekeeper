@@ -10,9 +10,9 @@ import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTrigger;
-import cz.startnet.utils.pgdiff.schema.AbstractTrigger.TgTypes;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
+import cz.startnet.utils.pgdiff.schema.PgTrigger.TgTypes;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -46,7 +46,8 @@ public class TriggersReader extends JdbcReader {
         String schemaName = schema.getName();
         String triggerName = res.getString("tgname");
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, triggerName, DbObjType.TRIGGER));
-        AbstractTrigger t = new PgTrigger(triggerName);
+        PgTrigger t = new PgTrigger(triggerName, PgDiffUtils.getQuotedName(schemaName) + '.'
+                + PgDiffUtils.getQuotedName(tableName));
 
         int firingConditions = res.getInt("tgtype");
         if ((firingConditions & TRIGGER_TYPE_DELETE) != 0) {
@@ -71,9 +72,6 @@ public class TriggersReader extends JdbcReader {
         } else {
             t.setType(TgTypes.AFTER);
         }
-
-        t.setTableName(PgDiffUtils.getQuotedName(schemaName) + '.'
-                + PgDiffUtils.getQuotedName(tableName));
 
         String funcName = res.getString("proname");
         String funcSchema = res.getString(NAMESPACE_NSPNAME);
