@@ -90,10 +90,14 @@ public class AggregatesReader extends JdbcReader {
             }
         }
 
+        // since 11 PostgreSQL
+        if (SupportedVersion.VERSION_11.isLE(loader.version)) {
+            aggregate.setFinalFuncModify(res.getString("finalfunc_modify"));
+            aggregate.setMFinalFuncModify(res.getString("mfinalfunc_modify"));
+        }
+
         aggregate.setSFunc(getProcessedName(res.getString("sfunc_nsp"), res.getString("sfunc")));
         aggregate.setSType(res.getString("stype"));
-        aggregate.setFinalFuncModify(res.getString("finalfunc_modify"));
-        aggregate.setMFinalFuncModify(res.getString("mfinalfunc_modify"));
 
         String kind = res.getString("aggkind");
         aggregate.setKind(kind);
