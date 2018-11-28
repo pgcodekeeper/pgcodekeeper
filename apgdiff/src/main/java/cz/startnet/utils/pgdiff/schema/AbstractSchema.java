@@ -537,8 +537,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
 
             eq = Objects.equals(name, schema.getName())
                     && Objects.equals(definition, schema.getDefinition())
-                    && grants.equals(schema.grants)
-                    && revokes.equals(schema.revokes)
+                    && privileges.equals(schema.privileges)
                     && Objects.equals(owner, schema.getOwner())
                     && Objects.equals(comment, schema.getComment());
         }
@@ -570,8 +569,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         hasher.put(name);
         hasher.put(owner);
         hasher.put(definition);
-        hasher.putUnordered(grants);
-        hasher.putUnordered(revokes);
+        hasher.putUnordered(privileges);
         hasher.put(comment);
     }
 
@@ -595,8 +593,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         AbstractSchema schemaDst = getSchemaCopy();
         schemaDst.setDefinition(getDefinition());
         schemaDst.setComment(getComment());
-        schemaDst.grants.addAll(grants);
-        schemaDst.revokes.addAll(revokes);
+        schemaDst.privileges.addAll(privileges);
         schemaDst.setOwner(getOwner());
         schemaDst.deps.addAll(deps);
         schemaDst.setLocation(getLocation());

@@ -270,8 +270,7 @@ public abstract class AbstractColumn extends PgStatementWithSearchPath implement
                     && Objects.equals(sequence, col.getSequence())
                     && Objects.equals(identityType, col.getIdentityType())
                     && isInherit == col.isInherit()
-                    && grants.equals(col.grants)
-                    && revokes.equals(col.revokes)
+                    && privileges.equals(col.privileges)
                     && Objects.equals(comment, col.getComment())
                     && isSparse == col.isSparse()
                     && isRowGuidCol ==  col.isRowGuidCol()
@@ -301,8 +300,7 @@ public abstract class AbstractColumn extends PgStatementWithSearchPath implement
         hasher.put(sequence);
         hasher.put(identityType);
         hasher.put(isInherit);
-        hasher.putUnordered(grants);
-        hasher.putUnordered(revokes);
+        hasher.putUnordered(privileges);
         hasher.put(comment);
         hasher.put(isSparse);
         hasher.put(isRowGuidCol);
@@ -338,8 +336,7 @@ public abstract class AbstractColumn extends PgStatementWithSearchPath implement
         colDst.setIdentityType(getIdentityType());
         colDst.setSequence(getSequence());
         colDst.setInherit(isInherit());
-        colDst.grants.addAll(grants);
-        colDst.revokes.addAll(revokes);
+        colDst.privileges.addAll(privileges);
         colDst.setComment(getComment());
         colDst.deps.addAll(deps);
         colDst.setLocation(getLocation());

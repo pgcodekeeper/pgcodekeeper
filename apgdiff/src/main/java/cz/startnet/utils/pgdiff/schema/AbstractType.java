@@ -20,8 +20,7 @@ public abstract class AbstractType extends PgStatementWithSearchPath {
     public AbstractType shallowCopy() {
         AbstractType copy = getTypeCopy();
         copy.setOwner(getOwner());
-        copy.grants.addAll(grants);
-        copy.revokes.addAll(revokes);
+        copy.privileges.addAll(privileges);
         copy.setComment(getComment());
         copy.deps.addAll(deps);
         copy.setLocation(getLocation());
@@ -44,8 +43,7 @@ public abstract class AbstractType extends PgStatementWithSearchPath {
 
             return Objects.equals(name, type.getName())
                     && Objects.equals(owner, type.getOwner())
-                    && grants.equals(type.grants)
-                    && revokes.equals(type.revokes)
+                    && privileges.equals(type.privileges)
                     && Objects.equals(comment, type.getComment());
         }
 
@@ -58,8 +56,7 @@ public abstract class AbstractType extends PgStatementWithSearchPath {
     public void computeHash(Hasher hasher) {
         hasher.put(name);
         hasher.put(owner);
-        hasher.putUnordered(grants);
-        hasher.putUnordered(revokes);
+        hasher.putUnordered(privileges);
         hasher.put(comment);
     }
 

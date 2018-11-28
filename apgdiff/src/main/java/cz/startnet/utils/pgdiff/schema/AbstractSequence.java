@@ -166,8 +166,7 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
                     && cycle == seq.isCycle()
                     && isCached == seq.isCached()
                     && Objects.equals(ownedBy, seq.getOwnedBy())
-                    && grants.equals(seq.grants)
-                    && revokes.equals(seq.revokes)
+                    && privileges.equals(seq.privileges)
                     && Objects.equals(owner, seq.getOwner())
                     && Objects.equals(presicion, seq.getPresicion())
                     && Objects.equals(comment, seq.getComment())
@@ -179,8 +178,7 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.putUnordered(grants);
-        hasher.putUnordered(revokes);
+        hasher.putUnordered(privileges);
         hasher.put(cache);
         hasher.put(cycle);
         hasher.put(increment);
@@ -209,8 +207,7 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
         sequenceDst.setCached(isCached());
         sequenceDst.setStartWith(getStartWith());
         sequenceDst.setComment(getComment());
-        sequenceDst.grants.addAll(grants);
-        sequenceDst.revokes.addAll(revokes);
+        sequenceDst.privileges.addAll(privileges);
         sequenceDst.setOwner(getOwner());
         sequenceDst.setPresicion(getPresicion());
         sequenceDst.deps.addAll(deps);

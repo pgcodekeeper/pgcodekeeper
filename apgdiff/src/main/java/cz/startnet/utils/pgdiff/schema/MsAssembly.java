@@ -122,8 +122,7 @@ public class MsAssembly extends PgStatement {
         hasher.put(binaries);
         hasher.put(isVisible);
         hasher.put(permission);
-        hasher.putUnordered(grants);
-        hasher.putUnordered(revokes);
+        hasher.putUnordered(privileges);
     }
 
     @Override
@@ -133,8 +132,7 @@ public class MsAssembly extends PgStatement {
         assDst.binaries.addAll(binaries);
         assDst.setOwner(getOwner());
         assDst.setVisible(isVisible());
-        assDst.grants.addAll(grants);
-        assDst.revokes.addAll(revokes);
+        assDst.privileges.addAll(privileges);
         assDst.setLocation(getLocation());
         return assDst;
     }
@@ -156,8 +154,7 @@ public class MsAssembly extends PgStatement {
             eq = Objects.equals(name, schema.getName())
                     && Objects.equals(owner, schema.getOwner())
                     && Objects.equals(binaries, schema.getBinaries())
-                    && grants.equals(schema.grants)
-                    && revokes.equals(schema.revokes)
+                    && privileges.equals(schema.privileges)
                     && Objects.equals(isVisible, schema.isVisible())
                     && Objects.equals(permission, schema.getPermission());
         }

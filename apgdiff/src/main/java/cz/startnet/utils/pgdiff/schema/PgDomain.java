@@ -214,8 +214,7 @@ public class PgDomain extends PgStatementWithSearchPath {
         for (AbstractConstraint constr : constraints) {
             copy.addConstraint(constr.deepCopy());
         }
-        copy.grants.addAll(grants);
-        copy.revokes.addAll(revokes);
+        copy.privileges.addAll(privileges);
         copy.deps.addAll(deps);
         copy.setLocation(getLocation());
         return copy;
@@ -242,8 +241,7 @@ public class PgDomain extends PgStatementWithSearchPath {
                 && notNull == dom.isNotNull()
                 && PgDiffUtils.setlikeEquals(constraints, dom.constraints)
                 && Objects.equals(owner, dom.getOwner())
-                && grants.equals(dom.grants)
-                && revokes.equals(dom.revokes)
+                && privileges.equals(dom.privileges)
                 && Objects.equals(comment, dom.getComment());
     }
 
@@ -256,8 +254,7 @@ public class PgDomain extends PgStatementWithSearchPath {
         hasher.put(notNull);
         hasher.putUnordered(constraints);
         hasher.put(owner);
-        hasher.putUnordered(grants);
-        hasher.putUnordered(revokes);
+        hasher.putUnordered(privileges);
         hasher.put(comment);
     }
 

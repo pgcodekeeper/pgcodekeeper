@@ -287,8 +287,7 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
                 return false;
             }
             return  Objects.equals(owner, func.getOwner())
-                    && Objects.equals(grants, func.grants)
-                    && Objects.equals(revokes, func.revokes)
+                    && Objects.equals(privileges, func.privileges)
                     && Objects.equals(comment, func.getComment())
                     && quotedIdentified == func.isQuotedIdentified()
                     && ansiNulls == func.isAnsiNulls();
@@ -298,8 +297,7 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.putUnordered(grants);
-        hasher.putUnordered(revokes);
+        hasher.putUnordered(privileges);
         hasher.putOrdered(arguments);
         hasher.put(returns);
         hasher.put(body);
@@ -349,8 +347,7 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
             argDst.setReadOnly(argSrc.isReadOnly());
             functionDst.addArgument(argDst);
         }
-        functionDst.revokes.addAll(revokes);
-        functionDst.grants.addAll(grants);
+        functionDst.privileges.addAll(privileges);
         functionDst.deps.addAll(deps);
         functionDst.options.addAll(options);
         functionDst.transforms.addAll(transforms);

@@ -22,6 +22,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -384,12 +385,12 @@ public abstract class AbstractModelExporter {
 
     protected void dumpOverrides(PgStatement st) throws IOException {
         StringBuilder sb = new StringBuilder();
-        PgStatement.appendOwnerSQL(st, st.getOwner(), sb);
-        st.appendPrivileges(sb);
+        PgStatement.appendOwnerSQL(st, st.getOwner(), false, sb);
+        PgPrivilege.appendPrivileges(st.getPrivileges(), st.isPostgres(), sb);
 
         if (DbObjType.TABLE == st.getStatementType()) {
             for (AbstractColumn col : ((AbstractTable)st).getColumns()) {
-                col.appendPrivileges(sb);
+                PgPrivilege.appendPrivileges(col.getPrivileges(), col.isPostgres(), sb);
             }
         }
 

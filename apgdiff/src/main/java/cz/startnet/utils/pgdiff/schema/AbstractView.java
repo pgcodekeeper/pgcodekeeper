@@ -274,8 +274,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
                     && Objects.equals(normalizedQuery, view.getNormalizedQuery())
                     && columnNames.equals(view.columnNames)
                     && PgDiffUtils.setlikeEquals(defaultValues, view.defaultValues)
-                    && grants.equals(view.grants)
-                    && revokes.equals(view.revokes)
+                    && privileges.equals(view.privileges)
                     && Objects.equals(owner, view.getOwner())
                     && Objects.equals(comment, view.getComment())
                     && Objects.equals(columnComments, view.getColumnComments())
@@ -301,8 +300,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.putUnordered(grants);
-        hasher.putUnordered(revokes);
+        hasher.putUnordered(privileges);
         hasher.put(columnNames);
         hasher.putUnordered(defaultValues);
         hasher.put(name);
@@ -337,8 +335,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         viewDst.defaultValues.addAll(defaultValues);
         viewDst.columnComments.addAll(columnComments);
         viewDst.relationColumns.addAll(relationColumns);
-        viewDst.grants.addAll(grants);
-        viewDst.revokes.addAll(revokes);
+        viewDst.privileges.addAll(privileges);
         viewDst.setOwner(getOwner());
         viewDst.deps.addAll(deps);
         viewDst.options.putAll(options);
