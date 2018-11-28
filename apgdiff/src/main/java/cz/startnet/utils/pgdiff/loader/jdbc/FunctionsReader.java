@@ -15,10 +15,14 @@ import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.PgAggregate;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgProcedure;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
+/**
+ * Reads FUNCTIONs, PROCEDUREs and AGGREGATEs from JDBC.
+ */
 public class FunctionsReader extends JdbcReader {
 
     public FunctionsReader(JdbcLoaderBase loader) {
@@ -27,20 +31,10 @@ public class FunctionsReader extends JdbcReader {
 
     @Override
     protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException {
-        if (res.getBoolean("proisagg")) {
-            return;
-        }
         String schemaName = schema.getName();
         String funcName = res.getString("proname");
-
-        boolean isProc = SupportedVersion.VERSION_11.isLE(loader.version)
-                && (res.getBoolean("proisproc"));
-
-        loader.setCurrentObject(new GenericColumn(schemaName, funcName,
-                isProc ? DbObjType.PROCEDURE : DbObjType.FUNCTION));
-        AbstractFunction f = isProc ? new PgProcedure(funcName, "") : new PgFunction(funcName, "");
-
-        fillFunction(f, res);
+        AbstractFunction f = res.getBoolean("proisagg") ? processResultAggr(res, schema, schemaName, funcName)
+                : processResultFunc(res, schema, schemaName, funcName);
 
         // OWNER
         loader.setOwner(f, res.getLong("proowner"));
@@ -51,48 +45,24 @@ public class FunctionsReader extends JdbcReader {
             f.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
 
-        StringBuilder returnedTableArguments = new StringBuilder();
-        String[] argModes = getColArray(res, "proargmodes");
-        String[] argNames = getColArray(res, "proargnames");
-        Long[] argTypeOids = getColArray(res, "proallargtypes");
+        // PRIVILEGES
+        loader.setPrivileges(f, res.getString("aclarray"), schemaName);
 
-        Long[] argTypes = argTypeOids != null ? argTypeOids : getColArray(res, "argtypes");
-        for (int i = 0; argTypes.length > i; i++) {
-            String aMode = argModes != null ? argModes[i] : "i";
+        schema.addFunction(f);
+    }
 
-            JdbcType returnType = loader.cachedTypesByOid.get(argTypes[i]);
-            returnType.addTypeDepcy(f);
+    private AbstractFunction processResultFunc(ResultSet res, AbstractSchema schema,
+            String schemaName, String funcName) throws SQLException {
+        boolean isProc = SupportedVersion.VERSION_11.isLE(loader.version)
+                && (res.getBoolean("proisproc"));
 
-            if("t".equals(aMode)) {
-                String name = argNames[i];
-                String type = returnType.getFullName();
-                returnedTableArguments.append(PgDiffUtils.getQuotedName(name)).append(" ")
-                .append(type).append(", ");
-                f.addReturnsColumn(argNames[i], type);
-                continue;
-            }
+        loader.setCurrentObject(new GenericColumn(schemaName, funcName,
+                isProc ? DbObjType.PROCEDURE : DbObjType.FUNCTION));
 
-            switch(aMode) {
-            case "i":
-                aMode = "IN";
-                break;
-            case "o":
-                aMode = "OUT";
-                break;
-            case "b":
-                aMode = "INOUT";
-                break;
-            case "v":
-                aMode = "VARIADIC";
-                break;
-            }
+        AbstractFunction f = isProc ? new PgProcedure(funcName, "") : new PgFunction(funcName, "");
 
-            // these require resetHash functionality for defaults
-            Argument a = f.new PgArgument(aMode, argNames != null ? argNames[i] : null,
-                    loader.cachedTypesByOid.get(argTypes[i]).getFullName());
-
-            f.addArgument(a);
-        }
+        fillFunction(f, res);
+        StringBuilder returnedTableArguments = fillArguments(f, res);
 
         if (!isProc) {
             // RETURN TYPE
@@ -128,10 +98,7 @@ public class FunctionsReader extends JdbcReader {
                     });
         }
 
-        // PRIVILEGES
-        loader.setPrivileges(f, res.getString("aclarray"), schemaName);
-
-        schema.addFunction(f);
+        return f;
     }
 
     private void fillFunction(AbstractFunction function, ResultSet res) throws SQLException {
@@ -256,6 +223,177 @@ public class FunctionsReader extends JdbcReader {
         }
 
         return quote.concat("$");
+    }
+
+    private AbstractFunction processResultAggr(ResultSet res, AbstractSchema schema,
+            String schemaName, String funcName) throws SQLException {
+        loader.setCurrentObject(new GenericColumn(schemaName, funcName, DbObjType.AGGREGATE));
+
+        PgAggregate f = new PgAggregate(funcName, "");
+
+        fillAggregate(f, res);
+        fillArguments(f, res);
+
+        // RETURN TYPE
+        JdbcType returnType = loader.cachedTypesByOid.get(res.getLong("prorettype"));
+        f.setReturns(returnType.getFullName());
+        returnType.addTypeDepcy(f);
+
+        return f;
+    }
+
+    private void fillAggregate(PgAggregate aggregate, ResultSet res) throws SQLException {
+        // since 9.6 PostgreSQL
+        // parallel mode: s - safe, r - restricted, u - unsafe
+        if (SupportedVersion.VERSION_9_6.isLE(loader.version)) {
+            String parMode = res.getString("proparallel");
+            switch (parMode) {
+            case "s":
+                aggregate.setParallel("SAFE");
+                break;
+            case "r":
+                aggregate.setParallel("RESTRICTED");
+                break;
+            default :
+                break;
+            }
+        }
+
+        // since 11 PostgreSQL
+        if (SupportedVersion.VERSION_11.isLE(loader.version)) {
+            aggregate.setFinalFuncModify(res.getString("finalfunc_modify"));
+            aggregate.setMFinalFuncModify(res.getString("mfinalfunc_modify"));
+        }
+
+        aggregate.setSFunc(getProcessedName(res.getString("sfunc_nsp"), res.getString("sfunc")));
+        aggregate.setSType(res.getString("stype"));
+
+        String kind = res.getString("aggkind");
+        aggregate.setKind(kind);
+
+        if ("h".equals(kind)) {
+            aggregate.setHypothetical(true);
+        }
+
+        String sspace = res.getString("sspace");
+        if (sspace != null) {
+            aggregate.setSSpace(Long.parseLong(sspace));
+        }
+
+        String finalfunc = res.getString("finalfunc");
+        if (finalfunc != null) {
+            aggregate.setFinalFunc(getProcessedName(res.getString("finalfunc_nsp"), finalfunc));
+        }
+
+        if (res.getBoolean("is_finalfunc_extra")) {
+            aggregate.setFinalFuncExtra(true);
+        }
+
+        String combinefunc = res.getString("combinefunc");
+        if (combinefunc != null) {
+            aggregate.setCombineFunc(getProcessedName(res.getString("combinefunc_nsp"), combinefunc));
+        }
+
+        String serialfanc = res.getString("serialfanc");
+        if (serialfanc != null) {
+            aggregate.setSerialFunc(getProcessedName(res.getString("serialfanc_nsp"), serialfanc));
+        }
+
+        String deserialfunc = res.getString("deserialfunc");
+        if (deserialfunc != null) {
+            aggregate.setDeserialFunc(getProcessedName(res.getString("deserialfunc_nsp"), deserialfunc));
+        }
+
+        String initCond = res.getString("initcond");
+        if (initCond != null) {
+            aggregate.setInitCond(initCond);
+        }
+
+        String msfunc = res.getString("msfunc");
+        if (deserialfunc != null) {
+            aggregate.setMSFunc(getProcessedName(res.getString("msfunc_nsp"), msfunc));
+        }
+
+        String minvfunc = res.getString("minvfunc");
+        if (minvfunc != null) {
+            aggregate.setMInvFunc(getProcessedName(res.getString("minvfunc_nsp"), minvfunc));
+        }
+
+        String mstype = res.getString("mstype");
+        if (mstype != null) {
+            aggregate.setMSType(res.getString("mstype"));
+        }
+
+        String msspace = res.getString("msspace");
+        if (sspace != null) {
+            aggregate.setMSSpace(Long.parseLong(msspace));
+        }
+
+        String mfinalfunc = res.getString("mfinalfunc");
+        if (mfinalfunc != null) {
+            aggregate.setMFinalFunc(getProcessedName(res.getString("mfinalfunc_nsp"), mfinalfunc));
+        }
+
+        if (res.getBoolean("is_mfinalfunc_extra")) {
+            aggregate.setMFinalFuncExtra(true);
+        }
+
+        String mInitCond = res.getString("minitcond");
+        if (mInitCond != null) {
+            aggregate.setMInitCond(mInitCond);
+        }
+
+        String sortOp = res.getString("sortop");
+        if (mfinalfunc != null) {
+            aggregate.setSortOp(getProcessedName(res.getString("sortop_nsp"), sortOp));
+        }
+    }
+
+    private StringBuilder fillArguments(AbstractFunction f, ResultSet res)
+            throws SQLException {
+        StringBuilder returnedTableArguments = new StringBuilder();
+        String[] argModes = getColArray(res, "proargmodes");
+        String[] argNames = getColArray(res, "proargnames");
+        Long[] argTypeOids = getColArray(res, "proallargtypes");
+
+        Long[] argTypes = argTypeOids != null ? argTypeOids : getColArray(res, "argtypes");
+        for (int i = 0; argTypes.length > i; i++) {
+            String aMode = argModes != null ? argModes[i] : "i";
+
+            JdbcType returnType = loader.cachedTypesByOid.get(argTypes[i]);
+            returnType.addTypeDepcy(f);
+
+            if("t".equals(aMode)) {
+                String name = argNames[i];
+                String type = returnType.getFullName();
+                returnedTableArguments.append(PgDiffUtils.getQuotedName(name)).append(" ")
+                .append(type).append(", ");
+                f.addReturnsColumn(argNames[i], type);
+                continue;
+            }
+
+            switch(aMode) {
+            case "i":
+                aMode = "IN";
+                break;
+            case "o":
+                aMode = "OUT";
+                break;
+            case "b":
+                aMode = "INOUT";
+                break;
+            case "v":
+                aMode = "VARIADIC";
+                break;
+            }
+
+            // these require resetHash functionality for defaults
+            Argument a = f.new PgArgument(aMode, argNames != null ? argNames[i] : null,
+                    loader.cachedTypesByOid.get(argTypes[i]).getFullName());
+
+            f.addArgument(a);
+        }
+        return returnedTableArguments;
     }
 
     @Override

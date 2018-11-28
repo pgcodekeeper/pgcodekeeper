@@ -15,7 +15,6 @@ import org.eclipse.core.runtime.SubMonitor;
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.loader.jdbc.AggregatesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.ConstraintsReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.ExtensionsReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.FtsConfigurationsReader;
@@ -101,6 +100,7 @@ public class JdbcLoader extends JdbcLoaderBase {
             new RulesReader(this).read();
             new TriggersReader(this).read();
             new IndicesReader(this).read();
+            // Reads FUNCTIONs, PROCEDUREs and AGGREGATEs from JDBC.
             new FunctionsReader(this).read();
             // non-ANTLR tasks
             new ConstraintsReader(this).read();
@@ -112,7 +112,6 @@ public class JdbcLoader extends JdbcLoaderBase {
             if (SupportedVersion.VERSION_9_3.isLE(version)) {
                 new FtsConfigurationsReader(this).read();
             }
-            new AggregatesReader(this).read();
             new OperatorsReader(this).read();
 
             new ExtensionsReader(this, d).read();
