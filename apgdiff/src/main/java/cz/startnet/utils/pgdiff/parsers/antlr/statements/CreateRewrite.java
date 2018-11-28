@@ -35,7 +35,7 @@ public class CreateRewrite extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         AbstractSchema schema = getSchemaSafe(ctx.table_name.identifier(), db.getDefaultSchema());
-        PgRule rule = new PgRule(ctx.name.getText(), getFullCtxText(ctx.getParent()));
+        PgRule rule = new PgRule(ctx.name.getText());
         rule.setEvent(PgRuleEventType.valueOf(ctx.event.getText().toUpperCase()));
         if (ctx.INSTEAD() != null){
             rule.setInstead(true);

@@ -20,8 +20,8 @@ public abstract class AbstractForeignTable extends AbstractTable {
 
     protected static final String ALTER_FOREIGN_OPTION = "{0} OPTIONS ({1} {2} {3});";
 
-    public AbstractForeignTable(String name, String rawStatement, String serverName) {
-        super(name, rawStatement);
+    public AbstractForeignTable(String name, String serverName) {
+        super(name);
         this.serverName = serverName;
     }
 

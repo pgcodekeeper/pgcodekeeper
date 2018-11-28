@@ -45,11 +45,11 @@ public class MsExtendedObjectsReader extends JdbcReader {
         AbstractFunction func;
 
         if (type == DbObjType.PROCEDURE) {
-            func = new MsProcedure(name, "");
+            func = new MsProcedure(name);
             func.setBody(body);
             func.addOption("EXECUTE AS " + (executeAs == null ? "CALLER" : executeAs));
         } else {
-            func = new MsFunction(name, "");
+            func = new MsFunction(name);
 
             if ("FT".equals(funcType)) {
                 List<String> columns = new ArrayList<>();

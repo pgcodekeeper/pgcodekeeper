@@ -63,7 +63,7 @@ public class PgDatabase extends PgStatement {
     }
 
     public PgDatabase() {
-        super("DB_name_placeholder", null);
+        super("DB_name_placeholder");
     }
 
     public void setDefaultSchema(final String name) {
@@ -482,7 +482,7 @@ public class PgDatabase extends PgStatement {
                 addSchema(s);
                 // skip empty public schema
             } else if (!ApgdiffConsts.PUBLIC.equals(s.getName())
-                    || !s.compareChildren(new PgSchema(ApgdiffConsts.PUBLIC, ""))) {
+                    || !s.compareChildren(new PgSchema(ApgdiffConsts.PUBLIC))) {
                 overrides.add(new PgOverride(schema, s));
 
                 for (AbstractType ty : s.getTypes()) {

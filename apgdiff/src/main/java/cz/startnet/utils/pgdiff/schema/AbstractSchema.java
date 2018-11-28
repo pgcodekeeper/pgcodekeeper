@@ -35,8 +35,8 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         return DbObjType.SCHEMA;
     }
 
-    public AbstractSchema(String name, String rawStatement) {
-        super(name, rawStatement);
+    public AbstractSchema(String name) {
+        super(name);
     }
 
     public String getDefinition() {

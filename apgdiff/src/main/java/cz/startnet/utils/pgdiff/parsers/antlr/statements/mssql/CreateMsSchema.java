@@ -19,7 +19,7 @@ public class CreateMsSchema extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         String name = ctx.schema_name.getText();
-        AbstractSchema schema = new MsSchema(name, getFullCtxText(ctx.getParent()));
+        AbstractSchema schema = new MsSchema(name);
         if (ctx.owner_name != null && !db.getArguments().isIgnorePrivileges()) {
             schema.setOwner(ctx.owner_name.getText());
         }

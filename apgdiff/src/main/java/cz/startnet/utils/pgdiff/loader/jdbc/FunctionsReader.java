@@ -38,7 +38,7 @@ public class FunctionsReader extends JdbcReader {
 
         loader.setCurrentObject(new GenericColumn(schemaName, funcName,
                 isProc ? DbObjType.PROCEDURE : DbObjType.FUNCTION));
-        AbstractFunction f = isProc ? new PgProcedure(funcName, "") : new PgFunction(funcName, "");
+        AbstractFunction f = isProc ? new PgProcedure(funcName) : new PgFunction(funcName);
 
         fillFunction(f, res);
 

@@ -31,10 +31,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public abstract class PgStatement implements IStatement, IHashable {
     //TODO move to MS SQL statement abstract class.
     public static final String GO = "\nGO";
-    /**
-     * The statement as it's been read from dump before parsing.
-     */
-    private final String rawStatement;
     protected final String name;
     protected String owner;
     protected String comment;
@@ -49,13 +45,8 @@ public abstract class PgStatement implements IStatement, IHashable {
     // 0 means not calculated yet and/or hash has been reset
     private int hash;
 
-    public PgStatement(String name, String rawStatement) {
+    public PgStatement(String name) {
         this.name = name;
-        this.rawStatement = rawStatement;
-    }
-
-    public String getRawStatement() {
-        return rawStatement;
     }
 
     @Override

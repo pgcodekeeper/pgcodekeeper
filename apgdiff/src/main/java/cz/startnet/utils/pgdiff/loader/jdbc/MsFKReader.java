@@ -26,7 +26,7 @@ public class MsFKReader extends JdbcReader {
         String name = res.getString("name");
         loader.setCurrentObject(new GenericColumn(schema.getName(), name, DbObjType.CONSTRAINT));
 
-        AbstractConstraint con = new MsConstraint(name, "");
+        AbstractConstraint con = new MsConstraint(name);
 
         con.setNotValid(res.getBoolean("with_no_check"));
         con.setDisabled(res.getBoolean("is_disabled"));

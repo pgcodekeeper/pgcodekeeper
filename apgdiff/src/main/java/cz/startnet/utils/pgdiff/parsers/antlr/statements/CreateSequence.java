@@ -22,7 +22,7 @@ public class CreateSequence extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        AbstractSequence sequence = new PgSequence(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
+        AbstractSequence sequence = new PgSequence(QNameParser.getFirstName(ids));
         AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         fillSequence(sequence, ctx.sequence_body());
         schema.addSequence(sequence);

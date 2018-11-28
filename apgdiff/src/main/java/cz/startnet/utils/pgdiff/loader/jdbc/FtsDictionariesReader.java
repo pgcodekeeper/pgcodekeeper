@@ -20,7 +20,7 @@ public class FtsDictionariesReader extends JdbcReader {
     @Override
     protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException {
         String name = res.getString("dictname");
-        PgFtsDictionary dic = new PgFtsDictionary(name, "");
+        PgFtsDictionary dic = new PgFtsDictionary(name);
 
         String options = res.getString("dictinitoption");
         if (options != null) {

@@ -18,8 +18,8 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  */
 public class PgProcedure extends AbstractPgFunction {
 
-    public PgProcedure(String name, String rawStatement) {
-        super(name, rawStatement);
+    public PgProcedure(String name) {
+        super(name);
     }
 
     @Override
@@ -185,6 +185,6 @@ public class PgProcedure extends AbstractPgFunction {
 
     @Override
     protected AbstractFunction getFunctionCopy() {
-        return new PgProcedure(getBareName(), getRawStatement());
+        return new PgProcedure(getBareName());
     }
 }

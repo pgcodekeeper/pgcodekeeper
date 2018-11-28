@@ -41,8 +41,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         return DbObjType.VIEW;
     }
 
-    public AbstractView(String name, String rawStatement) {
-        super(name, rawStatement);
+    public AbstractView(String name) {
+        super(name);
     }
 
     @Override

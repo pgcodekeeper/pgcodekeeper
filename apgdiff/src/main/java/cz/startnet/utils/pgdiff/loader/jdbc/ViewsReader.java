@@ -33,7 +33,7 @@ public class ViewsReader extends JdbcReader {
         String viewName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, viewName, DbObjType.VIEW));
 
-        AbstractView v = new PgView(viewName, "");
+        AbstractView v = new PgView(viewName);
 
         // materialized view
         if ("m".equals(res.getString("kind"))) {

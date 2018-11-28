@@ -68,7 +68,7 @@ public class MsIndicesAndPKReader extends JdbcReader {
         sb.append(")");
 
         if (type == DbObjType.CONSTRAINT) {
-            AbstractConstraint constraint = new MsConstraint(name, "");
+            AbstractConstraint constraint = new MsConstraint(name);
 
             if (filter != null) {
                 sb.append(" WHERE ").append(filter);
@@ -129,7 +129,7 @@ public class MsIndicesAndPKReader extends JdbcReader {
             }
             t.addConstraint(constraint);
         } else {
-            AbstractIndex index = new MsIndex(name, "");
+            AbstractIndex index = new MsIndex(name);
             index.setClusterIndex(isClustered);
             index.setUnique(isUnique);
             index.setDefinition(sb.toString());

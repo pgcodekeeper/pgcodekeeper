@@ -91,7 +91,7 @@ public abstract class TableAbstract extends ParserAbstract {
             String constrName = ctx.constraint_name == null ?
                     table.getName() + '_' + colName + "_fkey" : ctx.constraint_name.getText();
 
-            constr = new PgConstraint(constrName, getFullCtxText(ctx));
+            constr = new PgConstraint(constrName);
             constr.setForeignTable(ftable);
 
             String fColumn = null;
@@ -119,7 +119,7 @@ public abstract class TableAbstract extends ParserAbstract {
                     : table.getName() + "_pkey";
 
             String constrName = ctx.constraint_name == null ? genName : ctx.constraint_name.getText();
-            constr = new PgConstraint(constrName, getFullCtxText(ctx));
+            constr = new PgConstraint(constrName);
 
             if (prkey.PRIMARY() != null) {
                 constr.setUnique(false);
@@ -136,7 +136,7 @@ public abstract class TableAbstract extends ParserAbstract {
         } else if (comConstr != null && comConstr.check_boolean_expression() != null) {
             String genName = table.getName() + '_' + col.getName() + "_check";
             String constrName = ctx.constraint_name == null ? genName : ctx.constraint_name.getText();
-            constr = new PgConstraint(constrName, getFullCtxText(ctx));
+            constr = new PgConstraint(constrName);
             VexContext expCtx = comConstr.check_boolean_expression().expression;
             constr.setDefinition("CHECK ((" + getFullCtxText(expCtx) + "))");
             db.addContextForAnalyze(constr, expCtx);
@@ -190,7 +190,7 @@ public abstract class TableAbstract extends ParserAbstract {
 
     protected static AbstractConstraint createTableConstraintBlank(Constraint_commonContext ctx) {
         String constrName = ctx.constraint_name == null ? "" : ctx.constraint_name.getText();
-        return new PgConstraint(constrName, getFullCtxText(ctx));
+        return new PgConstraint(constrName);
     }
 
     protected static void processTableConstraintBlank(Constraint_commonContext ctx,
@@ -263,7 +263,7 @@ public abstract class TableAbstract extends ParserAbstract {
 
     protected AbstractConstraint getMsConstraint(Table_constraintContext conCtx) {
         String conName = conCtx.id() == null ? "" : conCtx.id().getText();
-        AbstractConstraint con = new MsConstraint(conName, getFullCtxText(conCtx));
+        AbstractConstraint con = new MsConstraint(conName);
 
         Table_constraint_bodyContext body = conCtx.table_constraint_body();
         con.setPrimaryKey(body.PRIMARY() != null);

@@ -38,7 +38,7 @@ public class CreateTrigger extends ParserAbstract {
         AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         String schemaName = schema.getName();
         String tableName = QNameParser.getFirstName(ids);
-        AbstractTrigger trigger = new PgTrigger(ctx.name.getText(), getFullCtxText(ctx.getParent()));
+        AbstractTrigger trigger = new PgTrigger(ctx.name.getText());
         trigger.setTableName(ParserAbstract.getFullCtxText(ctx.table_name));
         if (ctx.AFTER() != null) {
             trigger.setType(TgTypes.AFTER);

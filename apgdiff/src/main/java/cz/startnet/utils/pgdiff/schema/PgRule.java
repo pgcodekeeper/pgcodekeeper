@@ -89,8 +89,8 @@ public class PgRule extends PgStatementWithSearchPath{
         addCommand(args.isKeepNewlines() ? command : command.replace("\r", ""));
     }
 
-    public PgRule(String name, String rawStatement) {
-        super(name, rawStatement);
+    public PgRule(String name) {
+        super(name);
     }
 
     @Override
@@ -192,7 +192,7 @@ public class PgRule extends PgStatementWithSearchPath{
 
     @Override
     public PgRule shallowCopy() {
-        PgRule ruleDst = new PgRule(getName(), getRawStatement());
+        PgRule ruleDst = new PgRule(getName());
         ruleDst.setEvent(getEvent());
         ruleDst.setCondition(getCondition());
         ruleDst.setInstead(isInstead());

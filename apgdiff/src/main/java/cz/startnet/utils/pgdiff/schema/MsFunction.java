@@ -24,8 +24,8 @@ public class MsFunction extends AbstractFunction implements SourceStatement {
         return DbObjType.FUNCTION;
     }
 
-    public MsFunction(String name, String rawStatement) {
-        super(name, rawStatement);
+    public MsFunction(String name) {
+        super(name);
     }
 
     @Override
@@ -166,7 +166,7 @@ public class MsFunction extends AbstractFunction implements SourceStatement {
 
     @Override
     protected AbstractFunction getFunctionCopy() {
-        MsFunction func = new MsFunction(getName(), getRawStatement());
+        MsFunction func = new MsFunction(getName());
         func.setFirstPart(getFirstPart());
         func.setSecondPart(getSecondPart());
         func.setFuncType(getFuncType());

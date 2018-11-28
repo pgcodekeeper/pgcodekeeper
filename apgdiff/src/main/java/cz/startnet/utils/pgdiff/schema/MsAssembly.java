@@ -18,8 +18,8 @@ public class MsAssembly extends PgStatement {
     private String permission = "SAFE";
     private boolean isVisible = true;
 
-    public MsAssembly(String name, String rawStatement) {
-        super(name, rawStatement);
+    public MsAssembly(String name) {
+        super(name);
     }
 
     @Override
@@ -127,7 +127,7 @@ public class MsAssembly extends PgStatement {
 
     @Override
     public MsAssembly shallowCopy() {
-        MsAssembly assDst = new MsAssembly(getName(), getRawStatement());
+        MsAssembly assDst = new MsAssembly(getName());
         assDst.setPermission(getPermission());
         assDst.binaries.addAll(binaries);
         assDst.setOwner(getOwner());

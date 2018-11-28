@@ -28,7 +28,7 @@ public class CreateDomain extends ParserAbstract {
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
         AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
-        PgDomain domain = new PgDomain(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
+        PgDomain domain = new PgDomain(QNameParser.getFirstName(ids));
         domain.setDataType(getFullCtxText(ctx.dat_type));
         addTypeAsDepcy(ctx.dat_type, domain, getDefSchemaName());
         for (Collate_identifierContext coll : ctx.collate_identifier()) {
@@ -58,8 +58,7 @@ public class CreateDomain extends ParserAbstract {
     public static AbstractConstraint processDomainConstraintCtx(Domain_constraintContext constrCtx,
             Check_boolean_expressionContext boolExpCtx, PgDomain domain, PgDatabase db) {
         AbstractConstraint constr = new PgConstraint(
-                constrCtx.name != null ? QNameParser.getFirstName(constrCtx.name.identifier()) : "",
-                        getFullCtxText(constrCtx));
+                constrCtx.name != null ? QNameParser.getFirstName(constrCtx.name.identifier()) : "");
         parseDomainConstraint(domain, constr, boolExpCtx, db);
         return constr;
     }

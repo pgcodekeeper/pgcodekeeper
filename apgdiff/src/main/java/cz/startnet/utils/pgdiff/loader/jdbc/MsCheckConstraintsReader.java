@@ -28,7 +28,7 @@ public class MsCheckConstraintsReader extends JdbcReader {
             return;
         }
 
-        AbstractConstraint con = new MsConstraint(name, "");
+        AbstractConstraint con = new MsConstraint(name);
 
         con.setNotValid(res.getBoolean("with_no_check"));
         con.setDisabled(res.getBoolean("is_disabled"));

@@ -10,8 +10,8 @@ public class MsView extends AbstractView implements SourceStatement {
     private String firstPart;
     private String secondPart;
 
-    public MsView(String name, String rawStatement) {
-        super(name, rawStatement);
+    public MsView(String name) {
+        super(name);
     }
 
     @Override
@@ -91,7 +91,7 @@ public class MsView extends AbstractView implements SourceStatement {
 
     @Override
     protected AbstractView getViewCopy() {
-        MsView view = new MsView(getName(), getRawStatement());
+        MsView view = new MsView(getName());
         view.setFirstPart(getFirstPart());
         view.setSecondPart(getSecondPart());
         return view;

@@ -8,13 +8,13 @@ import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
+import cz.startnet.utils.pgdiff.schema.AbstractRegularTable;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PartitionForeignPgTable;
 import cz.startnet.utils.pgdiff.schema.PartitionPgTable;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
-import cz.startnet.utils.pgdiff.schema.AbstractRegularTable;
 import cz.startnet.utils.pgdiff.schema.SimpleForeignPgTable;
 import cz.startnet.utils.pgdiff.schema.SimplePgTable;
 import cz.startnet.utils.pgdiff.schema.TypedPgTable;
@@ -48,19 +48,19 @@ public class TablesReader extends JdbcReader {
         long ofTypeOid = res.getLong("of_type");
         if (serverName != null) {
             if (partitionBound == null) {
-                t = new SimpleForeignPgTable(tableName, "", serverName);
+                t = new SimpleForeignPgTable(tableName, serverName);
             } else {
-                t = new PartitionForeignPgTable(tableName, "", serverName, partitionBound);
+                t = new PartitionForeignPgTable(tableName, serverName, partitionBound);
             }
         } else if (ofTypeOid != 0) {
             JdbcType jdbcOfType = loader.cachedTypesByOid.get(ofTypeOid);
             String ofType = jdbcOfType.getFullName();
-            t = new TypedPgTable(tableName, "", ofType);
+            t = new TypedPgTable(tableName, ofType);
             jdbcOfType.addTypeDepcy(t);
         } else if (partitionBound != null) {
-            t = new PartitionPgTable(tableName, "", partitionBound);
+            t = new PartitionPgTable(tableName, partitionBound);
         } else {
-            t = new SimplePgTable(tableName, "");
+            t = new SimplePgTable(tableName);
         }
 
         String[] foptions = getColArray(res, "ftoptions");

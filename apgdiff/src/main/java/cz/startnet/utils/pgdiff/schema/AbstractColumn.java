@@ -48,7 +48,7 @@ public abstract class AbstractColumn extends PgStatementWithSearchPath implement
     }
 
     public AbstractColumn(String name) {
-        super(name, null);
+        super(name);
     }
 
     public void setDefaultValue(final String defaultValue) {

@@ -20,8 +20,8 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
  */
 public class PgView extends AbstractView {
 
-    public PgView(String name, String rawStatement) {
-        super(name, rawStatement);
+    public PgView(String name) {
+        super(name);
     }
 
     @Override
@@ -295,6 +295,6 @@ public class PgView extends AbstractView {
 
     @Override
     protected AbstractView getViewCopy() {
-        return new PgView(getName(), getRawStatement());
+        return new PgView(getName());
     }
 }

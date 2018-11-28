@@ -55,8 +55,7 @@ public class CreateMsFunction extends BatchContextProcessor {
     }
 
     public MsFunction getObject(AbstractSchema schema) {
-        ParserRuleContext batchCtx = ctx.getParent().getParent();
-        MsFunction function = new MsFunction(ctx.qualified_name().name.getText(), getFullCtxText(batchCtx));
+        MsFunction function = new MsFunction(ctx.qualified_name().name.getText());
         boolean isKeepNewlines = db.getArguments().isKeepNewlines();
         Func_body_returnContext bodyRet = ctx.func_body().func_body_return();
         if (bodyRet.EXTERNAL() != null) {

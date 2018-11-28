@@ -46,7 +46,7 @@ public class TriggersReader extends JdbcReader {
         String schemaName = schema.getName();
         String triggerName = res.getString("tgname");
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, triggerName, DbObjType.TRIGGER));
-        AbstractTrigger t = new PgTrigger(triggerName, "");
+        AbstractTrigger t = new PgTrigger(triggerName);
 
         int firingConditions = res.getInt("tgtype");
         if ((firingConditions & TRIGGER_TYPE_DELETE) != 0) {

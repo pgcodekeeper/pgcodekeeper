@@ -11,8 +11,8 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
     private String firstPart;
     private String secondPart;
 
-    public MsTrigger(String name, String rawStatement) {
-        super(name, rawStatement);
+    public MsTrigger(String name) {
+        super(name);
     }
 
     @Override
@@ -123,7 +123,7 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
 
     @Override
     protected AbstractTrigger getTriggerCopy() {
-        MsTrigger view = new MsTrigger(getName(), getRawStatement());
+        MsTrigger view = new MsTrigger(getName());
         view.setFirstPart(getFirstPart());
         view.setSecondPart(getSecondPart());
         return view;

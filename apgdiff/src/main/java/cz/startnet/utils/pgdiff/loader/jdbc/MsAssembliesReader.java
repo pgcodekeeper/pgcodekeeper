@@ -28,7 +28,7 @@ public class MsAssembliesReader {
                 String name = res.getString("name");
                 loader.setCurrentObject(new GenericColumn(name, DbObjType.ASSEMBLY));
 
-                MsAssembly ass = new MsAssembly(name, "");
+                MsAssembly ass = new MsAssembly(name);
                 for (XmlReader bin : XmlReader.readXML(res.getString("binaries"))) {
                     ass.addBinary(CreateMsAssembly.formatBinary(bin.getString("b")));
                 }

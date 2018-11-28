@@ -35,9 +35,8 @@ public class CreateFunction extends ParserAbstract {
         AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
 
         String name = QNameParser.getFirstName(ids);
-        String rawStatement = getFullCtxText(ctx.getParent());
-        AbstractFunction function = ctx.PROCEDURE() != null ? new PgProcedure(name, rawStatement)
-                : new PgFunction(name, rawStatement);
+        AbstractFunction function = ctx.PROCEDURE() != null ? new PgProcedure(name)
+                : new PgFunction(name);
 
         fillArguments(function);
         function.setBody(db.getArguments(), getFullCtxText(ctx.funct_body));

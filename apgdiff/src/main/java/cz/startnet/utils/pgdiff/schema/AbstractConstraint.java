@@ -99,8 +99,8 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath {
         return DbObjType.CONSTRAINT;
     }
 
-    public AbstractConstraint(String name, String rawStatement) {
-        super(name, rawStatement);
+    public AbstractConstraint(String name) {
+        super(name);
     }
 
     public void setDefinition(final String definition) {

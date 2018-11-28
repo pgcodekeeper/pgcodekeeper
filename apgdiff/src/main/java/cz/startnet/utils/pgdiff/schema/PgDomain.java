@@ -74,8 +74,8 @@ public class PgDomain extends PgStatementWithSearchPath {
         resetHash();
     }
 
-    public PgDomain(String name, String rawStatement) {
-        super(name, rawStatement);
+    public PgDomain(String name) {
+        super(name);
     }
 
     @Override
@@ -204,7 +204,7 @@ public class PgDomain extends PgStatementWithSearchPath {
 
     @Override
     public PgDomain shallowCopy() {
-        PgDomain copy = new PgDomain(getName(), getRawStatement());
+        PgDomain copy = new PgDomain(getName());
         copy.setDataType(getDataType());
         copy.setCollation(getCollation());
         copy.setDefaultValue(getDefaultValue());

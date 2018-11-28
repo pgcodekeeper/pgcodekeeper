@@ -22,8 +22,8 @@ public abstract class AbstractRegularTable extends AbstractTable {
     protected boolean isForceSecurity;
     protected String partitionBy;
 
-    public AbstractRegularTable(String name, String rawStatement) {
-        super(name, rawStatement);
+    public AbstractRegularTable(String name) {
+        super(name);
     }
 
     @Override

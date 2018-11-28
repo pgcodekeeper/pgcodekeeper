@@ -12,8 +12,8 @@ public class PgFtsTemplate extends PgStatementWithSearchPath {
     private String initFunction;
     private String lexizeFunction;
 
-    public PgFtsTemplate(String name, String rawStatement) {
-        super(name, rawStatement);
+    public PgFtsTemplate(String name) {
+        super(name);
     }
 
     @Override
@@ -84,7 +84,7 @@ public class PgFtsTemplate extends PgStatementWithSearchPath {
 
     @Override
     public PgFtsTemplate shallowCopy() {
-        PgFtsTemplate template = new PgFtsTemplate(getName(), getRawStatement());
+        PgFtsTemplate template = new PgFtsTemplate(getName());
         template.setComment(getComment());
         template.setInitFunction(getInitFunction());
         template.setLexizeFunction(getLexizeFunction());

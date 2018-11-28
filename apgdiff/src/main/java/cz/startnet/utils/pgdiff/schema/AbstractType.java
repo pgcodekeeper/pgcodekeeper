@@ -7,8 +7,8 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class AbstractType extends PgStatementWithSearchPath {
 
-    public AbstractType(String name, String rawStatement) {
-        super(name, rawStatement);
+    public AbstractType(String name) {
+        super(name);
     }
 
     @Override

@@ -45,8 +45,7 @@ public class CreateMsProcedure extends BatchContextProcessor {
     }
 
     public MsProcedure getObject(AbstractSchema schema) {
-        ParserRuleContext batchCtx = ctx.getParent().getParent();
-        MsProcedure procedure = new MsProcedure(ctx.qualified_name().name.getText(), getFullCtxText(batchCtx));
+        MsProcedure procedure = new MsProcedure(ctx.qualified_name().name.getText());
         if (ctx.proc_body().EXTERNAL() != null) {
             procedure.setCLR(true);
 

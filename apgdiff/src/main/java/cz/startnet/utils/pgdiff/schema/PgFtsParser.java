@@ -15,8 +15,8 @@ public class PgFtsParser extends PgStatementWithSearchPath {
     private String headLineFunction;
     private String lexTypesFunction;
 
-    public PgFtsParser(String name, String rawStatement) {
-        super(name, rawStatement);
+    public PgFtsParser(String name) {
+        super(name);
     }
 
     @Override
@@ -90,7 +90,7 @@ public class PgFtsParser extends PgStatementWithSearchPath {
 
     @Override
     public PgFtsParser shallowCopy() {
-        PgFtsParser parser = new PgFtsParser(getName(), getRawStatement());
+        PgFtsParser parser = new PgFtsParser(getName());
         parser.setComment(getComment());
         parser.setStartFunction(getStartFunction());
         parser.setGetTokenFunction(getGetTokenFunction());

@@ -21,7 +21,7 @@ public class MsSequencesReader extends JdbcReader {
         loader.monitor.worked(1);
         String sequenceName = res.getString("name");
         loader.setCurrentObject(new GenericColumn(schema.getName(), sequenceName, DbObjType.SEQUENCE));
-        AbstractSequence s = new MsSequence(sequenceName, "");
+        AbstractSequence s = new MsSequence(sequenceName);
 
         String dataType = res.getString("data_type");
         s.setDataType(dataType);

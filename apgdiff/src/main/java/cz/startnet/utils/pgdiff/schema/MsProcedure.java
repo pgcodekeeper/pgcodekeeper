@@ -12,8 +12,8 @@ public class MsProcedure extends AbstractFunction implements SourceStatement {
     private String firstPart;
     private String secondPart;
 
-    public MsProcedure(String name, String rawStatement) {
-        super(name, rawStatement);
+    public MsProcedure(String name) {
+        super(name);
     }
 
     @Override
@@ -157,7 +157,7 @@ public class MsProcedure extends AbstractFunction implements SourceStatement {
 
     @Override
     protected AbstractFunction getFunctionCopy() {
-        MsProcedure proc = new MsProcedure(getName(), getRawStatement());
+        MsProcedure proc = new MsProcedure(getName());
         proc.setFirstPart(getFirstPart());
         proc.setSecondPart(getSecondPart());
         return proc;

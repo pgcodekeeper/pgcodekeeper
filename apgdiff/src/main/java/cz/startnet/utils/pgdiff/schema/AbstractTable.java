@@ -46,8 +46,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         return DbObjType.TABLE;
     }
 
-    public AbstractTable(String name, String rawStatement) {
-        super(name, rawStatement);
+    public AbstractTable(String name) {
+        super(name);
     }
 
     public boolean isClustered() {

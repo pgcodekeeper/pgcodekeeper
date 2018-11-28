@@ -21,8 +21,7 @@ public class CreateFtsParser extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        PgFtsParser parser = new PgFtsParser(QNameParser.getFirstName(ids),
-                getFullCtxText(ctx.getParent()));
+        PgFtsParser parser = new PgFtsParser(QNameParser.getFirstName(ids));
 
         // TODO functions deps
         parser.setStartFunction(ParserAbstract.getFullCtxText(ctx.start_func));

@@ -26,7 +26,7 @@ public class CreateMsSequence extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         String name = ctx.qualified_name().name.getText();
-        AbstractSequence sequence = new MsSequence(name, getFullCtxText(ctx.getParent()));
+        AbstractSequence sequence = new MsSequence(name);
         fillSequence(sequence, ctx.sequence_body());
         IdContext schemaCtx = ctx.qualified_name().schema;
         AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);

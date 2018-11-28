@@ -19,8 +19,8 @@ public class PgOperator extends PgStatementWithSearchPath {
     private String restrict;
     private String join;
 
-    public PgOperator(String name, String rawStatement) {
-        super(name, rawStatement);
+    public PgOperator(String name) {
+        super(name);
     }
 
     @Override
@@ -309,7 +309,7 @@ public class PgOperator extends PgStatementWithSearchPath {
 
     @Override
     public PgOperator shallowCopy() {
-        PgOperator copy = new PgOperator(getBareName(), getRawStatement());
+        PgOperator copy = new PgOperator(getBareName());
         copy.setProcedure(getProcedure());
         copy.setLeftArg(getLeftArg());
         copy.setRightArg(getRightArg());

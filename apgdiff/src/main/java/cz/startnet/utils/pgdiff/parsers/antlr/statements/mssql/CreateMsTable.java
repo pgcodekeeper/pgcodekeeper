@@ -39,7 +39,7 @@ public class CreateMsTable extends TableAbstract {
         AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
         String tableName = ctx.qualified_name().name.getText();
 
-        SimpleMsTable table = new SimpleMsTable(tableName, getFullCtxText(ctx.getParent()));
+        SimpleMsTable table = new SimpleMsTable(tableName);
 
         table.setAnsiNulls(ansiNulls);
 
@@ -77,7 +77,7 @@ public class CreateMsTable extends TableAbstract {
             table.addConstraint(getMsConstraint(colCtx.table_constraint()));
         } else if (colCtx.table_index() != null) {
             Table_indexContext indCtx = colCtx.table_index();
-            MsIndex index = new MsIndex(indCtx.index_name.getText(), "");
+            MsIndex index = new MsIndex(indCtx.index_name.getText());
             index.setTableName(table.getName());
             ClusteredContext cluster = indCtx.clustered();
             index.setClusterIndex(cluster != null && cluster.CLUSTERED() != null);

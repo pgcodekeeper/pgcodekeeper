@@ -39,9 +39,7 @@ public class CreateMsTrigger extends BatchContextProcessor {
     }
 
     public MsTrigger getObject(AbstractSchema schema) {
-        ParserRuleContext batchCtx = ctx.getParent().getParent();
-        MsTrigger trigger = new MsTrigger(ctx.trigger_name.name.getText(),
-                getFullCtxText(batchCtx));
+        MsTrigger trigger = new MsTrigger(ctx.trigger_name.name.getText());
         trigger.setTableName(ctx.table_name.name.getText());
         trigger.setAnsiNulls(ansiNulls);
         trigger.setQuotedIdentified(quotedIdentifier);

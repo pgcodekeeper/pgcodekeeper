@@ -23,7 +23,7 @@ public class FtsConfigurationsReader extends JdbcReader {
     @Override
     protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException {
         String name = res.getString("cfgname");
-        PgFtsConfiguration config = new PgFtsConfiguration(name, "");
+        PgFtsConfiguration config = new PgFtsConfiguration(name);
 
         String parserSchema = res.getString("prsnspname");
         String parserName = res.getString("prsname");

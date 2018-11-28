@@ -16,7 +16,7 @@ public class CreateExtension extends ParserAbstract {
 
     @Override
     public PgStatement getObject() {
-        PgExtension ext = new PgExtension(ctx.name.getText(), getFullCtxText(ctx.getParent()));
+        PgExtension ext = new PgExtension(ctx.name.getText());
         if (ctx.schema_with_name() != null) {
             ext.setSchema(ctx.schema_with_name().name.getText());
             ext.addDep(new GenericColumn(ext.getSchema(), DbObjType.SCHEMA));

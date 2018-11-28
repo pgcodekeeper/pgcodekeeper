@@ -19,8 +19,8 @@ public class SimpleMsTable extends AbstractRegularTable {
     private boolean ansiNulls;
     private Boolean isTracked;
 
-    public SimpleMsTable(String name, String rawStatement) {
-        super(name, rawStatement);
+    public SimpleMsTable(String name) {
+        super(name);
     }
 
     @Override
@@ -110,7 +110,7 @@ public class SimpleMsTable extends AbstractRegularTable {
                     || !Objects.equals(smt.getOptions(), getOptions())
                     || !Objects.equals(smt.getFileStream(), getFileStream())
                     || (smt.getTextImage() != null && getTextImage() != null
-                        && !Objects.equals(smt.getTextImage(), getTextImage()));
+                    && !Objects.equals(smt.getTextImage(), getTextImage()));
         }
 
         return true;
@@ -146,7 +146,7 @@ public class SimpleMsTable extends AbstractRegularTable {
 
     @Override
     protected SimpleMsTable getTableCopy() {
-        SimpleMsTable table = new SimpleMsTable(name, getRawStatement());
+        SimpleMsTable table = new SimpleMsTable(name);
         table.setFileStream(getFileStream());
         table.setTextImage(getTextImage());
         table.setAnsiNulls(isAnsiNulls());

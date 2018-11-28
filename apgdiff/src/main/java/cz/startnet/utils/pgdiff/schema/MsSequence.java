@@ -7,8 +7,8 @@ import cz.startnet.utils.pgdiff.MsDiffUtils;
 
 public class MsSequence extends AbstractSequence {
 
-    public MsSequence(String name, String rawStatement) {
-        super(name, rawStatement);
+    public MsSequence(String name) {
+        super(name);
     }
 
     @Override
@@ -182,6 +182,6 @@ public class MsSequence extends AbstractSequence {
 
     @Override
     protected AbstractSequence getSequenceCopy() {
-        return new MsSequence(getName(), getRawStatement());
+        return new MsSequence(getName());
     }
 }

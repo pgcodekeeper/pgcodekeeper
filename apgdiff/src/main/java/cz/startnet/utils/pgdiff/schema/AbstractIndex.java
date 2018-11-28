@@ -42,8 +42,8 @@ implements PgOptionContainer {
         return DbObjType.INDEX;
     }
 
-    public AbstractIndex(String name, String rawStatement) {
-        super(name, rawStatement);
+    public AbstractIndex(String name) {
+        super(name);
     }
 
     public void setDefinition(final String definition) {

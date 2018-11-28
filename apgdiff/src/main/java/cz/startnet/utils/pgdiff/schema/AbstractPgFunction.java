@@ -7,8 +7,8 @@ public abstract class AbstractPgFunction extends AbstractFunction {
 
     private String signatureCache;
 
-    public AbstractPgFunction(String name, String rawStatement) {
-        super(name, rawStatement);
+    public AbstractPgFunction(String name) {
+        super(name);
     }
 
     public StringBuilder appendFunctionSignature(StringBuilder sb,

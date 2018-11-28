@@ -14,8 +14,8 @@ public class MsRole extends PgStatement {
 
     private final Set<String> members = new LinkedHashSet<>();
 
-    public MsRole(String name, String rawStatement) {
-        super(name, rawStatement);
+    public MsRole(String name) {
+        super(name);
     }
 
     @Override
@@ -121,7 +121,7 @@ public class MsRole extends PgStatement {
 
     @Override
     public MsRole shallowCopy() {
-        MsRole roleDst = new MsRole(getName(), getRawStatement());
+        MsRole roleDst = new MsRole(getName());
         roleDst.setOwner(getOwner());
         roleDst.members.addAll(members);
         roleDst.privileges.addAll(privileges);

@@ -6,8 +6,8 @@ import cz.startnet.utils.pgdiff.MsDiffUtils;
 
 public class MsConstraint extends AbstractConstraint {
 
-    public MsConstraint(String name, String rawStatement) {
-        super(name, rawStatement);
+    public MsConstraint(String name) {
+        super(name);
     }
 
     @Override
@@ -94,6 +94,6 @@ public class MsConstraint extends AbstractConstraint {
 
     @Override
     protected AbstractConstraint getConstraintCopy() {
-        return new MsConstraint(getName(), getRawStatement());
+        return new MsConstraint(getName());
     }
 }

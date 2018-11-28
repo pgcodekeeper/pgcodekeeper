@@ -182,7 +182,7 @@ public class ProjectLoader {
 
     protected void addDboSchema(PgDatabase db) {
         if (!db.containsSchema(ApgdiffConsts.DBO)) {
-            db.addSchema(new MsSchema(ApgdiffConsts.DBO, ""));
+            db.addSchema(new MsSchema(ApgdiffConsts.DBO));
             db.setDefaultSchema(ApgdiffConsts.DBO);
         }
     }

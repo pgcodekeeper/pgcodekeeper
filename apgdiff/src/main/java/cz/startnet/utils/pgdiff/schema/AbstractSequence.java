@@ -43,8 +43,8 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
         return DbObjType.SEQUENCE;
     }
 
-    public AbstractSequence(String name, String rawStatement) {
-        super(name, rawStatement);
+    public AbstractSequence(String name) {
+        super(name);
     }
 
     public void setCache(final String cache) {

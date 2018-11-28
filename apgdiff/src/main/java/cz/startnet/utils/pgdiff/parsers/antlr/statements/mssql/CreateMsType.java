@@ -33,7 +33,7 @@ public class CreateMsType extends ParserAbstract {
 
     @Override
     public PgStatement getObject() {
-        MsType type = new MsType(ctx.qualified_name().name.getText(), getFullCtxText(ctx.getParent()));
+        MsType type = new MsType(ctx.qualified_name().name.getText());
 
         IdContext schemaCtx = ctx.qualified_name().schema;
         AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);

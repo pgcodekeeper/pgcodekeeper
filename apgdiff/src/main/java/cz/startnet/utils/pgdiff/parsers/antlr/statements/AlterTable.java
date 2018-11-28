@@ -129,7 +129,7 @@ public class AlterTable extends TableAbstract {
                             name = body.name.getText();
                         }
                     }
-                    AbstractSequence sequence = new PgSequence(name, null);
+                    AbstractSequence sequence = new PgSequence(name);
                     CreateSequence.fillSequence(sequence, identity.sequence_body());
 
                     col.setSequence(sequence);

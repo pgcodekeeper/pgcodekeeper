@@ -9,8 +9,8 @@ package cz.startnet.utils.pgdiff.schema;
  */
 public class SimplePgTable extends AbstractRegularTable {
 
-    public SimplePgTable(String name, String rawStatement) {
-        super(name, rawStatement);
+    public SimplePgTable(String name) {
+        super(name);
     }
 
     @Override
@@ -32,7 +32,7 @@ public class SimplePgTable extends AbstractRegularTable {
 
     @Override
     protected AbstractTable getTableCopy() {
-        return new SimplePgTable(name, getRawStatement());
+        return new SimplePgTable(name);
     }
 
     @Override

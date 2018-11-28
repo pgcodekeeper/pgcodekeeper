@@ -37,7 +37,7 @@ public class SchemasMsReader {
     private AbstractSchema getSchema(ResultSet res) throws SQLException, XmlReaderException {
         String schemaName = res.getString("name");
         loader.setCurrentObject(new GenericColumn(schemaName, DbObjType.SCHEMA));
-        AbstractSchema s = new MsSchema(schemaName, "");
+        AbstractSchema s = new MsSchema(schemaName);
 
         String owner = res.getString("owner");
         if (!schemaName.equalsIgnoreCase(ApgdiffConsts.DBO) || !owner.equalsIgnoreCase(ApgdiffConsts.DBO)) {

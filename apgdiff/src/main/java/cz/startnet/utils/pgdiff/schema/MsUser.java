@@ -14,8 +14,8 @@ public class MsUser extends PgStatement {
     private String schema;
     private String login;
 
-    public MsUser(String name, String rawStatement) {
-        super(name, rawStatement);
+    public MsUser(String name) {
+        super(name);
     }
 
     @Override
@@ -120,7 +120,7 @@ public class MsUser extends PgStatement {
 
     @Override
     public MsUser shallowCopy() {
-        MsUser userDst = new MsUser(getName(), getRawStatement());
+        MsUser userDst = new MsUser(getName());
         userDst.setOwner(getOwner());
         userDst.setSchema(getSchema());
         userDst.setLogin(getLogin());

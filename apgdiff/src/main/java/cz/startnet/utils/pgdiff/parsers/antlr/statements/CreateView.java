@@ -48,7 +48,7 @@ public class CreateView extends ParserAbstract {
         List<IdentifierContext> ids = ctx.name.identifier();
         AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         IdentifierContext name = QNameParser.getFirstNameCtx(ids);
-        AbstractView view = new PgView(name.getText(), getFullCtxText(ctx.getParent()));
+        AbstractView view = new PgView(name.getText());
         if (ctx.MATERIALIZED() != null) {
             view.setIsWithData(ctx.NO() == null);
             Table_spaceContext tablespace = ctx.table_space();

@@ -23,8 +23,8 @@ public class PgFunction extends AbstractPgFunction {
         return DbObjType.FUNCTION;
     }
 
-    public PgFunction(String name, String rawStatement) {
-        super(name, rawStatement);
+    public PgFunction(String name) {
+        super(name);
     }
 
     @Override
@@ -270,6 +270,6 @@ public class PgFunction extends AbstractPgFunction {
 
     @Override
     protected AbstractFunction getFunctionCopy() {
-        return new PgFunction(getBareName(), getRawStatement());
+        return new PgFunction(getBareName());
     }
 }

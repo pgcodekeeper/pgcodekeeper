@@ -15,8 +15,8 @@ implements PgOptionContainer {
     private String template;
     private final Map<String, String> options = new LinkedHashMap<>();
 
-    public PgFtsDictionary(String name, String rawStatement) {
-        super(name, rawStatement);
+    public PgFtsDictionary(String name) {
+        super(name);
     }
 
     @Override
@@ -133,7 +133,7 @@ implements PgOptionContainer {
 
     @Override
     public PgFtsDictionary shallowCopy() {
-        PgFtsDictionary dictionary = new PgFtsDictionary(getName(), getRawStatement());
+        PgFtsDictionary dictionary = new PgFtsDictionary(getName());
         dictionary.setComment(getComment());
         dictionary.setTemplate(getTemplate());
         dictionary.options.putAll(getOptions());

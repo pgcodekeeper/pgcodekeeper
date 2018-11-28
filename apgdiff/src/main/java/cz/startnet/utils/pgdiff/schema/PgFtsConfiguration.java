@@ -18,8 +18,8 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
     private final Map<String, String> dictionariesMap = new HashMap<>();
 
 
-    public PgFtsConfiguration(String name, String rawStatement) {
-        super(name, rawStatement);
+    public PgFtsConfiguration(String name) {
+        super(name);
     }
 
     @Override
@@ -134,7 +134,7 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
 
     @Override
     public PgFtsConfiguration shallowCopy() {
-        PgFtsConfiguration conf = new PgFtsConfiguration(getName(), getRawStatement());
+        PgFtsConfiguration conf = new PgFtsConfiguration(getName());
         conf.setComment(getComment());
         conf.setParser(getParser());
         conf.deps.addAll(deps);

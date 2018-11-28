@@ -12,8 +12,8 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 public class PgTrigger extends AbstractTrigger {
 
-    public PgTrigger(String name, String rawStatement) {
-        super(name, rawStatement);
+    public PgTrigger(String name) {
+        super(name);
     }
 
     @Override
@@ -145,6 +145,6 @@ public class PgTrigger extends AbstractTrigger {
 
     @Override
     protected AbstractTrigger getTriggerCopy() {
-        return new PgTrigger(getName(), getRawStatement());
+        return new PgTrigger(getName());
     }
 }

@@ -21,8 +21,8 @@ public class PgExtension extends PgStatement {
         return DbObjType.EXTENSION;
     }
 
-    public PgExtension(String name, String rawStatement) {
-        super(name, rawStatement);
+    public PgExtension(String name) {
+        super(name);
     }
 
     public String getSchema() {
@@ -115,7 +115,7 @@ public class PgExtension extends PgStatement {
 
     @Override
     public PgExtension shallowCopy() {
-        PgExtension extDst = new PgExtension(getName(), getRawStatement());
+        PgExtension extDst = new PgExtension(getName());
         extDst.setSchema(getSchema());
         extDst.setComment(getComment());
         extDst.deps.addAll(deps);

@@ -15,8 +15,8 @@ public class PartitionPgTable extends AbstractRegularTable {
 
     private final String partitionBounds;
 
-    public PartitionPgTable(String name, String rawStatement, String partitionBounds) {
-        super(name, rawStatement);
+    public PartitionPgTable(String name, String partitionBounds) {
+        super(name);
         this.partitionBounds = partitionBounds;
     }
 
@@ -124,7 +124,7 @@ public class PartitionPgTable extends AbstractRegularTable {
 
     @Override
     protected AbstractTable getTableCopy() {
-        return new PartitionPgTable(name, getRawStatement(), partitionBounds);
+        return new PartitionPgTable(name, partitionBounds);
     }
 
     @Override

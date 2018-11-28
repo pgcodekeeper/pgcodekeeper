@@ -38,8 +38,8 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
     private String parallel;
     private String volatileType;
 
-    public AbstractFunction(String name, String rawStatement) {
-        super(name, rawStatement);
+    public AbstractFunction(String name) {
+        super(name);
     }
 
     protected abstract String getDeclaration(Argument arg, boolean includeDefaultValue, boolean includeArgName);

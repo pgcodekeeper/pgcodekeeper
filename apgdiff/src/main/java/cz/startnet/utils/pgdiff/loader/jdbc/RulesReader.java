@@ -35,7 +35,7 @@ public class RulesReader extends JdbcReader {
 
         String command = res.getString("rule_string");
         checkObjectValidity(command, getType(), ruleName);
-        PgRule r = new PgRule(ruleName, command);
+        PgRule r = new PgRule(ruleName);
 
         switch (res.getString("ev_type")) {
         case "1":

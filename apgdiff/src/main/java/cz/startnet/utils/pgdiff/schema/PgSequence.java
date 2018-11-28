@@ -15,8 +15,8 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
  */
 public class PgSequence extends AbstractSequence {
 
-    public PgSequence(String name, String rawStatement) {
-        super(name, rawStatement);
+    public PgSequence(String name) {
+        super(name);
     }
 
     @Override
@@ -237,6 +237,6 @@ public class PgSequence extends AbstractSequence {
 
     @Override
     protected AbstractSequence getSequenceCopy() {
-        return new PgSequence(getName(), getRawStatement());
+        return new PgSequence(getName());
     }
 }

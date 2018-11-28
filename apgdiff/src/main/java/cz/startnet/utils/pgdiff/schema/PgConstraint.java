@@ -12,8 +12,8 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 public class PgConstraint extends AbstractConstraint {
 
-    public PgConstraint(String name, String rawStatement) {
-        super(name, rawStatement);
+    public PgConstraint(String name) {
+        super(name);
     }
 
     @Override
@@ -90,6 +90,6 @@ public class PgConstraint extends AbstractConstraint {
 
     @Override
     protected AbstractConstraint getConstraintCopy() {
-        return new PgConstraint(getName(), getRawStatement());
+        return new PgConstraint(getName());
     }
 }

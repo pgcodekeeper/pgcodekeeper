@@ -23,7 +23,7 @@ public class MsTablesReader extends JdbcReader {
         loader.monitor.worked(1);
         String tableName = res.getString("name");
         loader.setCurrentObject(new GenericColumn(schema.getName(), tableName, DbObjType.TABLE));
-        SimpleMsTable table = new SimpleMsTable(tableName, "");
+        SimpleMsTable table = new SimpleMsTable(tableName);
 
         if (res.getBoolean("is_memory_optimized")) {
             table.addOption("MEMORY_OPTIMIZED" , "ON");

@@ -68,8 +68,8 @@ public abstract class AbstractTrigger extends PgStatementWithSearchPath {
         return DbObjType.TRIGGER;
     }
 
-    public AbstractTrigger(String name, String rawStatement) {
-        super(name, rawStatement);
+    public AbstractTrigger(String name) {
+        super(name);
     }
 
     public void setType(final TgTypes tgType) {

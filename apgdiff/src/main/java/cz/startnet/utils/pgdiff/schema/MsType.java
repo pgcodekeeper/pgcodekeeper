@@ -27,8 +27,8 @@ public class MsType extends AbstractType {
     private final List<String> indices = new ArrayList<>();
 
 
-    public MsType(String name, String rawStatement) {
-        super(name, rawStatement);
+    public MsType(String name) {
+        super(name);
     }
 
     @Override
@@ -131,7 +131,7 @@ public class MsType extends AbstractType {
 
     @Override
     protected AbstractType getTypeCopy() {
-        MsType copy = new MsType(getName(), getRawStatement());
+        MsType copy = new MsType(getName());
         copy.setNotNull(isNotNull());
         copy.setMemoryOptimized(isMemoryOptimized());
         copy.setBaseType(getBaseType());

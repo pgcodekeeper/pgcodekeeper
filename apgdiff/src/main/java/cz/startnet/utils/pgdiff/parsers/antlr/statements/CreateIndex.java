@@ -39,7 +39,7 @@ public class CreateIndex extends ParserAbstract {
         String schemaName = schema.getName();
         String tableName = QNameParser.getFirstName(ids);
         String name = ctx.name.getText();
-        AbstractIndex ind = new PgIndex(name != null ? name : "", getFullCtxText(ctx.getParent()));
+        AbstractIndex ind = new PgIndex(name != null ? name : "");
         ind.setTableName(tableName);
         parseIndex(ctx.index_rest(), tablespace, schemaName, tableName, ind, db);
         ind.setUnique(ctx.UNIQUE() != null);
