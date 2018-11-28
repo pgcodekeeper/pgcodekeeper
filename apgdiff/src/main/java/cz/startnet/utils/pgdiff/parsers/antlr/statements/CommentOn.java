@@ -12,7 +12,6 @@ import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
-import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
@@ -20,6 +19,7 @@ import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
 import cz.startnet.utils.pgdiff.schema.PgType;
+import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
 public class CommentOn extends ParserAbstract {
@@ -60,7 +60,7 @@ public class CommentOn extends ParserAbstract {
             String tableName = tableCtx.getText();
             AbstractTable table = schema.getTable(tableName);
             if (table == null) {
-                AbstractView view = schema.getView(tableName);
+                PgView view = (PgView) schema.getView(tableName);
                 if (view == null) {
                     ((PgType) getSafe(schema::getType, tableCtx)).getAttr(name).setComment(db.getArguments(), comment);
                 } else {

@@ -7,6 +7,9 @@ import cz.startnet.utils.pgdiff.hashers.Hasher;
 
 public class MsView extends AbstractView implements SourceStatement {
 
+    private boolean ansiNulls;
+    private boolean quotedIdentified;
+
     private String firstPart;
     private String secondPart;
 
@@ -76,7 +79,9 @@ public class MsView extends AbstractView implements SourceStatement {
         if (obj instanceof MsView && super.compare(obj)) {
             MsView view = (MsView) obj;
             return Objects.equals(getFirstPart(), view.getFirstPart())
-                    && Objects.equals(getSecondPart(), view.getSecondPart());
+                    && Objects.equals(getSecondPart(), view.getSecondPart())
+                    && isQuotedIdentified() == view.isQuotedIdentified()
+                    && isAnsiNulls() == view.isAnsiNulls();
         }
 
         return false;
@@ -87,6 +92,8 @@ public class MsView extends AbstractView implements SourceStatement {
         super.computeHash(hasher);
         hasher.put(getFirstPart());
         hasher.put(getSecondPart());
+        hasher.put(isQuotedIdentified());
+        hasher.put(isAnsiNulls());
     }
 
     @Override
@@ -94,7 +101,27 @@ public class MsView extends AbstractView implements SourceStatement {
         MsView view = new MsView(getName());
         view.setFirstPart(getFirstPart());
         view.setSecondPart(getSecondPart());
+        view.setAnsiNulls(isAnsiNulls());
+        view.setQuotedIdentified(isQuotedIdentified());
         return view;
+    }
+
+    public void setAnsiNulls(boolean ansiNulls) {
+        this.ansiNulls = ansiNulls;
+        resetHash();
+    }
+
+    public boolean isAnsiNulls() {
+        return ansiNulls;
+    }
+
+    public void setQuotedIdentified(boolean quotedIdentified) {
+        this.quotedIdentified = quotedIdentified;
+        resetHash();
+    }
+
+    public boolean isQuotedIdentified() {
+        return quotedIdentified;
     }
 
     @Override
