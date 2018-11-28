@@ -14,8 +14,8 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 public class PgIndex extends AbstractIndex {
 
-    public PgIndex(String name) {
-        super(name);
+    public PgIndex(String name, String tableName) {
+        super(name, tableName);
     }
 
     @Override
@@ -135,6 +135,6 @@ public class PgIndex extends AbstractIndex {
 
     @Override
     protected AbstractIndex getIndexCopy() {
-        return new PgIndex(getName());
+        return new PgIndex(getName(), getTableName());
     }
 }

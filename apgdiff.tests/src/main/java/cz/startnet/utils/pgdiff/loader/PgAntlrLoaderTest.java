@@ -342,9 +342,8 @@ class PgDB2 extends PgDatabaseObjectCreator {
         col.setType("varchar(50)");
         table.addColumn(col);
 
-        AbstractIndex idx = new PgIndex("contacts_number_pool_id_idx");
+        AbstractIndex idx = new PgIndex("contacts_number_pool_id_idx", "contacts");
         table.addIndex(idx);
-        idx.setTableName("contacts");
         idx.setDefinition("(number_pool_id)");
 
         return d;
@@ -564,8 +563,7 @@ class PgDB6 extends PgDatabaseObjectCreator {
 
         table.setOwner("postgres");
 
-        AbstractIndex idx = new PgIndex("test_table_deleted");
-        idx.setTableName("test_table");
+        AbstractIndex idx = new PgIndex("test_table_deleted", "test_table");
         idx.setMethod("btree");
         idx.setDefinition("(date_deleted)");
         idx.setWhere("(date_deleted IS NULL)");
@@ -826,8 +824,7 @@ class PgDB10 extends PgDatabaseObjectCreator {
         col.setNullValue(false);
         table.addColumn(col);
 
-        AbstractIndex idx = new PgIndex("fki_user_role_id_fkey");
-        idx.setTableName("user");
+        AbstractIndex idx = new PgIndex("fki_user_role_id_fkey", "user");
         idx.setMethod("btree");
         idx.setDefinition("(role_id)");
         table.addIndex(idx);

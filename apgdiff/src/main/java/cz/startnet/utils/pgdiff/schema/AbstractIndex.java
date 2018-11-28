@@ -23,15 +23,16 @@ public abstract class AbstractIndex extends PgStatementWithSearchPath
 implements PgOptionContainer {
 
     /**
-     * Contains USING method for PG, columns and include columns for all
+     * Contains columns with sort order
      */
     private String definition;
-    private String tableName;
     private String where;
     private String tableSpace;
     private String method;
     private boolean unique;
     private boolean clusterIndex;
+
+    private final String tableName;
     private final Set<String> columns = new HashSet<>();
 
     protected final Set<String> includes = new LinkedHashSet<>();
@@ -42,8 +43,9 @@ implements PgOptionContainer {
         return DbObjType.INDEX;
     }
 
-    public AbstractIndex(String name) {
+    public AbstractIndex(String name, String tableName) {
         super(name);
+        this.tableName = tableName;
     }
 
     public void setDefinition(final String definition) {
@@ -80,11 +82,6 @@ implements PgOptionContainer {
         return Collections.unmodifiableSet(includes);
     }
 
-    public void setTableName(final String tableName) {
-        this.tableName = tableName;
-        resetHash();
-    }
-
     public String getTableName() {
         return tableName;
     }
@@ -113,6 +110,7 @@ implements PgOptionContainer {
 
     public void setMethod(String method) {
         this.method = method;
+        resetHash();
     }
 
     public String getTableSpace() {
@@ -182,7 +180,6 @@ implements PgOptionContainer {
     public AbstractIndex shallowCopy() {
         AbstractIndex indexDst = getIndexCopy();
         indexDst.setDefinition(getDefinition());
-        indexDst.setTableName(getTableName());
         indexDst.setUnique(isUnique());
         indexDst.setMethod(getMethod());
         indexDst.setClusterIndex(isClusterIndex());

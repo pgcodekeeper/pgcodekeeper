@@ -129,11 +129,10 @@ public class MsIndicesAndPKReader extends JdbcReader {
             }
             t.addConstraint(constraint);
         } else {
-            AbstractIndex index = new MsIndex(name);
+            AbstractIndex index = new MsIndex(name, t.getName());
             index.setClusterIndex(isClustered);
             index.setUnique(isUnique);
             index.setDefinition(sb.toString());
-            index.setTableName(t.getName());
             index.setWhere(filter);
             index.setTableSpace(dataSpace);
 
