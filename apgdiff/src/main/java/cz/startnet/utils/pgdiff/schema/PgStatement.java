@@ -284,17 +284,15 @@ public abstract class PgStatement implements IStatement, IHashable {
 
     protected void alterPrivileges(PgStatement newObj, StringBuilder sb) {
         // first drop (revoke) missing grants
-        boolean grantsChanged = false;
         Set<PgPrivilege> newPrivileges = newObj.getPrivileges();
         for (PgPrivilege privilege : privileges) {
             if (!privilege.isRevoke() && !newPrivileges.contains(privilege)) {
-                grantsChanged = true;
                 sb.append('\n').append(privilege.getDropSQL()).append(isPostgres() ? ';' : "\nGO");
             }
         }
 
         // now set all privileges if there are any changes
-        if (grantsChanged || !privileges.equals(newPrivileges)) {
+        if (!privileges.equals(newPrivileges)) {
             newObj.appendPrivileges(sb);
             if (newObj.isPostgres() && newPrivileges.isEmpty()) {
                 PgPrivilege.appendDefaultPrivileges(newObj, sb);
