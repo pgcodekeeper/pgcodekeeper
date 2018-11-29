@@ -7,7 +7,6 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
-import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractRegularTable;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
@@ -166,7 +165,7 @@ public class TablesReader extends JdbcReader {
         String[] colDefaultStorages = getColArray(res, "col_default_storages");
 
         for (int i = 0; i < colNames.length; i++) {
-            AbstractColumn column = new PgColumn(colNames[i]);
+            PgColumn column = new PgColumn(colNames[i]);
             column.setInherit(!colIsLocal[i]);
 
             if (ofTypeOid == 0 && !column.isInherit()) {

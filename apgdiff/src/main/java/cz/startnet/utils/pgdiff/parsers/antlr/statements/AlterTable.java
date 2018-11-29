@@ -12,18 +12,17 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_option
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
-import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
+import cz.startnet.utils.pgdiff.schema.AbstractRegularTable;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractSequence;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
-import cz.startnet.utils.pgdiff.schema.AbstractRegularTable;
 
 public class AlterTable extends TableAbstract {
 
@@ -67,13 +66,13 @@ public class AlterTable extends TableAbstract {
             }
 
             if (tablAction.column != null) {
-                AbstractColumn col;
+                PgColumn col;
                 if (tabl.getInherits().isEmpty()) {
-                    col = getSafe(tabl::getColumn,
+                    col = (PgColumn) getSafe(tabl::getColumn,
                             QNameParser.getFirstNameCtx(tablAction.column.identifier()));
                 } else {
                     String colName = QNameParser.getFirstName(tablAction.column.identifier());
-                    col = tabl.getColumn(colName);
+                    col = (PgColumn) tabl.getColumn(colName);
                     if (col == null) {
                         col = new PgColumn(colName);
                         col.setInherit(true);

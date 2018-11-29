@@ -19,7 +19,6 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
-import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
@@ -225,7 +224,7 @@ class MsDB0 extends MsDatabaseObjectCreator {
         table.setAnsiNulls(true);
         schema.addTable(table);
 
-        AbstractColumn col = new MsColumn("fax_box_id");
+        MsColumn col = new MsColumn("fax_box_id");
         col.setType("[int]");
         col.setNullValue(false);
         table.addColumn(col);
@@ -348,7 +347,7 @@ class MsDB1 extends MsDatabaseObjectCreator {
         table.setAnsiNulls(true);
         schema.addTable(table);
 
-        AbstractColumn col = new MsColumn("id");
+        MsColumn col = new MsColumn("id");
         col.setType("[int]");
         table.addColumn(col);
 
@@ -385,7 +384,7 @@ class MsDB2 extends MsDatabaseObjectCreator {
         table.setAnsiNulls(true);
         schema.addTable(table);
 
-        AbstractColumn col = new MsColumn("aid");
+        MsColumn col = new MsColumn("aid");
         col.setType("[int]");
         col.setNullValue(false);
         // TODO replace constraint 'constraint = new MsConstraint("DF_admins_aid", "")' by this,
@@ -523,7 +522,7 @@ class MsDB3 extends MsDatabaseObjectCreator {
         table.setAnsiNulls(true);
         schema.addTable(table);
 
-        AbstractColumn col = new MsColumn("id");
+        MsColumn col = new MsColumn("id");
         col.setType("[bigint]");
         col.setNullValue(false);
         // TODO replace constraint 'constraint = new MsConstraint("DF_admins_aid", "")' by this,
@@ -553,7 +552,7 @@ class MsDB4 extends MsDatabaseObjectCreator {
         table.setAnsiNulls(true);
         schema.addTable(table);
 
-        AbstractColumn col = new MsColumn("id");
+        MsColumn col = new MsColumn("id");
         col.setType("[int]");
         col.setNullValue(false);
         table.addColumn(col);
@@ -637,7 +636,7 @@ class MsDB5 extends MsDatabaseObjectCreator {
         table.setAnsiNulls(true);
         schema.addTable(table);
 
-        AbstractColumn col = new MsColumn("id");
+        MsColumn col = new MsColumn("id");
         col.setType("[bigint]");
         table.addColumn(col);
 
@@ -692,7 +691,7 @@ class MsDB7 extends MsDatabaseObjectCreator {
 
         // TODO uncomment and remade this for MsType when it will be supported
         // MsType type = new MsType("testtt", MsTypeForm.COMPOSITE, "");
-        // AbstractColumn col = new MsColumn("a");
+        // MsColumn col = new MsColumn("a");
         // col.setType("[int]");
         // type.addAttr(col);
         // col = new MsColumn("b");
@@ -746,7 +745,7 @@ class MsDB8 extends MsDatabaseObjectCreator {
         table.setOwner("ms_user");
         schema.addTable(table);
 
-        AbstractColumn col = new MsColumn("id");
+        MsColumn col = new MsColumn("id");
         col.setType("[bigint]");
         col.setNullValue(false);
         // col.setDefaultValue("(NEXT VALUE FOR [dbo].[user_id_seq])");
@@ -862,7 +861,7 @@ class MsDB9 extends MsDatabaseObjectCreator {
         table.setAnsiNulls(true);
         schema.addTable(table);
 
-        AbstractColumn col = new MsColumn("id");
+        MsColumn col = new MsColumn("id");
         col.setType("[bigint]");
         col.setNullValue(false);
         table.addColumn(col);
@@ -1003,7 +1002,7 @@ class MsDB11 extends MsDatabaseObjectCreator {
         // table.setComment("'This is my table comment.'");
         schema.addTable(table);
 
-        AbstractColumn col = new MsColumn("ID");
+        MsColumn col = new MsColumn("ID");
         col.setType("[int]");
         col.setNullValue(false);
         col.setIdentity("1", "1");
@@ -1165,7 +1164,7 @@ class MsDB13 extends MsDatabaseObjectCreator {
         table.setAnsiNulls(true);
         schema.addTable(table);
 
-        AbstractColumn col = new MsColumn("id");
+        MsColumn col = new MsColumn("id");
         col.setType("[int]");
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
         // col.setComment("id column");
@@ -1257,7 +1256,7 @@ class MsDB14 extends MsDatabaseObjectCreator {
         table.setAnsiNulls(true);
         schema.addTable(table);
 
-        AbstractColumn col = new MsColumn("id");
+        MsColumn col = new MsColumn("id");
         col.setType("[bigint]");
         table.addColumn(col);
 
@@ -1285,7 +1284,7 @@ class MsDB15 extends MsDatabaseObjectCreator {
         table.setAnsiNulls(true);
         schema.addTable(table);
 
-        AbstractColumn col = new MsColumn("id");
+        MsColumn col = new MsColumn("id");
         col.setType("[int]");
         table.addColumn(col);
 
@@ -1333,7 +1332,7 @@ class MsDB16 extends MsDatabaseObjectCreator {
         table.setAnsiNulls(true);
         schema.addTable(table);
 
-        AbstractColumn col = new MsColumn("id");
+        MsColumn col = new MsColumn("id");
         col.setType("[int]");
         table.addColumn(col);
 

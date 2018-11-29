@@ -1,8 +1,3 @@
-/**
- * Copyright 2006 StartNet s.r.o.
- *
- * Distributed under MIT license
- */
 package cz.startnet.utils.pgdiff.schema;
 
 import java.util.ArrayList;
@@ -246,7 +241,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     }
 
     protected void appendColumnsStatistics(StringBuilder sbSQL) {
-        columns.stream().filter(c -> c.getStatistics() != null)
+        columns.stream().map(e -> (PgColumn) e).filter(c -> c.getStatistics() != null)
         .forEach(column -> {
             sbSQL.append(getAlterTable(true, true));
             sbSQL.append(ALTER_COLUMN);
@@ -271,7 +266,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         }
     }
 
-    private void writeSequences(AbstractColumn column, StringBuilder sbOption) {
+    private void writeSequences(PgColumn column, StringBuilder sbOption) {
         AbstractSequence sequence = column.getSequence();
         if (sequence != null) {
             sbOption.append(getAlterTable(true, false))
@@ -592,10 +587,12 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
      */
     public void sortColumns() {
         Collections.sort(columns, (e1, e2) ->  {
-            if (e1.isInherit() && e2.isInherit()) {
+            boolean first = e1 instanceof PgColumn && ((PgColumn) e1).isInherit();
+            boolean second = e2 instanceof PgColumn && ((PgColumn) e2).isInherit();
+            if (first && second) {
                 return e1.getName().compareTo(e2.getName());
             } else {
-                return -Boolean.compare(e1.isInherit(), e2.isInherit());
+                return -Boolean.compare(first, second);
             }
         });
 
@@ -741,7 +738,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         return (AbstractSchema)this.getParent();
     }
 
-    private void writeOptions(AbstractColumn column, StringBuilder sbOption, boolean isInherit) {
+    private void writeOptions(PgColumn column, StringBuilder sbOption, boolean isInherit) {
         Map<String, String> opts = column.getOptions();
         Map<String, String> fOpts = column.getForeignOptions();
 
@@ -782,7 +779,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
     protected void writeColumn(AbstractColumn column, StringBuilder sbSQL,
             StringBuilder sbOption) {
-        boolean isInherit = column.isInherit();
+
+        boolean isInherit = isPostgres() && ((PgColumn) column).isInherit();
         if (isInherit) {
             fillInheritOptions(column, sbOption);
         } else {
@@ -791,17 +789,20 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
             sbSQL.append(",\n");
         }
 
-        if (column.getStorage() != null) {
-            sbOption.append(getAlterTable(true, isInherit))
-            .append(ALTER_COLUMN)
-            .append(PgDiffUtils.getQuotedName(column.name))
-            .append(" SET STORAGE ")
-            .append(column.getStorage())
-            .append(';');
-        }
+        if (isPostgres()) {
+            PgColumn col = (PgColumn) columns;
+            if (col.getStorage() != null) {
+                sbOption.append(getAlterTable(true, isInherit))
+                .append(ALTER_COLUMN)
+                .append(PgDiffUtils.getQuotedName(col.name))
+                .append(" SET STORAGE ")
+                .append(col.getStorage())
+                .append(';');
+            }
 
-        writeOptions(column, sbOption, isInherit);
-        writeSequences(column, sbOption);
+            writeOptions(col, sbOption, isInherit);
+            writeSequences(col, sbOption);
+        }
     }
 
     private void fillInheritOptions(AbstractColumn column, StringBuilder sb) {

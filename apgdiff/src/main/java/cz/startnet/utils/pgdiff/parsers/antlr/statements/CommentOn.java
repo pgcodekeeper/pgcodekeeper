@@ -7,7 +7,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementCont
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
-import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
@@ -67,12 +66,12 @@ public class CommentOn extends ParserAbstract {
                     view.addColumnComment(db.getArguments(), name, comment);
                 }
             } else {
-                AbstractColumn column;
+                PgColumn column;
                 if (table.getInherits().isEmpty()) {
-                    column = getSafe(table::getColumn, nameCtx);
+                    column = (PgColumn) getSafe(table::getColumn, nameCtx);
                 } else {
                     String colName = nameCtx.getText();
-                    column = table.getColumn(colName);
+                    column = (PgColumn) table.getColumn(colName);
                     if (column == null) {
                         column = new PgColumn(colName);
                         column.setInherit(true);

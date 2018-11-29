@@ -8,7 +8,6 @@ import java.util.List;
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
-import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
@@ -55,7 +54,7 @@ public class MsExtendedObjectsReader extends JdbcReader {
                 List<String> columns = new ArrayList<>();
 
                 for (XmlReader col : XmlReader.readXML(res.getString("cols"))) {
-                    AbstractColumn column = new MsColumn(col.getString("name"));
+                    MsColumn column = new MsColumn(col.getString("name"));
                     boolean isUserDefined = col.getBoolean("ud");
                     if (!isUserDefined) {
                         column.setCollation(col.getString("cn"));

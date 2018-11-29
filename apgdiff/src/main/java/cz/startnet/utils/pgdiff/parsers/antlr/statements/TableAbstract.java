@@ -150,7 +150,7 @@ public abstract class TableAbstract extends ParserAbstract {
     protected void addColumn(String columnName, Data_typeContext datatype,
             Collate_identifierContext collate, List<Constraint_commonContext> constraints,
             Define_foreign_optionsContext options, AbstractTable table) {
-        AbstractColumn col = new PgColumn(columnName);
+        PgColumn col = new PgColumn(columnName);
         if (datatype != null) {
             col.setType(getFullCtxText(datatype));
             addTypeAsDepcy(datatype, col, getDefSchemaName());
