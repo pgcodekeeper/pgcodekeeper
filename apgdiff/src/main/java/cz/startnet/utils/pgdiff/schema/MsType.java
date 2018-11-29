@@ -33,9 +33,7 @@ public class MsType extends AbstractType {
 
     @Override
     public String getCreationSQL() {
-        StringBuilder sb = new StringBuilder("CREATE TYPE ")
-                .append(MsDiffUtils.quoteName(getContainingSchema().getName())).append('.')
-                .append(MsDiffUtils.quoteName(getName()));
+        StringBuilder sb = new StringBuilder("CREATE TYPE ").append(getQualifiedName());
 
         if (getBaseType() != null) {
             sb.append(" FROM ").append(getBaseType());
@@ -125,8 +123,7 @@ public class MsType extends AbstractType {
 
     @Override
     public String getDropSQL() {
-        return "DROP TYPE " + MsDiffUtils.quoteName(getContainingSchema().getName()) + '.'
-                + MsDiffUtils.quoteName(getName()) + GO;
+        return "DROP TYPE " + getQualifiedName() + GO;
     }
 
     @Override

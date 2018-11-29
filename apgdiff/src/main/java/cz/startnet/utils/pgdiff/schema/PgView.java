@@ -50,8 +50,7 @@ public class PgView extends AbstractView implements PgOptionContainer  {
             sbSQL.append(" MATERIALIZED");
         }
         sbSQL.append(" VIEW ");
-        sbSQL.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
-        sbSQL.append(PgDiffUtils.getQuotedName(name));
+        sbSQL.append(getQualifiedName());
 
         if (!columnNames.isEmpty()) {
             sbSQL.append(" (");
@@ -109,9 +108,7 @@ public class PgView extends AbstractView implements PgOptionContainer  {
 
         for (final DefaultValue defaultValue : getDefaultValues()) {
             sbSQL.append("\n\nALTER VIEW ");
-            sbSQL.append(PgDiffUtils.getQuotedName(getContainingSchema().getName()));
-            sbSQL.append('.');
-            sbSQL.append(PgDiffUtils.getQuotedName(name));
+            sbSQL.append(getQualifiedName());
             sbSQL.append(" ALTER COLUMN ");
             sbSQL.append(
                     PgDiffUtils.getQuotedName(defaultValue.getColumnName()));
@@ -129,9 +126,7 @@ public class PgView extends AbstractView implements PgOptionContainer  {
             if (columnComment.getComment() != null
                     && !columnComment.getComment().isEmpty()) {
                 sbSQL.append("\n\nCOMMENT ON COLUMN ");
-                sbSQL.append(PgDiffUtils.getQuotedName(getContainingSchema().getName()));
-                sbSQL.append('.');
-                sbSQL.append(PgDiffUtils.getQuotedName(name));
+                sbSQL.append(getQualifiedName());
                 sbSQL.append('.');
                 sbSQL.append(PgDiffUtils.getQuotedName(columnComment.getColumnName()));
                 sbSQL.append(" IS ");
@@ -146,8 +141,7 @@ public class PgView extends AbstractView implements PgOptionContainer  {
     @Override
     public String getDropSQL() {
         String mat = isMatView() ? "MATERIALIZED " : "";
-        return "DROP " + mat + "VIEW " + PgDiffUtils.getQuotedName(getContainingSchema().getName()) + '.'
-                + PgDiffUtils.getQuotedName(getName()) + ';';
+        return "DROP " + mat + "VIEW " + getQualifiedName() + ';';
     }
 
     @Override
@@ -219,16 +213,12 @@ public class PgView extends AbstractView implements PgOptionContainer  {
                     && !oldColumnComment.getComment().equals(
                             newColumnComment.getComment())) {
 
-                sb.append("\n\nCOMMENT ON COLUMN "
-                        + PgDiffUtils.getQuotedName(PgDiffUtils.getQuotedName(getContainingSchema().getName())) + '.'
-                        + PgDiffUtils.getQuotedName(newView.getName()) + '.'
+                sb.append("\n\nCOMMENT ON COLUMN " + getQualifiedName() + '.'
                         + PgDiffUtils.getQuotedName(newColumnComment
                                 .getColumnName()) + " IS "
                                 + newColumnComment.getComment() + ';');
             } else if (oldColumnComment != null && newColumnComment == null) {
-                sb.append("\n\nCOMMENT ON COLUMN "
-                        + PgDiffUtils.getQuotedName(PgDiffUtils.getQuotedName(getContainingSchema().getName())) + '.'
-                        + PgDiffUtils.getQuotedName(newView.getName()) + '.'
+                sb.append("\n\nCOMMENT ON COLUMN " + getQualifiedName() + '.'
                         + PgDiffUtils.getQuotedName(oldColumnComment
                                 .getColumnName()) + " IS NULL;");
             }
@@ -257,16 +247,10 @@ public class PgView extends AbstractView implements PgOptionContainer  {
             for (final DefaultValue newValue : newValues) {
                 if (oldValue.getColumnName().equals(newValue.getColumnName())) {
                     found = true;
-
                     if (!oldValue.getDefaultValue().equals(newValue.getDefaultValue())) {
-                        sb.append("\n\nALTER TABLE "
-                                + PgDiffUtils.getQuotedName(newView.getContainingSchema().getName()) + '.'
-                                + PgDiffUtils.getQuotedName(newView.getName())
-                                + " ALTER COLUMN "
-                                + PgDiffUtils.getQuotedName(newValue.getColumnName())
-                                + " SET DEFAULT "
-                                + newValue.getDefaultValue()
-                                + ';');
+                        sb.append("\n\nALTER TABLE ").append(getQualifiedName())
+                        .append(" ALTER COLUMN ").append(PgDiffUtils.getQuotedName(newValue.getColumnName()))
+                        .append(" SET DEFAULT ").append(newValue.getDefaultValue()).append(';');
                     }
 
                     break;
@@ -274,12 +258,9 @@ public class PgView extends AbstractView implements PgOptionContainer  {
             }
 
             if (!found) {
-                sb.append("\n\nALTER TABLE "
-                        + PgDiffUtils.getQuotedName(newView.getContainingSchema().getName()) + '.'
-                        + PgDiffUtils.getQuotedName(newView.getName())
-                        + " ALTER COLUMN "
-                        + PgDiffUtils.getQuotedName(oldValue.getColumnName())
-                        + " DROP DEFAULT;");
+                sb.append("\n\nALTER TABLE ").append(getQualifiedName()).append(" ALTER COLUMN ")
+                .append(PgDiffUtils.getQuotedName(oldValue.getColumnName()))
+                .append(" DROP DEFAULT;");
             }
         }
 
@@ -298,14 +279,9 @@ public class PgView extends AbstractView implements PgOptionContainer  {
                 continue;
             }
 
-            sb.append("\n\nALTER TABLE "
-                    + PgDiffUtils.getQuotedName(newView.getContainingSchema().getName()) + '.'
-                    + PgDiffUtils.getQuotedName(newView.getName())
-                    + " ALTER COLUMN "
-                    + PgDiffUtils.getQuotedName(newValue.getColumnName())
-                    + " SET DEFAULT "
-                    + newValue.getDefaultValue()
-                    + ';');
+            sb.append("\n\nALTER TABLE ").append(getQualifiedName())
+            .append(" ALTER COLUMN ").append(PgDiffUtils.getQuotedName(newValue.getColumnName()))
+            .append(" SET DEFAULT ").append(newValue.getDefaultValue()).append(';');
         }
     }
 

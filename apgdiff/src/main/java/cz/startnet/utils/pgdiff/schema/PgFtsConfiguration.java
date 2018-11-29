@@ -38,8 +38,7 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
     public String getCreationSQL() {
         StringBuilder sbSql = new StringBuilder();
         sbSql.append("CREATE TEXT SEARCH CONFIGURATION ")
-        .append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.')
-        .append(PgDiffUtils.getQuotedName(getName())).append(" (\n\t");
+        .append(getQualifiedName()).append(" (\n\t");
         sbSql.append("PARSER = ").append(parser).append(" );");
 
         dictionariesMap.forEach((fragment, dictionaries) -> {
@@ -63,15 +62,13 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
     @Override
     protected StringBuilder appendCommentSql(StringBuilder sb) {
         sb.append("COMMENT ON TEXT SEARCH CONFIGURATION ");
-        sb.append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
-        .append('.').append(PgDiffUtils.getQuotedName(getName()));
+        sb.append(getQualifiedName());
         return sb.append(" IS ").append(comment).append(';');
     }
 
     @Override
     public String getDropSQL() {
-        return "DROP TEXT SEARCH CONFIGURATION " + PgDiffUtils.getQuotedName(getContainingSchema().getName())
-        + '.' + PgDiffUtils.getQuotedName(getName()) + ';';
+        return "DROP TEXT SEARCH CONFIGURATION " + getQualifiedName() + ';';
     }
 
     @Override

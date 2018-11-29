@@ -3,7 +3,6 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -30,8 +29,7 @@ public class PgFtsTemplate extends PgStatementWithSearchPath {
     public String getCreationSQL() {
         StringBuilder sbSql = new StringBuilder();
         sbSql.append("CREATE TEXT SEARCH TEMPLATE ")
-        .append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.')
-        .append(PgDiffUtils.getQuotedName(getName())).append(" (\n\t");
+        .append(getQualifiedName()).append(" (\n\t");
 
         if (initFunction != null) {
             sbSql.append("INIT = ").append(initFunction).append(",\n\t");
@@ -50,15 +48,13 @@ public class PgFtsTemplate extends PgStatementWithSearchPath {
     @Override
     protected StringBuilder appendCommentSql(StringBuilder sb) {
         sb.append("COMMENT ON TEXT SEARCH TEMPLATE ");
-        sb.append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
-        .append('.').append(PgDiffUtils.getQuotedName(getName()));
+        sb.append(getQualifiedName());
         return sb.append(" IS ").append(comment).append(';');
     }
 
     @Override
     public String getDropSQL() {
-        return "DROP TEXT SEARCH TEMPLATE " + PgDiffUtils.getQuotedName(getContainingSchema().getName())
-        + '.' + PgDiffUtils.getQuotedName(getName()) + ';';
+        return "DROP TEXT SEARCH TEMPLATE " + getQualifiedName() + ';';
     }
 
     @Override

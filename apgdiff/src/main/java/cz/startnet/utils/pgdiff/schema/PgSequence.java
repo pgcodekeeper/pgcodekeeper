@@ -8,8 +8,6 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
-
 /**
  * Stores sequence information.
  */
@@ -22,9 +20,7 @@ public class PgSequence extends AbstractSequence {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append("CREATE SEQUENCE ");
-        sbSQL.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
-        sbSQL.append(PgDiffUtils.getQuotedName(name));
+        sbSQL.append("CREATE SEQUENCE ").append(getQualifiedName());
 
         if (!"bigint".equals(getDataType())) {
             sbSQL.append("\n\tAS ").append(getDataType());
@@ -94,9 +90,7 @@ public class PgSequence extends AbstractSequence {
         }
         final StringBuilder sbSQL = new StringBuilder();
 
-        sbSQL.append("\n\nALTER SEQUENCE ")
-        .append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.')
-        .append(PgDiffUtils.getQuotedName(name));
+        sbSQL.append("\n\nALTER SEQUENCE ").append(getQualifiedName());
         sbSQL.append("\n\tOWNED BY ").append(getOwnedBy()).append(';');
 
         return sbSQL.toString();
@@ -111,8 +105,7 @@ public class PgSequence extends AbstractSequence {
 
     @Override
     public String getDropSQL() {
-        return "DROP SEQUENCE " + PgDiffUtils.getQuotedName(getContainingSchema().getName()) + '.'
-                + PgDiffUtils.getQuotedName(getName()) + ";";
+        return "DROP SEQUENCE " + getQualifiedName() + ";";
     }
 
     @Override
@@ -130,10 +123,8 @@ public class PgSequence extends AbstractSequence {
         sbSQL.setLength(0);
 
         if (compareSequenceBody(newSequence, oldSequence, sbSQL)) {
-            sb.append("\n\nALTER SEQUENCE "
-                    + PgDiffUtils.getQuotedName(getContainingSchema().getName()) + '.'
-                    + PgDiffUtils.getQuotedName(newSequence.getName())
-                    + sbSQL.toString() + ";");
+            sb.append("\n\nALTER SEQUENCE ").append(newSequence.getQualifiedName()).
+            append(sbSQL).append(';');
         }
 
         if (!Objects.equals(oldSequence.getOwner(), newSequence.getOwner())) {

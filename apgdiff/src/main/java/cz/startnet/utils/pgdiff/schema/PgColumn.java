@@ -218,9 +218,7 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
                 .append(newIdentityType)
                 .append(" AS IDENTITY (")
                 .append("\n\tSEQUENCE NAME ")
-                .append(PgDiffUtils.getQuotedName(newSequence.getContainingSchema().getName()))
-                .append('.')
-                .append(PgDiffUtils.getQuotedName(newSequence.getName()));
+                .append(newSequence.getQualifiedName());
                 newSequence.fillSequenceBody(sb);
                 sb.append("\n);");
             } else {
@@ -232,9 +230,7 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
                 !Objects.equals(oldSequence, newSequence)) {
             if (!oldSequence.getName().equals(newSequence.getName())) {
                 sb.append("\n\n").append("ALTER SEQUENCE ")
-                .append(PgDiffUtils.getQuotedName(oldSequence.getContainingSchema().getName()))
-                .append('.')
-                .append(PgDiffUtils.getQuotedName(oldSequence.getName()))
+                .append(oldSequence.getQualifiedName())
                 .append(" RENAME TO ")
                 .append(PgDiffUtils.getQuotedName(newSequence.getName())).append(';');
             }
