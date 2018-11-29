@@ -1049,7 +1049,7 @@ role_name_with_group
 
 comment_on_statement
     : COMMENT ON(
-        (AGGREGATE | FUNCTION) name=schema_qualified_name function_args
+        (AGGREGATE | FUNCTION | PROCEDURE) name=schema_qualified_name function_args
         | CAST LEFT_PAREN source_type=data_type AS target_type=data_type RIGHT_PAREN
         | (CONSTRAINT | RULE | TRIGGER) name=schema_qualified_name ON table_name=schema_qualified_name
         | OPERATOR target_operator
