@@ -47,6 +47,7 @@ public class PgPrivilegesModelExporter extends AbstractModelExporter {
             break;
         case FUNCTION:
         case PROCEDURE:
+        case AGGREGATE:
         case OPERATOR:
             dumpFuncPriv(el, st);
             break;

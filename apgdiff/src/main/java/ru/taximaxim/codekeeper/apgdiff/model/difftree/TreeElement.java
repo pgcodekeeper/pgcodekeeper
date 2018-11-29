@@ -134,8 +134,9 @@ public class TreeElement {
         case USER:              return ((PgDatabase) parent.getPgStatement(db)).getUser(name);
         case ROLE:              return ((PgDatabase) parent.getPgStatement(db)).getRole(name);
 
-        case FUNCTION:          return ((AbstractSchema) parent.getPgStatement(db)).getFunction(name);
-        case PROCEDURE:         return ((AbstractSchema) parent.getPgStatement(db)).getFunction(name);
+        case FUNCTION:
+        case PROCEDURE:
+        case AGGREGATE:         return ((AbstractSchema) parent.getPgStatement(db)).getFunction(name);
         case OPERATOR:          return ((AbstractSchema) parent.getPgStatement(db)).getOperator(name);
         case SEQUENCE:          return ((AbstractSchema) parent.getPgStatement(db)).getSequence(name);
         case TYPE:              return ((AbstractSchema) parent.getPgStatement(db)).getType(name);

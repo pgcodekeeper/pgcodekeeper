@@ -178,6 +178,8 @@ public class DBTimestamp implements Serializable {
         case TYPE:
         case SEQUENCE:
         case FUNCTION:
+        case PROCEDURE:
+        case AGGREGATE:
         case OPERATOR:
         case TABLE:
         case VIEW:

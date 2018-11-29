@@ -83,8 +83,11 @@ public class TimestampsReader implements PgCatalogStrings {
             column = new GenericColumn(schema, name, DbObjType.SEQUENCE);
             break;
         case "function":
+        case "procedure":
+        case "aggregate":
             loader.submitAntlrTask(identity, SQLParser::function_args_parser,
-                    ctx -> parseFunctionName(ctx, lastModified, time, objId, author, acl, colAcls));
+                    ctx -> parseFunctionName(ctx, lastModified, time, objId,
+                            author, acl, colAcls, DbObjType.valueOf(type.toUpperCase())));
             break;
         case "operator":
             loader.submitAntlrTask(identity, SQLParser::operator_args_parser,
@@ -131,13 +134,13 @@ public class TimestampsReader implements PgCatalogStrings {
 
     private void parseFunctionName(Function_args_parserContext ctx,
             Instant lastModified, DBTimestamp time, long objId, String author, String acl,
-            Map<String, String> colAcls) {
+            Map<String, String> colAcls, DbObjType type) {
         if (ctx != null) {
             List<IdentifierContext> object = ctx.schema_qualified_name().identifier();
             String schema = QNameParser.getSchemaNameCtx(object).getText();
             String name = QNameParser.getFirstName(object);
             GenericColumn gc = new GenericColumn(schema, ParserAbstract
-                    .parseSignature(name, ctx.function_args(), false), DbObjType.FUNCTION);
+                    .parseSignature(name, ctx.function_args(), DbObjType.AGGREGATE == type), type);
             time.addObject(gc, objId, lastModified, author, acl, colAcls);
         }
     }

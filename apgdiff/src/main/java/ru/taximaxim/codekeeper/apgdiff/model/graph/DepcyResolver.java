@@ -325,6 +325,7 @@ public class DepcyResolver {
             return oldSchema.getSequence(statement.getName());
         case FUNCTION:
         case PROCEDURE:
+        case AGGREGATE:
             return oldSchema.getFunction(statement.getName());
         case OPERATOR:
             return oldSchema.getOperator(statement.getName());
