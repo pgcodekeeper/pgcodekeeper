@@ -29,7 +29,7 @@ import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
 
 public class LibraryLoader {
 
-    private final PgDatabase db;
+    private final PgDatabase database;
     private final Path metaPath;
     private final List<AntlrError> errors;
 
@@ -37,8 +37,8 @@ public class LibraryLoader {
         this(db, metaPath, null);
     }
 
-    public LibraryLoader(PgDatabase db, Path metaPath, List<AntlrError> errors) {
-        this.db = db;
+    public LibraryLoader(PgDatabase database, Path metaPath, List<AntlrError> errors) {
+        this.database = database;
         this.metaPath = metaPath;
         this.errors = errors;
     }
@@ -59,7 +59,7 @@ public class LibraryLoader {
 
     private void loadLibrary(PgDiffArguments args, boolean isIgnorePriv, String path)
             throws InterruptedException, IOException {
-        db.addLib(getLibrary(path, args, isIgnorePriv));
+        database.addLib(getLibrary(path, args, isIgnorePriv));
     }
 
     private PgDatabase getLibrary(String path, PgDiffArguments arguments, boolean isIgnorePriv)

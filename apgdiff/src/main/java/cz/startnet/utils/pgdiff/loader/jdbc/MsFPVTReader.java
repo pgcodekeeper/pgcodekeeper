@@ -3,7 +3,6 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.function.BiConsumer;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 
@@ -20,8 +19,6 @@ import cz.startnet.utils.pgdiff.schema.MsProcedure;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import cz.startnet.utils.pgdiff.schema.MsView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
-import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsFPVTReader extends JdbcReader {
@@ -71,14 +68,6 @@ public class MsFPVTReader extends JdbcReader {
 
         PgDatabase db = schema.getDatabase();
 
-        BiConsumer<PgStatementWithSearchPath, List<XmlReader>> cons = (st, acl) -> {
-            try {
-                loader.setPrivileges(st, acl);
-            } catch (XmlReaderException e) {
-                Log.log(e);
-            }
-        };
-
         if (tt == DbObjType.TRIGGER) {
             loader.submitMsAntlrTask(def, p -> {
                 Batch_statementContext ctx = p.tsql_file().batch(0).batch_statement();
@@ -94,7 +83,7 @@ public class MsFPVTReader extends JdbcReader {
             }, creator -> {
                 MsView st = creator.getObject(schema);
                 loader.setOwner(st, owner);
-                cons.accept(st, acls);
+                loader.setPrivileges(st, acls);
             });
         } else if (tt == DbObjType.PROCEDURE) {
             loader.submitMsAntlrTask(def, p -> {
@@ -103,7 +92,7 @@ public class MsFPVTReader extends JdbcReader {
             }, creator -> {
                 MsProcedure st = creator.getObject(schema);
                 loader.setOwner(st, owner);
-                cons.accept(st, acls);
+                loader.setPrivileges(st, acls);
             });
         } else {
             loader.submitMsAntlrTask(def, p -> {
@@ -112,7 +101,7 @@ public class MsFPVTReader extends JdbcReader {
             }, creator -> {
                 MsFunction st = creator.getObject(schema);
                 loader.setOwner(st, owner);
-                cons.accept(st, acls);
+                loader.setPrivileges(st, acls);
             });
         }
     }

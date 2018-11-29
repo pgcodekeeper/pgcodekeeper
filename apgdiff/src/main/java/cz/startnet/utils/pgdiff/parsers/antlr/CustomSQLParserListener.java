@@ -141,7 +141,7 @@ implements SqlContextProcessor {
 
     private void set(Set_statementContext ctx) {
         Session_local_optionContext sesLocOpt = ctx.set_action().session_local_option();
-        if (sesLocOpt != null && sesLocOpt.config_param_val.isEmpty()) {
+        if (sesLocOpt == null || sesLocOpt.config_param == null) {
             return;
         }
         String confParam = sesLocOpt.config_param.getText();

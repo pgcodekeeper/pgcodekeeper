@@ -106,7 +106,7 @@ public final class Main {
     }
 
     private static void parse(PgDiffArguments arguments)
-            throws IOException, InterruptedException, URISyntaxException {
+            throws IOException, InterruptedException {
         PgDatabase d = PgDiff.loadDatabaseSchema(
                 arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments);
 

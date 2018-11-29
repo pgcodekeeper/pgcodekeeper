@@ -147,7 +147,7 @@ public class CommentOn extends ParserAbstract {
                 }
             }
             //schema
-        } else if (ctx.SCHEMA() != null && !name.equals(ApgdiffConsts.PUBLIC)) {
+        } else if (ctx.SCHEMA() != null && !ApgdiffConsts.PUBLIC.equals(name)) {
             getSafe(db::getSchema, nameCtx).setComment(db.getArguments(), comment);
             // sequence
         } else if (ctx.SEQUENCE() != null) {

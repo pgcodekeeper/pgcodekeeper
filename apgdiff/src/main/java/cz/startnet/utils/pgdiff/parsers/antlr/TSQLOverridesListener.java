@@ -82,13 +82,7 @@ implements TSqlContextProcessor {
             return;
         }
 
-        StatementOverride override = overrides.get(st);
-        if (override == null) {
-            override = new StatementOverride();
-            overrides.put(st, override);
-        }
-
-        override.setOwner(owner);
+        overrides.computeIfAbsent(st, k -> new StatementOverride()).setOwner(owner);
     }
 
     private void alter(Schema_alterContext ctx) {

@@ -13,6 +13,8 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgFtsConfiguration extends PgStatementWithSearchPath {
 
+    private static final String ALTER_CONFIGURATION = "\n\nALTER TEXT SEARCH CONFIGURATION ";
+
     private String parser;
     /**key - fragment, value - dictionaries */
     private final Map<String, String> dictionariesMap = new HashMap<>();
@@ -41,7 +43,7 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
         sbSql.append("PARSER = ").append(parser).append(" );");
 
         dictionariesMap.forEach((fragment, dictionaries) -> {
-            sbSql.append("\n\nALTER TEXT SEARCH CONFIGURATION ")
+            sbSql.append(ALTER_CONFIGURATION)
             .append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.')
             .append(PgDiffUtils.getQuotedName(getName()));
             sbSql.append("\n\tADD MAPPING FOR ").append(fragment)
@@ -108,12 +110,12 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
             String newDictionaries = newMap.get(fragment);
 
             if (newDictionaries == null) {
-                sb.append("\n\nALTER TEXT SEARCH CONFIGURATION ")
+                sb.append(ALTER_CONFIGURATION)
                 .append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
                 .append('.').append(PgDiffUtils.getQuotedName(getName()))
                 .append("\n\tDROP MAPPING FOR ").append(fragment).append(';');
             } else if (!dictionaries.equals(newDictionaries)) {
-                sb.append("\n\nALTER TEXT SEARCH CONFIGURATION ")
+                sb.append(ALTER_CONFIGURATION)
                 .append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
                 .append('.').append(PgDiffUtils.getQuotedName(getName()))
                 .append("\n\tALTER MAPPING FOR ").append(fragment)
@@ -123,7 +125,7 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
 
         newMap.forEach((fragment, dictionaries) -> {
             if (!oldMap.containsKey(fragment)) {
-                sb.append("\n\nALTER TEXT SEARCH CONFIGURATION ")
+                sb.append(ALTER_CONFIGURATION)
                 .append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
                 .append('.').append(PgDiffUtils.getQuotedName(getName()))
                 .append("\n\tADD MAPPING FOR ").append(fragment)

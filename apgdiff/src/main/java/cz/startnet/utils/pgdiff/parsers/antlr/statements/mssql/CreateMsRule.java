@@ -151,13 +151,8 @@ public class CreateMsRule extends ParserAbstract {
         for (Table_column_privilegesContext priv : columnsCtx.table_column_privileges()) {
             String privName = getFullCtxText(priv.permission());
             for (IdContext col : priv.table_columns().column) {
-                String colName = col.getText();
-                Entry<IdContext, List<String>> privList = colPriv.get(colName);
-                if (privList == null) {
-                    privList = new SimpleEntry<>(col, new ArrayList<>());
-                    colPriv.put(colName, privList);
-                }
-                privList.getValue().add(privName);
+                colPriv.computeIfAbsent(col.getText(),
+                        k -> new SimpleEntry<>(col, new ArrayList<>())).getValue().add(privName);
             }
         }
 
@@ -200,13 +195,8 @@ public class CreateMsRule extends ParserAbstract {
         if (overrides == null) {
             st.addPrivilege(privilege);
         } else {
-            StatementOverride override = overrides.get(st);
-            if (override == null) {
-                override = new StatementOverride();
-                overrides.put(st, override);
-            }
-
-            override.addPrivilege(privilege);
+            overrides.computeIfAbsent(st,
+                    k -> new StatementOverride()).addPrivilege(privilege);
         }
     }
 }

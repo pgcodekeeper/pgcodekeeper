@@ -47,7 +47,7 @@ public class PgOverridesModelExporter extends AbstractModelExporter {
         case FUNCTION:
         case PROCEDURE:
         case OPERATOR:
-            dumpFuncOverrides(el, st);
+            dumpFuncOverrides(st);
             break;
         default:
             deleteStatementIfExists(st);
@@ -60,7 +60,7 @@ public class PgOverridesModelExporter extends AbstractModelExporter {
         // no impl
     }
 
-    private void dumpFuncOverrides(TreeElement el, PgStatement st) throws IOException {
+    private void dumpFuncOverrides(PgStatement st) throws IOException {
         PgDiffArguments args = new PgDiffArguments();
         Path path = outDir.resolve(getRelativeFilePath(st, true));
         StringBuilder sb = new StringBuilder();

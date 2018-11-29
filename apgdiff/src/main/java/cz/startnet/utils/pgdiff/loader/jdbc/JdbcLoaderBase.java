@@ -313,7 +313,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         }
     }
 
-    public void setPrivileges(PgStatement st, List<XmlReader> privs) throws XmlReaderException {
+    public void setPrivileges(PgStatement st, List<XmlReader> privs) {
         if (args.isIgnorePrivileges()) {
             return;
         }

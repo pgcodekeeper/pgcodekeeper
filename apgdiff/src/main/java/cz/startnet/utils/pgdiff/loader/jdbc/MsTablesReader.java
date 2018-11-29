@@ -67,7 +67,7 @@ public class MsTablesReader extends JdbcReader {
         loader.setPrivileges(table, XmlReader.readXML(res.getString("acl")));
     }
 
-    static AbstractColumn getColumn(XmlReader col) throws XmlReaderException {
+    static AbstractColumn getColumn(XmlReader col) {
         MsColumn column = new MsColumn(col.getString("name"));
         String exp = col.getString("def");
         column.setExpression(exp);

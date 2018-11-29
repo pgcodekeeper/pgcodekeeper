@@ -9,7 +9,6 @@ import java.net.URLEncoder;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Properties;
 
@@ -18,7 +17,6 @@ import org.osgi.framework.BundleContext;
 import ru.taximaxim.codekeeper.apgdiff.Activator;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
-import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.pgpass.PgPass;
 import ru.taximaxim.pgpass.PgPassException;
 
@@ -172,16 +170,12 @@ public class JdbcConnector {
             Connection connection = establishConnection();
             connection.setReadOnly(readOnly);
             return connection;
-        } catch (ClassNotFoundException e) {
-            throw new IOException(MessageFormat.format(
-                    Messages.Connection_JdbcDriverClassNotFound, e.getLocalizedMessage()), e);
         } catch (SQLException e) {
             throw new IOException(e.getLocalizedMessage(), e);
         }
     }
 
-    protected Connection establishConnection()
-            throws SQLException, ClassNotFoundException, IOException {
+    protected Connection establishConnection() throws SQLException, IOException {
         Log.log(Log.LOG_INFO, "Establishing JDBC connection with host:port " +
                 host + ":" + port + ", db name " + dbName + ", username " + user);
         return DriverManager.getConnection(url, makeProperties());

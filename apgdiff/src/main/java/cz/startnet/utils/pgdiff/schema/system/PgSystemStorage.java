@@ -41,7 +41,7 @@ public class PgSystemStorage implements Serializable {
                     FILE_NAME + version + ".ser")).toString();
             Object object = ApgdiffUtils.deserialize(path);
 
-            if (object != null && object instanceof PgSystemStorage) {
+            if (object instanceof PgSystemStorage) {
                 systemStorage = (PgSystemStorage) object;
                 PgSystemStorage other = STORAGE_CACHE.putIfAbsent(version, systemStorage);
                 return other == null ? systemStorage : other;

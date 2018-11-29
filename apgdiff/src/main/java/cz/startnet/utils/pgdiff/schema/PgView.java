@@ -181,20 +181,20 @@ public class PgView extends AbstractView implements PgOptionContainer  {
             sb.append("\n\n");
             newView.appendCommentSql(sb);
         }
-        final List<String> columnNames = new ArrayList<>(newView
+        final List<String> newColumnNames = new ArrayList<>(newView
                 .getColumnComments().size());
 
         for (final ColumnComment columnComment : newView.getColumnComments()) {
-            columnNames.add(columnComment.getColumnName());
+            newColumnNames.add(columnComment.getColumnName());
         }
 
         for (final ColumnComment columnComment : getColumnComments()) {
-            if (!columnNames.contains(columnComment.getColumnName())) {
-                columnNames.add(columnComment.getColumnName());
+            if (!newColumnNames.contains(columnComment.getColumnName())) {
+                newColumnNames.add(columnComment.getColumnName());
             }
         }
 
-        for (final String columnName : columnNames) {
+        for (final String columnName : newColumnNames) {
             ColumnComment oldColumnComment = null;
             ColumnComment newColumnComment = null;
 

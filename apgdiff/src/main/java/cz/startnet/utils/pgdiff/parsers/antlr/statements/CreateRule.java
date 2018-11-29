@@ -115,10 +115,10 @@ public class CreateRule extends ParserAbstract {
             return null;
         }
 
-        List<Schema_qualified_nameContext> obj_name = ctx.names_references().name;
+        List<Schema_qualified_nameContext> objName = ctx.names_references().name;
 
         if (type != null) {
-            for (Schema_qualified_nameContext name : obj_name) {
+            for (Schema_qualified_nameContext name : objName) {
                 for (String role : roles) {
                     addToDB(name, type, new PgPrivilege(state, permissions,
                             type + " " + name.getText(), role, isGO));
@@ -140,13 +140,8 @@ public class CreateRule extends ParserAbstract {
         for (Table_column_privilegesContext priv : columnsCtx.table_column_privileges()) {
             String privName = getFullCtxText(priv.table_column_privilege());
             for (IdentifierContext col : priv.column) {
-                String colName = col.getText();
-                Entry<IdentifierContext, List<String>> privList = colPriv.get(colName);
-                if (privList == null) {
-                    privList = new SimpleEntry<>(col, new ArrayList<>());
-                    colPriv.put(colName, privList);
-                }
-                privList.getValue().add(privName);
+                colPriv.computeIfAbsent(col.getText(),
+                        k -> new SimpleEntry<>(col, new ArrayList<>())).getValue().add(privName);
             }
         }
 
@@ -247,13 +242,8 @@ public class CreateRule extends ParserAbstract {
         if (overrides == null) {
             st.addPrivilege(privilege);
         } else {
-            StatementOverride override = overrides.get(st);
-            if (override == null) {
-                override = new StatementOverride();
-                overrides.put(st, override);
-            }
-
-            override.addPrivilege(privilege);
+            overrides.computeIfAbsent(st,
+                    k -> new StatementOverride()).addPrivilege(privilege);
         }
     }
 }

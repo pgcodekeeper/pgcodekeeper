@@ -128,12 +128,8 @@ public class TablesReader extends JdbcReader {
             }
 
             // persistence: U - unlogged, P - permanent, T - temporary
-            switch (res.getString("persistence")) {
-            case "u":
+            if ("u".equals(res.getString("persistence"))) {
                 regTable.setLogged(false);
-                break;
-            default:
-                break;
             }
         }
         return t;

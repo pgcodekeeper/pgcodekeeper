@@ -183,8 +183,8 @@ public class TreeElement {
             }
             return root;
         }
-        TreeElement parent = findElement(st.getParent());
-        return parent == null ? null : parent.getChild(st.getName(), st.getStatementType());
+        TreeElement par = findElement(st.getParent());
+        return par == null ? null : par.getChild(st.getName(), st.getStatementType());
     }
 
     /**

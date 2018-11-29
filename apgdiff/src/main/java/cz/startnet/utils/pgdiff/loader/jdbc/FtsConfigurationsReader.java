@@ -42,16 +42,14 @@ public class FtsConfigurationsReader extends JdbcReader {
                 String dictSchema = dictSchemas[i];
                 String dictName = dictionaries[i];
 
-                List<String> dicts = dictMap.get(fragment);
-                if (dicts == null) {
-                    dicts = new ArrayList<>();
-                    dictMap.put(fragment, dicts);
-                }
-
                 if (!"pg_catalog".equals(dictSchema)) {
                     config.addDep(new GenericColumn(dictSchema, dictName, DbObjType.FTS_DICTIONARY));
                 }
-                dicts.add(PgDiffUtils.getQuotedName(dictSchema) + '.' + PgDiffUtils.getQuotedName(dictName));
+
+                String dName = PgDiffUtils.getQuotedName(dictSchema) + '.'
+                        + PgDiffUtils.getQuotedName(dictName);
+
+                dictMap.computeIfAbsent(fragment, k -> new ArrayList<>()).add(dName);
             }
 
             dictMap.forEach(config::addDictionary);
