@@ -25,6 +25,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PartitionPgTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.SimplePgTable;
 import cz.startnet.utils.pgdiff.schema.TypedPgTable;
 
@@ -59,7 +60,7 @@ public class CreateTable extends TableAbstract {
         Define_typeContext typeCtx = tabCtx.define_type();
         Define_partitionContext partCtx = tabCtx.define_partition();
 
-        AbstractTable table;
+        PgTable table;
 
         if (typeCtx != null) {
             table = defineType(typeCtx, tableName, schemaName);
@@ -76,7 +77,7 @@ public class CreateTable extends TableAbstract {
         return table;
     }
 
-    private void fillColumns(Define_columnsContext columnsCtx, AbstractTable table, String schemaName) {
+    private void fillColumns(Define_columnsContext columnsCtx, PgTable table, String schemaName) {
         for (Table_column_defContext colCtx : columnsCtx.table_col_def) {
             if (colCtx.tabl_constraint != null) {
                 addTableConstraint(colCtx.tabl_constraint, table, schemaName);

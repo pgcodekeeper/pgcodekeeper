@@ -17,12 +17,12 @@ import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractRegularTable;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractSequence;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgTable;
 
 public class AlterTable extends TableAbstract {
 
@@ -37,7 +37,7 @@ public class AlterTable extends TableAbstract {
         List<IdentifierContext> ids = ctx.name.identifier();
         AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
-        AbstractTable tabl = null;
+        PgTable tabl = null;
 
         for (Table_actionContext tablAction : ctx.table_action()) {
             // for owners try to get any relation, fail if the last attempt fails
@@ -57,7 +57,7 @@ public class AlterTable extends TableAbstract {
             }
 
             // everything else requires a real table, so fail immediately
-            tabl = getSafe(schema::getTable, nameCtx);
+            tabl = (PgTable) getSafe(schema::getTable, nameCtx);
 
             if (tablAction.table_column_definition() != null) {
                 Table_column_definitionContext column = tablAction.table_column_definition();
@@ -173,7 +173,7 @@ public class AlterTable extends TableAbstract {
         return tabl;
     }
 
-    private void createRule(AbstractTable tabl, Table_actionContext tablAction) {
+    private void createRule(PgTable tabl, Table_actionContext tablAction) {
         PgRule rule = getSafe(tabl::getRule, tablAction.rewrite_rule_name.identifier(0));
         if (rule != null) {
             if (tablAction.DISABLE() != null) {

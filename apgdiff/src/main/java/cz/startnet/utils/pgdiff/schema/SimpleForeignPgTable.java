@@ -24,7 +24,7 @@ public class SimpleForeignPgTable extends AbstractForeignTable {
 
         int start = sbSQL.length();
         for (AbstractColumn column : columns) {
-            writeColumn(column, sbSQL, sbOption);
+            writeColumn((PgColumn) column, sbSQL, sbOption);
         }
 
         if (start != sbSQL.length()) {

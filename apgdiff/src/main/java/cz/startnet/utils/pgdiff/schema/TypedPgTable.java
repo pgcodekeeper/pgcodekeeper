@@ -29,7 +29,7 @@ public class TypedPgTable extends AbstractRegularTable {
 
             int start = sbSQL.length();
             for (AbstractColumn column : columns) {
-                writeColumn(column, sbSQL, sbOption);
+                writeColumn((PgColumn) column, sbSQL, sbOption);
             }
 
             if (start != sbSQL.length()) {
@@ -44,7 +44,7 @@ public class TypedPgTable extends AbstractRegularTable {
     }
 
     @Override
-    protected void compareTableTypes(AbstractTable newTable, StringBuilder sb) {
+    protected void compareTableTypes(PgTable newTable, StringBuilder sb) {
         if (newTable instanceof TypedPgTable) {
             String newType  = ((TypedPgTable)newTable).getOfType();
             if (!Objects.equals(ofType, newType)) {

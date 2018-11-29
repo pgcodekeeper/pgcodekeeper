@@ -104,7 +104,7 @@ public class PgIndex extends AbstractIndex {
         }
 
         if (isClusterIndex() && !newIndex.isClusterIndex() &&
-                !((AbstractTable)newIndex.getParent()).isClustered()) {
+                !((PgTable)newIndex.getParent()).isClustered()) {
             sb.append("\n\nALTER TABLE ")
             .append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
             .append('.').append(PgDiffUtils.getQuotedName(getTableName()))

@@ -10,7 +10,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.SimpleMsTable;
+import cz.startnet.utils.pgdiff.schema.MsTable;
 
 public class AlterMsTable extends TableAbstract {
 
@@ -45,7 +45,7 @@ public class AlterMsTable extends TableAbstract {
             MsTrigger tr = (MsTrigger) getSafe(table::getTrigger, triggerName);
             tr.setDisable(ctx.ENABLE() == null);
         } else if (ctx.CHANGE_TRACKING() != null && ctx.ENABLE() != null) {
-            ((SimpleMsTable)table).setTracked(ctx.ON() != null);
+            ((MsTable)table).setTracked(ctx.ON() != null);
         }
 
         return table;

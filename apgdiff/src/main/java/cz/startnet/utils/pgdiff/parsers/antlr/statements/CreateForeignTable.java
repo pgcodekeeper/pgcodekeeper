@@ -20,6 +20,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PartitionForeignPgTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.SimpleForeignPgTable;
 
 public class CreateForeignTable extends TableAbstract {
@@ -49,7 +50,7 @@ public class CreateForeignTable extends TableAbstract {
         Define_foreign_tableContext colCtx = ctx.define_foreign_table();
         Define_partitionContext partCtx = ctx.define_partition();
 
-        AbstractTable table;
+        PgTable table;
 
         if (colCtx != null) {
             table = fillForeignTable(srvCtx, new SimpleForeignPgTable(
@@ -67,7 +68,7 @@ public class CreateForeignTable extends TableAbstract {
         return table;
     }
 
-    private void fillColumns(Define_foreign_tableContext columnsCtx, AbstractTable table,
+    private void fillColumns(Define_foreign_tableContext columnsCtx, PgTable table,
             String schemaName) {
         for (Foreign_column_defContext colCtx : columnsCtx.columns) {
             if (colCtx.tabl_constraint != null) {

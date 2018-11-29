@@ -482,7 +482,7 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof MsColumn && super.compare(obj)) {
+        if (obj instanceof PgColumn && super.compare(obj)) {
             PgColumn col = (PgColumn) obj;
             return Objects.equals(statistics, col.getStatistics())
                     && Objects.equals(storage, col.getStorage())

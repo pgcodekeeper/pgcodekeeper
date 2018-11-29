@@ -36,7 +36,7 @@ import cz.startnet.utils.pgdiff.schema.MsView;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
-import cz.startnet.utils.pgdiff.schema.SimpleMsTable;
+import cz.startnet.utils.pgdiff.schema.MsTable;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
@@ -220,7 +220,7 @@ class MsDB0 extends MsDatabaseObjectCreator {
         PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
         AbstractSchema schema = d.getDefaultSchema();
 
-        SimpleMsTable table = new SimpleMsTable("fax_boxes");
+        MsTable table = new MsTable("fax_boxes");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -239,7 +239,7 @@ class MsDB0 extends MsDatabaseObjectCreator {
 
         table.setOwner("ms_user");
 
-        table = new SimpleMsTable("faxes");
+        table = new MsTable("faxes");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -315,7 +315,7 @@ class MsDB0 extends MsDatabaseObjectCreator {
                 "    REFERENCES [dbo].[fax_boxes](fax_box_id) ON DELETE SET NULL ON UPDATE CASCADE");
         table.addConstraint(constraint);
 
-        table = new SimpleMsTable("extensions");
+        table = new MsTable("extensions");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -343,7 +343,7 @@ class MsDB1 extends MsDatabaseObjectCreator {
 
         schema = d.getSchema(ApgdiffConsts.DBO);
 
-        SimpleMsTable table = new SimpleMsTable("contacts");
+        MsTable table = new MsTable("contacts");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -380,7 +380,7 @@ class MsDB2 extends MsDatabaseObjectCreator {
         seq.setCache("1");
         schema.addSequence(seq);
 
-        SimpleMsTable table = new SimpleMsTable("admins");
+        MsTable table = new MsTable("admins");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -518,7 +518,7 @@ class MsDB3 extends MsDatabaseObjectCreator {
         seq.setCache("1");
         schema.addSequence(seq);
 
-        SimpleMsTable table = new SimpleMsTable("call_logs");
+        MsTable table = new MsTable("call_logs");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -548,7 +548,7 @@ class MsDB4 extends MsDatabaseObjectCreator {
         PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
         AbstractSchema schema = d.getDefaultSchema();
 
-        SimpleMsTable table = new SimpleMsTable("table1");
+        MsTable table = new MsTable("table1");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -632,7 +632,7 @@ class MsDB5 extends MsDatabaseObjectCreator {
         schema.addPrivilege(new PgPrivilege("GRANT", "DELETE", "SCHEMA::[dbo]", "[ms_user]", false));
         schema.addPrivilege(new PgPrivilege("GRANT", "INSERT", "SCHEMA::[dbo]", "[ms_user]", false));
 
-        SimpleMsTable table = new SimpleMsTable("test_table");
+        MsTable table = new MsTable("test_table");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -740,7 +740,7 @@ class MsDB8 extends MsDatabaseObjectCreator {
         seq.setOwner("ms_user");
         schema.addSequence(seq);
 
-        SimpleMsTable table = new SimpleMsTable("user_data");
+        MsTable table = new MsTable("user_data");
         table.setAnsiNulls(true);
         table.setOwner("ms_user");
         schema.addTable(table);
@@ -771,7 +771,7 @@ class MsDB8 extends MsDatabaseObjectCreator {
         constraint.setDefinition("DEFAULT (getdate()) FOR created");
         table.addConstraint(constraint);
 
-        table = new SimpleMsTable("t1");
+        table = new MsTable("t1");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -857,7 +857,7 @@ class MsDB9 extends MsDatabaseObjectCreator {
 
         schema.setOwner("ms_user");
 
-        SimpleMsTable table = new SimpleMsTable("acl_role");
+        MsTable table = new MsTable("acl_role");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -872,7 +872,7 @@ class MsDB9 extends MsDatabaseObjectCreator {
 
         table.setOwner("ms_user");
 
-        table = new SimpleMsTable("\"user\"");
+        table = new MsTable("\"user\"");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -996,7 +996,7 @@ class MsDB11 extends MsDatabaseObjectCreator {
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
         // schema.setComment("'Contains super objects.'");
 
-        SimpleMsTable table = new SimpleMsTable("TABLE_1");
+        MsTable table = new MsTable("TABLE_1");
         table.setAnsiNulls(true);
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
         // table.setComment("'This is my table comment.'");
@@ -1160,7 +1160,7 @@ class MsDB13 extends MsDatabaseObjectCreator {
 
         proc.setOwner("ms_user");
 
-        SimpleMsTable table = new SimpleMsTable("test");
+        MsTable table = new MsTable("test");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -1252,7 +1252,7 @@ class MsDB14 extends MsDatabaseObjectCreator {
         PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
         AbstractSchema schema = d.getDefaultSchema();
 
-        SimpleMsTable table = new SimpleMsTable("test");
+        MsTable table = new MsTable("test");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -1280,7 +1280,7 @@ class MsDB15 extends MsDatabaseObjectCreator {
         AbstractSchema schema = d.getDefaultSchema();
 
         // table1
-        SimpleMsTable table = new SimpleMsTable("\"t_work\"");
+        MsTable table = new MsTable("\"t_work\"");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -1289,7 +1289,7 @@ class MsDB15 extends MsDatabaseObjectCreator {
         table.addColumn(col);
 
         // table2
-        SimpleMsTable table2 = new SimpleMsTable("\"t_chart\"");
+        MsTable table2 = new MsTable("\"t_chart\"");
         table2.setAnsiNulls(true);
         schema.addTable(table2);
         col = new MsColumn("id");
@@ -1328,7 +1328,7 @@ class MsDB16 extends MsDatabaseObjectCreator {
         AbstractSchema schema = d.getDefaultSchema();
 
         // table1
-        SimpleMsTable table = new SimpleMsTable("\"t_work\"");
+        MsTable table = new MsTable("\"t_work\"");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -1337,7 +1337,7 @@ class MsDB16 extends MsDatabaseObjectCreator {
         table.addColumn(col);
 
         // table2
-        SimpleMsTable table2 = new SimpleMsTable("\"t_chart\"");
+        MsTable table2 = new MsTable("\"t_chart\"");
         table2.setAnsiNulls(true);
         schema.addTable(table2);
         col = new MsColumn("id");
@@ -1345,7 +1345,7 @@ class MsDB16 extends MsDatabaseObjectCreator {
         table2.addColumn(col);
 
         // table 3
-        SimpleMsTable table3 = new SimpleMsTable("\"t_memo\"");
+        MsTable table3 = new MsTable("\"t_memo\"");
         table3.setAnsiNulls(true);
         schema.addTable(table3);
         col = new MsColumn("name");

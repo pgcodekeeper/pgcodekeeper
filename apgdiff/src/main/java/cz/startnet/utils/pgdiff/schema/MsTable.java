@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
@@ -9,48 +10,82 @@ import cz.startnet.utils.pgdiff.hashers.Hasher;
 /**
  * Base MS SQL table class
  *
+ * @since 5.3.1.
  * @author galiev_mr
- *
  */
-public class SimpleMsTable extends AbstractRegularTable {
+public class MsTable extends AbstractTable {
 
-    private String textImage;
-    private String fileStream;
     private boolean ansiNulls;
     private Boolean isTracked;
 
-    public SimpleMsTable(String name) {
+    private String textImage;
+    private String fileStream;
+    private String tablespace;
+
+    public MsTable(String name) {
         super(name);
     }
 
     @Override
-    protected void convertTable(StringBuilder sb) {
-        // no implements
+    public String getCreationSQL() {
+        final StringBuilder sbOption = new StringBuilder();
+        final StringBuilder sbSQL = new StringBuilder();
+
+        appendName(sbSQL);
+        appendColumns(sbSQL);
+        appendOptions(sbSQL);
+        sbSQL.append(sbOption);
+        appendAlterOptions(sbSQL);
+        appendOwnerSQL(sbSQL);
+        appendPrivileges(sbSQL);
+        appendColumnsPriliges(sbSQL);
+        return sbSQL.toString();
     }
 
     @Override
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+            AtomicBoolean isNeedDepcies) {
+        final int startLength = sb.length();
+        if (!(newCondition instanceof MsTable)) {
+            return false;
+        }
+
+        MsTable newTable = (MsTable) newCondition;
+
+        if (isRecreated(newTable)) {
+            isNeedDepcies.set(true);
+            return true;
+        }
+
+        compareOptions(newTable, sb);
+        compareOwners(newTable, sb);
+        compareTableOptions(newTable, sb);
+        alterPrivileges(newTable, sb);
+
+        return sb.length() > startLength;
+    }
+
     protected void appendAlterOptions(StringBuilder sbSQL) {
         if (isTracked != null) {
             enableTracking(sbSQL);
         }
     }
 
-    @Override
     protected void appendName(StringBuilder sbSQL) {
         sbSQL.append("SET QUOTED_IDENTIFIER ON").append(GO).append('\n');
         sbSQL.append("SET ANSI_NULLS ").append(ansiNulls ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
-
-        super.appendName(sbSQL);
+        sbSQL.append("CREATE TABLE ").append(getQualifiedName());
     }
 
-    @Override
-    protected void appendColumns(StringBuilder sbSQL, StringBuilder sbOption) {
+    protected void appendColumns(StringBuilder sbSQL) {
         sbSQL.append("(\n");
 
         int start = sbSQL.length();
         for (AbstractColumn column : columns) {
-            writeColumn(column, sbSQL, sbOption);
+            sbSQL.append("\t");
+            sbSQL.append(column.getFullDefinition());
+            sbSQL.append(",\n");
         }
 
         if (start != sbSQL.length()) {
@@ -61,7 +96,6 @@ public class SimpleMsTable extends AbstractRegularTable {
         sbSQL.append(')');
     }
 
-    @Override
     protected void appendOptions(StringBuilder sbSQL) {
         int startLenght = sbSQL.length();
         if (tablespace != null) {
@@ -104,8 +138,8 @@ public class SimpleMsTable extends AbstractRegularTable {
 
     @Override
     protected boolean isNeedRecreate(AbstractTable newTable) {
-        if (newTable instanceof SimpleMsTable) {
-            SimpleMsTable smt = (SimpleMsTable) newTable;
+        if (newTable instanceof MsTable) {
+            MsTable smt = (MsTable) newTable;
             return !Objects.equals(smt.getTablespace(), getTablespace())
                     || !Objects.equals(smt.getOptions(), getOptions())
                     || !Objects.equals(smt.getFileStream(), getFileStream())
@@ -116,14 +150,8 @@ public class SimpleMsTable extends AbstractRegularTable {
         return true;
     }
 
-    @Override
-    protected void compareTableTypes(AbstractTable newTable, StringBuilder sb) {
-        // no implements
-    }
-
-    @Override
-    protected void compareTableOptions(AbstractTable table, StringBuilder sb) {
-        SimpleMsTable newTable = (SimpleMsTable) table;
+    private void compareTableOptions(MsTable table, StringBuilder sb) {
+        MsTable newTable = table;
         if (!Objects.equals(isTracked, newTable.isTracked())) {
             if (newTable.isTracked() == null) {
                 sb.append(getAlterTable(true, false));
@@ -145,31 +173,8 @@ public class SimpleMsTable extends AbstractRegularTable {
     }
 
     @Override
-    protected SimpleMsTable getTableCopy() {
-        SimpleMsTable table = new SimpleMsTable(name);
-        table.setFileStream(getFileStream());
-        table.setTextImage(getTextImage());
-        table.setAnsiNulls(isAnsiNulls());
-        table.setTracked(isTracked());
-        return table;
-    }
-
-    @Override
     public String getDropSQL() {
         return "DROP TABLE " + getQualifiedName() + GO;
-    }
-
-    @Override
-    public boolean compare(PgStatement obj) {
-        if (obj instanceof SimpleMsTable && super.compare(obj)) {
-            SimpleMsTable table = (SimpleMsTable) obj;
-            return Objects.equals(textImage, table.getTextImage())
-                    && Objects.equals(fileStream, table.getFileStream())
-                    && Objects.equals(ansiNulls, table.isAnsiNulls())
-                    && Objects.equals(isTracked, table.isTracked());
-        }
-
-        return false;
     }
 
     @Override
@@ -181,15 +186,6 @@ public class SimpleMsTable extends AbstractRegularTable {
         sb.append("ALTER TABLE ");
         sb.append(getQualifiedName());
         return sb.toString();
-    }
-
-    @Override
-    public void computeHash(Hasher hasher) {
-        super.computeHash(hasher);
-        hasher.put(getTextImage());
-        hasher.put(getFileStream());
-        hasher.put(isAnsiNulls());
-        hasher.put(isTracked());
     }
 
     public String getFileStream() {
@@ -228,8 +224,55 @@ public class SimpleMsTable extends AbstractRegularTable {
         resetHash();
     }
 
+    public String getTablespace() {
+        return tablespace;
+    }
+
+    public void setTablespace(final String tablespace) {
+        this.tablespace = tablespace;
+        resetHash();
+    }
+
     @Override
     public boolean isPostgres() {
         return false;
+    }
+
+    @Override
+    public boolean compare(PgStatement obj) {
+        if (this == obj) {
+            return true;
+        } else if (obj instanceof MsTable && super.compare(obj)) {
+            MsTable table = (MsTable) obj;
+            return ansiNulls == table.isAnsiNulls()
+                    && Objects.equals(textImage, table.getTextImage())
+                    && Objects.equals(fileStream, table.getFileStream())
+                    && Objects.equals(isTracked, table.isTracked())
+                    && Objects.equals(tablespace, table.getTablespace());
+        }
+
+        return false;
+    }
+
+    @Override
+    public void computeHash(Hasher hasher) {
+        super.computeHash(hasher);
+        hasher.put(getTextImage());
+        hasher.put(getFileStream());
+        hasher.put(isAnsiNulls());
+        hasher.put(isTracked());
+        hasher.put(getTablespace());
+    }
+
+
+    @Override
+    protected MsTable getTableCopy() {
+        MsTable table = new MsTable(name);
+        table.setFileStream(getFileStream());
+        table.setTextImage(getTextImage());
+        table.setAnsiNulls(isAnsiNulls());
+        table.setTracked(isTracked());
+        table.setTablespace(getTablespace());
+        return table;
     }
 }

@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 
 /**
@@ -14,7 +13,7 @@ import cz.startnet.utils.pgdiff.hashers.Hasher;
  * @since 4.1.1
  * @author galiev_mr
  */
-public abstract class AbstractForeignTable extends AbstractTable {
+public abstract class AbstractForeignTable extends PgTable {
 
     protected final String serverName;
 
@@ -35,15 +34,13 @@ public abstract class AbstractForeignTable extends AbstractTable {
         if (only) {
             sb.append("ONLY ");
         }
-        sb.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
-        sb.append(PgDiffUtils.getQuotedName(getName()));
+        sb.append(getQualifiedName());
         return sb.toString();
     }
 
     @Override
     public String getDropSQL() {
-        return "DROP FOREIGN TABLE " + PgDiffUtils.getQuotedName(getContainingSchema().getName()) + '.'
-                + PgDiffUtils.getQuotedName(getName()) + ';';
+        return "DROP FOREIGN TABLE " + getQualifiedName() + ';';
     }
 
     @Override
@@ -105,9 +102,7 @@ public abstract class AbstractForeignTable extends AbstractTable {
 
     @Override
     protected void appendName(StringBuilder sbSQL) {
-        sbSQL.append("CREATE FOREIGN TABLE ");
-        sbSQL.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
-        sbSQL.append(PgDiffUtils.getQuotedName(name));
+        sbSQL.append("CREATE FOREIGN TABLE ").append(getQualifiedName());
     }
 
     @Override
@@ -119,7 +114,7 @@ public abstract class AbstractForeignTable extends AbstractTable {
     }
 
     @Override
-    protected void compareTableTypes(AbstractTable newTable,  StringBuilder sb) {
+    protected void compareTableTypes(PgTable newTable,  StringBuilder sb) {
         // untransformable
     }
 

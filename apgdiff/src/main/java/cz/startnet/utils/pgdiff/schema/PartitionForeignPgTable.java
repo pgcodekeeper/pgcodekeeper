@@ -26,7 +26,7 @@ public class PartitionForeignPgTable extends AbstractForeignTable {
     protected boolean isNeedRecreate(AbstractTable newTable) {
         return super.isNeedRecreate(newTable)
                 || !(Objects.equals(partitionBounds, ((PartitionForeignPgTable)newTable).getPartitionBounds()))
-                || !inherits.equals(newTable.inherits);
+                || !inherits.equals(((PgTable)newTable).inherits);
     }
 
     @Override
@@ -38,7 +38,7 @@ public class PartitionForeignPgTable extends AbstractForeignTable {
 
             int start = sbSQL.length();
             for (AbstractColumn column : columns) {
-                writeColumn(column, sbSQL, sbOption);
+                writeColumn((PgColumn) column, sbSQL, sbOption);
             }
 
             if (start != sbSQL.length()) {

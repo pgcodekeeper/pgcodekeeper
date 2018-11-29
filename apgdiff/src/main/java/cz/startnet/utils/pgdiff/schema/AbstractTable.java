@@ -5,22 +5,16 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
-import cz.startnet.utils.pgdiff.hashers.IHashable;
-import cz.startnet.utils.pgdiff.hashers.JavaHasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 /**
  * Stores table information.
- *
- * @author fordfrog
  */
 public abstract class AbstractTable extends PgStatementWithSearchPath
 implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
@@ -28,9 +22,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     protected static final String ALTER_COLUMN = " ALTER COLUMN ";
 
     protected final List<AbstractColumn> columns = new ArrayList<>();
-    protected final List<Inherits> inherits = new ArrayList<>();
     protected final Map<String, String> options = new LinkedHashMap<>();
-    protected boolean hasOids;
     protected final List<AbstractConstraint> constraints = new ArrayList<>();
     protected final List<AbstractIndex> indexes = new ArrayList<>();
     protected final List<AbstractTrigger> triggers = new ArrayList<>();
@@ -43,15 +35,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
     public AbstractTable(String name) {
         super(name);
-    }
-
-    public boolean isClustered() {
-        for (AbstractIndex ind : indexes) {
-            if (ind.isClusterIndex()) {
-                return true;
-            }
-        }
-        return false;
     }
 
     @Override
@@ -108,22 +91,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
     @Override
     public Stream<Pair<String, String>> getRelationColumns() {
-        Stream<Pair<String, String>> localColumns = columns.stream()
-                .filter(c -> c.getType() != null)
+        return columns.stream().filter(c -> c.getType() != null)
                 .map(c -> new Pair<>(c.getName(), c.getType()));
-        if (inherits.isEmpty()) {
-            return localColumns;
-        }
-
-        Stream<Pair<String, String>> inhColumns = Stream.empty();
-        for (Inherits inht : inherits) {
-            String schemaName = inht.getKey();
-            AbstractSchema inhtSchema = schemaName == null ? getContainingSchema()
-                    : getDatabase().getSchema(schemaName);
-            inhColumns = Stream.concat(inhColumns, inhtSchema
-                    .getTable(inht.getValue()).getRelationColumns());
-        }
-        return Stream.concat(inhColumns, localColumns);
     }
 
     /**
@@ -151,172 +120,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     public List<AbstractConstraint> getConstraints() {
         return Collections.unmodifiableList(constraints);
     }
-
-    @Override
-    public String getCreationSQL() {
-        final StringBuilder sbOption = new StringBuilder();
-        final StringBuilder sbSQL = new StringBuilder();
-
-        appendName(sbSQL);
-        appendColumns(sbSQL, sbOption);
-        appendInherit(sbSQL);
-        appendOptions(sbSQL);
-        sbSQL.append(sbOption);
-        appendAlterOptions(sbSQL);
-        appendOwnerSQL(sbSQL);
-        appendPrivileges(sbSQL);
-        appendColumnsPriliges(sbSQL);
-        appendColumnsStatistics(sbSQL);
-        appendComments(sbSQL);
-        return sbSQL.toString();
-    }
-
-
-    /**
-     * Appends CREATE TABLE statement beginning
-     * <br><br>
-     * Expected:
-     * <br><br>
-     * CREATE [ [ GLOBAL | LOCAL ] { TEMPORARY | TEMP } | UNLOGGED | FOREIGN ] TABLE [ IF NOT EXISTS ] table_name
-     *
-     * @param sbSQL - StringBuilder for statement
-     */
-    protected abstract void appendName(StringBuilder sbSQL);
-
-    /**
-     * Fills columns and their options to create table statement. Options will
-     * be appends after CREATE TABLE statement. <br>
-     * Must be overridden by subclasses
-     *
-     * @param sbSQL - StringBuilder for columns
-     * @param sbOption - StringBuilder for options
-     */
-    protected abstract void appendColumns(StringBuilder sbSQL, StringBuilder sbOption);
-
-    /**
-     * Fills tables parents, parents are stored in 'inherits' list.<br>
-     * May be overridden by subclasses.
-     * <br><br>
-     * For example:
-     * <br><br>
-     * INHERITS (first_parent, schema_name.second_parent)
-     *
-     * @param sbSQL - StringBuilder for inherits
-     */
-    protected void appendInherit(StringBuilder sbSQL) {
-        if (!inherits.isEmpty()) {
-            sbSQL.append("\nINHERITS (");
-            for (final Inherits tableName : inherits) {
-                sbSQL.append(tableName.getQualifiedName());
-                sbSQL.append(", ");
-            }
-            sbSQL.setLength(sbSQL.length() - 2);
-            sbSQL.append(")");
-        }
-    }
-
-    /**
-     * Appends table storage parameters or server options, part of create statement,
-     * must be finished with ';' character;
-     *
-     * @param sbSQL - StringBuilder for options
-     */
-    protected abstract void appendOptions(StringBuilder sbSQL);
-
-    /**
-     * Appends <b>TABLE</b> options by alter table statement
-     * <br><br>
-     * For example:
-     * <br><br>
-     * ALTER TABLE table_name SET WITH OID;
-     * <br>
-     * @param sbSQL - StringBuilder for options
-     */
-    protected abstract void appendAlterOptions(StringBuilder sbSQL);
-
-    protected void appendColumnsPriliges(StringBuilder sbSQL) {
-        for (AbstractColumn col : columns) {
-            col.appendPrivileges(sbSQL);
-        }
-    }
-
-    protected void appendColumnsStatistics(StringBuilder sbSQL) {
-        columns.stream().map(e -> (PgColumn) e).filter(c -> c.getStatistics() != null)
-        .forEach(column -> {
-            sbSQL.append(getAlterTable(true, true));
-            sbSQL.append(ALTER_COLUMN);
-            sbSQL.append(PgDiffUtils.getQuotedName(column.getName()));
-            sbSQL.append(" SET STATISTICS ");
-            sbSQL.append(column.getStatistics());
-            sbSQL.append(';');
-        });
-    }
-
-    protected void appendComments(StringBuilder sbSQL) {
-        if (comment != null && !comment.isEmpty()) {
-            sbSQL.append("\n\n");
-            appendCommentSql(sbSQL);
-        }
-
-        for (final AbstractColumn column : columns) {
-            if (column.getComment() != null && !column.getComment().isEmpty()) {
-                sbSQL.append("\n\n");
-                column.appendCommentSql(sbSQL);
-            }
-        }
-    }
-
-    private void writeSequences(PgColumn column, StringBuilder sbOption) {
-        AbstractSequence sequence = column.getSequence();
-        if (sequence != null) {
-            sbOption.append(getAlterTable(true, false))
-            .append(ALTER_COLUMN)
-            .append(PgDiffUtils.getQuotedName(column.name))
-            .append(" ADD GENERATED ")
-            .append(column.getIdentityType())
-            .append(" AS IDENTITY (");
-            sbOption.append("\n\tSEQUENCE NAME ").append(sequence.getName());
-            sequence.fillSequenceBody(sbOption);
-            sbOption.append("\n);");
-        }
-    }
-
-    @Override
-    public String getDropSQL() {
-        return "DROP TABLE " + PgDiffUtils.getQuotedName(getContainingSchema().getName()) + '.'
-                + PgDiffUtils.getQuotedName(getName()) + ';';
-    }
-
-    @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
-        if (!(newCondition instanceof AbstractTable)) {
-            return false;
-        }
-
-        AbstractTable newTable = (AbstractTable)newCondition;
-
-        if (isNeedRecreate(newTable) || isColumnsOrderChanged(newTable)) {
-            isNeedDepcies.set(true);
-            return true;
-        }
-
-        compareTableTypes(newTable, sb);
-        compareInherits(newTable, sb);
-        compareOptions(newTable, sb);
-        compareOwners(newTable, sb);
-        compareTableOptions(newTable, sb);
-        alterPrivileges(newTable, sb);
-        compareComment(newTable,sb);
-
-        return sb.length() > startLength;
-    }
-
-    public boolean isRecreated(AbstractTable newTable) {
-        return isNeedRecreate(newTable) || isColumnsOrderChanged(newTable);
-    }
-
 
     /** Checks if the order of the table columns has changed.<br><br>
      *
@@ -354,12 +157,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
      * @since 5.1.7
      */
     protected boolean isColumnsOrderChanged(AbstractTable newTable) {
-        // broken inherit algorithm
-        if (!inherits.isEmpty() || !newTable.inherits.isEmpty()
-                || newTable instanceof TypedPgTable) {
-            return false;
-        }
-
         // last founded column
         int i = -1;
         for (AbstractColumn col : newTable.getColumns()) {
@@ -391,21 +188,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         return false;
     }
 
-    /**
-     * Compare <b>TABLE</b> options by alter table statement
-     *
-     * @param newTable - new table
-     * @param sb - StringBuilder for statements
-     */
-    protected void compareTableOptions(AbstractTable newTable, StringBuilder sb) {
-        if (hasOids != newTable.getHasOids()) {
-            sb.append(getAlterTable(true, true))
-            .append(" SET ")
-            .append(newTable.getHasOids() ? "WITH" : "WITHOUT")
-            .append(" OIDS;");
-        }
-    }
-
     protected void compareComment(AbstractTable newTable, StringBuilder sb) {
         if (!Objects.equals(getComment(), newTable.getComment())) {
             sb.append("\n\n");
@@ -419,42 +201,17 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         }
     }
 
-    protected void compareInherits(AbstractTable newTable, StringBuilder sb) {
-        List<Inherits> newInherits = newTable.getInherits();
-
-        if (newTable instanceof PartitionPgTable) {
-            return;
-        }
-
-        for (final Inherits tableName : inherits) {
-            if (!newInherits.contains(tableName)) {
-                sb.append(getAlterTable(true, false))
-                .append("\n\tNO INHERIT ")
-                .append(tableName.getQualifiedName())
-                .append(';');
-            }
-        }
-
-        for (final Inherits tableName : newInherits) {
-            if (!inherits.contains(tableName)) {
-                sb.append(getAlterTable(true, false))
-                .append("\n\tINHERIT ")
-                .append(tableName.getQualifiedName())
-                .append(';');
-            }
+    protected void appendColumnsPriliges(StringBuilder sbSQL) {
+        for (AbstractColumn col : columns) {
+            col.appendPrivileges(sbSQL);
         }
     }
 
-    protected abstract boolean isNeedRecreate(AbstractTable newTable);
+    public final boolean isRecreated(AbstractTable newTable) {
+        return isNeedRecreate(newTable) || isColumnsOrderChanged(newTable);
+    }
 
-    /**
-     * Compare tables types and generate transform scripts for change tables type
-     *
-     * @param oldTable - old table
-     * @param newTable - new table
-     * @param sb - StringBuilder for statements
-     */
-    protected abstract void compareTableTypes(AbstractTable newTable, StringBuilder sb);
+    protected abstract boolean isNeedRecreate(AbstractTable newTable);
 
     /**
      * Finds index according to specified index {@code name}.
@@ -529,20 +286,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         resetHash();
     }
 
-    public void addInherits(final String schemaName, final String tableName) {
-        inherits.add(new Inherits(schemaName, tableName));
-        resetHash();
-    }
-
-    /**
-     * Getter for {@link #inherits}.
-     *
-     * @return {@link #inherits}
-     */
-    public List<Inherits> getInherits() {
-        return Collections.unmodifiableList(inherits);
-    }
-
     /**
      * Getter for {@link #triggers}. The list cannot be modified.
      *
@@ -563,39 +306,10 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         return Collections.unmodifiableList(rules);
     }
 
-    public boolean getHasOids() {
-        return hasOids;
-    }
-
-    public void setHasOids(final boolean hasOids) {
-        this.hasOids = hasOids;
-        resetHash();
-    }
-
     public void addColumn(final AbstractColumn column) {
         assertUnique(this::getColumn, column);
         columns.add(column);
         column.setParent(this);
-        resetHash();
-    }
-
-    /**
-     * Sorts columns on table.
-     * <br><br>
-     * First the usual columns in the order of adding,
-     * then sorted alphabetically the inheritance columns
-     */
-    public void sortColumns() {
-        Collections.sort(columns, (e1, e2) ->  {
-            boolean first = e1 instanceof PgColumn && ((PgColumn) e1).isInherit();
-            boolean second = e2 instanceof PgColumn && ((PgColumn) e2).isInherit();
-            if (first && second) {
-                return e1.getName().compareTo(e2.getName());
-            } else {
-                return -Boolean.compare(first, second);
-            }
-        });
-
         resetHash();
     }
 
@@ -645,17 +359,15 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     public boolean compare(PgStatement obj) {
         boolean eq = false;
 
-        if(this == obj) {
+        if (this == obj) {
             eq = true;
-        } else if(obj instanceof AbstractTable) {
+        } else if (obj instanceof AbstractTable) {
             AbstractTable table = (AbstractTable) obj;
 
             eq = getClass().equals(table.getClass())
                     && Objects.equals(name, table.getName())
                     && columns.equals(table.columns)
-                    && inherits.equals(table.inherits)
                     && options.equals(table.options)
-                    && hasOids == table.getHasOids()
                     && privileges.equals(table.privileges)
                     && Objects.equals(owner, table.getOwner())
                     && Objects.equals(comment, table.getComment());
@@ -679,9 +391,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     public void computeHash(Hasher hasher) {
         hasher.put(name);
         hasher.putOrdered(columns);
-        hasher.putOrdered(inherits);
         hasher.put(options);
-        hasher.put(hasOids);
         hasher.putUnordered(privileges);
         hasher.put(owner);
         hasher.put(comment);
@@ -701,9 +411,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         for (AbstractColumn colSrc : columns) {
             tableDst.addColumn(colSrc.deepCopy());
         }
-        tableDst.inherits.addAll(inherits);
         tableDst.options.putAll(options);
-        tableDst.setHasOids(getHasOids());
         tableDst.privileges.addAll(privileges);
         tableDst.setOwner(getOwner());
         tableDst.setComment(getComment());
@@ -736,135 +444,5 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     @Override
     public AbstractSchema getContainingSchema() {
         return (AbstractSchema)this.getParent();
-    }
-
-    private void writeOptions(PgColumn column, StringBuilder sbOption, boolean isInherit) {
-        Map<String, String> opts = column.getOptions();
-        Map<String, String> fOpts = column.getForeignOptions();
-
-        if (!opts.isEmpty()) {
-            sbOption.append(getAlterTable(true, isInherit))
-            .append(ALTER_COLUMN)
-            .append(PgDiffUtils.getQuotedName(column.name))
-            .append(" SET (");
-
-            for (Entry<String, String> option : opts.entrySet()) {
-                sbOption.append(option.getKey());
-                if (!option.getValue().isEmpty()) {
-                    sbOption.append('=').append(option.getValue());
-                }
-                sbOption.append(", ");
-            }
-            sbOption.setLength(sbOption.length() - 2);
-            sbOption.append(");");
-        }
-
-        if (!fOpts.isEmpty()) {
-            sbOption.append(getAlterTable(true, isInherit))
-            .append(ALTER_COLUMN)
-            .append(PgDiffUtils.getQuotedName(column.name))
-            .append(" OPTIONS (");
-
-            for (Entry<String, String> option : fOpts.entrySet()) {
-                sbOption.append(option.getKey());
-                if (!option.getValue().isEmpty()) {
-                    sbOption.append(' ').append(option.getValue());
-                }
-                sbOption.append(", ");
-            }
-            sbOption.setLength(sbOption.length() - 2);
-            sbOption.append(");");
-        }
-    }
-
-    protected void writeColumn(AbstractColumn column, StringBuilder sbSQL,
-            StringBuilder sbOption) {
-
-        boolean isInherit = isPostgres() && ((PgColumn) column).isInherit();
-        if (isInherit) {
-            fillInheritOptions(column, sbOption);
-        } else {
-            sbSQL.append("\t");
-            sbSQL.append(column.getFullDefinition());
-            sbSQL.append(",\n");
-        }
-
-        if (isPostgres()) {
-            PgColumn col = (PgColumn) columns;
-            if (col.getStorage() != null) {
-                sbOption.append(getAlterTable(true, isInherit))
-                .append(ALTER_COLUMN)
-                .append(PgDiffUtils.getQuotedName(col.name))
-                .append(" SET STORAGE ")
-                .append(col.getStorage())
-                .append(';');
-            }
-
-            writeOptions(col, sbOption, isInherit);
-            writeSequences(col, sbOption);
-        }
-    }
-
-    private void fillInheritOptions(AbstractColumn column, StringBuilder sb) {
-        if (!column.getNullValue()) {
-            sb.append(getAlterTable(true, true))
-            .append(ALTER_COLUMN)
-            .append(PgDiffUtils.getQuotedName(column.name))
-            .append(" SET NOT NULL;");
-        }
-        if (column.getDefaultValue() != null) {
-            sb.append(getAlterTable(true, true))
-            .append(ALTER_COLUMN)
-            .append(PgDiffUtils.getQuotedName(column.name))
-            .append(" SET DEFAULT ")
-            .append(column.getDefaultValue())
-            .append(';');
-        }
-    }
-
-    public static class Inherits implements IHashable {
-        private final String key;
-        private final String value;
-
-        public String getKey() {
-            return key;
-        }
-
-        public String getValue() {
-            return value;
-        }
-
-        public Inherits(String key, String value) {
-            this.key = key;
-            this.value = value;
-        }
-
-        public String getQualifiedName() {
-            return (key == null ? "" : (PgDiffUtils.getQuotedName(key) + '.'))
-                    + PgDiffUtils.getQuotedName(value);
-        }
-
-        @Override
-        public int hashCode() {
-            JavaHasher hasher = new JavaHasher();
-            computeHash(hasher);
-            return hasher.getResult();
-        }
-
-        @Override
-        public void computeHash(Hasher hasher) {
-            hasher.put(key);
-            hasher.put(value);
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof Inherits) {
-                Inherits other = (Inherits) obj;
-                return Objects.equals(key, other.key)
-                        && Objects.equals(value, other.value);
-            }
-            return false;
-        }
     }
 }
