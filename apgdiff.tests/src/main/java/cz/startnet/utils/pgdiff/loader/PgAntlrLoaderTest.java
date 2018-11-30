@@ -562,7 +562,7 @@ class PgDB6 extends PgDatabaseObjectCreator {
 
         table.setOwner("postgres");
 
-        AbstractIndex idx = new PgIndex("test_table_deleted", "test_table");
+        PgIndex idx = new PgIndex("test_table_deleted", "test_table");
         idx.setMethod("btree");
         idx.setDefinition("(date_deleted)");
         idx.setWhere("(date_deleted IS NULL)");
@@ -823,7 +823,7 @@ class PgDB10 extends PgDatabaseObjectCreator {
         col.setNullValue(false);
         table.addColumn(col);
 
-        AbstractIndex idx = new PgIndex("fki_user_role_id_fkey", "user");
+        PgIndex idx = new PgIndex("fki_user_role_id_fkey", "user");
         idx.setMethod("btree");
         idx.setDefinition("(role_id)");
         table.addIndex(idx);

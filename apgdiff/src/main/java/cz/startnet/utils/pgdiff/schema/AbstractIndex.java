@@ -28,7 +28,6 @@ implements PgOptionContainer {
     private String definition;
     private String where;
     private String tableSpace;
-    private String method;
     private boolean unique;
     private boolean clusterIndex;
 
@@ -104,15 +103,6 @@ implements PgOptionContainer {
         resetHash();
     }
 
-    public String getMethod() {
-        return method;
-    }
-
-    public void setMethod(String method) {
-        this.method = method;
-        resetHash();
-    }
-
     public String getTableSpace() {
         return tableSpace;
     }
@@ -155,14 +145,12 @@ implements PgOptionContainer {
                 && Objects.equals(where, index.getWhere())
                 && Objects.equals(tableSpace, index.getTableSpace())
                 && Objects.equals(includes, index.includes)
-                && Objects.equals(method, index.method)
                 && unique == index.isUnique();
     }
 
     @Override
     public void computeHash(Hasher hasher) {
         hasher.put(definition);
-        hasher.put(method);
         hasher.put(tableName);
         hasher.put(unique);
         hasher.put(clusterIndex);
@@ -177,7 +165,6 @@ implements PgOptionContainer {
         AbstractIndex indexDst = getIndexCopy();
         indexDst.setDefinition(getDefinition());
         indexDst.setUnique(isUnique());
-        indexDst.setMethod(getMethod());
         indexDst.setClusterIndex(isClusterIndex());
         indexDst.setComment(getComment());
         indexDst.setWhere(getWhere());

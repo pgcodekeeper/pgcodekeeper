@@ -11,8 +11,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
 
 public class PgIndex extends AbstractIndex {
+
+    private String method;
 
     public PgIndex(String name, String tableName) {
         super(name, tableName);
@@ -133,8 +136,32 @@ public class PgIndex extends AbstractIndex {
         return sbSQL.toString();
     }
 
+    public String getMethod() {
+        return method;
+    }
+
+    public void setMethod(String method) {
+        this.method = method;
+        resetHash();
+    }
+
+    @Override
+    protected boolean compareWithoutComments(AbstractIndex index) {
+        return index instanceof PgIndex
+                && super.compareWithoutComments(index)
+                && Objects.equals(method, ((PgIndex) index).method);
+    }
+
+    @Override
+    public void computeHash(Hasher hasher) {
+        super.computeHash(hasher);
+        hasher.put(method);
+    }
+
     @Override
     protected AbstractIndex getIndexCopy() {
-        return new PgIndex(getName(), getTableName());
+        PgIndex index =  new PgIndex(getName(), getTableName());
+        index.setMethod(getMethod());
+        return index;
     }
 }

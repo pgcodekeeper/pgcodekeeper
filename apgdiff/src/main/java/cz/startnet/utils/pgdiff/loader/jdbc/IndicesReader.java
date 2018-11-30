@@ -33,7 +33,7 @@ public class IndicesReader extends JdbcReader {
         String schemaName = schema.getName();
         String indexName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, indexName, DbObjType.INDEX));
-        AbstractIndex i = new PgIndex(indexName, tableName);
+        PgIndex i = new PgIndex(indexName, tableName);
 
         String tablespace = res.getString("table_space");
         String definition = res.getString("definition");

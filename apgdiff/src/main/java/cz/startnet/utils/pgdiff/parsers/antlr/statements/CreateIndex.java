@@ -39,7 +39,7 @@ public class CreateIndex extends ParserAbstract {
         String schemaName = schema.getName();
         String tableName = QNameParser.getFirstName(ids);
         String name = ctx.name.getText();
-        AbstractIndex ind = new PgIndex(name != null ? name : "", tableName);
+        PgIndex ind = new PgIndex(name != null ? name : "", tableName);
         parseIndex(ctx.index_rest(), tablespace, schemaName, tableName, ind, db);
         ind.setUnique(ctx.UNIQUE() != null);
         if (name != null) {
@@ -51,7 +51,7 @@ public class CreateIndex extends ParserAbstract {
     }
 
     public static void parseIndex(Index_restContext rest, String tablespace,
-            String schemaName, String tableName, AbstractIndex ind, PgDatabase db) {
+            String schemaName, String tableName, PgIndex ind, PgDatabase db) {
         db.addContextForAnalyze(ind, rest);
 
         Index_sortContext sort = rest.index_sort();
