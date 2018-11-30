@@ -45,6 +45,27 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         return stream;
     }
 
+    @Override
+    public void addChild(PgStatement st) {
+        DbObjType type = st.getStatementType();
+        switch (type) {
+        case INDEX:
+            addIndex((AbstractIndex) st);
+            break;
+        case CONSTRAINT:
+            addConstraint((AbstractConstraint) st);
+            break;
+        case TRIGGER:
+            addTrigger((AbstractTrigger) st);
+            break;
+        case RULE:
+            addRule((PgRule) st);
+            break;
+        default:
+            throw new IllegalArgumentException("Unsupported child type: " + type);
+        }
+    }
+
     public static Stream<PgStatement> columnAdder(PgStatement st) {
         Stream<PgStatement> newStream = Stream.of(st);
         if (st.getStatementType() == DbObjType.TABLE) {

@@ -151,6 +151,49 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         return stream;
     }
 
+    @Override
+    public void addChild(PgStatement st) {
+        DbObjType type = st.getStatementType();
+        switch (type) {
+        case DOMAIN:
+            addDomain((PgDomain) st);
+            break;
+        case FTS_CONFIGURATION:
+            addFtsConfiguration((PgFtsConfiguration) st);
+            break;
+        case FTS_DICTIONARY:
+            addFtsDictionary((PgFtsDictionary) st);
+            break;
+        case FTS_PARSER:
+            addFtsParser((PgFtsParser) st);
+            break;
+        case FTS_TEMPLATE:
+            addFtsTemplate((PgFtsTemplate) st);
+            break;
+        case FUNCTION:
+        case PROCEDURE:
+            addFunction((AbstractFunction) st);
+            break;
+        case OPERATOR:
+            addOperator((PgOperator) st);
+            break;
+        case SEQUENCE:
+            addSequence((AbstractSequence) st);
+            break;
+        case TABLE:
+            addTable((AbstractTable) st);
+            break;
+        case TYPE:
+            addType((AbstractType) st);
+            break;
+        case VIEW:
+            addView((AbstractView) st);
+            break;
+        default:
+            throw new IllegalArgumentException("Unsupported child type: " + type);
+        }
+    }
+
     /**
      * Finds sequence according to specified sequence {@code name}.
      *

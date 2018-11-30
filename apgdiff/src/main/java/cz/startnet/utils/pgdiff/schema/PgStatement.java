@@ -457,9 +457,10 @@ public abstract class PgStatement implements IStatement, IHashable {
     protected final void copyBaseFields(PgStatement copy) {
         copy.setOwner(owner);
         copy.setComment(comment);
-        copy.setLocation(location);
         copy.deps.addAll(deps);
         copy.privileges.addAll(privileges);
+        copy.setLocation(location);
+        copy.isLib = isLib;
     }
 
     protected final boolean compareBaseFields(PgStatement obj) {
@@ -485,6 +486,15 @@ public abstract class PgStatement implements IStatement, IHashable {
 
     public boolean hasChildren() {
         return getChildren().anyMatch(e -> true);
+    }
+
+    public void addChild(PgStatement st) {
+        //  subclasses with children must override
+    }
+
+    public PgStatement getChild(String name, DbObjType type) {
+        return getChildren().filter(e -> e.getName().equals(name)
+                && e.getStatementType().equals(type)).findAny().orElse(null);
     }
 
     /**

@@ -31,6 +31,21 @@ implements PgRuleContainer, PgTriggerContainer, IRelation {
         return Stream.concat(getRules().stream(), getTriggers().stream());
     }
 
+    @Override
+    public void addChild(PgStatement st) {
+        DbObjType type = st.getStatementType();
+        switch (type) {
+        case TRIGGER:
+            addTrigger((AbstractTrigger) st);
+            break;
+        case RULE:
+            addRule((PgRule) st);
+            break;
+        default:
+            throw new IllegalArgumentException("Unsupported child type: " + type);
+        }
+    }
+
     /**
      * Finds rule according to specified rule {@code name}.
      *
