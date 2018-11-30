@@ -33,7 +33,6 @@ import cz.startnet.utils.pgdiff.schema.MsSequence;
 import cz.startnet.utils.pgdiff.schema.MsTable;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import cz.startnet.utils.pgdiff.schema.MsView;
-import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -865,7 +864,7 @@ class MsDB9 extends MsDatabaseObjectCreator {
         col.setNullValue(false);
         table.addColumn(col);
 
-        AbstractConstraint constraint = new PgConstraint("PK_acl_role");
+        AbstractConstraint constraint = new MsConstraint("PK_acl_role");
         constraint.setDefinition("PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]");
         table.addConstraint(constraint);
 
@@ -1021,7 +1020,7 @@ class MsDB11 extends MsDatabaseObjectCreator {
         // col.setComment("'This is column 2 comment'");
         table.addColumn(col);
 
-        AbstractConstraint constraint = new PgConstraint("PK_TABLE_1");
+        AbstractConstraint constraint = new MsConstraint("PK_TABLE_1");
         constraint.setDefinition("PRIMARY KEY CLUSTERED  ([ID]) ON [PRIMARY]");
         table.addConstraint(constraint);
 
