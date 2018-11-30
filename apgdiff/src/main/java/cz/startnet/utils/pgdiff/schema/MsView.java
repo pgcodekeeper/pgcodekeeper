@@ -89,7 +89,6 @@ public class MsView extends AbstractView implements SourceStatement {
 
     @Override
     public void computeHash(Hasher hasher) {
-        super.computeHash(hasher);
         hasher.put(getFirstPart());
         hasher.put(getSecondPart());
         hasher.put(isQuotedIdentified());

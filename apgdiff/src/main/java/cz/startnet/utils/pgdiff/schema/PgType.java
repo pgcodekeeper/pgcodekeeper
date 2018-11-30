@@ -645,7 +645,6 @@ public class PgType extends AbstractType {
 
     @Override
     public void computeHash(Hasher hasher) {
-        super.computeHash(hasher);
         hasher.put(form);
         hasher.putOrdered(attrs);
         hasher.put(enums);

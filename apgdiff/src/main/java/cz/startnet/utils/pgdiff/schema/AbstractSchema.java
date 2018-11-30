@@ -528,21 +528,12 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
 
     @Override
     public boolean compare(PgStatement obj) {
-        boolean eq = false;
-
-        if(this == obj) {
-            eq = true;
-        } else if(obj instanceof AbstractSchema) {
-            AbstractSchema schema = (AbstractSchema) obj;
-
-            eq = Objects.equals(name, schema.getName())
-                    && Objects.equals(definition, schema.getDefinition())
-                    && privileges.equals(schema.privileges)
-                    && Objects.equals(owner, schema.getOwner())
-                    && Objects.equals(comment, schema.getComment());
+        if (this == obj) {
+            return true;
         }
 
-        return eq;
+        return obj instanceof AbstractSchema && compareBaseFields(obj)
+                && Objects.equals(definition, ((AbstractSchema) obj).getDefinition());
     }
 
     @Override
@@ -566,11 +557,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(name);
-        hasher.put(owner);
         hasher.put(definition);
-        hasher.putUnordered(privileges);
-        hasher.put(comment);
     }
 
     @Override
@@ -591,12 +578,8 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     @Override
     public AbstractSchema shallowCopy() {
         AbstractSchema schemaDst = getSchemaCopy();
+        copyBaseFields(schemaDst);
         schemaDst.setDefinition(getDefinition());
-        schemaDst.setComment(getComment());
-        schemaDst.privileges.addAll(privileges);
-        schemaDst.setOwner(getOwner());
-        schemaDst.deps.addAll(deps);
-        schemaDst.setLocation(getLocation());
         return schemaDst;
     }
 

@@ -151,44 +151,36 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
 
     @Override
     public boolean compare(PgStatement obj) {
-        boolean eq = false;
+        if (this == obj) {
+            return true;
+        }
 
-        if(this == obj) {
-            eq = true;
-        } else if(obj instanceof AbstractSequence) {
+        if (obj instanceof AbstractSequence && compareBaseFields(obj)) {
             AbstractSequence seq = (AbstractSequence) obj;
-            eq = Objects.equals(name, seq.getName())
+            return cycle == seq.isCycle()
+                    && isCached == seq.isCached()
                     && Objects.equals(increment, seq.getIncrement())
                     && Objects.equals(minValue, seq.getMinValue())
                     && Objects.equals(maxValue, seq.getMaxValue())
                     && Objects.equals(startWith, seq.getStartWith())
                     && Objects.equals(cache, seq.getCache())
-                    && cycle == seq.isCycle()
-                    && isCached == seq.isCached()
                     && Objects.equals(ownedBy, seq.getOwnedBy())
-                    && privileges.equals(seq.privileges)
-                    && Objects.equals(owner, seq.getOwner())
                     && Objects.equals(presicion, seq.getPresicion())
-                    && Objects.equals(comment, seq.getComment())
                     && Objects.equals(dataType, seq.getDataType());
         }
 
-        return eq;
+        return false;
     }
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.putUnordered(privileges);
         hasher.put(cache);
         hasher.put(cycle);
         hasher.put(increment);
         hasher.put(maxValue);
         hasher.put(minValue);
-        hasher.put(name);
         hasher.put(ownedBy);
         hasher.put(startWith);
-        hasher.put(owner);
-        hasher.put(comment);
         hasher.put(dataType);
         hasher.put(presicion);
         hasher.put(isCached);
@@ -197,6 +189,7 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
     @Override
     public AbstractSequence shallowCopy() {
         AbstractSequence sequenceDst = getSequenceCopy();
+        copyBaseFields(sequenceDst);
         sequenceDst.setCache(getCache());
         sequenceDst.setCycle(isCycle());
         sequenceDst.increment = getIncrement();
@@ -206,12 +199,7 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
         sequenceDst.setOwnedBy(getOwnedBy());
         sequenceDst.setCached(isCached());
         sequenceDst.setStartWith(getStartWith());
-        sequenceDst.setComment(getComment());
-        sequenceDst.privileges.addAll(privileges);
-        sequenceDst.setOwner(getOwner());
         sequenceDst.setPresicion(getPresicion());
-        sequenceDst.deps.addAll(deps);
-        sequenceDst.setLocation(getLocation());
         return sequenceDst;
     }
 

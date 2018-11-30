@@ -111,21 +111,16 @@ public class MsUser extends PgStatement {
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(name);
-        hasher.put(owner);
         hasher.put(schema);
         hasher.put(login);
-        hasher.putUnordered(privileges);
     }
 
     @Override
     public MsUser shallowCopy() {
         MsUser userDst = new MsUser(getName());
-        userDst.setOwner(getOwner());
+        copyBaseFields(userDst);
         userDst.setSchema(getSchema());
         userDst.setLogin(getLogin());
-        userDst.privileges.addAll(privileges);
-        userDst.setLocation(getLocation());
         return userDst;
     }
 
@@ -136,13 +131,14 @@ public class MsUser extends PgStatement {
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof MsUser) {
+        if (obj == this) {
+            return true;
+        }
+
+        if (obj instanceof MsUser && compareBaseFields(obj)) {
             MsUser user = (MsUser) obj;
             return Objects.equals(schema, user.getSchema())
-                    && Objects.equals(login, user.getLogin())
-                    && Objects.equals(name, user.getName())
-                    && Objects.equals(owner, user.getOwner())
-                    && privileges.equals(user.privileges);
+                    && Objects.equals(login, user.getLogin());
         }
         return false;
     }

@@ -200,20 +200,16 @@ public class PgDomain extends PgStatementWithSearchPath {
 
     @Override
     public PgDomain shallowCopy() {
-        PgDomain copy = new PgDomain(getName());
-        copy.setDataType(getDataType());
-        copy.setCollation(getCollation());
-        copy.setDefaultValue(getDefaultValue());
-        copy.setNotNull(isNotNull());
-        copy.setOwner(getOwner());
-        copy.setComment(getComment());
+        PgDomain domainDst = new PgDomain(getName());
+        copyBaseFields(domainDst);
+        domainDst.setDataType(getDataType());
+        domainDst.setCollation(getCollation());
+        domainDst.setDefaultValue(getDefaultValue());
+        domainDst.setNotNull(isNotNull());
         for (AbstractConstraint constr : constraints) {
-            copy.addConstraint(constr.deepCopy());
+            domainDst.addConstraint(constr.deepCopy());
         }
-        copy.privileges.addAll(privileges);
-        copy.deps.addAll(deps);
-        copy.setLocation(getLocation());
-        return copy;
+        return domainDst;
     }
 
     @Override
@@ -226,32 +222,26 @@ public class PgDomain extends PgStatementWithSearchPath {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof PgDomain)) {
-            return false;
+
+        if (obj instanceof PgDomain && compareBaseFields(obj)) {
+            PgDomain dom = (PgDomain) obj;
+            return Objects.equals(dataType, dom.getDataType())
+                    && Objects.equals(collation, dom.getCollation())
+                    && Objects.equals(defaultValue, dom.getDefaultValue())
+                    && notNull == dom.isNotNull()
+                    && PgDiffUtils.setlikeEquals(constraints, dom.constraints);
         }
-        PgDomain dom = (PgDomain) obj;
-        return Objects.equals(name, dom.getName())
-                && Objects.equals(dataType, dom.getDataType())
-                && Objects.equals(collation, dom.getCollation())
-                && Objects.equals(defaultValue, dom.getDefaultValue())
-                && notNull == dom.isNotNull()
-                && PgDiffUtils.setlikeEquals(constraints, dom.constraints)
-                && Objects.equals(owner, dom.getOwner())
-                && privileges.equals(dom.privileges)
-                && Objects.equals(comment, dom.getComment());
+
+        return false;
     }
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(name);
         hasher.put(dataType);
         hasher.put(collation);
         hasher.put(defaultValue);
         hasher.put(notNull);
         hasher.putUnordered(constraints);
-        hasher.put(owner);
-        hasher.putUnordered(privileges);
-        hasher.put(comment);
     }
 
     @Override

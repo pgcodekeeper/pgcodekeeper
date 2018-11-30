@@ -28,17 +28,12 @@ public abstract class AbstractTrigger extends PgStatementWithSearchPath {
 
     @Override
     public boolean compare(PgStatement obj) {
-        boolean eq = false;
-
         if (this == obj) {
-            eq = true;
-        } else if (obj instanceof AbstractTrigger) {
-            AbstractTrigger trigger = (AbstractTrigger) obj;
-            eq = compareWithoutComments(trigger)
-                    && Objects.equals(comment, trigger.getComment());
+            return true;
         }
 
-        return eq;
+        return obj instanceof AbstractTrigger && compareBaseFields(obj)
+                && compareWithoutComments((AbstractTrigger) obj);
     }
 
     protected boolean compareWithoutComments(AbstractTrigger trigger) {
@@ -48,18 +43,13 @@ public abstract class AbstractTrigger extends PgStatementWithSearchPath {
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(name);
-        hasher.put(comment);
         hasher.put(tableName);
     }
-
 
     @Override
     public AbstractTrigger shallowCopy() {
         AbstractTrigger triggerDst = getTriggerCopy();
-        triggerDst.setComment(getComment());
-        triggerDst.deps.addAll(deps);
-        triggerDst.setLocation(getLocation());
+        copyBaseFields(triggerDst);
         return triggerDst;
     }
 

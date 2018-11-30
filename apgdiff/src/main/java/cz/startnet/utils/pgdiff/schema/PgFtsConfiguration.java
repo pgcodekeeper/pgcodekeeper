@@ -86,12 +86,17 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
             return false;
         }
 
+        compareOptions(newConf, sb);
+
+        if (!Objects.equals(getOwner(), newConf.getOwner())) {
+            newConf.alterOwnerSQL(sb);
+        }
+
         if (!Objects.equals(getComment(), newCondition.getComment())) {
             sb.append("\n\n");
             newCondition.appendCommentSql(sb);
         }
 
-        compareOptions(newConf, sb);
         return sb.length() > startLength;
     }
 
@@ -133,14 +138,11 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
 
     @Override
     public PgFtsConfiguration shallowCopy() {
-        PgFtsConfiguration conf = new PgFtsConfiguration(getName());
-        conf.setComment(getComment());
-        conf.setParser(getParser());
-        conf.deps.addAll(deps);
-        conf.setOwner(getOwner());
-        conf.dictionariesMap.putAll(getDictionariesMap());
-        conf.setLocation(getLocation());
-        return conf;
+        PgFtsConfiguration confDst = new PgFtsConfiguration(getName());
+        copyBaseFields(confDst);
+        confDst.setParser(getParser());
+        confDst.dictionariesMap.putAll(getDictionariesMap());
+        return confDst;
     }
 
     @Override
@@ -150,29 +152,23 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
 
     @Override
     public boolean compare(PgStatement obj) {
-        boolean eq = false;
-
         if (this == obj) {
-            eq = true;
-        } else if(obj instanceof PgFtsConfiguration) {
+            return true;
+        }
+
+        if (obj instanceof PgFtsConfiguration && compareBaseFields(obj)) {
             PgFtsConfiguration config = (PgFtsConfiguration) obj;
-            eq = Objects.equals(name, config.name)
-                    && Objects.equals(parser, config.getParser())
-                    && Objects.equals(owner, config.getOwner())
-                    && Objects.equals(comment, config.getComment())
+            return Objects.equals(parser, config.getParser())
                     && Objects.equals(dictionariesMap, config.dictionariesMap);
         }
 
-        return eq;
+        return false;
     }
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(name);
-        hasher.put(owner);
         hasher.put(parser);
         hasher.put(dictionariesMap);
-        hasher.put(comment);
     }
 
     public String getParser() {

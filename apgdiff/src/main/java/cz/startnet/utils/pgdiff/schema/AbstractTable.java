@@ -357,22 +357,18 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
     @Override
     public boolean compare(PgStatement obj) {
-        boolean eq = false;
-
         if (this == obj) {
-            eq = true;
-        } else if (obj instanceof AbstractTable) {
-            AbstractTable table = (AbstractTable) obj;
-
-            eq = getClass().equals(table.getClass())
-                    && Objects.equals(name, table.getName())
-                    && columns.equals(table.columns)
-                    && options.equals(table.options)
-                    && privileges.equals(table.privileges)
-                    && Objects.equals(owner, table.getOwner())
-                    && Objects.equals(comment, table.getComment());
+            return true;
         }
-        return eq;
+
+        if (obj instanceof AbstractTable && compareBaseFields(obj)) {
+            AbstractTable table = (AbstractTable) obj;
+            return getClass().equals(table.getClass())
+                    && columns.equals(table.columns)
+                    && options.equals(table.options);
+        }
+
+        return false;
     }
 
     @Override
@@ -389,12 +385,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(name);
         hasher.putOrdered(columns);
         hasher.put(options);
-        hasher.putUnordered(privileges);
-        hasher.put(owner);
-        hasher.put(comment);
     }
 
     @Override
@@ -408,15 +400,11 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     @Override
     public AbstractTable shallowCopy() {
         AbstractTable tableDst = getTableCopy();
+        copyBaseFields(tableDst);
         for (AbstractColumn colSrc : columns) {
             tableDst.addColumn(colSrc.deepCopy());
         }
         tableDst.options.putAll(options);
-        tableDst.privileges.addAll(privileges);
-        tableDst.setOwner(getOwner());
-        tableDst.setComment(getComment());
-        tableDst.deps.addAll(deps);
-        tableDst.setLocation(getLocation());
         return tableDst;
     }
 

@@ -403,10 +403,9 @@ public class PgDatabase extends PgStatement {
     @Override
     public PgDatabase shallowCopy() {
         PgDatabase dbDst = new PgDatabase();
+        copyBaseFields(dbDst);
         dbDst.setArguments(getArguments());
-        dbDst.setComment(getComment());
         dbDst.setPostgresVersion(getPostgresVersion());
-        dbDst.setLocation(getLocation());
         return dbDst;
     }
 

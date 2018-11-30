@@ -92,34 +92,24 @@ public class PgExtension extends PgStatement {
 
     @Override
     public boolean compare(PgStatement obj) {
-        boolean eq = false;
-
         if (this == obj) {
-            eq = true;
-        } else if (obj instanceof PgExtension) {
-            PgExtension ext = (PgExtension) obj;
-            eq = Objects.equals(name, ext.getName())
-                    && Objects.equals(schema, ext.getSchema())
-                    && Objects.equals(comment, ext.getComment());
+            return true;
         }
 
-        return eq;
+        return obj instanceof PgExtension && compareBaseFields(obj)
+                && Objects.equals(schema, ((PgExtension) obj).getSchema());
     }
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(name);
         hasher.put(schema);
-        hasher.put(comment);
     }
 
     @Override
     public PgExtension shallowCopy() {
         PgExtension extDst = new PgExtension(getName());
+        copyBaseFields(extDst);
         extDst.setSchema(getSchema());
-        extDst.setComment(getComment());
-        extDst.deps.addAll(deps);
-        extDst.setLocation(getLocation());
         return extDst;
     }
 

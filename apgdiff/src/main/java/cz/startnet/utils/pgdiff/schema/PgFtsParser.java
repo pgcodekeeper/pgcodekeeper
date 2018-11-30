@@ -86,16 +86,14 @@ public class PgFtsParser extends PgStatementWithSearchPath {
 
     @Override
     public PgFtsParser shallowCopy() {
-        PgFtsParser parser = new PgFtsParser(getName());
-        parser.setComment(getComment());
-        parser.setStartFunction(getStartFunction());
-        parser.setGetTokenFunction(getGetTokenFunction());
-        parser.setEndFunction(getEndFunction());
-        parser.setLexTypesFunction(getLexTypesFunction());
-        parser.setHeadLineFunction(getHeadLineFunction());
-        parser.deps.addAll(deps);
-        parser.setLocation(getLocation());
-        return parser;
+        PgFtsParser parserDst = new PgFtsParser(getName());
+        copyBaseFields(parserDst);
+        parserDst.setStartFunction(getStartFunction());
+        parserDst.setGetTokenFunction(getGetTokenFunction());
+        parserDst.setEndFunction(getEndFunction());
+        parserDst.setLexTypesFunction(getLexTypesFunction());
+        parserDst.setHeadLineFunction(getHeadLineFunction());
+        return parserDst;
     }
 
     @Override
@@ -105,17 +103,12 @@ public class PgFtsParser extends PgStatementWithSearchPath {
 
     @Override
     public boolean compare(PgStatement obj) {
-        boolean eq = false;
-
         if (this == obj) {
-            eq = true;
-        } else if (obj instanceof PgFtsParser) {
-            PgFtsParser parser = (PgFtsParser) obj;
-            eq = compareWithoutComments(parser)
-                    && Objects.equals(comment, parser.getComment());
+            return true;
         }
 
-        return eq;
+        return obj instanceof PgFtsParser && compareBaseFields(obj)
+                && compareWithoutComments((PgFtsParser) obj);
     }
 
     private boolean compareWithoutComments(PgFtsParser parser) {
@@ -129,13 +122,11 @@ public class PgFtsParser extends PgStatementWithSearchPath {
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(name);
         hasher.put(startFunction);
         hasher.put(getTokenFunction);
         hasher.put(endFunction);
         hasher.put(headLineFunction);
         hasher.put(lexTypesFunction);
-        hasher.put(comment);
     }
 
     public String getStartFunction() {

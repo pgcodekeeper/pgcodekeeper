@@ -193,14 +193,12 @@ public class PgRule extends PgStatementWithSearchPath{
     @Override
     public PgRule shallowCopy() {
         PgRule ruleDst = new PgRule(getName());
+        copyBaseFields(ruleDst);
         ruleDst.setEvent(getEvent());
         ruleDst.setCondition(getCondition());
         ruleDst.setInstead(isInstead());
-        ruleDst.setComment(getComment());
         ruleDst.commands.addAll(commands);
         ruleDst.setEnabledState(getEnabledState());
-        ruleDst.deps.addAll(deps);
-        ruleDst.setLocation(getLocation());
         return ruleDst;
     }
 
@@ -211,18 +209,17 @@ public class PgRule extends PgStatementWithSearchPath{
 
     @Override
     public boolean compare(PgStatement obj) {
-        boolean eq = false;
-
         if (this == obj) {
-            eq = true;
-        } else if (obj instanceof PgRule) {
-            PgRule rule = (PgRule) obj;
-            eq = compareWithoutComments(rule)
-                    && Objects.equals(enabledState, rule.getEnabledState())
-                    && Objects.equals(comment, rule.getComment());
+            return true;
         }
 
-        return eq;
+        if (obj instanceof PgRule && compareBaseFields(obj)) {
+            PgRule rule = (PgRule) obj;
+            return compareWithoutComments(rule)
+                    && Objects.equals(enabledState, rule.getEnabledState());
+        }
+
+        return false;
     }
 
     private boolean compareWithoutComments(PgRule rule) {
@@ -235,13 +232,11 @@ public class PgRule extends PgStatementWithSearchPath{
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(name);
         hasher.put(event);
         hasher.put(condition);
         hasher.put(instead);
         hasher.put(commands);
         hasher.put(enabledState);
-        hasher.put(comment);
     }
 
     @Override

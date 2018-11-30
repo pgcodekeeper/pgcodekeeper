@@ -80,13 +80,11 @@ public class PgFtsTemplate extends PgStatementWithSearchPath {
 
     @Override
     public PgFtsTemplate shallowCopy() {
-        PgFtsTemplate template = new PgFtsTemplate(getName());
-        template.setComment(getComment());
-        template.setInitFunction(getInitFunction());
-        template.setLexizeFunction(getLexizeFunction());
-        template.deps.addAll(deps);
-        template.setLocation(getLocation());
-        return template;
+        PgFtsTemplate templateDst = new PgFtsTemplate(getName());
+        copyBaseFields(templateDst);
+        templateDst.setInitFunction(getInitFunction());
+        templateDst.setLexizeFunction(getLexizeFunction());
+        return templateDst;
     }
 
     @Override
@@ -96,17 +94,12 @@ public class PgFtsTemplate extends PgStatementWithSearchPath {
 
     @Override
     public boolean compare(PgStatement obj) {
-        boolean eq = false;
-
         if (this == obj) {
-            eq = true;
-        } else if(obj instanceof PgFtsTemplate) {
-            PgFtsTemplate template = (PgFtsTemplate) obj;
-            eq = compareWithoutComments(template)
-                    && Objects.equals(comment, template.getComment());
+            return true;
         }
 
-        return eq;
+        return obj instanceof PgFtsTemplate && compareBaseFields(obj)
+                && compareWithoutComments((PgFtsTemplate) obj);
     }
 
     private boolean compareWithoutComments(PgFtsTemplate template) {
@@ -117,10 +110,8 @@ public class PgFtsTemplate extends PgStatementWithSearchPath {
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(name);
         hasher.put(initFunction);
         hasher.put(lexizeFunction);
-        hasher.put(comment);
     }
 
     public String getInitFunction() {

@@ -134,19 +134,18 @@ implements PgOptionContainer {
 
     @Override
     public boolean compare(PgStatement obj) {
-        boolean equals = false;
-
         if (this == obj) {
-            equals = true;
-        } else if (obj instanceof AbstractIndex) {
+            return true;
+        }
+
+        if (obj instanceof AbstractIndex && compareBaseFields(obj)) {
             AbstractIndex index = (AbstractIndex) obj;
-            equals = compareWithoutComments(index)
-                    && Objects.equals(comment, index.getComment())
+            return compareWithoutComments(index)
                     && clusterIndex == index.isClusterIndex()
                     && Objects.equals(options, index.options);
         }
 
-        return equals;
+        return false;
     }
 
     protected boolean compareWithoutComments(AbstractIndex index) {
@@ -160,12 +159,10 @@ implements PgOptionContainer {
                 && unique == index.isUnique();
     }
 
-
     @Override
     public void computeHash(Hasher hasher) {
         hasher.put(definition);
         hasher.put(method);
-        hasher.put(name);
         hasher.put(tableName);
         hasher.put(unique);
         hasher.put(clusterIndex);
@@ -173,7 +170,6 @@ implements PgOptionContainer {
         hasher.put(tableSpace);
         hasher.put(options);
         hasher.put(includes);
-        hasher.put(comment);
     }
 
     @Override

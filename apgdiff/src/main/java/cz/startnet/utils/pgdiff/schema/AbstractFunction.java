@@ -281,23 +281,18 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
             return true;
         }
 
-        if (obj instanceof AbstractFunction) {
+        if (obj instanceof AbstractFunction && compareBaseFields(obj)) {
             AbstractFunction func  = (AbstractFunction) obj;
-            if (!checkForChanges(func)) {
-                return false;
-            }
-            return  Objects.equals(owner, func.getOwner())
-                    && Objects.equals(privileges, func.privileges)
-                    && Objects.equals(comment, func.getComment())
+            return checkForChanges(func)
                     && quotedIdentified == func.isQuotedIdentified()
                     && ansiNulls == func.isAnsiNulls();
         }
+
         return false;
     }
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.putUnordered(privileges);
         hasher.putOrdered(arguments);
         hasher.put(returns);
         hasher.put(body);
@@ -310,9 +305,6 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
         hasher.put(rows);
         hasher.put(cost);
         hasher.put(parallel);
-        hasher.put(name);
-        hasher.put(owner);
-        hasher.put(comment);
         hasher.put(quotedIdentified);
         hasher.put(ansiNulls);
         hasher.put(options);
@@ -324,6 +316,7 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
     @Override
     public AbstractFunction shallowCopy() {
         AbstractFunction functionDst = getFunctionCopy();
+        copyBaseFields(functionDst);
         functionDst.setReturns(getReturns());
         functionDst.setAnsiNulls(isAnsiNulls());
         functionDst.setQuotedIdentified(isQuotedIdentified());
@@ -337,18 +330,13 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
         functionDst.setLeakproof(isLeakproof());
         functionDst.setRows(getRows());
         functionDst.setCost(getCost());
-        functionDst.setComment(getComment());
         functionDst.setParallel(getParallel());
-        functionDst.setOwner(getOwner());
-        functionDst.setLocation(getLocation());
         for (Argument argSrc : arguments) {
             Argument argDst = new Argument(argSrc.getMode(), argSrc.getName(), argSrc.getDataType());
             argDst.setDefaultExpression(argSrc.getDefaultExpression());
             argDst.setReadOnly(argSrc.isReadOnly());
             functionDst.addArgument(argDst);
         }
-        functionDst.privileges.addAll(privileges);
-        functionDst.deps.addAll(deps);
         functionDst.options.addAll(options);
         functionDst.transforms.addAll(transforms);
         functionDst.returnsColumns.putAll(returnsColumns);

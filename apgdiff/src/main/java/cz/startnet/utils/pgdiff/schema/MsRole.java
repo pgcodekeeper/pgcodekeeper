@@ -113,19 +113,14 @@ public class MsRole extends PgStatement {
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(name);
-        hasher.put(owner);
         hasher.put(members);
-        hasher.putUnordered(privileges);
     }
 
     @Override
     public MsRole shallowCopy() {
         MsRole roleDst = new MsRole(getName());
-        roleDst.setOwner(getOwner());
+        copyBaseFields(roleDst);
         roleDst.members.addAll(members);
-        roleDst.privileges.addAll(privileges);
-        roleDst.setLocation(getLocation());
         return roleDst;
     }
 
@@ -136,14 +131,12 @@ public class MsRole extends PgStatement {
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof MsRole) {
-            MsRole role = (MsRole) obj;
-            return Objects.equals(members, role.members)
-                    && Objects.equals(name, role.getName())
-                    && Objects.equals(owner, role.getOwner())
-                    && privileges.equals(role.privileges);
+        if (obj == this) {
+            return true;
         }
-        return false;
+
+        return obj instanceof MsRole && compareBaseFields(obj)
+                && Objects.equals(members, ((MsRole) obj).members);
     }
 
     @Override

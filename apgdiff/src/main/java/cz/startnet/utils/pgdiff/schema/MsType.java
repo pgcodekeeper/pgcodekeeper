@@ -156,7 +156,6 @@ public class MsType extends AbstractType {
 
     @Override
     public void computeHash(Hasher hasher) {
-        super.computeHash(hasher);
         hasher.put(isNotNull);
         hasher.put(isMemoryOptimized);
         hasher.put(baseType);

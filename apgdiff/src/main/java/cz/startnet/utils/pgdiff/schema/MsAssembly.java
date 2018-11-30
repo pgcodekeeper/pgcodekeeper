@@ -117,23 +117,18 @@ public class MsAssembly extends PgStatement {
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(name);
-        hasher.put(owner);
         hasher.put(binaries);
         hasher.put(isVisible);
         hasher.put(permission);
-        hasher.putUnordered(privileges);
     }
 
     @Override
     public MsAssembly shallowCopy() {
         MsAssembly assDst = new MsAssembly(getName());
+        copyBaseFields(assDst);
         assDst.setPermission(getPermission());
         assDst.binaries.addAll(binaries);
-        assDst.setOwner(getOwner());
         assDst.setVisible(isVisible());
-        assDst.privileges.addAll(privileges);
-        assDst.setLocation(getLocation());
         return assDst;
     }
 
@@ -144,22 +139,18 @@ public class MsAssembly extends PgStatement {
 
     @Override
     public boolean compare(PgStatement obj) {
-        boolean eq = false;
-
         if (this == obj) {
-            eq = true;
-        } else if (obj instanceof MsAssembly) {
-            MsAssembly schema = (MsAssembly) obj;
+            return true;
+        }
 
-            eq = Objects.equals(name, schema.getName())
-                    && Objects.equals(owner, schema.getOwner())
-                    && Objects.equals(binaries, schema.getBinaries())
-                    && privileges.equals(schema.privileges)
+        if (obj instanceof MsAssembly && compareBaseFields(obj)) {
+            MsAssembly schema = (MsAssembly) obj;
+            return Objects.equals(binaries, schema.getBinaries())
                     && Objects.equals(isVisible, schema.isVisible())
                     && Objects.equals(permission, schema.getPermission());
         }
 
-        return eq;
+        return false;
     }
 
     public String getPermission() {

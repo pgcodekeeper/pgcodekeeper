@@ -446,7 +446,6 @@ public class PgView extends AbstractView implements PgOptionContainer  {
 
     @Override
     public void computeHash(Hasher hasher) {
-        super.computeHash(hasher);
         hasher.put(columnNames);
         hasher.putUnordered(defaultValues);
         hasher.put(normalizedQuery);

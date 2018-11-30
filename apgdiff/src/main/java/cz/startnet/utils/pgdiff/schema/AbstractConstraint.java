@@ -127,42 +127,38 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath {
 
     @Override
     public boolean compare(PgStatement obj) {
-        boolean eq = false;
-
         if (this == obj) {
-            eq = true;
-        } else if (obj instanceof AbstractConstraint) {
+            return true;
+        }
+
+        if (obj instanceof AbstractConstraint) {
             AbstractConstraint constraint = (AbstractConstraint) obj;
-            eq = compareWithoutComments(constraint)
+            return compareWithoutComments(constraint)
                     && notValid == constraint.isNotValid()
                     && isDisabled == constraint.isDisabled()
                     && Objects.equals(comment, constraint.getComment());
         }
 
-        return eq;
+        return false;
     }
 
     protected boolean compareWithoutComments(AbstractConstraint constraint) {
-        boolean eq;
-        eq = Objects.equals(definition, constraint.getDefinition())
+        return Objects.equals(definition, constraint.getDefinition())
                 && Objects.equals(name, constraint.getName());
-        return eq;
     }
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(name);
         hasher.put(definition);
         hasher.put(notValid);
         hasher.put(isDisabled);
-        hasher.put(comment);
     }
 
     @Override
     public AbstractConstraint shallowCopy() {
         AbstractConstraint constraintDst = getConstraintCopy();
+        copyBaseFields(constraintDst);
         constraintDst.setDefinition(getDefinition());
-        constraintDst.setComment(getComment());
         constraintDst.setPrimaryKey(isPrimaryKey());
         constraintDst.setUnique(isUnique());
         constraintDst.columns.addAll(columns);
@@ -171,7 +167,6 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath {
         constraintDst.deps.addAll(deps);
         constraintDst.setNotValid(isNotValid());
         constraintDst.setDisabled(isDisabled());
-        constraintDst.setLocation(getLocation());
         return constraintDst;
     }
 

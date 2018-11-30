@@ -1,8 +1,5 @@
 package cz.startnet.utils.pgdiff.schema;
 
-import java.util.Objects;
-
-import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class AbstractType extends PgStatementWithSearchPath {
@@ -18,13 +15,9 @@ public abstract class AbstractType extends PgStatementWithSearchPath {
 
     @Override
     public AbstractType shallowCopy() {
-        AbstractType copy = getTypeCopy();
-        copy.setOwner(getOwner());
-        copy.privileges.addAll(privileges);
-        copy.setComment(getComment());
-        copy.deps.addAll(deps);
-        copy.setLocation(getLocation());
-        return copy;
+        AbstractType typeDst = getTypeCopy();
+        copyBaseFields(typeDst);
+        return typeDst;
     }
 
     @Override
@@ -38,27 +31,10 @@ public abstract class AbstractType extends PgStatementWithSearchPath {
             return true;
         }
 
-        if (obj instanceof AbstractType) {
-            AbstractType type = (AbstractType) obj;
-
-            return Objects.equals(name, type.getName())
-                    && Objects.equals(owner, type.getOwner())
-                    && privileges.equals(type.privileges)
-                    && Objects.equals(comment, type.getComment());
-        }
-
-        return false;
+        return obj instanceof AbstractType && compareBaseFields(obj);
     }
 
     protected abstract AbstractType getTypeCopy();
-
-    @Override
-    public void computeHash(Hasher hasher) {
-        hasher.put(name);
-        hasher.put(owner);
-        hasher.putUnordered(privileges);
-        hasher.put(comment);
-    }
 
     @Override
     public AbstractSchema getContainingSchema() {

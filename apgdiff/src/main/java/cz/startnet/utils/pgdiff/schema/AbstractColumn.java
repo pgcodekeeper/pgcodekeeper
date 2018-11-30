@@ -91,47 +91,38 @@ public abstract class AbstractColumn extends PgStatementWithSearchPath {
 
     @Override
     public boolean compare(PgStatement obj) {
-        boolean eq = false;
-
         if (this == obj) {
-            eq = true;
-        } else if (obj instanceof AbstractColumn) {
-            AbstractColumn col = (AbstractColumn) obj;
-
-            eq = Objects.equals(name, col.getName())
-                    && Objects.equals(type, col.getType())
-                    && Objects.equals(collation, col.getCollation())
-                    && nullValue == col.getNullValue()
-                    && Objects.equals(defaultValue, col.getDefaultValue())
-                    && privileges.equals(col.privileges)
-                    && Objects.equals(comment, col.getComment());
+            return true;
         }
 
-        return eq;
+        if (obj instanceof AbstractColumn && compareBaseFields(obj)) {
+            AbstractColumn col = (AbstractColumn) obj;
+
+            return  Objects.equals(type, col.getType())
+                    && Objects.equals(collation, col.getCollation())
+                    && nullValue == col.getNullValue()
+                    && Objects.equals(defaultValue, col.getDefaultValue());
+        }
+
+        return false;
     }
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(name);
         hasher.put(type);
         hasher.put(collation);
         hasher.put(nullValue);
         hasher.put(defaultValue);
-        hasher.putUnordered(privileges);
-        hasher.put(comment);
     }
 
     @Override
     public AbstractColumn shallowCopy() {
         AbstractColumn colDst = getColumnCopy();
+        copyBaseFields(colDst);
         colDst.setType(getType());
         colDst.setCollation(getCollation());
         colDst.setNullValue(getNullValue());
         colDst.setDefaultValue(getDefaultValue());
-        colDst.privileges.addAll(privileges);
-        colDst.setComment(getComment());
-        colDst.deps.addAll(deps);
-        colDst.setLocation(getLocation());
         return colDst;
     }
 

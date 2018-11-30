@@ -454,6 +454,21 @@ public abstract class PgStatement implements IStatement, IHashable {
      */
     public abstract boolean compare(PgStatement obj);
 
+    protected final void copyBaseFields(PgStatement copy) {
+        copy.setOwner(owner);
+        copy.setComment(comment);
+        copy.setLocation(location);
+        copy.deps.addAll(deps);
+        copy.privileges.addAll(privileges);
+    }
+
+    protected final boolean compareBaseFields(PgStatement obj) {
+        return Objects.equals(name, obj.name)
+                && privileges.equals(obj.privileges)
+                && Objects.equals(owner, obj.owner)
+                && Objects.equals(comment, obj.comment);
+    }
+
     /**
      * Returns all subtree elements
      */
@@ -533,6 +548,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         int h = hash;
         if (h == 0) {
             JavaHasher hasher = new JavaHasher();
+            computeLocalHash(hasher);
             computeHash(hasher);
             computeChildrenHash(hasher);
             computeNamesHash(hasher);
@@ -554,10 +570,17 @@ public abstract class PgStatement implements IStatement, IHashable {
      */
     public final byte[] shaHash() {
         ShaHasher hasher = new ShaHasher();
+        computeLocalHash(hasher);
         computeHash(hasher);
         return hasher.getArray();
     }
 
+    private final void computeLocalHash(Hasher hasher) {
+        hasher.put(name);
+        hasher.put(owner);
+        hasher.put(comment);
+        hasher.putUnordered(privileges);
+    }
 
     protected void resetHash(){
         PgStatement st = this;

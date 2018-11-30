@@ -128,14 +128,11 @@ implements PgOptionContainer {
 
     @Override
     public PgFtsDictionary shallowCopy() {
-        PgFtsDictionary dictionary = new PgFtsDictionary(getName());
-        dictionary.setComment(getComment());
-        dictionary.setTemplate(getTemplate());
-        dictionary.options.putAll(getOptions());
-        dictionary.deps.addAll(deps);
-        dictionary.setOwner(getOwner());
-        dictionary.setLocation(getLocation());
-        return dictionary;
+        PgFtsDictionary dictDst = new PgFtsDictionary(getName());
+        copyBaseFields(dictDst);
+        dictDst.setTemplate(getTemplate());
+        dictDst.options.putAll(getOptions());
+        return dictDst;
     }
 
     @Override
@@ -145,28 +142,22 @@ implements PgOptionContainer {
 
     @Override
     public boolean compare(PgStatement obj) {
-        boolean eq = false;
-
         if (this == obj) {
-            eq = true;
-        } else if(obj instanceof PgFtsDictionary) {
+            return true;
+        }
+
+        if (obj instanceof PgFtsDictionary && compareBaseFields(obj)) {
             PgFtsDictionary dictionary = (PgFtsDictionary) obj;
-            eq = Objects.equals(name, dictionary.name)
-                    && Objects.equals(template, dictionary.template)
-                    && Objects.equals(owner, dictionary.getOwner())
-                    && Objects.equals(comment, dictionary.getComment())
+            return Objects.equals(template, dictionary.template)
                     && Objects.equals(options, dictionary.getOptions());
         }
 
-        return eq;
+        return false;
     }
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(name);
-        hasher.put(owner);
         hasher.put(template);
         hasher.put(options);
-        hasher.put(comment);
     }
 }
