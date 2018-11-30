@@ -89,10 +89,6 @@ public abstract class PgStatement implements IStatement, IHashable {
 
     public abstract PgDatabase getDatabase();
 
-    public void dropParent() {
-        parent = null;
-    }
-
     public void setParent(PgStatement parent) {
         if(this.parent != null) {
             throw new IllegalStateException("Statement already has a parent: "
