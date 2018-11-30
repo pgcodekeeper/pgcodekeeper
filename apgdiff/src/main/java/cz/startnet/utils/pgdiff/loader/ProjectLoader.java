@@ -66,9 +66,7 @@ public class ProjectLoader {
      * @throws InterruptedException
      */
     public PgDatabase loadDatabaseSchemaFromDirTree() throws InterruptedException, IOException {
-        PgDatabase db = new PgDatabase();
-        db.setArguments(arguments);
-        db = loadSchemaOnly();
+        PgDatabase db = loadSchemaOnly();
         FullAnalyze.fullAnalyze(db, errors);
         return db;
     }
