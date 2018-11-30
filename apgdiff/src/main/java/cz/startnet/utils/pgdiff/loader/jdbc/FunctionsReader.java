@@ -261,12 +261,12 @@ public class FunctionsReader extends JdbcReader {
 
         // since 11 PostgreSQL
         if (SupportedVersion.VERSION_11.isLE(loader.version)) {
-            aggregate.setFinalFuncModify(res.getString("finalfunc_modify"));
-            aggregate.setMFinalFuncModify(res.getString("mfinalfunc_modify"));
+            aggregate.setFinalFuncModify(getFuncModifier(res.getString("finalfunc_modify")));
+            aggregate.setMFinalFuncModify(getFuncModifier(res.getString("mfinalfunc_modify")));
         }
 
         aggregate.setSFunc(getProcessedName(res.getString("sfunc_nsp"), res.getString("sfunc")));
-        aggregate.setSType(res.getString("stype"));
+        aggregate.setSType(loader.cachedTypesByOid.get(res.getLong("stype")).getFullName());
 
         String kind = res.getString("aggkind");
         aggregate.setKind(kind);
@@ -306,7 +306,7 @@ public class FunctionsReader extends JdbcReader {
 
         String initCond = res.getString("initcond");
         if (initCond != null) {
-            aggregate.setInitCond(initCond);
+            aggregate.setInitCond(PgDiffUtils.quoteString(initCond));
         }
 
         String msfunc = res.getString("msfunc");
@@ -319,9 +319,9 @@ public class FunctionsReader extends JdbcReader {
             aggregate.setMInvFunc(getProcessedName(res.getString("minvfunc_nsp"), minvfunc));
         }
 
-        String mstype = res.getString("mstype");
-        if (mstype != null) {
-            aggregate.setMSType(res.getString("mstype"));
+        long mstype = res.getLong("mstype");
+        if (mstype != 0) {
+            aggregate.setMSType(loader.cachedTypesByOid.get(mstype).getFullName());
         }
 
         String msspace = res.getString("msspace");
@@ -340,12 +340,25 @@ public class FunctionsReader extends JdbcReader {
 
         String mInitCond = res.getString("minitcond");
         if (mInitCond != null) {
-            aggregate.setMInitCond(mInitCond);
+            aggregate.setMInitCond(PgDiffUtils.quoteString(mInitCond));
         }
 
         String sortOp = res.getString("sortop");
         if (mfinalfunc != null) {
             aggregate.setSortOp(getProcessedName(res.getString("sortop_nsp"), sortOp));
+        }
+    }
+
+    private String getFuncModifier(String modifier) {
+        switch (modifier) {
+        case "r":
+            return "READ_ONLY";
+        case "s":
+            return "SHAREABLE";
+        case "w":
+            return "READ_WRITE";
+        default :
+            throw new IllegalStateException("FinalFuncModifier '"+ modifier + "' doesn't support by AGGREGATE!");
         }
     }
 

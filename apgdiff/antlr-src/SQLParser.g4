@@ -1097,7 +1097,10 @@ function_parameters
     ;
 
 function_args
-    : LEFT_PAREN (function_arguments (COMMA function_arguments)*)?  agg_order? RIGHT_PAREN
+    : LEFT_PAREN 
+    ( (function_arguments (COMMA function_arguments)*)?  agg_order? 
+      | MULTIPLY ) 
+    RIGHT_PAREN
     ;
 
 agg_order

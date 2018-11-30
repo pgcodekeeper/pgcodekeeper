@@ -238,8 +238,19 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             }
             break;
 
-        case FUNCTION:
         case AGGREGATE:
+            // For grant permissions to AGGREGATE in postgres used operator 'FUNCTION'.
+            // For example grant permissions to AGGREGATE public.mode(boolean):
+            // GRANT ALL ON FUNCTION public.mode(boolean) TO test_user;
+            stType = "FUNCTION";
+
+            // For grant permissions to AGGREGATE without arguments as signature
+            // used only left and right paren.
+            if (stSignature.contains("*")) {
+                stSignature = stSignature.replace("*", "");
+            }
+            // $FALL-THROUGH$
+        case FUNCTION:
             order = "X";
             isFunctionOrTypeOrDomain = true;
             break;
