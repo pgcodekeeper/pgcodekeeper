@@ -27,7 +27,6 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
                     new Pair<>("cache_value", BIGINT), new Pair<>("log_cnt", BIGINT),
                     new Pair<>("is_cycled", "boolean"), new Pair<>("is_called", "boolean"))));
 
-    private boolean isCached;
     private String cache;
     protected String increment;
     protected String maxValue;
@@ -36,7 +35,6 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
     private boolean cycle;
     private String ownedBy;
     private String dataType = BIGINT;
-    private String presicion;
 
     @Override
     public DbObjType getStatementType() {
@@ -68,15 +66,6 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
 
     public boolean isCycle() {
         return cycle;
-    }
-
-    public String getPresicion() {
-        return presicion;
-    }
-
-    public void setPresicion(String presicion) {
-        this.presicion = presicion;
-        resetHash();
     }
 
     public abstract void setMinMaxInc(long inc, Long max, Long min, String dataType,
@@ -140,15 +129,6 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
         resetHash();
     }
 
-    public boolean isCached() {
-        return isCached;
-    }
-
-    public void setCached(boolean isCached) {
-        this.isCached = isCached;
-        resetHash();
-    }
-
     @Override
     public boolean compare(PgStatement obj) {
         if (this == obj) {
@@ -158,14 +138,12 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
         if (obj instanceof AbstractSequence && compareBaseFields(obj)) {
             AbstractSequence seq = (AbstractSequence) obj;
             return cycle == seq.isCycle()
-                    && isCached == seq.isCached()
                     && Objects.equals(increment, seq.getIncrement())
                     && Objects.equals(minValue, seq.getMinValue())
                     && Objects.equals(maxValue, seq.getMaxValue())
                     && Objects.equals(startWith, seq.getStartWith())
                     && Objects.equals(cache, seq.getCache())
                     && Objects.equals(ownedBy, seq.getOwnedBy())
-                    && Objects.equals(presicion, seq.getPresicion())
                     && Objects.equals(dataType, seq.getDataType());
         }
 
@@ -182,8 +160,6 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
         hasher.put(ownedBy);
         hasher.put(startWith);
         hasher.put(dataType);
-        hasher.put(presicion);
-        hasher.put(isCached);
     }
 
     @Override
@@ -197,9 +173,7 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
         sequenceDst.minValue = getMinValue();
         sequenceDst.dataType = getDataType();
         sequenceDst.setOwnedBy(getOwnedBy());
-        sequenceDst.setCached(isCached());
         sequenceDst.setStartWith(getStartWith());
-        sequenceDst.setPresicion(getPresicion());
         return sequenceDst;
     }
 

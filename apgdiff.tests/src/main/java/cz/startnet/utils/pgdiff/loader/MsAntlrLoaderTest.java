@@ -22,7 +22,6 @@ import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.AbstractSequence;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.MsConstraint;
 import cz.startnet.utils.pgdiff.schema.MsFunction;
@@ -31,12 +30,12 @@ import cz.startnet.utils.pgdiff.schema.MsIndex;
 import cz.startnet.utils.pgdiff.schema.MsProcedure;
 import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.MsSequence;
+import cz.startnet.utils.pgdiff.schema.MsTable;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import cz.startnet.utils.pgdiff.schema.MsView;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
-import cz.startnet.utils.pgdiff.schema.MsTable;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
@@ -373,7 +372,7 @@ class MsDB2 extends MsDatabaseObjectCreator {
         PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
         AbstractSchema schema = d.getDefaultSchema();
 
-        AbstractSequence seq = new MsSequence("admins_aid_seq");
+        MsSequence seq = new MsSequence("admins_aid_seq");
         seq.setStartWith("1");
         seq.setMinMaxInc(1L, 1000000000L, 1L, null, 0L);
         seq.setCached(true);
@@ -511,7 +510,7 @@ class MsDB3 extends MsDatabaseObjectCreator {
         PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
         AbstractSchema schema = d.getDefaultSchema();
 
-        AbstractSequence seq = new MsSequence("call_logs_id_seq");
+        MsSequence seq = new MsSequence("call_logs_id_seq");
         seq.setStartWith("1");
         seq.setMinMaxInc(1L, 1000000000L, 1L, null, 0L);
         seq.setCached(true);
@@ -1101,7 +1100,7 @@ class MsDB13 extends MsDatabaseObjectCreator {
         // d.setComment("comments database");
         // schema.setComment("dbo schema");
 
-        AbstractSequence seq = new MsSequence("test_id_seq");
+        MsSequence seq = new MsSequence("test_id_seq");
         seq.setStartWith("1");
         seq.setMinMaxInc(1L, null, null, null, 0L);
         seq.setCached(true);
