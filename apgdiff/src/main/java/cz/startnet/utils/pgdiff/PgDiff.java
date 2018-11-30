@@ -96,6 +96,14 @@ public final class PgDiff {
             }
         }
 
+        // read additional privileges from special folder
+        if ("parsed".equals(arguments.getOldSrcFormat())) {
+            new ProjectLoader(arguments.getOldSrc(), arguments).loadOverrides(oldDatabase);
+        }
+        if ("parsed".equals(arguments.getNewSrcFormat())) {
+            new ProjectLoader(arguments.getNewSrc(), arguments).loadOverrides(newDatabase);
+        }
+
         FullAnalyze.fullAnalyze(oldDatabase, null);
         FullAnalyze.fullAnalyze(newDatabase, null);
 
@@ -132,8 +140,7 @@ public final class PgDiff {
             }
         } else if ("parsed".equals(format)) {
             ProjectLoader loader = new ProjectLoader(srcPath, arguments);
-            return arguments.isMsSql() ? loader.loadMsDatabaseSchemaFromDirTree() :
-                loader.loadDatabaseSchemaFromDirTree(db);
+            return loader.loadSchemaOnly();
         } else if ("db".equals(format)) {
             String timezone = arguments.getTimeZone() == null ? ApgdiffConsts.UTC : arguments.getTimeZone();
             return arguments.isMsSql() ?
