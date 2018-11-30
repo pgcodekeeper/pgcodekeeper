@@ -521,7 +521,7 @@ public class PgAggregate extends AbstractPgFunction {
         for (Argument argSrc : orderByArgs) {
             Argument orderByArgDst = new Argument(argSrc.getMode(), argSrc.getName(),
                     argSrc.getDataType());
-            copy.addArgument(orderByArgDst);
+            copy.addOrderByArg(orderByArgDst);
         }
         copy.setKind(getKind());
         copy.setBaseType(getBaseType());
