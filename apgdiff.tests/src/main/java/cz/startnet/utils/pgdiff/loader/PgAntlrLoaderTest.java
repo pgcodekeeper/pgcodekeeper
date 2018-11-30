@@ -700,7 +700,7 @@ class PgDB9 extends PgDatabaseObjectCreator {
         rule.setInstead(true);
         table.addRule(rule);
 
-        AbstractSequence seq = new PgSequence("user_id_seq");
+        PgSequence seq = new PgSequence("user_id_seq");
         seq.setMinMaxInc(1L, null, null, null, 0L);
         seq.setCache("1");
         seq.setOwnedBy("public.user_data.id");
@@ -952,7 +952,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
 
         table.setOwner("fordfrog");
 
-        AbstractSequence seq = new PgSequence("test_id_seq");
+        PgSequence seq = new PgSequence("test_id_seq");
         seq.setStartWith("1");
         seq.setMinMaxInc(1L, null, null, null, 0L);
         seq.setCache("1");

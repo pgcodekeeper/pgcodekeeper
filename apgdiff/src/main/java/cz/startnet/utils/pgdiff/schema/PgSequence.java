@@ -8,10 +8,14 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import cz.startnet.utils.pgdiff.hashers.Hasher;
+
 /**
  * Stores sequence information.
  */
 public class PgSequence extends AbstractSequence {
+
+    private String ownedBy;
 
     public PgSequence(String name) {
         super(name);
@@ -227,7 +231,31 @@ public class PgSequence extends AbstractSequence {
     }
 
     @Override
+    public boolean compare(PgStatement obj) {
+        return obj instanceof PgSequence && super.compare(obj)
+                && Objects.equals(ownedBy, ((PgSequence) obj).getOwnedBy());
+    }
+
+
+    public String getOwnedBy() {
+        return ownedBy;
+    }
+
+    public void setOwnedBy(final String ownedBy) {
+        this.ownedBy = ownedBy;
+        resetHash();
+    }
+
+    @Override
+    public void computeHash(Hasher hasher) {
+        super.computeHash(hasher);
+        hasher.put(ownedBy);
+    }
+
+    @Override
     protected AbstractSequence getSequenceCopy() {
-        return new PgSequence(getName());
+        PgSequence sequence = new PgSequence(getName());
+        sequence.setOwnedBy(getOwnedBy());
+        return sequence;
     }
 }

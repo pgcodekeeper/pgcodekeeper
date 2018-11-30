@@ -34,7 +34,7 @@ public class SequencesReader extends JdbcReader {
         loader.monitor.worked(1);
         String sequenceName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schema.getName(), sequenceName, DbObjType.SEQUENCE));
-        AbstractSequence s = new PgSequence(sequenceName);
+        PgSequence s = new PgSequence(sequenceName);
 
         String refTable = res.getString("referenced_table_name");
         String refColumn = res.getString("ref_col_name");

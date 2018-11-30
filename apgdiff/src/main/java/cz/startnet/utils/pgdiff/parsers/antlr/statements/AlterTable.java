@@ -16,7 +16,6 @@ import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractRegularTable;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.AbstractSequence;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
@@ -128,7 +127,7 @@ public class AlterTable extends TableAbstract {
                             name = body.name.getText();
                         }
                     }
-                    AbstractSequence sequence = new PgSequence(name);
+                    PgSequence sequence = new PgSequence(name);
                     CreateSequence.fillSequence(sequence, identity.sequence_body());
 
                     col.setSequence(sequence);

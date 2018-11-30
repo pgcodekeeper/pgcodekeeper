@@ -33,7 +33,6 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
     protected String minValue;
     private String startWith;
     private boolean cycle;
-    private String ownedBy;
     private String dataType = BIGINT;
 
     @Override
@@ -120,15 +119,6 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
         return dataType;
     }
 
-    public String getOwnedBy() {
-        return ownedBy;
-    }
-
-    public void setOwnedBy(final String ownedBy) {
-        this.ownedBy = ownedBy;
-        resetHash();
-    }
-
     @Override
     public boolean compare(PgStatement obj) {
         if (this == obj) {
@@ -143,7 +133,6 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
                     && Objects.equals(maxValue, seq.getMaxValue())
                     && Objects.equals(startWith, seq.getStartWith())
                     && Objects.equals(cache, seq.getCache())
-                    && Objects.equals(ownedBy, seq.getOwnedBy())
                     && Objects.equals(dataType, seq.getDataType());
         }
 
@@ -157,7 +146,6 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
         hasher.put(increment);
         hasher.put(maxValue);
         hasher.put(minValue);
-        hasher.put(ownedBy);
         hasher.put(startWith);
         hasher.put(dataType);
     }
@@ -172,7 +160,6 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
         sequenceDst.maxValue = getMaxValue();
         sequenceDst.minValue = getMinValue();
         sequenceDst.dataType = getDataType();
-        sequenceDst.setOwnedBy(getOwnedBy());
         sequenceDst.setStartWith(getStartWith());
         return sequenceDst;
     }
