@@ -486,6 +486,7 @@ public abstract class PgStatement implements IStatement, IHashable {
 
     public void addChild(PgStatement st) {
         //  subclasses with children must override
+        throw new IllegalStateException("Statement can't have child");
     }
 
     public PgStatement getChild(String name, DbObjType type) {
