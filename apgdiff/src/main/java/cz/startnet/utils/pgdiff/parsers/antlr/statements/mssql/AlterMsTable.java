@@ -7,10 +7,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.TableAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
+import cz.startnet.utils.pgdiff.schema.MsConstraint;
+import cz.startnet.utils.pgdiff.schema.MsTable;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.MsTable;
 
 public class AlterMsTable extends TableAbstract {
 
@@ -33,7 +34,7 @@ public class AlterMsTable extends TableAbstract {
             con.setNotValid(ctx.nocheck_add != null);
             table.addConstraint(con);
         } else if (ctx.con != null) {
-            AbstractConstraint con = getSafe(table::getConstraint, ctx.con);
+            MsConstraint con = (MsConstraint) getSafe(table::getConstraint, ctx.con);
             if (ctx.WITH() != null) {
                 con.setNotValid(ctx.nocheck_check != null);
             }

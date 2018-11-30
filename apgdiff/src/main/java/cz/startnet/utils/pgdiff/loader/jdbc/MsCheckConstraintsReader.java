@@ -4,7 +4,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
-import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -28,7 +27,7 @@ public class MsCheckConstraintsReader extends JdbcReader {
             return;
         }
 
-        AbstractConstraint con = new MsConstraint(name);
+        MsConstraint con = new MsConstraint(name);
 
         con.setNotValid(res.getBoolean("with_no_check"));
         con.setDisabled(res.getBoolean("is_disabled"));

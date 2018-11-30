@@ -25,7 +25,6 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath {
     private GenericColumn refTable;
     private final Set<String> refs = new HashSet<>();
     private boolean notValid;
-    private boolean isDisabled;
 
     /**
      * Список колонок на которых установлен PrimaryKey или Unique
@@ -85,15 +84,6 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath {
         resetHash();
     }
 
-    public boolean isDisabled() {
-        return isDisabled;
-    }
-
-    public void setDisabled(boolean isDisabled) {
-        this.isDisabled = isDisabled;
-        resetHash();
-    }
-
     @Override
     public DbObjType getStatementType() {
         return DbObjType.CONSTRAINT;
@@ -131,15 +121,9 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath {
             return true;
         }
 
-        if (obj instanceof AbstractConstraint) {
-            AbstractConstraint constraint = (AbstractConstraint) obj;
-            return compareWithoutComments(constraint)
-                    && notValid == constraint.isNotValid()
-                    && isDisabled == constraint.isDisabled()
-                    && Objects.equals(comment, constraint.getComment());
-        }
-
-        return false;
+        return obj instanceof AbstractConstraint && compareBaseFields(obj)
+                && compareWithoutComments((AbstractConstraint) obj)
+                && notValid == ((AbstractConstraint) obj).isNotValid();
     }
 
     protected boolean compareWithoutComments(AbstractConstraint constraint) {
@@ -151,7 +135,6 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath {
     public void computeHash(Hasher hasher) {
         hasher.put(definition);
         hasher.put(notValid);
-        hasher.put(isDisabled);
     }
 
     @Override
@@ -166,7 +149,6 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath {
         constraintDst.refs.addAll(refs);
         constraintDst.deps.addAll(deps);
         constraintDst.setNotValid(isNotValid());
-        constraintDst.setDisabled(isDisabled());
         return constraintDst;
     }
 
