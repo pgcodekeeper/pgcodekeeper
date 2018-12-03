@@ -59,7 +59,7 @@ implements TSqlContextProcessor {
             Batch_statementContext batchSt;
             if (clauses != null) {
                 for (St_clauseContext st : clauses.st_clause()) {
-                    clause(st);
+                    clause(st, stream);
                 }
             } else if ((batchSt = b.batch_statement()) != null) {
                 batchStatement(batchSt, stream);
@@ -67,7 +67,7 @@ implements TSqlContextProcessor {
         }
     }
 
-    private void clause(St_clauseContext st) {
+    public void clause(St_clauseContext st, CommonTokenStream stream) {
         Ddl_clauseContext ddl = st.ddl_clause();
         Another_statementContext ast;
         if (ddl != null) {
@@ -75,7 +75,7 @@ implements TSqlContextProcessor {
             Schema_alterContext alter;
             Enable_disable_triggerContext disable;
             if (create != null) {
-                create(create);
+                create(create, stream);
             } else if ((alter = ddl.schema_alter()) != null) {
                 alter(alter);
             } else if ((disable = ddl.enable_disable_trigger()) != null && disable.DISABLE() != null) {
@@ -93,7 +93,7 @@ implements TSqlContextProcessor {
         }
     }
 
-    private void batchStatement(Batch_statementContext ctx, CommonTokenStream stream) {
+    public void batchStatement(Batch_statementContext ctx, CommonTokenStream stream) {
         if (ctx.CREATE() == null) {
             return;
         }
@@ -117,12 +117,12 @@ implements TSqlContextProcessor {
         safeParseStatement(p, ctx);
     }
 
-    private void create(Schema_createContext ctx) {
+    private void create(Schema_createContext ctx, CommonTokenStream stream) {
         ParserAbstract p;
         if (ctx.create_sequence() != null) {
             p = new CreateMsSequence(ctx.create_sequence(), db);
         } else if (ctx.create_schema() != null) {
-            p = new CreateMsSchema(ctx.create_schema(), db);
+            p = new CreateMsSchema(ctx.create_schema(), db, this, stream);
         } else if (ctx.create_index() != null) {
             p = new CreateMsIndex(ctx.create_index(), db);
         } else if (ctx.create_table() != null) {

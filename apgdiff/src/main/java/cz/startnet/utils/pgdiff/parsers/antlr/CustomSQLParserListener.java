@@ -56,18 +56,22 @@ implements SqlContextProcessor {
     @Override
     public void process(SqlContext rootCtx, CommonTokenStream stream) {
         for (StatementContext s : rootCtx.statement()) {
-            Schema_statementContext st = s.schema_statement();
-            if (st != null) {
-                Schema_createContext create = st.schema_create();
-                Schema_alterContext alter;
-                if (create != null) {
-                    create(create);
-                } else if ((alter = st.schema_alter()) != null) {
-                    alter(alter);
-                }
-            }
+            statement(s);
         }
         db.sortColumns();
+    }
+
+    public void statement(StatementContext statement) {
+        Schema_statementContext schema = statement.schema_statement();
+        if (schema != null) {
+            Schema_createContext create = schema.schema_create();
+            Schema_alterContext alter;
+            if (create != null) {
+                create(create);
+            } else if ((alter = schema.schema_alter()) != null) {
+                alter(alter);
+            }
+        }
     }
 
     private void create(Schema_createContext ctx) {
@@ -91,7 +95,7 @@ implements SqlContextProcessor {
         } else if (ctx.create_sequence_statement() != null) {
             p = new CreateSequence(ctx.create_sequence_statement(), db);
         } else if (ctx.create_schema_statement() != null) {
-            p = new CreateSchema(ctx.create_schema_statement(), db);
+            p = new CreateSchema(ctx.create_schema_statement(), db, this);
         } else if (ctx.create_view_statement() != null) {
             p = new CreateView(ctx.create_view_statement(), db);
         } else if (ctx.create_type_statement() != null) {

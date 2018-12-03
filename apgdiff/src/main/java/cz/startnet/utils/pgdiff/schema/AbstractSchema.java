@@ -3,7 +3,6 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -28,8 +27,6 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     private final List<PgFtsConfiguration> configurations = new ArrayList<>();
     private final List<PgOperator> operators = new ArrayList<>();
 
-    private String definition;
-
     @Override
     public DbObjType getStatementType() {
         return DbObjType.SCHEMA;
@@ -37,15 +34,6 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
 
     public AbstractSchema(String name) {
         super(name);
-    }
-
-    public String getDefinition() {
-        return definition;
-    }
-
-    public void setDefinition(final String definition) {
-        this.definition = definition;
-        resetHash();
     }
 
     @Override
@@ -575,8 +563,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
             return true;
         }
 
-        return obj instanceof AbstractSchema && compareBaseFields(obj)
-                && Objects.equals(definition, ((AbstractSchema) obj).getDefinition());
+        return obj instanceof AbstractSchema && compareBaseFields(obj);
     }
 
     @Override
@@ -600,7 +587,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(definition);
+        // all hashable fields in PgStatement
     }
 
     @Override
@@ -622,7 +609,6 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     public AbstractSchema shallowCopy() {
         AbstractSchema schemaDst = getSchemaCopy();
         copyBaseFields(schemaDst);
-        schemaDst.setDefinition(getDefinition());
         return schemaDst;
     }
 

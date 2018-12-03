@@ -101,7 +101,7 @@ public class CreateRule extends ParserAbstract {
 
         DbObjType type = null;
         Object_typeContext typeCtx = ctx.object_type();
-        if (typeCtx.TABLE() != null) {
+        if (typeCtx == null || typeCtx.TABLE() != null) {
             type = DbObjType.TABLE;
         } else if (typeCtx.SEQUENCE() != null) {
             type = DbObjType.SEQUENCE;

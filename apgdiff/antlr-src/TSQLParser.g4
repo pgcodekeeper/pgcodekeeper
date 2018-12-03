@@ -922,10 +922,8 @@ create_schema
     ;
 
 schema_definition
-    : CREATE create_table
-    | CREATE create_or_alter_view
-    | (GRANT|DENY) (SELECT|INSERT|DELETE|UPDATE) ON (SCHEMA COLON COLON)? object_name=id TO owner_name=id
-    | REVOKE (SELECT|INSERT|DELETE|UPDATE) ON (SCHEMA COLON COLON)? object_name=id FROM owner_name=id
+    : sql_clauses 
+    | batch_statement
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-search-property-list-transact-sql
