@@ -150,7 +150,7 @@ public class PgProcedure extends AbstractPgFunction {
         return sb.length() > startLength;
     }
 
-    private boolean needDrop(AbstractFunction newFunction) {
+    private boolean needDrop(AbstractPgFunction newFunction) {
         Iterator<Argument> iOld = arguments.iterator();
         Iterator<Argument> iNew = newFunction.arguments.iterator();
         while (iOld.hasNext() && iNew.hasNext()) {
@@ -184,7 +184,7 @@ public class PgProcedure extends AbstractPgFunction {
     }
 
     @Override
-    protected AbstractFunction getFunctionCopy() {
+    protected AbstractPgFunction getFunctionCopy() {
         return new PgProcedure(getBareName());
     }
 }

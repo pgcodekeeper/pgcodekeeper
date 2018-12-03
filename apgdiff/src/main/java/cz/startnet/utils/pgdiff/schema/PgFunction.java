@@ -204,7 +204,7 @@ public class PgFunction extends AbstractPgFunction {
         return sb.length() > startLength;
     }
 
-    private boolean needDrop(AbstractFunction newFunction) {
+    private boolean needDrop(AbstractPgFunction newFunction) {
         if (newFunction == null ||
                 !Objects.equals(getReturns(), newFunction.getReturns())) {
             return true;
@@ -269,7 +269,7 @@ public class PgFunction extends AbstractPgFunction {
     }
 
     @Override
-    protected AbstractFunction getFunctionCopy() {
+    protected AbstractPgFunction getFunctionCopy() {
         return new PgFunction(getBareName());
     }
 }

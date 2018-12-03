@@ -12,10 +12,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsFunction;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsProcedure;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsTrigger;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsView;
+import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.MsFunction;
-import cz.startnet.utils.pgdiff.schema.MsProcedure;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import cz.startnet.utils.pgdiff.schema.MsView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -90,7 +89,7 @@ public class MsFPVTReader extends JdbcReader {
                 Batch_statementContext ctx = p.tsql_file().batch(0).batch_statement();
                 return new CreateMsProcedure(ctx, db, an, qi, (CommonTokenStream) p.getInputStream());
             }, creator -> {
-                MsProcedure st = creator.getObject(schema);
+                AbstractFunction st = creator.getObject(schema);
                 loader.setOwner(st, owner);
                 loader.setPrivileges(st, acls);
             });
@@ -99,7 +98,7 @@ public class MsFPVTReader extends JdbcReader {
                 Batch_statementContext ctx = p.tsql_file().batch(0).batch_statement();
                 return new CreateMsFunction(ctx, db, an, qi, (CommonTokenStream) p.getInputStream());
             }, creator -> {
-                MsFunction st = creator.getObject(schema);
+                AbstractFunction st = creator.getObject(schema);
                 loader.setOwner(st, owner);
                 loader.setPrivileges(st, acls);
             });

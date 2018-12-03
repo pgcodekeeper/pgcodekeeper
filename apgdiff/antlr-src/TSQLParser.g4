@@ -1621,7 +1621,8 @@ trigger_operation
 create_or_alter_function
     : FUNCTION qualified_name LR_BRACKET (procedure_param (COMMA procedure_param)*)?  RR_BRACKET
     RETURNS func_return
-    func_body
+    (WITH function_option (COMMA function_option)*)?
+    AS? func_body
     ;
 
 func_return
@@ -1631,11 +1632,6 @@ func_return
     ;
 
 func_body
-    : (WITH function_option (COMMA function_option)*)?
-    AS? func_body_return
-    ;
-
-func_body_return
     : RETURN select_statement
     | BEGIN sql_clauses? RETURN ret=expression? SEMI? END
     | EXTERNAL NAME assembly_specifier

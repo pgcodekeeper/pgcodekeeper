@@ -14,7 +14,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statement_valueConte
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Transform_for_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_storage_parameterContext;
-import cz.startnet.utils.pgdiff.schema.AbstractFunction;
+import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -35,7 +35,7 @@ public class CreateFunction extends ParserAbstract {
         AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
 
         String name = QNameParser.getFirstName(ids);
-        AbstractFunction function = ctx.PROCEDURE() != null ? new PgProcedure(name)
+        AbstractPgFunction function = ctx.PROCEDURE() != null ? new PgProcedure(name)
                 : new PgFunction(name);
 
         fillArguments(function);
@@ -57,7 +57,7 @@ public class CreateFunction extends ParserAbstract {
     }
 
     private void fillFunction(Create_funct_paramsContext params,
-            AbstractFunction function) {
+            AbstractPgFunction function) {
         for (Function_actions_commonContext action  : params.function_actions_common()) {
             if (action.WINDOW() != null) {
                 function.setWindow(true);
@@ -93,7 +93,7 @@ public class CreateFunction extends ParserAbstract {
             } else if (action.SET() != null) {
                 String par = PgDiffUtils.getQuotedName(action.configuration_parameter.getText());
                 if (action.FROM() != null) {
-                    function.addConfiguration(par, AbstractFunction.FROM_CURRENT);
+                    function.addConfiguration(par, AbstractPgFunction.FROM_CURRENT);
                 } else {
                     StringBuilder sb = new StringBuilder();
                     for (Set_statement_valueContext val : action.value) {
@@ -117,7 +117,7 @@ public class CreateFunction extends ParserAbstract {
         }
     }
 
-    private void fillArguments(AbstractFunction function) {
+    private void fillArguments(AbstractPgFunction function) {
         for (Function_argumentsContext argument : ctx.function_parameters()
                 .function_args().function_arguments()) {
             Argument arg = new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
