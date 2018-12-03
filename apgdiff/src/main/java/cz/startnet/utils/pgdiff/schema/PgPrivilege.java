@@ -69,7 +69,8 @@ public class PgPrivilege implements IHashable {
             name = PgDiffUtils.getQuotedName(name);
         } else {
             name = PgDiffUtils.getQuotedName(newObj.getParent().getName()) + '.' + name;
-            isFunctionOrTypeOrDomain = (DbObjType.FUNCTION == type) || (DbObjType.TYPE == type)
+            isFunctionOrTypeOrDomain = (DbObjType.FUNCTION == type) || (DbObjType.PROCEDURE == type)
+                    || (DbObjType.AGGREGATE == type) || (DbObjType.TYPE == type)
                     || (DbObjType.DOMAIN == type);
             if (type == DbObjType.VIEW) {
                 type = DbObjType.TABLE;
@@ -78,7 +79,7 @@ public class PgPrivilege implements IHashable {
 
         owner =  PgDiffUtils.getQuotedName(owner);
 
-        // FUNCTION/TYPE/DOMAIN by default has "GRANT ALL to PUBLIC".
+        // FUNCTION/PROCEDURE/AGGREGATE/TYPE/DOMAIN by default has "GRANT ALL to PUBLIC".
         // That's why for them set "GRANT ALL to PUBLIC".
         PgPrivilege priv = new PgPrivilege(isFunctionOrTypeOrDomain ? "GRANT" : "REVOKE",
                 "ALL" + column, type + " " + name, "PUBLIC", false);

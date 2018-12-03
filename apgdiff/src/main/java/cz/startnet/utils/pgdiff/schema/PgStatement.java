@@ -254,6 +254,8 @@ public abstract class PgStatement implements IStatement, IHashable {
                 switch (getStatementType()) {
                 // revoke public is non-default for these
                 case FUNCTION:
+                case PROCEDURE:
+                case AGGREGATE:
                 case DOMAIN:
                 case TYPE:
                     break;

@@ -251,6 +251,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             }
             // $FALL-THROUGH$
         case FUNCTION:
+        case PROCEDURE:
             order = "X";
             isFunctionOrTypeOrDomain = true;
             break;

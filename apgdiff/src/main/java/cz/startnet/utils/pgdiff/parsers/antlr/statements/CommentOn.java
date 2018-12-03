@@ -93,23 +93,23 @@ public class CommentOn extends ParserAbstract {
                     : getSchemaSafe(ids, db.getDefaultSchema());
         }
 
-        // function
-        if (ctx.FUNCTION() != null) {
+        // function or procedure
+        if (ctx.FUNCTION() != null || ctx.PROCEDURE() != null) {
             getSafe(schema::getFunction, parseSignature(name, ctx.function_args(), false),
                     nameCtx.getStart())
             .setComment(db.getArguments(), comment);
             // aggregate
-        }  else if (ctx.AGGREGATE() != null) {
+        } else if (ctx.AGGREGATE() != null) {
             getSafe(schema::getFunction, parseSignature(name, ctx.function_args(), true),
                     nameCtx.getStart())
             .setComment(db.getArguments(), comment);
             // operator
-        }  else if (ctx.OPERATOR() != null) {
+        } else if (ctx.OPERATOR() != null) {
             Target_operatorContext targetOperCtx = ctx.target_operator();
             getSafe(schema::getOperator, parseSignature(targetOperCtx.name.operator.getText(),
                     targetOperCtx), targetOperCtx.getStart()).setComment(db.getArguments(), comment);
             //extension
-        }  else if (ctx.EXTENSION() != null) {
+        } else if (ctx.EXTENSION() != null) {
             getSafe(db::getExtension, nameCtx).setComment(db.getArguments(), comment);
             //constraint
         } else if (ctx.CONSTRAINT() != null) {

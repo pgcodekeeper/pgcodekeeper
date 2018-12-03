@@ -589,18 +589,27 @@ public class ReferenceListener implements SqlContextProcessor {
     }
 
     public void rule(Rule_commonContext ctx) {
+        DbObjType type = null;
+
+        boolean isFuncOrProc = false;
         if (ctx.FUNCTION() != null) {
+            type = DbObjType.FUNCTION;
+            isFuncOrProc = true;
+        } else if (ctx.PROCEDURE() != null) {
+            type = DbObjType.PROCEDURE;
+            isFuncOrProc = true;
+        }
+        if (isFuncOrProc) {
             for (Function_parametersContext functparam : ctx.func_name) {
                 List<IdentifierContext> ids = functparam.name.identifier();
                 String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
                 String name =  QNameParser.getFirstName(ids);
-                addFullObjReference(schemaName, name, functparam.name, DbObjType.FUNCTION,
+                addFullObjReference(schemaName, name, functparam.name, type,
                         StatementActions.NONE, ctx.getParent());
             }
             return;
         }
 
-        DbObjType type = null;
         Object_typeContext typeCtx = ctx.object_type();
         if (typeCtx.TABLE() != null) {
             type = DbObjType.TABLE;
