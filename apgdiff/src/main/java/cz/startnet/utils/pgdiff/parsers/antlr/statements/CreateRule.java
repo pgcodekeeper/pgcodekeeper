@@ -82,7 +82,7 @@ public class CreateRule extends ParserAbstract {
                 AbstractSchema schema = getSchemaSafe(funcIds, db.getDefaultSchema());
 
                 // For GRANT/REVOKE in AGGREGATEs the signature will be the same as in FUNCTIONs
-                // (even if AGGREGATE has 'ORDER BY').
+                // (even if AGGREGATE has 'ORDER BY';'ORDER BY' will not be displayed).
                 AbstractFunction func;
                 try {
                     func = getSafe(schema::getFunction,
@@ -98,7 +98,17 @@ public class CreateRule extends ParserAbstract {
                 sb.append(ctx.PROCEDURE() == null ?
                         DbObjType.FUNCTION : DbObjType.PROCEDURE).append(' ');
                 sb.append(PgDiffUtils.getQuotedName(schema.getName())).append('.');
-                ((AbstractPgFunction) func).appendFunctionSignature(sb, false, true);
+
+                // For AGGREGATEs which use asterisk (*) as argument, in GRANT/REVOKE
+                // syntax the asterisk (*) is not displayed.
+                if (DbObjType.AGGREGATE == func.getStatementType()) {
+                    String agSign = ((AbstractPgFunction) func)
+                            .appendFunctionSignature(new StringBuilder(), false, true)
+                            .toString();
+                    sb.append(agSign.contains("*") ? agSign.replace("*", "") : agSign);
+                } else {
+                    ((AbstractPgFunction) func).appendFunctionSignature(sb, false, true);
+                }
 
                 for (String role : roles) {
                     addPrivilege(func, new PgPrivilege(state, permissions,

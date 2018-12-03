@@ -56,7 +56,7 @@ public class CreateAggregate extends ParserAbstract {
             } else if (param.SFUNC() != null) {
                 aggregate.setSFunc(param.sfunc_name.getText());
             } else if (param.STYPE() != null) {
-                aggregate.setSType(param.type.getText());
+                aggregate.setSType(getFullCtxText(param.type));
             }
         }
 
@@ -83,7 +83,7 @@ public class CreateAggregate extends ParserAbstract {
                 } else if (paramOpt.MINVFUNC() != null) {
                     aggregate.setMInvFunc(paramOpt.minv_func.getText());
                 } else if (paramOpt.MSTYPE() != null) {
-                    aggregate.setMSType(paramOpt.ms_type.getText());
+                    aggregate.setMSType(getFullCtxText(paramOpt.ms_type));
                 } else if (paramOpt.MSSPACE() != null) {
                     aggregate.setMSSpace(Long.parseLong(paramOpt.ms_space.getText()));
                 } else if (paramOpt.MFINALFUNC() != null) {
