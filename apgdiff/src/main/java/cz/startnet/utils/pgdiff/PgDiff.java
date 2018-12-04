@@ -76,8 +76,8 @@ public final class PgDiff {
             oldLib.loadXml(new DependenciesXmlStore(Paths.get(xml)), arguments);
         }
 
-        oldLib.loadLibraries(arguments, false, arguments.getTargetLibs());
-        oldLib.loadLibraries(arguments, true, arguments.getTargetLibsWithoutPriv());
+        oldLib.loadLibraries(arguments, false, arguments.getSourceLibs());
+        oldLib.loadLibraries(arguments, true, arguments.getSourceLibsWithoutPriv());
 
         LibraryLoader newLib = new LibraryLoader(newDatabase, metaPath);
 
@@ -85,8 +85,8 @@ public final class PgDiff {
             newLib.loadXml(new DependenciesXmlStore(Paths.get(xml)), arguments);
         }
 
-        newLib.loadLibraries(arguments, false, arguments.getSourceLibs());
-        newLib.loadLibraries(arguments, true, arguments.getSourceLibsWithoutPriv());
+        newLib.loadLibraries(arguments, false, arguments.getTargetLibs());
+        newLib.loadLibraries(arguments, true, arguments.getTargetLibsWithoutPriv());
 
         if (arguments.isLibSafeMode()) {
             List<PgOverride> overrides = oldDatabase.getOverrides();
