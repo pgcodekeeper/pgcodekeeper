@@ -33,7 +33,7 @@ public class FunctionsReader extends JdbcReader {
     protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException {
         String schemaName = schema.getName();
         String funcName = res.getString("proname");
-        AbstractFunction f = res.getBoolean("proisagg") ? processResultAggr(res, schema, schemaName, funcName)
+        AbstractFunction f = res.getBoolean("proisagg") ? processResultAggr(res, schemaName, funcName)
                 : processResultFunc(res, schema, schemaName, funcName);
 
         // OWNER
@@ -225,20 +225,12 @@ public class FunctionsReader extends JdbcReader {
         return quote.concat("$");
     }
 
-    private AbstractFunction processResultAggr(ResultSet res, AbstractSchema schema,
-            String schemaName, String funcName) throws SQLException {
+    private AbstractFunction processResultAggr(ResultSet res, String schemaName,
+            String funcName) throws SQLException {
         loader.setCurrentObject(new GenericColumn(schemaName, funcName, DbObjType.AGGREGATE));
-
         PgAggregate f = new PgAggregate(funcName, "");
-
         fillAggregate(f, res);
         fillArguments(f, res);
-
-        // RETURN TYPE
-        JdbcType returnType = loader.cachedTypesByOid.get(res.getLong("prorettype"));
-        f.setReturns(returnType.getFullName());
-        returnType.addTypeDepcy(f);
-
         return f;
     }
 
