@@ -1,11 +1,14 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
+import java.util.function.BiConsumer;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Aggregate_paramContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Aggregate_param_optionalContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_aggregate_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
@@ -30,21 +33,34 @@ public class CreateAggregate extends ParserAbstract {
         String rawStatement = getFullCtxText(ctx.getParent());
 
         PgAggregate aggregate = new PgAggregate(name, rawStatement);
-        fillArguments(aggregate);
+        fillAllArguments(aggregate);
         fillAggregate(ctx.aggregate_param(), ctx.aggregate_param_optional(), aggregate);
 
         schema.addFunction(aggregate);
         return aggregate;
     }
 
-    private void fillArguments(PgAggregate aggregate) {
-        for (Function_argumentsContext argument : ctx.function_parameters()
-                .function_args().function_arguments()) {
-            Argument arg = new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
-                    argument.argname != null ? argument.argname.getText() : null,
-                            getFullCtxText(argument.argtype_data));
-            addTypeAsDepcy(argument.data_type(), aggregate, getDefSchemaName());
-            aggregate.addArgument(arg);
+    private void fillAllArguments(PgAggregate aggregate) {
+        Function_argsContext argumentsCtx = ctx.function_parameters().function_args();
+
+        fillArguments(argumentsCtx.function_arguments(), aggregate,
+                (aggr, a) -> aggr.addArgument(a));
+
+        if (argumentsCtx.agg_order() != null) {
+            fillArguments(argumentsCtx.agg_order().function_arguments(), aggregate,
+                    (aggr, a) -> aggr.addOrderByArg(a));
+        }
+    }
+
+    private void fillArguments(List<Function_argumentsContext> argumentsCtx, PgAggregate aggr,
+            BiConsumer<PgAggregate, Argument> addArgument) {
+        for (Function_argumentsContext argumentCtx : argumentsCtx) {
+            Data_typeContext argumentTypeCtx = argumentCtx.argtype_data;
+            addTypeAsDepcy(argumentTypeCtx, aggr, getDefSchemaName());
+            addArgument.accept(aggr, new Argument(
+                    argumentCtx.arg_mode != null ? argumentCtx.arg_mode.getText() : null,
+                    argumentCtx.argname != null ? argumentCtx.argname.getText() : null,
+                    getFullCtxText(argumentTypeCtx)));
         }
     }
 

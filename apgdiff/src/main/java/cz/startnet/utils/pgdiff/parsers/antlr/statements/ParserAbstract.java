@@ -22,6 +22,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionC
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
+import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
@@ -123,7 +124,20 @@ public abstract class ParserAbstract {
         AbstractPgFunction function = isAggregate ? new PgAggregate(name, null)
                 : new PgFunction(name, null);
 
-        for (Function_argumentsContext argument : argsContext.function_arguments()) {
+        fillFuncArgs(argsContext.function_arguments(), function,
+                (abstrFunc, a) -> abstrFunc.addArgument(a));
+
+        if (isAggregate && argsContext.agg_order() != null) {
+            fillFuncArgs(argsContext.agg_order().function_arguments(), function,
+                    (abstrFunc, a) -> ((PgAggregate) abstrFunc).addOrderByArg(a));
+        }
+
+        return function.getSignature();
+    }
+
+    private static void fillFuncArgs(List<Function_argumentsContext> argsCtx, AbstractPgFunction function,
+            BiConsumer<AbstractFunction, Argument> addArgument) {
+        for (Function_argumentsContext argument : argsCtx) {
             String type = getFullCtxText(argument.argtype_data);
 
             // function identity types from pg_dbo_timestamp extension have
@@ -137,11 +151,9 @@ public abstract class ParserAbstract {
                 }
             }
 
-            Argument arg = new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
-                    argument.argname != null ? argument.argname.getText() : null, type);
-            function.addArgument(arg);
+            addArgument.accept(function, new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
+                    argument.argname != null ? argument.argname.getText() : null, type));
         }
-        return function.getSignature();
     }
 
     public static String parseSignature(String name, Target_operatorContext targerOperCtx) {

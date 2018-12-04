@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.function.BiConsumer;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
@@ -62,7 +63,7 @@ public class FunctionsReader extends JdbcReader {
         AbstractFunction f = isProc ? new PgProcedure(funcName, "") : new PgFunction(funcName, "");
 
         fillFunction(f, res);
-        StringBuilder returnedTableArguments = fillArguments(f, res);
+        StringBuilder returnedTableArguments = fillAllArguments(f, res);
 
         if (!isProc) {
             // RETURN TYPE
@@ -230,7 +231,7 @@ public class FunctionsReader extends JdbcReader {
         loader.setCurrentObject(new GenericColumn(schemaName, funcName, DbObjType.AGGREGATE));
         PgAggregate f = new PgAggregate(funcName, "");
         fillAggregate(f, res);
-        fillArguments(f, res);
+        fillAllArguments(f, res);
         return f;
     }
 
@@ -354,7 +355,7 @@ public class FunctionsReader extends JdbcReader {
         }
     }
 
-    private StringBuilder fillArguments(AbstractFunction f, ResultSet res)
+    private StringBuilder fillAllArguments(AbstractFunction f, ResultSet res)
             throws SQLException {
         StringBuilder returnedTableArguments = new StringBuilder();
         String[] argModes = getColArray(res, "proargmodes");
@@ -362,7 +363,32 @@ public class FunctionsReader extends JdbcReader {
         Long[] argTypeOids = getColArray(res, "proallargtypes");
 
         Long[] argTypes = argTypeOids != null ? argTypeOids : getColArray(res, "argtypes");
-        for (int i = 0; argTypes.length > i; i++) {
+        int allArgsLength =  argTypes.length;
+
+        BiConsumer<AbstractFunction, Argument> addArgument = (fn, a) -> fn.addArgument(a);
+
+        int orderByArgsCount = res.getInt("aggnumdirectargs");
+        if (orderByArgsCount == 0) {
+            fillArguments(argModes, argTypes, argNames, 0, allArgsLength,
+                    f, returnedTableArguments, addArgument);
+        } else {
+            int argsLength = allArgsLength - orderByArgsCount;
+
+            fillArguments(argModes, argTypes, argNames, 0, argsLength,
+                    f, returnedTableArguments, addArgument);
+
+            fillArguments(argModes, argTypes, argNames, argsLength, allArgsLength,
+                    f, returnedTableArguments,
+                    (abstrFunc, a) -> ((PgAggregate) abstrFunc).addOrderByArg(a));
+        }
+
+        return returnedTableArguments;
+    }
+
+    private void fillArguments(String[] argModes, Long[] argTypes, String[] argNames,
+            int startInex, int arrayLength, AbstractFunction f, StringBuilder returnedTableArguments,
+            BiConsumer<AbstractFunction, Argument> addArgument) {
+        for (int i = startInex; arrayLength > i; i++) {
             String aMode = argModes != null ? argModes[i] : "i";
 
             JdbcType returnType = loader.cachedTypesByOid.get(argTypes[i]);
@@ -393,12 +419,9 @@ public class FunctionsReader extends JdbcReader {
             }
 
             // these require resetHash functionality for defaults
-            Argument a = f.new PgArgument(aMode, argNames != null ? argNames[i] : null,
-                    loader.cachedTypesByOid.get(argTypes[i]).getFullName());
-
-            f.addArgument(a);
+            addArgument.accept(f, f.new PgArgument(aMode, argNames != null ? argNames[i] : null,
+                    loader.cachedTypesByOid.get(argTypes[i]).getFullName()));
         }
-        return returnedTableArguments;
     }
 
     @Override

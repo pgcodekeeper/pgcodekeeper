@@ -64,7 +64,8 @@ SELECT  -- common part (functions/procedures/aggregates)
         a.aggminitval AS minitcond,
         sortop.oprname AS sortop,
         sortop_n.nspname AS sortop_nsp,
-        a.aggkind
+        a.aggkind,
+        a.aggnumdirectargs
         
 FROM pg_catalog.pg_proc p
 
