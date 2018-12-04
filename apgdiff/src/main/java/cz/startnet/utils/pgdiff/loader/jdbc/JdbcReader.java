@@ -52,7 +52,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
         }
 
         loader.setCurrentOperation(getClass().getSimpleName() + " query");
-        try (ResultSet result = loader.statement.executeQuery(query)) {
+        try (ResultSet result = loader.runner.runScript(loader.statement, query)) {
             while (result.next()) {
                 long schemaId = result.getLong("schema_oid");
                 AbstractSchema schema = loader.schemaIds.get(schemaId);
