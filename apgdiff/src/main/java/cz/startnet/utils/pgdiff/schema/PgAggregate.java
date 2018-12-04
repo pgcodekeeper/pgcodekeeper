@@ -197,6 +197,11 @@ public class PgAggregate extends AbstractPgFunction {
     @Override
     public StringBuilder appendFunctionSignature(StringBuilder sb,
             boolean includeDefaultValues, boolean includeArgNames) {
+        return appendFunctionSignatureForGrant(sb, includeArgNames, false);
+    }
+
+    public StringBuilder appendFunctionSignatureForGrant(StringBuilder sb,
+            boolean includeArgNames, boolean isForGrantRevoke) {
         boolean cache = !includeArgNames;
         if (cache && signatureCache != null) {
             return sb.append(signatureCache);
@@ -204,11 +209,11 @@ public class PgAggregate extends AbstractPgFunction {
         final int sigStart = sb.length();
 
         sb.append(PgDiffUtils.getQuotedName(name)).append('(');
-        if (arguments.isEmpty() && orderByArgs.isEmpty()) {
+        if (!isForGrantRevoke && arguments.isEmpty() && orderByArgs.isEmpty()) {
             sb.append('*');
         } else {
             appendArguments(sb, arguments, includeArgNames);
-            if (!orderByArgs.isEmpty()) {
+            if (!isForGrantRevoke && !orderByArgs.isEmpty()) {
                 if (!arguments.isEmpty()) {
                     sb.append(' ');
                 }

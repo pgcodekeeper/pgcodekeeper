@@ -24,6 +24,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
+import cz.startnet.utils.pgdiff.schema.PgAggregate;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -81,8 +82,8 @@ public class CreateRule extends ParserAbstract {
                 IdentifierContext functNameCtx = QNameParser.getFirstNameCtx(funcIds);
                 AbstractSchema schema = getSchemaSafe(funcIds, db.getDefaultSchema());
 
-                // For GRANT/REVOKE in AGGREGATEs the signature will be the same as in FUNCTIONs
-                // (even if AGGREGATE has 'ORDER BY';'ORDER BY' will not be displayed).
+                // TODO It will be better if we can determine is this AGGREGATE
+                // or not without throwing an exception.
                 AbstractFunction func;
                 try {
                     func = getSafe(schema::getFunction,
@@ -99,13 +100,10 @@ public class CreateRule extends ParserAbstract {
                         DbObjType.FUNCTION : DbObjType.PROCEDURE).append(' ');
                 sb.append(PgDiffUtils.getQuotedName(schema.getName())).append('.');
 
-                // For AGGREGATEs which use asterisk (*) as argument, in GRANT/REVOKE
-                // syntax the asterisk (*) is not displayed.
+                // For AGGREGATEs in GRANT/REVOKE the signature will be the same as in FUNCTIONs;
+                // important: asterisk (*) and 'ORDER BY' are not displayed.
                 if (DbObjType.AGGREGATE == func.getStatementType()) {
-                    String agSign = ((AbstractPgFunction) func)
-                            .appendFunctionSignature(new StringBuilder(), false, true)
-                            .toString();
-                    sb.append(agSign.contains("*") ? agSign.replace("*", "") : agSign);
+                    ((PgAggregate) func).appendFunctionSignatureForGrant(sb, true, true);
                 } else {
                     ((AbstractPgFunction) func).appendFunctionSignature(sb, false, true);
                 }
