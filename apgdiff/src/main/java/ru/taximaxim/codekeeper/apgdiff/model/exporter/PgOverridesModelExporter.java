@@ -68,7 +68,7 @@ public class PgOverridesModelExporter extends AbstractModelExporter {
         Map<PgStatement, StatementOverride> privs;
         try {
             privs = new ProjectLoader(outDir.toString(), args)
-                    .getPrivilegesFromPath(path, oldDb);
+                    .getOverridesFromPath(path, oldDb);
         } catch (InterruptedException e) {
             // unreachable
             throw new IllegalStateException(e);

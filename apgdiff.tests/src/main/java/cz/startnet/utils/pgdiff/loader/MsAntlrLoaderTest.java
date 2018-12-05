@@ -37,7 +37,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
-import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.MsModelExporter;
 
 /**
  * An abstract 'factory' that creates 'artificial'
@@ -176,7 +176,7 @@ public class MsAntlrLoaderTest {
         Path exportDir = null;
         try {
             exportDir = Files.createTempDirectory("pgCodekeeper-test-files");
-            new ModelExporter(exportDir, dbPredefined, encoding).exportFull();
+            new MsModelExporter(exportDir, dbPredefined, encoding).exportFull();
 
             args = new PgDiffArguments();
             args.setInCharsetName(encoding);

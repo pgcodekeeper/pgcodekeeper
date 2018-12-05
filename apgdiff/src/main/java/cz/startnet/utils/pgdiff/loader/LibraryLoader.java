@@ -103,11 +103,12 @@ public class LibraryLoader {
         }
 
         if (Files.isDirectory(p)) {
-            PgDatabase db = new PgDatabase();
-            db.setArguments(args);
+            PgDatabase db;
             if (Files.exists(p.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
-                new ProjectLoader(path, args).loadDatabaseSchemaFromDirTree(db);
+                db = new ProjectLoader(path, args).loadSchemaOnly();
             } else {
+                db = new PgDatabase();
+                db.setArguments(args);
                 readStatementsFromDirectory(p, db);
             }
             return db;

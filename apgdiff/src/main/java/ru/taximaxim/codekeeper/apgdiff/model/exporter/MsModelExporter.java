@@ -86,7 +86,7 @@ public class MsModelExporter extends AbstractModelExporter {
             dumpSQL(getDumpSql(schema), schemasSharedDir.resolve(getExportedFilenameSql(schema)));
 
             for (AbstractFunction func : schema.getFunctions()) {
-                dumpSQL(getDumpSql(schema), outDir.resolve(getRelativeFilePath(func, true)));
+                dumpSQL(getDumpSql(func), outDir.resolve(getRelativeFilePath(func, true)));
             }
 
             dumpObjects(schema.getSequences(), outDir.resolve(MS_WORK_DIR_NAMES.SEQUENCES.getDirName()));

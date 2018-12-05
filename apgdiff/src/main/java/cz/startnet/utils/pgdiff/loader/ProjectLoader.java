@@ -66,9 +66,7 @@ public class ProjectLoader {
      * @throws InterruptedException
      */
     public PgDatabase loadDatabaseSchemaFromDirTree() throws InterruptedException, IOException {
-        PgDatabase db = new PgDatabase();
-        db.setArguments(arguments);
-        db = loadDatabaseSchemaFromDirTree(db);
+        PgDatabase db = loadSchemaOnly();
         FullAnalyze.fullAnalyze(db, errors);
         return db;
     }
@@ -81,34 +79,39 @@ public class ProjectLoader {
      * @return database schema
      * @throws InterruptedException
      */
-    public PgDatabase loadDatabaseSchemaFromDirTree(PgDatabase db) throws InterruptedException, IOException {
+    public PgDatabase loadSchemaOnly() throws InterruptedException, IOException {
+        PgDatabase db = new PgDatabase();
+        db.setArguments(arguments);
+
         File dir = new File(dirPath);
-        loadPgStrucure(dir, db);
-
-        if (arguments.isIgnorePrivileges()) {
-            return db;
-        }
-
-        isOverrideMode = true;
-        try {
-            // read additional privileges from special folder
-            loadOverridesFromDirTree(new File(dir, ApgdiffConsts.OVERRIDES_DIR), db);
-        } finally {
-            isOverrideMode = false;
+        if (arguments.isMsSql()) {
+            loadMsStructure(dir, db);
+        } else {
+            loadPgStructure(dir, db);
         }
 
         return db;
     }
 
-    private void loadOverridesFromDirTree(File dir, PgDatabase db)
-            throws InterruptedException, IOException {
-        if (dir.exists() && dir.isDirectory()) {
-            loadPgStrucure(dir, db);
+    public void loadOverrides(PgDatabase db) throws InterruptedException, IOException {
+        File dir = new File(dirPath, ApgdiffConsts.OVERRIDES_DIR);
+        if (arguments.isIgnorePrivileges() || !dir.exists() || !dir.isDirectory()) {
+            return;
+        }
+        isOverrideMode = true;
+        try {
+            if (arguments.isMsSql()) {
+                loadMsStructure(dir, db);
+            } else {
+                loadPgStructure(dir, db);
+            }
             replaceOverrides();
+        } finally {
+            isOverrideMode = false;
         }
     }
 
-    private void loadPgStrucure(File dir, PgDatabase db) throws InterruptedException, IOException {
+    private void loadPgStructure(File dir, PgDatabase db) throws InterruptedException, IOException {
         // step 1
         // read files in schema folder, add schemas to db
         for (WORK_DIR_NAMES dirEnum : WORK_DIR_NAMES.values()) {
@@ -132,39 +135,6 @@ public class ProjectLoader {
                     }
                 }
             }
-        }
-    }
-
-    /**
-     * Loads database schema from a MS SQL ModelExporter directory tree.
-     */
-    public PgDatabase loadMsDatabaseSchemaFromDirTree() throws InterruptedException, IOException {
-        PgDatabase db = new PgDatabase();
-        db.setArguments(arguments);
-        File dir = new File(dirPath);
-
-        loadMsStructure(dir, db);
-
-        if (arguments.isIgnorePrivileges()) {
-            return db;
-        }
-
-        isOverrideMode = true;
-        try {
-            // read additional privileges from special folder
-            loadMsOverridesFromDirTree(new File(dir, ApgdiffConsts.OVERRIDES_DIR), db);
-        } finally {
-            isOverrideMode = false;
-        }
-
-        return db;
-    }
-
-    private void loadMsOverridesFromDirTree(File dir, PgDatabase db)
-            throws InterruptedException, IOException {
-        if (dir.exists() && dir.isDirectory()) {
-            loadMsStructure(dir, db);
-            replaceOverrides();
         }
     }
 
@@ -217,7 +187,7 @@ public class ProjectLoader {
         }
     }
 
-    public Map<PgStatement, StatementOverride> getPrivilegesFromPath(Path path, PgDatabase db)
+    public Map<PgStatement, StatementOverride> getOverridesFromPath(Path path, PgDatabase db)
             throws IOException, InterruptedException {
         isOverrideMode = true;
         try {

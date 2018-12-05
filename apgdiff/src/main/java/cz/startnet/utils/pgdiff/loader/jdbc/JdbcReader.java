@@ -1,7 +1,6 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.sql.Array;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -53,17 +52,14 @@ public abstract class JdbcReader implements PgCatalogStrings {
         }
 
         loader.setCurrentOperation(getClass().getSimpleName() + " query");
-
-        try (PreparedStatement st = loader.connection.prepareStatement(query)) {
-            try (ResultSet result = loader.runner.runScript(st)) {
-                while (result.next()) {
-                    long schemaId = result.getLong("schema_oid");
-                    AbstractSchema schema = loader.schemaIds.get(schemaId);
-                    if (schema != null) {
-                        processResult(result, schema);
-                    } else {
-                        Log.log(Log.LOG_WARNING, "No schema found for id " + schemaId);
-                    }
+        try (ResultSet result = loader.runner.runScript(loader.statement, query)) {
+            while (result.next()) {
+                long schemaId = result.getLong("schema_oid");
+                AbstractSchema schema = loader.schemaIds.get(schemaId);
+                if (schema != null) {
+                    processResult(result, schema);
+                } else {
+                    Log.log(Log.LOG_WARNING, "No schema found for id " + schemaId);
                 }
             }
         }
