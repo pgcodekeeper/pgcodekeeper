@@ -55,7 +55,7 @@ public class PgAggregate extends AbstractPgFunction {
         sbSQL.append("CREATE AGGREGATE ");
         sbSQL.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
 
-        appendFunctionSignature(sbSQL, false, true);
+        appendFunctionSignatureExtended(sbSQL, false, true);
 
         sbSQL.append(" (\n\tSFUNC = ");
         sbSQL.append(sFunc);
@@ -197,11 +197,11 @@ public class PgAggregate extends AbstractPgFunction {
     @Override
     public StringBuilder appendFunctionSignature(StringBuilder sb,
             boolean includeDefaultValues, boolean includeArgNames) {
-        return appendFunctionSignatureForGrant(sb, includeArgNames, false);
+        return appendFunctionSignatureExtended(sb, true, includeArgNames);
     }
 
-    public StringBuilder appendFunctionSignatureForGrant(StringBuilder sb,
-            boolean includeArgNames, boolean isForGrantRevoke) {
+    public StringBuilder appendFunctionSignatureExtended(StringBuilder sb,
+            boolean isPrivilegesSignature, boolean includeArgNames) {
         boolean cache = !includeArgNames;
         if (cache && signatureCache != null) {
             return sb.append(signatureCache);
@@ -209,15 +209,23 @@ public class PgAggregate extends AbstractPgFunction {
         final int sigStart = sb.length();
 
         sb.append(PgDiffUtils.getQuotedName(name)).append('(');
-        if (!isForGrantRevoke && arguments.isEmpty() && orderByArgs.isEmpty()) {
+        if (!isPrivilegesSignature && arguments.isEmpty() && orderByArgs.isEmpty()) {
             sb.append('*');
         } else {
             appendArguments(sb, arguments, includeArgNames);
-            if (!isForGrantRevoke && !orderByArgs.isEmpty()) {
+            if (!orderByArgs.isEmpty()) {
                 if (!arguments.isEmpty()) {
-                    sb.append(' ');
+                    if (!isPrivilegesSignature) {
+                        sb.append(' ');
+                    } else {
+                        sb.append(", ");
+                    }
                 }
-                sb.append("ORDER BY ");
+
+                if (!isPrivilegesSignature) {
+                    sb.append("ORDER BY ");
+                }
+
                 appendArguments(sb, orderByArgs, includeArgNames);
             }
         }

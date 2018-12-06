@@ -24,7 +24,6 @@ import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
-import cz.startnet.utils.pgdiff.schema.PgAggregate;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -102,11 +101,7 @@ public class CreateRule extends ParserAbstract {
 
                 // For AGGREGATEs in GRANT/REVOKE the signature will be the same as in FUNCTIONs;
                 // important: asterisk (*) and 'ORDER BY' are not displayed.
-                if (DbObjType.AGGREGATE == func.getStatementType()) {
-                    ((PgAggregate) func).appendFunctionSignatureForGrant(sb, true, true);
-                } else {
-                    ((AbstractPgFunction) func).appendFunctionSignature(sb, false, true);
-                }
+                ((AbstractPgFunction) func).appendFunctionSignature(sb, false, true);
 
                 for (String role : roles) {
                     addPrivilege(func, new PgPrivilege(state, permissions,

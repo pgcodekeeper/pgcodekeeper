@@ -229,10 +229,10 @@ public class FunctionsReader extends JdbcReader {
     private AbstractFunction processResultAggr(ResultSet res, String schemaName,
             String funcName) throws SQLException {
         loader.setCurrentObject(new GenericColumn(schemaName, funcName, DbObjType.AGGREGATE));
-        PgAggregate f = new PgAggregate(funcName, "");
-        fillAggregate(f, res);
-        fillAllArguments(f, res);
-        return f;
+        PgAggregate aggr = new PgAggregate(funcName, "");
+        fillAggregate(aggr, res);
+        fillAllArguments(aggr, res);
+        return aggr;
     }
 
     private void fillAggregate(PgAggregate aggregate, ResultSet res) throws SQLException {
@@ -367,19 +367,33 @@ public class FunctionsReader extends JdbcReader {
 
         BiConsumer<AbstractFunction, Argument> addArgument = (fn, a) -> fn.addArgument(a);
 
-        int orderByArgsCount = res.getInt("aggnumdirectargs");
-        if (orderByArgsCount == 0) {
+        String aggrKind = (f instanceof PgAggregate) ? ((PgAggregate) f).getKind() : null;
+        int aggNumDirectArgs = res.getInt("aggnumdirectargs");
+        if (aggrKind == null ||
+                (PgAggregate.NORMAL.equals(aggrKind) && aggNumDirectArgs == 0)) {
+            // This case used for FUNCTIONs and NORMAL AGGREGATEs.
+
             fillArguments(argModes, argTypes, argNames, 0, allArgsLength,
                     f, returnedTableArguments, addArgument);
         } else {
-            int argsLength = allArgsLength - orderByArgsCount;
+            if (aggNumDirectArgs != 0) {
+                // This case is used for ORDERED and HYPOTHETICAL aggregates,
+                // which have arguments and orderByArguments in their signature.
 
-            fillArguments(argModes, argTypes, argNames, 0, argsLength,
-                    f, returnedTableArguments, addArgument);
+                fillArguments(argModes, argTypes, argNames, 0, aggNumDirectArgs,
+                        f, returnedTableArguments, addArgument);
 
-            fillArguments(argModes, argTypes, argNames, argsLength, allArgsLength,
-                    f, returnedTableArguments,
-                    (abstrFunc, a) -> ((PgAggregate) abstrFunc).addOrderByArg(a));
+                fillArguments(argModes, argTypes, argNames, aggNumDirectArgs, allArgsLength,
+                        f, returnedTableArguments,
+                        (abstrFunc, a) -> ((PgAggregate) abstrFunc).addOrderByArg(a));
+            } else {
+                // This case is used for ORDERED and HYPOTHETICAL aggregates,
+                // which have only orderByArguments in their signature.
+
+                fillArguments(argModes, argTypes, argNames, 0, allArgsLength,
+                        f, returnedTableArguments,
+                        (abstrFunc, a) -> ((PgAggregate) abstrFunc).addOrderByArg(a));
+            }
         }
 
         return returnedTableArguments;
