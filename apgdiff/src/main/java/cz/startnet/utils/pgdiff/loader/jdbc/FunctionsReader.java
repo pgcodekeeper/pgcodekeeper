@@ -230,12 +230,13 @@ public class FunctionsReader extends JdbcReader {
             String funcName) throws SQLException {
         loader.setCurrentObject(new GenericColumn(schemaName, funcName, DbObjType.AGGREGATE));
         PgAggregate aggr = new PgAggregate(funcName, "");
-        fillAggregate(aggr, res);
+        fillAggregate(aggr, res, schemaName);
         fillAllArguments(aggr, res);
         return aggr;
     }
 
-    private void fillAggregate(PgAggregate aggregate, ResultSet res) throws SQLException {
+    private void fillAggregate(PgAggregate aggregate, ResultSet res,
+            String schemaName) throws SQLException {
         // since 9.6 PostgreSQL
         // parallel mode: s - safe, r - restricted, u - unsafe
         if (SupportedVersion.VERSION_9_6.isLE(loader.version)) {
@@ -259,7 +260,10 @@ public class FunctionsReader extends JdbcReader {
         }
 
         aggregate.setSFunc(getProcessedName(res.getString("sfunc_nsp"), res.getString("sfunc")));
-        aggregate.setSType(loader.cachedTypesByOid.get(res.getLong("stype")).getFullName());
+
+        JdbcType sType = loader.cachedTypesByOid.get(res.getLong("stype"));
+        aggregate.setSType(sType.getFullName(schemaName));
+        sType.addTypeDepcy(aggregate);
 
         String kind = res.getString("aggkind");
         aggregate.setKind(kind);
@@ -314,7 +318,9 @@ public class FunctionsReader extends JdbcReader {
 
         long mstype = res.getLong("mstype");
         if (mstype != 0) {
-            aggregate.setMSType(loader.cachedTypesByOid.get(mstype).getFullName());
+            JdbcType mSType = loader.cachedTypesByOid.get(mstype);
+            aggregate.setMSType(mSType.getFullName(schemaName));
+            mSType.addTypeDepcy(aggregate);
         }
 
         String msspace = res.getString("msspace");

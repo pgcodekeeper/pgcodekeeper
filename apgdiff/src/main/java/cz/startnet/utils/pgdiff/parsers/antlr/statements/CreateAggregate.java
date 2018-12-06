@@ -34,7 +34,8 @@ public class CreateAggregate extends ParserAbstract {
 
         PgAggregate aggregate = new PgAggregate(name, rawStatement);
         fillAllArguments(aggregate);
-        fillAggregate(ctx.aggregate_param(), ctx.aggregate_param_optional(), aggregate);
+        fillAggregate(ctx.aggregate_param(), ctx.aggregate_param_optional(),
+                aggregate, schema.getName());
 
         schema.addFunction(aggregate);
         return aggregate;
@@ -65,14 +66,19 @@ public class CreateAggregate extends ParserAbstract {
     }
 
     private void fillAggregate(List<Aggregate_paramContext> params,
-            List<Aggregate_param_optionalContext> paramsOpt, PgAggregate aggregate) {
+            List<Aggregate_param_optionalContext> paramsOpt,
+            PgAggregate aggregate, String aggrSchemaName) {
         for (Aggregate_paramContext param : params) {
             if (param.BASETYPE() != null) {
-                aggregate.setBaseType(param.base_type.getText());
+                Data_typeContext baseTypeCtx = param.base_type;
+                aggregate.setBaseType(getFullCtxText(baseTypeCtx));
+                addTypeAsDepcy(baseTypeCtx, aggregate, aggrSchemaName);
             } else if (param.SFUNC() != null) {
                 aggregate.setSFunc(param.sfunc_name.getText());
             } else if (param.STYPE() != null) {
-                aggregate.setSType(getFullCtxText(param.type));
+                Data_typeContext sTypeCtx = param.type;
+                aggregate.setSType(getFullCtxText(sTypeCtx));
+                addTypeAsDepcy(sTypeCtx, aggregate, aggrSchemaName);
             }
         }
 
@@ -99,7 +105,9 @@ public class CreateAggregate extends ParserAbstract {
                 } else if (paramOpt.MINVFUNC() != null) {
                     aggregate.setMInvFunc(paramOpt.minv_func.getText());
                 } else if (paramOpt.MSTYPE() != null) {
-                    aggregate.setMSType(getFullCtxText(paramOpt.ms_type));
+                    Data_typeContext mSTypeCtx = paramOpt.ms_type;
+                    aggregate.setMSType(getFullCtxText(mSTypeCtx));
+                    addTypeAsDepcy(mSTypeCtx, aggregate, aggrSchemaName);
                 } else if (paramOpt.MSSPACE() != null) {
                     aggregate.setMSSpace(Long.parseLong(paramOpt.ms_space.getText()));
                 } else if (paramOpt.MFINALFUNC() != null) {
