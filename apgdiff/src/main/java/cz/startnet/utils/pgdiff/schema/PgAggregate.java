@@ -342,7 +342,7 @@ public class PgAggregate extends AbstractPgFunction {
 
     public void setBaseType(String baseType) {
         this.baseType = baseType;
-        if (!"ANY".equals(baseType)) {
+        if (baseType != null && !"ANY".equals(baseType)) {
             arguments.add(new Argument(null, baseType));
         }
         resetHash();
