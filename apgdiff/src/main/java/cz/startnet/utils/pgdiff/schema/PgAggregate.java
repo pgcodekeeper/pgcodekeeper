@@ -166,16 +166,16 @@ public class PgAggregate extends AbstractPgFunction {
     }
 
     private void appendFuncModify(String funcModifier, StringBuilder sbSQL, boolean isMovingAgg) {
-        // The default is READ_ONLY, except for ordered-set aggregates, for which the default is READ_WRITE.
+        // The default is READ_ONLY, except for ordered aggregates, for which the default is READ_WRITE.
         boolean appendModifier = false;
         switch (kind.toLowerCase()) {
         case NORMAL:
-        case HYPOTHETICAL:
             if (!"READ_ONLY".equalsIgnoreCase(funcModifier)) {
                 appendModifier = true;
             }
             break;
 
+        case HYPOTHETICAL:
         case ORDERED:
             if (!"READ_WRITE".equalsIgnoreCase(funcModifier)) {
                 appendModifier = true;

@@ -156,14 +156,14 @@ public class CreateAggregate extends ParserAbstract {
 
         String kind = aggr.getKind();
 
-        // The default is READ_ONLY, except for ordered-set aggregates, for which the default is READ_WRITE.
+        // The default is READ_ONLY, except for ordered aggregates, for which the default is READ_WRITE.
         String defaultModifier = null;
         switch (kind.toLowerCase()) {
         case PgAggregate.NORMAL:
-        case PgAggregate.HYPOTHETICAL:
             defaultModifier = "READ_ONLY";
             break;
 
+        case PgAggregate.HYPOTHETICAL:
         case PgAggregate.ORDERED:
             defaultModifier = "READ_WRITE";
             break;
