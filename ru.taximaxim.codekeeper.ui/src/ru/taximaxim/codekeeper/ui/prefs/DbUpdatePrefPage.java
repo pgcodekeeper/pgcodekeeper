@@ -55,12 +55,6 @@ public class DbUpdatePrefPage extends FieldEditorPreferencePage implements IWork
                 getFieldEditorParent());
         addField(gfe);
 
-        BooleanFieldEditor showScriptOutputSeparately = new BooleanFieldEditor(
-                DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY,
-                Messages.dbUpdatePrefPage_show_script_output_in_separate_window, getFieldEditorParent());
-        addField(showScriptOutputSeparately);
-
-
         addField(new BooleanFieldEditor(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION,
                 Messages.dbUpdatePrefPage_script_add_transaction,
                 getFieldEditorParent()));

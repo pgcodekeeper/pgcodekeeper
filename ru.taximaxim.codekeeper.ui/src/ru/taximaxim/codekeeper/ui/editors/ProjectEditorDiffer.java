@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -106,7 +105,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PATH;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.VIEW;
 import ru.taximaxim.codekeeper.ui.UiSync;
-import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dialogs.CommitDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
@@ -810,7 +808,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     }
 
     private String generateScriptName() {
-        String name = FileUtils.FILE_DATE.format(LocalDateTime.now()) + " migration"; //$NON-NLS-1$
+        String name = FileUtils.getFileDate() + " migration"; //$NON-NLS-1$
         if (loadedRemote != null) {
             name += " for " + getRemoteName(loadedRemote); //$NON-NLS-1$
         }
@@ -914,7 +912,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 Log.log(Log.LOG_INFO, "Project updater job finished with status " + //$NON-NLS-1$
                         event.getResult().getSeverity());
                 if (event.getResult().isOK()) {
-                    ConsoleFactory.write(Messages.commitPartDescr_success_project_updated);
                     try {
                         proj.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
                         UiSync.exec(parent, () -> {

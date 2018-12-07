@@ -2,7 +2,6 @@ package ru.taximaxim.codekeeper.ui.pgdbproject;
 
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -123,7 +122,7 @@ public class MockDataPage extends WizardPage {
 
         try {
             mainPrefs.setValue(PREF.EXPLICIT_TYPE_CAST, btnCast.getSelection());
-            String name = FileUtils.FILE_DATE.format(LocalDateTime.now()) + " data for " + txtTableName.getText() ; //$NON-NLS-1$
+            String name = FileUtils.getFileDate() + " data for " + txtTableName.getText() ; //$NON-NLS-1$
             name = FileUtils.sanitizeFilename(name);
             FileUtilsUi.saveOpenTmpSqlEditor(generateInsert(), name, isMsSql);
             return true;
