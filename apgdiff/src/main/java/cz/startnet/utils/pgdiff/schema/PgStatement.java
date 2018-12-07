@@ -507,6 +507,21 @@ public abstract class PgStatement implements IStatement, IHashable {
     public abstract boolean compare(PgStatement obj);
 
     /**
+     * @return an element in another db sharing the same name and location
+     */
+    public PgStatement getTwin(PgDatabase db) {
+        if (getStatementType() == DbObjType.DATABASE) {
+            return db;
+        }
+        PgStatement twinParent = getParent().getTwin(db);
+        if (twinParent == null) {
+            return null;
+        }
+        return getStatementType() == DbObjType.COLUMN ? ((AbstractTable) twinParent).getColumn(getName())
+                : twinParent.getChild(getName(), getStatementType());
+    }
+
+    /**
      * Returns all subtree elements
      */
     public Stream<PgStatement> getDescendants() {
@@ -518,6 +533,13 @@ public abstract class PgStatement implements IStatement, IHashable {
      */
     public Stream<PgStatement> getChildren() {
         return Stream.empty();
+    }
+
+    public PgStatement getChild(String name, DbObjType type) {
+        return getChildren()
+                .filter(st -> type == st.getStatementType() && name.equals(st.getName()))
+                .findAny()
+                .orElse(null);
     }
 
     public boolean hasChildren() {

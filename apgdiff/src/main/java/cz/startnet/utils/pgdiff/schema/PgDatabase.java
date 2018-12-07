@@ -432,6 +432,7 @@ public class PgDatabase extends PgStatement {
     public void addLib(PgDatabase database) {
         database.getDescendants().forEach(PgStatement::markAsLib);
         concat(database);
+        contextsForAnalyze.addAll(database.contextsForAnalyze);
     }
 
     private void concat(PgDatabase database) {
