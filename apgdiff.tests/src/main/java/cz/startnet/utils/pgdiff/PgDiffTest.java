@@ -459,6 +459,22 @@ public class PgDiffTest {
                     {"modify_procedure"},
                     // Tests scenario where configuration of PROCEDURE is modified.
                     {"modify_procedure_configuration"},
+                    // Tests scenario where new AGGREGATE is added.
+                    {"add_aggregate"},
+                    // Tests scenario where new overloaded AGGREGATE is added.
+                    {"add_aggregate_overloaded"},
+                    // Tests scenario where new AGGREGATE with using elements from other schemas is added.
+                    {"add_aggregate_use_other_schema"},
+                    // Tests scenario where AGGREGATE is dropped.
+                    {"drop_aggregate"},
+                    // Tests scenario where options of AGGREGATE is modified.
+                    {"modify_aggregate"},
+                    // Tests scenario for AGGREGATE where new privileges is added.
+                    {"add_aggregate_privileges"},
+
+                    // TODO add test for check the dependencies in AGGREGATE
+                    // TODO add test for AGGREGATE of user with the same name as in AGGREGATE of system
+
                 });
     }
 
