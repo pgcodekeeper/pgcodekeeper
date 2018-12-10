@@ -251,14 +251,17 @@ public class PgAggregate extends AbstractPgFunction {
 
     @Override
     public boolean checkForChanges(AbstractFunction func) {
-        boolean equals = false;
-
         if (this == func) {
-            equals = true;
-        } else {
+            return true;
+        }
+
+        if (!super.checkForChanges(func)) {
+            return false;
+        }
+
+        if (func instanceof PgAggregate) {
             PgAggregate aggr = (PgAggregate)func;
-            equals = super.checkForChanges(aggr)
-                    && orderByArgs.equals(aggr.getOrderByArgs())
+            return orderByArgs.equals(aggr.getOrderByArgs())
                     && Objects.equals(kind, aggr.getKind())
                     && Objects.equals(baseType, aggr.getBaseType())
                     && Objects.equals(sFunc, aggr.getSFunc())
@@ -282,7 +285,8 @@ public class PgAggregate extends AbstractPgFunction {
                     && Objects.equals(sortOp, aggr.getSortOp())
                     && isHypothetical == aggr.isHypothetical();
         }
-        return equals;
+
+        return false;
     }
 
     @Override
