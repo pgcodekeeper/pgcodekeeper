@@ -9,6 +9,7 @@ import java.text.MessageFormat;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import cz.startnet.utils.pgdiff.IProgressReporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.consoles.UiProgressReporter;
@@ -17,13 +18,9 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 public class StdStreamRedirector {
 
     private final StringBuilder storage = new StringBuilder();
-    private final UiProgressReporter reporter;
+    private final IProgressReporter reporter;
 
-    public StdStreamRedirector() {
-        this(new UiProgressReporter());
-    }
-
-    public StdStreamRedirector(UiProgressReporter reporter) {
+    public StdStreamRedirector(IProgressReporter reporter) {
         this.reporter = reporter;
     }
 
@@ -41,14 +38,14 @@ public class StdStreamRedirector {
 
         private final BufferedReader in;
         private final StringBuilder storage;
-        private final UiProgressReporter reporter;
+        private final IProgressReporter reporter;
         private final AtomicBoolean isDestroyed = new AtomicBoolean();
         /**
          * @param in {@link InputStream} to
          * @param reporter
          */
         StdStreamRedirectorWorker(InputStream in, StringBuilder storage,
-                UiProgressReporter reporter) {
+                IProgressReporter reporter) {
             this.in = new BufferedReader(new InputStreamReader(in));
             this.storage = storage;
             this.reporter = reporter;

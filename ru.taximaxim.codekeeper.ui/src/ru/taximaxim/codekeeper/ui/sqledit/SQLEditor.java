@@ -485,7 +485,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
                         dbInfo.isReadOnly(), ApgdiffConsts.UTC);
             }
 
-            UiProgressReporter reporter = new UiProgressReporter();
+            UiProgressReporter reporter = new UiProgressReporter(monitor);
             try {
                 ScriptParser parser = new ScriptParser(getEditorInput().getName());
                 List<List<String>> batches = parser.parse(script, dbInfo.isMsSql());
@@ -515,7 +515,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         private IStatus runExternal(IProgressMonitor monitor) {
             Log.log(Log.LOG_INFO, "Running DDL update using external command"); //$NON-NLS-1$
 
-            UiProgressReporter reporter = new UiProgressReporter();
+            UiProgressReporter reporter = new UiProgressReporter(monitor);
 
             Thread scriptThread = new Thread(new RunScriptExternal(script, reporter, new ArrayList<>(Arrays.asList(
                     getReplacedCmd(mainPrefs.getString(DB_UPDATE_PREF.MIGRATION_COMMAND), dbInfo).split(" "))))); //$NON-NLS-1$

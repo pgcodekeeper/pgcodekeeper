@@ -1,8 +1,11 @@
 package ru.taximaxim.codekeeper.ui.consoles;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -27,13 +30,18 @@ class CodekeeperConsole extends IOConsole implements IPropertyChangeListener {
     private final IOConsoleOutputStream baseOuter;
     private final IOConsoleOutputStream warningOuter;
     private final IOConsoleOutputStream errorOuter;
+    private final IProgressMonitor monitor;
+    private final List<IPropertyChangeListener> listeners = new ArrayList<>();
 
-    public CodekeeperConsole() {
-        this(FileUtils.getFileDate() + ' ' + CodekeeperConsole.NAME);
+    private boolean isTerminated;
+
+    public CodekeeperConsole(IProgressMonitor monitor) {
+        this(FileUtils.getFileDate() + ' ' + CodekeeperConsole.NAME, monitor);
     }
 
-    private CodekeeperConsole(String name) {
+    private CodekeeperConsole(String name, IProgressMonitor monitor) {
         super(name, null);
+        this.monitor = monitor;
         baseOuter = this.newOutputStream();
         baseOuter.setActivateOnWrite(Activator.getDefault()
                 .getPreferenceStore().getBoolean(PREF.FORCE_SHOW_CONSOLE));
@@ -98,5 +106,27 @@ class CodekeeperConsole extends IOConsole implements IPropertyChangeListener {
     void terminate() {
         UiSync.exec(PlatformUI.getWorkbench().getDisplay(),
                 () -> setName(TERMINATED + ' ' + getName()));
+        isTerminated = true;
+        notifyListeners();
+    }
+
+    void cancel() {
+        monitor.setCanceled(true);
+    }
+
+    boolean isTerminated() {
+        return isTerminated;
+    }
+
+    void addListener(IPropertyChangeListener listener) {
+        listeners.add(listener);
+    }
+
+    void deleteListener(IPropertyChangeListener listener) {
+        listeners.remove(listener);
+    }
+
+    private void notifyListeners() {
+        listeners.forEach(e -> e.propertyChange(null));
     }
 }

@@ -1,5 +1,7 @@
 package ru.taximaxim.codekeeper.ui.consoles;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import org.eclipse.jface.action.Action;
@@ -8,8 +10,12 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleConstants;
+import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.IConsolePageParticipant;
 import org.eclipse.ui.part.IPageBookViewPage;
 
@@ -24,6 +30,7 @@ public class ShowConsoleParticipant implements IConsolePageParticipant {
     private final IPreferenceStore prefs = Activator.getDefault().getPreferenceStore();
     private ShowConsoleAction action;
     private Control pageControl;
+    private CodekeeperConsole console;
 
     @Override
     public <T> T getAdapter(Class<T> adapter) {
@@ -33,10 +40,20 @@ public class ShowConsoleParticipant implements IConsolePageParticipant {
     @Override
     public void init(IPageBookViewPage page, IConsole console) {
         action = new ShowConsoleAction();
+        this.console = (CodekeeperConsole) console;
         page.getSite().getActionBars().getToolBarManager()
         .appendToGroup(IConsoleConstants.OUTPUT_GROUP, action);
         pageControl = page.getControl();
         prefs.addPropertyChangeListener(action);
+
+        page.getSite().getActionBars().getToolBarManager()
+        .appendToGroup(IConsoleConstants.LAUNCH_GROUP, new TerminateAction());
+
+        page.getSite().getActionBars().getToolBarManager()
+        .appendToGroup(IConsoleConstants.LAUNCH_GROUP, new RemoveAction());
+
+        page.getSite().getActionBars().getToolBarManager()
+        .appendToGroup(IConsoleConstants.LAUNCH_GROUP, new RemoveAllAction());
     }
 
     @Override
@@ -46,10 +63,12 @@ public class ShowConsoleParticipant implements IConsolePageParticipant {
 
     @Override
     public void activated() {
+        // no imp
     }
 
     @Override
     public void deactivated() {
+        // no imp
     }
 
     private class ShowConsoleAction extends Action implements IPropertyChangeListener {
@@ -57,7 +76,6 @@ public class ShowConsoleParticipant implements IConsolePageParticipant {
         public ShowConsoleAction() {
             super(Messages.generalPrefPage_show_console_when_program_write_to_console);
 
-            setToolTipText(Messages.generalPrefPage_show_console_when_program_write_to_console);
             setImageDescriptor(ImageDescriptor.createFromURL(
                     Activator.getContext().getBundle().getResource(FILE.ICONWRITEOUTCONSOLE)));
             setChecked(prefs.getBoolean(PREF.FORCE_SHOW_CONSOLE));
@@ -68,13 +86,9 @@ public class ShowConsoleParticipant implements IConsolePageParticipant {
             if (event.getNewValue() != null
                     && PREF.FORCE_SHOW_CONSOLE.equals(event.getProperty())
                     && !Objects.equals(event.getOldValue(), event.getNewValue())) {
-                UiSync.exec(pageControl, new Runnable() {
-
-                    @Override
-                    public void run() {
-                        if (!pageControl.isDisposed()) {
-                            setChecked((boolean) event.getNewValue());
-                        }
+                UiSync.exec(pageControl, (Runnable) () -> {
+                    if (!pageControl.isDisposed()) {
+                        setChecked((boolean) event.getNewValue());
                     }
                 });
             }
@@ -83,6 +97,90 @@ public class ShowConsoleParticipant implements IConsolePageParticipant {
         @Override
         public void run() {
             prefs.setValue(PREF.FORCE_SHOW_CONSOLE, isChecked());
+        }
+    }
+
+    private class TerminateAction extends Action {
+
+        public TerminateAction() {
+            super("Terminate");
+            setImageDescriptor(PlatformUI.getWorkbench().getSharedImages()
+                    .getImageDescriptor(ISharedImages.IMG_ELCL_STOP));
+
+            final IPropertyChangeListener listener = e -> update();
+            console.addListener(listener);
+            pageControl.addDisposeListener(e -> console.deleteListener(listener));
+
+            update();
+        }
+
+        private void update() {
+            UiSync.exec(PlatformUI.getWorkbench().getDisplay(),
+                    () -> setEnabled(!console.isTerminated()));
+        }
+
+        @Override
+        public void run() {
+            console.cancel();
+        }
+    }
+
+    private class RemoveAction extends Action {
+
+        public RemoveAction() {
+            super("Remove Launch");
+            setImageDescriptor(PlatformUI.getWorkbench().getSharedImages()
+                    .getImageDescriptor(ISharedImages.IMG_ELCL_REMOVE));
+
+            final IPropertyChangeListener listener = e -> update();
+            console.addListener(listener);
+            pageControl.addDisposeListener(e -> console.deleteListener(listener));
+
+            update();
+        }
+
+        private void update() {
+            UiSync.exec(PlatformUI.getWorkbench().getDisplay(),
+                    () -> setEnabled(console.isTerminated()));
+        }
+
+        @Override
+        public void run() {
+            ConsolePlugin.getDefault().getConsoleManager()
+            .removeConsoles(new IConsole[] { console });
+        }
+    }
+
+    private class RemoveAllAction extends Action {
+
+        public RemoveAllAction() {
+            super("Remove All Terminated Launches");
+            setImageDescriptor(PlatformUI.getWorkbench().getSharedImages()
+                    .getImageDescriptor(ISharedImages.IMG_ELCL_REMOVEALL));
+
+            final IPropertyChangeListener listener = e -> update();
+            console.addListener(listener);
+            pageControl.addDisposeListener(e -> console.deleteListener(listener));
+
+            update();
+        }
+
+        private void update() {
+            UiSync.exec(PlatformUI.getWorkbench().getDisplay(),
+                    () -> setEnabled(console.isTerminated()));
+        }
+
+        @Override
+        public void run() {
+            IConsoleManager conMan = ConsolePlugin.getDefault().getConsoleManager();
+            List<IConsole> toDelete = new ArrayList<>();
+            for (IConsole c : conMan.getConsoles()) {
+                if (c instanceof CodekeeperConsole && ((CodekeeperConsole) c).isTerminated())  {
+                    toDelete.add(c);
+                }
+            }
+
+            conMan.removeConsoles(toDelete.toArray(new IConsole[toDelete.size()]));
         }
     }
 }
