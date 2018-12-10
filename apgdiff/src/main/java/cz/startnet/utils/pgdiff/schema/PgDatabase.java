@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -180,23 +179,20 @@ public class PgDatabase extends PgStatement {
     }
 
     @Override
-    public Stream<PgStatement> getDescendants() {
-        Stream<PgStatement> stream = getChildren();
-
-        for (AbstractSchema schema : getSchemas()) {
-            stream = Stream.concat(stream, schema.getDescendants());
+    protected void fillDescendantsList(List<List<? extends PgStatement>> l) {
+        fillChildrenList(l);
+        for (AbstractSchema schema : schemas) {
+            schema.fillDescendantsList(l);
         }
-
-        return stream;
     }
 
     @Override
-    public Stream<PgStatement> getChildren() {
-        Stream<PgStatement> stream =  Stream.concat(getSchemas().stream(), getExtensions().stream());
-        stream = Stream.concat(stream, getAssemblies().stream());
-        stream = Stream.concat(stream, getRoles().stream());
-        stream = Stream.concat(stream, getUsers().stream());
-        return stream;
+    protected void fillChildrenList(List<List<? extends PgStatement>> l) {
+        l.add(schemas);
+        l.add(extensions);
+        l.add(assemblies);
+        l.add(roles);
+        l.add(users);
     }
 
     /**

@@ -1,8 +1,10 @@
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -524,15 +526,19 @@ public abstract class PgStatement implements IStatement, IHashable {
     /**
      * Returns all subtree elements
      */
-    public Stream<PgStatement> getDescendants() {
-        return getChildren();
+    public final Stream<PgStatement> getDescendants() {
+        List<List<? extends PgStatement>> l = new ArrayList<>();
+        fillDescendantsList(l);
+        return l.stream().flatMap(List::stream);
     }
 
     /**
      * Returns all subelements of current element
      */
-    public Stream<PgStatement> getChildren() {
-        return Stream.empty();
+    public final Stream<PgStatement> getChildren() {
+        List<List<? extends PgStatement>> l = new ArrayList<>();
+        fillChildrenList(l);
+        return l.stream().flatMap(List::stream);
     }
 
     public PgStatement getChild(String name, DbObjType type) {
@@ -544,6 +550,14 @@ public abstract class PgStatement implements IStatement, IHashable {
 
     public boolean hasChildren() {
         return getChildren().anyMatch(e -> true);
+    }
+
+    protected void fillDescendantsList(List<List<? extends PgStatement>> l) {
+        fillChildrenList(l);
+    }
+
+    protected void fillChildrenList(List<List<? extends PgStatement>> l) {
+        // default no op
     }
 
     /**
