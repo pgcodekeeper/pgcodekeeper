@@ -11,6 +11,7 @@ import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateAggregate;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
@@ -19,6 +20,7 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgAggregate;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgProcedure;
+import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -230,8 +232,15 @@ public class FunctionsReader extends JdbcReader {
             String funcName) throws SQLException {
         loader.setCurrentObject(new GenericColumn(schemaName, funcName, DbObjType.AGGREGATE));
         PgAggregate aggr = new PgAggregate(funcName, "");
-        fillAggregate(aggr, res, schemaName);
+
+        //// The order is important for adding dependencies. Two steps.
+
+        // First step: filling all types and arguments.
         fillAllArguments(aggr, res);
+
+        // Second step: filling other parameters of AGGREGATE.
+        fillAggregate(aggr, res, schemaName);
+
         return aggr;
     }
 
@@ -263,7 +272,11 @@ public class FunctionsReader extends JdbcReader {
         aggregate.setSType(sType.getFullName(schemaName));
         sType.addTypeDepcy(aggregate);
 
-        aggregate.setSFunc(getProcessedName(res.getString("sfunc_nsp"), res.getString("sfunc")));
+        String sFuncSchemaName = res.getString("sfunc_nsp");
+        String sFuncName = res.getString("sfunc");
+        aggregate.setSFunc(getProcessedName(sFuncSchemaName, sFuncName));
+        addFuncAsDepcy(aggregate, sFuncSchemaName,
+                CreateAggregate.getParamFuncSignature(aggregate, sFuncName, "SFUNC"));
 
         String kind = res.getString("aggkind");
         aggregate.setKind(kind);
@@ -277,27 +290,35 @@ public class FunctionsReader extends JdbcReader {
             aggregate.setSSpace(Long.parseLong(sspace));
         }
 
-        String finalfunc = res.getString("finalfunc");
-        if (finalfunc != null) {
-            aggregate.setFinalFunc(getProcessedName(res.getString("finalfunc_nsp"), finalfunc));
+        String finalFuncName = res.getString("finalfunc");
+        if (finalFuncName != null) {
+            String finalFuncSchemaName = res.getString("finalfunc_nsp");
+            aggregate.setFinalFunc(getProcessedName(finalFuncSchemaName, finalFuncName));
+            addFuncAsDepcy(aggregate, finalFuncSchemaName,
+                    CreateAggregate.getParamFuncSignature(aggregate, finalFuncName, "FINALFUNC"));
         }
 
         if (res.getBoolean("is_finalfunc_extra")) {
             aggregate.setFinalFuncExtra(true);
         }
 
-        String combinefunc = res.getString("combinefunc");
-        if (combinefunc != null) {
-            aggregate.setCombineFunc(getProcessedName(res.getString("combinefunc_nsp"), combinefunc));
+        String combineFunc = res.getString("combinefunc");
+        if (combineFunc != null) {
+            String combineFuncSchemaName = res.getString("combinefunc_nsp");
+            aggregate.setCombineFunc(getProcessedName(combineFuncSchemaName, combineFunc));
+            addFuncAsDepcy(aggregate, combineFuncSchemaName,
+                    CreateAggregate.getParamFuncSignature(aggregate, combineFunc, "COMBINEFUNC"));
         }
 
         String serialfanc = res.getString("serialfanc");
         if (serialfanc != null) {
+            // TODO add dependency
             aggregate.setSerialFunc(getProcessedName(res.getString("serialfanc_nsp"), serialfanc));
         }
 
         String deserialfunc = res.getString("deserialfunc");
         if (deserialfunc != null) {
+            // TODO add dependency
             aggregate.setDeserialFunc(getProcessedName(res.getString("deserialfunc_nsp"), deserialfunc));
         }
 
@@ -308,11 +329,13 @@ public class FunctionsReader extends JdbcReader {
 
         String msfunc = res.getString("msfunc");
         if (deserialfunc != null) {
+            // TODO add dependency
             aggregate.setMSFunc(getProcessedName(res.getString("msfunc_nsp"), msfunc));
         }
 
         String minvfunc = res.getString("minvfunc");
         if (minvfunc != null) {
+            // TODO add dependency
             aggregate.setMInvFunc(getProcessedName(res.getString("minvfunc_nsp"), minvfunc));
         }
 
@@ -330,6 +353,7 @@ public class FunctionsReader extends JdbcReader {
 
         String mfinalfunc = res.getString("mfinalfunc");
         if (mfinalfunc != null) {
+            // TODO add dependency
             aggregate.setMFinalFunc(getProcessedName(res.getString("mfinalfunc_nsp"), mfinalfunc));
         }
 
@@ -344,6 +368,7 @@ public class FunctionsReader extends JdbcReader {
 
         String sortOp = res.getString("sortop");
         if (mfinalfunc != null) {
+            // TODO add dependency
             aggregate.setSortOp(getProcessedName(res.getString("sortop_nsp"), sortOp));
         }
     }
@@ -358,6 +383,12 @@ public class FunctionsReader extends JdbcReader {
             return "READ_WRITE";
         default :
             throw new IllegalStateException("FinalFuncModifier '"+ modifier + "' doesn't support by AGGREGATE!");
+        }
+    }
+
+    private void addFuncAsDepcy(PgAggregate aggr, String funcSchemaName, String funcName) {
+        if (!PgSystemStorage.SCHEMA_PG_CATALOG.equalsIgnoreCase(funcSchemaName)) {
+            aggr.addDep(new GenericColumn(funcSchemaName, funcName, DbObjType.FUNCTION));
         }
     }
 
