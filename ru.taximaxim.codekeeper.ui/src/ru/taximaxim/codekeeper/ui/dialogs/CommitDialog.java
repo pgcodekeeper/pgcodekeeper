@@ -1,8 +1,19 @@
 package ru.taximaxim.codekeeper.ui.dialogs;
 
+import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
@@ -21,10 +32,15 @@ import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
+import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
+import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
+import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class CommitDialog extends TrayDialog {
 
@@ -36,7 +52,7 @@ public class CommitDialog extends TrayDialog {
     private final DbSource dbRemote;
     private final TreeElement diffTree;
     private final Set<TreeElement> depcyElementsSet;
-    private DiffTableViewer dtvBottom;
+    private final PgDbProject proj;
     private Button btnAutocommit;
     private Button btnSaveOverrides;
     private Label warningLbl;
@@ -45,7 +61,7 @@ public class CommitDialog extends TrayDialog {
     public CommitDialog(Shell parentShell, Set<TreeElement> depcyElementsSet,
             DbSource dbProject, DbSource dbRemote, TreeElement diffTree,
             IPreferenceStore mainPrefs, boolean egitCommitAvailable,
-            boolean forceOverridesOnly) {
+            boolean forceOverridesOnly, PgDbProject proj) {
         super(parentShell);
         this.depcyElementsSet = depcyElementsSet;
         this.dbProject = dbProject;
@@ -54,8 +70,9 @@ public class CommitDialog extends TrayDialog {
         this.prefs = mainPrefs;
         this.egitCommitAvailable = egitCommitAvailable;
         this.forceOverridesOnly = forceOverridesOnly;
+        this.proj = proj;
 
-        setShellStyle(getShellStyle() | SWT.RESIZE);
+        setShellStyle(getShellStyle() & ~SWT.CLOSE);
     }
 
     @Override
@@ -101,7 +118,7 @@ public class CommitDialog extends TrayDialog {
             gBottom.setLayoutData(gd);
             gBottom.setText(Messages.commitDialog_depcy_elements);
 
-            dtvBottom = new DiffTableViewer(gBottom, false);
+            DiffTableViewer dtvBottom = new DiffTableViewer(gBottom, false);
             gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 300;
             gd.widthHint = 1000;
@@ -154,15 +171,36 @@ public class CommitDialog extends TrayDialog {
     }
 
     @Override
-    public int open() {
-        int res = super.open();
-        // Если пользователь нажал отмену - снять выделения с зависимых элементов
-        if (res == CANCEL && depcyElementsSet != null) {
-            for (TreeElement el : depcyElementsSet) {
-                el.setSelected(false);
+    protected void okPressed() {
+        getButton(IDialogConstants.OK_ID).setEnabled(false);
+        getButton(IDialogConstants.CANCEL_ID).setEnabled(false);
+
+        Log.log(Log.LOG_INFO, "Updating project " + proj.getProjectName()); //$NON-NLS-1$
+        Job job = new JobProjectUpdater(Messages.projectEditorDiffer_save_project);
+        job.addJobChangeListener(new JobChangeAdapter() {
+
+            @Override
+            public void done(IJobChangeEvent event) {
+                Log.log(Log.LOG_INFO, "Project updater job finished with status " + //$NON-NLS-1$
+                        event.getResult().getSeverity());
+
+                UiSync.exec(getShell(), () -> {
+                    if (event.getResult().isOK()) {
+                        setReturnCode(OK);
+                        close();
+                    } else {
+                        getButton(IDialogConstants.OK_ID).setEnabled(true);
+                        getButton(IDialogConstants.CANCEL_ID).setEnabled(true);
+                        warningLbl.setText(event.getResult().getMessage());
+                        warningLbl.getParent().layout();
+                        warningLbl.setVisible(true);
+                    }
+                });
             }
-        }
-        return res;
+        });
+
+        job.setUser(true);
+        job.schedule();
     }
 
     @Override
@@ -229,4 +267,36 @@ public class CommitDialog extends TrayDialog {
             checkState();
         }
     }
+
+    private class JobProjectUpdater extends Job {
+
+        JobProjectUpdater(String name) {
+            super(name);
+        }
+
+        @Override
+        protected IStatus run(IProgressMonitor monitor) {
+            SubMonitor pm = SubMonitor.convert(
+                    monitor, Messages.commitPartDescr_commiting, 2);
+
+            Log.log(Log.LOG_INFO, "Applying diff tree to db"); //$NON-NLS-1$
+            pm.newChild(1).subTask(Messages.commitPartDescr_modifying_db_model); // 1
+            pm.newChild(1).subTask(Messages.commitPartDescr_exporting_db_model); // 2
+
+            try {
+                Collection<TreeElement> checked = new TreeFlattener()
+                        .onlySelected()
+                        .onlyEdits(dbProject.getDbObject(), dbRemote.getDbObject())
+                        .flatten(diffTree);
+                new ProjectUpdater(dbRemote.getDbObject(), dbProject.getDbObject(),
+                        checked, proj, isOverridesOnly).updatePartial();
+                monitor.done();
+            } catch (IOException | CoreException e) {
+                return new Status(Status.ERROR, PLUGIN_ID.THIS,
+                        Messages.ProjectEditorDiffer_commit_error, e);
+            }
+            return Status.OK_STATUS;
+        }
+    }
+
 }

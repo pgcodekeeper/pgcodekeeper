@@ -85,7 +85,6 @@ import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyTreeExtender;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -116,7 +115,6 @@ import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
-import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.job.SingletonEditorJob;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -888,46 +886,32 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         boolean considerDepcy = mainPrefs.getBoolean(COMMIT_PREF.CONSIDER_DEPCY_IN_COMMIT);
         Set<TreeElement> sumNewAndDelete = null;
+        TreeElement treeCopy = diffTree.getCopy();
         if (considerDepcy) {
             Log.log(Log.LOG_INFO, "Processing depcies for project update"); //$NON-NLS-1$
             sumNewAndDelete = new DepcyTreeExtender(dbProject.getDbObject(),
-                    dbRemote.getDbObject(), diffTree).getDepcies();
+                    dbRemote.getDbObject(), treeCopy).getDepcies();
         }
 
         Log.log(Log.LOG_INFO, "Querying user for project update"); //$NON-NLS-1$
         // display commit dialog
         CommitDialog cd = new CommitDialog(parent.getShell(), sumNewAndDelete,
-                dbProject, dbRemote, diffTree, mainPrefs, isCommitCommandAvailable,
-                forceSave);
+                dbProject, dbRemote, treeCopy, mainPrefs, isCommitCommandAvailable,
+                forceSave, proj);
         if (cd.open() != CommitDialog.OK) {
             return;
         }
 
-        Log.log(Log.LOG_INFO, "Updating project " + proj.getProjectName()); //$NON-NLS-1$
-        Job job = new JobProjectUpdater(Messages.projectEditorDiffer_save_project, diffTree, cd.isOverridesOnly());
-        job.addJobChangeListener(new JobChangeAdapter() {
-
-            @Override
-            public void done(IJobChangeEvent event) {
-                Log.log(Log.LOG_INFO, "Project updater job finished with status " + //$NON-NLS-1$
-                        event.getResult().getSeverity());
-                if (event.getResult().isOK()) {
-                    try {
-                        proj.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
-                        UiSync.exec(parent, () -> {
-                            if (!parent.isDisposed()) {
-                                callEgitCommitCommand();
-                            }
-                        });
-                    } catch (CoreException e) {
-                        ExceptionNotifier.notifyDefault(Messages.ProjectEditorDiffer_error_refreshing_project, e);
-                    }
+        try {
+            proj.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
+            UiSync.exec(parent, () -> {
+                if (!parent.isDisposed()) {
+                    callEgitCommitCommand();
                 }
-            }
-        });
-
-        job.setUser(true);
-        job.schedule();
+            });
+        } catch (CoreException e) {
+            ExceptionNotifier.notifyDefault(Messages.ProjectEditorDiffer_error_refreshing_project, e);
+        }
     }
 
     private void callEgitCommitCommand(){
@@ -971,45 +955,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             mb.open();
         }
         return checked;
-    }
-
-    private class JobProjectUpdater extends Job {
-
-        private final TreeElement tree;
-        private final boolean overridesOnly;
-
-        JobProjectUpdater(String name, TreeElement tree, boolean overridesOnly) {
-            super(name);
-            this.tree = tree;
-            this.overridesOnly = overridesOnly;
-        }
-
-        @Override
-        protected IStatus run(IProgressMonitor monitor) {
-            SubMonitor pm = SubMonitor.convert(
-                    monitor, Messages.commitPartDescr_commiting, 2);
-
-            Log.log(Log.LOG_INFO, "Applying diff tree to db"); //$NON-NLS-1$
-            pm.newChild(1).subTask(Messages.commitPartDescr_modifying_db_model); // 1
-            pm.newChild(1).subTask(Messages.commitPartDescr_exporting_db_model); // 2
-
-            try {
-                Collection<TreeElement> checked = new TreeFlattener()
-                        .onlySelected()
-                        .onlyEdits(dbProject.getDbObject(), dbRemote.getDbObject())
-                        .flatten(tree);
-                new ProjectUpdater(dbRemote.getDbObject(), dbProject.getDbObject(),
-                        checked, proj, overridesOnly).updatePartial();
-                monitor.done();
-            } catch (IOException | CoreException e) {
-                return new Status(Status.ERROR, PLUGIN_ID.THIS,
-                        Messages.ProjectEditorDiffer_commit_error, e);
-            }
-            if (monitor.isCanceled()) {
-                return Status.CANCEL_STATUS;
-            }
-            return Status.OK_STATUS;
-        }
     }
 
     public static void notifyDbChanged(DbInfo dbinfo) {
