@@ -877,18 +877,14 @@ operator_option
 
 create_aggregate_statement
     : AGGREGATE function_parameters LEFT_PAREN
-    aggregate_param (COMMA aggregate_param)+
-    (COMMA aggregate_param_optional)*
+    (BASETYPE EQUAL base_type=data_type COMMA)?
+    SFUNC EQUAL sfunc_name=schema_qualified_name COMMA
+    STYPE EQUAL type=data_type
+    (COMMA aggregate_param)*
     RIGHT_PAREN
     ;
 
 aggregate_param
-    : BASETYPE EQUAL base_type=data_type
-    | SFUNC EQUAL sfunc_name=schema_qualified_name
-    | STYPE EQUAL type=data_type
-    ;
-
-aggregate_param_optional
     : SSPACE EQUAL s_space=NUMBER_LITERAL
     | FINALFUNC EQUAL final_func=schema_qualified_name
     | FINALFUNC_EXTRA

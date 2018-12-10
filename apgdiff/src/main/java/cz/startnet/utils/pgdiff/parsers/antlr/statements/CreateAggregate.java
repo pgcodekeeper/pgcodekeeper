@@ -5,7 +5,6 @@ import java.util.function.BiConsumer;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Aggregate_paramContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Aggregate_param_optionalContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_aggregate_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
@@ -28,14 +27,28 @@ public class CreateAggregate extends ParserAbstract {
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
         AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
+        String schemaName = schema.getName();
 
         String name = QNameParser.getFirstName(ids);
         String rawStatement = getFullCtxText(ctx.getParent());
 
         PgAggregate aggregate = new PgAggregate(name, rawStatement);
+
+        if (ctx.BASETYPE() != null) {
+            Data_typeContext baseTypeCtx = ctx.base_type;
+            aggregate.setBaseType(getFullCtxText(baseTypeCtx));
+            addTypeAsDepcy(baseTypeCtx, aggregate, schemaName);
+        }
+
+        Data_typeContext sTypeCtx = ctx.type;
+        aggregate.setSType(getFullCtxText(sTypeCtx));
+        addTypeAsDepcy(sTypeCtx, aggregate, schemaName);
+
         fillAllArguments(aggregate);
-        fillAggregate(ctx.aggregate_param(), ctx.aggregate_param_optional(),
-                aggregate, schema.getName());
+
+        aggregate.setSFunc(ctx.sfunc_name.getText());
+
+        fillAggregate(ctx.aggregate_param(), aggregate, schema.getName());
 
         schema.addFunction(aggregate);
         return aggregate;
@@ -66,24 +79,9 @@ public class CreateAggregate extends ParserAbstract {
     }
 
     private void fillAggregate(List<Aggregate_paramContext> params,
-            List<Aggregate_param_optionalContext> paramsOpt,
             PgAggregate aggregate, String aggrSchemaName) {
-        for (Aggregate_paramContext param : params) {
-            if (param.BASETYPE() != null) {
-                Data_typeContext baseTypeCtx = param.base_type;
-                aggregate.setBaseType(getFullCtxText(baseTypeCtx));
-                addTypeAsDepcy(baseTypeCtx, aggregate, aggrSchemaName);
-            } else if (param.SFUNC() != null) {
-                aggregate.setSFunc(param.sfunc_name.getText());
-            } else if (param.STYPE() != null) {
-                Data_typeContext sTypeCtx = param.type;
-                aggregate.setSType(getFullCtxText(sTypeCtx));
-                addTypeAsDepcy(sTypeCtx, aggregate, aggrSchemaName);
-            }
-        }
-
-        if (paramsOpt != null ) {
-            for (Aggregate_param_optionalContext paramOpt : paramsOpt) {
+        if (params != null) {
+            for (Aggregate_paramContext paramOpt : params) {
                 if (paramOpt.SSPACE() != null) {
                     aggregate.setSSpace(Long.parseLong(paramOpt.s_space.getText()));
                 } else if (paramOpt.FINALFUNC() != null) {
@@ -181,14 +179,14 @@ public class CreateAggregate extends ParserAbstract {
         }
     }
 
-    private String getModifyParam(Aggregate_param_optionalContext paramOpt) {
+    private String getModifyParam(Aggregate_paramContext param) {
         String finalFuncModify = null;
-        if (paramOpt.READ_ONLY() != null) {
-            finalFuncModify = paramOpt.READ_ONLY().getText();
-        } else if (paramOpt.SHAREABLE() != null) {
-            finalFuncModify = paramOpt.SHAREABLE().getText();
-        } else if (paramOpt.READ_WRITE() != null) {
-            finalFuncModify = paramOpt.READ_WRITE().getText();
+        if (param.READ_ONLY() != null) {
+            finalFuncModify = param.READ_ONLY().getText();
+        } else if (param.SHAREABLE() != null) {
+            finalFuncModify = param.SHAREABLE().getText();
+        } else if (param.READ_WRITE() != null) {
+            finalFuncModify = param.READ_WRITE().getText();
         }
         return finalFuncModify;
     }

@@ -259,11 +259,11 @@ public class FunctionsReader extends JdbcReader {
             aggregate.setMFinalFuncModify(getFuncModifier(res.getString("mfinalfunc_modify")));
         }
 
-        aggregate.setSFunc(getProcessedName(res.getString("sfunc_nsp"), res.getString("sfunc")));
-
         JdbcType sType = loader.cachedTypesByOid.get(res.getLong("stype"));
         aggregate.setSType(sType.getFullName(schemaName));
         sType.addTypeDepcy(aggregate);
+
+        aggregate.setSFunc(getProcessedName(res.getString("sfunc_nsp"), res.getString("sfunc")));
 
         String kind = res.getString("aggkind");
         aggregate.setKind(kind);
