@@ -459,6 +459,7 @@ public class PgDatabase extends PgStatement {
             st.markAsLib();
             concat(st);
         });
+        contextsForAnalyze.addAll(database.contextsForAnalyze);
     }
 
     public void concat(PgStatement st) {

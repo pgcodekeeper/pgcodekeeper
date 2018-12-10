@@ -467,6 +467,21 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     /**
+     * @return an element in another db sharing the same name and location
+     */
+    public PgStatement getTwin(PgDatabase db) {
+        if (getStatementType() == DbObjType.DATABASE) {
+            return db;
+        }
+        PgStatement twinParent = getParent().getTwin(db);
+        if (twinParent == null) {
+            return null;
+        }
+        return getStatementType() == DbObjType.COLUMN ? ((AbstractTable) twinParent).getColumn(getName())
+                : twinParent.getChild(getName(), getStatementType());
+    }
+
+    /**
      * Returns all subtree elements
      */
     public Stream<PgStatement> getDescendants() {
@@ -480,6 +495,13 @@ public abstract class PgStatement implements IStatement, IHashable {
         return Stream.empty();
     }
 
+    public PgStatement getChild(String name, DbObjType type) {
+        return getChildren()
+                .filter(st -> type == st.getStatementType() && name.equals(st.getName()))
+                .findAny()
+                .orElse(null);
+    }
+
     public boolean hasChildren() {
         return getChildren().anyMatch(e -> true);
     }
@@ -487,11 +509,6 @@ public abstract class PgStatement implements IStatement, IHashable {
     public void addChild(PgStatement st) {
         //  subclasses with children must override
         throw new IllegalStateException("Statement can't have child");
-    }
-
-    public PgStatement getChild(String name, DbObjType type) {
-        return getChildren().filter(e -> e.getName().equals(name)
-                && e.getStatementType().equals(type)).findAny().orElse(null);
     }
 
     /**
