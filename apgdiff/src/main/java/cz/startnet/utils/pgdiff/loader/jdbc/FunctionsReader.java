@@ -276,7 +276,8 @@ public class FunctionsReader extends JdbcReader {
         String sFuncName = res.getString("sfunc");
         aggregate.setSFunc(getProcessedName(sFuncSchemaName, sFuncName));
         addFuncAsDepcy(aggregate, sFuncSchemaName,
-                CreateAggregate.getParamFuncSignature(aggregate, sFuncName, "SFUNC"));
+                CreateAggregate.getParamFuncSignature(aggregate, sFuncName,
+                        PgAggregate.SFUNC));
 
         String kind = res.getString("aggkind");
         aggregate.setKind(kind);
@@ -295,7 +296,8 @@ public class FunctionsReader extends JdbcReader {
             String finalFuncSchemaName = res.getString("finalfunc_nsp");
             aggregate.setFinalFunc(getProcessedName(finalFuncSchemaName, finalFuncName));
             addFuncAsDepcy(aggregate, finalFuncSchemaName,
-                    CreateAggregate.getParamFuncSignature(aggregate, finalFuncName, "FINALFUNC"));
+                    CreateAggregate.getParamFuncSignature(aggregate, finalFuncName,
+                            PgAggregate.FINALFUNC));
         }
 
         if (res.getBoolean("is_finalfunc_extra")) {
@@ -307,7 +309,8 @@ public class FunctionsReader extends JdbcReader {
             String combineFuncSchemaName = res.getString("combinefunc_nsp");
             aggregate.setCombineFunc(getProcessedName(combineFuncSchemaName, combineFunc));
             addFuncAsDepcy(aggregate, combineFuncSchemaName,
-                    CreateAggregate.getParamFuncSignature(aggregate, combineFunc, "COMBINEFUNC"));
+                    CreateAggregate.getParamFuncSignature(aggregate, combineFunc,
+                            PgAggregate.COMBINEFUNC));
         }
 
         String serialfanc = res.getString("serialfanc");

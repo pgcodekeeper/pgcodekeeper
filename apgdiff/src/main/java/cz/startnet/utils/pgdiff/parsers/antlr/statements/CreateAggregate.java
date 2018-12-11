@@ -244,7 +244,7 @@ public class CreateAggregate extends ParserAbstract {
         sb.append(sType).append(", ");
 
         switch(paramName) {
-        case "SFUNC":
+        case PgAggregate.SFUNC:
             if (args.isEmpty() && orderByArgs.isEmpty()) {
                 // for signature: aggregateName(*)
                 // no action
@@ -260,23 +260,23 @@ public class CreateAggregate extends ParserAbstract {
             }
             break;
 
-        case "FINALFUNC":
+        case PgAggregate.FINALFUNC:
             if (!args.isEmpty() && !orderByArgs.isEmpty()) {
                 // for signature: aggregateName(mode name type, ... ORDER BY modeN nameN typeN, ....)
                 fillStringByArgs(sb, args);
             }
             break;
 
-        case "COMBINEFUNC":
+        case PgAggregate.COMBINEFUNC:
             sb.append(sType).append(", ");
             break;
 
-            // case "SERIALFUNC":
-            // case "DESERIALFUNC":
+            // case PgAggregate.SERIALFUNC:
+            // case PgAggregate.DESERIALFUNC:
 
-            // case "MSFUNC":
-            // case "MINVFUNC":
-            // case "MFINALFUNC":
+            // case PgAggregate.MSFUNC:
+            // case PgAggregate.MINVFUNC:
+            // case PgAggregate.MFINALFUNC:
 
 
         default:
