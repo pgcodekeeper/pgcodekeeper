@@ -110,6 +110,8 @@ implements TSqlContextProcessor {
             p = new CreateMsView(ctx, db, ansiNulls, quotedIdentifier, stream);
         } else if (body.create_or_alter_trigger() != null) {
             p = new CreateMsTrigger(ctx, db, ansiNulls, quotedIdentifier, stream);
+        } else if (ctx.create_schema() != null) {
+            p = new CreateMsSchema(ctx.create_schema(), db, this, stream);
         } else {
             return;
         }
@@ -121,8 +123,6 @@ implements TSqlContextProcessor {
         ParserAbstract p;
         if (ctx.create_sequence() != null) {
             p = new CreateMsSequence(ctx.create_sequence(), db);
-        } else if (ctx.create_schema() != null) {
-            p = new CreateMsSchema(ctx.create_schema(), db, this, stream);
         } else if (ctx.create_index() != null) {
             p = new CreateMsIndex(ctx.create_index(), db);
         } else if (ctx.create_table() != null) {
