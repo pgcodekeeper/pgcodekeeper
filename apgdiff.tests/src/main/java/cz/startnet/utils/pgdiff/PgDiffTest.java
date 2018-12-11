@@ -471,10 +471,8 @@ public class PgDiffTest {
                     {"modify_aggregate"},
                     // Tests scenario for AGGREGATE where new privileges is added.
                     {"add_aggregate_privileges"},
-
-                    // TODO add test for check the dependencies in AGGREGATE
-                    // TODO add test for AGGREGATE of user with the same name as in AGGREGATE of system
-
+                    // Tests scenario for check the dependency of AGGREGATE from 'sfunc'.
+                    {"modify_func_sfunc_of_aggregate"},
                 });
     }
 
