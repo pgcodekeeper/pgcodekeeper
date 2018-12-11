@@ -19,6 +19,7 @@ import org.eclipse.jface.viewers.CheckboxCellEditor;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -172,6 +173,20 @@ public class DependencyProperties extends PropertyPage {
                 }
             });
 
+            TableViewerColumn owner = new TableViewerColumn(viewer, SWT.CENTER);
+            owner.getColumn().setText(Messages.DependencyProperties_owner);
+            owner.getColumn().setResizable(true);
+            owner.getColumn().setMoveable(true);
+            owner.setLabelProvider(new ColumnLabelProvider() {
+
+                @Override
+                public String getText(Object element) {
+                    return ((PgLibrary) element).getOwner();
+                }
+            });
+
+            owner.setEditingSupport(new OwnerEditingSupport(viewer));
+
             TableViewerColumn ignorePriv = new TableViewerColumn(viewer, SWT.CENTER);
             ignorePriv.getColumn().setText(Messages.DependencyProperties_ignore_privileges);
             ignorePriv.getColumn().setResizable(true);
@@ -188,9 +203,10 @@ public class DependencyProperties extends PropertyPage {
 
             viewer.getTable().addListener(SWT.Resize, event -> {
                 Table table = (Table)event.widget;
-                int width = (int)(table.getClientArea().width * 0.33f);
-                table.getColumns()[0].setWidth(width * 2);
-                table.getColumns()[1].setWidth(width);
+                int width = (int)(table.getClientArea().width * 0.1f);
+                table.getColumns()[0].setWidth(width * 5);
+                table.getColumns()[1].setWidth(width * 3);
+                table.getColumns()[2].setWidth(width * 2);
             });
         }
 
@@ -230,7 +246,7 @@ public class DependencyProperties extends PropertyPage {
                     InputDialog dialog = new InputDialog(getShell(),
                             Messages.DependencyProperties_add_database,
                             Messages.DependencyProperties_enter_connection_string, "jdbc:",  //$NON-NLS-1$
-                            newText -> newText.startsWith("jdbc:") ?
+                            newText -> newText.startsWith("jdbc:") ? //$NON-NLS-1$
                                     null : Messages.DependencyProperties_connection_start);
 
                     if (dialog.open() == Window.OK) {
@@ -289,6 +305,24 @@ public class DependencyProperties extends PropertyPage {
         @Override
         protected void setValue(Object element, Object value) {
             ((PgLibrary) element).setIgnorePriv((boolean) value);
+            getViewer().update(element, null);
+        }
+    }
+
+    private static class OwnerEditingSupport extends CommonEditingSupport<TextCellEditor> {
+
+        public OwnerEditingSupport(TableViewer viewer) {
+            super(viewer, new TextCellEditor(viewer.getTable()));
+        }
+
+        @Override
+        protected Object getValue(Object element) {
+            return ((PgLibrary) element).getOwner();
+        }
+
+        @Override
+        protected void setValue(Object element, Object value) {
+            ((PgLibrary) element).setOwner((String) value);
             getViewer().update(element, null);
         }
     }
