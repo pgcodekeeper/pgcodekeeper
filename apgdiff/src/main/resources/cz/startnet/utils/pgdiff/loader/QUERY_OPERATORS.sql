@@ -10,7 +10,8 @@ WITH sys_schemas AS (
         AND dep.deptype = 'e'
 )
 
-SELECT o.oprname AS name, 
+SELECT o.oid::bigint,
+       o.oprname AS name, 
        o.oprnamespace AS schema_oid,
        prc.proname AS procedure,
        prc_n.nspname AS procedure_nsp,
