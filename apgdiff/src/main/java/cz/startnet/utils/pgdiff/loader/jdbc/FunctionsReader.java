@@ -304,12 +304,12 @@ public class FunctionsReader extends JdbcReader {
             aggregate.setFinalFuncExtra(true);
         }
 
-        String combineFunc = res.getString("combinefunc");
-        if (combineFunc != null) {
+        String combineFuncName = res.getString("combinefunc");
+        if (combineFuncName != null) {
             String combineFuncSchemaName = res.getString("combinefunc_nsp");
-            aggregate.setCombineFunc(getProcessedName(combineFuncSchemaName, combineFunc));
+            aggregate.setCombineFunc(getProcessedName(combineFuncSchemaName, combineFuncName));
             addFuncAsDepcy(aggregate, combineFuncSchemaName,
-                    CreateAggregate.getParamFuncSignature(aggregate, combineFunc,
+                    CreateAggregate.getParamFuncSignature(aggregate, combineFuncName,
                             PgAggregate.COMBINEFUNC));
         }
 
@@ -330,16 +330,22 @@ public class FunctionsReader extends JdbcReader {
             aggregate.setInitCond(PgDiffUtils.quoteString(initCond));
         }
 
-        String msfunc = res.getString("msfunc");
-        if (deserialfunc != null) {
-            // TODO add dependency
-            aggregate.setMSFunc(getProcessedName(res.getString("msfunc_nsp"), msfunc));
+        String msFuncName = res.getString("msfunc");
+        if (msFuncName != null) {
+            String mSFuncSchemaName = res.getString("msfunc_nsp");
+            aggregate.setMSFunc(getProcessedName(mSFuncSchemaName, msFuncName));
+            addFuncAsDepcy(aggregate, mSFuncSchemaName,
+                    CreateAggregate.getParamFuncSignature(aggregate, msFuncName,
+                            PgAggregate.MSFUNC));
         }
 
-        String minvfunc = res.getString("minvfunc");
-        if (minvfunc != null) {
-            // TODO add dependency
-            aggregate.setMInvFunc(getProcessedName(res.getString("minvfunc_nsp"), minvfunc));
+        String mInvFuncName = res.getString("minvfunc");
+        if (mInvFuncName != null) {
+            String mInvFuncSchemaName = res.getString("minvfunc_nsp");
+            aggregate.setMInvFunc(getProcessedName(mInvFuncSchemaName, mInvFuncName));
+            addFuncAsDepcy(aggregate, mInvFuncSchemaName,
+                    CreateAggregate.getParamFuncSignature(aggregate, mInvFuncName,
+                            PgAggregate.MINVFUNC));
         }
 
         long mstype = res.getLong("mstype");
@@ -350,14 +356,17 @@ public class FunctionsReader extends JdbcReader {
         }
 
         String msspace = res.getString("msspace");
-        if (sspace != null) {
+        if (msspace != null) {
             aggregate.setMSSpace(Long.parseLong(msspace));
         }
 
-        String mfinalfunc = res.getString("mfinalfunc");
-        if (mfinalfunc != null) {
-            // TODO add dependency
-            aggregate.setMFinalFunc(getProcessedName(res.getString("mfinalfunc_nsp"), mfinalfunc));
+        String mFinalFuncName = res.getString("mfinalfunc");
+        if (mFinalFuncName != null) {
+            String mFinalFuncSchemaName = res.getString("mfinalfunc_nsp");
+            aggregate.setMFinalFunc(getProcessedName(mFinalFuncSchemaName, mFinalFuncName));
+            addFuncAsDepcy(aggregate, mFinalFuncSchemaName,
+                    CreateAggregate.getParamFuncSignature(aggregate, mFinalFuncName,
+                            PgAggregate.MFINALFUNC));
         }
 
         if (res.getBoolean("is_mfinalfunc_extra")) {
@@ -370,7 +379,7 @@ public class FunctionsReader extends JdbcReader {
         }
 
         String sortOp = res.getString("sortop");
-        if (mfinalfunc != null) {
+        if (sortOp != null) {
             // TODO add dependency
             aggregate.setSortOp(getProcessedName(res.getString("sortop_nsp"), sortOp));
         }
