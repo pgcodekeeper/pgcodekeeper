@@ -23,6 +23,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.libraries.PgLibrary;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
@@ -55,8 +56,10 @@ public class LibraryLoader {
         for (PgLibrary lib : xmlStore.readObjects()) {
             PgDatabase l = getLibrary(lib.getPath(), args, lib.isIgnorePriv());
             String owner = lib.getOwner();
-            if (!lib.isIgnorePriv() && owner != null && !owner.isEmpty()) {
-                l.getDescendants().forEach(st -> st.setOwner(owner));
+            if (!owner.isEmpty()) {
+                l.getDescendants()
+                .filter(PgStatement::isOwned)
+                .forEach(st -> st.setOwner(owner));
             }
 
             db.addLib(l);
