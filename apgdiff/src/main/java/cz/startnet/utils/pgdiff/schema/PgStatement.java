@@ -61,6 +61,26 @@ public abstract class PgStatement implements IStatement, IHashable {
         return true;
     }
 
+    public boolean isOwned() {
+        switch (getStatementType()) {
+        case FTS_CONFIGURATION:
+        case FTS_DICTIONARY:
+        case TABLE:
+        case VIEW:
+        case SCHEMA:
+        case FUNCTION:
+        case OPERATOR:
+        case PROCEDURE:
+        case SEQUENCE:
+        case TYPE:
+        case DOMAIN:
+        case ASSEMBLY:
+            return true;
+        default :
+            return false;
+        }
+    }
+
     /**
      * @return Always returns just the object's name.
      */
@@ -328,7 +348,7 @@ public abstract class PgStatement implements IStatement, IHashable {
 
     public static StringBuilder appendOwnerSQL(PgStatement st, String owner,
             boolean addNewLine, StringBuilder sb) {
-        if (owner == null) {
+        if (owner == null || !st.isOwned()) {
             return sb;
         }
         if (addNewLine) {
@@ -356,18 +376,8 @@ public abstract class PgStatement implements IStatement, IHashable {
                 }
                 sb.append("VIEW ");
                 break;
-            case SCHEMA:
-            case FUNCTION:
-            case OPERATOR:
-            case PROCEDURE:
-            case SEQUENCE:
-            case TYPE:
-            case DOMAIN:
-                sb.append(type).append(' ');
-                break;
             default :
-                // other types cannot have owner
-                return sb;
+                sb.append(type).append(' ');
             }
 
             if (type == DbObjType.SCHEMA) {
