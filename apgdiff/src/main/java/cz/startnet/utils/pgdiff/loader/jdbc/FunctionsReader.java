@@ -269,7 +269,8 @@ public class FunctionsReader extends JdbcReader {
         }
 
         JdbcType sType = loader.cachedTypesByOid.get(res.getLong("stype"));
-        aggregate.setSType(sType.getFullName(schemaName));
+        String sTypeName = sType.getFullName(schemaName);
+        aggregate.setSType(sTypeName);
         sType.addTypeDepcy(aggregate);
 
         String sFuncSchemaName = res.getString("sfunc_nsp");
@@ -378,10 +379,14 @@ public class FunctionsReader extends JdbcReader {
             aggregate.setMInitCond(PgDiffUtils.quoteString(mInitCond));
         }
 
-        String sortOp = res.getString("sortop");
-        if (sortOp != null) {
-            // TODO add dependency
-            aggregate.setSortOp(getProcessedName(res.getString("sortop_nsp"), sortOp));
+        String sortOpName = res.getString("sortop");
+        if (sortOpName != null) {
+            String operSchemaName = res.getString("sortop_nsp");
+            aggregate.setSortOp(PgDiffUtils.getQuotedName(operSchemaName)
+                    + '.' + PgDiffUtils.getQuotedName(sortOpName));
+            aggregate.addDep(new GenericColumn(operSchemaName,
+                    CreateAggregate.getSortOperSign(aggregate, sortOpName, sTypeName),
+                    DbObjType.OPERATOR));
         }
     }
 

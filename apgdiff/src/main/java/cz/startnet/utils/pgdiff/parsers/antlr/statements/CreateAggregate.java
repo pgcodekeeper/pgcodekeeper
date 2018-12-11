@@ -10,6 +10,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
@@ -49,7 +50,8 @@ public class CreateAggregate extends ParserAbstract {
         }
 
         Data_typeContext sTypeCtx = ctx.type;
-        aggregate.setSType(getFullCtxText(sTypeCtx));
+        String sType = getFullCtxText(sTypeCtx);
+        aggregate.setSType(sType);
         addTypeAsDepcy(sTypeCtx, aggregate, schemaName);
 
         fillAllArguments(aggregate);
@@ -60,7 +62,7 @@ public class CreateAggregate extends ParserAbstract {
         aggregate.setSFunc(sFuncCtx.getText());
         addFuncAsDepcy(PgAggregate.SFUNC, sFuncCtx, aggregate, schemaName);
 
-        fillAggregate(ctx.aggregate_param(), aggregate, schema.getName(), schemaName);
+        fillAggregate(ctx.aggregate_param(), aggregate, schema.getName(), schemaName, sType);
 
         schema.addFunction(aggregate);
         return aggregate;
@@ -91,7 +93,8 @@ public class CreateAggregate extends ParserAbstract {
     }
 
     private void fillAggregate(List<Aggregate_paramContext> params,
-            PgAggregate aggregate, String aggrSchemaName, String defSchemaName) {
+            PgAggregate aggregate, String aggrSchemaName, String defSchemaName,
+            String sType) {
         if (params != null) {
             for (Aggregate_paramContext paramOpt : params) {
                 if (paramOpt.SSPACE() != null) {
@@ -141,8 +144,13 @@ public class CreateAggregate extends ParserAbstract {
                 } else if (paramOpt.MINITCOND() != null) {
                     aggregate.setMInitCond(paramOpt.minit_cond.getText());
                 } else if (paramOpt.SORTOP() != null) {
-                    // TODO add dependency
-                    aggregate.setSortOp(paramOpt.oper_name.getText());
+                    Operator_nameContext operNameCtx = paramOpt.oper_name;
+                    String operName = operNameCtx.getText();
+                    aggregate.setSortOp(operName);
+                    aggregate.addDep(new GenericColumn(
+                            CreateOperator.getSchemaSafe(operNameCtx, db.getDefaultSchema(), db).getName(),
+                            getSortOperSign(aggregate, operNameCtx.operator.getText(), sType),
+                            DbObjType.OPERATOR));
                 } else if (paramOpt.PARALLEL() != null) {
                     String parallel = null;
                     if (paramOpt.SAFE() != null) {
@@ -332,6 +340,21 @@ public class CreateAggregate extends ParserAbstract {
         }
     }
 
+    public static String getSortOperSign(PgAggregate aggr, String operName, String sType) {
+        StringBuilder operSign = new StringBuilder();
+        operSign.append(operName).append('(').append(sType).append(", ");
 
+        List<Argument> args = aggr.getArguments();
+        if (!args.isEmpty()) {
+            operSign.append(args.get(0).getDataType());
+        } else {
+            List<Argument> orderByArgs = aggr.getOrderByArgs();
+            operSign.append(orderByArgs.get(0).getDataType());
+        }
+
+        operSign.append(')');
+
+        return operSign.toString();
+    }
 
 }
