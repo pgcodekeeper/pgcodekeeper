@@ -27,8 +27,9 @@ implements PgRuleContainer, PgTriggerContainer, IRelation {
     }
 
     @Override
-    public Stream<PgStatement> getChildren() {
-        return Stream.concat(getRules().stream(), getTriggers().stream());
+    protected void fillChildrenList(List<List<? extends PgStatement>> l) {
+        l.add(rules);
+        l.add(triggers);
     }
 
     @Override

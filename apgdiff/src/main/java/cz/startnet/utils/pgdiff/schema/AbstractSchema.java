@@ -110,33 +110,29 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     }
 
     @Override
-    public Stream<PgStatement> getDescendants() {
-        Stream<PgStatement> stream = getChildren();
-
-        for (AbstractTable tab : getTables()) {
-            stream = Stream.concat(stream, tab.getDescendants());
+    protected void fillDescendantsList(List<List<? extends PgStatement>> l) {
+        fillChildrenList(l);
+        for (AbstractTable table : tables) {
+            table.fillDescendantsList(l);
         }
-
-        for (AbstractView view : getViews()) {
-            stream = Stream.concat(stream, view.getDescendants());
+        for (AbstractView view : views) {
+            view.fillDescendantsList(l);
         }
-
-        return stream;
     }
 
     @Override
-    public Stream<PgStatement> getChildren() {
-        Stream<PgStatement> stream = Stream.concat(getFunctions().stream(), getSequences().stream());
-        stream = Stream.concat(stream, getTypes().stream());
-        stream = Stream.concat(stream, getDomains().stream());
-        stream = Stream.concat(stream, getTables().stream());
-        stream = Stream.concat(stream, getViews().stream());
-        stream = Stream.concat(stream, getFtsParsers().stream());
-        stream = Stream.concat(stream, getFtsTemplates().stream());
-        stream = Stream.concat(stream, getFtsDictionaries().stream());
-        stream = Stream.concat(stream, getFtsConfigurations().stream());
-        stream = Stream.concat(stream, getOperators().stream());
-        return stream;
+    protected void fillChildrenList(List<List<? extends PgStatement>> l) {
+        l.add(functions);
+        l.add(sequences);
+        l.add(types);
+        l.add(domains);
+        l.add(tables);
+        l.add(views);
+        l.add(parsers);
+        l.add(templates);
+        l.add(dictionaries);
+        l.add(configurations);
+        l.add(operators);
     }
 
     @Override
