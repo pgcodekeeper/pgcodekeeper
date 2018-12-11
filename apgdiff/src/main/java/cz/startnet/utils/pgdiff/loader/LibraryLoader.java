@@ -46,20 +46,21 @@ public class LibraryLoader {
     public void loadLibraries(PgDiffArguments args, boolean isIgnorePriv,
             Collection<String> paths) throws InterruptedException, IOException {
         for (String path : paths) {
-            loadLibrary(args, isIgnorePriv, path);
+            db.addLib(getLibrary(path, args, isIgnorePriv));
         }
     }
 
     public void loadXml(DependenciesXmlStore xmlStore, PgDiffArguments args)
             throws InterruptedException, IOException {
         for (PgLibrary lib : xmlStore.readObjects()) {
-            loadLibrary(args, lib.isIgnorePriv(), lib.getPath());
-        }
-    }
+            PgDatabase l = getLibrary(lib.getPath(), args, lib.isIgnorePriv());
+            String owner = lib.getOwner();
+            if (!lib.isIgnorePriv() && owner != null && !owner.isEmpty()) {
+                l.getDescendants().forEach(st -> st.setOwner(owner));
+            }
 
-    private void loadLibrary(PgDiffArguments args, boolean isIgnorePriv, String path)
-            throws InterruptedException, IOException {
-        db.addLib(getLibrary(path, args, isIgnorePriv));
+            db.addLib(l);
+        }
     }
 
     private PgDatabase getLibrary(String path, PgDiffArguments arguments, boolean isIgnorePriv)
