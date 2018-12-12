@@ -8,9 +8,9 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgAggregate extends AbstractPgFunction {
 
-    public static final String NORMAL = "n";
-    public static final String ORDERED = "o";
-    public static final String HYPOTHETICAL = "h";
+    public enum AggKinds {
+        NORMAL, ORDERED, HYPOTHETICAL
+    }
 
     public static final String SFUNC = "SFUNC";
     public static final String FINALFUNC = "FINALFUNC";
@@ -23,7 +23,8 @@ public class PgAggregate extends AbstractPgFunction {
 
     private int directCount;
 
-    private String kind;
+    private AggKinds kind = AggKinds.NORMAL;
+
     private String baseType;
     private String sFunc;
     private String sType;
@@ -44,7 +45,6 @@ public class PgAggregate extends AbstractPgFunction {
     private String mFinalFuncModify;
     private String mInitCond;
     private String sortOp;
-    private boolean isHypothetical;
 
     public PgAggregate(String name, String rawStatement) {
         super(name, rawStatement);
@@ -154,7 +154,7 @@ public class PgAggregate extends AbstractPgFunction {
             sbSQL.append(getParallel());
         }
 
-        if (isHypothetical) {
+        if (AggKinds.HYPOTHETICAL == kind) {
             sbSQL.append(",\n\tHYPOTHETICAL");
         }
 
@@ -184,7 +184,7 @@ public class PgAggregate extends AbstractPgFunction {
     private void appendFuncModify(String funcModifier, StringBuilder sbSQL, boolean isMovingAgg) {
         // The default is READ_ONLY, except for ordered aggregates, for which the default is READ_WRITE.
         boolean appendModifier = false;
-        switch (kind.toLowerCase()) {
+        switch (kind) {
         case NORMAL:
             if (!"READ_ONLY".equalsIgnoreCase(funcModifier)) {
                 appendModifier = true;
@@ -243,12 +243,8 @@ public class PgAggregate extends AbstractPgFunction {
             return true;
         }
 
-        if (!super.checkForChanges(func)) {
-            return false;
-        }
-
-        if (func instanceof PgAggregate) {
-            PgAggregate aggr = (PgAggregate)func;
+        if (func instanceof PgAggregate && super.checkForChanges(func)) {
+            PgAggregate aggr = (PgAggregate) func;
             return directCount == aggr.directCount
                     && Objects.equals(kind, aggr.getKind())
                     && Objects.equals(baseType, aggr.getBaseType())
@@ -270,8 +266,7 @@ public class PgAggregate extends AbstractPgFunction {
                     && isMFinalFuncExtra == aggr.isMFinalFuncExtra()
                     && Objects.equals(mFinalFuncModify, aggr.getMFinalFuncModify())
                     && Objects.equals(mInitCond, aggr.getMInitCond())
-                    && Objects.equals(sortOp, aggr.getSortOp())
-                    && isHypothetical == aggr.isHypothetical();
+                    && Objects.equals(sortOp, aggr.getSortOp());
         }
 
         return false;
@@ -302,7 +297,6 @@ public class PgAggregate extends AbstractPgFunction {
         hasher.put(mFinalFuncModify);
         hasher.put(mInitCond);
         hasher.put(sortOp);
-        hasher.put(isHypothetical);
     }
 
     public int getDirectCount() {
@@ -314,11 +308,11 @@ public class PgAggregate extends AbstractPgFunction {
         resetHash();
     }
 
-    public String getKind() {
+    public AggKinds getKind() {
         return kind;
     }
 
-    public void setKind(String kind) {
+    public void setKind(AggKinds kind) {
         this.kind = kind;
         resetHash();
     }
@@ -506,15 +500,6 @@ public class PgAggregate extends AbstractPgFunction {
         resetHash();
     }
 
-    public boolean isHypothetical() {
-        return isHypothetical;
-    }
-
-    public void setHypothetical(boolean isHypothetical) {
-        this.isHypothetical = isHypothetical;
-        resetHash();
-    }
-
     @Override
     protected AbstractFunction getFunctionCopy() {
         PgAggregate copy = new PgAggregate(getBareName(), getRawStatement());
@@ -541,7 +526,6 @@ public class PgAggregate extends AbstractPgFunction {
         copy.setMInitCond(getMInitCond());
         copy.setSortOp(getSortOp());
         copy.setParallel(getParallel());
-        copy.setHypothetical(isHypothetical());
         return copy;
     }
 }

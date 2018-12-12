@@ -16,6 +16,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgAggregate;
+import cz.startnet.utils.pgdiff.schema.PgAggregate.AggKinds;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
@@ -173,18 +174,15 @@ public class CreateAggregate extends ParserAbstract {
                     }
                     aggregate.setParallel(parallel);
                 } else if (paramOpt.HYPOTHETICAL() != null) {
-                    aggregate.setHypothetical(true);
+                    aggregate.setKind(AggKinds.HYPOTHETICAL);
                 }
             }
         }
 
-        String kind = PgAggregate.NORMAL;
-        if (aggregate.isHypothetical()) {
-            kind = PgAggregate.HYPOTHETICAL;
-        } else if (aggregate.getArguments().size() != aggregate.getDirectCount()) {
-            kind = PgAggregate.ORDERED;
+        if (AggKinds.HYPOTHETICAL != aggregate.getKind()
+                && aggregate.getArguments().size() != aggregate.getDirectCount()) {
+            aggregate.setKind(AggKinds.ORDERED);
         }
-        aggregate.setKind(kind);
 
         checkFinalFuncModifiers(aggregate);
     }
@@ -196,24 +194,17 @@ public class CreateAggregate extends ParserAbstract {
             return;
         }
 
-        String kind = aggr.getKind();
-
         // The default is READ_ONLY, except for ordered aggregates, for which the default is READ_WRITE.
         String defaultModifier = null;
-        switch (kind.toLowerCase()) {
-        case PgAggregate.NORMAL:
+        switch (aggr.getKind()) {
+        case NORMAL:
             defaultModifier = "READ_ONLY";
             break;
-
-        case PgAggregate.HYPOTHETICAL:
-        case PgAggregate.ORDERED:
+        case HYPOTHETICAL:
+        case ORDERED:
             defaultModifier = "READ_WRITE";
             break;
-
-        default:
-            throw new IllegalStateException(kind + " doesn't support by AGGREGATE!");
         }
-
 
         if (finalFuncModify == null) {
             aggr.setFinalFuncModify(defaultModifier);

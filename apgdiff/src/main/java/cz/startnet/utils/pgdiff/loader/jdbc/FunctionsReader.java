@@ -17,6 +17,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgAggregate;
+import cz.startnet.utils.pgdiff.schema.PgAggregate.AggKinds;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgProcedure;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
@@ -230,17 +231,28 @@ public class FunctionsReader extends JdbcReader {
     private AbstractFunction getAgg(ResultSet res, String schemaName,
             String funcName) throws SQLException {
         loader.setCurrentObject(new GenericColumn(schemaName, funcName, DbObjType.AGGREGATE));
-        PgAggregate aggr = new PgAggregate(funcName, "");
+        PgAggregate aggregate = new PgAggregate(funcName, "");
+
+        switch (res.getString("aggkind")) {
+        case "o":
+            aggregate.setKind(AggKinds.ORDERED);
+            break;
+        case "h":
+            aggregate.setKind(AggKinds.HYPOTHETICAL);
+            break;
+        default:
+            break;
+        }
 
         //// The order is important for adding dependencies. Two steps.
 
         // First step: filling all types and arguments.
-        fillArguments(aggr, res);
+        fillArguments(aggregate, res);
 
         // Second step: filling other parameters of AGGREGATE.
-        fillAggregate(aggr, res, schemaName);
+        fillAggregate(aggregate, res, schemaName);
 
-        return aggr;
+        return aggregate;
     }
 
     private void fillAggregate(PgAggregate aggregate, ResultSet res,
@@ -278,13 +290,6 @@ public class FunctionsReader extends JdbcReader {
         addFuncAsDepcy(aggregate, sFuncSchemaName,
                 CreateAggregate.getParamFuncSignature(aggregate, sFuncName,
                         PgAggregate.SFUNC));
-
-        String kind = res.getString("aggkind");
-        aggregate.setKind(kind);
-
-        if ("h".equals(kind)) {
-            aggregate.setHypothetical(true);
-        }
 
         String sspace = res.getString("sspace");
         if (sspace != null) {
@@ -458,7 +463,7 @@ public class FunctionsReader extends JdbcReader {
 
         if (f instanceof PgAggregate) {
             PgAggregate agg = ((PgAggregate) f);
-            agg.setDirectCount(PgAggregate.NORMAL.equals(agg.getKind()) ?
+            agg.setDirectCount(AggKinds.NORMAL == agg.getKind() ?
                     f.getArguments().size() : res.getInt("aggnumdirectargs"));
         }
         return sb;
