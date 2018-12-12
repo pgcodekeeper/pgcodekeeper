@@ -280,8 +280,7 @@ public class FunctionsReader extends JdbcReader {
         }
 
         JdbcType sType = loader.cachedTypesByOid.get(res.getLong("stype"));
-        String sTypeName = sType.getFullName(schemaName);
-        aggregate.setSType(sTypeName);
+        aggregate.setSType(sType.getFullName());
         sType.addTypeDepcy(aggregate);
 
         String sFuncSchemaName = res.getString("sfunc_nsp");
@@ -356,7 +355,7 @@ public class FunctionsReader extends JdbcReader {
         long mstype = res.getLong("mstype");
         if (mstype != 0) {
             JdbcType mSType = loader.cachedTypesByOid.get(mstype);
-            aggregate.setMSType(mSType.getFullName(schemaName));
+            aggregate.setMSType(mSType.getFullName());
             mSType.addTypeDepcy(aggregate);
         }
 
@@ -393,7 +392,7 @@ public class FunctionsReader extends JdbcReader {
 
             // TODO waits task #16080
             // aggregate.addDep(new GenericColumn(operSchemaName,
-            // CreateAggregate.getSortOperSign(aggregate, sortOpName, sTypeName),
+            // CreateAggregate.getSortOperSign(aggregate, sortOpName),
             //    DbObjType.OPERATOR));
         }
     }

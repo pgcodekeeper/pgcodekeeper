@@ -51,8 +51,7 @@ public class CreateAggregate extends ParserAbstract {
         }
 
         Data_typeContext sTypeCtx = ctx.type;
-        String sType = getFullCtxText(sTypeCtx);
-        aggregate.setSType(sType);
+        aggregate.setSType(getFullCtxText(sTypeCtx));
         addTypeAsDepcy(sTypeCtx, aggregate, schemaName);
 
         fillAllArguments(aggregate);
@@ -63,7 +62,7 @@ public class CreateAggregate extends ParserAbstract {
         aggregate.setSFunc(sFuncCtx.getText());
         addFuncAsDepcy(PgAggregate.SFUNC, sFuncCtx, aggregate, schemaName);
 
-        fillAggregate(ctx.aggregate_param(), aggregate, schema.getName(), schemaName, sType);
+        fillAggregate(ctx.aggregate_param(), aggregate, schema.getName(), schemaName);
 
         schema.addFunction(aggregate);
         return aggregate;
@@ -92,8 +91,7 @@ public class CreateAggregate extends ParserAbstract {
     }
 
     private void fillAggregate(List<Aggregate_paramContext> params,
-            PgAggregate aggregate, String aggrSchemaName, String defSchemaName,
-            String sType) {
+            PgAggregate aggregate, String aggrSchemaName, String defSchemaName) {
         if (params != null) {
             for (Aggregate_paramContext paramOpt : params) {
                 if (paramOpt.SSPACE() != null) {
@@ -160,8 +158,8 @@ public class CreateAggregate extends ParserAbstract {
 
                     // TODO waits task #16080
                     // aggregate.addDep(new GenericColumn(schemaNameCxt == null ?
-                    //         db.getDefaultSchema().getName() : schemaNameCxt.getText(),
-                    //         getSortOperSign(aggregate, operCtx.all_simple_op().getText(), sType),
+                    //         defSchemaName : schemaNameCxt.getText(),
+                    //         getSortOperSign(aggregate, operCtx.all_simple_op().getText()),
                     //         DbObjType.OPERATOR));
                 } else if (paramOpt.PARALLEL() != null) {
                     String parallel = null;
@@ -305,10 +303,11 @@ public class CreateAggregate extends ParserAbstract {
         }
     }
 
-    public static String getSortOperSign(PgAggregate aggr, String operName, String sType) {
+    public static String getSortOperSign(PgAggregate aggr, String operName) {
         StringBuilder operSign = new StringBuilder();
-        operSign.append(operName).append('(').append(sType).append(", ");
-        operSign.append(aggr.getArguments().get(0).getDataType());
+        String argType = aggr.getArguments().get(0).getDataType();
+        operSign.append(operName).append('(').append(argType).append(", ");
+        operSign.append(argType);
         operSign.append(')');
 
         return operSign.toString();
