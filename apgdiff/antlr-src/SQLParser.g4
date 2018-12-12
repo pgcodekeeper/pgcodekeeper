@@ -901,7 +901,7 @@ aggregate_param
     | MFINALFUNC_EXTRA
     | MFINALFUNC_MODIFY EQUAL (READ_ONLY | SHAREABLE | READ_WRITE)
     | MINITCOND EQUAL minit_cond=Character_String_Literal
-    | SORTOP EQUAL oper_name=operator_name
+    | SORTOP EQUAL all_op_ref
     | PARALLEL EQUAL (SAFE | RESTRICTED | UNSAFE)
     | HYPOTHETICAL
     ;

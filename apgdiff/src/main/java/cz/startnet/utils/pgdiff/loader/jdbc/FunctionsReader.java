@@ -381,11 +381,15 @@ public class FunctionsReader extends JdbcReader {
         String sortOpName = res.getString("sortop");
         if (sortOpName != null) {
             String operSchemaName = res.getString("sortop_nsp");
-            aggregate.setSortOp(PgDiffUtils.getQuotedName(operSchemaName)
-                    + '.' + PgDiffUtils.getQuotedName(sortOpName));
-            aggregate.addDep(new GenericColumn(operSchemaName,
-                    CreateAggregate.getSortOperSign(aggregate, sortOpName, sTypeName),
-                    DbObjType.OPERATOR));
+            StringBuilder sb = new StringBuilder().append("OPERATOR(")
+                    .append(PgDiffUtils.getQuotedName(operSchemaName))
+                    .append('.').append(sortOpName).append(')');
+            aggregate.setSortOp(sb.toString());
+
+            // TODO waits task #16080
+            // aggregate.addDep(new GenericColumn(operSchemaName,
+            // CreateAggregate.getSortOperSign(aggregate, sortOpName, sTypeName),
+            //    DbObjType.OPERATOR));
         }
     }
 

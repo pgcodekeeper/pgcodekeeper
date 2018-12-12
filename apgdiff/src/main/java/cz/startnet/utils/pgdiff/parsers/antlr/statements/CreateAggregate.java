@@ -2,14 +2,15 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Aggregate_paramContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.All_op_refContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_aggregate_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
@@ -141,13 +142,26 @@ public class CreateAggregate extends ParserAbstract {
                 } else if (paramOpt.MINITCOND() != null) {
                     aggregate.setMInitCond(paramOpt.minit_cond.getText());
                 } else if (paramOpt.SORTOP() != null) {
-                    Operator_nameContext operNameCtx = paramOpt.oper_name;
-                    String operName = operNameCtx.getText();
-                    aggregate.setSortOp(operName);
-                    aggregate.addDep(new GenericColumn(
-                            CreateOperator.getSchemaSafe(operNameCtx, db.getDefaultSchema(), db).getName(),
-                            getSortOperSign(aggregate, operNameCtx.operator.getText(), sType),
-                            DbObjType.OPERATOR));
+                    All_op_refContext operCtx = paramOpt.all_op_ref();
+                    IdentifierContext schemaNameCxt = operCtx.identifier();
+                    StringBuilder sb = new StringBuilder();
+                    if (schemaNameCxt != null) {
+                        sb.append("OPERATOR(")
+                        .append(PgDiffUtils.getQuotedName(schemaNameCxt.getText()))
+                        .append('.');
+                    }
+                    sb.append(operCtx.all_simple_op().getText());
+                    if (schemaNameCxt != null) {
+                        sb.append(')');
+                    }
+
+                    aggregate.setSortOp(sb.toString());
+
+                    // TODO waits task #16080
+                    // aggregate.addDep(new GenericColumn(schemaNameCxt == null ?
+                    //         db.getDefaultSchema().getName() : schemaNameCxt.getText(),
+                    //         getSortOperSign(aggregate, operCtx.all_simple_op().getText(), sType),
+                    //         DbObjType.OPERATOR));
                 } else if (paramOpt.PARALLEL() != null) {
                     String parallel = null;
                     if (paramOpt.SAFE() != null) {
