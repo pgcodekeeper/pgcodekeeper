@@ -35,14 +35,14 @@ public class OperatorsReader extends JdbcReader {
         long leftArgType = res.getLong("leftArg");
         if (leftArgType > 0) {
             JdbcType leftType = loader.cachedTypesByOid.get(leftArgType);
-            oper.setLeftArg(leftType.getFullName(operSchemaName));
+            oper.setLeftArg(leftType.getFullName());
             leftType.addTypeDepcy(oper);
         }
 
         long rightArgType = res.getLong("rightArg");
         if (rightArgType > 0) {
             JdbcType rightType = loader.cachedTypesByOid.get(rightArgType);
-            oper.setRightArg(rightType.getFullName(operSchemaName));
+            oper.setRightArg(rightType.getFullName());
             rightType.addTypeDepcy(oper);
         }
 
