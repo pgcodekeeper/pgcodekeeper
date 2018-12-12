@@ -1,7 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
-import java.util.function.BiConsumer;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Aggregate_paramContext;
@@ -70,25 +69,23 @@ public class CreateAggregate extends ParserAbstract {
 
     private void fillAllArguments(PgAggregate aggregate) {
         Function_argsContext argumentsCtx = ctx.function_parameters().function_args();
-
-        fillArguments(argumentsCtx.function_arguments(), aggregate,
-                (aggr, a) -> aggr.addArgument(a));
+        List<Function_argumentsContext> directArgs = argumentsCtx.function_arguments();
+        fillArguments(directArgs, aggregate);
 
         if (argumentsCtx.agg_order() != null) {
-            fillArguments(argumentsCtx.agg_order().function_arguments(), aggregate,
-                    (aggr, a) -> aggr.addOrderByArg(a));
+            fillArguments(argumentsCtx.agg_order().function_arguments(), aggregate);
         }
+
+        aggregate.setDirectCount(directArgs.size());
     }
 
-    private void fillArguments(List<Function_argumentsContext> argumentsCtx, PgAggregate aggr,
-            BiConsumer<PgAggregate, Argument> addArgument) {
-        for (Function_argumentsContext argumentCtx : argumentsCtx) {
-            Data_typeContext argumentTypeCtx = argumentCtx.argtype_data;
-            addTypeAsDepcy(argumentTypeCtx, aggr, getDefSchemaName());
-            addArgument.accept(aggr, new Argument(
-                    argumentCtx.arg_mode != null ? argumentCtx.arg_mode.getText() : null,
-                            argumentCtx.argname != null ? argumentCtx.argname.getText() : null,
-                                    getFullCtxText(argumentTypeCtx)));
+    private void fillArguments(List<Function_argumentsContext> argumentsCtx, PgAggregate aggr) {
+        for (Function_argumentsContext argument : argumentsCtx) {
+            Argument arg = new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
+                    argument.argname != null ? argument.argname.getText() : null,
+                            getFullCtxText(argument.argtype_data));
+            addTypeAsDepcy(argument.data_type(), aggr, getDefSchemaName());
+            aggr.addArgument(arg);
         }
     }
 
@@ -170,7 +167,7 @@ public class CreateAggregate extends ParserAbstract {
         String kind = PgAggregate.NORMAL;
         if (aggregate.isHypothetical()) {
             kind = PgAggregate.HYPOTHETICAL;
-        } else if (!aggregate.getOrderByArgs().isEmpty()){
+        } else if (aggregate.getArguments().size() != aggregate.getDirectCount()) {
             kind = PgAggregate.ORDERED;
         }
         aggregate.setKind(kind);
@@ -251,69 +248,32 @@ public class CreateAggregate extends ParserAbstract {
         String sType = aggregate.getSType();
         String mSType = aggregate.getMSType();
         List<Argument> args = aggregate.getArguments();
-        List<Argument> orderByArgs = aggregate.getOrderByArgs();
+        int directCount = aggregate.getDirectCount();
+        List<Argument> orderByArgs = args.subList(directCount, args.size());
 
         switch(paramName) {
         case PgAggregate.SFUNC:
-            sb.append(sType).append(", ");
-            if (args.isEmpty() && orderByArgs.isEmpty()) {
-                // for signature: aggregateName(*)
-                // no action
-            } else if (!args.isEmpty() && orderByArgs.isEmpty()) {
-                // for signature: aggregateName(mode name type, ...)
-                fillStringByArgs(sb, args);
-            } else if (args.isEmpty() && !orderByArgs.isEmpty()) {
-                // for signature: aggregateName(ORDER BY mode name type, ...)
-                fillStringByArgs(sb, orderByArgs);
-            } else {
-                // for signature: aggregateName(mode name type, ... ORDER BY modeN nameN typeN, ....)
-                fillStringByArgs(sb, orderByArgs);
-            }
+        case PgAggregate.MSFUNC:
+        case PgAggregate.MINVFUNC:
+            sb.append(paramName == PgAggregate.SFUNC ? sType : mSType).append(", ");
+            fillStringByArgs(sb, orderByArgs.isEmpty() ? args : orderByArgs);
             break;
-
         case PgAggregate.FINALFUNC:
-            sb.append(sType).append(", ");
-            if (!args.isEmpty() && !orderByArgs.isEmpty()) {
+        case PgAggregate.MFINALFUNC:
+            sb.append(paramName == PgAggregate.FINALFUNC ? sType : mSType).append(", ");
+            if (directCount > 0 && !orderByArgs.isEmpty()) {
                 // for signature: aggregateName(mode name type, ... ORDER BY modeN nameN typeN, ....)
-                fillStringByArgs(sb, args);
+                fillStringByArgs(sb, args.subList(0, directCount));
             }
             break;
 
         case PgAggregate.COMBINEFUNC:
-            sb.append(sType).append(", ");
-            sb.append(sType).append(", ");
+            sb.append(sType).append(", ").append(sType).append(", ");
             break;
 
             // TODO
             // case PgAggregate.SERIALFUNC:
             // case PgAggregate.DESERIALFUNC:
-
-        case PgAggregate.MSFUNC:
-        case PgAggregate.MINVFUNC:
-            sb.append(mSType).append(", ");
-            if (args.isEmpty() && orderByArgs.isEmpty()) {
-                // for signature: aggregateName(*)
-                // no action
-            } else if (!args.isEmpty() && orderByArgs.isEmpty()) {
-                // for signature: aggregateName(mode name type, ...)
-                fillStringByArgs(sb, args);
-            } else if (args.isEmpty() && !orderByArgs.isEmpty()) {
-                // for signature: aggregateName(ORDER BY mode name type, ...)
-                fillStringByArgs(sb, orderByArgs);
-            } else {
-                // for signature: aggregateName(mode name type, ... ORDER BY modeN nameN typeN, ....)
-                fillStringByArgs(sb, orderByArgs);
-            }
-            break;
-
-        case PgAggregate.MFINALFUNC:
-            sb.append(mSType).append(", ");
-            if (!args.isEmpty() && !orderByArgs.isEmpty()) {
-                // for signature: aggregateName(mode name type, ... ORDER BY modeN nameN typeN, ....)
-                fillStringByArgs(sb, args);
-            }
-            break;
-
 
         default:
             throw new IllegalStateException("The parameter '" + paramName
@@ -343,15 +303,7 @@ public class CreateAggregate extends ParserAbstract {
     public static String getSortOperSign(PgAggregate aggr, String operName, String sType) {
         StringBuilder operSign = new StringBuilder();
         operSign.append(operName).append('(').append(sType).append(", ");
-
-        List<Argument> args = aggr.getArguments();
-        if (!args.isEmpty()) {
-            operSign.append(args.get(0).getDataType());
-        } else {
-            List<Argument> orderByArgs = aggr.getOrderByArgs();
-            operSign.append(orderByArgs.get(0).getDataType());
-        }
-
+        operSign.append(aggr.getArguments().get(0).getDataType());
         operSign.append(')');
 
         return operSign.toString();

@@ -5,7 +5,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class AbstractPgFunction extends AbstractFunction {
 
@@ -22,11 +21,7 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         sbString.append(getStatementType().name());
         sbString.append(' ');
         sbString.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
-        if (DbObjType.AGGREGATE == getStatementType()) {
-            ((PgAggregate)this).appendFunctionSignatureExtended(sbString, false, true);
-        } else {
-            appendFunctionSignature(sbString, false, true);
-        }
+        appendFunctionSignature(sbString, false, true);
         sbString.append(';');
         return sbString.toString();
     }

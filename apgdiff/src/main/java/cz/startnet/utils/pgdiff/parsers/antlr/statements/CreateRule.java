@@ -18,9 +18,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Role_name_with_groupCont
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rule_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_privilegesContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
-import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
@@ -83,16 +81,9 @@ public class CreateRule extends ParserAbstract {
 
                 // TODO It will be better if we can determine is this AGGREGATE
                 // or not without throwing an exception.
-                AbstractFunction func;
-                try {
-                    func = getSafe(schema::getFunction,
-                            parseSignature(functNameCtx.getText(), funct.function_args(), false),
-                            functNameCtx.getStart());
-                } catch (UnresolvedReferenceException urEx) {
-                    func = getSafe(schema::getFunction,
-                            parseSignature(functNameCtx.getText(), funct.function_args(), true),
-                            functNameCtx.getStart());
-                }
+                AbstractPgFunction func = (AbstractPgFunction) getSafe(schema::getFunction,
+                        parseSignature(functNameCtx.getText(), funct.function_args()),
+                        functNameCtx.getStart());
 
                 StringBuilder sb = new StringBuilder();
                 sb.append(ctx.PROCEDURE() == null ?
@@ -101,7 +92,7 @@ public class CreateRule extends ParserAbstract {
 
                 // For AGGREGATEs in GRANT/REVOKE the signature will be the same as in FUNCTIONs;
                 // important: asterisk (*) and 'ORDER BY' are not displayed.
-                ((AbstractPgFunction) func).appendFunctionSignature(sb, false, true);
+                func.appendFunctionSignature(sb, false, true);
 
                 for (String role : roles) {
                     addPrivilege(func, new PgPrivilege(state, permissions,

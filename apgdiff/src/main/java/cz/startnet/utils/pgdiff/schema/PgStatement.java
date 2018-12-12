@@ -169,7 +169,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         case AGGREGATE:
             sb.append(PgDiffUtils.getQuotedName(getParent().getName()))
             .append('.');
-            ((PgAggregate) this).appendFunctionSignatureExtended(sb, false, true);
+            ((PgAggregate) this).appendSignature(sb);
             break;
         case OPERATOR:
             sb.append(PgDiffUtils.getQuotedName(getParent().getName()))
@@ -379,7 +379,7 @@ public abstract class PgStatement implements IStatement, IHashable {
                 if (type == DbObjType.FUNCTION || type == DbObjType.PROCEDURE) {
                     ((AbstractPgFunction) this).appendFunctionSignature(sb, false, true);
                 } else if (type == DbObjType.AGGREGATE) {
-                    ((PgAggregate) this).appendFunctionSignatureExtended(sb, false, true);
+                    ((PgAggregate) this).appendSignature(sb);
                 } else if (type == DbObjType.OPERATOR) {
                     ((PgOperator) this).appendOperatorSignature(sb);
                 } else {

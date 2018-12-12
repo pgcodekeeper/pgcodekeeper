@@ -1,8 +1,5 @@
 package cz.startnet.utils.pgdiff.schema;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -24,7 +21,7 @@ public class PgAggregate extends AbstractPgFunction {
     public static final String MINVFUNC = "MINVFUNC";
     public static final String MFINALFUNC = "MFINALFUNC";
 
-    private final List<Argument> orderByArgs = new ArrayList<>();
+    private int directCount;
 
     private String kind;
     private String baseType;
@@ -64,7 +61,7 @@ public class PgAggregate extends AbstractPgFunction {
         sbSQL.append("CREATE AGGREGATE ");
         sbSQL.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
 
-        appendFunctionSignatureExtended(sbSQL, false, true);
+        appendSignature(sbSQL);
 
         sbSQL.append(" (\n\t").append(SFUNC).append(" = ");
         sbSQL.append(sFunc);
@@ -174,6 +171,16 @@ public class PgAggregate extends AbstractPgFunction {
         return sbSQL.toString();
     }
 
+    @Override
+    public String getDropSQL() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("DROP AGGREGATE ");
+        sb.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
+        appendSignature(sb);
+        sb.append(';');
+        return sb.toString();
+    }
+
     private void appendFuncModify(String funcModifier, StringBuilder sbSQL, boolean isMovingAgg) {
         // The default is READ_ONLY, except for ordered aggregates, for which the default is READ_WRITE.
         boolean appendModifier = false;
@@ -203,59 +210,31 @@ public class PgAggregate extends AbstractPgFunction {
         }
     }
 
-    @Override
-    public StringBuilder appendFunctionSignature(StringBuilder sb,
-            boolean includeDefaultValues, boolean includeArgNames) {
-        return appendFunctionSignatureExtended(sb, true, includeArgNames);
-    }
-
-    public StringBuilder appendFunctionSignatureExtended(StringBuilder sb,
-            boolean isPrivilegesSignature, boolean includeArgNames) {
-        boolean cache = !includeArgNames;
-        if (cache && signatureCache != null) {
-            return sb.append(signatureCache);
-        }
-        final int sigStart = sb.length();
-
+    public StringBuilder appendSignature(StringBuilder sb) {
         sb.append(PgDiffUtils.getQuotedName(name)).append('(');
-        if (!isPrivilegesSignature && arguments.isEmpty() && orderByArgs.isEmpty()) {
+        if (arguments.isEmpty()) {
             sb.append('*');
         } else {
-            appendArguments(sb, arguments, includeArgNames);
-            if (!orderByArgs.isEmpty()) {
-                if (!arguments.isEmpty()) {
-                    if (!isPrivilegesSignature) {
+            boolean first = true;
+            int i = directCount;
+            for (final Argument arg : arguments) {
+                if (i == 0) {
+                    if (!first) {
                         sb.append(' ');
-                    } else {
-                        sb.append(", ");
                     }
-                }
-
-                if (!isPrivilegesSignature) {
                     sb.append("ORDER BY ");
+                } else if (!first) {
+                    sb.append(", ");
                 }
 
-                appendArguments(sb, orderByArgs, includeArgNames);
+                sb.append(getDeclaration(arg, false, true));
+                first = false;
+                i--;
             }
         }
         sb.append(')');
 
-        if (cache) {
-            signatureCache = sb.substring(sigStart, sb.length());
-        }
         return sb;
-    }
-
-    private void appendArguments(StringBuilder sb, List<Argument> args,
-            boolean includeArgNames) {
-        boolean addComma = false;
-        for (final Argument arg : args) {
-            if (addComma) {
-                sb.append(", ");
-            }
-            sb.append(getDeclaration(arg, false, includeArgNames));
-            addComma = true;
-        }
     }
 
     @Override
@@ -270,7 +249,7 @@ public class PgAggregate extends AbstractPgFunction {
 
         if (func instanceof PgAggregate) {
             PgAggregate aggr = (PgAggregate)func;
-            return orderByArgs.equals(aggr.getOrderByArgs())
+            return directCount == aggr.directCount
                     && Objects.equals(kind, aggr.getKind())
                     && Objects.equals(baseType, aggr.getBaseType())
                     && Objects.equals(sFunc, aggr.getSFunc())
@@ -301,7 +280,7 @@ public class PgAggregate extends AbstractPgFunction {
     @Override
     public void computeHash(Hasher hasher) {
         super.computeHash(hasher);
-        hasher.putOrdered(orderByArgs);
+        hasher.put(directCount);
         hasher.put(kind);
         hasher.put(baseType);
         hasher.put(sFunc);
@@ -326,17 +305,12 @@ public class PgAggregate extends AbstractPgFunction {
         hasher.put(isHypothetical);
     }
 
-    /**
-     * Getter for {@link #orderByArgs}. List cannot be modified.
-     *
-     * @return {@link #orderByArgs}
-     */
-    public List<Argument> getOrderByArgs() {
-        return Collections.unmodifiableList(orderByArgs);
+    public int getDirectCount() {
+        return directCount;
     }
 
-    public void addOrderByArg(final Argument orderByArg) {
-        orderByArgs.add(orderByArg);
+    public void setDirectCount(int directCount) {
+        this.directCount = directCount;
         resetHash();
     }
 
@@ -544,11 +518,7 @@ public class PgAggregate extends AbstractPgFunction {
     @Override
     protected AbstractFunction getFunctionCopy() {
         PgAggregate copy = new PgAggregate(getBareName(), getRawStatement());
-        for (Argument argSrc : orderByArgs) {
-            Argument orderByArgDst = new Argument(argSrc.getMode(), argSrc.getName(),
-                    argSrc.getDataType());
-            copy.addOrderByArg(orderByArgDst);
-        }
+        copy.setDirectCount(getDirectCount());
         copy.setKind(getKind());
         copy.setBaseType(getBaseType());
         copy.setSFunc(getSFunc());

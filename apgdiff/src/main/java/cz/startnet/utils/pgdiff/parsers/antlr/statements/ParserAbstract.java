@@ -22,13 +22,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionC
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
-import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IStatement;
-import cz.startnet.utils.pgdiff.schema.PgAggregate;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
@@ -119,24 +117,19 @@ public abstract class ParserAbstract {
         return col;
     }
 
-    public static String parseSignature(String name, Function_argsContext argsContext,
-            boolean isAggregate) {
-        AbstractPgFunction function = isAggregate ? new PgAggregate(name, null)
-                : new PgFunction(name, null);
+    public static String parseSignature(String name, Function_argsContext argsContext) {
+        AbstractPgFunction function = new PgFunction(name, null);
 
-        fillFuncArgs(argsContext.function_arguments(), function,
-                (abstrFunc, a) -> abstrFunc.addArgument(a));
+        fillFuncArgs(argsContext.function_arguments(), function);
 
-        if (isAggregate && argsContext.agg_order() != null) {
-            fillFuncArgs(argsContext.agg_order().function_arguments(), function,
-                    (abstrFunc, a) -> ((PgAggregate) abstrFunc).addOrderByArg(a));
+        if (argsContext.agg_order() != null) {
+            fillFuncArgs(argsContext.agg_order().function_arguments(), function);
         }
 
         return function.getSignature();
     }
 
-    private static void fillFuncArgs(List<Function_argumentsContext> argsCtx, AbstractPgFunction function,
-            BiConsumer<AbstractFunction, Argument> addArgument) {
+    private static void fillFuncArgs(List<Function_argumentsContext> argsCtx, AbstractPgFunction function) {
         for (Function_argumentsContext argument : argsCtx) {
             String type = getFullCtxText(argument.argtype_data);
 
@@ -151,7 +144,7 @@ public abstract class ParserAbstract {
                 }
             }
 
-            addArgument.accept(function, new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
+            function.addArgument(new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
                     argument.argname != null ? argument.argname.getText() : null, type));
         }
     }
