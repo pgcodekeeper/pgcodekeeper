@@ -447,3 +447,18 @@ CREATE AGGREGATE public.mode9(boolean ORDER BY boolean) (
 
 
 ALTER AGGREGATE public.mode9(boolean ORDER BY boolean) OWNER TO shamsutdinov_lr;
+
+--
+-- Name: mode_seria(internal); Type: AGGREGATE; Schema: public; Owner: shamsutdinov_lr
+--
+
+CREATE AGGREGATE public.mode_seria(internal) (
+    SFUNC = inet_gist_picksplit,
+    STYPE = internal,
+    INITCOND = '{0,0}',
+    SERIALFUNC = numeric_poly_serialize,
+    DESERIALFUNC = numeric_poly_deserialize
+);
+
+
+ALTER AGGREGATE public.mode_seria(internal) OWNER TO shamsutdinov_lr;

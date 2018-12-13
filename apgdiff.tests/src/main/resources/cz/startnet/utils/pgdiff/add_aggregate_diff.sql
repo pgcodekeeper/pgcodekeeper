@@ -149,3 +149,13 @@ CREATE AGGREGATE public.mode9(boolean ORDER BY boolean) (
 );
 
 ALTER AGGREGATE public.mode9(boolean ORDER BY boolean) OWNER TO shamsutdinov_lr;
+
+CREATE AGGREGATE public.mode_seria(internal) (
+	SFUNC = inet_gist_picksplit,
+	STYPE = internal,
+	SERIALFUNC = numeric_poly_serialize,
+	DESERIALFUNC = numeric_poly_deserialize,
+	INITCOND = '{0,0}'
+);
+
+ALTER AGGREGATE public.mode_seria(internal) OWNER TO shamsutdinov_lr;

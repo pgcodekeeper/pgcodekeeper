@@ -31,3 +31,5 @@ DROP AGGREGATE public.mode7(boolean);
 DROP AGGREGATE public.mode8(boolean ORDER BY boolean);
 
 DROP AGGREGATE public.mode9(boolean ORDER BY boolean);
+
+DROP AGGREGATE public.mode_seria(internal);
