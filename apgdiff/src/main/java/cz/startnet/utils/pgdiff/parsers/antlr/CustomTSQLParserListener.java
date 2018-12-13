@@ -59,7 +59,7 @@ implements TSqlContextProcessor {
             Batch_statementContext batchSt;
             if (clauses != null) {
                 for (St_clauseContext st : clauses.st_clause()) {
-                    clause(st, stream);
+                    clause(st);
                 }
             } else if ((batchSt = b.batch_statement()) != null) {
                 batchStatement(batchSt, stream);
@@ -67,7 +67,7 @@ implements TSqlContextProcessor {
         }
     }
 
-    public void clause(St_clauseContext st, CommonTokenStream stream) {
+    public void clause(St_clauseContext st) {
         Ddl_clauseContext ddl = st.ddl_clause();
         Another_statementContext ast;
         if (ddl != null) {
@@ -75,7 +75,7 @@ implements TSqlContextProcessor {
             Schema_alterContext alter;
             Enable_disable_triggerContext disable;
             if (create != null) {
-                create(create, stream);
+                create(create);
             } else if ((alter = ddl.schema_alter()) != null) {
                 alter(alter);
             } else if ((disable = ddl.enable_disable_trigger()) != null && disable.DISABLE() != null) {
@@ -102,7 +102,9 @@ implements TSqlContextProcessor {
 
         Batch_statement_bodyContext body = ctx.batch_statement_body();
 
-        if (body.create_or_alter_procedure() != null) {
+        if (ctx.create_schema() != null) {
+            p = new CreateMsSchema(ctx.create_schema(), db, this, stream);
+        } else if (body.create_or_alter_procedure() != null) {
             p = new CreateMsProcedure(ctx, db, ansiNulls, quotedIdentifier, stream);
         } else if (body.create_or_alter_function() != null) {
             p = new CreateMsFunction(ctx, db, ansiNulls, quotedIdentifier, stream);
@@ -110,8 +112,6 @@ implements TSqlContextProcessor {
             p = new CreateMsView(ctx, db, ansiNulls, quotedIdentifier, stream);
         } else if (body.create_or_alter_trigger() != null) {
             p = new CreateMsTrigger(ctx, db, ansiNulls, quotedIdentifier, stream);
-        } else if (ctx.create_schema() != null) {
-            p = new CreateMsSchema(ctx.create_schema(), db, this, stream);
         } else {
             return;
         }
@@ -119,7 +119,7 @@ implements TSqlContextProcessor {
         safeParseStatement(p, ctx);
     }
 
-    private void create(Schema_createContext ctx, CommonTokenStream stream) {
+    private void create(Schema_createContext ctx) {
         ParserAbstract p;
         if (ctx.create_sequence() != null) {
             p = new CreateMsSequence(ctx.create_sequence(), db);

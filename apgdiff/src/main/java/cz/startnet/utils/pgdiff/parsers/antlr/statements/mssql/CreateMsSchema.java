@@ -47,7 +47,7 @@ public class CreateMsSchema extends ParserAbstract {
                     Batch_statementContext batchSt;
                     if (clauses != null) {
                         for (St_clauseContext st : clauses.st_clause()) {
-                            listener.clause(st, stream);
+                            listener.clause(st);
                         }
                     } else if ((batchSt = sd.batch_statement()) != null) {
                         listener.batchStatement(batchSt, stream);
