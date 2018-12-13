@@ -319,14 +319,20 @@ public class FunctionsReader extends JdbcReader {
 
         String serialfanc = res.getString("serialfanc");
         if (serialfanc != null) {
-            // TODO add dependency
-            aggregate.setSerialFunc(getProcessedName(res.getString("serialfanc_nsp"), serialfanc));
+            String serialFuncSchemaName = res.getString("serialfanc_nsp");
+            aggregate.setSerialFunc(getProcessedName(serialFuncSchemaName, serialfanc));
+            addFuncAsDepcy(aggregate, serialFuncSchemaName,
+                    CreateAggregate.getParamFuncSignature(aggregate, serialfanc,
+                            PgAggregate.SERIALFUNC));
         }
 
         String deserialfunc = res.getString("deserialfunc");
         if (deserialfunc != null) {
-            // TODO add dependency
-            aggregate.setDeserialFunc(getProcessedName(res.getString("deserialfunc_nsp"), deserialfunc));
+            String deserialFuncSchemaName = res.getString("deserialfunc_nsp");
+            aggregate.setDeserialFunc(getProcessedName(deserialFuncSchemaName, deserialfunc));
+            addFuncAsDepcy(aggregate, deserialFuncSchemaName,
+                    CreateAggregate.getParamFuncSignature(aggregate, deserialfunc,
+                            PgAggregate.DESERIALFUNC));
         }
 
         String initCond = res.getString("initcond");

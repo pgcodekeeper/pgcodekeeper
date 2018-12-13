@@ -112,11 +112,13 @@ public class CreateAggregate extends ParserAbstract {
                     aggregate.setCombineFunc(combineFuncCtx.getText());
                     addFuncAsDepcy(PgAggregate.COMBINEFUNC, combineFuncCtx, aggregate, defSchemaName);
                 } else if (paramOpt.SERIALFUNC() != null) {
-                    // TODO add dependency
-                    aggregate.setSerialFunc(paramOpt.serial_func.getText());
+                    Schema_qualified_nameContext serialFuncCtx = paramOpt.serial_func;
+                    aggregate.setSerialFunc(serialFuncCtx.getText());
+                    addFuncAsDepcy(PgAggregate.SERIALFUNC, serialFuncCtx, aggregate, defSchemaName);
                 } else if (paramOpt.DESERIALFUNC() != null) {
-                    // TODO add dependency
-                    aggregate.setDeserialFunc(paramOpt.deserial_func.getText());
+                    Schema_qualified_nameContext deserialFuncCtx = paramOpt.deserial_func;
+                    aggregate.setDeserialFunc(deserialFuncCtx.getText());
+                    addFuncAsDepcy(PgAggregate.DESERIALFUNC, deserialFuncCtx, aggregate, defSchemaName);
                 } else if (paramOpt.INITCOND() != null) {
                     aggregate.setInitCond(paramOpt.init_cond.getText());
                 } else if (paramOpt.MSFUNC() != null) {
@@ -250,9 +252,13 @@ public class CreateAggregate extends ParserAbstract {
             sb.append(sType).append(", ").append(sType).append(", ");
             break;
 
-            // TODO
-            // case PgAggregate.SERIALFUNC:
-            // case PgAggregate.DESERIALFUNC:
+        case PgAggregate.DESERIALFUNC:
+            sb.append("bytea").append(", ");
+            // $FALL-THROUGH$
+        case PgAggregate.SERIALFUNC:
+            // Signature 'aggregateName(*)' with 'SERIALFUNC'-parameter could not be created.
+            fillStringByArgs(sb, args);
+            break;
 
         default:
             throw new IllegalStateException("The parameter '" + paramName
