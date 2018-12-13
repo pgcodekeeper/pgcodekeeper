@@ -17,6 +17,7 @@ import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgAggregate;
 import cz.startnet.utils.pgdiff.schema.PgAggregate.AggKinds;
+import cz.startnet.utils.pgdiff.schema.PgAggregate.ModifyType;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
@@ -92,6 +93,8 @@ public class CreateAggregate extends ParserAbstract {
 
     private void fillAggregate(List<Aggregate_paramContext> params,
             PgAggregate aggregate, String aggrSchemaName, String defSchemaName) {
+        ModifyType finalFuncModify = null;
+        ModifyType mFinalFuncModify = null;
         if (params != null) {
             for (Aggregate_paramContext paramOpt : params) {
                 if (paramOpt.SSPACE() != null) {
@@ -103,7 +106,7 @@ public class CreateAggregate extends ParserAbstract {
                 } else if (paramOpt.FINALFUNC_EXTRA() != null) {
                     aggregate.setFinalFuncExtra(true);
                 } else if (paramOpt.FINALFUNC_MODIFY() != null) {
-                    aggregate.setFinalFuncModify(getModifyParam(paramOpt));
+                    finalFuncModify = getModifyParam(paramOpt);
                 } else if (paramOpt.COMBINEFUNC() != null) {
                     Schema_qualified_nameContext combineFuncCtx = paramOpt.combine_func;
                     aggregate.setCombineFunc(combineFuncCtx.getText());
@@ -137,7 +140,7 @@ public class CreateAggregate extends ParserAbstract {
                 } else if (paramOpt.MFINALFUNC_EXTRA() != null) {
                     aggregate.setMFinalFuncExtra(true);
                 } else if (paramOpt.MFINALFUNC_MODIFY() != null) {
-                    aggregate.setMFinalFuncModify(getModifyParam(paramOpt));
+                    mFinalFuncModify = getModifyParam(paramOpt);
                 } else if (paramOpt.MINITCOND() != null) {
                     aggregate.setMInitCond(paramOpt.minit_cond.getText());
                 } else if (paramOpt.SORTOP() != null) {
@@ -182,46 +185,19 @@ public class CreateAggregate extends ParserAbstract {
             aggregate.setKind(AggKinds.ORDERED);
         }
 
-        checkFinalFuncModifiers(aggregate);
+        ModifyType def = AggKinds.NORMAL == aggregate.getKind() ? ModifyType.READ_ONLY : ModifyType.READ_WRITE;
+        aggregate.setFinalFuncModify(def == finalFuncModify ? null : finalFuncModify);
+        aggregate.setMFinalFuncModify(def == mFinalFuncModify ? null : mFinalFuncModify);
     }
 
-    private void checkFinalFuncModifiers(PgAggregate aggr) {
-        String finalFuncModify = aggr.getFinalFuncModify();
-        String mFinalFuncModify = aggr.getMFinalFuncModify();
-        if (finalFuncModify != null && mFinalFuncModify != null) {
-            return;
-        }
-
-        // The default is READ_ONLY, except for ordered aggregates, for which the default is READ_WRITE.
-        String defaultModifier = null;
-        switch (aggr.getKind()) {
-        case NORMAL:
-            defaultModifier = "READ_ONLY";
-            break;
-        case HYPOTHETICAL:
-        case ORDERED:
-            defaultModifier = "READ_WRITE";
-            break;
-        }
-
-        if (finalFuncModify == null) {
-            aggr.setFinalFuncModify(defaultModifier);
-        }
-        if (mFinalFuncModify == null) {
-            aggr.setMFinalFuncModify(defaultModifier);
-        }
-    }
-
-    private String getModifyParam(Aggregate_paramContext param) {
-        String finalFuncModify = null;
-        if (param.READ_ONLY() != null) {
-            finalFuncModify = param.READ_ONLY().getText();
+    private ModifyType getModifyParam(Aggregate_paramContext param) {
+        if (param.READ_WRITE() != null) {
+            return ModifyType.READ_WRITE;
         } else if (param.SHAREABLE() != null) {
-            finalFuncModify = param.SHAREABLE().getText();
-        } else if (param.READ_WRITE() != null) {
-            finalFuncModify = param.READ_WRITE().getText();
+            return ModifyType.SHAREABLE;
+        } else {
+            return ModifyType.READ_ONLY;
         }
-        return finalFuncModify;
     }
 
     private void addFuncAsDepcy(String paramName, Schema_qualified_nameContext paramFuncCtx,

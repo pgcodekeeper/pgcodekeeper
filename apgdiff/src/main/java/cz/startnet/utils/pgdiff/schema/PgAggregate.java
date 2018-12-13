@@ -12,6 +12,10 @@ public class PgAggregate extends AbstractPgFunction {
         NORMAL, ORDERED, HYPOTHETICAL
     }
 
+    public enum ModifyType {
+        READ_ONLY, SHAREABLE, READ_WRITE
+    }
+
     public static final String SFUNC = "SFUNC";
     public static final String FINALFUNC = "FINALFUNC";
     public static final String COMBINEFUNC = "COMBINEFUNC";
@@ -31,7 +35,6 @@ public class PgAggregate extends AbstractPgFunction {
     private long sSpace;
     private String finalFunc;
     private boolean isFinalFuncExtra;
-    private String finalFuncModify;
     private String combineFunc;
     private String serialFunc;
     private String deserialFunc;
@@ -42,9 +45,11 @@ public class PgAggregate extends AbstractPgFunction {
     private long mSSpace;
     private String mFinalFunc;
     private boolean isMFinalFuncExtra;
-    private String mFinalFuncModify;
     private String mInitCond;
     private String sortOp;
+
+    private ModifyType finalFuncModify;
+    private ModifyType mFinalFuncModify;
 
     public PgAggregate(String name, String rawStatement) {
         super(name, rawStatement);
@@ -83,7 +88,8 @@ public class PgAggregate extends AbstractPgFunction {
         }
 
         if (finalFuncModify != null) {
-            appendFuncModify(finalFuncModify, sbSQL, false);
+            sbSQL.append(",\n\tFINALFUNC_MODIFY = ");
+            sbSQL.append(finalFuncModify);
         }
 
         if (combineFunc != null) {
@@ -136,7 +142,8 @@ public class PgAggregate extends AbstractPgFunction {
         }
 
         if (mFinalFuncModify != null) {
-            appendFuncModify(mFinalFuncModify, sbSQL, true);
+            sbSQL.append(",\n\tMFINALFUNC_MODIFY = ");
+            sbSQL.append(mFinalFuncModify);
         }
 
         if (mInitCond != null) {
@@ -179,35 +186,6 @@ public class PgAggregate extends AbstractPgFunction {
         appendSignature(sb);
         sb.append(';');
         return sb.toString();
-    }
-
-    private void appendFuncModify(String funcModifier, StringBuilder sbSQL, boolean isMovingAgg) {
-        // The default is READ_ONLY, except for ordered aggregates, for which the default is READ_WRITE.
-        boolean appendModifier = false;
-        switch (kind) {
-        case NORMAL:
-            if (!"READ_ONLY".equalsIgnoreCase(funcModifier)) {
-                appendModifier = true;
-            }
-            break;
-
-        case HYPOTHETICAL:
-        case ORDERED:
-            if (!"READ_WRITE".equalsIgnoreCase(funcModifier)) {
-                appendModifier = true;
-            }
-            break;
-
-        default:
-            throw new IllegalStateException(kind + " doesn't support by AGGREGATE!");
-        }
-
-        if (appendModifier) {
-            sbSQL.append(",\n\t");
-            sbSQL.append(isMovingAgg ? "M" : "");
-            sbSQL.append("FINALFUNC_MODIFY = ");
-            sbSQL.append(funcModifier);
-        }
     }
 
     public StringBuilder appendSignature(StringBuilder sb) {
@@ -374,11 +352,11 @@ public class PgAggregate extends AbstractPgFunction {
         resetHash();
     }
 
-    public String getFinalFuncModify() {
+    public ModifyType getFinalFuncModify() {
         return finalFuncModify;
     }
 
-    public void setFinalFuncModify(String finalFuncModify) {
+    public void setFinalFuncModify(ModifyType finalFuncModify) {
         this.finalFuncModify = finalFuncModify;
         resetHash();
     }
@@ -473,11 +451,11 @@ public class PgAggregate extends AbstractPgFunction {
         resetHash();
     }
 
-    public String getMFinalFuncModify() {
+    public ModifyType getMFinalFuncModify() {
         return mFinalFuncModify;
     }
 
-    public void setMFinalFuncModify(String mFinalFuncModify) {
+    public void setMFinalFuncModify(ModifyType mFinalFuncModify) {
         this.mFinalFuncModify = mFinalFuncModify;
         resetHash();
     }

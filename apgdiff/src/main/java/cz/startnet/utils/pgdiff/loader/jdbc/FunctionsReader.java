@@ -18,6 +18,7 @@ import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgAggregate;
 import cz.startnet.utils.pgdiff.schema.PgAggregate.AggKinds;
+import cz.startnet.utils.pgdiff.schema.PgAggregate.ModifyType;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgProcedure;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
@@ -250,13 +251,12 @@ public class FunctionsReader extends JdbcReader {
         fillArguments(aggregate, res);
 
         // Second step: filling other parameters of AGGREGATE.
-        fillAggregate(aggregate, res, schemaName);
+        fillAggregate(aggregate, res);
 
         return aggregate;
     }
 
-    private void fillAggregate(PgAggregate aggregate, ResultSet res,
-            String schemaName) throws SQLException {
+    private void fillAggregate(PgAggregate aggregate, ResultSet res) throws SQLException {
         // since 9.6 PostgreSQL
         // parallel mode: s - safe, r - restricted, u - unsafe
         if (SupportedVersion.VERSION_9_6.isLE(loader.version)) {
@@ -275,8 +275,10 @@ public class FunctionsReader extends JdbcReader {
 
         // since 11 PostgreSQL
         if (SupportedVersion.VERSION_11.isLE(loader.version)) {
-            aggregate.setFinalFuncModify(getFuncModifier(res.getString("finalfunc_modify")));
-            aggregate.setMFinalFuncModify(getFuncModifier(res.getString("mfinalfunc_modify")));
+            aggregate.setFinalFuncModify(getModifyType(
+                    res.getString("finalfunc_modify"), aggregate.getKind()));
+            aggregate.setMFinalFuncModify(getModifyType(
+                    res.getString("mfinalfunc_modify"), aggregate.getKind()));
         }
 
         JdbcType sType = loader.cachedTypesByOid.get(res.getLong("stype"));
@@ -304,9 +306,7 @@ public class FunctionsReader extends JdbcReader {
                             PgAggregate.FINALFUNC));
         }
 
-        if (res.getBoolean("is_finalfunc_extra")) {
-            aggregate.setFinalFuncExtra(true);
-        }
+        aggregate.setFinalFuncExtra(res.getBoolean("is_finalfunc_extra"));
 
         String combineFuncName = res.getString("combinefunc");
         if (combineFuncName != null) {
@@ -373,9 +373,7 @@ public class FunctionsReader extends JdbcReader {
                             PgAggregate.MFINALFUNC));
         }
 
-        if (res.getBoolean("is_mfinalfunc_extra")) {
-            aggregate.setMFinalFuncExtra(true);
-        }
+        aggregate.setMFinalFuncExtra(res.getBoolean("is_mfinalfunc_extra"));
 
         String mInitCond = res.getString("minitcond");
         if (mInitCond != null) {
@@ -397,14 +395,14 @@ public class FunctionsReader extends JdbcReader {
         }
     }
 
-    private String getFuncModifier(String modifier) {
+    private ModifyType getModifyType(String modifier, AggKinds kind) {
         switch (modifier) {
         case "r":
-            return "READ_ONLY";
+            return AggKinds.NORMAL == kind ? null : ModifyType.READ_ONLY;
         case "s":
-            return "SHAREABLE";
+            return ModifyType.SHAREABLE;
         case "w":
-            return "READ_WRITE";
+            return AggKinds.NORMAL != kind ? null : ModifyType.READ_WRITE;
         default :
             throw new IllegalStateException("FinalFuncModifier '"+ modifier + "' doesn't support by AGGREGATE!");
         }
