@@ -471,8 +471,12 @@ public class PgDiffTest {
                     {"modify_aggregate"},
                     // Tests scenario for AGGREGATE where new privileges is added.
                     {"add_aggregate_privileges"},
-                    // Tests scenario for check the dependency of AGGREGATE from 'sfunc'.
+                    // Tests scenario for check the dependency of AGGREGATE from 'SFUNC'-function.
                     {"modify_func_sfunc_of_aggregate"},
+                    // Tests scenario for check the dependency of AGGREGATE from 'MSFUNC'-function.
+                    {"modify_func_msfunc_of_aggregate"},
+                    // Tests scenario for check the dependency of AGGREGATE from 'MINVFUNC'-function.
+                    {"modify_func_minvfunc_of_aggregate"},
                 });
     }
 
