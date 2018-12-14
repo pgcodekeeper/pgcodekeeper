@@ -205,9 +205,7 @@ public class UIProjectLoader extends ProjectLoader {
         db.getSchemas().stream()
         .filter(sc -> schemaFiles.contains(AbstractModelExporter.getExportedFilename(sc))
                 || sc.hasChildren())
-        .forEach(st -> {
-            newDb.addSchema(st.deepCopy());
-        });
+        .forEach(st -> newDb.addSchema(st.deepCopy()));
 
         return newDb;
     }
@@ -333,13 +331,13 @@ public class UIProjectLoader extends ProjectLoader {
      */
     private static boolean isInProject(IPath path) {
         String dir = path.segment(0);
-        return dir == null ? false : Arrays.stream(ApgdiffConsts.WORK_DIR_NAMES.values())
+        return dir != null && Arrays.stream(ApgdiffConsts.WORK_DIR_NAMES.values())
                 .map(Enum::name).anyMatch(dir::equals);
     }
 
     private static boolean isInMsProject(IPath path) {
         String dir = path.segment(0);
-        return dir == null ? false : Arrays.stream(ApgdiffConsts.MS_WORK_DIR_NAMES.values())
+        return dir != null && Arrays.stream(ApgdiffConsts.MS_WORK_DIR_NAMES.values())
                 .map(MS_WORK_DIR_NAMES::getDirName).anyMatch(dir::equals);
     }
 
@@ -374,7 +372,7 @@ public class UIProjectLoader extends ProjectLoader {
 
     public static boolean isInProject(IEditorInput editorInput) {
         IResource res = ResourceUtil.getResource(editorInput);
-        return res == null ? false : isInProject(res);
+        return res != null && isInProject(res);
     }
 
     /**

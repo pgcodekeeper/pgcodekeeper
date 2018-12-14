@@ -42,7 +42,7 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
                 break;
 
             case IncrementalProjectBuilder.FULL_BUILD:
-                if (!PgDbParser.deserialize(proj.getName(), parser)) {
+                if (!parser.deserialize(proj.getName())) {
                     parser.getFullDBFromPgDbProject(proj, monitor);
                 }
                 break;

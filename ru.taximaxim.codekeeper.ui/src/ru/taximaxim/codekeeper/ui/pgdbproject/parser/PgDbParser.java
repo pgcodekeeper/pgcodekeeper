@@ -116,18 +116,18 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         }
     }
 
-    public static boolean deserialize(String name, PgDbParser pnew) {
+    public boolean deserialize(String name) {
         try {
             Path path = getPathToObject(name);
             if (Files.exists(path)) {
                 try (ObjectInputStream oin = new ObjectInputStream(Files.newInputStream(path))) {
                     PgDbParser parser = (PgDbParser) oin.readObject();
                     parser.listeners = new ArrayList<>();
-                    pnew.objReferences.clear();
-                    pnew.objReferences.putAll(parser.getObjReferences());
-                    pnew.objDefinitions.clear();
-                    pnew.objDefinitions.putAll(parser.getObjDefinitions());
-                    pnew.notifyListeners();
+                    objReferences.clear();
+                    objReferences.putAll(parser.getObjReferences());
+                    objDefinitions.clear();
+                    objDefinitions.putAll(parser.getObjDefinitions());
+                    notifyListeners();
                     return true;
                 }
             }
