@@ -37,8 +37,8 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
             switch (buildType[0]) {
             case IncrementalProjectBuilder.AUTO_BUILD:
             case IncrementalProjectBuilder.INCREMENTAL_BUILD:
-                IResourceDelta delta = getDelta(getProject());
-                buildIncrement(delta, parser, monitor);
+                IResourceDelta delta = getDelta(proj);
+                buildIncrement(delta, parser, monitor, OpenProjectUtils.checkMsSql(proj));
                 break;
 
             case IncrementalProjectBuilder.FULL_BUILD:
@@ -67,8 +67,9 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
         PgDbParser.clean(this.getProject().getName());
     }
 
-    private void buildIncrement(IResourceDelta delta, PgDbParser parser, IProgressMonitor monitor)
-            throws CoreException, InterruptedException, IOException {
+    private void buildIncrement(IResourceDelta delta, PgDbParser parser,
+            IProgressMonitor monitor, boolean isMsSql)
+                    throws CoreException, InterruptedException, IOException {
         List<IFile> files = new ArrayList<>();
         delta.accept(d -> {
             if (UIProjectLoader.isInProject(d, OpenProjectUtils.checkMsSql(getProject()))) {
@@ -87,6 +88,6 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
             }
             return true;
         });
-        parser.getObjFromProjFiles(files, monitor);
+        parser.getObjFromProjFiles(files, monitor, isMsSql);
     }
 }

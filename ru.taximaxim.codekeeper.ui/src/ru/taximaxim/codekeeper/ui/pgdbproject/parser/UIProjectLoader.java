@@ -63,11 +63,15 @@ public class UIProjectLoader extends ProjectLoader {
      *
      * @return database schema
      */
-    public PgDatabase loadDatabaseSchemaFromPgProject()
+    public PgDatabase loadDatabaseSchemaFromProject()
             throws InterruptedException, IOException, CoreException {
         PgDatabase db = new PgDatabase();
         db.setArguments(arguments);
-        loadPgStructure(iProject, db);
+        if (arguments.isMsSql()) {
+            loadMsStructure(iProject, db);
+        } else {
+            loadPgStructure(iProject, db);
+        }
         FullAnalyze.fullAnalyze(db, errors);
         return db;
     }

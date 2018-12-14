@@ -52,6 +52,7 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
+import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class PgDbParser implements IResourceChangeListener, Serializable {
@@ -153,9 +154,10 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         build.runInBackground(null);
     }
 
-    public void getObjFromProjFile(IFile file, IProgressMonitor monitor)
+    public void getObjFromProjFile(IFile file, IProgressMonitor monitor, boolean isMsSql)
             throws InterruptedException, IOException, CoreException {
         PgDiffArguments args = new PgDiffArguments();
+        args.setMsSql(isMsSql);
         args.setInCharsetName(file.getCharset());
         try (PgUIDumpLoader loader = new PgUIDumpLoader(file, args, monitor)) {
             loader.setLoadSchema(false);
@@ -168,10 +170,10 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         notifyListeners();
     }
 
-    public void getObjFromProjFiles(Collection<IFile> files, IProgressMonitor monitor)
+    public void getObjFromProjFiles(Collection<IFile> files, IProgressMonitor monitor, boolean isMsSql)
             throws InterruptedException, IOException, CoreException {
         List<StatementBodyContainer> statementBodies = new ArrayList<>();
-        PgDatabase db = new UIProjectLoader(monitor, statementBodies).buildFiles(files, false);
+        PgDatabase db = new UIProjectLoader(monitor, statementBodies).buildFiles(files, isMsSql);
         objDefinitions.putAll(db.getObjDefinitions());
         objReferences.putAll(db.getObjReferences());
         fillStatementBodies(statementBodies);
@@ -217,8 +219,9 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         List<StatementBodyContainer> statementBodies = new ArrayList<>();
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(proj.getDefaultCharset(true));
+        args.setMsSql(OpenProjectUtils.checkMsSql(proj));
         PgDatabase db = new UIProjectLoader(proj, args, mon, statementBodies, null)
-                .loadDatabaseSchemaFromPgProject();
+                .loadDatabaseSchemaFromProject();
         objDefinitions.clear();
         objDefinitions.putAll(db.getObjDefinitions());
         objReferences.clear();
@@ -271,17 +274,16 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         return getAll(objReferences);
     }
 
+    private Stream<PgObjLocation> getAll(Map<String, List<PgObjLocation>> refs) {
+        return refs.values().stream().flatMap(List<PgObjLocation>::stream);
+    }
+
     public Map<String, List<PgObjLocation>> getObjDefinitions() {
         return objDefinitions;
     }
 
     public Map<String, List<PgObjLocation>> getObjReferences() {
         return objReferences;
-    }
-
-    public static Stream<PgObjLocation> getAll(Map<String, List<PgObjLocation>> refs) {
-        return refs.values().stream()
-                .flatMap(List<PgObjLocation>::stream);
     }
 
     public void notifyListeners() {
