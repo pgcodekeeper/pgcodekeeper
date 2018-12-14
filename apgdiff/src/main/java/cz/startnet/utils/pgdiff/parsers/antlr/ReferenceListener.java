@@ -11,6 +11,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.All_simple_opContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_domain_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_fts_configurationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_fts_statementContext;
@@ -473,7 +474,9 @@ public class ReferenceListener implements SqlContextProcessor {
         } else {
             schemaName = getDefSchemaName();
         }
-        fillObjDefinition(schemaName, operNameCtx.operator.getStart(), DbObjType.OPERATOR);
+        All_simple_opContext oper = operNameCtx.operator;
+        fillObjDefinition(schemaName, oper.getText(), DbObjType.OPERATOR,
+                oper.getStart().getStartIndex(), oper.getStart().getLine());
     }
 
     public void commentOn(Comment_on_statementContext ctx) {
@@ -871,31 +874,16 @@ public class ReferenceListener implements SqlContextProcessor {
         if (ctx.QuotedIdentifier() != null) {
             start++;
         }
-
-        PgObjLocation loc = new PgObjLocation(schemaName, name, null,
-                start, filePath, ctx.getStart().getLine());
-        loc.setAction(StatementActions.CREATE);
-        loc.setObjType(objType);
-        definitions.computeIfAbsent(filePath, k -> new ArrayList<>()).add(loc);
-        references.computeIfAbsent(filePath, k -> new ArrayList<>()).add(loc);
+        fillObjDefinition(schemaName, name, objType, start, ctx.getStart().getLine());
     }
 
-    /**
-     * Add object with start position to db object location List
-     * @param schemaName - object schema name
-     * @param ctx - object context
-     * @param objType - object type
-     */
-    private void fillObjDefinition(String schemaName, Token tkn, DbObjType objType) {
-        int start = tkn.getStartIndex();
-        String name = tkn.getText();
-
+    private void fillObjDefinition(String schemaName, String name,
+            DbObjType objType, int start, int lineNumber) {
         PgObjLocation loc = new PgObjLocation(schemaName, name, null,
-                start, filePath, tkn.getLine());
+                start, filePath, lineNumber);
         loc.setAction(StatementActions.CREATE);
         loc.setObjType(objType);
         definitions.computeIfAbsent(filePath, k -> new ArrayList<>()).add(loc);
-        references.computeIfAbsent(filePath, k -> new ArrayList<>()).add(loc);
     }
 
     private PgObjLocation addObjReference(String schemaName, String objName, DbObjType objType,
