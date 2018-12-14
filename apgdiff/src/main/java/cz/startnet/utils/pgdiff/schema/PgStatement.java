@@ -1,8 +1,10 @@
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -67,6 +69,27 @@ public abstract class PgStatement implements IStatement, IHashable {
     //TODO enum later
     public boolean isPostgres() {
         return true;
+    }
+
+    public boolean isOwned() {
+        switch (getStatementType()) {
+        case FTS_CONFIGURATION:
+        case FTS_DICTIONARY:
+        case TABLE:
+        case VIEW:
+        case SCHEMA:
+        case FUNCTION:
+        case OPERATOR:
+        case PROCEDURE:
+        case AGGREGATE:
+        case SEQUENCE:
+        case TYPE:
+        case DOMAIN:
+        case ASSEMBLY:
+            return true;
+        default :
+            return false;
+        }
     }
 
     /**
@@ -364,44 +387,93 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     protected StringBuilder appendOwnerSQL(StringBuilder sb) {
-        if (owner == null) {
+        return appendOwnerSQL(this, owner, sb);
+    }
+
+    public StringBuilder alterOwnerSQL(StringBuilder sb) {
+        if (!isPostgres() && owner == null) {
+            sb.append("\n\nALTER AUTHORIZATION ON ");
+            DbObjType type = getStatementType();
+            if (DbObjType.TYPE == type || DbObjType.SCHEMA == type
+                    || DbObjType.ASSEMBLY == type) {
+                sb.append(type).append("::");
+            }
+
+            sb.append(getQualifiedName()).append(" TO ");
+
+            if (DbObjType.SCHEMA == type || DbObjType.ASSEMBLY == type) {
+                sb.append("[dbo]");
+            } else {
+                sb.append("SCHEMA OWNER");
+            }
+
+            sb.append(GO);
+        } else {
+            appendOwnerSQL(sb);
+        }
+        return sb;
+    }
+
+    public static StringBuilder appendOwnerSQL(PgStatement st, String owner, StringBuilder sb) {
+        if (owner == null || !st.isOwned()) {
             return sb;
         }
         sb.append("\n\nALTER ");
+        if (st.isPostgres()) {
+            DbObjType type = st.getStatementType();
+            switch (type) {
+            case FTS_CONFIGURATION:
+                sb.append("TEXT SEARCH CONFIGURATION ");
+                break;
+            case FTS_DICTIONARY:
+                sb.append("TEXT SEARCH DICTIONARY ");
+                break;
+            case TABLE:
+                if (st instanceof AbstractForeignTable) {
+                    sb.append("FOREIGN ");
+                }
+                sb.append("TABLE ");
+                break;
+            case VIEW:
+                if (((PgView) st).isMatView()) {
+                    sb.append("MATERIALIZED ");
+                }
+                sb.append("VIEW ");
+                break;
+            default :
+                sb.append(type).append(' ');
+            }
 
-        if (isPostgres()) {
-            DbObjType type = getStatementType();
-            sb.append(type).append(' ');
             if (type == DbObjType.SCHEMA) {
-                sb.append(PgDiffUtils.getQuotedName(getName()));
+                sb.append(PgDiffUtils.getQuotedName(st.getName()));
             } else {
-                sb.append(PgDiffUtils.getQuotedName(getParent().getName())).append('.');
+                sb.append(PgDiffUtils.getQuotedName(st.getParent().getName())).append('.');
                 if (type == DbObjType.FUNCTION || type == DbObjType.PROCEDURE) {
-                    ((AbstractPgFunction) this).appendFunctionSignature(sb, false, true);
+                    ((AbstractPgFunction) st).appendFunctionSignature(sb, false, true);
                 } else if (type == DbObjType.AGGREGATE) {
-                    ((PgAggregate) this).appendSignature(sb);
+                    ((PgAggregate) st).appendSignature(sb);
                 } else if (type == DbObjType.OPERATOR) {
-                    ((PgOperator) this).appendOperatorSignature(sb);
+                    ((PgOperator) st).appendOperatorSignature(sb);
                 } else {
-                    sb.append(PgDiffUtils.getQuotedName(getName()));
+                    sb.append(PgDiffUtils.getQuotedName(st.getName()));
                 }
             }
             sb.append(" OWNER TO ")
             .append(PgDiffUtils.getQuotedName(owner))
             .append(';');
         } else {
-            sb.append("AUTHORIZATION ON ").append(getQualifiedName())
-            .append(" TO ").append(MsDiffUtils.quoteName(owner)).append(GO);
+            sb.append("AUTHORIZATION ON ");
+            DbObjType type = st.getStatementType();
+            if (DbObjType.TYPE == type || DbObjType.SCHEMA == type
+                    || DbObjType.ASSEMBLY == type) {
+                sb.append(type).append("::");
+            }
+
+            sb.append(st.getQualifiedName()).append(" TO ")
+            .append(MsDiffUtils.quoteName(owner)).append(GO);
         }
 
         return sb;
-    }
-
-    public String getOwnerSQL() {
-        if (!isPostgres() && owner == null) {
-            return "\n\nALTER AUTHORIZATION ON " + getQualifiedName() + " TO SCHEMA OWNER" + GO;
-        }
-        return appendOwnerSQL(new StringBuilder()).toString();
     }
 
     public abstract String getCreationSQL();
@@ -457,21 +529,55 @@ public abstract class PgStatement implements IStatement, IHashable {
     public abstract boolean compare(PgStatement obj);
 
     /**
+     * @return an element in another db sharing the same name and location
+     */
+    public PgStatement getTwin(PgDatabase db) {
+        if (getStatementType() == DbObjType.DATABASE) {
+            return db;
+        }
+        PgStatement twinParent = getParent().getTwin(db);
+        if (twinParent == null) {
+            return null;
+        }
+        return getStatementType() == DbObjType.COLUMN ? ((AbstractTable) twinParent).getColumn(getName())
+                : twinParent.getChild(getName(), getStatementType());
+    }
+
+    /**
      * Returns all subtree elements
      */
-    public Stream<PgStatement> getDescendants() {
-        return getChildren();
+    public final Stream<PgStatement> getDescendants() {
+        List<List<? extends PgStatement>> l = new ArrayList<>();
+        fillDescendantsList(l);
+        return l.stream().flatMap(List::stream);
     }
 
     /**
      * Returns all subelements of current element
      */
-    public Stream<PgStatement> getChildren() {
-        return Stream.empty();
+    public final Stream<PgStatement> getChildren() {
+        List<List<? extends PgStatement>> l = new ArrayList<>();
+        fillChildrenList(l);
+        return l.stream().flatMap(List::stream);
+    }
+
+    public PgStatement getChild(String name, DbObjType type) {
+        return getChildren()
+                .filter(st -> type == st.getStatementType() && name.equals(st.getName()))
+                .findAny()
+                .orElse(null);
     }
 
     public boolean hasChildren() {
         return getChildren().anyMatch(e -> true);
+    }
+
+    protected void fillDescendantsList(List<List<? extends PgStatement>> l) {
+        fillChildrenList(l);
+    }
+
+    protected void fillChildrenList(List<List<? extends PgStatement>> l) {
+        // default no op
     }
 
     /**

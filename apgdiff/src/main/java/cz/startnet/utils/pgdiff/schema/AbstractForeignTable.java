@@ -53,14 +53,6 @@ public abstract class AbstractForeignTable extends AbstractTable {
     }
 
     @Override
-    protected StringBuilder appendOwnerSQL(StringBuilder sb) {
-        return owner == null ? super.appendOwnerSQL(sb)
-                : sb.append("\n\nALTER FOREIGN TABLE ").append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
-                .append('.').append(PgDiffUtils.getQuotedName(getName()))
-                .append(" OWNER TO ").append(PgDiffUtils.getQuotedName(owner)).append(';');
-    }
-
-    @Override
     protected void appendOptions(StringBuilder sbSQL) {
         sbSQL.append("\nSERVER ").append(serverName);
 

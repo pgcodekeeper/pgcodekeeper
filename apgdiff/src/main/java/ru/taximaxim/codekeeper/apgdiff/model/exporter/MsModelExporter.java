@@ -86,7 +86,7 @@ public class MsModelExporter extends AbstractModelExporter {
             dumpSQL(getDumpSql(schema), schemasSharedDir.resolve(getExportedFilenameSql(schema)));
 
             for (AbstractFunction func : schema.getFunctions()) {
-                dumpSQL(getDumpSql(schema), outDir.resolve(getRelativeFilePath(func, true)));
+                dumpSQL(getDumpSql(func), outDir.resolve(getRelativeFilePath(func, true)));
             }
 
             dumpObjects(schema.getSequences(), outDir.resolve(MS_WORK_DIR_NAMES.SEQUENCES.getDirName()));
@@ -170,6 +170,7 @@ public class MsModelExporter extends AbstractModelExporter {
         case SEQUENCE:
         case PROCEDURE:
         case FUNCTION:
+        case TYPE:
             // delete sql file
             deleteStatementIfExists(stInNew);
 
@@ -212,6 +213,7 @@ public class MsModelExporter extends AbstractModelExporter {
         case SEQUENCE:
         case FUNCTION:
         case PROCEDURE:
+        case TYPE:
             // delete statement if already exists
             deleteStatementIfExists(stInNew);
             dumpSQL(getDumpSql(stInNew),
@@ -286,7 +288,9 @@ public class MsModelExporter extends AbstractModelExporter {
         case PROCEDURE:
             path = path.resolve(MS_WORK_DIR_NAMES.PROCEDURES.getDirName());
             break;
-
+        case TYPE:
+            path = path.resolve(MS_WORK_DIR_NAMES.TYPES.getDirName());
+            break;
         case CONSTRAINT:
         case INDEX:
         case TRIGGER:

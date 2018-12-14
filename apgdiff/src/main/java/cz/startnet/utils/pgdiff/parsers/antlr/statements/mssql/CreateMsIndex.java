@@ -43,7 +43,7 @@ public class CreateMsIndex extends ParserAbstract {
         return ind;
     }
 
-    private void parseIndex(Index_restContext rest, AbstractIndex ind) {
+    static void parseIndex(Index_restContext rest, AbstractIndex ind) {
         Index_sortContext sort = rest.index_sort();
         for (IdContext col : sort.column_name_list_with_order().id()) {
             ind.addColumn(col.getText());

@@ -57,6 +57,10 @@ public class CliArgs extends PgDiffArguments {
 
     // "special" options start with "z"
 
+    // all (external) source <-> target (internal) swaps should be done here
+    // and not in the (internal) program logic to avoid confusion and accidents
+    // only here, everything "source" refers to the NEW DB, and target to OLD DB
+
     @Option(name="--help", help=true, usage="show this help")
     private boolean zhelp;
 
@@ -153,32 +157,32 @@ public class CliArgs extends PgDiffArguments {
     @Option(name="--src-lib-xml", metaVar="<path>", forbids="--parse",
             usage="add xml with library dependencies to source"
                     + "\nspecify multiple times to use several library xml's")
-    private List<String> sourceLibXmls;
+    private List<String> targetLibXmls;
 
     @Option(name="--src-lib", metaVar="<path or JDBC>", forbids="--parse",
             usage="add library dependency to source"
                     + "\nspecify multiple times to use several libraries")
-    private List<String> sourceLibs;
+    private List<String> targetLibs;
 
     @Option(name="--src-lib-no-priv", metaVar="<path or JDBC>", forbids="--parse",
             usage="add library dependency to source without privileges"
                     + "\nspecify multiple times to use several libraries")
-    private List<String> sourceLibsWithoutPriv;
+    private List<String> targetLibsWithoutPriv;
 
     @Option(name="--tgt-lib-xml", metaVar="<path>", forbids="--parse",
             usage="add xml with library dependencies to target"
                     + "\nspecify multiple times to use several library xml's")
-    private List<String> targetLibXmls;
+    private List<String> sourceLibXmls;
 
     @Option(name="--tgt-lib", metaVar="<path or JDBC>", forbids="--parse",
             usage="add library dependency to destination"
                     + "\nspecify multiple times to use several libraries")
-    private List<String> targetLibs;
+    private List<String> sourceLibs;
 
     @Option(name="--tgt-lib-no-priv", metaVar="<path or JDBC>", forbids="--parse",
             usage="add library dependency to destination without privileges"
                     + "\nspecify multiple times to use several libraries")
-    private List<String> targetLibsWithoutPriv;
+    private List<String> sourceLibsWithoutPriv;
 
     @Option(name="--lib-safe-mode", forbids="--parse",
             usage="exit with an error if a library object conflicts with other schema or library objects"

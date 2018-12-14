@@ -182,13 +182,16 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         }
 
         Set<PgStatement> newInput = new HashSet<>();
+        Set<PgStatement> rootSet = new HashSet<>();
         for (Object object : selected) {
             if (object instanceof TreeElement){
                 TreeElement el = (TreeElement) object;
                 // does el exist in the chosen graph (or DB)
                 boolean elIsProject = el.getSide() == DiffSide.LEFT;
                 if (elIsProject == showProject || el.getSide() == DiffSide.BOTH) {
-                    for (PgStatement dependant : depRes.getDropDepcies(el.getPgStatement(currentDb))) {
+                    PgStatement root = el.getPgStatement(currentDb);
+                    rootSet.add(root);
+                    for (PgStatement dependant : depRes.getDropDepcies(root)) {
                         if (!(dependant instanceof AbstractColumn)) {
                             newInput.add(dependant);
                         }
@@ -196,6 +199,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
                 }
             }
         }
+        labelProvider.setCurrentRootSet(rootSet);
         gv.setInput(newInput);
     }
 

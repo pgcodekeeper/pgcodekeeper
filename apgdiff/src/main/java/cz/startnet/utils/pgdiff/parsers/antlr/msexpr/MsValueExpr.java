@@ -4,6 +4,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Aggregate_windowed_func
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.All_distinct_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Analytic_windowed_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Case_expressionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_declarationContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Date_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ExpressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Expression_listContext;
@@ -22,7 +24,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Search_condition_andCon
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Search_condition_notContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Select_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Select_stmt_no_parensContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Sequence_callContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Switch_search_condition_sectionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Switch_sectionContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -47,7 +48,6 @@ public class MsValueExpr extends MsAbstractExpr {
         Case_expressionContext ce;
         Over_clauseContext oc;
         Date_expressionContext de;
-        Sequence_callContext sc;
         Function_callContext fc;
 
 
@@ -59,8 +59,6 @@ public class MsValueExpr extends MsAbstractExpr {
             overClause(oc);
         } else if ((de = exp.date_expression()) != null) {
             analyze(de.expression());
-        } else if ((sc = exp.sequence_call()) != null) {
-            addObjectDepcy(sc.qualified_name(), DbObjType.SEQUENCE);
         } else if ((fc = exp.function_call()) != null) {
             functionCall(fc);
 
@@ -81,6 +79,10 @@ public class MsValueExpr extends MsAbstractExpr {
         Analytic_windowed_functionContext awf;
         Aggregate_windowed_functionContext agg;
         Scalar_function_nameContext sfn;
+        Qualified_nameContext seq;
+        Function_callContext fc;
+        Data_typeContext dt;
+        Order_by_clauseContext obc;
 
         for (ExpressionContext exp : functionCall.expression()) {
             analyze(exp);
@@ -102,6 +104,19 @@ public class MsValueExpr extends MsAbstractExpr {
         } else if ((sfn = functionCall.scalar_function_name()) != null) {
             expressionList(functionCall.expression_list());
             return function(sfn);
+        } else if ((seq = functionCall.sequence_name)!= null) {
+            addObjectDepcy(seq, DbObjType.SEQUENCE);
+            overClause(functionCall.over_clause());
+        } else if ((fc = functionCall.function_call()) != null) {
+            return functionCall(fc);
+        } else if ((obc = functionCall.order_by_clause()) != null) {
+            orderBy(obc);
+        } else if ((dt = functionCall.data_type()) != null) {
+            addTypeDepcy(dt);
+        } else if (functionCall.OPENJSON() != null) {
+            for (Column_declarationContext col : functionCall.column_declaration()) {
+                addTypeDepcy(col.data_type());
+            }
         } else {
             expressionList(functionCall.expression_list());
         }

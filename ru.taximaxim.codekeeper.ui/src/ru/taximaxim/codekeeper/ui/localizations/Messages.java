@@ -320,6 +320,8 @@ public final class Messages extends NLS {
 
     public static String DependencyProperties_ignore_privileges;
 
+    public static String DependencyProperties_owner;
+
     public static String DependencyProperties_path;
 
     public static String DependencyProperties_safe_mode;

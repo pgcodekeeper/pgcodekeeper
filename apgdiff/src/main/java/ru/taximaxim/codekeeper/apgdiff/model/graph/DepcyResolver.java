@@ -17,17 +17,10 @@ import org.jgrapht.event.VertexTraversalEvent;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.DepthFirstIterator;
 
-import cz.startnet.utils.pgdiff.schema.AbstractColumn;
-import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
-import cz.startnet.utils.pgdiff.schema.AbstractIndex;
-import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
-import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import cz.startnet.utils.pgdiff.schema.TypedPgTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -104,7 +97,7 @@ public class DepcyResolver {
      *            объект для удаления из старой базы
      */
     public void addDropStatements(PgStatement toDrop) {
-        PgStatement statement = getObjectFromDB(toDrop, oldDb);
+        PgStatement statement = toDrop.getTwin(oldDb);
         if (oldDepcyGraph.getReversedGraph().containsVertex(statement)
                 && !sKippedObjects.contains(new SimpleEntry<>(statement, StatementActions.DROP))) {
             sKippedObjects.add(new SimpleEntry<>(statement, StatementActions.DROP));
@@ -125,7 +118,7 @@ public class DepcyResolver {
      * @param toCreate
      */
     public void addCreateStatements(PgStatement toCreate) {
-        PgStatement statement = getObjectFromDB(toCreate, newDb);
+        PgStatement statement = toCreate.getTwin(newDb);
         if (newDepcyGraph.getGraph().containsVertex(statement)
                 && !sKippedObjects.contains(new SimpleEntry<>(statement, StatementActions.CREATE))) {
             sKippedObjects.add(new SimpleEntry<>(statement, StatementActions.CREATE));
@@ -143,8 +136,8 @@ public class DepcyResolver {
      */
     public void addAlterStatements(PgStatement oldObj, PgStatement newObj) {
         if (newObj != null && oldObj != null) {
-            PgStatement oldObjStat = getObjectFromDB(oldObj, oldDb);
-            PgStatement newObjStat = getObjectFromDB(newObj, newDb);
+            PgStatement oldObjStat = oldObj.getTwin(oldDb);
+            PgStatement newObjStat = newObj.getTwin(newDb);
             StringBuilder sb = new StringBuilder();
             AtomicBoolean isNeedDepcies = new AtomicBoolean();
             boolean isChanged = (oldObjStat != null && oldObjStat.appendAlterSQL(newObjStat, sb, isNeedDepcies));
@@ -184,7 +177,7 @@ public class DepcyResolver {
                 }
             }
             for (PgStatement drop : toRecreate) {
-                if (getObjectFromDB(drop, newDb) != null) {
+                if (drop.getTwin(newDb) != null) {
                     addCreateStatements(drop);
                 }
             }
@@ -243,109 +236,11 @@ public class DepcyResolver {
             actions.add(new ActionContainer(oldObj, oldObj, action, starter));
             break;
         case ALTER:
-            actions.add(new ActionContainer(oldObj, getObjectFromDB(oldObj,
-                    newDb), action, starter));
+            actions.add(new ActionContainer(oldObj, oldObj.getTwin(newDb), action, starter));
             break;
         default:
             throw new IllegalStateException("Not implemented action");
         }
-    }
-
-    /**
-     * Ищет в переданной базе объект по имени
-     * @param statement объект для поиска
-     * @param db база для поиска
-     * @return
-     */
-    private PgStatement getObjectFromDB(PgStatement statement, PgDatabase db) {
-        switch (statement.getStatementType()) {
-        case EXTENSION:
-            return db.getExtension(statement.getName());
-        case SCHEMA:
-            return db.getSchema(statement.getName());
-        case ASSEMBLY:
-            return db.getAssembly(statement.getName());
-        case ROLE:
-            return db.getRole(statement.getName());
-        case USER:
-            return db.getUser(statement.getName());
-        case DATABASE:
-            return db;
-        default:
-            break;
-        }
-
-        AbstractSchema oldSchema = null;
-        if (statement instanceof PgStatementWithSearchPath) {
-            oldSchema = db.getSchema(((PgStatementWithSearchPath) statement)
-                    .getContainingSchema().getName());
-        }
-        if (oldSchema == null) {
-            return null;
-        }
-        switch (statement.getStatementType()) {
-        case VIEW:
-            return oldSchema.getView(statement.getName());
-        case TABLE:
-            return oldSchema.getTable(statement.getName());
-        case TRIGGER:
-            PgTriggerContainer ct = oldSchema.getTriggerContainer(statement.getParent().getName());
-            if (ct != null) {
-                return ct.getTrigger(statement.getName());
-            }
-            break;
-        case RULE:
-            PgRuleContainer cr = oldSchema.getRuleContainer(statement.getParent().getName());
-            if (cr != null) {
-                return cr.getRule(statement.getName());
-            }
-            break;
-        case INDEX:
-            AbstractIndex ind = (AbstractIndex) statement;
-            AbstractTable tableInd = oldSchema.getTable(ind.getTableName());
-            if (tableInd != null) {
-                return tableInd.getIndex(ind.getName());
-            }
-            break;
-        case CONSTRAINT:
-            AbstractConstraint constr = (AbstractConstraint) statement;
-            AbstractTable tableConstr = oldSchema.getTable(constr.getParent().getName());
-            if (tableConstr != null) {
-                return tableConstr.getConstraint(constr.getName());
-            }
-            break;
-        case COLUMN:
-            AbstractColumn column = (AbstractColumn) statement;
-            AbstractTable tableCol = oldSchema.getTable(column.getParent().getName());
-            if (tableCol != null) {
-                return tableCol.getColumn(column.getName());
-            }
-            break;
-        case SEQUENCE:
-            return oldSchema.getSequence(statement.getName());
-        case FUNCTION:
-        case PROCEDURE:
-        case AGGREGATE:
-            return oldSchema.getFunction(statement.getName());
-        case OPERATOR:
-            return oldSchema.getOperator(statement.getName());
-        case TYPE:
-            return oldSchema.getType(statement.getName());
-        case DOMAIN:
-            return oldSchema.getDomain(statement.getName());
-        case FTS_PARSER:
-            return oldSchema.getFtsParser(statement.getName());
-        case FTS_TEMPLATE:
-            return oldSchema.getFtsTemplate(statement.getName());
-        case FTS_DICTIONARY:
-            return oldSchema.getFtsDictionary(statement.getName());
-        case FTS_CONFIGURATION:
-            return oldSchema.getFtsConfiguration(statement.getName());
-        case DATABASE:
-        default:
-            break;
-        }
-        return null;
     }
 
     /**
@@ -370,7 +265,7 @@ public class DepcyResolver {
      * @return
      */
     public Set<PgStatement> getCreateDepcies(PgStatement toCreate) {
-        PgStatement statement = getObjectFromDB(toCreate, newDb);
+        PgStatement statement = toCreate.getTwin(newDb);
         Set<PgStatement> depcies = new HashSet<>();
         if (newDepcyGraph.getGraph().containsVertex(statement)) {
 
@@ -387,7 +282,7 @@ public class DepcyResolver {
      * @return
      */
     public Set<PgStatement> getDropDepcies(PgStatement toDrop) {
-        PgStatement statement = getObjectFromDB(toDrop, oldDb);
+        PgStatement statement = toDrop.getTwin(oldDb);
         Set<PgStatement> depcies = new HashSet<>();
         if (oldDepcyGraph.getReversedGraph().containsVertex(statement)) {
             DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
@@ -431,7 +326,7 @@ public class DepcyResolver {
             // Изначально будем удалять объект
             action = StatementActions.DROP;
 
-            PgStatement newObj = getObjectFromDB(oldObj, newDb);
+            PgStatement newObj = oldObj.getTwin(newDb);
             if (newObj != null) {
                 AtomicBoolean isNeedDepcies = new AtomicBoolean();
                 action = askAlter(oldObj, newObj, isNeedDepcies);
@@ -460,8 +355,7 @@ public class DepcyResolver {
             // Колонки пропускаются при удалении таблицы
             if (oldObj.getStatementType() == DbObjType.COLUMN) {
                 AbstractTable oldTable = (AbstractTable) oldObj.getParent();
-                PgStatement newTable = getObjectFromDB(oldObj.getParent(),
-                        newDb);
+                PgStatement newTable = oldObj.getParent().getTwin(newDb);
 
                 if (newTable == null) {
                     return true;
@@ -522,7 +416,7 @@ public class DepcyResolver {
             }
 
             PgStatement oldObj;
-            if ((oldObj = getObjectFromDB(newObj, oldDb)) != null) {
+            if ((oldObj = newObj.getTwin(oldDb)) != null) {
                 AtomicBoolean isNeedDepcies = new AtomicBoolean();
                 action = askAlter(oldObj, newObj, isNeedDepcies);
                 if (action == StatementActions.NONE) {
@@ -539,8 +433,7 @@ public class DepcyResolver {
                 }
             }
             if (newObj.getStatementType() == DbObjType.COLUMN) {
-                PgStatement oldTable = getObjectFromDB(newObj.getParent(),
-                        oldDb);
+                PgStatement oldTable = newObj.getParent().getTwin(oldDb);
                 AbstractTable newTable = (AbstractTable) newObj.getParent();
                 if (oldTable == null || ((AbstractTable)oldTable).isRecreated(newTable)) {
                     // columns are integrated into CREATE TABLE
@@ -628,7 +521,7 @@ public class DepcyResolver {
                 return;
             }
             PgStatement st = e.getVertex();
-            PgStatement newSt = getObjectFromDB(st, newDb);
+            PgStatement newSt = st.getTwin(newDb);
             if (newSt == null) {
                 return;
             }

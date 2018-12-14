@@ -76,7 +76,7 @@ public class MsRole extends PgStatement {
         }
 
         if (!Objects.equals(getOwner(), newRole.getOwner())) {
-            sb.append(newRole.getOwnerSQL());
+            newRole.alterOwnerSQL(sb);
         }
 
         if (!Objects.equals(members, newRole.members)) {

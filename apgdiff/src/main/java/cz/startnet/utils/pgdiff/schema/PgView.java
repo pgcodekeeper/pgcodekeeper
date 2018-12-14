@@ -133,15 +133,6 @@ public class PgView extends AbstractView {
     }
 
     @Override
-    protected StringBuilder appendOwnerSQL(StringBuilder sb) {
-        return (!isMatView() || owner == null) ? super.appendOwnerSQL(sb)
-                : sb.append("\n\nALTER MATERIALIZED VIEW ")
-                .append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
-                .append('.').append(PgDiffUtils.getQuotedName(getName()))
-                .append(" OWNER TO ").append(PgDiffUtils.getQuotedName(owner)).append(';');
-    }
-
-    @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
@@ -163,7 +154,7 @@ public class PgView extends AbstractView {
         diffDefaultValues(sb, newView);
 
         if (!Objects.equals(getOwner(), newView.getOwner())) {
-            sb.append(newView.getOwnerSQL());
+            newView.alterOwnerSQL(sb);
         }
 
         alterPrivileges(newView, sb);

@@ -26,15 +26,15 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomTSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.ReferenceListener;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLPrivilegesListener;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLOverridesListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLPrivilegesListener;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLOverridesListener;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.StatementOverride;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
 /**
@@ -56,7 +56,7 @@ public class PgDumpLoader implements AutoCloseable {
     private boolean loadSchema = true;
     private boolean loadReferences;
     private List<StatementBodyContainer> statementBodyReferences;
-    private Map<PgStatement, List<PgPrivilege>> privileges;
+    private Map<PgStatement, StatementOverride> overrides;
 
     public List<AntlrError> getErrors() {
         return errors;
@@ -66,8 +66,8 @@ public class PgDumpLoader implements AutoCloseable {
         this.loadSchema = loadSchema;
     }
 
-    public void setPrivilegesMap(Map<PgStatement, List<PgPrivilege>> privileges) {
-        this.privileges = privileges;
+    public void setOverridesMap(Map<PgStatement, StatementOverride> overrides) {
+        this.overrides = overrides;
     }
 
     public void setLoadReferences(boolean loadReferences) {
@@ -154,8 +154,8 @@ public class PgDumpLoader implements AutoCloseable {
 
         if (args.isMsSql()) {
             List<TSqlContextProcessor> listeners = new ArrayList<>();
-            if (privileges != null) {
-                listeners.add(new TSQLPrivilegesListener(intoDb, inputObjectName, errors, monitor, privileges));
+            if (overrides != null) {
+                listeners.add(new TSQLOverridesListener(intoDb, inputObjectName, errors, monitor, overrides));
             } else if (loadSchema) {
                 listeners.add(new CustomTSQLParserListener(intoDb, inputObjectName, errors, monitor));
             }
@@ -176,8 +176,8 @@ public class PgDumpLoader implements AutoCloseable {
                     monitor, monitoringLevel, listeners);
         } else {
             List<SqlContextProcessor> listeners = new ArrayList<>();
-            if (privileges != null) {
-                listeners.add(new SQLPrivilegesListener(intoDb, inputObjectName, errors, monitor, privileges));
+            if (overrides != null) {
+                listeners.add(new SQLOverridesListener(intoDb, inputObjectName, errors, monitor, overrides));
             } else if (loadSchema) {
                 listeners.add(new CustomSQLParserListener(intoDb, inputObjectName, errors, monitor));
             }

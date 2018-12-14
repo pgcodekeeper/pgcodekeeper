@@ -25,22 +25,24 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
+import cz.startnet.utils.pgdiff.schema.StatementOverride;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsRule extends ParserAbstract {
 
     private final Rule_commonContext ctx;
     private final String state;
     private final boolean isGO;
-    private final Map<PgStatement, List<PgPrivilege>> privs;
+    private final Map<PgStatement, StatementOverride> overrides;
 
     public CreateMsRule(Rule_commonContext ctx, PgDatabase db) {
         this(ctx, db, null);
     }
 
-    public CreateMsRule(Rule_commonContext ctx, PgDatabase db, Map<PgStatement, List<PgPrivilege>> privs) {
+    public CreateMsRule(Rule_commonContext ctx, PgDatabase db, Map<PgStatement, StatementOverride> overrides) {
         super(db);
         this.ctx = ctx;
-        this.privs = privs;
+        this.overrides = overrides;
         if (ctx.DENY() != null) {
             state = "DENY";
         } else {
@@ -76,14 +78,17 @@ public class CreateMsRule extends ParserAbstract {
             return null;
         }
 
-        String objectName;
+        StringBuilder name = new StringBuilder();
+        if (st.getStatementType() == DbObjType.TYPE || !(st instanceof PgStatementWithSearchPath)) {
+            name.append(st.getStatementType()).append("::");
+        }
 
         if (st instanceof PgStatementWithSearchPath) {
-            objectName = MsDiffUtils.quoteName(((PgStatementWithSearchPath) st).getContainingSchema().getName())
-                    + '.' + MsDiffUtils.quoteName(st.getBareName());
-        } else {
-            objectName = st.getStatementType() + "::" + MsDiffUtils.quoteName(st.getBareName());
+            name.append(MsDiffUtils.quoteName(((PgStatementWithSearchPath) st).getContainingSchema().getName()))
+            .append('.');
         }
+
+        name.append(MsDiffUtils.quoteName(st.getBareName()));
 
         Table_columnsContext columns = nameCtx.table_columns();
 
@@ -94,8 +99,8 @@ public class CreateMsRule extends ParserAbstract {
                 if (columns != null) {
                     // column privileges
                     for (IdContext column : columns.column) {
-                        String name = objectName + '(' + MsDiffUtils.quoteName(column.getText()) + ')';
-                        PgPrivilege priv = new PgPrivilege(state, per, name, role, isGO);
+                        name.append('(').append(MsDiffUtils.quoteName(column.getText())).append(')');
+                        PgPrivilege priv = new PgPrivilege(state, per, name.toString(), role, isGO);
                         // table column privileges to columns, other columns to statement
                         if (st instanceof AbstractTable) {
                             addPrivilege(getSafe(((AbstractTable)st)::getColumn, column), priv);
@@ -104,7 +109,7 @@ public class CreateMsRule extends ParserAbstract {
                         }
                     }
                 } else {
-                    addPrivilege(st, new PgPrivilege(state, per, objectName, role, isGO));
+                    addPrivilege(st, new PgPrivilege(state, per, name.toString(), role, isGO));
                 }
             }
         }
@@ -118,7 +123,7 @@ public class CreateMsRule extends ParserAbstract {
         Class_typeContext type = object.class_type();
 
         PgStatement st;
-        if (type == null || type.OBJECT() != null) {
+        if (type == null || type.OBJECT() != null || type.TYPE() != null) {
             IdContext schemaName = object.qualified_name().schema;
             AbstractSchema schema = schemaName != null ? getSafe(db::getSchema, schemaName) : db.getDefaultSchema();
             st = getSafe(name -> schema.getChildren().filter(
@@ -192,16 +197,16 @@ public class CreateMsRule extends ParserAbstract {
     }
 
     private void addPrivilege(PgStatement st, PgPrivilege privilege) {
-        if (privs == null) {
+        if (overrides == null) {
             st.addPrivilege(privilege);
         } else {
-            List<PgPrivilege> privileges = privs.get(st);
-            if (privileges == null) {
-                privileges = new ArrayList<>();
-                privs.put(st, privileges);
+            StatementOverride override = overrides.get(st);
+            if (override == null) {
+                override = new StatementOverride();
+                overrides.put(st, override);
             }
 
-            privileges.add(privilege);
+            override.addPrivilege(privilege);
         }
     }
 }

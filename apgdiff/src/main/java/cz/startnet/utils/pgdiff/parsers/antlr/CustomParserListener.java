@@ -35,8 +35,7 @@ public class CustomParserListener {
      * @param ctx statememnt's first token rule
      */
     protected void safeParseStatement(ParserAbstract p, ParserRuleContext ctx) {
-        try {
-            PgDiffUtils.checkCancelled(monitor);
+        safeParseStatement(() -> {
             PgStatement st = p.getObject();
             if (st != null) {
                 st.setLocation(filename);
@@ -47,6 +46,13 @@ public class CustomParserListener {
                     .forEach(con -> con.setLocation(filename));
                 }
             }
+        }, ctx);
+    }
+
+    protected void safeParseStatement(Runnable r, ParserRuleContext ctx) {
+        try {
+            PgDiffUtils.checkCancelled(monitor);
+            r.run();
         } catch (UnresolvedReferenceException ex) {
             errors.add(handleUnresolvedReference(ex, filename));
         } catch (InterruptedException ex) {

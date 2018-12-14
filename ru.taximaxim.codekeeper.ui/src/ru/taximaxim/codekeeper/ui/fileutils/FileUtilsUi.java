@@ -10,6 +10,7 @@ import java.nio.file.Paths;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -30,6 +31,7 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.TEMP_DIR_PATH;
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 
 public final class FileUtilsUi {
 
@@ -71,11 +73,16 @@ public final class FileUtilsUi {
             IFile[] files = workspace.getRoot().findFilesForLocationURI(path.toUri());
             IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
             if (files.length > 0) {
-                IDE.openEditor(page, files[0]);
-            } else {
-                IFileStore externalFile = EFS.getLocalFileSystem().fromLocalFile(path.toFile());
-                IDE.openEditorOnFileStore(page, externalFile);
+                for (IFile f : files) {
+                    IProject proj = f.getProject();
+                    if (proj.isOpen() && UIProjectLoader.isInProject(f)) {
+                        IDE.openEditor(page, f);
+                        return;
+                    }
+                }
             }
+            IFileStore externalFile = EFS.getLocalFileSystem().fromLocalFile(path.toFile());
+            IDE.openEditorOnFileStore(page, externalFile);
         }
     }
 

@@ -76,8 +76,8 @@ public final class PgDiff {
             oldLib.loadXml(new DependenciesXmlStore(Paths.get(xml)), arguments);
         }
 
-        oldLib.loadLibraries(arguments, false, arguments.getTargetLibs());
-        oldLib.loadLibraries(arguments, true, arguments.getTargetLibsWithoutPriv());
+        oldLib.loadLibraries(arguments, false, arguments.getSourceLibs());
+        oldLib.loadLibraries(arguments, true, arguments.getSourceLibsWithoutPriv());
 
         LibraryLoader newLib = new LibraryLoader(newDatabase, metaPath);
 
@@ -85,8 +85,8 @@ public final class PgDiff {
             newLib.loadXml(new DependenciesXmlStore(Paths.get(xml)), arguments);
         }
 
-        newLib.loadLibraries(arguments, false, arguments.getSourceLibs());
-        newLib.loadLibraries(arguments, true, arguments.getSourceLibsWithoutPriv());
+        newLib.loadLibraries(arguments, false, arguments.getTargetLibs());
+        newLib.loadLibraries(arguments, true, arguments.getTargetLibsWithoutPriv());
 
         if (arguments.isLibSafeMode()) {
             List<PgOverride> overrides = oldDatabase.getOverrides();
@@ -94,6 +94,14 @@ public final class PgDiff {
             if (!overrides.isEmpty()) {
                 throw new LibraryObjectDuplicationException(overrides);
             }
+        }
+
+        // read additional privileges from special folder
+        if ("parsed".equals(arguments.getOldSrcFormat())) {
+            new ProjectLoader(arguments.getOldSrc(), arguments).loadOverrides(oldDatabase);
+        }
+        if ("parsed".equals(arguments.getNewSrcFormat())) {
+            new ProjectLoader(arguments.getNewSrc(), arguments).loadOverrides(newDatabase);
         }
 
         FullAnalyze.fullAnalyze(oldDatabase, null);
@@ -132,8 +140,7 @@ public final class PgDiff {
             }
         } else if ("parsed".equals(format)) {
             ProjectLoader loader = new ProjectLoader(srcPath, arguments);
-            return arguments.isMsSql() ? loader.loadMsDatabaseSchemaFromDirTree() :
-                loader.loadDatabaseSchemaFromDirTree(db);
+            return loader.loadSchemaOnly();
         } else if ("db".equals(format)) {
             String timezone = arguments.getTimeZone() == null ? ApgdiffConsts.UTC : arguments.getTimeZone();
             return arguments.isMsSql() ?

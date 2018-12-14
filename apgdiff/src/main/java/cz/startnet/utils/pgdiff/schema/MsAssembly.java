@@ -99,7 +99,7 @@ public class MsAssembly extends PgStatement {
 
 
         if (!Objects.equals(getOwner(), newAss.getOwner())) {
-            sb.append(newAss.getOwnerSQL());
+            newAss.alterOwnerSQL(sb);
         }
 
         if (newAss.isVisible() != isVisible()) {

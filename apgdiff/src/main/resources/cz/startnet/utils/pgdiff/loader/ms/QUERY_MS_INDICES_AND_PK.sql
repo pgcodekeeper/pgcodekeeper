@@ -33,4 +33,4 @@ CROSS APPLY (
     ) cc ORDER BY cc.id
     FOR XML RAW, ROOT
 ) cc (cols)
-WHERE o.type = 'U' AND si.name IS NOT NULL
+WHERE o.type = 'U' AND si.type IN (1, 2)

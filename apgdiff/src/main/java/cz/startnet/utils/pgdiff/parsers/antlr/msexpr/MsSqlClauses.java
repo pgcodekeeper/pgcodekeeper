@@ -6,8 +6,11 @@ import java.util.List;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Another_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Block_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Cfl_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Cursor_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Cursor_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Dbcc_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Ddl_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Declare_localContext;
@@ -260,9 +263,23 @@ public class MsSqlClauses extends MsAbstractExpr {
 
     private void declare(Declare_statementContext dec) {
         for (Declare_localContext local : dec.declare_local()) {
+            Data_typeContext type = local.data_type();
+            if (type != null) {
+                addTypeDepcy(type);
+            }
             ExpressionContext exp = local.expression();
             if (exp != null) {
                 new MsValueExpr(this).analyze(exp);
+            }
+        }
+
+        Column_def_table_constraintsContext cons = dec.column_def_table_constraints();
+        if (cons != null) {
+            for (Column_def_table_constraintContext con : cons.column_def_table_constraint()) {
+                Data_typeContext dt = con.data_type();
+                if (dt != null) {
+                    addTypeDepcy(dt);
+                }
             }
         }
     }

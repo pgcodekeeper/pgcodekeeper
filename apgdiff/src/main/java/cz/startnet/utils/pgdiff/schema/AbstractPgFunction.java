@@ -47,7 +47,7 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         }
 
         if (!Objects.equals(getOwner(), newAbstractPgFunction.getOwner())) {
-            sb.append(newAbstractPgFunction.getOwnerSQL());
+            newAbstractPgFunction.alterOwnerSQL(sb);
         }
         alterPrivileges(newAbstractPgFunction, sb);
         if (!Objects.equals(getComment(), newAbstractPgFunction.getComment())) {

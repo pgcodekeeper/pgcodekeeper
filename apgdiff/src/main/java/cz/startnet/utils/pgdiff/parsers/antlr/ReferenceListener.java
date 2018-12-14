@@ -17,6 +17,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_fts_configurationC
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_fts_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_operator_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_ownerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_sequence_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
@@ -211,6 +212,8 @@ public class ReferenceListener implements SqlContextProcessor {
             r = () -> alterFts(ctx.alter_fts_statement());
         } else if (ctx.alter_operator_statement() != null) {
             r = () -> alterOperator(ctx.alter_operator_statement());
+        } else if (ctx.alter_owner() != null) {
+            r = () -> alterOwner(ctx.alter_owner());
         } else {
             return;
         }
@@ -748,6 +751,55 @@ public class ReferenceListener implements SqlContextProcessor {
         addFullObjReference(schemaCtx != null ? schemaCtx.getText() : getDefSchemaName(),
                 operNameCtx.operator.getText(), ctx.target_operator(),
                 DbObjType.OPERATOR, StatementActions.ALTER, ctx.getParent());
+    }
+
+    private void alterOwner(Alter_ownerContext ctx) {
+        if (ctx.OPERATOR() != null) {
+            Operator_nameContext operNameCtx = ctx.target_operator().operator_name();
+            IdentifierContext schemaCtx = operNameCtx.schema_name;
+            addFullObjReference(schemaCtx != null ? schemaCtx.getText() : getDefSchemaName(),
+                    operNameCtx.operator.getText(), ctx.target_operator(),
+                    DbObjType.OPERATOR, StatementActions.ALTER, ctx.getParent());
+            return;
+        }
+
+        List<IdentifierContext> ids = ctx.name.identifier();
+        IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
+
+        if (ctx.SCHEMA() != null) {
+            addObjReference(null, nameCtx.getText(),
+                    DbObjType.SCHEMA, StatementActions.ALTER,
+                    nameCtx.getStart().getStartIndex(), nameCtx.getStart().getLine(),
+                    ParserAbstract.getFullCtxText(ctx.getParent()));
+            return;
+        } else {
+            IdentifierContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
+            String schemaName = schemaCtx != null ? schemaCtx.getText() : getDefSchemaName();
+            DbObjType type;
+            String name = nameCtx.getText();
+            if (ctx.DOMAIN() != null) {
+                type = DbObjType.DOMAIN;
+            } else if (ctx.VIEW() != null) {
+                type = DbObjType.VIEW;
+            } else if (ctx.DICTIONARY() != null) {
+                type = DbObjType.FTS_DICTIONARY;
+            } else if (ctx.CONFIGURATION() != null) {
+                type = DbObjType.FTS_CONFIGURATION;
+            } else if (ctx.SEQUENCE() != null) {
+                type = DbObjType.SEQUENCE;
+            } else if (ctx.TYPE() != null) {
+                type = DbObjType.TYPE;
+            } else if (ctx.PROCEDURE() != null) {
+                type = DbObjType.PROCEDURE;
+            } else if (ctx.FUNCTION() != null) {
+                type = DbObjType.FUNCTION;
+            } else {
+                return;
+            }
+
+            addFullObjReference(schemaName, name, ctx.name,
+                    type, StatementActions.ALTER, ctx.getParent());
+        }
     }
 
     public void drop(Drop_statementsContext ctx) {

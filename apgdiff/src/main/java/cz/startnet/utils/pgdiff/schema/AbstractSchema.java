@@ -21,7 +21,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     private final List<AbstractSequence> sequences = new ArrayList<>();
     private final List<AbstractTable> tables = new ArrayList<>();
     private final List<AbstractView> views = new ArrayList<>();
-    private final List<PgType> types = new ArrayList<>();
+    private final List<AbstractType> types = new ArrayList<>();
     private final List<PgFtsParser> parsers = new ArrayList<>();
     private final List<PgFtsTemplate> templates = new ArrayList<>();
     private final List<PgFtsDictionary> dictionaries = new ArrayList<>();
@@ -122,33 +122,29 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     }
 
     @Override
-    public Stream<PgStatement> getDescendants() {
-        Stream<PgStatement> stream = getChildren();
-
-        for (AbstractTable tab : getTables()) {
-            stream = Stream.concat(stream, tab.getDescendants());
+    protected void fillDescendantsList(List<List<? extends PgStatement>> l) {
+        fillChildrenList(l);
+        for (AbstractTable table : tables) {
+            table.fillDescendantsList(l);
         }
-
-        for (AbstractView view : getViews()) {
-            stream = Stream.concat(stream, view.getDescendants());
+        for (AbstractView view : views) {
+            view.fillDescendantsList(l);
         }
-
-        return stream;
     }
 
     @Override
-    public Stream<PgStatement> getChildren() {
-        Stream<PgStatement> stream = Stream.concat(getFunctions().stream(), getSequences().stream());
-        stream = Stream.concat(stream, getTypes().stream());
-        stream = Stream.concat(stream, getDomains().stream());
-        stream = Stream.concat(stream, getTables().stream());
-        stream = Stream.concat(stream, getViews().stream());
-        stream = Stream.concat(stream, getFtsParsers().stream());
-        stream = Stream.concat(stream, getFtsTemplates().stream());
-        stream = Stream.concat(stream, getFtsDictionaries().stream());
-        stream = Stream.concat(stream, getFtsConfigurations().stream());
-        stream = Stream.concat(stream, getOperators().stream());
-        return stream;
+    protected void fillChildrenList(List<List<? extends PgStatement>> l) {
+        l.add(functions);
+        l.add(sequences);
+        l.add(types);
+        l.add(domains);
+        l.add(tables);
+        l.add(views);
+        l.add(parsers);
+        l.add(templates);
+        l.add(dictionaries);
+        l.add(configurations);
+        l.add(operators);
     }
 
     /**
@@ -252,8 +248,8 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      *
      * @return found type or null if no such type has been found
      */
-    public PgType getType(final String name) {
-        for (PgType type : types) {
+    public AbstractType getType(final String name) {
+        for (AbstractType type : types) {
             if (type.getName().equals(name)) {
                 return type;
             }
@@ -351,7 +347,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      *
      * @return {@link #types}
      */
-    public List<PgType> getTypes() {
+    public List<AbstractType> getTypes() {
         return Collections.unmodifiableList(types);
     }
 
@@ -444,7 +440,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         resetHash();
     }
 
-    public void addType(final PgType type) {
+    public void addType(final AbstractType type) {
         assertUnique(this::getType, type);
         types.add(type);
         type.setParent(this);
@@ -624,7 +620,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         for (AbstractTable table : tables) {
             copy.addTable(table.deepCopy());
         }
-        for (PgType type : types) {
+        for (AbstractType type : types) {
             copy.addType(type.deepCopy());
         }
         for (PgFtsParser parser : parsers) {

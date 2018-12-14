@@ -4,6 +4,7 @@ import java.util.LinkedHashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Full_column_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
@@ -62,18 +63,12 @@ public abstract class MsAbstractExpr {
         return depcy;
     }
 
-    // TODO wait MS TYPE
-    /* protected void addTypeDepcy(Data_typeContext type) {
-        Schema_qualified_name_nontypeContext typeName = type.predefined_type().schema_qualified_name_nontype();
-
-        if (typeName != null) {
-            IdentifierContext qual = typeName.identifier();
-            String schema = qual == null ? this.schema : qual.getText();
-
-            depcies.add(new GenericColumn(schema,
-                    typeName.identifier_nontype().getText(), DbObjType.TYPE));
+    protected void addTypeDepcy(Data_typeContext dt) {
+        Qualified_nameContext name = dt.qualified_name();
+        if (name != null && name.schema != null && !"sys".equals(name.schema.getText())) {
+            addObjectDepcy(name, DbObjType.TYPE);
         }
-    }*/
+    }
 
 
     protected void addDepcy(GenericColumn depcy) {

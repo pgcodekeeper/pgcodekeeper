@@ -57,6 +57,9 @@ public class MsDiffTest {
                     // Tests scenario where MS PRIVILEGES for schema is modified.
                     {"modify_ms_schema_privileges"},
 
+                    // Tests scenario where OWNERS for ALL types is dropped.
+                    {"drop_ms_owners"},
+
                     // TODO Uncomment the code when comments will be supported.
                     // Tests scenario where MS "COMMENT" is added.
                     // {"add_ms_comment"},
@@ -140,15 +143,18 @@ public class MsDiffTest {
                     // Tests scenario where MS VIEW trigger state is modified.
                     {"modify_ms_view_disable_trigger"},
 
-                    // TODO Uncomment the code when user-defined type will be supported.
-                    // Tests scenario where MS TYPE is added.
-                    // {"add_ms_type"},
+                    // Tests scenario where MS WRAPPER TYPE is added.
+                    {"add_ms_type"},
+                    // Tests scenario where MS TABLE TYPE is added.
+                    {"add_ms_table_type"},
+                    // Tests scenario where MS EXTERNAL TYPE is added.
+                    {"add_ms_external_type"},
                     // Tests scenario where MS TYPE is dropped.
-                    // {"drop_ms_type"},
+                    {"drop_ms_type"},
                     // Tests scenario where MS TYPE is modified.
-                    // {"modify_ms_type"},
+                    {"modify_ms_type"},
                     // Tests scenario where MS TYPE owner is modified.
-                    // {"modify_ms_type_owner"},
+                    {"modify_ms_type_owner"},
 
                     // Tests scenario where MS INDEX is added.
                     {"add_ms_index"},

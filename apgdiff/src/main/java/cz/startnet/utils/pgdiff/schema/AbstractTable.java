@@ -60,11 +60,11 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     }
 
     @Override
-    public Stream<PgStatement> getChildren() {
-        Stream<PgStatement> stream = Stream.concat(getIndexes().stream(), getTriggers().stream());
-        stream = Stream.concat(stream, getRules().stream());
-        stream = Stream.concat(stream, getConstraints().stream());
-        return stream;
+    protected void fillChildrenList(List<List<? extends PgStatement>> l) {
+        l.add(indexes);
+        l.add(triggers);
+        l.add(rules);
+        l.add(constraints);
     }
 
     public static Stream<PgStatement> columnAdder(PgStatement st) {
@@ -420,7 +420,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
     protected void compareOwners(AbstractTable newTable, StringBuilder sb) {
         if (!Objects.equals(owner, newTable.getOwner())) {
-            sb.append(newTable.getOwnerSQL());
+            newTable.alterOwnerSQL(sb);
         }
     }
 

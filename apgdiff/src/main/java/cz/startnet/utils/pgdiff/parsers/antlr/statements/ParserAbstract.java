@@ -20,6 +20,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
@@ -211,7 +213,7 @@ public abstract class ParserAbstract {
         if (db.getArguments().isIgnorePrivileges()) {
             return;
         }
-        if (ctx != null) {
+        if (ctx != null && ctx.name != null) {
             st.setOwner(ctx.name.getText());
         }
     }
@@ -231,6 +233,20 @@ public abstract class ParserAbstract {
 
             st.addDep(new GenericColumn(schemaName, qname.identifier_nontype().getText(),
                     DbObjType.TYPE));
+        }
+    }
+
+    protected void addTypeAsDepcy(cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Data_typeContext ctx,
+            PgStatement st) {
+        Qualified_nameContext qname = ctx.qualified_name();
+        if (qname != null) {
+            IdContext schemaCtx = qname.schema;
+            if (schemaCtx != null) {
+                String schemaName = schemaCtx.getText();
+                if (!"sys".equals(schemaName)) {
+                    st.addDep(new GenericColumn(schemaCtx.getText(), qname.name.getText(), DbObjType.TYPE));
+                }
+            }
         }
     }
 

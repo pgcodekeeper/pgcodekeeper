@@ -1,5 +1,8 @@
 package ru.taximaxim.codekeeper.ui.views;
 
+import java.util.Collections;
+import java.util.Set;
+
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.text.FlowPage;
@@ -15,7 +18,6 @@ import org.eclipse.zest.core.viewers.EntityConnectionData;
 import org.eclipse.zest.core.viewers.IEntityStyleProvider;
 
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
-import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvider{
@@ -30,6 +32,11 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
     private final Color colorDBlue;
 
     private boolean isSource = true;
+    private Set<?> currentRootSet = Collections.emptySet();
+
+    void setCurrentRootSet(Set<?> currentRootSet) {
+        this.currentRootSet = currentRootSet;
+    }
 
     public DepcyGraphLabelProvider(Control owner) {
         LocalResourceManager lrm = new LocalResourceManager(JFaceResources.getResources(), owner);
@@ -117,7 +124,7 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
 
     @Override
     public Color getBorderColor(Object entity) {
-        return entity instanceof AbstractSchema ? ColorConstants.black : ColorConstants.lightGray;
+        return currentRootSet.contains(entity) ? ColorConstants.black : ColorConstants.lightGray;
     }
 
     @Override
@@ -127,7 +134,7 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
 
     @Override
     public int getBorderWidth(Object entity) {
-        return entity instanceof AbstractSchema ? 2 : 1;
+        return currentRootSet.contains(entity) ? 2 : 1;
     }
 
     @Override
@@ -137,7 +144,7 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
 
     @Override
     public Color getForegroundColour(Object entity) {
-        return entity instanceof AbstractSchema ? ColorConstants.black : colorDBlue;
+        return currentRootSet.contains(entity) ? ColorConstants.black : colorDBlue;
     }
 
     @Override

@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -68,43 +67,23 @@ public class UIProjectLoader extends ProjectLoader {
             throws InterruptedException, IOException, CoreException {
         PgDatabase db = new PgDatabase();
         db.setArguments(arguments);
-        loadDatabaseSchemaFromPgProject(db);
+        loadPgStructure(iProject, db);
         FullAnalyze.fullAnalyze(db, errors);
         return db;
     }
 
-    /**
-     * Loads database schema from a ModelExporter directory tree without analyze.
-     *
-     * @return database schema
-     */
-    public PgDatabase loadDatabaseSchemaFromPgProject(PgDatabase db)
+    private void loadPgStructure(IContainer baseDir, PgDatabase db)
             throws InterruptedException, IOException, CoreException {
-        loadPgStructure(iProject, iProject::getFolder, db);
-
-        isPrivilegeMode = true;
-        // step 3
-        // read additional privileges from special folder
-        IFolder privs = iProject.getFolder(ApgdiffConsts.PRIVILEGES_DIR);
-        loadPgStructure(privs, privs::getFolder, db);
-        replacePrivileges();
-        isPrivilegeMode = false;
-
-        return db;
-    }
-
-    private void loadPgStructure(IContainer baseDir, Function<String, IFolder> folderGetter,
-            PgDatabase db) throws InterruptedException, IOException, CoreException {
         if (!baseDir.exists()) {
             return;
         }
 
         for (WORK_DIR_NAMES workDirName : WORK_DIR_NAMES.values()) {
             // legacy schemas
-            loadSubdir(folderGetter.apply(workDirName.name()), db);
+            loadSubdir(baseDir.getFolder(new Path(workDirName.name())), db);
         }
 
-        IFolder schemasCommonDir = folderGetter.apply(WORK_DIR_NAMES.SCHEMA.name());
+        IFolder schemasCommonDir = baseDir.getFolder(new Path(WORK_DIR_NAMES.SCHEMA.name()));
         // skip walking SCHEMA folder if it does not exist
         if (schemasCommonDir.exists()) {
             // new schemas + content
@@ -122,33 +101,13 @@ public class UIProjectLoader extends ProjectLoader {
         }
     }
 
-    /**
-     * Loads database schema from a MsModelExporter directory tree.
-     *
-     * @return database schema
-     */
-    public PgDatabase loadDatabaseSchemaFromMsProject() throws InterruptedException, IOException, CoreException {
-        PgDatabase db = new PgDatabase();
-        db.setArguments(arguments);
-
-        loadMsStructure(iProject, iProject::getFolder, db);
-
-        isPrivilegeMode = true;
-        // read additional privileges from special folder
-        IFolder privs = iProject.getFolder(ApgdiffConsts.PRIVILEGES_DIR);
-        loadMsStructure(privs, privs::getFolder, db);
-        replacePrivileges();
-        isPrivilegeMode = false;
-        return db;
-    }
-
-    private void loadMsStructure(IContainer baseDir, Function<String, IFolder> folderGetter,
-            PgDatabase db) throws InterruptedException, IOException, CoreException {
+    private void loadMsStructure(IContainer baseDir, PgDatabase db)
+            throws InterruptedException, IOException, CoreException {
         if (!baseDir.exists()) {
             return;
         }
 
-        IFolder securityFolder = folderGetter.apply(MS_WORK_DIR_NAMES.SECURITY.getDirName());
+        IFolder securityFolder = baseDir.getFolder(new Path(MS_WORK_DIR_NAMES.SECURITY.getDirName()));
         loadSubdir(securityFolder.getFolder("Schemas"), db); //$NON-NLS-1$
         loadSubdir(securityFolder.getFolder("Roles"), db); //$NON-NLS-1$
         loadSubdir(securityFolder.getFolder("Users"), db); //$NON-NLS-1$
@@ -156,7 +115,7 @@ public class UIProjectLoader extends ProjectLoader {
         addDboSchema(db);
 
         for (MS_WORK_DIR_NAMES dirSub : MS_WORK_DIR_NAMES.values()) {
-            loadSubdir(folderGetter.apply(dirSub.getDirName()), db);
+            loadSubdir(baseDir.getFolder(new Path(dirSub.getDirName())), db);
         }
     }
 
@@ -181,8 +140,8 @@ public class UIProjectLoader extends ProjectLoader {
         try (PgUIDumpLoader loader = new PgUIDumpLoader(file, arguments, monitor)) {
             errList = loader.getErrors();
             loader.setLoadReferences(statementBodies != null);
-            if (isPrivilegeMode) {
-                loader.setPrivilegesMap(privileges);
+            if (isOverrideMode) {
+                loader.setOverridesMap(overrides);
             }
             loader.loadFile(db);
             if (statementBodies != null) {
@@ -198,8 +157,7 @@ public class UIProjectLoader extends ProjectLoader {
     public PgDatabase buildFiles(Collection<IFile> files, boolean isMsSql)
             throws InterruptedException, IOException, CoreException {
         SubMonitor mon = SubMonitor.convert(monitor, files.size());
-        return isMsSql ? buildMsFiles(files, mon) :
-            buildPgFiles(files, mon);
+        return isMsSql ? buildMsFiles(files, mon) : buildPgFiles(files, mon);
     }
 
     private PgDatabase buildMsFiles(Collection<IFile> files, SubMonitor mon)
@@ -309,11 +267,33 @@ public class UIProjectLoader extends ProjectLoader {
         return db;
     }
 
-    public PgDatabase loadDatabaseWithLibraries() throws InterruptedException, IOException, CoreException {
+    public PgDatabase loadDatabaseWithLibraries()
+            throws InterruptedException, IOException, CoreException {
         PgDatabase db = new PgDatabase();
         db.setArguments(arguments);
-        db = arguments.isMsSql() ? loadDatabaseSchemaFromMsProject() : loadDatabaseSchemaFromPgProject(db);
+        if (arguments.isMsSql()) {
+            loadMsStructure(iProject, db);
+        } else {
+            loadPgStructure(iProject, db);
+        }
+
         loadLibraries(db, arguments);
+
+        if (!arguments.isIgnorePrivileges()) {
+            isOverrideMode = true;
+            // read overrides from special folder
+            IFolder privs = iProject.getFolder(ApgdiffConsts.OVERRIDES_DIR);
+            try {
+                if (arguments.isMsSql()) {
+                    loadMsStructure(privs, db);
+                } else {
+                    loadPgStructure(privs, db);
+                }
+                replaceOverrides();
+            } finally {
+                isOverrideMode = false;
+            }
+        }
         FullAnalyze.fullAnalyze(db, errors);
         return db;
     }
@@ -386,7 +366,7 @@ public class UIProjectLoader extends ProjectLoader {
     }
 
     public static boolean isPrivilegeFolder(IResourceDelta delta) {
-        return ApgdiffConsts.PRIVILEGES_DIR.equals(delta.getProjectRelativePath().segment(0));
+        return ApgdiffConsts.OVERRIDES_DIR.equals(delta.getProjectRelativePath().segment(0));
     }
 
     public static boolean isInProject(IEditorInput editorInput) {

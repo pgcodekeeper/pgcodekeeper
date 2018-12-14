@@ -23,6 +23,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.libraries.PgLibrary;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
@@ -46,20 +47,23 @@ public class LibraryLoader {
     public void loadLibraries(PgDiffArguments args, boolean isIgnorePriv,
             Collection<String> paths) throws InterruptedException, IOException {
         for (String path : paths) {
-            loadLibrary(args, isIgnorePriv, path);
+            db.addLib(getLibrary(path, args, isIgnorePriv));
         }
     }
 
     public void loadXml(DependenciesXmlStore xmlStore, PgDiffArguments args)
             throws InterruptedException, IOException {
         for (PgLibrary lib : xmlStore.readObjects()) {
-            loadLibrary(args, lib.isIgnorePriv(), lib.getPath());
-        }
-    }
+            PgDatabase l = getLibrary(lib.getPath(), args, lib.isIgnorePriv());
+            String owner = lib.getOwner();
+            if (!owner.isEmpty()) {
+                l.getDescendants()
+                .filter(PgStatement::isOwned)
+                .forEach(st -> st.setOwner(owner));
+            }
 
-    private void loadLibrary(PgDiffArguments args, boolean isIgnorePriv, String path)
-            throws InterruptedException, IOException {
-        db.addLib(getLibrary(path, args, isIgnorePriv));
+            db.addLib(l);
+        }
     }
 
     private PgDatabase getLibrary(String path, PgDiffArguments arguments, boolean isIgnorePriv)
@@ -103,11 +107,12 @@ public class LibraryLoader {
         }
 
         if (Files.isDirectory(p)) {
-            PgDatabase db = new PgDatabase();
-            db.setArguments(args);
+            PgDatabase db;
             if (Files.exists(p.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
-                new ProjectLoader(path, args).loadDatabaseSchemaFromDirTree(db);
+                db = new ProjectLoader(path, args).loadSchemaOnly();
             } else {
+                db = new PgDatabase();
+                db.setArguments(args);
                 readStatementsFromDirectory(p, db);
             }
             return db;

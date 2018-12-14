@@ -1628,7 +1628,7 @@ create_or_alter_function
 
 func_return
     : TABLE (LR_BRACKET column_def_table_constraints RR_BRACKET)?
-    | LOCAL_ID table_type_definition
+    | LOCAL_ID TABLE LR_BRACKET column_def_table_constraints RR_BRACKET
     | data_type
     ;
 
@@ -1648,7 +1648,7 @@ assembly_specifier
     ;
 
 procedure_param
-    : name=LOCAL_ID (id DOT)? AS? data_type VARYING? (EQUAL default_val=default_value)? arg_mode=(OUT | OUTPUT | READONLY)?
+    : name=LOCAL_ID AS? data_type VARYING? (EQUAL default_val=default_value)? arg_mode=(OUT | OUTPUT | READONLY)?
     ;
 
 procedure_option
@@ -1951,8 +1951,8 @@ service_broker_option
 
 snapshot_option
     : ALLOW_SNAPSHOT_ISOLATION on_off
-    | READ_COMMITTED_SNAPSHOT (ON | OFF )
-    | MEMORY_OPTIMIZED_ELEVATE_TO_SNAPSHOT = (ON | OFF )
+    | READ_COMMITTED_SNAPSHOT on_off
+    | MEMORY_OPTIMIZED_ELEVATE_TO_SNAPSHOT EQUAL on_off
     ;
 
 sql_option
@@ -1999,10 +1999,13 @@ drop_ddl_trigger
     ;
 
 create_type
-    : TYPE name = qualified_name
-    (FROM data_type default_value)?
-    (EXTERNAL NAME assembly_name=qualified_name)?
-    (AS TABLE LR_BRACKET column_def_table_constraints RR_BRACKET)?
+    : TYPE name = qualified_name type_definition    
+    ;
+
+type_definition
+    : FROM data_type null_notnull?
+    | EXTERNAL NAME assembly_name=id (DOT class_name=id)?
+    | AS TABLE LR_BRACKET column_def_table_constraints RR_BRACKET (WITH LR_BRACKET MEMORY_OPTIMIZED EQUAL on_off RR_BRACKET)?
     ;
 
 rowset_function_limited
@@ -2024,7 +2027,7 @@ opendatasource
 
 // https://msdn.microsoft.com/en-us/library/ms188927.aspx
 declare_statement
-    : DECLARE LOCAL_ID AS? table_type_definition
+    : DECLARE LOCAL_ID AS? TABLE LR_BRACKET column_def_table_constraints RR_BRACKET
     | DECLARE declare_local (COMMA declare_local)*
     | DECLARE LOCAL_ID AS? xml_type_definition
     | WITH XMLNAMESPACES LR_BRACKET xml_namespace_uri=STRING COMMA? AS id RR_BRACKET
@@ -2375,10 +2378,6 @@ declare_local
     : LOCAL_ID AS? data_type (EQUAL expression)?
     ;
 
-table_type_definition
-    : TABLE LR_BRACKET column_def_table_constraints RR_BRACKET
-    ;
-
 xml_type_definition
     : XML LR_BRACKET ( CONTENT | DOCUMENT )? xml_schema_collection RR_BRACKET
     ;
@@ -2394,6 +2393,11 @@ column_def_table_constraints
 column_def_table_constraint
     : id (data_type | AS expression) column_option* (MATERIALIZED | NOT MATERIALIZED)?
     | table_constraint
+    | table_index
+    ;
+ 
+table_index
+    : INDEX index_name=id clustered? HASH? index_rest
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms187742.aspx
@@ -2417,7 +2421,7 @@ identity_value
     ;
 
 column_constraint_body
-    : (PRIMARY KEY | UNIQUE) clustered? index_options?
+    : (PRIMARY KEY | UNIQUE) clustered? HASH? index_options?
     | CHECK not_for_replication? LR_BRACKET search_condition RR_BRACKET
     | (FOREIGN KEY)? REFERENCES qualified_name (LR_BRACKET id RR_BRACKET)? on_delete? on_update? not_for_replication?
     ;
@@ -2428,7 +2432,7 @@ table_constraint
     ;
 
 table_constraint_body
-    : (PRIMARY KEY | UNIQUE) clustered? LR_BRACKET column_name_list_with_order RR_BRACKET index_options? (ON id)?
+    : (PRIMARY KEY | UNIQUE) clustered? HASH? LR_BRACKET column_name_list_with_order RR_BRACKET index_options? (ON id)?
     | CHECK not_for_replication? LR_BRACKET search_condition RR_BRACKET
     | DEFAULT expression FOR id
     | FOREIGN KEY LR_BRACKET fk = column_name_list RR_BRACKET REFERENCES qualified_name (LR_BRACKET pk = column_name_list RR_BRACKET)? on_delete? on_update? not_for_replication?
@@ -2518,7 +2522,6 @@ expression
     | case_expression
     | over_clause
     | date_expression
-    | sequence_call
     | LR_BRACKET select_stmt_no_parens RR_BRACKET
     | primitive_expression
     ;
@@ -2532,10 +2535,6 @@ object_expression
     | over_clause
     | LR_BRACKET expression RR_BRACKET
     | LR_BRACKET select_stmt_no_parens RR_BRACKET
-    ;
-
-sequence_call
-    : NEXT VALUE FOR qualified_name
     ;
 
 date_expression
@@ -2780,13 +2779,17 @@ function_call
     : ranking_windowed_function
     | aggregate_windowed_function
     | analytic_windowed_function
+    // https://docs.microsoft.com/en-us/sql/t-sql/xml/xml-data-type-methods
+    | xml_data_type_methods
     | scalar_function_name LR_BRACKET expression_list? RR_BRACKET
     // https://msdn.microsoft.com/en-us/library/ms173784.aspx
     | BINARY_CHECKSUM LR_BRACKET STAR RR_BRACKET
     // https://msdn.microsoft.com/en-us/library/hh231076.aspx
-    // https://msdn.microsoft.com/en-us/library/ms187928.aspx
     | CAST LR_BRACKET expression AS data_type RR_BRACKET
+    // https://msdn.microsoft.com/en-us/library/ms187928.aspx
     | CONVERT LR_BRACKET convert_data_type=data_type COMMA convert_expression=expression (COMMA style=expression)? RR_BRACKET
+    // https://docs.microsoft.com/en-us/sql/t-sql/functions/parse-transact-sql
+    | PARSE LR_BRACKET expression AS data_type (USING expression)? RR_BRACKET
     // https://msdn.microsoft.com/en-us/library/ms189788.aspx
     | CHECKSUM LR_BRACKET STAR RR_BRACKET
     // https://msdn.microsoft.com/en-us/library/ms190349.aspx
@@ -2805,9 +2808,36 @@ function_call
     | SESSION_USER
     // https://msdn.microsoft.com/en-us/library/ms179930.aspx
     | SYSTEM_USER
+    // https://docs.microsoft.com/en-us/sql/t-sql/functions/openjson-transact-sql
+    | OPENJSON LR_BRACKET expression (COMMA expression)? RR_BRACKET 
+    WITH LR_BRACKET column_declaration (AS JSON)? (COMMA column_declaration (AS JSON)?)* RR_BRACKET
     | USER
-    // https://docs.microsoft.com/en-us/sql/t-sql/xml/xml-data-type-methods
-    | xml_data_type_methods
+    // https://docs.microsoft.com/en-us/sql/t-sql/functions/cursor-rows-transact-sql
+    | FUNC_CURSOR_ROWS
+    // https://docs.microsoft.com/en-us/sql/t-sql/functions/fetch-status-transact-sql
+    | FUNC_FETCH_STATUS
+    // https://docs.microsoft.com/en-us/sql/t-sql/functions/datefirst-transact-sql
+    | FUNC_DATEFIRST
+    // https://docs.microsoft.com/en-us/sql/t-sql/functions/procid-transact-sql
+    | FUNC_PROCID
+    // https://docs.microsoft.com/en-us/sql/t-sql/functions/error-transact-sql
+    | FUNC_ERROR
+    // https://docs.microsoft.com/en-us/sql/t-sql/functions/identity-transact-sql
+    | FUNC_IDENTITY
+    // https://docs.microsoft.com/en-us/sql/t-sql/functions/pack-received-transact-sql
+    | FUNC_PACK_RECEIVED 
+    // https://docs.microsoft.com/en-us/sql/t-sql/functions/rowcount-transact-sql
+    | FUNC_ROWCOUNT  
+    // https://docs.microsoft.com/en-us/sql/t-sql/functions/trancount-transact-sql
+    | FUNC_TRANCOUNT  
+    // https://docs.microsoft.com/en-us/sql/t-sql/functions/next-value-for-transact-sql
+    | NEXT VALUE FOR sequence_name = qualified_name over_clause?
+    // https://docs.microsoft.com/en-us/sql/t-sql/functions/string-agg-transact-sql
+    | STRING_AGG LR_BRACKET expression COMMA expression RR_BRACKET WITHIN_GROUP LR_BRACKET order_by_clause RR_BRACKET
+    // https://docs.microsoft.com/en-us/sql/t-sql/functions/trim-transact-sql
+    | TRIM LR_BRACKET (expression FROM)? expression RR_BRACKET
+    // https://docs.microsoft.com/en-us/sql/t-sql/functions/partition-transact-sql
+    | (id DOT)? DOLLAR PARTITION DOT function_call
     ;
 
 xml_data_type_methods
@@ -3421,6 +3451,8 @@ simple_id
     | MEDIUM
     | MEMBER
     | MEMORY_OPTIMIZED_DATA
+    | MEMORY_OPTIMIZED_ELEVATE_TO_SNAPSHOT
+    | MEMORY_OPTIMIZED
     | MEMORY_PARTITION_MODE
     | MESSAGE_FORWARD_SIZE
     | MESSAGE_FORWARDING
@@ -3481,6 +3513,7 @@ simple_id
     | ONLINE
     | ONLY
     | OPEN_EXISTING
+    | OPENJSON
     | OPTIMISTIC
     | OPTIMIZE
     | OUT
@@ -3490,6 +3523,7 @@ simple_id
     | PAGE
     | PARAM_NODE
     | PARAMETERIZATION
+    | PARSE
     | PARTIAL
     | PARTITION
     | PARTITIONS
@@ -3662,6 +3696,7 @@ simple_id
     | STOP
     | STOPLIST
     | STOPPED
+    | STRING_AGG
     | STUFF
     | SUBJECT
     | SUM
@@ -3689,6 +3724,7 @@ simple_id
     | TRACK_COLUMNS_UPDATED
     | TRANSFER
     | TRANSFORM_NOISE_WORDS
+    | TRIM
     | TRIPLE_DES_3KEY
     | TRIPLE_DES
     | TRUE
