@@ -160,7 +160,7 @@ public class DbStorePicker extends Composite {
     private void loadStore(ISelection newSelection) {
         ISelection selection = newSelection == null ? cmbDbNames.getSelection() : newSelection;
 
-        List<DbInfo> store = DbInfo.readStoreFromXml(prefStore.getString(PREF.DB_STORE));
+        List<DbInfo> store = DbInfo.readStoreFromXml();
         Collection<File> files;
         if (useFileSources || useDirSources) {
             files = stringToDumpFileHistory(prefStore.getString(PREF.DB_STORE_FILES));
