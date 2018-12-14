@@ -96,6 +96,17 @@ public class CreateAggregate extends ParserAbstract {
         ModifyType finalFuncModify = null;
         ModifyType mFinalFuncModify = null;
         if (params != null) {
+            // The parameter 'MSTYPE' must be processed before parameters 'MSFUNC',
+            // 'MINVFUNC', 'MFINALFUNC', for correctly adding dependencies on the
+            // functions 'MSFUNC', 'MINVFUNC', 'MFINALFUNC'.
+            Aggregate_paramContext mSTypeParamCtx = params.stream()
+                    .filter(param -> param.MSTYPE() != null).findAny().orElse(null);
+            if (mSTypeParamCtx != null) {
+                Data_typeContext mSTypeCtx = mSTypeParamCtx.ms_type;
+                aggregate.setMSType(getFullCtxText(mSTypeCtx));
+                addTypeAsDepcy(mSTypeCtx, aggregate, aggrSchemaName);
+            }
+
             for (Aggregate_paramContext paramOpt : params) {
                 if (paramOpt.SSPACE() != null) {
                     aggregate.setSSpace(Long.parseLong(paramOpt.s_space.getText()));
@@ -129,10 +140,6 @@ public class CreateAggregate extends ParserAbstract {
                     Schema_qualified_nameContext mInvFuncCtx = paramOpt.minv_func;
                     aggregate.setMInvFunc(mInvFuncCtx.getText());
                     addFuncAsDepcy(PgAggregate.MINVFUNC, mInvFuncCtx, aggregate, defSchemaName);
-                } else if (paramOpt.MSTYPE() != null) {
-                    Data_typeContext mSTypeCtx = paramOpt.ms_type;
-                    aggregate.setMSType(getFullCtxText(mSTypeCtx));
-                    addTypeAsDepcy(mSTypeCtx, aggregate, aggrSchemaName);
                 } else if (paramOpt.MSSPACE() != null) {
                     aggregate.setMSSpace(Long.parseLong(paramOpt.ms_space.getText()));
                 } else if (paramOpt.MFINALFUNC() != null) {

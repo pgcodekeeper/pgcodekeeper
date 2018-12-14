@@ -340,6 +340,16 @@ public class FunctionsReader extends JdbcReader {
             aggregate.setInitCond(PgDiffUtils.quoteString(initCond));
         }
 
+        // The parameter 'MSTYPE' must be processed before parameters 'MSFUNC',
+        // 'MINVFUNC', 'MFINALFUNC', for correctly adding dependencies on the
+        // functions 'MSFUNC', 'MINVFUNC', 'MFINALFUNC'.
+        long mstype = res.getLong("mstype");
+        if (mstype != 0) {
+            JdbcType mSType = loader.cachedTypesByOid.get(mstype);
+            aggregate.setMSType(mSType.getFullName());
+            mSType.addTypeDepcy(aggregate);
+        }
+
         String msFuncName = res.getString("msfunc");
         if (msFuncName != null) {
             String mSFuncSchemaName = res.getString("msfunc_nsp");
@@ -356,13 +366,6 @@ public class FunctionsReader extends JdbcReader {
             addFuncAsDepcy(aggregate, mInvFuncSchemaName,
                     CreateAggregate.getParamFuncSignature(aggregate, mInvFuncName,
                             PgAggregate.MINVFUNC));
-        }
-
-        long mstype = res.getLong("mstype");
-        if (mstype != 0) {
-            JdbcType mSType = loader.cachedTypesByOid.get(mstype);
-            aggregate.setMSType(mSType.getFullName());
-            mSType.addTypeDepcy(aggregate);
         }
 
         String msspace = res.getString("msspace");
