@@ -44,7 +44,7 @@ public class OpenEditor extends AbstractHandler {
     public void setEnabled(Object evaluationContext) {
         proj = getSelectedProject(evaluationContext);
         try {
-            setBaseEnabled(proj == null ? false : proj.hasNature(NATURE.ID));
+            setBaseEnabled(proj != null && proj.hasNature(NATURE.ID));
         } catch (CoreException ex) {
             setBaseEnabled(false);
             Log.log(ex);

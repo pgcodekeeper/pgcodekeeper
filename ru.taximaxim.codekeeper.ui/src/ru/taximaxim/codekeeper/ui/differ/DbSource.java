@@ -87,13 +87,12 @@ public abstract class DbSource {
     protected abstract PgDatabase loadInternal(SubMonitor monitor)
             throws IOException, InterruptedException, CoreException;
 
-    static PgDiffArguments getPgDiffArgs(String charset, boolean forceUnixNewlines, boolean msSql)
-            throws IOException {
+    static PgDiffArguments getPgDiffArgs(String charset, boolean forceUnixNewlines, boolean msSql) {
         return getPgDiffArgs(charset, ApgdiffConsts.UTC, forceUnixNewlines, msSql);
     }
 
     static PgDiffArguments getPgDiffArgs(String charset, String timeZone,
-            boolean forceUnixNewlines, boolean msSql) throws IOException {
+            boolean forceUnixNewlines, boolean msSql) {
         PgDiffArguments args = new PgDiffArguments();
         IPreferenceStore mainPS = Activator.getDefault().getPreferenceStore();
         args.setInCharsetName(charset);

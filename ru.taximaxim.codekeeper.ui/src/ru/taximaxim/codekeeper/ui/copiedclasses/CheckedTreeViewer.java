@@ -16,9 +16,7 @@ package ru.taximaxim.codekeeper.ui.copiedclasses;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
-import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.ITreeViewerListener;
 import org.eclipse.jface.viewers.TreeExpansionEvent;
 import org.eclipse.swt.widgets.Composite;
@@ -31,7 +29,7 @@ import org.eclipse.swt.widgets.Widget;
 /**
  * Modified copy of org.eclipse.ui.dialogs.ContainerCheckedTreeViewer.
  * <br>
- * CheckboxTreeViewer with special behaviour of the checked / gray state on 
+ * CheckboxTreeViewer with special behaviour of the checked / gray state on
  * container (non-leaf) nodes:
  * The grayed state is used to visualize the checked state of its children.
  * Containers are checked and non-gray if all contained leafs are checked. The
@@ -69,15 +67,11 @@ public class CheckedTreeViewer extends CheckboxTreeViewer {
 
     private void initViewer() {
         setUseHashlookup(true);
-        addCheckStateListener(new ICheckStateListener() {
-            @Override
-            public void checkStateChanged(CheckStateChangedEvent event) {
-                doCheckStateChanged(event.getElement());
-            }
-        });
+        addCheckStateListener(event -> doCheckStateChanged(event.getElement()));
         addTreeListener(new ITreeViewerListener() {
             @Override
             public void treeCollapsed(TreeExpansionEvent event) {
+                // no imp
             }
 
             @Override
@@ -105,7 +99,7 @@ public class CheckedTreeViewer extends CheckboxTreeViewer {
     }
 
     /**
-     * The item has expanded. Updates the checked state of its children. 
+     * The item has expanded. Updates the checked state of its children.
      */
     private void initializeItem(TreeItem item) {
         if (item.getChecked() && !item.getGrayed()) {
@@ -118,16 +112,16 @@ public class CheckedTreeViewer extends CheckboxTreeViewer {
      */
     private void updateChildrenItems(TreeItem parent) {
         boolean state = parent.getChecked();
-        
+
         // do not implicitly check children, only uncheck
         if(state) {
             return;
         }
-        
+
         Item[] children = getChildren(parent);
-        
-        for (int i = 0; i < children.length; i++) {
-            TreeItem curr = (TreeItem) children[i];
+
+        for (Item element : children) {
+            TreeItem curr = (TreeItem) element;
             if (curr.getData() != null
                     && ((curr.getChecked() != state) || curr.getGrayed())) {
                 curr.setChecked(state);
@@ -145,8 +139,8 @@ public class CheckedTreeViewer extends CheckboxTreeViewer {
             Item[] children = getChildren(item);
             boolean containsChecked = false;
             boolean containsUnchecked = false;
-            for (int i = 0; i < children.length; i++) {
-                TreeItem curr = (TreeItem) children[i];
+            for (Item element : children) {
+                TreeItem curr = (TreeItem) element;
                 containsChecked |= curr.getChecked();
                 containsUnchecked |= (!curr.getChecked() || curr.getGrayed());
             }
@@ -174,8 +168,8 @@ public class CheckedTreeViewer extends CheckboxTreeViewer {
     @Override
     public void setCheckedElements(Object[] elements) {
         super.setCheckedElements(elements);
-        for (int i = 0; i < elements.length; i++) {
-            doCheckStateChanged(elements[i]);
+        for (Object element : elements) {
+            doCheckStateChanged(element);
         }
     }
 
@@ -199,8 +193,7 @@ public class CheckedTreeViewer extends CheckboxTreeViewer {
         Object[] checked = super.getCheckedElements();
         // add all items that are children of a checked node but not created yet
         ArrayList<Object> result = new ArrayList<>();
-        for (int i = 0; i < checked.length; i++) {
-            Object curr = checked[i];
+        for (Object curr : checked) {
             result.add(curr);
             Widget item = findItem(curr);
             if (item != null) {
@@ -222,13 +215,12 @@ public class CheckedTreeViewer extends CheckboxTreeViewer {
      */
     private void collectChildren(Object element, List<Object> result) {
         Object[] filteredChildren = getFilteredChildren(element);
-        for (int i = 0; i < filteredChildren.length; i++) {
-            Object curr = filteredChildren[i];
+        for (Object curr : filteredChildren) {
             result.add(curr);
             collectChildren(curr, result);
         }
     }
-    
+
     @Override
     public boolean setSubtreeChecked(Object element, boolean state) {
         boolean rv = super.setSubtreeChecked(element, state);

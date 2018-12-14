@@ -13,11 +13,9 @@ import org.eclipse.jface.fieldassist.ContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.jface.viewers.ArrayContentProvider;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.ListViewer;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -39,7 +37,8 @@ public class ManualDepciesGroup extends Group{
     private final List<Entry<PgStatement, PgStatement>> depcies;
     private final Map<String, PgStatement> objects;
 
-    private final Text txtDependents, txtDependencies;
+    private final Text txtDependents;
+    private final Text txtDependencies;
     private final ListViewer listDepcies;
     private final Button btnAdd;
     private final Button btnRemove;
@@ -134,15 +133,12 @@ public class ManualDepciesGroup extends Group{
                         + e.getValue().getQualifiedName();
             }
         });
-        listDepcies.addSelectionChangedListener(new ISelectionChangedListener() {
-
-            @Override
-            public void selectionChanged(SelectionChangedEvent event) {
-                btnRemove.setEnabled(!event.getSelection().isEmpty());
-            }
-        });
 
         btnRemove = new Button(grpList, SWT.PUSH);
+
+        listDepcies.addSelectionChangedListener(
+                event -> btnRemove.setEnabled(!event.getSelection().isEmpty()));
+
         btnRemove.setText(Messages.manualDepciesDialog_remove);
         btnRemove.setEnabled(false);
         btnRemove.addSelectionListener(new SelectionAdapter() {

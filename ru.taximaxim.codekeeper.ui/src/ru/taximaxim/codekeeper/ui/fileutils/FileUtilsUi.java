@@ -1,7 +1,6 @@
 package ru.taximaxim.codekeeper.ui.fileutils;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -86,7 +85,7 @@ public final class FileUtilsUi {
         }
     }
 
-    public static Path getPathToTimeObject(String proj, String db, String hash) throws URISyntaxException {
+    public static Path getPathToTimeObject(String proj, String db, String hash) {
         return Paths.get(Platform.getStateLocation(Activator.getContext().getBundle())
                 .append("projects").append(proj + '-' + db + '-' + hash + ".time").toString()); //$NON-NLS-1$ //$NON-NLS-2$
     }

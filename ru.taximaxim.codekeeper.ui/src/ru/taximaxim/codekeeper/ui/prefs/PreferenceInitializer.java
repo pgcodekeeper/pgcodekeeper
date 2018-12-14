@@ -59,13 +59,6 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         for (SQLEditorStatementTypes type : SQLEditorStatementTypes.values()) {
             SQLEditorSyntaxModel syntax = new SQLEditorSyntaxModel(type, store);
             switch (type) {
-            case FUNCTIONS:
-                syntax.setBold(false);
-                syntax.setColor(new RGB(0, 0, 128));
-                syntax.setItalic(false);
-                syntax.setStrikethrough(false);
-                syntax.setUnderline(false);
-                break;
             case RESERVED_WORDS:
             case UN_RESERVED_WORDS:
                 syntax.setBold(true);
@@ -103,6 +96,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
                 syntax.setUnderline(false);
                 break;
             case QUOTED_IDENTIFIER:
+            case FUNCTIONS:
                 syntax.setBold(false);
                 syntax.setColor(new RGB(0, 0, 128));
                 syntax.setItalic(false);

@@ -6,12 +6,8 @@ import java.util.List;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IContributionItem;
-import org.eclipse.jface.action.IMenuListener;
-import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.viewers.DoubleClickEvent;
-import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.TreePath;
@@ -61,14 +57,10 @@ public class DiffTreeViewer extends Composite {
                 super.update(cell);
             }
         });
-        viewer.addDoubleClickListener(new IDoubleClickListener() {
-
-            @Override
-            public void doubleClick(DoubleClickEvent event) {
-                TreePath path = ((TreeSelection) event.getSelection()).getPaths()[0];
-                viewer.setExpandedState(path, !viewer.getExpandedState(path));
-                viewer.refresh();
-            }
+        viewer.addDoubleClickListener(event -> {
+            TreePath path = ((TreeSelection) event.getSelection()).getPaths()[0];
+            viewer.setExpandedState(path, !viewer.getExpandedState(path));
+            viewer.refresh();
         });
 
         MenuManager menuMgr = new MenuManager();
@@ -103,15 +95,11 @@ public class DiffTreeViewer extends Composite {
                 viewer.collapseToLevel(path, TreeViewer.ALL_LEVELS);
             }
         });
-        menuMgr.addMenuListener(new IMenuListener() {
-
-            @Override
-            public void menuAboutToShow(IMenuManager manager) {
-                boolean enable = !viewer.getSelection().isEmpty();
-                for(IContributionItem item : manager.getItems()) {
-                    if(item instanceof ActionContributionItem) {
-                        ((ActionContributionItem) item).getAction().setEnabled(enable);
-                    }
+        menuMgr.addMenuListener(manager -> {
+            boolean enable = !viewer.getSelection().isEmpty();
+            for(IContributionItem item : manager.getItems()) {
+                if(item instanceof ActionContributionItem) {
+                    ((ActionContributionItem) item).getAction().setEnabled(enable);
                 }
             }
         });

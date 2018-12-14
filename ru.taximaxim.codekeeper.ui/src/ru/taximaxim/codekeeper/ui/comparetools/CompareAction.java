@@ -29,7 +29,7 @@ public class CompareAction {
         IEditorReference[] editorRefs = page.getEditorReferences();
         for (IEditorReference editorRef : editorRefs) {
             IEditorPart part = editorRef.getEditor(false);
-            if (part != null && part instanceof IReusableEditor
+            if (part instanceof IReusableEditor
                     && part.getEditorInput().equals(input)) {
                 return part;
             }
@@ -38,13 +38,16 @@ public class CompareAction {
         if (Activator.getDefault().getPreferenceStore().getBoolean(PREF.REUSE_OPEN_COMPARE_EDITOR)) {
             for (IEditorReference editorRef : editorRefs) {
                 IEditorPart part = editorRef.getEditor(false);
-                if (part != null && part.getEditorInput() instanceof CompareInput
-                        && part instanceof IReusableEditor) {
+                if (part instanceof IReusableEditor
+                        && part.getEditorInput() instanceof CompareInput) {
                     return part;
                 }
             }
         }
 
         return null;
+    }
+
+    private CompareAction() {
     }
 }
