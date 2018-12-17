@@ -89,7 +89,7 @@ public class MsType extends AbstractType {
             return false;
         }
 
-        if (!checkForChanges(newType)) {
+        if (!compareUnalterable(newType)) {
             isNeedDepcies.set(true);
             return true;
         }
@@ -102,7 +102,7 @@ public class MsType extends AbstractType {
         return sb.length() > startLength;
     }
 
-    private boolean checkForChanges(MsType newType) {
+    private boolean compareUnalterable(MsType newType) {
         boolean equals = false;
 
         if (this == newType) {
@@ -113,9 +113,9 @@ public class MsType extends AbstractType {
                     && Objects.equals(getBaseType(), newType.getBaseType())
                     && Objects.equals(getAssemblyName(), newType.getAssemblyName())
                     && Objects.equals(getAssemblyClass(), newType.getAssemblyClass())
-                    && Objects.equals(getColumns(), newType.getColumns())
-                    && PgDiffUtils.setlikeEquals(getIndices(), newType.getIndices())
-                    && PgDiffUtils.setlikeEquals(getConstraints(), newType.getConstraints());
+                    && columns.equals(newType.columns)
+                    && PgDiffUtils.setlikeEquals(indices, newType.indices)
+                    && PgDiffUtils.setlikeEquals(constraints, newType.constraints);
         }
 
         return equals;
@@ -148,7 +148,7 @@ public class MsType extends AbstractType {
 
         if (obj instanceof MsType) {
             MsType type = (MsType) obj;
-            return super.compare(type) && checkForChanges(type);
+            return super.compare(type) && compareUnalterable(type);
         }
 
         return false;

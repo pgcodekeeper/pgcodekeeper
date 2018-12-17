@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
@@ -51,7 +52,7 @@ public class MsConstraint extends AbstractConstraint {
             AtomicBoolean isNeedDepcies) {
         if (newCondition instanceof MsConstraint) {
             MsConstraint newConstr = (MsConstraint)newCondition;
-            if (!compareWithoutComments(newConstr)) {
+            if (!Objects.equals(getDefinition(), newConstr.getDefinition())) {
                 isNeedDepcies.set(true);
                 return true;
             }

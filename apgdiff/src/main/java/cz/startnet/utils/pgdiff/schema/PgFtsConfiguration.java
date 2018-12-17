@@ -141,7 +141,7 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
         PgFtsConfiguration confDst = new PgFtsConfiguration(getName());
         copyBaseFields(confDst);
         confDst.setParser(getParser());
-        confDst.dictionariesMap.putAll(getDictionariesMap());
+        confDst.dictionariesMap.putAll(dictionariesMap);
         return confDst;
     }
 
@@ -156,10 +156,10 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
             return true;
         }
 
-        if (obj instanceof PgFtsConfiguration && compareBaseFields(obj)) {
+        if (obj instanceof PgFtsConfiguration) {
             PgFtsConfiguration config = (PgFtsConfiguration) obj;
             return Objects.equals(parser, config.getParser())
-                    && Objects.equals(dictionariesMap, config.dictionariesMap);
+                    && dictionariesMap.equals(config.dictionariesMap);
         }
 
         return false;

@@ -135,7 +135,7 @@ public class MsRole extends PgStatement {
             return true;
         }
 
-        return obj instanceof MsRole && compareBaseFields(obj)
+        return obj instanceof MsRole
                 && Objects.equals(members, ((MsRole) obj).members);
     }
 

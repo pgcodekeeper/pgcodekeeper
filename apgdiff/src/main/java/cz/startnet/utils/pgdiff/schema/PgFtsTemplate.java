@@ -62,7 +62,7 @@ public class PgFtsTemplate extends PgStatementWithSearchPath {
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         if (newCondition instanceof PgFtsTemplate) {
-            if (!compareWithoutComments((PgFtsTemplate)newCondition)) {
+            if (!compareUnalterable((PgFtsTemplate)newCondition)) {
                 isNeedDepcies.set(true);
                 return true;
             }
@@ -98,13 +98,12 @@ public class PgFtsTemplate extends PgStatementWithSearchPath {
             return true;
         }
 
-        return obj instanceof PgFtsTemplate && compareBaseFields(obj)
-                && compareWithoutComments((PgFtsTemplate) obj);
+        return obj instanceof PgFtsTemplate
+                && compareUnalterable((PgFtsTemplate) obj);
     }
 
-    private boolean compareWithoutComments(PgFtsTemplate template) {
-        return Objects.equals(name, template.name)
-                && Objects.equals(initFunction, template.initFunction)
+    private boolean compareUnalterable(PgFtsTemplate template) {
+        return Objects.equals(initFunction, template.initFunction)
                 && Objects.equals(lexizeFunction, template.lexizeFunction);
     }
 

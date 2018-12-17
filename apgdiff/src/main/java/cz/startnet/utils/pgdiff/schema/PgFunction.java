@@ -184,7 +184,7 @@ public class PgFunction extends AbstractPgFunction {
             return false;
         }
 
-        if (!checkForChanges(newFunction)) {
+        if (!compareUnalterable(newFunction)) {
             if (needDrop(newFunction)) {
                 isNeedDepcies.set(true);
                 return true;

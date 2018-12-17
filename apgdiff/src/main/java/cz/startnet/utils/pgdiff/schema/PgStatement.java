@@ -471,7 +471,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         copy.isLib = isLib;
     }
 
-    protected final boolean compareBaseFields(PgStatement obj) {
+    private boolean compareBaseFields(PgStatement obj) {
         return Objects.equals(name, obj.name)
                 && privileges.equals(obj.privileges)
                 && Objects.equals(owner, obj.owner)
@@ -557,7 +557,8 @@ public abstract class PgStatement implements IStatement, IHashable {
             return true;
         } else if (obj instanceof PgStatement) {
             PgStatement st = (PgStatement) obj;
-            return this.parentNamesEquals(st)
+            return this.compareBaseFields(st)
+                    && this.parentNamesEquals(st)
                     && this.compare(st)
                     && this.compareChildren(st);
         }

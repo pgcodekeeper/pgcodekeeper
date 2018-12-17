@@ -12,7 +12,7 @@ import cz.startnet.utils.pgdiff.hashers.Hasher;
  * @author galiev_mr
  *
  */
-public abstract class AbstractRegularTable extends PgTable {
+public abstract class AbstractRegularTable extends AbstractPgTable {
 
     protected boolean isLogged = true;
     protected String tablespace;
@@ -99,7 +99,7 @@ public abstract class AbstractRegularTable extends PgTable {
     }
 
     @Override
-    protected void compareTableOptions(PgTable newTable, StringBuilder sb) {
+    protected void compareTableOptions(AbstractPgTable newTable, StringBuilder sb) {
         super.compareTableOptions(newTable, sb);
 
         AbstractRegularTable newRegTable = (AbstractRegularTable) newTable;

@@ -11,7 +11,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
@@ -118,9 +117,7 @@ public abstract class XmlStore<T> {
 
     private void serializeXml(Document xml, boolean formatting,
             Writer writer) throws TransformerException {
-        TransformerFactory factory = TransformerFactory.newInstance();
-        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-        Transformer tf =  factory.newTransformer();
+        Transformer tf = TransformerFactory.newInstance().newTransformer();
         if (formatting) {
             tf.setOutputProperty(OutputKeys.INDENT, "yes"); //$NON-NLS-1$
             tf.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4"); //$NON-NLS-1$ //$NON-NLS-2$

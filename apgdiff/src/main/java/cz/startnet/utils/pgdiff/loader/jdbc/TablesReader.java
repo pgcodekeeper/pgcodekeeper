@@ -13,7 +13,7 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PartitionForeignPgTable;
 import cz.startnet.utils.pgdiff.schema.PartitionPgTable;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.SimpleForeignPgTable;
 import cz.startnet.utils.pgdiff.schema.SimplePgTable;
 import cz.startnet.utils.pgdiff.schema.TypedPgTable;
@@ -27,12 +27,12 @@ public class TablesReader extends JdbcReader {
 
     @Override
     protected void processResult(ResultSet result, AbstractSchema schema) throws SQLException {
-        PgTable table = getTable(result, schema);
+        AbstractPgTable table = getTable(result, schema);
         loader.monitor.worked(1);
         schema.addTable(table);
     }
 
-    private PgTable getTable(ResultSet res, AbstractSchema schema) throws SQLException {
+    private AbstractPgTable getTable(ResultSet res, AbstractSchema schema) throws SQLException {
         String schemaName = schema.getName();
         String tableName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, DbObjType.TABLE));
@@ -42,7 +42,7 @@ public class TablesReader extends JdbcReader {
             partitionBound = res.getString("partition_bound");
             checkObjectValidity(partitionBound, getType(), tableName);
         }
-        PgTable t;
+        AbstractPgTable t;
         String serverName = res.getString("server_name");
         long ofTypeOid = res.getLong("of_type");
         if (serverName != null) {
@@ -135,7 +135,7 @@ public class TablesReader extends JdbcReader {
         return t;
     }
 
-    private void readColumns(ResultSet res, PgTable t, long ofTypeOid,
+    private void readColumns(ResultSet res, AbstractPgTable t, long ofTypeOid,
             AbstractSchema schema) throws SQLException {
         String[] colNames = getColArray(res, "col_names");
         if (colNames == null) {

@@ -38,7 +38,7 @@ import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class TableAbstract extends ParserAbstract {
@@ -182,7 +182,7 @@ public abstract class TableAbstract extends ParserAbstract {
         addColumn(columnName, null, null, constraints, table);
     }
 
-    protected void addInherit(PgTable table, List<IdentifierContext> idsInh) {
+    protected void addInherit(AbstractPgTable table, List<IdentifierContext> idsInh) {
         String inhSchemaName = QNameParser.getSchemaName(idsInh, getDefSchemaName());
         String inhTableName = QNameParser.getFirstName(idsInh);
         table.addInherits(inhSchemaName, inhTableName);

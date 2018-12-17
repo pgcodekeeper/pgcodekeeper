@@ -135,7 +135,7 @@ public class MsUser extends PgStatement {
             return true;
         }
 
-        if (obj instanceof MsUser && compareBaseFields(obj)) {
+        if (obj instanceof MsUser) {
             MsUser user = (MsUser) obj;
             return Objects.equals(schema, user.getSchema())
                     && Objects.equals(login, user.getLogin());

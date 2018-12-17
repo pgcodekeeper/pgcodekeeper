@@ -130,7 +130,7 @@ public class PgProcedure extends AbstractPgFunction {
             return false;
         }
 
-        if (!checkForChanges(newProcedure)) {
+        if (!compareUnalterable(newProcedure)) {
             if (needDrop(newProcedure)) {
                 isNeedDepcies.set(true);
                 return true;

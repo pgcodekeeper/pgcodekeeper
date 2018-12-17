@@ -354,7 +354,7 @@ public class PgDatabase extends PgStatement {
     public void sortColumns() {
         if (isPostgres()) {
             for (AbstractSchema schema : schemas) {
-                schema.getTables().forEach(t -> ((PgTable) t).sortColumns());
+                schema.getTables().forEach(t -> ((AbstractPgTable) t).sortColumns());
             }
         }
     }

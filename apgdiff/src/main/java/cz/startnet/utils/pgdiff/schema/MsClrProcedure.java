@@ -69,7 +69,7 @@ public class MsClrProcedure extends AbstractMsClrFunction {
             return false;
         }
 
-        if (!checkForChanges(newProcedure)) {
+        if (!compareUnalterable(newProcedure)) {
             sb.append(newProcedure.getProcedureFullSQL(false));
         }
 

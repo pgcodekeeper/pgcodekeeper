@@ -47,7 +47,7 @@ public class MsClrFunction extends AbstractMsClrFunction {
             return false;
         }
 
-        if (!checkForChanges(newFunction)) {
+        if (!compareUnalterable(newFunction)) {
             if (!getFuncType().equals(newFunction.getFuncType())) {
                 isNeedDepcies.set(true);
                 return true;
@@ -145,8 +145,8 @@ public class MsClrFunction extends AbstractMsClrFunction {
     }
 
     @Override
-    public boolean checkForChanges(AbstractMsClrFunction func) {
-        return func instanceof MsClrFunction && super.checkForChanges(func)
+    public boolean compareUnalterable(AbstractMsClrFunction func) {
+        return func instanceof MsClrFunction && super.compareUnalterable(func)
                 && Objects.equals(returns, func.getReturns())
                 && Objects.equals(getFuncType(), ((MsClrFunction) func).getFuncType());
     }

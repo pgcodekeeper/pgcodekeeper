@@ -61,7 +61,7 @@ public abstract class AbstractMsFunction extends AbstractFunction {
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof AbstractMsFunction && compareBaseFields(obj)) {
+        if (obj instanceof AbstractMsFunction) {
             AbstractMsFunction func = (AbstractMsFunction) obj;
             return Objects.equals(getFirstPart(), func.getFirstPart())
                     && Objects.equals(getSecondPart(), func.getSecondPart())

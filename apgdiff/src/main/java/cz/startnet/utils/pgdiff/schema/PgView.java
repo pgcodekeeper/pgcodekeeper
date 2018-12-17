@@ -34,9 +34,8 @@ public class PgView extends AbstractView implements PgOptionContainer  {
     private Boolean isWithData;
     private final List<DefaultValue> defaultValues = new ArrayList<>();
     private final List<ColumnComment> columnComments = new ArrayList<>();
-
-    protected final Map<String, String> options = new LinkedHashMap<>();
-    protected final List<String> columnNames = new ArrayList<>();
+    private final Map<String, String> options = new LinkedHashMap<>();
+    private final List<String> columnNames = new ArrayList<>();
 
     public PgView(String name) {
         super(name);
@@ -433,12 +432,12 @@ public class PgView extends AbstractView implements PgOptionContainer  {
         if (obj instanceof PgView && super.compare(obj)) {
             PgView view = (PgView) obj;
             return Objects.equals(normalizedQuery, view.getNormalizedQuery())
+                    && Objects.equals(isWithData, view.isWithData())
+                    && Objects.equals(tablespace, view.getTablespace())
                     && columnNames.equals(view.columnNames)
                     && PgDiffUtils.setlikeEquals(defaultValues, view.defaultValues)
-                    && Objects.equals(columnComments, view.getColumnComments())
-                    && Objects.equals(options, view.getOptions())
-                    && Objects.equals(isWithData, view.isWithData())
-                    && Objects.equals(tablespace, view.getTablespace());
+                    && columnComments.equals(view.columnComments)
+                    && options.equals(view.options);
         }
 
         return false;
