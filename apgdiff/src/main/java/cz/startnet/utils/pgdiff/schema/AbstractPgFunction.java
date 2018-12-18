@@ -296,7 +296,7 @@ public abstract class AbstractPgFunction extends AbstractFunction {
             return true;
         }
 
-        return obj instanceof AbstractPgFunction
+        return obj instanceof AbstractPgFunction && super.compare(obj)
                 && compareUnalterable((AbstractPgFunction) obj);
     }
 

@@ -96,7 +96,7 @@ public class PgExtension extends PgStatement {
             return true;
         }
 
-        return obj instanceof PgExtension
+        return obj instanceof PgExtension && super.compare(obj)
                 && Objects.equals(schema, ((PgExtension) obj).getSchema());
     }
 

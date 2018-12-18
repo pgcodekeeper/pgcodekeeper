@@ -107,7 +107,7 @@ public class PgFtsParser extends PgStatementWithSearchPath {
             return true;
         }
 
-        return obj instanceof PgFtsParser
+        return obj instanceof PgFtsParser && super.compare(obj)
                 && compareUnalterable((PgFtsParser) obj);
     }
 

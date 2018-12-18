@@ -146,7 +146,7 @@ implements PgOptionContainer {
             return true;
         }
 
-        if (obj instanceof PgFtsDictionary) {
+        if (obj instanceof PgFtsDictionary && super.compare(obj)) {
             PgFtsDictionary dictionary = (PgFtsDictionary) obj;
             return Objects.equals(template, dictionary.template)
                     && options.equals(dictionary.options);

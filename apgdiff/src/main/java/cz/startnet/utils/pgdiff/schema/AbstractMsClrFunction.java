@@ -98,7 +98,7 @@ public abstract class AbstractMsClrFunction extends AbstractFunction {
             return true;
         }
 
-        return obj instanceof AbstractMsClrFunction
+        return obj instanceof AbstractMsClrFunction && super.compare(obj)
                 && compareUnalterable((AbstractMsClrFunction) obj);
     }
 

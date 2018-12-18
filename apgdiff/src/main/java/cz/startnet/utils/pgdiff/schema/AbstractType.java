@@ -27,7 +27,7 @@ public abstract class AbstractType extends PgStatementWithSearchPath {
 
     @Override
     public boolean compare(PgStatement obj) {
-        return this == obj || obj instanceof AbstractType;
+        return this == obj || obj instanceof AbstractType && super.compare(obj);
     }
 
     protected abstract AbstractType getTypeCopy();

@@ -143,7 +143,7 @@ public class MsAssembly extends PgStatement {
             return true;
         }
 
-        if (obj instanceof MsAssembly) {
+        if (obj instanceof MsAssembly && super.compare(obj)) {
             MsAssembly as = (MsAssembly) obj;
             return Objects.equals(isVisible, as.isVisible())
                     && Objects.equals(permission, as.getPermission())

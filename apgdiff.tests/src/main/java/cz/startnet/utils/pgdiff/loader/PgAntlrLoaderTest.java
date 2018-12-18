@@ -858,7 +858,7 @@ class PgDB12 extends PgDatabaseObjectCreator {
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpDB();
 
-        d.setComment("'The status : ''E'' for enabled, ''D'' for disabled.'");
+        // d.setComment("'The status : ''E'' for enabled, ''D'' for disabled.'");
 
         return d;
     }
@@ -895,7 +895,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
         schema.addPrivilege(new PgPrivilege("GRANT", "ALL", "SCHEMA public", "postgres", false));
         schema.addPrivilege(new PgPrivilege("GRANT", "ALL", "SCHEMA public", "PUBLIC", false));
 
-        d.setComment("'comments database'");
+        // d.setComment("'comments database'");
         //    schema.setComment("'public schema'");
 
         PgFunction func = new PgFunction("test_fnc");
