@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -41,19 +42,16 @@ public class ShowConsoleParticipant implements IConsolePageParticipant {
     public void init(IPageBookViewPage page, IConsole console) {
         action = new ShowConsoleAction();
         this.console = (CodekeeperConsole) console;
-        page.getSite().getActionBars().getToolBarManager()
-        .appendToGroup(IConsoleConstants.OUTPUT_GROUP, action);
+        IToolBarManager toolBarMgr = page.getSite().getActionBars().getToolBarManager();
+        toolBarMgr.appendToGroup(IConsoleConstants.OUTPUT_GROUP, action);
         pageControl = page.getControl();
         prefs.addPropertyChangeListener(action);
 
-        page.getSite().getActionBars().getToolBarManager()
-        .appendToGroup(IConsoleConstants.LAUNCH_GROUP, new TerminateAction());
+        toolBarMgr.appendToGroup(IConsoleConstants.LAUNCH_GROUP, new TerminateAction());
 
-        page.getSite().getActionBars().getToolBarManager()
-        .appendToGroup(IConsoleConstants.LAUNCH_GROUP, new RemoveAction());
+        toolBarMgr.appendToGroup(IConsoleConstants.LAUNCH_GROUP, new RemoveAction());
 
-        page.getSite().getActionBars().getToolBarManager()
-        .appendToGroup(IConsoleConstants.LAUNCH_GROUP, new RemoveAllAction());
+        toolBarMgr.appendToGroup(IConsoleConstants.LAUNCH_GROUP, new RemoveAllAction());
     }
 
     @Override
