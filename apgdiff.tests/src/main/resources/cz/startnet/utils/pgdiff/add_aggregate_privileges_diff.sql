@@ -9,8 +9,6 @@ CREATE AGGREGATE public.mode1(boolean) (
 
 ALTER AGGREGATE public.mode1(boolean) OWNER TO shamsutdinov_lr;
 
--- AGGREGATE public.mode1(boolean) GRANT
-
 GRANT ALL ON FUNCTION public.mode1(boolean) TO test_user;
 
 CREATE AGGREGATE public.mode3(*) (
@@ -21,8 +19,6 @@ CREATE AGGREGATE public.mode3(*) (
 );
 
 ALTER AGGREGATE public.mode3(*) OWNER TO shamsutdinov_lr;
-
--- AGGREGATE public.mode3() GRANT
 
 GRANT ALL ON FUNCTION public.mode3() TO test_user;
 
@@ -35,8 +31,6 @@ CREATE AGGREGATE public.mode4(ORDER BY boolean) (
 
 ALTER AGGREGATE public.mode4(ORDER BY boolean) OWNER TO shamsutdinov_lr;
 
--- AGGREGATE public.mode4(boolean) GRANT
-
 GRANT ALL ON FUNCTION public.mode4(boolean) TO test_user;
 
 CREATE AGGREGATE public.mode11(boolean, integer, text ORDER BY boolean, text) (
@@ -47,7 +41,5 @@ CREATE AGGREGATE public.mode11(boolean, integer, text ORDER BY boolean, text) (
 );
 
 ALTER AGGREGATE public.mode11(boolean, integer, text ORDER BY boolean, text) OWNER TO shamsutdinov_lr;
-
--- AGGREGATE public.mode11(boolean, integer, text, boolean, text) GRANT
 
 GRANT ALL ON FUNCTION public.mode11(boolean, integer, text, boolean, text) TO test_user;
