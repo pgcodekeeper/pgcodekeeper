@@ -18,8 +18,8 @@ public class MsAssembly extends PgStatement {
     private String permission = "SAFE";
     private boolean isVisible = true;
 
-    public MsAssembly(String name, String rawStatement) {
-        super(name, rawStatement);
+    public MsAssembly(String name) {
+        super(name);
     }
 
     @Override
@@ -117,25 +117,18 @@ public class MsAssembly extends PgStatement {
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(name);
-        hasher.put(owner);
         hasher.put(binaries);
         hasher.put(isVisible);
         hasher.put(permission);
-        hasher.putUnordered(grants);
-        hasher.putUnordered(revokes);
     }
 
     @Override
     public MsAssembly shallowCopy() {
-        MsAssembly assDst = new MsAssembly(getName(), getRawStatement());
+        MsAssembly assDst = new MsAssembly(getName());
+        copyBaseFields(assDst);
         assDst.setPermission(getPermission());
         assDst.binaries.addAll(binaries);
-        assDst.setOwner(getOwner());
         assDst.setVisible(isVisible());
-        assDst.grants.addAll(grants);
-        assDst.revokes.addAll(revokes);
-        assDst.setLocation(getLocation());
         return assDst;
     }
 
@@ -146,23 +139,18 @@ public class MsAssembly extends PgStatement {
 
     @Override
     public boolean compare(PgStatement obj) {
-        boolean eq = false;
-
         if (this == obj) {
-            eq = true;
-        } else if (obj instanceof MsAssembly) {
-            MsAssembly schema = (MsAssembly) obj;
-
-            eq = Objects.equals(name, schema.getName())
-                    && Objects.equals(owner, schema.getOwner())
-                    && Objects.equals(binaries, schema.getBinaries())
-                    && grants.equals(schema.grants)
-                    && revokes.equals(schema.revokes)
-                    && Objects.equals(isVisible, schema.isVisible())
-                    && Objects.equals(permission, schema.getPermission());
+            return true;
         }
 
-        return eq;
+        if (obj instanceof MsAssembly) {
+            MsAssembly as = (MsAssembly) obj;
+            return Objects.equals(isVisible, as.isVisible())
+                    && Objects.equals(permission, as.getPermission())
+                    && binaries.equals(as.binaries);
+        }
+
+        return false;
     }
 
     public String getPermission() {

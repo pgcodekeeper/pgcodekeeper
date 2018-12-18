@@ -118,8 +118,7 @@ public class JdbcMsConnector extends JdbcConnector {
     }
 
     @Override
-    protected Connection establishConnection()
-            throws SQLException, ClassNotFoundException, IOException {
+    protected Connection establishConnection() throws SQLException, IOException {
         try {
             return super.establishConnection();
         } catch (SQLException ex) {

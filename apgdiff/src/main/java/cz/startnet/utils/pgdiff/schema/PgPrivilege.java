@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.Collection;
 import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -54,11 +55,25 @@ public class PgPrivilege implements IHashable {
         return new PgPrivilege("REVOKE", permission, name, role, isGrantOption).getCreationSQL();
     }
 
-    public static void appendDefaultPrivileges(PgStatement newObj, StringBuilder sb) {
+    public static StringBuilder appendPrivileges(Collection<PgPrivilege> privileges,
+            boolean isPostgres, StringBuilder sb) {
+        if (privileges.isEmpty()) {
+            return sb;
+        }
+
+        sb.append('\n');
+        for (PgPrivilege priv : privileges) {
+            sb.append('\n').append(priv.getCreationSQL()).append(isPostgres ? ';' : "\nGO");
+        }
+
+        return sb;
+    }
+
+    public static StringBuilder appendDefaultPrivileges(PgStatement newObj, StringBuilder sb) {
         DbObjType type = newObj.getStatementType();
         String owner = newObj.getOwner();
         if (type == DbObjType.COLUMN || owner == null) {
-            return;
+            return sb;
         }
 
         String name = newObj.getName();
@@ -90,6 +105,8 @@ public class PgPrivilege implements IHashable {
 
         priv = new PgPrivilege("GRANT", "ALL" + column, type + " " + name, owner, false);
         sb.append('\n').append(priv.getCreationSQL()).append(';');
+
+        return sb;
     }
 
     @Override

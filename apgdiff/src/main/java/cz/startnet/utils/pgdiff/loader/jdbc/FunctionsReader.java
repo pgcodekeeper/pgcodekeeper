@@ -13,6 +13,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateAggregate;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
+import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -63,7 +64,7 @@ public class FunctionsReader extends JdbcReader {
         loader.setCurrentObject(new GenericColumn(schemaName, funcName,
                 isProc ? DbObjType.PROCEDURE : DbObjType.FUNCTION));
 
-        AbstractFunction f = isProc ? new PgProcedure(funcName, "") : new PgFunction(funcName, "");
+        AbstractPgFunction f = isProc ? new PgProcedure(funcName) : new PgFunction(funcName);
 
         fillFunction(f, res);
         StringBuilder returnedTableArguments = fillArguments(f, res);
@@ -105,7 +106,7 @@ public class FunctionsReader extends JdbcReader {
         return f;
     }
 
-    private void fillFunction(AbstractFunction function, ResultSet res) throws SQLException {
+    private void fillFunction(AbstractPgFunction function, ResultSet res) throws SQLException {
         StringBuilder body = new StringBuilder();
 
         function.setLanguage(res.getString("lang_name"));
@@ -232,7 +233,7 @@ public class FunctionsReader extends JdbcReader {
     private AbstractFunction getAgg(ResultSet res, String schemaName,
             String funcName) throws SQLException {
         loader.setCurrentObject(new GenericColumn(schemaName, funcName, DbObjType.AGGREGATE));
-        PgAggregate aggregate = new PgAggregate(funcName, "");
+        PgAggregate aggregate = new PgAggregate(funcName);
 
         switch (res.getString("aggkind")) {
         case "o":
@@ -423,7 +424,7 @@ public class FunctionsReader extends JdbcReader {
         }
     }
 
-    private StringBuilder fillArguments(AbstractFunction f, ResultSet res) throws SQLException {
+    private StringBuilder fillArguments(AbstractPgFunction f, ResultSet res) throws SQLException {
         StringBuilder sb = new StringBuilder();
         String[] argModes = getColArray(res, "proargmodes");
         String[] argNames = getColArray(res, "proargnames");

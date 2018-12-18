@@ -99,8 +99,6 @@ public class DBTimestamp implements Serializable {
      * Compares each object hash from given database with current DBTimestamp and
      * removes not equals. <br><br>
      *
-     * Each statement in database <b>must have</b> filled rawStatement.<br><br>
-     *
      * If don't have objects, the method does nothing.<br><br>
      *
      * @param db - database with filled raw statements

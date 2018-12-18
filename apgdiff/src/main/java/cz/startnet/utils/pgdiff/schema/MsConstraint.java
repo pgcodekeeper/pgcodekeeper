@@ -1,13 +1,17 @@
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
 
 public class MsConstraint extends AbstractConstraint {
 
-    public MsConstraint(String name, String rawStatement) {
-        super(name, rawStatement);
+    private boolean isDisabled;
+
+    public MsConstraint(String name) {
+        super(name);
     }
 
     @Override
@@ -48,7 +52,7 @@ public class MsConstraint extends AbstractConstraint {
             AtomicBoolean isNeedDepcies) {
         if (newCondition instanceof MsConstraint) {
             MsConstraint newConstr = (MsConstraint)newCondition;
-            if (!compareWithoutComments(newConstr)) {
+            if (!Objects.equals(getDefinition(), newConstr.getDefinition())) {
                 isNeedDepcies.set(true);
                 return true;
             }
@@ -88,12 +92,35 @@ public class MsConstraint extends AbstractConstraint {
     }
 
     @Override
+    public boolean compare(PgStatement obj) {
+        return obj instanceof MsConstraint && super.compare(obj)
+                && isDisabled == ((MsConstraint) obj).isDisabled();
+    }
+
+    public boolean isDisabled() {
+        return isDisabled;
+    }
+
+    public void setDisabled(boolean isDisabled) {
+        this.isDisabled = isDisabled;
+        resetHash();
+    }
+
+    @Override
+    public void computeHash(Hasher hasher) {
+        super.computeHash(hasher);
+        hasher.put(isDisabled);
+    }
+
+    @Override
     public boolean isPostgres() {
         return false;
     }
 
     @Override
     protected AbstractConstraint getConstraintCopy() {
-        return new MsConstraint(getName(), getRawStatement());
+        MsConstraint con = new MsConstraint(getName());
+        con.setDisabled(isDisabled());
+        return con;
     }
 }

@@ -7,7 +7,6 @@ import java.util.List;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
-import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsConstraint;
@@ -26,7 +25,7 @@ public class MsFKReader extends JdbcReader {
         String name = res.getString("name");
         loader.setCurrentObject(new GenericColumn(schema.getName(), name, DbObjType.CONSTRAINT));
 
-        AbstractConstraint con = new MsConstraint(name, "");
+        MsConstraint con = new MsConstraint(name);
 
         con.setNotValid(res.getBoolean("with_no_check"));
         con.setDisabled(res.getBoolean("is_disabled"));

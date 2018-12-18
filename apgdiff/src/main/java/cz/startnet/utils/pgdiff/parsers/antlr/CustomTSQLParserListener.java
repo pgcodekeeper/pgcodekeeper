@@ -67,7 +67,7 @@ implements TSqlContextProcessor {
         }
     }
 
-    private void clause(St_clauseContext st) {
+    public void clause(St_clauseContext st) {
         Ddl_clauseContext ddl = st.ddl_clause();
         Another_statementContext ast;
         if (ddl != null) {
@@ -93,7 +93,7 @@ implements TSqlContextProcessor {
         }
     }
 
-    private void batchStatement(Batch_statementContext ctx, CommonTokenStream stream) {
+    public void batchStatement(Batch_statementContext ctx, CommonTokenStream stream) {
         if (ctx.CREATE() == null) {
             return;
         }
@@ -102,7 +102,9 @@ implements TSqlContextProcessor {
 
         Batch_statement_bodyContext body = ctx.batch_statement_body();
 
-        if (body.create_or_alter_procedure() != null) {
+        if (ctx.create_schema() != null) {
+            p = new CreateMsSchema(ctx.create_schema(), db, this, stream);
+        } else if (body.create_or_alter_procedure() != null) {
             p = new CreateMsProcedure(ctx, db, ansiNulls, quotedIdentifier, stream);
         } else if (body.create_or_alter_function() != null) {
             p = new CreateMsFunction(ctx, db, ansiNulls, quotedIdentifier, stream);
@@ -121,8 +123,6 @@ implements TSqlContextProcessor {
         ParserAbstract p;
         if (ctx.create_sequence() != null) {
             p = new CreateMsSequence(ctx.create_sequence(), db);
-        } else if (ctx.create_schema() != null) {
-            p = new CreateMsSchema(ctx.create_schema(), db);
         } else if (ctx.create_index() != null) {
             p = new CreateMsIndex(ctx.create_index(), db);
         } else if (ctx.create_table() != null) {

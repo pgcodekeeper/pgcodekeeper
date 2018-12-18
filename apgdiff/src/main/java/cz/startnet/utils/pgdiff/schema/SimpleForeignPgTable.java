@@ -9,13 +9,13 @@ package cz.startnet.utils.pgdiff.schema;
  */
 public class SimpleForeignPgTable extends AbstractForeignTable {
 
-    public SimpleForeignPgTable(String name, String rawStatement, String serverName) {
-        super(name, rawStatement, serverName);
+    public SimpleForeignPgTable(String name, String serverName) {
+        super(name, serverName);
     }
 
     @Override
     protected AbstractTable getTableCopy() {
-        return new SimpleForeignPgTable(name, getRawStatement(), serverName);
+        return new SimpleForeignPgTable(name, serverName);
     }
 
     @Override
@@ -24,7 +24,7 @@ public class SimpleForeignPgTable extends AbstractForeignTable {
 
         int start = sbSQL.length();
         for (AbstractColumn column : columns) {
-            writeColumn(column, sbSQL, sbOption);
+            writeColumn((PgColumn) column, sbSQL, sbOption);
         }
 
         if (start != sbSQL.length()) {

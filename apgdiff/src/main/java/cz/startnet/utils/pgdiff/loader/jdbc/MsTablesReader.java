@@ -9,7 +9,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
-import cz.startnet.utils.pgdiff.schema.SimpleMsTable;
+import cz.startnet.utils.pgdiff.schema.MsTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsTablesReader extends JdbcReader {
@@ -23,7 +23,7 @@ public class MsTablesReader extends JdbcReader {
         loader.monitor.worked(1);
         String tableName = res.getString("name");
         loader.setCurrentObject(new GenericColumn(schema.getName(), tableName, DbObjType.TABLE));
-        SimpleMsTable table = new SimpleMsTable(tableName, "");
+        MsTable table = new MsTable(tableName);
 
         if (res.getBoolean("is_memory_optimized")) {
             table.addOption("MEMORY_OPTIMIZED" , "ON");
@@ -67,8 +67,8 @@ public class MsTablesReader extends JdbcReader {
         loader.setPrivileges(table, XmlReader.readXML(res.getString("acl")));
     }
 
-    static AbstractColumn getColumn(XmlReader col) throws XmlReaderException {
-        AbstractColumn column = new MsColumn(col.getString("name"));
+    static AbstractColumn getColumn(XmlReader col) {
+        MsColumn column = new MsColumn(col.getString("name"));
         String exp = col.getString("def");
         column.setExpression(exp);
         if (exp == null) {

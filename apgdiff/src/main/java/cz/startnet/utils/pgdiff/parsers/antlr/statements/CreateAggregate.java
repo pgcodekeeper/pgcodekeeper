@@ -36,10 +36,7 @@ public class CreateAggregate extends ParserAbstract {
         AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         String schemaName = schema.getName();
 
-        String name = QNameParser.getFirstName(ids);
-        String rawStatement = getFullCtxText(ctx.getParent());
-
-        PgAggregate aggregate = new PgAggregate(name, rawStatement);
+        PgAggregate aggregate = new PgAggregate(QNameParser.getFirstName(ids));
 
         //// The order is important for adding dependencies. Two steps.
 

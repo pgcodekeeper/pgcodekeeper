@@ -12,18 +12,16 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_option
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
-import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
+import cz.startnet.utils.pgdiff.schema.AbstractRegularTable;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.AbstractSequence;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
-import cz.startnet.utils.pgdiff.schema.AbstractRegularTable;
+import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 
 public class AlterTable extends TableAbstract {
 
@@ -38,7 +36,7 @@ public class AlterTable extends TableAbstract {
         List<IdentifierContext> ids = ctx.name.identifier();
         AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
-        AbstractTable tabl = null;
+        AbstractPgTable tabl = null;
 
         for (Table_actionContext tablAction : ctx.table_action()) {
             // for owners try to get any relation, fail if the last attempt fails
@@ -58,7 +56,7 @@ public class AlterTable extends TableAbstract {
             }
 
             // everything else requires a real table, so fail immediately
-            tabl = getSafe(schema::getTable, nameCtx);
+            tabl = (AbstractPgTable) getSafe(schema::getTable, nameCtx);
 
             if (tablAction.table_column_definition() != null) {
                 Table_column_definitionContext column = tablAction.table_column_definition();
@@ -67,13 +65,13 @@ public class AlterTable extends TableAbstract {
             }
 
             if (tablAction.column != null) {
-                AbstractColumn col;
+                PgColumn col;
                 if (tabl.getInherits().isEmpty()) {
-                    col = getSafe(tabl::getColumn,
+                    col = (PgColumn) getSafe(tabl::getColumn,
                             QNameParser.getFirstNameCtx(tablAction.column.identifier()));
                 } else {
                     String colName = QNameParser.getFirstName(tablAction.column.identifier());
-                    col = tabl.getColumn(colName);
+                    col = (PgColumn) tabl.getColumn(colName);
                     if (col == null) {
                         col = new PgColumn(colName);
                         col.setInherit(true);
@@ -129,7 +127,7 @@ public class AlterTable extends TableAbstract {
                             name = body.name.getText();
                         }
                     }
-                    AbstractSequence sequence = new PgSequence(name, null);
+                    PgSequence sequence = new PgSequence(name);
                     CreateSequence.fillSequence(sequence, identity.sequence_body());
 
                     col.setSequence(sequence);
@@ -174,7 +172,7 @@ public class AlterTable extends TableAbstract {
         return tabl;
     }
 
-    private void createRule(AbstractTable tabl, Table_actionContext tablAction) {
+    private void createRule(AbstractPgTable tabl, Table_actionContext tablAction) {
         PgRule rule = getSafe(tabl::getRule, tablAction.rewrite_rule_name.identifier(0));
         if (rule != null) {
             if (tablAction.DISABLE() != null) {

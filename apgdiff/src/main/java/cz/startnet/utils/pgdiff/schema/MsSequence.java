@@ -4,11 +4,15 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
 
 public class MsSequence extends AbstractSequence {
 
-    public MsSequence(String name, String rawStatement) {
-        super(name, rawStatement);
+    private boolean isCached;
+    private String presicion;
+
+    public MsSequence(String name) {
+        super(name);
     }
 
     @Override
@@ -94,7 +98,7 @@ public class MsSequence extends AbstractSequence {
         return sb.length() > startLength;
     }
 
-    private boolean compareSequenceBody(AbstractSequence newSequence, StringBuilder sbSQL) {
+    private boolean compareSequenceBody(MsSequence newSequence, StringBuilder sbSQL) {
         final String oldIncrement = getIncrement();
         final String newIncrement = newSequence.getIncrement();
 
@@ -175,6 +179,39 @@ public class MsSequence extends AbstractSequence {
         resetHash();
     }
 
+    public String getPresicion() {
+        return presicion;
+    }
+
+    public void setPresicion(String presicion) {
+        this.presicion = presicion;
+        resetHash();
+    }
+
+    public boolean isCached() {
+        return isCached;
+    }
+
+    public void setCached(boolean isCached) {
+        this.isCached = isCached;
+        resetHash();
+    }
+
+    @Override
+    public boolean compare(PgStatement obj) {
+        return obj instanceof MsSequence && super.compare(obj)
+                && Objects.equals(presicion, ((MsSequence) obj).getPresicion())
+                && isCached == ((MsSequence) obj).isCached();
+    }
+
+
+    @Override
+    public void computeHash(Hasher hasher) {
+        super.computeHash(hasher);
+        hasher.put(presicion);
+        hasher.put(isCached);
+    }
+
     @Override
     public boolean isPostgres() {
         return false;
@@ -182,6 +219,9 @@ public class MsSequence extends AbstractSequence {
 
     @Override
     protected AbstractSequence getSequenceCopy() {
-        return new MsSequence(getName(), getRawStatement());
+        MsSequence sequence = new MsSequence(getName());
+        sequence.setPresicion(getPresicion());
+        sequence.setCached(isCached());
+        return sequence;
     }
 }

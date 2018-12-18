@@ -14,8 +14,8 @@ public class MsUser extends PgStatement {
     private String schema;
     private String login;
 
-    public MsUser(String name, String rawStatement) {
-        super(name, rawStatement);
+    public MsUser(String name) {
+        super(name);
     }
 
     @Override
@@ -111,23 +111,16 @@ public class MsUser extends PgStatement {
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(name);
-        hasher.put(owner);
         hasher.put(schema);
         hasher.put(login);
-        hasher.putUnordered(grants);
-        hasher.putUnordered(revokes);
     }
 
     @Override
     public MsUser shallowCopy() {
-        MsUser userDst = new MsUser(getName(), getRawStatement());
-        userDst.setOwner(getOwner());
+        MsUser userDst = new MsUser(getName());
+        copyBaseFields(userDst);
         userDst.setSchema(getSchema());
         userDst.setLogin(getLogin());
-        userDst.grants.addAll(grants);
-        userDst.revokes.addAll(revokes);
-        userDst.setLocation(getLocation());
         return userDst;
     }
 
@@ -138,14 +131,14 @@ public class MsUser extends PgStatement {
 
     @Override
     public boolean compare(PgStatement obj) {
+        if (obj == this) {
+            return true;
+        }
+
         if (obj instanceof MsUser) {
             MsUser user = (MsUser) obj;
             return Objects.equals(schema, user.getSchema())
-                    && Objects.equals(login, user.getLogin())
-                    && Objects.equals(name, user.getName())
-                    && Objects.equals(owner, user.getOwner())
-                    && grants.equals(user.grants)
-                    && revokes.equals(user.revokes);
+                    && Objects.equals(login, user.getLogin());
         }
         return false;
     }

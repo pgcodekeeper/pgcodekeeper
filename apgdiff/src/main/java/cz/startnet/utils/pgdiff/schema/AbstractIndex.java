@@ -23,15 +23,15 @@ public abstract class AbstractIndex extends PgStatementWithSearchPath
 implements PgOptionContainer {
 
     /**
-     * Contains USING method for PG, columns and include columns for all
+     * Contains columns with sort order
      */
     private String definition;
-    private String tableName;
     private String where;
     private String tableSpace;
-    private String method;
     private boolean unique;
     private boolean clusterIndex;
+
+    private final String tableName;
     private final Set<String> columns = new HashSet<>();
 
     protected final Set<String> includes = new LinkedHashSet<>();
@@ -42,8 +42,9 @@ implements PgOptionContainer {
         return DbObjType.INDEX;
     }
 
-    public AbstractIndex(String name, String rawStatement) {
-        super(name, rawStatement);
+    public AbstractIndex(String name, String tableName) {
+        super(name);
+        this.tableName = tableName;
     }
 
     public void setDefinition(final String definition) {
@@ -80,11 +81,6 @@ implements PgOptionContainer {
         return Collections.unmodifiableSet(includes);
     }
 
-    public void setTableName(final String tableName) {
-        this.tableName = tableName;
-        resetHash();
-    }
-
     public String getTableName() {
         return tableName;
     }
@@ -105,14 +101,6 @@ implements PgOptionContainer {
     public void setWhere(final String where) {
         this.where = where;
         resetHash();
-    }
-
-    public String getMethod() {
-        return method;
-    }
-
-    public void setMethod(String method) {
-        this.method = method;
     }
 
     public String getTableSpace() {
@@ -136,38 +124,32 @@ implements PgOptionContainer {
 
     @Override
     public boolean compare(PgStatement obj) {
-        boolean equals = false;
-
         if (this == obj) {
-            equals = true;
-        } else if (obj instanceof AbstractIndex) {
+            return true;
+        }
+
+        if (obj instanceof AbstractIndex) {
             AbstractIndex index = (AbstractIndex) obj;
-            equals = compareWithoutComments(index)
-                    && Objects.equals(comment, index.getComment())
+            return compareUnalterable(index)
                     && clusterIndex == index.isClusterIndex()
                     && Objects.equals(options, index.options);
         }
 
-        return equals;
+        return false;
     }
 
-    protected boolean compareWithoutComments(AbstractIndex index) {
+    protected boolean compareUnalterable(AbstractIndex index) {
         return Objects.equals(definition, index.getDefinition())
-                && Objects.equals(name, index.getName())
                 && Objects.equals(tableName, index.getTableName())
                 && Objects.equals(where, index.getWhere())
                 && Objects.equals(tableSpace, index.getTableSpace())
                 && Objects.equals(includes, index.includes)
-                && Objects.equals(method, index.method)
                 && unique == index.isUnique();
     }
-
 
     @Override
     public void computeHash(Hasher hasher) {
         hasher.put(definition);
-        hasher.put(method);
-        hasher.put(name);
         hasher.put(tableName);
         hasher.put(unique);
         hasher.put(clusterIndex);
@@ -175,25 +157,20 @@ implements PgOptionContainer {
         hasher.put(tableSpace);
         hasher.put(options);
         hasher.put(includes);
-        hasher.put(comment);
     }
 
     @Override
     public AbstractIndex shallowCopy() {
         AbstractIndex indexDst = getIndexCopy();
+        copyBaseFields(indexDst);
         indexDst.setDefinition(getDefinition());
-        indexDst.setTableName(getTableName());
         indexDst.setUnique(isUnique());
-        indexDst.setMethod(getMethod());
         indexDst.setClusterIndex(isClusterIndex());
-        indexDst.setComment(getComment());
         indexDst.setWhere(getWhere());
         indexDst.setTableSpace(getTableSpace());
-        indexDst.deps.addAll(deps);
         indexDst.columns.addAll(columns);
         indexDst.options.putAll(options);
         indexDst.includes.addAll(includes);
-        indexDst.setLocation(getLocation());
         return indexDst;
     }
 

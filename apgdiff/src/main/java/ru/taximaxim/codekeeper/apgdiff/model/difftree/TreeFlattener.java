@@ -14,7 +14,8 @@ public class TreeFlattener {
 
     private boolean onlySelected;
     private boolean onlyEdits;
-    private PgDatabase dbSource, dbTarget;
+    private PgDatabase dbSource;
+    private PgDatabase dbTarget;
     private IgnoreList ignoreList;
     private String[] dbNames;
     private Collection<DbObjType> onlyTypes;

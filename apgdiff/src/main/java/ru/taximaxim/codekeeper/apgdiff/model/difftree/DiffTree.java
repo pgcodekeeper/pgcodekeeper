@@ -8,9 +8,9 @@ import org.eclipse.core.runtime.SubMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 
 public final class DiffTree {
@@ -35,7 +35,7 @@ public final class DiffTree {
         }
 
         for (AbstractColumn sRight : right) {
-            if (!left.stream().anyMatch(sLeft -> sRight.getName().equals(sLeft.getName()))) {
+            if (left.stream().noneMatch(sLeft -> sRight.getName().equals(sLeft.getName()))) {
                 TreeElement col = new TreeElement(sRight, DiffSide.RIGHT);
                 col.setParent(parent);
                 list.add(col);
@@ -115,7 +115,7 @@ public final class DiffTree {
 
         if (right != null) {
             right.getChildren().forEach(sRight -> {
-                if (left == null || !left.getChildren().anyMatch(
+                if (left == null || left.getChildren().noneMatch(
                         sLeft -> sRight.getName().equals(sLeft.getName())
                         && sLeft.getStatementType() == sRight.getStatementType())) {
                     rv.add(new CompareResult(null, sRight));

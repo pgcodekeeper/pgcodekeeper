@@ -64,7 +64,7 @@ public interface PgOptionContainer extends IStatement {
                 .append(PgDiffUtils.getQuotedName(getParent().getParent().getName()))
                 .append('.').append(PgDiffUtils.getQuotedName(getParent().getName()))
                 .append(" ALTER ");
-            } else if (type == DbObjType.VIEW && ((AbstractView)newContainer).isMatView()) {
+            } else if (type == DbObjType.VIEW && ((PgView)newContainer).isMatView()) {
                 sb.append("MATERIALIZED ");
             }
             sb.append(type)
@@ -88,7 +88,7 @@ public interface PgOptionContainer extends IStatement {
                 .append(PgDiffUtils.getQuotedName(getParent().getParent().getName()))
                 .append('.').append(PgDiffUtils.getQuotedName(getParent().getName()))
                 .append(" ALTER ");
-            } else if (type == DbObjType.VIEW && ((AbstractView)newContainer).isMatView()) {
+            } else if (type == DbObjType.VIEW && ((PgView)newContainer).isMatView()) {
                 sb.append("MATERIALIZED ");
             }
             sb.append(type)

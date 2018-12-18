@@ -21,7 +21,7 @@ public class OperatorsReader extends JdbcReader {
         String operSchemaName = schema.getName();
         String operName = res.getString("name");
         loader.setCurrentObject(new GenericColumn(operSchemaName, operName, DbObjType.OPERATOR));
-        PgOperator oper = new PgOperator(operName, "");
+        PgOperator oper = new PgOperator(operName);
 
         // OWNER
         loader.setOwner(oper, res.getLong("owner"));

@@ -5,15 +5,57 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
 
 public class PgTrigger extends AbstractTrigger {
 
-    public PgTrigger(String name, String rawStatement) {
-        super(name, rawStatement);
+    public enum TgTypes {
+        BEFORE, AFTER, INSTEAD_OF
+    }
+
+    private String function;
+    private String refTableName;
+    /**
+     * Whether the trigger should be fired BEFORE, AFTER or INSTEAD_OF action. Default is
+     * before.
+     */
+    private TgTypes tgType = TgTypes.BEFORE;
+    /**
+     * Whether the trigger should be fired FOR EACH ROW or FOR EACH STATEMENT.
+     * Default is FOR EACH STATEMENT.
+     */
+    private boolean forEachRow;
+    private boolean onDelete;
+    private boolean onInsert;
+    private boolean onUpdate;
+    private boolean onTruncate;
+    private boolean constraint;
+    private Boolean isImmediate;
+    /**
+     * Optional list of columns for UPDATE event.
+     */
+    protected final Set<String> updateColumns = new HashSet<>();
+    private String when;
+
+    /**
+     * REFERENCING old table name
+     */
+    private String oldTable;
+    /**
+     * REFERENCING new table name
+     */
+    private String newTable;
+
+
+    public PgTrigger(String name, String tableName) {
+        super(name, tableName);
     }
 
     @Override
@@ -132,7 +174,7 @@ public class PgTrigger extends AbstractTrigger {
         } else {
             return false;
         }
-        if (!compareWithoutComments(newTrg)) {
+        if (!compareUnalterable(newTrg)) {
             isNeedDepcies.set(true);
             return true;
         }
@@ -143,8 +185,190 @@ public class PgTrigger extends AbstractTrigger {
         return sb.length() > startLength;
     }
 
+    public void setType(final TgTypes tgType) {
+        this.tgType = tgType;
+        resetHash();
+    }
+
+    public TgTypes getType() {
+        return tgType;
+    }
+
+    public void setForEachRow(final boolean forEachRow) {
+        this.forEachRow = forEachRow;
+        resetHash();
+    }
+
+    public boolean isForEachRow() {
+        return forEachRow;
+    }
+
+    public void setFunction(final String function) {
+        this.function = function;
+        resetHash();
+    }
+
+    protected String getFunction() {
+        return function;
+    }
+
+    public void setOnDelete(final boolean onDelete) {
+        this.onDelete = onDelete;
+        resetHash();
+    }
+
+    public boolean isOnDelete() {
+        return onDelete;
+    }
+
+    public void setOnInsert(final boolean onInsert) {
+        this.onInsert = onInsert;
+        resetHash();
+    }
+
+    public boolean isOnInsert() {
+        return onInsert;
+    }
+
+    public void setOnUpdate(final boolean onUpdate) {
+        this.onUpdate = onUpdate;
+        resetHash();
+    }
+
+    public boolean isOnUpdate() {
+        return onUpdate;
+    }
+
+    public boolean isOnTruncate() {
+        return onTruncate;
+    }
+
+    public void setOnTruncate(final boolean onTruncate) {
+        this.onTruncate = onTruncate;
+        resetHash();
+    }
+
+    public Set<String> getUpdateColumns() {
+        return Collections.unmodifiableSet(updateColumns);
+    }
+
+    public void addUpdateColumn(final String columnName) {
+        updateColumns.add(columnName);
+        resetHash();
+    }
+
+    public String getWhen() {
+        return when;
+    }
+
+    public void setWhen(final String when) {
+        this.when = when;
+        resetHash();
+    }
+
+    public Boolean isImmediate() {
+        return isImmediate;
+    }
+
+    public void setImmediate(final Boolean isImmediate) {
+        this.isImmediate = isImmediate;
+        resetHash();
+    }
+
+    public boolean isConstraint() {
+        return constraint;
+    }
+
+    public void setConstraint(final boolean constraint) {
+        this.constraint = constraint;
+        resetHash();
+    }
+
+    public String getRefTableName() {
+        return refTableName;
+    }
+
+    public void setRefTableName(final String refTableName) {
+        this.refTableName = refTableName;
+        resetHash();
+    }
+
+    public void setOldTable(String oldTable) {
+        this.oldTable = oldTable;
+        resetHash();
+    }
+
+    public String getOldTable() {
+        return oldTable;
+    }
+
+    public void setNewTable(String newTable) {
+        this.newTable = newTable;
+        resetHash();
+    }
+
+    public String getNewTable() {
+        return newTable;
+    }
+
+    @Override
+    protected boolean compareUnalterable(AbstractTrigger obj) {
+        if (obj instanceof PgTrigger && super.compareUnalterable(obj)) {
+            PgTrigger trigger = (PgTrigger) obj;
+            return  tgType == trigger.getType()
+                    && (forEachRow == trigger.isForEachRow())
+                    && Objects.equals(function, trigger.getFunction())
+                    && (onDelete == trigger.isOnDelete())
+                    && (onInsert == trigger.isOnInsert())
+                    && (onUpdate == trigger.isOnUpdate())
+                    && (onTruncate == trigger.isOnTruncate())
+                    && Objects.equals(isImmediate, trigger.isImmediate())
+                    && Objects.equals(refTableName, trigger.getRefTableName())
+                    && (constraint == trigger.isConstraint())
+                    && Objects.equals(when, trigger.getWhen())
+                    && Objects.equals(newTable, trigger.getNewTable())
+                    && Objects.equals(oldTable, trigger.getOldTable())
+                    && Objects.equals(updateColumns, trigger.updateColumns);
+        }
+        return false;
+    }
+
+    @Override
+    public void computeHash(Hasher hasher) {
+        super.computeHash(hasher);
+        hasher.put(tgType);
+        hasher.put(forEachRow);
+        hasher.put(function);
+        hasher.put(onDelete);
+        hasher.put(onInsert);
+        hasher.put(onTruncate);
+        hasher.put(onUpdate);
+        hasher.put(when);
+        hasher.put(updateColumns);
+        hasher.put(constraint);
+        hasher.put(isImmediate);
+        hasher.put(refTableName);
+        hasher.put(newTable);
+        hasher.put(oldTable);
+    }
+
     @Override
     protected AbstractTrigger getTriggerCopy() {
-        return new PgTrigger(getName(), getRawStatement());
+        PgTrigger trigger = new PgTrigger(getName(), getTableName());
+        trigger.setType(getType());
+        trigger.setForEachRow(isForEachRow());
+        trigger.setFunction(getFunction());
+        trigger.setOnDelete(isOnDelete());
+        trigger.setOnInsert(isOnInsert());
+        trigger.setOnTruncate(isOnTruncate());
+        trigger.setOnUpdate(isOnUpdate());
+        trigger.setConstraint(isConstraint());
+        trigger.setWhen(getWhen());
+        trigger.setImmediate(isImmediate());
+        trigger.setRefTableName(getRefTableName());
+        trigger.setNewTable(getNewTable());
+        trigger.setOldTable(getOldTable());
+        trigger.updateColumns.addAll(updateColumns);
+        return trigger;
     }
 }

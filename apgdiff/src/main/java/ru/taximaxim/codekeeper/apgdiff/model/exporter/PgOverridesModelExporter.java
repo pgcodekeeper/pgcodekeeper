@@ -12,7 +12,6 @@ import cz.startnet.utils.pgdiff.loader.ProjectLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.StatementOverride;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
@@ -49,7 +48,7 @@ public class PgOverridesModelExporter extends AbstractModelExporter {
         case PROCEDURE:
         case AGGREGATE:
         case OPERATOR:
-            dumpFuncOverrides(el, st);
+            dumpFuncOverrides(st);
             break;
         default:
             deleteStatementIfExists(st);
@@ -62,7 +61,7 @@ public class PgOverridesModelExporter extends AbstractModelExporter {
         // no impl
     }
 
-    private void dumpFuncOverrides(TreeElement el, PgStatement st) throws IOException {
+    private void dumpFuncOverrides(PgStatement st) throws IOException {
         PgDiffArguments args = new PgDiffArguments();
         Path path = outDir.resolve(getRelativeFilePath(st, true));
         StringBuilder sb = new StringBuilder();
@@ -81,36 +80,22 @@ public class PgOverridesModelExporter extends AbstractModelExporter {
             if (st.getName().equals(oldSt.getName())) {
                 isFound = true;
                 // new state
-                PgStatement.appendOwnerSQL(st, st.getOwner(), sb);
-                st.appendPrivileges(sb);
+                PgStatement.appendOwnerSQL(st, st.getOwner(), false, sb);
+                PgPrivilege.appendPrivileges(st.getPrivileges(), st.isPostgres(), sb);
             } else {
                 // we can't change oldSt
+                // old state
                 StatementOverride override = entry.getValue();
-                PgStatement.appendOwnerSQL(oldSt, override.getOwner(), sb);
-
-                if (!override.getPrivileges().isEmpty()) {
-                    sb.append("\n\n-- ")
-                    .append(oldSt.getStatementType())
-                    .append(' ');
-                    sb.append(((PgStatementWithSearchPath)oldSt).getContainingSchema().getName())
-                    .append('.');
-                    sb.append(oldSt.getName())
-                    .append(' ')
-                    .append("GRANT\n");
-
-                    // old state
-                    for (PgPrivilege priv : override.getPrivileges()) {
-                        sb.append('\n').append(priv.getCreationSQL()).append(';');
-                    }
-                }
+                PgStatement.appendOwnerSQL(oldSt, override.getOwner(), false, sb);
+                PgPrivilege.appendPrivileges(override.getPrivileges(), st.isPostgres(), sb);
             }
             sb.append(GROUP_DELIMITER);
         }
 
         if (!isFound) {
             // add new privileges to end if not found
-            PgStatement.appendOwnerSQL(st, st.getOwner(), sb);
-            st.appendPrivileges(sb);
+            PgStatement.appendOwnerSQL(st, st.getOwner(), false, sb);
+            PgPrivilege.appendPrivileges(st.getPrivileges(), st.isPostgres(), sb);
         } else if (sb.length() > 0) {
             // remove trailing delimiter from loop above
             sb.setLength(sb.length() - GROUP_DELIMITER.length());

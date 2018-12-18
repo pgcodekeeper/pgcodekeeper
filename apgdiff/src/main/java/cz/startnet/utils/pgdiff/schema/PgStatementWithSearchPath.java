@@ -8,8 +8,8 @@ package cz.startnet.utils.pgdiff.schema;
  */
 public abstract class PgStatementWithSearchPath extends PgStatement implements ISearchPath {
 
-    public PgStatementWithSearchPath(String name, String rawStatement) {
-        super(name, rawStatement);
+    public PgStatementWithSearchPath(String name) {
+        super(name);
     }
 
     @Override

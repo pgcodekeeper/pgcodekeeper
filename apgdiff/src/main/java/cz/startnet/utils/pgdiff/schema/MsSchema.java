@@ -10,8 +10,8 @@ import cz.startnet.utils.pgdiff.MsDiffUtils;
  */
 public class MsSchema extends AbstractSchema {
 
-    public MsSchema(String name, String rawStatement) {
-        super(name, rawStatement);
+    public MsSchema(String name) {
+        super(name);
     }
 
     @Override
@@ -60,6 +60,6 @@ public class MsSchema extends AbstractSchema {
 
     @Override
     protected AbstractSchema getSchemaCopy() {
-        return new MsSchema(getName(), getRawStatement());
+        return new MsSchema(getName());
     }
 }

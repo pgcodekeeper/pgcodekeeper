@@ -51,8 +51,8 @@ public class PgAggregate extends AbstractPgFunction {
     private ModifyType finalFuncModify;
     private ModifyType mFinalFuncModify;
 
-    public PgAggregate(String name, String rawStatement) {
-        super(name, rawStatement);
+    public PgAggregate(String name) {
+        super(name);
     }
 
     @Override
@@ -216,12 +216,12 @@ public class PgAggregate extends AbstractPgFunction {
     }
 
     @Override
-    public boolean checkForChanges(AbstractFunction func) {
+    public boolean compareUnalterable(AbstractPgFunction func) {
         if (this == func) {
             return true;
         }
 
-        if (func instanceof PgAggregate && super.checkForChanges(func)) {
+        if (func instanceof PgAggregate && super.compareUnalterable(func)) {
             PgAggregate aggr = (PgAggregate) func;
             return directCount == aggr.directCount
                     && Objects.equals(kind, aggr.getKind())
@@ -479,8 +479,8 @@ public class PgAggregate extends AbstractPgFunction {
     }
 
     @Override
-    protected AbstractFunction getFunctionCopy() {
-        PgAggregate copy = new PgAggregate(getBareName(), getRawStatement());
+    protected AbstractPgFunction getFunctionCopy() {
+        PgAggregate copy = new PgAggregate(getBareName());
         copy.setDirectCount(getDirectCount());
         copy.setKind(getKind());
         copy.setBaseType(getBaseType());

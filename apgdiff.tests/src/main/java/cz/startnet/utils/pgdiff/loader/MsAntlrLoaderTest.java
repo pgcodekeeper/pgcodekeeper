@@ -19,25 +19,22 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
-import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.AbstractSequence;
+import cz.startnet.utils.pgdiff.schema.FuncTypes;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.MsConstraint;
 import cz.startnet.utils.pgdiff.schema.MsFunction;
-import cz.startnet.utils.pgdiff.schema.MsFunction.FuncTypes;
 import cz.startnet.utils.pgdiff.schema.MsIndex;
 import cz.startnet.utils.pgdiff.schema.MsProcedure;
 import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.MsSequence;
+import cz.startnet.utils.pgdiff.schema.MsTable;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import cz.startnet.utils.pgdiff.schema.MsView;
-import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
-import cz.startnet.utils.pgdiff.schema.SimpleMsTable;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.MsModelExporter;
@@ -221,11 +218,11 @@ class MsDB0 extends MsDatabaseObjectCreator {
         PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
         AbstractSchema schema = d.getDefaultSchema();
 
-        SimpleMsTable table = new SimpleMsTable("fax_boxes", "");
+        MsTable table = new MsTable("fax_boxes");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
-        AbstractColumn col = new MsColumn("fax_box_id");
+        MsColumn col = new MsColumn("fax_box_id");
         col.setType("[int]");
         col.setNullValue(false);
         table.addColumn(col);
@@ -234,13 +231,13 @@ class MsDB0 extends MsDatabaseObjectCreator {
         col.setType("[text]");
         table.addColumn(col);
 
-        AbstractConstraint constraint = new MsConstraint("PK_fax_boxes", "");
+        AbstractConstraint constraint = new MsConstraint("PK_fax_boxes");
         table.addConstraint(constraint);
         constraint.setDefinition("PRIMARY KEY CLUSTERED  ([fax_box_id]) ON [PRIMARY]");
 
         table.setOwner("ms_user");
 
-        table = new SimpleMsTable("faxes", "");
+        table = new MsTable("faxes");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -280,7 +277,7 @@ class MsDB0 extends MsDatabaseObjectCreator {
         table.addColumn(col);
 
         // TODO replace constraint by 'col.setDefaultValue("getdate()")' when it will be fixed
-        constraint = new MsConstraint("DF_faxes_time_received", "");
+        constraint = new MsConstraint("DF_faxes_time_received");
         constraint.setDefinition("DEFAULT (getdate()) FOR time_received");
         table.addConstraint(constraint);
 
@@ -299,7 +296,7 @@ class MsDB0 extends MsDatabaseObjectCreator {
         table.addColumn(col);
 
         // TODO replace constraint by 'col.setDefaultValue("0")' when it will be fixed
-        constraint = new MsConstraint("DF_faxes_read", "");
+        constraint = new MsConstraint("DF_faxes_read");
         constraint.setDefinition("DEFAULT 0 FOR [read]");
         table.addConstraint(constraint);
 
@@ -307,16 +304,16 @@ class MsDB0 extends MsDatabaseObjectCreator {
         col.setType("[text]");
         table.addColumn(col);
 
-        constraint = new MsConstraint("PK_faxes", "");
+        constraint = new MsConstraint("PK_faxes");
         constraint.setDefinition("PRIMARY KEY CLUSTERED  ([fax_id]) ON [PRIMARY]");
         table.addConstraint(constraint);
 
-        constraint = new MsConstraint("FK_faxes_fax_box_id", "");
+        constraint = new MsConstraint("FK_faxes_fax_box_id");
         constraint.setDefinition("FOREIGN KEY (fax_box_id) \n" +
                 "    REFERENCES [dbo].[fax_boxes](fax_box_id) ON DELETE SET NULL ON UPDATE CASCADE");
         table.addConstraint(constraint);
 
-        table = new SimpleMsTable("extensions", "");
+        table = new MsTable("extensions");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -325,7 +322,7 @@ class MsDB0 extends MsDatabaseObjectCreator {
         col.setNullValue(false);
         table.addColumn(col);
 
-        constraint = new MsConstraint("FK_extensions_fax_box_id", "");
+        constraint = new MsConstraint("FK_extensions_fax_box_id");
         constraint.setDefinition("FOREIGN KEY (fax_box_id) \n" +
                 "    REFERENCES [dbo].[fax_boxes](fax_box_id) ON DELETE SET NULL ON UPDATE CASCADE");
         table.addConstraint(constraint);
@@ -339,16 +336,16 @@ class MsDB1 extends MsDatabaseObjectCreator {
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
 
-        AbstractSchema schema = new MsSchema("msschema", "");
+        AbstractSchema schema = new MsSchema("msschema");
         d.addSchema(schema);
 
         schema = d.getSchema(ApgdiffConsts.DBO);
 
-        SimpleMsTable table = new SimpleMsTable("contacts", "");
+        MsTable table = new MsTable("contacts");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
-        AbstractColumn col = new MsColumn("id");
+        MsColumn col = new MsColumn("id");
         col.setType("[int]");
         table.addColumn(col);
 
@@ -360,9 +357,8 @@ class MsDB1 extends MsDatabaseObjectCreator {
         col.setType("[varchar](50)");
         table.addColumn(col);
 
-        AbstractIndex idx = new MsIndex("IX_contacts_number_pool_id", "");
+        AbstractIndex idx = new MsIndex("IX_contacts_number_pool_id", "contacts");
         table.addIndex(idx);
-        idx.setTableName("contacts");
         idx.setDefinition("([number_pool_id])");
 
         return d;
@@ -375,18 +371,18 @@ class MsDB2 extends MsDatabaseObjectCreator {
         PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
         AbstractSchema schema = d.getDefaultSchema();
 
-        AbstractSequence seq = new MsSequence("admins_aid_seq", "");
+        MsSequence seq = new MsSequence("admins_aid_seq");
         seq.setStartWith("1");
         seq.setMinMaxInc(1L, 1000000000L, 1L, null, 0L);
         seq.setCached(true);
         seq.setCache("1");
         schema.addSequence(seq);
 
-        SimpleMsTable table = new SimpleMsTable("admins", "");
+        MsTable table = new MsTable("admins");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
-        AbstractColumn col = new MsColumn("aid");
+        MsColumn col = new MsColumn("aid");
         col.setType("[int]");
         col.setNullValue(false);
         // TODO replace constraint 'constraint = new MsConstraint("DF_admins_aid", "")' by this,
@@ -398,11 +394,11 @@ class MsDB2 extends MsDatabaseObjectCreator {
         table.addColumn(col);
 
         // TODO replace constraint by 'col.setDefaultValue("(NEXT VALUE FOR [dbo].[admins_aid_seq])")' when it will be fixed
-        AbstractConstraint constraint = new MsConstraint("DF_admins_aid", "");
+        AbstractConstraint constraint = new MsConstraint("DF_admins_aid");
         constraint.setDefinition("DEFAULT (NEXT VALUE FOR [dbo].[admins_aid_seq]) FOR aid");
         table.addConstraint(constraint);
 
-        constraint = new MsConstraint("PK_admins", "");
+        constraint = new MsConstraint("PK_admins");
         constraint.setDefinition("PRIMARY KEY CLUSTERED  ([aid]) ON [PRIMARY]");
         table.addConstraint(constraint);
 
@@ -413,7 +409,7 @@ class MsDB2 extends MsDatabaseObjectCreator {
         table.addColumn(col);
 
         // TODO replace constraint by 'col.setDefaultValue("0")' when it will be fixed
-        constraint = new MsConstraint("DF_admins_companyid", "");
+        constraint = new MsConstraint("DF_admins_companyid");
         constraint.setDefinition("DEFAULT 0 FOR companyid");
         table.addConstraint(constraint);
 
@@ -424,7 +420,7 @@ class MsDB2 extends MsDatabaseObjectCreator {
         table.addColumn(col);
 
         // TODO replace constraint by 'col.setDefaultValue("0")' when it will be fixed
-        constraint = new MsConstraint("DF_admins_groupid", "");
+        constraint = new MsConstraint("DF_admins_groupid");
         constraint.setDefinition("DEFAULT 0 FOR groupid");
         table.addConstraint(constraint);
 
@@ -445,7 +441,7 @@ class MsDB2 extends MsDatabaseObjectCreator {
         table.addColumn(col);
 
         // TODO replace constraint by 'col.setDefaultValue("0")' when it will be fixed
-        constraint = new MsConstraint("DF_admins_superuser", "");
+        constraint = new MsConstraint("DF_admins_superuser");
         constraint.setDefinition("DEFAULT 0 FOR superuser");
         table.addConstraint(constraint);
 
@@ -477,7 +473,7 @@ class MsDB2 extends MsDatabaseObjectCreator {
         table.addColumn(col);
 
         // TODO replace constraint by 'col.setDefaultValue("1")' when it will be fixed
-        constraint = new MsConstraint("DF_admins_enabled", "");
+        constraint = new MsConstraint("DF_admins_enabled");
         constraint.setDefinition("DEFAULT 1 FOR enabled");
         table.addConstraint(constraint);
 
@@ -488,7 +484,7 @@ class MsDB2 extends MsDatabaseObjectCreator {
         table.addColumn(col);
 
         // TODO replace constraint by 'col.setDefaultValue("getdate()")' when it will be fixed
-        constraint = new MsConstraint("DF_admins_lastlogints", "");
+        constraint = new MsConstraint("DF_admins_lastlogints");
         constraint.setDefinition("DEFAULT (getdate()) FOR lastlogints");
         table.addConstraint(constraint);
 
@@ -498,7 +494,7 @@ class MsDB2 extends MsDatabaseObjectCreator {
         table.addColumn(col);
 
         // TODO replace constraint by 'col.setDefaultValue("0")' when it will be fixed
-        constraint = new MsConstraint("DF_admins_expirienced", "");
+        constraint = new MsConstraint("DF_admins_expirienced");
         constraint.setDefinition("DEFAULT 0 FOR expirienced");
         table.addConstraint(constraint);
 
@@ -513,18 +509,18 @@ class MsDB3 extends MsDatabaseObjectCreator {
         PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
         AbstractSchema schema = d.getDefaultSchema();
 
-        AbstractSequence seq = new MsSequence("call_logs_id_seq", "");
+        MsSequence seq = new MsSequence("call_logs_id_seq");
         seq.setStartWith("1");
         seq.setMinMaxInc(1L, 1000000000L, 1L, null, 0L);
         seq.setCached(true);
         seq.setCache("1");
         schema.addSequence(seq);
 
-        SimpleMsTable table = new SimpleMsTable("call_logs", "");
+        MsTable table = new MsTable("call_logs");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
-        AbstractColumn col = new MsColumn("id");
+        MsColumn col = new MsColumn("id");
         col.setType("[bigint]");
         col.setNullValue(false);
         // TODO replace constraint 'constraint = new MsConstraint("DF_admins_aid", "")' by this,
@@ -536,7 +532,7 @@ class MsDB3 extends MsDatabaseObjectCreator {
         table.addColumn(col);
 
         // TODO replace constraint by 'col.setDefaultValue("(NEXT VALUE FOR [dbo].[call_logs_id_seq])")' when it will be fixed
-        AbstractConstraint constraint = new MsConstraint("DF_call_logs_id", "");
+        AbstractConstraint constraint = new MsConstraint("DF_call_logs_id");
         constraint.setDefinition("DEFAULT (NEXT VALUE FOR [dbo].[call_logs_id_seq]) FOR id");
         table.addConstraint(constraint);
 
@@ -550,11 +546,11 @@ class MsDB4 extends MsDatabaseObjectCreator {
         PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
         AbstractSchema schema = d.getDefaultSchema();
 
-        SimpleMsTable table = new SimpleMsTable("table1", "");
+        MsTable table = new MsTable("table1");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
-        AbstractColumn col = new MsColumn("id");
+        MsColumn col = new MsColumn("id");
         col.setType("[int]");
         col.setNullValue(false);
         table.addColumn(col);
@@ -564,7 +560,7 @@ class MsDB4 extends MsDatabaseObjectCreator {
         col.setNullValue(false);
         table.addColumn(col);
 
-        MsFunction func = new MsFunction("gtsq_in", "");
+        MsFunction func = new MsFunction("gtsq_in");
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
         func.setFirstPart("");
@@ -581,7 +577,7 @@ class MsDB4 extends MsDatabaseObjectCreator {
 
         schema.addFunction(func);
 
-        func = new MsFunction("multiply_numbers", "");
+        func = new MsFunction("multiply_numbers");
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
         func.setFirstPart("");
@@ -600,7 +596,7 @@ class MsDB4 extends MsDatabaseObjectCreator {
                 "END");
         schema.addFunction(func);
 
-        func = new MsFunction("select_something", "");
+        func = new MsFunction("select_something");
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
         func.setFirstPart("");
@@ -634,11 +630,11 @@ class MsDB5 extends MsDatabaseObjectCreator {
         schema.addPrivilege(new PgPrivilege("GRANT", "DELETE", "SCHEMA::[dbo]", "[ms_user]", false));
         schema.addPrivilege(new PgPrivilege("GRANT", "INSERT", "SCHEMA::[dbo]", "[ms_user]", false));
 
-        SimpleMsTable table = new SimpleMsTable("test_table", "");
+        MsTable table = new MsTable("test_table");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
-        AbstractColumn col = new MsColumn("id");
+        MsColumn col = new MsColumn("id");
         col.setType("[bigint]");
         table.addColumn(col);
 
@@ -648,8 +644,7 @@ class MsDB5 extends MsDatabaseObjectCreator {
 
         table.setOwner("ms_user");
 
-        AbstractIndex idx = new MsIndex("IX_test_table_date_deleted", "");
-        idx.setTableName("test_table");
+        AbstractIndex idx = new MsIndex("IX_test_table_date_deleted", "test_table");
         idx.setDefinition("([date_deleted])");
         idx.setWhere("(date_deleted IS NULL)");
         table.addIndex(idx);
@@ -663,11 +658,11 @@ class MsDB6 extends MsDatabaseObjectCreator {
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
 
-        AbstractSchema schema = new MsSchema("common", "");
+        AbstractSchema schema = new MsSchema("common");
         d.addSchema(schema);
         d.setDefaultSchema("common");
 
-        MsFunction func = new MsFunction("t_common_casttotext", "");
+        MsFunction func = new MsFunction("t_common_casttotext");
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
         func.setFirstPart("");
@@ -694,7 +689,7 @@ class MsDB7 extends MsDatabaseObjectCreator {
 
         // TODO uncomment and remade this for MsType when it will be supported
         // MsType type = new MsType("testtt", MsTypeForm.COMPOSITE, "");
-        // AbstractColumn col = new MsColumn("a");
+        // MsColumn col = new MsColumn("a");
         // col.setType("[int]");
         // type.addAttr(col);
         // col = new MsColumn("b");
@@ -703,10 +698,10 @@ class MsDB7 extends MsDatabaseObjectCreator {
         // type.setOwner("ms_user");
         // schema.addType(type);
 
-        schema = new MsSchema("``54'253-=9!@#$%^&*()__<>?:\"\"{]};',./", "");
+        schema = new MsSchema("``54'253-=9!@#$%^&*()__<>?:\"\"{]};',./");
         d.addSchema(schema);
 
-        MsFunction func = new MsFunction(".x\"\".\"\"\"\".", "");
+        MsFunction func = new MsFunction(".x\"\".\"\"\"\".");
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
         func.setFirstPart("/*Name test*/\n");
@@ -736,26 +731,26 @@ class MsDB8 extends MsDatabaseObjectCreator {
         PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
         AbstractSchema schema = d.getDefaultSchema();
 
-        MsSequence seq = new MsSequence("user_id_seq", "");
+        MsSequence seq = new MsSequence("user_id_seq");
         seq.setMinMaxInc(1L, null, null, null, 0L);
         seq.setCached(true);
         seq.setCache("1");
         seq.setOwner("ms_user");
         schema.addSequence(seq);
 
-        SimpleMsTable table = new SimpleMsTable("user_data", "");
+        MsTable table = new MsTable("user_data");
         table.setAnsiNulls(true);
         table.setOwner("ms_user");
         schema.addTable(table);
 
-        AbstractColumn col = new MsColumn("id");
+        MsColumn col = new MsColumn("id");
         col.setType("[bigint]");
         col.setNullValue(false);
         // col.setDefaultValue("(NEXT VALUE FOR [dbo].[user_id_seq])");
         table.addColumn(col);
 
         // TODO replace constraint by 'col.setDefaultValue("(NEXT VALUE FOR [dbo].[user_id_seq])")' when it will be fixed
-        AbstractConstraint constraint = new MsConstraint("DF_user_data_id", "");
+        AbstractConstraint constraint = new MsConstraint("DF_user_data_id");
         constraint.setDefinition("DEFAULT (NEXT VALUE FOR [dbo].[user_id_seq]) FOR id");
         table.addConstraint(constraint);
 
@@ -770,11 +765,11 @@ class MsDB8 extends MsDatabaseObjectCreator {
         table.addColumn(col);
 
         // TODO replace constraint by 'col.setDefaultValue("getdate()")' when it will be fixed
-        constraint = new MsConstraint("DF_user_data_created", "");
+        constraint = new MsConstraint("DF_user_data_created");
         constraint.setDefinition("DEFAULT (getdate()) FOR created");
         table.addConstraint(constraint);
 
-        table = new SimpleMsTable("t1", "");
+        table = new MsTable("t1");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -782,7 +777,7 @@ class MsDB8 extends MsDatabaseObjectCreator {
         col.setType("[int]");
         table.addColumn(col);
 
-        MsView view = new MsView("\"user\"", "");
+        MsView view = new MsView("\"user\"");
         view.setAnsiNulls(true);
         view.setQuotedIdentified(true);
         view.setFirstPart("");
@@ -796,10 +791,9 @@ class MsDB8 extends MsDatabaseObjectCreator {
         view.setOwner("ms_user");
         schema.addView(view);
 
-        MsTrigger trigger = new MsTrigger("instead_of_delete", "");
+        MsTrigger trigger = new MsTrigger("instead_of_delete", "\"user\"");
         trigger.setAnsiNulls(true);
         trigger.setQuotedIdentified(true);
-        trigger.setTableName("\"user\"");
         trigger.setFirstPart("");
         trigger.setSecondPart("\n" +
                 "    INSTEAD OF DELETE\n" +
@@ -810,10 +804,9 @@ class MsDB8 extends MsDatabaseObjectCreator {
                 "    END");
         view.addTrigger(trigger);
 
-        trigger = new MsTrigger("instead_of_insert", "");
+        trigger = new MsTrigger("instead_of_insert", "\"user\"");
         trigger.setAnsiNulls(true);
         trigger.setQuotedIdentified(true);
-        trigger.setTableName("\"user\"");
         trigger.setFirstPart("");
         trigger.setSecondPart("\n" +
                 "    INSTEAD OF INSERT\n" +
@@ -824,10 +817,9 @@ class MsDB8 extends MsDatabaseObjectCreator {
                 "    END");
         view.addTrigger(trigger);
 
-        trigger = new MsTrigger("instead_of_update", "");
+        trigger = new MsTrigger("instead_of_update", "\"user\"");
         trigger.setAnsiNulls(true);
         trigger.setQuotedIdentified(true);
-        trigger.setTableName("\"user\"");
         trigger.setFirstPart("");
         trigger.setSecondPart("\n" +
                 "    INSTEAD OF UPDATE\n" +
@@ -839,7 +831,7 @@ class MsDB8 extends MsDatabaseObjectCreator {
                 "    END");
         view.addTrigger(trigger);
 
-        view = new MsView("ws_test", "");
+        view = new MsView("ws_test");
         view.setAnsiNulls(true);
         view.setQuotedIdentified(true);
         view.setFirstPart("");
@@ -857,28 +849,28 @@ class MsDB9 extends MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
-        AbstractSchema schema = new MsSchema("admin", "");
+        AbstractSchema schema = new MsSchema("admin");
         d.addSchema(schema);
         d.setDefaultSchema("admin");
 
         schema.setOwner("ms_user");
 
-        SimpleMsTable table = new SimpleMsTable("acl_role", "");
+        MsTable table = new MsTable("acl_role");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
-        AbstractColumn col = new MsColumn("id");
+        MsColumn col = new MsColumn("id");
         col.setType("[bigint]");
         col.setNullValue(false);
         table.addColumn(col);
 
-        AbstractConstraint constraint = new PgConstraint("PK_acl_role", "");
+        AbstractConstraint constraint = new MsConstraint("PK_acl_role");
         constraint.setDefinition("PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]");
         table.addConstraint(constraint);
 
         table.setOwner("ms_user");
 
-        table = new SimpleMsTable("\"user\"", "");
+        table = new MsTable("\"user\"");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -909,7 +901,7 @@ class MsDB9 extends MsDatabaseObjectCreator {
         table.addColumn(col);
 
         // TODO replace constraint by 'col.setDefaultValue("0")' when it will be fixed
-        constraint = new MsConstraint("DF_admin_is_active", "");
+        constraint = new MsConstraint("DF_admin_is_active");
         constraint.setDefinition("DEFAULT 0 FOR is_active");
         table.addConstraint(constraint);
 
@@ -920,7 +912,7 @@ class MsDB9 extends MsDatabaseObjectCreator {
         table.addColumn(col);
 
         // TODO replace constraint by 'col.setDefaultValue("getdate()")' when it will be fixed
-        constraint = new MsConstraint("DF_admin_updated", "");
+        constraint = new MsConstraint("DF_admin_updated");
         constraint.setDefinition("DEFAULT (getdate()) FOR updated");
         table.addConstraint(constraint);
 
@@ -931,7 +923,7 @@ class MsDB9 extends MsDatabaseObjectCreator {
         table.addColumn(col);
 
         // TODO replace constraint by 'col.setDefaultValue("getdate()")' when it will be fixed
-        constraint = new MsConstraint("DF_admin_created", "");
+        constraint = new MsConstraint("DF_admin_created");
         constraint.setDefinition("DEFAULT (getdate()) FOR created");
         table.addConstraint(constraint);
 
@@ -947,16 +939,15 @@ class MsDB9 extends MsDatabaseObjectCreator {
         table.addColumn(col);
 
         // TODO replace constraint by 'col.setDefaultValue("getdate()")' when it will be fixed
-        constraint = new MsConstraint("DF_admin_last_visit", "");
+        constraint = new MsConstraint("DF_admin_last_visit");
         constraint.setDefinition("DEFAULT (getdate()) FOR last_visit");
         table.addConstraint(constraint);
 
-        AbstractIndex idx = new MsIndex("IX_user_role_id", "");
-        idx.setTableName("\"user\"");
+        AbstractIndex idx = new MsIndex("IX_user_role_id", "\"user\"");
         idx.setDefinition("([role_id])");
         table.addIndex(idx);
 
-        constraint = new MsConstraint("FK_user_fax_box_id", "");
+        constraint = new MsConstraint("FK_user_fax_box_id");
         constraint.setDefinition("FOREIGN KEY (role_id) \n"
                 + "    REFERENCES [admin].[acl_role](id)");
         table.addConstraint(constraint);
@@ -973,7 +964,7 @@ class MsDB10 extends MsDatabaseObjectCreator {
         PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
         AbstractSchema schema = d.getDefaultSchema();
 
-        MsFunction func = new MsFunction("curdate", "");
+        MsFunction func = new MsFunction("curdate");
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
         func.setFirstPart("");
@@ -1003,13 +994,13 @@ class MsDB11 extends MsDatabaseObjectCreator {
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
         // schema.setComment("'Contains super objects.'");
 
-        SimpleMsTable table = new SimpleMsTable("TABLE_1", "");
+        MsTable table = new MsTable("TABLE_1");
         table.setAnsiNulls(true);
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
         // table.setComment("'This is my table comment.'");
         schema.addTable(table);
 
-        AbstractColumn col = new MsColumn("ID");
+        MsColumn col = new MsColumn("ID");
         col.setType("[int]");
         col.setNullValue(false);
         col.setIdentity("1", "1");
@@ -1029,7 +1020,7 @@ class MsDB11 extends MsDatabaseObjectCreator {
         // col.setComment("'This is column 2 comment'");
         table.addColumn(col);
 
-        AbstractConstraint constraint = new PgConstraint("PK_TABLE_1", "");
+        AbstractConstraint constraint = new MsConstraint("PK_TABLE_1");
         constraint.setDefinition("PRIMARY KEY CLUSTERED  ([ID]) ON [PRIMARY]");
         table.addConstraint(constraint);
 
@@ -1043,7 +1034,7 @@ class MsDB12 extends MsDatabaseObjectCreator {
         PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
         AbstractSchema schema = d.getDefaultSchema();
 
-        MsFunction func = new MsFunction("function_string_to_table", "");
+        MsFunction func = new MsFunction("function_string_to_table");
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
         func.setFuncType(FuncTypes.MULTI);
@@ -1069,7 +1060,7 @@ class MsDB12 extends MsDatabaseObjectCreator {
                 "END");
         schema.addFunction(func);
 
-        func = new MsFunction("function_empty", "");
+        func = new MsFunction("function_empty");
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
         func.setFuncType(FuncTypes.MULTI);
@@ -1108,7 +1099,7 @@ class MsDB13 extends MsDatabaseObjectCreator {
         // d.setComment("comments database");
         // schema.setComment("dbo schema");
 
-        AbstractSequence seq = new MsSequence("test_id_seq", "");
+        MsSequence seq = new MsSequence("test_id_seq");
         seq.setStartWith("1");
         seq.setMinMaxInc(1L, null, null, null, 0L);
         seq.setCached(true);
@@ -1120,7 +1111,7 @@ class MsDB13 extends MsDatabaseObjectCreator {
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
         // seq.setComment("test table sequence");
 
-        MsFunction func = new MsFunction("test_fnc", "");
+        MsFunction func = new MsFunction("test_fnc");
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
         func.setFirstPart("");
@@ -1137,7 +1128,7 @@ class MsDB13 extends MsDatabaseObjectCreator {
 
         schema.addFunction(func);
 
-        func = new MsFunction("fnc", "");
+        func = new MsFunction("fnc");
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
         func.setFirstPart("");
@@ -1153,7 +1144,7 @@ class MsDB13 extends MsDatabaseObjectCreator {
 
         func.setOwner("ms_user");
 
-        MsProcedure proc = new MsProcedure("trigger_proc", "");
+        MsProcedure proc = new MsProcedure("trigger_proc");
         proc.setAnsiNulls(true);
         proc.setQuotedIdentified(true);
         proc.setFirstPart("");
@@ -1167,11 +1158,11 @@ class MsDB13 extends MsDatabaseObjectCreator {
 
         proc.setOwner("ms_user");
 
-        SimpleMsTable table = new SimpleMsTable("test", "");
+        MsTable table = new MsTable("test");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
-        AbstractColumn col = new MsColumn("id");
+        MsColumn col = new MsColumn("id");
         col.setType("[int]");
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
         // col.setComment("id column");
@@ -1180,7 +1171,7 @@ class MsDB13 extends MsDatabaseObjectCreator {
         table.addColumn(col);
 
         // TODO replace constraint by 'col.setDefaultValue("(NEXT VALUE FOR [dbo].[admins_aid_seq])")' when it will be fixed
-        AbstractConstraint constraint = new MsConstraint("DF_test_id", "");
+        AbstractConstraint constraint = new MsConstraint("DF_test_id");
         constraint.setDefinition("DEFAULT (NEXT VALUE FOR [dbo].[test_id_seq]) FOR id");
         table.addConstraint(constraint);
 
@@ -1191,7 +1182,7 @@ class MsDB13 extends MsDatabaseObjectCreator {
         // col.setComment("text column");
         table.addColumn(col);
 
-        constraint = new MsConstraint("text_check", "");
+        constraint = new MsConstraint("text_check");
         constraint.setDefinition("CHECK  ((LEN([text])>(0)))");
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
         // constraint.setComment("text check");
@@ -1200,7 +1191,7 @@ class MsDB13 extends MsDatabaseObjectCreator {
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
         // table.setComment("test table");
 
-        constraint = new MsConstraint("PK_test", "");
+        constraint = new MsConstraint("PK_test");
         table.addConstraint(constraint);
         constraint.setDefinition("PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]");
 
@@ -1209,7 +1200,7 @@ class MsDB13 extends MsDatabaseObjectCreator {
 
         table.setOwner("ms_user");
 
-        MsView view = new MsView("test_view", "");
+        MsView view = new MsView("test_view");
         view.setAnsiNulls(true);
         view.setQuotedIdentified(true);
         view.setFirstPart("");
@@ -1226,18 +1217,16 @@ class MsDB13 extends MsDatabaseObjectCreator {
 
         view.setOwner("ms_user");
 
-        AbstractIndex idx = new MsIndex("IX_test_id", "");
+        AbstractIndex idx = new MsIndex("IX_test_id", "test");
         table.addIndex(idx);
-        idx.setTableName("test");
         idx.setDefinition("([id])");
 
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
         // idx.setComment("view id col");
 
-        MsTrigger trigger = new MsTrigger("test_trigger", "");
+        MsTrigger trigger = new MsTrigger("test_trigger", "test");
         trigger.setQuotedIdentified(true);
         trigger.setAnsiNulls(true);
-        trigger.setTableName("test");
         trigger.setFirstPart("");
         trigger.setSecondPart("\n" +
                 "FOR UPDATE\n" +
@@ -1261,11 +1250,11 @@ class MsDB14 extends MsDatabaseObjectCreator {
         PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
         AbstractSchema schema = d.getDefaultSchema();
 
-        SimpleMsTable table = new SimpleMsTable("test", "");
+        MsTable table = new MsTable("test");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
-        AbstractColumn col = new MsColumn("id");
+        MsColumn col = new MsColumn("id");
         col.setType("[bigint]");
         table.addColumn(col);
 
@@ -1289,16 +1278,16 @@ class MsDB15 extends MsDatabaseObjectCreator {
         AbstractSchema schema = d.getDefaultSchema();
 
         // table1
-        SimpleMsTable table = new SimpleMsTable("\"t_work\"", "");
+        MsTable table = new MsTable("\"t_work\"");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
-        AbstractColumn col = new MsColumn("id");
+        MsColumn col = new MsColumn("id");
         col.setType("[int]");
         table.addColumn(col);
 
         // table2
-        SimpleMsTable table2 = new SimpleMsTable("\"t_chart\"", "");
+        MsTable table2 = new MsTable("\"t_chart\"");
         table2.setAnsiNulls(true);
         schema.addTable(table2);
         col = new MsColumn("id");
@@ -1306,7 +1295,7 @@ class MsDB15 extends MsDatabaseObjectCreator {
         table2.addColumn(col);
 
         // view
-        MsView view = new MsView("v_subselect", "");
+        MsView view = new MsView("v_subselect");
         view.setAnsiNulls(true);
         view.setQuotedIdentified(true);
         view.setFirstPart("");
@@ -1337,16 +1326,16 @@ class MsDB16 extends MsDatabaseObjectCreator {
         AbstractSchema schema = d.getDefaultSchema();
 
         // table1
-        SimpleMsTable table = new SimpleMsTable("\"t_work\"", "");
+        MsTable table = new MsTable("\"t_work\"");
         table.setAnsiNulls(true);
         schema.addTable(table);
 
-        AbstractColumn col = new MsColumn("id");
+        MsColumn col = new MsColumn("id");
         col.setType("[int]");
         table.addColumn(col);
 
         // table2
-        SimpleMsTable table2 = new SimpleMsTable("\"t_chart\"", "");
+        MsTable table2 = new MsTable("\"t_chart\"");
         table2.setAnsiNulls(true);
         schema.addTable(table2);
         col = new MsColumn("id");
@@ -1354,7 +1343,7 @@ class MsDB16 extends MsDatabaseObjectCreator {
         table2.addColumn(col);
 
         // table 3
-        SimpleMsTable table3 = new SimpleMsTable("\"t_memo\"", "");
+        MsTable table3 = new MsTable("\"t_memo\"");
         table3.setAnsiNulls(true);
         schema.addTable(table3);
         col = new MsColumn("name");
@@ -1362,7 +1351,7 @@ class MsDB16 extends MsDatabaseObjectCreator {
         table3.addColumn(col);
 
         // view
-        MsView view = new MsView("v_subselect", "");
+        MsView view = new MsView("v_subselect");
         view.setAnsiNulls(true);
         view.setQuotedIdentified(true);
         view.setFirstPart("");

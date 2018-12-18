@@ -60,7 +60,7 @@ public class SchemasReader implements PgCatalogStrings {
     private AbstractSchema getSchema(ResultSet res) throws SQLException {
         String schemaName = res.getString(NAMESPACE_NSPNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, DbObjType.SCHEMA));
-        AbstractSchema s = new PgSchema(schemaName, "");
+        AbstractSchema s = new PgSchema(schemaName);
         long owner = res.getLong("nspowner");
 
         if (!schemaName.equals(ApgdiffConsts.PUBLIC)) {

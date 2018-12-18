@@ -15,8 +15,8 @@ public class TypedPgTable extends AbstractRegularTable {
 
     private final String ofType;
 
-    public TypedPgTable(String name, String rawStatement, String ofType) {
-        super(name, rawStatement);
+    public TypedPgTable(String name, String ofType) {
+        super(name);
         this.ofType = ofType;
     }
 
@@ -29,7 +29,7 @@ public class TypedPgTable extends AbstractRegularTable {
 
             int start = sbSQL.length();
             for (AbstractColumn column : columns) {
-                writeColumn(column, sbSQL, sbOption);
+                writeColumn((PgColumn) column, sbSQL, sbOption);
             }
 
             if (start != sbSQL.length()) {
@@ -44,7 +44,7 @@ public class TypedPgTable extends AbstractRegularTable {
     }
 
     @Override
-    protected void compareTableTypes(AbstractTable newTable, StringBuilder sb) {
+    protected void compareTableTypes(AbstractPgTable newTable, StringBuilder sb) {
         if (newTable instanceof TypedPgTable) {
             String newType  = ((TypedPgTable)newTable).getOfType();
             if (!Objects.equals(ofType, newType)) {
@@ -71,7 +71,7 @@ public class TypedPgTable extends AbstractRegularTable {
 
     @Override
     protected AbstractTable getTableCopy() {
-        return new TypedPgTable(name, getRawStatement(), getOfType());
+        return new TypedPgTable(name, getOfType());
     }
 
     @Override

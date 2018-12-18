@@ -20,7 +20,7 @@ public class CreateMsUser extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         String name = ctx.user_name.getText();
-        MsUser user = new MsUser(name, getFullCtxText(ctx.getParent()));
+        MsUser user = new MsUser(name);
         User_loginContext login = ctx.user_login();
         if (login != null && login.login_name != null) {
             user.setLogin(login.login_name.getText());

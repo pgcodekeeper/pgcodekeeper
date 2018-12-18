@@ -22,8 +22,8 @@ public class PgFunction extends AbstractPgFunction {
         return DbObjType.FUNCTION;
     }
 
-    public PgFunction(String name, String rawStatement) {
-        super(name, rawStatement);
+    public PgFunction(String name) {
+        super(name);
     }
 
     @Override
@@ -133,7 +133,7 @@ public class PgFunction extends AbstractPgFunction {
     }
 
     @Override
-    protected boolean needDrop(AbstractFunction newFunction) {
+    protected boolean needDrop(AbstractPgFunction newFunction) {
         if (newFunction == null ||
                 !Objects.equals(getReturns(), newFunction.getReturns())) {
             return true;
@@ -188,7 +188,7 @@ public class PgFunction extends AbstractPgFunction {
     }
 
     @Override
-    protected AbstractFunction getFunctionCopy() {
-        return new PgFunction(getBareName(), getRawStatement());
+    protected AbstractPgFunction getFunctionCopy() {
+        return new PgFunction(getBareName());
     }
 }

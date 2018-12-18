@@ -9,7 +9,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Sequence_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.AbstractSequence;
 import cz.startnet.utils.pgdiff.schema.MsSequence;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -26,7 +25,7 @@ public class CreateMsSequence extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         String name = ctx.qualified_name().name.getText();
-        AbstractSequence sequence = new MsSequence(name, getFullCtxText(ctx.getParent()));
+        MsSequence sequence = new MsSequence(name);
         fillSequence(sequence, ctx.sequence_body());
         IdContext schemaCtx = ctx.qualified_name().schema;
         AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
@@ -34,7 +33,7 @@ public class CreateMsSequence extends ParserAbstract {
         return sequence;
     }
 
-    private void fillSequence(AbstractSequence sequence, List<Sequence_bodyContext> list) {
+    private void fillSequence(MsSequence sequence, List<Sequence_bodyContext> list) {
         long inc = 1;
         Long maxValue = null;
         Long minValue = null;

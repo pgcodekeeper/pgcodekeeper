@@ -31,9 +31,9 @@ public class Insert extends AbstractExprWithNmspc<Insert_stmt_for_psqlContext> {
             addColumnsDepcies(insert.insert_table_name, insert.column);
         }
 
-        Select_stmtContext select_ctx = insert.select_stmt();
-        if (select_ctx != null) {
-            new Select(this).analyze(select_ctx);
+        Select_stmtContext selectCtx = insert.select_stmt();
+        if (selectCtx != null) {
+            new Select(this).analyze(selectCtx);
         }
 
         return Collections.emptyList();

@@ -94,13 +94,8 @@ public class AlterOwner extends ParserAbstract {
         if (overrides == null) {
             fillOwnerTo(owner, st);
         } else {
-            StatementOverride override = overrides.get(st);
-            if (override == null) {
-                override = new StatementOverride();
-                overrides.put(st, override);
-            }
-
-            override.setOwner(owner.name.getText());
+            overrides.computeIfAbsent(st,
+                    k -> new StatementOverride()).setOwner(owner.name.getText());
         }
     }
 }

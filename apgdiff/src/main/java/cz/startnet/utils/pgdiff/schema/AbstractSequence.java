@@ -27,24 +27,21 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
                     new Pair<>("cache_value", BIGINT), new Pair<>("log_cnt", BIGINT),
                     new Pair<>("is_cycled", "boolean"), new Pair<>("is_called", "boolean"))));
 
-    private boolean isCached;
     private String cache;
     protected String increment;
     protected String maxValue;
     protected String minValue;
     private String startWith;
     private boolean cycle;
-    private String ownedBy;
     private String dataType = BIGINT;
-    private String presicion;
 
     @Override
     public DbObjType getStatementType() {
         return DbObjType.SEQUENCE;
     }
 
-    public AbstractSequence(String name, String rawStatement) {
-        super(name, rawStatement);
+    public AbstractSequence(String name) {
+        super(name);
     }
 
     public void setCache(final String cache) {
@@ -68,15 +65,6 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
 
     public boolean isCycle() {
         return cycle;
-    }
-
-    public String getPresicion() {
-        return presicion;
-    }
-
-    public void setPresicion(String presicion) {
-        this.presicion = presicion;
-        resetHash();
     }
 
     public abstract void setMinMaxInc(long inc, Long max, Long min, String dataType,
@@ -131,90 +119,48 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
         return dataType;
     }
 
-    public String getOwnedBy() {
-        return ownedBy;
-    }
-
-    public void setOwnedBy(final String ownedBy) {
-        this.ownedBy = ownedBy;
-        resetHash();
-    }
-
-    public boolean isCached() {
-        return isCached;
-    }
-
-    public void setCached(boolean isCached) {
-        this.isCached = isCached;
-        resetHash();
-    }
-
     @Override
     public boolean compare(PgStatement obj) {
-        boolean eq = false;
+        if (this == obj) {
+            return true;
+        }
 
-        if(this == obj) {
-            eq = true;
-        } else if(obj instanceof AbstractSequence) {
+        if (obj instanceof AbstractSequence) {
             AbstractSequence seq = (AbstractSequence) obj;
-            eq = Objects.equals(name, seq.getName())
+            return cycle == seq.isCycle()
                     && Objects.equals(increment, seq.getIncrement())
                     && Objects.equals(minValue, seq.getMinValue())
                     && Objects.equals(maxValue, seq.getMaxValue())
                     && Objects.equals(startWith, seq.getStartWith())
                     && Objects.equals(cache, seq.getCache())
-                    && cycle == seq.isCycle()
-                    && isCached == seq.isCached()
-                    && Objects.equals(ownedBy, seq.getOwnedBy())
-                    && grants.equals(seq.grants)
-                    && revokes.equals(seq.revokes)
-                    && Objects.equals(owner, seq.getOwner())
-                    && Objects.equals(presicion, seq.getPresicion())
-                    && Objects.equals(comment, seq.getComment())
                     && Objects.equals(dataType, seq.getDataType());
         }
 
-        return eq;
+        return false;
     }
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.putUnordered(grants);
-        hasher.putUnordered(revokes);
         hasher.put(cache);
         hasher.put(cycle);
         hasher.put(increment);
         hasher.put(maxValue);
         hasher.put(minValue);
-        hasher.put(name);
-        hasher.put(ownedBy);
         hasher.put(startWith);
-        hasher.put(owner);
-        hasher.put(comment);
         hasher.put(dataType);
-        hasher.put(presicion);
-        hasher.put(isCached);
     }
 
     @Override
     public AbstractSequence shallowCopy() {
         AbstractSequence sequenceDst = getSequenceCopy();
+        copyBaseFields(sequenceDst);
         sequenceDst.setCache(getCache());
         sequenceDst.setCycle(isCycle());
         sequenceDst.increment = getIncrement();
         sequenceDst.maxValue = getMaxValue();
         sequenceDst.minValue = getMinValue();
         sequenceDst.dataType = getDataType();
-        sequenceDst.setOwnedBy(getOwnedBy());
-        sequenceDst.setCached(isCached());
         sequenceDst.setStartWith(getStartWith());
-        sequenceDst.setComment(getComment());
-        sequenceDst.grants.addAll(grants);
-        sequenceDst.revokes.addAll(revokes);
-        sequenceDst.setOwner(getOwner());
-        sequenceDst.setPresicion(getPresicion());
-        sequenceDst.deps.addAll(deps);
-        sequenceDst.setLocation(getLocation());
         return sequenceDst;
     }
 

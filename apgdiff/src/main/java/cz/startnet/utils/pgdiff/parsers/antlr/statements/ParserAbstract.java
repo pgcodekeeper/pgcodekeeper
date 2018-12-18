@@ -120,14 +120,11 @@ public abstract class ParserAbstract {
     }
 
     public static String parseSignature(String name, Function_argsContext argsContext) {
-        AbstractPgFunction function = new PgFunction(name, null);
-
+        AbstractPgFunction function = new PgFunction(name);
         fillFuncArgs(argsContext.function_arguments(), function);
-
         if (argsContext.agg_order() != null) {
             fillFuncArgs(argsContext.agg_order().function_arguments(), function);
         }
-
         return function.getSignature();
     }
 
@@ -152,7 +149,7 @@ public abstract class ParserAbstract {
     }
 
     public static String parseSignature(String name, Target_operatorContext targerOperCtx) {
-        PgOperator oper = new PgOperator(name, null);
+        PgOperator oper = new PgOperator(name);
         oper.setLeftArg(getOperArg(targerOperCtx.left_type));
         oper.setRightArg(getOperArg(targerOperCtx.right_type));
         return oper.getSignature();

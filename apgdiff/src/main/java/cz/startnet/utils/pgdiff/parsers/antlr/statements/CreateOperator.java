@@ -26,8 +26,7 @@ public class CreateOperator extends ParserAbstract {
         Operator_nameContext operNameCtx = ctx.name;
         AbstractSchema operSchema = getSchemaSafe(operNameCtx, db.getDefaultSchema(), db);
         String operSchemaName = operSchema.getName();
-        PgOperator oper = new PgOperator(operNameCtx.operator.getText(),
-                getFullCtxText(ctx.getParent()));
+        PgOperator oper = new PgOperator(operNameCtx.operator.getText());
         for (Operator_optionContext option : ctx.operator_option()) {
             if (option.PROCEDURE() != null || option.FUNCTION() != null) {
                 oper.setProcedure(option.func_name.getText());

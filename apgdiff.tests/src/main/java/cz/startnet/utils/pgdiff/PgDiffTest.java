@@ -459,6 +459,8 @@ public class PgDiffTest {
                     {"modify_procedure"},
                     // Tests scenario where configuration of PROCEDURE is modified.
                     {"modify_procedure_configuration"},
+                    // Tests scenario where SCHEMA with definition is added.
+                    {"add_schema_with_definition"},
                     // Tests scenario where new AGGREGATE is added.
                     {"add_aggregate"},
                     // Tests scenario where new overloaded AGGREGATE is added.

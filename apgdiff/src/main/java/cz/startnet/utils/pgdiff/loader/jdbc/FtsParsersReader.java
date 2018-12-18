@@ -17,7 +17,7 @@ public class FtsParsersReader extends JdbcReader {
 
     @Override
     protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException {
-        PgFtsParser parser = new PgFtsParser(res.getString("prsname"), "");
+        PgFtsParser parser = new PgFtsParser(res.getString("prsname"));
 
         parser.setStartFunction(res.getString("prsstart"));
         parser.setGetTokenFunction(res.getString("prstoken"));
