@@ -628,7 +628,8 @@ public class ReferenceListener implements SqlContextProcessor {
     public void alterSchema(Alter_schema_statementContext ctx) {
         addObjReference(null, ctx.schema_with_name().name.getText(),
                 DbObjType.SCHEMA, StatementActions.ALTER,
-                ctx.schema_with_name().name.getStart().getStartIndex(), ctx.schema_with_name().name.getStart().getLine(),
+                ctx.schema_with_name().name.getStart().getStartIndex(),
+                ctx.schema_with_name().name.getStart().getLine(),
                 ParserAbstract.getFullCtxText(ctx.getParent()));
     }
 
@@ -884,6 +885,7 @@ public class ReferenceListener implements SqlContextProcessor {
         loc.setAction(StatementActions.CREATE);
         loc.setObjType(objType);
         definitions.computeIfAbsent(filePath, k -> new ArrayList<>()).add(loc);
+        references.computeIfAbsent(filePath, k -> new ArrayList<>()).add(loc);
     }
 
     private PgObjLocation addObjReference(String schemaName, String objName, DbObjType objType,
