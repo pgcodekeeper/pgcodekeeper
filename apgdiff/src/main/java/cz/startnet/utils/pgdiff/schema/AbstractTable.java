@@ -382,7 +382,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
             return true;
         }
 
-        if (obj instanceof AbstractTable) {
+        if (obj instanceof AbstractTable && super.compare(obj)) {
             AbstractTable table = (AbstractTable) obj;
             return getClass().equals(table.getClass())
                     && columns.equals(table.columns)

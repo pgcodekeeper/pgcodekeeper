@@ -98,7 +98,7 @@ public class PgFtsTemplate extends PgStatementWithSearchPath {
             return true;
         }
 
-        return obj instanceof PgFtsTemplate
+        return obj instanceof PgFtsTemplate && super.compare(obj)
                 && compareUnalterable((PgFtsTemplate) obj);
     }
 

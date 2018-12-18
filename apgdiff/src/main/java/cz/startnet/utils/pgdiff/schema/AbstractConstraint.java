@@ -121,7 +121,7 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath {
             return true;
         }
 
-        return obj instanceof AbstractConstraint
+        return obj instanceof AbstractConstraint && super.compare(obj)
                 && Objects.equals(definition, ((AbstractConstraint) obj).getDefinition())
                 && notValid == ((AbstractConstraint) obj).isNotValid();
     }

@@ -223,7 +223,7 @@ public class PgDomain extends PgStatementWithSearchPath {
             return true;
         }
 
-        if (obj instanceof PgDomain) {
+        if (obj instanceof PgDomain && super.compare(obj)) {
             PgDomain dom = (PgDomain) obj;
             return Objects.equals(dataType, dom.getDataType())
                     && Objects.equals(collation, dom.getCollation())

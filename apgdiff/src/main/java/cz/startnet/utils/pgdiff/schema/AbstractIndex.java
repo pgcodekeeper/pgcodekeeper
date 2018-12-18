@@ -128,7 +128,7 @@ implements PgOptionContainer {
             return true;
         }
 
-        if (obj instanceof AbstractIndex) {
+        if (obj instanceof AbstractIndex && super.compare(obj)) {
             AbstractIndex index = (AbstractIndex) obj;
             return compareUnalterable(index)
                     && clusterIndex == index.isClusterIndex()

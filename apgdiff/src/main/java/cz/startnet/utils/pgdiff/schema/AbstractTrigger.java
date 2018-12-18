@@ -32,7 +32,7 @@ public abstract class AbstractTrigger extends PgStatementWithSearchPath {
             return true;
         }
 
-        return obj instanceof AbstractTrigger
+        return obj instanceof AbstractTrigger && super.compare(obj)
                 && compareUnalterable((AbstractTrigger) obj);
     }
 

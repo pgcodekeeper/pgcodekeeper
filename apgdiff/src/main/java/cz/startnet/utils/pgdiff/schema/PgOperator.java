@@ -190,7 +190,7 @@ public class PgOperator extends PgStatementWithSearchPath {
             return true;
         }
 
-        if (obj instanceof PgOperator) {
+        if (obj instanceof PgOperator && super.compare(obj)) {
             PgOperator oper  = (PgOperator) obj;
             return compareUnalterable(oper)
                     && Objects.equals(restrict, oper.getRestrict())

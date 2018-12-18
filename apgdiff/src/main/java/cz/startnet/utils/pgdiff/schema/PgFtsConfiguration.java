@@ -156,7 +156,7 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
             return true;
         }
 
-        if (obj instanceof PgFtsConfiguration) {
+        if (obj instanceof PgFtsConfiguration && super.compare(obj)) {
             PgFtsConfiguration config = (PgFtsConfiguration) obj;
             return Objects.equals(parser, config.getParser())
                     && dictionariesMap.equals(config.dictionariesMap);

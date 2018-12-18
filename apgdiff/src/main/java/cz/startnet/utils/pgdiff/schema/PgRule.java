@@ -212,7 +212,7 @@ public class PgRule extends PgStatementWithSearchPath{
             return true;
         }
 
-        if (obj instanceof PgRule) {
+        if (obj instanceof PgRule && super.compare(obj)) {
             PgRule rule = (PgRule) obj;
             return compareUnalterable(rule)
                     && Objects.equals(enabledState, rule.getEnabledState());
