@@ -7,6 +7,7 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.text.MessageFormat;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -14,14 +15,23 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 
 /**
  * Stores column information.
  */
-public class PgColumn extends AbstractColumn {
+public class PgColumn extends AbstractColumn implements PgOptionContainer  {
 
     private static final String ALTER_FOREIGN_OPTION =  "{0} OPTIONS ({1} {2} {3});";
+
+    private Integer statistics;
+    private String storage;
+    protected final Map<String, String> options = new LinkedHashMap<>(0);
+    protected final Map<String, String> fOptions = new LinkedHashMap<>(0);
+    private AbstractSequence sequence;
+    private String identityType;
+    private boolean isInherit;
 
     public PgColumn(String name) {
         super(name);
@@ -39,7 +49,7 @@ public class PgColumn extends AbstractColumn {
             sbDefinition.append(' ');
             sbDefinition.append(getType());
             if (getCollation() != null) {
-                sbDefinition.append(" COLLATE ").append(getCollation());
+                sbDefinition.append(COLLATE).append(getCollation());
             }
         }
 
@@ -49,7 +59,7 @@ public class PgColumn extends AbstractColumn {
         }
 
         if (!getNullValue()) {
-            sbDefinition.append(" NOT NULL");
+            sbDefinition.append(NOT_NULL);
         }
 
         return sbDefinition.toString();
@@ -66,7 +76,7 @@ public class PgColumn extends AbstractColumn {
             .append(' ')
             .append(getType());
             if (getCollation() != null) {
-                sb.append(" COLLATE ").append(getCollation());
+                sb.append(COLLATE).append(getCollation());
             }
             sb.append(';');
         }
@@ -208,9 +218,7 @@ public class PgColumn extends AbstractColumn {
                 .append(newIdentityType)
                 .append(" AS IDENTITY (")
                 .append("\n\tSEQUENCE NAME ")
-                .append(PgDiffUtils.getQuotedName(newSequence.getContainingSchema().getName()))
-                .append('.')
-                .append(PgDiffUtils.getQuotedName(newSequence.getName()));
+                .append(newSequence.getQualifiedName());
                 newSequence.fillSequenceBody(sb);
                 sb.append("\n);");
             } else {
@@ -222,9 +230,7 @@ public class PgColumn extends AbstractColumn {
                 !Objects.equals(oldSequence, newSequence)) {
             if (!oldSequence.getName().equals(newSequence.getName())) {
                 sb.append("\n\n").append("ALTER SEQUENCE ")
-                .append(PgDiffUtils.getQuotedName(oldSequence.getContainingSchema().getName()))
-                .append('.')
-                .append(PgDiffUtils.getQuotedName(oldSequence.getName()))
+                .append(oldSequence.getQualifiedName())
                 .append(" RENAME TO ")
                 .append(PgDiffUtils.getQuotedName(newSequence.getName())).append(';');
             }
@@ -258,7 +264,7 @@ public class PgColumn extends AbstractColumn {
             .append(newColumn.getType());
 
             if (newCollation != null) {
-                sb.append(" COLLATE ")
+                sb.append(COLLATE)
                 .append(newCollation);
             }
 
@@ -322,16 +328,16 @@ public class PgColumn extends AbstractColumn {
         if (oldNull != newNull) {
             if (newNull) {
                 sb.append(getAlterColumn(true, true, PgDiffUtils.getQuotedName(name)));
-                sb.append(" DROP NOT NULL;");
+                sb.append(" DROP").append(NOT_NULL).append(';');
             } else {
                 if (hasDefault) {
                     sb.append("\n\nUPDATE ONLY ").append(getParent().getQualifiedName())
                     .append("\n\tSET ").append(PgDiffUtils.getQuotedName(name))
-                    .append(" = DEFAULT WHERE ")
-                    .append(PgDiffUtils.getQuotedName(name)).append(" IS NULL;");
+                    .append(" = DEFAULT WHERE ").append(PgDiffUtils.getQuotedName(name))
+                    .append(" IS").append(NULL).append(';');
                 }
                 sb.append(getAlterColumn(true, true, PgDiffUtils.getQuotedName(name)));
-                sb.append(" SET NOT NULL;");
+                sb.append(" SET").append(NOT_NULL).append(';');
             }
         }
     }
@@ -406,7 +412,108 @@ public class PgColumn extends AbstractColumn {
     }
 
     @Override
+    public Map<String, String> getOptions() {
+        return Collections.unmodifiableMap(options);
+    }
+
+    @Override
+    public void addOption(String attribute, String value){
+        this.options.put(attribute, value);
+        resetHash();
+    }
+
+    public Map<String, String> getForeignOptions() {
+        return Collections.unmodifiableMap(fOptions);
+    }
+
+    public void addForeignOption(String attribute, String value){
+        this.fOptions.put(attribute, value);
+        resetHash();
+    }
+
+    public boolean isInherit() {
+        return isInherit;
+    }
+
+    public void setInherit(boolean isInherit) {
+        this.isInherit = isInherit;
+        resetHash();
+    }
+
+    public void setStatistics(final Integer statistics) {
+        this.statistics = statistics;
+        resetHash();
+    }
+
+    public Integer getStatistics() {
+        return statistics;
+    }
+
+    public String getStorage() {
+        return storage;
+    }
+
+    public void setStorage(final String storage) {
+        this.storage = storage;
+        resetHash();
+    }
+
+    public AbstractSequence getSequence() {
+        return sequence;
+    }
+
+    public void setSequence(final AbstractSequence sequence) {
+        this.sequence = sequence;
+        resetHash();
+    }
+
+    public void setIdentityType(final String identityType) {
+        this.identityType = identityType;
+        resetHash();
+    }
+
+    public String getIdentityType() {
+        return identityType;
+    }
+
+    @Override
+    public boolean compare(PgStatement obj) {
+        if (obj instanceof PgColumn && super.compare(obj)) {
+            PgColumn col = (PgColumn) obj;
+            return Objects.equals(statistics, col.getStatistics())
+                    && Objects.equals(storage, col.getStorage())
+                    && Objects.equals(identityType, col.getIdentityType())
+                    && isInherit == col.isInherit()
+                    && options.equals(col.options)
+                    && fOptions.equals(col.fOptions)
+                    && Objects.equals(sequence, col.getSequence());
+        }
+
+        return false;
+    }
+
+    @Override
+    public void computeHash(Hasher hasher) {
+        super.computeHash(hasher);
+        hasher.put(statistics);
+        hasher.put(storage);
+        hasher.put(options);
+        hasher.put(fOptions);
+        hasher.put(sequence);
+        hasher.put(identityType);
+        hasher.put(isInherit);
+    }
+
+    @Override
     protected AbstractColumn getColumnCopy() {
-        return new PgColumn(getName());
+        PgColumn copy = new PgColumn(getName());
+        copy.setStatistics(getStatistics());
+        copy.setStorage(getStorage());
+        copy.options.putAll(options);
+        copy.fOptions.putAll(fOptions);
+        copy.setIdentityType(getIdentityType());
+        copy.setSequence(getSequence());
+        copy.setInherit(isInherit());
+        return copy;
     }
 }

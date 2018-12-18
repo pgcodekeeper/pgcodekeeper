@@ -3,7 +3,6 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -15,8 +14,8 @@ public class PgFtsParser extends PgStatementWithSearchPath {
     private String headLineFunction;
     private String lexTypesFunction;
 
-    public PgFtsParser(String name, String rawStatement) {
-        super(name, rawStatement);
+    public PgFtsParser(String name) {
+        super(name);
     }
 
     @Override
@@ -33,8 +32,7 @@ public class PgFtsParser extends PgStatementWithSearchPath {
     public String getCreationSQL() {
         StringBuilder sbSql = new StringBuilder();
         sbSql.append("CREATE TEXT SEARCH PARSER ")
-        .append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.')
-        .append(PgDiffUtils.getQuotedName(getName())).append(" (\n\t")
+        .append(getQualifiedName()).append(" (\n\t")
         .append("START = ").append(startFunction).append(",\n\t")
         .append("GETTOKEN = ").append(getTokenFunction).append(",\n\t")
         .append("END = ").append(endFunction).append(",\n\t");
@@ -56,15 +54,13 @@ public class PgFtsParser extends PgStatementWithSearchPath {
     @Override
     protected StringBuilder appendCommentSql(StringBuilder sb) {
         sb.append("COMMENT ON TEXT SEARCH PARSER ");
-        sb.append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
-        .append('.').append(PgDiffUtils.getQuotedName(getName()));
+        sb.append(getQualifiedName());
         return sb.append(" IS ").append(comment).append(';');
     }
 
     @Override
     public String getDropSQL() {
-        return "DROP TEXT SEARCH PARSER " + PgDiffUtils.getQuotedName(getContainingSchema().getName())
-        + '.' + PgDiffUtils.getQuotedName(getName()) + ';';
+        return "DROP TEXT SEARCH PARSER " + getQualifiedName() + ';';
     }
 
     @Override
@@ -72,7 +68,7 @@ public class PgFtsParser extends PgStatementWithSearchPath {
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         if (newCondition instanceof PgFtsParser) {
-            if (!compareWithoutComments((PgFtsParser)newCondition)) {
+            if (!compareUnalterable((PgFtsParser)newCondition)) {
                 isNeedDepcies.set(true);
                 return true;
             }
@@ -90,16 +86,14 @@ public class PgFtsParser extends PgStatementWithSearchPath {
 
     @Override
     public PgFtsParser shallowCopy() {
-        PgFtsParser parser = new PgFtsParser(getName(), getRawStatement());
-        parser.setComment(getComment());
-        parser.setStartFunction(getStartFunction());
-        parser.setGetTokenFunction(getGetTokenFunction());
-        parser.setEndFunction(getEndFunction());
-        parser.setLexTypesFunction(getLexTypesFunction());
-        parser.setHeadLineFunction(getHeadLineFunction());
-        parser.deps.addAll(deps);
-        parser.setLocation(getLocation());
-        return parser;
+        PgFtsParser parserDst = new PgFtsParser(getName());
+        copyBaseFields(parserDst);
+        parserDst.setStartFunction(getStartFunction());
+        parserDst.setGetTokenFunction(getGetTokenFunction());
+        parserDst.setEndFunction(getEndFunction());
+        parserDst.setLexTypesFunction(getLexTypesFunction());
+        parserDst.setHeadLineFunction(getHeadLineFunction());
+        return parserDst;
     }
 
     @Override
@@ -109,22 +103,16 @@ public class PgFtsParser extends PgStatementWithSearchPath {
 
     @Override
     public boolean compare(PgStatement obj) {
-        boolean eq = false;
-
         if (this == obj) {
-            eq = true;
-        } else if (obj instanceof PgFtsParser) {
-            PgFtsParser parser = (PgFtsParser) obj;
-            eq = compareWithoutComments(parser)
-                    && Objects.equals(comment, parser.getComment());
+            return true;
         }
 
-        return eq;
+        return obj instanceof PgFtsParser && super.compare(obj)
+                && compareUnalterable((PgFtsParser) obj);
     }
 
-    private boolean compareWithoutComments(PgFtsParser parser) {
-        return Objects.equals(name, parser.name)
-                && Objects.equals(startFunction, parser.startFunction)
+    private boolean compareUnalterable(PgFtsParser parser) {
+        return Objects.equals(startFunction, parser.startFunction)
                 && Objects.equals(getTokenFunction, parser.getTokenFunction)
                 && Objects.equals(endFunction, parser.endFunction)
                 && Objects.equals(headLineFunction, parser.headLineFunction)
@@ -133,13 +121,11 @@ public class PgFtsParser extends PgStatementWithSearchPath {
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(name);
         hasher.put(startFunction);
         hasher.put(getTokenFunction);
         hasher.put(endFunction);
         hasher.put(headLineFunction);
         hasher.put(lexTypesFunction);
-        hasher.put(comment);
     }
 
     public String getStartFunction() {

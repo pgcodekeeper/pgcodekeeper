@@ -117,7 +117,7 @@ public abstract class XmlStore<T> {
 
     private void serializeXml(Document xml, boolean formatting,
             Writer writer) throws TransformerException {
-        Transformer tf =  TransformerFactory.newInstance().newTransformer();
+        Transformer tf = TransformerFactory.newInstance().newTransformer();
         if (formatting) {
             tf.setOutputProperty(OutputKeys.INDENT, "yes"); //$NON-NLS-1$
             tf.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4"); //$NON-NLS-1$ //$NON-NLS-2$

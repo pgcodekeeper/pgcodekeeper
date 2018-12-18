@@ -20,16 +20,16 @@ public class DependenciesXmlStore extends XmlStore<PgLibrary> {
     private static final String IGNORE_PRIV = "ignorePriv"; //$NON-NLS-1$
     private static final String ROOT_TAG = "dependencies"; //$NON-NLS-1$
 
-    private final Path path;
+    private final Path xmlPath;
 
     public DependenciesXmlStore(Path path) {
         super(path.getFileName().toString(), ROOT_TAG);
-        this.path = path;
+        this.xmlPath = path;
     }
 
     @Override
     protected Path getXmlFile() {
-        return path;
+        return xmlPath;
     }
 
     @Override

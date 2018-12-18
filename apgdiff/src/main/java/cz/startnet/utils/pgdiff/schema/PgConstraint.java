@@ -12,8 +12,8 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 public class PgConstraint extends AbstractConstraint {
 
-    public PgConstraint(String name, String rawStatement) {
-        super(name, rawStatement);
+    public PgConstraint(String name) {
+        super(name);
     }
 
     @Override
@@ -65,12 +65,11 @@ public class PgConstraint extends AbstractConstraint {
             return false;
         }
 
-        PgConstraint oldConstr = this;
-        if (!oldConstr.compareWithoutComments(newConstr)) {
+        if (!Objects.equals(getDefinition(), newConstr.getDefinition())) {
             isNeedDepcies.set(true);
             return true;
         }
-        if (oldConstr.isNotValid() && !newConstr.isNotValid()) {
+        if (isNotValid() && !newConstr.isNotValid()) {
             sb.append("\n\nALTER ").append(getParent().getStatementType().name()).append(' ')
             .append(PgDiffUtils.getQuotedName(getParent().getParent().getName()))
             .append('.')
@@ -80,7 +79,7 @@ public class PgConstraint extends AbstractConstraint {
             .append(';');
         }
 
-        if (!Objects.equals(oldConstr.getComment(), newConstr.getComment())) {
+        if (!Objects.equals(getComment(), newConstr.getComment())) {
             sb.append("\n\n");
             newConstr.appendCommentSql(sb);
         }
@@ -90,6 +89,6 @@ public class PgConstraint extends AbstractConstraint {
 
     @Override
     protected AbstractConstraint getConstraintCopy() {
-        return new PgConstraint(getName(), getRawStatement());
+        return new PgConstraint(getName());
     }
 }

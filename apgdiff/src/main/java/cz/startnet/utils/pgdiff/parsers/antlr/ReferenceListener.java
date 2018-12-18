@@ -112,7 +112,7 @@ public class ReferenceListener implements SqlContextProcessor {
         } catch (InterruptedException ex) {
             throw new MonitorCancelledRuntimeException();
         } catch (Exception e) {
-            Log.log(Log.LOG_ERROR, e.getLocalizedMessage());
+            Log.log(e);
         }
     }
 
@@ -738,7 +738,6 @@ public class ReferenceListener implements SqlContextProcessor {
                     DbObjType.SCHEMA, StatementActions.ALTER,
                     nameCtx.getStart().getStartIndex(), nameCtx.getStart().getLine(),
                     ParserAbstract.getFullCtxText(ctx.getParent()));
-            return;
         } else {
             IdentifierContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
             String schemaName = schemaCtx != null ? schemaCtx.getText() : getDefSchemaName();
@@ -877,18 +876,8 @@ public class ReferenceListener implements SqlContextProcessor {
                 start, filePath, ctx.getStart().getLine());
         loc.setAction(StatementActions.CREATE);
         loc.setObjType(objType);
-        List<PgObjLocation> defs = definitions.get(filePath);
-        if (defs == null) {
-            defs = new ArrayList<>();
-            definitions.put(filePath, defs);
-        }
-        defs.add(loc);
-        List<PgObjLocation> refs = references.get(filePath);
-        if (refs == null) {
-            refs = new ArrayList<>();
-            references.put(filePath, refs);
-        }
-        refs.add(loc);
+        definitions.computeIfAbsent(filePath, k -> new ArrayList<>()).add(loc);
+        references.computeIfAbsent(filePath, k -> new ArrayList<>()).add(loc);
     }
 
     /**
@@ -905,18 +894,8 @@ public class ReferenceListener implements SqlContextProcessor {
                 start, filePath, tkn.getLine());
         loc.setAction(StatementActions.CREATE);
         loc.setObjType(objType);
-        List<PgObjLocation> defs = definitions.get(filePath);
-        if (defs == null) {
-            defs = new ArrayList<>();
-            definitions.put(filePath, defs);
-        }
-        defs.add(loc);
-        List<PgObjLocation> refs = references.get(filePath);
-        if (refs == null) {
-            refs = new ArrayList<>();
-            references.put(filePath, refs);
-        }
-        refs.add(loc);
+        definitions.computeIfAbsent(filePath, k -> new ArrayList<>()).add(loc);
+        references.computeIfAbsent(filePath, k -> new ArrayList<>()).add(loc);
     }
 
     private PgObjLocation addObjReference(String schemaName, String objName, DbObjType objType,
@@ -925,12 +904,7 @@ public class ReferenceListener implements SqlContextProcessor {
                 startIndex, filePath, lineNumber).setAction(action);
         loc.setText(text);
         loc.setObjType(objType);
-        List<PgObjLocation> refs = references.get(filePath);
-        if (refs == null) {
-            refs = new ArrayList<>();
-            references.put(filePath, refs);
-        }
-        refs.add(loc);
+        references.computeIfAbsent(filePath, k -> new ArrayList<>()).add(loc);
         return loc;
     }
 

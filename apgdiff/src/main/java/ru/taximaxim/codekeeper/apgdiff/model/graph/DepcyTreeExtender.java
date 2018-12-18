@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -40,8 +39,7 @@ public class DepcyTreeExtender {
      */
     private final List<TreeElement> treeDepcyDelete = new ArrayList<>();
 
-    public DepcyTreeExtender(PgDatabase dbSource, PgDatabase dbTarget, TreeElement root)
-            throws PgCodekeeperException {
+    public DepcyTreeExtender(PgDatabase dbSource, PgDatabase dbTarget, TreeElement root) {
         this.dbSource = dbSource;
         this.dbTarget = dbTarget;
         this.root = root;

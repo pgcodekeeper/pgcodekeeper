@@ -26,7 +26,7 @@ public class CreateMsAssembly extends ParserAbstract {
 
     @Override
     public PgStatement getObject() {
-        MsAssembly ass = new MsAssembly(ctx.assembly_name.getText(), getFullCtxText(ctx.getParent()));
+        MsAssembly ass = new MsAssembly(ctx.assembly_name.getText());
         IdContext owner = ctx.owner_name;
         if (owner != null && !db.getArguments().isIgnorePrivileges()) {
             ass.setOwner(owner.getText());

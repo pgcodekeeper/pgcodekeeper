@@ -42,8 +42,7 @@ public class CreateMsView extends BatchContextProcessor {
 
     public MsView getObject(AbstractSchema schema) {
         String name = ctx.qualified_name().name.getText();
-        ParserRuleContext batchCtx = ctx.getParent().getParent();
-        MsView view = new MsView(name, getFullCtxText(batchCtx));
+        MsView view = new MsView(name);
         view.setAnsiNulls(ansiNulls);
         view.setQuotedIdentified(quotedIdentifier);
         setSourceParts(view);

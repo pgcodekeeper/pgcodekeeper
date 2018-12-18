@@ -33,15 +33,10 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public abstract class PgStatement implements IStatement, IHashable {
     //TODO move to MS SQL statement abstract class.
     public static final String GO = "\nGO";
-    /**
-     * The statement as it's been read from dump before parsing.
-     */
-    private final String rawStatement;
     protected final String name;
     protected String owner;
     protected String comment;
-    protected final Set<PgPrivilege> grants = new LinkedHashSet<>();
-    protected final Set<PgPrivilege> revokes = new LinkedHashSet<>();
+    protected final Set<PgPrivilege> privileges = new LinkedHashSet<>();
 
     private PgStatement parent;
     protected final Set<GenericColumn> deps = new LinkedHashSet<>();
@@ -52,13 +47,8 @@ public abstract class PgStatement implements IStatement, IHashable {
     // 0 means not calculated yet and/or hash has been reset
     private int hash;
 
-    public PgStatement(String name, String rawStatement) {
+    public PgStatement(String name) {
         this.name = name;
-        this.rawStatement = rawStatement;
-    }
-
-    public String getRawStatement() {
-        return rawStatement;
     }
 
     @Override
@@ -120,10 +110,6 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     public abstract PgDatabase getDatabase();
-
-    public void dropParent() {
-        parent = null;
-    }
 
     public void setParent(PgStatement parent) {
         if(this.parent != null) {
@@ -234,12 +220,8 @@ public abstract class PgStatement implements IStatement, IHashable {
         return appendCommentSql(new StringBuilder()).toString();
     }
 
-    public Set<PgPrivilege> getGrants() {
-        return Collections.unmodifiableSet(grants);
-    }
-
-    public Set<PgPrivilege> getRevokes() {
-        return Collections.unmodifiableSet(revokes);
+    public Set<PgPrivilege> getPrivileges() {
+        return Collections.unmodifiableSet(privileges);
     }
 
     public void addPrivilege(PgPrivilege privilege) {
@@ -260,11 +242,11 @@ public abstract class PgStatement implements IStatement, IHashable {
                     && privilege.getPermission().startsWith("ALL")) {
                 addPrivilegeFiltered(privilege, locOwner);
             } else {
-                addPrivilegeCommon(privilege);
+                privileges.add(privilege);
             }
 
         } else {
-            addPrivilegeCommon(privilege);
+            privileges.add(privilege);
         }
         resetHash();
     }
@@ -282,88 +264,46 @@ public abstract class PgStatement implements IStatement, IHashable {
                     return;
                 }
             }
-            revokes.add(privilege);
+            privileges.add(privilege);
+        } else if (!privilege.getRole().equals(locOwner)) {
+            privileges.add(privilege);
         } else {
-            if (!privilege.getRole().equals(locOwner)) {
-                grants.add(privilege);
+            PgPrivilege delRevoke = privileges.stream()
+                    .filter(p -> p.isRevoke()
+                            && p.getRole().equals(privilege.getRole())
+                            && p.getPermission().equals(privilege.getPermission()))
+                    .findAny().orElse(null);
+            if (delRevoke != null) {
+                privileges.remove(delRevoke);
             } else {
-                PgPrivilege delRevoke = revokes.stream()
-                        .filter(p -> p.getRole().equals(privilege.getRole())
-                                && p.getPermission().equals(privilege.getPermission()))
-                        .findAny().orElse(null);
-                if (delRevoke != null) {
-                    revokes.remove(delRevoke);
-                } else {
-                    grants.add(privilege);
-                }
+                privileges.add(privilege);
             }
-        }
-    }
-
-    private void addPrivilegeCommon(PgPrivilege privilege) {
-        if (privilege.isRevoke()) {
-            revokes.add(privilege);
-        } else {
-            grants.add(privilege);
         }
     }
 
     public void clearPrivileges() {
-        grants.clear();
-        revokes.clear();
+        privileges.clear();
         resetHash();
     }
 
-    public StringBuilder appendPrivileges(StringBuilder sb) {
-        if (grants.isEmpty() && revokes.isEmpty()) {
-            return sb;
-        }
-
-        if (isPostgres()) {
-            sb.append("\n\n-- ")
-            .append(getStatementType())
-            .append(' ');
-            if (DbObjType.SCHEMA != getStatementType()) {
-                if (this instanceof PgStatementWithSearchPath) {
-                    sb.append(((PgStatementWithSearchPath)this).getContainingSchema().getName())
-                    .append('.');
-                }
-
-                if (DbObjType.COLUMN == getStatementType()) {
-                    sb.append(getParent().getName()).append('.');
-                }
-            }
-            sb.append(getName())
-            .append(' ')
-            .append("GRANT\n");
-        }
-
-        for (PgPrivilege priv : revokes) {
-            sb.append('\n').append(priv.getCreationSQL()).append(isPostgres() ? ';' : "\nGO");
-        }
-        for (PgPrivilege priv : grants) {
-            sb.append('\n').append(priv.getCreationSQL()).append(isPostgres() ? ';' : "\nGO");
-        }
-
+    protected StringBuilder appendPrivileges(StringBuilder sb) {
+        PgPrivilege.appendPrivileges(privileges, isPostgres(), sb);
         return sb;
     }
 
     protected void alterPrivileges(PgStatement newObj, StringBuilder sb) {
         // first drop (revoke) missing grants
-        boolean grantsChanged = false;
-        Set<PgPrivilege> newGrants = newObj.getGrants();
-        for (PgPrivilege grant : grants) {
-            if (!newGrants.contains(grant)) {
-                grantsChanged = true;
-                sb.append('\n').append(grant.getDropSQL()).append(isPostgres() ? ';' : "\nGO");
+        Set<PgPrivilege> newPrivileges = newObj.getPrivileges();
+        for (PgPrivilege privilege : privileges) {
+            if (!privilege.isRevoke() && !newPrivileges.contains(privilege)) {
+                sb.append('\n').append(privilege.getDropSQL()).append(isPostgres() ? ';' : "\nGO");
             }
         }
 
         // now set all privileges if there are any changes
-        grantsChanged = grantsChanged || grants.size() != newGrants.size();
-        if (grantsChanged || !revokes.equals(newObj.getRevokes())) {
+        if (!privileges.equals(newPrivileges)) {
             newObj.appendPrivileges(sb);
-            if (newObj.isPostgres() && newObj.revokes.isEmpty() && newObj.grants.isEmpty()) {
+            if (newObj.isPostgres() && newPrivileges.isEmpty()) {
                 PgPrivilege.appendDefaultPrivileges(newObj, sb);
             }
         }
@@ -379,7 +319,7 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     protected StringBuilder appendOwnerSQL(StringBuilder sb) {
-        return appendOwnerSQL(this, owner, sb);
+        return appendOwnerSQL(this, owner, true, sb);
     }
 
     public StringBuilder alterOwnerSQL(StringBuilder sb) {
@@ -406,11 +346,15 @@ public abstract class PgStatement implements IStatement, IHashable {
         return sb;
     }
 
-    public static StringBuilder appendOwnerSQL(PgStatement st, String owner, StringBuilder sb) {
+    public static StringBuilder appendOwnerSQL(PgStatement st, String owner,
+            boolean addNewLine, StringBuilder sb) {
         if (owner == null || !st.isOwned()) {
             return sb;
         }
-        sb.append("\n\nALTER ");
+        if (addNewLine) {
+            sb.append("\n\n");
+        }
+        sb.append("ALTER ");
         if (st.isPostgres()) {
             DbObjType type = st.getStatementType();
             switch (type) {
@@ -516,7 +460,21 @@ public abstract class PgStatement implements IStatement, IHashable {
      * This method does not account for nested child PgStatements.
      * Shallow version of {@link #equals(Object)}
      */
-    public abstract boolean compare(PgStatement obj);
+    public boolean compare(PgStatement obj) {
+        return Objects.equals(name, obj.name)
+                && privileges.equals(obj.privileges)
+                && Objects.equals(owner, obj.owner)
+                && Objects.equals(comment, obj.comment);
+    }
+
+    protected final void copyBaseFields(PgStatement copy) {
+        copy.setOwner(owner);
+        copy.setComment(comment);
+        copy.deps.addAll(deps);
+        copy.privileges.addAll(privileges);
+        copy.setLocation(location);
+        copy.isLib = isLib;
+    }
 
     /**
      * @return an element in another db sharing the same name and location
@@ -568,6 +526,11 @@ public abstract class PgStatement implements IStatement, IHashable {
 
     protected void fillChildrenList(List<List<? extends PgStatement>> l) {
         // default no op
+    }
+
+    public void addChild(PgStatement st) {
+        //  subclasses with children must override
+        throw new IllegalStateException("Statement can't have child");
     }
 
     /**
@@ -631,6 +594,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         int h = hash;
         if (h == 0) {
             JavaHasher hasher = new JavaHasher();
+            computeLocalHash(hasher);
             computeHash(hasher);
             computeChildrenHash(hasher);
             computeNamesHash(hasher);
@@ -652,10 +616,17 @@ public abstract class PgStatement implements IStatement, IHashable {
      */
     public final byte[] shaHash() {
         ShaHasher hasher = new ShaHasher();
+        computeLocalHash(hasher);
         computeHash(hasher);
         return hasher.getArray();
     }
 
+    private final void computeLocalHash(Hasher hasher) {
+        hasher.put(name);
+        hasher.put(owner);
+        hasher.put(comment);
+        hasher.putUnordered(privileges);
+    }
 
     protected void resetHash(){
         PgStatement st = this;

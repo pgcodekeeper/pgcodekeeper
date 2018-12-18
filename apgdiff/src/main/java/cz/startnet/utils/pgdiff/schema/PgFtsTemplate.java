@@ -3,7 +3,6 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -12,8 +11,8 @@ public class PgFtsTemplate extends PgStatementWithSearchPath {
     private String initFunction;
     private String lexizeFunction;
 
-    public PgFtsTemplate(String name, String rawStatement) {
-        super(name, rawStatement);
+    public PgFtsTemplate(String name) {
+        super(name);
     }
 
     @Override
@@ -30,8 +29,7 @@ public class PgFtsTemplate extends PgStatementWithSearchPath {
     public String getCreationSQL() {
         StringBuilder sbSql = new StringBuilder();
         sbSql.append("CREATE TEXT SEARCH TEMPLATE ")
-        .append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.')
-        .append(PgDiffUtils.getQuotedName(getName())).append(" (\n\t");
+        .append(getQualifiedName()).append(" (\n\t");
 
         if (initFunction != null) {
             sbSql.append("INIT = ").append(initFunction).append(",\n\t");
@@ -50,15 +48,13 @@ public class PgFtsTemplate extends PgStatementWithSearchPath {
     @Override
     protected StringBuilder appendCommentSql(StringBuilder sb) {
         sb.append("COMMENT ON TEXT SEARCH TEMPLATE ");
-        sb.append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
-        .append('.').append(PgDiffUtils.getQuotedName(getName()));
+        sb.append(getQualifiedName());
         return sb.append(" IS ").append(comment).append(';');
     }
 
     @Override
     public String getDropSQL() {
-        return "DROP TEXT SEARCH TEMPLATE " + PgDiffUtils.getQuotedName(getContainingSchema().getName())
-        + '.' + PgDiffUtils.getQuotedName(getName()) + ';';
+        return "DROP TEXT SEARCH TEMPLATE " + getQualifiedName() + ';';
     }
 
     @Override
@@ -66,7 +62,7 @@ public class PgFtsTemplate extends PgStatementWithSearchPath {
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         if (newCondition instanceof PgFtsTemplate) {
-            if (!compareWithoutComments((PgFtsTemplate)newCondition)) {
+            if (!compareUnalterable((PgFtsTemplate)newCondition)) {
                 isNeedDepcies.set(true);
                 return true;
             }
@@ -84,13 +80,11 @@ public class PgFtsTemplate extends PgStatementWithSearchPath {
 
     @Override
     public PgFtsTemplate shallowCopy() {
-        PgFtsTemplate template = new PgFtsTemplate(getName(), getRawStatement());
-        template.setComment(getComment());
-        template.setInitFunction(getInitFunction());
-        template.setLexizeFunction(getLexizeFunction());
-        template.deps.addAll(deps);
-        template.setLocation(getLocation());
-        return template;
+        PgFtsTemplate templateDst = new PgFtsTemplate(getName());
+        copyBaseFields(templateDst);
+        templateDst.setInitFunction(getInitFunction());
+        templateDst.setLexizeFunction(getLexizeFunction());
+        return templateDst;
     }
 
     @Override
@@ -100,31 +94,23 @@ public class PgFtsTemplate extends PgStatementWithSearchPath {
 
     @Override
     public boolean compare(PgStatement obj) {
-        boolean eq = false;
-
         if (this == obj) {
-            eq = true;
-        } else if(obj instanceof PgFtsTemplate) {
-            PgFtsTemplate template = (PgFtsTemplate) obj;
-            eq = compareWithoutComments(template)
-                    && Objects.equals(comment, template.getComment());
+            return true;
         }
 
-        return eq;
+        return obj instanceof PgFtsTemplate && super.compare(obj)
+                && compareUnalterable((PgFtsTemplate) obj);
     }
 
-    private boolean compareWithoutComments(PgFtsTemplate template) {
-        return Objects.equals(name, template.name)
-                && Objects.equals(initFunction, template.initFunction)
+    private boolean compareUnalterable(PgFtsTemplate template) {
+        return Objects.equals(initFunction, template.initFunction)
                 && Objects.equals(lexizeFunction, template.lexizeFunction);
     }
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(name);
         hasher.put(initFunction);
         hasher.put(lexizeFunction);
-        hasher.put(comment);
     }
 
     public String getInitFunction() {

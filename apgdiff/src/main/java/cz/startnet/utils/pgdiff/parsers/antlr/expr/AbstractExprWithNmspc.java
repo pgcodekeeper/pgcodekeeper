@@ -208,11 +208,7 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
     }
 
     protected boolean addColumnReference(String alias, String column) {
-        Set<String> columns = columnAliases.get(alias);
-        if (columns == null) {
-            columns = new HashSet<>();
-            columnAliases.put(alias, columns);
-        }
+        Set<String> columns = columnAliases.computeIfAbsent(alias, k -> new HashSet<>());
         boolean exists = !columns.add(column);
         if (exists) {
             Log.log(Log.LOG_WARNING, "Duplicate column alias: " + alias + ' ' + column);

@@ -27,7 +27,7 @@ public class MsRolesReader {
                 String name = res.getString("name");
                 loader.setCurrentObject(new GenericColumn(name, DbObjType.ROLE));
 
-                MsRole role = new MsRole(name, "");
+                MsRole role = new MsRole(name);
                 loader.setOwner(role, res.getString("owner"));
 
                 for (XmlReader group : XmlReader.readXML(res.getString("groups"))) {

@@ -17,7 +17,7 @@ public class FtsTemplatesReader extends JdbcReader {
 
     @Override
     protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException {
-        PgFtsTemplate template = new PgFtsTemplate(res.getString("tmplname"), "");
+        PgFtsTemplate template = new PgFtsTemplate(res.getString("tmplname"));
 
         String init = res.getString("tmplinit");
         if (!"-".equals(init)) {

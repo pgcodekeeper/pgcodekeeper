@@ -9,12 +9,9 @@ import java.util.Comparator;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 
 public class CompareTree implements Comparator<TreeElement> {
-    
+
     private static final int LESS = -1;
     private static final int MORE = 1;
-
-    public CompareTree() {
-    }
 
     @Override
     public int compare(TreeElement o1, TreeElement o2) {
@@ -27,24 +24,25 @@ public class CompareTree implements Comparator<TreeElement> {
             } else {
                 return res;
             }
-        } else {
-            if (s1 == LEFT && s2 != LEFT) {
+        }
+
+        if (s1 == LEFT) {
+            return LESS;
+        }
+        if (s2 == LEFT) {
+            return MORE;
+        }
+        if (res == 0) {
+            if (s1 == RIGHT) {
                 return LESS;
             }
-            if (s2 == LEFT && s1 != LEFT) {
+            if (s1 == BOTH) {
                 return MORE;
             }
-            if (res == 0) {
-                if (s1 == RIGHT) {
-                    return LESS;
-                }
-                if (s1 == BOTH) {
-                    return MORE;
-                }
-            } else {
-                return res;
-            }
+        } else {
+            return res;
         }
+
         throw new IllegalStateException("Missing compare case");
     }
 

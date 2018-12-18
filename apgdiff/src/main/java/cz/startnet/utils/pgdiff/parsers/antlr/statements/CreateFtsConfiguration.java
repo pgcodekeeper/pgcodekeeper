@@ -26,7 +26,7 @@ public class CreateFtsConfiguration extends ParserAbstract {
         List<IdentifierContext> ids = ctx.name.identifier();
         AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         String name = QNameParser.getFirstName(ids);
-        PgFtsConfiguration config = new PgFtsConfiguration(name, getFullCtxText(ctx.getParent()));
+        PgFtsConfiguration config = new PgFtsConfiguration(name);
         List<IdentifierContext> parserIds = ctx.parser_name.identifier();
         config.setParser(ParserAbstract.getFullCtxText(ctx.parser_name));
         String parserSchema = QNameParser.getSchemaName(parserIds, getDefSchemaName());

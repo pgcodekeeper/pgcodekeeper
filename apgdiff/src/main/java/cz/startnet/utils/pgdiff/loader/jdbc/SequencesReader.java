@@ -12,7 +12,6 @@ import java.util.Map;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractSequence;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
@@ -35,7 +34,7 @@ public class SequencesReader extends JdbcReader {
         loader.monitor.worked(1);
         String sequenceName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schema.getName(), sequenceName, DbObjType.SEQUENCE));
-        AbstractSequence s = new PgSequence(sequenceName, "");
+        PgSequence s = new PgSequence(sequenceName);
 
         String refTable = res.getString("referenced_table_name");
         String refColumn = res.getString("ref_col_name");
@@ -82,7 +81,7 @@ public class SequencesReader extends JdbcReader {
 
         if ("d".equals(identityType) || "a".equals(identityType)) {
             AbstractTable table = schema.getTable(refTable);
-            AbstractColumn column = table.getColumn(refColumn);
+            PgColumn column = (PgColumn) table.getColumn(refColumn);
             if (column == null) {
                 column = new PgColumn(refColumn);
                 column.setInherit(true);

@@ -52,7 +52,7 @@ public class UnixPrintWriter extends PrintWriter {
         super(file, csn);
     }
 
-    public UnixPrintWriter(OutputStream out, String csn) throws FileNotFoundException, UnsupportedEncodingException {
+    public UnixPrintWriter(OutputStream out, String csn) throws UnsupportedEncodingException {
         this(new BufferedWriter(new OutputStreamWriter(out, csn)), false);
     }
 

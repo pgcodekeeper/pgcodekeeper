@@ -11,11 +11,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
 
 public class PgIndex extends AbstractIndex {
 
-    public PgIndex(String name, String rawStatement) {
-        super(name, rawStatement);
+    private String method;
+
+    public PgIndex(String name, String tableName) {
+        super(name, tableName);
     }
 
     @Override
@@ -98,13 +101,13 @@ public class PgIndex extends AbstractIndex {
         } else {
             return false;
         }
-        if (!compareWithoutComments(newIndex)) {
+        if (!compareUnalterable(newIndex)) {
             isNeedDepcies.set(true);
             return true;
         }
 
         if (isClusterIndex() && !newIndex.isClusterIndex() &&
-                !((AbstractTable)newIndex.getParent()).isClustered()) {
+                !((AbstractPgTable)newIndex.getParent()).isClustered()) {
             sb.append("\n\nALTER TABLE ")
             .append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
             .append('.').append(PgDiffUtils.getQuotedName(getTableName()))
@@ -133,8 +136,32 @@ public class PgIndex extends AbstractIndex {
         return sbSQL.toString();
     }
 
+    public String getMethod() {
+        return method;
+    }
+
+    public void setMethod(String method) {
+        this.method = method;
+        resetHash();
+    }
+
+    @Override
+    protected boolean compareUnalterable(AbstractIndex index) {
+        return index instanceof PgIndex
+                && super.compareUnalterable(index)
+                && Objects.equals(method, ((PgIndex) index).method);
+    }
+
+    @Override
+    public void computeHash(Hasher hasher) {
+        super.computeHash(hasher);
+        hasher.put(method);
+    }
+
     @Override
     protected AbstractIndex getIndexCopy() {
-        return new PgIndex(getName(), getRawStatement());
+        PgIndex index =  new PgIndex(getName(), getTableName());
+        index.setMethod(getMethod());
+        return index;
     }
 }

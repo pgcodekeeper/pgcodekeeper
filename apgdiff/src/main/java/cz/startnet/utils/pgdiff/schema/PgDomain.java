@@ -74,8 +74,8 @@ public class PgDomain extends PgStatementWithSearchPath {
         resetHash();
     }
 
-    public PgDomain(String name, String rawStatement) {
-        super(name, rawStatement);
+    public PgDomain(String name) {
+        super(name);
     }
 
     @Override
@@ -86,8 +86,7 @@ public class PgDomain extends PgStatementWithSearchPath {
     @Override
     public String getCreationSQL() {
         StringBuilder sb = new StringBuilder();
-        sb.append("CREATE DOMAIN ").append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
-        .append('.').append(PgDiffUtils.getQuotedName(getName()))
+        sb.append("CREATE DOMAIN ").append(getQualifiedName())
         .append(" AS ").append(dataType);
         if (collation != null && !collation.isEmpty()) {
             sb.append(" COLLATE ").append(collation);
@@ -133,30 +132,28 @@ public class PgDomain extends PgStatementWithSearchPath {
 
     @Override
     public String getDropSQL() {
-        return "DROP DOMAIN " + PgDiffUtils.getQuotedName(getContainingSchema().getName()) + '.'
-                + PgDiffUtils.getQuotedName(getName()) + ';';
+        return "DROP DOMAIN " + getQualifiedName() + ';';
     }
 
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
-        PgDomain newDomain, oldDomain = this;
+        PgDomain newDomain;
         if (newCondition instanceof PgDomain) {
             newDomain = (PgDomain) newCondition;
         } else {
             return false;
         }
 
-        if (!Objects.equals(newDomain.getDataType(), oldDomain.getDataType()) ||
-                !Objects.equals(newDomain.getCollation(), oldDomain.getCollation())) {
+        if (!Objects.equals(newDomain.getDataType(), getDataType()) ||
+                !Objects.equals(newDomain.getCollation(), getCollation())) {
             isNeedDepcies.set(true);
             return true;
         }
 
-        if (!Objects.equals(newDomain.getDefaultValue(), oldDomain.getDefaultValue())) {
-            sb.append("\n\nALTER DOMAIN ").append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
-            .append('.').append(PgDiffUtils.getQuotedName(newDomain.getName()));
+        if (!Objects.equals(newDomain.getDefaultValue(), getDefaultValue())) {
+            sb.append("\n\nALTER DOMAIN ").append(getQualifiedName());
             if (newDomain.getDefaultValue() == null) {
                 sb.append("\n\tDROP DEFAULT");
             } else {
@@ -165,9 +162,8 @@ public class PgDomain extends PgStatementWithSearchPath {
             sb.append(';');
         }
 
-        if (newDomain.isNotNull() != oldDomain.isNotNull()) {
-            sb.append("\n\nALTER DOMAIN ").append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
-            .append('.').append(PgDiffUtils.getQuotedName(newDomain.getName()));
+        if (newDomain.isNotNull() != isNotNull()) {
+            sb.append("\n\nALTER DOMAIN ").append(getQualifiedName());
             if (newDomain.isNotNull()) {
                 sb.append("\n\tSET NOT NULL");
             } else {
@@ -177,7 +173,7 @@ public class PgDomain extends PgStatementWithSearchPath {
         }
 
         AtomicBoolean needDepcyConstr = new AtomicBoolean();
-        for (AbstractConstraint oldConstr : oldDomain.getConstraints()) {
+        for (AbstractConstraint oldConstr : getConstraints()) {
             AbstractConstraint newConstr = newDomain.getConstraint(oldConstr.getName());
             if (newConstr == null) {
                 sb.append("\n\n").append(oldConstr.getDropSQL());
@@ -186,16 +182,16 @@ public class PgDomain extends PgStatementWithSearchPath {
             }
         }
         for (AbstractConstraint newConstr : newDomain.getConstraints()) {
-            if (oldDomain.getConstraint(newConstr.getName()) == null) {
+            if (getConstraint(newConstr.getName()) == null) {
                 sb.append("\n\n").append(newConstr.getCreationSQL());
             }
         }
 
-        if (!Objects.equals(oldDomain.getOwner(), newDomain.getOwner())) {
+        if (!Objects.equals(getOwner(), newDomain.getOwner())) {
             newDomain.appendOwnerSQL(sb);
         }
         alterPrivileges(newDomain, sb);
-        if (!Objects.equals(oldDomain.getComment(), newDomain.getComment())) {
+        if (!Objects.equals(getComment(), newDomain.getComment())) {
             sb.append("\n\n");
             newDomain.appendCommentSql(sb);
         }
@@ -204,21 +200,16 @@ public class PgDomain extends PgStatementWithSearchPath {
 
     @Override
     public PgDomain shallowCopy() {
-        PgDomain copy = new PgDomain(getName(), getRawStatement());
-        copy.setDataType(getDataType());
-        copy.setCollation(getCollation());
-        copy.setDefaultValue(getDefaultValue());
-        copy.setNotNull(isNotNull());
-        copy.setOwner(getOwner());
-        copy.setComment(getComment());
+        PgDomain domainDst = new PgDomain(getName());
+        copyBaseFields(domainDst);
+        domainDst.setDataType(getDataType());
+        domainDst.setCollation(getCollation());
+        domainDst.setDefaultValue(getDefaultValue());
+        domainDst.setNotNull(isNotNull());
         for (AbstractConstraint constr : constraints) {
-            copy.addConstraint(constr.deepCopy());
+            domainDst.addConstraint(constr.deepCopy());
         }
-        copy.grants.addAll(grants);
-        copy.revokes.addAll(revokes);
-        copy.deps.addAll(deps);
-        copy.setLocation(getLocation());
-        return copy;
+        return domainDst;
     }
 
     @Override
@@ -231,34 +222,26 @@ public class PgDomain extends PgStatementWithSearchPath {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof PgDomain)) {
-            return false;
+
+        if (obj instanceof PgDomain && super.compare(obj)) {
+            PgDomain dom = (PgDomain) obj;
+            return Objects.equals(dataType, dom.getDataType())
+                    && Objects.equals(collation, dom.getCollation())
+                    && Objects.equals(defaultValue, dom.getDefaultValue())
+                    && notNull == dom.isNotNull()
+                    && PgDiffUtils.setlikeEquals(constraints, dom.constraints);
         }
-        PgDomain dom = (PgDomain) obj;
-        return Objects.equals(name, dom.getName())
-                && Objects.equals(dataType, dom.getDataType())
-                && Objects.equals(collation, dom.getCollation())
-                && Objects.equals(defaultValue, dom.getDefaultValue())
-                && notNull == dom.isNotNull()
-                && PgDiffUtils.setlikeEquals(constraints, dom.constraints)
-                && Objects.equals(owner, dom.getOwner())
-                && grants.equals(dom.grants)
-                && revokes.equals(dom.revokes)
-                && Objects.equals(comment, dom.getComment());
+
+        return false;
     }
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(name);
         hasher.put(dataType);
         hasher.put(collation);
         hasher.put(defaultValue);
         hasher.put(notNull);
         hasher.putUnordered(constraints);
-        hasher.put(owner);
-        hasher.putUnordered(grants);
-        hasher.putUnordered(revokes);
-        hasher.put(comment);
     }
 
     @Override

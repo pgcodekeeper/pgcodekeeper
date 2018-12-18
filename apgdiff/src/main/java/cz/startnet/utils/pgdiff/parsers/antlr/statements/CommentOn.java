@@ -7,19 +7,19 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementCont
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
-import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
-import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
 import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
 import cz.startnet.utils.pgdiff.schema.PgType;
+import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
 public class CommentOn extends ParserAbstract {
@@ -58,21 +58,21 @@ public class CommentOn extends ParserAbstract {
                         "Table name is missing for commented column!", nameCtx.getStart());
             }
             String tableName = tableCtx.getText();
-            AbstractTable table = schema.getTable(tableName);
+            AbstractPgTable table = (AbstractPgTable) schema.getTable(tableName);
             if (table == null) {
-                AbstractView view = schema.getView(tableName);
+                PgView view = (PgView) schema.getView(tableName);
                 if (view == null) {
                     ((PgType) getSafe(schema::getType, tableCtx)).getAttr(name).setComment(db.getArguments(), comment);
                 } else {
                     view.addColumnComment(db.getArguments(), name, comment);
                 }
             } else {
-                AbstractColumn column;
+                PgColumn column;
                 if (table.getInherits().isEmpty()) {
-                    column = getSafe(table::getColumn, nameCtx);
+                    column = (PgColumn) getSafe(table::getColumn, nameCtx);
                 } else {
                     String colName = nameCtx.getText();
-                    column = table.getColumn(colName);
+                    column = (PgColumn) table.getColumn(colName);
                     if (column == null) {
                         column = new PgColumn(colName);
                         column.setInherit(true);
@@ -148,7 +148,7 @@ public class CommentOn extends ParserAbstract {
                 }
             }
             //schema
-        } else if (ctx.SCHEMA() != null && !name.equals(ApgdiffConsts.PUBLIC)) {
+        } else if (ctx.SCHEMA() != null && !ApgdiffConsts.PUBLIC.equals(name)) {
             getSafe(db::getSchema, nameCtx).setComment(db.getArguments(), comment);
             // sequence
         } else if (ctx.SEQUENCE() != null) {

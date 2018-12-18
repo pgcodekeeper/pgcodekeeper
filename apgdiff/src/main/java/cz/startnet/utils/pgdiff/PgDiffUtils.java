@@ -113,8 +113,8 @@ public final class PgDiffUtils {
     public static String normalizeWhitespaceUnquoted(String string) {
         StringBuilder sb = new StringBuilder(string.length());
 
-        boolean quote = false,
-                doubleQuote = false;
+        boolean quote = false;
+        boolean doubleQuote = false;
         int currentWhitespaceStart = -1;
         for (int pos = 0; pos < string.length(); ++pos) {
             char ch = string.charAt(pos);

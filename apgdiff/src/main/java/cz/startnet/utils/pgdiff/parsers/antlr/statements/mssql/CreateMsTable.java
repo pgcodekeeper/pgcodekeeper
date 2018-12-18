@@ -19,7 +19,7 @@ import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.MsIndex;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.SimpleMsTable;
+import cz.startnet.utils.pgdiff.schema.MsTable;
 
 public class CreateMsTable extends TableAbstract {
 
@@ -39,7 +39,7 @@ public class CreateMsTable extends TableAbstract {
         AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
         String tableName = ctx.qualified_name().name.getText();
 
-        SimpleMsTable table = new SimpleMsTable(tableName, getFullCtxText(ctx.getParent()));
+        MsTable table = new MsTable(tableName);
 
         table.setAnsiNulls(ansiNulls);
 
@@ -72,13 +72,12 @@ public class CreateMsTable extends TableAbstract {
         return table;
     }
 
-    private void fillColumn(Column_def_table_constraintContext colCtx, SimpleMsTable table) {
+    private void fillColumn(Column_def_table_constraintContext colCtx, MsTable table) {
         if (colCtx.table_constraint() != null) {
             table.addConstraint(getMsConstraint(colCtx.table_constraint()));
         } else if (colCtx.table_index() != null) {
             Table_indexContext indCtx = colCtx.table_index();
-            MsIndex index = new MsIndex(indCtx.index_name.getText(), "");
-            index.setTableName(table.getName());
+            MsIndex index = new MsIndex(indCtx.index_name.getText(), table.getName());
             ClusteredContext cluster = indCtx.clustered();
             index.setClusterIndex(cluster != null && cluster.CLUSTERED() != null);
             CreateMsIndex.parseIndex(indCtx.index_rest(), index);
@@ -131,7 +130,7 @@ public class CreateMsTable extends TableAbstract {
         }
     }
 
-    private void parseOptions(List<Index_optionContext> options, SimpleMsTable table) {
+    private void parseOptions(List<Index_optionContext> options, MsTable table) {
         for (Index_optionContext option : options) {
             String key = option.key.getText();
             String value = option.index_option_value().getText();

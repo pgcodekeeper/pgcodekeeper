@@ -289,8 +289,8 @@ public class PgType extends AbstractType {
         resetHash();
     }
 
-    public PgType(String name, PgTypeForm form, String rawStatement) {
-        super(name, rawStatement);
+    public PgType(String name, PgTypeForm form) {
+        super(name);
         this.form = form;
     }
 
@@ -571,7 +571,7 @@ public class PgType extends AbstractType {
 
     @Override
     protected AbstractType getTypeCopy() {
-        PgType copy = new PgType(getName(), getForm(), getRawStatement());
+        PgType copy = new PgType(getName(), getForm());
         for (AbstractColumn attr : attrs) {
             copy.addAttr(attr.deepCopy());
         }
@@ -645,7 +645,6 @@ public class PgType extends AbstractType {
 
     @Override
     public void computeHash(Hasher hasher) {
-        super.computeHash(hasher);
         hasher.put(form);
         hasher.putOrdered(attrs);
         hasher.put(enums);

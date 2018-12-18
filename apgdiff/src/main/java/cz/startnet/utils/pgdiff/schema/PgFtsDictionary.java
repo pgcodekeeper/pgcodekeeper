@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -15,8 +14,8 @@ implements PgOptionContainer {
     private String template;
     private final Map<String, String> options = new LinkedHashMap<>();
 
-    public PgFtsDictionary(String name, String rawStatement) {
-        super(name, rawStatement);
+    public PgFtsDictionary(String name) {
+        super(name);
     }
 
     @Override
@@ -33,8 +32,7 @@ implements PgOptionContainer {
     public String getCreationSQL() {
         final StringBuilder sbSql = new StringBuilder();
         sbSql.append("CREATE TEXT SEARCH DICTIONARY ")
-        .append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.')
-        .append(PgDiffUtils.getQuotedName(getName()));
+        .append(getQualifiedName());
         sbSql.append(" (\n\tTEMPLATE = ").append(template);
 
         options.forEach((k,v) -> sbSql.append(",\n\t").append(k).append(" = ").append(v));
@@ -53,8 +51,7 @@ implements PgOptionContainer {
     @Override
     protected StringBuilder appendCommentSql(StringBuilder sb) {
         sb.append("COMMENT ON TEXT SEARCH DICTIONARY ");
-        sb.append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
-        .append('.').append(PgDiffUtils.getQuotedName(getName()));
+        sb.append(getQualifiedName());
         return sb.append(" IS ")
                 .append(comment == null || comment.isEmpty() ? "NULL" : comment)
                 .append(';');
@@ -62,8 +59,7 @@ implements PgOptionContainer {
 
     @Override
     public String getDropSQL() {
-        return "DROP TEXT SEARCH DICTIONARY " + PgDiffUtils.getQuotedName(getContainingSchema().getName())
-        + '.' + PgDiffUtils.getQuotedName(getName()) + ';';
+        return "DROP TEXT SEARCH DICTIONARY " + getQualifiedName() + ';';
     }
 
     @Override
@@ -95,8 +91,7 @@ implements PgOptionContainer {
     public void appendOptions(PgOptionContainer newContainer, StringBuilder setOptions,
             StringBuilder resetOptions, StringBuilder sb) {
         sb.append("\n\nALTER TEXT SEARCH DICTIONARY ");
-        sb.append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
-        .append('.').append(PgDiffUtils.getQuotedName(getName()));
+        sb.append(getQualifiedName());
         sb.append("\n\t(");
 
         if (setOptions.length() > 0) {
@@ -133,14 +128,11 @@ implements PgOptionContainer {
 
     @Override
     public PgFtsDictionary shallowCopy() {
-        PgFtsDictionary dictionary = new PgFtsDictionary(getName(), getRawStatement());
-        dictionary.setComment(getComment());
-        dictionary.setTemplate(getTemplate());
-        dictionary.options.putAll(getOptions());
-        dictionary.deps.addAll(deps);
-        dictionary.setOwner(getOwner());
-        dictionary.setLocation(getLocation());
-        return dictionary;
+        PgFtsDictionary dictDst = new PgFtsDictionary(getName());
+        copyBaseFields(dictDst);
+        dictDst.setTemplate(getTemplate());
+        dictDst.options.putAll(options);
+        return dictDst;
     }
 
     @Override
@@ -150,28 +142,22 @@ implements PgOptionContainer {
 
     @Override
     public boolean compare(PgStatement obj) {
-        boolean eq = false;
-
         if (this == obj) {
-            eq = true;
-        } else if(obj instanceof PgFtsDictionary) {
-            PgFtsDictionary dictionary = (PgFtsDictionary) obj;
-            eq = Objects.equals(name, dictionary.name)
-                    && Objects.equals(template, dictionary.template)
-                    && Objects.equals(owner, dictionary.getOwner())
-                    && Objects.equals(comment, dictionary.getComment())
-                    && Objects.equals(options, dictionary.getOptions());
+            return true;
         }
 
-        return eq;
+        if (obj instanceof PgFtsDictionary && super.compare(obj)) {
+            PgFtsDictionary dictionary = (PgFtsDictionary) obj;
+            return Objects.equals(template, dictionary.template)
+                    && options.equals(dictionary.options);
+        }
+
+        return false;
     }
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(name);
-        hasher.put(owner);
         hasher.put(template);
         hasher.put(options);
-        hasher.put(comment);
     }
 }

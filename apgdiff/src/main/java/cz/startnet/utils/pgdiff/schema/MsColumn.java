@@ -4,8 +4,19 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
 
 public class MsColumn extends AbstractColumn {
+
+    private boolean isSparse;
+    private boolean isRowGuidCol;
+    private boolean isPersisted;
+    private boolean isNotForRep;
+    private boolean isIdentity;
+    private String seed;
+    private String increment;
+    private String defaultName;
+    private String expession;
 
     public MsColumn(String name) {
         super(name);
@@ -23,7 +34,7 @@ public class MsColumn extends AbstractColumn {
         }
 
         if (getCollation() != null) {
-            sbDefinition.append(" COLLATE ").append(getCollation());
+            sbDefinition.append(COLLATE).append(getCollation());
         }
 
         if (isSparse()) {
@@ -39,7 +50,7 @@ public class MsColumn extends AbstractColumn {
         }
 
         if (getExpression() == null) {
-            sbDefinition.append(getNullValue() ? " NULL" : " NOT NULL");
+            sbDefinition.append(getNullValue() ? NULL : NOT_NULL);
         }
 
         if (isIdentity()) {
@@ -74,7 +85,7 @@ public class MsColumn extends AbstractColumn {
         }
 
         if (getCollation() != null) {
-            sb.append(" COLLATE ").append(getCollation());
+            sb.append(COLLATE).append(getCollation());
         }
 
         if (isIdentity()) {
@@ -88,7 +99,7 @@ public class MsColumn extends AbstractColumn {
                 && !getNullValue();
 
         if (isJoinNotNull) {
-            sb.append(" NOT NULL");
+            sb.append(NOT_NULL);
         }
 
         sb.append(GO);
@@ -104,10 +115,10 @@ public class MsColumn extends AbstractColumn {
             .append(' ').append(getType());
 
             if (getCollation() != null) {
-                sb.append(" COLLATE ").append(getCollation());
+                sb.append(COLLATE).append(getCollation());
             }
 
-            sb.append(" NOT NULL");
+            sb.append(NOT_NULL);
             sb.append(GO);
         }
 
@@ -205,11 +216,11 @@ public class MsColumn extends AbstractColumn {
             .append(' ').append(newColumn.getType());
 
             if (newCollation != null) {
-                sb.append(" COLLATE ").append(newCollation);
+                sb.append(COLLATE).append(newCollation);
             }
 
             if (getNullValue() == newColumn.getNullValue()) {
-                sb.append(newColumn.getNullValue() ? " NULL" : " NOT NULL");
+                sb.append(newColumn.getNullValue() ? NULL : NOT_NULL);
             }
             sb.append(GO);
         }
@@ -225,10 +236,10 @@ public class MsColumn extends AbstractColumn {
             .append(' ').append(newColumn.getType());
 
             if (newColumn.getCollation() != null) {
-                sb.append(" COLLATE ").append(newColumn.getCollation());
+                sb.append(COLLATE).append(newColumn.getCollation());
             }
 
-            sb.append(newColumn.getNullValue() ? " NULL" : " NOT NULL");
+            sb.append(newColumn.getNullValue() ? NULL : NOT_NULL);
             sb.append(GO);
         }
     }
@@ -237,7 +248,7 @@ public class MsColumn extends AbstractColumn {
         sb.append("\n\nUPDATE ").append(getParent().getQualifiedName())
         .append("\n\tSET ").append(MsDiffUtils.quoteName(name))
         .append(" = DEFAULT WHERE ")
-        .append(MsDiffUtils.quoteName(name)).append(" IS NULL");
+        .append(MsDiffUtils.quoteName(name)).append(" IS").append(NULL);
         sb.append(GO);
     }
 
@@ -256,8 +267,123 @@ public class MsColumn extends AbstractColumn {
         return false;
     }
 
+    public boolean isSparse() {
+        return isSparse;
+    }
+
+    public void setSparse(final boolean isSparse) {
+        this.isSparse = isSparse;
+        resetHash();
+    }
+
+    public boolean isRowGuidCol() {
+        return isRowGuidCol;
+    }
+
+    public void setRowGuidCol(final boolean isRowGuidCol) {
+        this.isRowGuidCol = isRowGuidCol;
+        resetHash();
+    }
+
+    public boolean isPersisted() {
+        return isPersisted;
+    }
+
+    public void setPersisted(final boolean isPersisted) {
+        this.isPersisted = isPersisted;
+        resetHash();
+    }
+
+    public boolean isNotForRep() {
+        return isNotForRep;
+    }
+
+    public void setNotForRep(final boolean isNotForRep) {
+        this.isNotForRep = isNotForRep;
+        resetHash();
+    }
+
+    public String getDefaultName() {
+        return defaultName;
+    }
+
+    public void setDefaultName(final String defaultName) {
+        this.defaultName = defaultName;
+        resetHash();
+    }
+
+    public String getExpression() {
+        return expession;
+    }
+
+    public void setExpression(final String expession) {
+        this.expession = expession;
+        resetHash();
+    }
+
+    public String getSeed() {
+        return seed;
+    }
+
+    public String getIncrement() {
+        return increment;
+    }
+
+    public boolean isIdentity() {
+        return isIdentity;
+    }
+
+    public void setIdentity(String seed, String increment) {
+        this.seed = seed;
+        this.increment = increment;
+        this.isIdentity = true;
+        resetHash();
+    }
+
+    @Override
+    public boolean compare(PgStatement obj) {
+        if (obj instanceof MsColumn && super.compare(obj)) {
+            MsColumn col = (MsColumn) obj;
+            return isSparse == col.isSparse()
+                    && isRowGuidCol ==  col.isRowGuidCol()
+                    && isPersisted == col.isPersisted()
+                    && isNotForRep == col.isNotForRep()
+                    && isIdentity == col.isIdentity()
+                    && Objects.equals(seed, col.getSeed())
+                    && Objects.equals(increment, col.getIncrement())
+                    && Objects.equals(defaultName, col.getDefaultName())
+                    && Objects.equals(expession, col.getExpression());
+        }
+
+        return false;
+    }
+
+    @Override
+    public void computeHash(Hasher hasher) {
+        super.computeHash(hasher);
+        hasher.put(isSparse);
+        hasher.put(isRowGuidCol);
+        hasher.put(isPersisted);
+        hasher.put(isNotForRep);
+        hasher.put(isIdentity);
+        hasher.put(seed);
+        hasher.put(increment);
+        hasher.put(defaultName);
+        hasher.put(expession);
+    }
+
     @Override
     protected AbstractColumn getColumnCopy() {
-        return new MsColumn(getName());
+        MsColumn copy = new MsColumn(getName());
+        copy.setSparse(isSparse());
+        copy.setRowGuidCol(isRowGuidCol());
+        copy.setPersisted(isPersisted());
+        copy.setNotForRep(isNotForRep());
+        copy.isIdentity = isIdentity();
+        copy.seed = getSeed();
+        copy.increment = getIncrement();
+        copy.setDefaultName(getDefaultName());
+        copy.setExpression(getExpression());
+        return copy;
     }
 }

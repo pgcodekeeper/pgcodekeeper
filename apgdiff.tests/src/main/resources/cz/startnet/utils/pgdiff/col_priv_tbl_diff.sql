@@ -7,31 +7,19 @@ CREATE TABLE public.t2 (
 
 ALTER TABLE public.t2 OWNER TO botov_av;
 
--- TABLE public.t2 GRANT
-
 GRANT SELECT ON TABLE public.t2 TO levsha_aa;
-
--- COLUMN public.t2.c1 GRANT
 
 GRANT INSERT(c1),REFERENCES(c1),UPDATE(c1) ON TABLE public.t2 TO levsha_aa;
 
--- COLUMN public.t2.c2 GRANT
-
 GRANT INSERT(c2) ON TABLE public.t2 TO levsha_aa;
-
--- TABLE public.t1 GRANT
 
 GRANT SELECT ON TABLE public.t1 TO levsha_aa;
 
 ALTER TABLE public.t1
 	ADD COLUMN c2 text;
 
--- COLUMN public.t1.c2 GRANT
-
 GRANT ALL(c2) ON TABLE public.t1 TO maindb;
 GRANT INSERT(c2) ON TABLE public.t1 TO levsha_aa;
-
--- COLUMN public.t1.c1 GRANT
 
 REVOKE ALL(c1) ON TABLE public.t1 FROM botov_av;
 GRANT ALL(c1) ON TABLE public.t1 TO maindb;
@@ -42,8 +30,6 @@ CREATE VIEW public.v1 AS
    FROM public.t1;
 
 ALTER VIEW public.v1 OWNER TO botov_av;
-
--- VIEW public.v1 GRANT
 
 REVOKE ALL(c1) ON TABLE public.v1 FROM levsha_aa;
 GRANT UPDATE(c1) ON TABLE public.v1 TO maindb;

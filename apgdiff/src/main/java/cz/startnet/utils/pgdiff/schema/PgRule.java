@@ -89,8 +89,8 @@ public class PgRule extends PgStatementWithSearchPath{
         addCommand(args.isKeepNewlines() ? command : command.replace("\r", ""));
     }
 
-    public PgRule(String name, String rawStatement) {
-        super(name, rawStatement);
+    public PgRule(String name) {
+        super(name);
     }
 
     @Override
@@ -163,13 +163,12 @@ public class PgRule extends PgStatementWithSearchPath{
             return false;
         }
 
-        PgRule oldRule = this;
-        if (!oldRule.compareWithoutComments(newRule)) {
+        if (!compareUnalterable(newRule)) {
             isNeedDepcies.set(true);
             return true;
         }
         String newEnabledState = newRule.getEnabledState();
-        if (!Objects.equals(oldRule.getEnabledState(), newEnabledState)) {
+        if (!Objects.equals(getEnabledState(), newEnabledState)) {
             if (newEnabledState == null) {
                 newEnabledState = "ENABLE";
             }
@@ -183,7 +182,7 @@ public class PgRule extends PgStatementWithSearchPath{
             .append(PgDiffUtils.getQuotedName(newRule.getName()))
             .append(';');
         }
-        if (!Objects.equals(oldRule.getComment(), newRule.getComment())) {
+        if (!Objects.equals(getComment(), newRule.getComment())) {
             sb.append("\n\n");
             newRule.appendCommentSql(sb);
         }
@@ -192,15 +191,13 @@ public class PgRule extends PgStatementWithSearchPath{
 
     @Override
     public PgRule shallowCopy() {
-        PgRule ruleDst = new PgRule(getName(), getRawStatement());
+        PgRule ruleDst = new PgRule(getName());
+        copyBaseFields(ruleDst);
         ruleDst.setEvent(getEvent());
         ruleDst.setCondition(getCondition());
         ruleDst.setInstead(isInstead());
-        ruleDst.setComment(getComment());
         ruleDst.commands.addAll(commands);
         ruleDst.setEnabledState(getEnabledState());
-        ruleDst.deps.addAll(deps);
-        ruleDst.setLocation(getLocation());
         return ruleDst;
     }
 
@@ -211,23 +208,21 @@ public class PgRule extends PgStatementWithSearchPath{
 
     @Override
     public boolean compare(PgStatement obj) {
-        boolean eq = false;
-
         if (this == obj) {
-            eq = true;
-        } else if (obj instanceof PgRule) {
-            PgRule rule = (PgRule) obj;
-            eq = compareWithoutComments(rule)
-                    && Objects.equals(enabledState, rule.getEnabledState())
-                    && Objects.equals(comment, rule.getComment());
+            return true;
         }
 
-        return eq;
+        if (obj instanceof PgRule && super.compare(obj)) {
+            PgRule rule = (PgRule) obj;
+            return compareUnalterable(rule)
+                    && Objects.equals(enabledState, rule.getEnabledState());
+        }
+
+        return false;
     }
 
-    private boolean compareWithoutComments(PgRule rule) {
-        return Objects.equals(name, rule.getName())
-                && event == rule.event
+    private boolean compareUnalterable(PgRule rule) {
+        return event == rule.event
                 && Objects.equals(condition, rule.getCondition())
                 && instead == rule.isInstead()
                 && commands.equals(rule.commands);
@@ -235,13 +230,11 @@ public class PgRule extends PgStatementWithSearchPath{
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(name);
         hasher.put(event);
         hasher.put(condition);
         hasher.put(instead);
         hasher.put(commands);
         hasher.put(enabledState);
-        hasher.put(comment);
     }
 
     @Override

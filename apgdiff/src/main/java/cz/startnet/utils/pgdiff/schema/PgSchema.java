@@ -15,8 +15,8 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
  */
 public class PgSchema extends AbstractSchema {
 
-    public PgSchema(String name, String rawStatement) {
-        super(name, rawStatement);
+    public PgSchema(String name) {
+        super(name);
     }
 
     @Override
@@ -70,6 +70,6 @@ public class PgSchema extends AbstractSchema {
 
     @Override
     protected AbstractSchema getSchemaCopy() {
-        return new PgSchema(getName(), getRawStatement());
+        return new PgSchema(getName());
     }
 }

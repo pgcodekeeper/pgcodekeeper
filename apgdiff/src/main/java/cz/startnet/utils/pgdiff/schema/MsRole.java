@@ -14,8 +14,8 @@ public class MsRole extends PgStatement {
 
     private final Set<String> members = new LinkedHashSet<>();
 
-    public MsRole(String name, String rawStatement) {
-        super(name, rawStatement);
+    public MsRole(String name) {
+        super(name);
     }
 
     @Override
@@ -113,21 +113,14 @@ public class MsRole extends PgStatement {
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(name);
-        hasher.put(owner);
         hasher.put(members);
-        hasher.putUnordered(grants);
-        hasher.putUnordered(revokes);
     }
 
     @Override
     public MsRole shallowCopy() {
-        MsRole roleDst = new MsRole(getName(), getRawStatement());
-        roleDst.setOwner(getOwner());
+        MsRole roleDst = new MsRole(getName());
+        copyBaseFields(roleDst);
         roleDst.members.addAll(members);
-        roleDst.grants.addAll(grants);
-        roleDst.revokes.addAll(revokes);
-        roleDst.setLocation(getLocation());
         return roleDst;
     }
 
@@ -138,15 +131,12 @@ public class MsRole extends PgStatement {
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof MsRole) {
-            MsRole role = (MsRole) obj;
-            return Objects.equals(members, role.members)
-                    && Objects.equals(name, role.getName())
-                    && Objects.equals(owner, role.getOwner())
-                    && grants.equals(role.grants)
-                    && revokes.equals(role.revokes);
+        if (obj == this) {
+            return true;
         }
-        return false;
+
+        return obj instanceof MsRole && super.compare(obj)
+                && Objects.equals(members, ((MsRole) obj).members);
     }
 
     @Override

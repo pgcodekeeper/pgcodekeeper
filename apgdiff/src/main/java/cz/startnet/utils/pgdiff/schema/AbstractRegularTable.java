@@ -3,8 +3,6 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.Map.Entry;
 import java.util.Objects;
 
-import cz.startnet.utils.pgdiff.MsDiffUtils;
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 
 /**
@@ -14,7 +12,7 @@ import cz.startnet.utils.pgdiff.hashers.Hasher;
  * @author galiev_mr
  *
  */
-public abstract class AbstractRegularTable extends AbstractTable {
+public abstract class AbstractRegularTable extends AbstractPgTable {
 
     protected boolean isLogged = true;
     protected String tablespace;
@@ -22,8 +20,8 @@ public abstract class AbstractRegularTable extends AbstractTable {
     protected boolean isForceSecurity;
     protected String partitionBy;
 
-    public AbstractRegularTable(String name, String rawStatement) {
-        super(name, rawStatement);
+    public AbstractRegularTable(String name) {
+        super(name);
     }
 
     @Override
@@ -32,14 +30,7 @@ public abstract class AbstractRegularTable extends AbstractTable {
         if (!isLogged()) {
             sbSQL.append("UNLOGGED ");
         }
-        sbSQL.append("TABLE ");
-        if (isPostgres()) {
-            sbSQL.append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
-            .append('.').append(PgDiffUtils.getQuotedName(name));
-        } else {
-            sbSQL.append(MsDiffUtils.quoteName(getContainingSchema().getName()))
-            .append('.').append(MsDiffUtils.quoteName(name));
-        }
+        sbSQL.append("TABLE ").append(getQualifiedName());
     }
 
     @Override
@@ -52,8 +43,7 @@ public abstract class AbstractRegularTable extends AbstractTable {
         if (only) {
             sb.append("ONLY ");
         }
-        sb.append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
-        .append('.').append(PgDiffUtils.getQuotedName(getName()));
+        sb.append(getQualifiedName());
         return sb.toString();
     }
 
@@ -109,7 +99,7 @@ public abstract class AbstractRegularTable extends AbstractTable {
     }
 
     @Override
-    protected void compareTableOptions(AbstractTable newTable, StringBuilder sb) {
+    protected void compareTableOptions(AbstractPgTable newTable, StringBuilder sb) {
         super.compareTableOptions(newTable, sb);
 
         AbstractRegularTable newRegTable = (AbstractRegularTable) newTable;

@@ -202,8 +202,7 @@ public class UIProjectLoader extends ProjectLoader {
         .filter(sc -> schemaFiles.contains(AbstractModelExporter.getExportedFilename(sc))
                 || sc.hasChildren())
         .forEach(st -> {
-            st.dropParent();
-            newDb.addSchema(st);
+            newDb.addSchema(st.deepCopy());
         });
 
         return newDb;

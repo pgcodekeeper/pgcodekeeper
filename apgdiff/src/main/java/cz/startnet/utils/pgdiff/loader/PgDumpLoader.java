@@ -140,8 +140,8 @@ public class PgDumpLoader implements AutoCloseable {
     }
 
     public PgDatabase load(PgDatabase d) throws IOException, InterruptedException {
-        AbstractSchema schema = args.isMsSql() ? new MsSchema(ApgdiffConsts.DBO, "") :
-            new PgSchema(ApgdiffConsts.PUBLIC, "");
+        AbstractSchema schema = args.isMsSql() ? new MsSchema(ApgdiffConsts.DBO) :
+            new PgSchema(ApgdiffConsts.PUBLIC);
         d.addSchema(schema);
         d.setDefaultSchema(schema.getName());
         loadDatabase(d);

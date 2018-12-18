@@ -21,7 +21,7 @@ public final class ApgdiffTestUtils {
 
     public static PgDatabase createDumpDB() {
         PgDatabase db = new PgDatabase();
-        AbstractSchema schema = new PgSchema(ApgdiffConsts.PUBLIC, "");
+        AbstractSchema schema = new PgSchema(ApgdiffConsts.PUBLIC);
         db.addSchema(schema);
         db.setDefaultSchema(ApgdiffConsts.PUBLIC);
         return db;
@@ -29,7 +29,7 @@ public final class ApgdiffTestUtils {
 
     public static PgDatabase createDumpMsDB() {
         PgDatabase db = new PgDatabase();
-        AbstractSchema schema = new MsSchema(ApgdiffConsts.DBO, "");
+        AbstractSchema schema = new MsSchema(ApgdiffConsts.DBO);
         db.addSchema(schema);
         db.setDefaultSchema(ApgdiffConsts.DBO);
         return db;

@@ -31,36 +31,36 @@ public class XmlReader {
         this.result = result;
     }
 
-    public double getDouble(String columnName) throws XmlReaderException {
+    public double getDouble(String columnName) {
         String val = result.get(columnName);
         return val == null ? 0 : Double.parseDouble(val);
     }
 
-    public long getLong(String columnName) throws XmlReaderException {
+    public long getLong(String columnName) {
         String val = result.get(columnName);
         return val == null ? 0 : Long.parseLong(val);
     }
 
-    public boolean getBoolean(String columnName) throws XmlReaderException {
+    public boolean getBoolean(String columnName) {
         String o = result.get(columnName);
         return "1".equals(o);
     }
 
-    public String getString(String columnName) throws XmlReaderException {
+    public String getString(String columnName) {
         return result.get(columnName);
     }
 
-    public float getFloat(String columnName) throws XmlReaderException {
+    public float getFloat(String columnName) {
         String val = result.get(columnName);
         return val == null ? 0 : Float.parseFloat(val);
     }
 
-    public int getInt(String columnName) throws XmlReaderException {
+    public int getInt(String columnName) {
         String val = result.get(columnName);
         return val == null ? 0 : Integer.parseInt(val);
     }
 
-    public short getShort(String columnName) throws XmlReaderException {
+    public short getShort(String columnName) {
         String val = result.get(columnName);
         return val == null ? 0 : Short.parseShort(val);
     }

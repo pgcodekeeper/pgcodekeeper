@@ -9,8 +9,8 @@ package cz.startnet.utils.pgdiff.schema;
  */
 public class SimplePgTable extends AbstractRegularTable {
 
-    public SimplePgTable(String name, String rawStatement) {
-        super(name, rawStatement);
+    public SimplePgTable(String name) {
+        super(name);
     }
 
     @Override
@@ -19,7 +19,7 @@ public class SimplePgTable extends AbstractRegularTable {
 
         int start = sbSQL.length();
         for (AbstractColumn column : columns) {
-            writeColumn(column, sbSQL, sbOption);
+            writeColumn((PgColumn) column, sbSQL, sbOption);
         }
 
         if (start != sbSQL.length()) {
@@ -32,11 +32,11 @@ public class SimplePgTable extends AbstractRegularTable {
 
     @Override
     protected AbstractTable getTableCopy() {
-        return new SimplePgTable(name, getRawStatement());
+        return new SimplePgTable(name);
     }
 
     @Override
-    protected void compareTableTypes(AbstractTable newTable, StringBuilder sb) {
+    protected void compareTableTypes(AbstractPgTable newTable, StringBuilder sb) {
         if (newTable instanceof AbstractRegularTable) {
             ((AbstractRegularTable)newTable).convertTable(sb);
         }

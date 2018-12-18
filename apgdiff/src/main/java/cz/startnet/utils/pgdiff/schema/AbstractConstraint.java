@@ -25,7 +25,6 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath {
     private GenericColumn refTable;
     private final Set<String> refs = new HashSet<>();
     private boolean notValid;
-    private boolean isDisabled;
 
     /**
      * Список колонок на которых установлен PrimaryKey или Unique
@@ -85,22 +84,13 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath {
         resetHash();
     }
 
-    public boolean isDisabled() {
-        return isDisabled;
-    }
-
-    public void setDisabled(boolean isDisabled) {
-        this.isDisabled = isDisabled;
-        resetHash();
-    }
-
     @Override
     public DbObjType getStatementType() {
         return DbObjType.CONSTRAINT;
     }
 
-    public AbstractConstraint(String name, String rawStatement) {
-        super(name, rawStatement);
+    public AbstractConstraint(String name) {
+        super(name);
     }
 
     public void setDefinition(final String definition) {
@@ -127,51 +117,32 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath {
 
     @Override
     public boolean compare(PgStatement obj) {
-        boolean eq = false;
-
         if (this == obj) {
-            eq = true;
-        } else if (obj instanceof AbstractConstraint) {
-            AbstractConstraint constraint = (AbstractConstraint) obj;
-            eq = compareWithoutComments(constraint)
-                    && notValid == constraint.isNotValid()
-                    && isDisabled == constraint.isDisabled()
-                    && Objects.equals(comment, constraint.getComment());
+            return true;
         }
 
-        return eq;
-    }
-
-    protected boolean compareWithoutComments(AbstractConstraint constraint) {
-        boolean eq;
-        eq = Objects.equals(definition, constraint.getDefinition())
-                && Objects.equals(name, constraint.getName());
-        return eq;
+        return obj instanceof AbstractConstraint && super.compare(obj)
+                && Objects.equals(definition, ((AbstractConstraint) obj).getDefinition())
+                && notValid == ((AbstractConstraint) obj).isNotValid();
     }
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(name);
         hasher.put(definition);
         hasher.put(notValid);
-        hasher.put(isDisabled);
-        hasher.put(comment);
     }
 
     @Override
     public AbstractConstraint shallowCopy() {
         AbstractConstraint constraintDst = getConstraintCopy();
+        copyBaseFields(constraintDst);
         constraintDst.setDefinition(getDefinition());
-        constraintDst.setComment(getComment());
         constraintDst.setPrimaryKey(isPrimaryKey());
         constraintDst.setUnique(isUnique());
         constraintDst.columns.addAll(columns);
         constraintDst.setForeignTable(getForeignTable());
         constraintDst.refs.addAll(refs);
-        constraintDst.deps.addAll(deps);
         constraintDst.setNotValid(isNotValid());
-        constraintDst.setDisabled(isDisabled());
-        constraintDst.setLocation(getLocation());
         return constraintDst;
     }
 
