@@ -47,7 +47,7 @@ public class CreateType extends ParserAbstract {
             }
         }
         if (type == null) {
-            type = new PgType(name, form, getFullCtxText(ctx.getParent()));
+            type = new PgType(name, form);
             newType = type;
         }
 

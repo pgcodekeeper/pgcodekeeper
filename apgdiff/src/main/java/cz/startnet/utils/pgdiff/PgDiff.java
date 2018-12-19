@@ -8,7 +8,6 @@ package cz.startnet.utils.pgdiff;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
@@ -55,12 +54,9 @@ public final class PgDiff {
      *
      * @param writer    writer the output should be written to
      * @param arguments object containing arguments settings
-     * @throws IOException
-     * @throws InterruptedException
-     * @throws URISyntaxException
      */
     public static PgDiffScript createDiff(PrintWriter writer, PgDiffArguments arguments)
-            throws InterruptedException, IOException, URISyntaxException {
+            throws InterruptedException, IOException {
         PgDatabase oldDatabase = loadDatabaseSchema(
                 arguments.getOldSrcFormat(), arguments.getOldSrc(), arguments);
 
@@ -124,12 +120,9 @@ public final class PgDiff {
      * @param arguments        object containing arguments settings
      *
      * @return the loaded database
-     * @throws IOException
-     * @throws InterruptedException
-     * @throws URISyntaxException
      */
     public static PgDatabase loadDatabaseSchema(String format, String srcPath, PgDiffArguments arguments)
-            throws InterruptedException, IOException, URISyntaxException {
+            throws InterruptedException, IOException {
 
         PgDatabase db = new PgDatabase();
         db.setArguments(arguments);

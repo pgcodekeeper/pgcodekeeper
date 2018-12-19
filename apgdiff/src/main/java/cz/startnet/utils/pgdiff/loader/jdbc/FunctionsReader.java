@@ -11,7 +11,7 @@ import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
-import cz.startnet.utils.pgdiff.schema.AbstractFunction;
+import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -38,7 +38,7 @@ public class FunctionsReader extends JdbcReader {
 
         loader.setCurrentObject(new GenericColumn(schemaName, funcName,
                 isProc ? DbObjType.PROCEDURE : DbObjType.FUNCTION));
-        AbstractFunction f = isProc ? new PgProcedure(funcName, "") : new PgFunction(funcName, "");
+        AbstractPgFunction f = isProc ? new PgProcedure(funcName) : new PgFunction(funcName);
 
         fillFunction(f, res);
 
@@ -134,7 +134,7 @@ public class FunctionsReader extends JdbcReader {
         schema.addFunction(f);
     }
 
-    private void fillFunction(AbstractFunction function, ResultSet res) throws SQLException {
+    private void fillFunction(AbstractPgFunction function, ResultSet res) throws SQLException {
         StringBuilder body = new StringBuilder();
 
         function.setLanguage(res.getString("lang_name"));

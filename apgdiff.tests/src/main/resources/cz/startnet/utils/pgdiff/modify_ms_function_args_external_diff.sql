@@ -5,6 +5,6 @@ GO
 ALTER FUNCTION [dbo].[helloWorld](@i1 [int] = 0)
 RETURNS [int]
 WITH EXECUTE AS CALLER
-AS 
+AS
 EXTERNAL NAME [Hi].[Hello].[returnIntSecond]
 GO

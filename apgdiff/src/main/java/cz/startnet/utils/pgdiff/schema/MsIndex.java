@@ -8,8 +8,8 @@ import cz.startnet.utils.pgdiff.PgDiffArguments;
 
 public class MsIndex extends AbstractIndex {
 
-    public MsIndex(String name, String rawStatement) {
-        super(name, rawStatement);
+    public MsIndex(String name, String tableName) {
+        super(name, tableName);
     }
 
     @Override
@@ -105,6 +105,6 @@ public class MsIndex extends AbstractIndex {
 
     @Override
     protected AbstractIndex getIndexCopy() {
-        return new MsIndex(getName(), getRawStatement());
+        return new MsIndex(getName(), getTableName());
     }
 }

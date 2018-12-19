@@ -13,7 +13,7 @@ SET escape_string_warning = off;
 -- Name: comments; Type: COMMENT; Schema: -; Owner: fordfrog
 --
 
-COMMENT ON DATABASE comments IS 'comments database';
+--COMMENT ON DATABASE comments IS 'comments database';
 
 COMMENT ON SCHEMA public IS 'public schema';
 

@@ -86,13 +86,7 @@ implements SqlContextProcessor {
             return;
         }
 
-        StatementOverride override = overrides.get(st);
-        if (override == null) {
-            override = new StatementOverride();
-            overrides.put(st, override);
-        }
-
-        override.setOwner(owner.getText());
+        overrides.computeIfAbsent(st, k -> new StatementOverride()).setOwner(owner.getText());
     }
 
     private void alterTable(Alter_table_statementContext ctx) {
@@ -116,13 +110,8 @@ implements SqlContextProcessor {
                     st = ParserAbstract.getSafe(schema::getView, nameCtx);
                 }
 
-                StatementOverride override = overrides.get(st);
-                if (override == null) {
-                    override = new StatementOverride();
-                    overrides.put(st, override);
-                }
-
-                override.setOwner(owner.name.getText());
+                overrides.computeIfAbsent(st,
+                        k -> new StatementOverride()).setOwner(owner.name.getText());
             }
         }
     }

@@ -13,13 +13,15 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgFtsConfiguration extends PgStatementWithSearchPath {
 
+    private static final String ALTER_CONFIGURATION = "\n\nALTER TEXT SEARCH CONFIGURATION ";
+
     private String parser;
     /**key - fragment, value - dictionaries */
     private final Map<String, String> dictionariesMap = new HashMap<>();
 
 
-    public PgFtsConfiguration(String name, String rawStatement) {
-        super(name, rawStatement);
+    public PgFtsConfiguration(String name) {
+        super(name);
     }
 
     @Override
@@ -36,12 +38,11 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
     public String getCreationSQL() {
         StringBuilder sbSql = new StringBuilder();
         sbSql.append("CREATE TEXT SEARCH CONFIGURATION ")
-        .append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.')
-        .append(PgDiffUtils.getQuotedName(getName())).append(" (\n\t");
+        .append(getQualifiedName()).append(" (\n\t");
         sbSql.append("PARSER = ").append(parser).append(" );");
 
         dictionariesMap.forEach((fragment, dictionaries) -> {
-            sbSql.append("\n\nALTER TEXT SEARCH CONFIGURATION ")
+            sbSql.append(ALTER_CONFIGURATION)
             .append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.')
             .append(PgDiffUtils.getQuotedName(getName()));
             sbSql.append("\n\tADD MAPPING FOR ").append(fragment)
@@ -61,15 +62,13 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
     @Override
     protected StringBuilder appendCommentSql(StringBuilder sb) {
         sb.append("COMMENT ON TEXT SEARCH CONFIGURATION ");
-        sb.append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
-        .append('.').append(PgDiffUtils.getQuotedName(getName()));
+        sb.append(getQualifiedName());
         return sb.append(" IS ").append(comment).append(';');
     }
 
     @Override
     public String getDropSQL() {
-        return "DROP TEXT SEARCH CONFIGURATION " + PgDiffUtils.getQuotedName(getContainingSchema().getName())
-        + '.' + PgDiffUtils.getQuotedName(getName()) + ';';
+        return "DROP TEXT SEARCH CONFIGURATION " + getQualifiedName() + ';';
     }
 
     @Override
@@ -87,12 +86,17 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
             return false;
         }
 
+        compareOptions(newConf, sb);
+
+        if (!Objects.equals(getOwner(), newConf.getOwner())) {
+            newConf.alterOwnerSQL(sb);
+        }
+
         if (!Objects.equals(getComment(), newCondition.getComment())) {
             sb.append("\n\n");
             newCondition.appendCommentSql(sb);
         }
 
-        compareOptions(newConf, sb);
         return sb.length() > startLength;
     }
 
@@ -108,12 +112,12 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
             String newDictionaries = newMap.get(fragment);
 
             if (newDictionaries == null) {
-                sb.append("\n\nALTER TEXT SEARCH CONFIGURATION ")
+                sb.append(ALTER_CONFIGURATION)
                 .append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
                 .append('.').append(PgDiffUtils.getQuotedName(getName()))
                 .append("\n\tDROP MAPPING FOR ").append(fragment).append(';');
             } else if (!dictionaries.equals(newDictionaries)) {
-                sb.append("\n\nALTER TEXT SEARCH CONFIGURATION ")
+                sb.append(ALTER_CONFIGURATION)
                 .append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
                 .append('.').append(PgDiffUtils.getQuotedName(getName()))
                 .append("\n\tALTER MAPPING FOR ").append(fragment)
@@ -123,7 +127,7 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
 
         newMap.forEach((fragment, dictionaries) -> {
             if (!oldMap.containsKey(fragment)) {
-                sb.append("\n\nALTER TEXT SEARCH CONFIGURATION ")
+                sb.append(ALTER_CONFIGURATION)
                 .append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
                 .append('.').append(PgDiffUtils.getQuotedName(getName()))
                 .append("\n\tADD MAPPING FOR ").append(fragment)
@@ -134,14 +138,11 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
 
     @Override
     public PgFtsConfiguration shallowCopy() {
-        PgFtsConfiguration conf = new PgFtsConfiguration(getName(), getRawStatement());
-        conf.setComment(getComment());
-        conf.setParser(getParser());
-        conf.deps.addAll(deps);
-        conf.setOwner(getOwner());
-        conf.dictionariesMap.putAll(getDictionariesMap());
-        conf.setLocation(getLocation());
-        return conf;
+        PgFtsConfiguration confDst = new PgFtsConfiguration(getName());
+        copyBaseFields(confDst);
+        confDst.setParser(getParser());
+        confDst.dictionariesMap.putAll(dictionariesMap);
+        return confDst;
     }
 
     @Override
@@ -151,29 +152,23 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
 
     @Override
     public boolean compare(PgStatement obj) {
-        boolean eq = false;
-
         if (this == obj) {
-            eq = true;
-        } else if(obj instanceof PgFtsConfiguration) {
-            PgFtsConfiguration config = (PgFtsConfiguration) obj;
-            eq = Objects.equals(name, config.name)
-                    && Objects.equals(parser, config.getParser())
-                    && Objects.equals(owner, config.getOwner())
-                    && Objects.equals(comment, config.getComment())
-                    && Objects.equals(dictionariesMap, config.dictionariesMap);
+            return true;
         }
 
-        return eq;
+        if (obj instanceof PgFtsConfiguration && super.compare(obj)) {
+            PgFtsConfiguration config = (PgFtsConfiguration) obj;
+            return Objects.equals(parser, config.getParser())
+                    && dictionariesMap.equals(config.dictionariesMap);
+        }
+
+        return false;
     }
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(name);
-        hasher.put(owner);
         hasher.put(parser);
         hasher.put(dictionariesMap);
-        hasher.put(comment);
     }
 
     public String getParser() {

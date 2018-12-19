@@ -19,8 +19,8 @@ public class PgOperator extends PgStatementWithSearchPath {
     private String restrict;
     private String join;
 
-    public PgOperator(String name, String rawStatement) {
-        super(name, rawStatement);
+    public PgOperator(String name) {
+        super(name);
     }
 
     @Override
@@ -123,7 +123,7 @@ public class PgOperator extends PgStatementWithSearchPath {
             return false;
         }
 
-        if (!checkForChanges(newOperator)) {
+        if (!compareUnalterable(newOperator)) {
             isNeedDepcies.set(true);
             return true;
         }
@@ -160,21 +160,14 @@ public class PgOperator extends PgStatementWithSearchPath {
         return sb.length() > startLength;
     }
 
-    private boolean checkForChanges(PgOperator oper) {
-        boolean equals = false;
-        if (this == oper) {
-            equals = true;
-        } else {
-            equals = Objects.equals(name, oper.getBareName())
-                    && Objects.equals(procedure, oper.getProcedure())
-                    && Objects.equals(leftArg, oper.getLeftArg())
-                    && Objects.equals(rightArg, oper.getRightArg())
-                    && Objects.equals(commutator, oper.getCommutator())
-                    && Objects.equals(negator, oper.getNegator())
-                    && isMerges == oper.isMerges()
-                    && isHashes == oper.isHashes();
-        }
-        return equals;
+    private boolean compareUnalterable(PgOperator oper) {
+        return Objects.equals(procedure, oper.getProcedure())
+                && Objects.equals(leftArg, oper.getLeftArg())
+                && Objects.equals(rightArg, oper.getRightArg())
+                && Objects.equals(commutator, oper.getCommutator())
+                && Objects.equals(negator, oper.getNegator())
+                && isMerges == oper.isMerges()
+                && isHashes == oper.isHashes();
     }
 
     /**
@@ -197,22 +190,18 @@ public class PgOperator extends PgStatementWithSearchPath {
             return true;
         }
 
-        if (obj instanceof PgOperator) {
+        if (obj instanceof PgOperator && super.compare(obj)) {
             PgOperator oper  = (PgOperator) obj;
-            if (!checkForChanges(oper)) {
-                return false;
-            }
-            return Objects.equals(restrict, oper.getRestrict())
-                    && Objects.equals(join, oper.getJoin())
-                    && Objects.equals(owner, oper.getOwner())
-                    && Objects.equals(comment, oper.getComment());
+            return compareUnalterable(oper)
+                    && Objects.equals(restrict, oper.getRestrict())
+                    && Objects.equals(join, oper.getJoin());
         }
+
         return false;
     }
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(getBareName());
         hasher.put(getProcedure());
         hasher.put(getLeftArg());
         hasher.put(getRightArg());
@@ -222,8 +211,6 @@ public class PgOperator extends PgStatementWithSearchPath {
         hasher.put(isHashes());
         hasher.put(getRestrict());
         hasher.put(getJoin());
-        hasher.put(getOwner());
-        hasher.put(getComment());
     }
 
     public String getProcedure() {
@@ -309,22 +296,18 @@ public class PgOperator extends PgStatementWithSearchPath {
 
     @Override
     public PgOperator shallowCopy() {
-        PgOperator copy = new PgOperator(getBareName(), getRawStatement());
-        copy.setProcedure(getProcedure());
-        copy.setLeftArg(getLeftArg());
-        copy.setRightArg(getRightArg());
-        copy.setCommutator(getCommutator());
-        copy.setNegator(getNegator());
-        copy.setMerges(isMerges());
-        copy.setHashes(isHashes());
-        copy.setRestrict(getRestrict());
-        copy.setJoin(getJoin());
-        copy.setComment(getComment());
-        copy.setOwner(getOwner());
-        copy.deps.addAll(deps);
-        copy.setLocation(getLocation());
-
-        return copy;
+        PgOperator operatorDst = new PgOperator(getBareName());
+        copyBaseFields(operatorDst);
+        operatorDst.setProcedure(getProcedure());
+        operatorDst.setLeftArg(getLeftArg());
+        operatorDst.setRightArg(getRightArg());
+        operatorDst.setCommutator(getCommutator());
+        operatorDst.setNegator(getNegator());
+        operatorDst.setMerges(isMerges());
+        operatorDst.setHashes(isHashes());
+        operatorDst.setRestrict(getRestrict());
+        operatorDst.setJoin(getJoin());
+        return operatorDst;
     }
 
     @Override

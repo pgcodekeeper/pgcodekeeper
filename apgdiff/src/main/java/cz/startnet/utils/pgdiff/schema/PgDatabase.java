@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -63,7 +62,7 @@ public class PgDatabase extends PgStatement {
     }
 
     public PgDatabase() {
-        super("DB_name_placeholder", null);
+        super("DB_name_placeholder");
     }
 
     public void setDefaultSchema(final String name) {
@@ -180,23 +179,44 @@ public class PgDatabase extends PgStatement {
     }
 
     @Override
-    public Stream<PgStatement> getDescendants() {
-        Stream<PgStatement> stream = getChildren();
-
-        for (AbstractSchema schema : getSchemas()) {
-            stream = Stream.concat(stream, schema.getDescendants());
+    protected void fillDescendantsList(List<List<? extends PgStatement>> l) {
+        fillChildrenList(l);
+        for (AbstractSchema schema : schemas) {
+            schema.fillDescendantsList(l);
         }
-
-        return stream;
     }
 
     @Override
-    public Stream<PgStatement> getChildren() {
-        Stream<PgStatement> stream =  Stream.concat(getSchemas().stream(), getExtensions().stream());
-        stream = Stream.concat(stream, getAssemblies().stream());
-        stream = Stream.concat(stream, getRoles().stream());
-        stream = Stream.concat(stream, getUsers().stream());
-        return stream;
+    protected void fillChildrenList(List<List<? extends PgStatement>> l) {
+        l.add(schemas);
+        l.add(extensions);
+        l.add(assemblies);
+        l.add(roles);
+        l.add(users);
+    }
+
+    @Override
+    public void addChild(PgStatement st) {
+        DbObjType type = st.getStatementType();
+        switch (type) {
+        case SCHEMA:
+            addSchema((AbstractSchema) st);
+            break;
+        case EXTENSION:
+            addExtension((PgExtension) st);
+            break;
+        case ASSEMBLY:
+            addAssembly((MsAssembly) st);
+            break;
+        case ROLE:
+            addRole((MsRole) st);
+            break;
+        case USER:
+            addUser((MsUser) st);
+            break;
+        default:
+            throw new IllegalArgumentException("Unsupported child type: " + type);
+        }
     }
 
     /**
@@ -332,8 +352,10 @@ public class PgDatabase extends PgStatement {
     }
 
     public void sortColumns() {
-        for (AbstractSchema schema : schemas) {
-            schema.getTables().forEach(AbstractTable::sortColumns);
+        if (isPostgres()) {
+            for (AbstractSchema schema : schemas) {
+                schema.getTables().forEach(t -> ((AbstractPgTable) t).sortColumns());
+            }
         }
     }
 
@@ -401,10 +423,9 @@ public class PgDatabase extends PgStatement {
     @Override
     public PgDatabase shallowCopy() {
         PgDatabase dbDst = new PgDatabase();
+        copyBaseFields(dbDst);
         dbDst.setArguments(getArguments());
-        dbDst.setComment(getComment());
         dbDst.setPostgresVersion(getPostgresVersion());
-        dbDst.setLocation(getLocation());
         return dbDst;
     }
 
@@ -430,187 +451,76 @@ public class PgDatabase extends PgStatement {
     }
 
     public void addLib(PgDatabase database) {
-        database.getDescendants().forEach(PgStatement::markAsLib);
-        concat(database);
+        database.getDescendants().forEach(st -> {
+            st.markAsLib();
+            concat(st);
+        });
+        contextsForAnalyze.addAll(database.contextsForAnalyze);
     }
 
-    private void concat(PgDatabase database) {
-        for (PgExtension e : database.getExtensions()) {
-            PgExtension ext = getExtension(e.getName());
-            if (ext == null) {
-                e.dropParent();
-                addExtension(e);
-            } else if (!"plpgsql".equals(e.getName())) {
-                overrides.add(new PgOverride(ext, e));
-            }
-        }
-
-        for (MsAssembly a : database.getAssemblies()) {
-            MsAssembly ass = getAssembly(a.getName());
-            if (ass == null) {
-                a.dropParent();
-                addAssembly(a);
-            } else {
-                overrides.add(new PgOverride(ass, a));
-            }
-        }
-
-        for (MsRole r : database.getRoles()) {
-            MsRole role = getRole(r.getName());
-            if (role == null) {
-                r.dropParent();
-                addRole(r);
-            } else {
-                overrides.add(new PgOverride(role, r));
-            }
-        }
-
-        for (MsUser u : database.getUsers()) {
-            MsUser user = getUser(u.getName());
-            if (user == null) {
-                u.dropParent();
-                addUser(user);
-            } else {
-                overrides.add(new PgOverride(user, u));
-            }
-        }
-
-        for (AbstractSchema s : database.getSchemas()) {
-            AbstractSchema schema = getSchema(s.getName());
-            if (schema == null) {
-                s.dropParent();
-                addSchema(s);
+    public void concat(PgStatement st) {
+        DbObjType type = st.getStatementType();
+        String name = st.getName();
+        PgStatement parent = st.getParent();
+        String parentName = parent.getName();
+        PgStatement orig = null;
+        switch (type) {
+        case USER:
+        case ROLE:
+        case ASSEMBLY:
+        case SCHEMA:
+        case EXTENSION:
+            orig = getChild(name, type);
+            if (orig == null) {
+                addChild(st.shallowCopy());
+            } else if (type == DbObjType.SCHEMA
+                    && ApgdiffConsts.PUBLIC.equals(name) && !st.hasChildren()) {
                 // skip empty public schema
-            } else if (!ApgdiffConsts.PUBLIC.equals(s.getName())
-                    || !s.compareChildren(new PgSchema(ApgdiffConsts.PUBLIC, ""))) {
-                overrides.add(new PgOverride(schema, s));
-
-                for (AbstractType ty : s.getTypes()) {
-                    AbstractType type = schema.getType(ty.getName());
-                    if (type == null) {
-                        ty.dropParent();
-                        schema.addType(ty);
-                    } else {
-                        overrides.add(new PgOverride(type, ty));
-                    }
-                }
-
-                for (PgDomain dom : s.getDomains()) {
-                    PgDomain domain = schema.getDomain(dom.getName());
-                    if (domain == null) {
-                        dom.dropParent();
-                        schema.addDomain(dom);
-                    } else {
-                        overrides.add(new PgOverride(domain, dom));
-                    }
-                }
-
-                for (AbstractSequence seq : s.getSequences()) {
-                    AbstractSequence sequence = schema.getSequence(seq.getName());
-                    if (sequence == null) {
-                        seq.dropParent();
-                        schema.addSequence(seq);
-                    } else {
-                        overrides.add(new PgOverride(sequence, seq));
-                    }
-                }
-
-                for (AbstractFunction func : s.getFunctions()) {
-                    AbstractFunction function = schema.getFunction(func.getName());
-                    if (!schema.containsFunction(func.getName())) {
-                        func.dropParent();
-                        schema.addFunction(func);
-                    } else {
-                        overrides.add(new PgOverride(function, func));
-                    }
-                }
-
-                for (AbstractTable t : s.getTables()) {
-                    AbstractTable table = schema.getTable(t.getName());
-                    if (table == null) {
-                        t.dropParent();
-                        schema.addTable(t);
-                    } else {
-                        overrides.add(new PgOverride(table, t));
-
-                        for (AbstractConstraint con : t.getConstraints()) {
-                            AbstractConstraint constraint = table.getConstraint(con.getName());
-                            if (constraint == null) {
-                                con.dropParent();
-                                table.addConstraint(con);
-                            } else {
-                                overrides.add(new PgOverride(constraint, con));
-                            }
-                        }
-
-                        for (AbstractIndex ind : t.getIndexes()) {
-                            AbstractIndex index = table.getIndex(ind.getName());
-                            if (index == null) {
-                                ind.dropParent();
-                                table.addIndex(ind);
-                            } else {
-                                overrides.add(new PgOverride(index, ind));
-                            }
-                        }
-
-                        for (AbstractTrigger tr : t.getTriggers()) {
-                            AbstractTrigger trigger = table.getTrigger(tr.getName());
-                            if (trigger == null) {
-                                tr.dropParent();
-                                table.addTrigger(tr);
-                            } else {
-                                overrides.add(new PgOverride(trigger, tr));
-                            }
-                        }
-
-                        for (PgRule r : t.getRules()) {
-                            PgRule rule = table.getRule(r.getName());
-                            if (rule == null) {
-                                r.dropParent();
-                                table.addRule(r);
-                            } else {
-                                overrides.add(new PgOverride(rule, r));
-                            }
-                        }
-                    }
-                }
-
-                for (AbstractView v : s.getViews()) {
-                    AbstractView view = schema.getView(v.getName());
-                    if (view == null) {
-                        v.dropParent();
-                        schema.addView(v);
-                    } else {
-                        overrides.add(new PgOverride(view, v));
-
-                        for (AbstractTrigger tr : v.getTriggers()) {
-                            AbstractTrigger trigger = view.getTrigger(tr.getName());
-                            if (trigger == null) {
-                                tr.dropParent();
-                                view.addTrigger(tr);
-                            } else {
-                                overrides.add(new PgOverride(trigger, tr));
-                            }
-                        }
-
-                        for (PgRule r : v.getRules()) {
-                            PgRule rule = view.getRule(r.getName());
-                            if (rule == null) {
-                                r.dropParent();
-                                view.addRule(r);
-                            } else {
-                                overrides.add(new PgOverride(rule, r));
-                            }
-                        }
-                    }
-                }
+                orig = null;
             }
+            break;
+        case CONSTRAINT:
+        case INDEX:
+            AbstractTable tab = getSchema(parent.getParent().getName()).getTable(parentName);
+            orig = tab.getChild(name, type);
+            if (orig == null) {
+                tab.addChild(st.shallowCopy());
+            }
+            break;
+        case TRIGGER:
+            PgTriggerContainer tCont = getSchema(parent.getParent().getName())
+            .getTriggerContainer(parentName);
+            orig = tCont.getTrigger(name);
+            if (orig == null) {
+                tCont.addTrigger((AbstractTrigger) st.shallowCopy());
+            }
+            break;
+        case RULE:
+            PgRuleContainer rCont = getSchema(parent.getParent().getName())
+            .getRuleContainer(parentName);
+            orig = rCont.getRule(name);
+            if (orig == null) {
+                rCont.addRule((PgRule) st.shallowCopy());
+            }
+            break;
+        default :
+            AbstractSchema schema = getSchema(parentName);
+            orig = schema.getChild(name, type);
+            if (orig == null) {
+                schema.addChild(st.shallowCopy());
+            }
+            break;
+        }
+
+        if (orig != null) {
+            overrides.add(new PgOverride(orig, st));
         }
     }
 
     public static Map<String, PgStatement> listPgObjects(PgDatabase db) {
         Map<String, PgStatement> statements = new HashMap<>();
-        db.getDescendants().flatMap(AbstractTable::columnAdder).forEach(st -> statements.put(st.getQualifiedName(), st));
+        db.getDescendants().flatMap(AbstractTable::columnAdder)
+        .forEach(st -> statements.put(st.getQualifiedName(), st));
         return statements;
     }
 }

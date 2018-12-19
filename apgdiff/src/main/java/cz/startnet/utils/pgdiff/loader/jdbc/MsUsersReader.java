@@ -27,7 +27,7 @@ public class MsUsersReader {
                 String name = res.getString("name");
                 loader.setCurrentObject(new GenericColumn(name, DbObjType.USER));
 
-                MsUser user = new MsUser(name, "");
+                MsUser user = new MsUser(name);
                 user.setLogin(res.getString("loginname"));
 
                 user.setSchema(res.getString("schema_name"));

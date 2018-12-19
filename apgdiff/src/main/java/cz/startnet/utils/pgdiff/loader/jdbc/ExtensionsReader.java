@@ -54,7 +54,7 @@ public class ExtensionsReader implements PgCatalogStrings {
     private PgExtension getExtension(ResultSet res) throws SQLException {
         String extName = res.getString("extname");
         loader.setCurrentObject(new GenericColumn(extName, DbObjType.EXTENSION));
-        PgExtension e = new PgExtension(extName, "");
+        PgExtension e = new PgExtension(extName);
         e.setSchema(res.getString("namespace"));
         e.addDep(new GenericColumn(e.getSchema(), DbObjType.SCHEMA));
 

@@ -8,8 +8,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Tokens_nonreserved_except_function_typeContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.AbstractSequence;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class AlterSequence extends ParserAbstract {
@@ -23,7 +23,7 @@ public class AlterSequence extends ParserAbstract {
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
         AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
-        AbstractSequence sequence = getSafe(schema::getSequence, QNameParser.getFirstNameCtx(ids));
+        PgSequence sequence = (PgSequence) getSafe(schema::getSequence, QNameParser.getFirstNameCtx(ids));
 
         for (Sequence_bodyContext seqbody : ctx.sequence_body()) {
             if (seqbody.OWNED() != null && seqbody.col_name != null) {

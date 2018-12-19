@@ -9,6 +9,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Another_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.BatchContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_assemblyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_schemaContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Ddl_clauseContext;
@@ -40,10 +41,13 @@ implements TSqlContextProcessor {
     public void process(Tsql_fileContext rootCtx, CommonTokenStream stream) {
         for (BatchContext b : rootCtx.batch()) {
             Sql_clausesContext clauses = b.sql_clauses();
+            Batch_statementContext batch;
             if (clauses != null) {
                 for (St_clauseContext st : clauses.st_clause()) {
                     clause(st);
                 }
+            } else if ((batch = b.batch_statement()) != null) {
+                safeParseStatement(() -> batch(batch), batch);
             }
         }
     }
@@ -68,33 +72,27 @@ implements TSqlContextProcessor {
     }
 
     private void create(Schema_createContext ctx) {
-        Create_schemaContext schema = ctx.create_schema();
-        Create_assemblyContext ass;
-        PgStatement st;
-        String owner;
-        if (schema != null && schema.owner_name != null) {
-            st = ParserAbstract.getSafe(db::getSchema, schema.schema_name);
-            owner = schema.owner_name.getText();
-        } else if ((ass = ctx.create_assembly()) != null && ass.owner_name != null) {
-            st = ParserAbstract.getSafe(db::getAssembly, ass.assembly_name);
-            owner = ass.owner_name.getText();
-        } else {
-            return;
+        Create_assemblyContext ass = ctx.create_assembly();
+        if (ass!= null && ass.owner_name != null) {
+            PgStatement st = ParserAbstract.getSafe(db::getAssembly, ass.assembly_name);
+            String owner = ass.owner_name.getText();
+            overrides.computeIfAbsent(st, k -> new StatementOverride()).setOwner(owner);
         }
-
-        StatementOverride override = overrides.get(st);
-        if (override == null) {
-            override = new StatementOverride();
-            overrides.put(st, override);
-        }
-
-        override.setOwner(owner);
     }
 
     private void alter(Schema_alterContext ctx) {
         if (ctx.alter_authorization() != null) {
             safeParseStatement(new AlterMsAuthorization(
                     ctx.alter_authorization(), db, overrides), ctx);
+        }
+    }
+
+    private void batch(Batch_statementContext batch) {
+        Create_schemaContext schema = batch.create_schema();
+        if (schema != null && schema.owner_name != null) {
+            PgStatement st = ParserAbstract.getSafe(db::getSchema, schema.schema_name);
+            String owner = schema.owner_name.getText();
+            overrides.computeIfAbsent(st, k -> new StatementOverride()).setOwner(owner);
         }
     }
 }

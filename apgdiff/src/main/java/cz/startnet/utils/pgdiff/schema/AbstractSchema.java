@@ -3,7 +3,6 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -28,24 +27,13 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     private final List<PgFtsConfiguration> configurations = new ArrayList<>();
     private final List<PgOperator> operators = new ArrayList<>();
 
-    private String definition;
-
     @Override
     public DbObjType getStatementType() {
         return DbObjType.SCHEMA;
     }
 
-    public AbstractSchema(String name, String rawStatement) {
-        super(name, rawStatement);
-    }
-
-    public String getDefinition() {
-        return definition;
-    }
-
-    public void setDefinition(final String definition) {
-        this.definition = definition;
-        resetHash();
+    public AbstractSchema(String name) {
+        super(name);
     }
 
     @Override
@@ -122,33 +110,72 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     }
 
     @Override
-    public Stream<PgStatement> getDescendants() {
-        Stream<PgStatement> stream = getChildren();
-
-        for (AbstractTable tab : getTables()) {
-            stream = Stream.concat(stream, tab.getDescendants());
+    protected void fillDescendantsList(List<List<? extends PgStatement>> l) {
+        fillChildrenList(l);
+        for (AbstractTable table : tables) {
+            table.fillDescendantsList(l);
         }
-
-        for (AbstractView view : getViews()) {
-            stream = Stream.concat(stream, view.getDescendants());
+        for (AbstractView view : views) {
+            view.fillDescendantsList(l);
         }
-
-        return stream;
     }
 
     @Override
-    public Stream<PgStatement> getChildren() {
-        Stream<PgStatement> stream = Stream.concat(getFunctions().stream(), getSequences().stream());
-        stream = Stream.concat(stream, getTypes().stream());
-        stream = Stream.concat(stream, getDomains().stream());
-        stream = Stream.concat(stream, getTables().stream());
-        stream = Stream.concat(stream, getViews().stream());
-        stream = Stream.concat(stream, getFtsParsers().stream());
-        stream = Stream.concat(stream, getFtsTemplates().stream());
-        stream = Stream.concat(stream, getFtsDictionaries().stream());
-        stream = Stream.concat(stream, getFtsConfigurations().stream());
-        stream = Stream.concat(stream, getOperators().stream());
-        return stream;
+    protected void fillChildrenList(List<List<? extends PgStatement>> l) {
+        l.add(functions);
+        l.add(sequences);
+        l.add(types);
+        l.add(domains);
+        l.add(tables);
+        l.add(views);
+        l.add(parsers);
+        l.add(templates);
+        l.add(dictionaries);
+        l.add(configurations);
+        l.add(operators);
+    }
+
+    @Override
+    public void addChild(PgStatement st) {
+        DbObjType type = st.getStatementType();
+        switch (type) {
+        case DOMAIN:
+            addDomain((PgDomain) st);
+            break;
+        case FTS_CONFIGURATION:
+            addFtsConfiguration((PgFtsConfiguration) st);
+            break;
+        case FTS_DICTIONARY:
+            addFtsDictionary((PgFtsDictionary) st);
+            break;
+        case FTS_PARSER:
+            addFtsParser((PgFtsParser) st);
+            break;
+        case FTS_TEMPLATE:
+            addFtsTemplate((PgFtsTemplate) st);
+            break;
+        case FUNCTION:
+        case PROCEDURE:
+            addFunction((AbstractFunction) st);
+            break;
+        case OPERATOR:
+            addOperator((PgOperator) st);
+            break;
+        case SEQUENCE:
+            addSequence((AbstractSequence) st);
+            break;
+        case TABLE:
+            addTable((AbstractTable) st);
+            break;
+        case TYPE:
+            addType((AbstractType) st);
+            break;
+        case VIEW:
+            addView((AbstractView) st);
+            break;
+        default:
+            throw new IllegalArgumentException("Unsupported child type: " + type);
+        }
     }
 
     /**
@@ -528,22 +555,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
 
     @Override
     public boolean compare(PgStatement obj) {
-        boolean eq = false;
-
-        if(this == obj) {
-            eq = true;
-        } else if(obj instanceof AbstractSchema) {
-            AbstractSchema schema = (AbstractSchema) obj;
-
-            eq = Objects.equals(name, schema.getName())
-                    && Objects.equals(definition, schema.getDefinition())
-                    && grants.equals(schema.grants)
-                    && revokes.equals(schema.revokes)
-                    && Objects.equals(owner, schema.getOwner())
-                    && Objects.equals(comment, schema.getComment());
-        }
-
-        return eq;
+        return this == obj || obj instanceof AbstractSchema && super.compare(obj);
     }
 
     @Override
@@ -567,12 +579,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(name);
-        hasher.put(owner);
-        hasher.put(definition);
-        hasher.putUnordered(grants);
-        hasher.putUnordered(revokes);
-        hasher.put(comment);
+        // all hashable fields in PgStatement
     }
 
     @Override
@@ -593,13 +600,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     @Override
     public AbstractSchema shallowCopy() {
         AbstractSchema schemaDst = getSchemaCopy();
-        schemaDst.setDefinition(getDefinition());
-        schemaDst.setComment(getComment());
-        schemaDst.grants.addAll(grants);
-        schemaDst.revokes.addAll(revokes);
-        schemaDst.setOwner(getOwner());
-        schemaDst.deps.addAll(deps);
-        schemaDst.setLocation(getLocation());
+        copyBaseFields(schemaDst);
         return schemaDst;
     }
 

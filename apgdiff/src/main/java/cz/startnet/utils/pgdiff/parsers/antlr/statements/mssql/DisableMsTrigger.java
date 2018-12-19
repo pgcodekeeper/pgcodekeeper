@@ -6,6 +6,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Names_referencesContext
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
@@ -35,7 +36,7 @@ public class DisableMsTrigger extends ParserAbstract {
         }
 
         for (Qualified_nameContext trigger : triggers.qualified_name()) {
-            cont.getTrigger(trigger.name.getText()).setDisable(true);
+            ((MsTrigger) cont.getTrigger(trigger.name.getText())).setDisable(true);
         }
 
         return null;

@@ -18,6 +18,7 @@ batch
 // for statements that must be the only ones in an entire batch
 batch_statement
     : (CREATE (OR ALTER)? | ALTER) batch_statement_body
+    | CREATE create_schema
     ;
     
 batch_statement_body
@@ -150,7 +151,6 @@ schema_create
     | create_remote_service_binding
     | create_route
     | create_rule
-    | create_schema
     | create_search_property_list
     | create_security_policy
     | create_selective_index
@@ -922,10 +922,8 @@ create_schema
     ;
 
 schema_definition
-    : CREATE create_table
-    | CREATE create_or_alter_view
-    | (GRANT|DENY) (SELECT|INSERT|DELETE|UPDATE) ON (SCHEMA COLON COLON)? object_name=id TO owner_name=id
-    | REVOKE (SELECT|INSERT|DELETE|UPDATE) ON (SCHEMA COLON COLON)? object_name=id FROM owner_name=id
+    : sql_clauses 
+    | batch_statement
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-search-property-list-transact-sql
@@ -1623,7 +1621,8 @@ trigger_operation
 create_or_alter_function
     : FUNCTION qualified_name LR_BRACKET (procedure_param (COMMA procedure_param)*)?  RR_BRACKET
     RETURNS func_return
-    func_body
+    (WITH function_option (COMMA function_option)*)?
+    AS? func_body
     ;
 
 func_return
@@ -1633,11 +1632,6 @@ func_return
     ;
 
 func_body
-    : (WITH function_option (COMMA function_option)*)?
-    AS? func_body_return
-    ;
-
-func_body_return
     : RETURN select_statement
     | BEGIN sql_clauses? RETURN ret=expression? SEMI? END
     | EXTERNAL NAME assembly_specifier

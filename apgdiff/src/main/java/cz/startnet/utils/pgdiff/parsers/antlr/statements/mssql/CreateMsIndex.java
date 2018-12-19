@@ -31,8 +31,7 @@ public class CreateMsIndex extends ParserAbstract {
         AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
         String tableName = ctx.qualified_name().name.getText();
         String name = ctx.name.getText();
-        AbstractIndex ind = new MsIndex(name, getFullCtxText(ctx.getParent()));
-        ind.setTableName(tableName);
+        AbstractIndex ind = new MsIndex(name, tableName);
         ind.setUnique(ctx.UNIQUE() != null);
         ClusteredContext cluster = ctx.clustered();
         ind.setClusterIndex(cluster != null && cluster.CLUSTERED() != null);

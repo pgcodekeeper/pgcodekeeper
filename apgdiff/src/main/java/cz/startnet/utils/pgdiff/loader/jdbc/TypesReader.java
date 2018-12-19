@@ -60,7 +60,7 @@ public class TypesReader extends JdbcReader {
 
     private PgDomain getDomain(ResultSet res, AbstractSchema schema) throws SQLException {
         String schemaName = schema.getName();
-        PgDomain d = new PgDomain(res.getString("typname"), "");
+        PgDomain d = new PgDomain(res.getString("typname"));
         loader.setCurrentObject(new GenericColumn(schemaName, d.getName(), DbObjType.DOMAIN));
 
         String type = res.getString("dom_basetypefmt");
@@ -97,7 +97,7 @@ public class TypesReader extends JdbcReader {
 
             for (int i = 0; i < connames.length; ++i) {
                 String conName = connames[i];
-                AbstractConstraint c = new PgConstraint(conName, "");
+                AbstractConstraint c = new PgConstraint(conName);
                 String definition = condefs[i];
                 checkObjectValidity(definition, DbObjType.CONSTRAINT, conName);
                 loader.submitAntlrTask(ADD_CONSTRAINT + definition + ';',
@@ -122,7 +122,7 @@ public class TypesReader extends JdbcReader {
         PgType t;
         switch (typtype) {
         case "b":
-            t = new PgType(name, PgTypeForm.BASE, "");
+            t = new PgType(name, PgTypeForm.BASE);
 
             t.setInputFunction(res.getString("typinput"));
             t.setOutputFunction(res.getString("typoutput"));
@@ -218,7 +218,7 @@ public class TypesReader extends JdbcReader {
             break;
 
         case "c":
-            t = new PgType(name, PgTypeForm.COMPOSITE, "");
+            t = new PgType(name, PgTypeForm.COMPOSITE);
 
             String[] attnames = getColArray(res, "comp_attnames");
             if (attnames == null) {
@@ -253,7 +253,7 @@ public class TypesReader extends JdbcReader {
             break;
 
         case "e":
-            t = new PgType(name, PgTypeForm.ENUM, "");
+            t = new PgType(name, PgTypeForm.ENUM);
 
             String[] enums = getColArray(res, "enums");
             if (enums == null) {
@@ -265,7 +265,7 @@ public class TypesReader extends JdbcReader {
             break;
 
         case "r":
-            t = new PgType(name, PgTypeForm.RANGE, "");
+            t = new PgType(name, PgTypeForm.RANGE);
 
             JdbcType subtype = loader.cachedTypesByOid.get(res.getLong("rngsubtype"));
             t.setSubtype(subtype.getFullName());

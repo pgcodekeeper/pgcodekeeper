@@ -18,8 +18,8 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  */
 public class PgProcedure extends AbstractPgFunction {
 
-    public PgProcedure(String name, String rawStatement) {
-        super(name, rawStatement);
+    public PgProcedure(String name) {
+        super(name);
     }
 
     @Override
@@ -130,7 +130,7 @@ public class PgProcedure extends AbstractPgFunction {
             return false;
         }
 
-        if (!checkForChanges(newProcedure)) {
+        if (!compareUnalterable(newProcedure)) {
             if (needDrop(newProcedure)) {
                 isNeedDepcies.set(true);
                 return true;
@@ -150,7 +150,7 @@ public class PgProcedure extends AbstractPgFunction {
         return sb.length() > startLength;
     }
 
-    private boolean needDrop(AbstractFunction newFunction) {
+    private boolean needDrop(AbstractPgFunction newFunction) {
         Iterator<Argument> iOld = arguments.iterator();
         Iterator<Argument> iNew = newFunction.arguments.iterator();
         while (iOld.hasNext() && iNew.hasNext()) {
@@ -184,7 +184,7 @@ public class PgProcedure extends AbstractPgFunction {
     }
 
     @Override
-    protected AbstractFunction getFunctionCopy() {
-        return new PgProcedure(getBareName(), getRawStatement());
+    protected AbstractPgFunction getFunctionCopy() {
+        return new PgProcedure(getBareName());
     }
 }

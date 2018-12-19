@@ -15,8 +15,8 @@ public class PartitionPgTable extends AbstractRegularTable {
 
     private final String partitionBounds;
 
-    public PartitionPgTable(String name, String rawStatement, String partitionBounds) {
-        super(name, rawStatement);
+    public PartitionPgTable(String name, String partitionBounds) {
+        super(name);
         this.partitionBounds = partitionBounds;
     }
 
@@ -33,7 +33,7 @@ public class PartitionPgTable extends AbstractRegularTable {
 
             int start = sbSQL.length();
             for (AbstractColumn column : columns) {
-                writeColumn(column, sbSQL, sbOption);
+                writeColumn((PgColumn) column, sbSQL, sbOption);
             }
 
             if (start != sbSQL.length()) {
@@ -55,7 +55,7 @@ public class PartitionPgTable extends AbstractRegularTable {
     }
 
     @Override
-    protected void compareTableTypes(AbstractTable newTable, StringBuilder sb) {
+    protected void compareTableTypes(AbstractPgTable newTable, StringBuilder sb) {
         if (!(newTable instanceof PartitionPgTable)) {
             final Inherits tableName = inherits.get(0);
             sb.append("\n\nALTER TABLE ");
@@ -85,7 +85,7 @@ public class PartitionPgTable extends AbstractRegularTable {
     }
 
     @Override
-    protected void compareTableOptions(AbstractTable newTable, StringBuilder sb) {
+    protected void compareTableOptions(AbstractPgTable newTable, StringBuilder sb) {
         super.compareTableOptions(newTable, sb);
 
         if (newTable instanceof PartitionPgTable) {
@@ -118,13 +118,13 @@ public class PartitionPgTable extends AbstractRegularTable {
     }
 
     @Override
-    protected void compareInherits(AbstractTable newTable, StringBuilder sb) {
+    protected void compareInherits(AbstractPgTable newTable, StringBuilder sb) {
         //not support default syntax
     }
 
     @Override
     protected AbstractTable getTableCopy() {
-        return new PartitionPgTable(name, getRawStatement(), partitionBounds);
+        return new PartitionPgTable(name, partitionBounds);
     }
 
     @Override

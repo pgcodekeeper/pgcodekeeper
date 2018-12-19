@@ -1,14 +1,11 @@
 package cz.startnet.utils.pgdiff.schema;
 
-import java.util.Objects;
-
-import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class AbstractType extends PgStatementWithSearchPath {
 
-    public AbstractType(String name, String rawStatement) {
-        super(name, rawStatement);
+    public AbstractType(String name) {
+        super(name);
     }
 
     @Override
@@ -18,14 +15,9 @@ public abstract class AbstractType extends PgStatementWithSearchPath {
 
     @Override
     public AbstractType shallowCopy() {
-        AbstractType copy = getTypeCopy();
-        copy.setOwner(getOwner());
-        copy.grants.addAll(grants);
-        copy.revokes.addAll(revokes);
-        copy.setComment(getComment());
-        copy.deps.addAll(deps);
-        copy.setLocation(getLocation());
-        return copy;
+        AbstractType typeDst = getTypeCopy();
+        copyBaseFields(typeDst);
+        return typeDst;
     }
 
     @Override
@@ -35,33 +27,10 @@ public abstract class AbstractType extends PgStatementWithSearchPath {
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (this == obj) {
-            return true;
-        }
-
-        if (obj instanceof AbstractType) {
-            AbstractType type = (AbstractType) obj;
-
-            return Objects.equals(name, type.getName())
-                    && Objects.equals(owner, type.getOwner())
-                    && grants.equals(type.grants)
-                    && revokes.equals(type.revokes)
-                    && Objects.equals(comment, type.getComment());
-        }
-
-        return false;
+        return this == obj || obj instanceof AbstractType && super.compare(obj);
     }
 
     protected abstract AbstractType getTypeCopy();
-
-    @Override
-    public void computeHash(Hasher hasher) {
-        hasher.put(name);
-        hasher.put(owner);
-        hasher.putUnordered(grants);
-        hasher.putUnordered(revokes);
-        hasher.put(comment);
-    }
 
     @Override
     public AbstractSchema getContainingSchema() {

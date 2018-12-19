@@ -21,8 +21,7 @@ public class CreateFtsTemplate extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        PgFtsTemplate template = new PgFtsTemplate(QNameParser.getFirstName(ids),
-                getFullCtxText(ctx.getParent()));
+        PgFtsTemplate template = new PgFtsTemplate(QNameParser.getFirstName(ids));
 
         // TODO functions deps
         if (ctx.init_name != null) {

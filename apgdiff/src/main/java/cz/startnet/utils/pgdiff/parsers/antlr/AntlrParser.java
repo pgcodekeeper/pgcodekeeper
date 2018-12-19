@@ -129,6 +129,11 @@ public class AntlrParser {
             errors.add(CustomTSQLParserListener.handleUnresolvedReference(ex, parsedObjectName));
         }
     }
+
+
+    private AntlrParser() {
+        // only static
+    }
 }
 
 class CustomParseTreeListener implements ParseTreeListener{

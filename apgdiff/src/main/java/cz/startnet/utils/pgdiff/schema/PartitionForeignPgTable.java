@@ -13,9 +13,8 @@ import cz.startnet.utils.pgdiff.hashers.Hasher;
 public class PartitionForeignPgTable extends AbstractForeignTable {
     private final String partitionBounds;
 
-    public PartitionForeignPgTable(String name, String rawStatement,
-            String serverName, String partitionBounds) {
-        super(name, rawStatement, serverName);
+    public PartitionForeignPgTable(String name, String serverName, String partitionBounds) {
+        super(name, serverName);
         this.partitionBounds = partitionBounds;
     }
 
@@ -27,7 +26,7 @@ public class PartitionForeignPgTable extends AbstractForeignTable {
     protected boolean isNeedRecreate(AbstractTable newTable) {
         return super.isNeedRecreate(newTable)
                 || !(Objects.equals(partitionBounds, ((PartitionForeignPgTable)newTable).getPartitionBounds()))
-                || !inherits.equals(newTable.inherits);
+                || !inherits.equals(((AbstractPgTable)newTable).inherits);
     }
 
     @Override
@@ -39,7 +38,7 @@ public class PartitionForeignPgTable extends AbstractForeignTable {
 
             int start = sbSQL.length();
             for (AbstractColumn column : columns) {
-                writeColumn(column, sbSQL, sbOption);
+                writeColumn((PgColumn) column, sbSQL, sbOption);
             }
 
             if (start != sbSQL.length()) {
@@ -61,8 +60,7 @@ public class PartitionForeignPgTable extends AbstractForeignTable {
 
     @Override
     protected AbstractTable getTableCopy() {
-        return new PartitionForeignPgTable(name, getRawStatement(), serverName,
-                partitionBounds);
+        return new PartitionForeignPgTable(name, serverName, partitionBounds);
     }
 
     @Override

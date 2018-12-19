@@ -2,20 +2,11 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
-import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class MsFunction extends AbstractFunction implements SourceStatement {
-
-    private String firstPart;
-    private String secondPart;
-
-    public enum FuncTypes {
-        SCALAR, TABLE, MULTI
-    }
+public class MsFunction extends AbstractMsFunction implements SourceStatement {
 
     private FuncTypes funcType = FuncTypes.SCALAR;
 
@@ -24,8 +15,8 @@ public class MsFunction extends AbstractFunction implements SourceStatement {
         return DbObjType.FUNCTION;
     }
 
-    public MsFunction(String name, String rawStatement) {
-        super(name, rawStatement);
+    public MsFunction(String name) {
+        super(name);
     }
 
     @Override
@@ -44,24 +35,8 @@ public class MsFunction extends AbstractFunction implements SourceStatement {
         sbSQL.append(GO).append('\n');
         sbSQL.append("SET ANSI_NULLS ").append(isAnsiNulls() ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
-
-
-        if (!isCLR()) {
-            appendSourceStatement(isCreate, sbSQL);
-            sbSQL.append(GO);
-
-            return sbSQL.toString();
-        }
-
-        sbSQL.append(isCreate ? "CREATE" : "ALTER");
-        sbSQL.append(" FUNCTION ");
-        sbSQL.append(MsDiffUtils.quoteName(getContainingSchema().getName())).append('.');
-        appendFunctionSignature(sbSQL);
-        sbSQL.append("\nRETURNS ").append(getReturns());
-        sbSQL.append("\n");
-        sbSQL.append(getBody());
+        appendSourceStatement(isCreate, sbSQL);
         sbSQL.append(GO);
-
         return sbSQL.toString();
     }
 
@@ -72,14 +47,16 @@ public class MsFunction extends AbstractFunction implements SourceStatement {
         MsFunction newFunction;
         if (newCondition instanceof MsFunction) {
             newFunction = (MsFunction)newCondition;
+        } else if (newCondition instanceof MsClrFunction) {
+            isNeedDepcies.set(true);
+            return true;
         } else {
             return false;
         }
 
-        if (!checkForChanges(newFunction)
-                || !Objects.equals(getFirstPart(), newFunction.getFirstPart())
+        if (!Objects.equals(getFirstPart(), newFunction.getFirstPart())
                 || !Objects.equals(getSecondPart(), newFunction.getSecondPart())) {
-            if (needDrop(newFunction)) {
+            if (!getFuncType().equals(newFunction.getFuncType())) {
                 isNeedDepcies.set(true);
                 return true;
             } else {
@@ -96,103 +73,28 @@ public class MsFunction extends AbstractFunction implements SourceStatement {
         return sb.length() > startLength;
     }
 
-    private boolean needDrop(MsFunction newFunc) {
-        if (!getFuncType().equals(newFunc.getFuncType())) {
-            return true;
-        }
-
-        return isCLR() != newFunc.isCLR();
-    }
-
     @Override
     public String getDropSQL() {
         return "DROP FUNCTION " + getQualifiedName() + GO;
     }
 
-    public StringBuilder appendFunctionSignature(StringBuilder sb) {
-        sb.append(MsDiffUtils.quoteName(name)).append('(');
-        sb.append(arguments.stream().map(arg -> getDeclaration(arg, true, true))
-                .collect(Collectors.joining(", ")));
-        sb.append(')');
-
-        return sb;
-    }
-
-    @Override
-    public String getDeclaration(Argument arg, boolean includeDefaultValue,  boolean includeArgName) {
-        final StringBuilder sbString = new StringBuilder();
-        sbString.append(arg.getName()).append(' ').append(arg.getDataType());
-
-        String def = arg.getDefaultExpression();
-
-        if (includeDefaultValue && def != null && !def.isEmpty()) {
-            sbString.append(" = ");
-            sbString.append(def);
-        }
-
-        String mode = arg.getMode();
-
-        if (mode != null && !"IN".equalsIgnoreCase(mode)) {
-            sbString.append(' ').append(mode);
-        }
-
-        return sbString.toString();
-    }
-
-    @Override
-    public boolean isPostgres() {
-        return false;
-    }
-
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof MsFunction && super.compare(obj)) {
-            MsFunction func = (MsFunction) obj;
-            return Objects.equals(getFirstPart(), func.getFirstPart())
-                    && Objects.equals(getSecondPart(), func.getSecondPart())
-                    && getFuncType() == func.getFuncType();
-        }
-
-        return false;
+        return obj instanceof MsFunction && super.compare(obj)
+                && getFuncType() == ((MsFunction) obj).getFuncType();
     }
 
     @Override
     public void computeHash(Hasher hasher) {
         super.computeHash(hasher);
-        hasher.put(getFirstPart());
-        hasher.put(getSecondPart());
         hasher.put(getFuncType());
     }
 
     @Override
-    protected AbstractFunction getFunctionCopy() {
-        MsFunction func = new MsFunction(getName(), getRawStatement());
-        func.setFirstPart(getFirstPart());
-        func.setSecondPart(getSecondPart());
+    protected AbstractMsFunction getFunctionCopy() {
+        MsFunction func = new MsFunction(getName());
         func.setFuncType(getFuncType());
         return func;
-    }
-
-    @Override
-    public String getFirstPart() {
-        return firstPart;
-    }
-
-    @Override
-    public void setFirstPart(String firstPart) {
-        this.firstPart = firstPart;
-        resetHash();
-    }
-
-    @Override
-    public String getSecondPart() {
-        return secondPart;
-    }
-
-    @Override
-    public void setSecondPart(String secondPart) {
-        this.secondPart = secondPart;
-        resetHash();
     }
 
     public FuncTypes getFuncType() {
@@ -203,5 +105,4 @@ public class MsFunction extends AbstractFunction implements SourceStatement {
         this.funcType = funcType;
         resetHash();
     }
-
 }

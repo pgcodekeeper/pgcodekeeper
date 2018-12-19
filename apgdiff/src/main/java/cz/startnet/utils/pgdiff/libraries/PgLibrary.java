@@ -8,15 +8,17 @@ public class PgLibrary {
     private final String path;
     private final PgLibrarySource source;
     private boolean isIgnorePriv;
+    private String owner;
 
     public PgLibrary(String path) {
-        this(path, true);
+        this(path, true, "");
     }
 
-    public PgLibrary(String path, boolean hasPriv) {
+    public PgLibrary(String path, boolean hasPriv, String owner) {
         this.path = path;
         this.source = getSource(path);
         this.isIgnorePriv = hasPriv;
+        this.owner = owner;
     }
 
     public String getPath() {
@@ -33,6 +35,14 @@ public class PgLibrary {
 
     public void setIgnorePriv(boolean isIgnorePriv) {
         this.isIgnorePriv = isIgnorePriv;
+    }
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner == null ? "" : owner;
     }
 
     public static PgLibrarySource getSource(String libPath) {

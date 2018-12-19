@@ -5,18 +5,16 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
-import cz.startnet.utils.pgdiff.schema.AbstractColumn;
-import cz.startnet.utils.pgdiff.schema.AbstractFunction;
+import cz.startnet.utils.pgdiff.schema.AbstractMsClrFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
+import cz.startnet.utils.pgdiff.schema.FuncTypes;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.MsClrFunction;
+import cz.startnet.utils.pgdiff.schema.MsClrProcedure;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
-import cz.startnet.utils.pgdiff.schema.MsFunction;
-import cz.startnet.utils.pgdiff.schema.MsFunction.FuncTypes;
-import cz.startnet.utils.pgdiff.schema.MsProcedure;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsExtendedObjectsReader extends JdbcReader {
@@ -34,34 +32,30 @@ public class MsExtendedObjectsReader extends JdbcReader {
         loader.setCurrentObject(new GenericColumn(schema.getName(), name, type));
 
         String assembly = res.getString("assembly");
-        String assemblyClass = MsDiffUtils.quoteName(res.getString("assembly_class"));
-        String assemblyMethod = MsDiffUtils.quoteName(res.getString("assembly_method"));
-        String body = "EXTERNAL NAME " + MsDiffUtils.quoteName(assembly) + '.' + assemblyClass + '.' + assemblyMethod;
-        boolean nullOnNullInput = res.getBoolean("null_on_null_input");
+        String assemblyClass = res.getString("assembly_class");
+        String assemblyMethod = res.getString("assembly_method");
         String executeAs = res.getString("execute_as");
         String owner = res.getString("owner");
 
         List<XmlReader> args = XmlReader.readXML(res.getString("args"));
-        AbstractFunction func;
+        AbstractMsClrFunction func;
 
         if (type == DbObjType.PROCEDURE) {
-            func = new MsProcedure(name, "");
-            func.setBody(body);
-            func.addOption("EXECUTE AS " + (executeAs == null ? "CALLER" : executeAs));
+            func = new MsClrProcedure(name, assembly, assemblyClass, assemblyMethod);
         } else {
-            func = new MsFunction(name, "");
+            MsClrFunction localFunc = new MsClrFunction(name, assembly, assemblyClass, assemblyMethod);
 
             if ("FT".equals(funcType)) {
                 List<String> columns = new ArrayList<>();
 
                 for (XmlReader col : XmlReader.readXML(res.getString("cols"))) {
-                    AbstractColumn column = new MsColumn(col.getString("name"));
+                    MsColumn column = new MsColumn(col.getString("name"));
                     boolean isUserDefined = col.getBoolean("ud");
                     if (!isUserDefined) {
                         column.setCollation(col.getString("cn"));
                     }
 
-                    column.setType(JdbcLoaderBase.getMsType(func, col.getString("st"), col.getString("type"),
+                    column.setType(JdbcLoaderBase.getMsType(localFunc, col.getString("st"), col.getString("type"),
                             isUserDefined, col.getInt("size"), col.getInt("pr"), col.getInt("sc")));
                     column.setNullValue(col.getBoolean("nl"));
                     column.setSparse(col.getBoolean("sp"));
@@ -82,26 +76,23 @@ public class MsExtendedObjectsReader extends JdbcReader {
                     columns.add(column.getFullDefinition());
                 }
 
-                func.setReturns("TABLE (\n" + String.join(",\n", columns) + ")");
-                ((MsFunction)func).setFuncType(FuncTypes.TABLE);
+                localFunc.setReturns("TABLE (\n" + String.join(",\n", columns) + ")");
+                localFunc.setFuncType(FuncTypes.TABLE);
             } else {
-                func.setReturns(JdbcLoaderBase.getMsType(func, res.getString("return_type_sh"),
+                localFunc.setReturns(JdbcLoaderBase.getMsType(localFunc, res.getString("return_type_sh"),
                         res.getString("return_type"), res.getBoolean("return_type_ud"),
                         res.getInt("return_type_size"), res.getInt("return_type_pr"),
                         res.getInt("return_type_sc")));
             }
 
-            StringBuilder sb = new StringBuilder();
-
-            sb.append("WITH EXECUTE AS ");
-            sb.append((executeAs == null ? "CALLER" : executeAs));
-            if (nullOnNullInput) {
-                sb.append(", RETURNS NULL ON NULL INPUT");
+            if (res.getBoolean("null_on_null_input")) {
+                localFunc.addOption("RETURNS NULL ON NULL INPUT");
             }
-            sb.append('\n');
-            sb.append(body);
-            func.setBody(sb.toString());
+
+            func = localFunc;
         }
+
+        func.addOption("EXECUTE AS " + (executeAs == null ? "CALLER" : executeAs));
 
         for (XmlReader arg : args) {
             boolean isUserDefined = arg.getBoolean("ud");
@@ -138,7 +129,6 @@ public class MsExtendedObjectsReader extends JdbcReader {
         }
 
         loader.setOwner(func, owner);
-        func.setCLR(true);
         func.addDep(new GenericColumn(assembly, DbObjType.ASSEMBLY));
 
         schema.addFunction(func);

@@ -23,12 +23,12 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateRewrite;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.TableAbstract;
-import cz.startnet.utils.pgdiff.schema.AbstractTrigger;
 import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
+import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 
@@ -56,6 +56,11 @@ public final class FullAnalyze {
             }
 
             ParserRuleContext ctx = entry.getValue();
+            if (statement.getDatabase() != db) {
+                // statement came from another DB object, probably a library
+                // for proper depcy processing, find its twin in the final DB object
+                statement = (PgStatementWithSearchPath) statement.getTwin(db);
+            }
             String schemaName = statement.getContainingSchema().getName();
 
             try {
@@ -66,7 +71,7 @@ public final class FullAnalyze {
                     break;
                 case TRIGGER:
                     CreateTrigger.analyzeTriggersWhen((VexContext) ctx,
-                            (AbstractTrigger) statement, schemaName, db);
+                            (PgTrigger) statement, schemaName, db);
                     break;
                 case INDEX:
                     CreateIndex.analyzeIndexRest((Index_restContext) ctx, statement,
@@ -110,23 +115,28 @@ public final class FullAnalyze {
 
         @Override
         public void vertexTraversed(VertexTraversalEvent<PgStatement> event) {
-            PgStatement stmt = event.getVertex();
-            if (DbObjType.VIEW.equals(stmt.getStatementType())) {
-                db.getContextsForAnalyze().stream().filter(e -> stmt.equals(e.getKey()))
-                .forEach(e -> {
-                    ParserRuleContext ctx = e.getValue();
-                    try {
-                        CreateView.analyzeViewCtx(ctx, (AbstractView) e.getKey(),
-                                stmt.getParent().getName(), db);
-                    } catch (UnresolvedReferenceException ex) {
-                        unresolvRefExHandler(ex, errors, ctx, stmt.getLocation());
-                    } catch (Exception ex) {
-                        addError(errors, CustomParserListener.handleParserContextException(
-                                ex, stmt.getLocation(), ctx));
-                    }
-                });
+            PgStatement st = event.getVertex();
+            if (DbObjType.VIEW != st.getStatementType()) {
+                return;
             }
-
+            if (st.getDatabase() != db) {
+                // same as above, get the object from the final DB
+                st = st.getTwin(db);
+            }
+            PgStatement stmt = st;
+            db.getContextsForAnalyze().stream().filter(e -> stmt.equals(e.getKey()))
+            .forEach(e -> {
+                ParserRuleContext ctx = e.getValue();
+                try {
+                    CreateView.analyzeViewCtx(ctx, (AbstractView) e.getKey(),
+                            stmt.getParent().getName(), db);
+                } catch (UnresolvedReferenceException ex) {
+                    unresolvRefExHandler(ex, errors, ctx, stmt.getLocation());
+                } catch (Exception ex) {
+                    addError(errors, CustomParserListener.handleParserContextException(
+                            ex, stmt.getLocation(), ctx));
+                }
+            });
         }
     }
 

@@ -152,7 +152,7 @@ public class ProjectLoader {
 
     protected void addDboSchema(PgDatabase db) {
         if (!db.containsSchema(ApgdiffConsts.DBO)) {
-            db.addSchema(new MsSchema(ApgdiffConsts.DBO, ""));
+            db.addSchema(new MsSchema(ApgdiffConsts.DBO));
             db.setDefaultSchema(ApgdiffConsts.DBO);
         }
     }
@@ -205,12 +205,16 @@ public class ProjectLoader {
             iterator.remove();
 
             PgStatement st = entry.getKey();
-            st.clearPrivileges();
             StatementOverride override = entry.getValue();
-            st.setOwner(override.getOwner());
+            if (override.getOwner() != null) {
+                st.setOwner(override.getOwner());
+            }
 
-            for (PgPrivilege privilege : override.getPrivileges()) {
-                st.addPrivilege(privilege);
+            if (!override.getPrivileges().isEmpty()) {
+                st.clearPrivileges();
+                for (PgPrivilege privilege : override.getPrivileges()) {
+                    st.addPrivilege(privilege);
+                }
             }
         }
     }
