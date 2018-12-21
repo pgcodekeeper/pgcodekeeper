@@ -11,8 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -42,7 +40,6 @@ import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.DaemonThreadFactory;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -53,9 +50,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public abstract class JdbcLoaderBase implements PgCatalogStrings {
 
     private static final int DEFAULT_OBJECTS_COUNT = 100;
-    public static final ExecutorService ANTLR_POOL = Executors.newFixedThreadPool(
-            Integer.max(1, Runtime.getRuntime().availableProcessors() - 1),
-            new DaemonThreadFactory());
 
     // TODO after removing helpers split this into MS and PG base classes
 
@@ -422,7 +416,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected <T> void submitAntlrTask(String sql,
             Function<SQLParser, T> parserCtxReader, Consumer<T> finalizer) {
         String loc = getCurrentLocation();
-        Future<T> future = ANTLR_POOL.submit(() -> parserCtxReader.apply(
+        Future<T> future = AntlrParser.ANTLR_POOL.submit(() -> parserCtxReader.apply(
                 AntlrParser.makeBasicParser(SQLParser.class, sql, loc)));
         antlrTasks.add(new AntlrTask<>(future, finalizer, currentObject));
     }
@@ -430,7 +424,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected <T> void submitMsAntlrTask(String sql,
             Function<TSQLParser, T> parserCtxReader, Consumer<T> finalizer) {
         String loc = getCurrentLocation();
-        Future<T> future = ANTLR_POOL.submit(() -> parserCtxReader.apply(
+        Future<T> future = AntlrParser.ANTLR_POOL.submit(() -> parserCtxReader.apply(
                 AntlrParser.makeBasicParser(TSQLParser.class, sql, loc)));
         antlrTasks.add(new AntlrTask<>(future, finalizer, currentObject));
     }

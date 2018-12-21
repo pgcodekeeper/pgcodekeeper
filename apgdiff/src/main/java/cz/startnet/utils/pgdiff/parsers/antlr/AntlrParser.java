@@ -7,6 +7,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -28,14 +30,18 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.jdbc.AntlrTask;
-import cz.startnet.utils.pgdiff.loader.jdbc.JdbcLoaderBase;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
+import ru.taximaxim.codekeeper.apgdiff.DaemonThreadFactory;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
 public class AntlrParser {
+
+    public static final ExecutorService ANTLR_POOL = Executors.newFixedThreadPool(
+            Integer.max(1, Runtime.getRuntime().availableProcessors() - 1),
+            new DaemonThreadFactory());
 
     /**
      * Constructs a <code>parserClass</code> {@link Parser} object with the stream as the token source
@@ -120,7 +126,7 @@ public class AntlrParser {
 
     private static <T> void submitAntlrTask(Queue<AntlrTask<?>> antlrTasks,
             Function<SQLParser, T> parserCtxReader, SQLParser parser, Consumer<T> finalizer) {
-        Future<T> future = JdbcLoaderBase.ANTLR_POOL.submit(() -> parserCtxReader.apply(parser));
+        Future<T> future = ANTLR_POOL.submit(() -> parserCtxReader.apply(parser));
         antlrTasks.add(new AntlrTask<>(future, finalizer, null));
     }
 
@@ -146,7 +152,7 @@ public class AntlrParser {
 
     private static <T> void submitMsAntlrTask(Queue<AntlrTask<?>> antlrTasks,
             Function<TSQLParser, T> parserCtxReader, TSQLParser parser, Consumer<T> finalizer) {
-        Future<T> future = JdbcLoaderBase.ANTLR_POOL.submit(() -> parserCtxReader.apply(parser));
+        Future<T> future = ANTLR_POOL.submit(() -> parserCtxReader.apply(parser));
         antlrTasks.add(new AntlrTask<>(future, finalizer, null));
     }
 
