@@ -44,7 +44,7 @@ public class TypedPgTable extends AbstractRegularTable {
     }
 
     @Override
-    protected void compareTableTypes(PgTable newTable, StringBuilder sb) {
+    protected void compareTableTypes(AbstractPgTable newTable, StringBuilder sb) {
         if (newTable instanceof TypedPgTable) {
             String newType  = ((TypedPgTable)newTable).getOfType();
             if (!Objects.equals(ofType, newType)) {

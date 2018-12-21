@@ -174,7 +174,7 @@ public class PgTrigger extends AbstractTrigger {
         } else {
             return false;
         }
-        if (!compareWithoutComments(newTrg)) {
+        if (!compareUnalterable(newTrg)) {
             isNeedDepcies.set(true);
             return true;
         }
@@ -312,8 +312,8 @@ public class PgTrigger extends AbstractTrigger {
     }
 
     @Override
-    protected boolean compareWithoutComments(AbstractTrigger obj) {
-        if (obj instanceof PgTrigger && super.compareWithoutComments(obj)) {
+    protected boolean compareUnalterable(AbstractTrigger obj) {
+        if (obj instanceof PgTrigger && super.compareUnalterable(obj)) {
             PgTrigger trigger = (PgTrigger) obj;
             return  tgType == trigger.getType()
                     && (forEachRow == trigger.isForEachRow())

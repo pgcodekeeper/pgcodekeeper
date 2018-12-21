@@ -32,13 +32,12 @@ public abstract class AbstractTrigger extends PgStatementWithSearchPath {
             return true;
         }
 
-        return obj instanceof AbstractTrigger && compareBaseFields(obj)
-                && compareWithoutComments((AbstractTrigger) obj);
+        return obj instanceof AbstractTrigger && super.compare(obj)
+                && compareUnalterable((AbstractTrigger) obj);
     }
 
-    protected boolean compareWithoutComments(AbstractTrigger trigger) {
-        return Objects.equals(name, trigger.getName())
-                && Objects.equals(tableName, trigger.getTableName());
+    protected boolean compareUnalterable(AbstractTrigger trigger) {
+        return Objects.equals(tableName, trigger.getTableName());
     }
 
     @Override

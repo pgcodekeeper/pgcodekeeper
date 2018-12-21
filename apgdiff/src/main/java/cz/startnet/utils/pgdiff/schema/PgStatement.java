@@ -460,7 +460,12 @@ public abstract class PgStatement implements IStatement, IHashable {
      * This method does not account for nested child PgStatements.
      * Shallow version of {@link #equals(Object)}
      */
-    public abstract boolean compare(PgStatement obj);
+    public boolean compare(PgStatement obj) {
+        return Objects.equals(name, obj.name)
+                && privileges.equals(obj.privileges)
+                && Objects.equals(owner, obj.owner)
+                && Objects.equals(comment, obj.comment);
+    }
 
     protected final void copyBaseFields(PgStatement copy) {
         copy.setOwner(owner);
@@ -469,13 +474,6 @@ public abstract class PgStatement implements IStatement, IHashable {
         copy.privileges.addAll(privileges);
         copy.setLocation(location);
         copy.isLib = isLib;
-    }
-
-    protected final boolean compareBaseFields(PgStatement obj) {
-        return Objects.equals(name, obj.name)
-                && privileges.equals(obj.privileges)
-                && Objects.equals(owner, obj.owner)
-                && Objects.equals(comment, obj.comment);
     }
 
     /**

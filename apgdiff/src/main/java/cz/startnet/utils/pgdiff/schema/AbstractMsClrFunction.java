@@ -77,18 +77,17 @@ public abstract class AbstractMsClrFunction extends AbstractFunction {
      *         the same when compared ignoring whitespace, otherwise returns
      *         false
      */
-    public boolean checkForChanges(AbstractMsClrFunction func) {
+    public boolean compareUnalterable(AbstractMsClrFunction func) {
         boolean equals = false;
 
         if (this == func) {
             equals = true;
         } else {
-            equals = Objects.equals(name, func.getBareName())
-                    && arguments.equals(func.arguments)
-                    && options.equals(func.options)
-                    && Objects.equals(assembly, func.getAssembly())
+            equals = Objects.equals(assembly, func.getAssembly())
                     && Objects.equals(assemblyClass, func.getAssemblyClass())
-                    && Objects.equals(assemblyMethod, func.getAssemblyMethod());
+                    && Objects.equals(assemblyMethod, func.getAssemblyMethod())
+                    && arguments.equals(func.arguments)
+                    && options.equals(func.options);
         }
         return equals;
     }
@@ -99,8 +98,8 @@ public abstract class AbstractMsClrFunction extends AbstractFunction {
             return true;
         }
 
-        return obj instanceof AbstractMsClrFunction && compareBaseFields(obj)
-                && checkForChanges((AbstractMsClrFunction) obj);
+        return obj instanceof AbstractMsClrFunction && super.compare(obj)
+                && compareUnalterable((AbstractMsClrFunction) obj);
     }
 
     @Override

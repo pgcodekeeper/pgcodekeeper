@@ -13,7 +13,7 @@ import cz.startnet.utils.pgdiff.hashers.Hasher;
  * @since 4.1.1
  * @author galiev_mr
  */
-public abstract class AbstractForeignTable extends PgTable {
+public abstract class AbstractForeignTable extends AbstractPgTable {
 
     protected final String serverName;
 
@@ -114,7 +114,7 @@ public abstract class AbstractForeignTable extends PgTable {
     }
 
     @Override
-    protected void compareTableTypes(PgTable newTable,  StringBuilder sb) {
+    protected void compareTableTypes(AbstractPgTable newTable,  StringBuilder sb) {
         // untransformable
     }
 

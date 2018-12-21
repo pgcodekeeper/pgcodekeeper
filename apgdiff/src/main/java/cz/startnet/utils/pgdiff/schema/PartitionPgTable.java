@@ -55,7 +55,7 @@ public class PartitionPgTable extends AbstractRegularTable {
     }
 
     @Override
-    protected void compareTableTypes(PgTable newTable, StringBuilder sb) {
+    protected void compareTableTypes(AbstractPgTable newTable, StringBuilder sb) {
         if (!(newTable instanceof PartitionPgTable)) {
             final Inherits tableName = inherits.get(0);
             sb.append("\n\nALTER TABLE ");
@@ -85,7 +85,7 @@ public class PartitionPgTable extends AbstractRegularTable {
     }
 
     @Override
-    protected void compareTableOptions(PgTable newTable, StringBuilder sb) {
+    protected void compareTableOptions(AbstractPgTable newTable, StringBuilder sb) {
         super.compareTableOptions(newTable, sb);
 
         if (newTable instanceof PartitionPgTable) {
@@ -118,7 +118,7 @@ public class PartitionPgTable extends AbstractRegularTable {
     }
 
     @Override
-    protected void compareInherits(PgTable newTable, StringBuilder sb) {
+    protected void compareInherits(AbstractPgTable newTable, StringBuilder sb) {
         //not support default syntax
     }
 

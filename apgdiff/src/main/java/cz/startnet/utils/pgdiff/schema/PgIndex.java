@@ -101,13 +101,13 @@ public class PgIndex extends AbstractIndex {
         } else {
             return false;
         }
-        if (!compareWithoutComments(newIndex)) {
+        if (!compareUnalterable(newIndex)) {
             isNeedDepcies.set(true);
             return true;
         }
 
         if (isClusterIndex() && !newIndex.isClusterIndex() &&
-                !((PgTable)newIndex.getParent()).isClustered()) {
+                !((AbstractPgTable)newIndex.getParent()).isClustered()) {
             sb.append("\n\nALTER TABLE ")
             .append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
             .append('.').append(PgDiffUtils.getQuotedName(getTableName()))
@@ -146,9 +146,9 @@ public class PgIndex extends AbstractIndex {
     }
 
     @Override
-    protected boolean compareWithoutComments(AbstractIndex index) {
+    protected boolean compareUnalterable(AbstractIndex index) {
         return index instanceof PgIndex
-                && super.compareWithoutComments(index)
+                && super.compareUnalterable(index)
                 && Objects.equals(method, ((PgIndex) index).method);
     }
 

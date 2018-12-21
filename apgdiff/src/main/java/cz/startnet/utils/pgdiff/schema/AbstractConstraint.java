@@ -121,14 +121,9 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath {
             return true;
         }
 
-        return obj instanceof AbstractConstraint && compareBaseFields(obj)
-                && compareWithoutComments((AbstractConstraint) obj)
+        return obj instanceof AbstractConstraint && super.compare(obj)
+                && Objects.equals(definition, ((AbstractConstraint) obj).getDefinition())
                 && notValid == ((AbstractConstraint) obj).isNotValid();
-    }
-
-    protected boolean compareWithoutComments(AbstractConstraint constraint) {
-        return Objects.equals(definition, constraint.getDefinition())
-                && Objects.equals(name, constraint.getName());
     }
 
     @Override
@@ -147,7 +142,6 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath {
         constraintDst.columns.addAll(columns);
         constraintDst.setForeignTable(getForeignTable());
         constraintDst.refs.addAll(refs);
-        constraintDst.deps.addAll(deps);
         constraintDst.setNotValid(isNotValid());
         return constraintDst;
     }

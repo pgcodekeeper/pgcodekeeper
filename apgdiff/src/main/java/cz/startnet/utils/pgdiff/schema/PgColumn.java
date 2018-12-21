@@ -482,11 +482,11 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
             PgColumn col = (PgColumn) obj;
             return Objects.equals(statistics, col.getStatistics())
                     && Objects.equals(storage, col.getStorage())
+                    && Objects.equals(identityType, col.getIdentityType())
+                    && isInherit == col.isInherit()
                     && options.equals(col.options)
                     && fOptions.equals(col.fOptions)
-                    && Objects.equals(sequence, col.getSequence())
-                    && Objects.equals(identityType, col.getIdentityType())
-                    && isInherit == col.isInherit();
+                    && Objects.equals(sequence, col.getSequence());
         }
 
         return false;

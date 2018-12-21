@@ -125,7 +125,7 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
             return true;
         }
 
-        if (obj instanceof AbstractSequence && compareBaseFields(obj)) {
+        if (obj instanceof AbstractSequence && super.compare(obj)) {
             AbstractSequence seq = (AbstractSequence) obj;
             return cycle == seq.isCycle()
                     && Objects.equals(increment, seq.getIncrement())

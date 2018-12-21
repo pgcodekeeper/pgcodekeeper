@@ -265,18 +265,13 @@ public abstract class AbstractPgFunction extends AbstractFunction {
      *         the same when compared ignoring whitespace, otherwise returns
      *         false
      */
-    public boolean checkForChanges(AbstractPgFunction func) {
+    public boolean compareUnalterable(AbstractPgFunction func) {
         boolean equals = false;
 
         if (this == func) {
             equals = true;
         } else {
-            equals = Objects.equals(name, func.getBareName())
-                    && arguments.equals(func.arguments)
-                    && options.equals(func.options)
-                    && transforms.equals(func.transforms)
-                    && configurations.equals(func.configurations)
-                    && Objects.equals(body, func.getBody())
+            equals = Objects.equals(body, func.getBody())
                     && isWindow == func.isWindow()
                     && Objects.equals(language, func.getLanguage())
                     && Objects.equals(parallel, func.getParallel())
@@ -286,7 +281,11 @@ public abstract class AbstractPgFunction extends AbstractFunction {
                     && isLeakproof == func.isLeakproof()
                     && rows == func.getRows()
                     && cost == func.getCost()
-                    && Objects.equals(returns, func.getReturns());
+                    && Objects.equals(returns, func.getReturns())
+                    && arguments.equals(func.arguments)
+                    && options.equals(func.options)
+                    && transforms.equals(func.transforms)
+                    && configurations.equals(func.configurations);
         }
         return equals;
     }
@@ -297,8 +296,8 @@ public abstract class AbstractPgFunction extends AbstractFunction {
             return true;
         }
 
-        return obj instanceof AbstractPgFunction && compareBaseFields(obj)
-                && checkForChanges((AbstractPgFunction) obj);
+        return obj instanceof AbstractPgFunction && super.compare(obj)
+                && compareUnalterable((AbstractPgFunction) obj);
     }
 
     @Override
@@ -335,7 +334,12 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         functionDst.setRows(getRows());
         functionDst.setCost(getCost());
         functionDst.setParallel(getParallel());
-        functionDst.arguments.addAll(arguments);
+        for (Argument argSrc : arguments) {
+            Argument argDst = new Argument(argSrc.getMode(), argSrc.getName(), argSrc.getDataType());
+            argDst.setDefaultExpression(argSrc.getDefaultExpression());
+            argDst.setReadOnly(argSrc.isReadOnly());
+            functionDst.addArgument(argDst);
+        }
         functionDst.options.addAll(options);
         functionDst.transforms.addAll(transforms);
         functionDst.returnsColumns.putAll(returnsColumns);

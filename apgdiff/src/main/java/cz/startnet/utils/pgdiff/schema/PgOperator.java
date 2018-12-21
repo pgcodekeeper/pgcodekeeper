@@ -123,7 +123,7 @@ public class PgOperator extends PgStatementWithSearchPath {
             return false;
         }
 
-        if (!checkForChanges(newOperator)) {
+        if (!compareUnalterable(newOperator)) {
             isNeedDepcies.set(true);
             return true;
         }
@@ -160,9 +160,8 @@ public class PgOperator extends PgStatementWithSearchPath {
         return sb.length() > startLength;
     }
 
-    private boolean checkForChanges(PgOperator oper) {
-        return Objects.equals(name, oper.getBareName())
-                && Objects.equals(procedure, oper.getProcedure())
+    private boolean compareUnalterable(PgOperator oper) {
+        return Objects.equals(procedure, oper.getProcedure())
                 && Objects.equals(leftArg, oper.getLeftArg())
                 && Objects.equals(rightArg, oper.getRightArg())
                 && Objects.equals(commutator, oper.getCommutator())
@@ -191,9 +190,9 @@ public class PgOperator extends PgStatementWithSearchPath {
             return true;
         }
 
-        if (obj instanceof PgOperator && compareBaseFields(obj)) {
+        if (obj instanceof PgOperator && super.compare(obj)) {
             PgOperator oper  = (PgOperator) obj;
-            return checkForChanges(oper)
+            return compareUnalterable(oper)
                     && Objects.equals(restrict, oper.getRestrict())
                     && Objects.equals(join, oper.getJoin());
         }

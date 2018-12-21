@@ -128,9 +128,9 @@ implements PgOptionContainer {
             return true;
         }
 
-        if (obj instanceof AbstractIndex && compareBaseFields(obj)) {
+        if (obj instanceof AbstractIndex && super.compare(obj)) {
             AbstractIndex index = (AbstractIndex) obj;
-            return compareWithoutComments(index)
+            return compareUnalterable(index)
                     && clusterIndex == index.isClusterIndex()
                     && Objects.equals(options, index.options);
         }
@@ -138,9 +138,8 @@ implements PgOptionContainer {
         return false;
     }
 
-    protected boolean compareWithoutComments(AbstractIndex index) {
+    protected boolean compareUnalterable(AbstractIndex index) {
         return Objects.equals(definition, index.getDefinition())
-                && Objects.equals(name, index.getName())
                 && Objects.equals(tableName, index.getTableName())
                 && Objects.equals(where, index.getWhere())
                 && Objects.equals(tableSpace, index.getTableSpace())
@@ -163,17 +162,15 @@ implements PgOptionContainer {
     @Override
     public AbstractIndex shallowCopy() {
         AbstractIndex indexDst = getIndexCopy();
+        copyBaseFields(indexDst);
         indexDst.setDefinition(getDefinition());
         indexDst.setUnique(isUnique());
         indexDst.setClusterIndex(isClusterIndex());
-        indexDst.setComment(getComment());
         indexDst.setWhere(getWhere());
         indexDst.setTableSpace(getTableSpace());
-        indexDst.deps.addAll(deps);
         indexDst.columns.addAll(columns);
         indexDst.options.putAll(options);
         indexDst.includes.addAll(includes);
-        indexDst.setLocation(getLocation());
         return indexDst;
     }
 

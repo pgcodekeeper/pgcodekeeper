@@ -131,7 +131,7 @@ implements PgOptionContainer {
         PgFtsDictionary dictDst = new PgFtsDictionary(getName());
         copyBaseFields(dictDst);
         dictDst.setTemplate(getTemplate());
-        dictDst.options.putAll(getOptions());
+        dictDst.options.putAll(options);
         return dictDst;
     }
 
@@ -146,10 +146,10 @@ implements PgOptionContainer {
             return true;
         }
 
-        if (obj instanceof PgFtsDictionary && compareBaseFields(obj)) {
+        if (obj instanceof PgFtsDictionary && super.compare(obj)) {
             PgFtsDictionary dictionary = (PgFtsDictionary) obj;
             return Objects.equals(template, dictionary.template)
-                    && Objects.equals(options, dictionary.getOptions());
+                    && options.equals(dictionary.options);
         }
 
         return false;

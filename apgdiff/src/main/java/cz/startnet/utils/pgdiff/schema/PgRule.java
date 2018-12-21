@@ -163,13 +163,12 @@ public class PgRule extends PgStatementWithSearchPath{
             return false;
         }
 
-        PgRule oldRule = this;
-        if (!oldRule.compareWithoutComments(newRule)) {
+        if (!compareUnalterable(newRule)) {
             isNeedDepcies.set(true);
             return true;
         }
         String newEnabledState = newRule.getEnabledState();
-        if (!Objects.equals(oldRule.getEnabledState(), newEnabledState)) {
+        if (!Objects.equals(getEnabledState(), newEnabledState)) {
             if (newEnabledState == null) {
                 newEnabledState = "ENABLE";
             }
@@ -183,7 +182,7 @@ public class PgRule extends PgStatementWithSearchPath{
             .append(PgDiffUtils.getQuotedName(newRule.getName()))
             .append(';');
         }
-        if (!Objects.equals(oldRule.getComment(), newRule.getComment())) {
+        if (!Objects.equals(getComment(), newRule.getComment())) {
             sb.append("\n\n");
             newRule.appendCommentSql(sb);
         }
@@ -213,18 +212,17 @@ public class PgRule extends PgStatementWithSearchPath{
             return true;
         }
 
-        if (obj instanceof PgRule && compareBaseFields(obj)) {
+        if (obj instanceof PgRule && super.compare(obj)) {
             PgRule rule = (PgRule) obj;
-            return compareWithoutComments(rule)
+            return compareUnalterable(rule)
                     && Objects.equals(enabledState, rule.getEnabledState());
         }
 
         return false;
     }
 
-    private boolean compareWithoutComments(PgRule rule) {
-        return Objects.equals(name, rule.getName())
-                && event == rule.event
+    private boolean compareUnalterable(PgRule rule) {
+        return event == rule.event
                 && Objects.equals(condition, rule.getCondition())
                 && instead == rule.isInstead()
                 && commands.equals(rule.commands);

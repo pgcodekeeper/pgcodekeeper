@@ -555,11 +555,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (this == obj) {
-            return true;
-        }
-
-        return obj instanceof AbstractSchema && compareBaseFields(obj);
+        return this == obj || obj instanceof AbstractSchema && super.compare(obj);
     }
 
     @Override

@@ -16,7 +16,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
 import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgView;
@@ -58,7 +58,7 @@ public class CommentOn extends ParserAbstract {
                         "Table name is missing for commented column!", nameCtx.getStart());
             }
             String tableName = tableCtx.getText();
-            PgTable table = (PgTable) schema.getTable(tableName);
+            AbstractPgTable table = (AbstractPgTable) schema.getTable(tableName);
             if (table == null) {
                 PgView view = (PgView) schema.getView(tableName);
                 if (view == null) {

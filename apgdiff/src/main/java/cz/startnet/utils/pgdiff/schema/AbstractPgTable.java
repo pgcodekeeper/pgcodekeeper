@@ -21,12 +21,12 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
  * @since 5.3.1.
  * @author galiev_mr
  */
-public abstract class PgTable extends AbstractTable {
+public abstract class AbstractPgTable extends AbstractTable {
 
     protected boolean hasOids;
     protected final List<Inherits> inherits = new ArrayList<>();
 
-    public PgTable(String name) {
+    public AbstractPgTable(String name) {
         super(name);
     }
 
@@ -171,11 +171,11 @@ public abstract class PgTable extends AbstractTable {
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
-        if (!(newCondition instanceof PgTable)) {
+        if (!(newCondition instanceof AbstractPgTable)) {
             return false;
         }
 
-        PgTable newTable = (PgTable) newCondition;
+        AbstractPgTable newTable = (AbstractPgTable) newCondition;
 
         if (isRecreated(newTable)) {
             isNeedDepcies.set(true);
@@ -214,8 +214,8 @@ public abstract class PgTable extends AbstractTable {
     @Override
     protected boolean isColumnsOrderChanged(AbstractTable newTable) {
         // broken inherit algorithm
-        if (newTable instanceof PgTable && !(newTable instanceof TypedPgTable)
-                && inherits.isEmpty() && ((PgTable) newTable).inherits.isEmpty()) {
+        if (newTable instanceof AbstractPgTable && !(newTable instanceof TypedPgTable)
+                && inherits.isEmpty() && ((AbstractPgTable) newTable).inherits.isEmpty()) {
             return super.isColumnsOrderChanged(newTable);
         }
 
@@ -228,7 +228,7 @@ public abstract class PgTable extends AbstractTable {
      * @param newTable - new table
      * @param sb - StringBuilder for statements
      */
-    protected void compareTableOptions(PgTable newTable, StringBuilder sb) {
+    protected void compareTableOptions(AbstractPgTable newTable, StringBuilder sb) {
         if (hasOids != newTable.getHasOids()) {
             sb.append(getAlterTable(true, true))
             .append(" SET ")
@@ -237,7 +237,7 @@ public abstract class PgTable extends AbstractTable {
         }
     }
 
-    protected void compareInherits(PgTable newTable, StringBuilder sb) {
+    protected void compareInherits(AbstractPgTable newTable, StringBuilder sb) {
         List<Inherits> newInherits = newTable.getInherits();
 
         if (newTable instanceof PartitionPgTable) {
@@ -394,17 +394,17 @@ public abstract class PgTable extends AbstractTable {
      * @param newTable - new table
      * @param sb - StringBuilder for statements
      */
-    protected abstract void compareTableTypes(PgTable newTable, StringBuilder sb);
+    protected abstract void compareTableTypes(AbstractPgTable newTable, StringBuilder sb);
 
     @Override
     public boolean compare(PgStatement obj) {
         if (this == obj) {
             return true;
-        } else if (obj instanceof PgTable && super.compare(obj)) {
-            PgTable table = (PgTable) obj;
+        } else if (obj instanceof AbstractPgTable && super.compare(obj)) {
+            AbstractPgTable table = (AbstractPgTable) obj;
 
-            return inherits.equals(table.inherits)
-                    && hasOids == table.getHasOids();
+            return hasOids == table.getHasOids()
+                    && inherits.equals(table.inherits);
         }
         return false;
     }
@@ -418,7 +418,7 @@ public abstract class PgTable extends AbstractTable {
 
     @Override
     public AbstractTable shallowCopy() {
-        PgTable copy = (PgTable) super.shallowCopy();
+        AbstractPgTable copy = (AbstractPgTable) super.shallowCopy();
         copy.inherits.addAll(inherits);
         copy.setHasOids(getHasOids());
         return copy;

@@ -68,7 +68,7 @@ public class PgFtsParser extends PgStatementWithSearchPath {
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         if (newCondition instanceof PgFtsParser) {
-            if (!compareWithoutComments((PgFtsParser)newCondition)) {
+            if (!compareUnalterable((PgFtsParser)newCondition)) {
                 isNeedDepcies.set(true);
                 return true;
             }
@@ -107,13 +107,12 @@ public class PgFtsParser extends PgStatementWithSearchPath {
             return true;
         }
 
-        return obj instanceof PgFtsParser && compareBaseFields(obj)
-                && compareWithoutComments((PgFtsParser) obj);
+        return obj instanceof PgFtsParser && super.compare(obj)
+                && compareUnalterable((PgFtsParser) obj);
     }
 
-    private boolean compareWithoutComments(PgFtsParser parser) {
-        return Objects.equals(name, parser.name)
-                && Objects.equals(startFunction, parser.startFunction)
+    private boolean compareUnalterable(PgFtsParser parser) {
+        return Objects.equals(startFunction, parser.startFunction)
                 && Objects.equals(getTokenFunction, parser.getTokenFunction)
                 && Objects.equals(endFunction, parser.endFunction)
                 && Objects.equals(headLineFunction, parser.headLineFunction)

@@ -120,11 +120,7 @@ implements PgRuleContainer, PgTriggerContainer, IRelation {
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (this == obj) {
-            return true;
-        }
-
-        return obj instanceof AbstractView && compareBaseFields(obj);
+        return this == obj || obj instanceof AbstractView && super.compare(obj);
     }
 
     @Override
