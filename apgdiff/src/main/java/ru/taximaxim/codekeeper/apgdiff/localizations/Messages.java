@@ -15,6 +15,9 @@ public final class Messages extends NLS {
     public static String Connection_DatabaseJdbcAccessError;
     public static String Connection_JdbcDriverClassNotFound;
 
+    // pgdiff.dumploader
+    public static String PgDumpLoader_ProjReadingError;
+
     // pgdiff
 
     public static String JdbcConnector_in_jdbc_connection;

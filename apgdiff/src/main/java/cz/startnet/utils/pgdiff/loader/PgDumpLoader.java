@@ -9,16 +9,20 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.MessageFormat;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.jdbc.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
@@ -36,6 +40,7 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.StatementOverride;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 
 /**
  * Loads PostgreSQL dump into classes.
@@ -45,6 +50,8 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 public class PgDumpLoader implements AutoCloseable {
 
     private final InputStream input;
+    private boolean isInputInAntlrParser;
+
     private final String inputObjectName;
     private final PgDiffArguments args;
 
@@ -52,6 +59,8 @@ public class PgDumpLoader implements AutoCloseable {
     private final int monitoringLevel;
 
     private final List<AntlrError> errors = new ArrayList<>();
+
+    private final Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
 
     private boolean loadSchema = true;
     private boolean loadReferences;
@@ -172,8 +181,9 @@ public class PgDumpLoader implements AutoCloseable {
              */
             statementBodyReferences = Collections.emptyList();
 
+            isInputInAntlrParser = true;
             AntlrParser.parseTSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
-                    monitor, monitoringLevel, listeners);
+                    monitor, monitoringLevel, listeners, antlrTasks);
         } else {
             List<SqlContextProcessor> listeners = new ArrayList<>();
             if (overrides != null) {
@@ -186,8 +196,17 @@ public class PgDumpLoader implements AutoCloseable {
                 statementBodyReferences = refListener.getStatementBodies();
                 listeners.add(refListener);
             }
+
+            isInputInAntlrParser = true;
             AntlrParser.parseSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
-                    monitor, monitoringLevel, listeners);
+                    monitor, monitoringLevel, listeners, antlrTasks);
+        }
+
+        try {
+            AntlrParser.finishAntlr(antlrTasks);
+        } catch(Exception e) {
+            throw new IOException(MessageFormat.format(Messages.PgDumpLoader_ProjReadingError,
+                    e.getLocalizedMessage(), inputObjectName), e);
         }
 
         return intoDb;
@@ -195,6 +214,8 @@ public class PgDumpLoader implements AutoCloseable {
 
     @Override
     public void close() throws IOException {
-        input.close();
+        if (!isInputInAntlrParser) {
+            input.close();
+        }
     }
 }

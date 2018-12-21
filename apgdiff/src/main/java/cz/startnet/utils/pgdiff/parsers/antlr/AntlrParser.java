@@ -5,6 +5,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.BaseErrorListener;
@@ -22,10 +27,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.jdbc.AntlrTask;
+import cz.startnet.utils.pgdiff.loader.jdbc.JdbcLoaderBase;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Tsql_fileContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import ru.taximaxim.codekeeper.apgdiff.Log;
@@ -96,37 +101,60 @@ public class AntlrParser {
 
     public static void parseSqlStream(InputStream inputStream, String charsetName,
             String parsedObjectName, List<AntlrError> errors,IProgressMonitor mon, int monitoringLevel,
-            Collection<SqlContextProcessor> listeners) throws IOException, InterruptedException {
-        SQLParser parser = makeBasicParser(SQLParser.class, inputStream, charsetName, parsedObjectName, errors);
-        parser.addParseListener(new CustomParseTreeListener(
-                monitoringLevel, mon == null ? new NullProgressMonitor() : mon));
+            Collection<SqlContextProcessor> listeners, Queue<AntlrTask<?>> antlrTasks)
+                    throws IOException, InterruptedException {
         try {
-            SqlContext ctx = parser.sql();
-            for (SqlContextProcessor listener : listeners) {
-                listener.process(ctx, null);
-            }
+            SQLParser parser = makeBasicParser(SQLParser.class, inputStream, charsetName, parsedObjectName, errors);
+            parser.addParseListener(new CustomParseTreeListener(
+                    monitoringLevel, mon == null ? new NullProgressMonitor() : mon));
+            submitAntlrTask(antlrTasks, SQLParser::sql, parser,
+                    ctx -> listeners.forEach(listener -> listener.process(ctx, null)));
         } catch (MonitorCancelledRuntimeException mcre){
             throw new InterruptedException();
         } catch (UnresolvedReferenceException ex) {
             errors.add(CustomSQLParserListener.handleUnresolvedReference(ex, parsedObjectName));
+        } finally {
+            inputStream.close();
         }
+    }
+
+    private static <T> void submitAntlrTask(Queue<AntlrTask<?>> antlrTasks,
+            Function<SQLParser, T> parserCtxReader, SQLParser parser, Consumer<T> finalizer) {
+        Future<T> future = JdbcLoaderBase.ANTLR_POOL.submit(() -> parserCtxReader.apply(parser));
+        antlrTasks.add(new AntlrTask<>(future, finalizer, null));
     }
 
     public static void parseTSqlStream(InputStream inputStream, String charsetName,
             String parsedObjectName, List<AntlrError> errors,IProgressMonitor mon, int monitoringLevel,
-            Collection<TSqlContextProcessor> listeners) throws IOException, InterruptedException {
-        TSQLParser parser = makeBasicParser(TSQLParser.class, inputStream, charsetName, parsedObjectName, errors);
-        parser.addParseListener(new CustomParseTreeListener(
-                monitoringLevel, mon == null ? new NullProgressMonitor() : mon));
+            Collection<TSqlContextProcessor> listeners, Queue<AntlrTask<?>> antlrTasks)
+                    throws IOException, InterruptedException {
         try {
-            Tsql_fileContext ctx = parser.tsql_file();
-            for (TSqlContextProcessor listener : listeners) {
-                listener.process(ctx, (CommonTokenStream) parser.getInputStream());
-            }
+            TSQLParser parser = makeBasicParser(TSQLParser.class, inputStream, charsetName, parsedObjectName, errors);
+            parser.addParseListener(new CustomParseTreeListener(
+                    monitoringLevel, mon == null ? new NullProgressMonitor() : mon));
+            submitMsAntlrTask(antlrTasks, TSQLParser::tsql_file, parser,
+                    ctx -> listeners.forEach(listener ->
+                    listener.process(ctx, (CommonTokenStream) parser.getInputStream())));
         } catch (MonitorCancelledRuntimeException mcre){
             throw new InterruptedException();
         } catch (UnresolvedReferenceException ex) {
             errors.add(CustomTSQLParserListener.handleUnresolvedReference(ex, parsedObjectName));
+        } finally {
+            inputStream.close();
+        }
+    }
+
+    private static <T> void submitMsAntlrTask(Queue<AntlrTask<?>> antlrTasks,
+            Function<TSQLParser, T> parserCtxReader, TSQLParser parser, Consumer<T> finalizer) {
+        Future<T> future = JdbcLoaderBase.ANTLR_POOL.submit(() -> parserCtxReader.apply(parser));
+        antlrTasks.add(new AntlrTask<>(future, finalizer, null));
+    }
+
+    public static void finishAntlr(Queue<AntlrTask<?>> antlrTasks)
+            throws InterruptedException, ExecutionException {
+        AntlrTask<?> task;
+        while ((task = antlrTasks.poll()) != null) {
+            task.finish();
         }
     }
 

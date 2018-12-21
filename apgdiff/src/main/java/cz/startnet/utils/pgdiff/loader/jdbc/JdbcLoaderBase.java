@@ -53,7 +53,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public abstract class JdbcLoaderBase implements PgCatalogStrings {
 
     private static final int DEFAULT_OBJECTS_COUNT = 100;
-    private static final ExecutorService ANTLR_POOL = Executors.newFixedThreadPool(
+    public static final ExecutorService ANTLR_POOL = Executors.newFixedThreadPool(
             Integer.max(1, Runtime.getRuntime().availableProcessors() - 1),
             new DaemonThreadFactory());
 
