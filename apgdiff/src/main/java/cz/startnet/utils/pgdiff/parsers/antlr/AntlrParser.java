@@ -124,12 +124,6 @@ public class AntlrParser {
         }
     }
 
-    private static <T> void submitAntlrTask(Queue<AntlrTask<?>> antlrTasks,
-            Function<SQLParser, T> parserCtxReader, SQLParser parser, Consumer<T> finalizer) {
-        Future<T> future = ANTLR_POOL.submit(() -> parserCtxReader.apply(parser));
-        antlrTasks.add(new AntlrTask<>(future, finalizer, null));
-    }
-
     public static void parseTSqlStream(InputStream inputStream, String charsetName,
             String parsedObjectName, List<AntlrError> errors,IProgressMonitor mon, int monitoringLevel,
             Collection<TSqlContextProcessor> listeners, Queue<AntlrTask<?>> antlrTasks)
@@ -138,7 +132,7 @@ public class AntlrParser {
             TSQLParser parser = makeBasicParser(TSQLParser.class, inputStream, charsetName, parsedObjectName, errors);
             parser.addParseListener(new CustomParseTreeListener(
                     monitoringLevel, mon == null ? new NullProgressMonitor() : mon));
-            submitMsAntlrTask(antlrTasks, TSQLParser::tsql_file, parser,
+            submitAntlrTask(antlrTasks, TSQLParser::tsql_file, parser,
                     ctx -> listeners.forEach(listener ->
                     listener.process(ctx, (CommonTokenStream) parser.getInputStream())));
         } catch (MonitorCancelledRuntimeException mcre){
@@ -150,9 +144,9 @@ public class AntlrParser {
         }
     }
 
-    private static <T> void submitMsAntlrTask(Queue<AntlrTask<?>> antlrTasks,
-            Function<TSQLParser, T> parserCtxReader, TSQLParser parser, Consumer<T> finalizer) {
-        Future<T> future = ANTLR_POOL.submit(() -> parserCtxReader.apply(parser));
+    public static <P, C> void submitAntlrTask(Queue<AntlrTask<?>> antlrTasks,
+            Function<P, C> parserCtxReader, P parser, Consumer<C> finalizer) {
+        Future<C> future = ANTLR_POOL.submit(() -> parserCtxReader.apply(parser));
         antlrTasks.add(new AntlrTask<>(future, finalizer, null));
     }
 
