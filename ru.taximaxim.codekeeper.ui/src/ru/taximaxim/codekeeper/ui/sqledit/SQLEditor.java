@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.ResourceBundle;
+import java.util.concurrent.ExecutionException;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -540,7 +541,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             } catch (InterruptedException ex) {
                 output = ex.getLocalizedMessage();
                 return Status.CANCEL_STATUS;
-            } catch (SQLException | IOException e) {
+            } catch (SQLException | IOException | ExecutionException e) {
                 output = e.getLocalizedMessage();
                 return new Status(IStatus.WARNING, PLUGIN_ID.THIS,
                         Messages.sqlScriptDialog_exception_during_script_execution, e);
