@@ -2161,12 +2161,51 @@ backup_service_master_key
 
 // https://msdn.microsoft.com/en-us/library/ms188332.aspx
 execute_statement
-    : EXECUTE expression (execute_statement_arg (COMMA execute_statement_arg)*)? 
-    (AS? (LOGIN | USER) EQUAL STRING)?
+    : EXECUTE? 
+    (return_status=LOCAL_ID EQUAL)? qualified_name 
+    (execute_statement_arg (COMMA execute_statement_arg)*)? 
+    (WITH execute_option (COMMA execute_option)*)?
     ;
 
 execute_statement_arg
     : (parameter=LOCAL_ID EQUAL)? ((constant_LOCAL_ID | id) (OUTPUT | OUT)? | DEFAULT | NULL)
+    ;
+
+execute_option
+    : RECOMPILE
+    | RESULT SETS result_sets_value
+    ;
+
+result_sets_value
+    : UNDEFINED
+    | NONE
+    | LR_BRACKET result_sets_definition (COMMA result_sets_definition)* RR_BRACKET
+    ;
+
+result_sets_definition
+    : LR_BRACKET column_definition (COMMA column_definition) RR_BRACKET
+    | AS (OBJECT | TYPE) qualified_name
+    | AS FOR XML
+    ;
+
+execute_statement_2
+    : EXECUTE 
+    LR_BRACKET execute_string (PLUS execute_string)* RR_BRACKET
+    (AS (LOGIN | USER) EQUAL STRING)?
+    ;
+
+execute_string
+    : LOCAL_ID | STRING
+    ;
+
+execute_statement_3
+    : EXECUTE 
+    LR_BRACKET 
+    execute_string (PLUS execute_string)* 
+    (COMMA ((constant_LOCAL_ID | id) (OUTPUT | OUT)? | DEFAULT | NULL))*
+    RR_BRACKET
+    (AS (LOGIN | USER) EQUAL STRING)?
+    (AT qualified_name)?
     ;
 
 // https://msdn.microsoft.com/en-us/library/ff848791.aspx
@@ -2669,7 +2708,7 @@ for_clause
     (COMMA ELEMENTS (XSINIL | ABSENT))?
     | FOR XML EXPLICIT xml_common_directives* (COMMA XMLDATA)?
     | FOR XML PATH (LR_BRACKET STRING RR_BRACKET)? xml_common_directives* (COMMA ELEMENTS (XSINIL | ABSENT))?
-    | FOR JSON (AUTO | PATH) (COMMA ROOT (LR_BRACKET STRING RR_BRACKET)?)? (COMMA INCLUDE_NULL_VALUES)? (COMMA WITHOUT_ARRAY_WRAPPER)?
+    | FOR JSON (AUTO | PATH) (COMMA ROOT (LR_BRACKET STRING RR_BRACKET)?)? (COMMA INCLUDE_NULL_VALUES | COMMA WITHOUT_ARRAY_WRAPPER)*
     ;
 
 xml_common_directives
@@ -3601,6 +3640,7 @@ simple_id
     | RESOURCE
     | RESTART
     | RESTRICTED_USER
+    | RESULT
     | RESUME
     | RETAINDAYS
     | RETENTION
@@ -3651,6 +3691,7 @@ simple_id
     | SESSION_TIMEOUT
     | SESSION
     | SETERROR
+    | SETS
     | SHARE
     | SHOWPLAN
     | SID
@@ -3731,6 +3772,7 @@ simple_id
     | UNBOUNDED
     | UNCHECKED
     | UNCOMMITTED
+    | UNDEFINED
     | UNKNOWN
     | UNLIMITED
     | UNLOCK
