@@ -6,6 +6,7 @@ import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
@@ -17,6 +18,8 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
 
 public class QueriesBatchCallable extends StatementCallable<String> {
+
+    private static final Pattern PATTERN_WS = Pattern.compile("\\s+");
 
     private final List<List<String>> batches;
     private final IProgressMonitor monitor;
@@ -35,13 +38,13 @@ public class QueriesBatchCallable extends StatementCallable<String> {
     @Override
     public String call() throws Exception {
         SubMonitor subMonitor = SubMonitor.convert(monitor);
-        String curr = null;
+        String currQuery = null;
         try {
             if (batches.size() == 1) {
                 List<String> queries = batches.get(0);
                 subMonitor.setWorkRemaining(queries.size());
                 for (String query : queries) {
-                    curr = query;
+                    currQuery = query;
                     PgDiffUtils.checkCancelled(monitor);
                     st.execute(query);
 
@@ -81,8 +84,8 @@ public class QueriesBatchCallable extends StatementCallable<String> {
             ServerErrorMessage sem = ex.getServerErrorMessage();
             StringBuilder sb = new StringBuilder(sem.toString());
             int offset = sem.getPosition();
-            if (offset > 0 && curr != null) {
-                appendPosition(sb, curr, offset);
+            if (offset > 0 && currQuery != null) {
+                appendPosition(sb, currQuery, offset);
             }
 
             reporter.writeError(sb.toString());
@@ -108,21 +111,26 @@ public class QueriesBatchCallable extends StatementCallable<String> {
             return;
         }
 
-        String[] arr = query.split("\\s+", -1);
-        String first = arr[0];
-        String second = arr[1];
-
-        String message = first;
-        if (second != null
-                && ("CREATE".equalsIgnoreCase(first)
-                        || "ALTER".equalsIgnoreCase(first)
-                        || "DROP".equalsIgnoreCase(first)
-                        || "START".equalsIgnoreCase(first)
-                        || "BEGIN".equalsIgnoreCase(first))) {
-            message = first + ' ' + second;
+        // trim to avoid empty strings at the edges of the array
+        String[] arr = PATTERN_WS.split(query.trim(), 3);
+        if (arr[0].isEmpty()) {
+            // empty or whitespace query, wtf was that
+            return;
         }
 
-        reporter.writeMessage(message.toUpperCase(Locale.ENGLISH));
+        String message = arr[0].toUpperCase(Locale.ENGLISH);
+        if (arr.length > 1) {
+            switch (message) {
+            case "CREATE":
+            case "ALTER":
+            case "DROP":
+            case "START":
+            case "BEGIN":
+                message += ' ' + arr[1].toUpperCase(Locale.ENGLISH);
+            }
+        }
+
+        reporter.writeMessage(message);
     }
 
     private void appendPosition(StringBuilder sb, String query, int offset) {

@@ -197,19 +197,11 @@ public class TreeElement {
      * Создает копию элементов начиная с текущего
      */
     public TreeElement getCopy() {
-        TreeElement copy = getElement();
+        TreeElement copy = new TreeElement(name, type, side);
+        copy.setSelected(selected);
         for (TreeElement child : getChildren()) {
             copy.addChild(child.getCopy());
         }
-        return copy;
-    }
-
-    /**
-     * возвращает копию элемента
-     */
-    private TreeElement getElement() {
-        TreeElement copy = new TreeElement(name, type, side);
-        copy.setSelected(selected);
         return copy;
     }
 

@@ -638,8 +638,6 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             } catch (IOException ex) {
                 throw new IllegalStateException(ex.getLocalizedMessage(), ex);
             } finally {
-                // request UI change: button label changed
-                reporter.writeMessage(sr.getStorage());
                 reporter.terminate();
                 afterScriptFinished();
             }

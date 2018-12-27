@@ -901,17 +901,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         if (cd.open() != CommitDialog.OK) {
             return;
         }
-
-        try {
-            proj.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
-            UiSync.exec(parent, () -> {
-                if (!parent.isDisposed()) {
-                    callEgitCommitCommand();
-                }
-            });
-        } catch (CoreException e) {
-            ExceptionNotifier.notifyDefault(Messages.ProjectEditorDiffer_error_refreshing_project, e);
-        }
+        callEgitCommitCommand();
     }
 
     private void callEgitCommitCommand(){

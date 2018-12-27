@@ -113,8 +113,7 @@ public class ShowConsoleParticipant implements IConsolePageParticipant {
         }
 
         private void update() {
-            UiSync.exec(PlatformUI.getWorkbench().getDisplay(),
-                    () -> setEnabled(!console.isTerminated()));
+            UiSync.exec(pageControl, () -> setEnabled(!console.isTerminated()));
         }
 
         @Override
@@ -138,8 +137,7 @@ public class ShowConsoleParticipant implements IConsolePageParticipant {
         }
 
         private void update() {
-            UiSync.exec(PlatformUI.getWorkbench().getDisplay(),
-                    () -> setEnabled(console.isTerminated()));
+            UiSync.exec(pageControl, () -> setEnabled(console.isTerminated()));
         }
 
         @Override
@@ -164,8 +162,7 @@ public class ShowConsoleParticipant implements IConsolePageParticipant {
         }
 
         private void update() {
-            UiSync.exec(PlatformUI.getWorkbench().getDisplay(),
-                    () -> setEnabled(console.isTerminated()));
+            UiSync.exec(pageControl, () -> setEnabled(console.isTerminated()));
         }
 
         @Override

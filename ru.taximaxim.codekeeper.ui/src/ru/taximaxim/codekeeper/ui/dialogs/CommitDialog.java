@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -184,6 +185,11 @@ public class CommitDialog extends TrayDialog {
                 Log.log(Log.LOG_INFO, "Project updater job finished with status " + //$NON-NLS-1$
                         event.getResult().getSeverity());
 
+                try {
+                    proj.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
+                } catch (CoreException e) {
+                    ExceptionNotifier.notifyDefault(Messages.ProjectEditorDiffer_error_refreshing_project, e);
+                }
                 UiSync.exec(getShell(), () -> {
                     if (event.getResult().isOK()) {
                         setReturnCode(OK);

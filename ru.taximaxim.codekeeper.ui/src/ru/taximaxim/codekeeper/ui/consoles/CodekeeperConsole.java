@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.Objects;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.IOConsole;
 import org.eclipse.ui.console.IOConsoleOutputStream;
@@ -27,20 +27,19 @@ class CodekeeperConsole extends IOConsole implements IPropertyChangeListener {
     private static final String NAME = "pgCodeKeeper"; //$NON-NLS-1$
     private static final String TERMINATED = "<terminated>"; //$NON-NLS-1$
 
+    private final Color colorWarn;
+    private final Color colorErr;
+
     private final IOConsoleOutputStream baseOuter;
     private final IOConsoleOutputStream warningOuter;
     private final IOConsoleOutputStream errorOuter;
     private final IProgressMonitor monitor;
     private final List<IPropertyChangeListener> listeners = new ArrayList<>();
 
-    private boolean isTerminated;
+    private volatile boolean isTerminated;
 
     public CodekeeperConsole(IProgressMonitor monitor) {
-        this(FileUtils.getFileDate() + ' ' + CodekeeperConsole.NAME, monitor);
-    }
-
-    private CodekeeperConsole(String name, IProgressMonitor monitor) {
-        super(name, null);
+        super(FileUtils.getFileDate() + ' ' + CodekeeperConsole.NAME, null);
         this.monitor = monitor;
         baseOuter = this.newOutputStream();
         baseOuter.setActivateOnWrite(Activator.getDefault()
@@ -49,14 +48,35 @@ class CodekeeperConsole extends IOConsole implements IPropertyChangeListener {
         warningOuter = this.newOutputStream();
         warningOuter.setActivateOnWrite(Activator.getDefault()
                 .getPreferenceStore().getBoolean(PREF.FORCE_SHOW_CONSOLE));
-        warningOuter.setColor(new Color(null, 255, 127, 0));
 
         errorOuter = this.newOutputStream();
         errorOuter.setActivateOnWrite(Activator.getDefault()
                 .getPreferenceStore().getBoolean(PREF.FORCE_SHOW_CONSOLE));
-        errorOuter.setColor(ColorConstants.red);
 
         Activator.getDefault().getPreferenceStore().addPropertyChangeListener(this);
+
+        Display display = PlatformUI.getWorkbench().getDisplay();
+        Color colorWarn = null;
+        Color colorErr = null;
+        // guard against resource leaks
+        try {
+            colorWarn = new Color(display, 255, 127, 0);
+            warningOuter.setColor(colorWarn);
+            colorErr = new Color(display, 255, 0, 0);
+            errorOuter.setColor(colorErr);
+        } catch (Exception ex) {
+            if (colorWarn != null) {
+                warningOuter.setColor(null);
+                colorWarn.dispose();
+            }
+            if (colorErr != null) {
+                errorOuter.setColor(null);
+                colorErr.dispose();
+            }
+            throw ex;
+        }
+        this.colorWarn = colorWarn;
+        this.colorErr = colorErr;
     }
 
     @Override
@@ -80,6 +100,12 @@ class CodekeeperConsole extends IOConsole implements IPropertyChangeListener {
                 prefs.removePropertyChangeListener(this);
             }
         }
+        if (colorWarn != null) {
+            colorWarn.dispose();
+        }
+        if (colorErr != null) {
+            colorErr.dispose();
+        }
         super.dispose();
     }
 
@@ -97,16 +123,17 @@ class CodekeeperConsole extends IOConsole implements IPropertyChangeListener {
 
     private void writeMsg(String msg, IOConsoleOutputStream outer) {
         try {
-            outer.write(msg + UIConsts._NL + UIConsts._NL);
+            outer.write(msg);
+            outer.write(UIConsts._NL);
         } catch (IOException e) {
             Log.log(e);
         }
     }
 
     void terminate() {
+        isTerminated = true;
         UiSync.exec(PlatformUI.getWorkbench().getDisplay(),
                 () -> setName(TERMINATED + ' ' + getName()));
-        isTerminated = true;
         notifyListeners();
     }
 
