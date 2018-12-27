@@ -7,7 +7,7 @@ import org.eclipse.core.runtime.jobs.Job;
 
 public class CountEventTimer {
 
-    private static final long PERIOD = 1000*60*60*24;
+    private static final long PERIOD = 1000*60*60*24L;
 
     private static final CountEventTimer INSTANCE = new CountEventTimer();
 

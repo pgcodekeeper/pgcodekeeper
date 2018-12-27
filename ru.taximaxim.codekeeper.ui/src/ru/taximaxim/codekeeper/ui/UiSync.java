@@ -22,7 +22,7 @@ public final class UiSync {
         try {
             d.asyncExec(r);
         } catch (SWTException ex) {
-            if (ex.code != SWT.ERROR_WIDGET_DISPOSED) {
+            if (ex.code != SWT.ERROR_DEVICE_DISPOSED) {
                 throw ex;
             }
             // do nothing: UI is already dead

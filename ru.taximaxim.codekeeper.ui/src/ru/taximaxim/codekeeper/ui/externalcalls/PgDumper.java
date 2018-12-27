@@ -9,6 +9,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.eclipse.core.runtime.NullProgressMonitor;
+
+import cz.startnet.utils.pgdiff.IProgressReporter;
+import ru.taximaxim.codekeeper.ui.consoles.UiProgressReporter;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.ProcBuilderUtils;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -21,14 +25,22 @@ public class PgDumper {
     private final String exePgdump;
     private final List<String> customParams;
 
-    private final String host, user, pass, dbname, encoding, timezone;
+    private final String host;
+    private final String user;
+    private final String pass;
+    private final String dbname;
+    private final String encoding;
+    private final String timezone;
+
     private final int port;
 
     private final String dumpFile;
 
-    public PgDumper(String exePgdump, String customParams,
-            String host, int port, String user, String pass,
-            String dbname, String encoding, String timezone, String dumpFile) {
+    private final IProgressReporter reporter;
+
+    public PgDumper(String exePgdump, String customParams, String host, int port,
+            String user, String pass, String dbname, String encoding,
+            String timezone, String dumpFile, IProgressReporter reporter) {
         this.exePgdump = exePgdump;
         this.host = host;
         this.port = port;
@@ -42,6 +54,7 @@ public class PgDumper {
         List<String> listCustom = new ArrayList<>(Arrays.asList(customParams.split(" "))); //$NON-NLS-1$
         listCustom.removeAll(Arrays.asList("")); //$NON-NLS-1$
         this.customParams = Collections.unmodifiableList(listCustom);
+        this.reporter = reporter;
     }
 
     /**
@@ -58,6 +71,7 @@ public class PgDumper {
         customParams = Arrays.asList();
         host = user = pass = dbname = encoding = timezone = dumpFile = null;
         port = 0;
+        reporter = new UiProgressReporter(new NullProgressMonitor());
     }
 
     public void pgDump() throws IOException {
@@ -77,15 +91,15 @@ public class PgDumper {
         env.addEnv("PGCLIENTENCODING", encoding); //$NON-NLS-1$
         env.addEnv("PGTZ", timezone); //$NON-NLS-1$
 
-        new StdStreamRedirector().launchAndRedirect(pgdump);
+        new StdStreamRedirector(reporter).launchAndRedirect(pgdump);
     }
 
     public String getVersion() throws IOException {
         ProcessBuilder pgdump = new ProcessBuilder(exePgdump,
                 "--version", "--no-password"); //$NON-NLS-1$ //$NON-NLS-2$
-        String version = new StdStreamRedirector().launchAndRedirect(pgdump).trim();
+        String version = new StdStreamRedirector(reporter).launchAndRedirect(pgdump).trim();
         Matcher m = PATTERN_VERSION.matcher(version);
-        if(!m.matches()) {
+        if (!m.matches()) {
             throw new IOException(MessageFormat.format(
                     Messages.pgDumper_bad_pg_dump_version_output, version));
         }

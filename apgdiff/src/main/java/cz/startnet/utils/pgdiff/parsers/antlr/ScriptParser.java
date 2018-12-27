@@ -56,16 +56,8 @@ public class ScriptParser {
                 .submit(() -> AntlrParser.makeBasicParser(SQLParser.class, script, name, errors).sql());
 
         List<String> l = new ArrayList<>();
-
-        List<StatementContext> statements = future.get().statement();
-
-        if (errors.isEmpty()) {
-            for (StatementContext st : statements) {
-                l.add(ParserAbstract.getFullCtxText(st));
-            }
-        } else {
-            // if has unsupported statement try to execute all script as one statement (like old mechanism)
-            l.add(script);
+        for (StatementContext st : future.get().statement()) {
+            l.add(ParserAbstract.getFullCtxText(st));
         }
 
         List<List<String>> list = new ArrayList<>(1);

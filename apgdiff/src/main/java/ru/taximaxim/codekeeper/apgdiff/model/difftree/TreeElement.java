@@ -194,6 +194,18 @@ public class TreeElement {
     }
 
     /**
+     * Создает копию элементов начиная с текущего
+     */
+    public TreeElement getCopy() {
+        TreeElement copy = new TreeElement(name, type, side);
+        copy.setSelected(selected);
+        for (TreeElement child : getChildren()) {
+            copy.addChild(child.getCopy());
+        }
+        return copy;
+    }
+
+    /**
      * начиная от текущего отмечает все элементы
      */
     public void setAllChecked() {
