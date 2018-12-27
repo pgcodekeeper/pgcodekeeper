@@ -1,7 +1,6 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -164,8 +163,6 @@ public class Differ implements IRunnableWithProgress {
                 writer.flush();
                 diffReverse = new String(diffOut.toByteArray(), StandardCharsets.UTF_8).trim();
             }
-        } catch (IOException ex) {
-            throw new InvocationTargetException(ex, ex.getLocalizedMessage());
         }
 
         PgDiffUtils.checkCancelled(pm);

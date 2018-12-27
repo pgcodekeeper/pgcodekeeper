@@ -44,7 +44,7 @@ public class AddBuilder extends AbstractHandler implements IHandler {
             final ICommand buildCommand = description.newCommand();
             buildCommand.setBuilderName(BUILDER.ID);
 
-            final List<ICommand> commands = new ArrayList<ICommand>();
+            final List<ICommand> commands = new ArrayList<>();
             commands.addAll(Arrays.asList(description.getBuildSpec()));
             commands.add(buildCommand);
 

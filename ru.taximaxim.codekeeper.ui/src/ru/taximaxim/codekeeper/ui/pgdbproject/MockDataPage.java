@@ -435,16 +435,12 @@ public class MockDataPage extends WizardPage {
 
         txtColumnName = new Text(composite, SWT.BORDER);
         txtColumnName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        txtColumnName.addModifyListener(new ModifyListener() {
-
-            @Override
-            public void modifyText(ModifyEvent e) {
-                IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
-                if (!sel.isEmpty()) {
-                    PgData<?> c = (PgData<?>) sel.getFirstElement();
-                    c.setName(txtColumnName.getText());
-                    viewer.refresh();
-                }
+        txtColumnName.addModifyListener(e -> {
+            IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
+            if (!sel.isEmpty()) {
+                PgData<?> c = (PgData<?>) sel.getFirstElement();
+                c.setName(txtColumnName.getText());
+                viewer.refresh();
             }
         });
 

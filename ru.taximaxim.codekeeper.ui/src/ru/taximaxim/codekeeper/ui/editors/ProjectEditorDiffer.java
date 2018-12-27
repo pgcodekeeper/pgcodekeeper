@@ -725,8 +725,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             InternalIgnoreList.readAppendList(
                     proj.getPathToProject().resolve(FILE.IGNORED_OBJECTS), ignoreList);
 
-            if (loadedRemote != null && loadedRemote instanceof DbInfo) {
-                ((DbInfo)loadedRemote).appendIgnoreFiles(ignoreList);
+            if (loadedRemote instanceof DbInfo) {
+                ((DbInfo) loadedRemote).appendIgnoreFiles(ignoreList);
             }
 
             try {

@@ -16,10 +16,7 @@ public class CustomPgData extends PgData<String> {
 
     @Override
     public String generateValue() {
-        switch (generator) {
-        case ANY: return start;
-        default: return null;
-        }
+        return generator == PgDataGenerator.ANY ? start : null;
     }
 
     @Override
