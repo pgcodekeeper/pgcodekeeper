@@ -5,6 +5,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.DosFileAttributeView;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -16,8 +17,8 @@ public final class FileUtils {
 
     private static final int HASH_LENGTH = 10;
 
-    public static final DateTimeFormatter FILE_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH''mm''ss");
-    public static final Pattern INVALID_FILENAME = Pattern.compile("[\\\\/:*?\"<>|]");
+    private static final DateTimeFormatter FILE_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH''mm''ss");
+    private static final Pattern INVALID_FILENAME = Pattern.compile("[\\\\/:*?\"<>|]");
 
     /**
      * Deletes folder and its contents recursively. FOLLOWS SYMLINKS!
@@ -57,6 +58,10 @@ public final class FileUtils {
         } else {
             return name;
         }
+    }
+
+    public static String getFileDate() {
+        return FileUtils.FILE_DATE.format(LocalDateTime.now());
     }
 
     private FileUtils() {

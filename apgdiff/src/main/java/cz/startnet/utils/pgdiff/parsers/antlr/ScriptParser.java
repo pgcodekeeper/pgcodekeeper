@@ -51,13 +51,8 @@ public class ScriptParser {
 
         List<String> l = new ArrayList<>();
 
-        if (errors.isEmpty()) {
-            for (StatementContext st : statements) {
-                l.add(ParserAbstract.getFullCtxText(st));
-            }
-        } else {
-            // if has unsupported statement try to execute all script as one statement (like old mechanism)
-            l.add(script);
+        for (StatementContext st : statements) {
+            l.add(ParserAbstract.getFullCtxText(st));
         }
 
         List<List<String>> list = new ArrayList<>(1);
