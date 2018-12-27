@@ -2162,7 +2162,24 @@ backup_service_master_key
 // https://msdn.microsoft.com/en-us/library/ms188332.aspx
 execute_statement
     : EXECUTE? 
-    (return_status=LOCAL_ID EQUAL)? qualified_name 
+      (execute_string | execute_module)
+    ;
+
+execute_string
+    : LR_BRACKET 
+    execute_string_part (PLUS execute_string_part)* 
+    (COMMA ((constant_LOCAL_ID | id) (OUTPUT | OUT)? | DEFAULT | NULL))*
+    RR_BRACKET
+    (AS (LOGIN | USER) EQUAL STRING)?
+    (AT qualified_name)?
+    ;
+
+execute_string_part
+    : LOCAL_ID | STRING
+    ;
+
+execute_module
+    : (return_status=LOCAL_ID EQUAL)? qualified_name 
     (execute_statement_arg (COMMA execute_statement_arg)*)? 
     (WITH execute_option (COMMA execute_option)*)?
     ;
@@ -2186,26 +2203,6 @@ result_sets_definition
     : LR_BRACKET column_definition (COMMA column_definition) RR_BRACKET
     | AS (OBJECT | TYPE) qualified_name
     | AS FOR XML
-    ;
-
-execute_statement_2
-    : EXECUTE 
-    LR_BRACKET execute_string (PLUS execute_string)* RR_BRACKET
-    (AS (LOGIN | USER) EQUAL STRING)?
-    ;
-
-execute_string
-    : LOCAL_ID | STRING
-    ;
-
-execute_statement_3
-    : EXECUTE 
-    LR_BRACKET 
-    execute_string (PLUS execute_string)* 
-    (COMMA ((constant_LOCAL_ID | id) (OUTPUT | OUT)? | DEFAULT | NULL))*
-    RR_BRACKET
-    (AS (LOGIN | USER) EQUAL STRING)?
-    (AT qualified_name)?
     ;
 
 // https://msdn.microsoft.com/en-us/library/ff848791.aspx
