@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_name_listContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Execute_moduleContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Execute_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ExpressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
@@ -42,7 +43,10 @@ public class MsInsert extends MsAbstractExprWithNmspc<Insert_statementContext> {
         if (ss != null) {
             new MsSelect(this).analyze(ss);
         } else if ((es = insert.execute_statement()) != null) {
-            new MsValueExpr(this).analyze(es.expression());
+            Execute_moduleContext em;
+            if ((em = es.execute_module()) != null) {
+                addObjectDepcy(em.qualified_name(), DbObjType.FUNCTION);
+            }
         }
 
         Qualified_nameContext tableName = insert.qualified_name();
