@@ -36,9 +36,12 @@ public class MsDiffDepciesTest {
     public static Collection<?> parameters() {
         return Arrays.asList(new Object[][] {
             { "empty", "empty_usr" },
-            // создается две функции f1 и f2, в f2 через 'EXECUTE' вызвается f1,
+            // создаются две функции f1 и f2, в f2 через 'EXECUTE' вызвается f1,
             // пользователь выбирает функцию f2
-            { "add_ms_func_exec", "add_ms_func_exec_usr_f2" }
+            { "add_ms_func_exec", "add_ms_func_exec_usr_f2" },
+            // создаются процедура p1 и функция f2, в f2 через 'EXECUTE' вызвается p1,
+            // пользователь выбирает функцию f2
+            { "add_ms_proc_exec", "add_ms_proc_exec_usr_f2" }
         });
     }
 
