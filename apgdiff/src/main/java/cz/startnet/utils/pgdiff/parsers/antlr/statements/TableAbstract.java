@@ -30,6 +30,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceExcep
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
+import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -38,7 +39,6 @@ import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class TableAbstract extends ParserAbstract {
@@ -168,7 +168,7 @@ public abstract class TableAbstract extends ParserAbstract {
                 fillOptionParams(value, option.name.getText(), false, col::addForeignOption);
             }
         }
-        table.addColumn(col);
+        addSafe(AbstractTable::addColumn, table, col);
     }
 
     protected void addColumn(String columnName, Data_typeContext datatype,
@@ -212,6 +212,7 @@ public abstract class TableAbstract extends ParserAbstract {
             constrBlank.setForeignTable(ftable);
             constrBlank.addDep(ftable);
 
+            // TODO need ref to table
             for (Schema_qualified_nameContext name : tblRef.column_references().names_references().name) {
                 String colName = QNameParser.getFirstName(name.identifier());
                 constrBlank.addForeignColumn(colName);

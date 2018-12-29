@@ -93,10 +93,10 @@ public final class FullAnalyze {
                 }
 
             } catch (UnresolvedReferenceException ex) {
-                unresolvRefExHandler(ex, errors, ctx, statement.getLocation());
+                unresolvRefExHandler(ex, errors, ctx, statement.getLocation().getFilePath());
             } catch (Exception ex) {
                 addError(errors, CustomParserListener.handleParserContextException(
-                        ex, statement.getLocation(), ctx));
+                        ex, statement.getLocation().getFilePath(), ctx));
             }
         }
 
@@ -131,10 +131,10 @@ public final class FullAnalyze {
                     CreateView.analyzeViewCtx(ctx, (AbstractView) e.getKey(),
                             stmt.getParent().getName(), db);
                 } catch (UnresolvedReferenceException ex) {
-                    unresolvRefExHandler(ex, errors, ctx, stmt.getLocation());
+                    unresolvRefExHandler(ex, errors, ctx, stmt.getLocation().getFilePath());
                 } catch (Exception ex) {
                     addError(errors, CustomParserListener.handleParserContextException(
-                            ex, stmt.getLocation(), ctx));
+                            ex, stmt.getLocation().getFilePath(), ctx));
                 }
             });
         }

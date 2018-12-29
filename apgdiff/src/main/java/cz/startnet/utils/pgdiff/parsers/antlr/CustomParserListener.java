@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -11,42 +12,39 @@ import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeE
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.ObjectCreationException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
 public class CustomParserListener {
 
     protected final PgDatabase db;
+    protected final boolean refMode;
+    protected final String filename;
     private final List<AntlrError> errors;
     private final IProgressMonitor monitor;
-    private final String filename;
+
+    protected String defaultSchema = null;
+
+    public void setDefaultSchema(String defaultSchema) {
+        this.defaultSchema = defaultSchema;
+    }
+
+    private final List<StatementBodyContainer> statementBodies = new ArrayList<>();
 
     public CustomParserListener(PgDatabase database, String filename,
-            List<AntlrError> errors, IProgressMonitor monitor) {
+            boolean refMode, List<AntlrError> errors, IProgressMonitor monitor) {
         this.db = database;
         this.errors = errors;
         this.monitor = monitor;
         this.filename = filename;
+        this.refMode = refMode;
     }
 
     /**
      * @param ctx statememnt's first token rule
      */
     protected void safeParseStatement(ParserAbstract p, ParserRuleContext ctx) {
-        safeParseStatement(() -> {
-            PgStatement st = p.getObject();
-            if (st != null) {
-                st.setLocation(filename);
-
-                if (st instanceof AbstractTable) {
-                    ((AbstractTable) st).getConstraints().stream()
-                    .filter(con -> con.getLocation() == null)
-                    .forEach(con -> con.setLocation(filename));
-                }
-            }
-        }, ctx);
+        safeParseStatement(() -> p.parseObject(filename, defaultSchema, refMode, statementBodies), ctx);
     }
 
     protected void safeParseStatement(Runnable r, ParserRuleContext ctx) {
@@ -60,6 +58,10 @@ public class CustomParserListener {
         } catch (Exception e) {
             errors.add(handleParserContextException(e, filename, ctx));
         }
+    }
+
+    public List<StatementBodyContainer> getStatementBodies() {
+        return statementBodies;
     }
 
     public static AntlrError handleUnresolvedReference(UnresolvedReferenceException ex, String filename) {

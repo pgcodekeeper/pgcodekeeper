@@ -12,7 +12,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public final class GenericColumn implements Serializable {
+public class GenericColumn implements Serializable {
 
     private static final Collection<String> SYS_SCHEMAS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             "information_schema", "pg_catalog"
@@ -245,6 +245,18 @@ public final class GenericColumn implements Serializable {
         return found == 1 ? oper : null;
     }
 
+    public String getObjName() {
+        if (column != null) {
+            return column;
+        } else if (table != null) {
+            return table;
+        } else if (schema != null) {
+            return schema;
+        }
+
+        return "";
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -258,6 +270,10 @@ public final class GenericColumn implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
+        return compare(obj);
+    }
+
+    public final boolean compare(Object obj) {
         boolean eq = false;
 
         if (this == obj) {

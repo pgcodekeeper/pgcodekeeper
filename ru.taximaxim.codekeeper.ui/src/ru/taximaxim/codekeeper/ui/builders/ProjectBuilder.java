@@ -72,7 +72,7 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
                     throws CoreException, InterruptedException, IOException {
         List<IFile> files = new ArrayList<>();
         delta.accept(d -> {
-            if (UIProjectLoader.isInProject(d, OpenProjectUtils.checkMsSql(getProject()))) {
+            if (UIProjectLoader.isInProject(d, isMsSql)) {
                 IResource res = d.getResource();
                 if (res.getType() == IResource.FILE) {
                     switch (d.getKind()) {

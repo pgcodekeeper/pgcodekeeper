@@ -1,10 +1,12 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_db_roleContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.MsRole;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsRole extends ParserAbstract {
 
@@ -16,14 +18,15 @@ public class CreateMsRole extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
-        String name = ctx.role_name.getText();
+    public void parseObject() {
+        IdContext nameCtx = ctx.role_name;
+        String name = nameCtx.getText();
         MsRole role = new MsRole(name);
         if (ctx.owner_name != null && !db.getArguments().isIgnorePrivileges()) {
             role.setOwner(ctx.owner_name.getText());
         }
 
-        db.addRole(role);
-        return role;
+        addSafe(PgDatabase::addRole, db, role);
+        fillObjDefinition(new PgObjLocation(nameCtx.getText(), DbObjType.ROLE), nameCtx, role);
     }
 }

@@ -1,8 +1,9 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -15,11 +16,13 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Including_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
@@ -31,8 +34,10 @@ import cz.startnet.utils.pgdiff.schema.IStatement;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgOperator;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -42,18 +47,44 @@ public abstract class ParserAbstract {
 
     protected final PgDatabase db;
 
+    private List<StatementBodyContainer> statementBodies;
+    private boolean refMode;
+    private String fileName;
+    private String defaultSchema;
+
     public ParserAbstract(PgDatabase db) {
         this.db = db;
     }
 
+    public void parseObject(String fileName, String defaultSchema,
+            boolean refMode, List<StatementBodyContainer> statementBodies) {
+        this.fileName = fileName;
+        this.defaultSchema = defaultSchema;
+        this.refMode = refMode;
+        this.statementBodies = statementBodies;
+        parseObject();
+    }
+
+    protected boolean isRefMode() {
+        return refMode;
+    }
+
+    protected void addStatementBody(ParserRuleContext ctx) {
+        // if not refMode FullAnalyze must find all dependencies
+        if (/*refMode && */statementBodies != null) {
+            statementBodies.add(new StatementBodyContainer(fileName, ctx));
+        }
+    }
+
     /**
-     * Parse object from context and return it
-     *
-     * @return parsed object
+     * Parse object from context
      */
-    public abstract PgStatement getObject();
+    public abstract void parseObject();
 
     protected String getDefSchemaName() {
+        if (defaultSchema != null) {
+            return defaultSchema;
+        }
         AbstractSchema s = db.getDefaultSchema();
         return s == null ? null : s.getName();
     }
@@ -167,31 +198,168 @@ public abstract class ParserAbstract {
         return argType;
     }
 
-    public static <T extends IStatement> T getSafe(Function <String, T> getter,
-            ParserRuleContext ctx) {
-        return getSafe(getter, ctx.getText(), ctx.getStart());
+    protected void addReferenceOnSchema(ParserRuleContext schemaCtx) {
+        if (schemaCtx != null) {
+            addObjReference(new PgObjLocation(schemaCtx.getText(), DbObjType.SCHEMA),
+                    StatementActions.NONE, schemaCtx);
+        }
     }
 
-    public static <T extends IStatement> T getSafe(Function <String, T> getter,
-            String name, Token errToken) {
-        T statement = getter.apply(name);
-        if (statement == null) {
+    protected PgObjLocation addObjReference(ParserRuleContext name, DbObjType type,
+            StatementActions action) {
+        return addObjReference(new PgObjLocation(name.getText(), type), action, name);
+    }
+
+    protected PgObjLocation addObjReference(PgObjLocation loc, StatementActions action,
+            ParserRuleContext nameCtx) {
+        loc.setOffset(getStart(nameCtx));
+        loc.setLine(nameCtx.start.getLine());
+        loc.setFilePath(fileName);
+        loc.setAction(action);
+        db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
+        return loc;
+    }
+
+    protected PgObjLocation addFullObjReference(List<? extends ParserRuleContext> ids, DbObjType type,
+            StatementActions action) {
+        addReferenceOnSchema(QNameParser.getSchemaNameCtx(ids));
+        ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
+        return addObjReference(new PgObjLocation(QNameParser.getSchemaName(ids, getDefSchemaName()),
+                nameCtx.getText(), type), action,nameCtx);
+    }
+
+    protected PgObjLocation addFullObjReference(IdContext schemaCtx, IdContext name, DbObjType type,
+            StatementActions action) {
+        addReferenceOnSchema(schemaCtx);
+        return addObjReference((new PgObjLocation(schemaCtx != null ? schemaCtx.getText()
+                : getDefSchemaName(), name.getText(), type)), action, name);
+    }
+
+    protected void fillObjDefinition(PgObjLocation loc, ParserRuleContext nameCtx, PgStatement st) {
+        loc.setOffset(getStart(nameCtx));
+        loc.setLine(nameCtx.start.getLine());
+        loc.setFilePath(fileName);
+        loc.setAction(StatementActions.CREATE);
+        st.setLocation(loc);
+        db.getObjDefinitions().computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
+        db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
+    }
+
+    private int getStart(ParserRuleContext ctx) {
+        int start = ctx.start.getStartIndex();
+        if (ctx instanceof IdentifierContext && ((IdentifierContext) ctx).QuotedIdentifier() != null
+                || ctx instanceof IdContext && ((IdContext) ctx).SQUARE_BRACKET_ID() != null) {
+            start++;
+        }
+        return start;
+    }
+
+    public <T extends IStatement, R extends IStatement> R getSafe(
+            BiFunction<T, String, R> getter, T container, ParserRuleContext ctx) {
+        return getSafe(getter, container, ctx.getText(), ctx.start);
+    }
+
+    public static <T extends IStatement, R extends IStatement> R getSafe(BiFunction<T, String, R> getter,
+            T container, ParserRuleContext ctx, boolean refMode) {
+        return getSafe(getter, container, ctx.getText(), ctx.getStart(), refMode);
+    }
+
+    public static <T extends IStatement, R extends IStatement> R getSafe(BiFunction<T, String, R> getter,
+            T container, String name, Token errToken, boolean refMode) {
+        if (container == null) {
+            return null;
+        }
+        R statement = getter.apply(container, name);
+        if (statement == null && !refMode) {
             throw new UnresolvedReferenceException("Cannot find object in database: "
                     + errToken.getText(), errToken);
         }
         return statement;
     }
 
-    public AbstractSchema getSchemaSafe(List<? extends ParserRuleContext> ids, AbstractSchema defaultSchema) {
+    public <T extends IStatement, R extends IStatement> R getSafe(
+            BiFunction<T, String, R> getter, T container, String name, Token errToken) {
+        return getSafe(getter, container, name, errToken, refMode);
+    }
+
+    protected <U extends PgStatement> void addSafe(BiConsumer<AbstractSchema, U> adder,
+            AbstractSchema parent, U child, List<? extends ParserRuleContext> ids) {
+        addSafe(adder, parent, child);
+        addReferenceOnSchema(QNameParser.getSchemaNameCtx(ids));
+        ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
+        PgObjLocation loc = new PgObjLocation(
+                QNameParser.getSchemaName(ids, getDefSchemaName()),
+                nameCtx.getText(), child.getStatementType());
+        fillObjDefinition(loc, nameCtx, child);
+    }
+
+    protected <T extends IStatement, U extends PgStatement> void addSafe(BiConsumer<T, U> adder,
+            T parent, U child, IdContext nameCtx) {
+        addSafe(adder, parent, child);
+        PgObjLocation loc = new PgObjLocation(nameCtx.getText(), child.getStatementType());
+        fillObjDefinition(loc, nameCtx, child);
+    }
+
+    protected <T extends IStatement, U extends PgStatement> void addSafe(BiConsumer<T, U> adder,
+            T parent, U child, IdContext schemaCtx, IdContext parentCtx, IdContext nameCtx) {
+        addSafe(adder, parent, child);
+        PgObjLocation loc = new PgObjLocation(schemaCtx != null ? schemaCtx.getText()
+                : getDefSchemaName(), parentCtx.getText(), nameCtx.getText(), child.getStatementType());
+        fillObjDefinition(loc, nameCtx, child);
+    }
+
+    protected <T extends IStatement, U extends IStatement> void addSafe(BiConsumer<T, U> adder,
+            T parent, U child) {
+        if (!refMode && parent != null) {
+            adder.accept(parent, child);
+        }
+    }
+
+    protected <T extends IStatement, U extends Object> void setSafe(BiConsumer<T, U> adder,
+            T statement, U object) {
+        if (!refMode) {
+            adder.accept(statement, object);
+        }
+    }
+
+    protected void addDepSafe(PgStatement st, List<IdentifierContext> ids, DbObjType type) {
+        addReferenceOnSchema(QNameParser.getSchemaNameCtx(ids));
+        IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
+        PgObjLocation loc = new PgObjLocation(QNameParser.getSchemaName(ids, getDefSchemaName()),
+                nameCtx.getText(), type);
+        addDepSafe(st, loc, nameCtx);
+    }
+
+    protected void addDepSafe(PgStatement st, PgObjLocation loc, ParserRuleContext nameCtx) {
+        loc.setOffset(getStart(nameCtx));
+        loc.setLine(nameCtx.start.getLine());
+        loc.setFilePath(fileName);
+        if (!refMode) {
+            st.addDep(loc);
+        }
+        db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
+    }
+
+    protected AbstractSchema getSchemaSafe(List<? extends ParserRuleContext> ids) {
+        return getSchemaSafe(ids, db.getSchema(getDefSchemaName()));
+    }
+
+    protected AbstractSchema getSchemaSafe(List<? extends ParserRuleContext> ids, AbstractSchema defaultSchema) {
         ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
-        AbstractSchema foundSchema = schemaCtx == null ? defaultSchema : getSafe(db::getSchema, schemaCtx);
-        if (foundSchema != null) {
+        AbstractSchema foundSchema = schemaCtx == null ? defaultSchema :
+            getSafe(PgDatabase::getSchema, db, schemaCtx);
+        if (foundSchema != null || refMode) {
             return foundSchema;
         }
 
         ParserRuleContext firstNameCtx = QNameParser.getFirstNameCtx(ids);
         throw new UnresolvedReferenceException("Schema not found for " +
                 getFullCtxText(ids), firstNameCtx.start);
+    }
+
+    protected void setCommentToDefinition(PgObjLocation ref, String comment) {
+        db.getObjDefinitions().values().stream().flatMap(List::stream)
+        .filter(ref::compare).forEach(def -> def.setComment(comment));
     }
 
     /**
@@ -208,12 +376,12 @@ public abstract class ParserAbstract {
         }
     }
 
-    static void addTypeAsDepcy(Data_typeContext ctx, PgStatement st, String schema) {
+    protected void addTypeAsDepcy(Data_typeContext ctx, PgStatement st, String schema) {
         Schema_qualified_name_nontypeContext qname = ctx.predefined_type().schema_qualified_name_nontype();
         if (qname != null) {
             IdentifierContext schemaCtx = qname.identifier();
             String schemaName = schema;
-            if (schemaCtx != null){
+            if (schemaCtx != null) {
                 schemaName = schemaCtx.getText();
                 if ("pg_catalog".equals(schemaName)
                         || "information_schema".equals(schemaName)) {
@@ -221,8 +389,10 @@ public abstract class ParserAbstract {
                 }
             }
 
-            st.addDep(new GenericColumn(schemaName, qname.identifier_nontype().getText(),
-                    DbObjType.TYPE));
+            addReferenceOnSchema(schemaCtx);
+            Identifier_nontypeContext name = qname.identifier_nontype();
+            PgObjLocation loc = new PgObjLocation(schemaName, name.getText(), DbObjType.TYPE);
+            addDepSafe(st, loc, name);
         }
     }
 
@@ -234,7 +404,10 @@ public abstract class ParserAbstract {
             if (schemaCtx != null) {
                 String schemaName = schemaCtx.getText();
                 if (!"sys".equals(schemaName)) {
-                    st.addDep(new GenericColumn(schemaCtx.getText(), qname.name.getText(), DbObjType.TYPE));
+                    addReferenceOnSchema(schemaCtx);
+                    IdContext name = qname.name;
+                    PgObjLocation loc = new PgObjLocation(schemaName, name.getText(), DbObjType.TYPE);
+                    addDepSafe(st, loc, name);
                 }
             }
         }

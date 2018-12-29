@@ -1,5 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.Arrays;
+
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.All_op_refContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.All_simple_opContext;
@@ -8,11 +10,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_optionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgOperator;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateOperator extends ParserAbstract {
     private final Create_operator_statementContext ctx;
@@ -22,22 +24,23 @@ public class CreateOperator extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public void parseObject() {
         Operator_nameContext operNameCtx = ctx.name;
-        AbstractSchema operSchema = getSchemaSafe(operNameCtx, db.getDefaultSchema(), db);
-        String operSchemaName = operSchema.getName();
-        PgOperator oper = new PgOperator(operNameCtx.operator.getText());
+        IdentifierContext schemaCtx = operNameCtx.schema_name;
+        String schemaName = schemaCtx != null ? schemaCtx.getText() : getDefSchemaName();
+        All_simple_opContext operName = operNameCtx.operator;
+        PgOperator oper = new PgOperator(operName.getText());
         for (Operator_optionContext option : ctx.operator_option()) {
             if (option.PROCEDURE() != null || option.FUNCTION() != null) {
                 oper.setProcedure(option.func_name.getText());
             } else if (option.LEFTARG() != null) {
                 Data_typeContext leftArgTypeCtx = option.type;
                 oper.setLeftArg(leftArgTypeCtx.getText());
-                addTypeAsDepcy(leftArgTypeCtx, oper, operSchemaName);
+                addTypeAsDepcy(leftArgTypeCtx, oper, schemaName);
             } else if (option.RIGHTARG() != null) {
                 Data_typeContext rightArgTypeCtx = option.type;
                 oper.setRightArg(rightArgTypeCtx.getText());
-                addTypeAsDepcy(rightArgTypeCtx, oper, operSchemaName);
+                addTypeAsDepcy(rightArgTypeCtx, oper, schemaName);
             } else if (option.COMMUTATOR() != null || option.NEGATOR() != null) {
                 All_op_refContext comutNameCtx = option.addition_oper_name;
                 IdentifierContext schemaNameCxt = comutNameCtx.identifier();
@@ -68,21 +71,10 @@ public class CreateOperator extends ParserAbstract {
             }
         }
 
-        operSchema.addOperator(oper);
-        return oper;
-    }
-
-    public static AbstractSchema getSchemaSafe(Operator_nameContext operNameCtx,
-            AbstractSchema defaultSchema, PgDatabase db) {
-        IdentifierContext schemaCtx = operNameCtx.schema_name;
-        AbstractSchema foundSchema = schemaCtx == null ?
-                defaultSchema : getSafe(db::getSchema, schemaCtx);
-        if (foundSchema != null) {
-            return foundSchema;
-        }
-
-        All_simple_opContext opChars = operNameCtx.operator;
-        throw new UnresolvedReferenceException("Schema not found for " +
-                opChars.getText(), opChars.getStart());
+        AbstractSchema operSchema = getSchemaSafe(Arrays.asList(schemaCtx, operName));
+        addSafe(AbstractSchema::addOperator, operSchema, oper);
+        addReferenceOnSchema(operNameCtx.schema_name);
+        fillObjDefinition(new PgObjLocation(schemaName, operName.getText(), DbObjType.OPERATOR),
+                operName, oper);
     }
 }

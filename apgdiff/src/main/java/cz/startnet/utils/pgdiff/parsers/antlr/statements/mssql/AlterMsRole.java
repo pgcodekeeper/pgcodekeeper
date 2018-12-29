@@ -4,7 +4,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_db_roleContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.TableAbstract;
 import cz.startnet.utils.pgdiff.schema.MsRole;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class AlterMsRole extends TableAbstract {
 
@@ -16,13 +17,13 @@ public class AlterMsRole extends TableAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
-        MsRole role = getSafe(db::getRole, ctx.role_name);
+    public void parseObject() {
+        MsRole role = getSafe(PgDatabase::getRole, db, ctx.role_name);
 
         if (ctx.ADD() != null) {
-            role.addMember(ctx.database_principal.getText());
+            setSafe(MsRole::addMember, role, ctx.database_principal.getText());
         }
 
-        return null;
+        addObjReference(ctx.role_name, DbObjType.ROLE, StatementActions.ALTER);
     }
 }

@@ -3,7 +3,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Collection;
 import java.util.List;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
@@ -24,8 +23,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Tsql_fileContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import ru.taximaxim.codekeeper.apgdiff.Log;
@@ -96,15 +93,12 @@ public class AntlrParser {
 
     public static void parseSqlStream(InputStream inputStream, String charsetName,
             String parsedObjectName, List<AntlrError> errors,IProgressMonitor mon, int monitoringLevel,
-            Collection<SqlContextProcessor> listeners) throws IOException, InterruptedException {
+            SqlContextProcessor listener) throws IOException, InterruptedException {
         SQLParser parser = makeBasicParser(SQLParser.class, inputStream, charsetName, parsedObjectName, errors);
         parser.addParseListener(new CustomParseTreeListener(
                 monitoringLevel, mon == null ? new NullProgressMonitor() : mon));
         try {
-            SqlContext ctx = parser.sql();
-            for (SqlContextProcessor listener : listeners) {
-                listener.process(ctx, null);
-            }
+            listener.process(parser.sql(), null);
         } catch (MonitorCancelledRuntimeException mcre){
             throw new InterruptedException();
         } catch (UnresolvedReferenceException ex) {
@@ -114,22 +108,18 @@ public class AntlrParser {
 
     public static void parseTSqlStream(InputStream inputStream, String charsetName,
             String parsedObjectName, List<AntlrError> errors,IProgressMonitor mon, int monitoringLevel,
-            Collection<TSqlContextProcessor> listeners) throws IOException, InterruptedException {
+            TSqlContextProcessor listener) throws IOException, InterruptedException {
         TSQLParser parser = makeBasicParser(TSQLParser.class, inputStream, charsetName, parsedObjectName, errors);
         parser.addParseListener(new CustomParseTreeListener(
                 monitoringLevel, mon == null ? new NullProgressMonitor() : mon));
         try {
-            Tsql_fileContext ctx = parser.tsql_file();
-            for (TSqlContextProcessor listener : listeners) {
-                listener.process(ctx, (CommonTokenStream) parser.getInputStream());
-            }
+            listener.process(parser.tsql_file(), (CommonTokenStream) parser.getInputStream());
         } catch (MonitorCancelledRuntimeException mcre){
             throw new InterruptedException();
         } catch (UnresolvedReferenceException ex) {
             errors.add(CustomTSQLParserListener.handleUnresolvedReference(ex, parsedObjectName));
         }
     }
-
 
     private AntlrParser() {
         // only static

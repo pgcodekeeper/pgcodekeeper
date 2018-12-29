@@ -1,13 +1,16 @@
 package cz.startnet.utils.pgdiff.parsers.antlr;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_alterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_createContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_dropContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Session_local_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statementContext;
@@ -16,6 +19,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.StatementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterDomain;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterFtsStatement;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterOther;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterOwner;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterSequence;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterTable;
@@ -39,8 +43,12 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTable;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateType;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.DropStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.UpdateStatement;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CustomSQLParserListener extends CustomParserListener
 implements SqlContextProcessor {
@@ -49,8 +57,8 @@ implements SqlContextProcessor {
     private String oids;
 
     public CustomSQLParserListener(PgDatabase database, String filename,
-            List<AntlrError> errors, IProgressMonitor monitor) {
-        super(database, filename, errors, monitor);
+            boolean refMode, List<AntlrError> errors, IProgressMonitor monitor) {
+        super(database, filename, refMode, errors, monitor);
     }
 
     @Override
@@ -63,14 +71,20 @@ implements SqlContextProcessor {
 
     public void statement(StatementContext statement) {
         Schema_statementContext schema = statement.schema_statement();
+        Data_statementContext ds;
         if (schema != null) {
             Schema_createContext create = schema.schema_create();
             Schema_alterContext alter;
+            Schema_dropContext drop;
             if (create != null) {
                 create(create);
             } else if ((alter = schema.schema_alter()) != null) {
                 alter(alter);
+            } else if ((drop = schema.schema_drop()) != null) {
+                safeParseStatement(new DropStatement(drop, db), drop);
             }
+        } else if ((ds = statement.data_statement()) != null) {
+            data(ds);
         }
     }
 
@@ -138,8 +152,19 @@ implements SqlContextProcessor {
         } else if (ctx.alter_owner() != null) {
             p = new AlterOwner(ctx.alter_owner(), db);
         } else {
+            p = new AlterOther(ctx, db);
+        }
+        safeParseStatement(p, ctx);
+    }
+
+    private void data(Data_statementContext ctx) {
+        ParserAbstract p;
+        if (ctx.update_stmt_for_psql() != null) {
+            p =  new UpdateStatement(ctx.update_stmt_for_psql(), db);
+        } else {
             return;
         }
+
         safeParseStatement(p, ctx);
     }
 
@@ -160,10 +185,21 @@ implements SqlContextProcessor {
             if ("pg_catalog".equals(confValue)) {
                 break;
             }
-            // allow the exception to terminate entire walker here
-            // so that objects aren't created on the wrong search_path
-            db.setDefaultSchema(ParserAbstract.getSafe(
-                    db::getSchema, confValue, confValueCtx.getStart()).getName());
+            defaultSchema = confValue;
+
+            // schema ref
+            db.getObjReferences().computeIfAbsent(filename, v -> new ArrayList<>()).add(
+                    new PgObjLocation(confValue, DbObjType.SCHEMA)
+                    .setFilePath(filename)
+                    .setOffset(confValueCtx.start.getStartIndex())
+                    .setLine(confValueCtx.start.getLine()));
+
+            if (!refMode) {
+                // allow the exception to terminate entire walker here
+                // so that objects aren't created on the wrong search_path
+                ParserAbstract.getSafe(PgDatabase::getSchema, db,
+                        confValue, confValueCtx.getStart(), refMode);
+            }
             break;
         case "default_with_oids":
             oids = confValue;

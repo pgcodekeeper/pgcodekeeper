@@ -31,9 +31,9 @@ implements TSqlContextProcessor {
 
     private final Map<PgStatement, StatementOverride> overrides;
 
-    public TSQLOverridesListener(PgDatabase db, String filename, List<AntlrError> errors,
+    public TSQLOverridesListener(PgDatabase db, String filename, boolean refMode, List<AntlrError> errors,
             IProgressMonitor mon, Map<PgStatement, StatementOverride> overrides) {
-        super(db, filename, errors, mon);
+        super(db, filename, refMode, errors, mon);
         this.overrides = overrides;
     }
 
@@ -74,7 +74,8 @@ implements TSqlContextProcessor {
     private void create(Schema_createContext ctx) {
         Create_assemblyContext ass = ctx.create_assembly();
         if (ass!= null && ass.owner_name != null) {
-            PgStatement st = ParserAbstract.getSafe(db::getAssembly, ass.assembly_name);
+            PgStatement st = ParserAbstract.getSafe(
+                    PgDatabase::getAssembly, db, ass.assembly_name, false);
             String owner = ass.owner_name.getText();
             overrides.computeIfAbsent(st, k -> new StatementOverride()).setOwner(owner);
         }
@@ -90,7 +91,8 @@ implements TSqlContextProcessor {
     private void batch(Batch_statementContext batch) {
         Create_schemaContext schema = batch.create_schema();
         if (schema != null && schema.owner_name != null) {
-            PgStatement st = ParserAbstract.getSafe(db::getSchema, schema.schema_name);
+            PgStatement st = ParserAbstract.getSafe(
+                    PgDatabase::getSchema, db, schema.schema_name, false);
             String owner = schema.owner_name.getText();
             overrides.computeIfAbsent(st, k -> new StatementOverride()).setOwner(owner);
         }

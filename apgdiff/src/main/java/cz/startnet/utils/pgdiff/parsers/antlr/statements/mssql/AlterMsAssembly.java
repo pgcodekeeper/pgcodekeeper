@@ -7,7 +7,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Assembly_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.TableAbstract;
 import cz.startnet.utils.pgdiff.schema.MsAssembly;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class AlterMsAssembly extends TableAbstract {
 
@@ -19,18 +20,17 @@ public class AlterMsAssembly extends TableAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
-        MsAssembly assembly = getSafe(db::getAssembly, ctx.name);
+    public void parseObject() {
+        MsAssembly assembly = getSafe(PgDatabase::getAssembly, db, ctx.name);
+        addObjReference(ctx.name, DbObjType.ASSEMBLY, StatementActions.ALTER);
 
         List<Assembly_optionContext> options = ctx.assembly_option();
         if (options != null) {
             for (Assembly_optionContext option : options) {
                 if (option.VISIBILITY() != null) {
-                    assembly.setVisible(option.ON() != null);
+                    setSafe(MsAssembly::setVisible, assembly, option.ON() != null);
                 }
             }
         }
-
-        return null;
     }
 }

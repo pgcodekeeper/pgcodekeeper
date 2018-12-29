@@ -6,9 +6,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.StatementContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateSchema extends ParserAbstract {
 
@@ -23,10 +24,11 @@ public class CreateSchema extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
-        String name = ctx.name.getText();
+    public void parseObject() {
+        IdentifierContext nameCtx = ctx.name;
+        String name = nameCtx.getText();
         if (name == null) {
-            return null;
+            return;
         }
         AbstractSchema schema = new PgSchema(name);
         IdentifierContext userName = ctx.user_name;
@@ -34,21 +36,20 @@ public class CreateSchema extends ParserAbstract {
                 && (!name.equals(ApgdiffConsts.PUBLIC) || !"postgres".equals(userName.getText()))) {
             schema.setOwner(userName.getText());
         }
-        db.addSchema(schema);
+        addSafe(PgDatabase::addSchema, db, schema);
+        fillObjDefinition(new PgObjLocation(nameCtx.getText(), DbObjType.SCHEMA),
+                nameCtx, schema);
 
         if (ctx.schema_def != null) {
-            String defaultSchemaName = db.getDefaultSchema().getName();
+            String defaultSchemaName = getDefSchemaName();
             try {
-                db.setDefaultSchema(name);
+                listener.setDefaultSchema(name);
                 for (StatementContext s : ctx.schema_def.statement()) {
                     listener.statement(s);
                 }
             } finally {
-                db.setDefaultSchema(defaultSchemaName);
+                listener.setDefaultSchema(defaultSchemaName);
             }
         }
-
-        return schema;
     }
-
 }

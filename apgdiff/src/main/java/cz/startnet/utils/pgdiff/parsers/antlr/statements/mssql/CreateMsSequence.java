@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
+import java.util.Arrays;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_sequenceContext;
@@ -11,7 +12,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsSequence;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class CreateMsSequence extends ParserAbstract {
 
@@ -23,14 +23,14 @@ public class CreateMsSequence extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
-        String name = ctx.qualified_name().name.getText();
+    public void parseObject() {
+        IdContext nameCtx = ctx.qualified_name().name;
+        String name = nameCtx.getText();
         MsSequence sequence = new MsSequence(name);
         fillSequence(sequence, ctx.sequence_body());
-        IdContext schemaCtx = ctx.qualified_name().schema;
-        AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
-        schema.addSequence(sequence);
-        return sequence;
+        List<IdContext> ids = Arrays.asList(ctx.qualified_name().schema, nameCtx);
+        AbstractSchema schema = getSchemaSafe(ids);
+        addSafe(AbstractSchema::addSequence, schema, sequence, ids);
     }
 
     private void fillSequence(MsSequence sequence, List<Sequence_bodyContext> list) {

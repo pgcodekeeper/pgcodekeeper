@@ -41,7 +41,7 @@ public abstract class PgStatement implements IStatement, IHashable {
     private PgStatement parent;
     protected final Set<GenericColumn> deps = new LinkedHashSet<>();
 
-    protected String location;
+    protected PgObjLocation location;
     private boolean isLib;
 
     // 0 means not calculated yet and/or hash has been reset
@@ -93,11 +93,11 @@ public abstract class PgStatement implements IStatement, IHashable {
         return parent;
     }
 
-    public String getLocation() {
+    public PgObjLocation getLocation() {
         return location;
     }
 
-    public void setLocation(String location) {
+    public void setLocation(PgObjLocation location) {
         this.location = location;
     }
 

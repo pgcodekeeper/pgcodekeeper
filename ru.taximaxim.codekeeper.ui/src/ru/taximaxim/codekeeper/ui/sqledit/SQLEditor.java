@@ -74,17 +74,14 @@ import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.osgi.service.prefs.BackingStoreException;
 
-import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcMsConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
 import cz.startnet.utils.pgdiff.parsers.antlr.ScriptParser;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.TempFile;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.IPartAdapter2;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -213,26 +210,8 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         List<PgObjLocation> refs = getParser().getObjsForEditor(getEditorInput());
         IAnnotationModel model = getSourceViewer().getAnnotationModel();
         for (PgObjLocation loc : refs) {
-            String annotationMsg = null;
-            if (loc.getAction() == StatementActions.UPDATE) {
-                annotationMsg = "UPDATE statement"; //$NON-NLS-1$
-            } else if (loc.getAction() == StatementActions.DROP && loc.getObjType() == DbObjType.TABLE){
-                annotationMsg = "DROP TABLE statement"; //$NON-NLS-1$
-            } else if (loc.getAction() == StatementActions.ALTER){
-                String text = loc.getText();
-                if (loc.getObjType() == DbObjType.TABLE) {
-                    if (DangerStatement.ALTER_COLUMN.getRegex().matcher(text).matches()) {
-                        annotationMsg = "ALTER COLUMN ... TYPE statement"; //$NON-NLS-1$
-                    } else if (DangerStatement.DROP_COLUMN.getRegex().matcher(text).matches()) {
-                        annotationMsg = "DROP COLUMN statement"; //$NON-NLS-1$
-                    }
-                } else if (loc.getObjType() == DbObjType.SEQUENCE &&
-                        DangerStatement.RESTART_WITH.getRegex().matcher(text).matches()) {
-                    annotationMsg = "ALTER SEQUENCE ... RESTART WITH statement"; //$NON-NLS-1$
-                }
-            }
-            if (annotationMsg != null) {
-                model.addAnnotation(new Annotation(MARKER.DANGER_ANNOTATION, false, annotationMsg),
+            if (loc.getWarningText() != null) {
+                model.addAnnotation(new Annotation(MARKER.DANGER_ANNOTATION, false, loc.getWarningText()),
                         new Position(loc.getOffset(), loc.getObjLength()));
             }
         }

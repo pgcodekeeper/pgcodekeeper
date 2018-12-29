@@ -29,10 +29,10 @@ public class PgOverride {
     }
 
     public String getNewLocation() {
-        return newStatement.getLocation();
+        return newStatement.getLocation().getFilePath();
     }
 
     public String getOldLocation() {
-        return oldStatement.getLocation();
+        return oldStatement.getLocation().getFilePath();
     }
 }

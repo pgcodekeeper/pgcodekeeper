@@ -11,18 +11,23 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.BatchContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statement_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Ddl_clauseContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Dml_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Enable_disable_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_alterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_createContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_dropContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Security_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Set_specialContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Set_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Sql_clausesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.St_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Tsql_fileContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Update_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.AlterMsAssembly;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.AlterMsAuthorization;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.AlterMsBatch;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.AlterMsOther;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.AlterMsRole;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.AlterMsTable;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsAssembly;
@@ -39,6 +44,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsType;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsUser;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.DisableMsTrigger;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.DropMsStatement;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.UpdateMsStatement;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class CustomTSQLParserListener extends CustomParserListener
@@ -48,8 +55,8 @@ implements TSqlContextProcessor {
     private boolean quotedIdentifier = true;
 
     public CustomTSQLParserListener(PgDatabase database, String filename,
-            List<AntlrError> errors, IProgressMonitor monitor) {
-        super(database, filename, errors, monitor);
+            boolean refMode, List<AntlrError> errors, IProgressMonitor monitor) {
+        super(database, filename, refMode, errors, monitor);
     }
 
     @Override
@@ -69,17 +76,26 @@ implements TSqlContextProcessor {
 
     public void clause(St_clauseContext st) {
         Ddl_clauseContext ddl = st.ddl_clause();
+        Dml_clauseContext dml;
         Another_statementContext ast;
         if (ddl != null) {
             Schema_createContext create = ddl.schema_create();
             Schema_alterContext alter;
+            Schema_dropContext drop;
             Enable_disable_triggerContext disable;
             if (create != null) {
                 create(create);
             } else if ((alter = ddl.schema_alter()) != null) {
                 alter(alter);
-            } else if ((disable = ddl.enable_disable_trigger()) != null && disable.DISABLE() != null) {
+            } else if ((disable = ddl.enable_disable_trigger()) != null) {
                 safeParseStatement(new DisableMsTrigger(disable, db), disable);
+            } else if ((drop = ddl.schema_drop()) != null) {
+                safeParseStatement(new DropMsStatement(drop, db), drop);
+            }
+        } else if ((dml = st.dml_clause()) != null) {
+            Update_statementContext update = dml.update_statement();
+            if (update != null) {
+                safeParseStatement(new UpdateMsStatement(update, db), update);
             }
         } else if ((ast = st.another_statement()) != null) {
             Set_statementContext set = ast.set_statement();
@@ -94,13 +110,15 @@ implements TSqlContextProcessor {
     }
 
     public void batchStatement(Batch_statementContext ctx, CommonTokenStream stream) {
-        if (ctx.CREATE() == null) {
+        Batch_statement_bodyContext body = ctx.batch_statement_body();
+
+        if (ctx.ALTER() != null) {
+            safeParseStatement(new AlterMsBatch(body, db), body);
             return;
         }
 
         ParserAbstract p;
 
-        Batch_statement_bodyContext body = ctx.batch_statement_body();
 
         if (ctx.create_schema() != null) {
             p = new CreateMsSchema(ctx.create_schema(), db, this, stream);
@@ -152,7 +170,7 @@ implements TSqlContextProcessor {
         } else if (ctx.alter_db_role() != null) {
             p = new AlterMsRole(ctx.alter_db_role(), db);
         } else {
-            return;
+            p = new AlterMsOther(ctx, db);
         }
         safeParseStatement(p, ctx);
     }

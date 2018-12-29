@@ -11,7 +11,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgType.PgTypeForm;
 
@@ -24,10 +23,10 @@ public class CreateType extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public void parseObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
         String name = QNameParser.getFirstName(ids);
-        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
+        AbstractSchema schema = getSchemaSafe(ids);
         PgTypeForm form = PgTypeForm.SHELL;
         if (ctx.RANGE() != null) {
             form = PgTypeForm.RANGE;
@@ -40,7 +39,7 @@ public class CreateType extends ParserAbstract {
         }
         PgType type = null;
         PgType newType = null;
-        if (form == PgTypeForm.BASE) {
+        if (form == PgTypeForm.BASE && schema != null) {
             type = (PgType) schema.getType(name);
             if (type != null && type.getForm() != PgTypeForm.SHELL) {
                 throw new IllegalStateException("Duplicate type but existing is not SHELL type!");
@@ -134,8 +133,7 @@ public class CreateType extends ParserAbstract {
         }
         if (newType != null) {
             // add only newly created type, not a filled SHELL that was added before
-            schema.addType(type);
+            addSafe(AbstractSchema::addType, getSchemaSafe(ids), type, ids);
         }
-        return type;
     }
 }

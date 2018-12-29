@@ -143,7 +143,6 @@ public class UIProjectLoader extends ProjectLoader {
         List<AntlrError> errList = null;
         try (PgUIDumpLoader loader = new PgUIDumpLoader(file, arguments, monitor)) {
             errList = loader.getErrors();
-            loader.setLoadReferences(statementBodies != null);
             if (isOverrideMode) {
                 loader.setOverridesMap(overrides);
             }
@@ -206,7 +205,8 @@ public class UIProjectLoader extends ProjectLoader {
         .filter(sc -> schemaFiles.contains(AbstractModelExporter.getExportedFilename(sc))
                 || sc.hasChildren())
         .forEach(st -> newDb.addSchema(st.deepCopy()));
-
+        newDb.getObjReferences().putAll(db.getObjReferences());
+        newDb.getObjDefinitions().putAll(db.getObjDefinitions());
         return newDb;
     }
 

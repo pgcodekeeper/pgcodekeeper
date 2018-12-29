@@ -18,9 +18,13 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_storage_parameterCo
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateIndex extends ParserAbstract {
     private final Create_index_statementContext ctx;
@@ -33,21 +37,24 @@ public class CreateIndex extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public void parseObject() {
         List<IdentifierContext> ids = ctx.table_name.identifier();
-        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
-        String schemaName = schema.getName();
+
+        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         String tableName = QNameParser.getFirstName(ids);
-        String name = ctx.name.getText();
+        addFullObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
+        IdentifierContext nameCtx = ctx.name;
+        String name = nameCtx.getText();
         PgIndex ind = new PgIndex(name != null ? name : "", tableName);
         parseIndex(ctx.index_rest(), tablespace, schemaName, tableName, ind, db);
         ind.setUnique(ctx.UNIQUE() != null);
         if (name != null) {
-            getSafe(schema::getTable, QNameParser.getFirstNameCtx(ids))
-            .addIndex(ind);
+            AbstractTable table = getSafe(AbstractSchema::getTable,
+                    getSchemaSafe(ids), QNameParser.getFirstNameCtx(ids));
+            addSafe(AbstractTable::addIndex, table, ind);
+            fillObjDefinition(new PgObjLocation(schemaName, tableName, name, DbObjType.INDEX),
+                    nameCtx, ind);
         }
-
-        return ind;
     }
 
     public static void parseIndex(Index_restContext rest, String tablespace,

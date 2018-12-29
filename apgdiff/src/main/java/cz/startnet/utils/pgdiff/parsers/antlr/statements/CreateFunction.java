@@ -20,7 +20,6 @@ import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgProcedure;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class CreateFunction extends ParserAbstract {
     private final Create_function_statementContext ctx;
@@ -30,10 +29,8 @@ public class CreateFunction extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public void parseObject() {
         List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
-        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
-
         String name = QNameParser.getFirstName(ids);
         AbstractPgFunction function = ctx.PROCEDURE() != null ? new PgProcedure(name)
                 : new PgFunction(name);
@@ -52,8 +49,7 @@ public class CreateFunction extends ParserAbstract {
             function.setReturns(getFullCtxText(ctx.rettype_data));
             addTypeAsDepcy(ctx.rettype_data, function, getDefSchemaName());
         }
-        schema.addFunction(function);
-        return function;
+        addSafe(AbstractSchema::addFunction, getSchemaSafe(ids), function, ids);
     }
 
     private void fillFunction(Create_funct_paramsContext params,
@@ -81,6 +77,7 @@ public class CreateFunction extends ParserAbstract {
                     function.setRows(Float.parseFloat(action.result_rows.getText()));
                 }
             } else if (action.AS() != null) {
+                addStatementBody(action.function_def());
                 function.setBody(db.getArguments(), getFullCtxText(action.function_def()));
             } else if (action.TRANSFORM() != null) {
                 for (Transform_for_typeContext transform : action.transform_for_type()) {

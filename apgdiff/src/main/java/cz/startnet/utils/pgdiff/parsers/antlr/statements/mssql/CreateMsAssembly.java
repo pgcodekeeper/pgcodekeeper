@@ -10,7 +10,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.MsAssembly;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsAssembly extends ParserAbstract {
 
@@ -25,7 +26,8 @@ public class CreateMsAssembly extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public void parseObject() {
+        IdContext nameCtx = ctx.assembly_name;
         MsAssembly ass = new MsAssembly(ctx.assembly_name.getText());
         IdContext owner = ctx.owner_name;
         if (owner != null && !db.getArguments().isIgnorePrivileges()) {
@@ -41,8 +43,8 @@ public class CreateMsAssembly extends ParserAbstract {
             ass.setPermission(getFullCtxText(permission).toUpperCase());
         }
 
-        db.addAssembly(ass);
-        return ass;
+        addSafe(PgDatabase::addAssembly, db, ass);
+        fillObjDefinition(new PgObjLocation(nameCtx.getText(), DbObjType.ASSEMBLY), nameCtx, ass);
     }
 
     public static String formatBinary(String hex) {

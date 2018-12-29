@@ -5,6 +5,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomTSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_schemaContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Sql_clausesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.St_clauseContext;
@@ -12,7 +13,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsSchema extends ParserAbstract {
 
@@ -29,19 +31,22 @@ public class CreateMsSchema extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
-        String name = ctx.schema_name.getText();
+    public void parseObject() {
+        IdContext nameCtx = ctx.schema_name;
+        String name = nameCtx.getText();
         AbstractSchema schema = new MsSchema(name);
         if (ctx.owner_name != null && !db.getArguments().isIgnorePrivileges()) {
             schema.setOwner(ctx.owner_name.getText());
         }
 
-        db.addSchema(schema);
+        addSafe(PgDatabase::addSchema, db, schema);
+        fillObjDefinition(new PgObjLocation(nameCtx.getText(), DbObjType.SCHEMA),
+                nameCtx, schema);
 
         if (ctx.schema_def != null) {
-            String defaultSchemaName = db.getDefaultSchema().getName();
+            String defaultSchemaName = getDefSchemaName();
             try {
-                db.setDefaultSchema(name);
+                listener.setDefaultSchema(name);
                 for (Schema_definitionContext sd : ctx.schema_definition()) {
                     Sql_clausesContext clauses = sd.sql_clauses();
                     Batch_statementContext batchSt;
@@ -54,11 +59,8 @@ public class CreateMsSchema extends ParserAbstract {
                     }
                 }
             } finally {
-                db.setDefaultSchema(defaultSchemaName);
+                listener.setDefaultSchema(defaultSchemaName);
             }
         }
-
-        return schema;
     }
-
 }

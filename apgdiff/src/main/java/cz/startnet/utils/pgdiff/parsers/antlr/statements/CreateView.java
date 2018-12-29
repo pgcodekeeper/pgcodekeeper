@@ -24,7 +24,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
 public class CreateView extends ParserAbstract {
@@ -43,10 +42,9 @@ public class CreateView extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public void parseObject() {
         Create_view_statementContext ctx = context;
         List<IdentifierContext> ids = ctx.name.identifier();
-        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         IdentifierContext name = QNameParser.getFirstNameCtx(ids);
         PgView view = new PgView(name.getText());
         if (ctx.MATERIALIZED() != null) {
@@ -66,9 +64,10 @@ public class CreateView extends ParserAbstract {
         }
         Select_stmtContext vQuery = ctx.v_query;
         if (vQuery != null) {
+            addStatementBody(vQuery);
             view.setQuery(getFullCtxText(vQuery));
             db.addContextForAnalyze(view, vQuery);
-            ViewSelect select = new ViewSelect(schema.getName());
+            ViewSelect select = new ViewSelect(QNameParser.getSchemaName(ids, getDefSchemaName()));
             select.analyze(new SelectStmt(vQuery));
             view.addAllDeps(select.getDepcies());
         }
@@ -91,8 +90,7 @@ public class CreateView extends ParserAbstract {
                     ctx.with_check_option().LOCAL() != null ? "local" : "cascaded");
         }
 
-        schema.addView(view);
-        return view;
+        addSafe(AbstractSchema::addView, getSchemaSafe(ids), view, ids);
     }
 
     public static void analyzeViewCtx(ParserRuleContext ctx, AbstractView view,

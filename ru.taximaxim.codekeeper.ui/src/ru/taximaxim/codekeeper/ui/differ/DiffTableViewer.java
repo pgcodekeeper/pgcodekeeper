@@ -846,7 +846,7 @@ public class DiffTableViewer extends Composite {
 
                 String name = null;
                 String type = null;
-                String loc = st.getLocation();
+                String loc = st.getLocation().getFilePath();
                 switch (PgLibrary.getSource(loc)) {
                 case JDBC:
                     type = Messages.DiffTableViewer_database;

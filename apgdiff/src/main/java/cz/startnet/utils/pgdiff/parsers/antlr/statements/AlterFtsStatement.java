@@ -9,10 +9,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_fts_statementConte
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFtsConfiguration;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class AlterFtsStatement extends ParserAbstract {
@@ -25,15 +24,28 @@ public class AlterFtsStatement extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public void parseObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
-        if (ctx.CONFIGURATION() == null) {
-            return null;
+
+        DbObjType tt;
+        if (ctx.DICTIONARY() != null) {
+            tt = DbObjType.FTS_DICTIONARY;
+        } else if (ctx.TEMPLATE() != null) {
+            tt = DbObjType.FTS_TEMPLATE;
+        } else if (ctx.PARSER() != null) {
+            tt = DbObjType.FTS_PARSER;
+        } else {
+            tt = DbObjType.FTS_CONFIGURATION;
         }
 
-        PgFtsConfiguration config = getSafe(schema::getFtsConfiguration,
-                QNameParser.getFirstNameCtx(ids));
+        addFullObjReference(ids, tt, StatementActions.ALTER);
+
+        if (tt != DbObjType.FTS_CONFIGURATION) {
+            return;
+        }
+
+        PgFtsConfiguration config = getSafe(AbstractSchema::getFtsConfiguration,
+                getSchemaSafe(ids), QNameParser.getFirstNameCtx(ids));
 
         Alter_fts_configurationContext afc = ctx.alter_fts_configuration();
         if (afc != null && afc.ADD() != null) {
@@ -42,13 +54,13 @@ public class AlterFtsStatement extends ParserAbstract {
                 for (Schema_qualified_nameContext dictionary : afc.dictionaries) {
                     List<IdentifierContext> dIds = dictionary.identifier();
                     dics.add(getFullCtxText(dictionary));
-                    config.addDep(new GenericColumn(QNameParser.getSchemaName(dIds, getDefSchemaName()),
-                            QNameParser.getFirstName(dIds), DbObjType.FTS_DICTIONARY));
+                    addDepSafe(config, dIds, DbObjType.FTS_DICTIONARY);
                 }
-                config.addDictionary(getFullCtxText(type), dics);
+
+                if (!isRefMode()) {
+                    config.addDictionary(getFullCtxText(type), dics);
+                }
             }
         }
-
-        return null;
     }
 }

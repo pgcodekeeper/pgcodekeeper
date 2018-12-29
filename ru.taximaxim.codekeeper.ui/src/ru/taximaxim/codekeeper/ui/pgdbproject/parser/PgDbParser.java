@@ -160,9 +160,10 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         args.setMsSql(isMsSql);
         args.setInCharsetName(file.getCharset());
         try (PgUIDumpLoader loader = new PgUIDumpLoader(file, args, monitor)) {
-            loader.setLoadSchema(false);
-            loader.setLoadReferences(true);
-            PgDatabase db = loader.loadFile(new PgDatabase());
+            loader.setRefMode(true);
+            PgDatabase intoDb = new PgDatabase();
+            intoDb.setArguments(args);
+            PgDatabase db = loader.loadFile(intoDb);
             objDefinitions.putAll(db.getObjDefinitions());
             objReferences.putAll(db.getObjReferences());
             fillStatementBodies(loader.getStatementBodyReferences());
@@ -192,10 +193,11 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
                     // check word boundaries, whole words only
                     if ((index == 0 || !PgDiffUtils.isValidIdChar(body.charAt(index - 1))) &&
                             (next >= body.length() || !PgDiffUtils.isValidIdChar(body.charAt(next)))) {
-                        PgObjLocation loc = new PgObjLocation(def.getObject().schema,
-                                def.getObjName(), null, statementBody.getOffset() + index,
-                                statementBody.getPath(), statementBody.getLineNumber());
-                        loc.setObjType(def.getObjType());
+                        PgObjLocation loc = new PgObjLocation(def.schema,
+                                def.table, def.column, def.type);
+                        loc.setOffset(statementBody.getOffset() + index);
+                        loc.setFilePath(statementBody.getPath());
+                        loc.setLine(statementBody.getLineNumber());
                         loc.setAction(StatementActions.NONE);
                         newRefs.add(loc);
                     }
@@ -240,8 +242,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         PgDiffArguments args = new PgDiffArguments();
         args.setMsSql(isMsSql);
         try (PgDumpLoader loader = new PgDumpLoader(input, fileName, args, monitor)) {
-            loader.setLoadSchema(false);
-            loader.setLoadReferences(true);
+            loader.setRefMode(true);
             PgDatabase db = loader.load();
             objDefinitions.putAll(db.getObjDefinitions());
             objReferences.putAll(db.getObjReferences());
@@ -251,9 +252,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
     }
 
     public Stream<PgObjLocation> getDefinitionsForObj(PgObjLocation obj) {
-        return getAllObjDefinitions()
-                .filter(o -> o.getObject().equals(obj.getObject())
-                        && o.getObjType().equals(obj.getObjType()));
+        return getAllObjDefinitions().filter(obj::compare);
     }
 
     public List<PgObjLocation> getObjsForEditor(IEditorInput in) {

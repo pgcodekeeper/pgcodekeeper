@@ -1,5 +1,8 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -10,6 +13,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSqlClauses;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsTrigger extends BatchContextProcessor {
 
@@ -32,10 +38,10 @@ public class CreateMsTrigger extends BatchContextProcessor {
     }
 
     @Override
-    public MsTrigger getObject() {
-        IdContext schemaCtx = ctx.trigger_name.schema;
-        AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
-        return getObject(schema);
+    public void parseObject() {
+        List<IdContext> ids = Arrays.asList(ctx.trigger_name.schema, ctx.table_name.name);
+        addFullObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
+        getObject(getSchemaSafe(ids));
     }
 
     public MsTrigger getObject(AbstractSchema schema) {
@@ -45,11 +51,17 @@ public class CreateMsTrigger extends BatchContextProcessor {
         trigger.setQuotedIdentified(quotedIdentifier);
         setSourceParts(trigger);
 
-        MsSqlClauses clauses = new MsSqlClauses(schema.getName());
+        IdContext schemaCtx = ctx.trigger_name.schema;
+        String schemaName = schemaCtx != null ? schemaCtx.getText() : getDefSchemaName();
+        MsSqlClauses clauses = new MsSqlClauses(schemaName);
         clauses.analyze(ctx.sql_clauses());
         trigger.addAllDeps(clauses.getDepcies());
 
-        getSafe(schema::getTriggerContainer, ctx.table_name.name).addTrigger(trigger);
+        PgTriggerContainer cont = getSafe(AbstractSchema::getTriggerContainer,
+                schema, ctx.table_name.name);
+
+        addSafe(PgTriggerContainer::addTrigger, cont, trigger, ctx.trigger_name.schema,
+                ctx.table_name.name, ctx.trigger_name.name);
         return trigger;
     }
 }
