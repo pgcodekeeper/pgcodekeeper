@@ -27,7 +27,8 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
     protected IProject[] build(int kind, Map<String, String> args,
             IProgressMonitor monitor) throws CoreException {
         IProject proj = getProject();
-        if (!proj.hasNature(NATURE.ID)) {
+        if (!proj.hasNature(NATURE.ID) ||
+                !OpenProjectUtils.checkVersion(proj, new StringBuilder())) {
             return null;
         }
 
@@ -64,7 +65,7 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
 
     @Override
     protected void clean(IProgressMonitor monitor) throws CoreException {
-        PgDbParser.clean(this.getProject().getName());
+        PgDbParser.clean(getProject().getName());
     }
 
     private void buildIncrement(IResourceDelta delta, PgDbParser parser,
