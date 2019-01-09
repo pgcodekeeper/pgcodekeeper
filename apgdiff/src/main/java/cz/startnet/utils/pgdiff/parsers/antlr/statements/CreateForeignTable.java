@@ -35,8 +35,7 @@ public class CreateForeignTable extends TableAbstract {
     public void parseObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
         String tableName = QNameParser.getFirstName(ids);
-        AbstractTable table = defineTable(tableName,
-                QNameParser.getSchemaName(ids, getDefSchemaName()));
+        AbstractTable table = defineTable(tableName, getSchemaNameSafe(ids));
         addSafe(AbstractSchema::addTable, getSchemaSafe(ids), table, ids);
     }
 

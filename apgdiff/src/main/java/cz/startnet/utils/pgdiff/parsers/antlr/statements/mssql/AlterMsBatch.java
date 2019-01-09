@@ -39,13 +39,16 @@ public class AlterMsBatch extends ParserAbstract {
     private void alterTrigger(Create_or_alter_triggerContext ctx) {
         Qualified_nameContext qname = ctx.trigger_name;
         IdContext schemaCtx = qname.schema;
-        IdContext parentCtx = ctx.table_name.name;
-        IdContext nameCtx = qname.name;
-        addReferenceOnSchema(ctx.table_name.schema);
-        addFullObjReference(schemaCtx, parentCtx, DbObjType.TABLE, StatementActions.NONE);
 
-        PgObjLocation loc = new PgObjLocation(schemaCtx == null ? getDefSchemaName() :
-            schemaCtx.getText(), parentCtx.getText(), nameCtx.getText(), DbObjType.TRIGGER);
-        addObjReference(loc, StatementActions.ALTER, nameCtx);
+        if (schemaCtx != null) {
+            IdContext parentCtx = ctx.table_name.name;
+            IdContext nameCtx = qname.name;
+            addReferenceOnSchema(ctx.table_name.schema);
+            addFullObjReference(schemaCtx, parentCtx, DbObjType.TABLE, StatementActions.NONE);
+
+            PgObjLocation loc = new PgObjLocation(schemaCtx.getText(),
+                    parentCtx.getText(), nameCtx.getText(), DbObjType.TRIGGER);
+            addObjReference(loc, StatementActions.ALTER, nameCtx);
+        }
     }
 }

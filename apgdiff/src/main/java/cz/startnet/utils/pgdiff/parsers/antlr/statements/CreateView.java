@@ -67,7 +67,7 @@ public class CreateView extends ParserAbstract {
             addStatementBody(vQuery);
             view.setQuery(getFullCtxText(vQuery));
             db.addContextForAnalyze(view, vQuery);
-            ViewSelect select = new ViewSelect(QNameParser.getSchemaName(ids, getDefSchemaName()));
+            ViewSelect select = new ViewSelect(getSchemaNameSafe(ids));
             select.analyze(new SelectStmt(vQuery));
             view.addAllDeps(select.getDepcies());
         }

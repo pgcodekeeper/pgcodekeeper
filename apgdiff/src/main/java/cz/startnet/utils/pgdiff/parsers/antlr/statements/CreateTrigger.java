@@ -37,7 +37,7 @@ public class CreateTrigger extends ParserAbstract {
     @Override
     public void parseObject() {
         List<IdentifierContext> ids = ctx.table_name.identifier();
-        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+        String schemaName = getSchemaNameSafe(ids);
         String tableName = QNameParser.getFirstName(ids);
         addFullObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
 
@@ -102,10 +102,12 @@ public class CreateTrigger extends ParserAbstract {
         Schema_qualified_name_nontypeContext funcNameCtx = ctx.func_name.function_name()
                 .schema_qualified_name_nontype();
         IdentifierContext sch = funcNameCtx.schema;
-        String schName = sch != null ?  sch.getText() : getDefSchemaName();
-        Identifier_nontypeContext nameCtx = funcNameCtx.identifier_nontype();
-        addDepSafe(trigger, new PgObjLocation(schName, nameCtx.getText() + "()", DbObjType.FUNCTION),
-                nameCtx);
+        if (sch != null) {
+            String schName = sch.getText();
+            Identifier_nontypeContext nameCtx = funcNameCtx.identifier_nontype();
+            addDepSafe(trigger, new PgObjLocation(schName, nameCtx.getText() + "()", DbObjType.FUNCTION),
+                    nameCtx);
+        }
 
         for (Names_referencesContext column : ctx.names_references()) {
             for (Schema_qualified_nameContext nameCol : column.name) {

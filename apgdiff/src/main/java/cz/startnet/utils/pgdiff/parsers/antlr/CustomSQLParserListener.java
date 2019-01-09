@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -17,6 +16,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statement_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.StatementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterDomain;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterFtsStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterOther;
@@ -47,8 +47,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.DropStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.UpdateStatement;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
 public class CustomSQLParserListener extends CustomParserListener
 implements SqlContextProcessor {
@@ -176,29 +175,13 @@ implements SqlContextProcessor {
         String confParam = sesLocOpt.config_param.getText();
         // TODO set param values can be identifiers, quoted identifiers, string
         // or other literals: improve handling
-        Set_statement_valueContext confValueCtx = sesLocOpt.config_param_val.get(0);
-        String confValue = confValueCtx.getText();
+        List<Set_statement_valueContext> confValueCtx = sesLocOpt.config_param_val;
+        String confValue = confValueCtx.get(0).getText();
 
         switch (confParam.toLowerCase()) {
         case "search_path":
-            // костыль: TRANSFORM объекты создаются в pg_catalog и дампятся pg_dump
-            if ("pg_catalog".equals(confValue)) {
-                break;
-            }
-            defaultSchema = confValue;
-
-            // schema ref
-            db.getObjReferences().computeIfAbsent(filename, v -> new ArrayList<>()).add(
-                    new PgObjLocation(confValue, DbObjType.SCHEMA)
-                    .setFilePath(filename)
-                    .setOffset(confValueCtx.start.getStartIndex())
-                    .setLine(confValueCtx.start.getLine()));
-
-            if (!refMode) {
-                // allow the exception to terminate entire walker here
-                // so that objects aren't created on the wrong search_path
-                ParserAbstract.getSafe(PgDatabase::getSchema, db,
-                        confValue, confValueCtx.getStart(), refMode);
+            if (confValueCtx.size() != 1 || !ApgdiffConsts.PG_CATALOG.equals(confValue)) {
+                throw new UnresolvedReferenceException("Unsupported search_path", ctx.start);
             }
             break;
         case "default_with_oids":

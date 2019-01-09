@@ -6,7 +6,6 @@ import java.util.List;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Assembly_specifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintContext;
@@ -106,7 +105,7 @@ public class CreateMsFunction extends BatchContextProcessor {
         setSourceParts(func);
 
         Select_statementContext select = bodyRet.select_statement();
-        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+        String schemaName = getSchemaNameSafe(ids);
         if (select != null) {
             MsSelect sel = new MsSelect(schemaName);
             sel.analyze(select);

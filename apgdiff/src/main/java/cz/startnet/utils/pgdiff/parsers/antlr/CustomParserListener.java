@@ -25,11 +25,11 @@ public class CustomParserListener {
 
     protected String defaultSchema = null;
 
+    private final List<StatementBodyContainer> statementBodies = new ArrayList<>();
+
     public void setDefaultSchema(String defaultSchema) {
         this.defaultSchema = defaultSchema;
     }
-
-    private final List<StatementBodyContainer> statementBodies = new ArrayList<>();
 
     public CustomParserListener(PgDatabase database, String filename,
             boolean refMode, List<AntlrError> errors, IProgressMonitor monitor) {

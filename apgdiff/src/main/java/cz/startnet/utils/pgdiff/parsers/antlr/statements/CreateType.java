@@ -52,14 +52,14 @@ public class CreateType extends ParserAbstract {
 
         for (Table_column_definitionContext attr : ctx.attrs) {
             type.addAttr(getColumn(attr));
-            addTypeAsDepcy(attr.datatype, type, getDefSchemaName());
+            addTypeAsDepcy(attr.datatype, type);
         }
         for (Character_stringContext enume : ctx.enums) {
             type.addEnum(enume.getText());
         }
         if (ctx.subtype_name != null) {
             type.setSubtype(getFullCtxText(ctx.subtype_name));
-            addTypeAsDepcy(ctx.subtype_name, type, getDefSchemaName());
+            addTypeAsDepcy(ctx.subtype_name, type);
         }
         if (ctx.subtype_operator_class != null) {
             type.setSubtypeOpClass(getFullCtxText(ctx.subtype_operator_class));
@@ -123,7 +123,7 @@ public class CreateType extends ParserAbstract {
         }
         if (ctx.element != null) {
             type.setElement(getFullCtxText(ctx.element));
-            addTypeAsDepcy(ctx.element, type, getDefSchemaName());
+            addTypeAsDepcy(ctx.element, type);
         }
         if (ctx.delimiter != null) {
             type.setDelimiter(ctx.delimiter.getText());
@@ -133,7 +133,7 @@ public class CreateType extends ParserAbstract {
         }
         if (newType != null) {
             // add only newly created type, not a filled SHELL that was added before
-            addSafe(AbstractSchema::addType, getSchemaSafe(ids), type, ids);
+            addSafe(AbstractSchema::addType, schema, type, ids);
         }
     }
 }

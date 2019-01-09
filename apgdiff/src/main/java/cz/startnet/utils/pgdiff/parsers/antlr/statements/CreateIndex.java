@@ -39,8 +39,7 @@ public class CreateIndex extends ParserAbstract {
     @Override
     public void parseObject() {
         List<IdentifierContext> ids = ctx.table_name.identifier();
-
-        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+        String schemaName = getSchemaNameSafe(ids);
         String tableName = QNameParser.getFirstName(ids);
         addFullObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
         IdentifierContext nameCtx = ctx.name;

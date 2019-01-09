@@ -44,7 +44,6 @@ public class CreateMsSchema extends ParserAbstract {
                 nameCtx, schema);
 
         if (ctx.schema_def != null) {
-            String defaultSchemaName = getDefSchemaName();
             try {
                 listener.setDefaultSchema(name);
                 for (Schema_definitionContext sd : ctx.schema_definition()) {
@@ -59,7 +58,7 @@ public class CreateMsSchema extends ParserAbstract {
                     }
                 }
             } finally {
-                listener.setDefaultSchema(defaultSchemaName);
+                listener.setDefaultSchema(null);
             }
         }
     }

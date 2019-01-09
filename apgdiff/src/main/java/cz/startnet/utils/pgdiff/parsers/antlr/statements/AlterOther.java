@@ -1,5 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.Arrays;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_operator_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
@@ -52,10 +54,7 @@ public class AlterOther extends ParserAbstract {
 
     private void alterOperator(Alter_operator_statementContext ctx) {
         Operator_nameContext nameCtx = ctx.target_operator().operator_name();
-        IdentifierContext schemaCtx = nameCtx.schema_name;
-        addReferenceOnSchema(schemaCtx);
-        PgObjLocation loc = new PgObjLocation(schemaCtx != null ? schemaCtx.getText() : getDefSchemaName(),
-                nameCtx.getText(), DbObjType.OPERATOR);
-        addObjReference(loc, StatementActions.ALTER, nameCtx);
+        addFullObjReference(Arrays.asList(nameCtx.schema_name, nameCtx.operator),
+                DbObjType.OPERATOR, StatementActions.ALTER);
     }
 }

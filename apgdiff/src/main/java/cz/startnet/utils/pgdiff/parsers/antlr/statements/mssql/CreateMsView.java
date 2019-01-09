@@ -6,7 +6,6 @@ import java.util.List;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_viewContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
@@ -55,7 +54,7 @@ public class CreateMsView extends BatchContextProcessor {
 
         Select_statementContext vQuery = ctx.select_statement();
         if (vQuery != null) {
-            MsSelect select = new MsSelect(QNameParser.getSchemaName(ids, getDefSchemaName()));
+            MsSelect select = new MsSelect(getSchemaNameSafe(ids));
             select.analyze(new MsSelectStmt(vQuery));
             view.addAllDeps(select.getDepcies());
         }

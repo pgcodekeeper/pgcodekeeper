@@ -45,23 +45,25 @@ public class CreateMsTrigger extends BatchContextProcessor {
     }
 
     public MsTrigger getObject(AbstractSchema schema) {
-        MsTrigger trigger = new MsTrigger(ctx.trigger_name.name.getText(),
-                ctx.table_name.name.getText());
+        IdContext schemaCtx = ctx.trigger_name.schema;
+        IdContext tableNameCtx = ctx.table_name.name;
+        IdContext nameCtx = ctx.trigger_name.name;
+
+        MsTrigger trigger = new MsTrigger(nameCtx.getText(), tableNameCtx.getText());
         trigger.setAnsiNulls(ansiNulls);
         trigger.setQuotedIdentified(quotedIdentifier);
         setSourceParts(trigger);
 
-        IdContext schemaCtx = ctx.trigger_name.schema;
-        String schemaName = schemaCtx != null ? schemaCtx.getText() : getDefSchemaName();
+        String schemaName = getSchemaNameSafe(Arrays.asList(schemaCtx, tableNameCtx));
         MsSqlClauses clauses = new MsSqlClauses(schemaName);
         clauses.analyze(ctx.sql_clauses());
         trigger.addAllDeps(clauses.getDepcies());
 
         PgTriggerContainer cont = getSafe(AbstractSchema::getTriggerContainer,
-                schema, ctx.table_name.name);
+                schema, tableNameCtx);
 
-        addSafe(PgTriggerContainer::addTrigger, cont, trigger, ctx.trigger_name.schema,
-                ctx.table_name.name, ctx.trigger_name.name);
+        addSafe(PgTriggerContainer::addTrigger, cont, trigger, schemaCtx,
+                tableNameCtx, nameCtx);
         return trigger;
     }
 }

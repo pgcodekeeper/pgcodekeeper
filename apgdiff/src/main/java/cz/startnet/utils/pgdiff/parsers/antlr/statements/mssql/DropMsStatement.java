@@ -1,5 +1,8 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
+import java.util.Arrays;
+import java.util.List;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Drop_relational_or_xml_or_spatial_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Drop_statementsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
@@ -33,8 +36,9 @@ public class DropMsStatement extends ParserAbstract {
                 IdContext schemaCtx = tableIds.schema;
                 IdContext parentCtx = tableIds.name;
                 IdContext nameCtx = ind.index_name;
+                List<IdContext> ids = Arrays.asList(schemaCtx, parentCtx, nameCtx);
                 addFullObjReference(schemaCtx, parentCtx, DbObjType.TABLE, StatementActions.NONE);
-                PgObjLocation loc = new PgObjLocation(schemaCtx == null ? getDefSchemaName() : schemaCtx.getText(),
+                PgObjLocation loc = new PgObjLocation(getSchemaNameSafe(ids),
                         parentCtx.getText(), nameCtx.getText(), DbObjType.INDEX);
                 addObjReference(loc, StatementActions.DROP, nameCtx);
             }
@@ -80,8 +84,8 @@ public class DropMsStatement extends ParserAbstract {
 
         if (type != null) {
             for (Qualified_nameContext qname : ctx.qualified_name()) {
-                PgObjLocation ref = addFullObjReference(qname.schema, qname.name,
-                        type, StatementActions.DROP);
+                List<IdContext> ids = Arrays.asList(qname.schema, qname.name);
+                PgObjLocation ref = addFullObjReference(ids, type, StatementActions.DROP);
                 if (type == DbObjType.TABLE) {
                     ref.setWarningText(PgObjLocation.DROP_TABLE);
                 }

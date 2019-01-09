@@ -44,9 +44,8 @@ public class CreateTable extends TableAbstract {
     public void parseObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
         String tableName = QNameParser.getFirstName(ids);
-        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+        String schemaName = getSchemaNameSafe(ids);
         AbstractTable table = defineTable(tableName, schemaName);
-
         addSafe(AbstractSchema::addTable, getSchemaSafe(ids), table, ids);
     }
 
@@ -98,7 +97,7 @@ public class CreateTable extends TableAbstract {
         String ofType = getFullCtxText(typeName);
         TypedPgTable table = new TypedPgTable(tableName, ofType);
         fillTypeColumns(typeCtx.list_of_type_column_def(), table, schemaName);
-        addTypeAsDepcy(typeName, table, getDefSchemaName());
+        addTypeAsDepcy(typeName, table);
         fillRegularTable(table);
         return table;
     }

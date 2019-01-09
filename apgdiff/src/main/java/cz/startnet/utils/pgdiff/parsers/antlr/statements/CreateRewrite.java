@@ -53,7 +53,7 @@ public class CreateRewrite extends ParserAbstract {
         PgRuleContainer cont = getSafe(AbstractSchema::getRuleContainer,
                 getSchemaSafe(ids), QNameParser.getFirstNameCtx(ids));
         addSafe(PgRuleContainer::addRule, cont, rule);
-        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+        String schemaName = getSchemaNameSafe(ids);
         String tableName = QNameParser.getFirstName(ids);
         fillObjDefinition(new PgObjLocation(schemaName, tableName, rule.getName(), DbObjType.RULE),
                 ctx.name, rule);

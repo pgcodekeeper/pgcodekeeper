@@ -41,14 +41,13 @@ public class CreateSchema extends ParserAbstract {
                 nameCtx, schema);
 
         if (ctx.schema_def != null) {
-            String defaultSchemaName = getDefSchemaName();
             try {
                 listener.setDefaultSchema(name);
                 for (StatementContext s : ctx.schema_def.statement()) {
                     listener.statement(s);
                 }
             } finally {
-                listener.setDefaultSchema(defaultSchemaName);
+                listener.setDefaultSchema(null);
             }
         }
     }

@@ -6,7 +6,6 @@ import java.util.List;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Assembly_specifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_procedureContext;
@@ -78,7 +77,7 @@ public class CreateMsProcedure extends BatchContextProcessor {
         procedure.setQuotedIdentified(quotedIdentifier);
         setSourceParts(procedure);
 
-        MsSqlClauses clauses = new MsSqlClauses(QNameParser.getSchemaName(ids, getDefSchemaName()));
+        MsSqlClauses clauses = new MsSqlClauses(getSchemaNameSafe(ids));
         clauses.analyze(ctx.proc_body().sql_clauses());
         procedure.addAllDeps(clauses.getDepcies());
         addSafe(AbstractSchema::addFunction, schema, procedure, ids);

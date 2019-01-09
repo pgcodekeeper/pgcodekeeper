@@ -3,7 +3,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 import java.util.Arrays;
 import java.util.List;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Enable_disable_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Names_referencesContext;
@@ -36,16 +35,15 @@ public class DisableMsTrigger extends ParserAbstract {
 
         IdContext schemaCtx = parent.schema;
         List<IdContext> ids = Arrays.asList(schemaCtx, parent.name);
-        AbstractSchema schema = getSchemaSafe(ids);
         PgTriggerContainer cont = getSafe(AbstractSchema::getTriggerContainer,
-                schema, parent.name.getText(), parent.name.start);
+                getSchemaSafe(ids), parent.name.getText(), parent.name.start);
         addFullObjReference(parent.schema, parent.name, DbObjType.TABLE, StatementActions.NONE);
 
         for (Qualified_nameContext qname : triggers.qualified_name()) {
             MsTrigger trig = (MsTrigger) getSafe(PgTriggerContainer::getTrigger,
                     cont, qname.name.getText(), qname.name.start);
             addReferenceOnSchema(schemaCtx);
-            PgObjLocation loc = new PgObjLocation(QNameParser.getSchemaName(ids, getDefSchemaName()),
+            PgObjLocation loc = new PgObjLocation(getSchemaNameSafe(ids),
                     parent.name.getText(), qname.name.getText(), DbObjType.TRIGGER);
             addObjReference(loc, StatementActions.ALTER, qname);
             if (ctx.DISABLE() != null) {

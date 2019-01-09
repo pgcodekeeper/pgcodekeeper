@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.Arrays;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
@@ -51,11 +52,8 @@ public class DropStatement extends ParserAbstract {
     public void dropOperator(Drop_operator_statementContext ctx) {
         for (Target_operatorContext targetOperCtx : ctx.target_operator()) {
             Operator_nameContext nameCtx = targetOperCtx.operator_name();
-            IdentifierContext schemaCtx = nameCtx.schema_name;
-            addReferenceOnSchema(schemaCtx);
-            PgObjLocation loc = new PgObjLocation(schemaCtx != null ? schemaCtx.getText() : getDefSchemaName(),
-                    nameCtx.getText(), DbObjType.OPERATOR);
-            addObjReference(loc, StatementActions.DROP, nameCtx);
+            addFullObjReference(Arrays.asList(nameCtx.schema_name, nameCtx.operator),
+                    DbObjType.OPERATOR, StatementActions.DROP);
         }
     }
 
@@ -69,7 +67,7 @@ public class DropStatement extends ParserAbstract {
 
     public void dropChild(List<IdentifierContext> tableIds, IdentifierContext nameCtx, DbObjType type) {
         addFullObjReference(tableIds, DbObjType.TABLE, StatementActions.NONE);
-        PgObjLocation loc = new PgObjLocation(QNameParser.getSchemaName(tableIds, getDefSchemaName()),
+        PgObjLocation loc = new PgObjLocation(getSchemaNameSafe(tableIds),
                 QNameParser.getFirstName(tableIds), nameCtx.getText(), type);
         addObjReference(loc, StatementActions.DROP, nameCtx);
     }

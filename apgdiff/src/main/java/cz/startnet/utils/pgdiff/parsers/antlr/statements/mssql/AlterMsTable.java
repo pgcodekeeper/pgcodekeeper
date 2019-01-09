@@ -30,6 +30,10 @@ public class AlterMsTable extends TableAbstract {
     @Override
     public void parseObject() {
         IdContext schemaCtx = ctx.name.schema;
+        if (schemaCtx == null) {
+            return;
+        }
+
         IdContext nameCtx = ctx.name.name;
         List<IdContext> ids = Arrays.asList(schemaCtx, nameCtx);
         AbstractSchema schema = getSchemaSafe(ids);
@@ -63,12 +67,11 @@ public class AlterMsTable extends TableAbstract {
         if (trigger != null) {
             MsTrigger tr = (MsTrigger) getSafe(AbstractTable::getTrigger, table, trigger);
             tr.setDisable(ctx.ENABLE() == null);
-            PgObjLocation loc = new PgObjLocation(schemaCtx != null ?
-                    schemaCtx.getText() : getDefSchemaName(),
+            PgObjLocation loc = new PgObjLocation(schemaCtx.getText(),
                     nameCtx.getText(), trigger.getText(), DbObjType.TRIGGER);
             addObjReference(loc, StatementActions.ALTER, trigger);
         } else if (ctx.CHANGE_TRACKING() != null && ctx.ENABLE() != null) {
-            setSafe(MsTable::setTracked, ((MsTable)table), ctx.ON() != null);
+            setSafe(MsTable::setTracked, ((MsTable) table), ctx.ON() != null);
         }
     }
 }
