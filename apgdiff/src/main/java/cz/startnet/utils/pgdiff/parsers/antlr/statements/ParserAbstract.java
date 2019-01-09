@@ -368,7 +368,7 @@ public abstract class ParserAbstract {
      * @param st объект
      */
     protected void fillOwnerTo(Owner_toContext ctx, PgStatement st) {
-        if (db.getArguments().isIgnorePrivileges()) {
+        if (db.getArguments().isIgnorePrivileges() || refMode) {
             return;
         }
         if (ctx != null && ctx.name != null) {

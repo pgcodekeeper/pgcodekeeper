@@ -27,7 +27,7 @@ public class AlterSequence extends ParserAbstract {
         PgSequence sequence = (PgSequence) getSafe(AbstractSchema::getSequence,
                 getSchemaSafe(ids), QNameParser.getFirstNameCtx(ids));
 
-        addFullObjReference(ids, DbObjType.SEQUENCE, StatementActions.ALTER);
+        PgObjLocation loc = addFullObjReference(ids, DbObjType.SEQUENCE, StatementActions.ALTER);
 
         for (Sequence_bodyContext seqbody : ctx.sequence_body()) {
             if (seqbody.OWNED() != null && seqbody.col_name != null) {
@@ -43,7 +43,7 @@ public class AlterSequence extends ParserAbstract {
         }
 
         if (!ctx.RESTART().isEmpty()) {
-            sequence.getLocation().setWarningText(PgObjLocation.RESTART_WITH);
+            loc.setWarningText(PgObjLocation.RESTART_WITH);
         }
     }
 }

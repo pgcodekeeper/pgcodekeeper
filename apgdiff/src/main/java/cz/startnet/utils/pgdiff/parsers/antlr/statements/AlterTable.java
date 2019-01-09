@@ -51,10 +51,6 @@ public class AlterTable extends TableAbstract {
                 loc.setWarningText(PgObjLocation.ALTER_COLUMN_TYPE);
             }
 
-            if (isRefMode()) {
-                continue;
-            }
-
             // for owners try to get any relation, fail if the last attempt fails
             if (tablAction.owner_to() != null) {
                 String name = nameCtx.getText();
@@ -73,6 +69,31 @@ public class AlterTable extends TableAbstract {
 
             // everything else requires a real table, so fail immediately
             tabl = (AbstractPgTable) getSafe(AbstractSchema::getTable, schema, nameCtx);
+
+            if (tablAction.tabl_constraint != null) {
+                AbstractConstraint con = parseAlterTableConstraint(tablAction,
+                        createTableConstraintBlank(tablAction.tabl_constraint), db,
+                        schema.getName(), nameCtx.getText());
+                if (!con.getName().isEmpty()) {
+                    fillObjDefinition(new PgObjLocation(loc.schema,
+                            loc.table, con.getName(), DbObjType.CONSTRAINT),
+                            tablAction.tabl_constraint, con);
+                }
+
+                tabl.addConstraint(con);
+            }
+
+
+            if (tablAction.drop_constraint() != null) {
+                IdentifierContext conName = tablAction.drop_constraint().constraint_name;
+                addObjReference(new PgObjLocation(loc.schema,
+                        loc.table, conName.getText(), DbObjType.CONSTRAINT),
+                        StatementActions.DROP, conName);
+            }
+
+            if (isRefMode()) {
+                continue;
+            }
 
             if (tablAction.table_column_definition() != null) {
                 Table_column_definitionContext column = tablAction.table_column_definition();
@@ -152,11 +173,6 @@ public class AlterTable extends TableAbstract {
                 }
             }
 
-            if (tablAction.tabl_constraint != null) {
-                tabl.addConstraint(parseAlterTableConstraint(tablAction,
-                        createTableConstraintBlank(tablAction.tabl_constraint), db,
-                        schema.getName(), nameCtx.getText()));
-            }
             if (tablAction.index_name != null) {
                 IdentifierContext indexName = QNameParser.getFirstNameCtx(tablAction.index_name.identifier());
                 AbstractIndex index = getSafe(AbstractTable::getIndex, tabl, indexName);
@@ -173,15 +189,13 @@ public class AlterTable extends TableAbstract {
                 createRule(tabl, tablAction);
             }
 
-            if (tabl instanceof AbstractRegularTable) {
-                AbstractRegularTable regTable = (AbstractRegularTable)tabl;
+            if (tablAction.SECURITY() != null && tabl instanceof AbstractRegularTable) {
+                AbstractRegularTable regTable = (AbstractRegularTable) tabl;
                 // since 9.5 PostgreSQL
-                if (tablAction.SECURITY() != null) {
-                    if (tablAction.FORCE() != null) {
-                        regTable.setForceSecurity(tablAction.NO() == null);
-                    } else {
-                        regTable.setRowSecurity(tablAction.ENABLE() != null);
-                    }
+                if (tablAction.FORCE() != null) {
+                    regTable.setForceSecurity(tablAction.NO() == null);
+                } else {
+                    regTable.setRowSecurity(tablAction.ENABLE() != null);
                 }
             }
         }

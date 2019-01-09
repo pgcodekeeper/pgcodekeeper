@@ -327,7 +327,7 @@ validate_constraint
     ;
 
 drop_constraint
-    : DROP CONSTRAINT (IF EXISTS)?  constraint_name=schema_qualified_name cascade_restrict?
+    : DROP CONSTRAINT (IF EXISTS)? constraint_name=identifier cascade_restrict?
     ;
 
 table_deferrable
