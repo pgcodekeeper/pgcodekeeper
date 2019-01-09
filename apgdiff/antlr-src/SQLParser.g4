@@ -358,6 +358,7 @@ function_actions_common
 
 function_def
     : character_string (COMMA character_string)*
+    | sql
     ;
 
 alter_index_statement
@@ -2169,7 +2170,7 @@ cast_specification
 // using data_type for function name because keyword-named functions
 // use the same category of keywords as keyword-named types
 function_call
-    : function_name LEFT_PAREN (set_qualifier? vex (COMMA vex)* orderby_clause?)? RIGHT_PAREN
+    : function_name LEFT_PAREN (set_qualifier? vex_or_named_notation (COMMA vex_or_named_notation)* orderby_clause?)? RIGHT_PAREN
         filter_clause? (OVER window_definition)?
     | extract_function
     | system_function
@@ -2183,6 +2184,14 @@ function_name
   // allow for all built-in function except those with explicit syntax rules defined
   | (identifier DOT)? tokens_simple_functions
   ;
+
+vex_or_named_notation
+    : (argname=identifier_nontype pointer)? vex
+    ;
+
+pointer
+    : EQUAL_GTH | COLON_EQUAL
+    ;
 
 extract_function
   : EXTRACT LEFT_PAREN extract_field_string=identifier FROM vex RIGHT_PAREN

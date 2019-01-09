@@ -703,6 +703,9 @@ DOLLAR : '$';
 LEFT_BRACKET : '[';
 RIGHT_BRACKET : ']';
 
+EQUAL_GTH : '=>';
+COLON_EQUAL : ':=';
+
 BlockComment
     :   '/*' .*? '*/' -> channel(HIDDEN)
     ;

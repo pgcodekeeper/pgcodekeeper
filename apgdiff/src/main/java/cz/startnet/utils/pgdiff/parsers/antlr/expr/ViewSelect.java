@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -47,6 +48,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Values_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Values_valuesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Vex_bContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Vex_or_named_notationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Window_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_queryContext;
@@ -422,7 +424,8 @@ public class ViewSelect {
         Xml_functionContext xml;
 
         if (name != null){
-            args = addVexCtxtoList(args, function.vex());
+            args = addVexCtxtoList(args, function.vex_or_named_notation().stream()
+                    .map(Vex_or_named_notationContext::vex).collect(Collectors.toList()));
 
             Orderby_clauseContext orderBy = function.orderby_clause();
             if (orderBy != null) {

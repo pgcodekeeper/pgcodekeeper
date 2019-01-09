@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -49,6 +50,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Unsigned_value_specifica
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expression_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Vex_bContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Vex_or_named_notationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Window_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Xml_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
@@ -327,7 +329,8 @@ public class ValueExpr extends AbstractExpr {
             functionName = funcNameCtx.getText();
         }
 
-        List<VexContext> args = function.vex();
+        List<VexContext> args = function.vex_or_named_notation().stream()
+                .map(Vex_or_named_notationContext::vex).collect(Collectors.toList());
         Value_expression_primaryContext primary;
         if (args.size() == 1 && (primary = args.get(0).value_expression_primary()) != null
                 && primary.qualified_asterisk() != null) {
