@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -46,6 +47,8 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  * Abstract Class contents common operations for parsing
  */
 public abstract class ParserAbstract {
+
+    private static final String SCHEMA_ERROR = "Object must be schema qualified: ";
 
     protected final PgDatabase db;
 
@@ -203,11 +206,6 @@ public abstract class ParserAbstract {
         }
     }
 
-    protected PgObjLocation addObjReference(ParserRuleContext name, DbObjType type,
-            StatementActions action) {
-        return addObjReference(new PgObjLocation(name.getText(), type), action, name);
-    }
-
     protected PgObjLocation addObjReference(PgObjLocation loc, StatementActions action,
             ParserRuleContext nameCtx) {
         loc.setOffset(getStart(nameCtx));
@@ -218,36 +216,66 @@ public abstract class ParserAbstract {
         return loc;
     }
 
-    protected PgObjLocation addFullObjReference(List<? extends ParserRuleContext> ids, DbObjType type,
-            StatementActions action) {
-        ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
-        if (schemaCtx != null) {
-            addReferenceOnSchema(schemaCtx);
-            ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
-            return addObjReference(new PgObjLocation(schemaCtx.getText(), nameCtx.getText(), type),
-                    action,nameCtx);
-        }
-        return null;
-    }
-
     protected PgObjLocation addFullObjReference(IdContext schemaCtx, IdContext name, DbObjType type,
             StatementActions action) {
-        if (schemaCtx != null) {
-            addReferenceOnSchema(schemaCtx);
-            return addObjReference((new PgObjLocation(schemaCtx.getText(), name.getText(), type)),
-                    action, name);
-        }
-        return null;
+        return addFullObjReference(Arrays.asList(schemaCtx, name), type, action);
     }
 
-    protected void fillObjDefinition(PgObjLocation loc, ParserRuleContext nameCtx, PgStatement st) {
-        loc.setOffset(getStart(nameCtx));
-        loc.setLine(nameCtx.start.getLine());
-        loc.setFilePath(fileName);
-        loc.setAction(StatementActions.CREATE);
-        st.setLocation(loc);
-        db.getObjDefinitions().computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
-        db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
+    protected PgObjLocation addObjReference(ParserRuleContext name, DbObjType type,
+            StatementActions action) {
+        return addFullObjReference(Arrays.asList(name), type, action);
+    }
+
+    protected PgObjLocation addFullObjReference(List<? extends ParserRuleContext> ids, DbObjType type,
+            StatementActions action) {
+        ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
+        switch (type) {
+        case ASSEMBLY:
+        case EXTENSION:
+        case SCHEMA:
+        case ROLE:
+        case USER:
+        case DATABASE:
+            return addObjReference(new PgObjLocation(nameCtx.getText(), type),
+                    action, nameCtx);
+        default:
+            break;
+        }
+
+        ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
+        if (schemaCtx == null) {
+            throw new ObjectCreationException(SCHEMA_ERROR + getFullCtxText(nameCtx));
+        }
+
+        switch (type) {
+        case DOMAIN:
+        case FTS_CONFIGURATION:
+        case FTS_DICTIONARY:
+        case FTS_PARSER:
+        case FTS_TEMPLATE:
+        case FUNCTION:
+        case OPERATOR:
+        case PROCEDURE:
+        case SEQUENCE:
+        case TABLE:
+        case TYPE:
+        case VIEW:
+            return addObjReference(new PgObjLocation(schemaCtx.getText(), nameCtx.getText(), type),
+                    action,nameCtx);
+        case CONSTRAINT:
+        case INDEX:
+        case TRIGGER:
+        case RULE:
+            ParserRuleContext parent = QNameParser.getSecondNameCtx(ids);
+            addObjReference(new PgObjLocation(schemaCtx.getText(),
+                    parent.getText(), DbObjType.TABLE), StatementActions.NONE, parent);
+
+            return addObjReference(new PgObjLocation(schemaCtx.getText(),
+                    QNameParser.getSecondName(ids), nameCtx.getText(), type),
+                    action,nameCtx);
+        default:
+            return null;
+        }
     }
 
     private int getStart(ParserRuleContext ctx) {
@@ -317,6 +345,16 @@ public abstract class ParserAbstract {
         }
     }
 
+    protected void fillObjDefinition(PgObjLocation loc, ParserRuleContext nameCtx, PgStatement st) {
+        loc.setOffset(getStart(nameCtx));
+        loc.setLine(nameCtx.start.getLine());
+        loc.setFilePath(fileName);
+        loc.setAction(StatementActions.CREATE);
+        st.setLocation(loc);
+        db.getObjDefinitions().computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
+        db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
+    }
+
     protected <T extends IStatement, U extends IStatement> void addSafe(BiConsumer<T, U> adder,
             T parent, U child) {
         if (!refMode && parent != null) {
@@ -360,8 +398,7 @@ public abstract class ParserAbstract {
         ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
 
         if (schemaCtx == null && defaultSchema == null) {
-            throw new ObjectCreationException("Object must be schema qualified: " +
-                    QNameParser.getFirstName(ids));
+            throw new ObjectCreationException(SCHEMA_ERROR + QNameParser.getFirstName(ids));
         }
 
         AbstractSchema foundSchema;
@@ -388,8 +425,7 @@ public abstract class ParserAbstract {
             return defaultSchema;
         }
 
-        throw new ObjectCreationException("Object must be schema qualified: " +
-                getFullCtxText(ids));
+        throw new ObjectCreationException(SCHEMA_ERROR + QNameParser.getFirstName(ids));
     }
 
     protected void setCommentToDefinition(PgObjLocation ref, String comment) {

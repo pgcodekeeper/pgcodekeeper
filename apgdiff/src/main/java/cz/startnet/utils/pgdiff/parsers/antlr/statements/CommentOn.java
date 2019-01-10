@@ -15,12 +15,10 @@ import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
-import cz.startnet.utils.pgdiff.schema.AbstractTrigger;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
@@ -134,22 +132,13 @@ public class CommentOn extends ParserAbstract {
                 getSafe(AbstractTable::getConstraint, table, nameCtx).setComment(db.getArguments(), comment);
             }
         } else if (ctx.TRIGGER() != null) {
-            List<IdentifierContext> idsTblConstr = ctx.table_name.identifier();
-            String schemaName = getSchemaNameSafe(idsTblConstr);
-            IdentifierContext parentCtx = QNameParser.getFirstNameCtx(idsTblConstr);
-            addFullObjReference(idsTblConstr, DbObjType.TABLE, StatementActions.NONE);
-
+            type = DbObjType.TRIGGER;
+            List<IdentifierContext> parentIds = ctx.table_name.identifier();
+            ids = Arrays.asList(QNameParser.getSchemaNameCtx(parentIds),
+                    QNameParser.getFirstNameCtx(parentIds), nameCtx);
             PgTriggerContainer c = getSafe(AbstractSchema::getTriggerContainer, schema,
                     QNameParser.getFirstNameCtx(ctx.table_name.identifier()));
-            AbstractTrigger trig = getSafe(PgTriggerContainer::getTrigger, c, nameCtx);
-            if (trig != null) {
-                trig.setComment(db.getArguments(), comment);
-            }
-
-            PgObjLocation ref = new PgObjLocation(schemaName, parentCtx.getText(),
-                    nameCtx.getText(), DbObjType.TRIGGER);
-            setCommentToDefinition(ref, comment);
-            addObjReference(ref, StatementActions.COMMENT, nameCtx);
+            st = getSafe(PgTriggerContainer::getTrigger, c, nameCtx);
         } else if (ctx.DATABASE() != null) {
             st = db;
             type = DbObjType.DATABASE;
@@ -189,20 +178,13 @@ public class CommentOn extends ParserAbstract {
             type = DbObjType.DOMAIN;
             st = getSafe(AbstractSchema::getDomain, schema, nameCtx);
         } else if (ctx.RULE() != null) {
+            type = DbObjType.RULE;
             List<IdentifierContext> parentIds = ctx.table_name.identifier();
-            String schemaName = getSchemaNameSafe(parentIds);
-            IdentifierContext parentCtx = QNameParser.getFirstNameCtx(parentIds);
-            addFullObjReference(parentIds, DbObjType.TABLE, StatementActions.NONE);
+            ids = Arrays.asList(QNameParser.getSchemaNameCtx(parentIds),
+                    QNameParser.getFirstNameCtx(parentIds), nameCtx);
             PgRuleContainer c = getSafe(AbstractSchema::getRuleContainer, schema,
                     QNameParser.getFirstNameCtx(ctx.table_name.identifier()));
-            PgRule rule = getSafe(PgRuleContainer::getRule, c, nameCtx);
-            if (rule != null) {
-                rule.setComment(db.getArguments(), comment);
-            }
-            PgObjLocation ref = new PgObjLocation(schemaName,
-                    parentCtx.getText(), nameCtx.getText(), DbObjType.RULE);
-            addObjReference(ref, StatementActions.COMMENT, nameCtx);
-            setCommentToDefinition(ref, comment);
+            st = getSafe(PgRuleContainer::getRule, c, nameCtx);
         } else if (ctx.CONFIGURATION() != null) {
             type = DbObjType.FTS_CONFIGURATION;
             st = getSafe(AbstractSchema::getFtsConfiguration, schema, nameCtx);

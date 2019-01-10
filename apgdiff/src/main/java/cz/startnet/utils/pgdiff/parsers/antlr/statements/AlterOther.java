@@ -10,7 +10,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_alterContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -44,8 +43,7 @@ public class AlterOther extends ParserAbstract {
 
     public void alterSchema(Alter_schema_statementContext ctx) {
         IdentifierContext nameCtx = ctx.schema_with_name().name;
-        addObjReference(new PgObjLocation(nameCtx.getText(), DbObjType.SCHEMA),
-                StatementActions.ALTER, nameCtx);
+        addObjReference(nameCtx, DbObjType.SCHEMA, StatementActions.ALTER);
     }
 
     public void alterType(Alter_type_statementContext ctx) {

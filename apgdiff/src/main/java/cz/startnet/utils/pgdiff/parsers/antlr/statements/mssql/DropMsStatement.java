@@ -36,11 +36,8 @@ public class DropMsStatement extends ParserAbstract {
                 IdContext schemaCtx = tableIds.schema;
                 IdContext parentCtx = tableIds.name;
                 IdContext nameCtx = ind.index_name;
-                List<IdContext> ids = Arrays.asList(schemaCtx, parentCtx, nameCtx);
-                addFullObjReference(schemaCtx, parentCtx, DbObjType.TABLE, StatementActions.NONE);
-                PgObjLocation loc = new PgObjLocation(getSchemaNameSafe(ids),
-                        parentCtx.getText(), nameCtx.getText(), DbObjType.INDEX);
-                addObjReference(loc, StatementActions.DROP, nameCtx);
+                addFullObjReference(Arrays.asList(schemaCtx, parentCtx, nameCtx),
+                        DbObjType.INDEX, StatementActions.DROP);
             }
         } else if (ctx.drop_statements() != null) {
             drop(ctx.drop_statements());

@@ -3,7 +3,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.util.Arrays;
 import java.util.List;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_operator_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_rule_statementContext;
@@ -66,10 +65,8 @@ public class DropStatement extends ParserAbstract {
     }
 
     public void dropChild(List<IdentifierContext> tableIds, IdentifierContext nameCtx, DbObjType type) {
-        addFullObjReference(tableIds, DbObjType.TABLE, StatementActions.NONE);
-        PgObjLocation loc = new PgObjLocation(getSchemaNameSafe(tableIds),
-                QNameParser.getFirstName(tableIds), nameCtx.getText(), type);
-        addObjReference(loc, StatementActions.DROP, nameCtx);
+        tableIds.add(nameCtx);
+        addFullObjReference(tableIds, type, StatementActions.DROP);
     }
 
     public void drop(Drop_statementsContext ctx) {

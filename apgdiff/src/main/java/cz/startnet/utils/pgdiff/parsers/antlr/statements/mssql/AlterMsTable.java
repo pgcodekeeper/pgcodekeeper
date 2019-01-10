@@ -66,7 +66,7 @@ public class AlterMsTable extends TableAbstract {
         IdContext trigger = ctx.trigger;
         if (trigger != null) {
             MsTrigger tr = (MsTrigger) getSafe(AbstractTable::getTrigger, table, trigger);
-            tr.setDisable(ctx.ENABLE() == null);
+            setSafe(MsTrigger::setDisable, tr, ctx.ENABLE() == null);
             PgObjLocation loc = new PgObjLocation(schemaCtx.getText(),
                     nameCtx.getText(), trigger.getText(), DbObjType.TRIGGER);
             addObjReference(loc, StatementActions.ALTER, trigger);

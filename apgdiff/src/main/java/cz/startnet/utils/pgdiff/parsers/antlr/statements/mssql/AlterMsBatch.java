@@ -1,7 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import java.util.Arrays;
-import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statement_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_triggerContext;
@@ -9,7 +8,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -46,18 +44,10 @@ public class AlterMsBatch extends ParserAbstract {
             schemaCtx = ctx.table_name.schema;
         }
 
-        if (schemaCtx != null) {
-            IdContext parentCtx = ctx.table_name.name;
-            IdContext nameCtx = qname.name;
-            List<IdContext> ids = Arrays.asList(schemaCtx, parentCtx);
-            // second schema ref
-            // CREATE TRIGGER schema.trigger ON schema.table ...
-            addReferenceOnSchema(ctx.table_name.schema);
-            addFullObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
-
-            PgObjLocation loc = new PgObjLocation(getSchemaNameSafe(ids),
-                    parentCtx.getText(), nameCtx.getText(), DbObjType.TRIGGER);
-            addObjReference(loc, StatementActions.ALTER, nameCtx);
-        }
+        // second schema ref
+        // CREATE TRIGGER schema.trigger ON schema.table ...
+        addReferenceOnSchema(ctx.table_name.schema);
+        addFullObjReference(Arrays.asList(schemaCtx, ctx.table_name.name, qname.name),
+                DbObjType.TRIGGER, StatementActions.ALTER);
     }
 }
