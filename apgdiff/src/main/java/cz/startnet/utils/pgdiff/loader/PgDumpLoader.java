@@ -203,7 +203,7 @@ public class PgDumpLoader implements AutoCloseable {
         }
 
         try {
-            AntlrParser.finishAntlr(antlrTasks);
+            AntlrParser.finishAntlr(antlrTasks, null, null);
         } catch(Exception e) {
             throw new IOException(MessageFormat.format(Messages.PgDumpLoader_ProjReadingError,
                     e.getLocalizedMessage(), inputObjectName), e);

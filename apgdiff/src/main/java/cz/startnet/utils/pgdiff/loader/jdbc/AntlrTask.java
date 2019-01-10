@@ -18,6 +18,10 @@ public class AntlrTask<T> {
         this.object = object;
     }
 
+    public GenericColumn getObject() {
+        return object;
+    }
+
     public void finish() throws InterruptedException, ExecutionException {
         finalizer.accept(future.get());
     }

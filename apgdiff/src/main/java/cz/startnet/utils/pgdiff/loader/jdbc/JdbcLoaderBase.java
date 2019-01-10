@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -415,28 +414,20 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
 
     protected <T> void submitAntlrTask(String sql,
             Function<SQLParser, T> parserCtxReader, Consumer<T> finalizer) {
-        String loc = getCurrentLocation();
-        Future<T> future = AntlrParser.ANTLR_POOL.submit(() -> parserCtxReader.apply(
-                AntlrParser.makeBasicParser(SQLParser.class, sql, loc)));
-        antlrTasks.add(new AntlrTask<>(future, finalizer, currentObject));
+        AntlrParser.submitAntlrTask(antlrTasks, parserCtxReader,
+                AntlrParser.makeBasicParser(SQLParser.class, sql, getCurrentLocation()),
+                finalizer, currentObject);
     }
 
     protected <T> void submitMsAntlrTask(String sql,
             Function<TSQLParser, T> parserCtxReader, Consumer<T> finalizer) {
-        String loc = getCurrentLocation();
-        Future<T> future = AntlrParser.ANTLR_POOL.submit(() -> parserCtxReader.apply(
-                AntlrParser.makeBasicParser(TSQLParser.class, sql, loc)));
-        antlrTasks.add(new AntlrTask<>(future, finalizer, currentObject));
+        AntlrParser.submitAntlrTask(antlrTasks, parserCtxReader,
+                AntlrParser.makeBasicParser(TSQLParser.class, sql, getCurrentLocation()),
+                finalizer, currentObject);
     }
 
     protected void finishAntlr() throws InterruptedException, ExecutionException {
-        AntlrTask<?> task;
-        setCurrentOperation("finalizing antlr");
-        while ((task = antlrTasks.poll()) != null) {
-            // default to operation if object is null
-            setCurrentObject(task.object);
-            task.finish();
-        }
+        AntlrParser.finishAntlr(antlrTasks, this::setCurrentOperation, this::setCurrentObject);
     }
 
     protected static class TimestampParam {
