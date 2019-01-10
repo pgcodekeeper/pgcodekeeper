@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.ExecutionException;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -204,7 +205,7 @@ public class PgDumpLoader implements AutoCloseable {
 
         try {
             AntlrParser.finishAntlr(antlrTasks, null, null);
-        } catch(Exception e) {
+        } catch(ExecutionException e) {
             throw new IOException(MessageFormat.format(Messages.PgDumpLoader_ProjReadingError,
                     e.getLocalizedMessage(), inputObjectName), e);
         }
