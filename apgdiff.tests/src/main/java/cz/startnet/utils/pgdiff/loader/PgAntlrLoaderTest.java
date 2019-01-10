@@ -291,7 +291,7 @@ class PgDB1 extends PgDatabaseObjectCreator {
         table.addConstraint(constraint);
 
         constraint = new PgConstraint("faxes_fax_box_id_fkey");
-        constraint.setDefinition("FOREIGN KEY (fax_box_id)\n      REFERENCES fax_boxes (fax_box_id) MATCH SIMPLE\n      ON UPDATE RESTRICT ON DELETE CASCADE");
+        constraint.setDefinition("FOREIGN KEY (fax_box_id)\n      REFERENCES public.fax_boxes (fax_box_id) MATCH SIMPLE\n      ON UPDATE RESTRICT ON DELETE CASCADE");
         table.addConstraint(constraint);
 
         table = new SimplePgTable("extensions");
@@ -303,7 +303,7 @@ class PgDB1 extends PgDatabaseObjectCreator {
         table.addColumn(col);
 
         constraint = new PgConstraint("extensions_fax_box_id_fkey");
-        constraint.setDefinition("FOREIGN KEY (fax_box_id) REFERENCES fax_boxes\n(fax_box_id)    ON UPDATE RESTRICT ON DELETE RESTRICT");
+        constraint.setDefinition("FOREIGN KEY (id) REFERENCES public.fax_boxes\n(fax_box_id)    ON UPDATE RESTRICT ON DELETE RESTRICT");
         table.addConstraint(constraint);
 
         return d;
@@ -1033,8 +1033,8 @@ class PgDB16 extends PgDatabaseObjectCreator {
 
         // view
         PgView view = new PgView("v_subselect");
-        view.setQuery("SELECT c.id, t.id FROM ( SELECT t_work.id FROM t_work) t"
-                + " JOIN t_chart c ON t.id = c.id");
+        view.setQuery("SELECT c.id, t.id FROM ( SELECT t_work.id FROM public.t_work) t"
+                + " JOIN public.t_chart c ON t.id = c.id");
         schema.addView(view);
 
         return d;
@@ -1077,8 +1077,10 @@ class PgDB17 extends PgDatabaseObjectCreator {
 
         // view
         PgView view = new PgView("v_subselect");
-        view.setQuery("SELECT c.id, t.id, t.name FROM  ( SELECT w.id, m.name FROM "
-                + "(SELECT t_work.id FROM t_work) w JOIN t_memo m ON w.id::text = m.name)  t JOIN t_chart c ON t.id = c.id");
+        view.setQuery("SELECT c.id, t.id AS second, t.name\n" +
+                "   FROM (( SELECT w.id, m.name FROM (( SELECT t_work.id FROM public.t_work) w\n" +
+                "             JOIN public.t_memo m ON (((w.id)::text = m.name)))) t\n" +
+                "     JOIN public.t_chart c ON ((t.id = c.id)))");
         schema.addView(view);
 
         return d;
