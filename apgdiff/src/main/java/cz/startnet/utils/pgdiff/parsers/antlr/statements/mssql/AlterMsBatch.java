@@ -1,5 +1,8 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
+import java.util.Arrays;
+import java.util.List;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statement_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
@@ -39,14 +42,20 @@ public class AlterMsBatch extends ParserAbstract {
     private void alterTrigger(Create_or_alter_triggerContext ctx) {
         Qualified_nameContext qname = ctx.trigger_name;
         IdContext schemaCtx = qname.schema;
+        if (schemaCtx == null) {
+            schemaCtx = ctx.table_name.schema;
+        }
 
         if (schemaCtx != null) {
             IdContext parentCtx = ctx.table_name.name;
             IdContext nameCtx = qname.name;
+            List<IdContext> ids = Arrays.asList(schemaCtx, parentCtx);
+            // second schema ref
+            // CREATE TRIGGER schema.trigger ON schema.table ...
             addReferenceOnSchema(ctx.table_name.schema);
-            addFullObjReference(schemaCtx, parentCtx, DbObjType.TABLE, StatementActions.NONE);
+            addFullObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
 
-            PgObjLocation loc = new PgObjLocation(schemaCtx.getText(),
+            PgObjLocation loc = new PgObjLocation(getSchemaNameSafe(ids),
                     parentCtx.getText(), nameCtx.getText(), DbObjType.TRIGGER);
             addObjReference(loc, StatementActions.ALTER, nameCtx);
         }

@@ -39,13 +39,20 @@ public class CreateMsTrigger extends BatchContextProcessor {
 
     @Override
     public void parseObject() {
-        List<IdContext> ids = Arrays.asList(ctx.trigger_name.schema, ctx.table_name.name);
+        IdContext schemaCtx = ctx.trigger_name.schema;
+        if (schemaCtx == null) {
+            schemaCtx = ctx.table_name.schema;
+        }
+        List<IdContext> ids = Arrays.asList(schemaCtx, ctx.table_name.name);
         addFullObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
         getObject(getSchemaSafe(ids));
     }
 
     public MsTrigger getObject(AbstractSchema schema) {
         IdContext schemaCtx = ctx.trigger_name.schema;
+        if (schemaCtx == null) {
+            schemaCtx = ctx.table_name.schema;
+        }
         IdContext tableNameCtx = ctx.table_name.name;
         IdContext nameCtx = ctx.trigger_name.name;
 

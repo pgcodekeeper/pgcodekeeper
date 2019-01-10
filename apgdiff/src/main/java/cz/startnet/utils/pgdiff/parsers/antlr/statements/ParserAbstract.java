@@ -361,7 +361,7 @@ public abstract class ParserAbstract {
 
         if (schemaCtx == null && defaultSchema == null) {
             throw new ObjectCreationException("Object must be schema qualified: " +
-                    getFullCtxText(ids));
+                    QNameParser.getFirstName(ids));
         }
 
         AbstractSchema foundSchema;
