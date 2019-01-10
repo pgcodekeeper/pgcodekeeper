@@ -1,29 +1,4 @@
---
--- PostgreSQL database dump
---
-
-SET client_encoding = 'UTF8';
-SET check_function_bodies = false;
-SET client_min_messages = warning;
-
---
--- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: postgres
---
-
-COMMENT ON SCHEMA public IS 'Standard public schema';
-
-
-SET search_path = public, pg_catalog;
-
-SET default_tablespace = '';
-
-SET default_with_oids = false;
-
---
--- Name: testtable; Type: TABLE; Schema: public; Owner: fordfrog; Tablespace: 
---
-
-CREATE TABLE testtable (
+CREATE TABLE public.testtable (
     field1 integer,
     field2 integer,
     field3 character varying(150) DEFAULT 'none'::character varying,
@@ -33,42 +8,13 @@ CREATE TABLE testtable (
 
 ALTER TABLE public.testtable OWNER TO fordfrog;
 
---
--- Name: testindex; Type: INDEX; Schema: public; Owner: fordfrog; Tablespace: 
---
+CREATE UNIQUE INDEX testindex ON public.testtable USING btree (field1);
 
-CREATE UNIQUE INDEX testindex ON testtable USING btree (field1);
-
-
---
--- Name: testtable_2; Type: TABLE; Schema: public; Owner: fordfrog; Tablespace: 
---
-
-CREATE TABLE testtable_2 (
+CREATE TABLE public.testtable_2 (
     field1 integer,
     field2 integer,
     field4 double precision
 );
 
-
---
--- Name: f2 testtable_2_c2_fkey; Type: FK CONSTRAINT; Schema: public; Owner: fordfrog; Tablespace: 
---
-
-ALTER TABLE ONLY testtable_2
-    ADD CONSTRAINT testtable_2_c2_fkey FOREIGN KEY (field2) REFERENCES testtable(field1);
-
---
--- Name: public; Type: ACL; Schema: -; Owner: postgres
---
-
-REVOKE ALL ON SCHEMA public FROM PUBLIC;
-REVOKE ALL ON SCHEMA public FROM postgres;
-GRANT ALL ON SCHEMA public TO postgres;
-GRANT ALL ON SCHEMA public TO PUBLIC;
-
-
---
--- PostgreSQL database dump complete
---
-
+ALTER TABLE ONLY public.testtable_2
+    ADD CONSTRAINT testtable_2_c2_fkey FOREIGN KEY (field2) REFERENCES public.testtable(field1);
