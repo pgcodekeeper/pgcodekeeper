@@ -243,7 +243,14 @@ public abstract class ParserAbstract {
         }
 
         ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
+        String schemaName;
         if (schemaCtx == null) {
+            schemaName = defaultSchema;
+        } else {
+            schemaName = schemaCtx.getText();
+        }
+
+        if (schemaName == null) {
             throw new ObjectCreationException(SCHEMA_ERROR + getFullCtxText(nameCtx));
         }
 
@@ -260,19 +267,19 @@ public abstract class ParserAbstract {
         case TABLE:
         case TYPE:
         case VIEW:
-            return addObjReference(new PgObjLocation(schemaCtx.getText(), nameCtx.getText(), type),
+            return addObjReference(new PgObjLocation(schemaName, nameCtx.getText(), type),
                     action,nameCtx);
         case CONSTRAINT:
         case INDEX:
         case TRIGGER:
         case RULE:
             ParserRuleContext parent = QNameParser.getSecondNameCtx(ids);
-            addObjReference(new PgObjLocation(schemaCtx.getText(),
-                    parent.getText(), DbObjType.TABLE), StatementActions.NONE, parent);
+            String parentName = parent.getText();
+            addObjReference(new PgObjLocation(schemaName,
+                    parentName, DbObjType.TABLE), StatementActions.NONE, parent);
 
-            return addObjReference(new PgObjLocation(schemaCtx.getText(),
-                    QNameParser.getSecondName(ids), nameCtx.getText(), type),
-                    action,nameCtx);
+            return addObjReference(new PgObjLocation(schemaName,
+                    parentName, nameCtx.getText(), type), action,nameCtx);
         default:
             return null;
         }
