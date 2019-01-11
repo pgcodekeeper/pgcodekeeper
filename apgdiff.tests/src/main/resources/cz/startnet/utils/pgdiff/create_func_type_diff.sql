@@ -7,8 +7,8 @@ CREATE TYPE public.typ_composite AS (
 
 ALTER TYPE public.typ_composite OWNER TO botov_av;
 
-CREATE OR REPLACE FUNCTION public.add(typ_composite, integer) RETURNS integer
+CREATE OR REPLACE FUNCTION public.add(public.typ_composite, integer) RETURNS integer
     LANGUAGE sql IMMUTABLE STRICT
     AS $_$select $2;$_$;
 
-ALTER FUNCTION public.add(typ_composite, integer) OWNER TO botov_av;
+ALTER FUNCTION public.add(public.typ_composite, integer) OWNER TO botov_av;

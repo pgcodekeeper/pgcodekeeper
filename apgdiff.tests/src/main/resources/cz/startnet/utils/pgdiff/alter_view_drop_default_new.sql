@@ -1,5 +1,5 @@
-CREATE VIEW test2 AS
+CREATE VIEW public.test2 AS
 	SELECT 1 AS test_col;
 
-CREATE VIEW test AS
-	SELECT test_col FROM test2;
+CREATE VIEW public.test AS
+	SELECT test_col FROM public.test2;

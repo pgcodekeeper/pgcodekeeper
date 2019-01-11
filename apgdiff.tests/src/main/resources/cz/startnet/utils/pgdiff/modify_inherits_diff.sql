@@ -7,8 +7,6 @@ CREATE TABLE public.parenttable2 (
 	id bigserial NOT NULL
 );
 
-ALTER TABLE public.parenttable2 OWNER TO fordfrog;
-
 ALTER TABLE public.testtable
 	NO INHERIT public.parenttable;
 

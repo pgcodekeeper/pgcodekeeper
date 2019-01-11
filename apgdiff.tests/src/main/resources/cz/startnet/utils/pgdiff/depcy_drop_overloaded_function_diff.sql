@@ -15,6 +15,6 @@ CREATE OR REPLACE FUNCTION public.f(p integer) RETURNS numeric
 ALTER FUNCTION public.f(p integer) OWNER TO shamsutdinov_lr;
 
 CREATE VIEW public.v2 AS
-	SELECT f(3) AS f;
+	SELECT public.f(3) AS f;
 
 ALTER VIEW public.v2 OWNER TO shamsutdinov_lr;

@@ -1,8 +1,8 @@
-CREATE TABLE t1 (
+CREATE TABLE public.t1 (
     c1 integer
 );
 
-ALTER TABLE t1 OWNER TO galiev_mr;
+ALTER TABLE public.t1 OWNER TO galiev_mr;
 
 CREATE RULE notify_me AS
-    ON UPDATE TO t1 DO  NOTIFY t1;
+    ON UPDATE TO public.t1 DO  NOTIFY t1;

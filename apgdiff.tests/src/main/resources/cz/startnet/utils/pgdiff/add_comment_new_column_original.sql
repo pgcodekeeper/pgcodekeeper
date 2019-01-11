@@ -1,3 +1,3 @@
-CREATE TABLE agent(
+CREATE TABLE public.agent(
   id BIGINT
 );
