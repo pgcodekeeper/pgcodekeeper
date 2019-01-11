@@ -10,8 +10,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.MsAssembly;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsAssembly extends ParserAbstract {
 
@@ -43,8 +41,7 @@ public class CreateMsAssembly extends ParserAbstract {
             ass.setPermission(getFullCtxText(permission).toUpperCase());
         }
 
-        addSafe(PgDatabase::addAssembly, db, ass);
-        fillObjDefinition(new PgObjLocation(nameCtx.getText(), DbObjType.ASSEMBLY), nameCtx, ass);
+        addSafe(PgDatabase::addAssembly, db, ass, nameCtx);
     }
 
     public static String formatBinary(String hex) {

@@ -1,14 +1,13 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.Arrays;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Columns_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_trigger_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Names_referencesContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_deferrableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_initialy_immedContext;
@@ -25,6 +24,7 @@ import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgTrigger.TgTypes;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateTrigger extends ParserAbstract {
@@ -103,19 +103,19 @@ public class CreateTrigger extends ParserAbstract {
                 .schema_qualified_name_nontype();
         IdentifierContext sch = funcNameCtx.schema;
         if (sch != null) {
-            String schName = sch.getText();
-            Identifier_nontypeContext nameCtx = funcNameCtx.identifier_nontype();
-            addDepSafe(trigger, new PgObjLocation(schName, nameCtx.getText() + "()", DbObjType.FUNCTION),
-                    nameCtx);
+            addDepSafe(trigger, Arrays.asList(sch, funcNameCtx.identifier_nontype()),
+                    DbObjType.FUNCTION);
         }
 
-        for (Names_referencesContext column : ctx.names_references()) {
-            for (Schema_qualified_nameContext nameCol : column.name) {
-                IdentifierContext col = QNameParser.getFirstNameCtx(nameCol.identifier());
-                String colName = col.getText();
-                trigger.addUpdateColumn(colName);
-                addDepSafe(trigger, new PgObjLocation(schemaName, tableName, colName, DbObjType.COLUMN),
-                        col);
+        for (Columns_listContext column : ctx.columns_list()) {
+            for (IdentifierContext nameCol : column.name) {
+                String colName = nameCol.getText();
+                trigger.addUpdateColumn(nameCol.getText());
+                if (!ApgdiffUtils.isPgSystemSchema(schemaName)) {
+                    addDepSafe(trigger, new PgObjLocation(schemaName, tableName,
+                            colName, DbObjType.COLUMN),
+                            nameCol);
+                }
             }
         }
         parseWhen(ctx.when_trigger(), trigger, db);

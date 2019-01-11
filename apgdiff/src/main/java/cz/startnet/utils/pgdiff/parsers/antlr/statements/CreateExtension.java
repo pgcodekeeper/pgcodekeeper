@@ -1,12 +1,9 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.Arrays;
-
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_extension_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateExtension extends ParserAbstract {
@@ -25,11 +22,9 @@ public class CreateExtension extends ParserAbstract {
         if (ctx.schema_with_name() != null) {
             IdentifierContext id = ctx.schema_with_name().name;
             ext.setSchema(id.getText());
-            addDepSafe(ext, Arrays.asList(id), DbObjType.SCHEMA);
+            addDepSafe(ext, id, DbObjType.SCHEMA);
         }
 
-        addSafe(PgDatabase::addExtension, db, ext);
-        fillObjDefinition(new PgObjLocation(nameCtx.getText(), DbObjType.EXTENSION),
-                nameCtx, ext);
+        addSafe(PgDatabase::addExtension, db, ext, nameCtx);
     }
 }

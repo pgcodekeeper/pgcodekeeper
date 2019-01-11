@@ -41,6 +41,7 @@ import cz.startnet.utils.pgdiff.schema.PgOperator;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -161,7 +162,7 @@ public abstract class ParserAbstract {
             Schema_qualified_name_nontypeContext sqnn = argument.argtype_data.predefined_type().schema_qualified_name_nontype();
             if (sqnn != null) {
                 IdentifierContext schema = sqnn.schema;
-                if (schema != null && "pg_catalog".equals(schema.getText())) {
+                if (schema != null && ApgdiffConsts.PG_CATALOG.equals(schema.getText())) {
                     type = type.substring("pg_catalog.".length());
                 }
             }
@@ -190,7 +191,7 @@ public abstract class ParserAbstract {
             Schema_qualified_name_nontypeContext sqnn = typeCtx.predefined_type().schema_qualified_name_nontype();
             if (sqnn != null) {
                 IdentifierContext schema = sqnn.schema;
-                if (schema != null && "pg_catalog".equals(schema.getText())) {
+                if (schema != null && ApgdiffConsts.PG_CATALOG.equals(schema.getText())) {
                     argType = argType.substring("pg_catalog.".length());
                 }
             }
@@ -336,7 +337,7 @@ public abstract class ParserAbstract {
     }
 
     protected <T extends IStatement, U extends PgStatement> void addSafe(BiConsumer<T, U> adder,
-            T parent, U child, IdContext nameCtx) {
+            T parent, U child, ParserRuleContext nameCtx) {
         addSafe(adder, parent, child);
         PgObjLocation loc = new PgObjLocation(nameCtx.getText(), child.getStatementType());
         fillObjDefinition(loc, nameCtx, child);
@@ -376,19 +377,68 @@ public abstract class ParserAbstract {
         }
     }
 
-    protected void addDepSafe(PgStatement st, List<IdentifierContext> ids, DbObjType type) {
-        IdentifierContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
-        if (schemaCtx != null) {
-            String schemaName = schemaCtx.getText();
-            if (ApgdiffConsts.PG_CATALOG.equals(schemaName)) {
-                return;
-            }
+    protected void addDepSafe(PgStatement st, ParserRuleContext name, DbObjType type) {
+        addDepSafe(st, Arrays.asList(name), type);
+    }
 
-            addReferenceOnSchema(QNameParser.getSchemaNameCtx(ids));
-            IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
-            PgObjLocation loc = new PgObjLocation(schemaName, nameCtx.getText(), type);
-            addDepSafe(st, loc, nameCtx);
+    protected void addDepSafe(PgStatement st, List<? extends ParserRuleContext> ids, DbObjType type) {
+        ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
+        switch (type) {
+        case ASSEMBLY:
+        case EXTENSION:
+        case SCHEMA:
+        case ROLE:
+        case USER:
+        case DATABASE:
+            addDepSafe(st, new PgObjLocation(nameCtx.getText(), type), nameCtx);
+            return;
+        default:
+            break;
         }
+
+        ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
+        String schemaName;
+        if (schemaCtx == null) {
+            schemaName = defaultSchema;
+        } else {
+            schemaName = schemaCtx.getText();
+        }
+
+        if (schemaName == null || ApgdiffUtils.isSystemSchema(schemaName, st.isPostgres())) {
+            return;
+        }
+
+        PgObjLocation loc;
+        switch (type) {
+        case DOMAIN:
+        case FTS_CONFIGURATION:
+        case FTS_DICTIONARY:
+        case FTS_PARSER:
+        case FTS_TEMPLATE:
+        case FUNCTION:
+        case OPERATOR:
+        case PROCEDURE:
+        case SEQUENCE:
+        case TABLE:
+        case TYPE:
+        case VIEW:
+            loc = new PgObjLocation(schemaName, nameCtx.getText(), type);
+            break;
+        case CONSTRAINT:
+        case INDEX:
+        case TRIGGER:
+        case RULE:
+        case COLUMN:
+            ParserRuleContext parent = QNameParser.getSecondNameCtx(ids);
+            String parentName = parent.getText();
+            loc = new PgObjLocation(schemaName, parentName, nameCtx.getText(), type);
+            break;
+        default:
+            return;
+        }
+
+        addReferenceOnSchema(schemaCtx);
+        addDepSafe(st, loc, nameCtx);
     }
 
     protected void addDepSafe(PgStatement st, PgObjLocation loc, ParserRuleContext nameCtx) {
@@ -460,8 +510,7 @@ public abstract class ParserAbstract {
             IdentifierContext schemaCtx = qname.identifier();
             String schemaName = schemaCtx != null ? schemaCtx.getText() : null;
 
-            if (schemaName == null || ApgdiffConsts.PG_CATALOG.equals(schemaName)
-                    || "information_schema".equals(schemaName)) {
+            if (schemaName == null || ApgdiffUtils.isPgSystemSchema(schemaName)) {
                 return;
             }
 
@@ -478,7 +527,7 @@ public abstract class ParserAbstract {
         if (qname != null) {
             IdContext schemaCtx = qname.schema;
             String schemaName = schemaCtx != null ? schemaCtx.getText() : null;
-            if (schemaName == null || "sys".equals(schemaName)) {
+            if (schemaName == null || ApgdiffUtils.isMsSystemSchema(schemaName)) {
                 return;
             }
 

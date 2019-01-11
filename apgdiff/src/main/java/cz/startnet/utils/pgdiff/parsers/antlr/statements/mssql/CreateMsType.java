@@ -21,7 +21,6 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.MsType;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsType extends ParserAbstract {
@@ -46,7 +45,7 @@ public class CreateMsType extends ParserAbstract {
         } else if (def.EXTERNAL() != null) {
             String assemblyName = def.assembly_name.getText();
             type.setAssemblyName(assemblyName);
-            addDepSafe(type, new PgObjLocation(assemblyName, DbObjType.ASSEMBLY), def.assembly_name);
+            addDepSafe(type, def.assembly_name, DbObjType.ASSEMBLY);
             String assemblyClass;
             if (def.class_name != null) {
                 assemblyClass = def.class_name.getText();

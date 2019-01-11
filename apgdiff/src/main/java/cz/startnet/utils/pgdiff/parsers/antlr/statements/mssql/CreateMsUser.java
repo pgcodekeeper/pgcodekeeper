@@ -7,8 +7,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.User_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.MsUser;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsUser extends ParserAbstract {
 
@@ -35,7 +33,6 @@ public class CreateMsUser extends ParserAbstract {
             }
         }
 
-        addSafe(PgDatabase::addUser, db, user);
-        fillObjDefinition(new PgObjLocation(nameCtx.getText(), DbObjType.USER), nameCtx, user);
+        addSafe(PgDatabase::addUser, db, user, nameCtx);
     }
 }

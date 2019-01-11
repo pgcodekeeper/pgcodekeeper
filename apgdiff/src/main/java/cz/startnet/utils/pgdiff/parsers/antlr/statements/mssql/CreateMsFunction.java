@@ -32,7 +32,6 @@ import cz.startnet.utils.pgdiff.schema.FuncTypes;
 import cz.startnet.utils.pgdiff.schema.MsClrFunction;
 import cz.startnet.utils.pgdiff.schema.MsFunction;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsFunction extends BatchContextProcessor {
@@ -75,8 +74,7 @@ public class CreateMsFunction extends BatchContextProcessor {
             MsClrFunction func = new MsClrFunction(name, assembly,
                     assemblyClass, assemblyMethod);
 
-            addDepSafe(func, new PgObjLocation(assembly, DbObjType.ASSEMBLY),
-                    assemblyCtx.assembly_name);
+            addDepSafe(func, assemblyCtx.assembly_name, DbObjType.ASSEMBLY);
             fillArguments(func);
 
             for (Function_optionContext option : ctx.function_option()) {

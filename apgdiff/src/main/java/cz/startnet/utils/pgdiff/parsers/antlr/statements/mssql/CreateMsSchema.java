@@ -13,8 +13,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsSchema extends ParserAbstract {
 
@@ -39,9 +37,7 @@ public class CreateMsSchema extends ParserAbstract {
             schema.setOwner(ctx.owner_name.getText());
         }
 
-        addSafe(PgDatabase::addSchema, db, schema);
-        fillObjDefinition(new PgObjLocation(nameCtx.getText(), DbObjType.SCHEMA),
-                nameCtx, schema);
+        addSafe(PgDatabase::addSchema, db, schema, nameCtx);
 
         if (ctx.schema_def != null) {
             try {

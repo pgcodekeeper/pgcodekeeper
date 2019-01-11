@@ -6,10 +6,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.StatementContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateSchema extends ParserAbstract {
 
@@ -36,9 +34,7 @@ public class CreateSchema extends ParserAbstract {
                 && (!name.equals(ApgdiffConsts.PUBLIC) || !"postgres".equals(userName.getText()))) {
             schema.setOwner(userName.getText());
         }
-        addSafe(PgDatabase::addSchema, db, schema);
-        fillObjDefinition(new PgObjLocation(nameCtx.getText(), DbObjType.SCHEMA),
-                nameCtx, schema);
+        addSafe(PgDatabase::addSchema, db, schema, nameCtx);
 
         if (ctx.schema_def != null) {
             try {

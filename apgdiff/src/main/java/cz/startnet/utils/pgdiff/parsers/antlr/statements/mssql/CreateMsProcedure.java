@@ -20,7 +20,6 @@ import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.MsClrProcedure;
 import cz.startnet.utils.pgdiff.schema.MsProcedure;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsProcedure extends BatchContextProcessor {
@@ -60,8 +59,7 @@ public class CreateMsProcedure extends BatchContextProcessor {
             MsClrProcedure procedure = new MsClrProcedure(nameCtx.getText(),
                     assembly, assemblyClass, assemblyMethod);
 
-            addDepSafe(procedure, new PgObjLocation(assembly, DbObjType.ASSEMBLY),
-                    assemblyCtx.assembly_name);
+            addDepSafe(procedure, assemblyCtx.assembly_name, DbObjType.ASSEMBLY);
             fillArguments(procedure);
 
             for (Procedure_optionContext option : ctx.procedure_option()) {
