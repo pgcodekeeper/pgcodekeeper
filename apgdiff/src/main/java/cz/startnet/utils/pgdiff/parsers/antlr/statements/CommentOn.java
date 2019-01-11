@@ -37,9 +37,9 @@ public class CommentOn extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        if (ctx.comment_text == null) {
-            // maybe NULL if drop comment
-            return;
+        String comment = null;
+        if (ctx.comment_text != null) {
+            comment = ctx.comment_text.getText();
         }
 
         List<? extends ParserRuleContext> ids = null;
@@ -55,7 +55,6 @@ public class CommentOn extends ParserAbstract {
         nameCtx = QNameParser.getFirstNameCtx(ids);
         name = nameCtx.getText();
 
-        String comment = ctx.comment_text.getText();
         DbObjType type = null;
 
         // column (separately because of schema qualification)
@@ -104,7 +103,7 @@ public class CommentOn extends ParserAbstract {
         AbstractSchema schema = null;
         if (ctx.TRIGGER() != null || ctx.RULE() != null || ctx.CONSTRAINT() != null) {
             schema = getSchemaSafe(ctx.table_name.identifier());
-        } else if (ctx.EXTENSION() == null && ctx.SCHEMA() == null) {
+        } else if (ctx.EXTENSION() == null && ctx.SCHEMA() == null && ctx.DATABASE() == null) {
             schema = getSchemaSafe(ids);
         }
 
