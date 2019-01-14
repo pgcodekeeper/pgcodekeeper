@@ -61,8 +61,7 @@ public class CreateMsTrigger extends BatchContextProcessor {
         trigger.setQuotedIdentified(quotedIdentifier);
         setSourceParts(trigger);
 
-        String schemaName = getSchemaNameSafe(Arrays.asList(schemaCtx, tableNameCtx));
-        MsSqlClauses clauses = new MsSqlClauses(schemaName);
+        MsSqlClauses clauses = new MsSqlClauses();
         clauses.analyze(ctx.sql_clauses());
         trigger.addAllDeps(clauses.getDepcies());
 

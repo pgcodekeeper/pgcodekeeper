@@ -75,7 +75,7 @@ public class CreateMsProcedure extends BatchContextProcessor {
         procedure.setQuotedIdentified(quotedIdentifier);
         setSourceParts(procedure);
 
-        MsSqlClauses clauses = new MsSqlClauses(getSchemaNameSafe(ids));
+        MsSqlClauses clauses = new MsSqlClauses();
         clauses.analyze(ctx.proc_body().sql_clauses());
         procedure.addAllDeps(clauses.getDepcies());
         addSafe(AbstractSchema::addFunction, schema, procedure, ids);

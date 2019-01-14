@@ -17,8 +17,8 @@ public class MsDelete extends MsAbstractExprWithNmspc<Delete_statementContext> {
         super(parent);
     }
 
-    public MsDelete(String schema) {
-        super(schema);
+    public MsDelete() {
+        super();
     }
 
     @Override

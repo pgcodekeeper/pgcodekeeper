@@ -28,7 +28,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraint_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
@@ -39,7 +38,6 @@ import cz.startnet.utils.pgdiff.schema.MsConstraint;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class TableAbstract extends ParserAbstract {
@@ -256,12 +254,6 @@ public abstract class TableAbstract extends ParserAbstract {
         if (incl != null) {
             fillIncludingDepcy(incl, constr, schemaName, tableName);
         }
-    }
-
-    public static void analyzeConstraintCtx(VexContext ctx, PgStatement statement,
-            String schemaName, PgDatabase db) {
-        UtilAnalyzeExpr.analyzeWithNmspc(ctx, statement, schemaName,
-                statement.getParent().getName(), db);
     }
 
     protected AbstractConstraint getMsConstraint(Table_constraintContext conCtx) {

@@ -9,11 +9,12 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Full_column_nameContext
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class MsAbstractExpr {
 
-    private final String schema;
     private final MsAbstractExpr parent;
     private final Set<GenericColumn> depcies;
 
@@ -21,14 +22,12 @@ public abstract class MsAbstractExpr {
         return Collections.unmodifiableSet(depcies);
     }
 
-    public MsAbstractExpr(String schema) {
-        this.schema = schema;
+    public MsAbstractExpr() {
         parent = null;
         depcies = new LinkedHashSet<>();
     }
 
     protected MsAbstractExpr(MsAbstractExpr parent) {
-        this.schema = parent.schema;
         this.parent = parent;
         depcies = parent.depcies;
     }
@@ -57,19 +56,28 @@ public abstract class MsAbstractExpr {
     protected GenericColumn addObjectDepcy(Qualified_nameContext qualifiedName, DbObjType type) {
         String relationName = qualifiedName.name.getText();
         IdContext schemaCtx = qualifiedName.schema;
-        String schemaName = schemaCtx == null ? schema : schemaCtx.getText();
+        String schemaName = null;
+        if (schemaCtx != null) {
+            schemaName = schemaCtx.getText();
+        }
+
+        if (schemaName == null) {
+            return new GenericColumn(ApgdiffConsts.SYS, relationName, type);
+        }
+
         GenericColumn depcy = new GenericColumn(schemaName, relationName, type);
-        depcies.add(depcy);
+        if (!ApgdiffUtils.isMsSystemSchema(schemaName)) {
+            depcies.add(depcy);
+        }
         return depcy;
     }
 
     protected void addTypeDepcy(Data_typeContext dt) {
         Qualified_nameContext name = dt.qualified_name();
-        if (name != null && name.schema != null && !"sys".equals(name.schema.getText())) {
+        if (name != null) {
             addObjectDepcy(name, DbObjType.TYPE);
         }
     }
-
 
     protected void addDepcy(GenericColumn depcy) {
         depcies.add(depcy);
@@ -80,8 +88,15 @@ public abstract class MsAbstractExpr {
         if (tableName != null) {
             String relationName = tableName.name.getText();
             IdContext schemaCtx = tableName.schema;
-            String schemaName = schemaCtx == null ? schema : schemaCtx.getText();
-            depcies.add(new GenericColumn(schemaName, relationName, fcn.id().getText(), DbObjType.COLUMN));
+            String schemaName = null;
+            if (schemaCtx != null) {
+                schemaName = schemaCtx.getText();
+            }
+
+            if (schemaName != null && !ApgdiffUtils.isMsSystemSchema(schemaName)) {
+                depcies.add(new GenericColumn(schemaName,
+                        relationName, fcn.id().getText(), DbObjType.COLUMN));
+            }
         }
     }
 }

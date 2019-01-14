@@ -22,8 +22,8 @@ public class MsMerge extends MsAbstractExprWithNmspc<Merge_statementContext> {
         super(parent);
     }
 
-    public MsMerge(String schema) {
-        super(schema);
+    public MsMerge() {
+        super();
     }
 
     @Override

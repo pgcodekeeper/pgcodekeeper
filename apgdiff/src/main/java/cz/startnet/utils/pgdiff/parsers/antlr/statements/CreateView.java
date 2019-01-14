@@ -4,8 +4,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.text.MessageFormat;
 import java.util.List;
 
-import org.antlr.v4.runtime.ParserRuleContext;
-
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
@@ -16,13 +14,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameterContext
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_spaceContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ViewSelect;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
@@ -67,7 +61,7 @@ public class CreateView extends ParserAbstract {
             addStatementBody(vQuery);
             view.setQuery(getFullCtxText(vQuery));
             db.addContextForAnalyze(view, vQuery);
-            ViewSelect select = new ViewSelect(getSchemaNameSafe(ids));
+            ViewSelect select = new ViewSelect();
             select.analyze(new SelectStmt(vQuery));
             view.addAllDeps(select.getDepcies());
         }
@@ -91,16 +85,5 @@ public class CreateView extends ParserAbstract {
         }
 
         addSafe(AbstractSchema::addView, getSchemaSafe(ids), view, ids);
-    }
-
-    public static void analyzeViewCtx(ParserRuleContext ctx, AbstractView view,
-            String schemaName, PgDatabase db) {
-        if (ctx instanceof Select_stmtContext) {
-            Select select = new Select(schemaName, db);
-            view.addRelationColumns(select.analyze((Select_stmtContext) ctx));
-            view.addAllDeps(select.getDepcies());
-        } else {
-            UtilAnalyzeExpr.analyze((VexContext) ctx, new ValueExpr(schemaName, db), view);
-        }
     }
 }

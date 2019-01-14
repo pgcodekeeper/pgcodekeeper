@@ -15,14 +15,12 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_option
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expression_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_storage_parameterContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -109,22 +107,6 @@ public class CreateIndex extends ParserAbstract {
                     ind.addColumn(colName.getText());
                 }
             }
-        }
-    }
-
-    public static void analyzeIndexRest(Index_restContext rest, PgStatement indexStmt,
-            String schemaName, PgDatabase db) {
-        String rawTableReference = indexStmt.getParent().getName();
-
-        for (Sort_specifierContext sort_ctx : rest.index_sort().sort_specifier_list()
-                .sort_specifier()) {
-            UtilAnalyzeExpr.analyzeWithNmspc(sort_ctx.key, indexStmt, schemaName,
-                    rawTableReference, db);
-        }
-
-        if (rest.index_where() != null){
-            UtilAnalyzeExpr.analyzeWithNmspc(rest.index_where().vex(), indexStmt,
-                    schemaName, rawTableReference, db);
         }
     }
 }

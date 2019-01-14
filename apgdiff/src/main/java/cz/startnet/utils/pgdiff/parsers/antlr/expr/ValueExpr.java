@@ -63,8 +63,8 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class ValueExpr extends AbstractExpr {
 
-    public ValueExpr(String schema, PgDatabase db) {
-        super(schema, db);
+    public ValueExpr(PgDatabase db) {
+        super(db);
     }
 
     protected ValueExpr(AbstractExpr parent) {
@@ -549,8 +549,7 @@ public class ValueExpr extends AbstractExpr {
             }
             return schema.getFunctions().stream();
         } else {
-            return Stream.concat(findSchema(schema, null).getFunctions().stream(),
-                    systemStorage.getPgCatalog().getFunctions().stream());
+            return systemStorage.getPgCatalog().getFunctions().stream();
         }
     }
 

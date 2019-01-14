@@ -14,10 +14,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_initialy_immedCont
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Trigger_referencingContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.When_triggerContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
@@ -134,15 +131,5 @@ public class CreateTrigger extends ParserAbstract {
             trigger.setWhen(getFullCtxText(vex));
             db.addContextForAnalyze(trigger, vex);
         }
-    }
-
-    public static void analyzeTriggersWhen(VexContext ctx, PgTrigger trigger,
-            String schemaName, PgDatabase db) {
-        ValueExprWithNmspc vex = new ValueExprWithNmspc(schemaName, db);
-        GenericColumn implicitTable = new GenericColumn(schemaName,
-                trigger.getParent().getName(), DbObjType.TABLE);
-        vex.addReference("new", implicitTable);
-        vex.addReference("old", implicitTable);
-        UtilAnalyzeExpr.analyze(ctx, vex, trigger);
     }
 }

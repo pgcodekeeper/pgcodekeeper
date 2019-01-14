@@ -35,8 +35,8 @@ public class MsValueExpr extends MsAbstractExpr {
         super(parent);
     }
 
-    public MsValueExpr(String schema) {
-        super(schema);
+    public MsValueExpr() {
+        super();
     }
 
     public void analyze(ExpressionContext exp) {

@@ -58,8 +58,8 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
      */
     private boolean lateralAllowed;
 
-    public Select(String schema, PgDatabase db) {
-        super(schema, db);
+    public Select(PgDatabase db) {
+        super(db);
     }
 
     protected Select(AbstractExpr parent) {
