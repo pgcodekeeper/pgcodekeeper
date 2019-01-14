@@ -2161,14 +2161,13 @@ backup_service_master_key
 
 // https://msdn.microsoft.com/en-us/library/ms188332.aspx
 execute_statement
-    : EXECUTE? 
-      (execute_string | execute_module)
+    : EXECUTE (execute_string | execute_module)
     ;
 
 execute_string
-    : LR_BRACKET 
+    : LR_BRACKET
     execute_string_part (PLUS execute_string_part)* 
-    (COMMA ((constant_LOCAL_ID | id) (OUTPUT | OUT)? | DEFAULT | NULL))*
+    (COMMA (default_value | (LOCAL_ID (OUTPUT | OUT)?)))*
     RR_BRACKET
     (AS (LOGIN | USER) EQUAL STRING)?
     (AT qualified_name)?
@@ -2179,13 +2178,13 @@ execute_string_part
     ;
 
 execute_module
-    : (return_status=LOCAL_ID EQUAL)? qualified_name 
+    : (return_status=LOCAL_ID EQUAL)? (qualified_name (SEMI DECIMAL)? | LOCAL_ID)
     (execute_statement_arg (COMMA execute_statement_arg)*)? 
     (WITH execute_option (COMMA execute_option)*)?
     ;
 
 execute_statement_arg
-    : (parameter=LOCAL_ID EQUAL)? ((constant_LOCAL_ID | id) (OUTPUT | OUT)? | DEFAULT | NULL)
+    : (parameter=LOCAL_ID EQUAL)? (default_value | (LOCAL_ID (OUTPUT | OUT)?))
     ;
 
 execute_option

@@ -235,9 +235,10 @@ public class MsSqlClauses extends MsAbstractExpr {
         } else if ((receive = another.receive_statement())!= null) {
             receive(receive);
         } else if ((exec = another.execute_statement())!= null) {
-            Execute_moduleContext em;
-            if ((em = exec.execute_module()) != null) {
-                addObjectDepcy(em.qualified_name(), DbObjType.FUNCTION);
+            Execute_moduleContext em = exec.execute_module();
+            Qualified_nameContext qname;
+            if (em != null && (qname = em.qualified_name()) != null) {
+                addObjectDepcy(qname, DbObjType.FUNCTION);
             }
         } else if ((set = another.set_statement()) != null) {
             set(set);

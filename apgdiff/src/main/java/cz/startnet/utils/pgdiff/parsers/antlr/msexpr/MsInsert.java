@@ -43,9 +43,10 @@ public class MsInsert extends MsAbstractExprWithNmspc<Insert_statementContext> {
         if (ss != null) {
             new MsSelect(this).analyze(ss);
         } else if ((es = insert.execute_statement()) != null) {
-            Execute_moduleContext em;
-            if ((em = es.execute_module()) != null) {
-                addObjectDepcy(em.qualified_name(), DbObjType.FUNCTION);
+            Execute_moduleContext em = es.execute_module();
+            Qualified_nameContext qname;
+            if (em != null && (qname = em.qualified_name()) != null) {
+                addObjectDepcy(qname, DbObjType.FUNCTION);
             }
         }
 
