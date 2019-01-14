@@ -437,8 +437,7 @@ public class PgDiffTest {
                     // Tests scenario where only RESTRICT and JOIN options of OPERATOR is modified.
                     {"modify_operator_restr_join"},
                     // Tests scenario where function (from other schema) of OPERATOR is modified.
-                    // TODO uncomment this code when dependencies for OPERATOR will be fixed
-                    // {"modify_operator_use_other_schema"},
+                    {"modify_operator_use_other_schema"},
                     // Tests scenario where COLUMN is added to middle of TABLE definition.
                     {"add_column_middle"},
                     // Tests scenario where COLUMNS order is modified.
