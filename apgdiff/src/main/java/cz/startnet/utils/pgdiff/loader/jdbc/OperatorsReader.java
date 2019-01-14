@@ -9,6 +9,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgOperator;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class OperatorsReader extends JdbcReader {
@@ -47,7 +48,7 @@ public class OperatorsReader extends JdbcReader {
             rightType.addTypeDepcy(oper);
         }
 
-        oper.setProcedure(getProcessedName(res.getString("procedure_nsp"),
+        oper.setProcedure(getProcessedName(oper, res.getString("procedure_nsp"),
                 res.getString("procedure")));
 
         String commutator = res.getString("commutator");
@@ -76,21 +77,24 @@ public class OperatorsReader extends JdbcReader {
 
         String restrFuncName = res.getString("restrict");
         if (restrFuncName != null) {
-            oper.setRestrict(getProcessedName(res.getString("restrict_nsp"), restrFuncName));
+            oper.setRestrict(getProcessedName(oper, res.getString("restrict_nsp"), restrFuncName));
         }
 
         String joinFuncName = res.getString("join");
         if (joinFuncName != null) {
-            oper.setJoin(getProcessedName(res.getString("join_nsp"), joinFuncName));
+            oper.setJoin(getProcessedName(oper, res.getString("join_nsp"), joinFuncName));
         }
 
         schema.addOperator(oper);
     }
 
-    private String getProcessedName(String schemaName, String funcName) {
+    private String getProcessedName(PgOperator oper, String schemaName, String funcName) {
         StringBuilder sb = new StringBuilder();
         if (!ApgdiffConsts.PG_CATALOG.equalsIgnoreCase(schemaName)) {
             sb.append(PgDiffUtils.getQuotedName(schemaName)).append('.');
+            if (!ApgdiffUtils.isPgSystemSchema(schemaName)) {
+                oper.addDep(new GenericColumn(schemaName, funcName, DbObjType.FUNCTION));
+            }
         }
         sb.append(PgDiffUtils.getQuotedName(funcName));
         return sb.toString();

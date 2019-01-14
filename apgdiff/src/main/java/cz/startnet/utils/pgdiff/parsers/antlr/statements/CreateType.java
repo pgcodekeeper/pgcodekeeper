@@ -13,6 +13,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgType.PgTypeForm;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateType extends ParserAbstract {
 
@@ -69,31 +70,39 @@ public class CreateType extends ParserAbstract {
         }
         if (ctx.canonical_function != null) {
             type.setCanonical(getFullCtxText(ctx.canonical_function));
+            addDepSafe(type, ctx.canonical_function.identifier(), DbObjType.FUNCTION);
         }
         if (ctx.subtype_diff_function != null) {
             type.setSubtypeDiff(getFullCtxText(ctx.subtype_diff_function));
+            addDepSafe(type, ctx.subtype_diff_function.identifier(), DbObjType.FUNCTION);
         }
-        // TODO function depcies; caution: may introduce cyclic depcies
         if (ctx.input_function != null) {
             type.setInputFunction(getFullCtxText(ctx.input_function));
+            addDepSafe(type, ctx.input_function.identifier(), DbObjType.FUNCTION);
         }
         if (ctx.output_function != null) {
             type.setOutputFunction(getFullCtxText(ctx.output_function));
+            addDepSafe(type, ctx.output_function.identifier(), DbObjType.FUNCTION);
         }
         if (ctx.receive_function != null) {
             type.setReceiveFunction(getFullCtxText(ctx.receive_function));
+            addDepSafe(type, ctx.receive_function.identifier(), DbObjType.FUNCTION);
         }
         if (ctx.send_function != null) {
             type.setSendFunction(getFullCtxText(ctx.send_function));
+            addDepSafe(type, ctx.send_function.identifier(), DbObjType.FUNCTION);
         }
         if (ctx.type_modifier_input_function != null) {
             type.setTypmodInputFunction(getFullCtxText(ctx.type_modifier_input_function));
+            addDepSafe(type, ctx.type_modifier_input_function.identifier(), DbObjType.FUNCTION);
         }
         if (ctx.type_modifier_output_function != null) {
             type.setTypmodOutputFunction(getFullCtxText(ctx.type_modifier_output_function));
+            addDepSafe(type, ctx.type_modifier_output_function.identifier(), DbObjType.FUNCTION);
         }
         if (ctx.analyze_function != null) {
             type.setAnalyzeFunction(getFullCtxText(ctx.analyze_function));
+            addDepSafe(type, ctx.analyze_function.identifier(), DbObjType.FUNCTION);
         }
         if (ctx.internallength != null) {
             type.setInternalLength(getFullCtxText(ctx.internallength));

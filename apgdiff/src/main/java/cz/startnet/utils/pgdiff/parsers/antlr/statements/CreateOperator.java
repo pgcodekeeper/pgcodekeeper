@@ -16,6 +16,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_optionContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgOperator;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateOperator extends ParserAbstract {
     private final Create_operator_statementContext ctx;
@@ -34,6 +35,7 @@ public class CreateOperator extends ParserAbstract {
         for (Operator_optionContext option : ctx.operator_option()) {
             if (option.PROCEDURE() != null || option.FUNCTION() != null) {
                 oper.setProcedure(option.func_name.getText());
+                addDepSafe(oper, option.func_name.identifier(), DbObjType.FUNCTION);
             } else if (option.LEFTARG() != null) {
                 Data_typeContext leftArgTypeCtx = option.type;
                 oper.setLeftArg(leftArgTypeCtx.getText());
@@ -67,8 +69,10 @@ public class CreateOperator extends ParserAbstract {
                 oper.setHashes(true);
             } else if (option.RESTRICT() != null) {
                 oper.setRestrict(option.restr_name.getText());
+                addDepSafe(oper, option.restr_name.identifier(), DbObjType.FUNCTION);
             } else if (option.JOIN() != null) {
                 oper.setJoin(option.join_name.getText());
+                addDepSafe(oper, option.join_name.identifier(), DbObjType.FUNCTION);
             }
         }
 
