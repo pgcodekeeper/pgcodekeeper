@@ -5,10 +5,10 @@ CREATE TABLE public.t1 (
 
 CREATE VIEW public.v2 AS
  SELECT a.c1
-   FROM t1 a;
+   FROM public.t1 a;
 
 CREATE VIEW public.v1 AS
  SELECT a.c1
-   FROM v2 a;
+   FROM public.v2 a;
 
-GRANT ALL ON SCHEMA public.public TO maindb;
+GRANT ALL ON SCHEMA public TO maindb;

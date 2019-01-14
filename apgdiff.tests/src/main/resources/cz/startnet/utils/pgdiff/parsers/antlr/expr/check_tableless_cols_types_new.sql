@@ -34,8 +34,8 @@ ALTER VIEW public.tableless_view1 OWNER TO shamsutdinov_lr;
 
 CREATE VIEW public.tableless_view2 AS
     SELECT col222, col333, c3 
-   FROM (SELECT c1, c3 FROM tablettt) t 
-     JOIN mytable m on (m.col111 = t.c1);
+   FROM (SELECT c1, c3 FROM public.tablettt) t 
+     JOIN public.mytable m on (m.col111 = t.c1);
 
 ALTER VIEW public.tableless_view2 OWNER TO shamsutdinov_lr;
 
