@@ -11,9 +11,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -21,14 +24,19 @@ import java.util.zip.ZipInputStream;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.libraries.PgLibrary;
+import cz.startnet.utils.pgdiff.loader.jdbc.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
+import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 
 public class LibraryLoader {
+
+    private final Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
 
     private final PgDatabase database;
     private final Path metaPath;
@@ -123,7 +131,7 @@ public class LibraryLoader {
         }
 
         List<AntlrError> errList = null;
-        try (PgDumpLoader loader = new PgDumpLoader(new File(path), args)) {
+        try (PgDumpLoader loader = new PgDumpLoader(new File(path), args, antlrTasks)) {
             errList = loader.getErrors();
             return loader.load();
         } finally {
@@ -251,7 +259,7 @@ public class LibraryLoader {
                         db.addLib(getLibrary(filePath, args, args.isIgnorePrivileges()));
                     } else if (filePath.endsWith(".sql")) {
                         List<AntlrError> errList = null;
-                        try (PgDumpLoader loader = new PgDumpLoader(sub.toFile(), args)) {
+                        try (PgDumpLoader loader = new PgDumpLoader(sub.toFile(), args, antlrTasks)) {
                             errList = loader.getErrors();
                             loader.loadDatabase(db);
                         } finally {
@@ -262,6 +270,15 @@ public class LibraryLoader {
                     }
                 }
             }
+
+            try {
+                AntlrParser.finishAntlr(antlrTasks, null, null);
+            } catch(ExecutionException e) {
+                // TODO need to determine which object throws an exception
+                throw new IOException(MessageFormat.format(Messages.PgDumpLoader_ProjReadingError,
+                        e.getLocalizedMessage(), "unknown obeject name"), e);
+            }
+
             for (Path sub : dirs) {
                 readStatementsFromDirectory(sub, db);
             }

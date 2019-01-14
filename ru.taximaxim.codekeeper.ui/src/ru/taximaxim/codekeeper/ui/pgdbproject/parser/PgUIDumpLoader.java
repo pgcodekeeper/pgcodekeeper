@@ -1,6 +1,8 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject.parser;
 
 import java.io.IOException;
+import java.util.ArrayDeque;
+import java.util.Queue;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -15,6 +17,7 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
+import cz.startnet.utils.pgdiff.loader.jdbc.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -29,9 +32,10 @@ public class PgUIDumpLoader extends PgDumpLoader {
 
     private final IFile file;
 
-    public PgUIDumpLoader(IFile ifile, PgDiffArguments args, IProgressMonitor monitor, int monitoringLevel)
-            throws CoreException {
-        super(ifile.getContents(), ifile.getLocation().toOSString(), args, monitor, monitoringLevel);
+    public PgUIDumpLoader(IFile ifile, PgDiffArguments args, IProgressMonitor monitor,
+            int monitoringLevel, Queue<AntlrTask<?>> antlrTasks) throws CoreException {
+        super(ifile.getContents(), ifile.getLocation().toOSString(), args, monitor,
+                monitoringLevel, antlrTasks);
         file = ifile;
     }
 
@@ -39,9 +43,9 @@ public class PgUIDumpLoader extends PgDumpLoader {
      * This constructor sets the monitoring level to the default of 1.
      * @throws CoreException
      */
-    public PgUIDumpLoader(IFile ifile, PgDiffArguments args, IProgressMonitor monitor)
-            throws CoreException {
-        this(ifile, args, monitor, 1);
+    public PgUIDumpLoader(IFile ifile, PgDiffArguments args, IProgressMonitor monitor,
+            Queue<AntlrTask<?>> antlrTasks) throws CoreException {
+        this(ifile, args, monitor, 1, antlrTasks);
     }
 
     /**
@@ -49,7 +53,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
      * @throws CoreException
      */
     public PgUIDumpLoader(IFile ifile, PgDiffArguments args) throws CoreException {
-        this(ifile, args, new NullProgressMonitor(), 0);
+        this(ifile, args, new NullProgressMonitor(), 0, new ArrayDeque<>());
     }
 
     public PgDatabase loadFile(PgDatabase db) throws InterruptedException, IOException {

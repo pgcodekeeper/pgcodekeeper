@@ -4,19 +4,25 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.MessageFormat;
+import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.jdbc.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
@@ -25,6 +31,7 @@ import cz.startnet.utils.pgdiff.schema.StatementOverride;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.MS_WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
+import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 
 public class ProjectLoader {
     /**
@@ -169,10 +176,11 @@ public class ProjectLoader {
     private void loadFiles(File[] files, PgDatabase db)
             throws IOException, InterruptedException {
         Arrays.sort(files);
+        Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
         for (File f : files) {
             if (f.isFile() && f.getName().toLowerCase().endsWith(".sql")) {
                 List<AntlrError> errList = null;
-                try (PgDumpLoader loader = new PgDumpLoader(f, arguments, monitor)) {
+                try (PgDumpLoader loader = new PgDumpLoader(f, arguments, monitor, antlrTasks)) {
                     if (isOverrideMode) {
                         loader.setOverridesMap(overrides);
                     }
@@ -184,6 +192,14 @@ public class ProjectLoader {
                     }
                 }
             }
+        }
+
+        try {
+            AntlrParser.finishAntlr(antlrTasks, null, null);
+        } catch(ExecutionException e) {
+            // TODO need to determine which object throws an exception
+            throw new IOException(MessageFormat.format(Messages.PgDumpLoader_ProjReadingError,
+                    e.getLocalizedMessage(), "unknown obeject name"), e);
         }
     }
 

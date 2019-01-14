@@ -2,11 +2,14 @@ package ru.taximaxim.codekeeper.ui.pgdbproject.parser;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -28,7 +31,9 @@ import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.FullAnalyze;
 import cz.startnet.utils.pgdiff.loader.LibraryLoader;
 import cz.startnet.utils.pgdiff.loader.ProjectLoader;
+import cz.startnet.utils.pgdiff.loader.jdbc.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -46,6 +51,7 @@ public class UIProjectLoader extends ProjectLoader {
 
     private final IProject iProject;
     private final List<StatementBodyContainer> statementBodies;
+    private final Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
 
     public UIProjectLoader(IProgressMonitor monitor, List<StatementBodyContainer> statementBodies) {
         this(null, null, monitor, statementBodies, null);
@@ -129,6 +135,13 @@ public class UIProjectLoader extends ProjectLoader {
                 loadFile((IFile) resource, monitor, db);
             }
         }
+
+        try {
+            AntlrParser.finishAntlr(antlrTasks, null, null);
+        } catch(ExecutionException e) {
+            // TODO need to determine which object throws an exception
+            throw new IOException("unknown obeject name", e);
+        }
     }
 
     private void loadFile(IFile file, IProgressMonitor monitor, PgDatabase db)
@@ -137,7 +150,7 @@ public class UIProjectLoader extends ProjectLoader {
         arguments.setInCharsetName(file.getCharset());
 
         List<AntlrError> errList = null;
-        try (PgUIDumpLoader loader = new PgUIDumpLoader(file, arguments, monitor)) {
+        try (PgUIDumpLoader loader = new PgUIDumpLoader(file, arguments, monitor, antlrTasks)) {
             errList = loader.getErrors();
             loader.setLoadReferences(statementBodies != null);
             if (isOverrideMode) {

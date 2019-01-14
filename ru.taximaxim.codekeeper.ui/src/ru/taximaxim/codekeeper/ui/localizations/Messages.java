@@ -582,6 +582,8 @@ public final class Messages extends NLS {
 
     public static String PgDbParser_error_loading_db;
 
+    public static String PgDbParser_ProjReadingError;
+
     public static String PgImport_error_default_name;
 
     public static String PgImport_error_metadata;

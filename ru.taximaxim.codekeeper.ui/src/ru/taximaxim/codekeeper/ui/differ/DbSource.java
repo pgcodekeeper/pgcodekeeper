@@ -5,10 +5,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -23,6 +25,7 @@ import cz.startnet.utils.pgdiff.loader.JdbcMsConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcMsLoader;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.loader.ProjectLoader;
+import cz.startnet.utils.pgdiff.loader.jdbc.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -357,9 +360,10 @@ class DbSourceDb extends DbSource {
 
             pm.newChild(1).subTask(Messages.dbSource_loading_dump);
 
+            Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
             try (PgDumpLoader loader = new PgDumpLoader(dump,
                     getPgDiffArgs(encoding, forceUnixNewlines, false),
-                    monitor)) {
+                    monitor, antlrTasks)) {
                 PgDatabase database = loader.load();
                 errors = loader.getErrors();
                 return database;

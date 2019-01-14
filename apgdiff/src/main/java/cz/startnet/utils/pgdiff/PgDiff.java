@@ -11,6 +11,7 @@ import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -128,7 +129,7 @@ public final class PgDiff {
         db.setArguments(arguments);
 
         if ("dump".equals(format)) {
-            try (PgDumpLoader loader = new PgDumpLoader(new File(srcPath), arguments)) {
+            try (PgDumpLoader loader = new PgDumpLoader(new File(srcPath), arguments, new ArrayDeque<>())) {
                 return loader.load(db);
             }
         } else if ("parsed".equals(format)) {

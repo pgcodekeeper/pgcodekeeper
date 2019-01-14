@@ -61,7 +61,7 @@ public class PgDumpLoader implements AutoCloseable {
 
     private final List<AntlrError> errors = new ArrayList<>();
 
-    private final Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
+    private Queue<AntlrTask<?>> antlrTasks;
 
     private boolean loadSchema = true;
     private boolean loadReferences;
@@ -89,12 +89,14 @@ public class PgDumpLoader implements AutoCloseable {
     }
 
     public PgDumpLoader(InputStream input, String inputObjectName,
-            PgDiffArguments args, IProgressMonitor monitor, int monitoringLevel) {
+            PgDiffArguments args, IProgressMonitor monitor, int monitoringLevel,
+            Queue<AntlrTask<?>> antlrTasks) {
         this.input = input;
         this.inputObjectName = inputObjectName;
         this.args = args;
         this.monitor = monitor;
         this.monitoringLevel = monitoringLevel;
+        this.antlrTasks = antlrTasks;
     }
 
     /**
@@ -102,7 +104,7 @@ public class PgDumpLoader implements AutoCloseable {
      */
     public PgDumpLoader(InputStream input, String inputObjectName,
             PgDiffArguments args, IProgressMonitor monitor) {
-        this(input, inputObjectName, args, monitor, 1);
+        this(input, inputObjectName, args, monitor, 1, new ArrayDeque<>());
     }
 
     /**
@@ -110,7 +112,7 @@ public class PgDumpLoader implements AutoCloseable {
      */
     public PgDumpLoader(InputStream input, String inputObjectName,
             PgDiffArguments args) {
-        this(input, inputObjectName, args, new NullProgressMonitor(), 0);
+        this(input, inputObjectName, args, new NullProgressMonitor(), 0, new ArrayDeque<>());
     }
 
     /**
@@ -121,7 +123,7 @@ public class PgDumpLoader implements AutoCloseable {
     public PgDumpLoader(File inputFile, PgDiffArguments args,
             IProgressMonitor monitor, int monitoringLevel) throws IOException {
         this(new FileInputStream(inputFile), inputFile.toString(), args,
-                monitor, monitoringLevel);
+                monitor, monitoringLevel, new ArrayDeque<>());
     }
 
     /**
@@ -129,16 +131,19 @@ public class PgDumpLoader implements AutoCloseable {
      * @see #PgDumpLoader(InputStream, String, PgDiffArguments, IProgressMonitor)
      */
     public PgDumpLoader(File inputFile, PgDiffArguments args,
-            IProgressMonitor monitor) throws IOException {
+            IProgressMonitor monitor, Queue<AntlrTask<?>> antlrTasks) throws IOException {
         this(inputFile, args, monitor, 1);
+        this.antlrTasks = antlrTasks;
     }
 
     /**
      * @see #PgDumpLoader(File, PgDiffArguments, IProgressMonitor, int)
      * @see #PgDumpLoader(InputStream, String, PgDiffArguments)
      */
-    public PgDumpLoader(File inputFile, PgDiffArguments args) throws IOException {
+    public PgDumpLoader(File inputFile, PgDiffArguments args, Queue<AntlrTask<?>> antlrTasks)
+            throws IOException {
         this(inputFile, args, new NullProgressMonitor(), 0);
+        this.antlrTasks = antlrTasks;
     }
 
     public PgDatabase load() throws IOException, InterruptedException {
@@ -155,6 +160,12 @@ public class PgDumpLoader implements AutoCloseable {
         d.addSchema(schema);
         d.setDefaultSchema(schema.getName());
         loadDatabase(d);
+        try {
+            AntlrParser.finishAntlr(antlrTasks, null, null);
+        } catch(ExecutionException e) {
+            throw new IOException(MessageFormat.format(Messages.PgDumpLoader_ProjReadingError,
+                    e.getLocalizedMessage(), inputObjectName), e);
+        }
         d.getSchema(schema.getName()).setLocation(inputObjectName);
         return d;
     }
@@ -201,13 +212,6 @@ public class PgDumpLoader implements AutoCloseable {
             isInputInAntlrParser = true;
             AntlrParser.parseSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
                     monitor, monitoringLevel, listeners, antlrTasks);
-        }
-
-        try {
-            AntlrParser.finishAntlr(antlrTasks, null, null);
-        } catch(ExecutionException e) {
-            throw new IOException(MessageFormat.format(Messages.PgDumpLoader_ProjReadingError,
-                    e.getLocalizedMessage(), inputObjectName), e);
         }
 
         return intoDb;
