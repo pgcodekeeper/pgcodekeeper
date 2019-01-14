@@ -18,6 +18,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Declare_statementContex
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Delete_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Dml_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Enable_disable_triggerContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Execute_moduleContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Execute_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ExpressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Expression_listContext;
@@ -234,7 +235,11 @@ public class MsSqlClauses extends MsAbstractExpr {
         } else if ((receive = another.receive_statement())!= null) {
             receive(receive);
         } else if ((exec = another.execute_statement())!= null) {
-            new MsValueExpr(this).analyze(exec.expression());
+            Execute_moduleContext em = exec.execute_module();
+            Qualified_nameContext qname;
+            if (em != null && (qname = em.qualified_name()) != null) {
+                addObjectDepcy(qname, DbObjType.FUNCTION);
+            }
         } else if ((set = another.set_statement()) != null) {
             set(set);
         }
