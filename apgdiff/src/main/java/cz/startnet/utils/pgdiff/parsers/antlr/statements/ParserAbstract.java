@@ -249,9 +249,13 @@ public abstract class ParserAbstract {
             schemaName = defaultSchema;
         } else {
             schemaName = schemaCtx.getText();
+            addReferenceOnSchema(schemaCtx);
         }
 
         if (schemaName == null) {
+            if (refMode) {
+                return null;
+            }
             throw new ObjectCreationException(SCHEMA_ERROR + getFullCtxText(nameCtx));
         }
 
@@ -455,6 +459,9 @@ public abstract class ParserAbstract {
         ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
 
         if (schemaCtx == null && defaultSchema == null) {
+            if (refMode) {
+                return null;
+            }
             throw new ObjectCreationException(SCHEMA_ERROR + QNameParser.getFirstName(ids));
         }
 
@@ -480,6 +487,8 @@ public abstract class ParserAbstract {
             return schemaCtx.getText();
         } else if (defaultSchema != null) {
             return defaultSchema;
+        } else if (refMode) {
+            return null;
         }
 
         throw new ObjectCreationException(SCHEMA_ERROR + QNameParser.getFirstName(ids));

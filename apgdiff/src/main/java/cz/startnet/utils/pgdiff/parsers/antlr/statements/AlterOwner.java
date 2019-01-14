@@ -65,11 +65,7 @@ public class AlterOwner extends ParserAbstract {
         DbObjType type = null;
         if (ctx.SCHEMA() != null) {
             st = getSafe(PgDatabase::getSchema, db, nameCtx);
-            addReferenceOnSchema(nameCtx);
-            if (ApgdiffConsts.PUBLIC.equals(st.getName())
-                    && "postgres".equals(owner.name.getText())) {
-                return;
-            }
+            type = DbObjType.SCHEMA;
         } else {
             AbstractSchema schema = getSchemaSafe(ids);
             if (ctx.DOMAIN() != null) {
@@ -97,15 +93,18 @@ public class AlterOwner extends ParserAbstract {
             }
         }
 
-        if (st != null) {
-            setOwner(st, owner);
-        }
-
         if (type != null)  {
             addFullObjReference(ids, type, StatementActions.ALTER);
         }
-    }
 
+        if (st == null || (type == DbObjType.SCHEMA
+                && ApgdiffConsts.PUBLIC.equals(nameCtx.getText())
+                && "postgres".equals(owner.name.getText()))) {
+            return;
+        }
+
+        setOwner(st, owner);
+    }
 
     private void setOwner(PgStatement st, Owner_toContext owner) {
         if (overrides == null) {

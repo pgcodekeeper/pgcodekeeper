@@ -180,7 +180,7 @@ implements SqlContextProcessor {
 
         switch (confParam.toLowerCase()) {
         case "search_path":
-            if (confValueCtx.size() != 1 || !ApgdiffConsts.PG_CATALOG.equals(confValue)) {
+            if (!refMode && (confValueCtx.size() != 1 || !ApgdiffConsts.PG_CATALOG.equals(confValue))) {
                 throw new UnresolvedReferenceException("Unsupported search_path", ctx.start);
             }
             break;
