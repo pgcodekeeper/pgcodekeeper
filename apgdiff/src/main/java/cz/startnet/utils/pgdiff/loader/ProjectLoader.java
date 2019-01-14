@@ -52,6 +52,8 @@ public class ProjectLoader {
 
     protected boolean isOverrideMode;
 
+    private final Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
+
     public ProjectLoader(String dirPath, PgDiffArguments arguments) {
         this(dirPath, arguments, null, null);
     }
@@ -97,6 +99,14 @@ public class ProjectLoader {
             loadPgStructure(dir, db);
         }
 
+        try {
+            AntlrParser.finishAntlr(antlrTasks, null, null);
+        } catch(ExecutionException e) {
+            // TODO need to determine which object throws an exception
+            throw new IOException(MessageFormat.format(Messages.PgDumpLoader_ProjReadingError,
+                    e.getLocalizedMessage(), "unknown obeject name"), e);
+        }
+
         return db;
     }
 
@@ -115,6 +125,14 @@ public class ProjectLoader {
             replaceOverrides();
         } finally {
             isOverrideMode = false;
+        }
+
+        try {
+            AntlrParser.finishAntlr(antlrTasks, null, null);
+        } catch(ExecutionException e) {
+            // TODO need to determine which object throws an exception
+            throw new IOException(MessageFormat.format(Messages.PgDumpLoader_ProjReadingError,
+                    e.getLocalizedMessage(), "unknown obeject name"), e);
         }
     }
 
@@ -176,7 +194,6 @@ public class ProjectLoader {
     private void loadFiles(File[] files, PgDatabase db)
             throws IOException, InterruptedException {
         Arrays.sort(files);
-        Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
         for (File f : files) {
             if (f.isFile() && f.getName().toLowerCase().endsWith(".sql")) {
                 List<AntlrError> errList = null;
@@ -193,14 +210,6 @@ public class ProjectLoader {
                 }
             }
         }
-
-        try {
-            AntlrParser.finishAntlr(antlrTasks, null, null);
-        } catch(ExecutionException e) {
-            // TODO need to determine which object throws an exception
-            throw new IOException(MessageFormat.format(Messages.PgDumpLoader_ProjReadingError,
-                    e.getLocalizedMessage(), "unknown obeject name"), e);
-        }
     }
 
     public Map<PgStatement, StatementOverride> getOverridesFromPath(Path path, PgDatabase db)
@@ -208,6 +217,14 @@ public class ProjectLoader {
         isOverrideMode = true;
         try {
             loadFiles(new File[] {path.toFile()}, db);
+
+            try {
+                AntlrParser.finishAntlr(antlrTasks, null, null);
+            } catch(ExecutionException e) {
+                // TODO need to determine which object throws an exception
+                throw new IOException(MessageFormat.format(Messages.PgDumpLoader_ProjReadingError,
+                        e.getLocalizedMessage(), "unknown obeject name"), e);
+            }
         } finally {
             isOverrideMode = false;
         }

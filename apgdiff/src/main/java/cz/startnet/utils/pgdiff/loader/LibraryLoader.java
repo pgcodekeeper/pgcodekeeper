@@ -122,6 +122,14 @@ public class LibraryLoader {
                 db = new PgDatabase();
                 db.setArguments(args);
                 readStatementsFromDirectory(p, db);
+
+                try {
+                    AntlrParser.finishAntlr(antlrTasks, null, null);
+                } catch(ExecutionException e) {
+                    // TODO need to determine which object throws an exception
+                    throw new IOException(MessageFormat.format(Messages.PgDumpLoader_ProjReadingError,
+                            e.getLocalizedMessage(), "unknown obeject name"), e);
+                }
             }
             return db;
         }
@@ -269,14 +277,6 @@ public class LibraryLoader {
                         }
                     }
                 }
-            }
-
-            try {
-                AntlrParser.finishAntlr(antlrTasks, null, null);
-            } catch(ExecutionException e) {
-                // TODO need to determine which object throws an exception
-                throw new IOException(MessageFormat.format(Messages.PgDumpLoader_ProjReadingError,
-                        e.getLocalizedMessage(), "unknown obeject name"), e);
             }
 
             for (Path sub : dirs) {
