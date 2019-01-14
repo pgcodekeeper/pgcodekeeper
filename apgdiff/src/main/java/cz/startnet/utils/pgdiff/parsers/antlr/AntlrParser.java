@@ -117,6 +117,7 @@ public class AntlrParser {
         try {
             submitAntlrTask(antlrTasks, () -> {
                 SQLParser parser;
+                // TODO подумать что нужно делать с finalizer-ом если ctx == null
                 SqlContext ctx = null;
                 try {
                     parser = makeBasicParser(SQLParser.class, inputStream,
@@ -125,6 +126,8 @@ public class AntlrParser {
                             monitoringLevel, mon == null ? new NullProgressMonitor() : mon));
                     ctx = parser.sql();
                 } catch (IOException e) {
+                    // TODO проверить какие ошибки могут вылетать
+                    // TODO подумать над тема как можно по другому обрабатывать ошибку
                     errors.add(CustomParserListener
                             .handleParserContextException(e, parsedObjectName, ctx));
                 } finally {
@@ -149,6 +152,7 @@ public class AntlrParser {
             Collection<TSqlContextProcessor> listeners, Queue<AntlrTask<?>> antlrTasks)
                     throws IOException, InterruptedException {
         try {
+            // TODO сделать подкласс AntlrTask'a у которого будет еще CommonTokenStream
             TSQLParser parser = submitTask(() -> makeBasicParser(TSQLParser.class,
                     inputStream, charsetName, parsedObjectName, errors)).get();
 
@@ -185,6 +189,7 @@ public class AntlrParser {
         return ANTLR_POOL.submit(task);
     }
 
+    // TODO !!! СДЕЛАТЬ в первую очередь !!! Supplier<C> parserCtxReader заменить на callable
     public static <C> void submitAntlrTask(Queue<AntlrTask<?>> antlrTasks,
             Supplier<C> parserCtxReader, Consumer<C> finalizer,
             GenericColumn currentObject) {
