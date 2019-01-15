@@ -3,10 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 import org.antlr.v4.runtime.CommonTokenStream;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomTSQLParserListener;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_schemaContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Sql_clausesContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.St_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsSchema;
@@ -36,27 +33,25 @@ public class CreateMsSchema extends ParserAbstract {
         }
 
         db.addSchema(schema);
-
+        /* FIXME
         if (ctx.schema_def != null) {
             String defaultSchemaName = db.getDefaultSchema().getName();
             try {
                 db.setDefaultSchema(name);
-                if (ctx.schema_def != null) {
-                    Sql_clausesContext clauses = ctx.schema_def.sql_clauses();
-                    Batch_statementContext batchSt;
-                    if (clauses != null) {
-                        for (St_clauseContext st : clauses.st_clause()) {
-                            listener.clause(st);
-                        }
-                    } else if ((batchSt = ctx.schema_def.batch_statement()) != null) {
-                        listener.batchStatement(batchSt, stream);
+                for (Schema_definitionContext sd : ctx.schema_definition()) {
+                    St_clauseContext clause = sd.st_clause();
+                    Batch_statement_no_schemaContext batchSt;
+                    if (clause != null) {
+                        listener.clause(clause);
+                    } else if ((batchSt = sd.batch_statement_no_schema()) != null) {
+                        listener.batchStatementNoSchema(batchSt, stream);
                     }
                 }
             } finally {
                 db.setDefaultSchema(defaultSchemaName);
             }
         }
-
+         */
         return schema;
     }
 

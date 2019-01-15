@@ -18,9 +18,9 @@ batch
 // for statements that must be the only ones in an entire batch
 batch_statement
     : (CREATE (OR ALTER)? | ALTER) batch_statement_body
-    | CREATE create_schema
+    | CREATE create_schema SEMI*
     ;
-    
+
 batch_statement_body
     : create_or_alter_procedure
     | create_or_alter_function SEMI*
@@ -918,11 +918,11 @@ alter_schema_sql
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-schema-transact-sql
 create_schema
-    : SCHEMA schema_name=id (AUTHORIZATION owner_name=id)? schema_def=schema_definition?
+    : SCHEMA schema_name=id (AUTHORIZATION owner_name=id)?/* schema_def=schema_definition**/
     ;
 
 schema_definition
-    : sql_clauses 
+    : st_clause
     | batch_statement
     ;
 
