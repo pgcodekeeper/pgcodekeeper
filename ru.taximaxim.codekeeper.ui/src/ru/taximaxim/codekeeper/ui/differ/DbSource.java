@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -359,8 +358,7 @@ class DbSourceDb extends DbSource {
             pm.newChild(1).subTask(Messages.dbSource_loading_dump);
 
             try (PgDumpLoader loader = new PgDumpLoader(dump,
-                    getPgDiffArgs(encoding, forceUnixNewlines, false), monitor,
-                    new ArrayDeque<>())) {
+                    getPgDiffArgs(encoding, forceUnixNewlines, false), monitor)) {
                 PgDatabase database = loader.load();
                 errors = loader.getErrors();
                 return database;

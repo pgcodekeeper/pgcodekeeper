@@ -150,13 +150,13 @@ public class UIProjectLoader extends ProjectLoader {
         arguments.setInCharsetName(file.getCharset());
 
         List<AntlrError> errList = null;
-        try (PgUIDumpLoader loader = new PgUIDumpLoader(file, arguments, monitor, antlrTasks)) {
+        try (PgUIDumpLoader loader = new PgUIDumpLoader(file, arguments, monitor)) {
             errList = loader.getErrors();
             loader.setLoadReferences(statementBodies != null);
             if (isOverrideMode) {
                 loader.setOverridesMap(overrides);
             }
-            loader.loadFile(db);
+            loader.loadFile(db, antlrTasks);
             if (statementBodies != null) {
                 statementBodies.addAll(loader.getStatementBodyReferences());
             }

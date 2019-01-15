@@ -139,7 +139,7 @@ public class LibraryLoader {
         }
 
         List<AntlrError> errList = null;
-        try (PgDumpLoader loader = new PgDumpLoader(new File(path), args, antlrTasks)) {
+        try (PgDumpLoader loader = new PgDumpLoader(new File(path), args)) {
             errList = loader.getErrors();
             return loader.load();
         } finally {
@@ -267,9 +267,9 @@ public class LibraryLoader {
                         db.addLib(getLibrary(filePath, args, args.isIgnorePrivileges()));
                     } else if (filePath.endsWith(".sql")) {
                         List<AntlrError> errList = null;
-                        try (PgDumpLoader loader = new PgDumpLoader(sub.toFile(), args, antlrTasks)) {
+                        try (PgDumpLoader loader = new PgDumpLoader(sub.toFile(), args)) {
                             errList = loader.getErrors();
-                            loader.loadDatabase(db);
+                            loader.loadDatabase(db, antlrTasks);
                         } finally {
                             if (errors != null && errList != null && !errList.isEmpty()) {
                                 errors.addAll(errList);

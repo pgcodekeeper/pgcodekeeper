@@ -1,7 +1,6 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject.parser;
 
 import java.io.IOException;
-import java.util.ArrayDeque;
 import java.util.Queue;
 
 import org.eclipse.core.resources.IFile;
@@ -33,9 +32,9 @@ public class PgUIDumpLoader extends PgDumpLoader {
     private final IFile file;
 
     public PgUIDumpLoader(IFile ifile, PgDiffArguments args, IProgressMonitor monitor,
-            int monitoringLevel, Queue<AntlrTask<?>> antlrTasks) throws CoreException {
+            int monitoringLevel) throws CoreException {
         super(ifile.getContents(), ifile.getLocation().toOSString(), args, monitor,
-                monitoringLevel, antlrTasks);
+                monitoringLevel);
         file = ifile;
     }
 
@@ -43,9 +42,8 @@ public class PgUIDumpLoader extends PgDumpLoader {
      * This constructor sets the monitoring level to the default of 1.
      * @throws CoreException
      */
-    public PgUIDumpLoader(IFile ifile, PgDiffArguments args, IProgressMonitor monitor,
-            Queue<AntlrTask<?>> antlrTasks) throws CoreException {
-        this(ifile, args, monitor, 1, antlrTasks);
+    public PgUIDumpLoader(IFile ifile, PgDiffArguments args, IProgressMonitor monitor) throws CoreException {
+        this(ifile, args, monitor, 1);
     }
 
     /**
@@ -53,12 +51,13 @@ public class PgUIDumpLoader extends PgDumpLoader {
      * @throws CoreException
      */
     public PgUIDumpLoader(IFile ifile, PgDiffArguments args) throws CoreException {
-        this(ifile, args, new NullProgressMonitor(), 0, new ArrayDeque<>());
+        this(ifile, args, new NullProgressMonitor(), 0);
     }
 
-    public PgDatabase loadFile(PgDatabase db) throws InterruptedException, IOException {
+    public PgDatabase loadFile(PgDatabase db, Queue<AntlrTask<?>> antlrTasks)
+            throws InterruptedException, IOException {
         try {
-            loadDatabase(db);
+            loadDatabase(db, antlrTasks);
             return db;
         } finally {
             updateMarkers();

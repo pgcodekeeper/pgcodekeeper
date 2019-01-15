@@ -61,8 +61,6 @@ public class PgDumpLoader implements AutoCloseable {
 
     private final List<AntlrError> errors = new ArrayList<>();
 
-    private Queue<AntlrTask<?>> antlrTasks;
-
     private boolean loadSchema = true;
     private boolean loadReferences;
     private List<StatementBodyContainer> statementBodyReferences;
@@ -89,14 +87,12 @@ public class PgDumpLoader implements AutoCloseable {
     }
 
     public PgDumpLoader(InputStream input, String inputObjectName,
-            PgDiffArguments args, IProgressMonitor monitor, int monitoringLevel,
-            Queue<AntlrTask<?>> antlrTasks) {
+            PgDiffArguments args, IProgressMonitor monitor, int monitoringLevel) {
         this.input = input;
         this.inputObjectName = inputObjectName;
         this.args = args;
         this.monitor = monitor;
         this.monitoringLevel = monitoringLevel;
-        this.antlrTasks = antlrTasks;
     }
 
     /**
@@ -104,15 +100,14 @@ public class PgDumpLoader implements AutoCloseable {
      */
     public PgDumpLoader(InputStream input, String inputObjectName,
             PgDiffArguments args, IProgressMonitor monitor) {
-        this(input, inputObjectName, args, monitor, 1, new ArrayDeque<>());
+        this(input, inputObjectName, args, monitor, 1);
     }
 
     /**
      * This constructor uses {@link NullProgressMonitor}.
      */
-    public PgDumpLoader(InputStream input, String inputObjectName,
-            PgDiffArguments args) {
-        this(input, inputObjectName, args, new NullProgressMonitor(), 0, new ArrayDeque<>());
+    public PgDumpLoader(InputStream input, String inputObjectName, PgDiffArguments args) {
+        this(input, inputObjectName, args, new NullProgressMonitor(), 0);
     }
 
     /**
@@ -122,28 +117,23 @@ public class PgDumpLoader implements AutoCloseable {
      */
     public PgDumpLoader(File inputFile, PgDiffArguments args,
             IProgressMonitor monitor, int monitoringLevel) throws IOException {
-        this(new FileInputStream(inputFile), inputFile.toString(), args,
-                monitor, monitoringLevel, new ArrayDeque<>());
+        this(new FileInputStream(inputFile), inputFile.toString(), args, monitor, monitoringLevel);
     }
 
     /**
      * @see #PgDumpLoader(File, PgDiffArguments, IProgressMonitor, int)
      * @see #PgDumpLoader(InputStream, String, PgDiffArguments, IProgressMonitor)
      */
-    public PgDumpLoader(File inputFile, PgDiffArguments args,
-            IProgressMonitor monitor, Queue<AntlrTask<?>> antlrTasks) throws IOException {
+    public PgDumpLoader(File inputFile, PgDiffArguments args, IProgressMonitor monitor) throws IOException {
         this(inputFile, args, monitor, 1);
-        this.antlrTasks = antlrTasks;
     }
 
     /**
      * @see #PgDumpLoader(File, PgDiffArguments, IProgressMonitor, int)
      * @see #PgDumpLoader(InputStream, String, PgDiffArguments)
      */
-    public PgDumpLoader(File inputFile, PgDiffArguments args, Queue<AntlrTask<?>> antlrTasks)
-            throws IOException {
+    public PgDumpLoader(File inputFile, PgDiffArguments args) throws IOException {
         this(inputFile, args, new NullProgressMonitor(), 0);
-        this.antlrTasks = antlrTasks;
     }
 
     public PgDatabase load() throws IOException, InterruptedException {
@@ -159,7 +149,8 @@ public class PgDumpLoader implements AutoCloseable {
             new PgSchema(ApgdiffConsts.PUBLIC);
         d.addSchema(schema);
         d.setDefaultSchema(schema.getName());
-        loadDatabase(d);
+        Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
+        loadDatabase(d, antlrTasks);
         try {
             AntlrParser.finishAntlr(antlrTasks, null, null);
         } catch(ExecutionException e) {
@@ -170,7 +161,8 @@ public class PgDumpLoader implements AutoCloseable {
         return d;
     }
 
-    protected PgDatabase loadDatabase(PgDatabase intoDb) throws IOException, InterruptedException {
+    protected PgDatabase loadDatabase(PgDatabase intoDb, Queue<AntlrTask<?>> antlrTasks)
+            throws IOException, InterruptedException {
         PgDiffUtils.checkCancelled(monitor);
 
         if (args.isMsSql()) {

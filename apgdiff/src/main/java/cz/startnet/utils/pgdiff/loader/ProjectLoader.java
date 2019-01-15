@@ -197,12 +197,12 @@ public class ProjectLoader {
         for (File f : files) {
             if (f.isFile() && f.getName().toLowerCase().endsWith(".sql")) {
                 List<AntlrError> errList = null;
-                try (PgDumpLoader loader = new PgDumpLoader(f, arguments, monitor, antlrTasks)) {
+                try (PgDumpLoader loader = new PgDumpLoader(f, arguments, monitor)) {
                     if (isOverrideMode) {
                         loader.setOverridesMap(overrides);
                     }
                     errList = loader.getErrors();
-                    loader.loadDatabase(db);
+                    loader.loadDatabase(db, antlrTasks);
                 } finally {
                     if (errors != null && errList != null && !errList.isEmpty()) {
                         errors.addAll(errList);
