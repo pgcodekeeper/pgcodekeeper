@@ -81,26 +81,22 @@ public class NormalizeProject extends AbstractHandler {
                                 Messages.ProjectEditorDiffer_error_refreshing_project, ex);
                         return;
                     }
-                    UiSync.exec(PlatformUI.getWorkbench().getDisplay(), new Runnable() {
-
-                        @Override
-                        public void run() {
-                            Shell parent = shell;
-                            if (parent.isDisposed()) {
-                                IWorkbenchWindow w = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-                                if (w == null) {
-                                    return;
-                                }
-                                parent = w.getShell();
-                                if (parent == null || parent.isDisposed()) {
-                                    return;
-                                }
+                    UiSync.exec(PlatformUI.getWorkbench().getDisplay(), (Runnable) () -> {
+                        Shell parent = shell;
+                        if (parent.isDisposed()) {
+                            IWorkbenchWindow w = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+                            if (w == null) {
+                                return;
                             }
-                            MessageBox mb = new MessageBox(parent, SWT.ICON_INFORMATION);
-                            mb.setMessage(Messages.NormalizeProject_project_normalized_success);
-                            mb.setText(Messages.NormalizeProject_project_normalized);
-                            mb.open();
+                            parent = w.getShell();
+                            if (parent == null || parent.isDisposed()) {
+                                return;
+                            }
                         }
+                        MessageBox mb = new MessageBox(parent, SWT.ICON_INFORMATION);
+                        mb.setMessage(Messages.NormalizeProject_project_normalized_success);
+                        mb.setText(Messages.NormalizeProject_project_normalized);
+                        mb.open();
                     });
                 }
             }

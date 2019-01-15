@@ -98,7 +98,7 @@ public class UsageRequest {
             int responseCode = urlConnection.getResponseCode();
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 Log.log(Log.LOG_DEBUG, MessageFormat.format(
-                        "HTTP GET to url \"{0}\" successfull!", url, responseCode)); //$NON-NLS-1$
+                        "HTTP GET to url \"{0}\" successfull!", url)); //$NON-NLS-1$
                 return true;
             } else {
                 Log.log(Log.LOG_ERROR, MessageFormat.format(
@@ -106,7 +106,7 @@ public class UsageRequest {
             }
         } catch (Exception e) {
             Log.log(Log.LOG_DEBUG, MessageFormat.format(
-                    "HTTP GET to \"{0}\" failed, exception occured: \"{1}\"", url, e.toString())); //$NON-NLS-1$
+                    "HTTP GET to \"{0}\" failed, exception occured: \"{1}\"", url, e)); //$NON-NLS-1$
         }
         return false;
 

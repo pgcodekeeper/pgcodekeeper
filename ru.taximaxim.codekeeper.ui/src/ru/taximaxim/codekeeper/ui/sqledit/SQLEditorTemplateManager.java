@@ -19,7 +19,7 @@ public class SQLEditorTemplateManager {
     private TemplateStore fStore;
     private ContributionContextTypeRegistry fRegistry;
 
-    public SQLEditorTemplateManager() {
+    private SQLEditorTemplateManager() {
     }
 
     public static SQLEditorTemplateManager getInstance() {

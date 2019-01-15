@@ -24,7 +24,6 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
-import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStoreEditorDialog;
@@ -46,7 +45,7 @@ implements IWorkbenchPreferencePage {
     @Override
     protected Control createContents(Composite parent) {
         dbList = new DbStorePrefListEditor(parent);
-        dbList.setInputList(DbInfo.readStoreFromXml(getPreferenceStore().getString(PREF.DB_STORE)));
+        dbList.setInputList(DbInfo.readStoreFromXml());
         return dbList;
     }
 

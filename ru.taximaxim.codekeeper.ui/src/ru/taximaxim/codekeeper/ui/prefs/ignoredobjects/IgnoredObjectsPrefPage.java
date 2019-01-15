@@ -1,7 +1,6 @@
 package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
@@ -64,13 +63,11 @@ implements IWorkbenchPreferencePage {
         } catch (IOException ex) {
             ExceptionNotifier.notifyDefault(Messages.IgnoredObjectsPrefPage_error_saving_ignores_list, ex);
             return false;
-        } catch (URISyntaxException ex) {
-            ExceptionNotifier.notifyDefault(Messages.IgnoredObjectsPrefPage_error_workspace_path, ex);
         }
         return true;
     }
 
-    private void writeList() throws IOException, URISyntaxException {
+    private void writeList() throws IOException {
         IgnoreList list = new IgnoreList();
         boolean isWhite = !ignore.isShow();
         list.setShow(!isWhite);

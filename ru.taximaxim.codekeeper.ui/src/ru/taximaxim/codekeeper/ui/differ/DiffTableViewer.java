@@ -1157,7 +1157,7 @@ public class DiffTableViewer extends Composite {
 
         private Entry<Boolean, Boolean> getState(TreeElement el, Boolean providedExpandedState) {
             Boolean grayed = contGraySelected(el, providedExpandedState);
-            return new SimpleEntry<>(el.isSelected() ? true : grayed, grayed);
+            return new SimpleEntry<>(el.isSelected() || grayed, grayed);
         }
 
         /**
@@ -1343,15 +1343,15 @@ public class DiffTableViewer extends Composite {
 
             if (!types.isEmpty() && !types.contains(el.getType())
                     && (!isSubElement || !types.contains(el.getParent().getType()))
-                    && (!isContainer(el) || !el.getChildren().stream()
-                            .anyMatch(e -> types.contains(e.getType())))) {
+                    && (!isContainer(el) || el.getChildren().stream()
+                            .noneMatch(e -> types.contains(e.getType())))) {
                 return false;
             }
 
             if (!sides.isEmpty() && !sides.contains(el.getSide())
                     && (!isSubElement || !sides.contains(el.getParent().getSide()))
-                    && (!isContainer(el) || !el.getChildren().stream()
-                            .anyMatch(e -> sides.contains(e.getSide())))) {
+                    && (!isContainer(el) || el.getChildren().stream()
+                            .noneMatch(e -> sides.contains(e.getSide())))) {
                 return false;
             }
 

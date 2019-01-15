@@ -32,6 +32,7 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
+import ru.taximaxim.codekeeper.ui.consoles.UiProgressReporter;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
@@ -87,13 +88,12 @@ public abstract class DbSource {
     protected abstract PgDatabase loadInternal(SubMonitor monitor)
             throws IOException, InterruptedException, CoreException;
 
-    static PgDiffArguments getPgDiffArgs(String charset, boolean forceUnixNewlines, boolean msSql)
-            throws IOException {
+    static PgDiffArguments getPgDiffArgs(String charset, boolean forceUnixNewlines, boolean msSql) {
         return getPgDiffArgs(charset, ApgdiffConsts.UTC, forceUnixNewlines, msSql);
     }
 
     static PgDiffArguments getPgDiffArgs(String charset, String timeZone,
-            boolean forceUnixNewlines, boolean msSql) throws IOException {
+            boolean forceUnixNewlines, boolean msSql) {
         PgDiffArguments args = new PgDiffArguments();
         IPreferenceStore mainPS = Activator.getDefault().getPreferenceStore();
         args.setInCharsetName(charset);
@@ -353,7 +353,7 @@ class DbSourceDb extends DbSource {
 
             new PgDumper(exePgdump, customParams,
                     host, port, user, pass, dbname, encoding, timezone,
-                    dump.getAbsolutePath()).pgDump();
+                    dump.getAbsolutePath(), new UiProgressReporter(monitor)).pgDump();
 
             pm.newChild(1).subTask(Messages.dbSource_loading_dump);
 

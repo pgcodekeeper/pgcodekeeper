@@ -34,7 +34,6 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(DB_UPDATE_PREF.DROP_TABLE_STATEMENT, true);
         store.setDefault(DB_UPDATE_PREF.RESTART_WITH_STATEMENT, true);
         store.setDefault(DB_UPDATE_PREF.UPDATE_STATEMENT, true);
-        store.setDefault(DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY, true);
         store.setDefault(DB_UPDATE_PREF.USING_ON_OFF, true);
         store.setDefault(DB_UPDATE_PREF.DELETE_SCRIPT_AFTER_CLOSE, MessageDialogWithToggle.PROMPT);
         store.setDefault(DB_UPDATE_PREF.CREATE_SCRIPT_IN_PROJECT, MessageDialogWithToggle.ALWAYS);
@@ -59,13 +58,6 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         for (SQLEditorStatementTypes type : SQLEditorStatementTypes.values()) {
             SQLEditorSyntaxModel syntax = new SQLEditorSyntaxModel(type, store);
             switch (type) {
-            case FUNCTIONS:
-                syntax.setBold(false);
-                syntax.setColor(new RGB(0, 0, 128));
-                syntax.setItalic(false);
-                syntax.setStrikethrough(false);
-                syntax.setUnderline(false);
-                break;
             case RESERVED_WORDS:
             case UN_RESERVED_WORDS:
                 syntax.setBold(true);
@@ -103,6 +95,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
                 syntax.setUnderline(false);
                 break;
             case QUOTED_IDENTIFIER:
+            case FUNCTIONS:
                 syntax.setBold(false);
                 syntax.setColor(new RGB(0, 0, 128));
                 syntax.setItalic(false);

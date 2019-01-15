@@ -223,7 +223,7 @@ class QuickUpdateJob extends SingletonEditorJob {
                 throw new PgCodekeeperUIException(error);
             }
 
-            new JdbcRunner(monitor).runBatches(connector, batches);
+            new JdbcRunner(monitor).runBatches(connector, batches, null);
         } catch (SQLException e) {
             throw new PgCodekeeperUIException(Messages.QuickUpdate_migration_failed + e.getLocalizedMessage());
         }

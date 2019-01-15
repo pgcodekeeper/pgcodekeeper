@@ -35,7 +35,7 @@ public class UserFilter extends AbstractFilter {
 
             if (DiffTableViewer.isContainer(el)) {
                 return el.getChildren().stream().filter(elementInfoMap::containsKey)
-                        .map(e -> elementInfoMap.get(e))
+                        .map(elementInfoMap::get)
                         .anyMatch(s -> s != null && searchMatches(getter.apply(s)));
             }
         }

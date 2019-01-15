@@ -1,6 +1,5 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
@@ -11,7 +10,6 @@ import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcLoader;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
@@ -82,26 +80,22 @@ public abstract class TreeDiffer implements IRunnableWithProgress {
             boolean forceUnixNewlines, IPreferenceStore prefs, String timezone) {
         String error = null;
         if (!dbInfo.isMsSql() && !prefs.getBoolean(PREF.PGDUMP_SWITCH) && prefs.getBoolean(PREF.USE_EXTENSION)) {
+            Path timePath = FileUtilsUi.getPathToTimeObject(dbProj.getOrigin(),
+                    dbInfo.getName(), PgDiffUtils.shaString(dbInfo.toString()));
+
+            String extSchema = null;
             try {
-                Path timePath = FileUtilsUi.getPathToTimeObject(dbProj.getOrigin(),
-                        dbInfo.getName(), PgDiffUtils.shaString(dbInfo.toString()));
+                extSchema = JdbcLoader.getExtensionSchema(dbInfo.getDbHost(),
+                        dbInfo.getDbPort(), dbInfo.getDbUser(), dbInfo.getDbPass(),
+                        dbInfo.getDbName(), dbInfo.getProperties(), dbInfo.isReadOnly(),
+                        timezone);
+            } catch (PgCodekeeperException e) {
+                error = e.getLocalizedMessage();
+            }
 
-                String extSchema = null;
-                try {
-                    extSchema = JdbcLoader.getExtensionSchema(dbInfo.getDbHost(),
-                            dbInfo.getDbPort(), dbInfo.getDbUser(), dbInfo.getDbPass(),
-                            dbInfo.getDbName(), dbInfo.getProperties(), dbInfo.isReadOnly(),
-                            timezone);
-                } catch (PgCodekeeperException e) {
-                    error = e.getLocalizedMessage();
-                }
-
-                if (extSchema != null) {
-                    return new TimestampTreeDiffer(dbProj, dbInfo, extSchema, charset,
-                            timezone, forceUnixNewlines, timePath);
-                }
-            } catch (URISyntaxException e) {
-                Log.log(Log.LOG_ERROR, "Error reading project timestamps", e); //$NON-NLS-1$
+            if (extSchema != null) {
+                return new TimestampTreeDiffer(dbProj, dbInfo, extSchema, charset,
+                        timezone, forceUnixNewlines, timePath);
             }
         }
 
