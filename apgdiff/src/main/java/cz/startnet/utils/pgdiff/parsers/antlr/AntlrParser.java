@@ -13,7 +13,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.BaseErrorListener;
@@ -34,13 +33,12 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.jdbc.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Tsql_fileContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import ru.taximaxim.codekeeper.apgdiff.DaemonThreadFactory;
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class AntlrParser {
 
@@ -113,32 +111,16 @@ public class AntlrParser {
     public static void parseSqlStream(InputStream inputStream, String charsetName,
             String parsedObjectName, List<AntlrError> errors, IProgressMonitor mon, int monitoringLevel,
             Collection<SqlContextProcessor> listeners, Queue<AntlrTask<?>> antlrTasks)
-                    throws IOException, InterruptedException {
+                    throws InterruptedException {
         try {
             submitAntlrTask(antlrTasks, () -> {
-                SQLParser parser;
-                // TODO подумать что нужно делать с finalizer-ом если ctx == null
-                SqlContext ctx = null;
-                try {
-                    parser = makeBasicParser(SQLParser.class, inputStream,
+                try(InputStream forAutoCloseInputStream = inputStream) {
+                    SQLParser parser = makeBasicParser(SQLParser.class, inputStream,
                             charsetName, parsedObjectName, errors);
                     parser.addParseListener(new CustomParseTreeListener(
                             monitoringLevel, mon == null ? new NullProgressMonitor() : mon));
-                    ctx = parser.sql();
-                } catch (IOException e) {
-                    // TODO проверить какие ошибки могут вылетать
-                    // TODO подумать над тема как можно по другому обрабатывать ошибку
-                    errors.add(CustomParserListener
-                            .handleParserContextException(e, parsedObjectName, ctx));
-                } finally {
-                    try {
-                        inputStream.close();
-                    } catch (IOException e) {
-                        errors.add(CustomParserListener
-                                .handleParserContextException(e, parsedObjectName, ctx));
-                    }
+                    return parser.sql();
                 }
-                return ctx;
             }, ctx -> listeners.forEach(listener -> listener.process(ctx, null)), null);
         } catch (MonitorCancelledRuntimeException mcre){
             throw new InterruptedException();
@@ -150,50 +132,32 @@ public class AntlrParser {
     public static void parseTSqlStream(InputStream inputStream, String charsetName,
             String parsedObjectName, List<AntlrError> errors,IProgressMonitor mon, int monitoringLevel,
             Collection<TSqlContextProcessor> listeners, Queue<AntlrTask<?>> antlrTasks)
-                    throws IOException, InterruptedException {
+                    throws InterruptedException {
         try {
-            // TODO сделать подкласс AntlrTask'a у которого будет еще CommonTokenStream
-            TSQLParser parser = submitTask(() -> makeBasicParser(TSQLParser.class,
-                    inputStream, charsetName, parsedObjectName, errors)).get();
-
             submitAntlrTask(antlrTasks, () -> {
-                Tsql_fileContext ctx = null;
-                try {
+                try(InputStream forAutoCloseInputStream = inputStream) {
+                    TSQLParser parser = makeBasicParser(TSQLParser.class,
+                            inputStream, charsetName, parsedObjectName, errors);
                     parser.addParseListener(new CustomParseTreeListener(
                             monitoringLevel, mon == null ? new NullProgressMonitor() : mon));
-                    ctx = parser.tsql_file();
+                    return new Pair<>(parser, parser.tsql_file());
                 }
-                finally {
-                    try {
-                        inputStream.close();
-                    } catch (IOException e) {
-                        errors.add(CustomParserListener
-                                .handleParserContextException(e, parsedObjectName, ctx));
-                    }
-                }
-                return ctx;
-            }, ctx -> listeners.forEach(listener -> listener.process(ctx,
-                    (CommonTokenStream) parser.getInputStream())), null);
+            }, pair -> listeners.forEach(listener -> listener.process(pair.getSecond(),
+                    (CommonTokenStream) pair.getFirst().getInputStream())), null);
         } catch (MonitorCancelledRuntimeException mcre){
             throw new InterruptedException();
         } catch (UnresolvedReferenceException ex) {
             errors.add(CustomTSQLParserListener.handleUnresolvedReference(ex, parsedObjectName));
-        } catch (ExecutionException ee) {
-            AntlrError err = new AntlrError(null, parsedObjectName, 0, 0,  ee.getMessage());
-            Log.log(Log.LOG_ERROR, err.toString(), ee);
-            errors.add(err);
         }
     }
 
-    public static <C> Future<C> submitTask(Callable<C> task) {
+    public static <T> Future<T> submitTask(Callable<T> task) {
         return ANTLR_POOL.submit(task);
     }
 
-    // TODO !!! СДЕЛАТЬ в первую очередь !!! Supplier<C> parserCtxReader заменить на callable
-    public static <C> void submitAntlrTask(Queue<AntlrTask<?>> antlrTasks,
-            Supplier<C> parserCtxReader, Consumer<C> finalizer,
-            GenericColumn currentObject) {
-        Future<C> future = submitTask(parserCtxReader::get);
+    public static <T> void submitAntlrTask(Queue<AntlrTask<?>> antlrTasks,
+            Callable<T> getCtxOrPair, Consumer<T> finalizer, GenericColumn currentObject) {
+        Future<T> future = submitTask(getCtxOrPair);
         antlrTasks.add(new AntlrTask<>(future, finalizer, currentObject));
     }
 
