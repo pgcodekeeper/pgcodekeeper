@@ -6,7 +6,7 @@ DROP OPERATOR public.||++(text, text);
 
 DROP FUNCTION tester.nonull_append_strings(text, text);
 
--- DEPCY: This FUNCTION is a dependency of OPERATOR: public.||++(text, text)
+-- DEPCY: This FUNCTION is a dependency of OPERATOR: public."||++(text, text)"
 
 CREATE OR REPLACE FUNCTION tester.nonull_append_strings(text, text) RETURNS text
     LANGUAGE sql IMMUTABLE
