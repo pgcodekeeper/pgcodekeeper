@@ -5,7 +5,6 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomTSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_schemaContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Sql_clausesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.St_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
@@ -42,14 +41,14 @@ public class CreateMsSchema extends ParserAbstract {
             String defaultSchemaName = db.getDefaultSchema().getName();
             try {
                 db.setDefaultSchema(name);
-                for (Schema_definitionContext sd : ctx.schema_definition()) {
-                    Sql_clausesContext clauses = sd.sql_clauses();
+                if (ctx.schema_def != null) {
+                    Sql_clausesContext clauses = ctx.schema_def.sql_clauses();
                     Batch_statementContext batchSt;
                     if (clauses != null) {
                         for (St_clauseContext st : clauses.st_clause()) {
                             listener.clause(st);
                         }
-                    } else if ((batchSt = sd.batch_statement()) != null) {
+                    } else if ((batchSt = ctx.schema_def.batch_statement()) != null) {
                         listener.batchStatement(batchSt, stream);
                     }
                 }
