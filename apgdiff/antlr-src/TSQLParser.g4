@@ -2167,7 +2167,7 @@ execute_statement
 execute_string
     : LR_BRACKET
     execute_string_part (PLUS execute_string_part)* 
-    (COMMA (default_value | (LOCAL_ID (OUTPUT | OUT)?)))*
+    (COMMA (default_value | id | (LOCAL_ID (OUTPUT | OUT)?)))*
     RR_BRACKET
     (AS (LOGIN | USER) EQUAL STRING)?
     (AT qualified_name)?
@@ -2184,7 +2184,7 @@ execute_module
     ;
 
 execute_statement_arg
-    : (parameter=LOCAL_ID EQUAL)? (default_value | (LOCAL_ID (OUTPUT | OUT)?))
+    : (parameter=LOCAL_ID EQUAL)? (default_value | id | (LOCAL_ID (OUTPUT | OUT)?))
     ;
 
 execute_option
