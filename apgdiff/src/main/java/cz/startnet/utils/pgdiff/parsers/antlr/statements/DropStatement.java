@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.util.Arrays;
 import java.util.List;
 
+import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_operator_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_rule_statementContext;
@@ -109,7 +110,7 @@ public class DropStatement extends ParserAbstract {
             PgObjLocation loc = addFullObjReference(ids, type, StatementActions.DROP);
 
             if (type == DbObjType.TABLE) {
-                loc.setWarningText(PgObjLocation.DROP_TABLE);
+                loc.setWarningText(DangerStatement.DROP_TABLE);
             }
         }
     }

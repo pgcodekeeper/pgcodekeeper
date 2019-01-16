@@ -759,21 +759,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
     private void showEditor(Differ differ) throws PartInitException {
         try {
-            boolean isMsSql = getProject().hasNature(NATURE.MS);
-            if (!isMsSql && differ.getScript().isDangerDdl(
-                    !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_TABLE_STATEMENT),
-                    !mainPrefs.getBoolean(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT),
-                    !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT),
-                    !mainPrefs.getBoolean(DB_UPDATE_PREF.RESTART_WITH_STATEMENT),
-                    !mainPrefs.getBoolean(DB_UPDATE_PREF.UPDATE_STATEMENT))){
-                MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_WARNING | SWT.OK | SWT.CANCEL);
-                mb.setText(Messages.sqlScriptDialog_warning);
-                mb.setMessage(Messages.sqlScriptDialog_script_contains_statements_that_may_modify_data);
-                if (mb.open() != SWT.OK){
-                    return;
-                }
-            }
-
             boolean inProj = false;
             String creationMode = mainPrefs.getString(DB_UPDATE_PREF.CREATE_SCRIPT_IN_PROJECT);
             // if select "YES" with toggle
@@ -798,7 +783,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 }
                 getSite().getPage().openEditor(file, EDITOR.SQL);
             } else {
-                FileUtilsUi.saveOpenTmpSqlEditor(content, filename, isMsSql);
+                FileUtilsUi.saveOpenTmpSqlEditor(content, filename, getProject().hasNature(NATURE.MS));
             }
         } catch (CoreException | IOException ex) {
             ExceptionNotifier.notifyDefault(

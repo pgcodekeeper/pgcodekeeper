@@ -444,6 +444,30 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         @Override
         protected IStatus run(IProgressMonitor monitor) {
             SubMonitor.convert(monitor).setTaskName(Messages.SqlEditor_update_ddl);
+
+            /*
+            DangerStatementParser dangerParser = new DangerStatementParser();
+            dangerParser.checkDanger(script, dbInfo.isMsSql());
+
+            if (dangerParser.isDangerDdl(DangerStatement.getAllowedDanger(
+                    !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT),
+                    !mainPrefs.getBoolean(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT),
+                    !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_TABLE_STATEMENT),
+                    !mainPrefs.getBoolean(DB_UPDATE_PREF.RESTART_WITH_STATEMENT),
+                    !mainPrefs.getBoolean(DB_UPDATE_PREF.UPDATE_STATEMENT)))) {
+
+                MessageBox mb = new MessageBox(parentComposite.getShell(),
+                        SWT.ICON_WARNING | SWT.OK | SWT.CANCEL);
+                mb.setText(Messages.sqlScriptDialog_warning);
+                mb.setMessage(Messages.sqlScriptDialog_script_contains_statements_that_may_modify_data);
+
+                if (mb.open() != SWT.OK) {
+                    reporter.writeError("Script execution interrupted by user");
+                    return Status.CANCEL_STATUS;
+                }
+            }
+             */
+
             return mainPrefs.getBoolean(DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE) ?
                     runExternal(monitor) : runInternal(monitor);
         }

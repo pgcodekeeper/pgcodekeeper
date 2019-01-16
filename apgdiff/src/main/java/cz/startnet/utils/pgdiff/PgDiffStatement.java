@@ -31,10 +31,6 @@ class PgDiffStatement {
         this.statementType = (obj == null) ? null : obj.getStatementType();
     }
 
-    public boolean isDangerStatement(DangerStatement dst) {
-        return dst.getRegex().matcher(statement).find();
-    }
-
     @Override
     public boolean equals(Object obj) {
         boolean eq = false;

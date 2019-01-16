@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 
 import cz.startnet.utils.pgdiff.PgDiffStatement.DiffStatementType;
+import cz.startnet.utils.pgdiff.parsers.antlr.DangerStatementParser;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 /**
@@ -29,41 +30,26 @@ public class PgDiffScript {
     private final Set<PgDiffStatement> unique = new HashSet<>();
 
     public boolean isDangerDdl(boolean ignoreDropCol, boolean ignoreAlterCol,
-            boolean ignoreDropTable, boolean ignoreRestartWith, boolean ignoreUpdate) {
-        Set<DangerStatement> allowedDangers = EnumSet.noneOf(DangerStatement.class);
-        if (ignoreDropCol) {
-            allowedDangers.add(DangerStatement.DROP_COLUMN);
-        }
-        if (ignoreAlterCol) {
-            allowedDangers.add(DangerStatement.ALTER_COLUMN);
-        }
-        if (ignoreDropTable) {
-            allowedDangers.add(DangerStatement.DROP_TABLE);
-        }
-        if (ignoreRestartWith) {
-            allowedDangers.add(DangerStatement.RESTART_WITH);
-        }
-        if (ignoreUpdate) {
-            allowedDangers.add(DangerStatement.UPDATE);
-        }
-
-        return !findDangers(allowedDangers).isEmpty();
+            boolean ignoreDropTable, boolean ignoreRestartWith,
+            boolean ignoreUpdate, boolean isMsSql) {
+        return !findDangers(DangerStatement.getAllowedDanger(ignoreDropCol, ignoreAlterCol,
+                ignoreDropTable, ignoreRestartWith, ignoreUpdate), isMsSql).isEmpty();
     }
 
-    public Set<DangerStatement> findDangers(Collection<DangerStatement> allowedDangers) {
-        Set<DangerStatement> allDangers = EnumSet.allOf(DangerStatement.class);
-        if (allowedDangers.containsAll(allDangers)) {
+    public Set<DangerStatement> findDangers(Collection<DangerStatement> allowedDangers,
+            boolean isMsSql) {
+        if (allowedDangers.containsAll(EnumSet.allOf(DangerStatement.class))) {
             return Collections.emptySet();
         }
 
-        Set<DangerStatement> dangerTypes = EnumSet.noneOf(DangerStatement.class);
+        DangerStatementParser parser = new DangerStatementParser();
         for (PgDiffStatement st : statements) {
-            for (DangerStatement d : allDangers) {
-                if (!allowedDangers.contains(d) && st.isDangerStatement(d)) {
-                    dangerTypes.add(d);
-                }
-            }
+            parser.checkDanger(st.statement, isMsSql);
         }
+
+        Set<DangerStatement> dangerTypes = parser.getDangerStatements();
+        dangerTypes.removeAll(allowedDangers);
+
         return dangerTypes;
     }
 
@@ -102,10 +88,8 @@ public class PgDiffScript {
             }
             statements.add(st);
             unique.add(st);
-        } else {
-            if (replaceExisting) {
-                statements.set(statements.indexOf(st), st);
-            }
+        } else if (replaceExisting) {
+            statements.set(statements.indexOf(st), st);
         }
     }
 

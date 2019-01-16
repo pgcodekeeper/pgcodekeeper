@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 import java.util.Arrays;
 import java.util.List;
 
+import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
@@ -58,9 +59,9 @@ public class AlterMsTable extends TableAbstract {
             }
             setSafe(MsConstraint::setDisabled, con, ctx.nocheck != null);
         } else if (ctx.DROP() != null && ctx.COLUMN() != null) {
-            ref.setWarningText(PgObjLocation.DROP_COLUMN);
+            ref.setWarningText(DangerStatement.DROP_COLUMN);
         } else if (ctx.ALTER() != null && ctx.COLUMN() != null) {
-            ref.setWarningText(PgObjLocation.ALTER_COLUMN_TYPE);
+            ref.setWarningText(DangerStatement.ALTER_COLUMN);
         }
 
         IdContext trigger = ctx.trigger;

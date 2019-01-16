@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
+import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_sequence_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -43,7 +44,7 @@ public class AlterSequence extends ParserAbstract {
         }
 
         if (!ctx.RESTART().isEmpty()) {
-            loc.setWarningText(PgObjLocation.RESTART_WITH);
+            loc.setWarningText(DangerStatement.RESTART_WITH);
         }
     }
 }

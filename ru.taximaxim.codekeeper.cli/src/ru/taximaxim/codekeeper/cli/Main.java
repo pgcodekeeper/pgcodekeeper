@@ -9,7 +9,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Set;
@@ -75,13 +74,14 @@ public final class Main {
     }
 
     private static boolean diff(PrintWriter writer, PgDiffArguments arguments)
-            throws InterruptedException, IOException, URISyntaxException {
+            throws InterruptedException, IOException {
         PgDiffScript script;
         try (PrintWriter encodedWriter = getDiffWriter(arguments)) {
             script = PgDiff.createDiff(encodedWriter != null ? encodedWriter : writer, arguments);
         }
         if (arguments.isSafeMode()) {
-            Set<DangerStatement> dangerTypes = script.findDangers(arguments.getAllowedDangers());
+            Set<DangerStatement> dangerTypes = script.findDangers(
+                    arguments.getAllowedDangers(), arguments.isMsSql());
             if (!dangerTypes.isEmpty()) {
                 String msg = MessageFormat.format(Messages.Main_danger_statements,
                         dangerTypes.stream().map(DangerStatement::name)
