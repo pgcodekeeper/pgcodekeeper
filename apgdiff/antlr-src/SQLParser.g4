@@ -357,8 +357,9 @@ function_actions_common
     ;
 
 function_def
-    : character_string (COMMA character_string)*
-    | sql
+    : RETURN? select_stmt
+    | BEGIN sql (RETURN ret=vex)? SEMI_COLON? END
+    | character_string (COMMA character_string)*
     ;
 
 alter_index_statement
@@ -1454,14 +1455,14 @@ if_exist_names_restrict_cascade
   includes types
 */
 identifier
-  : (Identifier | QuotedIdentifier)
+  : (Identifier | QuotedIdentifier | DOLLAR_NUMBER)
   | tokens_nonreserved
   | tokens_nonreserved_except_function_type
   | tokens_nonkeyword
   ;
 
 identifier_nontype
-  : (Identifier | QuotedIdentifier)
+  : (Identifier | QuotedIdentifier | DOLLAR_NUMBER)
   | tokens_nonreserved
   | tokens_reserved_except_function_type
   | tokens_nonkeyword
@@ -1678,6 +1679,7 @@ tokens_nonreserved
   | RESET
   | RESTART
   | RESTRICT
+  | RETURN
   | RETURNS
   | REVOKE
   | ROLE
