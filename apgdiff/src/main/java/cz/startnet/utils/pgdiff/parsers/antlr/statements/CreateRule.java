@@ -23,7 +23,9 @@ import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
+import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
@@ -128,11 +130,9 @@ public class CreateRule extends ParserAbstract {
         if (type != null) {
             for (Schema_qualified_nameContext name : objName) {
                 addFullObjReference(name.identifier(), type, StatementActions.NONE);
-                if (!isRefMode()) {
-                    for (String role : roles) {
-                        addToDB(name, type, new PgPrivilege(state, permissions,
-                                type + " " + name.getText(), role, isGO));
-                    }
+                for (String role : roles) {
+                    addToDB(name, type, new PgPrivilege(state, permissions,
+                            type + " " + name.getText(), role, isGO));
                 }
             }
         }
@@ -164,29 +164,17 @@ public class CreateRule extends ParserAbstract {
             Map<String, Entry<IdentifierContext, List<String>>> colPrivs, List<String> roles) {
         String tableName = getFullCtxText(tbl);
         List<IdentifierContext> ids = tbl.identifier();
-        String firstPart = QNameParser.getFirstName(ids);
 
-        if (isRefMode()) {
-            // TODO add column references later
-            addFullObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
-            return;
-        }
-
+        PgObjLocation loc = addFullObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
         AbstractSchema schema = getSchemaSafe(ids);
+        IdentifierContext firstPart = QNameParser.getFirstNameCtx(ids);
+
         //привилегии пишем так как получили одной строкой
         PgStatement st = null;
-        AbstractTable tblSt = schema.getTable(firstPart);
-
-        // если таблица не найдена попробовать вьюхи и проч
-        if (tblSt == null) {
-            st = schema.getView(firstPart);
-        }
-
-        if (st == null) {
-            st = schema.getSequence(firstPart);
-        }
-
-        if (tblSt == null && st == null) {
+        IRelation r = getSafe(AbstractSchema::getRelation, schema, firstPart);
+        if (r instanceof PgStatement) {
+            st = (PgStatement) r;
+        } else {
             return;
         }
 
@@ -202,11 +190,15 @@ public class CreateRule extends ParserAbstract {
             for (String role : roles) {
                 PgPrivilege priv = new PgPrivilege(state, permission.toString(),
                         "TABLE " + tableName, role, isGO);
-                if (tblSt == null) {
+                if (DbObjType.TABLE != st.getStatementType()) {
                     addPrivilege(st, priv);
                 } else {
+                    IdentifierContext colName = colPriv.getValue().getKey();
+                    addObjReference(new PgObjLocation(loc.schema,
+                            loc.table, colName.getText(), DbObjType.COLUMN),
+                            StatementActions.NONE, colName);
                     AbstractColumn col = getSafe(AbstractTable::getColumn,
-                            tblSt, colPriv.getValue().getKey());
+                            (AbstractTable) st, colName);
                     addPrivilege(col, priv);
                 }
             }
@@ -216,18 +208,14 @@ public class CreateRule extends ParserAbstract {
     private void addToDB(Schema_qualified_nameContext name, DbObjType type, PgPrivilege pgPrivilege) {
         List<IdentifierContext> ids = name.identifier();
         IdentifierContext idCtx = QNameParser.getFirstNameCtx(ids);
-        String id = idCtx.getText();
         AbstractSchema schema = (DbObjType.SCHEMA == type ?
                 getSafe(PgDatabase::getSchema, db, idCtx) : getSchemaSafe(ids));
         PgStatement statement = null;
         switch (type) {
         case TABLE:
-            statement = schema.getTable(id);
-            if (statement == null) {
-                statement = schema.getView(id);
-            }
-            if (statement == null) {
-                statement = getSafe(AbstractSchema::getSequence, schema, idCtx);
+            IRelation r = getSafe(AbstractSchema::getRelation, schema, idCtx);
+            if (r instanceof PgStatement) {
+                statement = (PgStatement) r;
             }
             break;
         case SEQUENCE:

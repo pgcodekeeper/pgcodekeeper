@@ -18,6 +18,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.AbstractRegularTable;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
+import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -52,20 +53,10 @@ public class AlterTable extends TableAbstract {
                 loc.setWarningText(PgObjLocation.ALTER_COLUMN_TYPE);
             }
 
-            // for owners try to get any relation, fail if the last attempt fails
             if (tablAction.owner_to() != null) {
-                if (!isRefMode()) {
-                    String name = nameCtx.getText();
-                    PgStatement st = schema.getTable(name);
-                    if (st == null) {
-                        st = schema.getSequence(name);
-                    }
-                    if (st == null) {
-                        st = getSafe(AbstractSchema::getView, schema, nameCtx);
-                    }
-                    if (st != null) {
-                        fillOwnerTo(tablAction.owner_to(), st);
-                    }
+                IRelation r = getSafe(AbstractSchema::getRelation, schema, nameCtx);
+                if (r instanceof PgStatement) {
+                    fillOwnerTo(tablAction.owner_to(), (PgStatement) r);
                 }
                 continue;
             }
