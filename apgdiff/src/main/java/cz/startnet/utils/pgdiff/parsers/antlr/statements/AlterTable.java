@@ -52,6 +52,24 @@ public class AlterTable extends TableAbstract {
                 loc.setWarningText(PgObjLocation.ALTER_COLUMN_TYPE);
             }
 
+            // for owners try to get any relation, fail if the last attempt fails
+            if (tablAction.owner_to() != null) {
+                if (!isRefMode()) {
+                    String name = nameCtx.getText();
+                    PgStatement st = schema.getTable(name);
+                    if (st == null) {
+                        st = schema.getSequence(name);
+                    }
+                    if (st == null) {
+                        st = getSafe(AbstractSchema::getView, schema, nameCtx);
+                    }
+                    if (st != null) {
+                        fillOwnerTo(tablAction.owner_to(), st);
+                    }
+                }
+                continue;
+            }
+
             // everything else requires a real table, so fail immediately
             tabl = (AbstractPgTable) getSafe(AbstractSchema::getTable, schema, nameCtx);
 
@@ -86,22 +104,6 @@ public class AlterTable extends TableAbstract {
             }
 
             if (isRefMode()) {
-                continue;
-            }
-
-            // for owners try to get any relation, fail if the last attempt fails
-            if (tablAction.owner_to() != null) {
-                String name = nameCtx.getText();
-                PgStatement st = schema.getTable(name);
-                if (st == null) {
-                    st = schema.getSequence(name);
-                }
-                if (st == null) {
-                    st = getSafe(AbstractSchema::getView, schema, nameCtx);
-                }
-                if (st != null) {
-                    fillOwnerTo(tablAction.owner_to(), st);
-                }
                 continue;
             }
 
