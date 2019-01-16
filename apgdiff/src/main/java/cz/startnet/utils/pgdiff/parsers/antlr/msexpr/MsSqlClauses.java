@@ -53,8 +53,8 @@ public class MsSqlClauses extends MsAbstractExpr {
         super(parent);
     }
 
-    public MsSqlClauses() {
-        super();
+    public MsSqlClauses(String schema) {
+        super(schema);
     }
 
     public List<String> analyze(Sql_clausesContext sql) {

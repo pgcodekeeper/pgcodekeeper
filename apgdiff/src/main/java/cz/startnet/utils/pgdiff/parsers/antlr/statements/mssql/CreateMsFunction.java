@@ -103,21 +103,28 @@ public class CreateMsFunction extends BatchContextProcessor {
         setSourceParts(func);
 
         Select_statementContext select = bodyRet.select_statement();
+        String schemaName;
+        if (schema != null) {
+            schemaName = schema.getName();
+        } else {
+            schemaName = getSchemaNameSafe(ids);
+        }
+
         if (select != null) {
-            MsSelect sel = new MsSelect();
+            MsSelect sel = new MsSelect(schemaName);
             sel.analyze(select);
             func.addAllDeps(sel.getDepcies());
         } else {
             ExpressionContext exp = bodyRet.expression();
             if (exp != null) {
-                MsValueExpr vex = new MsValueExpr();
+                MsValueExpr vex = new MsValueExpr(schemaName);
                 vex.analyze(exp);
                 func.addAllDeps(vex.getDepcies());
             }
 
             Sql_clausesContext clausesCtx = bodyRet.sql_clauses();
             if (clausesCtx != null) {
-                MsSqlClauses clauses = new MsSqlClauses();
+                MsSqlClauses clauses = new MsSqlClauses(schemaName);
                 clauses.analyze(clausesCtx);
                 func.addAllDeps(clauses.getDepcies());
             }

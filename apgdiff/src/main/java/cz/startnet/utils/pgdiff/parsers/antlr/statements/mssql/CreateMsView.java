@@ -54,9 +54,18 @@ public class CreateMsView extends BatchContextProcessor {
 
         Select_statementContext vQuery = ctx.select_statement();
         if (vQuery != null) {
-            MsSelect select = new MsSelect();
+            String schemaName;
+            if (schema != null) {
+                schemaName = schema.getName();
+            } else {
+                schemaName = getSchemaNameSafe(ids);
+            }
+
+            MsSelect select = new MsSelect(schemaName);
             select.analyze(new MsSelectStmt(vQuery));
             view.addAllDeps(select.getDepcies());
+
+            view.getDeps().forEach(System.err::println);
         }
 
         return view;

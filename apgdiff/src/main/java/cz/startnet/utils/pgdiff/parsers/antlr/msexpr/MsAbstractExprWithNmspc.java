@@ -42,8 +42,8 @@ public abstract class MsAbstractExprWithNmspc<T> extends MsAbstractExpr {
      */
     protected final Set<String> cte = new HashSet<>();
 
-    public MsAbstractExprWithNmspc() {
-        super();
+    public MsAbstractExprWithNmspc(String schema) {
+        super(schema);
     }
 
     protected MsAbstractExprWithNmspc(MsAbstractExpr parent) {

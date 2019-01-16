@@ -18,8 +18,8 @@ public class MsUpdate extends MsAbstractExprWithNmspc<Update_statementContext> {
         super(parent);
     }
 
-    public MsUpdate() {
-        super();
+    public MsUpdate(String schema) {
+        super(schema);
     }
 
     @Override
