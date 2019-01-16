@@ -88,11 +88,15 @@ public class CreateRule extends ParserAbstract {
                 StringBuilder sb = new StringBuilder();
                 DbObjType type = ctx.PROCEDURE() == null ?
                         DbObjType.FUNCTION : DbObjType.PROCEDURE;
+                addFullObjReference(funcIds, type, StatementActions.NONE);
+
+                if (isRefMode()) {
+                    continue;
+                }
+
                 sb.append(type).append(' ');
                 sb.append(PgDiffUtils.getQuotedName(schema.getName())).append('.');
                 ((AbstractPgFunction) func).appendFunctionSignature(sb, false, true);
-
-                addFullObjReference(funcIds, type, StatementActions.NONE);
 
                 for (String role : roles) {
                     addPrivilege(func, new PgPrivilege(state, permissions,
@@ -124,9 +128,11 @@ public class CreateRule extends ParserAbstract {
         if (type != null) {
             for (Schema_qualified_nameContext name : objName) {
                 addFullObjReference(name.identifier(), type, StatementActions.NONE);
-                for (String role : roles) {
-                    addToDB(name, type, new PgPrivilege(state, permissions,
-                            type + " " + name.getText(), role, isGO));
+                if (!isRefMode()) {
+                    for (String role : roles) {
+                        addToDB(name, type, new PgPrivilege(state, permissions,
+                                type + " " + name.getText(), role, isGO));
+                    }
                 }
             }
         }
@@ -159,6 +165,13 @@ public class CreateRule extends ParserAbstract {
         String tableName = getFullCtxText(tbl);
         List<IdentifierContext> ids = tbl.identifier();
         String firstPart = QNameParser.getFirstName(ids);
+
+        if (isRefMode()) {
+            // TODO add column references later
+            addFullObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
+            return;
+        }
+
         AbstractSchema schema = getSchemaSafe(ids);
         //привилегии пишем так как получили одной строкой
         PgStatement st = null;

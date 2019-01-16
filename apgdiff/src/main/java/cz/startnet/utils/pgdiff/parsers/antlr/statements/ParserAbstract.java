@@ -386,6 +386,11 @@ public abstract class ParserAbstract {
     }
 
     protected void addDepSafe(PgStatement st, List<? extends ParserRuleContext> ids, DbObjType type) {
+        addDepSafe(st, ids, type, st.isPostgres());
+    }
+
+    protected void addDepSafe(PgStatement st, List<? extends ParserRuleContext> ids,
+            DbObjType type, boolean isPostgres) {
         ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
         switch (type) {
         case ASSEMBLY:
@@ -408,7 +413,7 @@ public abstract class ParserAbstract {
             schemaName = schemaCtx.getText();
         }
 
-        if (schemaName == null || ApgdiffUtils.isSystemSchema(schemaName, st.isPostgres())) {
+        if (schemaName == null || ApgdiffUtils.isSystemSchema(schemaName, isPostgres)) {
             return;
         }
 

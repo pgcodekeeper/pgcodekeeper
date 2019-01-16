@@ -19,6 +19,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractRegularTable;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
+import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgRule;
@@ -51,6 +52,43 @@ public class AlterTable extends TableAbstract {
                 loc.setWarningText(PgObjLocation.ALTER_COLUMN_TYPE);
             }
 
+            // everything else requires a real table, so fail immediately
+            tabl = (AbstractPgTable) getSafe(AbstractSchema::getTable, schema, nameCtx);
+
+            if (tablAction.tabl_constraint != null) {
+                IdentifierContext conNameCtx = tablAction.tabl_constraint.constraint_name;
+                String conName = conNameCtx != null ? conNameCtx.getText() : "";
+
+                AbstractConstraint con;
+                if (isRefMode()) {
+                    con = new PgConstraint(conName);
+                } else {
+                    // static method can create real dep
+                    con = parseAlterTableConstraint(tablAction,
+                            createTableConstraintBlank(tablAction.tabl_constraint), db,
+                            schema.getName(), nameCtx.getText());
+                    addSafe(AbstractPgTable::addConstraint, tabl, con);
+                }
+
+                if (!con.getName().isEmpty()) {
+                    fillObjDefinition(new PgObjLocation(loc.schema,
+                            loc.table, con.getName(), DbObjType.CONSTRAINT),
+                            conNameCtx, con);
+                }
+            }
+
+
+            if (tablAction.drop_constraint() != null) {
+                IdentifierContext conName = tablAction.drop_constraint().constraint_name;
+                addObjReference(new PgObjLocation(loc.schema,
+                        loc.table, conName.getText(), DbObjType.CONSTRAINT),
+                        StatementActions.DROP, conName);
+            }
+
+            if (isRefMode()) {
+                continue;
+            }
+
             // for owners try to get any relation, fail if the last attempt fails
             if (tablAction.owner_to() != null) {
                 String name = nameCtx.getText();
@@ -64,34 +102,6 @@ public class AlterTable extends TableAbstract {
                 if (st != null) {
                     fillOwnerTo(tablAction.owner_to(), st);
                 }
-                continue;
-            }
-
-            // everything else requires a real table, so fail immediately
-            tabl = (AbstractPgTable) getSafe(AbstractSchema::getTable, schema, nameCtx);
-
-            if (tablAction.tabl_constraint != null) {
-                AbstractConstraint con = parseAlterTableConstraint(tablAction,
-                        createTableConstraintBlank(tablAction.tabl_constraint), db,
-                        schema.getName(), nameCtx.getText());
-                if (!con.getName().isEmpty()) {
-                    fillObjDefinition(new PgObjLocation(loc.schema,
-                            loc.table, con.getName(), DbObjType.CONSTRAINT),
-                            tablAction.tabl_constraint, con);
-                }
-
-                tabl.addConstraint(con);
-            }
-
-
-            if (tablAction.drop_constraint() != null) {
-                IdentifierContext conName = tablAction.drop_constraint().constraint_name;
-                addObjReference(new PgObjLocation(loc.schema,
-                        loc.table, conName.getText(), DbObjType.CONSTRAINT),
-                        StatementActions.DROP, conName);
-            }
-
-            if (isRefMode()) {
                 continue;
             }
 
