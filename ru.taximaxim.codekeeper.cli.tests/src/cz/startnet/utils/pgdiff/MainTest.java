@@ -849,7 +849,7 @@ class ArgumentsProvider_23 extends ArgumentsProvider{
     @Override
     public String output() {
         return "SET search_path = pg_catalog;\n\n" +
-                "CREATE INDEX CONCURRENTLY testindex3 ON public.testtable USING btree (field3);\n\n";
+                "CREATE INDEX CONCURRENTLY testindex3 ON public.testtable USING btree (field3);\n";
     }
 }
 
@@ -874,7 +874,7 @@ class ArgumentsProvider_24 extends ArgumentsProvider{
     @Override
     public String output() {
         return "BEGIN TRANSACTION\nGO\n\nCREATE CLUSTERED INDEX [index_c2] ON [dbo].[table1] ([c2])\n" +
-                "WITH (ONLINE = ON)\nGO\n\nCOMMIT\nGO\n\n";
+                "WITH (ONLINE = ON)\nGO\n\nCOMMIT\nGO\n";
     }
 }
 

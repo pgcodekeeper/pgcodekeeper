@@ -1,10 +1,6 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
@@ -24,7 +20,6 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -33,8 +28,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class Differ implements IRunnableWithProgress {
-
-    private static final int INITIAL_BUFFER_CAPACITY = 1024;
 
     private final PgDatabase sourceDbFull;
     private final PgDatabase targetDbFull;
@@ -136,32 +129,26 @@ public class Differ implements IRunnableWithProgress {
         + " to: " + targetDbFull.getName()); //$NON-NLS-1$
 
         pm.newChild(25).subTask(Messages.differ_direct_diff); // 75
-        ByteArrayOutputStream diffOut = new ByteArrayOutputStream(INITIAL_BUFFER_CAPACITY);
         try (Getter source = new Getter(sourceDbFull); Getter target = new Getter(targetDbFull)) {
-            PrintWriter writer = new UnixPrintWriter(
-                    new OutputStreamWriter(diffOut, StandardCharsets.UTF_8), true);
-            script = PgDiff.diffDatabaseSchemasAdditionalDepcies(writer,
+            script = PgDiff.diffDatabaseSchemasAdditionalDepcies(
                     // forceUnixNewLines has no effect on diff operaiton, just pass true
                     DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone, true, msSql),
                     root,
                     sourceDbFull, targetDbFull,
                     additionalDepciesSource, additionalDepciesTarget);
-            writer.flush();
-            diffDirect = new String(diffOut.toByteArray(), StandardCharsets.UTF_8).trim();
+            diffDirect = script.getText();
 
             if (needTwoWay) {
                 Log.log(Log.LOG_INFO, "Diff from: " + targetDbFull.getName() //$NON-NLS-1$
                 + " to: " + sourceDbFull.getName()); //$NON-NLS-1$
 
                 pm.newChild(25).subTask(Messages.differ_reverse_diff); // 100
-                diffOut.reset();
-                PgDiff.diffDatabaseSchemasAdditionalDepcies(writer,
+                PgDiff.diffDatabaseSchemasAdditionalDepcies(
                         DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone, true, msSql),
                         root.getRevertedCopy(),
                         targetDbFull, sourceDbFull,
                         additionalDepciesTarget, additionalDepciesSource);
-                writer.flush();
-                diffReverse = new String(diffOut.toByteArray(), StandardCharsets.UTF_8).trim();
+                diffReverse = script.getText();
             }
         }
 

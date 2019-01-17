@@ -1,16 +1,12 @@
 package cz.startnet.utils.pgdiff;
 
-import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.PgDiffStatement.DiffStatementType;
-import cz.startnet.utils.pgdiff.parsers.antlr.DangerStatementParser;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 /**
@@ -28,30 +24,6 @@ public class PgDiffScript {
     // List.contains() is O(n)
     // also String caches hashcodes, so that's a minor performance plus
     private final Set<PgDiffStatement> unique = new HashSet<>();
-
-    public boolean isDangerDdl(boolean ignoreDropCol, boolean ignoreAlterCol,
-            boolean ignoreDropTable, boolean ignoreRestartWith,
-            boolean ignoreUpdate, boolean isMsSql) {
-        return !findDangers(DangerStatement.getAllowedDanger(ignoreDropCol, ignoreAlterCol,
-                ignoreDropTable, ignoreRestartWith, ignoreUpdate), isMsSql).isEmpty();
-    }
-
-    public Set<DangerStatement> findDangers(Collection<DangerStatement> allowedDangers,
-            boolean isMsSql) {
-        if (allowedDangers.containsAll(EnumSet.allOf(DangerStatement.class))) {
-            return Collections.emptySet();
-        }
-
-        DangerStatementParser parser = new DangerStatementParser();
-        for (PgDiffStatement st : statements) {
-            parser.checkDanger(st.statement, isMsSql);
-        }
-
-        Set<DangerStatement> dangerTypes = parser.getDangerStatements();
-        dangerTypes.removeAll(allowedDangers);
-
-        return dangerTypes;
-    }
 
     public void addStatement(String statement) {
         PgDiffStatement st = new PgDiffStatement(DiffStatementType.OTHER, null, statement.trim());
@@ -93,13 +65,8 @@ public class PgDiffScript {
         }
     }
 
-    /**
-     * Prints all statements into {@link PrintWriter}.
-     */
-    public void printStatements(PrintWriter printer) {
-        for (PgDiffStatement st : statements) {
-            printer.println(st.statement.trim());
-            printer.println();
-        }
+    public String getText() {
+        return statements.stream().map(st -> st.statement.trim())
+                .collect(Collectors.joining("\n\n"));
     }
 }

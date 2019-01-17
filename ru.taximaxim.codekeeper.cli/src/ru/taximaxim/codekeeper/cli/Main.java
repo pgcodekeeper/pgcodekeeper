@@ -24,6 +24,7 @@ import cz.startnet.utils.pgdiff.NotAllowedObjectException;
 import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffScript;
+import cz.startnet.utils.pgdiff.parsers.antlr.ScriptParser;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
@@ -75,26 +76,35 @@ public final class Main {
 
     private static boolean diff(PrintWriter writer, PgDiffArguments arguments)
             throws InterruptedException, IOException {
-        PgDiffScript script;
         try (PrintWriter encodedWriter = getDiffWriter(arguments)) {
-            script = PgDiff.createDiff(encodedWriter != null ? encodedWriter : writer, arguments);
-        }
-        if (arguments.isSafeMode()) {
-            Set<DangerStatement> dangerTypes = script.findDangers(
-                    arguments.getAllowedDangers(), arguments.isMsSql());
-            if (!dangerTypes.isEmpty()) {
-                String msg = MessageFormat.format(Messages.Main_danger_statements,
-                        dangerTypes.stream().map(DangerStatement::name)
-                        .collect(Collectors.joining(", ")));
-                writer.println(msg);
-                try (PrintWriter encodedWriter = getDiffWriter(arguments)) {
+            PgDiffScript script = PgDiff.createDiff(arguments);
+            String text = script.getText();
+
+            if (arguments.isSafeMode()) {
+                ScriptParser parser = ScriptParser.parse("CLI", text, arguments.isMsSql());
+                parser.checkDanger();
+                Set<DangerStatement> dangerTypes =
+                        parser.getDangerDdl(arguments.getAllowedDangers());
+
+                if (!dangerTypes.isEmpty()) {
+                    String msg = MessageFormat.format(Messages.Main_danger_statements,
+                            dangerTypes.stream().map(DangerStatement::name)
+                            .collect(Collectors.joining(", ")));
+                    writer.println(msg);
                     if (encodedWriter != null) {
                         encodedWriter.println("-- " + msg);
                     }
+                    return false;
                 }
-                return false;
+            }
+
+            if (encodedWriter != null) {
+                encodedWriter.println(script.getText());
+            } else {
+                writer.println(script.getText());
             }
         }
+
         return true;
     }
 

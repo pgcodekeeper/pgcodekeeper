@@ -32,6 +32,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.ide.ResourceUtil;
 
+import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcMsConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
@@ -196,10 +197,6 @@ class QuickUpdateJob extends SingletonEditorJob {
                 treeFull, false, timezone, isMsSql);
         differ.run(monitor.newChild(1));
 
-        if (differ.getScript().isDangerDdl(false, false, false, false, false, isMsSql)) {
-            throw new PgCodekeeperUIException(Messages.QuickUpdate_danger);
-        }
-
         checkFileModified();
 
         monitor.newChild(1).subTask(Messages.QuickUpdate_updating_db);
@@ -216,12 +213,20 @@ class QuickUpdateJob extends SingletonEditorJob {
         }
 
         try {
-            ScriptParser parser = new ScriptParser(file.getName());
-            List<List<String>> batches = parser.parse(differ.getDiffDirect(), dbinfo.isMsSql());
+            ScriptParser parser = ScriptParser.parse(file.getName(), differ.getDiffDirect(), isMsSql);
             String error = parser.getErrorMessage();
-            if (dbinfo.isMsSql() && error != null) {
+            if (error != null) {
                 throw new PgCodekeeperUIException(error);
             }
+
+            parser.checkDanger();
+            if (parser.isDangerDdl(
+                    DangerStatement.getAllowedDanger(false, false, false, false, false))) {
+                throw new PgCodekeeperUIException(Messages.QuickUpdate_danger);
+            }
+
+            List<List<String>> batches = parser.batch();
+
 
             new JdbcRunner(monitor).runBatches(connector, batches, null);
         } catch (SQLException e) {
