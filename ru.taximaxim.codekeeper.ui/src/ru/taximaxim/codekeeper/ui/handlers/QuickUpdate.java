@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -220,8 +221,7 @@ class QuickUpdateJob extends SingletonEditorJob {
             }
 
             parser.checkDanger();
-            if (parser.isDangerDdl(
-                    DangerStatement.getAllowedDanger(false, false, false, false, false))) {
+            if (parser.isDangerDdl(EnumSet.noneOf(DangerStatement.class))) {
                 throw new PgCodekeeperUIException(Messages.QuickUpdate_danger);
             }
 
