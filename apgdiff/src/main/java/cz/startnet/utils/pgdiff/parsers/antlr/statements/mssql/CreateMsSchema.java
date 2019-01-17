@@ -4,6 +4,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomTSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_schemaContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsSchema;
@@ -51,6 +52,5 @@ public class CreateMsSchema extends ParserAbstract {
             }
         }
          */
-        return schema;
     }
 }
