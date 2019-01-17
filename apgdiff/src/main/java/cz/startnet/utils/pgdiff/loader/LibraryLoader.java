@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -24,19 +23,16 @@ import java.util.zip.ZipInputStream;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.libraries.PgLibrary;
-import cz.startnet.utils.pgdiff.loader.jdbc.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
-import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 
 public class LibraryLoader {
-
-    private final Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
 
     private final PgDatabase database;
     private final Path metaPath;
@@ -121,15 +117,10 @@ public class LibraryLoader {
             } else {
                 db = new PgDatabase();
                 db.setArguments(args);
-                readStatementsFromDirectory(p, db);
 
-                try {
-                    AntlrParser.finishAntlr(antlrTasks, null, null);
-                } catch(ExecutionException e) {
-                    // TODO need to determine which object throws an exception
-                    throw new IOException(MessageFormat.format(Messages.PgDumpLoader_ProjReadingError,
-                            e.getLocalizedMessage(), "unknown obeject name"), e);
-                }
+                Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
+                readStatementsFromDirectory(p, db, antlrTasks);
+                AntlrParser.finishAntlr(antlrTasks);
             }
             return db;
         }
@@ -253,7 +244,7 @@ public class LibraryLoader {
         return dir.toString();
     }
 
-    private void readStatementsFromDirectory(Path f, PgDatabase db)
+    private void readStatementsFromDirectory(Path f, PgDatabase db, Queue<AntlrTask<?>> antlrTasks)
             throws IOException, InterruptedException {
         try (Stream<Path> stream = Files.list(f)) {
             List<Path> dirs = new ArrayList<>();
@@ -280,7 +271,7 @@ public class LibraryLoader {
             }
 
             for (Path sub : dirs) {
-                readStatementsFromDirectory(sub, db);
+                readStatementsFromDirectory(sub, db, antlrTasks);
             }
         }
     }

@@ -9,25 +9,23 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.MessageFormat;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.ExecutionException;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.loader.jdbc.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomTSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.ReferenceListener;
@@ -41,7 +39,6 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.StatementOverride;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 
 /**
  * Loads PostgreSQL dump into classes.
@@ -149,15 +146,12 @@ public class PgDumpLoader implements AutoCloseable {
             new PgSchema(ApgdiffConsts.PUBLIC);
         d.addSchema(schema);
         d.setDefaultSchema(schema.getName());
-        Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
-        loadDatabase(d, antlrTasks);
-        try {
-            AntlrParser.finishAntlr(antlrTasks, null, null);
-        } catch(ExecutionException e) {
-            throw new IOException(MessageFormat.format(Messages.PgDumpLoader_ProjReadingError,
-                    e.getLocalizedMessage(), inputObjectName), e);
-        }
         d.getSchema(schema.getName()).setLocation(inputObjectName);
+
+        Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>(1);
+        loadDatabase(d, antlrTasks);
+        AntlrParser.finishAntlr(antlrTasks);
+
         return d;
     }
 

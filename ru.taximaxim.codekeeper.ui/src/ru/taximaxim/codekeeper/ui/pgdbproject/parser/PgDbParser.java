@@ -7,19 +7,15 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.MessageFormat;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IFile;
@@ -47,8 +43,6 @@ import org.eclipse.ui.ide.ResourceUtil;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
-import cz.startnet.utils.pgdiff.loader.jdbc.AntlrTask;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
@@ -163,21 +157,13 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
             throws InterruptedException, IOException, CoreException {
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(file.getCharset());
-        Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
         try (PgUIDumpLoader loader = new PgUIDumpLoader(file, args, monitor)) {
             loader.setLoadSchema(false);
             loader.setLoadReferences(true);
-            PgDatabase db = loader.loadFile(new PgDatabase(), antlrTasks);
+            PgDatabase db = loader.loadFile(new PgDatabase());
             objDefinitions.putAll(db.getObjDefinitions());
             objReferences.putAll(db.getObjReferences());
             fillStatementBodies(loader.getStatementBodyReferences());
-        }
-
-        try {
-            AntlrParser.finishAntlr(antlrTasks, null, null);
-        } catch(ExecutionException e) {
-            throw new IOException(MessageFormat.format(Messages.PgDbParser_ProjReadingError,
-                    e.getLocalizedMessage(), file.getLocation()), e);
         }
 
         notifyListeners();

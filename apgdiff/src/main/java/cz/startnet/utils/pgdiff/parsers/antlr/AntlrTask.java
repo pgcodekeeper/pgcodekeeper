@@ -1,25 +1,17 @@
-package cz.startnet.utils.pgdiff.loader.jdbc;
+package cz.startnet.utils.pgdiff.parsers.antlr;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
-
 public class AntlrTask<T> {
 
     private final Future<T> future;
     private final Consumer<T> finalizer;
-    final GenericColumn object;
 
-    public AntlrTask(Future<T> future, Consumer<T> finalizer, GenericColumn object) {
+    public AntlrTask(Future<T> future, Consumer<T> finalizer) {
         this.future = future;
         this.finalizer = finalizer;
-        this.object = object;
-    }
-
-    public GenericColumn getObject() {
-        return object;
     }
 
     public void finish() throws InterruptedException, ExecutionException {

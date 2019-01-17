@@ -12,7 +12,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.BaseErrorListener;
@@ -30,12 +29,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.loader.jdbc.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import ru.taximaxim.codekeeper.apgdiff.DaemonThreadFactory;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
@@ -112,78 +109,91 @@ public class AntlrParser {
             String parsedObjectName, List<AntlrError> errors, IProgressMonitor mon, int monitoringLevel,
             Collection<SqlContextProcessor> listeners, Queue<AntlrTask<?>> antlrTasks)
                     throws InterruptedException {
-        try {
-            submitAntlrTask(antlrTasks, () -> {
-                try(InputStream forAutoCloseInputStream = inputStream) {
-                    SQLParser parser = makeBasicParser(SQLParser.class, inputStream,
-                            charsetName, parsedObjectName, errors);
-                    parser.addParseListener(new CustomParseTreeListener(
-                            monitoringLevel, mon == null ? new NullProgressMonitor() : mon));
-                    return parser.sql();
-                }
-            }, ctx -> listeners.forEach(listener -> listener.process(ctx, null)), null);
-        } catch (MonitorCancelledRuntimeException mcre){
-            throw new InterruptedException();
-        } catch (UnresolvedReferenceException ex) {
-            errors.add(CustomSQLParserListener.handleUnresolvedReference(ex, parsedObjectName));
-        }
+        submitAntlrTask(antlrTasks, () -> {
+            try(InputStream forAutoCloseInputStream = inputStream) {
+                SQLParser parser = makeBasicParser(SQLParser.class, inputStream,
+                        charsetName, parsedObjectName, errors);
+                parser.addParseListener(new CustomParseTreeListener(
+                        monitoringLevel, mon == null ? new NullProgressMonitor() : mon));
+                return parser.sql();
+            } catch (MonitorCancelledRuntimeException mcre){
+                throw new InterruptedException();
+            }
+        }, ctx -> {
+            try {
+                listeners.forEach(listener -> listener.process(ctx, null));
+            } catch (UnresolvedReferenceException ex) {
+                errors.add(CustomSQLParserListener.handleUnresolvedReference(ex, parsedObjectName));
+            }
+        });
     }
 
     public static void parseTSqlStream(InputStream inputStream, String charsetName,
             String parsedObjectName, List<AntlrError> errors,IProgressMonitor mon, int monitoringLevel,
             Collection<TSqlContextProcessor> listeners, Queue<AntlrTask<?>> antlrTasks)
                     throws InterruptedException {
-        try {
-            submitAntlrTask(antlrTasks, () -> {
-                try(InputStream forAutoCloseInputStream = inputStream) {
-                    TSQLParser parser = makeBasicParser(TSQLParser.class,
-                            inputStream, charsetName, parsedObjectName, errors);
-                    parser.addParseListener(new CustomParseTreeListener(
-                            monitoringLevel, mon == null ? new NullProgressMonitor() : mon));
-                    return new Pair<>(parser, parser.tsql_file());
-                }
-            }, pair -> listeners.forEach(listener -> listener.process(pair.getSecond(),
-                    (CommonTokenStream) pair.getFirst().getInputStream())), null);
-        } catch (MonitorCancelledRuntimeException mcre){
-            throw new InterruptedException();
-        } catch (UnresolvedReferenceException ex) {
-            errors.add(CustomTSQLParserListener.handleUnresolvedReference(ex, parsedObjectName));
-        }
+        submitAntlrTask(antlrTasks, () -> {
+            try(InputStream forAutoCloseInputStream = inputStream) {
+                TSQLParser parser = makeBasicParser(TSQLParser.class,
+                        inputStream, charsetName, parsedObjectName, errors);
+                parser.addParseListener(new CustomParseTreeListener(
+                        monitoringLevel, mon == null ? new NullProgressMonitor() : mon));
+                return new Pair<>(parser, parser.tsql_file());
+            } catch (MonitorCancelledRuntimeException mcre){
+                throw new InterruptedException();
+            }
+        }, pair -> {
+            try {
+                listeners.forEach(listener -> listener.process(pair.getSecond(),
+                        (CommonTokenStream) pair.getFirst().getInputStream()));
+            } catch (UnresolvedReferenceException ex) {
+                errors.add(CustomTSQLParserListener.handleUnresolvedReference(ex, parsedObjectName));
+            }
+        });
     }
 
-    public static <T> Future<T> submitTask(Callable<T> task) {
+    public static <T> Future<T> submitAntlrTask(Callable<T> task) {
         return ANTLR_POOL.submit(task);
     }
 
     public static <T> void submitAntlrTask(Queue<AntlrTask<?>> antlrTasks,
-            Callable<T> getCtxOrPair, Consumer<T> finalizer, GenericColumn currentObject) {
-        Future<T> future = submitTask(getCtxOrPair);
-        antlrTasks.add(new AntlrTask<>(future, finalizer, currentObject));
+            Callable<T> task, Consumer<T> finalizer) {
+        Future<T> future = submitAntlrTask(task);
+        antlrTasks.add(new AntlrTask<>(future, finalizer));
     }
 
-    public static <P, C> void submitAntlrTask(Queue<AntlrTask<?>> antlrTasks,
-            Function<P, C> parserCtxReader, P parser, Consumer<C> finalizer,
-            GenericColumn currentObject) {
-        Future<C> future = submitTask(() -> parserCtxReader.apply(parser));
-        antlrTasks.add(new AntlrTask<>(future, finalizer, currentObject));
-    }
-
-    public static void finishAntlr(Queue<AntlrTask<?>> antlrTasks,
-            Consumer<String> setCurrentOperation, Consumer<GenericColumn> setCurrentObject)
-                    throws InterruptedException, ExecutionException {
+    public static void finishAntlr(Queue<AntlrTask<?>> antlrTasks)
+            throws InterruptedException, IOException {
         AntlrTask<?> task;
-        if (setCurrentOperation != null) {
-            setCurrentOperation.accept("finalizing antlr");
-        }
-        while ((task = antlrTasks.poll()) != null) {
-            if (setCurrentObject != null) {
-                // default to operation if object is null
-                setCurrentObject.accept(task.getObject());
+        try {
+            while ((task = antlrTasks.poll()) != null) {
+                task.finish();
             }
-            task.finish();
+        } catch (ExecutionException ex) {
+            handleAntlrTaskException(ex);
         }
     }
 
+    /**
+     * Uwraps potential parser Interrupted and IO Exceptions from ExecutionException.<br>
+     * If non-standard parser exception is caught in the wrapper, it is rethrown
+     * as an IllegalStateException.
+     *
+     * @throws InterruptedException
+     * @throws IOException
+     * @throws IllegalStateException
+     */
+    public static void handleAntlrTaskException(ExecutionException ex)
+            throws InterruptedException, IOException {
+        Throwable t = ex.getCause();
+        if (t instanceof InterruptedException) {
+            throw (InterruptedException) t;
+        } else if (t instanceof IOException) {
+            throw (IOException) t;
+        } else {
+            throw new IllegalStateException(ex);
+        }
+    }
 
     private AntlrParser() {
         // only static

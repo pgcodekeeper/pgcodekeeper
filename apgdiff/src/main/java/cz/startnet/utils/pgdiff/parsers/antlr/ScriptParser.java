@@ -31,7 +31,7 @@ public class ScriptParser {
     private List<List<String>> parseMs(String script) throws InterruptedException, ExecutionException {
         List<List<String>> list = new ArrayList<>();
         TSQLParser parser = AntlrParser.makeBasicParser(TSQLParser.class, script, name, errors);
-        Future<Tsql_fileContext> future = AntlrParser.submitTask(parser::tsql_file);
+        Future<Tsql_fileContext> future = AntlrParser.submitAntlrTask(parser::tsql_file);
         CommonTokenStream stream = (CommonTokenStream) parser.getInputStream();
         List<BatchContext> batches = future.get().batch();
 
@@ -52,7 +52,7 @@ public class ScriptParser {
     }
 
     private List<List<String>> parsePg(String script) throws InterruptedException, ExecutionException {
-        Future<SqlContext> future = AntlrParser.submitTask(
+        Future<SqlContext> future = AntlrParser.submitAntlrTask(
                 () -> AntlrParser.makeBasicParser(SQLParser.class, script, name, errors).sql());
 
         List<String> l = new ArrayList<>();

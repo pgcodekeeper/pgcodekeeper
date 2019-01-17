@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -10,11 +11,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.antlr.v4.runtime.Parser;
 import org.eclipse.core.runtime.SubMonitor;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
@@ -27,6 +28,7 @@ import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
 import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
@@ -414,20 +416,31 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
 
     protected <T> void submitAntlrTask(String sql,
             Function<SQLParser, T> parserCtxReader, Consumer<T> finalizer) {
-        AntlrParser.submitAntlrTask(antlrTasks, parserCtxReader,
-                AntlrParser.makeBasicParser(SQLParser.class, sql, getCurrentLocation()),
-                finalizer, currentObject);
+        submitAntlrTask(sql, parserCtxReader, finalizer, SQLParser.class);
     }
 
     protected <T> void submitMsAntlrTask(String sql,
             Function<TSQLParser, T> parserCtxReader, Consumer<T> finalizer) {
-        AntlrParser.submitAntlrTask(antlrTasks, parserCtxReader,
-                AntlrParser.makeBasicParser(TSQLParser.class, sql, getCurrentLocation()),
-                finalizer, currentObject);
+        submitAntlrTask(sql, parserCtxReader, finalizer, TSQLParser.class);
     }
 
-    protected void finishAntlr() throws InterruptedException, ExecutionException {
-        AntlrParser.finishAntlr(antlrTasks, this::setCurrentOperation, this::setCurrentObject);
+    private <T, P extends Parser> void submitAntlrTask(String sql,
+            Function<P, T> parserCtxReader, Consumer<T> finalizer,
+            Class<P> parserClass) {
+        String location = getCurrentLocation();
+        GenericColumn object = this.currentObject;
+        AntlrParser.submitAntlrTask(antlrTasks, () -> {
+            P p = AntlrParser.makeBasicParser(parserClass, sql, location);
+            return parserCtxReader.apply(p);
+        }, t -> {
+            setCurrentObject(object);
+            finalizer.accept(t);
+        });
+    }
+
+    protected void finishAntlr() throws InterruptedException, IOException {
+        setCurrentOperation("finalizing antlr");
+        AntlrParser.finishAntlr(antlrTasks);
     }
 
     protected static class TimestampParam {
