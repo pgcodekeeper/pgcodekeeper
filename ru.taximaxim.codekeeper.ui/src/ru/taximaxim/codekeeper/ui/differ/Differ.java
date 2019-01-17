@@ -143,12 +143,11 @@ public class Differ implements IRunnableWithProgress {
                 + " to: " + sourceDbFull.getName()); //$NON-NLS-1$
 
                 pm.newChild(25).subTask(Messages.differ_reverse_diff); // 100
-                PgDiff.diffDatabaseSchemasAdditionalDepcies(
+                diffReverse = PgDiff.diffDatabaseSchemasAdditionalDepcies(
                         DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone, true, msSql),
                         root.getRevertedCopy(),
                         targetDbFull, sourceDbFull,
-                        additionalDepciesTarget, additionalDepciesSource);
-                diffReverse = script.getText();
+                        additionalDepciesTarget, additionalDepciesSource).getText();
             }
         }
 
