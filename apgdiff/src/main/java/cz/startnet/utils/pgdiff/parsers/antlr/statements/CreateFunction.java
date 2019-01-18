@@ -1,16 +1,24 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_funct_paramsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_actions_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_column_name_typeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statement_valueContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Transform_for_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_storage_parameterContext;
@@ -21,6 +29,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgProcedure;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 
 public class CreateFunction extends ParserAbstract {
     private final Create_function_statementContext ctx;
@@ -81,7 +90,16 @@ public class CreateFunction extends ParserAbstract {
                     function.setRows(Float.parseFloat(action.result_rows.getText()));
                 }
             } else if (action.AS() != null) {
-                function.setBody(db.getArguments(), getFullCtxText(action.function_def()));
+                Function_defContext funcDefinition = action.function_def();
+                function.setBody(db.getArguments(), getFullCtxText(funcDefinition));
+
+                // TODO add function definition parsing
+                if (funcDefinition.character_string().size() == 1) {
+                    StringBuilder funcDefBetweenDollar = new StringBuilder();
+                    funcDefinition.character_string(0).Text_between_Dollar()
+                    .forEach(n -> funcDefBetweenDollar.append(n.getText()));
+                    parseFunctionDefinition(function, funcDefBetweenDollar.toString().trim());
+                }
             } else if (action.TRANSFORM() != null) {
                 for (Transform_for_typeContext transform : action.transform_for_type()) {
                     function.addTransform(ParserAbstract.getFullCtxText(transform.type_name));
@@ -131,6 +149,25 @@ public class CreateFunction extends ParserAbstract {
             }
 
             function.addArgument(arg);
+        }
+    }
+
+    public static void parseFunctionDefinition(AbstractPgFunction function,
+            String funcDefinition) {
+        if (!"SQL".equalsIgnoreCase(function.getLanguage())) {
+            return;
+        }
+
+        // TODO perhaps analize should be done at the
+        // 'FullAnalyze' (db.addContextForAnalyze(func, someCtx))
+        try {
+            SQLParser parser = AntlrParser.makeBasicParser(SQLParser.class,
+                    new ByteArrayInputStream(funcDefinition.getBytes(StandardCharsets.UTF_8)),
+                    StandardCharsets.UTF_8.toString(), function.getName(), new ArrayList<>());
+            SqlContext sqlCtx = parser.sql();
+        } catch (IOException e) {
+            // TODO replace it by some thing more correct
+            Log.log(Log.LOG_ERROR, "exception of function definition parsing", e); //$NON-NLS-1$
         }
     }
 }

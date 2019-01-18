@@ -12,7 +12,7 @@ options {
 /******* Start symbols *******/
 
 sql
-    : BOM? (statement SEMI_COLON)* EOF
+    : BOM? (statement SEMI_COLON?)* EOF
     ;
 
 qname_parser
@@ -357,9 +357,7 @@ function_actions_common
     ;
 
 function_def
-    : RETURN? select_stmt
-    | BEGIN sql (RETURN ret=vex)? SEMI_COLON? END
-    | character_string (COMMA character_string)*
+    : character_string (COMMA character_string)*
     ;
 
 alter_index_statement
