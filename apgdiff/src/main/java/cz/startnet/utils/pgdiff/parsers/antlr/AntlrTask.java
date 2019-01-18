@@ -14,7 +14,14 @@ public class AntlrTask<T> {
         this.finalizer = finalizer;
     }
 
-    public void finish() throws InterruptedException, ExecutionException {
-        finalizer.accept(future.get());
+    public void finish() throws ExecutionException {
+        T t;
+        try {
+            t = future.get();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new ExecutionException(ex);
+        }
+        finalizer.accept(t);
     }
 }

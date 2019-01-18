@@ -165,7 +165,6 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
             objReferences.putAll(db.getObjReferences());
             fillStatementBodies(loader.getStatementBodyReferences());
         }
-
         notifyListeners();
     }
 

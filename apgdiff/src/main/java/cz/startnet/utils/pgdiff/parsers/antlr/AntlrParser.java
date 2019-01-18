@@ -12,6 +12,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.BaseErrorListener;
@@ -129,7 +130,7 @@ public class AntlrParser {
     }
 
     public static void parseTSqlStream(InputStream inputStream, String charsetName,
-            String parsedObjectName, List<AntlrError> errors,IProgressMonitor mon, int monitoringLevel,
+            String parsedObjectName, List<AntlrError> errors, IProgressMonitor mon, int monitoringLevel,
             Collection<TSqlContextProcessor> listeners, Queue<AntlrTask<?>> antlrTasks)
                     throws InterruptedException {
         submitAntlrTask(antlrTasks, () -> {
@@ -152,6 +153,27 @@ public class AntlrParser {
         });
     }
 
+    public static <T extends ParserRuleContext, P extends Parser>
+    T parseSqlString(Class<P> parserClass, Function<P, T> parserEntry, String sql,
+            String parsedObjectName) {
+        return parseSqlString(parserClass, parserEntry, sql, parsedObjectName, null);
+    }
+
+    public static <T extends ParserRuleContext, P extends Parser>
+    T parseSqlString(Class<P> parserClass, Function<P, T> parserEntry, String sql,
+            String parsedObjectName, List<AntlrError> errors) {
+        Future<T> f = submitAntlrTask(() -> parserEntry.apply(
+                makeBasicParser(parserClass, sql, parsedObjectName, errors)));
+        try {
+            return f.get();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException(ex);
+        } catch (ExecutionException ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
+
     public static <T> Future<T> submitAntlrTask(Callable<T> task) {
         return ANTLR_POOL.submit(task);
     }
@@ -171,6 +193,9 @@ public class AntlrParser {
             }
         } catch (ExecutionException ex) {
             handleAntlrTaskException(ex);
+        } catch (MonitorCancelledRuntimeException ex) {
+            // finalizing parser listeners' cancellations will reach here
+            throw new InterruptedException();
         }
     }
 

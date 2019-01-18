@@ -11,7 +11,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -140,8 +139,7 @@ class QuickUpdateJob extends SingletonEditorJob {
             doRun();
         } catch (InterruptedException e) {
             return Status.CANCEL_STATUS;
-        } catch (IOException | CoreException | PgCodekeeperUIException
-                | InvocationTargetException | ExecutionException e) {
+        } catch (IOException | CoreException | PgCodekeeperUIException | InvocationTargetException e) {
             return new Status(Status.ERROR, PLUGIN_ID.THIS, Messages.QuickUpdate_error, e);
         } finally {
             monitor.done();
@@ -150,7 +148,7 @@ class QuickUpdateJob extends SingletonEditorJob {
     }
 
     private void doRun() throws IOException, InterruptedException,
-    CoreException, PgCodekeeperUIException, InvocationTargetException, ExecutionException {
+    CoreException, PgCodekeeperUIException, InvocationTargetException {
         boolean isMsSql = OpenProjectUtils.checkMsSql(proj.getProject());
 
         if (dbinfo.isMsSql() != isMsSql) {

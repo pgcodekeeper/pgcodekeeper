@@ -33,10 +33,9 @@ public class PgUIDumpLoader extends PgDumpLoader {
 
     private final IFile file;
 
-    public PgUIDumpLoader(IFile ifile, PgDiffArguments args, IProgressMonitor monitor,
-            int monitoringLevel) throws CoreException {
-        super(ifile.getContents(), ifile.getLocation().toOSString(), args, monitor,
-                monitoringLevel);
+    public PgUIDumpLoader(IFile ifile, PgDiffArguments args, IProgressMonitor monitor, int monitoringLevel)
+            throws CoreException {
+        super(ifile.getContents(), ifile.getLocation().toOSString(), args, monitor, monitoringLevel);
         file = ifile;
     }
 
@@ -44,7 +43,8 @@ public class PgUIDumpLoader extends PgDumpLoader {
      * This constructor sets the monitoring level to the default of 1.
      * @throws CoreException
      */
-    public PgUIDumpLoader(IFile ifile, PgDiffArguments args, IProgressMonitor monitor) throws CoreException {
+    public PgUIDumpLoader(IFile ifile, PgDiffArguments args, IProgressMonitor monitor)
+            throws CoreException {
         this(ifile, args, monitor, 1);
     }
 
