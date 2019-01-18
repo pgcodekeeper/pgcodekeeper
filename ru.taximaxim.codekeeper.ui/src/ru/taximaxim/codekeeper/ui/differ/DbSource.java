@@ -358,8 +358,7 @@ class DbSourceDb extends DbSource {
             pm.newChild(1).subTask(Messages.dbSource_loading_dump);
 
             try (PgDumpLoader loader = new PgDumpLoader(dump,
-                    getPgDiffArgs(encoding, forceUnixNewlines, false),
-                    monitor)) {
+                    getPgDiffArgs(encoding, forceUnixNewlines, false), monitor)) {
                 PgDatabase database = loader.load();
                 errors = loader.getErrors();
                 return database;

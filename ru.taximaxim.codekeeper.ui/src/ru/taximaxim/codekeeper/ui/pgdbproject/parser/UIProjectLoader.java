@@ -2,10 +2,12 @@ package ru.taximaxim.codekeeper.ui.pgdbproject.parser;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 
 import org.eclipse.core.resources.IContainer;
@@ -29,6 +31,8 @@ import cz.startnet.utils.pgdiff.loader.FullAnalyze;
 import cz.startnet.utils.pgdiff.loader.LibraryLoader;
 import cz.startnet.utils.pgdiff.loader.ProjectLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -46,6 +50,7 @@ public class UIProjectLoader extends ProjectLoader {
 
     private final IProject iProject;
     private final List<StatementBodyContainer> statementBodies;
+    private final Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
 
     public UIProjectLoader(IProgressMonitor monitor, List<StatementBodyContainer> statementBodies) {
         this(null, null, monitor, statementBodies, null);
@@ -68,6 +73,8 @@ public class UIProjectLoader extends ProjectLoader {
         PgDatabase db = new PgDatabase();
         db.setArguments(arguments);
         loadPgStructure(iProject, db);
+        AntlrParser.finishAntlr(antlrTasks);
+
         FullAnalyze.fullAnalyze(db, errors);
         return db;
     }
@@ -143,7 +150,7 @@ public class UIProjectLoader extends ProjectLoader {
             if (isOverrideMode) {
                 loader.setOverridesMap(overrides);
             }
-            loader.loadFile(db);
+            loader.loadFile(db, antlrTasks);
             if (statementBodies != null) {
                 statementBodies.addAll(loader.getStatementBodyReferences());
             }
@@ -157,7 +164,9 @@ public class UIProjectLoader extends ProjectLoader {
     public PgDatabase buildFiles(Collection<IFile> files, boolean isMsSql)
             throws InterruptedException, IOException, CoreException {
         SubMonitor mon = SubMonitor.convert(monitor, files.size());
-        return isMsSql ? buildMsFiles(files, mon) : buildPgFiles(files, mon);
+        PgDatabase d = isMsSql ? buildMsFiles(files, mon) : buildPgFiles(files, mon);
+        AntlrParser.finishAntlr(antlrTasks);
+        return d;
     }
 
     private PgDatabase buildMsFiles(Collection<IFile> files, SubMonitor mon)
@@ -275,6 +284,7 @@ public class UIProjectLoader extends ProjectLoader {
         } else {
             loadPgStructure(iProject, db);
         }
+        AntlrParser.finishAntlr(antlrTasks);
 
         loadLibraries(db, arguments);
 
@@ -288,6 +298,7 @@ public class UIProjectLoader extends ProjectLoader {
                 } else {
                     loadPgStructure(privs, db);
                 }
+                AntlrParser.finishAntlr(antlrTasks);
                 replaceOverrides();
             } finally {
                 isOverrideMode = false;

@@ -19,6 +19,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.IgnoreListParser.Rule_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.IgnoreListParser.Rule_restContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.IgnoreListParser.Show_ruleContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.IgnoreListParser.WhiteContext;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
@@ -46,7 +47,7 @@ public class IgnoreParser {
 
     public IgnoreParser parse(InputStream stream, String parsedObjectName) throws IOException {
         IgnoreListParser parser = AntlrParser.makeBasicParser(
-                IgnoreListParser.class, stream, "UTF-8", parsedObjectName);
+                IgnoreListParser.class, stream, ApgdiffConsts.UTF_8, parsedObjectName);
         try {
             parse(parser);
         } catch (Exception ex) {

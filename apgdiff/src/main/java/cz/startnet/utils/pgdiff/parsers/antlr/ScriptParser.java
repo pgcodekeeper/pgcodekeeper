@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.StatementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.BatchContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.St_clauseContext;
@@ -25,9 +26,15 @@ public class ScriptParser {
 
     private List<List<String>> parseMs(String script) {
         List<List<String>> list = new ArrayList<>();
-        TSQLParser parser = AntlrParser.makeBasicParser(TSQLParser.class, script, name, errors);
-        List<BatchContext> batches = parser.tsql_file().batch();
-        CommonTokenStream stream = (CommonTokenStream) parser.getInputStream();
+
+        TSQLParser[] parser = new TSQLParser[1];
+        List<BatchContext> batches = AntlrParser.parseSqlString(TSQLParser.class,
+                p -> {
+                    parser[0] = p;
+                    return p.tsql_file();
+                }, script, name, errors)
+                .batch();
+        CommonTokenStream stream = (CommonTokenStream) parser[0].getInputStream();
 
         for (BatchContext batch : batches) {
             List<String> l = new ArrayList<>();
@@ -46,12 +53,11 @@ public class ScriptParser {
     }
 
     private List<List<String>> parsePg(String script) {
-        List<StatementContext> statements = AntlrParser.makeBasicParser(SQLParser.class,
-                script, name, errors).sql().statement();
+        SqlContext sql = AntlrParser.parseSqlString(
+                SQLParser.class, SQLParser::sql, script, name, errors);
 
         List<String> l = new ArrayList<>();
-
-        for (StatementContext st : statements) {
+        for (StatementContext st : sql.statement()) {
             l.add(ParserAbstract.getFullCtxText(st));
         }
 
