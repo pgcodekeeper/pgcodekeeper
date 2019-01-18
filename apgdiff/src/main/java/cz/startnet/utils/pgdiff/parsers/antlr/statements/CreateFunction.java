@@ -94,12 +94,12 @@ public class CreateFunction extends ParserAbstract {
                 function.setBody(db.getArguments(), getFullCtxText(funcDefinition));
 
                 // TODO add function definition parsing
-                if (funcDefinition.character_string().size() == 1) {
-                    StringBuilder funcDefBetweenDollar = new StringBuilder();
-                    funcDefinition.character_string(0).Text_between_Dollar()
-                    .forEach(n -> funcDefBetweenDollar.append(n.getText()));
-                    parseFunctionDefinition(function, funcDefBetweenDollar.toString().trim());
-                }
+                // if (funcDefinition.character_string().size() == 1) {
+                //     StringBuilder funcDefBetweenDollar = new StringBuilder();
+                //     funcDefinition.character_string(0).Text_between_Dollar()
+                //     .forEach(n -> funcDefBetweenDollar.append(n.getText()));
+                //     parseFunctionDefinition(function, funcDefBetweenDollar.toString().trim());
+                // }
             } else if (action.TRANSFORM() != null) {
                 for (Transform_for_typeContext transform : action.transform_for_type()) {
                     function.addTransform(ParserAbstract.getFullCtxText(transform.type_name));

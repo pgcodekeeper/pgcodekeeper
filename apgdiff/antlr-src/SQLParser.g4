@@ -2217,7 +2217,7 @@ date_time_function
 
 string_value_function
   : TRIM LEFT_PAREN (LEADING | TRAILING | BOTH)? (chars=vex? FROM str=vex | FROM? str=vex (COMMA chars=vex)?) RIGHT_PAREN
-  | SUBSTRING LEFT_PAREN vex (FROM vex)? (FOR vex)? RIGHT_PAREN
+  | SUBSTRING LEFT_PAREN vex (COMMA vex)* (FROM vex)? (FOR vex)? RIGHT_PAREN
   | POSITION LEFT_PAREN vex_b IN vex RIGHT_PAREN
   | OVERLAY LEFT_PAREN vex PLACING vex FROM vex (FOR vex)? RIGHT_PAREN
   ;
