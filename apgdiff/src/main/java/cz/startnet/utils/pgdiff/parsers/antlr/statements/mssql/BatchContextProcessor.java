@@ -15,7 +15,7 @@ import cz.startnet.utils.pgdiff.schema.SourceStatement;
 public abstract class BatchContextProcessor extends ParserAbstract {
 
     private final Batch_statementContext batchCtx;
-    private final CommonTokenStream stream;
+    protected final CommonTokenStream stream;
 
     public BatchContextProcessor(PgDatabase db, Batch_statementContext batchCtx,
             CommonTokenStream stream) {
