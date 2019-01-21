@@ -26,15 +26,15 @@ public class ExtensionsReader implements PgCatalogStrings {
         loader.setCurrentOperation("extensions query");
         String query = JdbcQueries.QUERY_EXTENSIONS.getQuery();
 
-        List<ObjectTimestamp> objects = loader.getTimestampEqualObjects();
+        List<ObjectTimestamp> objects = loader.getTimestampOldObjects();
         if (objects != null && !objects.isEmpty()) {
-            PgDatabase projDb = loader.getTimestampProjDb();
+            PgDatabase snapshot = loader.getTimestampSnapshot();
             StringBuilder sb = new StringBuilder();
 
             for (ObjectTimestamp obj : objects) {
                 if (obj.getType() == DbObjType.EXTENSION) {
                     sb.append(obj.getObjId()).append(',');
-                    db.addExtension((PgExtension)obj.copyStatement(projDb, loader));
+                    db.addExtension((PgExtension) obj.copyStatement(snapshot, loader));
                 }
             }
             if (sb.length() > 0) {

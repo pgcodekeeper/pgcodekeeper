@@ -35,9 +35,9 @@ public abstract class JdbcReader implements PgCatalogStrings {
     public void read() throws SQLException, InterruptedException, XmlReaderException {
         String query = queries.makeQuery(loader.version);
 
-        List<ObjectTimestamp> objects = loader.getTimestampEqualObjects();
+        List<ObjectTimestamp> objects = loader.getTimestampOldObjects();
         if (objects != null && !objects.isEmpty()) {
-            PgDatabase projDb = loader.getTimestampProjDb();
+            PgDatabase projDb = loader.getTimestampSnapshot();
 
             StringBuilder sb = new StringBuilder();
 

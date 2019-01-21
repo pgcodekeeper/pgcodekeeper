@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -12,6 +14,7 @@ import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -162,14 +165,6 @@ public abstract class DbSource {
      */
     public static DbSource fromDbObject(DbSource dbSource) {
         return fromDbObject(dbSource.getDbObject(), dbSource.getOrigin());
-    }
-
-    public static DbSource fromDbTimestamp(DbInfo dbInfo, boolean forceUnixNewlines, String charset,
-            String timezone, PgDatabase dbSrc, String extSchema) {
-        return new DbSourceTimestamp(new JdbcConnector(dbInfo.getDbHost(), dbInfo.getDbPort(),
-                dbInfo.getDbUser(), dbInfo.getDbPass(), dbInfo.getDbName(), dbInfo.getProperties(),
-                dbInfo.isReadOnly(), timezone), dbSrc, extSchema, dbInfo.getDbName(), charset,
-                forceUnixNewlines);
     }
 }
 
@@ -405,46 +400,9 @@ class DbSourceJdbc extends DbSource {
         }
 
         JdbcLoader loader = new JdbcLoader(jdbcConnector, args, monitor);
-        PgDatabase database = loader.getDbFromJdbc();
-        errors = loader.getErrors();
-        return database;
-    }
-}
-
-class DbSourceTimestamp extends DbSource {
-
-    private final JdbcConnector jdbcConnector;
-    private final String dbName;
-    private final boolean forceUnixNewlines;
-    private final String extSchema;
-    private final PgDatabase dbSrc;
-    private final String charset;
-
-    @Override
-    public String getDbName() {
-        return dbName;
-    }
-
-    DbSourceTimestamp(JdbcConnector jdbcConnector, PgDatabase dbSrc,
-            String extSchema, String dbName, String charset,
-            boolean forceUnixNewlines) {
-        super(dbName);
-        this.jdbcConnector = jdbcConnector;
-        this.dbSrc = dbSrc;
-        this.extSchema = extSchema;
-        this.dbName = dbName;
-        this.charset = charset;
-        this.forceUnixNewlines = forceUnixNewlines;
-    }
-
-    @Override
-    protected PgDatabase loadInternal(SubMonitor monitor)
-            throws IOException, InterruptedException {
-        monitor.subTask(Messages.reading_db_from_jdbc);
-        PgDiffArguments args = getPgDiffArgs(charset, forceUnixNewlines, false);
-        JdbcLoader loader = new JdbcLoader(jdbcConnector, args, monitor);
-        loader.setTimestampParams(dbSrc, extSchema);
-        PgDatabase database = loader.getDbFromJdbc();
+        Path snapshotFolder = Paths.get(Platform.getStateLocation(
+                Activator.getContext().getBundle()).toString());
+        PgDatabase database = loader.getDbFromJdbc(snapshotFolder);
         errors = loader.getErrors();
         return database;
     }

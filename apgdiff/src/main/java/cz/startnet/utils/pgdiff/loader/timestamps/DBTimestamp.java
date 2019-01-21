@@ -3,7 +3,6 @@ package cz.startnet.utils.pgdiff.loader.timestamps;
 import java.io.Serializable;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.hashers.ShaHasher;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
@@ -199,23 +199,22 @@ public class DBTimestamp implements Serializable {
     }
 
     /**
-     * Searches equals objects in project timestamps and given remote database timestamps.
+     * Searches objects that older that given date.
      *
-     * @param dbTime - filled remote database timestamp
+     * @param snapshotDate - date of snapshot
      * @return equals objects
      */
-    public List<ObjectTimestamp> searchEqualsObjects(DBTimestamp dbTime) {
-        List<ObjectTimestamp> equalsObjects = new ArrayList<>();
+    public List<ObjectTimestamp> getOldObjects(Instant snapshotDate) {
+        return objects.values().stream()
+                .filter(obj -> obj.getTime().compareTo(snapshotDate) < 1)
+                .collect(Collectors.toList());
+    }
 
-        for (ObjectTimestamp pObj : objects.values()) {
-            GenericColumn gc = pObj.getObject();
-            ObjectTimestamp rObj = dbTime.objects.get(gc);
-            if (rObj != null && rObj.getTime().equals(pObj.getTime())) {
-                equalsObjects.add(rObj.copyNewHash(pObj.getHash()));
-            }
-        }
-
-        return equalsObjects;
+    public Instant getLastDate() {
+        return objects.values().stream()
+                .map(ObjectTimestamp::getTime)
+                .max(Instant::compareTo)
+                .orElse(null);
     }
 
     /**

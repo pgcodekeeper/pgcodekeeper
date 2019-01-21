@@ -5,8 +5,10 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -123,12 +125,12 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         errors.add(getCurrentLocation() + ' ' + message);
     }
 
-    public List<ObjectTimestamp> getTimestampEqualObjects() {
-        return timestampParams.equalObjects;
+    public List<ObjectTimestamp> getTimestampOldObjects() {
+        return timestampParams.oldObjects;
     }
 
-    public PgDatabase getTimestampProjDb() {
-        return timestampParams.projDB;
+    public PgDatabase getTimestampSnapshot() {
+        return timestampParams.snapshot;
     }
 
     public String getExtensionSchema() {
@@ -414,6 +416,24 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         }
     }
 
+    protected void queryCheckExtension() throws SQLException, InterruptedException {
+        setCurrentOperation("check pg_dbo_timestamp extension");
+        try (ResultSet res = runner.runScript(statement, JdbcQueries.QUERY_CHECK_TIMESTAMPS)) {
+            while (res.next()) {
+                String version = res.getString("extversion");
+                if (!version.equals(ApgdiffConsts.EXTENSION_VERSION)) {
+                    addError("old version of extension is used: " +
+                            version + ", current version: " + ApgdiffConsts.EXTENSION_VERSION);
+                } else if (res.getBoolean("disabled")) {
+                    addError("event trigger is disabled");
+                } else {
+                    timestampParams.extensionSchema = res.getString("nspname");
+                }
+            }
+        }
+    }
+
+
     protected <T> void submitAntlrTask(String sql,
             Function<SQLParser, T> parserCtxReader, Consumer<T> finalizer) {
         submitAntlrTask(sql, parserCtxReader, finalizer, SQLParser.class);
@@ -444,17 +464,26 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     }
 
     protected static class TimestampParam {
-        private List<ObjectTimestamp> equalObjects;
-        private PgDatabase projDB;
+        private List<ObjectTimestamp> oldObjects;
+        private PgDatabase snapshot;
         private String extensionSchema;
+        private Instant lastDate;
 
-        public void setTimeParams(PgDatabase projDB, String extensionSchema) {
-            this.projDB = projDB;
-            this.extensionSchema = extensionSchema;
+        public void setSnapshot(PgDatabase snapshot) {
+            this.snapshot = snapshot;
         }
 
-        public void fillEqualObjects(DBTimestamp dbTime) {
-            equalObjects = projDB.getDbTimestamp().searchEqualsObjects(dbTime);
+        public void fillOldObjects(DBTimestamp dbTime, Instant snapshotDate) {
+            if (snapshotDate == null) {
+                oldObjects = Collections.emptyList();
+            } else {
+                oldObjects = dbTime.getOldObjects(snapshotDate);
+            }
+            lastDate = dbTime.getLastDate();
+        }
+
+        public Instant getLastDate() {
+            return lastDate;
         }
     }
 }
