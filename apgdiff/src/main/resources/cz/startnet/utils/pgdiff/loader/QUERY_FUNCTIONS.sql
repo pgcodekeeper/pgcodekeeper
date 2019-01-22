@@ -14,17 +14,6 @@ SELECT  -- common part (functions/procedures/aggregates)
         p.oid::bigint,
         p.proname,
         p.proowner::bigint,
-        p.prorettype::bigint,
-        p.proallargtypes::bigint[],
-        p.proargmodes,
-        p.proargnames,
-        p.proacl::text AS aclarray,
-        d.description AS comment,
-        p.proretset,
-        array(select pg_catalog.unnest(p.proargtypes))::bigint[] as argtypes,
-        p.pronamespace AS schema_oid,
-        
-        -- for functions/procedures
         l.lanname AS lang_name,
         p.prosrc,
         p.provolatile,
@@ -35,7 +24,16 @@ SELECT  -- common part (functions/procedures/aggregates)
         p.prorows::real,
         p.proconfig,
         p.probin,
+        p.prorettype::bigint,
+        p.proallargtypes::bigint[],
+        p.proargmodes,
+        p.proargnames,
+        p.proacl::text AS aclarray,
+        d.description AS comment,
+        p.proretset,
+        array(select pg_catalog.unnest(p.proargtypes))::bigint[] as argtypes,
         pg_catalog.pg_get_expr(p.proargdefaults, 0) AS default_values_as_string,
+        p.pronamespace AS schema_oid,
         
         -- for aggregates
         sfunc.proname AS sfunc,
@@ -71,8 +69,6 @@ FROM pg_catalog.pg_proc p
 
 -- common part (functions/procedures/aggregates)
 LEFT JOIN pg_catalog.pg_description d ON d.objoid = p.oid
-
--- for functions/procedures
 LEFT JOIN pg_catalog.pg_language l ON l.oid = p.prolang
 
 -- for aggregates
