@@ -6,16 +6,16 @@ import java.util.Map;
 import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.loader.jdbc.JdbcLoaderBase;
+import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.AbstractTrigger;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -116,7 +116,13 @@ public class ObjectTimestamp implements Serializable {
 
     public void addRuleCopy(PgDatabase db, AbstractSchema schema, JdbcLoaderBase loader) {
         PgStatement base = object.getStatement(db);
+        if (base == null) {
+            return;
+        }
         PgRuleContainer parent = schema.getRuleContainer(base.getParent().getName());
+        if (parent == null) {
+            return;
+        }
         PgStatement copy = base.shallowCopy();
         fillPrivileges(copy, loader, schema.getName());
         parent.addRule((PgRule)copy);
@@ -124,7 +130,13 @@ public class ObjectTimestamp implements Serializable {
 
     public void addTriggerCopy(PgDatabase db, AbstractSchema schema, JdbcLoaderBase loader) {
         PgStatement base = object.getStatement(db);
+        if (base == null) {
+            return;
+        }
         PgTriggerContainer parent = schema.getTriggerContainer(base.getParent().getName());
+        if (parent == null) {
+            return;
+        }
         PgStatement copy = base.shallowCopy();
         fillPrivileges(copy, loader, schema.getName());
         parent.addTrigger((AbstractTrigger)copy);
@@ -132,6 +144,9 @@ public class ObjectTimestamp implements Serializable {
 
     public PgStatement copyStatement(PgDatabase db, JdbcLoaderBase loader) {
         PgStatement stmt = object.getStatement(db);
+        if (stmt == null) {
+            return null;
+        }
         PgStatement copy = stmt.shallowCopy();
         String schemaName = null;
         if (stmt instanceof PgStatementWithSearchPath) {
@@ -156,7 +171,7 @@ public class ObjectTimestamp implements Serializable {
                     loader.setPrivileges(c, table, colAcls.get(c.getName()), schemaName);
                 }
             } else if (DbObjType.VIEW == type) {
-                colAcls.forEach((colName, colAcl) -> loader.setPrivileges(copy, colAcl, colName));
+                colAcls.forEach((colName, colAcl) -> loader.setPrivileges(copy, colAcl, colName, schemaName));
             }
         }
     }

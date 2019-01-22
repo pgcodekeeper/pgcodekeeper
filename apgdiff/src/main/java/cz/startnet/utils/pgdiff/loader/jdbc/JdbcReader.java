@@ -3,26 +3,24 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.time.Instant;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.loader.JdbcQuery;
 import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
-import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.AbstractSequence;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
-import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgFtsConfiguration;
-import cz.startnet.utils.pgdiff.schema.PgFtsDictionary;
-import cz.startnet.utils.pgdiff.schema.PgFtsParser;
-import cz.startnet.utils.pgdiff.schema.PgFtsTemplate;
-import cz.startnet.utils.pgdiff.schema.PgOperator;
-import cz.startnet.utils.pgdiff.schema.PgType;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class JdbcReader implements PgCatalogStrings {
+
+    private static final String EXTENSION_QUERY = "SELECT q.* FROM ({0}) q\n" +
+            "LEFT JOIN {1}.dbots_event_data time ON q.oid = time.objid\n" +
+            "WHERE time.last_modified IS NULL OR time.last_modified > \''{2}\'';";
 
     protected final JdbcQuery queries;
     protected final JdbcLoaderBase loader;
@@ -39,16 +37,11 @@ public abstract class JdbcReader implements PgCatalogStrings {
         if (objects != null && !objects.isEmpty()) {
             PgDatabase projDb = loader.getTimestampSnapshot();
 
-            StringBuilder sb = new StringBuilder();
-
             for (AbstractSchema schema : loader.schemaIds.values()) {
-                fillOldObjects(objects, schema, projDb, sb);
+                fillOldObjects(objects, schema, projDb);
             }
 
-            if (sb.length() > 0) {
-                sb.setLength(sb.length() - 1);
-                query = excludeObjects(query, sb.toString());
-            }
+            query = excludeObjects(query, loader.getExtensionSchema(), loader.getTimestampLastDate());
         }
 
         loader.setCurrentOperation(getClass().getSimpleName() + " query");
@@ -65,7 +58,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
         }
     }
 
-    private void fillOldObjects(List<ObjectTimestamp> objects, AbstractSchema sc, PgDatabase projDb, StringBuilder sbOids) {
+    private void fillOldObjects(List<ObjectTimestamp> objects, AbstractSchema sc, PgDatabase projDb) {
         DbObjType type = getType();
         DbObjType local = type == DbObjType.CONSTRAINT ? DbObjType.TABLE : type;
 
@@ -73,68 +66,48 @@ public abstract class JdbcReader implements PgCatalogStrings {
             if (obj.getSchema().equals(sc.getName()) && obj.getType() == local) {
                 switch (type) {
                 case VIEW:
-                    sc.addView((AbstractView) obj.copyStatement(projDb, loader));
-                    sbOids.append(obj.getObjId()).append(',');
-                    break;
                 case TABLE:
-                    sc.addTable((AbstractTable) obj.copyStatement(projDb, loader));
-                    sbOids.append(obj.getObjId()).append(',');
+                case FUNCTION:
+                case PROCEDURE:
+                case TYPE:
+                case SEQUENCE:
+                case FTS_PARSER:
+                case FTS_TEMPLATE:
+                case FTS_DICTIONARY:
+                case FTS_CONFIGURATION:
+                case OPERATOR:
+                    PgStatement st = obj.copyStatement(projDb, loader);
+                    if (st != null) {
+                        sc.addChild(st);
+                    } else {
+                        Log.log(Log.LOG_INFO,
+                                "Snapshot not contains object: " + obj.getObject());
+                    }
                     break;
                 case RULE:
                     obj.addRuleCopy(projDb, sc, loader);
-                    sbOids.append(obj.getObjId()).append(',');
                     break;
                 case TRIGGER:
                     obj.addTriggerCopy(projDb, sc, loader);
-                    sbOids.append(obj.getObjId()).append(',');
                     break;
                 case INDEX:
                     AbstractSchema schema = projDb.getSchema(sc.getName());
                     AbstractTable t;
                     if (schema != null && (t = schema.getTableByIndex(obj.getColumn())) != null) {
-                        sc.getTable(t.getName()).addIndex(t.getIndex(obj.getColumn()).shallowCopy());
+                        AbstractTable tab = sc.getTable(t.getName());
+                        if (tab != null) {
+                            tab.addIndex(t.getIndex(obj.getColumn()).shallowCopy());
+                        }
                     }
-                    sbOids.append(obj.getObjId()).append(',');
-                    break;
-                case FUNCTION:
-                    sc.addFunction((AbstractFunction) obj.copyStatement(projDb, loader));
-                    sbOids.append(obj.getObjId()).append(',');
                     break;
                 case CONSTRAINT:
                     AbstractTable table = (AbstractTable) obj.getObject().getStatement(projDb);
-                    AbstractTable newTable = sc.getTable(table.getName());
-                    if (newTable.getConstraints().isEmpty()) {
-                        table.getConstraints().forEach(con -> newTable.addConstraint(con.shallowCopy()));
+                    if (table != null) {
+                        AbstractTable newTable = sc.getTable(table.getName());
+                        if (newTable.getConstraints().isEmpty()) {
+                            table.getConstraints().forEach(con -> newTable.addConstraint(con.shallowCopy()));
+                        }
                     }
-                    sbOids.append(obj.getObjId()).append(',');
-                    break;
-                case TYPE:
-                    sc.addType((PgType) obj.copyStatement(projDb, loader));
-                    sbOids.append(obj.getObjId()).append(',');
-                    break;
-                case SEQUENCE:
-                    sc.addSequence((AbstractSequence) obj.copyStatement(projDb, loader));
-                    sbOids.append(obj.getObjId()).append(',');
-                    break;
-                case FTS_PARSER:
-                    sc.addFtsParser((PgFtsParser) obj.copyStatement(projDb, loader));
-                    sbOids.append(obj.getObjId()).append(',');
-                    break;
-                case FTS_TEMPLATE:
-                    sc.addFtsTemplate((PgFtsTemplate) obj.copyStatement(projDb, loader));
-                    sbOids.append(obj.getObjId()).append(',');
-                    break;
-                case FTS_DICTIONARY:
-                    sc.addFtsDictionary((PgFtsDictionary) obj.copyStatement(projDb, loader));
-                    sbOids.append(obj.getObjId()).append(',');
-                    break;
-                case FTS_CONFIGURATION:
-                    sc.addFtsConfiguration((PgFtsConfiguration) obj.copyStatement(projDb, loader));
-                    sbOids.append(obj.getObjId()).append(',');
-                    break;
-                case OPERATOR:
-                    sc.addOperator((PgOperator) obj.copyStatement(projDb, loader));
-                    sbOids.append(obj.getObjId()).append(',');
                     break;
                 default:
                     break;
@@ -176,19 +149,15 @@ public abstract class JdbcReader implements PgCatalogStrings {
     }
 
     /**
-     * Exclude oids from query
+     * Join extension to query
      *
-     * @param base - base query
-     * @param oids - oids separated by commas
+     * @param base base query
+     * @param schema extension schema
+     * @param date snapshot date
      * @return new query
      */
-    public static String excludeObjects(String base, String oids) {
-        StringBuilder sb = new StringBuilder("SELECT * FROM (");
-        sb.append(base);
-        sb.append(") q WHERE NOT (q.oid = ANY (ARRAY [");
-        sb.append(oids);
-        sb.append("]));");
-        return sb.toString();
+    public static String excludeObjects(String base, String schema, Instant date) {
+        return MessageFormat.format(EXTENSION_QUERY, base, schema, date);
     }
 
     protected abstract void processResult(ResultSet result, AbstractSchema schema)

@@ -133,6 +133,10 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         return timestampParams.snapshot;
     }
 
+    public Instant getTimestampLastDate() {
+        return timestampParams.lastDate;
+    }
+
     public String getExtensionSchema() {
         return timestampParams.extensionSchema;
     }
@@ -480,10 +484,6 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
                 oldObjects = dbTime.getOldObjects(snapshotDate);
             }
             lastDate = dbTime.getLastDate();
-        }
-
-        public Instant getLastDate() {
-            return lastDate;
         }
     }
 }

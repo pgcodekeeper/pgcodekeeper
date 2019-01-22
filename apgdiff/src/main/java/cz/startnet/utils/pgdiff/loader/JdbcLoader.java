@@ -84,13 +84,10 @@ public class JdbcLoader extends JdbcLoaderBase {
             setupMonitorWork();
 
             Path fullPath = null;
-            if (snapshotPath != null) {
+            if (snapshotPath != null && getExtensionSchema() != null) {
                 String name = connector.dbName + ' ' + connector.host + ' ' + connector.port;
                 fullPath = snapshotPath.resolve("timestamps")
                         .resolve(PgDiffUtils.md5(name).substring(0, 10));
-            }
-
-            if (getExtensionSchema() != null) {
                 Instant snapshotDate = TimestampsUtils.getSnapshotDate(fullPath);
                 DBTimestamp dbTime = new TimestampsReader(this).read();
                 timestampParams.setSnapshot(TimestampsUtils.getSnapshot(fullPath));
@@ -134,8 +131,8 @@ public class JdbcLoader extends JdbcLoaderBase {
 
             d.setPostgresVersion(SupportedVersion.valueOf(version));
 
-            if (getExtensionSchema() != null) {
-                TimestampsUtils.writeSnapshot(fullPath, timestampParams.getLastDate(), d);
+            if (getTimestampLastDate() != null) {
+                TimestampsUtils.writeSnapshot(fullPath, getTimestampLastDate(), d);
             }
 
             Log.log(Log.LOG_INFO, "Database object has been successfully queried from JDBC");

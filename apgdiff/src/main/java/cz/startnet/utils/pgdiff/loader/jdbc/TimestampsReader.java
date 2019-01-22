@@ -50,6 +50,9 @@ public class TimestampsReader implements PgCatalogStrings {
         String identity = res.getString("identity");
         String schema = res.getString("schema");
         String name = res.getString("name");
+        if (name != null && name.startsWith("\"")) {
+            name = PgDiffUtils.unquoteQuotedName(name);
+        }
         long objId = res.getLong("objid");
         Instant lastModified = res.getTimestamp("last_modified").toInstant();
         String author = res.getString("ses_user");
