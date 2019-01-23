@@ -272,6 +272,33 @@ public class FunctionsReader extends JdbcReader {
             default :
                 break;
             }
+
+            String combineFuncName = res.getString("combinefunc");
+            if (combineFuncName != null) {
+                String combineFuncSchemaName = res.getString("combinefunc_nsp");
+                aggregate.setCombineFunc(getProcessedName(combineFuncSchemaName, combineFuncName));
+                addFuncAsDepcy(aggregate, combineFuncSchemaName,
+                        CreateAggregate.getParamFuncSignature(aggregate, combineFuncName,
+                                PgAggregate.COMBINEFUNC));
+            }
+
+            String serialFuncName = res.getString("serialfunc");
+            if (serialFuncName != null) {
+                String serialFuncSchemaName = res.getString("serialfunc_nsp");
+                aggregate.setSerialFunc(getProcessedName(serialFuncSchemaName, serialFuncName));
+                addFuncAsDepcy(aggregate, serialFuncSchemaName,
+                        CreateAggregate.getParamFuncSignature(aggregate, serialFuncName,
+                                PgAggregate.SERIALFUNC));
+            }
+
+            String deserialFuncName = res.getString("deserialfunc");
+            if (deserialFuncName != null) {
+                String deserialFuncSchemaName = res.getString("deserialfunc_nsp");
+                aggregate.setDeserialFunc(getProcessedName(deserialFuncSchemaName, deserialFuncName));
+                addFuncAsDepcy(aggregate, deserialFuncSchemaName,
+                        CreateAggregate.getParamFuncSignature(aggregate, deserialFuncName,
+                                PgAggregate.DESERIALFUNC));
+            }
         }
 
         // since 11 PostgreSQL
@@ -308,33 +335,6 @@ public class FunctionsReader extends JdbcReader {
         }
 
         aggregate.setFinalFuncExtra(res.getBoolean("is_finalfunc_extra"));
-
-        String combineFuncName = res.getString("combinefunc");
-        if (combineFuncName != null) {
-            String combineFuncSchemaName = res.getString("combinefunc_nsp");
-            aggregate.setCombineFunc(getProcessedName(combineFuncSchemaName, combineFuncName));
-            addFuncAsDepcy(aggregate, combineFuncSchemaName,
-                    CreateAggregate.getParamFuncSignature(aggregate, combineFuncName,
-                            PgAggregate.COMBINEFUNC));
-        }
-
-        String serialfanc = res.getString("serialfanc");
-        if (serialfanc != null) {
-            String serialFuncSchemaName = res.getString("serialfanc_nsp");
-            aggregate.setSerialFunc(getProcessedName(serialFuncSchemaName, serialfanc));
-            addFuncAsDepcy(aggregate, serialFuncSchemaName,
-                    CreateAggregate.getParamFuncSignature(aggregate, serialfanc,
-                            PgAggregate.SERIALFUNC));
-        }
-
-        String deserialfunc = res.getString("deserialfunc");
-        if (deserialfunc != null) {
-            String deserialFuncSchemaName = res.getString("deserialfunc_nsp");
-            aggregate.setDeserialFunc(getProcessedName(deserialFuncSchemaName, deserialfunc));
-            addFuncAsDepcy(aggregate, deserialFuncSchemaName,
-                    CreateAggregate.getParamFuncSignature(aggregate, deserialfunc,
-                            PgAggregate.DESERIALFUNC));
-        }
 
         String initCond = res.getString("initcond");
         if (initCond != null) {

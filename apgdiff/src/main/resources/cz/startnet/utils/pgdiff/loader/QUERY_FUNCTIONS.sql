@@ -43,12 +43,6 @@ SELECT  -- common part (functions/procedures/aggregates)
         finalfn.proname AS finalfunc,
         finalfn_n.nspname AS finalfunc_nsp,
         a.aggfinalextra AS is_finalfunc_extra,
-        combinefn.proname AS combinefunc,
-        combinefn_n.nspname AS combinefunc_nsp,
-        serialfn.proname AS serialfanc,
-        serialfn_n.nspname AS serialfanc_nsp,
-        deserialfn.proname AS deserialfunc,
-        deserialfn_n.nspname AS deserialfunc_nsp,
         a.agginitval AS initcond,
         msfunc.proname AS msfunc,
         msfunc_n.nspname AS msfunc_nsp,
@@ -77,12 +71,6 @@ LEFT JOIN pg_catalog.pg_proc sfunc ON a.aggtransfn = sfunc.oid
 LEFT JOIN pg_catalog.pg_namespace sfunc_n ON sfunc.pronamespace = sfunc_n.oid
 LEFT JOIN pg_catalog.pg_proc finalfn ON a.aggfinalfn = finalfn.oid
 LEFT JOIN pg_catalog.pg_namespace finalfn_n ON finalfn.pronamespace = finalfn_n.oid
-LEFT JOIN pg_catalog.pg_proc combinefn ON a.aggcombinefn = combinefn.oid
-LEFT JOIN pg_catalog.pg_namespace combinefn_n ON combinefn.pronamespace = combinefn_n.oid
-LEFT JOIN pg_catalog.pg_proc serialfn ON a.aggserialfn = serialfn.oid
-LEFT JOIN pg_catalog.pg_namespace serialfn_n ON serialfn.pronamespace = serialfn_n.oid
-LEFT JOIN pg_catalog.pg_proc deserialfn ON a.aggdeserialfn = deserialfn.oid
-LEFT JOIN pg_catalog.pg_namespace deserialfn_n ON deserialfn.pronamespace = deserialfn_n.oid
 LEFT JOIN pg_catalog.pg_proc msfunc ON a.aggmtransfn = msfunc.oid
 LEFT JOIN pg_catalog.pg_namespace msfunc_n ON msfunc.pronamespace = msfunc_n.oid
 LEFT JOIN pg_catalog.pg_proc minvfunc ON a.aggminvtransfn = minvfunc.oid
