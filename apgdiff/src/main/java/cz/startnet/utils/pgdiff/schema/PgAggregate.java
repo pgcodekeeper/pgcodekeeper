@@ -32,7 +32,7 @@ public class PgAggregate extends AbstractPgFunction {
     private String baseType;
     private String sFunc;
     private String sType;
-    private long sSpace;
+    private int sSpace;
     private String finalFunc;
     private boolean isFinalFuncExtra;
     private String combineFunc;
@@ -42,7 +42,7 @@ public class PgAggregate extends AbstractPgFunction {
     private String mSFunc;
     private String mInvFunc;
     private String mSType;
-    private long mSSpace;
+    private int mSSpace;
     private String mFinalFunc;
     private boolean isMFinalFuncExtra;
     private String mInitCond;
@@ -325,11 +325,11 @@ public class PgAggregate extends AbstractPgFunction {
         resetHash();
     }
 
-    public long getSSpace() {
+    public int getSSpace() {
         return sSpace;
     }
 
-    public void setSSpace(long sSpace) {
+    public void setSSpace(int sSpace) {
         this.sSpace = sSpace;
         resetHash();
     }
@@ -424,11 +424,11 @@ public class PgAggregate extends AbstractPgFunction {
         resetHash();
     }
 
-    public long getMSSpace() {
+    public int getMSSpace() {
         return mSSpace;
     }
 
-    public void setMSSpace(long mSSpace) {
+    public void setMSSpace(int mSSpace) {
         this.mSSpace = mSSpace;
         resetHash();
     }

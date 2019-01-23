@@ -39,7 +39,7 @@ public class FunctionsReader extends JdbcReader {
         String schemaName = schema.getName();
         String funcName = res.getString("proname");
         AbstractFunction f = res.getBoolean("proisagg") ? getAgg(res, schemaName, funcName)
-                : getFunc(res, schema, schemaName, funcName);
+                : getFunc(res, schema, funcName);
 
         // OWNER
         loader.setOwner(f, res.getLong("proowner"));
@@ -57,30 +57,17 @@ public class FunctionsReader extends JdbcReader {
     }
 
     private AbstractFunction getFunc(ResultSet res, AbstractSchema schema,
-            String schemaName, String funcName) throws SQLException {
+            String funcName) throws SQLException {
         boolean isProc = SupportedVersion.VERSION_11.isLE(loader.version)
                 && (res.getBoolean("proisproc"));
 
-        loader.setCurrentObject(new GenericColumn(schemaName, funcName,
+        loader.setCurrentObject(new GenericColumn(schema.getName(), funcName,
                 isProc ? DbObjType.PROCEDURE : DbObjType.FUNCTION));
 
         AbstractPgFunction f = isProc ? new PgProcedure(funcName) : new PgFunction(funcName);
 
         fillFunction(f, res);
-        StringBuilder returnedTableArguments = fillArguments(f, res);
-
-        if (!isProc) {
-            // RETURN TYPE
-            if (returnedTableArguments.length() != 0) {
-                returnedTableArguments.setLength(returnedTableArguments.length() - 2);
-                f.setReturns("TABLE(" + returnedTableArguments + ")");
-            } else {
-                JdbcType returnType = loader.cachedTypesByOid.get(res.getLong("prorettype"));
-                String retType = returnType.getFullName();
-                f.setReturns(res.getBoolean("proretset") ? "SETOF " + retType : retType);
-                returnType.addTypeDepcy(f);
-            }
-        }
+        fillArguments(f, res);
 
         String defaultValuesAsString = res.getString("default_values_as_string");
         if (defaultValuesAsString != null) {
@@ -258,6 +245,10 @@ public class FunctionsReader extends JdbcReader {
     }
 
     private void fillAggregate(PgAggregate aggregate, ResultSet res) throws SQLException {
+        // 'setDirectCount' must be first at this method, because of using 'directCount' later.
+        aggregate.setDirectCount(AggKinds.NORMAL == aggregate.getKind() ?
+                aggregate.getArguments().size() : res.getInt("aggnumdirectargs"));
+
         // since 9.6 PostgreSQL
         // parallel mode: s - safe, r - restricted, u - unsafe
         if (SupportedVersion.VERSION_9_6.isLE(loader.version)) {
@@ -320,10 +311,7 @@ public class FunctionsReader extends JdbcReader {
                 CreateAggregate.getParamFuncSignature(aggregate, sFuncName,
                         PgAggregate.SFUNC));
 
-        String sspace = res.getString("sspace");
-        if (sspace != null) {
-            aggregate.setSSpace(Long.parseLong(sspace));
-        }
+        aggregate.setSSpace(res.getInt("sspace"));
 
         String finalFuncName = res.getString("finalfunc");
         if (finalFuncName != null) {
@@ -369,10 +357,7 @@ public class FunctionsReader extends JdbcReader {
                             PgAggregate.MINVFUNC));
         }
 
-        String msspace = res.getString("msspace");
-        if (msspace != null) {
-            aggregate.setMSSpace(Long.parseLong(msspace));
-        }
+        aggregate.setMSSpace(res.getInt("msspace"));
 
         String mFinalFuncName = res.getString("mfinalfunc");
         if (mFinalFuncName != null) {
@@ -424,7 +409,7 @@ public class FunctionsReader extends JdbcReader {
         }
     }
 
-    private StringBuilder fillArguments(AbstractPgFunction f, ResultSet res) throws SQLException {
+    private void fillArguments(AbstractPgFunction f, ResultSet res) throws SQLException {
         StringBuilder sb = new StringBuilder();
         String[] argModes = getColArray(res, "proargmodes");
         String[] argNames = getColArray(res, "proargnames");
@@ -468,12 +453,18 @@ public class FunctionsReader extends JdbcReader {
             f.addArgument(a);
         }
 
-        if (f instanceof PgAggregate) {
-            PgAggregate agg = ((PgAggregate) f);
-            agg.setDirectCount(AggKinds.NORMAL == agg.getKind() ?
-                    f.getArguments().size() : res.getInt("aggnumdirectargs"));
+        if (DbObjType.FUNCTION == f.getStatementType()) {
+            // RETURN TYPE
+            if (sb.length() != 0) {
+                sb.setLength(sb.length() - 2);
+                f.setReturns("TABLE(" + sb + ")");
+            } else {
+                JdbcType returnType = loader.cachedTypesByOid.get(res.getLong("prorettype"));
+                String retType = returnType.getFullName();
+                f.setReturns(res.getBoolean("proretset") ? "SETOF " + retType : retType);
+                returnType.addTypeDepcy(f);
+            }
         }
-        return sb;
     }
 
     @Override

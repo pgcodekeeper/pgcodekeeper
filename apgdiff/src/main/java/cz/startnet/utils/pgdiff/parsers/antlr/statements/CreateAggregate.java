@@ -106,7 +106,7 @@ public class CreateAggregate extends ParserAbstract {
 
             for (Aggregate_paramContext paramOpt : params) {
                 if (paramOpt.SSPACE() != null) {
-                    aggregate.setSSpace(Long.parseLong(paramOpt.s_space.getText()));
+                    aggregate.setSSpace(Integer.parseInt(paramOpt.s_space.getText()));
                 } else if (paramOpt.FINALFUNC() != null) {
                     Schema_qualified_nameContext finalFuncCtx = paramOpt.final_func;
                     aggregate.setFinalFunc(finalFuncCtx.getText());
@@ -138,7 +138,7 @@ public class CreateAggregate extends ParserAbstract {
                     aggregate.setMInvFunc(mInvFuncCtx.getText());
                     addFuncAsDepcy(PgAggregate.MINVFUNC, mInvFuncCtx, aggregate, defSchemaName);
                 } else if (paramOpt.MSSPACE() != null) {
-                    aggregate.setMSSpace(Long.parseLong(paramOpt.ms_space.getText()));
+                    aggregate.setMSSpace(Integer.parseInt(paramOpt.ms_space.getText()));
                 } else if (paramOpt.MFINALFUNC() != null) {
                     Schema_qualified_nameContext mFinalFuncCtx = paramOpt.mfinal_func;
                     aggregate.setMFinalFunc(mFinalFuncCtx.getText());
