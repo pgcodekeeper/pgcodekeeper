@@ -88,7 +88,6 @@ import org.eclipse.ui.ISharedImages;
 
 import cz.startnet.utils.pgdiff.libraries.PgLibrary;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
-import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -809,14 +808,6 @@ public class DiffTableViewer extends Composite {
             setLibLocations();
         }
 
-        if (dbRemote != null) {
-            DBTimestamp dbTime = dbRemote.getDbObject().getDbTimestamp();
-            if (dbTime != null) {
-                readDbUsers(dbTime);
-            }
-            showDbUser = dbTime != null;
-        }
-
         viewer.setInput(elements);
         updateColumnsWidth();
 
@@ -875,14 +866,6 @@ public class DiffTableViewer extends Composite {
 
                 v.setLibLocation(Messages.DiffTableViewer_library + name + '\n' + Messages.DiffTableViewer_type + type
                         + (loc == null ? "" : ('\n' + Messages.DiffTableViewer_path + loc))); //$NON-NLS-1$
-            }
-        });
-    }
-
-    private void readDbUsers(DBTimestamp dbTime) {
-        elementInfoMap.forEach((k,v) -> {
-            if (k.getSide() != DiffSide.LEFT) {
-                v.setDbUser(dbTime.getElementAuthor(k));
             }
         });
     }

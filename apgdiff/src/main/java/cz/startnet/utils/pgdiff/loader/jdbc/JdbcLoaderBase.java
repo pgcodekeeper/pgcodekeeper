@@ -8,6 +8,7 @@ import java.sql.Statement;
 import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +28,6 @@ import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
 import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
@@ -125,7 +125,11 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         errors.add(getCurrentLocation() + ' ' + message);
     }
 
-    public List<ObjectTimestamp> getTimestampOldObjects() {
+    public boolean hasTimestampObjects() {
+        return timestampParams.oldObjects != null && !timestampParams.oldObjects.isEmpty();
+    }
+
+    public Collection<ObjectTimestamp> getTimestampOldObjects() {
         return timestampParams.oldObjects;
     }
 
@@ -468,7 +472,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     }
 
     protected static class TimestampParam {
-        private List<ObjectTimestamp> oldObjects;
+        private Collection<ObjectTimestamp> oldObjects;
         private PgDatabase snapshot;
         private String extensionSchema;
         private Instant lastDate;
@@ -477,13 +481,17 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             this.snapshot = snapshot;
         }
 
-        public void fillOldObjects(DBTimestamp dbTime, Instant snapshotDate) {
+        public void fillOldObjects(Collection<ObjectTimestamp> objects, Instant snapshotDate) {
+            lastDate = objects.stream().map(ObjectTimestamp::getTime)
+                    .max(Instant::compareTo).orElse(null);
+
             if (snapshotDate == null) {
                 oldObjects = Collections.emptyList();
             } else {
-                oldObjects = dbTime.getOldObjects(snapshotDate);
+                oldObjects = objects.stream()
+                        .filter(obj -> obj.getTime().compareTo(snapshotDate) < 1)
+                        .collect(Collectors.toList());
             }
-            lastDate = dbTime.getLastDate();
         }
     }
 }

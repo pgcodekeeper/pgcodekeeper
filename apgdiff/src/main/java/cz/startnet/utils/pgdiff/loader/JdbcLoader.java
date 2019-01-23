@@ -5,7 +5,7 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.text.MessageFormat;
-import java.time.Instant;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -31,7 +31,7 @@ import cz.startnet.utils.pgdiff.loader.jdbc.TimestampsReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.TriggersReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.TypesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.ViewsReader;
-import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
+import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.loader.timestamps.TimestampsUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
@@ -88,12 +88,11 @@ public class JdbcLoader extends JdbcLoaderBase {
                 String name = connector.dbName + ' ' + connector.host + ' ' + connector.port;
                 fullPath = snapshotPath.resolve("timestamps")
                         .resolve(PgDiffUtils.md5(name).substring(0, 10));
-                Instant snapshotDate = TimestampsUtils.getSnapshotDate(fullPath);
-                DBTimestamp dbTime = new TimestampsReader(this).read();
                 timestampParams.setSnapshot(TimestampsUtils.getSnapshot(fullPath));
+                Collection<ObjectTimestamp> objects = new TimestampsReader(this).read();
+                // project reader and jdbc reader have antlr tasks
                 finishAntlr();
-                d.setDbTimestamp(dbTime);
-                timestampParams.fillOldObjects(dbTime, snapshotDate);
+                timestampParams.fillOldObjects(objects, TimestampsUtils.getSnapshotDate(fullPath));
             }
 
             new SchemasReader(this, d).read();

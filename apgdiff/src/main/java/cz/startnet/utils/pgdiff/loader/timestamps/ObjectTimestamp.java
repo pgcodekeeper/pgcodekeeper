@@ -17,6 +17,7 @@ import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class ObjectTimestamp implements Serializable {
@@ -145,9 +146,15 @@ public class ObjectTimestamp implements Serializable {
     public PgStatement copyStatement(PgDatabase db, JdbcLoaderBase loader) {
         PgStatement stmt = object.getStatement(db);
         if (stmt == null) {
+            Log.log(Log.LOG_WARNING, "Snapshot not contains object: " + object);
             return null;
         }
         PgStatement copy = stmt.shallowCopy();
+        if (copy instanceof AbstractTable) {
+            ((AbstractTable) stmt).getConstraints().forEach(
+                    con -> ((AbstractTable) copy).addConstraint(con.shallowCopy()));
+        }
+
         String schemaName = null;
         if (stmt instanceof PgStatementWithSearchPath) {
             schemaName = ((PgStatementWithSearchPath)stmt).getContainingSchema().getName();

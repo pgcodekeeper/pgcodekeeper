@@ -5,7 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.Instant;
-import java.util.List;
+import java.util.Collection;
 
 import cz.startnet.utils.pgdiff.loader.JdbcQuery;
 import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
@@ -33,12 +33,15 @@ public abstract class JdbcReader implements PgCatalogStrings {
     public void read() throws SQLException, InterruptedException, XmlReaderException {
         String query = queries.makeQuery(loader.version);
 
-        List<ObjectTimestamp> objects = loader.getTimestampOldObjects();
-        if (objects != null && !objects.isEmpty()) {
-            PgDatabase projDb = loader.getTimestampSnapshot();
+        DbObjType type = getType();
+        Collection<ObjectTimestamp> objects = loader.getTimestampOldObjects();
+        if (objects != null && (!objects.isEmpty() || type == DbObjType.CONSTRAINT)) {
+            if (getType() != DbObjType.CONSTRAINT) {
+                for (AbstractSchema schema : loader.schemaIds.values()) {
+                    fillOldObjects(objects, schema);
+                }
 
-            for (AbstractSchema schema : loader.schemaIds.values()) {
-                fillOldObjects(objects, schema, projDb);
+                objects.removeIf(obj -> obj.getType() == getType());
             }
 
             query = excludeObjects(query, loader.getExtensionSchema(), loader.getTimestampLastDate());
@@ -58,12 +61,12 @@ public abstract class JdbcReader implements PgCatalogStrings {
         }
     }
 
-    private void fillOldObjects(List<ObjectTimestamp> objects, AbstractSchema sc, PgDatabase projDb) {
-        DbObjType type = getType();
-        DbObjType local = type == DbObjType.CONSTRAINT ? DbObjType.TABLE : type;
+    private void fillOldObjects(Collection<ObjectTimestamp> objects, AbstractSchema sc) {
+        PgDatabase projDb = loader.getTimestampSnapshot();
 
+        DbObjType type = getType();
         for (ObjectTimestamp obj: objects) {
-            if (obj.getSchema().equals(sc.getName()) && obj.getType() == local) {
+            if (obj.getSchema().equals(sc.getName()) && obj.getType() == type) {
                 switch (type) {
                 case VIEW:
                 case TABLE:
@@ -79,9 +82,6 @@ public abstract class JdbcReader implements PgCatalogStrings {
                     PgStatement st = obj.copyStatement(projDb, loader);
                     if (st != null) {
                         sc.addChild(st);
-                    } else {
-                        Log.log(Log.LOG_INFO,
-                                "Snapshot not contains object: " + obj.getObject());
                     }
                     break;
                 case RULE:
@@ -97,15 +97,6 @@ public abstract class JdbcReader implements PgCatalogStrings {
                         AbstractTable tab = sc.getTable(t.getName());
                         if (tab != null) {
                             tab.addIndex(t.getIndex(obj.getColumn()).shallowCopy());
-                        }
-                    }
-                    break;
-                case CONSTRAINT:
-                    AbstractTable table = (AbstractTable) obj.getObject().getStatement(projDb);
-                    if (table != null) {
-                        AbstractTable newTable = sc.getTable(table.getName());
-                        if (newTable.getConstraints().isEmpty()) {
-                            table.getConstraints().forEach(con -> newTable.addConstraint(con.shallowCopy()));
                         }
                     }
                     break;

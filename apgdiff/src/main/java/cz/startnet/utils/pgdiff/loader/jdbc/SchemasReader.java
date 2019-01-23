@@ -2,7 +2,7 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
+import java.util.Collection;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
@@ -29,8 +29,8 @@ public class SchemasReader implements PgCatalogStrings {
 
         String query = JdbcQueries.QUERY_SCHEMAS.getQuery();
 
-        List<ObjectTimestamp> objects = loader.getTimestampOldObjects();
-        if (objects != null && !objects.isEmpty()) {
+        if (loader.hasTimestampObjects()) {
+            Collection<ObjectTimestamp> objects = loader.getTimestampOldObjects();
             PgDatabase snapshot = loader.getTimestampSnapshot();
             for (ObjectTimestamp obj : objects) {
                 if (obj.getType() == DbObjType.SCHEMA) {
@@ -40,6 +40,8 @@ public class SchemasReader implements PgCatalogStrings {
                     loader.schemaIds.put(oid, schema);
                 }
             }
+
+            objects.removeIf(obj -> obj.getType() == DbObjType.SCHEMA);
 
             query = JdbcReader.excludeObjects(query,
                     loader.getExtensionSchema(), loader.getTimestampLastDate());
