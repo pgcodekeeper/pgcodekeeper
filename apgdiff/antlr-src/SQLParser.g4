@@ -870,7 +870,7 @@ operator_option
     ;
 
 create_aggregate_statement
-    : AGGREGATE function_parameters LEFT_PAREN
+    : AGGREGATE name=schema_qualified_name function_args? LEFT_PAREN
     (BASETYPE EQUAL base_type=data_type COMMA)?
     SFUNC EQUAL sfunc_name=schema_qualified_name COMMA
     STYPE EQUAL type=data_type
@@ -1083,7 +1083,7 @@ function_column_name_type
     ;
 
 function_parameters
-    : name=schema_qualified_name function_args?
+    : name=schema_qualified_name function_args
     ;
 
 function_args

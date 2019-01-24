@@ -32,7 +32,7 @@ public class CreateAggregate extends ParserAbstract {
 
     @Override
     public PgStatement getObject() {
-        List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
+        List<IdentifierContext> ids = ctx.name.identifier();
         AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         String schemaName = schema.getName();
 
@@ -41,12 +41,6 @@ public class CreateAggregate extends ParserAbstract {
         //// The order is important for adding dependencies. Two steps.
 
         // First step: filling all types and arguments.
-
-        if (ctx.BASETYPE() != null) {
-            Data_typeContext baseTypeCtx = ctx.base_type;
-            aggregate.setBaseType(getFullCtxText(baseTypeCtx));
-            addTypeAsDepcy(baseTypeCtx, aggregate, schemaName);
-        }
 
         Data_typeContext sTypeCtx = ctx.type;
         aggregate.setSType(getFullCtxText(sTypeCtx));
@@ -67,15 +61,23 @@ public class CreateAggregate extends ParserAbstract {
     }
 
     private void fillAllArguments(PgAggregate aggregate) {
-        Function_argsContext argumentsCtx = ctx.function_parameters().function_args();
-        List<Function_argumentsContext> directArgs = argumentsCtx.function_arguments();
-        fillArguments(directArgs, aggregate);
-
-        if (argumentsCtx.agg_order() != null) {
-            fillArguments(argumentsCtx.agg_order().function_arguments(), aggregate);
+        Function_argsContext argumentsCtx = ctx.function_args();
+        if (argumentsCtx != null) {
+            List<Function_argumentsContext> directArgs = argumentsCtx.function_arguments();
+            fillArguments(directArgs, aggregate);
+            if (argumentsCtx.agg_order() != null) {
+                fillArguments(argumentsCtx.agg_order().function_arguments(), aggregate);
+            }
+            aggregate.setDirectCount(directArgs.size());
+        } else {
+            Data_typeContext baseTypeCtx = ctx.base_type;
+            String baseType = getFullCtxText(baseTypeCtx);
+            if (!"ANY".equals(baseType)) {
+                aggregate.addArgument(new Argument(null, baseType));
+                addTypeAsDepcy(baseTypeCtx, aggregate, getDefSchemaName());
+                aggregate.setDirectCount(1);
+            }
         }
-
-        aggregate.setDirectCount(directArgs.size());
     }
 
     private void fillArguments(List<Function_argumentsContext> argumentsCtx, PgAggregate aggr) {

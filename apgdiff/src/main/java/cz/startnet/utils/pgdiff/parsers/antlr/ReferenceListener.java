@@ -407,7 +407,7 @@ public class ReferenceListener implements SqlContextProcessor {
     }
 
     public void createAggregate(Create_aggregate_statementContext ctx) {
-        List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
+        List<IdentifierContext> ids = ctx.name.identifier();
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         addReferenceOnSchema(ids, schemaName, ctx);
         fillObjDefinition(schemaName, QNameParser.getFirstNameCtx(ids), DbObjType.AGGREGATE);

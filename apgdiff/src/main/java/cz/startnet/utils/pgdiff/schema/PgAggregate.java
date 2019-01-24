@@ -29,7 +29,6 @@ public class PgAggregate extends AbstractPgFunction {
 
     private AggKinds kind = AggKinds.NORMAL;
 
-    private String baseType;
     private String sFunc;
     private String sType;
     private int sSpace;
@@ -225,7 +224,6 @@ public class PgAggregate extends AbstractPgFunction {
             PgAggregate aggr = (PgAggregate) func;
             return directCount == aggr.directCount
                     && Objects.equals(kind, aggr.getKind())
-                    && Objects.equals(baseType, aggr.getBaseType())
                     && Objects.equals(sFunc, aggr.getSFunc())
                     && Objects.equals(sType, aggr.getSType())
                     && sSpace == aggr.getSSpace()
@@ -255,7 +253,6 @@ public class PgAggregate extends AbstractPgFunction {
         super.computeHash(hasher);
         hasher.put(directCount);
         hasher.put(kind);
-        hasher.put(baseType);
         hasher.put(sFunc);
         hasher.put(sType);
         hasher.put(sSpace);
@@ -292,18 +289,6 @@ public class PgAggregate extends AbstractPgFunction {
 
     public void setKind(AggKinds kind) {
         this.kind = kind;
-        resetHash();
-    }
-
-    public String getBaseType() {
-        return baseType;
-    }
-
-    public void setBaseType(String baseType) {
-        this.baseType = baseType;
-        if (baseType != null && !"ANY".equals(baseType)) {
-            arguments.add(new Argument(null, baseType));
-        }
         resetHash();
     }
 
@@ -483,7 +468,6 @@ public class PgAggregate extends AbstractPgFunction {
         PgAggregate copy = new PgAggregate(getBareName());
         copy.setDirectCount(getDirectCount());
         copy.setKind(getKind());
-        copy.setBaseType(getBaseType());
         copy.setSFunc(getSFunc());
         copy.setSType(getSType());
         copy.setSSpace(getSSpace());
