@@ -5,8 +5,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -14,7 +12,6 @@ import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -400,9 +397,9 @@ class DbSourceJdbc extends DbSource {
         }
 
         JdbcLoader loader = new JdbcLoader(jdbcConnector, args, monitor);
-        Path snapshotFolder = Paths.get(Platform.getStateLocation(
-                Activator.getContext().getBundle()).toString());
-        PgDatabase database = loader.getDbFromJdbc(snapshotFolder);
+        //        Path snapshotFolder = Paths.get(Platform.getStateLocation(
+        //                Activator.getContext().getBundle()).toString());
+        PgDatabase database = loader.getDbFromJdbc(/*snapshotFolder*/);
         errors = loader.getErrors();
         return database;
     }

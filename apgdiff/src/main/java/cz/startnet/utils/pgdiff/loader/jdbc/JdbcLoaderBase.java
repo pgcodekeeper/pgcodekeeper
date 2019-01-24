@@ -43,6 +43,7 @@ import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -161,6 +162,12 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected void setOwner(PgStatement st, String owner) {
         if (!args.isIgnorePrivileges()) {
             st.setOwner(owner);
+        }
+    }
+
+    protected void setAuthor(PgStatement st, ResultSet res) throws SQLException {
+        if (getExtensionSchema() != null) {
+            st.setAuthor(res.getString(AUTHOR));
         }
     }
 
@@ -430,10 +437,10 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             while (res.next()) {
                 String version = res.getString("extversion");
                 if (!version.equals(ApgdiffConsts.EXTENSION_VERSION)) {
-                    addError("old version of extension is used: " +
+                    Log.log(Log.LOG_INFO, "pg_dbo_timestamps: old version of extension is used: " +
                             version + ", current version: " + ApgdiffConsts.EXTENSION_VERSION);
                 } else if (res.getBoolean("disabled")) {
-                    addError("event trigger is disabled");
+                    Log.log(Log.LOG_INFO, "pg_dbo_timestamps: event trigger is disabled");
                 } else {
                     timestampParams.extensionSchema = res.getString("nspname");
                 }

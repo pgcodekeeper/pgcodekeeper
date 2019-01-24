@@ -808,6 +808,10 @@ public class DiffTableViewer extends Composite {
             setLibLocations();
         }
 
+        if (dbRemote != null) {
+            readDbUsers();
+        }
+
         viewer.setInput(elements);
         updateColumnsWidth();
 
@@ -869,6 +873,19 @@ public class DiffTableViewer extends Composite {
             }
         });
     }
+
+    private void readDbUsers() {
+        elementInfoMap.forEach((k,v) -> {
+            if (k.getSide() != DiffSide.LEFT) {
+                String author = k.getPgStatement(dbRemote.getDbObject()).getAuthor();
+                v.setDbUser(author);
+                if (author != null) {
+                    showDbUser = true;
+                }
+            }
+        });
+    }
+
 
     private void readGitUsers() {
         Job job = new Job(Messages.DiffTableViewer_reading_git_history) {

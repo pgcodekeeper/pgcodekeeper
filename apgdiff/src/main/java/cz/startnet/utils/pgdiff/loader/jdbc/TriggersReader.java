@@ -142,6 +142,8 @@ public class TriggersReader extends JdbcReader {
                 .schema_create().create_trigger_statement().when_trigger(),
                 ctx -> CreateTrigger.parseWhen(ctx, t, schema.getDatabase()));
 
+        loader.setAuthor(t, res);
+
         // COMMENT
         String comment = res.getString("comment");
         if (comment != null && !comment.isEmpty()) {

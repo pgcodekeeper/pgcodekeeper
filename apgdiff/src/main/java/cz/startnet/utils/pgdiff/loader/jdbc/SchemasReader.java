@@ -2,11 +2,9 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
-import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -29,7 +27,8 @@ public class SchemasReader implements PgCatalogStrings {
 
         String query = JdbcQueries.QUERY_SCHEMAS.getQuery();
 
-        if (loader.hasTimestampObjects()) {
+        if (loader.getExtensionSchema() != null) {
+            /*
             Collection<ObjectTimestamp> objects = loader.getTimestampOldObjects();
             PgDatabase snapshot = loader.getTimestampSnapshot();
             for (ObjectTimestamp obj : objects) {
@@ -45,6 +44,8 @@ public class SchemasReader implements PgCatalogStrings {
 
             query = JdbcReader.excludeObjects(query,
                     loader.getExtensionSchema(), loader.getTimestampLastDate());
+             */
+            query = JdbcReader.excludeObjects(query, loader.getExtensionSchema());
         }
 
         try (ResultSet result = loader.runner.runScript(loader.statement, query)) {
@@ -52,6 +53,7 @@ public class SchemasReader implements PgCatalogStrings {
                 AbstractSchema schema = getSchema(result);
                 db.addSchema(schema);
                 loader.schemaIds.put(result.getLong(OID), schema);
+                loader.setAuthor(schema, result);
             }
         }
     }

@@ -96,6 +96,7 @@ public class ViewsReader extends JdbcReader {
 
         // Query view privileges
         loader.setPrivileges(v, res.getString("relacl"), schemaName);
+        loader.setAuthor(v, res);
 
         // STORAGE PARAMETRS
         String[] options = getColArray(res, "reloptions");

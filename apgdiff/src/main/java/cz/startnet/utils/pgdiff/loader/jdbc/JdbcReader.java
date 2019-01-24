@@ -4,23 +4,16 @@ import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.time.Instant;
-import java.util.Collection;
 
 import cz.startnet.utils.pgdiff.loader.JdbcQuery;
-import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class JdbcReader implements PgCatalogStrings {
 
-    private static final String EXTENSION_QUERY = "SELECT q.* FROM ({0}) q\n" +
-            "LEFT JOIN {1}.dbots_event_data time ON q.oid = time.objid\n" +
-            "WHERE time.last_modified IS NULL OR time.last_modified > \''{2}\'';";
+    private static final String EXTENSION_QUERY = "SELECT q.*, time.ses_user FROM ({0}) q\n"
+            + "LEFT JOIN {1}.dbots_event_data time ON q.oid = time.objid";
 
     protected final JdbcQuery queries;
     protected final JdbcLoaderBase loader;
@@ -33,6 +26,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
     public void read() throws SQLException, InterruptedException, XmlReaderException {
         String query = queries.makeQuery(loader.version);
 
+        /*
         DbObjType type = getType();
         Collection<ObjectTimestamp> objects = loader.getTimestampOldObjects();
         if (objects != null && (!objects.isEmpty() || type == DbObjType.CONSTRAINT)) {
@@ -45,6 +39,12 @@ public abstract class JdbcReader implements PgCatalogStrings {
             }
 
             query = excludeObjects(query, loader.getExtensionSchema(), loader.getTimestampLastDate());
+        }
+
+         */
+
+        if (loader.getExtensionSchema() != null) {
+            query = excludeObjects(query, loader.getExtensionSchema());
         }
 
         loader.setCurrentOperation(getClass().getSimpleName() + " query");
@@ -61,6 +61,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
         }
     }
 
+    /*
     private void fillOldObjects(Collection<ObjectTimestamp> objects, AbstractSchema sc) {
         PgDatabase projDb = loader.getTimestampSnapshot();
 
@@ -106,6 +107,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
             }
         }
     }
+     */
 
     /**
      * The functions that accept the oid / object name and return the set / processing of its metadata are considered unsafe.
@@ -147,8 +149,20 @@ public abstract class JdbcReader implements PgCatalogStrings {
      * @param date snapshot date
      * @return new query
      */
+    /*
     public static String excludeObjects(String base, String schema, Instant date) {
         return MessageFormat.format(EXTENSION_QUERY, base, schema, date);
+    }
+     */
+    /**
+     * Join timestamps to query
+     *
+     * @param base base query
+     * @param schema extension schema
+     * @return new query
+     */
+    public static String excludeObjects(String base, String schema) {
+        return MessageFormat.format(EXTENSION_QUERY, base, schema);
     }
 
     protected abstract void processResult(ResultSet result, AbstractSchema schema)

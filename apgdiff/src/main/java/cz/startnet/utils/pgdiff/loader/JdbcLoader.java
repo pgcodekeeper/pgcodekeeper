@@ -1,11 +1,9 @@
 package cz.startnet.utils.pgdiff.loader;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.text.MessageFormat;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -27,12 +25,9 @@ import cz.startnet.utils.pgdiff.loader.jdbc.RulesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.SchemasReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.SequencesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.TablesReader;
-import cz.startnet.utils.pgdiff.loader.jdbc.TimestampsReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.TriggersReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.TypesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.ViewsReader;
-import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
-import cz.startnet.utils.pgdiff.loader.timestamps.TimestampsUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
@@ -52,19 +47,15 @@ public class JdbcLoader extends JdbcLoaderBase {
         return Collections.unmodifiableList(errors);
     }
 
-    public PgDatabase getDbFromJdbc() throws IOException, InterruptedException {
-        return getDbFromJdbc(null);
-    }
-
-    public PgDatabase getDbFromJdbc(Path snapshotPath) throws IOException, InterruptedException {
+    public PgDatabase getDbFromJdbc(/*Path snapshotPath*/) throws IOException, InterruptedException {
         PgDatabase d = new PgDatabase();
         d.setArguments(args);
-        getDbFromJdbc(d, snapshotPath);
+        getDbFromJdbc(d/*, snapshotPath*/);
         FullAnalyze.fullAnalyze(d, null);
         return d;
     }
 
-    public PgDatabase getDbFromJdbc(PgDatabase d, Path snapshotPath) throws IOException, InterruptedException {
+    public PgDatabase getDbFromJdbc(PgDatabase d/*, Path snapshotPath*/) throws IOException, InterruptedException {
         Log.log(Log.LOG_INFO, "Reading db using JDBC.");
         setCurrentOperation("connection setup");
         try (Connection connection = connector.getConnection();
@@ -82,7 +73,8 @@ public class JdbcLoader extends JdbcLoaderBase {
             queryRoles();
             queryCheckExtension();
             setupMonitorWork();
-
+            // FIXME deprecated part
+            /*
             Path fullPath = null;
             if (snapshotPath != null && getExtensionSchema() != null) {
                 String name = connector.dbName + ' ' + connector.host + ' ' + connector.port;
@@ -94,7 +86,7 @@ public class JdbcLoader extends JdbcLoaderBase {
                 finishAntlr();
                 timestampParams.fillOldObjects(objects, TimestampsUtils.getSnapshotDate(fullPath));
             }
-
+             */
             new SchemasReader(this, d).read();
 
             // NOTE: order of readers has been changed to move the heaviest ANTLR tasks to the beginning
@@ -129,11 +121,11 @@ public class JdbcLoader extends JdbcLoaderBase {
             d.sortColumns();
 
             d.setPostgresVersion(SupportedVersion.valueOf(version));
-
+            /*
             if (getTimestampLastDate() != null) {
                 TimestampsUtils.writeSnapshot(fullPath, getTimestampLastDate(), d);
             }
-
+             */
             Log.log(Log.LOG_INFO, "Database object has been successfully queried from JDBC");
         } catch (InterruptedException ex) {
             throw ex;
