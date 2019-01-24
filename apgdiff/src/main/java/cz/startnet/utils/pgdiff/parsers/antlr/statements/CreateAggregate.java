@@ -12,6 +12,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
+import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -279,15 +280,7 @@ public class CreateAggregate extends ParserAbstract {
 
     private static void fillStringByArgs(StringBuilder sb, List<Argument> args) {
         for (Argument arg : args) {
-            String argMode = arg.getMode();
-            if (!"IN".equals(argMode)) {
-                sb.append(argMode).append(" ");
-            }
-            String argName = arg.getName();
-            if (argName != null) {
-                sb.append(argName).append(" ");
-            }
-            sb.append(arg.getDataType()).append(", ");
+            sb.append(AbstractPgFunction.getDeclaration(arg, false, true)).append(", ");
         }
     }
 

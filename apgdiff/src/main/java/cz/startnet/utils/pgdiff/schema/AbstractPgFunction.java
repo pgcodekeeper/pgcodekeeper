@@ -130,7 +130,7 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         return sb;
     }
 
-    protected String getDeclaration(Argument arg, boolean includeDefaultValue, boolean includeArgName) {
+    public static String getDeclaration(Argument arg, boolean includeDefaultValue, boolean includeArgName) {
         final StringBuilder sbString = new StringBuilder();
 
         String mode = arg.getMode();
