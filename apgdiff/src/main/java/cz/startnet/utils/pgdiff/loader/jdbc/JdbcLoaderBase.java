@@ -5,11 +5,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +25,6 @@ import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
@@ -38,7 +34,6 @@ import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
@@ -73,7 +68,8 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected List<String> errors = new ArrayList<>();
     protected JdbcRunner runner;
 
-    protected final TimestampParam timestampParams = new TimestampParam();
+    private String extensionSchema;
+    //protected final TimestampParam timestampParams = new TimestampParam();
 
     public JdbcLoaderBase(JdbcConnector connector, SubMonitor monitor, PgDiffArguments args) {
         this.connector = connector;
@@ -126,6 +122,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         errors.add(getCurrentLocation() + ' ' + message);
     }
 
+    /*
     public boolean hasTimestampObjects() {
         return timestampParams.oldObjects != null && !timestampParams.oldObjects.isEmpty();
     }
@@ -144,6 +141,11 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
 
     public String getExtensionSchema() {
         return timestampParams.extensionSchema;
+    }
+     */
+
+    public String getExtensionSchema() {
+        return extensionSchema;
     }
 
     protected String getRoleByOid(long oid) {
@@ -442,7 +444,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
                 } else if (res.getBoolean("disabled")) {
                     Log.log(Log.LOG_INFO, "pg_dbo_timestamps: event trigger is disabled");
                 } else {
-                    timestampParams.extensionSchema = res.getString("nspname");
+                    /*timestampParams.*/extensionSchema = res.getString("nspname");
                 }
             }
         }
@@ -477,7 +479,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         setCurrentOperation("finalizing antlr");
         AntlrParser.finishAntlr(antlrTasks);
     }
-
+    /*
     protected static class TimestampParam {
         private Collection<ObjectTimestamp> oldObjects;
         private PgDatabase snapshot;
@@ -500,5 +502,5 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
                         .collect(Collectors.toList());
             }
         }
-    }
+    }*/
 }

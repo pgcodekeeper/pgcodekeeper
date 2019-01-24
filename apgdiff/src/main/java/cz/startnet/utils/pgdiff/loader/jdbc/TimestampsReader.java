@@ -1,38 +1,14 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.sql.Array;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.time.Instant;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.loader.JdbcQueries;
-import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
-import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_args_parserContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Object_identity_parserContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_args_parserContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-
 public class TimestampsReader implements PgCatalogStrings {
-
+    /*
     private final JdbcLoaderBase loader;
     private final Map<GenericColumn, ObjectTimestamp> objects = new HashMap<>();
 
     public TimestampsReader(JdbcLoaderBase loader) {
         this.loader = loader;
     }
+
 
     public Collection<ObjectTimestamp> read() throws SQLException, InterruptedException {
         loader.setCurrentOperation("pg_dbo_timestamp query");
@@ -181,7 +157,7 @@ public class TimestampsReader implements PgCatalogStrings {
             addObject(gc, objId, lastModified, author, acl, colAcls);
         }
     }
-
+     */
     /**
      * Added object from jdbc to objects map. <br>
      * WARNING: if objects already present in map, newest version of objects will be saved
@@ -193,6 +169,7 @@ public class TimestampsReader implements PgCatalogStrings {
      * @param acl - objects privileges
      * @param colAcls - object columns privileges
      */
+    /*
     private void addObject(GenericColumn column, long objId, Instant lastModified,
             String author, String acl, Map<String, String> colAcls) {
         ObjectTimestamp obj = objects.get(column);
@@ -200,5 +177,5 @@ public class TimestampsReader implements PgCatalogStrings {
             objects.put(column, new ObjectTimestamp(column, objId, lastModified, author,
                     acl, colAcls));
         }
-    }
+    }*/
 }

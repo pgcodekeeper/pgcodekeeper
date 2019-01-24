@@ -44,7 +44,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
          */
 
         if (loader.getExtensionSchema() != null) {
-            query = excludeObjects(query, loader.getExtensionSchema());
+            query = appendTimestamps(query, loader.getExtensionSchema());
         }
 
         loader.setCurrentOperation(getClass().getSimpleName() + " query");
@@ -161,7 +161,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
      * @param schema extension schema
      * @return new query
      */
-    public static String excludeObjects(String base, String schema) {
+    public static String appendTimestamps(String base, String schema) {
         return MessageFormat.format(EXTENSION_QUERY, base, schema);
     }
 

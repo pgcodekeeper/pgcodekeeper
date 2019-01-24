@@ -39,7 +39,7 @@ public class ExtensionsReader implements PgCatalogStrings {
                     loader.getExtensionSchema(), loader.getTimestampLastDate());
              */
 
-            query = JdbcReader.excludeObjects(query, loader.getExtensionSchema());
+            query = JdbcReader.appendTimestamps(query, loader.getExtensionSchema());
 
         }
 

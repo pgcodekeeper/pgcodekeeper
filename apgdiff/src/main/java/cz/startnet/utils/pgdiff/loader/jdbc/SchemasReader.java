@@ -45,7 +45,7 @@ public class SchemasReader implements PgCatalogStrings {
             query = JdbcReader.excludeObjects(query,
                     loader.getExtensionSchema(), loader.getTimestampLastDate());
              */
-            query = JdbcReader.excludeObjects(query, loader.getExtensionSchema());
+            query = JdbcReader.appendTimestamps(query, loader.getExtensionSchema());
         }
 
         try (ResultSet result = loader.runner.runScript(loader.statement, query)) {
