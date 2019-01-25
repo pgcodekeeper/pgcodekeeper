@@ -142,6 +142,8 @@ public class MsDiffTest {
                     {"drop_ms_view"},
                     // Tests scenario where MS VIEW is modified.
                     {"modify_ms_view"},
+                    // Tests scenario where MS VIEW is modified by refresh.
+                    {"modify_ms_view_by_refresh"},
                     // Tests scenario where MS VIEW trigger state is modified.
                     {"modify_ms_view_disable_trigger"},
 

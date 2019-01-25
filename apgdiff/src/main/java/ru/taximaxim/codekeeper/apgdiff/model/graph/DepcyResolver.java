@@ -37,6 +37,7 @@ public class DepcyResolver {
     private final DepcyGraph oldDepcyGraph;
     private final DepcyGraph newDepcyGraph;
     private final Set<ActionContainer> actions = new LinkedHashSet<>();
+    private final Set<PgStatement> toRefresh = new HashSet<>();
     /**
      * Хранит запущенные итерации, используется для предотвращения циклического прохода по графу
      */
@@ -72,11 +73,8 @@ public class DepcyResolver {
         return Collections.unmodifiableSet(actions);
     }
 
-    /**
-     * Очищает списки объектов
-     */
-    public void clearActions() {
-        actions.clear();
+    public Set<PgStatement> getToRefresh() {
+        return Collections.unmodifiableSet(toRefresh);
     }
 
     public DepcyResolver(PgDatabase oldDatabase, PgDatabase newDatabase) {
@@ -165,11 +163,11 @@ public class DepcyResolver {
      * Пересоздает ранее удаленные объекты в новое состояние
      */
     public void recreateDrops() {
-        List<PgStatement> toRecreate = new ArrayList<>();
         int oldActionsSize = -1;
         // since a recreate can trigger a drop via  dependency being altered
         // run recreates until no more statements are being added (may need optimization)
         while (actions.size() > oldActionsSize){
+            List<PgStatement> toRecreate = new ArrayList<>();
             oldActionsSize = actions.size();
             for (ActionContainer action : actions) {
                 if (action.getAction() == StatementActions.DROP) {
@@ -177,7 +175,14 @@ public class DepcyResolver {
                 }
             }
             for (PgStatement drop : toRecreate) {
-                if (drop.getTwin(newDb) != null) {
+                PgStatement newSt = drop.getTwin(newDb);
+                if (newSt != null) {
+                    if (!newSt.isPostgres()
+                            && newSt.getStatementType() == DbObjType.VIEW
+                            && newSt.equals(drop)) {
+                        toRefresh.add(newSt);
+                    }
+
                     addCreateStatements(drop);
                 }
             }

@@ -242,7 +242,8 @@ public final class PgDiff {
         createScript(depRes, arguments, root, oldDbFull, newDbFull,
                 additionalDepciesSource, additionalDepciesTarget, ignoreList);
 
-        new ActionsToScriptConverter(depRes.getActions(), arguments).fillScript(script);
+        new ActionsToScriptConverter(depRes.getActions(),
+                depRes.getToRefresh(), arguments).fillScript(script);
 
         if (arguments.isAddTransaction()) {
             script.addStatement("COMMIT\nGO");
