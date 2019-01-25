@@ -21,6 +21,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.SourceStatement;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import cz.startnet.utils.pgdiff.schema.TypedPgTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -166,7 +167,7 @@ public class DepcyResolver {
         int oldActionsSize = -1;
         // since a recreate can trigger a drop via  dependency being altered
         // run recreates until no more statements are being added (may need optimization)
-        while (actions.size() > oldActionsSize){
+        while (actions.size() > oldActionsSize) {
             List<PgStatement> toRecreate = new ArrayList<>();
             oldActionsSize = actions.size();
             for (ActionContainer action : actions) {
@@ -177,9 +178,7 @@ public class DepcyResolver {
             for (PgStatement drop : toRecreate) {
                 PgStatement newSt = drop.getTwin(newDb);
                 if (newSt != null) {
-                    if (!newSt.isPostgres()
-                            && newSt.getStatementType() == DbObjType.VIEW
-                            && newSt.equals(drop)) {
+                    if (newSt instanceof SourceStatement && newSt.equals(drop)) {
                         toRefresh.add(newSt);
                     }
 

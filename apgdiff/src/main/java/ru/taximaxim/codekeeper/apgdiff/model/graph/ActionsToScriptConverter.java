@@ -20,7 +20,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class ActionsToScriptConverter {
 
-    private static final String REFRESH_VIEW = "EXEC sp_refreshview ''{0}'' \nGO";
+    private static final String REFRESH_MODULE = "EXEC sys.sp_refreshsqlmodule ''{0}'' \nGO";
 
     private static final String DROP_COMMENT = "-- DEPCY: This {0} depends on the {1}: {2}";
     private static final String CREATE_COMMENT = "-- DEPCY: This {0} is a dependency of {1}: {2}";
@@ -83,7 +83,7 @@ public class ActionsToScriptConverter {
                         script.addStatement(depcy);
                     }
                     if (toRefresh.contains(oldObj)) {
-                        script.addStatement(MessageFormat.format(REFRESH_VIEW,
+                        script.addStatement(MessageFormat.format(REFRESH_MODULE,
                                 oldObj.getQualifiedName()));
                     } else {
                         script.addCreate(oldObj, null, oldObj.getCreationSQL(), true);
