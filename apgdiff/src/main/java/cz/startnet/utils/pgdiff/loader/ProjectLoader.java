@@ -149,10 +149,14 @@ public class ProjectLoader {
 
     private void loadMsStructure(File dir, PgDatabase db) throws InterruptedException, IOException {
         File securityFolder = new File(dir, MS_WORK_DIR_NAMES.SECURITY.getDirName());
+
+        loadSubdir(securityFolder, "Schemas", db);
+        // DBO schema check requires schema loads to finish first
+        AntlrParser.finishAntlr(antlrTasks);
+        addDboSchema(db);
+
         loadSubdir(securityFolder, "Roles", db);
         loadSubdir(securityFolder, "Users", db);
-        loadSubdir(securityFolder, "Schemas", db);
-        addDboSchema(db);
 
         for (MS_WORK_DIR_NAMES dirSub : MS_WORK_DIR_NAMES.values()) {
             loadSubdir(dir, dirSub.getDirName(), db);

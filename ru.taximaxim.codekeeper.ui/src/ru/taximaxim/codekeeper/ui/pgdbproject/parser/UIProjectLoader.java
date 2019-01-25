@@ -115,11 +115,14 @@ public class UIProjectLoader extends ProjectLoader {
         }
 
         IFolder securityFolder = baseDir.getFolder(new Path(MS_WORK_DIR_NAMES.SECURITY.getDirName()));
+
         loadSubdir(securityFolder.getFolder("Schemas"), db); //$NON-NLS-1$
+        // DBO schema check requires schema loads to finish first
+        AntlrParser.finishAntlr(antlrTasks);
+        addDboSchema(db);
+
         loadSubdir(securityFolder.getFolder("Roles"), db); //$NON-NLS-1$
         loadSubdir(securityFolder.getFolder("Users"), db); //$NON-NLS-1$
-
-        addDboSchema(db);
 
         for (MS_WORK_DIR_NAMES dirSub : MS_WORK_DIR_NAMES.values()) {
             loadSubdir(baseDir.getFolder(new Path(dirSub.getDirName())), db);
