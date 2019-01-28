@@ -31,7 +31,6 @@ public final class JdbcQueries {
     public static String QUERY_CHECK_VERSION;
     public static String QUERY_CHECK_LAST_SYS_OID;
     public static String QUERY_CHECK_TIMESTAMPS;
-    // public static String QUERY_TIMESTAMPS;
 
     public static final JdbcQuery QUERY_EXTENSIONS = new JdbcQuery();
     public static final JdbcQuery QUERY_SCHEMAS = new JdbcQuery();

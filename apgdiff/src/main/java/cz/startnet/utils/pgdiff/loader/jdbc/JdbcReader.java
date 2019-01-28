@@ -26,23 +26,6 @@ public abstract class JdbcReader implements PgCatalogStrings {
     public void read() throws SQLException, InterruptedException, XmlReaderException {
         String query = queries.makeQuery(loader.version);
 
-        /*
-        DbObjType type = getType();
-        Collection<ObjectTimestamp> objects = loader.getTimestampOldObjects();
-        if (objects != null && (!objects.isEmpty() || type == DbObjType.CONSTRAINT)) {
-            if (getType() != DbObjType.CONSTRAINT) {
-                for (AbstractSchema schema : loader.schemaIds.values()) {
-                    fillOldObjects(objects, schema);
-                }
-
-                objects.removeIf(obj -> obj.getType() == getType());
-            }
-
-            query = excludeObjects(query, loader.getExtensionSchema(), loader.getTimestampLastDate());
-        }
-
-         */
-
         if (loader.getExtensionSchema() != null) {
             query = appendTimestamps(query, loader.getExtensionSchema());
         }
@@ -60,54 +43,6 @@ public abstract class JdbcReader implements PgCatalogStrings {
             }
         }
     }
-
-    /*
-    private void fillOldObjects(Collection<ObjectTimestamp> objects, AbstractSchema sc) {
-        PgDatabase projDb = loader.getTimestampSnapshot();
-
-        DbObjType type = getType();
-        for (ObjectTimestamp obj: objects) {
-            if (obj.getSchema().equals(sc.getName()) && obj.getType() == type) {
-                switch (type) {
-                case VIEW:
-                case TABLE:
-                case FUNCTION:
-                case PROCEDURE:
-                case TYPE:
-                case SEQUENCE:
-                case FTS_PARSER:
-                case FTS_TEMPLATE:
-                case FTS_DICTIONARY:
-                case FTS_CONFIGURATION:
-                case OPERATOR:
-                    PgStatement st = obj.copyStatement(projDb, loader);
-                    if (st != null) {
-                        sc.addChild(st);
-                    }
-                    break;
-                case RULE:
-                    obj.addRuleCopy(projDb, sc, loader);
-                    break;
-                case TRIGGER:
-                    obj.addTriggerCopy(projDb, sc, loader);
-                    break;
-                case INDEX:
-                    AbstractSchema schema = projDb.getSchema(sc.getName());
-                    AbstractTable t;
-                    if (schema != null && (t = schema.getTableByIndex(obj.getColumn())) != null) {
-                        AbstractTable tab = sc.getTable(t.getName());
-                        if (tab != null) {
-                            tab.addIndex(t.getIndex(obj.getColumn()).shallowCopy());
-                        }
-                    }
-                    break;
-                default:
-                    break;
-                }
-            }
-        }
-    }
-     */
 
     /**
      * The functions that accept the oid / object name and return the set / processing of its metadata are considered unsafe.
@@ -141,19 +76,6 @@ public abstract class JdbcReader implements PgCatalogStrings {
         return null;
     }
 
-    /**
-     * Join extension to query
-     *
-     * @param base base query
-     * @param schema extension schema
-     * @param date snapshot date
-     * @return new query
-     */
-    /*
-    public static String excludeObjects(String base, String schema, Instant date) {
-        return MessageFormat.format(EXTENSION_QUERY, base, schema, date);
-    }
-     */
     /**
      * Join timestamps to query
      *

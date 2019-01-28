@@ -140,10 +140,8 @@ public final class PgDiff {
                 return new JdbcMsLoader(JdbcConnector.fromUrl(srcPath), arguments).readDb();
             }
 
-            //            Path snapshotFolder = Paths.get(System.getProperty("user.home"))
-            //                    .resolve(".pgcodekeeper-cli").resolve("timestamps");
             return new JdbcLoader(JdbcConnector.fromUrl(srcPath, timezone), arguments)
-                    .getDbFromJdbc(/*snapshotFolder*/);
+                    .getDbFromJdbc();
         }
 
         throw new UnsupportedOperationException(

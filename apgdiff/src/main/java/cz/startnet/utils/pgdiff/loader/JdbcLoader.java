@@ -47,15 +47,15 @@ public class JdbcLoader extends JdbcLoaderBase {
         return Collections.unmodifiableList(errors);
     }
 
-    public PgDatabase getDbFromJdbc(/*Path snapshotPath*/) throws IOException, InterruptedException {
+    public PgDatabase getDbFromJdbc() throws IOException, InterruptedException {
         PgDatabase d = new PgDatabase();
         d.setArguments(args);
-        getDbFromJdbc(d/*, snapshotPath*/);
+        getDbFromJdbc(d);
         FullAnalyze.fullAnalyze(d, null);
         return d;
     }
 
-    public PgDatabase getDbFromJdbc(PgDatabase d/*, Path snapshotPath*/) throws IOException, InterruptedException {
+    public PgDatabase getDbFromJdbc(PgDatabase d) throws IOException, InterruptedException {
         Log.log(Log.LOG_INFO, "Reading db using JDBC.");
         setCurrentOperation("connection setup");
         try (Connection connection = connector.getConnection();
@@ -73,20 +73,7 @@ public class JdbcLoader extends JdbcLoaderBase {
             queryRoles();
             queryCheckExtension();
             setupMonitorWork();
-            // FIXME deprecated part
-            /*
-            Path fullPath = null;
-            if (snapshotPath != null && getExtensionSchema() != null) {
-                String name = connector.dbName + ' ' + connector.host + ' ' + connector.port;
-                fullPath = snapshotPath.resolve("timestamps")
-                        .resolve(PgDiffUtils.md5(name).substring(0, 10));
-                timestampParams.setSnapshot(TimestampsUtils.getSnapshot(fullPath));
-                Collection<ObjectTimestamp> objects = new TimestampsReader(this).read();
-                // project reader and jdbc reader have antlr tasks
-                finishAntlr();
-                timestampParams.fillOldObjects(objects, TimestampsUtils.getSnapshotDate(fullPath));
-            }
-             */
+
             new SchemasReader(this, d).read();
 
             // NOTE: order of readers has been changed to move the heaviest ANTLR tasks to the beginning
@@ -121,11 +108,6 @@ public class JdbcLoader extends JdbcLoaderBase {
             d.sortColumns();
 
             d.setPostgresVersion(SupportedVersion.valueOf(version));
-            /*
-            if (getTimestampLastDate() != null) {
-                TimestampsUtils.writeSnapshot(fullPath, getTimestampLastDate(), d);
-            }
-             */
             Log.log(Log.LOG_INFO, "Database object has been successfully queried from JDBC");
         } catch (InterruptedException ex) {
             throw ex;

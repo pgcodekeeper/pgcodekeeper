@@ -28,23 +28,6 @@ public class SchemasReader implements PgCatalogStrings {
         String query = JdbcQueries.QUERY_SCHEMAS.getQuery();
 
         if (loader.getExtensionSchema() != null) {
-            /*
-            Collection<ObjectTimestamp> objects = loader.getTimestampOldObjects();
-            PgDatabase snapshot = loader.getTimestampSnapshot();
-            for (ObjectTimestamp obj : objects) {
-                if (obj.getType() == DbObjType.SCHEMA) {
-                    long oid = obj.getObjId();
-                    AbstractSchema schema = (AbstractSchema) obj.copyStatement(snapshot, loader);
-                    db.addSchema(schema);
-                    loader.schemaIds.put(oid, schema);
-                }
-            }
-
-            objects.removeIf(obj -> obj.getType() == DbObjType.SCHEMA);
-
-            query = JdbcReader.excludeObjects(query,
-                    loader.getExtensionSchema(), loader.getTimestampLastDate());
-             */
             query = JdbcReader.appendTimestamps(query, loader.getExtensionSchema());
         }
 

@@ -397,9 +397,7 @@ class DbSourceJdbc extends DbSource {
         }
 
         JdbcLoader loader = new JdbcLoader(jdbcConnector, args, monitor);
-        //        Path snapshotFolder = Paths.get(Platform.getStateLocation(
-        //                Activator.getContext().getBundle()).toString());
-        PgDatabase database = loader.getDbFromJdbc(/*snapshotFolder*/);
+        PgDatabase database = loader.getDbFromJdbc();
         errors = loader.getErrors();
         return database;
     }

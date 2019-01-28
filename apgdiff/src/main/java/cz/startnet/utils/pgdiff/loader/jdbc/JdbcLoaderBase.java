@@ -69,7 +69,6 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected JdbcRunner runner;
 
     private String extensionSchema;
-    //protected final TimestampParam timestampParams = new TimestampParam();
 
     public JdbcLoaderBase(JdbcConnector connector, SubMonitor monitor, PgDiffArguments args) {
         this.connector = connector;
@@ -121,28 +120,6 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected void addError(final String message) {
         errors.add(getCurrentLocation() + ' ' + message);
     }
-
-    /*
-    public boolean hasTimestampObjects() {
-        return timestampParams.oldObjects != null && !timestampParams.oldObjects.isEmpty();
-    }
-
-    public Collection<ObjectTimestamp> getTimestampOldObjects() {
-        return timestampParams.oldObjects;
-    }
-
-    public PgDatabase getTimestampSnapshot() {
-        return timestampParams.snapshot;
-    }
-
-    public Instant getTimestampLastDate() {
-        return timestampParams.lastDate;
-    }
-
-    public String getExtensionSchema() {
-        return timestampParams.extensionSchema;
-    }
-     */
 
     public String getExtensionSchema() {
         return extensionSchema;
@@ -444,7 +421,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
                 } else if (res.getBoolean("disabled")) {
                     Log.log(Log.LOG_INFO, "pg_dbo_timestamps: event trigger is disabled");
                 } else {
-                    /*timestampParams.*/extensionSchema = res.getString("nspname");
+                    extensionSchema = res.getString("nspname");
                 }
             }
         }
@@ -479,28 +456,4 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         setCurrentOperation("finalizing antlr");
         AntlrParser.finishAntlr(antlrTasks);
     }
-    /*
-    protected static class TimestampParam {
-        private Collection<ObjectTimestamp> oldObjects;
-        private PgDatabase snapshot;
-        private String extensionSchema;
-        private Instant lastDate;
-
-        public void setSnapshot(PgDatabase snapshot) {
-            this.snapshot = snapshot;
-        }
-
-        public void fillOldObjects(Collection<ObjectTimestamp> objects, Instant snapshotDate) {
-            lastDate = objects.stream().map(ObjectTimestamp::getTime)
-                    .max(Instant::compareTo).orElse(null);
-
-            if (snapshotDate == null) {
-                oldObjects = Collections.emptyList();
-            } else {
-                oldObjects = objects.stream()
-                        .filter(obj -> obj.getTime().compareTo(snapshotDate) < 1)
-                        .collect(Collectors.toList());
-            }
-        }
-    }*/
 }
