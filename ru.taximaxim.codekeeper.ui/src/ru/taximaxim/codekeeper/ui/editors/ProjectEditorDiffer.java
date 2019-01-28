@@ -72,7 +72,6 @@ import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.FileEditorInput;
-import org.eclipse.ui.statushandlers.StatusManager;
 import org.osgi.service.prefs.BackingStoreException;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
@@ -108,7 +107,6 @@ import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dialogs.CommitDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.dialogs.ManualDepciesDialog;
-import ru.taximaxim.codekeeper.ui.differ.ClassicTreeDiffer;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffPaneViewer;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
@@ -480,21 +478,21 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         DbSource dbProject = DbSource.fromProject(proj);
 
-        DbSource dbRemote;
         TreeDiffer newDiffer;
         String name;
 
         if (isDbInfo) {
             DbInfo dbInfo = (DbInfo) currentRemote;
-            newDiffer = TreeDiffer.getTree(dbProject, dbInfo, charset, forceUnixNewlines,
-                    mainPrefs, projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
+            DbSource dbRemote = DbSource.fromDbInfo(dbInfo, mainPrefs, forceUnixNewlines,
+                    charset, projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
+            newDiffer = new TreeDiffer(dbProject, dbRemote);
             name = dbInfo.getName();
             saveLastDb(dbInfo);
         } else {
             File file = (File) currentRemote;
             name = file.getName();
-            dbRemote = DbSource.fromFile(forceUnixNewlines, file, charset, isMsProj);
-            newDiffer = new ClassicTreeDiffer(dbProject, dbRemote, false);
+            DbSource dbRemote = DbSource.fromFile(forceUnixNewlines, file, charset, isMsProj);
+            newDiffer = new TreeDiffer(dbProject, dbRemote);
         }
 
         String title = getEditorInput().getName() + " - " + name; //$NON-NLS-1$
@@ -565,10 +563,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                         }
                     });
                 }
-
-                newDiffer.getErrors().forEach(e -> StatusManager.getManager().handle(
-                        new Status(IStatus.WARNING, PLUGIN_ID.THIS, e.toString()),
-                        StatusManager.SHOW));
             }
         });
         job.setUser(true);

@@ -13,11 +13,6 @@ public final class Messages extends NLS {
 
     // pgdiff.loader
     public static String Connection_DatabaseJdbcAccessError;
-    public static String Connection_JdbcDriverClassNotFound;
-
-    // pgdiff
-
-    public static String JdbcConnector_in_jdbc_connection;
 
     public static String Table_TypeParameterChange;
     public static String Storage_WarningUnableToDetermineStorageType;

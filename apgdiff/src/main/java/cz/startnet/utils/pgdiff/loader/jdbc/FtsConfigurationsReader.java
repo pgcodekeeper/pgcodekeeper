@@ -64,6 +64,7 @@ public class FtsConfigurationsReader extends JdbcReader {
             config.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
 
+        loader.setAuthor(config, res);
         schema.addFtsConfiguration(config);
     }
 

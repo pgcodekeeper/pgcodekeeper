@@ -13,7 +13,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
@@ -26,7 +25,6 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.TEMP_DIR_PATH;
@@ -83,11 +81,6 @@ public final class FileUtilsUi {
             IFileStore externalFile = EFS.getLocalFileSystem().fromLocalFile(path.toFile());
             IDE.openEditorOnFileStore(page, externalFile);
         }
-    }
-
-    public static Path getPathToTimeObject(String proj, String db, String hash) {
-        return Paths.get(Platform.getStateLocation(Activator.getContext().getBundle())
-                .append("projects").append(proj + '-' + db + '-' + hash + ".time").toString()); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     private FileUtilsUi() {

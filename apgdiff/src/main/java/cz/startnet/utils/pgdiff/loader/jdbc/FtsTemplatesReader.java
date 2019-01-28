@@ -32,6 +32,7 @@ public class FtsTemplatesReader extends JdbcReader {
             template.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
 
+        loader.setAuthor(template, res);
         schema.addFtsTemplate(template);
     }
 

@@ -102,8 +102,6 @@ public final class Messages extends NLS {
     public static String commitDialog_depcy_elements;
 
     // ui.dbstore
-    public static String dbInfo_bad_dbinfo_string;
-    public static String dbInfo_too_many_parts_in_dbinfo_string;
     public static String dbPicker_port;
     public static String dbStoreEditorDialog_cannot_save_entry;
     public static String dbStoreEditorDialog_db_info;
@@ -172,7 +170,6 @@ public final class Messages extends NLS {
 
     public static String CommitDialog_unchecked_objects_can_occur_unexpected_errors;
 
-    public static String ConsoleFactory_error_opening_console;
     public static String ConvertProject_convert_dialog_message;
 
     public static String ConvertProject_convert_dialog_title;
@@ -429,7 +426,6 @@ public final class Messages extends NLS {
     public static String IgnoredObjectsPrefPage_error_getting_ignores_list;
     public static String IgnoredObjectsPrefPage_error_saving_ignores_list;
 
-    public static String IgnoredObjectsPrefPage_error_workspace_path;
     public static String IgnoredObjectsPrefPage_these_objects_are_ignored_info;
     public static String IgnoredObjectsPrefPage_these_objects_are_ignored_info_white;
 
@@ -733,7 +729,6 @@ public final class Messages extends NLS {
     public static String TreeDiffer_reverting_tree;
 
     public static String TreeDiffer_schema_load_error;
-    public static String XmlHistory_read_error;
 
     public static String e_mail;
 

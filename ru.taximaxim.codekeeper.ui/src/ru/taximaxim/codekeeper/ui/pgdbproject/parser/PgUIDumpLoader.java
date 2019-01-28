@@ -1,6 +1,8 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject.parser;
 
 import java.io.IOException;
+import java.util.ArrayDeque;
+import java.util.Queue;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -16,6 +18,8 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
@@ -53,8 +57,16 @@ public class PgUIDumpLoader extends PgDumpLoader {
     }
 
     public PgDatabase loadFile(PgDatabase db) throws InterruptedException, IOException {
+        Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>(1);
+        loadFile(db, antlrTasks);
+        AntlrParser.finishAntlr(antlrTasks);
+        return db;
+    }
+
+    protected PgDatabase loadFile(PgDatabase db, Queue<AntlrTask<?>> antlrTasks)
+            throws InterruptedException, IOException {
         try {
-            loadDatabase(db);
+            loadDatabase(db, antlrTasks);
             return db;
         } finally {
             updateMarkers();

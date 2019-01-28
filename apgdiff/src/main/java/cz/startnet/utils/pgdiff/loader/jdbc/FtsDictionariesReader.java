@@ -47,6 +47,7 @@ public class FtsDictionariesReader extends JdbcReader {
             dic.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
 
+        loader.setAuthor(dic, res);
         schema.addFtsDictionary(dic);
     }
 

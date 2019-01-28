@@ -1,23 +1,22 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.MessageFormat;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.antlr.v4.runtime.Parser;
 import org.eclipse.core.runtime.SubMonitor;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
@@ -27,9 +26,8 @@ import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
-import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
@@ -37,12 +35,11 @@ import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.DaemonThreadFactory;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -52,10 +49,10 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  */
 public abstract class JdbcLoaderBase implements PgCatalogStrings {
 
+    private static final String EXTENSION_QUERY = "SELECT q.*, time.ses_user FROM ({0}) q\n"
+            + "LEFT JOIN {1}.dbots_event_data time ON q.oid = time.objid";
+
     private static final int DEFAULT_OBJECTS_COUNT = 100;
-    private static final ExecutorService ANTLR_POOL = Executors.newFixedThreadPool(
-            Integer.max(1, Runtime.getRuntime().availableProcessors() - 1),
-            new DaemonThreadFactory());
 
     // TODO after removing helpers split this into MS and PG base classes
 
@@ -75,7 +72,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected List<String> errors = new ArrayList<>();
     protected JdbcRunner runner;
 
-    protected final TimestampParam timestampParams = new TimestampParam();
+    private String extensionSchema;
 
     public JdbcLoaderBase(JdbcConnector connector, SubMonitor monitor, PgDiffArguments args) {
         this.connector = connector;
@@ -128,16 +125,21 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         errors.add(getCurrentLocation() + ' ' + message);
     }
 
-    public List<ObjectTimestamp> getTimestampEqualObjects() {
-        return timestampParams.equalObjects;
-    }
-
-    public PgDatabase getTimestampProjDb() {
-        return timestampParams.projDB;
+    /**
+     * Join timestamps to query
+     *
+     * @param base base query
+     * @return new query
+     */
+    public String appendTimestamps(String base) {
+        if (extensionSchema == null) {
+            return base;
+        }
+        return MessageFormat.format(EXTENSION_QUERY, base, PgDiffUtils.getQuotedName(extensionSchema));
     }
 
     public String getExtensionSchema() {
-        return timestampParams.extensionSchema;
+        return extensionSchema;
     }
 
     protected String getRoleByOid(long oid) {
@@ -156,6 +158,12 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected void setOwner(PgStatement st, String owner) {
         if (!args.isIgnorePrivileges()) {
             st.setOwner(owner);
+        }
+    }
+
+    protected void setAuthor(PgStatement st, ResultSet res) throws SQLException {
+        if (getExtensionSchema() != null) {
+            st.setAuthor(res.getString(AUTHOR));
         }
     }
 
@@ -419,44 +427,50 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         }
     }
 
+    protected void queryCheckExtension() throws SQLException, InterruptedException {
+        setCurrentOperation("check pg_dbo_timestamp extension");
+        try (ResultSet res = runner.runScript(statement, JdbcQueries.QUERY_CHECK_TIMESTAMPS)) {
+            while (res.next()) {
+                String version = res.getString("extversion");
+                if (!version.equals(ApgdiffConsts.EXTENSION_VERSION)) {
+                    Log.log(Log.LOG_INFO, "pg_dbo_timestamps: old version of extension is used: " +
+                            version + ", current version: " + ApgdiffConsts.EXTENSION_VERSION);
+                } else if (res.getBoolean("disabled")) {
+                    Log.log(Log.LOG_INFO, "pg_dbo_timestamps: event trigger is disabled");
+                } else {
+                    extensionSchema = res.getString("nspname");
+                }
+            }
+        }
+    }
+
+
     protected <T> void submitAntlrTask(String sql,
             Function<SQLParser, T> parserCtxReader, Consumer<T> finalizer) {
-        String loc = getCurrentLocation();
-        Future<T> future = ANTLR_POOL.submit(() -> parserCtxReader.apply(
-                AntlrParser.makeBasicParser(SQLParser.class, sql, loc)));
-        antlrTasks.add(new AntlrTask<>(future, finalizer, currentObject));
+        submitAntlrTask(sql, parserCtxReader, finalizer, SQLParser.class);
     }
 
     protected <T> void submitMsAntlrTask(String sql,
             Function<TSQLParser, T> parserCtxReader, Consumer<T> finalizer) {
-        String loc = getCurrentLocation();
-        Future<T> future = ANTLR_POOL.submit(() -> parserCtxReader.apply(
-                AntlrParser.makeBasicParser(TSQLParser.class, sql, loc)));
-        antlrTasks.add(new AntlrTask<>(future, finalizer, currentObject));
+        submitAntlrTask(sql, parserCtxReader, finalizer, TSQLParser.class);
     }
 
-    protected void finishAntlr() throws InterruptedException, ExecutionException {
-        AntlrTask<?> task;
+    private <T, P extends Parser> void submitAntlrTask(String sql,
+            Function<P, T> parserCtxReader, Consumer<T> finalizer,
+            Class<P> parserClass) {
+        String location = getCurrentLocation();
+        GenericColumn object = this.currentObject;
+        AntlrParser.submitAntlrTask(antlrTasks, () -> {
+            P p = AntlrParser.makeBasicParser(parserClass, sql, location);
+            return parserCtxReader.apply(p);
+        }, t -> {
+            setCurrentObject(object);
+            finalizer.accept(t);
+        });
+    }
+
+    protected void finishAntlr() throws InterruptedException, IOException {
         setCurrentOperation("finalizing antlr");
-        while ((task = antlrTasks.poll()) != null) {
-            // default to operation if object is null
-            setCurrentObject(task.object);
-            task.finish();
-        }
-    }
-
-    protected static class TimestampParam {
-        private List<ObjectTimestamp> equalObjects;
-        private PgDatabase projDB;
-        private String extensionSchema;
-
-        public void setTimeParams(PgDatabase projDB, String extensionSchema) {
-            this.projDB = projDB;
-            this.extensionSchema = extensionSchema;
-        }
-
-        public void fillEqualObjects(DBTimestamp dbTime) {
-            equalObjects = projDB.getDbTimestamp().searchEqualsObjects(dbTime);
-        }
+        AntlrParser.finishAntlr(antlrTasks);
     }
 }
