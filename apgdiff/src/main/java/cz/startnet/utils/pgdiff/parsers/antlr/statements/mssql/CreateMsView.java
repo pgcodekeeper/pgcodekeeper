@@ -72,8 +72,6 @@ public class CreateMsView extends BatchContextProcessor {
             MsSelect select = new MsSelect(schemaName);
             select.analyze(new MsSelectStmt(vQuery));
             view.addAllDeps(select.getDepcies());
-
-            view.getDeps().forEach(System.err::println);
         }
 
         return view;
