@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import cz.startnet.utils.pgdiff.NotAllowedObjectException;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffScript;
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -20,7 +21,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class ActionsToScriptConverter {
 
-    private static final String REFRESH_MODULE = "EXEC sys.sp_refreshsqlmodule ''{0}'' \nGO";
+    private static final String REFRESH_MODULE = "EXEC sys.sp_refreshsqlmodule {0} \nGO";
 
     private static final String DROP_COMMENT = "-- DEPCY: This {0} depends on the {1}: {2}";
     private static final String CREATE_COMMENT = "-- DEPCY: This {0} is a dependency of {1}: {2}";
@@ -84,7 +85,7 @@ public class ActionsToScriptConverter {
                     }
                     if (toRefresh.contains(oldObj)) {
                         script.addStatement(MessageFormat.format(REFRESH_MODULE,
-                                oldObj.getQualifiedName()));
+                                PgDiffUtils.quoteString(oldObj.getQualifiedName())));
                     } else {
                         script.addCreate(oldObj, null, oldObj.getCreationSQL(), true);
                     }
