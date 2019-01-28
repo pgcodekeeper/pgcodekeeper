@@ -38,7 +38,7 @@ public class CreateMsSchema extends ParserAbstract {
         db.addSchema(schema);
 
         if (ctx.schema_def != null) {
-            String defaultSchemaName = db.getDefaultSchema().getName();
+            String defaultSchemaName = getDefSchemaName();
             try {
                 db.setDefaultSchema(name);
                 for (Schema_definitionContext sd : ctx.schema_definition()) {
