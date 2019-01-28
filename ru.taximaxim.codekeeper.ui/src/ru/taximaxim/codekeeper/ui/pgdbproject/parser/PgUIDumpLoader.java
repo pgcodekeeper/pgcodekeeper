@@ -64,7 +64,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
     }
 
     protected PgDatabase loadFile(PgDatabase db, Queue<AntlrTask<?>> antlrTasks)
-            throws InterruptedException, IOException {
+            throws InterruptedException {
         try {
             loadDatabase(db, antlrTasks);
             return db;

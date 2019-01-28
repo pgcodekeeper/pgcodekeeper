@@ -108,8 +108,7 @@ public class AntlrParser {
 
     public static void parseSqlStream(InputStream inputStream, String charsetName,
             String parsedObjectName, List<AntlrError> errors, IProgressMonitor mon, int monitoringLevel,
-            Collection<SqlContextProcessor> listeners, Queue<AntlrTask<?>> antlrTasks)
-                    throws InterruptedException {
+            Collection<SqlContextProcessor> listeners, Queue<AntlrTask<?>> antlrTasks) {
         submitAntlrTask(antlrTasks, () -> {
             try(InputStream forAutoCloseInputStream = inputStream) {
                 SQLParser parser = makeBasicParser(SQLParser.class, inputStream,
@@ -131,8 +130,7 @@ public class AntlrParser {
 
     public static void parseTSqlStream(InputStream inputStream, String charsetName,
             String parsedObjectName, List<AntlrError> errors, IProgressMonitor mon, int monitoringLevel,
-            Collection<TSqlContextProcessor> listeners, Queue<AntlrTask<?>> antlrTasks)
-                    throws InterruptedException {
+            Collection<TSqlContextProcessor> listeners, Queue<AntlrTask<?>> antlrTasks) {
         submitAntlrTask(antlrTasks, () -> {
             try(InputStream forAutoCloseInputStream = inputStream) {
                 TSQLParser parser = makeBasicParser(TSQLParser.class,
