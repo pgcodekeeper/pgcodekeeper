@@ -20,6 +20,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_of_type_column_def
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_of_type_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_unique_prkeyContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Type_with_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_name_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
@@ -30,6 +31,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceExcep
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
+import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -38,7 +40,6 @@ import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class TableAbstract extends ParserAbstract {
@@ -155,6 +156,7 @@ public abstract class TableAbstract extends ParserAbstract {
         if (datatype != null) {
             col.setType(getFullCtxText(datatype));
             addTypeAsDepcy(datatype, col, getDefSchemaName());
+            checkTypeWithArgs(datatype, col);
         }
         if (collate != null) {
             col.setCollation(getFullCtxText(collate.collation));
@@ -169,6 +171,15 @@ public abstract class TableAbstract extends ParserAbstract {
             }
         }
         table.addColumn(col);
+    }
+
+    private void checkTypeWithArgs(Data_typeContext datatype, PgColumn col) {
+        Type_with_argsContext typeWithArgs = datatype.predefined_type().type_with_args();
+        if (typeWithArgs != null) {
+            for (VexContext vCtx : typeWithArgs.vex()) {
+                db.addContextForAnalyze(col, vCtx);
+            }
+        }
     }
 
     protected void addColumn(String columnName, Data_typeContext datatype,
