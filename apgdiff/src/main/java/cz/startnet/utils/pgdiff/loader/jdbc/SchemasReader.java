@@ -25,11 +25,7 @@ public class SchemasReader implements PgCatalogStrings {
     public void read() throws SQLException, InterruptedException {
         loader.setCurrentOperation("schemas query");
 
-        String query = JdbcQueries.QUERY_SCHEMAS.getQuery();
-
-        if (loader.getExtensionSchema() != null) {
-            query = JdbcReader.appendTimestamps(query, loader.getExtensionSchema());
-        }
+        String query = loader.appendTimestamps(JdbcQueries.QUERY_SCHEMAS.getQuery());
 
         try (ResultSet result = loader.runner.runScript(loader.statement, query)) {
             while (result.next()) {

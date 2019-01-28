@@ -3,7 +3,6 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.MessageFormat;
 
 import cz.startnet.utils.pgdiff.loader.JdbcQuery;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
@@ -11,9 +10,6 @@ import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class JdbcReader implements PgCatalogStrings {
-
-    private static final String EXTENSION_QUERY = "SELECT q.*, time.ses_user FROM ({0}) q\n"
-            + "LEFT JOIN {1}.dbots_event_data time ON q.oid = time.objid";
 
     protected final JdbcQuery queries;
     protected final JdbcLoaderBase loader;
@@ -24,11 +20,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
     }
 
     public void read() throws SQLException, InterruptedException, XmlReaderException {
-        String query = queries.makeQuery(loader.version);
-
-        if (loader.getExtensionSchema() != null) {
-            query = appendTimestamps(query, loader.getExtensionSchema());
-        }
+        String query = loader.appendTimestamps(queries.makeQuery(loader.version));
 
         loader.setCurrentOperation(getClass().getSimpleName() + " query");
         try (ResultSet result = loader.runner.runScript(loader.statement, query)) {
@@ -74,17 +66,6 @@ public abstract class JdbcReader implements PgCatalogStrings {
             return ret;
         }
         return null;
-    }
-
-    /**
-     * Join timestamps to query
-     *
-     * @param base base query
-     * @param schema extension schema
-     * @return new query
-     */
-    public static String appendTimestamps(String base, String schema) {
-        return MessageFormat.format(EXTENSION_QUERY, base, schema);
     }
 
     protected abstract void processResult(ResultSet result, AbstractSchema schema)

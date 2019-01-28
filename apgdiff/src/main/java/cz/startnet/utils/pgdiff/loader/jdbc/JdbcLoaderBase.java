@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.MessageFormat;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,6 +48,9 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  * @author levsha_aa
  */
 public abstract class JdbcLoaderBase implements PgCatalogStrings {
+
+    private static final String EXTENSION_QUERY = "SELECT q.*, time.ses_user FROM ({0}) q\n"
+            + "LEFT JOIN {1}.dbots_event_data time ON q.oid = time.objid";
 
     private static final int DEFAULT_OBJECTS_COUNT = 100;
 
@@ -119,6 +123,19 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
 
     protected void addError(final String message) {
         errors.add(getCurrentLocation() + ' ' + message);
+    }
+
+    /**
+     * Join timestamps to query
+     *
+     * @param base base query
+     * @return new query
+     */
+    public String appendTimestamps(String base) {
+        if (extensionSchema == null) {
+            return base;
+        }
+        return MessageFormat.format(EXTENSION_QUERY, base, PgDiffUtils.getQuotedName(extensionSchema));
     }
 
     public String getExtensionSchema() {
