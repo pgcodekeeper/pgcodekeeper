@@ -20,7 +20,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_of_type_column_def
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_of_type_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_unique_prkeyContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Type_with_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_name_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
@@ -156,7 +155,6 @@ public abstract class TableAbstract extends ParserAbstract {
         if (datatype != null) {
             col.setType(getFullCtxText(datatype));
             addTypeAsDepcy(datatype, col, getDefSchemaName());
-            checkTypeWithArgs(datatype, col);
         }
         if (collate != null) {
             col.setCollation(getFullCtxText(collate.collation));
@@ -171,15 +169,6 @@ public abstract class TableAbstract extends ParserAbstract {
             }
         }
         table.addColumn(col);
-    }
-
-    private void checkTypeWithArgs(Data_typeContext datatype, PgColumn col) {
-        Type_with_argsContext typeWithArgs = datatype.predefined_type().type_with_args();
-        if (typeWithArgs != null) {
-            for (VexContext vCtx : typeWithArgs.vex()) {
-                db.addContextForAnalyze(col, vCtx);
-            }
-        }
     }
 
     protected void addColumn(String columnName, Data_typeContext datatype,
