@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.MessageFormat;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,8 +26,6 @@ import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
-import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
@@ -36,11 +35,11 @@ import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -49,6 +48,9 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  * @author levsha_aa
  */
 public abstract class JdbcLoaderBase implements PgCatalogStrings {
+
+    private static final String EXTENSION_QUERY = "SELECT q.*, time.ses_user FROM ({0}) q\n"
+            + "LEFT JOIN {1}.dbots_event_data time ON q.oid = time.objid";
 
     private static final int DEFAULT_OBJECTS_COUNT = 100;
 
@@ -70,7 +72,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected List<String> errors = new ArrayList<>();
     protected JdbcRunner runner;
 
-    protected final TimestampParam timestampParams = new TimestampParam();
+    private String extensionSchema;
 
     public JdbcLoaderBase(JdbcConnector connector, SubMonitor monitor, PgDiffArguments args) {
         this.connector = connector;
@@ -123,16 +125,21 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         errors.add(getCurrentLocation() + ' ' + message);
     }
 
-    public List<ObjectTimestamp> getTimestampEqualObjects() {
-        return timestampParams.equalObjects;
-    }
-
-    public PgDatabase getTimestampProjDb() {
-        return timestampParams.projDB;
+    /**
+     * Join timestamps to query
+     *
+     * @param base base query
+     * @return new query
+     */
+    public String appendTimestamps(String base) {
+        if (extensionSchema == null) {
+            return base;
+        }
+        return MessageFormat.format(EXTENSION_QUERY, base, PgDiffUtils.getQuotedName(extensionSchema));
     }
 
     public String getExtensionSchema() {
-        return timestampParams.extensionSchema;
+        return extensionSchema;
     }
 
     protected String getRoleByOid(long oid) {
@@ -151,6 +158,12 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected void setOwner(PgStatement st, String owner) {
         if (!args.isIgnorePrivileges()) {
             st.setOwner(owner);
+        }
+    }
+
+    protected void setAuthor(PgStatement st, ResultSet res) throws SQLException {
+        if (getExtensionSchema() != null) {
+            st.setAuthor(res.getString(AUTHOR));
         }
     }
 
@@ -414,6 +427,24 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         }
     }
 
+    protected void queryCheckExtension() throws SQLException, InterruptedException {
+        setCurrentOperation("check pg_dbo_timestamp extension");
+        try (ResultSet res = runner.runScript(statement, JdbcQueries.QUERY_CHECK_TIMESTAMPS)) {
+            while (res.next()) {
+                String version = res.getString("extversion");
+                if (!version.equals(ApgdiffConsts.EXTENSION_VERSION)) {
+                    Log.log(Log.LOG_INFO, "pg_dbo_timestamps: old version of extension is used: " +
+                            version + ", current version: " + ApgdiffConsts.EXTENSION_VERSION);
+                } else if (res.getBoolean("disabled")) {
+                    Log.log(Log.LOG_INFO, "pg_dbo_timestamps: event trigger is disabled");
+                } else {
+                    extensionSchema = res.getString("nspname");
+                }
+            }
+        }
+    }
+
+
     protected <T> void submitAntlrTask(String sql,
             Function<SQLParser, T> parserCtxReader, Consumer<T> finalizer) {
         submitAntlrTask(sql, parserCtxReader, finalizer, SQLParser.class);
@@ -441,20 +472,5 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected void finishAntlr() throws InterruptedException, IOException {
         setCurrentOperation("finalizing antlr");
         AntlrParser.finishAntlr(antlrTasks);
-    }
-
-    protected static class TimestampParam {
-        private List<ObjectTimestamp> equalObjects;
-        private PgDatabase projDB;
-        private String extensionSchema;
-
-        public void setTimeParams(PgDatabase projDB, String extensionSchema) {
-            this.projDB = projDB;
-            this.extensionSchema = extensionSchema;
-        }
-
-        public void fillEqualObjects(DBTimestamp dbTime) {
-            equalObjects = projDB.getDbTimestamp().searchEqualsObjects(dbTime);
-        }
     }
 }

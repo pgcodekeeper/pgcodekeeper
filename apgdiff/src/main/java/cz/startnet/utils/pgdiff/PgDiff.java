@@ -136,9 +136,12 @@ public final class PgDiff {
             return loader.loadSchemaOnly();
         } else if ("db".equals(format)) {
             String timezone = arguments.getTimeZone() == null ? ApgdiffConsts.UTC : arguments.getTimeZone();
-            return arguments.isMsSql() ?
-                    new JdbcMsLoader(JdbcConnector.fromUrl(srcPath), arguments).readDb()
-                    : new JdbcLoader(JdbcConnector.fromUrl(srcPath, timezone), arguments).getDbFromJdbc(db);
+            if (arguments.isMsSql()) {
+                return new JdbcMsLoader(JdbcConnector.fromUrl(srcPath), arguments).readDb();
+            }
+
+            return new JdbcLoader(JdbcConnector.fromUrl(srcPath, timezone), arguments)
+                    .getDbFromJdbc();
         }
 
         throw new UnsupportedOperationException(
