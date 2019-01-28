@@ -268,7 +268,6 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     RESET: [rR] [eE] [sS] [eE] [tT];
     RESTART: [rR] [eE] [sS] [tT] [aA] [rR] [tT];
     RESTRICT: [rR] [eE] [sS] [tT] [rR] [iI] [cC] [tT];
-    RETURN: [rR] [eE] [tT] [uU] [rR] [nN];
     RETURNS: [rR] [eE] [tT] [uU] [rR] [nN] [sS];
     REVOKE: [rR] [eE] [vV] [oO] [kK] [eE];
     ROLE: [rR] [oO] [lL] [eE];
