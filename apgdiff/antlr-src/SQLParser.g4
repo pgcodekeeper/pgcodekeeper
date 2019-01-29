@@ -12,7 +12,7 @@ options {
 /******* Start symbols *******/
 
 sql
-    : BOM? (statement SEMI_COLON?)* EOF
+    : BOM? (statement? SEMI_COLON)* statement? EOF
     ;
 
 qname_parser
@@ -1460,7 +1460,7 @@ identifier
   ;
 
 identifier_nontype
-  : (Identifier | QuotedIdentifier | DOLLAR_NUMBER)
+  : (Identifier | QuotedIdentifier)
   | tokens_nonreserved
   | tokens_reserved_except_function_type
   | tokens_nonkeyword
