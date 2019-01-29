@@ -242,6 +242,8 @@ public class FunctionsReader extends JdbcReader {
         }
 
         function.setBody(loader.args, body.toString());
+
+        // TODO add function definition parsing and analyze
     }
 
     /**

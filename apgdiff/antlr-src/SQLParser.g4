@@ -12,7 +12,7 @@ options {
 /******* Start symbols *******/
 
 sql
-    : BOM? (statement SEMI_COLON)* EOF
+    : BOM? (statement? SEMI_COLON)* statement? EOF
     ;
 
 qname_parser
@@ -1453,7 +1453,7 @@ if_exist_names_restrict_cascade
   includes types
 */
 identifier
-  : (Identifier | QuotedIdentifier)
+  : (Identifier | QuotedIdentifier | DOLLAR_NUMBER)
   | tokens_nonreserved
   | tokens_nonreserved_except_function_type
   | tokens_nonkeyword
@@ -2151,7 +2151,6 @@ unsigned_numeric_literal
 general_literal
   : character_string
   | truth_value
-  | DOLLAR_NUMBER
   ;
 
 truth_value
@@ -2169,7 +2168,7 @@ cast_specification
 // using data_type for function name because keyword-named functions
 // use the same category of keywords as keyword-named types
 function_call
-    : function_name LEFT_PAREN (set_qualifier? vex (COMMA vex)* orderby_clause?)? RIGHT_PAREN
+    : function_name LEFT_PAREN (set_qualifier? vex_or_named_notation (COMMA vex_or_named_notation)* orderby_clause?)? RIGHT_PAREN
         filter_clause? (OVER window_definition)?
     | extract_function
     | system_function
@@ -2183,6 +2182,14 @@ function_name
   // allow for all built-in function except those with explicit syntax rules defined
   | (identifier DOT)? tokens_simple_functions
   ;
+
+vex_or_named_notation
+    : (argname=identifier pointer)? vex
+    ;
+
+pointer
+    : EQUAL_GTH | COLON_EQUAL
+    ;
 
 extract_function
   : EXTRACT LEFT_PAREN extract_field_string=identifier FROM vex RIGHT_PAREN

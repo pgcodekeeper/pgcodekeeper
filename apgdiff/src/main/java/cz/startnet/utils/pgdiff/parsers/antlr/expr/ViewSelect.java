@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -47,6 +48,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Values_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Values_valuesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Vex_bContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Vex_or_named_notationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Window_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_queryContext;
@@ -340,7 +342,7 @@ public class ViewSelect {
         Function_callContext function;
         Indirection_identifierContext indirection;
         Array_expressionContext array;
-        List<Vex> subOperands = null;
+        ArrayList<Vex> subOperands = null;
 
         if (primary.LEFT_PAREN() != null && primary.RIGHT_PAREN() != null &&
                 subSelectStmt != null) {
@@ -413,7 +415,7 @@ public class ViewSelect {
      * @return function reference or null for internal functions
      */
     private void function(Function_callContext function) {
-        List<Vex> args = null;
+        ArrayList<Vex> args = null;
 
         Function_nameContext name = function.function_name();
 
@@ -422,7 +424,8 @@ public class ViewSelect {
         Xml_functionContext xml;
 
         if (name != null){
-            args = addVexCtxtoList(args, function.vex());
+            args = addVexCtxtoList(args, function.vex_or_named_notation(),
+                    Vex_or_named_notationContext::vex);
 
             Orderby_clauseContext orderBy = function.orderby_clause();
             if (orderBy != null) {
@@ -456,15 +459,22 @@ public class ViewSelect {
         }
     }
 
-    private List<Vex> addVexCtxtoList(List<Vex> list, List<VexContext> ctx) {
-        List<Vex> l = list;
+    private ArrayList<Vex> addVexCtxtoList(ArrayList<Vex> list, List<VexContext> ctx) {
+        return addVexCtxtoList(list, ctx, Function.identity());
+    }
+
+    private <T extends ParserRuleContext> ArrayList<Vex> addVexCtxtoList(
+            ArrayList<Vex> list, List<T> ctx, Function<T, VexContext> getVex) {
+        ArrayList<Vex> l = list;
         int toAdd = ctx.size();
         if (toAdd != 0) {
             if (l == null) {
                 l = new ArrayList<>(toAdd);
+            } else {
+                l.ensureCapacity(l.size() + toAdd);
             }
-            for (VexContext vexCtx : ctx) {
-                l.add(new Vex(vexCtx));
+            for (T c: ctx) {
+                l.add(new Vex(getVex.apply(c)));
             }
         }
         return l;

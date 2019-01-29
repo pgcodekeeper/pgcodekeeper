@@ -49,6 +49,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Unsigned_value_specifica
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expression_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Vex_bContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Vex_or_named_notationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Window_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Xml_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
@@ -327,9 +328,16 @@ public class ValueExpr extends AbstractExpr {
             functionName = funcNameCtx.getText();
         }
 
-        List<VexContext> args = function.vex();
+        // TODO add processing for named/mixed notation in functions, because
+        // of order the arguments in function call (if order of arguments
+        // are not the same as in original - the current analysis will fail)
+        //
+        // (4.3.2. Using Named Notation / 4.3.3. Using Mixed Notation)
+        // https://www.postgresql.org/docs/11/sql-syntax-calling-funcs.html
+
+        List<Vex_or_named_notationContext> args = function.vex_or_named_notation();
         Value_expression_primaryContext primary;
-        if (args.size() == 1 && (primary = args.get(0).value_expression_primary()) != null
+        if (args.size() == 1 && (primary = args.get(0).vex().value_expression_primary()) != null
                 && primary.qualified_asterisk() != null) {
             //// In this case function's argument is '*' or 'source.*'.
 
@@ -346,7 +354,8 @@ public class ValueExpr extends AbstractExpr {
                     getFunctionReturns(func) : TypesSetManually.FUNCTION_COLUMN);
         } else {
             List<String> argsType = new ArrayList<>(args.size());
-            for (VexContext arg : args) {
+            for (VexContext arg : PgDiffUtils.sIter(args.stream()
+                    .map(Vex_or_named_notationContext::vex))) {
                 argsType.add(analyze(new Vex(arg)).getSecond());
             }
 
