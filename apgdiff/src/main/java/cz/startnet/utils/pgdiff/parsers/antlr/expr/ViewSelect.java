@@ -7,7 +7,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -425,8 +424,8 @@ public class ViewSelect {
         Xml_functionContext xml;
 
         if (name != null){
-            args = addVexCtxtoList(args, function.vex_or_named_notation().stream()
-                    .map(Vex_or_named_notationContext::vex).collect(Collectors.toList()));
+            args = addVexCtxtoList(args, function.vex_or_named_notation(),
+                    Vex_or_named_notationContext::vex);
 
             Orderby_clauseContext orderBy = function.orderby_clause();
             if (orderBy != null) {

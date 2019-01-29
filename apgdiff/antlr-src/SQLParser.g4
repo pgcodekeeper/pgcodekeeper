@@ -1453,14 +1453,14 @@ if_exist_names_restrict_cascade
   includes types
 */
 identifier
-  : (Identifier | QuotedIdentifier)
+  : (Identifier | QuotedIdentifier | DOLLAR_NUMBER)
   | tokens_nonreserved
   | tokens_nonreserved_except_function_type
   | tokens_nonkeyword
   ;
 
 identifier_nontype
-  : (Identifier | QuotedIdentifier)
+  : (Identifier | QuotedIdentifier | DOLLAR_NUMBER)
   | tokens_nonreserved
   | tokens_reserved_except_function_type
   | tokens_nonkeyword
@@ -2151,7 +2151,6 @@ unsigned_numeric_literal
 general_literal
   : character_string
   | truth_value
-  | DOLLAR_NUMBER
   ;
 
 truth_value
