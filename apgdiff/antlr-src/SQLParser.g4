@@ -12,7 +12,9 @@ options {
 /******* Start symbols *******/
 
 sql
-    : BOM? (statement? SEMI_COLON)* statement? EOF
+    // FIXME 2x DFA cache memory
+    //: BOM? (statement? SEMI_COLON)* statement? EOF
+    : BOM? (statement SEMI_COLON)* EOF
     ;
 
 qname_parser
