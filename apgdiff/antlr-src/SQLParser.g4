@@ -2034,7 +2034,7 @@ predefined_type
   | TIME type_length? ((WITH | WITHOUT) TIME ZONE)?
   | TIMESTAMP type_length? ((WITH | WITHOUT) TIME ZONE)?
   | VARCHAR type_length?
-  | schema_qualified_name_nontype
+  | schema_qualified_name_nontype (LEFT_PAREN vex (COMMA vex)* RIGHT_PAREN)?
   ;
 
 type_length
