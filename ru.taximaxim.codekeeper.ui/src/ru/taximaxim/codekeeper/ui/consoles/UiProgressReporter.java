@@ -3,6 +3,7 @@ package ru.taximaxim.codekeeper.ui.consoles;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
+import org.eclipse.ui.console.IConsoleManager;
 
 import cz.startnet.utils.pgdiff.IProgressReporter;
 
@@ -11,9 +12,9 @@ public class UiProgressReporter implements IProgressReporter {
     private final CodekeeperConsole console;
 
     public UiProgressReporter(IProgressMonitor monitor) {
-        console = new CodekeeperConsole(monitor);
-        ConsolePlugin.getDefault().getConsoleManager()
-        .addConsoles(new IConsole[] { console });
+        IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
+        console = CodekeeperConsole.createInstance(monitor);
+        manager.addConsoles(new IConsole[] { console });
     }
 
     @Override
