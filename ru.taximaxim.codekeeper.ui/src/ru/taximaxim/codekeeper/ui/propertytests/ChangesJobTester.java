@@ -23,7 +23,7 @@ public class ChangesJobTester extends SingletonJobTester {
         if (editor instanceof SQLEditor) {
             editor = findProjectEditor((SQLEditor) editor);
         }
-        return editor == null ? false : super.test(editor, property, args, expectedValue);
+        return editor != null && super.test(editor, property, args, expectedValue);
     }
 
     private static ProjectEditorDiffer findProjectEditor(SQLEditor editor) {

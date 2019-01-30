@@ -151,7 +151,6 @@ public final class OpenProjectUtils {
         } catch (CoreException ex) {
             ExceptionNotifier.notifyDefault(MessageFormat.format(
                     Messages.OpenProjectUtils_schema_convert_error, ex.getLocalizedMessage()), ex);
-            return;
         }
     }
 

@@ -83,6 +83,7 @@ public class OperatorsReader extends JdbcReader {
             oper.setJoin(getProcessedName(res.getString("join_nsp"), joinFuncName));
         }
 
+        loader.setAuthor(oper, res);
         schema.addOperator(oper);
     }
 

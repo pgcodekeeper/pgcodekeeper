@@ -18,6 +18,7 @@ import java.util.concurrent.TimeoutException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
+import cz.startnet.utils.pgdiff.IProgressReporter;
 import cz.startnet.utils.pgdiff.loader.callables.QueriesBatchCallable;
 import cz.startnet.utils.pgdiff.loader.callables.QueryCallable;
 import cz.startnet.utils.pgdiff.loader.callables.ResultSetCallable;
@@ -72,14 +73,16 @@ public class JdbcRunner {
      *
      * @param connector contains database connection information
      * @param batches contains splited queries of Statements
+     * @param reporter reports result
      * @throws SQLException
      * @throws IOException
      * @throws InterruptedException
      */
-    public void runBatches(JdbcConnector connector, List<List<String>> batches) throws SQLException, IOException, InterruptedException {
+    public void runBatches(JdbcConnector connector, List<List<String>> batches,
+            IProgressReporter reporter) throws SQLException, IOException, InterruptedException {
         try (Connection connection = connector.getConnection();
                 Statement st = connection.createStatement()) {
-            runScript(new QueriesBatchCallable(st, batches, monitor, connection));
+            runScript(new QueriesBatchCallable(st, batches, monitor, reporter, connection));
         }
     }
 

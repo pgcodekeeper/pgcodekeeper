@@ -8,4 +8,6 @@ public interface PgCatalogStrings {
 
     String CLASS_RELNAME = "relname";
     String CLASS_RELOWNER = "relowner";
+
+    String AUTHOR = "ses_user";
 }

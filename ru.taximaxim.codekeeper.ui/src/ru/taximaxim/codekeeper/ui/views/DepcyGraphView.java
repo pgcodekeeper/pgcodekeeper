@@ -50,7 +50,8 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, ISelectionListener {
 
-    private final Action projectAction, remoteAction;
+    private final Action projectAction;
+    private final Action remoteAction;
     private GraphViewer gv;
     private DepcyGraphLabelProvider labelProvider;
 

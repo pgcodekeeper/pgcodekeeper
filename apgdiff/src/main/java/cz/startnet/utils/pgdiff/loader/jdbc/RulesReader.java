@@ -71,6 +71,7 @@ public class RulesReader extends JdbcReader {
                 .schema_statement().schema_create().create_rewrite_statement(),
                 ctx -> CreateRewrite.setConditionAndAddCommands(ctx, r, schema.getDatabase()));
 
+        loader.setAuthor(r, res);
         // COMMENT
         String comment = res.getString("comment");
         if (comment != null && !comment.isEmpty()) {

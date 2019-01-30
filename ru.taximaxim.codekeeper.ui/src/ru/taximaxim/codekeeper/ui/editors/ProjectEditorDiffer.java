@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -73,7 +72,6 @@ import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.FileEditorInput;
-import org.eclipse.ui.statushandlers.StatusManager;
 import org.osgi.service.prefs.BackingStoreException;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
@@ -86,7 +84,6 @@ import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyTreeExtender;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -106,19 +103,16 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PATH;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.VIEW;
 import ru.taximaxim.codekeeper.ui.UiSync;
-import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dialogs.CommitDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.dialogs.ManualDepciesDialog;
-import ru.taximaxim.codekeeper.ui.differ.ClassicTreeDiffer;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffPaneViewer;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
-import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.job.SingletonEditorJob;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -484,21 +478,21 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         DbSource dbProject = DbSource.fromProject(proj);
 
-        DbSource dbRemote;
         TreeDiffer newDiffer;
         String name;
 
         if (isDbInfo) {
             DbInfo dbInfo = (DbInfo) currentRemote;
-            newDiffer = TreeDiffer.getTree(dbProject, dbInfo, charset, forceUnixNewlines,
-                    mainPrefs, projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
+            DbSource dbRemote = DbSource.fromDbInfo(dbInfo, mainPrefs, forceUnixNewlines,
+                    charset, projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
+            newDiffer = new TreeDiffer(dbProject, dbRemote);
             name = dbInfo.getName();
             saveLastDb(dbInfo);
         } else {
             File file = (File) currentRemote;
             name = file.getName();
-            dbRemote = DbSource.fromFile(forceUnixNewlines, file, charset, isMsProj);
-            newDiffer = new ClassicTreeDiffer(dbProject, dbRemote, false);
+            DbSource dbRemote = DbSource.fromFile(forceUnixNewlines, file, charset, isMsProj);
+            newDiffer = new TreeDiffer(dbProject, dbRemote);
         }
 
         String title = getEditorInput().getName() + " - " + name; //$NON-NLS-1$
@@ -569,10 +563,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                         }
                     });
                 }
-
-                newDiffer.getErrors().forEach(e -> StatusManager.getManager().handle(
-                        new Status(IStatus.WARNING, PLUGIN_ID.THIS, e.toString()),
-                        StatusManager.SHOW));
             }
         });
         job.setUser(true);
@@ -729,8 +719,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             InternalIgnoreList.readAppendList(
                     proj.getPathToProject().resolve(FILE.IGNORED_OBJECTS), ignoreList);
 
-            if (loadedRemote != null && loadedRemote instanceof DbInfo) {
-                ((DbInfo)loadedRemote).appendIgnoreFiles(ignoreList);
+            if (loadedRemote instanceof DbInfo) {
+                ((DbInfo) loadedRemote).appendIgnoreFiles(ignoreList);
             }
 
             try {
@@ -810,7 +800,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     }
 
     private String generateScriptName() {
-        String name = FileUtils.FILE_DATE.format(LocalDateTime.now()) + " migration"; //$NON-NLS-1$
+        String name = FileUtils.getFileDate() + " migration"; //$NON-NLS-1$
         if (loadedRemote != null) {
             name += " for " + getRemoteName(loadedRemote); //$NON-NLS-1$
         }
@@ -890,47 +880,22 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         boolean considerDepcy = mainPrefs.getBoolean(COMMIT_PREF.CONSIDER_DEPCY_IN_COMMIT);
         Set<TreeElement> sumNewAndDelete = null;
+        TreeElement treeCopy = diffTree.getCopy();
         if (considerDepcy) {
             Log.log(Log.LOG_INFO, "Processing depcies for project update"); //$NON-NLS-1$
             sumNewAndDelete = new DepcyTreeExtender(dbProject.getDbObject(),
-                    dbRemote.getDbObject(), diffTree).getDepcies();
+                    dbRemote.getDbObject(), treeCopy).getDepcies();
         }
 
         Log.log(Log.LOG_INFO, "Querying user for project update"); //$NON-NLS-1$
         // display commit dialog
         CommitDialog cd = new CommitDialog(parent.getShell(), sumNewAndDelete,
-                dbProject, dbRemote, diffTree, mainPrefs, isCommitCommandAvailable,
-                forceSave);
+                dbProject, dbRemote, treeCopy, mainPrefs, isCommitCommandAvailable,
+                forceSave, proj);
         if (cd.open() != CommitDialog.OK) {
             return;
         }
-
-        Log.log(Log.LOG_INFO, "Updating project " + proj.getProjectName()); //$NON-NLS-1$
-        Job job = new JobProjectUpdater(Messages.projectEditorDiffer_save_project, diffTree, cd.isOverridesOnly());
-        job.addJobChangeListener(new JobChangeAdapter() {
-
-            @Override
-            public void done(IJobChangeEvent event) {
-                Log.log(Log.LOG_INFO, "Project updater job finished with status " + //$NON-NLS-1$
-                        event.getResult().getSeverity());
-                if (event.getResult().isOK()) {
-                    ConsoleFactory.write(Messages.commitPartDescr_success_project_updated);
-                    try {
-                        proj.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
-                        UiSync.exec(parent, () -> {
-                            if (!parent.isDisposed()) {
-                                callEgitCommitCommand();
-                            }
-                        });
-                    } catch (CoreException e) {
-                        ExceptionNotifier.notifyDefault(Messages.ProjectEditorDiffer_error_refreshing_project, e);
-                    }
-                }
-            }
-        });
-
-        job.setUser(true);
-        job.schedule();
+        callEgitCommitCommand();
     }
 
     private void callEgitCommitCommand(){
@@ -974,45 +939,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             mb.open();
         }
         return checked;
-    }
-
-    private class JobProjectUpdater extends Job {
-
-        private final TreeElement tree;
-        private final boolean overridesOnly;
-
-        JobProjectUpdater(String name, TreeElement tree, boolean overridesOnly) {
-            super(name);
-            this.tree = tree;
-            this.overridesOnly = overridesOnly;
-        }
-
-        @Override
-        protected IStatus run(IProgressMonitor monitor) {
-            SubMonitor pm = SubMonitor.convert(
-                    monitor, Messages.commitPartDescr_commiting, 2);
-
-            Log.log(Log.LOG_INFO, "Applying diff tree to db"); //$NON-NLS-1$
-            pm.newChild(1).subTask(Messages.commitPartDescr_modifying_db_model); // 1
-            pm.newChild(1).subTask(Messages.commitPartDescr_exporting_db_model); // 2
-
-            try {
-                Collection<TreeElement> checked = new TreeFlattener()
-                        .onlySelected()
-                        .onlyEdits(dbProject.getDbObject(), dbRemote.getDbObject())
-                        .flatten(tree);
-                new ProjectUpdater(dbRemote.getDbObject(), dbProject.getDbObject(),
-                        checked, proj, overridesOnly).updatePartial();
-                monitor.done();
-            } catch (IOException | CoreException e) {
-                return new Status(Status.ERROR, PLUGIN_ID.THIS,
-                        Messages.ProjectEditorDiffer_commit_error, e);
-            }
-            if (monitor.isCanceled()) {
-                return Status.CANCEL_STATUS;
-            }
-            return Status.OK_STATUS;
-        }
     }
 
     public static void notifyDbChanged(DbInfo dbinfo) {

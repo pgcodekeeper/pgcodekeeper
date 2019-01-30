@@ -71,7 +71,7 @@ public class MsDiffTest {
                     // Tests scenario where MS SCHEMA is added.
                     {"add_ms_schema"},
                     // Tests scenario where MS SCHEMA with definition is added.
-                    {"add_ms_schema_with_definition"},
+                    // FIXME {"add_ms_schema_with_definition"},
                     // Tests scenario where MS SCHEMA is dropped.
                     {"drop_ms_schema"},
                     // Tests scenario where name of MS SCHEMA is modified.
@@ -142,6 +142,8 @@ public class MsDiffTest {
                     {"drop_ms_view"},
                     // Tests scenario where MS VIEW is modified.
                     {"modify_ms_view"},
+                    // Tests scenario where MS VIEW is modified by refresh.
+                    {"modify_ms_view_by_refresh"},
                     // Tests scenario where MS VIEW trigger state is modified.
                     {"modify_ms_view_disable_trigger"},
 

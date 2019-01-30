@@ -88,7 +88,6 @@ import org.eclipse.ui.ISharedImages;
 
 import cz.startnet.utils.pgdiff.libraries.PgLibrary;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
-import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -810,11 +809,7 @@ public class DiffTableViewer extends Composite {
         }
 
         if (dbRemote != null) {
-            DBTimestamp dbTime = dbRemote.getDbObject().getDbTimestamp();
-            if (dbTime != null) {
-                readDbUsers(dbTime);
-            }
-            showDbUser = dbTime != null;
+            readDbUsers();
         }
 
         viewer.setInput(elements);
@@ -879,13 +874,18 @@ public class DiffTableViewer extends Composite {
         });
     }
 
-    private void readDbUsers(DBTimestamp dbTime) {
+    private void readDbUsers() {
         elementInfoMap.forEach((k,v) -> {
             if (k.getSide() != DiffSide.LEFT) {
-                v.setDbUser(dbTime.getElementAuthor(k));
+                String author = k.getPgStatement(dbRemote.getDbObject()).getAuthor();
+                v.setDbUser(author);
+                if (author != null) {
+                    showDbUser = true;
+                }
             }
         });
     }
+
 
     private void readGitUsers() {
         Job job = new Job(Messages.DiffTableViewer_reading_git_history) {
@@ -1157,7 +1157,7 @@ public class DiffTableViewer extends Composite {
 
         private Entry<Boolean, Boolean> getState(TreeElement el, Boolean providedExpandedState) {
             Boolean grayed = contGraySelected(el, providedExpandedState);
-            return new SimpleEntry<>(el.isSelected() ? true : grayed, grayed);
+            return new SimpleEntry<>(el.isSelected() || grayed, grayed);
         }
 
         /**
@@ -1343,15 +1343,15 @@ public class DiffTableViewer extends Composite {
 
             if (!types.isEmpty() && !types.contains(el.getType())
                     && (!isSubElement || !types.contains(el.getParent().getType()))
-                    && (!isContainer(el) || !el.getChildren().stream()
-                            .anyMatch(e -> types.contains(e.getType())))) {
+                    && (!isContainer(el) || el.getChildren().stream()
+                            .noneMatch(e -> types.contains(e.getType())))) {
                 return false;
             }
 
             if (!sides.isEmpty() && !sides.contains(el.getSide())
                     && (!isSubElement || !sides.contains(el.getParent().getSide()))
-                    && (!isContainer(el) || !el.getChildren().stream()
-                            .anyMatch(e -> sides.contains(e.getSide())))) {
+                    && (!isContainer(el) || el.getChildren().stream()
+                            .noneMatch(e -> sides.contains(e.getSide())))) {
                 return false;
             }
 

@@ -21,7 +21,6 @@ import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -50,8 +49,6 @@ public class PgDatabase extends PgStatement {
     private final List<Entry<PgStatementWithSearchPath, ParserRuleContext>> contextsForAnalyze = new ArrayList<>();
 
     private PgDiffArguments arguments;
-
-    private DBTimestamp dbTimestamp;
 
     private final List<PgOverride> overrides = new ArrayList<>();
     private SupportedVersion postgresVersion;
@@ -101,14 +98,6 @@ public class PgDatabase extends PgStatement {
      */
     public void addContextForAnalyze(PgStatementWithSearchPath stmt, ParserRuleContext ctx) {
         contextsForAnalyze.add(new SimpleEntry<>(stmt, ctx));
-    }
-
-    public void setDbTimestamp(DBTimestamp dbTimestamp) {
-        this.dbTimestamp = dbTimestamp;
-    }
-
-    public DBTimestamp getDbTimestamp() {
-        return dbTimestamp;
     }
 
     public SupportedVersion getPostgresVersion() {

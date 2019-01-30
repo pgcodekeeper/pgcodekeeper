@@ -4,12 +4,14 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -17,6 +19,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
@@ -44,6 +48,8 @@ public class ProjectLoader {
     protected final Map<PgStatement, StatementOverride> overrides = new LinkedHashMap<>();
 
     protected boolean isOverrideMode;
+
+    private final Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
 
     public ProjectLoader(String dirPath, PgDiffArguments arguments) {
         this(dirPath, arguments, null, null);
@@ -90,6 +96,8 @@ public class ProjectLoader {
             loadPgStructure(dir, db);
         }
 
+        AntlrParser.finishAntlr(antlrTasks);
+
         return db;
     }
 
@@ -105,6 +113,7 @@ public class ProjectLoader {
             } else {
                 loadPgStructure(dir, db);
             }
+            AntlrParser.finishAntlr(antlrTasks);
             replaceOverrides();
         } finally {
             isOverrideMode = false;
@@ -140,10 +149,14 @@ public class ProjectLoader {
 
     private void loadMsStructure(File dir, PgDatabase db) throws InterruptedException, IOException {
         File securityFolder = new File(dir, MS_WORK_DIR_NAMES.SECURITY.getDirName());
+
+        loadSubdir(securityFolder, "Schemas", db);
+        // DBO schema check requires schema loads to finish first
+        AntlrParser.finishAntlr(antlrTasks);
+        addDboSchema(db);
+
         loadSubdir(securityFolder, "Roles", db);
         loadSubdir(securityFolder, "Users", db);
-        loadSubdir(securityFolder, "Schemas", db);
-        addDboSchema(db);
 
         for (MS_WORK_DIR_NAMES dirSub : MS_WORK_DIR_NAMES.values()) {
             loadSubdir(dir, dirSub.getDirName(), db);
@@ -177,7 +190,7 @@ public class ProjectLoader {
                         loader.setOverridesMap(overrides);
                     }
                     errList = loader.getErrors();
-                    loader.loadDatabase(db);
+                    loader.loadDatabase(db, antlrTasks);
                 } finally {
                     if (errors != null && errList != null && !errList.isEmpty()) {
                         errors.addAll(errList);
@@ -192,6 +205,7 @@ public class ProjectLoader {
         isOverrideMode = true;
         try {
             loadFiles(new File[] {path.toFile()}, db);
+            AntlrParser.finishAntlr(antlrTasks);
         } finally {
             isOverrideMode = false;
         }

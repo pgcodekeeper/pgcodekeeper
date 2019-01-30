@@ -3,10 +3,9 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 import org.antlr.v4.runtime.CommonTokenStream;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomTSQLParserListener;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_viewContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_schemaContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_definitionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Sql_clausesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.St_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
@@ -39,18 +38,16 @@ public class CreateMsSchema extends ParserAbstract {
         db.addSchema(schema);
 
         if (ctx.schema_def != null) {
-            String defaultSchemaName = db.getDefaultSchema().getName();
+            String defaultSchemaName = getDefSchemaName();
             try {
                 db.setDefaultSchema(name);
                 for (Schema_definitionContext sd : ctx.schema_definition()) {
-                    Sql_clausesContext clauses = sd.sql_clauses();
-                    Batch_statementContext batchSt;
-                    if (clauses != null) {
-                        for (St_clauseContext st : clauses.st_clause()) {
-                            listener.clause(st);
-                        }
-                    } else if ((batchSt = sd.batch_statement()) != null) {
-                        listener.batchStatement(batchSt, stream);
+                    St_clauseContext clause = sd.st_clause();
+                    Create_or_alter_viewContext viewSt;
+                    if (clause != null) {
+                        listener.clause(clause);
+                    } else if ((viewSt = sd.create_or_alter_view()) != null) {
+                        listener.schemaViewStatement(viewSt, stream);
                     }
                 }
             } finally {

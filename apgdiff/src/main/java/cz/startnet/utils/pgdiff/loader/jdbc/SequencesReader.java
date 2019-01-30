@@ -91,6 +91,7 @@ public class SequencesReader extends JdbcReader {
             s.setParent(schema);
             column.setIdentityType("d".equals(identityType) ? "BY DEFAULT" : "ALWAYS") ;
         } else {
+            loader.setAuthor(s, res);
             schema.addSequence(s);
         }
     }

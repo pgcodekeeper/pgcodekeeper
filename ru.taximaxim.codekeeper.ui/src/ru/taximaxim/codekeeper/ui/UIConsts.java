@@ -63,7 +63,6 @@ public interface UIConsts {
         String PGDUMP_CUSTOM_PARAMS = "prefPgdumpCustomParams"; //$NON-NLS-1$
         String PGDUMP_SWITCH = "prefPgDumpSwitch"; //$NON-NLS-1$
         String FORCE_SHOW_CONSOLE = "prefForceShowConsole"; //$NON-NLS-1$
-        String DB_STORE = "prefDbStore"; //$NON-NLS-1$
         String DB_STORE_FILES = "prefDbStoreHistory"; //$NON-NLS-1$
         //String IGNORE_OBJECTS = "prefIgnoreObjects"; //$NON-NLS-1$
         String NO_PRIVILEGES = "prefNoPrivileges"; //$NON-NLS-1$
@@ -79,8 +78,6 @@ public interface UIConsts {
         String EXPLICIT_TYPE_CAST = "explicitTypeCast"; //$NON-NLS-1$
 
         String REUSE_OPEN_COMPARE_EDITOR = "reuseOpenCompareEditors"; //$NON-NLS-1$
-
-        String USE_EXTENSION = "useExtension"; //$NON-NLS-1$
     }
 
     interface COMMIT_PREF {
@@ -88,7 +85,6 @@ public interface UIConsts {
     }
 
     interface DB_UPDATE_PREF {
-        String SHOW_SCRIPT_OUTPUT_SEPARATELY = "prefShowScriptOutputSeparately"; //$NON-NLS-1$
         String CREATE_SCRIPT_IN_PROJECT = "prefAddScriptToProject"; //$NON-NLS-1$
         String DELETE_SCRIPT_AFTER_CLOSE = "prefDeleteScriptAfterClose"; //$NON-NLS-1$
         String DROP_TABLE_STATEMENT = "prefDropTableStatement"; //$NON-NLS-1$

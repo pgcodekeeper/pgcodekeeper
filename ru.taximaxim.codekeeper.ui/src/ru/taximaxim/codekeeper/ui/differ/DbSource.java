@@ -32,6 +32,7 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
+import ru.taximaxim.codekeeper.ui.consoles.UiProgressReporter;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
@@ -87,13 +88,12 @@ public abstract class DbSource {
     protected abstract PgDatabase loadInternal(SubMonitor monitor)
             throws IOException, InterruptedException, CoreException;
 
-    static PgDiffArguments getPgDiffArgs(String charset, boolean forceUnixNewlines, boolean msSql)
-            throws IOException {
+    static PgDiffArguments getPgDiffArgs(String charset, boolean forceUnixNewlines, boolean msSql) {
         return getPgDiffArgs(charset, ApgdiffConsts.UTC, forceUnixNewlines, msSql);
     }
 
     static PgDiffArguments getPgDiffArgs(String charset, String timeZone,
-            boolean forceUnixNewlines, boolean msSql) throws IOException {
+            boolean forceUnixNewlines, boolean msSql) {
         PgDiffArguments args = new PgDiffArguments();
         IPreferenceStore mainPS = Activator.getDefault().getPreferenceStore();
         args.setInCharsetName(charset);
@@ -162,14 +162,6 @@ public abstract class DbSource {
      */
     public static DbSource fromDbObject(DbSource dbSource) {
         return fromDbObject(dbSource.getDbObject(), dbSource.getOrigin());
-    }
-
-    public static DbSource fromDbTimestamp(DbInfo dbInfo, boolean forceUnixNewlines, String charset,
-            String timezone, PgDatabase dbSrc, String extSchema) {
-        return new DbSourceTimestamp(new JdbcConnector(dbInfo.getDbHost(), dbInfo.getDbPort(),
-                dbInfo.getDbUser(), dbInfo.getDbPass(), dbInfo.getDbName(), dbInfo.getProperties(),
-                dbInfo.isReadOnly(), timezone), dbSrc, extSchema, dbInfo.getDbName(), charset,
-                forceUnixNewlines);
     }
 }
 
@@ -353,13 +345,12 @@ class DbSourceDb extends DbSource {
 
             new PgDumper(exePgdump, customParams,
                     host, port, user, pass, dbname, encoding, timezone,
-                    dump.getAbsolutePath()).pgDump();
+                    dump.getAbsolutePath(), new UiProgressReporter(monitor)).pgDump();
 
             pm.newChild(1).subTask(Messages.dbSource_loading_dump);
 
             try (PgDumpLoader loader = new PgDumpLoader(dump,
-                    getPgDiffArgs(encoding, forceUnixNewlines, false),
-                    monitor)) {
+                    getPgDiffArgs(encoding, forceUnixNewlines, false), monitor)) {
                 PgDatabase database = loader.load();
                 errors = loader.getErrors();
                 return database;
@@ -406,45 +397,6 @@ class DbSourceJdbc extends DbSource {
         }
 
         JdbcLoader loader = new JdbcLoader(jdbcConnector, args, monitor);
-        PgDatabase database = loader.getDbFromJdbc();
-        errors = loader.getErrors();
-        return database;
-    }
-}
-
-class DbSourceTimestamp extends DbSource {
-
-    private final JdbcConnector jdbcConnector;
-    private final String dbName;
-    private final boolean forceUnixNewlines;
-    private final String extSchema;
-    private final PgDatabase dbSrc;
-    private final String charset;
-
-    @Override
-    public String getDbName() {
-        return dbName;
-    }
-
-    DbSourceTimestamp(JdbcConnector jdbcConnector, PgDatabase dbSrc,
-            String extSchema, String dbName, String charset,
-            boolean forceUnixNewlines) {
-        super(dbName);
-        this.jdbcConnector = jdbcConnector;
-        this.dbSrc = dbSrc;
-        this.extSchema = extSchema;
-        this.dbName = dbName;
-        this.charset = charset;
-        this.forceUnixNewlines = forceUnixNewlines;
-    }
-
-    @Override
-    protected PgDatabase loadInternal(SubMonitor monitor)
-            throws IOException, InterruptedException {
-        monitor.subTask(Messages.reading_db_from_jdbc);
-        PgDiffArguments args = getPgDiffArgs(charset, forceUnixNewlines, false);
-        JdbcLoader loader = new JdbcLoader(jdbcConnector, args, monitor);
-        loader.setTimestampParams(dbSrc, extSchema);
         PgDatabase database = loader.getDbFromJdbc();
         errors = loader.getErrors();
         return database;

@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-    <extension point="org.eclipse.ui.console.consoleFactories">
-        <consoleFactory
-            class="ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory"
-            icon="icons/app_icon16.png"
-            label="%consoleFactory.label.keeperConsole">
-        </consoleFactory>
-    </extension>
     <extension point="org.eclipse.ui.contexts">
         <context
             id="ru.taximaxim.codekeeper.ui.pgCodeKeeper"

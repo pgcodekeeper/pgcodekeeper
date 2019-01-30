@@ -41,8 +41,7 @@ public abstract class PgStatement implements IStatement, IHashable {
     private PgStatement parent;
     protected final Set<GenericColumn> deps = new LinkedHashSet<>();
 
-    protected String location;
-    private boolean isLib;
+    private final PgStatementMeta meta = new PgStatementMeta();
 
     // 0 means not calculated yet and/or hash has been reset
     private int hash;
@@ -95,19 +94,31 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     public String getLocation() {
-        return location;
+        return getMeta().getLocation();
     }
 
     public void setLocation(String location) {
-        this.location = location;
+        getMeta().setLocation(location);
     }
 
     public boolean isLib() {
-        return isLib;
+        return getMeta().isLib();
     }
 
     public void markAsLib() {
-        this.isLib = true;
+        getMeta().setLib(true);
+    }
+
+    public String getAuthor() {
+        return getMeta().getAuthor();
+    }
+
+    public void setAuthor(String author) {
+        getMeta().setAuthor(author);
+    }
+
+    public PgStatementMeta getMeta() {
+        return meta;
     }
 
     public abstract PgDatabase getDatabase();
@@ -482,8 +493,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         copy.setComment(comment);
         copy.deps.addAll(deps);
         copy.privileges.addAll(privileges);
-        copy.setLocation(location);
-        copy.isLib = isLib;
+        copy.meta.copy(meta);
     }
 
     /**

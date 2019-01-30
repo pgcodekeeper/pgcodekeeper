@@ -43,6 +43,7 @@ public class IndicesReader extends JdbcReader {
                 .create_index_statement().index_rest(),
                 ctx -> CreateIndex.parseIndex(ctx, tablespace, schemaName, tableName, i,
                         schema.getDatabase()));
+        loader.setAuthor(i, res);
 
         i.setClusterIndex(res.getBoolean("isclustered"));
         i.setUnique(res.getBoolean("indisunique"));

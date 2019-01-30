@@ -76,7 +76,6 @@ public final class Messages extends NLS {
 
     public static String SQLEditorSytaxColoring_underline;
 
-    public static String SqlEditor_jdbc_success;
     public static String SqlEditor_script_delete_dialog_message;
     public static String SqlEditor_script_delete_dialog_title;
     public static String SqlEditor_selected_text_error;
@@ -92,7 +91,6 @@ public final class Messages extends NLS {
 
     public static String sqlScriptDialog_script_contains_statements_that_may_modify_data;
     public static String sqlScriptDialog_script_execution_interrupted;
-    public static String sqlScriptDialog_script_output;
     public static String sqlScriptDialog_warning;
     public static String stdStreamRedirector_completed_with_code;
     public static String manualDepciesDialog_dependant_dependency;
@@ -104,8 +102,6 @@ public final class Messages extends NLS {
     public static String commitDialog_depcy_elements;
 
     // ui.dbstore
-    public static String dbInfo_bad_dbinfo_string;
-    public static String dbInfo_too_many_parts_in_dbinfo_string;
     public static String dbPicker_port;
     public static String dbStoreEditorDialog_cannot_save_entry;
     public static String dbStoreEditorDialog_db_info;
@@ -163,7 +159,6 @@ public final class Messages extends NLS {
     public static String commitPartDescr_commiting;
     public static String commitPartDescr_exporting_db_model;
     public static String commitPartDescr_modifying_db_model;
-    public static String commitPartDescr_success_project_updated;
     public static String commitPartDescr_the_following_changes_be_included_in_commit;
 
     public static String copy;
@@ -175,7 +170,6 @@ public final class Messages extends NLS {
 
     public static String CommitDialog_unchecked_objects_can_occur_unexpected_errors;
 
-    public static String ConsoleFactory_error_opening_console;
     public static String ConvertProject_convert_dialog_message;
 
     public static String ConvertProject_convert_dialog_title;
@@ -208,7 +202,6 @@ public final class Messages extends NLS {
     public static String newProjWizard_new_pg_db_project;
 
     // ui.prefs
-    public static String dbUpdatePrefPage_show_script_output_in_separate_window;
     public static String dBUpdatePrefPage_alter_column_statement;
     public static String dBUpdatePrefPage_drop_column_statement;
     public static String dBUpdatePrefPage_drop_table;
@@ -433,7 +426,6 @@ public final class Messages extends NLS {
     public static String IgnoredObjectsPrefPage_error_getting_ignores_list;
     public static String IgnoredObjectsPrefPage_error_saving_ignores_list;
 
-    public static String IgnoredObjectsPrefPage_error_workspace_path;
     public static String IgnoredObjectsPrefPage_these_objects_are_ignored_info;
     public static String IgnoredObjectsPrefPage_these_objects_are_ignored_info_white;
 
@@ -447,8 +439,6 @@ public final class Messages extends NLS {
 
     public static String ImportProjWizard_title;
 
-
-    public static String InternalIgnoreList_error_workspace_path;
 
     public static String ManualDepciesDialog_set_add_depcies;
     public static String MockDataPage_add_column;
@@ -537,8 +527,6 @@ public final class Messages extends NLS {
     public static String NewProjWizard_select_time_zone;
 
     public static String NewProjWizard_get_from_db;
-
-    public static String NewProjWizard_ms_project;
 
     public static String NewProjWizard_new_ms_project;
 
@@ -719,7 +707,6 @@ public final class Messages extends NLS {
 
     public static String ProjectUpdater_old_db_null;
 
-    public static String sqlScriptDialog_script_has_not_been_run_yet;
     public static String sqlScriptDialog_script_select_storage;
     public static String StdStreamRedirector_error_reading_std;
     public static String StdStreamRedirector_error_reading_std_external;
@@ -742,9 +729,6 @@ public final class Messages extends NLS {
     public static String TreeDiffer_reverting_tree;
 
     public static String TreeDiffer_schema_load_error;
-    public static String XmlHistory_read_error;
-    public static String XmlHistory_write_error;
-    public static String XmlStringList_root_name_invalid;
 
     public static String e_mail;
 

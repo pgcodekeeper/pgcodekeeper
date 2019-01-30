@@ -1,0 +1,15 @@
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+CREATE FUNCTION [dbo].[f2]() 
+RETURNS smallint
+AS
+BEGIN
+  DECLARE @ret smallint;  
+
+  EXECUTE @ret = [dbo].[f1] 68, 'A';
+
+  RETURN @ret;
+END
+GO

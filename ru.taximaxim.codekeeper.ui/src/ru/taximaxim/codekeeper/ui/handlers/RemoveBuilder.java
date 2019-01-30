@@ -33,7 +33,7 @@ public class RemoveBuilder extends AbstractHandler implements IHandler {
         try {
             final IProjectDescription description = project
                     .getDescription();
-            final List<ICommand> commands = new ArrayList<ICommand>();
+            final List<ICommand> commands = new ArrayList<>();
             commands.addAll(Arrays.asList(description.getBuildSpec()));
 
             for (final ICommand buildSpec : description.getBuildSpec()) {

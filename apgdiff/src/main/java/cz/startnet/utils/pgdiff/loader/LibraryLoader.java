@@ -11,9 +11,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Queue;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -22,6 +24,8 @@ import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.libraries.PgLibrary;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
@@ -113,7 +117,10 @@ public class LibraryLoader {
             } else {
                 db = new PgDatabase();
                 db.setArguments(args);
-                readStatementsFromDirectory(p, db);
+
+                Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
+                readStatementsFromDirectory(p, db, antlrTasks);
+                AntlrParser.finishAntlr(antlrTasks);
             }
             return db;
         }
@@ -237,7 +244,7 @@ public class LibraryLoader {
         return dir.toString();
     }
 
-    private void readStatementsFromDirectory(Path f, PgDatabase db)
+    private void readStatementsFromDirectory(Path f, PgDatabase db, Queue<AntlrTask<?>> antlrTasks)
             throws IOException, InterruptedException {
         try (Stream<Path> stream = Files.list(f)) {
             List<Path> dirs = new ArrayList<>();
@@ -253,7 +260,7 @@ public class LibraryLoader {
                         List<AntlrError> errList = null;
                         try (PgDumpLoader loader = new PgDumpLoader(sub.toFile(), args)) {
                             errList = loader.getErrors();
-                            loader.loadDatabase(db);
+                            loader.loadDatabase(db, antlrTasks);
                         } finally {
                             if (errors != null && errList != null && !errList.isEmpty()) {
                                 errors.addAll(errList);
@@ -262,8 +269,9 @@ public class LibraryLoader {
                     }
                 }
             }
+
             for (Path sub : dirs) {
-                readStatementsFromDirectory(sub, db);
+                readStatementsFromDirectory(sub, db, antlrTasks);
             }
         }
     }
