@@ -13,6 +13,8 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.postgresql.util.PSQLException;
 import org.postgresql.util.ServerErrorMessage;
 
+import com.microsoft.sqlserver.jdbc.SQLServerException;
+
 import cz.startnet.utils.pgdiff.IProgressReporter;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
@@ -89,6 +91,12 @@ public class QueriesBatchCallable extends StatementCallable<String> {
             }
 
             reporter.writeError(sb.toString());
+        } catch (SQLServerException e) {
+            if (reporter == null) {
+                throw e;
+            }
+
+            reporter.writeError(e.getSQLServerError().getErrorMessage());
         }
 
         return JDBC_CONSTS.JDBC_SUCCESS;
