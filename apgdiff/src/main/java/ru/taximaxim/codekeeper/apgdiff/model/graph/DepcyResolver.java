@@ -527,6 +527,12 @@ public class DepcyResolver {
             PgStatement st = e.getVertex();
             PgStatement newSt = st.getTwin(newDb);
             if (newSt == null) {
+                if (st.getStatementType() == DbObjType.FUNCTION) {
+                    // when function's signature changes it has no twin
+                    // but the dependent object might be unchanged
+                    // due to default arguments changing in the signature
+                    needDrop = st;
+                }
                 return;
             }
             AtomicBoolean isNeedDepcy = new AtomicBoolean();
