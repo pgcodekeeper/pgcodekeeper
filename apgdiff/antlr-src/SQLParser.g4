@@ -12,9 +12,10 @@ options {
 /******* Start symbols *******/
 
 sql
-    // FIXME 2x DFA cache memory
-    //: BOM? (statement? SEMI_COLON)* statement? EOF
-    : BOM? (statement SEMI_COLON)* EOF
+    // adding an optional trailing statement without terminating semicolon
+    // consumes additional 250M of DFA cache memory for this rule
+    // append a semicolon to parsed strings instead
+    : BOM? (statement? SEMI_COLON)* EOF
     ;
 
 qname_parser
