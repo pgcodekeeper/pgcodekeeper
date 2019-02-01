@@ -13,7 +13,13 @@ options {
 
 sql
     // FIXME 2x DFA cache memory
-    : BOM? (statement? SEMI_COLON)* statement? EOF
+    // (broken with 'CREATE TYPE')
+    // : BOM? (statement? SEMI_COLON)* statement? EOF 
+
+    // (broken with function definition because of optional SEMI_COLON at the end of function definition)
+    // : BOM? (statement SEMI_COLON)* EOF
+
+    : BOM? (statement SEMI_COLON?)* EOF
     ;
 
 qname_parser
