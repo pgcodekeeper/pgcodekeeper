@@ -5,9 +5,7 @@
  */
 package cz.startnet.utils.pgdiff.loader;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
@@ -37,6 +35,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
+import ru.taximaxim.codekeeper.apgdiff.fileutils.TempDir;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.MsModelExporter;
 
 /**
@@ -174,8 +173,8 @@ public class MsAntlrLoaderTest {
 
         PgDatabase dbPredefined = DB_OBJS[fileIndex].getDatabase();
         Path exportDir = null;
-        try {
-            exportDir = Files.createTempDirectory("pgCodekeeper-test-files");
+        try (TempDir dir = new TempDir("pgCodekeeper-test-files")) {
+            exportDir = dir.get();
             new MsModelExporter(exportDir, dbPredefined, encoding).exportFull();
 
             args = new PgDiffArguments();
@@ -190,23 +189,7 @@ public class MsAntlrLoaderTest {
 
             Assert.assertEquals("ModelExporter: exported predefined object is not "
                     + "equal to file " + filename, dbAfterExport, dbFromFile);
-        } finally {
-            if (exportDir != null) {
-                deleteRecursive(exportDir.toFile());
-            }
         }
-    }
-
-    /**
-     * Deletes folder and its contents recursively. FOLLOWS SYMLINKS!
-     */
-    private static void deleteRecursive(File f) throws IOException {
-        if (f.isDirectory()) {
-            for (File sub : f.listFiles()) {
-                deleteRecursive(sub);
-            }
-        }
-        Files.delete(f.toPath());
     }
 }
 
