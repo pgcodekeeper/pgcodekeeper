@@ -62,6 +62,7 @@ public class CreateFunction extends ParserAbstract {
 
     private void fillFunction(Create_funct_paramsContext params,
             AbstractPgFunction function) {
+        Function_defContext funcDef = null;
         for (Function_actions_commonContext action  : params.function_actions_common()) {
             if (action.WINDOW() != null) {
                 function.setWindow(true);
@@ -85,18 +86,8 @@ public class CreateFunction extends ParserAbstract {
                     function.setRows(Float.parseFloat(action.result_rows.getText()));
                 }
             } else if (action.AS() != null) {
-                Function_defContext funcDef = action.function_def();
+                funcDef = action.function_def();
                 function.setBody(db.getArguments(), getFullCtxText(funcDef));
-
-                // Parsing the function definition and adding its result context for analysis.
-                List<Character_stringContext> funcContent = funcDef.character_string();
-                if ("SQL".equalsIgnoreCase(function.getLanguage()) && funcContent.size() == 1) {
-                    StringBuilder funcCommands = new StringBuilder();
-                    funcContent.get(0).Text_between_Dollar().forEach(funcCommands::append);
-                    db.addContextForAnalyze(function, AntlrParser.parseSqlString(SQLParser.class,
-                            SQLParser::sql, funcCommands.toString().trim(),
-                            "function definition of " + function.getName()));
-                }
             } else if (action.TRANSFORM() != null) {
                 for (Transform_for_typeContext transform : action.transform_for_type()) {
                     function.addTransform(ParserAbstract.getFullCtxText(transform.type_name));
@@ -118,6 +109,16 @@ public class CreateFunction extends ParserAbstract {
                     function.addConfiguration(par, sb.toString());
                 }
             }
+        }
+
+        // Parsing the function definition and adding its result context for analysis.
+        List<Character_stringContext> funcContent = funcDef.character_string();
+        if ("SQL".equalsIgnoreCase(function.getLanguage()) && funcContent.size() == 1) {
+            StringBuilder funcCommands = new StringBuilder();
+            funcContent.get(0).Text_between_Dollar().forEach(funcCommands::append);
+            db.addContextForAnalyze(function, AntlrParser.parseSqlString(SQLParser.class,
+                    SQLParser::sql, funcCommands.toString().trim(),
+                    "function definition of " + function.getName()));
         }
 
         With_storage_parameterContext storage = params.with_storage_parameter();
