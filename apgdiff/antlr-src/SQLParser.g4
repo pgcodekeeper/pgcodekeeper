@@ -13,8 +13,7 @@ options {
 
 sql
     // FIXME 2x DFA cache memory
-    //: BOM? (statement? SEMI_COLON)* statement? EOF
-    : BOM? (statement SEMI_COLON)* EOF
+    : BOM? (statement? SEMI_COLON)* statement? EOF
     ;
 
 qname_parser

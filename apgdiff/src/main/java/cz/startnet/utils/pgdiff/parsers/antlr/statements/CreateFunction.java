@@ -3,12 +3,16 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_funct_paramsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_actions_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_column_name_typeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statement_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
@@ -81,8 +85,18 @@ public class CreateFunction extends ParserAbstract {
                     function.setRows(Float.parseFloat(action.result_rows.getText()));
                 }
             } else if (action.AS() != null) {
-                function.setBody(db.getArguments(), getFullCtxText(action.function_def()));
-                // TODO add function definition parsing and analyze
+                Function_defContext funcDef = action.function_def();
+                function.setBody(db.getArguments(), getFullCtxText(funcDef));
+
+                // Parsing the function definition and adding its result context for analysis.
+                List<Character_stringContext> funcContent = funcDef.character_string();
+                if ("SQL".equalsIgnoreCase(function.getLanguage()) && funcContent.size() == 1) {
+                    StringBuilder funcCommands = new StringBuilder();
+                    funcContent.get(0).Text_between_Dollar().forEach(funcCommands::append);
+                    db.addContextForAnalyze(function, AntlrParser.parseSqlString(SQLParser.class,
+                            SQLParser::sql, funcCommands.toString().trim(),
+                            "function definition of " + function.getName()));
+                }
             } else if (action.TRANSFORM() != null) {
                 for (Transform_for_typeContext transform : action.transform_for_type()) {
                     function.addTransform(ParserAbstract.getFullCtxText(transform.type_name));

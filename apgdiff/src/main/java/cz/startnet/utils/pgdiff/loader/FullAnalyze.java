@@ -14,6 +14,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.CustomParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_restContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
@@ -80,8 +81,16 @@ public final class FullAnalyze {
                 case CONSTRAINT:
                     TableAbstract.analyzeConstraintCtx((VexContext) ctx, statement, schemaName, db);
                     break;
-                case DOMAIN:
                 case FUNCTION:
+                    if (ctx instanceof VexContext) {
+                        UtilAnalyzeExpr.analyze((VexContext) ctx, new ValueExpr(schemaName, db),
+                                statement);
+                    } else {
+                        FunctionDefinAnalyze.funcDefinAnalyze((SqlContext) ctx,
+                                schemaName, statement, db);
+                    }
+                    break;
+                case DOMAIN:
                 case COLUMN:
                     UtilAnalyzeExpr.analyze((VexContext) ctx, new ValueExpr(schemaName,
                             db), statement);

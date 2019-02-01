@@ -40,7 +40,7 @@ public class FunctionsReader extends JdbcReader {
                 isProc ? DbObjType.PROCEDURE : DbObjType.FUNCTION));
         AbstractPgFunction f = isProc ? new PgProcedure(funcName) : new PgFunction(funcName);
 
-        fillFunction(f, res);
+        fillFunction(f, res, schema);
 
         // OWNER
         loader.setOwner(f, res.getLong("proowner"));
@@ -135,7 +135,8 @@ public class FunctionsReader extends JdbcReader {
         schema.addFunction(f);
     }
 
-    private void fillFunction(AbstractPgFunction function, ResultSet res) throws SQLException {
+    private void fillFunction(AbstractPgFunction function, ResultSet res, AbstractSchema schema)
+            throws SQLException {
         StringBuilder body = new StringBuilder();
 
         function.setLanguage(res.getString("lang_name"));
@@ -244,6 +245,12 @@ public class FunctionsReader extends JdbcReader {
         function.setBody(loader.args, body.toString());
 
         // TODO add function definition parsing and analyze
+        // Parsing the function definition and adding its result context for analysis.
+        //        if ("SQL".equalsIgnoreCase(function.getLanguage())) {
+        //            schema.getDatabase().addContextForAnalyze(function,
+        //                    AntlrParser.parseSqlString(SQLParser.class, SQLParser::sql,
+        //                            definition.trim(), "function definition of " + function.getName()));
+        //        }
     }
 
     /**
