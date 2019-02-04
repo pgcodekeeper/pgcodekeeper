@@ -13,6 +13,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alias_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_bracketsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_elementsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Case_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Cast_specificationContext;
@@ -368,7 +369,7 @@ public class ViewSelect {
         } else if ((array = primary.array_expression()) != null) {
             Array_bracketsContext arrayb = array.array_brackets();
             if (arrayb != null) {
-                subOperands = addVexCtxtoList(subOperands, arrayb.vex());
+                arrayElements(subOperands, arrayb.array_elements());
             } else {
                 new ViewSelect(this).analyze(array.array_query().table_subquery().select_stmt());
             }
@@ -378,6 +379,13 @@ public class ViewSelect {
             for (Vex v : subOperands) {
                 analyze(v);
             }
+        }
+    }
+
+    private void arrayElements(ArrayList<Vex> subOperands, Array_elementsContext elements) {
+        addVexCtxtoList(subOperands,  elements.vex());
+        for (Array_elementsContext sub : elements.array_elements()) {
+            arrayElements(subOperands, sub);
         }
     }
 
