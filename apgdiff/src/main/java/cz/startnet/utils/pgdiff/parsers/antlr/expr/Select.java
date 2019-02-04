@@ -8,6 +8,8 @@ import java.util.Map.Entry;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alias_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_itemContext;
@@ -202,15 +204,10 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
                 } else {
                     Pair<String, String> columnPair = vex.analyze(selectSublistVex);
 
-                    if (columnPair != null && (target.identifier() != null || target.id_token() != null)) {
-                        String alias;
-                        if (target.identifier() != null) {
-                            alias = target.identifier().getText();
-                        } else {
-                            alias = target.id_token().getText();
-                        }
-
-                        columnPair.setFirst(alias);
+                    IdentifierContext id = target.identifier();
+                    ParserRuleContext aliasCtx = id != null ? id : target.id_token();
+                    if (aliasCtx != null) {
+                        columnPair.setFirst(aliasCtx.getText());
                     }
 
                     ret.add(columnPair);

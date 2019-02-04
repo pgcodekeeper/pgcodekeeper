@@ -2466,7 +2466,7 @@ null_ordering
     this applies to UPDATE as well
 */
 insert_stmt_for_psql
-  : with_clause? INSERT INTO insert_table_name=schema_qualified_name (AS? alias=identifier)?
+  : with_clause? INSERT INTO insert_table_name=schema_qualified_name (AS alias=identifier)?
   (OVERRIDING (SYSTEM | USER) VALUE)?
   (LEFT_PAREN column+=identifier (COMMA column+=identifier)* RIGHT_PAREN)?
   (select_stmt | DEFAULT VALUES)
@@ -2475,12 +2475,13 @@ insert_stmt_for_psql
   ;
 
 conflict_object
-    : index_sort index_where? (ON CONSTRAINT identifier)?
+    : index_sort index_where? 
+    | ON CONSTRAINT identifier
     ;
 
 conflict_action
     : DO NOTHING
-    | DO UPDATE SET update_set (COMMA update_set)*
+    | DO UPDATE SET update_set (COMMA update_set)* (WHERE vex)?
     ;
 
 delete_stmt_for_psql
