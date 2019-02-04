@@ -868,7 +868,7 @@ public class ReferenceListener implements SqlContextProcessor {
     private void fillObjDefinition(String schemaName, IdentifierContext ctx, DbObjType objType) {
         int start = ctx.getStart().getStartIndex();
         String name = ctx.getText();
-        if (ctx.QuotedIdentifier() != null) {
+        if (ctx.id_token() != null && ctx.id_token().QuotedIdentifier() != null) {
             start++;
         }
 

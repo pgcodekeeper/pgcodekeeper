@@ -1450,22 +1450,23 @@ if_exist_names_restrict_cascade
 ===============================================================================
 */
 
+id_token
+  : Identifier | QuotedIdentifier | tokens_nonkeyword;
+
 /*
   old rule for default old identifier behavior
   includes types
 */
 identifier
-  : (Identifier | QuotedIdentifier | DOLLAR_NUMBER)
+  : id_token | DOLLAR_NUMBER
   | tokens_nonreserved
   | tokens_nonreserved_except_function_type
-  | tokens_nonkeyword
   ;
 
 identifier_nontype
-  : (Identifier | QuotedIdentifier)
+  : id_token
   | tokens_nonreserved
   | tokens_reserved_except_function_type
-  | tokens_nonkeyword
   ;
 
 /*
@@ -2362,7 +2363,7 @@ select_list
   ;
 
 select_sublist
-  : vex (AS? alias=identifier)?
+  : vex (AS identifier | id_token)?
   ;
 
 from_item

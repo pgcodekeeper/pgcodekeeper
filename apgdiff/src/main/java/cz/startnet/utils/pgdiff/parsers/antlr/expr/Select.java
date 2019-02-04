@@ -202,8 +202,15 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
                 } else {
                     Pair<String, String> columnPair = vex.analyze(selectSublistVex);
 
-                    if (target.alias != null && columnPair != null) {
-                        columnPair.setFirst(target.alias.getText());
+                    if (columnPair != null && (target.identifier() != null || target.id_token() != null)) {
+                        String alias;
+                        if (target.identifier() != null) {
+                            alias = target.identifier().getText();
+                        } else {
+                            alias = target.id_token().getText();
+                        }
+
+                        columnPair.setFirst(alias);
                     }
 
                     ret.add(columnPair);
