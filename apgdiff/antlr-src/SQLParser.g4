@@ -2160,7 +2160,7 @@ general_literal
   ;
 
 truth_value
-  : TRUE | FALSE | UNKNOWN | ON | OFF
+  : TRUE | FALSE | ON // on is reserved but is required by SET statements
   ;
 
 case_expression
@@ -2220,7 +2220,7 @@ date_time_function
     ;
 
 string_value_function
-  : TRIM LEFT_PAREN (LEADING | TRAILING | BOTH)? (chars=vex? FROM str=vex | FROM? str=vex (COMMA chars=vex)?) RIGHT_PAREN
+  : TRIM LEFT_PAREN (LEADING | TRAILING | BOTH)? (chars=vex FROM str=vex | FROM? str=vex (COMMA chars=vex)?) RIGHT_PAREN
   | SUBSTRING LEFT_PAREN vex (FROM vex)? (FOR vex)? RIGHT_PAREN
   | POSITION LEFT_PAREN vex_b IN vex RIGHT_PAREN
   | OVERLAY LEFT_PAREN vex PLACING vex FROM vex (FOR vex)? RIGHT_PAREN
@@ -2306,7 +2306,7 @@ select_stmt
     : with_clause? select_ops
         orderby_clause?
         (LIMIT (vex | ALL))?
-        (OFFSET vex (ROW | ROWS))?
+        (OFFSET vex (ROW | ROWS)?)?
         (FETCH (FIRST | NEXT) vex? (ROW | ROWS) ONLY)?
         (FOR (UPDATE | NO KEY UPDATE | SHARE | NO KEY SHARE) (OF schema_qualified_name (COMMA schema_qualified_name)*)? NOWAIT?)*
     ;
@@ -2318,7 +2318,7 @@ select_stmt_no_parens
     : with_clause? select_ops_no_parens
         orderby_clause?
         (LIMIT (vex | ALL))?
-        (OFFSET vex (ROW | ROWS))?
+        (OFFSET vex (ROW | ROWS)?)?
         (FETCH (FIRST | NEXT) vex? (ROW | ROWS) ONLY)?
         (FOR (UPDATE | NO KEY UPDATE | SHARE | NO KEY SHARE) (OF schema_qualified_name (COMMA schema_qualified_name)*)? NOWAIT?)*
     ;
@@ -2338,9 +2338,9 @@ select_ops
     | select_primary
     ;
 
-// copy of select_ops for use in select_stmt_no_parens
+// version of select_ops for use in select_stmt_no_parens
 select_ops_no_parens
-    : select_ops (INTERSECT | UNION | EXCEPT) set_qualifier? select_ops
+    : select_ops (INTERSECT | UNION | EXCEPT) set_qualifier? (select_primary | LEFT_PAREN select_ops RIGHT_PAREN)
     | select_primary
     ;
 
