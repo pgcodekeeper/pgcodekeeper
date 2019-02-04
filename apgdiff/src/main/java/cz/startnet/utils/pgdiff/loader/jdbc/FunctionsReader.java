@@ -249,7 +249,8 @@ public class FunctionsReader extends JdbcReader {
         //        if ("SQL".equalsIgnoreCase(function.getLanguage())) {
         //            schema.getDatabase().addContextForAnalyze(function,
         //                    AntlrParser.parseSqlString(SQLParser.class, SQLParser::sql,
-        //                            definition.trim(), "function definition of " + function.getName()));
+        //                            CreateFunction.getSqlWithTrimAndSemicolon(definition),
+        //                            "function definition of " + function.getName()));
         //        }
     }
 

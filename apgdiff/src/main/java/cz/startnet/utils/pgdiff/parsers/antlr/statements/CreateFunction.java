@@ -117,7 +117,7 @@ public class CreateFunction extends ParserAbstract {
             StringBuilder funcCommands = new StringBuilder();
             funcContent.get(0).Text_between_Dollar().forEach(funcCommands::append);
             db.addContextForAnalyze(function, AntlrParser.parseSqlString(SQLParser.class,
-                    SQLParser::sql, funcCommands.toString().trim(),
+                    SQLParser::sql, getSqlWithTrimAndSemicolon(funcCommands.toString()),
                     "function definition of " + function.getName()));
         }
 
@@ -148,5 +148,13 @@ public class CreateFunction extends ParserAbstract {
 
             function.addArgument(arg);
         }
+    }
+
+    public static String getSqlWithTrimAndSemicolon(String sql) {
+        String sqlLoc = sql.trim();
+        if (!";".equals(sqlLoc.substring(sqlLoc.length() - 1))) {
+            return sqlLoc + ';';
+        }
+        return sqlLoc;
     }
 }
