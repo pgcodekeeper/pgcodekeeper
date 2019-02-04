@@ -143,7 +143,13 @@ public class PgDiffDepciesTest {
             {"chg_fts_statements", "chg_fts_statements_usr_template"},
             // изменение зависимых объектов полнотекстового поиска
             // пользователь выбрал конфигурацию
-            {"chg_fts_statements", "chg_fts_statements_usr_configuration"}
+            {"chg_fts_statements", "chg_fts_statements_usr_configuration"},
+            // в функции 'f1' изменяется имя аргумента функции,
+            // в функции 'f2' изменяется определение функции,
+            // пользователь выбирает 'f1'
+            // (опеределение обеих функций написано на языке SQL)
+            // ('f2' зависит от 'f1')
+            { "add_change_func_arg_name", "add_change_func_arg_name_usr_f1" }
         });
     }
 
