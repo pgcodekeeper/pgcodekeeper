@@ -14,6 +14,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_bracketsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_elementsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_expressionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Build_in_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Case_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Cast_specificationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Collate_identifierContext;
@@ -80,7 +81,7 @@ public class ValueExpr extends AbstractExpr {
         @SuppressWarnings("unused")
         // TODO OpCtx user-operator reference
         Collate_identifierContext collate;
-        TerminalNode operator;
+        String operator;
         OpContext op = null;
         Datetime_overlapsContext overlaps;
         Value_expression_primaryContext primary;
@@ -150,8 +151,10 @@ public class ValueExpr extends AbstractExpr {
         } else if ((operator = getOperatorToken(vex)) != null || (op = vex.op()) != null) {
             if (op != null) {
                 IdentifierContext opSchemaCtx = op.identifier();
-                if (opSchemaCtx == null || opSchemaCtx.getText().equals(PgSystemStorage.SCHEMA_PG_CATALOG)) {
-                    operator = op.OP_CHARS();
+                if (opSchemaCtx == null) {
+                    operator = op.op_chars().getText();
+                } else if (opSchemaCtx.getText().equals(PgSystemStorage.SCHEMA_PG_CATALOG)) {
+                    operator = op.all_simple_op().getText();
                 }
             }
             if (operator != null) {
@@ -165,7 +168,7 @@ public class ValueExpr extends AbstractExpr {
                 } else {
                     larg = operandsList.get(0).getSecond();
                 }
-                ret = operator(operator.getText(), larg, rarg);
+                ret = operator(operator, larg, rarg);
             } else {
                 // if we got to this point, operator didn't get filled by the OP_CHARS token
                 // meaning user-schema operator
@@ -262,8 +265,8 @@ public class ValueExpr extends AbstractExpr {
                 ret.setFirst("array");
                 ret.setSecond(ret.getSecond() + "[]");
             } else if ((typeCoercion = primary.type_coercion()) != null) {
-                Data_typeContext coercionDataType = typeCoercion.data_type();
-                addTypeDepcy(coercionDataType);
+                Build_in_typeContext coercionDataType = typeCoercion.build_in_type();
+                // addTypeDepcy(coercionDataType);
                 String type = ParserAbstract.getFullCtxText(coercionDataType);
                 // since this cast can only convert string literals into a type
                 // and types are restricted to the simplest
@@ -543,7 +546,7 @@ public class ValueExpr extends AbstractExpr {
                 .filter(arg -> "IN".equals(arg.getMode()) || "INOUT".equals(arg.getMode()));
     }
 
-    private TerminalNode getOperatorToken(Vex vex) {
+    private String getOperatorToken(Vex vex) {
         TerminalNode token = vex.getVexCtx().getChild(TerminalNode.class, 0);
         if (token == null) {
             return null;
@@ -555,7 +558,7 @@ public class ValueExpr extends AbstractExpr {
         case SQLParser.MULTIPLY:
         case SQLParser.DIVIDE:
         case SQLParser.MODULAR:
-            return token;
+            return token.getText();
         default:
             return null;
         }

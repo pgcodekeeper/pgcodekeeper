@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.After_opsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alias_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_itemContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_primaryContext;
@@ -100,30 +101,22 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
     }
 
     private void selectAfterOps(SelectStmt select) {
-        Orderby_clauseContext orderBy = select.orderBy();
+        ValueExpr vex = new ValueExpr(this);
 
-        List<VexContext> vexs = null;
-        if (select.limit() != null || select.offset() != null || select.fetch() != null) {
-            vexs = select.vex();
-        }
+        for (After_opsContext after : select.afterOps()) {
+            VexContext vexCtx = after.vex();
+            if (vexCtx != null) {
+                vex.analyze(new Vex(vexCtx));
+            }
 
-        if (orderBy != null || vexs != null) {
-            ValueExpr vex = new ValueExpr(this);
+            Orderby_clauseContext orderBy = after.orderby_clause();
             if (orderBy != null) {
                 vex.orderBy(orderBy);
             }
-            if(vexs != null) {
-                for (VexContext vexCtx : vexs) {
-                    vex.analyze(new Vex(vexCtx));
-                }
-            }
-        }
 
-        if (select.of(0) != null) {
-            for (Schema_qualified_nameContext tableLock : select.schemaQualifiedName()) {
+            for (Schema_qualified_nameContext tableLock : after.schema_qualified_name()) {
                 addRelationDepcy(tableLock.identifier());
             }
-
         }
     }
 
@@ -163,7 +156,13 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
                 addCteSignature(recursiveCteCtx, ret);
             }
 
-            new Select(this).selectOps(selectOps.selectOps(1));
+            Select_primaryContext prim = selectOps.selectPrimary();
+            if (prim != null) {
+                primary(prim);
+            } else {
+                new Select(this).selectOps(selectOps.selectOps(1));
+            }
+
         } else if ((primary = selectOps.selectPrimary()) != null) {
             ret = primary(primary);
         } else {

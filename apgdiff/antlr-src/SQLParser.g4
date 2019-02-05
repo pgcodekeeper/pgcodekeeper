@@ -38,6 +38,10 @@ vex_eof
     : vex (COMMA vex)* EOF
     ;
 
+plpgsql_function
+    : comp_options? function_block SEMI_COLON ? EOF
+    ;
+
 /******* END Start symbols *******/
 
 statement
@@ -82,10 +86,10 @@ lock_table
     ;
 
 lock_mode
-    : (ROW | ACCESS) SHARE 
-    | ROW EXCLUSIVE 
+    : (ROW | ACCESS) SHARE
+    | ROW EXCLUSIVE
     | SHARE (ROW | UPDATE) EXCLUSIVE
-    | SHARE 
+    | SHARE
     | ACCESS? EXCLUSIVE
     ;
 
@@ -107,7 +111,7 @@ script_additional
     | REFRESH MATERIALIZED VIEW CONCURRENTLY? schema_qualified_name (WITH NO? DATA)?
     | PREPARE identifier (LEFT_PAREN data_type (COMMA data_type)* RIGHT_PAREN)? AS data_statement
     | EXECUTE identifier (LEFT_PAREN vex (COMMA vex)* RIGHT_PAREN)?
-    | REASSIGN OWNED BY user_identifer_current_session (COMMA user_identifer_current_session)* 
+    | REASSIGN OWNED BY user_identifer_current_session (COMMA user_identifer_current_session)*
       TO user_identifer_current_session
     ;
 
@@ -125,14 +129,14 @@ user_identifer_current_session
     ;
 
 table_cols
-    : schema_qualified_name (LEFT_PAREN identifier (COMMA identifier)* RIGHT_PAREN)? 
+    : schema_qualified_name (LEFT_PAREN identifier (COMMA identifier)* RIGHT_PAREN)?
     ;
 
 vacuum_mode
-    : FULL 
-    | FREEZE 
-    | VERBOSE 
-    | ANALYZE 
+    : FULL
+    | FREEZE
+    | VERBOSE
+    | ANALYZE
     | DISABLE_PAGE_SKIPPING
     ;
 
@@ -344,9 +348,9 @@ table_initialy_immed
 function_actions_common
     : (CALLED | RETURNS NULL) ON NULL INPUT
     | TRANSFORM transform_for_type (COMMA transform_for_type)*
-    | STRICT 
-    | IMMUTABLE 
-    | VOLATILE 
+    | STRICT
+    | IMMUTABLE
+    | VOLATILE
     | STABLE
     | LEAKPROOF
     | (EXTERNAL)? SECURITY (INVOKER | DEFINER)
@@ -387,7 +391,7 @@ index_def_action
 
 index_all_def
     : INDEX ALL IN TABLESPACE tbl_spc=identifier (OWNED BY rolname+=identifier (COMMA rolname+=identifier)*)?
-      SET TABLESPACE new_tbl_spc=identifier NOWAIT? 
+      SET TABLESPACE new_tbl_spc=identifier NOWAIT?
     ;
 
 alter_default_privileges
@@ -442,7 +446,7 @@ alter_event_trigger
     ;
 
 alter_event_trigger_action
-    : DISABLE 
+    : DISABLE
     | ENABLE (REPLICA | ALWAYS)?
     | owner_to
     | rename_to
@@ -638,29 +642,29 @@ create_fts_parser
         (COMMA HEADLINE EQUAL headline_func=schema_qualified_name)?
     RIGHT_PAREN
     ;
-    
+
 create_collation
-    : COLLATION (IF NOT EXISTS)? name=schema_qualified_name 
+    : COLLATION (IF NOT EXISTS)? name=schema_qualified_name
       (FROM copy=schema_qualified_name | LEFT_PAREN (collation_option (COMMA collation_option)*)? RIGHT_PAREN)
     ;
 
 alter_collation
     : COLLATION name=schema_qualified_name (REFRESH VERSION | rename_to | owner_to | set_schema)
     ;
-    
+
 collation_option
-    : (LOCALE | LC_COLLATE | LC_CTYPE | PROVIDER | VERSION) EQUAL (character_string | identifier) 
+    : (LOCALE | LC_COLLATE | LC_CTYPE | PROVIDER | VERSION) EQUAL (character_string | identifier)
     ;
-    
+
 create_user_mapping
     : USER MAPPING (IF NOT EXISTS)? FOR (identifier | USER | CURRENT_USER)
     SERVER identifier
     define_foreign_options?
     ;
-    
+
 alter_user_mapping
     : USER MAPPING FOR (identifier | USER | CURRENT_USER) SERVER identifier
-    define_foreign_options? 
+    define_foreign_options?
     ;
 
 alter_user_or_role
@@ -686,7 +690,7 @@ alter_group
 
 alter_group_action
     : name=identifier rename_to
-    | user_identifer_current_session (ADD | DROP) 
+    | user_identifer_current_session (ADD | DROP)
         USER user_name+=identifier (COMMA user_name+=identifier)*
     ;
 
@@ -696,17 +700,17 @@ alter_tablespace
 
 alter_owner
     : (OPERATOR target_operator
-    | (FUNCTION | PROCEDURE) name=schema_qualified_name function_args 
-    | (TEXT SEARCH DICTIONARY | TEXT SEARCH CONFIGURATION | DOMAIN | SCHEMA | SEQUENCE | TYPE | MATERIALIZED? VIEW) 
+    | (FUNCTION | PROCEDURE) name=schema_qualified_name function_args
+    | (TEXT SEARCH DICTIONARY | TEXT SEARCH CONFIGURATION | DOMAIN | SCHEMA | SEQUENCE | TYPE | MATERIALIZED? VIEW)
     (IF EXISTS)? name=schema_qualified_name) owner_to
     ;
 
 alter_tablespace_action
     : rename_to
     | owner_to
-    | SET LEFT_PAREN tablespace_option=identifier EQUAL value=vex 
+    | SET LEFT_PAREN tablespace_option=identifier EQUAL value=vex
             (COMMA tablespace_option=identifier EQUAL value=vex)* RIGHT_PAREN
-    | RESET LEFT_PAREN tablespace_option=identifier  
+    | RESET LEFT_PAREN tablespace_option=identifier
             (COMMA tablespace_option=identifier)* RIGHT_PAREN
     ;
 
@@ -812,7 +816,7 @@ user_or_role_common_option
 
 user_or_role_or_group_option_for_create
     : SYSID vex
-    | (IN ROLE | IN GROUP | ROLE | ADMIN | USER) option_role_name+=identifier 
+    | (IN ROLE | IN GROUP | ROLE | ADMIN | USER) option_role_name+=identifier
         (COMMA option_role_name+=identifier)*
     ;
 
@@ -1118,7 +1122,7 @@ create_view_statement
         with_check_option?
         (WITH NO? DATA)?
     ;
-    
+
 view_columns
     : LEFT_PAREN column_name+=identifier (COMMA column_name+=identifier)* RIGHT_PAREN
     ;
@@ -1269,7 +1273,7 @@ constraint_common
     ;
 
 constr_body
-    :((EXCLUDE (USING index_method=identifier)?
+    : ((EXCLUDE (USING index_method=identifier)?
             LEFT_PAREN exclude_element=identifier WITH operator=all_op RIGHT_PAREN
             index_parameters (WHERE vex)?)
        | (FOREIGN KEY column_references)? table_references
@@ -1288,9 +1292,17 @@ all_op
     ;
 
 all_simple_op
-    : OP_CHARS
+    : op_chars
     | EQUAL | NOT_EQUAL | LTH | LEQ | GTH | GEQ
     | PLUS | MINUS | MULTIPLY | DIVIDE | MODULAR | EXP
+    ;
+
+op_chars
+    : OP_CHARS
+    | LESS_LESS
+    | GREATER_GREATER
+    | EQUAL_GTH
+    | HASH_SIGN
     ;
 
 table_unique_prkey
@@ -1302,7 +1314,7 @@ index_parameters
     ;
 
 common_constraint
-    :check_boolean_expression
+    : check_boolean_expression
     | null_false=NOT? null_value=NULL
     ;
 
@@ -1356,8 +1368,8 @@ table_space
 
 action
     : cascade_restrict
-      | SET (NULL | DEFAULT)
-      | NO ACTION
+    | SET (NULL | DEFAULT)
+    | NO ACTION
     ;
 
 owner_to
@@ -1421,9 +1433,9 @@ drop_rule_statement
 drop_statements
     : (ACCESS METHOD
     | COLLATION
-    | DATABASE 
+    | DATABASE
     | DOMAIN
-    | EVENT TRIGGER 
+    | EVENT TRIGGER
     | EXTENSION
     | FOREIGN? TABLE
     | FOREIGN DATA WRAPPER
@@ -1459,549 +1471,584 @@ id_token
   includes types
 */
 identifier
-  : id_token | DOLLAR_NUMBER
-  | tokens_nonreserved
-  | tokens_nonreserved_except_function_type
-  ;
+    : id_token | DOLLAR_NUMBER
+    | tokens_nonreserved
+    | tokens_nonreserved_except_function_type
+    ;
 
 identifier_nontype
-  : id_token
-  | tokens_nonreserved
-  | tokens_reserved_except_function_type
-  ;
+    : id_token
+    | tokens_nonreserved
+    | tokens_reserved_except_function_type
+    ;
 
 /*
  * These rules should be generated using code in the Keyword class.
  * Word tokens that are not keywords should be added to nonreserved list.
  */
 tokens_nonreserved
-  : ABORT
-  | ABSOLUTE
-  | ACCESS
-  | ACTION
-  | ADD
-  | ADMIN
-  | AFTER
-  | AGGREGATE
-  | ALSO
-  | ALTER
-  | ALWAYS
-  | ASSERTION
-  | ASSIGNMENT
-  | AT
-  | ATTACH
-  | ATTRIBUTE
-  | BACKWARD
-  | BEFORE
-  | BEGIN
-  | BY
-  | CACHE
-  | CALL
-  | CALLED
-  | CASCADE
-  | CASCADED
-  | CATALOG
-  | CHAIN
-  | CHARACTERISTICS
-  | CHECKPOINT
-  | CLASS
-  | CLOSE
-  | CLUSTER
-  | COLUMNS
-  | COMMENT
-  | COMMENTS
-  | COMMIT
-  | COMMITTED
-  | CONFIGURATION
-  | CONFLICT
-  | CONNECTION
-  | CONSTRAINTS
-  | CONTENT
-  | CONTINUE
-  | CONVERSION
-  | COPY
-  | COST
-  | CSV
-  | CUBE
-  | CURRENT
-  | CURSOR
-  | CYCLE
-  | DATA
-  | DATABASE
-  | DAY
-  | DEALLOCATE
-  | DECLARE
-  | DEFAULTS
-  | DEFERRED
-  | DEFINER
-  | DELETE
-  | DELIMITER
-  | DELIMITERS
-  | DEPENDS
-  | DETACH
-  | DICTIONARY
-  | DISABLE
-  | DISCARD
-  | DOCUMENT
-  | DOMAIN
-  | DOUBLE
-  | DROP
-  | EACH
-  | ENABLE
-  | ENCODING
-  | ENCRYPTED
-  | ENUM
-  | ESCAPE
-  | EVENT
-  | EXCLUDE
-  | EXCLUDING
-  | EXCLUSIVE
-  | EXECUTE
-  | EXPLAIN
-  | EXTENSION
-  | EXTERNAL
-  | FAMILY
-  | FILTER
-  | FIRST
-  | FOLLOWING
-  | FORCE
-  | FORWARD
-  | FUNCTION
-  | FUNCTIONS
-  | GENERATED
-  | GLOBAL
-  | GRANTED
-  | GROUPS
-  | HANDLER
-  | HEADER
-  | HOLD
-  | HOUR
-  | IDENTITY
-  | IF
-  | IMMEDIATE
-  | IMMUTABLE
-  | IMPLICIT
-  | IMPORT
-  | INCLUDE
-  | INCLUDING
-  | INCREMENT
-  | INDEX
-  | INDEXES
-  | INHERIT
-  | INHERITS
-  | INLINE
-  | INPUT
-  | INSENSITIVE
-  | INSERT
-  | INSTEAD
-  | INVOKER
-  | ISOLATION
-  | KEY
-  | LABEL
-  | LANGUAGE
-  | LARGE
-  | LAST
-  | LEAKPROOF
-  | LEVEL
-  | LISTEN
-  | LOAD
-  | LOCAL
-  | LOCATION
-  | LOCK
-  | LOCKED
-  | LOGGED
-  | MAPPING
-  | MATCH
-  | MATERIALIZED
-  | MAXVALUE
-  | METHOD
-  | MINUTE
-  | MINVALUE
-  | MODE
-  | MONTH
-  | MOVE
-  | NAME
-  | NAMES
-  | NEW
-  | NEXT
-  | NO
-  | NOTHING
-  | NOTIFY
-  | NOWAIT
-  | NULLS
-  | OBJECT
-  | OF
-  | OFF
-  | OIDS
-  | OLD
-  | OPERATOR
-  | OPTION
-  | OPTIONS
-  | ORDINALITY
-  | OTHERS
-  | OVER
-  | OVERRIDING
-  | OWNED
-  | OWNER
-  | PARALLEL
-  | PARSER
-  | PARTIAL
-  | PARTITION
-  | PASSING
-  | PASSWORD
-  | PLANS
-  | POLICY
-  | PRECEDING
-  | PREPARE
-  | PREPARED
-  | PRESERVE
-  | PRIOR
-  | PRIVILEGES
-  | PROCEDURAL
-  | PROCEDURE
-  | PROCEDURES
-  | PROGRAM
-  | PUBLICATION
-  | QUOTE
-  | RANGE
-  | READ
-  | REASSIGN
-  | RECHECK
-  | RECURSIVE
-  | REF
-  | REFERENCING
-  | REFRESH
-  | REINDEX
-  | RELATIVE
-  | RELEASE
-  | RENAME
-  | REPEATABLE
-  | REPLACE
-  | REPLICA
-  | RESET
-  | RESTART
-  | RESTRICT
-  | RETURNS
-  | REVOKE
-  | ROLE
-  | ROLLBACK
-  | ROLLUP
-  | ROUTINE
-  | ROUTINES
-  | ROWS
-  | RULE
-  | SAVEPOINT
-  | SCHEMA
-  | SCHEMAS
-  | SCROLL
-  | SEARCH
-  | SECOND
-  | SECURITY
-  | SEQUENCE
-  | SEQUENCES
-  | SERIALIZABLE
-  | SERVER
-  | SESSION
-  | SET
-  | SETS
-  | SHARE
-  | SHOW
-  | SIMPLE
-  | SKIP_
-  | SNAPSHOT
-  | SQL
-  | STABLE
-  | STANDALONE
-  | START
-  | STATEMENT
-  | STATISTICS
-  | STDIN
-  | STDOUT
-  | STORAGE
-  | STRICT
-  | STRIP
-  | SUBSCRIPTION
-  | SYSID
-  | SYSTEM
-  | TABLES
-  | TABLESPACE
-  | TEMP
-  | TEMPLATE
-  | TEMPORARY
-  | TEXT
-  | TIES
-  | TRANSACTION
-  | TRANSFORM
-  | TRIGGER
-  | TRUNCATE
-  | TRUSTED
-  | TYPE
-  | TYPES
-  | UNBOUNDED
-  | UNCOMMITTED
-  | UNENCRYPTED
-  | UNKNOWN
-  | UNLISTEN
-  | UNLOGGED
-  | UNTIL
-  | UPDATE
-  | VACUUM
-  | VALID
-  | VALIDATE
-  | VALIDATOR
-  | VALUE
-  | VARYING
-  | VERSION
-  | VIEW
-  | VIEWS
-  | VOLATILE
-  | WHITESPACE
-  | WITHIN
-  | WITHOUT
-  | WORK
-  | WRAPPER
-  | WRITE
-  | XML
-  | YEAR
-  | YES
-  | ZONE
-  ;
+    : ABORT
+    | ABSOLUTE
+    | ACCESS
+    | ACTION
+    | ADD
+    | ADMIN
+    | AFTER
+    | AGGREGATE
+    | ALSO
+    | ALTER
+    | ALWAYS
+    | ASSERTION
+    | ASSIGNMENT
+    | AT
+    | ATTACH
+    | ATTRIBUTE
+    | BACKWARD
+    | BEFORE
+    | BEGIN
+    | BY
+    | CACHE
+    | CALL
+    | CALLED
+    | CASCADE
+    | CASCADED
+    | CATALOG
+    | CHAIN
+    | CHARACTERISTICS
+    | CHECKPOINT
+    | CLASS
+    | CLOSE
+    | CLUSTER
+    | COLUMNS
+    | COMMENT
+    | COMMENTS
+    | COMMIT
+    | COMMITTED
+    | CONFIGURATION
+    | CONFLICT
+    | CONNECTION
+    | CONSTRAINTS
+    | CONTENT
+    | CONTINUE
+    | CONVERSION
+    | COPY
+    | COST
+    | CSV
+    | CUBE
+    | CURRENT
+    | CURSOR
+    | CYCLE
+    | DATA
+    | DATABASE
+    | DAY
+    | DEALLOCATE
+    | DECLARE
+    | DEFAULTS
+    | DEFERRED
+    | DEFINER
+    | DELETE
+    | DELIMITER
+    | DELIMITERS
+    | DEPENDS
+    | DETACH
+    | DICTIONARY
+    | DISABLE
+    | DISCARD
+    | DOCUMENT
+    | DOMAIN
+    | DOUBLE
+    | DROP
+    | EACH
+    | ENABLE
+    | ENCODING
+    | ENCRYPTED
+    | ENUM
+    | ESCAPE
+    | EVENT
+    | EXCLUDE
+    | EXCLUDING
+    | EXCLUSIVE
+    | EXECUTE
+    | EXPLAIN
+    | EXTENSION
+    | EXTERNAL
+    | FAMILY
+    | FILTER
+    | FIRST
+    | FOLLOWING
+    | FORCE
+    | FORWARD
+    | FUNCTION
+    | FUNCTIONS
+    | GENERATED
+    | GLOBAL
+    | GRANTED
+    | GROUPS
+    | HANDLER
+    | HEADER
+    | HOLD
+    | HOUR
+    | IDENTITY
+    | IF
+    | IMMEDIATE
+    | IMMUTABLE
+    | IMPLICIT
+    | IMPORT
+    | INCLUDE
+    | INCLUDING
+    | INCREMENT
+    | INDEX
+    | INDEXES
+    | INHERIT
+    | INHERITS
+    | INLINE
+    | INPUT
+    | INSENSITIVE
+    | INSERT
+    | INSTEAD
+    | INVOKER
+    | ISOLATION
+    | KEY
+    | LABEL
+    | LANGUAGE
+    | LARGE
+    | LAST
+    | LEAKPROOF
+    | LEVEL
+    | LISTEN
+    | LOAD
+    | LOCAL
+    | LOCATION
+    | LOCK
+    | LOCKED
+    | LOGGED
+    | MAPPING
+    | MATCH
+    | MATERIALIZED
+    | MAXVALUE
+    | METHOD
+    | MINUTE
+    | MINVALUE
+    | MODE
+    | MONTH
+    | MOVE
+    | NAME
+    | NAMES
+    | NEW
+    | NEXT
+    | NO
+    | NOTHING
+    | NOTIFY
+    | NOWAIT
+    | NULLS
+    | OBJECT
+    | OF
+    | OFF
+    | OIDS
+    | OLD
+    | OPERATOR
+    | OPTION
+    | OPTIONS
+    | ORDINALITY
+    | OTHERS
+    | OVER
+    | OVERRIDING
+    | OWNED
+    | OWNER
+    | PARALLEL
+    | PARSER
+    | PARTIAL
+    | PARTITION
+    | PASSING
+    | PASSWORD
+    | PLANS
+    | POLICY
+    | PRECEDING
+    | PREPARE
+    | PREPARED
+    | PRESERVE
+    | PRIOR
+    | PRIVILEGES
+    | PROCEDURAL
+    | PROCEDURE
+    | PROCEDURES
+    | PROGRAM
+    | PUBLICATION
+    | QUOTE
+    | RANGE
+    | READ
+    | REASSIGN
+    | RECHECK
+    | RECURSIVE
+    | REF
+    | REFERENCING
+    | REFRESH
+    | REINDEX
+    | RELATIVE
+    | RELEASE
+    | RENAME
+    | REPEATABLE
+    | REPLACE
+    | REPLICA
+    | RESET
+    | RESTART
+    | RESTRICT
+    | RETURNS
+    | REVOKE
+    | ROLE
+    | ROLLBACK
+    | ROLLUP
+    | ROUTINE
+    | ROUTINES
+    | ROWS
+    | RULE
+    | SAVEPOINT
+    | SCHEMA
+    | SCHEMAS
+    | SCROLL
+    | SEARCH
+    | SECOND
+    | SECURITY
+    | SEQUENCE
+    | SEQUENCES
+    | SERIALIZABLE
+    | SERVER
+    | SESSION
+    | SET
+    | SETS
+    | SHARE
+    | SHOW
+    | SIMPLE
+    | SKIP_
+    | SNAPSHOT
+    | SQL
+    | STABLE
+    | STANDALONE
+    | START
+    | STATEMENT
+    | STATISTICS
+    | STDIN
+    | STDOUT
+    | STORAGE
+    | STRICT
+    | STRIP
+    | SUBSCRIPTION
+    | SYSID
+    | SYSTEM
+    | TABLES
+    | TABLESPACE
+    | TEMP
+    | TEMPLATE
+    | TEMPORARY
+    | TEXT
+    | TIES
+    | TRANSACTION
+    | TRANSFORM
+    | TRIGGER
+    | TRUNCATE
+    | TRUSTED
+    | TYPE
+    | TYPES
+    | UNBOUNDED
+    | UNCOMMITTED
+    | UNENCRYPTED
+    | UNKNOWN
+    | UNLISTEN
+    | UNLOGGED
+    | UNTIL
+    | UPDATE
+    | VACUUM
+    | VALID
+    | VALIDATE
+    | VALIDATOR
+    | VALUE
+    | VARYING
+    | VERSION
+    | VIEW
+    | VIEWS
+    | VOLATILE
+    | WHITESPACE
+    | WITHIN
+    | WITHOUT
+    | WORK
+    | WRAPPER
+    | WRITE
+    | XML
+    | YEAR
+    | YES
+    | ZONE
+    ;
 
 tokens_nonreserved_except_function_type
-  : BETWEEN
-  | BIGINT
-  | BIT
-  | BOOLEAN
-  | CHAR
-  | CHARACTER
-  | COALESCE
-  | DEC
-  | DECIMAL
-  | EXISTS
-  | EXTRACT
-  | FLOAT
-  | GREATEST
-  | GROUPING
-  | INOUT
-  | INT
-  | INTEGER
-  | INTERVAL
-  | LEAST
-  | NATIONAL
-  | NCHAR
-  | NONE
-  | NULLIF
-  | NUMERIC
-  | OUT
-  | OVERLAY
-  | POSITION
-  | PRECISION
-  | REAL
-  | ROW
-  | SETOF
-  | SMALLINT
-  | SUBSTRING
-  | TIME
-  | TIMESTAMP
-  | TREAT
-  | TRIM
-  | VALUES
-  | VARCHAR
-  | XMLATTRIBUTES
-  | XMLCONCAT
-  | XMLELEMENT
-  | XMLEXISTS
-  | XMLFOREST
-  | XMLNAMESPACES
-  | XMLPARSE
-  | XMLPI
-  | XMLROOT
-  | XMLSERIALIZE
-  | XMLTABLE
-  ;
+    : BETWEEN
+    | BIGINT
+    | BIT
+    | BOOLEAN
+    | CHAR
+    | CHARACTER
+    | COALESCE
+    | DEC
+    | DECIMAL
+    | EXISTS
+    | EXTRACT
+    | FLOAT
+    | GREATEST
+    | GROUPING
+    | INOUT
+    | INT
+    | INTEGER
+    | INTERVAL
+    | LEAST
+    | NATIONAL
+    | NCHAR
+    | NONE
+    | NULLIF
+    | NUMERIC
+    | OUT
+    | OVERLAY
+    | POSITION
+    | PRECISION
+    | REAL
+    | ROW
+    | SETOF
+    | SMALLINT
+    | SUBSTRING
+    | TIME
+    | TIMESTAMP
+    | TREAT
+    | TRIM
+    | VALUES
+    | VARCHAR
+    | XMLATTRIBUTES
+    | XMLCONCAT
+    | XMLELEMENT
+    | XMLEXISTS
+    | XMLFOREST
+    | XMLNAMESPACES
+    | XMLPARSE
+    | XMLPI
+    | XMLROOT
+    | XMLSERIALIZE
+    | XMLTABLE
+    ;
 
 tokens_simple_functions
-  : COALESCE
-  | GREATEST
-  | GROUPING
-  | LEAST
-  | NULLIF
-  | ROW
-  | XMLCONCAT
-  ;
+    : COALESCE
+    | GREATEST
+    | GROUPING
+    | LEAST
+    | NULLIF
+    | ROW
+    | XMLCONCAT
+    ;
 
 tokens_reserved_except_function_type
-  : AUTHORIZATION
-  | BINARY
-  | COLLATION
-  | CONCURRENTLY
-  | CROSS
-  | CURRENT_SCHEMA
-  | FREEZE
-  | FULL
-  | ILIKE
-  | INNER
-  | IS
-  | ISNULL
-  | JOIN
-  | LEFT
-  | LIKE
-  | NATURAL
-  | NOTNULL
-  | OUTER
-  | OVERLAPS
-  | RIGHT
-  | SIMILAR
-  | TABLESAMPLE
-  | VERBOSE
-  ;
+    : AUTHORIZATION
+    | BINARY
+    | COLLATION
+    | CONCURRENTLY
+    | CROSS
+    | CURRENT_SCHEMA
+    | FREEZE
+    | FULL
+    | ILIKE
+    | INNER
+    | IS
+    | ISNULL
+    | JOIN
+    | LEFT
+    | LIKE
+    | NATURAL
+    | NOTNULL
+    | OUTER
+    | OVERLAPS
+    | RIGHT
+    | SIMILAR
+    | TABLESAMPLE
+    | VERBOSE
+    ;
 
 tokens_reserved
-  : ALL
-  | ANALYSE
-  | ANALYZE
-  | AND
-  | ANY
-  | ARRAY
-  | AS
-  | ASC
-  | ASYMMETRIC
-  | BOTH
-  | CASE
-  | CAST
-  | CHECK
-  | COLLATE
-  | COLUMN
-  | CONSTRAINT
-  | CREATE
-  | CURRENT_CATALOG
-  | CURRENT_DATE
-  | CURRENT_ROLE
-  | CURRENT_TIME
-  | CURRENT_TIMESTAMP
-  | CURRENT_USER
-  | DEFAULT
-  | DEFERRABLE
-  | DESC
-  | DISTINCT
-  | DO
-  | ELSE
-  | END
-  | EXCEPT
-  | FALSE
-  | FETCH
-  | FOR
-  | FOREIGN
-  | FROM
-  | GRANT
-  | GROUP
-  | HAVING
-  | IN
-  | INITIALLY
-  | INTERSECT
-  | INTO
-  | LATERAL
-  | LEADING
-  | LIMIT
-  | LOCALTIME
-  | LOCALTIMESTAMP
-  | NOT
-  | NULL
-  | OFFSET
-  | ON
-  | ONLY
-  | OR
-  | ORDER
-  | PLACING
-  | PRIMARY
-  | REFERENCES
-  | RETURNING
-  | SELECT
-  | SESSION_USER
-  | SOME
-  | SYMMETRIC
-  | TABLE
-  | THEN
-  | TO
-  | TRAILING
-  | TRUE
-  | UNION
-  | UNIQUE
-  | USER
-  | USING
-  | VARIADIC
-  | WHEN
-  | WHERE
-  | WINDOW
-  | WITH
-  ;
+    : ALL
+    | ANALYSE
+    | ANALYZE
+    | AND
+    | ANY
+    | ARRAY
+    | AS
+    | ASC
+    | ASYMMETRIC
+    | BOTH
+    | CASE
+    | CAST
+    | CHECK
+    | COLLATE
+    | COLUMN
+    | CONSTRAINT
+    | CREATE
+    | CURRENT_CATALOG
+    | CURRENT_DATE
+    | CURRENT_ROLE
+    | CURRENT_TIME
+    | CURRENT_TIMESTAMP
+    | CURRENT_USER
+    | DEFAULT
+    | DEFERRABLE
+    | DESC
+    | DISTINCT
+    | DO
+    | ELSE
+    | END
+    | EXCEPT
+    | FALSE
+    | FETCH
+    | FOR
+    | FOREIGN
+    | FROM
+    | GRANT
+    | GROUP
+    | HAVING
+    | IN
+    | INITIALLY
+    | INTERSECT
+    | INTO
+    | LATERAL
+    | LEADING
+    | LIMIT
+    | LOCALTIME
+    | LOCALTIMESTAMP
+    | NOT
+    | NULL
+    | OFFSET
+    | ON
+    | ONLY
+    | OR
+    | ORDER
+    | PLACING
+    | PRIMARY
+    | REFERENCES
+    | RETURNING
+    | SELECT
+    | SESSION_USER
+    | SOME
+    | SYMMETRIC
+    | TABLE
+    | THEN
+    | TO
+    | TRAILING
+    | TRUE
+    | UNION
+    | UNIQUE
+    | USER
+    | USING
+    | VARIADIC
+    | WHEN
+    | WHERE
+    | WINDOW
+    | WITH
+    ;
 
 tokens_nonkeyword
-  : ALIGNMENT
-  | BUFFERS
-  | BYPASSRLS
-  | CANONICAL
-  | CATEGORY
-  | COLLATABLE
-  | COMMUTATOR
-  | CONNECT
-  | COSTS
-  | CREATEDB
-  | CREATEROLE
-  | DISABLE_PAGE_SKIPPING
-  | ELEMENT
-  | EXTENDED
-  | FORMAT
-  | GETTOKEN
-  | HASH
-  | HASHES
-  | HEADLINE
-  | INIT
-  | INTERNALLENGTH
-  | JSON
-  | LC_COLLATE
-  | LC_CTYPE 
-  | LEFTARG
-  | LEXIZE
-  | LEXTYPES
-  | LOCALE 
-  | LOGIN
-  | MAIN
-  | MERGES
-  | MODULUS
-  | NEGATOR
-  | NOBYPASSRLS
-  | NOCREATEDB
-  | NOCREATEROLE
-  | NOINHERIT
-  | NOLOGIN
-  | NOREPLICATION
-  | NOSUPERUSER
-  | OUTPUT
-  | PASSEDBYVALUE
-  | PLAIN
-  | PREFERRED
-  | PROVIDER
-  | RECEIVE
-  | REPLICATION
-  | REMAINDER
-  | RESTRICTED
-  | RIGHTARG
-  | SAFE
-  | SEND
-  | SUBTYPE
-  | SUBTYPE_DIFF
-  | SUBTYPE_OPCLASS
-  | SUMMARY
-  | SUPERUSER
-  | TIMING
-  | TYPMOD_IN
-  | TYPMOD_OUT
-  | UNSAFE
-  | USAGE
-  | VARIABLE
-  | YAML
-  ;
+    : ALIGNMENT
+    | BUFFERS
+    | BYPASSRLS
+    | CANONICAL
+    | CATEGORY
+    | COLLATABLE
+    | COMMUTATOR
+    | CONNECT
+    | COSTS
+    | CREATEDB
+    | CREATEROLE
+    | DISABLE_PAGE_SKIPPING
+    | ELEMENT
+    | EXTENDED
+    | FORMAT
+    | GETTOKEN
+    | HASH
+    | HASHES
+    | HEADLINE
+    | INIT
+    | INTERNALLENGTH
+    | JSON
+    | LC_COLLATE
+    | LC_CTYPE
+    | LEFTARG
+    | LEXIZE
+    | LEXTYPES
+    | LOCALE
+    | LOGIN
+    | MAIN
+    | MERGES
+    | MODULUS
+    | NEGATOR
+    | NOBYPASSRLS
+    | NOCREATEDB
+    | NOCREATEROLE
+    | NOINHERIT
+    | NOLOGIN
+    | NOREPLICATION
+    | NOSUPERUSER
+    | OUTPUT
+    | PASSEDBYVALUE
+    | PLAIN
+    | PREFERRED
+    | PROVIDER
+    | RECEIVE
+    | REPLICATION
+    | REMAINDER
+    | RESTRICTED
+    | RIGHTARG
+    | SAFE
+    | SEND
+    | SUBTYPE
+    | SUBTYPE_DIFF
+    | SUBTYPE_OPCLASS
+    | SUMMARY
+    | SUPERUSER
+    | TIMING
+    | TYPMOD_IN
+    | TYPMOD_OUT
+    | UNSAFE
+    | USAGE
+    | VARIABLE
+    | YAML
+
+// plpgsql tokens
+    | ALIAS
+    | ASSERT
+    | CONSTANT
+    | DATATYPE
+    | DEBUG
+    | DETAIL
+    | DIAGNOSTICS
+    | ELSEIF
+    | ELSIF
+    | ERRCODE
+    | EXIT
+    | EXCEPTION
+    | FOREACH
+    | GET
+    | HINT
+    | INFO
+    | LOG
+    | LOOP
+    | MESSAGE
+    | NOTICE
+    | OPEN
+    | PERFORM
+    | QUERY
+    | RAISE
+    | RECORD
+    | RETURN
+    | REVERSE
+    | ROWTYPE
+    | SLICE
+    | SQLSTATE
+    | STACKED
+    | WARNING
+    | WHILE
+    ;
 
 /*
 ===============================================================================
@@ -2024,26 +2071,30 @@ array_type
     ;
 
 predefined_type
-  : BIGINT
-  | BIT VARYING? type_length?
-  | BOOLEAN
-  | DEC precision_param?
-  | DECIMAL precision_param?
-  | DOUBLE PRECISION
-  | FLOAT precision_param?
-  | INT
-  | INTEGER
-  | INTERVAL ((identifier TO)? identifier)? type_length?
-  | NATIONAL? (CHARACTER | CHAR) VARYING? type_length?
-  | NCHAR VARYING? type_length?
-  | NUMERIC precision_param?
-  | REAL
-  | SMALLINT
-  | TIME type_length? ((WITH | WITHOUT) TIME ZONE)?
-  | TIMESTAMP type_length? ((WITH | WITHOUT) TIME ZONE)?
-  | VARCHAR type_length?
-  | schema_qualified_name_nontype (LEFT_PAREN vex (COMMA vex)* RIGHT_PAREN)?
-  ;
+    : schema_qualified_name_nontype (LEFT_PAREN vex (COMMA vex)* RIGHT_PAREN)?
+    | build_in_type
+    ;
+
+build_in_type
+    : BIGINT
+    | BIT VARYING? type_length?
+    | BOOLEAN
+    | DEC precision_param?
+    | DECIMAL precision_param?
+    | DOUBLE PRECISION
+    | FLOAT precision_param?
+    | INT
+    | INTEGER
+    | INTERVAL ((identifier TO)? identifier)? type_length?
+    | NATIONAL? (CHARACTER | CHAR) VARYING? type_length?
+    | NCHAR VARYING? type_length?
+    | NUMERIC precision_param?
+    | REAL
+    | SMALLINT
+    | TIME type_length? ((WITH | WITHOUT) TIME ZONE)?
+    | TIMESTAMP type_length? ((WITH | WITHOUT) TIME ZONE)?
+    | VARCHAR type_length?
+    ;
 
 type_length
   : LEFT_PAREN NUMBER_LITERAL RIGHT_PAREN
@@ -2063,7 +2114,7 @@ vex
   : vex CAST_EXPRESSION data_type
   | LEFT_PAREN vex RIGHT_PAREN
   | LEFT_PAREN vex (COMMA vex)+ RIGHT_PAREN
-  | vex LEFT_BRACKET vex (COLON vex)? RIGHT_BRACKET
+  | vex LEFT_BRACKET vex (COLON vex?)? RIGHT_BRACKET
   | vex collate_identifier
   | <assoc=right> (PLUS | MINUS) vex
   | vex AT TIME ZONE vex
@@ -2099,7 +2150,7 @@ vex_b
   : vex_b CAST_EXPRESSION data_type
   | LEFT_PAREN vex RIGHT_PAREN
   | LEFT_PAREN vex (COMMA vex)+ RIGHT_PAREN
-  | vex_b LEFT_BRACKET vex (COLON vex)? RIGHT_BRACKET
+  | vex_b LEFT_BRACKET vex (COLON vex?)? RIGHT_BRACKET
   | <assoc=right> (PLUS | MINUS) vex_b
   | vex_b EXP vex_b
   | vex_b (MULTIPLY | DIVIDE | MODULAR) vex_b
@@ -2114,7 +2165,7 @@ vex_b
   ;
 
 op
-  : OP_CHARS
+  : op_chars
   | OPERATOR LEFT_PAREN identifier DOT all_simple_op RIGHT_PAREN
   ;
 
@@ -2223,7 +2274,7 @@ date_time_function
 
 string_value_function
   : TRIM LEFT_PAREN (LEADING | TRAILING | BOTH)? (chars=vex FROM str=vex | FROM? str=vex (COMMA chars=vex)?) RIGHT_PAREN
-  | SUBSTRING LEFT_PAREN vex (FROM vex)? (FOR vex)? RIGHT_PAREN
+  | SUBSTRING LEFT_PAREN vex (COMMA vex)* (FROM vex)? (FOR vex)? RIGHT_PAREN
   | POSITION LEFT_PAREN vex_b IN vex RIGHT_PAREN
   | OVERLAY LEFT_PAREN vex PLACING vex FROM vex (FOR vex)? RIGHT_PAREN
   ;
@@ -2274,7 +2325,7 @@ array_expression
 array_brackets
     : ARRAY array_elements
     ;
- 
+
 array_elements
     : LEFT_BRACKET (vex | array_elements) (COMMA (vex | array_elements))* RIGHT_BRACKET
     ;
@@ -2284,9 +2335,8 @@ array_query
     ;
 
 type_coercion
-    : data_type character_string
+    : build_in_type character_string
     ;
-
 /*
 ===============================================================================
   7.13 <query expression>
@@ -2305,24 +2355,22 @@ table_subquery
   ;
 
 select_stmt
-    : with_clause? select_ops
-        orderby_clause?
-        (LIMIT (vex | ALL))?
-        (OFFSET vex (ROW | ROWS)?)?
-        (FETCH (FIRST | NEXT) vex? (ROW | ROWS) ONLY)?
-        (FOR (UPDATE | NO KEY UPDATE | SHARE | NO KEY SHARE) (OF schema_qualified_name (COMMA schema_qualified_name)*)? NOWAIT?)*
+    : with_clause? select_ops (after_ops into_statement?)*
+    ;
+
+after_ops
+    : orderby_clause
+    | LIMIT (vex | ALL)
+    | OFFSET vex (ROW | ROWS)?
+    | FETCH (FIRST | NEXT) vex? (ROW | ROWS) ONLY?
+    | FOR (UPDATE | NO KEY UPDATE | SHARE | NO KEY SHARE) (OF schema_qualified_name (COMMA schema_qualified_name)*)? NOWAIT?
     ;
 
 // select_stmt copy that doesn't consume external parens
 // for use in vex
 // we let the vex rule to consume as many parens as it can
 select_stmt_no_parens
-    : with_clause? select_ops_no_parens
-        orderby_clause?
-        (LIMIT (vex | ALL))?
-        (OFFSET vex (ROW | ROWS)?)?
-        (FETCH (FIRST | NEXT) vex? (ROW | ROWS) ONLY)?
-        (FOR (UPDATE | NO KEY UPDATE | SHARE | NO KEY SHARE) (OF schema_qualified_name (COMMA schema_qualified_name)*)? NOWAIT?)*
+    : with_clause? select_ops_no_parens after_ops*
     ;
 
 with_clause
@@ -2348,10 +2396,12 @@ select_ops_no_parens
 
 select_primary
     : SELECT
+        into_statement?
         (set_qualifier (ON LEFT_PAREN vex (COMMA vex)* RIGHT_PAREN)?)?
-        select_list
-        (FROM from_item (COMMA from_item)*)?
-        (WHERE vex)?
+        select_list?
+        into_statement?
+        (FROM into_statement? from_item (COMMA from_item)*)?
+        (WHERE vex into_statement?)?
         groupby_clause?
         (HAVING vex)?
         (WINDOW w_name=identifier AS LEFT_PAREN window_definition RIGHT_PAREN (COMMA w_name=identifier AS LEFT_PAREN window_definition RIGHT_PAREN)*)?
@@ -2373,7 +2423,7 @@ from_item
     | from_item (INNER | (LEFT | RIGHT | FULL) OUTER?)? JOIN from_item ON vex
     | from_item (INNER | (LEFT | RIGHT | FULL) OUTER?)? JOIN from_item USING column_references
     | from_item NATURAL (INNER | (LEFT | RIGHT | FULL) OUTER?)? JOIN from_item
-    | from_primary
+    | from_primary into_statement?
     ;
 
 from_primary
@@ -2472,11 +2522,11 @@ insert_stmt_for_psql
   (LEFT_PAREN column+=identifier (COMMA column+=identifier)* RIGHT_PAREN)?
   (select_stmt | DEFAULT VALUES)
   (ON CONFLICT conflict_object? conflict_action)?
-  (RETURNING select_list)?
+  (RETURNING select_list into_statement?)?
   ;
 
 conflict_object
-    : index_sort index_where? 
+    : index_sort index_where?
     | ON CONSTRAINT identifier
     ;
 
@@ -2489,15 +2539,15 @@ delete_stmt_for_psql
   : with_clause? DELETE FROM ONLY? delete_table_name=schema_qualified_name MULTIPLY? (AS? alias=identifier)?
   (USING from_item (COMMA from_item)*)?
   (WHERE (vex | CURRENT OF cursor=identifier))?
-  (RETURNING select_list)?
+  (RETURNING select_list into_statement?)?
   ;
 
 update_stmt_for_psql
   : with_clause? UPDATE ONLY? update_table_name=schema_qualified_name MULTIPLY? (AS? alias=identifier)?
   SET update_set (COMMA update_set)*
   (FROM from_item (COMMA from_item)*)?
-  (WHERE (vex | WHERE CURRENT OF cursor=identifier))?
-  (RETURNING select_list)?
+  (WHERE (vex | CURRENT OF cursor=identifier))?
+  (RETURNING select_list into_statement?)?
   ;
 
 update_set
@@ -2515,3 +2565,209 @@ truncate_stmt
   : TRUNCATE TABLE? ONLY? name=schema_qualified_name MULTIPLY? (COMMA name=schema_qualified_name MULTIPLY?)*
   ((RESTART | CONTINUE) IDENTITY)? (CASCADE | RESTRICT)?
   ;
+
+comp_options
+    : HASH_SIGN identifier vex
+    ;
+
+function_block
+    : start_label? declarations?
+    BEGIN function_statements exception_statement?
+    END end_label=identifier?
+    ;
+
+start_label
+    : LESS_LESS identifier GREATER_GREATER
+    ;
+
+declarations
+    : DECLARE (identifier type_declaration SEMI_COLON)*
+    ;
+
+type_declaration
+    : CONSTANT? data_type_dec collate_identifier? (NOT NULL)? ((DEFAULT | COLON_EQUAL | EQUAL) vex)?
+    | ALIAS FOR (identifier | DOLLAR_NUMBER)
+    | ((NO)? SCROLL)? CURSOR (LEFT_PAREN arguments_list RIGHT_PAREN)? (FOR | IS) query_stmt
+    ;
+
+arguments_list
+    : identifier data_type (COMMA identifier data_type)*
+    ;
+
+data_type_dec
+    : data_type (MODULAR (TYPE | ROWTYPE))?
+    ;
+
+exception_statement
+    : EXCEPTION (WHEN vex THEN function_statements)+
+    ;
+
+function_statements
+    : (function_statement SEMI_COLON)*
+    ;
+
+function_statement
+    : function_block
+    | base_statement
+    | control_statement
+    | transaction_statement
+    | cursor_statement
+    | message_statement
+    | anonymous_block
+    | schema_statement
+    | data_statement
+    ;
+
+base_statement
+    : var_assign_value
+    | EXECUTE vex (INTO (STRICT)? schema_qualified_name)? using_vex?
+    | PERFORM (table_subquery | perform_stmt)
+    | GET (CURRENT | STACKED)? DIAGNOSTICS diagnostic_option (COMMA diagnostic_option)*
+    | NULL
+    ;
+
+var
+    : identifier array_elements?
+    | DOLLAR_NUMBER
+    ;
+
+diagnostic_option
+    : var (COLON_EQUAL | EQUAL) identifier
+    ;
+
+perform_stmt
+    : with_clause? perform_ops orderby_clause?
+    (LIMIT (vex | ALL))?
+    (OFFSET vex (ROW | ROWS))?
+    (FETCH (FIRST | NEXT) vex? (ROW | ROWS) ONLY)?
+    (FOR (UPDATE | NO KEY UPDATE | SHARE | NO KEY SHARE) (OF schema_qualified_name (COMMA schema_qualified_name)*)? NOWAIT?)*
+    ;
+
+perform_ops
+    : perform_ops (INTERSECT | UNION | EXCEPT) set_qualifier? perform_ops
+    | perform_primary
+    ;
+
+perform_primary
+    : (set_qualifier (ON LEFT_PAREN vex (COMMA vex)* RIGHT_PAREN)?)?
+      select_list (FROM from_item (COMMA from_item)*)?
+      (WHERE vex)? groupby_clause? (HAVING vex)?
+      (WINDOW w_name=identifier AS LEFT_PAREN window_definition RIGHT_PAREN (COMMA w_name=identifier AS LEFT_PAREN window_definition RIGHT_PAREN)*)?
+    | TABLE ONLY? schema_qualified_name MULTIPLY?
+    | values_stmt
+    ;
+
+var_assign_value
+    : schema_qualified_name array_elements? (COLON_EQUAL | EQUAL) (select_ops_no_parens | perform_stmt)
+    ;
+
+control_statement
+    : return_stmt
+    | CALL function_call
+    | if_statement
+    | case_statement
+    | loop_statement
+    ;
+
+cursor_statement
+    : OPEN var ((NO)? SCROLL)? FOR query_stmt
+    | OPEN var ((NO)? SCROLL)? FOR EXECUTE vex using_vex?
+    | OPEN var (option (COMMA option)*)?
+    | FETCH (fetch_move_derection? (FROM | IN)?) var INTO identifier_list
+    | MOVE (fetch_move_derection? (FROM | IN)?) var
+    | DELETE FROM schema_qualified_name WHERE CURRENT OF var
+    | CLOSE var
+    ;
+
+option
+    : (identifier COLON_EQUAL)? vex
+    ;
+
+transaction_statement
+    : COMMIT
+    | ROLLBACK
+    ;
+
+message_statement
+    : RAISE log_level? SQLSTATE? (character_string (COMMA vex)*)? raise_using?
+    | ASSERT vex (COMMA vex)?
+    ;
+
+log_level
+    : DEBUG
+    | LOG
+    | INFO
+    | NOTICE
+    | WARNING
+    | EXCEPTION
+    ;
+
+raise_using
+    : USING raise_param EQUAL vex (COMMA raise_param EQUAL vex)*
+    ;
+
+raise_param
+    : MESSAGE
+    | DETAIL
+    | HINT
+    | ERRCODE
+    | COLUMN
+    | CONSTRAINT
+    | DATATYPE
+    | TABLE
+    | SCHEMA
+    ;
+
+return_stmt
+    : RETURN vex?
+    | RETURN NEXT vex
+    | RETURN QUERY select_stmt
+    | RETURN QUERY EXECUTE vex using_vex?
+    ;
+
+loop_statement
+    : start_label? loop_start? LOOP function_statements END LOOP identifier?
+    | (EXIT | CONTINUE) identifier? (WHEN vex)?
+    ;
+
+loop_start
+    : WHILE vex
+    | FOR identifier IN REVERSE? vex DOUBLE_DOT vex (BY vex)?
+    | FOR identifier_list IN select_stmt_no_parens
+    | FOR identifier_list IN vex using_vex?
+    | FOR identifier IN identifier (LEFT_PAREN option (COMMA option)* RIGHT_PAREN)?
+    | FOREACH identifier_list (SLICE NUMBER_LITERAL)? IN ARRAY vex
+    ;
+
+identifier_list
+    : identifier (COMMA identifier)*
+    ;
+
+using_vex
+    : USING vex (COMMA vex)*
+    ;
+
+if_statement
+    : IF vex THEN function_statements ((ELSIF | ELSEIF) vex THEN function_statements)* (ELSE function_statements)? END IF
+    ;
+
+// plpgsql case
+case_statement
+    : CASE vex? (WHEN vex (COMMA vex)* THEN (function_statements | vex))+ (ELSE (function_statements | vex))? END CASE
+    ;
+
+query_stmt
+    : select_stmt
+    | insert_stmt_for_psql
+    | update_stmt_for_psql
+    | delete_stmt_for_psql
+    ;
+
+into_statement
+    : INTO STRICT? names_references
+    ;
+
+anonymous_block
+    : DO (LANGUAGE identifier)? character_string
+    | DO character_string LANGUAGE identifier
+    ;
