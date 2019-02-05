@@ -32,6 +32,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import ru.taximaxim.codekeeper.apgdiff.DaemonThreadFactory;
@@ -151,17 +152,36 @@ public class AntlrParser {
         });
     }
 
-    public static <T extends ParserRuleContext, P extends Parser>
-    T parseSqlString(Class<P> parserClass, Function<P, T> parserEntry, String sql,
+    public static <P extends Parser> SqlContext parseSqlStringSqlCtx(Class<P> parserClass,
+            Function<P, SqlContext> parserEntry, String sql,
             String parsedObjectName) {
-        return parseSqlString(parserClass, parserEntry, sql, parsedObjectName, null);
+        return parseSqlStringSqlCtx(parserClass, parserEntry, sql, parsedObjectName, null);
+    }
+
+    public static <P extends Parser> SqlContext parseSqlStringSqlCtx(Class<P> parserClass,
+            Function<P, SqlContext> parserEntry, String sql,
+            String parsedObjectName, List<AntlrError> errors) {
+        return getCtxFromFuture(submitAntlrTask(() -> parserEntry.apply(
+                makeBasicParser(parserClass, getSqlWithSemicolon(sql),
+                        parsedObjectName, errors))));
+    }
+
+    private static String getSqlWithSemicolon(String sql) {
+        return ";".indexOf(sql.charAt(sql.length() - 1)) < 0 ? sql + "\n;" : sql;
     }
 
     public static <T extends ParserRuleContext, P extends Parser>
     T parseSqlString(Class<P> parserClass, Function<P, T> parserEntry, String sql,
             String parsedObjectName, List<AntlrError> errors) {
-        Future<T> f = submitAntlrTask(() -> parserEntry.apply(
-                makeBasicParser(parserClass, sql, parsedObjectName, errors)));
+        return getCtxFromFuture(submitAntlrTask(() -> parserEntry.apply(
+                makeBasicParser(parserClass, sql, parsedObjectName, errors))));
+    }
+
+    public static <T> Future<T> submitAntlrTask(Callable<T> task) {
+        return ANTLR_POOL.submit(task);
+    }
+
+    private static <T extends ParserRuleContext>T getCtxFromFuture(Future<T> f) {
         try {
             return f.get();
         } catch (InterruptedException ex) {
@@ -170,10 +190,6 @@ public class AntlrParser {
         } catch (ExecutionException ex) {
             throw new IllegalStateException(ex);
         }
-    }
-
-    public static <T> Future<T> submitAntlrTask(Callable<T> task) {
-        return ANTLR_POOL.submit(task);
     }
 
     public static <T> void submitAntlrTask(Queue<AntlrTask<?>> antlrTasks,

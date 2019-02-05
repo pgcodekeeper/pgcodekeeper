@@ -11,7 +11,6 @@ import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateFunction;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
@@ -41,6 +40,8 @@ public class FunctionsReader extends JdbcReader {
         loader.setCurrentObject(new GenericColumn(schemaName, funcName,
                 isProc ? DbObjType.PROCEDURE : DbObjType.FUNCTION));
         AbstractPgFunction f = isProc ? new PgProcedure(funcName) : new PgFunction(funcName);
+
+        fillFunction(f, res, schema);
 
         // OWNER
         loader.setOwner(f, res.getLong("proowner"));
@@ -93,8 +94,6 @@ public class FunctionsReader extends JdbcReader {
 
             f.addArgument(a);
         }
-
-        fillFunction(f, res, schema);
 
         if (!isProc) {
             // RETURN TYPE
@@ -249,9 +248,8 @@ public class FunctionsReader extends JdbcReader {
         // Parsing the function definition and adding its result context for analysis.
         if ("SQL".equalsIgnoreCase(function.getLanguage())) {
             schema.getDatabase().addContextForAnalyze(function,
-                    AntlrParser.parseSqlString(SQLParser.class, SQLParser::sql,
-                            CreateFunction.getSqlWithTrimAndSemicolon(definition),
-                            "function definition of " + function.getName()));
+                    AntlrParser.parseSqlStringSqlCtx(SQLParser.class, SQLParser::sql,
+                            definition, "function definition of " + function.getBareName()));
         }
     }
 
