@@ -80,8 +80,6 @@ public class CreateRule extends ParserAbstract {
                 IdentifierContext functNameCtx = QNameParser.getFirstNameCtx(funcIds);
                 AbstractSchema schema = getSchemaSafe(funcIds, db.getDefaultSchema());
 
-                // TODO It will be better if we can determine is this AGGREGATE
-                // or not without throwing an exception.
                 AbstractPgFunction func = (AbstractPgFunction) getSafe(schema::getFunction,
                         parseSignature(functNameCtx.getText(), funct.function_args()),
                         functNameCtx.getStart());

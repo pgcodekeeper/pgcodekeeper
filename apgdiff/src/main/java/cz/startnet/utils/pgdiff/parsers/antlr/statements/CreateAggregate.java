@@ -284,14 +284,11 @@ public class CreateAggregate extends ParserAbstract {
         }
     }
 
+    // It will be used in the 'CreateAggregate.fillAggregate' method - 'aggregate.addDep()'
+    // (which is waiting for task #16080).
     public static String getSortOperSign(PgAggregate aggr, String operName) {
-        StringBuilder operSign = new StringBuilder();
         String argType = aggr.getArguments().get(0).getDataType();
-        operSign.append(operName).append('(').append(argType).append(", ");
-        operSign.append(argType);
-        operSign.append(')');
-
-        return operSign.toString();
+        return operName + '(' + argType + ", " + argType + ')';
     }
 
 }
