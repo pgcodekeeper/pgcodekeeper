@@ -100,7 +100,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
         return ret;
     }
 
-    private void selectAfterOps(SelectStmt select) {
+    void selectAfterOps(SelectStmt select) {
         ValueExpr vex = new ValueExpr(this);
 
         for (After_opsContext after : select.afterOps()) {
@@ -124,17 +124,16 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
         return selectOps(selectOps, null);
     }
 
-    private List<Pair<String, String>> selectOps(SelectOps selectOps, With_queryContext recursiveCteCtx) {
+    List<Pair<String, String>> selectOps(SelectOps selectOps, With_queryContext recursiveCteCtx) {
         List<Pair<String, String>> ret;
         Select_stmtContext selectStmt = selectOps.selectStmt();
-        Select_primaryContext primary;
+        Select_primaryContext primary = selectOps.selectPrimary();
+        SelectOps firstOpt = selectOps.firstOps();
 
-        if (selectOps.leftParen() != null && selectOps.rightParen() != null && selectStmt != null) {
-            ret = analyze(selectStmt);
-        } else if (selectOps.intersect() != null || selectOps.union() != null || selectOps.except() != null) {
+        if (firstOpt != null) {
             // analyze each in a separate scope
             // use column names from the first one
-            ret = new Select(this).selectOps(selectOps.selectOps(0));
+            ret = new Select(this).selectOps(firstOpt);
 
             // when a recursive CTE is encountered, its SELECT is guaranteed
             // to have a "SelectOps" on top level
@@ -156,19 +155,23 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
                 addCteSignature(recursiveCteCtx, ret);
             }
 
-            Select_primaryContext prim = selectOps.selectPrimary();
-            if (prim != null) {
-                primary(prim);
-            } else {
-                new Select(this).selectOps(selectOps.selectOps(1));
+            SelectOps secondOpt = selectOps.secondOps();
+            if (secondOpt != null) {
+                new Select(this).selectOps(secondOpt);
+            } else if (primary != null) {
+                primary(primary);
+            } else if (selectStmt != null) {
+                analyze(selectStmt);
             }
-
-        } else if ((primary = selectOps.selectPrimary()) != null) {
+        } else if (primary != null) {
             ret = primary(primary);
+        } else if (selectStmt != null) {
+            ret = analyze(selectStmt);
         } else {
             Log.log(Log.LOG_WARNING, "No alternative in SelectOps!");
             ret = Collections.emptyList();
         }
+
         return ret;
     }
 

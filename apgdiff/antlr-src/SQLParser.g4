@@ -39,7 +39,11 @@ vex_eof
     ;
 
 plpgsql_function
-    : comp_options? function_block SEMI_COLON ? EOF
+    : comp_options? function_block SEMI_COLON? EOF
+    ;
+
+plpgsql_function_test_list
+    : (comp_options? function_block SEMI_COLON)* EOF
     ;
 
 /******* END Start symbols *******/
@@ -2390,7 +2394,7 @@ select_ops
 
 // version of select_ops for use in select_stmt_no_parens
 select_ops_no_parens
-    : select_ops (INTERSECT | UNION | EXCEPT) set_qualifier? (select_primary | LEFT_PAREN select_ops RIGHT_PAREN)
+    : select_ops (INTERSECT | UNION | EXCEPT) set_qualifier? (select_primary | LEFT_PAREN select_stmt RIGHT_PAREN)
     | select_primary
     ;
 
@@ -2567,7 +2571,7 @@ truncate_stmt
   ;
 
 comp_options
-    : HASH_SIGN identifier vex
+    : HASH_SIGN identifier identifier
     ;
 
 function_block
@@ -2587,7 +2591,7 @@ declarations
 type_declaration
     : CONSTANT? data_type_dec collate_identifier? (NOT NULL)? ((DEFAULT | COLON_EQUAL | EQUAL) vex)?
     | ALIAS FOR (identifier | DOLLAR_NUMBER)
-    | ((NO)? SCROLL)? CURSOR (LEFT_PAREN arguments_list RIGHT_PAREN)? (FOR | IS) query_stmt
+    | ((NO)? SCROLL)? CURSOR (LEFT_PAREN arguments_list RIGHT_PAREN)? (FOR | IS) select_stmt
     ;
 
 arguments_list
@@ -2621,7 +2625,7 @@ function_statement
 base_statement
     : var_assign_value
     | EXECUTE vex (INTO (STRICT)? schema_qualified_name)? using_vex?
-    | PERFORM (table_subquery | perform_stmt)
+    | PERFORM perform_stmt
     | GET (CURRENT | STACKED)? DIAGNOSTICS diagnostic_option (COMMA diagnostic_option)*
     | NULL
     ;
@@ -2636,29 +2640,16 @@ diagnostic_option
     ;
 
 perform_stmt
-    : with_clause? perform_ops orderby_clause?
-    (LIMIT (vex | ALL))?
-    (OFFSET vex (ROW | ROWS))?
-    (FETCH (FIRST | NEXT) vex? (ROW | ROWS) ONLY)?
-    (FOR (UPDATE | NO KEY UPDATE | SHARE | NO KEY SHARE) (OF schema_qualified_name (COMMA schema_qualified_name)*)? NOWAIT?)*
-    ;
-
-perform_ops
-    : perform_ops (INTERSECT | UNION | EXCEPT) set_qualifier? perform_ops
-    | perform_primary
-    ;
-
-perform_primary
     : (set_qualifier (ON LEFT_PAREN vex (COMMA vex)* RIGHT_PAREN)?)?
-      select_list (FROM from_item (COMMA from_item)*)?
-      (WHERE vex)? groupby_clause? (HAVING vex)?
-      (WINDOW w_name=identifier AS LEFT_PAREN window_definition RIGHT_PAREN (COMMA w_name=identifier AS LEFT_PAREN window_definition RIGHT_PAREN)*)?
-    | TABLE ONLY? schema_qualified_name MULTIPLY?
-    | values_stmt
+    select_list (FROM from_item (COMMA from_item)*)?
+    (WHERE vex)? groupby_clause? (HAVING vex)?
+    (WINDOW w_name=identifier AS LEFT_PAREN window_definition RIGHT_PAREN (COMMA w_name=identifier AS LEFT_PAREN window_definition RIGHT_PAREN)*)?
+    ((INTERSECT | UNION | EXCEPT) set_qualifier? select_ops)?
+    after_ops*
     ;
 
 var_assign_value
-    : schema_qualified_name array_elements? (COLON_EQUAL | EQUAL) (select_ops_no_parens | perform_stmt)
+    : schema_qualified_name array_elements? (COLON_EQUAL | EQUAL) (select_stmt_no_parens | perform_stmt)
     ;
 
 control_statement
@@ -2670,7 +2661,7 @@ control_statement
     ;
 
 cursor_statement
-    : OPEN var ((NO)? SCROLL)? FOR query_stmt
+    : OPEN var ((NO)? SCROLL)? FOR select_stmt
     | OPEN var ((NO)? SCROLL)? FOR EXECUTE vex using_vex?
     | OPEN var (option (COMMA option)*)?
     | FETCH (fetch_move_derection? (FROM | IN)?) var INTO identifier_list
@@ -2754,13 +2745,6 @@ if_statement
 // plpgsql case
 case_statement
     : CASE vex? (WHEN vex (COMMA vex)* THEN (function_statements | vex))+ (ELSE (function_statements | vex))? END CASE
-    ;
-
-query_stmt
-    : select_stmt
-    | insert_stmt_for_psql
-    | update_stmt_for_psql
-    | delete_stmt_for_psql
     ;
 
 into_statement
