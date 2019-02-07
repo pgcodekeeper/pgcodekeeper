@@ -22,9 +22,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_set_listContext
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Orderby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Ordinary_grouping_setContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Perform_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Qualified_asteriskContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Row_value_predicand_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_opsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensContext;
@@ -95,15 +97,66 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
 
         List<Pair<String, String>> ret = selectOps(select.selectOps(), recursiveCteCtx);
 
-        selectAfterOps(select);
+        selectAfterOps(select.afterOps());
 
         return ret;
     }
 
-    void selectAfterOps(SelectStmt select) {
+    public List<Pair<String, String>> analyze(Perform_stmtContext perform) {
+        List<Pair<String, String>> ret = perform(perform);
+
+        Select_opsContext ops = perform.select_ops();
+        if (ops != null) {
+            new Select(this).selectOps(new SelectOps(ops));
+        }
+        selectAfterOps(perform.after_ops());
+        return ret;
+    }
+
+    private List<Pair<String, String>> perform(Perform_stmtContext perform) {
+        List<Pair<String, String>> ret = new ArrayList<>();
+
+        // from defines the namespace so it goes before everything else
+        if (perform.FROM() != null) {
+            boolean oldFrom = inFrom;
+            try {
+                inFrom = true;
+                for (From_itemContext fromItem : perform.from_item()) {
+                    from(fromItem);
+                }
+            } finally {
+                inFrom = oldFrom;
+            }
+        }
+
+        ValueExpr vex = new ValueExpr(this);
+        sublist(perform.select_list().select_sublist(), vex, ret);
+
+        if ((perform.set_qualifier() != null && perform.ON() != null)
+                || perform.WHERE() != null || perform.HAVING() != null) {
+            for (VexContext v : perform.vex()) {
+                vex.analyze(new Vex(v));
+            }
+        }
+
+        Groupby_clauseContext groupBy = perform.groupby_clause();
+        if (groupBy != null) {
+            groupBy(groupBy, vex);
+        }
+
+        if (perform.WINDOW() != null) {
+            for (Window_definitionContext window : perform.window_definition()) {
+                vex.window(window);
+            }
+        }
+
+        return ret;
+    }
+
+    private void selectAfterOps(List<After_opsContext> ops) {
         ValueExpr vex = new ValueExpr(this);
 
-        for (After_opsContext after : select.afterOps()) {
+        for (After_opsContext after : ops) {
             VexContext vexCtx = after.vex();
             if (vexCtx != null) {
                 vex.analyze(new Vex(vexCtx));
@@ -124,7 +177,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
         return selectOps(selectOps, null);
     }
 
-    List<Pair<String, String>> selectOps(SelectOps selectOps, With_queryContext recursiveCteCtx) {
+    private List<Pair<String, String>> selectOps(SelectOps selectOps, With_queryContext recursiveCteCtx) {
         List<Pair<String, String>> ret;
         Select_stmtContext selectStmt = selectOps.selectStmt();
         Select_primaryContext primary = selectOps.selectPrimary();
@@ -194,28 +247,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
 
             ret = new ArrayList<>();
             ValueExpr vex = new ValueExpr(this);
-            for (Select_sublistContext target : primary.select_list().select_sublist()) {
-                Vex selectSublistVex = new Vex(target.vex());
-
-                Qualified_asteriskContext ast;
-                Value_expression_primaryContext valExprPrimary = selectSublistVex.primary();
-                if (valExprPrimary != null
-                        && (ast = valExprPrimary.qualified_asterisk()) != null) {
-                    Schema_qualified_nameContext qNameAst = ast.tb_name;
-                    ret.addAll(qNameAst == null ? unqualAster() : qualAster(qNameAst));
-                } else {
-                    Pair<String, String> columnPair = vex.analyze(selectSublistVex);
-
-                    IdentifierContext id = target.identifier();
-                    ParserRuleContext aliasCtx = id != null ? id : target.id_token();
-                    if (aliasCtx != null) {
-                        columnPair.setFirst(aliasCtx.getText());
-                    }
-
-                    ret.add(columnPair);
-                }
-            }
-
+            sublist(primary.select_list().select_sublist(), vex, ret);
 
             if ((primary.set_qualifier() != null && primary.ON() != null)
                     || primary.WHERE() != null || primary.HAVING() != null) {
@@ -226,18 +258,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
 
             Groupby_clauseContext groupBy = primary.groupby_clause();
             if (groupBy != null) {
-                for (Grouping_elementContext group : groupBy.grouping_element_list().grouping_element()) {
-                    Ordinary_grouping_setContext groupingSet = group.ordinary_grouping_set();
-                    Grouping_set_listContext groupingSets;
-
-                    if (groupingSet != null) {
-                        groupingSet(groupingSet, vex);
-                    } else if ((groupingSets = group.grouping_set_list()) != null) {
-                        for (Ordinary_grouping_setContext groupingSubset : groupingSets.ordinary_grouping_set_list().ordinary_grouping_set()) {
-                            groupingSet(groupingSubset, vex);
-                        }
-                    }
-                }
+                groupBy(groupBy, vex);
             }
 
             if (primary.WINDOW() != null) {
@@ -262,6 +283,46 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
             ret = Collections.emptyList();
         }
         return ret;
+    }
+
+    private void sublist(List<Select_sublistContext> sublist, ValueExpr vex,
+            List<Pair<String, String>> ret) {
+        for (Select_sublistContext target : sublist) {
+            Vex selectSublistVex = new Vex(target.vex());
+
+            Qualified_asteriskContext ast;
+            Value_expression_primaryContext valExprPrimary = selectSublistVex.primary();
+            if (valExprPrimary != null
+                    && (ast = valExprPrimary.qualified_asterisk()) != null) {
+                Schema_qualified_nameContext qNameAst = ast.tb_name;
+                ret.addAll(qNameAst == null ? unqualAster() : qualAster(qNameAst));
+            } else {
+                Pair<String, String> columnPair = vex.analyze(selectSublistVex);
+
+                IdentifierContext id = target.identifier();
+                ParserRuleContext aliasCtx = id != null ? id : target.id_token();
+                if (aliasCtx != null) {
+                    columnPair.setFirst(aliasCtx.getText());
+                }
+
+                ret.add(columnPair);
+            }
+        }
+    }
+
+    private void groupBy(Groupby_clauseContext groupBy, ValueExpr vex) {
+        for (Grouping_elementContext group : groupBy.grouping_element_list().grouping_element()) {
+            Ordinary_grouping_setContext groupingSet = group.ordinary_grouping_set();
+            Grouping_set_listContext groupingSets;
+
+            if (groupingSet != null) {
+                groupingSet(groupingSet, vex);
+            } else if ((groupingSets = group.grouping_set_list()) != null) {
+                for (Ordinary_grouping_setContext groupingSubset : groupingSets.ordinary_grouping_set_list().ordinary_grouping_set()) {
+                    groupingSet(groupingSubset, vex);
+                }
+            }
+        }
     }
 
     private static final Predicate<String> ANY = s -> true;
