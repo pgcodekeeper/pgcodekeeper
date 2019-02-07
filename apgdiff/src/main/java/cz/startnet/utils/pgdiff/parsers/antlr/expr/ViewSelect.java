@@ -166,26 +166,33 @@ public class ViewSelect {
     }
 
     private void selectOps(SelectOps selectOps) {
-        SelectOps firstOpt = selectOps.firstOps();
-        if (firstOpt != null) {
-            new ViewSelect(this).selectOps(firstOpt);
-        }
-
-        SelectOps secondOpt = selectOps.secondOps();
-        if (secondOpt != null) {
-            new ViewSelect(this).selectOps(secondOpt);
-        }
-
-        Select_primaryContext primary = selectOps.selectPrimary();
-        if (primary != null) {
-            selectPrimary(primary);
-        }
-
         Select_stmtContext selectStmt = selectOps.selectStmt();
-        if (selectStmt != null) {
+        Select_primaryContext primary = selectOps.selectPrimary();
+
+        if (selectOps.intersect() != null || selectOps.union() != null || selectOps.except() != null) {
+            // analyze each in a separate scope
+            new ViewSelect(this).selectOps(selectOps.selectOps(0));
+
+            ViewSelect viewSelect = new ViewSelect(this);
+            SelectOps ops = selectOps.selectOps(1);
+            if (ops != null) {
+                viewSelect.selectOps(ops);
+            } else if (primary != null) {
+                viewSelect.selectPrimary(primary);
+            } else if (selectStmt != null) {
+                viewSelect.analyze(selectStmt);
+            } else {
+                Log.log(Log.LOG_WARNING, "No alternative in right part of SelectOps!");
+            }
+        } else if (selectOps.leftParen() != null && selectOps.rightParen() != null && selectStmt != null) {
             analyze(selectStmt);
+        } else if (primary != null) {
+            selectPrimary(primary);
+        } else {
+            Log.log(Log.LOG_WARNING, "No alternative in SelectOps!");
         }
     }
+
 
     private void selectPrimary(Select_primaryContext primary) {
         Values_stmtContext values;
