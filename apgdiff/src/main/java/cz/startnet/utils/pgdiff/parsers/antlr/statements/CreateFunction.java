@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -116,9 +117,10 @@ public class CreateFunction extends ParserAbstract {
         if ("SQL".equalsIgnoreCase(function.getLanguage()) && funcContent.size() == 1) {
             StringBuilder funcCommands = new StringBuilder();
             funcContent.get(0).Text_between_Dollar().forEach(funcCommands::append);
+            String funcCommandsStr = funcCommands.toString();
             db.addContextForAnalyze(function, AntlrParser.parseSqlStringSqlCtx(SQLParser.class,
-                    SQLParser::sql, funcCommands.toString(),
-                    "function definition of " + function.getName()));
+                    SQLParser::sql, funcCommandsStr, "function definition of " + function.getBareName(),
+                    new ArrayList<>(), getFullCtxText(ctx).indexOf(funcCommandsStr) + 1));
         }
 
         With_storage_parameterContext storage = params.with_storage_parameter();

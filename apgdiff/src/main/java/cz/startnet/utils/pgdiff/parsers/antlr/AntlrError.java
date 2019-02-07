@@ -8,8 +8,8 @@ public class AntlrError {
     private final int charPositionInLine;
     private final String msg;
     private final String text;
-    private final int start;
-    private final int stop;
+    private int start;
+    private int stop;
     private final String location;
 
     public AntlrError(Token tokenError, String location, int line, int charPositionInLine, String msg) {
@@ -48,6 +48,11 @@ public class AntlrError {
 
     public String getLocation() {
         return location;
+    }
+
+    public void setOffsetToDefinition(int funcDefinOffset) {
+        start = start + funcDefinOffset;
+        stop = stop + funcDefinOffset;
     }
 
     @Override

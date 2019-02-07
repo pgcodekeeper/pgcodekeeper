@@ -159,11 +159,21 @@ public class AntlrParser {
     }
 
     public static <P extends Parser> SqlContext parseSqlStringSqlCtx(Class<P> parserClass,
-            Function<P, SqlContext> parserEntry, String sql,
-            String parsedObjectName, List<AntlrError> errors) {
-        return getCtxFromFuture(submitAntlrTask(() -> parserEntry.apply(
+            Function<P, SqlContext> parserEntry, String sql, String parsedObjectName,
+            List<AntlrError> errors) {
+        return parseSqlStringSqlCtx(parserClass, parserEntry, sql, parsedObjectName, errors, 0);
+    }
+
+    public static <P extends Parser> SqlContext parseSqlStringSqlCtx(Class<P> parserClass,
+            Function<P, SqlContext> parserEntry, String sql, String parsedObjectName,
+            List<AntlrError> errors, int offsetToDefinition) {
+        SqlContext sqlCtx = getCtxFromFuture(submitAntlrTask(() -> parserEntry.apply(
                 makeBasicParser(parserClass, getSqlWithSemicolon(sql),
                         parsedObjectName, errors))));
+        if (offsetToDefinition > 0) {
+            errors.forEach(err -> err.setOffsetToDefinition(offsetToDefinition));
+        }
+        return sqlCtx;
     }
 
     private static String getSqlWithSemicolon(String sql) {
