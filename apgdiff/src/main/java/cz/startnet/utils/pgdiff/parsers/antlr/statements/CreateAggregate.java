@@ -52,7 +52,7 @@ public class CreateAggregate extends ParserAbstract {
         // Second step: filling other parameters of AGGREGATE.
 
         Schema_qualified_nameContext sFuncCtx = ctx.sfunc_name;
-        aggregate.setSFunc(sFuncCtx.getText());
+        aggregate.setSFunc(getFullCtxText(sFuncCtx));
         addFuncAsDepcy(PgAggregate.SFUNC, sFuncCtx, aggregate, schemaName);
 
         fillAggregate(ctx.aggregate_param(), aggregate, schema.getName(), schemaName);
@@ -112,7 +112,7 @@ public class CreateAggregate extends ParserAbstract {
                     aggregate.setSSpace(Integer.parseInt(paramOpt.s_space.getText()));
                 } else if (paramOpt.FINALFUNC() != null) {
                     Schema_qualified_nameContext finalFuncCtx = paramOpt.final_func;
-                    aggregate.setFinalFunc(finalFuncCtx.getText());
+                    aggregate.setFinalFunc(getFullCtxText(finalFuncCtx));
                     addFuncAsDepcy(PgAggregate.FINALFUNC, finalFuncCtx, aggregate, defSchemaName);
                 } else if (paramOpt.FINALFUNC_EXTRA() != null) {
                     aggregate.setFinalFuncExtra(true);
@@ -120,31 +120,31 @@ public class CreateAggregate extends ParserAbstract {
                     finalFuncModify = getModifyParam(paramOpt);
                 } else if (paramOpt.COMBINEFUNC() != null) {
                     Schema_qualified_nameContext combineFuncCtx = paramOpt.combine_func;
-                    aggregate.setCombineFunc(combineFuncCtx.getText());
+                    aggregate.setCombineFunc(getFullCtxText(combineFuncCtx));
                     addFuncAsDepcy(PgAggregate.COMBINEFUNC, combineFuncCtx, aggregate, defSchemaName);
                 } else if (paramOpt.SERIALFUNC() != null) {
                     Schema_qualified_nameContext serialFuncCtx = paramOpt.serial_func;
-                    aggregate.setSerialFunc(serialFuncCtx.getText());
+                    aggregate.setSerialFunc(getFullCtxText(serialFuncCtx));
                     addFuncAsDepcy(PgAggregate.SERIALFUNC, serialFuncCtx, aggregate, defSchemaName);
                 } else if (paramOpt.DESERIALFUNC() != null) {
                     Schema_qualified_nameContext deserialFuncCtx = paramOpt.deserial_func;
-                    aggregate.setDeserialFunc(deserialFuncCtx.getText());
+                    aggregate.setDeserialFunc(getFullCtxText(deserialFuncCtx));
                     addFuncAsDepcy(PgAggregate.DESERIALFUNC, deserialFuncCtx, aggregate, defSchemaName);
                 } else if (paramOpt.INITCOND() != null) {
                     aggregate.setInitCond(paramOpt.init_cond.getText());
                 } else if (paramOpt.MSFUNC() != null) {
                     Schema_qualified_nameContext mSFuncCtx = paramOpt.ms_func;
-                    aggregate.setMSFunc(mSFuncCtx.getText());
+                    aggregate.setMSFunc(getFullCtxText(mSFuncCtx));
                     addFuncAsDepcy(PgAggregate.MSFUNC, mSFuncCtx, aggregate, defSchemaName);
                 } else if (paramOpt.MINVFUNC() != null) {
                     Schema_qualified_nameContext mInvFuncCtx = paramOpt.minv_func;
-                    aggregate.setMInvFunc(mInvFuncCtx.getText());
+                    aggregate.setMInvFunc(getFullCtxText(mInvFuncCtx));
                     addFuncAsDepcy(PgAggregate.MINVFUNC, mInvFuncCtx, aggregate, defSchemaName);
                 } else if (paramOpt.MSSPACE() != null) {
                     aggregate.setMSSpace(Integer.parseInt(paramOpt.ms_space.getText()));
                 } else if (paramOpt.MFINALFUNC() != null) {
                     Schema_qualified_nameContext mFinalFuncCtx = paramOpt.mfinal_func;
-                    aggregate.setMFinalFunc(mFinalFuncCtx.getText());
+                    aggregate.setMFinalFunc(getFullCtxText(mFinalFuncCtx));
                     addFuncAsDepcy(PgAggregate.MFINALFUNC, mFinalFuncCtx, aggregate, defSchemaName);
                 } else if (paramOpt.MFINALFUNC_EXTRA() != null) {
                     aggregate.setMFinalFuncExtra(true);
