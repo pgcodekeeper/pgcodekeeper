@@ -29,7 +29,7 @@ public class CreateDomain extends ParserAbstract {
         List<IdentifierContext> ids = ctx.name.identifier();
         AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         PgDomain domain = new PgDomain(QNameParser.getFirstName(ids));
-        domain.setDataType(getFullCtxText(ctx.dat_type));
+        domain.setDataType(getTypeName(ctx.dat_type));
         addTypeAsDepcy(ctx.dat_type, domain, getDefSchemaName());
         for (Collate_identifierContext coll : ctx.collate_identifier()) {
             domain.setCollation(getFullCtxText(coll.collation));

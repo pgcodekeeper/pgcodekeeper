@@ -2015,8 +2015,7 @@ schema_qualified_name_nontype
   ;
 
 data_type
-  : predefined_type (ARRAY array_type | array_type+)?
-  | SETOF value=predefined_type
+  : SETOF? predefined_type (ARRAY array_type | array_type+)?
   ;
 
 array_type

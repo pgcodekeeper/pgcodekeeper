@@ -32,11 +32,11 @@ public class CreateOperator extends ParserAbstract {
                 oper.setProcedure(option.func_name.getText());
             } else if (option.LEFTARG() != null) {
                 Data_typeContext leftArgTypeCtx = option.type;
-                oper.setLeftArg(leftArgTypeCtx.getText());
+                oper.setLeftArg(getTypeName(leftArgTypeCtx));
                 addTypeAsDepcy(leftArgTypeCtx, oper, operSchemaName);
             } else if (option.RIGHTARG() != null) {
                 Data_typeContext rightArgTypeCtx = option.type;
-                oper.setRightArg(rightArgTypeCtx.getText());
+                oper.setRightArg(getTypeName(rightArgTypeCtx));
                 addTypeAsDepcy(rightArgTypeCtx, oper, operSchemaName);
             } else if (option.COMMUTATOR() != null || option.NEGATOR() != null) {
                 All_op_refContext comutNameCtx = option.addition_oper_name;
