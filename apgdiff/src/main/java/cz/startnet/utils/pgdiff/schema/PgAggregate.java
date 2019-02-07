@@ -178,6 +178,11 @@ public class PgAggregate extends AbstractPgFunction {
     }
 
     @Override
+    protected boolean needDrop(AbstractPgFunction newFunction) {
+        return true;
+    }
+
+    @Override
     public String getDropSQL() {
         final StringBuilder sb = new StringBuilder();
         sb.append("DROP AGGREGATE ");

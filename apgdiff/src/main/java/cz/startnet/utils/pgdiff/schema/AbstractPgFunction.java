@@ -87,10 +87,7 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         return sb.length() > startLength;
     }
 
-    // By default, this method returns 'true', it is necessary for AGGREGATE.
-    protected boolean needDrop(AbstractPgFunction newFunction) {
-        return true;
-    }
+    protected abstract boolean needDrop(AbstractPgFunction newFunction);
 
     /**
      * Alias for {@link #getSignature()} which provides a unique function ID.
