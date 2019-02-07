@@ -191,7 +191,7 @@ public class ViewSelect {
             }
         } else if (selectOps.leftParen() != null && selectOps.rightParen() != null && selectStmt != null) {
             analyze(selectStmt);
-        } else if ((primary) != null) {
+        } else if (primary != null) {
             selectPrimary(primary);
         } else {
             Log.log(Log.LOG_WARNING, "No alternative in SelectOps!");

@@ -161,13 +161,14 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
                 addCteSignature(recursiveCteCtx, ret);
             }
 
+            Select select = new Select(this);
             SelectOps ops = selectOps.selectOps(1);
             if (ops != null) {
-                new Select(this).selectOps(ops);
+                select.selectOps(ops);
             } else if (primary != null) {
-                primary(primary);
+                select.primary(primary);
             } else if (selectStmt != null) {
-                analyze(selectStmt);
+                select.analyze(selectStmt);
             } else {
                 Log.log(Log.LOG_WARNING, "No alternative in right part of SelectOps!");
             }
