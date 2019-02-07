@@ -26,6 +26,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Perform_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Qualified_asteriskContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Row_value_predicand_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_opsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
@@ -247,7 +248,11 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
 
             ret = new ArrayList<>();
             ValueExpr vex = new ValueExpr(this);
-            sublist(primary.select_list().select_sublist(), vex, ret);
+
+            Select_listContext list = primary.select_list();
+            if (list != null) {
+                sublist(list.select_sublist(), vex, ret);
+            }
 
             if ((primary.set_qualifier() != null && primary.ON() != null)
                     || primary.WHERE() != null || primary.HAVING() != null) {
