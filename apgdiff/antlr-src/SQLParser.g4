@@ -2342,7 +2342,7 @@ select_ops
 
 // version of select_ops for use in select_stmt_no_parens
 select_ops_no_parens
-    : select_ops (INTERSECT | UNION | EXCEPT) set_qualifier? (select_primary | LEFT_PAREN select_ops RIGHT_PAREN)
+    : select_ops (INTERSECT | UNION | EXCEPT) set_qualifier? (select_primary | LEFT_PAREN select_stmt RIGHT_PAREN)
     | select_primary
     ;
 

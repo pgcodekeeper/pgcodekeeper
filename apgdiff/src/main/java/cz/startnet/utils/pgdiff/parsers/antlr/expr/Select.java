@@ -134,11 +134,9 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
     private List<Pair<String, String>> selectOps(SelectOps selectOps, With_queryContext recursiveCteCtx) {
         List<Pair<String, String>> ret;
         Select_stmtContext selectStmt = selectOps.selectStmt();
-        Select_primaryContext primary;
+        Select_primaryContext primary = selectOps.selectPrimary();
 
-        if (selectOps.leftParen() != null && selectOps.rightParen() != null && selectStmt != null) {
-            ret = analyze(selectStmt);
-        } else if (selectOps.intersect() != null || selectOps.union() != null || selectOps.except() != null) {
+        if (selectOps.intersect() != null || selectOps.union() != null || selectOps.except() != null) {
             // analyze each in a separate scope
             // use column names from the first one
             ret = new Select(this).selectOps(selectOps.selectOps(0));
@@ -163,9 +161,20 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
                 addCteSignature(recursiveCteCtx, ret);
             }
 
-            new Select(this).selectOps(selectOps.selectOps(1));
-        } else if ((primary = selectOps.selectPrimary()) != null) {
+            SelectOps ops = selectOps.selectOps(1);
+            if (ops != null) {
+                new Select(this).selectOps(ops);
+            } else if (primary != null) {
+                primary(primary);
+            } else if (selectStmt != null) {
+                analyze(selectStmt);
+            } else {
+                Log.log(Log.LOG_WARNING, "No alternative in right part of SelectOps!");
+            }
+        } else if (primary != null) {
             ret = primary(primary);
+        } else if (selectOps.leftParen() != null && selectOps.rightParen() != null && selectStmt != null) {
+            ret = analyze(selectStmt);
         } else {
             Log.log(Log.LOG_WARNING, "No alternative in SelectOps!");
             ret = Collections.emptyList();
