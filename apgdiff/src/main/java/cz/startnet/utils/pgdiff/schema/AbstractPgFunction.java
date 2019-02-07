@@ -130,27 +130,28 @@ public abstract class AbstractPgFunction extends AbstractFunction {
     public static String getDeclaration(Argument arg, boolean includeDefaultValue, boolean includeArgName) {
         final StringBuilder sbString = new StringBuilder();
 
-        String mode = arg.getMode();
-        if (mode != null && !"IN".equalsIgnoreCase(mode)) {
-            sbString.append(mode);
-            sbString.append(' ');
-        }
+        if (includeArgName) {
+            String mode = arg.getMode();
+            if (mode != null && !"IN".equalsIgnoreCase(mode)) {
+                sbString.append(mode);
+                sbString.append(' ');
+            }
 
-        String name = arg.getName();
+            String name = arg.getName();
 
-        if (name != null && !name.isEmpty() && includeArgName) {
-            sbString.append(PgDiffUtils.getQuotedName(name));
-            sbString.append(' ');
+            if (name != null && !name.isEmpty()) {
+                sbString.append(PgDiffUtils.getQuotedName(name));
+                sbString.append(' ');
+            }
         }
 
         sbString.append(arg.getDataType());
 
-        if (includeDefaultValue) {
-            String def = arg.getDefaultExpression();
-            if (def != null && !def.isEmpty()) {
-                sbString.append(" = ");
-                sbString.append(def);
-            }
+        String def = arg.getDefaultExpression();
+
+        if (includeDefaultValue && def != null && !def.isEmpty()) {
+            sbString.append(" = ");
+            sbString.append(def);
         }
 
         return sbString.toString();
