@@ -120,7 +120,7 @@ public abstract class ParserAbstract {
         return col;
     }
 
-    protected String getTypeName(Data_typeContext datatype) {
+    public static String getTypeName(Data_typeContext datatype) {
         String full = getFullCtxText(datatype);
         Predefined_typeContext typeCtx = datatype.predefined_type();
 
@@ -137,7 +137,7 @@ public abstract class ParserAbstract {
         return full;
     }
 
-    private String convertAlias(String type) {
+    private static String convertAlias(String type) {
         String alias = type.toLowerCase(Locale.ENGLISH);
 
         switch (alias) {
@@ -181,19 +181,7 @@ public abstract class ParserAbstract {
     public static String parseSignature(String name, Function_argsContext argsContext) {
         PgFunction function = new PgFunction(name);
         for (Function_argumentsContext argument : argsContext.function_arguments()) {
-            String type = getFullCtxText(argument.argtype_data);
-
-            // function identity types from pg_dbo_timestamp extension have
-            // names qualified by pg_catalog schema, delete them to have
-            // equal signatures in project and in extension
-            Schema_qualified_name_nontypeContext sqnn = argument.argtype_data.predefined_type().schema_qualified_name_nontype();
-            if (sqnn != null) {
-                IdentifierContext schema = sqnn.schema;
-                if (schema != null && "pg_catalog".equals(schema.getText())) {
-                    type = type.substring("pg_catalog.".length());
-                }
-            }
-
+            String type = getTypeName(argument.argtype_data);
             Argument arg = new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
                     argument.argname != null ? argument.argname.getText() : null, type);
             function.addArgument(arg);
@@ -203,28 +191,9 @@ public abstract class ParserAbstract {
 
     public static String parseSignature(String name, Target_operatorContext targerOperCtx) {
         PgOperator oper = new PgOperator(name);
-        oper.setLeftArg(getOperArg(targerOperCtx.left_type));
-        oper.setRightArg(getOperArg(targerOperCtx.right_type));
+        oper.setLeftArg(getTypeName(targerOperCtx.left_type));
+        oper.setRightArg(getTypeName(targerOperCtx.right_type));
         return oper.getSignature();
-    }
-
-    private static String getOperArg(Data_typeContext typeCtx) {
-        String argType = null;
-        if (typeCtx != null) {
-            argType = getFullCtxText(typeCtx);
-            // operator identity types from pg_dbo_timestamp extension have
-            // names qualified by pg_catalog schema, delete them to have
-            // equal signatures in project and in extension
-            Schema_qualified_name_nontypeContext sqnn = typeCtx.predefined_type().schema_qualified_name_nontype();
-            if (sqnn != null) {
-                IdentifierContext schema = sqnn.schema;
-                if (schema != null && "pg_catalog".equals(schema.getText())) {
-                    argType = argType.substring("pg_catalog.".length());
-                }
-            }
-        }
-
-        return argType;
     }
 
     public static <T extends IStatement> T getSafe(Function <String, T> getter,
