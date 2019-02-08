@@ -110,8 +110,6 @@ public class PgDiffTest {
                     {"add_table_with_exist_sequence"},
                     // Tests scenario where new TABLE with drop SEQUENCE is added.
                     {"add_table_with_drop_sequence"},
-                    // Tests scenario where new TABLE with drop SEQUENCE is added.
-                    {"add_table_with_not_existing_sequence"},
                     // Tests scenario where TABLE is dropped.
                     {"drop_table"},
                     // Tests scenario where new TYPED TABLE is added.
@@ -473,6 +471,8 @@ public class PgDiffTest {
                     {"modify_aggregate"},
                     // Tests scenario for AGGREGATE where new privileges is added.
                     {"add_aggregate_privileges"},
+                    // Tests scenario where COLUMN types compared with aliases.
+                    {"compare_column_type_aliases"},
                 });
     }
 

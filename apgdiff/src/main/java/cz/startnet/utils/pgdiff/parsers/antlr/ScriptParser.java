@@ -35,6 +35,9 @@ public class ScriptParser {
                 }, script, name, errors)
                 .batch();
         CommonTokenStream stream = (CommonTokenStream) parser[0].getInputStream();
+        if (!errors.isEmpty()) {
+            return list;
+        }
 
         for (BatchContext batch : batches) {
             List<String> l = new ArrayList<>();
@@ -53,16 +56,19 @@ public class ScriptParser {
     }
 
     private List<List<String>> parsePg(String script) {
+        List<List<String>> list = new ArrayList<>(1);
+        List<String> l = new ArrayList<>();
+        list.add(l);
+
         SqlContext sql = AntlrParser.parseSqlString(
                 SQLParser.class, SQLParser::sql, script, name, errors);
+        if (!errors.isEmpty()) {
+            return list;
+        }
 
-        List<String> l = new ArrayList<>();
         for (StatementContext st : sql.statement()) {
             l.add(ParserAbstract.getFullCtxText(st));
         }
-
-        List<List<String>> list = new ArrayList<>(1);
-        list.add(l);
         return list;
     }
 

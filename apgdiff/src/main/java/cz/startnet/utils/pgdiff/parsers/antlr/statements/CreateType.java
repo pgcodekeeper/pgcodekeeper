@@ -59,7 +59,7 @@ public class CreateType extends ParserAbstract {
             type.addEnum(enume.getText());
         }
         if (ctx.subtype_name != null) {
-            type.setSubtype(getFullCtxText(ctx.subtype_name));
+            type.setSubtype(getTypeName(ctx.subtype_name));
             addTypeAsDepcy(ctx.subtype_name, type, getDefSchemaName());
         }
         if (ctx.subtype_operator_class != null) {
@@ -123,7 +123,7 @@ public class CreateType extends ParserAbstract {
             type.setDefaultValue(ctx.default_value.getText());
         }
         if (ctx.element != null) {
-            type.setElement(getFullCtxText(ctx.element));
+            type.setElement(getTypeName(ctx.element));
             addTypeAsDepcy(ctx.element, type, getDefSchemaName());
         }
         if (ctx.delimiter != null) {

@@ -29,6 +29,7 @@ import org.junit.runners.Parameterized.Parameters;
 import org.osgi.framework.BundleContext;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
+import ru.taximaxim.codekeeper.apgdiff.fileutils.TempDir;
 import ru.taximaxim.codekeeper.cli.Activator;
 import ru.taximaxim.codekeeper.cli.Main;
 import ru.taximaxim.codekeeper.cli.localizations.Messages;
@@ -97,8 +98,8 @@ public class MainTest {
             break;
         case TEST_PARSE:
             Main.main(args.args());
-            assertTrue(".pgcodekeeper doesn't exist", new File(args.getParseResultDir(), ".pgcodekeeper").isFile());
-            assertTrue("SCHEMA doesn't exist", new File(args.getParseResultDir(), "SCHEMA").isDirectory());
+            assertTrue(".pgcodekeeper doesn't exist", Files.isRegularFile(args.getParseResultDir().get().resolve(".pgcodekeeper")));
+            assertTrue("SCHEMA doesn't exist", Files.isDirectory(args.getParseResultDir().get().resolve("SCHEMA")));
             break;
         case TEST_OUTPUT:
             PrintStream old = System.out;
@@ -169,7 +170,7 @@ abstract class ArgumentsProvider implements Closeable{
     public TestType testType = TestType.TEST_OUTPUT;
     public String resName = null;
     public File resFile = null;
-    public File resDir = null;
+    public TempDir resDir = null;
 
     protected abstract String[] args() throws URISyntaxException, IOException;
 
@@ -185,7 +186,7 @@ abstract class ArgumentsProvider implements Closeable{
         return null;
     }
 
-    public File getParseResultDir() throws IOException {
+    public TempDir getParseResultDir() throws IOException {
         return null;
     }
 
@@ -200,24 +201,12 @@ abstract class ArgumentsProvider implements Closeable{
         }
 
         try{
-            if (resDir != null && resDir.isDirectory()){
-                deleteRecursive(resDir);
+            if (resDir != null ){
+                resDir.close();
             }
         }catch(Exception e){
             // do nothing
         }
-    }
-
-    /**
-     * Deletes folder and its contents recursively. FOLLOWS SYMLINKS!
-     */
-    private static void deleteRecursive(File f) throws IOException {
-        if (f.isDirectory()) {
-            for (File sub : f.listFiles()) {
-                deleteRecursive(sub);
-            }
-        }
-        Files.deleteIfExists(f.toPath());
     }
 }
 
@@ -739,13 +728,13 @@ class ArgumentsProvider_19 extends ArgumentsProvider{
     public String[] args() throws URISyntaxException, IOException {
         File db = ApgdiffUtils.getFileFromOsgiRes(PgDiffTest.class.getResource(resName));
 
-        return new String[]{"--parse", "-o", getParseResultDir().getAbsolutePath(), db.getAbsolutePath()};
+        return new String[]{"--parse", "-o", getParseResultDir().get().toFile().getAbsolutePath(), db.getAbsolutePath()};
     }
 
     @Override
-    public File getParseResultDir() throws IOException {
+    public TempDir getParseResultDir() throws IOException {
         if (resDir == null){
-            resDir = Files.createTempDirectory("pgcodekeeper_standalone_").toFile();
+            resDir = new TempDir("pgcodekeeper_standalone_");
         }
 
         return resDir;

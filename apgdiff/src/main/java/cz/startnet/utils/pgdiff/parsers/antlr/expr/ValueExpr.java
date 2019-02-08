@@ -12,6 +12,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_bracketsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_elementsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Case_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Cast_specificationContext;
@@ -101,7 +102,7 @@ public class ValueExpr extends AbstractExpr {
             Schema_qualified_name_nontypeContext customType = pType.schema_qualified_name_nontype();
             IdentifierContext typeSchema = customType == null ? null : customType.identifier();
             // TODO remove when tokens are refactored
-            if (dataType.LEFT_BRACKET() == null && dataType.SETOF() == null && customType != null &&
+            if (dataType.array_type().isEmpty() && dataType.SETOF() == null && customType != null &&
                     (typeSchema == null || "pg_catalog".equals(typeSchema.getText()))) {
                 // check simple built-in types for reg*** casts
                 Value_expression_primaryContext castPrimary = vex.vex().get(0).primary();
@@ -225,7 +226,7 @@ public class ValueExpr extends AbstractExpr {
             } else if ((cast = primary.cast_specification()) != null) {
                 ret = analyze(new Vex(cast.vex()));
                 Data_typeContext dataTypeCtx = cast.data_type();
-                ret.setValue(ParserAbstract.getFullCtxText(dataTypeCtx));
+                ret.setValue(ParserAbstract.getTypeName(dataTypeCtx));
                 addTypeDepcy(dataTypeCtx);
             } else if ((compMod = primary.comparison_mod()) != null) {
                 VexContext compModVex = compMod.vex();
@@ -252,11 +253,7 @@ public class ValueExpr extends AbstractExpr {
             } else if ((array = primary.array_expression()) != null) {
                 Array_bracketsContext arrayb = array.array_brackets();
                 if (arrayb != null) {
-                    List<VexContext> arraybVexCtxList = arrayb.vex();
-                    ret = analyze(new Vex(arraybVexCtxList.get(0)));
-                    for (int i = 1; i < arraybVexCtxList.size(); ++i) {
-                        analyze(new Vex(arraybVexCtxList.get(i)));
-                    }
+                    ret = arrayElements(arrayb.array_elements());
                 } else {
                     ret = new Select(this)
                             .analyze(array.array_query().table_subquery().select_stmt())
@@ -267,7 +264,7 @@ public class ValueExpr extends AbstractExpr {
             } else if ((typeCoercion = primary.type_coercion()) != null) {
                 Data_typeContext coercionDataType = typeCoercion.data_type();
                 addTypeDepcy(coercionDataType);
-                String type = ParserAbstract.getFullCtxText(coercionDataType);
+                String type = ParserAbstract.getTypeName(coercionDataType);
                 // since this cast can only convert string literals into a type
                 // and types are restricted to the simplest
                 // column name here will always be derived from type name
@@ -283,6 +280,20 @@ public class ValueExpr extends AbstractExpr {
 
         return ret;
     }
+
+    private Pair<String, String> arrayElements(Array_elementsContext elements) {
+        Pair<String, String> ret = new Pair<>(null, TypesSetManually.UNKNOWN);
+        for (Array_elementsContext sub : elements.array_elements()) {
+            ret = arrayElements(sub);
+        }
+
+        for (VexContext vex : elements.vex()) {
+            ret = analyze(new Vex(vex));
+        }
+
+        return ret;
+    }
+
 
     /**
      * @return return signature
@@ -443,7 +454,7 @@ public class ValueExpr extends AbstractExpr {
                 coltype = TypesSetManually.BOOLEAN;
             } else if (xml.XMLSERIALIZE() != null) {
                 Data_typeContext type = xml.data_type();
-                coltype = ParserAbstract.getFullCtxText(type);
+                coltype = ParserAbstract.getTypeName(type);
                 addTypeDepcy(type);
             } else {
                 // defaults work

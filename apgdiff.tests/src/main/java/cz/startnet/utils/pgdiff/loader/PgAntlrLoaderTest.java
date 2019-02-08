@@ -5,9 +5,7 @@
  */
 package cz.startnet.utils.pgdiff.loader;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
@@ -45,6 +43,7 @@ import cz.startnet.utils.pgdiff.schema.PgView;
 import cz.startnet.utils.pgdiff.schema.SimplePgTable;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
+import ru.taximaxim.codekeeper.apgdiff.fileutils.TempDir;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 
 /**
@@ -179,8 +178,8 @@ public class PgAntlrLoaderTest {
 
         PgDatabase dbPredefined = DB_OBJS[fileIndex - 1].getDatabase();
         Path exportDir = null;
-        try {
-            exportDir = Files.createTempDirectory("pgCodekeeper-test-files");
+        try (TempDir dir = new TempDir("pgCodekeeper-test-files")) {
+            exportDir = dir.get();
             new ModelExporter(exportDir, dbPredefined, encoding).exportFull();
 
             args = new PgDiffArguments();
@@ -194,23 +193,7 @@ public class PgAntlrLoaderTest {
 
             Assert.assertEquals("ModelExporter: exported predefined object is not "
                     + "equal to file " + filename, dbAfterExport, dbFromFile);
-        } finally {
-            if (exportDir != null) {
-                deleteRecursive(exportDir.toFile());
-            }
         }
-    }
-
-    /**
-     * Deletes folder and its contents recursively. FOLLOWS SYMLINKS!
-     */
-    private static void deleteRecursive(File f) throws IOException {
-        if (f.isDirectory()) {
-            for (File sub : f.listFiles()) {
-                deleteRecursive(sub);
-            }
-        }
-        Files.delete(f.toPath());
     }
 }
 
@@ -249,7 +232,7 @@ class PgDB1 extends PgDatabaseObjectCreator {
         table.addColumn(col);
 
         col = new PgColumn("fax_box_id");
-        col.setType("int4");
+        col.setType("integer");
         table.addColumn(col);
 
         col = new PgColumn("from_name");
@@ -261,11 +244,11 @@ class PgDB1 extends PgDatabaseObjectCreator {
         table.addColumn(col);
 
         col = new PgColumn("status");
-        col.setType("int4");
+        col.setType("integer");
         table.addColumn(col);
 
         col = new PgColumn("pages");
-        col.setType("int4");
+        col.setType("integer");
         table.addColumn(col);
 
         col = new PgColumn("time_received");
@@ -278,7 +261,7 @@ class PgDB1 extends PgDatabaseObjectCreator {
         table.addColumn(col);
 
         col = new PgColumn("read");
-        col.setType("int2");
+        col.setType("smallint");
         col.setDefaultValue("0");
         table.addColumn(col);
 
@@ -291,7 +274,7 @@ class PgDB1 extends PgDatabaseObjectCreator {
         table.addConstraint(constraint);
 
         constraint = new PgConstraint("faxes_fax_box_id_fkey");
-        constraint.setDefinition("FOREIGN KEY (fax_box_id)\n      REFERENCES fax_boxes (fax_box_id) MATCH SIMPLE\n      ON UPDATE RESTRICT ON DELETE CASCADE");
+        constraint.setDefinition("FOREIGN KEY (fax_box_id)\n      REFERENCES public.fax_boxes (fax_box_id) MATCH SIMPLE\n      ON UPDATE RESTRICT ON DELETE CASCADE");
         table.addConstraint(constraint);
 
         table = new SimplePgTable("extensions");
@@ -303,7 +286,7 @@ class PgDB1 extends PgDatabaseObjectCreator {
         table.addColumn(col);
 
         constraint = new PgConstraint("extensions_fax_box_id_fkey");
-        constraint.setDefinition("FOREIGN KEY (fax_box_id) REFERENCES fax_boxes\n(fax_box_id)    ON UPDATE RESTRICT ON DELETE RESTRICT");
+        constraint.setDefinition("FOREIGN KEY (id) REFERENCES public.fax_boxes\n(fax_box_id)    ON UPDATE RESTRICT ON DELETE RESTRICT");
         table.addConstraint(constraint);
 
         return d;
@@ -329,15 +312,15 @@ class PgDB2 extends PgDatabaseObjectCreator {
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("id");
-        col.setType("int");
+        col.setType("integer");
         table.addColumn(col);
 
         col = new PgColumn("number_pool_id");
-        col.setType("int");
+        col.setType("integer");
         table.addColumn(col);
 
         col = new PgColumn("name");
-        col.setType("varchar(50)");
+        col.setType("character varying(50)");
         table.addColumn(col);
 
         AbstractIndex idx = new PgIndex("contacts_number_pool_id_idx", "contacts");
@@ -710,7 +693,7 @@ class PgDB9 extends PgDatabaseObjectCreator {
         schema.addTable(table);
 
         col = new PgColumn("c1");
-        col.setType("int");
+        col.setType("integer");
         table.addColumn(col);
 
         PgView view = new PgView("user");
@@ -1033,8 +1016,8 @@ class PgDB16 extends PgDatabaseObjectCreator {
 
         // view
         PgView view = new PgView("v_subselect");
-        view.setQuery("SELECT c.id, t.id FROM ( SELECT t_work.id FROM t_work) t"
-                + " JOIN t_chart c ON t.id = c.id");
+        view.setQuery("SELECT c.id, t.id FROM ( SELECT t_work.id FROM public.t_work) t"
+                + " JOIN public.t_chart c ON t.id = c.id");
         schema.addView(view);
 
         return d;
@@ -1077,8 +1060,10 @@ class PgDB17 extends PgDatabaseObjectCreator {
 
         // view
         PgView view = new PgView("v_subselect");
-        view.setQuery("SELECT c.id, t.id, t.name FROM  ( SELECT w.id, m.name FROM "
-                + "(SELECT t_work.id FROM t_work) w JOIN t_memo m ON w.id::text = m.name)  t JOIN t_chart c ON t.id = c.id");
+        view.setQuery("SELECT c.id, t.id AS second, t.name\n" +
+                "   FROM (( SELECT w.id, m.name FROM (( SELECT t_work.id FROM public.t_work) w\n" +
+                "             JOIN public.t_memo m ON (((w.id)::text = m.name)))) t\n" +
+                "     JOIN public.t_chart c ON ((t.id = c.id)))");
         schema.addView(view);
 
         return d;

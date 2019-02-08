@@ -19,13 +19,13 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_storage_parameterContext;
+import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.AbstractRegularTable;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PartitionPgTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.SimplePgTable;
 import cz.startnet.utils.pgdiff.schema.TypedPgTable;
 
@@ -99,8 +99,7 @@ public class CreateTable extends TableAbstract {
     private TypedPgTable defineType(Define_typeContext typeCtx, String tableName,
             String schemaName) {
         Data_typeContext typeName = typeCtx.type_name;
-        String ofType = getFullCtxText(typeName);
-        TypedPgTable table = new TypedPgTable(tableName, ofType);
+        TypedPgTable table = new TypedPgTable(tableName, getTypeName(typeName));
         fillTypeColumns(typeCtx.list_of_type_column_def(), table, schemaName);
         addTypeAsDepcy(typeName, table, getDefSchemaName());
         fillRegularTable(table);
