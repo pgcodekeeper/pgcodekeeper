@@ -16,6 +16,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Id_tokenContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Including_indexContext;
@@ -292,8 +293,12 @@ public abstract class ParserAbstract {
 
     private int getStart(ParserRuleContext ctx) {
         int start = ctx.start.getStartIndex();
-        if (ctx instanceof IdentifierContext && ((IdentifierContext) ctx).QuotedIdentifier() != null
-                || ctx instanceof IdContext && ((IdContext) ctx).SQUARE_BRACKET_ID() != null) {
+        if (ctx instanceof IdentifierContext) {
+            Id_tokenContext id = ((IdentifierContext) ctx).id_token();
+            if (id != null && id.QuotedIdentifier() != null) {
+                start++;
+            }
+        } else if (ctx instanceof IdContext && ((IdContext) ctx).SQUARE_BRACKET_ID() != null) {
             start++;
         }
         return start;

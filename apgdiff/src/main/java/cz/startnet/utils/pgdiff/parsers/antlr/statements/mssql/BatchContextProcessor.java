@@ -7,17 +7,16 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.SourceStatement;
 
 public abstract class BatchContextProcessor extends ParserAbstract {
 
-    private final Batch_statementContext batchCtx;
+    private final ParserRuleContext batchCtx;
     private final CommonTokenStream stream;
 
-    public BatchContextProcessor(PgDatabase db, Batch_statementContext batchCtx,
+    public BatchContextProcessor(PgDatabase db, ParserRuleContext batchCtx,
             CommonTokenStream stream) {
         super(db);
         this.batchCtx = batchCtx;

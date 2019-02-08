@@ -130,6 +130,7 @@ public class FunctionsReader extends JdbcReader {
 
         // PRIVILEGES
         loader.setPrivileges(f, res.getString("aclarray"), schemaName);
+        loader.setAuthor(f, res);
 
         schema.addFunction(f);
     }
@@ -241,6 +242,8 @@ public class FunctionsReader extends JdbcReader {
         }
 
         function.setBody(loader.args, body.toString());
+
+        // TODO add function definition parsing and analyze
     }
 
     /**

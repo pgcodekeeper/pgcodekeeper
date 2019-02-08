@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.apgdiff.model.graph;
 
 import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -10,6 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import cz.startnet.utils.pgdiff.NotAllowedObjectException;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffScript;
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
@@ -17,17 +19,26 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class ActionsToScriptConverter {
 
+    private static final String REFRESH_MODULE = "EXEC sys.sp_refreshsqlmodule {0} \nGO";
+
     private static final String DROP_COMMENT = "-- DEPCY: This {0} depends on the {1}: {2}";
     private static final String CREATE_COMMENT = "-- DEPCY: This {0} is a dependency of {1}: {2}";
     private static final String HIDDEN_OBJECT = "-- HIDDEN: Object {0} of type {1}";
 
     private final Set<ActionContainer> actions;
     private final Set<PgSequence> sequencesOwnedBy = new LinkedHashSet<>();
+    private final Set<PgStatement> toRefresh;
     private final PgDiffArguments arguments;
 
     public ActionsToScriptConverter(Set<ActionContainer> actions, PgDiffArguments arguments) {
+        this(actions, Collections.emptySet(), arguments);
+    }
+
+    public ActionsToScriptConverter(Set<ActionContainer> actions, Set<PgStatement> toRefresh,
+            PgDiffArguments arguments) {
         this.actions = actions;
         this.arguments = arguments;
+        this.toRefresh = toRefresh;
     }
 
     /**
@@ -60,14 +71,20 @@ public class ActionsToScriptConverter {
                     if (depcy != null) {
                         script.addStatement(depcy);
                     }
-
-                    script.addCreate(oldObj, null, oldObj.getCreationSQL(), true);
+                    if (toRefresh.contains(oldObj)) {
+                        script.addStatement(MessageFormat.format(REFRESH_MODULE,
+                                PgDiffUtils.quoteString(oldObj.getQualifiedName())));
+                    } else {
+                        script.addCreate(oldObj, null, oldObj.getCreationSQL(), true);
+                    }
                     break;
                 case DROP:
-                    if (depcy != null) {
-                        script.addStatement(depcy);
+                    if (!toRefresh.contains(oldObj)) {
+                        if (depcy != null) {
+                            script.addStatement(depcy);
+                        }
+                        script.addDrop(oldObj, null, oldObj.getDropSQL());
                     }
-                    script.addDrop(oldObj, null, oldObj.getDropSQL());
                     break;
                 case ALTER:
                     StringBuilder sb = new StringBuilder();

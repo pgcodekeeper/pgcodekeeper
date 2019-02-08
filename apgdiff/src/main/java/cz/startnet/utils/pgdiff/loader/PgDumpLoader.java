@@ -9,10 +9,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -23,6 +25,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.SqlContextPr
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomTSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLOverridesListener;
@@ -45,6 +48,8 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 public class PgDumpLoader implements AutoCloseable {
 
     private final InputStream input;
+    private boolean isInputInAntlrParser;
+
     private final String inputObjectName;
     private final PgDiffArguments args;
 
@@ -140,11 +145,15 @@ public class PgDumpLoader implements AutoCloseable {
         d.addSchema(schema);
         schema.setLocation(new PgObjLocation(inputObjectName));
         d.setDefaultSchema(schema.getName());
-        loadDatabase(d);
+        Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>(1);
+        loadDatabase(d, antlrTasks);
+        AntlrParser.finishAntlr(antlrTasks);
+
         return d;
     }
 
-    protected PgDatabase loadDatabase(PgDatabase intoDb) throws IOException, InterruptedException {
+    protected PgDatabase loadDatabase(PgDatabase intoDb, Queue<AntlrTask<?>> antlrTasks)
+            throws InterruptedException {
         PgDiffUtils.checkCancelled(monitor);
 
         if (args.isMsSql()) {
@@ -157,9 +166,9 @@ public class PgDumpLoader implements AutoCloseable {
                         intoDb, inputObjectName, refMode, errors, monitor);
                 statementBodyReferences = Collections.emptyList();
             }
-
+            isInputInAntlrParser = true;
             AntlrParser.parseTSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
-                    monitor, monitoringLevel, listener);
+                    monitor, monitoringLevel, listener, antlrTasks);
         } else {
             SqlContextProcessor listener;
             if (overrides != null) {
@@ -172,8 +181,9 @@ public class PgDumpLoader implements AutoCloseable {
                 listener = cust;
             }
 
+            isInputInAntlrParser = true;
             AntlrParser.parseSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
-                    monitor, monitoringLevel, listener);
+                    monitor, monitoringLevel, listener, antlrTasks);
         }
 
         return intoDb;
@@ -181,6 +191,8 @@ public class PgDumpLoader implements AutoCloseable {
 
     @Override
     public void close() throws IOException {
-        input.close();
+        if (!isInputInAntlrParser) {
+            input.close();
+        }
     }
 }

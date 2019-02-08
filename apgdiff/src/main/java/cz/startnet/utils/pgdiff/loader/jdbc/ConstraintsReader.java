@@ -8,9 +8,9 @@ import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterTable;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class ConstraintsReader extends JdbcReader {
@@ -57,6 +57,7 @@ public class ConstraintsReader extends JdbcReader {
                 .alter_table_statement().table_action(0),
                 ctx -> AlterTable.parseAlterTableConstraint(ctx, c, schema.getDatabase(),
                         schemaName, tableName));
+        loader.setAuthor(c, res);
 
         String comment = res.getString("description");
         if (comment != null && !comment.isEmpty()) {

@@ -32,6 +32,14 @@ public class CreateMsView extends BatchContextProcessor {
         this.quotedIdentifier = quotedIdentifier;
     }
 
+    public CreateMsView(Create_or_alter_viewContext ctx, PgDatabase db,
+            boolean ansiNulls, boolean quotedIdentifier, CommonTokenStream stream) {
+        super(db, ctx.getParent(), stream);
+        this.ctx = ctx;
+        this.ansiNulls = ansiNulls;
+        this.quotedIdentifier = quotedIdentifier;
+    }
+
     @Override
     protected ParserRuleContext getDelimiterCtx() {
         return ctx.qualified_name();

@@ -8,6 +8,8 @@ import java.util.Map.Entry;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alias_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_itemContext;
@@ -132,11 +134,9 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
     private List<Pair<String, String>> selectOps(SelectOps selectOps, With_queryContext recursiveCteCtx) {
         List<Pair<String, String>> ret;
         Select_stmtContext selectStmt = selectOps.selectStmt();
-        Select_primaryContext primary;
+        Select_primaryContext primary = selectOps.selectPrimary();
 
-        if (selectOps.leftParen() != null && selectOps.rightParen() != null && selectStmt != null) {
-            ret = analyze(selectStmt);
-        } else if (selectOps.intersect() != null || selectOps.union() != null || selectOps.except() != null) {
+        if (selectOps.intersect() != null || selectOps.union() != null || selectOps.except() != null) {
             // analyze each in a separate scope
             // use column names from the first one
             ret = new Select(this).selectOps(selectOps.selectOps(0));
@@ -161,9 +161,21 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
                 addCteSignature(recursiveCteCtx, ret);
             }
 
-            new Select(this).selectOps(selectOps.selectOps(1));
-        } else if ((primary = selectOps.selectPrimary()) != null) {
+            Select select = new Select(this);
+            SelectOps ops = selectOps.selectOps(1);
+            if (ops != null) {
+                select.selectOps(ops);
+            } else if (primary != null) {
+                select.primary(primary);
+            } else if (selectStmt != null) {
+                select.analyze(selectStmt);
+            } else {
+                Log.log(Log.LOG_WARNING, "No alternative in right part of SelectOps!");
+            }
+        } else if (primary != null) {
             ret = primary(primary);
+        } else if (selectOps.leftParen() != null && selectOps.rightParen() != null && selectStmt != null) {
+            ret = analyze(selectStmt);
         } else {
             Log.log(Log.LOG_WARNING, "No alternative in SelectOps!");
             ret = Collections.emptyList();
@@ -202,8 +214,10 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
                 } else {
                     Pair<String, String> columnPair = vex.analyze(selectSublistVex);
 
-                    if (target.alias != null && columnPair != null) {
-                        columnPair.setFirst(target.alias.getText());
+                    IdentifierContext id = target.identifier();
+                    ParserRuleContext aliasCtx = id != null ? id : target.id_token();
+                    if (aliasCtx != null) {
+                        columnPair.setFirst(aliasCtx.getText());
                     }
 
                     ret.add(columnPair);

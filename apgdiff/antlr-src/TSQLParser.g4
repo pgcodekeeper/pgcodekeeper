@@ -918,12 +918,12 @@ alter_schema_sql
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-schema-transact-sql
 create_schema
-    : SCHEMA schema_name=id (AUTHORIZATION owner_name=id)?/* schema_def=schema_definition**/
+    : SCHEMA schema_name=id (AUTHORIZATION owner_name=id)? schema_def=schema_definition*
     ;
 
 schema_definition
     : st_clause
-    | batch_statement
+    | CREATE create_or_alter_view
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-search-property-list-transact-sql

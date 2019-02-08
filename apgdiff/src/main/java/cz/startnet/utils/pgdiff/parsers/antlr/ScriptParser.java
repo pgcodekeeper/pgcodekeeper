@@ -32,6 +32,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 public class ScriptParser {
 
     private final String script;
+
     private final List<AntlrError> errors = new ArrayList<>();
     private final Set<DangerStatement> dangerStatements = new HashSet<>();
 
@@ -46,13 +47,16 @@ public class ScriptParser {
         ScriptParser sp = new ScriptParser(script);
 
         if (isMsSql) {
-            TSQLParser parser = AntlrParser.makeBasicParser(TSQLParser.class,
-                    script, name, sp.errors);
-            sp.rootCtx = parser.tsql_file();
-            sp.stream = (CommonTokenStream) parser.getInputStream();
+            TSQLParser[] parser = new TSQLParser[1];
+            sp.rootCtx = AntlrParser.parseSqlString(TSQLParser.class,
+                    p -> {
+                        parser[0] = p;
+                        return p.tsql_file();
+                    }, script, name, sp.errors);
+            sp.stream = (CommonTokenStream) parser[0].getInputStream();
         } else {
-            sp.rootCtx = AntlrParser.makeBasicParser(SQLParser.class, script,
-                    name, sp.errors).sql();
+            sp.rootCtx = AntlrParser.parseSqlString(SQLParser.class, SQLParser::sql,
+                    script, name, sp.errors);
         }
 
         return sp;
@@ -100,13 +104,13 @@ public class ScriptParser {
 
     private List<List<String>> batchPg(SqlContext rootCtx) {
         List<String> l = new ArrayList<>();
+        List<List<String>> list = new ArrayList<>(1);
+        list.add(l);
 
         for (StatementContext st : rootCtx.statement()) {
             l.add(ParserAbstract.getFullCtxText(st));
         }
 
-        List<List<String>> list = new ArrayList<>(1);
-        list.add(l);
         return list;
     }
 

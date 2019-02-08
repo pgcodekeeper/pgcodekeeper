@@ -2,11 +2,9 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
-import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -27,32 +25,14 @@ public class SchemasReader implements PgCatalogStrings {
     public void read() throws SQLException, InterruptedException {
         loader.setCurrentOperation("schemas query");
 
-        String query = JdbcQueries.QUERY_SCHEMAS.getQuery();
-
-        List<ObjectTimestamp> objects = loader.getTimestampEqualObjects();
-        if (objects != null && !objects.isEmpty()) {
-            PgDatabase projDb = loader.getTimestampProjDb();
-            StringBuilder sb = new StringBuilder();
-            for (ObjectTimestamp obj : objects) {
-                if (obj.getType() == DbObjType.SCHEMA) {
-                    long oid = obj.getObjId();
-                    sb.append(oid).append(',');
-                    AbstractSchema schema = (AbstractSchema)obj.copyStatement(projDb, loader);
-                    db.addSchema(schema);
-                    loader.schemaIds.put(oid, schema);
-                }
-            }
-            if (sb.length() > 0) {
-                sb.setLength(sb.length() - 1);
-                query = JdbcReader.excludeObjects(query, sb.toString());
-            }
-        }
+        String query = loader.appendTimestamps(JdbcQueries.QUERY_SCHEMAS.getQuery());
 
         try (ResultSet result = loader.runner.runScript(loader.statement, query)) {
             while (result.next()) {
                 AbstractSchema schema = getSchema(result);
                 db.addSchema(schema);
                 loader.schemaIds.put(result.getLong(OID), schema);
+                loader.setAuthor(schema, result);
             }
         }
     }

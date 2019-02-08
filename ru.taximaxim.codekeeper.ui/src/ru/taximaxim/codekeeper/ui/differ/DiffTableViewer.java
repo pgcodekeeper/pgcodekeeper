@@ -88,7 +88,6 @@ import org.eclipse.ui.ISharedImages;
 
 import cz.startnet.utils.pgdiff.libraries.PgLibrary;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
-import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -810,11 +809,7 @@ public class DiffTableViewer extends Composite {
         }
 
         if (dbRemote != null) {
-            DBTimestamp dbTime = dbRemote.getDbObject().getDbTimestamp();
-            if (dbTime != null) {
-                readDbUsers(dbTime);
-            }
-            showDbUser = dbTime != null;
+            readDbUsers();
         }
 
         viewer.setInput(elements);
@@ -879,13 +874,18 @@ public class DiffTableViewer extends Composite {
         });
     }
 
-    private void readDbUsers(DBTimestamp dbTime) {
+    private void readDbUsers() {
         elementInfoMap.forEach((k,v) -> {
             if (k.getSide() != DiffSide.LEFT) {
-                v.setDbUser(dbTime.getElementAuthor(k));
+                String author = k.getPgStatement(dbRemote.getDbObject()).getAuthor();
+                v.setDbUser(author);
+                if (author != null) {
+                    showDbUser = true;
+                }
             }
         });
     }
+
 
     private void readGitUsers() {
         Job job = new Job(Messages.DiffTableViewer_reading_git_history) {
@@ -978,8 +978,7 @@ public class DiffTableViewer extends Composite {
         int count = elementInfoMap.size();
         int checked = getCheckedElementsCount();
         if (lineManager != null) {
-            lineManager.setMessage(lrm.createImage(ImageDescriptor.createFromURL(
-                    Activator.getContext().getBundle().getResource(FILE.ICONAPPSMALL))),
+            lineManager.setMessage(Activator.getRegisteredImage(FILE.ICONAPPSMALL),
                     MessageFormat.format(Messages.DiffTableViewer_selected_count, checked, count));
         } else {
             lblObjectCount.setText(MessageFormat.format(Messages.diffTableViewer_objects, count));

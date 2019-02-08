@@ -12,6 +12,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_bracketsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_elementsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Case_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Cast_specificationContext;
@@ -49,6 +50,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Unsigned_value_specifica
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expression_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Vex_bContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Vex_or_named_notationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Window_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Xml_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
@@ -100,7 +102,7 @@ public class ValueExpr extends AbstractExpr {
             Schema_qualified_name_nontypeContext customType = pType.schema_qualified_name_nontype();
             IdentifierContext typeSchema = customType == null ? null : customType.identifier();
             // TODO remove when tokens are refactored
-            if (dataType.LEFT_BRACKET() == null && dataType.SETOF() == null && customType != null &&
+            if (dataType.array_type().isEmpty() && dataType.SETOF() == null && customType != null &&
                     (typeSchema == null || ApgdiffConsts.PG_CATALOG.equals(typeSchema.getText()))) {
                 // check simple built-in types for reg*** casts
                 Value_expression_primaryContext castPrimary = vex.vex().get(0).primary();
@@ -251,11 +253,7 @@ public class ValueExpr extends AbstractExpr {
             } else if ((array = primary.array_expression()) != null) {
                 Array_bracketsContext arrayb = array.array_brackets();
                 if (arrayb != null) {
-                    List<VexContext> arraybVexCtxList = arrayb.vex();
-                    ret = analyze(new Vex(arraybVexCtxList.get(0)));
-                    for (int i = 1; i < arraybVexCtxList.size(); ++i) {
-                        analyze(new Vex(arraybVexCtxList.get(i)));
-                    }
+                    ret = arrayElements(arrayb.array_elements());
                 } else {
                     ret = new Select(this)
                             .analyze(array.array_query().table_subquery().select_stmt())
@@ -282,6 +280,20 @@ public class ValueExpr extends AbstractExpr {
 
         return ret;
     }
+
+    private Pair<String, String> arrayElements(Array_elementsContext elements) {
+        Pair<String, String> ret = new Pair<>(null, TypesSetManually.UNKNOWN);
+        for (Array_elementsContext sub : elements.array_elements()) {
+            ret = arrayElements(sub);
+        }
+
+        for (VexContext vex : elements.vex()) {
+            ret = analyze(new Vex(vex));
+        }
+
+        return ret;
+    }
+
 
     /**
      * @return return signature
@@ -327,9 +339,16 @@ public class ValueExpr extends AbstractExpr {
             functionName = funcNameCtx.getText();
         }
 
-        List<VexContext> args = function.vex();
+        // TODO add processing for named/mixed notation in functions, because
+        // of order the arguments in function call (if order of arguments
+        // are not the same as in original - the current analysis will fail)
+        //
+        // (4.3.2. Using Named Notation / 4.3.3. Using Mixed Notation)
+        // https://www.postgresql.org/docs/11/sql-syntax-calling-funcs.html
+
+        List<Vex_or_named_notationContext> args = function.vex_or_named_notation();
         Value_expression_primaryContext primary;
-        if (args.size() == 1 && (primary = args.get(0).value_expression_primary()) != null
+        if (args.size() == 1 && (primary = args.get(0).vex().value_expression_primary()) != null
                 && primary.qualified_asterisk() != null) {
             //// In this case function's argument is '*' or 'source.*'.
 
@@ -346,7 +365,8 @@ public class ValueExpr extends AbstractExpr {
                     getFunctionReturns(func) : TypesSetManually.FUNCTION_COLUMN);
         } else {
             List<String> argsType = new ArrayList<>(args.size());
-            for (VexContext arg : args) {
+            for (VexContext arg : PgDiffUtils.sIter(args.stream()
+                    .map(Vex_or_named_notationContext::vex))) {
                 argsType.add(analyze(new Vex(arg)).getSecond());
             }
 

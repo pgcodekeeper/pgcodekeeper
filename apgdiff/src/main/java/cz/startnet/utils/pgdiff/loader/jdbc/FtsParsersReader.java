@@ -35,6 +35,7 @@ public class FtsParsersReader extends JdbcReader {
             parser.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
 
+        loader.setAuthor(parser, res);
         schema.addFtsParser(parser);
     }
 
