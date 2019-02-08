@@ -19,7 +19,7 @@ import ru.taximaxim.codekeeper.apgdiff.Log;
 public class CustomParserListener {
 
     protected final PgDatabase db;
-    private final List<AntlrError> errors;
+    protected final List<AntlrError> errors;
     private final IProgressMonitor monitor;
     private final String filename;
 

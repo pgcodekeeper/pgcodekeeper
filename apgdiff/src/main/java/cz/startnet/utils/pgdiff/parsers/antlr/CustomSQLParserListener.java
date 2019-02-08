@@ -90,6 +90,7 @@ implements SqlContextProcessor {
             p = new CreateRewrite(ctx.create_rewrite_statement(), db);
         } else if (ctx.create_function_statement() != null) {
             p = new CreateFunction(ctx.create_function_statement(), db);
+            ((CreateFunction) p).setErrors(errors);
         } else if (ctx.create_operator_statement() != null) {
             p = new CreateOperator(ctx.create_operator_statement(), db);
         } else if (ctx.create_sequence_statement() != null) {

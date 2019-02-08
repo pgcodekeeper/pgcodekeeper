@@ -1,9 +1,9 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
@@ -28,10 +28,16 @@ import cz.startnet.utils.pgdiff.schema.PgProcedure;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class CreateFunction extends ParserAbstract {
+    private final int LENGTH_OF_WORD_CREATE_WITH_SPACE = 7;
+    private List<AntlrError> errors;
     private final Create_function_statementContext ctx;
     public CreateFunction(Create_function_statementContext ctx, PgDatabase db) {
         super(db);
         this.ctx = ctx;
+    }
+
+    public void setErrors(List<AntlrError> errors) {
+        this.errors = errors;
     }
 
     @Override
@@ -120,7 +126,7 @@ public class CreateFunction extends ParserAbstract {
             String funcCommandsStr = funcCommands.toString();
             db.addContextForAnalyze(function, AntlrParser.parseSqlStringSqlCtx(SQLParser.class,
                     SQLParser::sql, funcCommandsStr, "function definition of " + function.getBareName(),
-                    new ArrayList<>(), getFullCtxText(ctx).indexOf(funcCommandsStr) + 1));
+                    errors, LENGTH_OF_WORD_CREATE_WITH_SPACE + getFullCtxText(ctx).indexOf(funcCommandsStr)));
         }
 
         With_storage_parameterContext storage = params.with_storage_parameter();
