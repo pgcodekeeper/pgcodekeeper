@@ -1,18 +1,6 @@
---
--- TOC Entry ID 2 (OID 605638)
---
--- Name: admins_aid_seq Type: SEQUENCE Owner: xxxx
---
+CREATE SEQUENCE public."admins_aid_seq" start 1 increment 1 maxvalue 1000000000 minvalue 1 cache 1;
 
-CREATE SEQUENCE "admins_aid_seq" start 1 increment 1 maxvalue 1000000000 minvalue 1 cache 1;
-
---
--- TOC Entry ID 108 (OID 605640)
---
--- Name: admins Type: TABLE Owner: enki
---
-
-CREATE TABLE "admins" (
+CREATE TABLE public."admins" (
     "aid" integer DEFAULT nextval('"admins_aid_seq"'::regclass) NOT NULL,
     "companyid" integer DEFAULT 0 NOT NULL,
     "groupid" integer DEFAULT 0 NOT NULL,
