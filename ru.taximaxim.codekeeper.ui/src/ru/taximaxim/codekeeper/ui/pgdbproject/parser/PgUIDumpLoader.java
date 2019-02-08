@@ -58,22 +58,16 @@ public class PgUIDumpLoader extends PgDumpLoader {
 
     public PgDatabase loadFile(PgDatabase db) throws InterruptedException, IOException {
         Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>(1);
-        loadFile(db, antlrTasks);
-        AntlrParser.finishAntlr(antlrTasks);
-        return db;
-    }
-
-    protected PgDatabase loadFile(PgDatabase db, Queue<AntlrTask<?>> antlrTasks)
-            throws InterruptedException {
+        loadDatabase(db, antlrTasks);
         try {
-            loadDatabase(db, antlrTasks);
-            return db;
+            AntlrParser.finishAntlr(antlrTasks);
         } finally {
             updateMarkers();
         }
+        return db;
     }
 
-    private void updateMarkers() {
+    protected void updateMarkers() {
         try {
             file.deleteMarkers(MARKER.ERROR, false, IResource.DEPTH_ZERO);
         } catch (CoreException ex) {
