@@ -155,7 +155,7 @@ public class PgDumpLoader implements AutoCloseable {
         return d;
     }
 
-    protected PgDatabase loadDatabase(PgDatabase intoDb, Queue<AntlrTask<?>> antlrTasks)
+    public PgDatabase loadDatabase(PgDatabase intoDb, Queue<AntlrTask<?>> antlrTasks)
             throws InterruptedException {
         PgDiffUtils.checkCancelled(monitor);
 

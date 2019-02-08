@@ -1,7 +1,7 @@
-CREATE VIEW test2 AS
+CREATE VIEW public.test2 AS
 	SELECT 1 AS test_col;
 
-CREATE VIEW test AS
-	SELECT test_col FROM test2;
+CREATE VIEW public.test AS
+	SELECT test_col FROM public.test2;
 
-ALTER VIEW test ALTER COLUMN test_col SET DEFAULT 1;
+ALTER VIEW public.test ALTER COLUMN test_col SET DEFAULT 1;

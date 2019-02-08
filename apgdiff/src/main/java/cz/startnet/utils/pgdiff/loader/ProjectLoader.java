@@ -49,7 +49,8 @@ public class ProjectLoader {
 
     protected boolean isOverrideMode;
 
-    private final Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
+    protected final Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
+    protected final Queue<PgDumpLoader> launchedLoaders = new ArrayDeque<>();
 
     public ProjectLoader(String dirPath, PgDiffArguments arguments) {
         this(dirPath, arguments, null, null);
@@ -96,7 +97,7 @@ public class ProjectLoader {
             loadPgStructure(dir, db);
         }
 
-        AntlrParser.finishAntlr(antlrTasks);
+        finishLoaders();
 
         return db;
     }
@@ -113,7 +114,7 @@ public class ProjectLoader {
             } else {
                 loadPgStructure(dir, db);
             }
-            AntlrParser.finishAntlr(antlrTasks);
+            finishLoaders();
             replaceOverrides();
         } finally {
             isOverrideMode = false;
@@ -231,5 +232,17 @@ public class ProjectLoader {
                 }
             }
         }
+    }
+
+    protected void finishLoaders() throws InterruptedException, IOException {
+        AntlrParser.finishAntlr(antlrTasks);
+        PgDumpLoader l;
+        while ((l = launchedLoaders.poll()) != null) {
+            finishLoader(l);
+        }
+    }
+
+    protected void finishLoader(PgDumpLoader l) {
+        errors.addAll(l.getErrors());
     }
 }

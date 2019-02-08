@@ -13,6 +13,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alias_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_bracketsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_elementsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Case_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Cast_specificationContext;
@@ -171,15 +172,26 @@ public class ViewSelect {
 
     private void selectOps(SelectOps selectOps) {
         Select_stmtContext selectStmt = selectOps.selectStmt();
-        Select_primaryContext primary;
+        Select_primaryContext primary = selectOps.selectPrimary();
 
-        if (selectOps.leftParen() != null && selectOps.rightParen() != null && selectStmt != null) {
-            analyze(selectStmt);
-        } else if (selectOps.intersect() != null || selectOps.union() != null || selectOps.except() != null) {
+        if (selectOps.intersect() != null || selectOps.union() != null || selectOps.except() != null) {
             // analyze each in a separate scope
             new ViewSelect(this).selectOps(selectOps.selectOps(0));
-            new ViewSelect(this).selectOps(selectOps.selectOps(1));
-        } else if ((primary = selectOps.selectPrimary()) != null) {
+
+            ViewSelect viewSelect = new ViewSelect(this);
+            SelectOps ops = selectOps.selectOps(1);
+            if (ops != null) {
+                viewSelect.selectOps(ops);
+            } else if (primary != null) {
+                viewSelect.selectPrimary(primary);
+            } else if (selectStmt != null) {
+                viewSelect.analyze(selectStmt);
+            } else {
+                Log.log(Log.LOG_WARNING, "No alternative in right part of SelectOps!");
+            }
+        } else if (selectOps.leftParen() != null && selectOps.rightParen() != null && selectStmt != null) {
+            analyze(selectStmt);
+        } else if (primary != null) {
             selectPrimary(primary);
         } else {
             Log.log(Log.LOG_WARNING, "No alternative in SelectOps!");
@@ -368,7 +380,7 @@ public class ViewSelect {
         } else if ((array = primary.array_expression()) != null) {
             Array_bracketsContext arrayb = array.array_brackets();
             if (arrayb != null) {
-                subOperands = addVexCtxtoList(subOperands, arrayb.vex());
+                arrayElements(subOperands, arrayb.array_elements());
             } else {
                 new ViewSelect(this).analyze(array.array_query().table_subquery().select_stmt());
             }
@@ -378,6 +390,13 @@ public class ViewSelect {
             for (Vex v : subOperands) {
                 analyze(v);
             }
+        }
+    }
+
+    private void arrayElements(ArrayList<Vex> subOperands, Array_elementsContext elements) {
+        addVexCtxtoList(subOperands,  elements.vex());
+        for (Array_elementsContext sub : elements.array_elements()) {
+            arrayElements(subOperands, sub);
         }
     }
 

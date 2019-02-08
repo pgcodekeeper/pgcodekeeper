@@ -110,8 +110,6 @@ public class PgDiffTest {
                     {"add_table_with_exist_sequence"},
                     // Tests scenario where new TABLE with drop SEQUENCE is added.
                     {"add_table_with_drop_sequence"},
-                    // Tests scenario where new TABLE with drop SEQUENCE is added.
-                    {"add_table_with_not_existing_sequence"},
                     // Tests scenario where TABLE is dropped.
                     {"drop_table"},
                     // Tests scenario where new TYPED TABLE is added.

@@ -1,4 +1,4 @@
-CREATE FOREIGN TABLE testtable (
+CREATE FOREIGN TABLE public.testtable (
     code integer NOT NULL
 )
 SERVER myserver;
