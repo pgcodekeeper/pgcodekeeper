@@ -459,6 +459,8 @@ public class PgDiffTest {
                     {"modify_procedure_configuration"},
                     // Tests scenario where SCHEMA with definition is added.
                     {"add_schema_with_definition"},
+                    // Tests scenario where COLUMN types compared with aliases.
+                    {"compare_column_type_aliases"},
                 });
     }
 

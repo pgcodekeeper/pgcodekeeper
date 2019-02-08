@@ -46,10 +46,10 @@ public class CreateFunction extends ParserAbstract {
             function.setReturns(getFullCtxText(ctx.ret_table));
             for (Function_column_name_typeContext ret_col : ctx.ret_table.function_column_name_type()) {
                 addTypeAsDepcy(ret_col.column_type, function, getDefSchemaName());
-                function.addReturnsColumn(ret_col.column_name.getText(), getFullCtxText(ret_col.column_type));
+                function.addReturnsColumn(ret_col.column_name.getText(), getTypeName(ret_col.column_type));
             }
         } else if (ctx.rettype_data != null) {
-            function.setReturns(getFullCtxText(ctx.rettype_data));
+            function.setReturns(getTypeName(ctx.rettype_data));
             addTypeAsDepcy(ctx.rettype_data, function, getDefSchemaName());
         }
         schema.addFunction(function);
@@ -123,7 +123,7 @@ public class CreateFunction extends ParserAbstract {
                 .function_args().function_arguments()) {
             Argument arg = new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
                     argument.argname != null ? argument.argname.getText() : null,
-                            getFullCtxText(argument.argtype_data));
+                            getTypeName(argument.argtype_data));
             addTypeAsDepcy(argument.data_type(), function, getDefSchemaName());
 
             if (argument.function_def_value() != null) {
