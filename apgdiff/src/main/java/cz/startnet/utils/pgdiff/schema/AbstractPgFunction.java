@@ -12,6 +12,7 @@ import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class AbstractPgFunction extends AbstractFunction {
 
@@ -51,7 +52,11 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         sbString.append(getStatementType().name());
         sbString.append(' ');
         sbString.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
-        appendFunctionSignature(sbString, false, true);
+        if (getStatementType() == DbObjType.AGGREGATE) {
+            ((PgAggregate) this).appendAggSignature(sbString);
+        } else {
+            appendFunctionSignature(sbString, false, true);
+        }
         sbString.append(';');
         return sbString.toString();
     }
@@ -99,6 +104,17 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         return getSignature();
     }
 
+    /**
+     * Appends signature of statement to sb.<br />
+     *
+     * Used for PRIVILEGES in Functions, Procedures, Aggregates.<br />
+     *
+     * Used for CREATE, ALTER, DROP, COMMENT operations in Functions and Procedures.<br /><br />
+     *
+     * (For CREATE, ALTER, DROP, COMMENT operations in Aggregates used own method
+     * {@link PgAggregate#appendAggSignature(StringBuilder)}.)
+     *
+     */
     public StringBuilder appendFunctionSignature(StringBuilder sb,
             boolean includeDefaultValues, boolean includeArgNames) {
         boolean cache = !includeDefaultValues && !includeArgNames;
