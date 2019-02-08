@@ -26,6 +26,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
+import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -179,14 +180,20 @@ public abstract class ParserAbstract {
     }
 
     public static String parseSignature(String name, Function_argsContext argsContext) {
-        PgFunction function = new PgFunction(name);
-        for (Function_argumentsContext argument : argsContext.function_arguments()) {
-            String type = getTypeName(argument.argtype_data);
-            Argument arg = new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
-                    argument.argname != null ? argument.argname.getText() : null, type);
-            function.addArgument(arg);
+        AbstractPgFunction function = new PgFunction(name);
+        fillFuncArgs(argsContext.function_arguments(), function);
+        if (argsContext.agg_order() != null) {
+            fillFuncArgs(argsContext.agg_order().function_arguments(), function);
         }
         return function.getSignature();
+    }
+
+    private static void fillFuncArgs(List<Function_argumentsContext> argsCtx, AbstractPgFunction function) {
+        for (Function_argumentsContext argument : argsCtx) {
+            String type = getTypeName(argument.argtype_data);
+            function.addArgument(new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
+                    argument.argname != null ? argument.argname.getText() : null, type));
+        }
     }
 
     public static String parseSignature(String name, Target_operatorContext targerOperCtx) {
