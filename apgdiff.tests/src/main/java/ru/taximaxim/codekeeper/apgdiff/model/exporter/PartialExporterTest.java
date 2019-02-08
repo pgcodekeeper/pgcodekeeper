@@ -1,6 +1,5 @@
 package ru.taximaxim.codekeeper.apgdiff.model.exporter;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
@@ -25,6 +24,7 @@ import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
+import ru.taximaxim.codekeeper.apgdiff.fileutils.TempDir;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
@@ -158,9 +158,10 @@ public class PartialExporterTest {
 
         Path exportDirFull = null;
         Path exportDirPartial = null;
-        try {
-            exportDirFull = Files.createTempDirectory("pgCodekeeper-test-export-full");
-            exportDirPartial = Files.createTempDirectory("pgCodekeeper-test-export-partial");
+        try  (TempDir dirFull = new TempDir("pgCodekeeper-test-files");
+                TempDir dirPartial = new TempDir("pgCodekeeper-test-export-partial")) {
+            exportDirFull = dirFull.get();
+            exportDirPartial = dirPartial.get();
 
             // full export of source
             new ModelExporter(exportDirFull, dbSource, UTF_8).exportFull();
@@ -178,13 +179,6 @@ public class PartialExporterTest {
                     list, UTF_8).exportPartial();
 
             walkAndComare(exportDirFull, exportDirPartial, preset);
-        } finally {
-            if (exportDirFull != null) {
-                deleteRecursive(exportDirFull.toFile());
-            }
-            if (exportDirPartial != null) {
-                deleteRecursive(exportDirPartial.toFile());
-            }
         }
     }
 
@@ -215,18 +209,6 @@ public class PartialExporterTest {
         Assert.assertTrue("Not all objects in modified/new lists have been walked:\n"
                 + modifiedFiles + '\n' + newFiles,
                 modifiedFiles.isEmpty() && newFiles.isEmpty());
-    }
-
-    /**
-     * Deletes folder and its contents recursively. FOLLOWS SYMLINKS!
-     */
-    private static void deleteRecursive(File f) throws IOException {
-        if (f.isDirectory()) {
-            for (File sub : f.listFiles()) {
-                deleteRecursive(sub);
-            }
-        }
-        Files.deleteIfExists(f.toPath());
     }
 }
 

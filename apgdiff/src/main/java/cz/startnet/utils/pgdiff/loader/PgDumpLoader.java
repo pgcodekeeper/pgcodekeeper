@@ -153,7 +153,7 @@ public class PgDumpLoader implements AutoCloseable {
     }
 
     protected PgDatabase loadDatabase(PgDatabase intoDb, Queue<AntlrTask<?>> antlrTasks)
-            throws IOException, InterruptedException {
+            throws InterruptedException {
         PgDiffUtils.checkCancelled(monitor);
 
         if (args.isMsSql()) {

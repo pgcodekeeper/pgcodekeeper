@@ -12,7 +12,10 @@ options {
 /******* Start symbols *******/
 
 sql
-    : BOM? (statement SEMI_COLON)* EOF
+    // adding an optional trailing statement without terminating semicolon
+    // consumes additional 250M of DFA cache memory for this rule
+    // append a semicolon to parsed strings instead
+    : BOM? (statement? SEMI_COLON)* EOF
     ;
 
 qname_parser
@@ -1453,22 +1456,23 @@ if_exist_names_restrict_cascade
 ===============================================================================
 */
 
+id_token
+  : Identifier | QuotedIdentifier | tokens_nonkeyword;
+
 /*
   old rule for default old identifier behavior
   includes types
 */
 identifier
-  : (Identifier | QuotedIdentifier)
+  : id_token | DOLLAR_NUMBER
   | tokens_nonreserved
   | tokens_nonreserved_except_function_type
-  | tokens_nonkeyword
   ;
 
 identifier_nontype
-  : (Identifier | QuotedIdentifier)
+  : id_token
   | tokens_nonreserved
   | tokens_reserved_except_function_type
-  | tokens_nonkeyword
   ;
 
 /*
@@ -2016,9 +2020,13 @@ schema_qualified_name_nontype
   ;
 
 data_type
-  : predefined_type (LEFT_BRACKET RIGHT_BRACKET)?
+  : predefined_type (ARRAY array_type | array_type+)?
   | SETOF value=predefined_type
   ;
+
+array_type
+    : LEFT_BRACKET NUMBER_LITERAL? RIGHT_BRACKET
+    ;
 
 predefined_type
   : BIGINT
@@ -2039,7 +2047,7 @@ predefined_type
   | TIME type_length? ((WITH | WITHOUT) TIME ZONE)?
   | TIMESTAMP type_length? ((WITH | WITHOUT) TIME ZONE)?
   | VARCHAR type_length?
-  | schema_qualified_name_nontype
+  | schema_qualified_name_nontype (LEFT_PAREN vex (COMMA vex)* RIGHT_PAREN)?
   ;
 
 type_length
@@ -2156,11 +2164,10 @@ unsigned_numeric_literal
 general_literal
   : character_string
   | truth_value
-  | DOLLAR_NUMBER
   ;
 
 truth_value
-  : TRUE | FALSE | UNKNOWN | ON | OFF
+  : TRUE | FALSE | ON // on is reserved but is required by SET statements
   ;
 
 case_expression
@@ -2174,7 +2181,7 @@ cast_specification
 // using data_type for function name because keyword-named functions
 // use the same category of keywords as keyword-named types
 function_call
-    : function_name LEFT_PAREN (set_qualifier? vex (COMMA vex)* orderby_clause?)? RIGHT_PAREN
+    : function_name LEFT_PAREN (set_qualifier? vex_or_named_notation (COMMA vex_or_named_notation)* orderby_clause?)? RIGHT_PAREN
         filter_clause? (OVER window_definition)?
     | extract_function
     | system_function
@@ -2189,8 +2196,16 @@ function_name
   | (identifier DOT)? tokens_simple_functions
   ;
 
+vex_or_named_notation
+    : (argname=identifier pointer)? vex
+    ;
+
+pointer
+    : EQUAL_GTH | COLON_EQUAL
+    ;
+
 extract_function
-  : EXTRACT LEFT_PAREN extract_field_string=identifier FROM vex RIGHT_PAREN
+  : EXTRACT LEFT_PAREN (identifier | character_string) FROM vex RIGHT_PAREN
   ;
 
 system_function
@@ -2212,7 +2227,7 @@ date_time_function
     ;
 
 string_value_function
-  : TRIM LEFT_PAREN (LEADING | TRAILING | BOTH)? (chars=vex? FROM str=vex | FROM? str=vex (COMMA chars=vex)?) RIGHT_PAREN
+  : TRIM LEFT_PAREN (LEADING | TRAILING | BOTH)? (chars=vex FROM str=vex | FROM? str=vex (COMMA chars=vex)?) RIGHT_PAREN
   | SUBSTRING LEFT_PAREN vex (FROM vex)? (FOR vex)? RIGHT_PAREN
   | POSITION LEFT_PAREN vex_b IN vex RIGHT_PAREN
   | OVERLAY LEFT_PAREN vex PLACING vex FROM vex (FOR vex)? RIGHT_PAREN
@@ -2221,7 +2236,7 @@ string_value_function
 xml_function
     : XMLELEMENT LEFT_PAREN NAME name=identifier
         (COMMA XMLATTRIBUTES LEFT_PAREN vex (AS attname=identifier)? (COMMA vex (AS attname=identifier)?)* RIGHT_PAREN)?
-        (vex (COMMA vex)*)? RIGHT_PAREN
+        (COMMA vex)* RIGHT_PAREN
     | XMLFOREST LEFT_PAREN vex (AS name=identifier)? (COMMA vex (AS name=identifier)?)* RIGHT_PAREN
     | XMLPI LEFT_PAREN NAME name=identifier (COMMA vex)? RIGHT_PAREN
     | XMLROOT LEFT_PAREN vex COMMA VERSION (vex | NO VALUE) (COMMA STANDALONE (YES | NO | NO VALUE))? RIGHT_PAREN
@@ -2262,7 +2277,11 @@ array_expression
     ;
 
 array_brackets
-    : ARRAY LEFT_BRACKET vex (COMMA vex)* RIGHT_BRACKET
+    : ARRAY array_elements
+    ;
+ 
+array_elements
+    : LEFT_BRACKET (vex | array_elements) (COMMA (vex | array_elements))* RIGHT_BRACKET
     ;
 
 array_query
@@ -2294,7 +2313,7 @@ select_stmt
     : with_clause? select_ops
         orderby_clause?
         (LIMIT (vex | ALL))?
-        (OFFSET vex (ROW | ROWS))?
+        (OFFSET vex (ROW | ROWS)?)?
         (FETCH (FIRST | NEXT) vex? (ROW | ROWS) ONLY)?
         (FOR (UPDATE | NO KEY UPDATE | SHARE | NO KEY SHARE) (OF schema_qualified_name (COMMA schema_qualified_name)*)? NOWAIT?)*
     ;
@@ -2306,7 +2325,7 @@ select_stmt_no_parens
     : with_clause? select_ops_no_parens
         orderby_clause?
         (LIMIT (vex | ALL))?
-        (OFFSET vex (ROW | ROWS))?
+        (OFFSET vex (ROW | ROWS)?)?
         (FETCH (FIRST | NEXT) vex? (ROW | ROWS) ONLY)?
         (FOR (UPDATE | NO KEY UPDATE | SHARE | NO KEY SHARE) (OF schema_qualified_name (COMMA schema_qualified_name)*)? NOWAIT?)*
     ;
@@ -2326,9 +2345,9 @@ select_ops
     | select_primary
     ;
 
-// copy of select_ops for use in select_stmt_no_parens
+// version of select_ops for use in select_stmt_no_parens
 select_ops_no_parens
-    : select_ops (INTERSECT | UNION | EXCEPT) set_qualifier? select_ops
+    : select_ops (INTERSECT | UNION | EXCEPT) set_qualifier? (select_primary | LEFT_PAREN select_stmt RIGHT_PAREN)
     | select_primary
     ;
 
@@ -2350,7 +2369,7 @@ select_list
   ;
 
 select_sublist
-  : vex (AS? alias=identifier)?
+  : vex (AS identifier | id_token)?
   ;
 
 from_item
@@ -2453,15 +2472,27 @@ null_ordering
     this applies to UPDATE as well
 */
 insert_stmt_for_psql
-  : with_clause? INSERT INTO insert_table_name=schema_qualified_name
+  : with_clause? INSERT INTO insert_table_name=schema_qualified_name (AS alias=identifier)?
+  (OVERRIDING (SYSTEM | USER) VALUE)?
   (LEFT_PAREN column+=identifier (COMMA column+=identifier)* RIGHT_PAREN)?
   (select_stmt | DEFAULT VALUES)
+  (ON CONFLICT conflict_object? conflict_action)?
   (RETURNING select_list)?
   ;
 
+conflict_object
+    : index_sort index_where? 
+    | ON CONSTRAINT identifier
+    ;
+
+conflict_action
+    : DO NOTHING
+    | DO UPDATE SET update_set (COMMA update_set)* (WHERE vex)?
+    ;
+
 delete_stmt_for_psql
   : with_clause? DELETE FROM ONLY? delete_table_name=schema_qualified_name MULTIPLY? (AS? alias=identifier)?
-  (USING using_table (COMMA using_table)*)?
+  (USING from_item (COMMA from_item)*)?
   (WHERE (vex | CURRENT OF cursor=identifier))?
   (RETURNING select_list)?
   ;
@@ -2479,10 +2510,6 @@ update_set
   | LEFT_PAREN column+=identifier (COMMA column+=identifier)* RIGHT_PAREN EQUAL
   (LEFT_PAREN (value+=vex | DEFAULT) (COMMA (value+=vex | DEFAULT))* RIGHT_PAREN
     | table_subquery)
-  ;
-
-using_table
-  : ONLY? schema_qualified_name MULTIPLY? alias_clause?
   ;
 
 notify_stmt

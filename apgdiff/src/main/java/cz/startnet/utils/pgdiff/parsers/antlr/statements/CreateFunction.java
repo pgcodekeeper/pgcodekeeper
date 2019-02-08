@@ -79,6 +79,7 @@ public class CreateFunction extends ParserAbstract {
             } else if (action.AS() != null) {
                 addStatementBody(action.function_def());
                 function.setBody(db.getArguments(), getFullCtxText(action.function_def()));
+                // TODO add function definition parsing and analyze
             } else if (action.TRANSFORM() != null) {
                 for (Transform_for_typeContext transform : action.transform_for_type()) {
                     function.addTransform(ParserAbstract.getFullCtxText(transform.type_name));

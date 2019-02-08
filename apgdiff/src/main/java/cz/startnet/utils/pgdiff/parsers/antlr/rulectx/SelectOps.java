@@ -1,7 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.rulectx;
 
-import java.util.List;
-
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_opsContext;
@@ -34,23 +32,25 @@ public class SelectOps {
     }
 
     public TerminalNode leftParen() {
-        return isNp ? null : ops.LEFT_PAREN();
+        return isNp ? opsNp.LEFT_PAREN() : ops.LEFT_PAREN();
     }
 
     public TerminalNode rightParen() {
-        return isNp ? null : ops.RIGHT_PAREN();
+        return isNp ? opsNp.RIGHT_PAREN() : ops.RIGHT_PAREN();
     }
 
     public Select_stmtContext selectStmt() {
         return isNp ? null : ops.select_stmt();
     }
 
-    public List<Select_opsContext> selectOps() {
-        return isNp ? opsNp.select_ops() : ops.select_ops();
-    }
-
     public SelectOps selectOps(int i) {
-        Select_opsContext ctx = isNp ? opsNp.select_ops(i) : ops.select_ops(i);
+        Select_opsContext ctx = null;
+        if (isNp && i == 0) {
+            ctx = opsNp.select_ops();
+        } else if (!isNp) {
+            ctx = ops.select_ops(i);
+        }
+
         return ctx == null ? null : new SelectOps(ctx);
     }
 

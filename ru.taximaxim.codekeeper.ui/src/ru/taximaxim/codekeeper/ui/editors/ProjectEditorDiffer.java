@@ -211,8 +211,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
                 Button btnCommit = new Button(container, SWT.PUSH);
                 btnCommit.setText(Messages.DiffTableViewer_to_project);
-                btnCommit.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
-                        .getBundle().getResource(FILE.ICONAPPSMALL))));
+                btnCommit.setImage(Activator.getRegisteredImage(FILE.ICONAPPSMALL));
                 btnCommit.addSelectionListener(new SelectionAdapter() {
 
                     @Override

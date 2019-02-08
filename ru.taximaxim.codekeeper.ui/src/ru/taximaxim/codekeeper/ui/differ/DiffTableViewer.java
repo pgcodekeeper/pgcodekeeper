@@ -978,8 +978,7 @@ public class DiffTableViewer extends Composite {
         int count = elementInfoMap.size();
         int checked = getCheckedElementsCount();
         if (lineManager != null) {
-            lineManager.setMessage(lrm.createImage(ImageDescriptor.createFromURL(
-                    Activator.getContext().getBundle().getResource(FILE.ICONAPPSMALL))),
+            lineManager.setMessage(Activator.getRegisteredImage(FILE.ICONAPPSMALL),
                     MessageFormat.format(Messages.DiffTableViewer_selected_count, checked, count));
         } else {
             lblObjectCount.setText(MessageFormat.format(Messages.diffTableViewer_objects, count));

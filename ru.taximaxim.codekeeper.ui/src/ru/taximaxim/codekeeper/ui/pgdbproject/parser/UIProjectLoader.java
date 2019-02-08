@@ -207,6 +207,7 @@ public class UIProjectLoader extends ProjectLoader {
                 loadFile(file, mon, db);
             }
         }
+        AntlrParser.finishAntlr(antlrTasks);
 
         PgDatabase newDb = new PgDatabase();
         newDb.setArguments(args);
