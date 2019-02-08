@@ -125,7 +125,7 @@ public abstract class ParserAbstract {
         Predefined_typeContext typeCtx = datatype.predefined_type();
 
         String type = getFullCtxText(typeCtx);
-        if (type.contains("'")) {
+        if (type.startsWith("\"")) {
             return full;
         }
 
