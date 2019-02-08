@@ -1,5 +1,5 @@
-CREATE TABLE test (id bigint);
+CREATE TABLE public.test (id bigint);
 
-COMMENT ON TABLE test IS 'multiline
+COMMENT ON TABLE public.test IS 'multiline
 comment
 ';

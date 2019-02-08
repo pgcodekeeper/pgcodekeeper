@@ -25,7 +25,7 @@ ALTER VIEW s.v1 OWNER TO levsha_aa;
 
 CREATE VIEW public.v2 AS
 	SELECT t1.id
-   FROM t1;
+   FROM public.t1;
 
 ALTER VIEW public.v2 OWNER TO levsha_aa;
 

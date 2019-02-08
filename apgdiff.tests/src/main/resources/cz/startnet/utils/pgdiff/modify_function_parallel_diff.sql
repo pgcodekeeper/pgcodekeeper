@@ -6,13 +6,9 @@ CREATE OR REPLACE FUNCTION public.add_safe_second(integer, integer) RETURNS inte
     LANGUAGE sql IMMUTABLE STRICT PARALLEL SAFE
     AS $_$select $1 + $2;$_$;
 
-ALTER FUNCTION public.add_safe_second(integer, integer) OWNER TO galiev_mr;
-
 CREATE OR REPLACE FUNCTION public.add_restricted(integer, integer) RETURNS integer
     LANGUAGE sql IMMUTABLE STRICT
     AS $_$select $1 + $2;$_$;
-
-ALTER FUNCTION public.add_restricted(integer, integer) OWNER TO galiev_mr;
 
 CREATE OR REPLACE FUNCTION public.add_safe(integer, integer) RETURNS integer
     LANGUAGE sql IMMUTABLE STRICT PARALLEL RESTRICTED
