@@ -11,6 +11,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_aggregate_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_domain_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_fts_configurationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_fts_statementContext;
@@ -24,6 +25,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_type_statementCont
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_view_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_aggregate_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_domain_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_extension_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_foreign_table_statementContext;
@@ -154,6 +156,8 @@ public class ReferenceListener implements SqlContextProcessor {
             r = () -> createRewrite(ctx.create_rewrite_statement());
         } else if (ctx.create_function_statement() != null) {
             r = () -> createFunction(ctx.create_function_statement());
+        } else if (ctx.create_aggregate_statement() != null) {
+            r = () -> createAggregate(ctx.create_aggregate_statement());
         } else if (ctx.create_sequence_statement() != null) {
             r = () -> createSequence(ctx.create_sequence_statement());
         } else if (ctx.create_schema_statement() != null) {
@@ -190,6 +194,8 @@ public class ReferenceListener implements SqlContextProcessor {
         Runnable r;
         if (ctx.alter_function_statement() != null) {
             r = () -> alterFunction(ctx.alter_function_statement());
+        } else if (ctx.alter_aggregate_statement() != null) {
+            r = () -> alterAggregate(ctx.alter_aggregate_statement());
         } else if (ctx.alter_schema_statement() != null) {
             r = () -> alterSchema(ctx.alter_schema_statement());
         } else if (ctx.alter_table_statement() != null) {
@@ -400,6 +406,13 @@ public class ReferenceListener implements SqlContextProcessor {
         return params;
     }
 
+    public void createAggregate(Create_aggregate_statementContext ctx) {
+        List<IdentifierContext> ids = ctx.name.identifier();
+        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+        addReferenceOnSchema(ids, schemaName, ctx);
+        fillObjDefinition(schemaName, QNameParser.getFirstNameCtx(ids), DbObjType.AGGREGATE);
+    }
+
     public void createSequence(Create_sequence_statementContext ctx) {
         List<IdentifierContext> ids = ctx.name.identifier();
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
@@ -490,6 +503,10 @@ public class ReferenceListener implements SqlContextProcessor {
         DbObjType type = null;
         if (ctx.FUNCTION() != null) {
             type = DbObjType.FUNCTION;
+        } else if (ctx.PROCEDURE() != null) {
+            type = DbObjType.PROCEDURE;
+        } else if (ctx.AGGREGATE() != null) {
+            type = DbObjType.AGGREGATE;
         } else if (ctx.OPERATOR() != null && ctx.target_operator() != null) {
             type = DbObjType.OPERATOR;
             Operator_nameContext operNameCtx =  ctx.target_operator().operator_name();
@@ -575,18 +592,27 @@ public class ReferenceListener implements SqlContextProcessor {
     }
 
     public void rule(Rule_commonContext ctx) {
+        DbObjType type = null;
+
+        boolean isFuncOrProc = false;
         if (ctx.FUNCTION() != null) {
+            type = DbObjType.FUNCTION;
+            isFuncOrProc = true;
+        } else if (ctx.PROCEDURE() != null) {
+            type = DbObjType.PROCEDURE;
+            isFuncOrProc = true;
+        }
+        if (isFuncOrProc) {
             for (Function_parametersContext functparam : ctx.func_name) {
                 List<IdentifierContext> ids = functparam.name.identifier();
                 String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
                 String name =  QNameParser.getFirstName(ids);
-                addFullObjReference(schemaName, name, functparam.name, DbObjType.FUNCTION,
+                addFullObjReference(schemaName, name, functparam.name, type,
                         StatementActions.NONE, ctx.getParent());
             }
             return;
         }
 
-        DbObjType type = null;
         Object_typeContext typeCtx = ctx.object_type();
         if (typeCtx.TABLE() != null) {
             type = DbObjType.TABLE;
@@ -620,6 +646,13 @@ public class ReferenceListener implements SqlContextProcessor {
                 QNameParser.getFirstName(ids), ctx.function_parameters().name,
                 ctx.PROCEDURE() == null ? DbObjType.FUNCTION : DbObjType.PROCEDURE,
                         StatementActions.ALTER, ctx.getParent());
+    }
+
+    public void alterAggregate(Alter_aggregate_statementContext ctx) {
+        List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
+        addFullObjReference(QNameParser.getSchemaName(ids, getDefSchemaName()),
+                QNameParser.getFirstName(ids), ctx.function_parameters().name,
+                DbObjType.AGGREGATE, StatementActions.ALTER, ctx.getParent());
     }
 
     public void alterSchema(Alter_schema_statementContext ctx) {
@@ -834,11 +867,19 @@ public class ReferenceListener implements SqlContextProcessor {
     }
 
     public void dropFunction(Drop_function_statementContext ctx) {
+        DbObjType type;
+        if (ctx.FUNCTION() != null) {
+            type = DbObjType.FUNCTION;
+        } else if (ctx.PROCEDURE() != null) {
+            type = DbObjType.PROCEDURE;
+        } else {
+            type = DbObjType.AGGREGATE;
+        }
+
         List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
         addFullObjReference(QNameParser.getSchemaName(ids, getDefSchemaName()),
                 QNameParser.getFirstName(ids), ctx.function_parameters().name,
-                ctx.PROCEDURE() == null ? DbObjType.FUNCTION : DbObjType.PROCEDURE,
-                        StatementActions.DROP, ctx.getParent());
+                type, StatementActions.DROP, ctx.getParent());
     }
 
     public void dropOperator(Drop_operator_statementContext ctx) {

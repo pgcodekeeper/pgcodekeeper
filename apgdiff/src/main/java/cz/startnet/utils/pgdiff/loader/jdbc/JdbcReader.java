@@ -4,8 +4,10 @@ import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQuery;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -70,6 +72,23 @@ public abstract class JdbcReader implements PgCatalogStrings {
 
     protected abstract void processResult(ResultSet result, AbstractSchema schema)
             throws SQLException, XmlReaderException;
+
+    /**
+     *  Returns the qualified name if the schema is not pg_catalog.
+     *  Otherwise returns only name of function.
+     *
+     * @param schemaName schema name of statement
+     * @param funcName name of statement
+     * @return qualified name if schema is not pg_catalog, otherwise only name
+     */
+    protected String getProcessedName(String schemaName, String funcName) {
+        StringBuilder sb = new StringBuilder();
+        if (!PgSystemStorage.SCHEMA_PG_CATALOG.equalsIgnoreCase(schemaName)) {
+            sb.append(PgDiffUtils.getQuotedName(schemaName)).append('.');
+        }
+        sb.append(PgDiffUtils.getQuotedName(funcName));
+        return sb.toString();
+    }
 
     protected DbObjType getType() {
         // PG subclasses must override

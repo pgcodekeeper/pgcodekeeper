@@ -293,6 +293,20 @@ public final class PgDiffUtils {
         return input != null && !input.isEmpty();
     }
 
+    public static boolean startsWithId(String text, String id, int offset) {
+        if (offset != 0 && isValidIdChar(text.charAt(offset - 1))) {
+            return false;
+        }
+        int rightChar = offset + id.length();
+        if (rightChar < text.length() && isValidIdChar(text.charAt(rightChar))) {
+            return false;
+        }
+
+        return text.startsWith(id, offset);
+    }
+
+
+
     public static <T> Iterable<T> sIter(Stream<T> stream) {
         return stream::iterator;
     }

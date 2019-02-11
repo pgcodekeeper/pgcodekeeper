@@ -46,6 +46,7 @@ public class PgOverridesModelExporter extends AbstractModelExporter {
             break;
         case FUNCTION:
         case PROCEDURE:
+        case AGGREGATE:
         case OPERATOR:
             dumpFuncOverrides(st);
             break;

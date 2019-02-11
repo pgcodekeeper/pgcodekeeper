@@ -21,6 +21,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterSequence;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterTable;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CommentOn;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateAggregate;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateDomain;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateExtension;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateForeignTable;
@@ -91,6 +92,8 @@ implements SqlContextProcessor {
         } else if (ctx.create_function_statement() != null) {
             p = new CreateFunction(ctx.create_function_statement(), db);
             ((CreateFunction) p).setErrors(errors);
+        } else if (ctx.create_aggregate_statement() != null) {
+            p = new CreateAggregate(ctx.create_aggregate_statement(), db);
         } else if (ctx.create_operator_statement() != null) {
             p = new CreateOperator(ctx.create_operator_statement(), db);
         } else if (ctx.create_sequence_statement() != null) {

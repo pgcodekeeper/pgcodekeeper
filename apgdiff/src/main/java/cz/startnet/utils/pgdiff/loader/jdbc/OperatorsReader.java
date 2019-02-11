@@ -8,7 +8,6 @@ import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgOperator;
-import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class OperatorsReader extends JdbcReader {
@@ -36,14 +35,14 @@ public class OperatorsReader extends JdbcReader {
         long leftArgType = res.getLong("leftArg");
         if (leftArgType > 0) {
             JdbcType leftType = loader.cachedTypesByOid.get(leftArgType);
-            oper.setLeftArg(leftType.getFullName(operSchemaName));
+            oper.setLeftArg(leftType.getFullName());
             leftType.addTypeDepcy(oper);
         }
 
         long rightArgType = res.getLong("rightArg");
         if (rightArgType > 0) {
             JdbcType rightType = loader.cachedTypesByOid.get(rightArgType);
-            oper.setRightArg(rightType.getFullName(operSchemaName));
+            oper.setRightArg(rightType.getFullName());
             rightType.addTypeDepcy(oper);
         }
 
@@ -86,15 +85,6 @@ public class OperatorsReader extends JdbcReader {
 
         loader.setAuthor(oper, res);
         schema.addOperator(oper);
-    }
-
-    private String getProcessedName(String schemaName, String funcName) {
-        StringBuilder sb = new StringBuilder();
-        if (!PgSystemStorage.SCHEMA_PG_CATALOG.equalsIgnoreCase(schemaName)) {
-            sb.append(PgDiffUtils.getQuotedName(schemaName)).append('.');
-        }
-        sb.append(PgDiffUtils.getQuotedName(funcName));
-        return sb.toString();
     }
 
     @Override
