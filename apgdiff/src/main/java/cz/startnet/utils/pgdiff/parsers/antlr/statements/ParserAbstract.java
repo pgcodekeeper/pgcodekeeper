@@ -198,8 +198,10 @@ public abstract class ParserAbstract {
 
     public static String parseSignature(String name, Target_operatorContext targerOperCtx) {
         PgOperator oper = new PgOperator(name);
-        oper.setLeftArg(getTypeName(targerOperCtx.left_type));
-        oper.setRightArg(getTypeName(targerOperCtx.right_type));
+        oper.setLeftArg(targerOperCtx.left_type == null ? null
+                : getTypeName(targerOperCtx.left_type));
+        oper.setRightArg(targerOperCtx.right_type == null ? null
+                : getTypeName(targerOperCtx.right_type));
         return oper.getSignature();
     }
 

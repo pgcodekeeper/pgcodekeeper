@@ -157,14 +157,13 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
             throws InterruptedException, IOException, CoreException {
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(file.getCharset());
-        try (PgUIDumpLoader loader = new PgUIDumpLoader(file, args, monitor)) {
-            loader.setLoadSchema(false);
-            loader.setLoadReferences(true);
-            PgDatabase db = loader.loadFile(new PgDatabase());
-            objDefinitions.putAll(db.getObjDefinitions());
-            objReferences.putAll(db.getObjReferences());
-            fillStatementBodies(loader.getStatementBodyReferences());
-        }
+        PgUIDumpLoader loader = new PgUIDumpLoader(file, args, monitor);
+        loader.setLoadSchema(false);
+        loader.setLoadReferences(true);
+        PgDatabase db = loader.loadFile(new PgDatabase());
+        objDefinitions.putAll(db.getObjDefinitions());
+        objReferences.putAll(db.getObjReferences());
+        fillStatementBodies(loader.getStatementBodyReferences());
         notifyListeners();
     }
 
@@ -236,14 +235,13 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
             boolean isMsSql, IProgressMonitor monitor) throws InterruptedException, IOException {
         PgDiffArguments args = new PgDiffArguments();
         args.setMsSql(isMsSql);
-        try (PgDumpLoader loader = new PgDumpLoader(input, fileName, args, monitor)) {
-            loader.setLoadSchema(false);
-            loader.setLoadReferences(true);
-            PgDatabase db = loader.load();
-            objDefinitions.putAll(db.getObjDefinitions());
-            objReferences.putAll(db.getObjReferences());
-            fillStatementBodies(loader.getStatementBodyReferences());
-        }
+        PgDumpLoader loader = new PgDumpLoader(() -> input, fileName, args, monitor);
+        loader.setLoadSchema(false);
+        loader.setLoadReferences(true);
+        PgDatabase db = loader.load();
+        objDefinitions.putAll(db.getObjDefinitions());
+        objReferences.putAll(db.getObjReferences());
+        fillStatementBodies(loader.getStatementBodyReferences());
         notifyListeners();
     }
 
