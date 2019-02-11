@@ -28,7 +28,6 @@ import cz.startnet.utils.pgdiff.schema.PgProcedure;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class CreateFunction extends ParserAbstract {
-    private final int LENGTH_OF_WORD_CREATE_WITH_SPACE = 7;
     private List<AntlrError> errors;
     private final Create_function_statementContext ctx;
     public CreateFunction(Create_function_statementContext ctx, PgDatabase db) {
@@ -124,9 +123,14 @@ public class CreateFunction extends ParserAbstract {
             StringBuilder funcCommands = new StringBuilder();
             funcContent.get(0).Text_between_Dollar().forEach(funcCommands::append);
             String funcCommandsStr = funcCommands.toString();
+
+            // '7' is a number of characters in the 'CREATE '. It used for correct
+            // counting the offset of error marking in function definition.
+            // The reason is the structure of the parsing rule:
+            // 'schema_create' which contains 'CREATE' + 'create_function_statement'.
             db.addContextForAnalyze(function, AntlrParser.parseSqlStringSqlCtx(SQLParser.class,
                     SQLParser::sql, funcCommandsStr, "function definition of " + function.getBareName(),
-                    errors, LENGTH_OF_WORD_CREATE_WITH_SPACE + getFullCtxText(ctx).indexOf(funcCommandsStr)));
+                    errors, 7 + getFullCtxText(ctx).indexOf(funcCommandsStr)));
         }
 
         With_storage_parameterContext storage = params.with_storage_parameter();
