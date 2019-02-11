@@ -123,14 +123,9 @@ public class CreateFunction extends ParserAbstract {
             StringBuilder funcCommands = new StringBuilder();
             funcContent.get(0).Text_between_Dollar().forEach(funcCommands::append);
             String funcCommandsStr = funcCommands.toString();
-
-            // '7' is a number of characters in the 'CREATE '. It used for correct
-            // counting the offset of error marking in function definition.
-            // The reason is the structure of the parsing rule:
-            // 'schema_create' which contains 'CREATE' + 'create_function_statement'.
             db.addContextForAnalyze(function, AntlrParser.parseSqlStringSqlCtx(SQLParser.class,
                     SQLParser::sql, funcCommandsStr, "function definition of " + function.getBareName(),
-                    errors, 7 + getFullCtxText(ctx).indexOf(funcCommandsStr)));
+                    errors, getFullCtxText(ctx.getParent()).indexOf(funcCommandsStr)));
         }
 
         With_storage_parameterContext storage = params.with_storage_parameter();
