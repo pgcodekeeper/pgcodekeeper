@@ -128,9 +128,7 @@ public final class PgDiff {
         db.setArguments(arguments);
 
         if ("dump".equals(format)) {
-            try (PgDumpLoader loader = new PgDumpLoader(new File(srcPath), arguments)) {
-                return loader.load(db);
-            }
+            return new PgDumpLoader(new File(srcPath), arguments).load(db);
         } else if ("parsed".equals(format)) {
             ProjectLoader loader = new ProjectLoader(srcPath, arguments);
             return loader.loadSchemaOnly();

@@ -143,14 +143,13 @@ public class UIProjectLoader extends ProjectLoader {
         PgDiffArguments arguments = db.getArguments().clone();
         arguments.setInCharsetName(file.getCharset());
 
-        try (PgUIDumpLoader loader = new PgUIDumpLoader(file, arguments, monitor)) {
-            loader.setLoadReferences(statementBodies != null);
-            if (isOverrideMode) {
-                loader.setOverridesMap(overrides);
-            }
-            loader.loadDatabase(db, antlrTasks);
-            launchedLoaders.add(loader);
+        PgUIDumpLoader loader = new PgUIDumpLoader(file, arguments, monitor);
+        loader.setLoadReferences(statementBodies != null);
+        if (isOverrideMode) {
+            loader.setOverridesMap(overrides);
         }
+        loader.loadDatabase(db, antlrTasks);
+        launchedLoaders.add(loader);
     }
 
     public PgDatabase buildFiles(Collection<IFile> files, boolean isMsSql)

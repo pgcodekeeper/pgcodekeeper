@@ -180,21 +180,19 @@ public class ProjectLoader {
         }
     }
 
-    private void loadFiles(File[] files, PgDatabase db)
-            throws IOException, InterruptedException {
+    private void loadFiles(File[] files, PgDatabase db) throws InterruptedException {
         Arrays.sort(files);
         for (File f : files) {
             if (f.isFile() && f.getName().toLowerCase().endsWith(".sql")) {
-                List<AntlrError> errList = null;
-                try (PgDumpLoader loader = new PgDumpLoader(f, arguments, monitor)) {
+                PgDumpLoader loader = new PgDumpLoader(f, arguments, monitor);
+                try {
                     if (isOverrideMode) {
                         loader.setOverridesMap(overrides);
                     }
-                    errList = loader.getErrors();
                     loader.loadDatabase(db, antlrTasks);
                 } finally {
-                    if (errors != null && errList != null && !errList.isEmpty()) {
-                        errors.addAll(errList);
+                    if (errors != null) {
+                        errors.addAll(loader.getErrors());
                     }
                 }
             }
