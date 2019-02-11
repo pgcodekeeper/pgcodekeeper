@@ -82,6 +82,7 @@ public final class FullAnalyze {
                     TableAbstract.analyzeConstraintCtx((VexContext) ctx, statement, schemaName, db);
                     break;
                 case FUNCTION:
+                case PROCEDURE:
                     if (ctx instanceof VexContext) {
                         UtilAnalyzeExpr.analyze((VexContext) ctx, new ValueExpr(schemaName, db),
                                 statement);
