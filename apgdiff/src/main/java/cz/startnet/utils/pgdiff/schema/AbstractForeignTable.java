@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 
 /**
@@ -51,7 +52,7 @@ public abstract class AbstractForeignTable extends AbstractPgTable {
 
     @Override
     protected void appendOptions(StringBuilder sbSQL) {
-        sbSQL.append("\nSERVER ").append(serverName);
+        sbSQL.append("\nSERVER ").append(PgDiffUtils.getQuotedName(serverName));
 
         StringBuilder sb = new StringBuilder();
         for (Entry <String, String> entry : options.entrySet()) {
