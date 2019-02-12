@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
 import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -73,12 +74,21 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
      */
     protected final Map<String, List<Pair<String, String>>> complexNamespace = new LinkedHashMap<>();
 
+    /**
+     * Function arguments for analyze function definition.
+     */
+    protected List<Pair<String, String>> funcParams = new ArrayList<>();
+
     public AbstractExprWithNmspc(String schema, PgDatabase db) {
         super(schema, db);
     }
 
     protected AbstractExprWithNmspc(AbstractExpr parent) {
         super(parent);
+    }
+
+    public void addFuncParams(List<Pair<String, String>> funcParams) {
+        funcParams.addAll(funcParams);
     }
 
     @Override

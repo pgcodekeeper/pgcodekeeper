@@ -1,5 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
+import java.util.List;
+
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
@@ -8,6 +10,7 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class UtilAnalyzeExpr {
 
@@ -28,6 +31,13 @@ public class UtilAnalyzeExpr {
         valExptWithNmspc.addRawTableReference(new GenericColumn(schemaName,
                 rawTableReference, DbObjType.TABLE));
         analyze(ctx, valExptWithNmspc, statement);
+    }
+
+    public static <T extends ParserRuleContext> void analyzeFuncDefin(
+            T ctx, AbstractExprWithNmspc<T> analyzer, PgStatement pg,
+            List<Pair<String, String>> params) {
+        analyzer.addFuncParams(params);
+        analyze(ctx, analyzer, pg);
     }
 
     private UtilAnalyzeExpr() {
