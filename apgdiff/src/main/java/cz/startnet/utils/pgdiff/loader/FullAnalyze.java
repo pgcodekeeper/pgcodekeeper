@@ -82,6 +82,7 @@ public final class FullAnalyze {
                     break;
                 case DOMAIN:
                 case FUNCTION:
+                case PROCEDURE:
                 case COLUMN:
                     UtilAnalyzeExpr.analyze((VexContext) ctx, new ValueExpr(schemaName,
                             db), statement);
