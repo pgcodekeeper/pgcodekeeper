@@ -29,13 +29,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Groupby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_elementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_set_listContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_element_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_identifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Orderby_clauseContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Ordinary_grouping_setContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Partition_by_columnsContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Row_value_predicand_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
@@ -43,6 +41,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_sublistContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sort_specifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.String_value_functionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.System_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_subqueryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expression_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Values_stmtContext;
@@ -220,7 +219,10 @@ public class ViewSelect {
                 }
             }
 
-            groupBy(primary);
+            Groupby_clauseContext groupBy = primary.groupby_clause();
+            if (groupBy != null) {
+                groupBy(groupBy.grouping_element_list());
+            }
 
             if (primary.WINDOW() != null) {
                 for (Window_definitionContext window : primary.window_definition()) {
@@ -242,32 +244,14 @@ public class ViewSelect {
         }
     }
 
-    private void groupBy(Select_primaryContext primary) {
-        Groupby_clauseContext groupBy = primary.groupby_clause();
-        if (groupBy != null) {
-            for (Grouping_elementContext group : groupBy.grouping_element_list().grouping_element()) {
-                Ordinary_grouping_setContext groupingSet = group.ordinary_grouping_set();
-                Grouping_set_listContext groupingSets;
-
-                if (groupingSet != null) {
-                    groupingSet(groupingSet);
-                } else if ((groupingSets = group.grouping_set_list()) != null) {
-                    for (Ordinary_grouping_setContext s : groupingSets.ordinary_grouping_set_list().ordinary_grouping_set()) {
-                        groupingSet(s);
-                    }
-                }
-            }
-        }
-    }
-
-    private void groupingSet(Ordinary_grouping_setContext groupingSet) {
-        VexContext v = groupingSet.vex();
-        Row_value_predicand_listContext predicandList;
-        if (v != null) {
-            analyze(new Vex(v));
-        } else if ((predicandList = groupingSet.row_value_predicand_list()) != null) {
-            for (VexContext vex : predicandList.vex()) {
-                analyze(vex);
+    private void groupBy(Grouping_element_listContext list) {
+        for (Grouping_elementContext el : list.grouping_element()) {
+            VexContext vexCtx = el.vex();
+            Grouping_element_listContext sub;
+            if (vexCtx != null) {
+                analyze(vexCtx);
+            } else if ((sub = el.c) != null) {
+                groupBy(sub);
             }
         }
     }
@@ -348,7 +332,6 @@ public class ViewSelect {
     private void analysePrimary(Value_expression_primaryContext primary) {
         Select_stmt_no_parensContext subSelectStmt = primary.select_stmt_no_parens();
         Case_expressionContext caseExpr;
-        Cast_specificationContext cast;
         Comparison_modContext compMod;
         Table_subqueryContext subquery;
         Function_callContext function;
@@ -361,8 +344,6 @@ public class ViewSelect {
             new ViewSelect(this).analyze(subSelectStmt);
         } else if ((caseExpr = primary.case_expression()) != null) {
             subOperands = addVexCtxtoList(subOperands, caseExpr.vex());
-        } else if ((cast = primary.cast_specification()) != null) {
-            analyze(new Vex(cast.vex()));
         } else if ((compMod = primary.comparison_mod()) != null) {
             VexContext compModVex = compMod.vex();
             if (compModVex != null) {
@@ -440,14 +421,14 @@ public class ViewSelect {
 
         Extract_functionContext extract;
         String_value_functionContext string;
+        System_functionContext sys;
         Xml_functionContext xml;
 
         if (name != null){
             args = addVexCtxtoList(args, function.vex_or_named_notation(),
                     Vex_or_named_notationContext::vex);
 
-            Orderby_clauseContext orderBy = function.orderby_clause();
-            if (orderBy != null) {
+            for (Orderby_clauseContext orderBy : function.orderby_clause()) {
                 orderBy(orderBy);
             }
             Filter_clauseContext filter = function.filter_clause();
@@ -469,6 +450,11 @@ public class ViewSelect {
             }
         } else if ((xml = function.xml_function()) != null) {
             args = addVexCtxtoList(args, xml.vex());
+        } else if ((sys = function.system_function()) != null) {
+            Cast_specificationContext cast = sys.cast_specification();
+            if (cast != null) {
+                analyze(new Vex(cast.vex()));
+            }
         }
 
         if (args != null) {

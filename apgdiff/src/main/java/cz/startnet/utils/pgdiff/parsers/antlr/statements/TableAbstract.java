@@ -250,7 +250,7 @@ public abstract class TableAbstract extends ParserAbstract {
             ctx.column_references().names_references().name) {
             constr.addColumn(QNameParser.getFirstName(name.identifier()));
         }
-        Including_indexContext incl = ctx.including_index();
+        Including_indexContext incl = ctx.index_parameters().including_index();
         if (incl != null) {
             fillIncludingDepcy(incl, constr, schemaName, tableName);
         }

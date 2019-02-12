@@ -876,9 +876,9 @@ public class ReferenceListener implements SqlContextProcessor {
             type = DbObjType.AGGREGATE;
         }
 
-        List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
+        List<IdentifierContext> ids = ctx.name.identifier();
         addFullObjReference(QNameParser.getSchemaName(ids, getDefSchemaName()),
-                QNameParser.getFirstName(ids), ctx.function_parameters().name,
+                QNameParser.getFirstName(ids), ctx.name,
                 type, StatementActions.DROP, ctx.getParent());
     }
 
