@@ -263,16 +263,13 @@ class DbSourceFile extends DbSource {
             monitor.setWorkRemaining(1000);
         }
 
-        List<AntlrError> errList = null;
-        try (PgDumpLoader loader = new PgDumpLoader(filename,
+        PgDumpLoader loader = new PgDumpLoader(filename,
                 getPgDiffArgs(encoding, forceUnixNewlines, isMsSql),
-                monitor, 2)) {
-            errList = loader.getErrors();
+                monitor, 2);
+        try {
             return loader.load();
         } finally {
-            if (errList != null && !errList.isEmpty()) {
-                errors = errList;
-            }
+            errors = loader.getErrors();
         }
     }
 
@@ -349,11 +346,12 @@ class DbSourceDb extends DbSource {
 
             pm.newChild(1).subTask(Messages.dbSource_loading_dump);
 
-            try (PgDumpLoader loader = new PgDumpLoader(dump,
-                    getPgDiffArgs(encoding, forceUnixNewlines, false), monitor)) {
-                PgDatabase database = loader.load();
+            PgDumpLoader loader = new PgDumpLoader(dump,
+                    getPgDiffArgs(encoding, forceUnixNewlines, false), monitor);
+            try {
+                return loader.load();
+            } finally {
                 errors = loader.getErrors();
-                return database;
             }
         }
     }

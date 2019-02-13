@@ -26,6 +26,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
@@ -210,12 +211,14 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     }
 
     @Override
+    // NOTE: this method's monitor is weird / useless / bad, do not use it
+    // see Eclipse bug 543782
     public void doSave(IProgressMonitor progressMonitor) {
         super.doSave(progressMonitor);
         IResource res = ResourceUtil.getResource(getEditorInput());
         try {
             if (res == null || !UIProjectLoader.isInProject(res)) {
-                refreshParser(getParser(), res, progressMonitor);
+                refreshParser(getParser(), res, new NullProgressMonitor());
             }
         } catch (Exception ex) {
             Log.log(ex);

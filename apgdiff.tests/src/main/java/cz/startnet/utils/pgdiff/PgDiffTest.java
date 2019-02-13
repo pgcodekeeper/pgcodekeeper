@@ -458,6 +458,20 @@ public class PgDiffTest {
                     {"modify_procedure_configuration"},
                     // Tests scenario where SCHEMA with definition is added.
                     {"add_schema_with_definition"},
+                    // Tests scenario where new AGGREGATE is added.
+                    {"add_aggregate"},
+                    // Tests scenario where new overloaded AGGREGATE is added.
+                    {"add_aggregate_overloaded"},
+                    // Tests scenario where new AGGREGATE with using elements from other schemas is added.
+                    {"add_aggregate_use_other_schema"},
+                    // Tests scenario where AGGREGATE is dropped.
+                    {"drop_aggregate"},
+                    // Tests scenario where options of AGGREGATE is modified.
+                    {"modify_aggregate"},
+                    // Tests scenario for AGGREGATE where new privileges is added.
+                    {"add_aggregate_privileges"},
+                    // Tests scenario where COLUMN types compared with aliases.
+                    {"compare_column_type_aliases"},
                 });
     }
 

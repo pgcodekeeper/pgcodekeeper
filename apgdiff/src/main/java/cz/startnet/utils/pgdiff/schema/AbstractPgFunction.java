@@ -6,11 +6,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class AbstractPgFunction extends AbstractFunction {
 
@@ -43,6 +45,76 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         super(name);
     }
 
+    @Override
+    public String getDropSQL() {
+        final StringBuilder sbString = new StringBuilder();
+        sbString.append("DROP ");
+        sbString.append(getStatementType().name());
+        sbString.append(' ');
+        sbString.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
+        if (getStatementType() == DbObjType.AGGREGATE) {
+            ((PgAggregate) this).appendAggSignature(sbString);
+        } else {
+            appendFunctionSignature(sbString, false, true);
+        }
+        sbString.append(';');
+        return sbString.toString();
+    }
+
+    @Override
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+            AtomicBoolean isNeedDepcies) {
+        final int startLength = sb.length();
+        AbstractPgFunction newAbstractPgFunction;
+        if (newCondition instanceof AbstractPgFunction) {
+            newAbstractPgFunction = (AbstractPgFunction)newCondition;
+        } else {
+            return false;
+        }
+
+        if (!compareUnalterable(newAbstractPgFunction)) {
+            if (needDrop(newAbstractPgFunction)) {
+                isNeedDepcies.set(true);
+                return true;
+            } else {
+                sb.append(newAbstractPgFunction.getCreationSQL());
+            }
+        }
+
+        if (!Objects.equals(getOwner(), newAbstractPgFunction.getOwner())) {
+            newAbstractPgFunction.alterOwnerSQL(sb);
+        }
+        alterPrivileges(newAbstractPgFunction, sb);
+        if (!Objects.equals(getComment(), newAbstractPgFunction.getComment())) {
+            sb.append("\n\n");
+            newAbstractPgFunction.appendCommentSql(sb);
+        }
+        return sb.length() > startLength;
+    }
+
+    protected abstract boolean needDrop(AbstractPgFunction newFunction);
+
+    /**
+     * Alias for {@link #getSignature()} which provides a unique function ID.
+     *
+     * Use {@link #getBareName()} to get just the function name.
+     */
+    @Override
+    public String getName() {
+        return getSignature();
+    }
+
+    /**
+     * Appends signature of statement to sb.<br />
+     *
+     * Used for PRIVILEGES in Functions, Procedures, Aggregates.<br />
+     *
+     * Used for CREATE, ALTER, DROP, COMMENT operations in Functions and Procedures.<br /><br />
+     *
+     * (For CREATE, ALTER, DROP, COMMENT operations in Aggregates used own method
+     * {@link PgAggregate#appendAggSignature(StringBuilder)}.)
+     *
+     */
     public StringBuilder appendFunctionSignature(StringBuilder sb,
             boolean includeDefaultValues, boolean includeArgNames) {
         boolean cache = !includeDefaultValues && !includeArgNames;
@@ -71,8 +143,35 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         return sb;
     }
 
-    protected abstract String getDeclaration(Argument arg,
-            boolean includeDefaultValue, boolean includeArgName);
+    public static String getDeclaration(Argument arg, boolean includeDefaultValue, boolean includeArgName) {
+        final StringBuilder sbString = new StringBuilder();
+
+        if (includeArgName) {
+            String mode = arg.getMode();
+            if (mode != null && !"IN".equalsIgnoreCase(mode)) {
+                sbString.append(mode);
+                sbString.append(' ');
+            }
+
+            String name = arg.getName();
+
+            if (name != null && !name.isEmpty()) {
+                sbString.append(PgDiffUtils.getQuotedName(name));
+                sbString.append(' ');
+            }
+        }
+
+        sbString.append(arg.getDataType());
+
+        String def = arg.getDefaultExpression();
+
+        if (includeDefaultValue && def != null && !def.isEmpty()) {
+            sbString.append(" = ");
+            sbString.append(def);
+        }
+
+        return sbString.toString();
+    }
 
     public boolean isWindow() {
         return isWindow;

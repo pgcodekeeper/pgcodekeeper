@@ -103,6 +103,7 @@ public final class FullAnalyze {
                     break;
                 case DOMAIN:
                 case FUNCTION:
+                case PROCEDURE:
                 case COLUMN:
                     analyze((VexContext) ctx, new ValueExpr(db), statement);
                     break;

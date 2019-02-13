@@ -8,6 +8,7 @@ import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgOperator;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -37,14 +38,14 @@ public class OperatorsReader extends JdbcReader {
         long leftArgType = res.getLong("leftArg");
         if (leftArgType > 0) {
             JdbcType leftType = loader.cachedTypesByOid.get(leftArgType);
-            oper.setLeftArg(leftType.getFullName(operSchemaName));
+            oper.setLeftArg(leftType.getFullName());
             leftType.addTypeDepcy(oper);
         }
 
         long rightArgType = res.getLong("rightArg");
         if (rightArgType > 0) {
             JdbcType rightType = loader.cachedTypesByOid.get(rightArgType);
-            oper.setRightArg(rightType.getFullName(operSchemaName));
+            oper.setRightArg(rightType.getFullName());
             rightType.addTypeDepcy(oper);
         }
 
@@ -89,12 +90,12 @@ public class OperatorsReader extends JdbcReader {
         schema.addOperator(oper);
     }
 
-    private String getProcessedName(PgOperator oper, String schemaName, String funcName) {
+    protected String getProcessedName(PgStatement st, String schemaName, String funcName) {
         StringBuilder sb = new StringBuilder();
         if (!ApgdiffConsts.PG_CATALOG.equalsIgnoreCase(schemaName)) {
             sb.append(PgDiffUtils.getQuotedName(schemaName)).append('.');
             if (!ApgdiffUtils.isPgSystemSchema(schemaName)) {
-                oper.addDep(new GenericColumn(schemaName, funcName, DbObjType.FUNCTION));
+                st.addDep(new GenericColumn(schemaName, funcName, DbObjType.FUNCTION));
             }
         }
         sb.append(PgDiffUtils.getQuotedName(funcName));

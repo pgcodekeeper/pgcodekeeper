@@ -36,9 +36,17 @@ public class AlterOther extends ParserAbstract {
     }
 
     public void alterFunction(Alter_function_statementContext ctx) {
+        DbObjType type;
+        if (ctx.FUNCTION() != null) {
+            type = DbObjType.FUNCTION;
+        } else if (ctx.PROCEDURE() != null) {
+            type = DbObjType.PROCEDURE;
+        } else {
+            type = DbObjType.AGGREGATE;
+        }
+
         addFullObjReference(ctx.function_parameters().name.identifier(),
-                ctx.PROCEDURE() == null ? DbObjType.FUNCTION : DbObjType.PROCEDURE,
-                        StatementActions.ALTER);
+                type, StatementActions.ALTER);
     }
 
     public void alterSchema(Alter_schema_statementContext ctx) {

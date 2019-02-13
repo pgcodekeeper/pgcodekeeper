@@ -226,7 +226,7 @@ public class ValueExpr extends AbstractExpr {
             } else if ((cast = primary.cast_specification()) != null) {
                 ret = analyze(new Vex(cast.vex()));
                 Data_typeContext dataTypeCtx = cast.data_type();
-                ret.setValue(ParserAbstract.getFullCtxText(dataTypeCtx));
+                ret.setValue(ParserAbstract.getTypeName(dataTypeCtx));
                 addTypeDepcy(dataTypeCtx);
             } else if ((compMod = primary.comparison_mod()) != null) {
                 VexContext compModVex = compMod.vex();
@@ -264,7 +264,7 @@ public class ValueExpr extends AbstractExpr {
             } else if ((typeCoercion = primary.type_coercion()) != null) {
                 Data_typeContext coercionDataType = typeCoercion.data_type();
                 addTypeDepcy(coercionDataType);
-                String type = ParserAbstract.getFullCtxText(coercionDataType);
+                String type = ParserAbstract.getTypeName(coercionDataType);
                 // since this cast can only convert string literals into a type
                 // and types are restricted to the simplest
                 // column name here will always be derived from type name
@@ -454,7 +454,7 @@ public class ValueExpr extends AbstractExpr {
                 coltype = TypesSetManually.BOOLEAN;
             } else if (xml.XMLSERIALIZE() != null) {
                 Data_typeContext type = xml.data_type();
-                coltype = ParserAbstract.getFullCtxText(type);
+                coltype = ParserAbstract.getTypeName(type);
                 addTypeDepcy(type);
             } else {
                 // defaults work

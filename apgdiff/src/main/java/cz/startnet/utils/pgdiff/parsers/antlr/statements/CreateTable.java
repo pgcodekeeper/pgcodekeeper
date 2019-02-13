@@ -94,7 +94,7 @@ public class CreateTable extends TableAbstract {
     private TypedPgTable defineType(Define_typeContext typeCtx, String tableName,
             String schemaName) {
         Data_typeContext typeName = typeCtx.type_name;
-        String ofType = getFullCtxText(typeName);
+        String ofType = getTypeName(typeName);
         TypedPgTable table = new TypedPgTable(tableName, ofType);
         fillTypeColumns(typeCtx.list_of_type_column_def(), table, schemaName);
         addTypeAsDepcy(typeName, table);

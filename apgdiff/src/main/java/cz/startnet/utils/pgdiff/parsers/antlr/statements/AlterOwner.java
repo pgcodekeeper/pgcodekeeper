@@ -86,10 +86,16 @@ public class AlterOwner extends ParserAbstract {
             } else if (ctx.TYPE() != null) {
                 st = getSafe(AbstractSchema::getType, schema, nameCtx);
                 type = DbObjType.TYPE;
-            } else if (ctx.PROCEDURE() != null || ctx.FUNCTION() != null) {
+            } else if (ctx.PROCEDURE() != null || ctx.FUNCTION() != null || ctx.AGGREGATE() != null) {
                 st = getSafe(AbstractSchema::getFunction, schema, parseSignature(nameCtx.getText(),
                         ctx.function_args()), nameCtx.getStart());
-                type = ctx.PROCEDURE() != null ? DbObjType.PROCEDURE : DbObjType.FUNCTION;
+                if (ctx.FUNCTION() != null) {
+                    type = DbObjType.FUNCTION;
+                } else if (ctx.PROCEDURE() != null) {
+                    type = DbObjType.PROCEDURE;
+                } else {
+                    type = DbObjType.AGGREGATE;
+                }
             }
         }
 

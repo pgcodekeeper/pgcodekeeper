@@ -107,17 +107,17 @@ public class CommentOn extends ParserAbstract {
             schema = getSchemaSafe(ids);
         }
 
-        if (ctx.FUNCTION() != null) {
-            type = DbObjType.FUNCTION;
+        if (ctx.FUNCTION() != null || ctx.AGGREGATE() != null) {
+            type = ctx.FUNCTION() != null ? DbObjType.FUNCTION : DbObjType.AGGREGATE;
             st = getSafe(AbstractSchema::getFunction, schema,
                     parseSignature(name, ctx.function_args()), nameCtx.getStart());
-        }  else if (ctx.OPERATOR() != null) {
+        } else if (ctx.OPERATOR() != null) {
             type = DbObjType.OPERATOR;
             Target_operatorContext targetOperCtx = ctx.target_operator();
             st = getSafe(AbstractSchema::getOperator, schema,
                     parseSignature(targetOperCtx.name.operator.getText(),
                             targetOperCtx), targetOperCtx.getStart());
-        }  else if (ctx.EXTENSION() != null) {
+        } else if (ctx.EXTENSION() != null) {
             type = DbObjType.EXTENSION;
             st = getSafe(PgDatabase::getExtension, db, nameCtx);
         } else if (ctx.CONSTRAINT() != null && !isRefMode()) {

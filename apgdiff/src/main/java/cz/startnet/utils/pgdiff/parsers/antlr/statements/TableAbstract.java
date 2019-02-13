@@ -152,7 +152,7 @@ public abstract class TableAbstract extends ParserAbstract {
             Define_foreign_optionsContext options, AbstractTable table) {
         PgColumn col = new PgColumn(columnName);
         if (datatype != null) {
-            col.setType(getFullCtxText(datatype));
+            col.setType(getTypeName(datatype));
             addTypeAsDepcy(datatype, col);
         }
         if (collate != null) {
