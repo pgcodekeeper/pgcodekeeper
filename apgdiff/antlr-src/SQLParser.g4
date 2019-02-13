@@ -1305,7 +1305,6 @@ op_chars
     : OP_CHARS
     | LESS_LESS
     | GREATER_GREATER
-    | EQUAL_GTH
     | HASH_SIGN
     ;
 
