@@ -1147,11 +1147,7 @@ sign
   ;
 
 create_schema_statement
-    : SCHEMA (IF NOT EXISTS)? name=identifier? (AUTHORIZATION user_name=identifier)? schema_def=schema_definition?
-    ;
-
-schema_definition
-    : schema_element+=statement+
+    : SCHEMA (IF NOT EXISTS)? name=identifier? (AUTHORIZATION user_name=identifier)?
     ;
 
 create_view_statement

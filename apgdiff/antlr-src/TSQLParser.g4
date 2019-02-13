@@ -18,7 +18,6 @@ batch
 // for statements that must be the only ones in an entire batch
 batch_statement
     : (CREATE (OR ALTER)? | ALTER) batch_statement_body
-    | CREATE create_schema SEMI*
     ;
 
 batch_statement_body
@@ -151,6 +150,7 @@ schema_create
     | create_remote_service_binding
     | create_route
     | create_rule
+    | create_schema
     | create_search_property_list
     | create_security_policy
     | create_selective_index
@@ -918,12 +918,7 @@ alter_schema_sql
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-schema-transact-sql
 create_schema
-    : SCHEMA schema_name=id (AUTHORIZATION owner_name=id)? schema_def=schema_definition*
-    ;
-
-schema_definition
-    : st_clause
-    | CREATE create_or_alter_view
+    : SCHEMA schema_name=id (AUTHORIZATION owner_name=id)?
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-search-property-list-transact-sql

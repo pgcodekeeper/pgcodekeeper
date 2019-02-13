@@ -60,19 +60,13 @@ public abstract class ParserAbstract {
     private boolean refMode;
     private String fileName;
 
-    /**
-     * For objects from schema definition
-     */
-    private String defaultSchema;
-
     public ParserAbstract(PgDatabase db) {
         this.db = db;
     }
 
-    public void parseObject(String fileName, String defaultSchema,
-            boolean refMode, List<StatementBodyContainer> statementBodies) {
+    public void parseObject(String fileName, boolean refMode,
+            List<StatementBodyContainer> statementBodies) {
         this.fileName = fileName;
-        this.defaultSchema = defaultSchema;
         this.refMode = refMode;
         this.statementBodies = statementBodies;
         parseObject();
@@ -283,14 +277,10 @@ public abstract class ParserAbstract {
 
         ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
         String schemaName;
-        if (schemaCtx == null) {
-            schemaName = defaultSchema;
-        } else {
+        if (schemaCtx != null) {
             schemaName = schemaCtx.getText();
             addReferenceOnSchema(schemaCtx);
-        }
-
-        if (schemaName == null) {
+        } else {
             if (refMode) {
                 return null;
             }
@@ -434,16 +424,12 @@ public abstract class ParserAbstract {
         }
 
         ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
-        String schemaName;
-        if (schemaCtx == null) {
-            schemaName = defaultSchema;
-        } else {
-            schemaName = schemaCtx.getText();
-        }
 
-        if (schemaName == null || ApgdiffUtils.isSystemSchema(schemaName, isPostgres)) {
+        if (schemaCtx == null || ApgdiffUtils.isSystemSchema(schemaCtx.getText(), isPostgres)) {
             return;
         }
+
+        String schemaName = schemaCtx.getText();
 
         PgObjLocation loc;
         switch (type) {
@@ -492,22 +478,17 @@ public abstract class ParserAbstract {
     protected AbstractSchema getSchemaSafe(List<? extends ParserRuleContext> ids) {
         ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
 
-        if (schemaCtx == null && defaultSchema == null) {
+        if (schemaCtx == null) {
             if (refMode) {
                 return null;
             }
             throw new ObjectCreationException(SCHEMA_ERROR + QNameParser.getFirstName(ids));
         }
 
-        AbstractSchema foundSchema;
-        if (schemaCtx == null) {
-            foundSchema = db.getSchema(defaultSchema);
-        } else {
-            foundSchema = getSafe(PgDatabase::getSchema, db, schemaCtx);
-        }
+        AbstractSchema schema = getSafe(PgDatabase::getSchema, db, schemaCtx);
 
-        if (foundSchema != null || refMode) {
-            return foundSchema;
+        if (schema != null || refMode) {
+            return schema;
         }
 
         ParserRuleContext firstNameCtx = QNameParser.getFirstNameCtx(ids);
@@ -519,8 +500,6 @@ public abstract class ParserAbstract {
         ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
         if (schemaCtx != null) {
             return schemaCtx.getText();
-        } else if (defaultSchema != null) {
-            return defaultSchema;
         } else if (refMode) {
             return null;
         }

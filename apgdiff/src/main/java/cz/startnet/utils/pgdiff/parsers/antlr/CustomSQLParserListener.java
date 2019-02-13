@@ -111,7 +111,7 @@ implements SqlContextProcessor {
         } else if (ctx.create_sequence_statement() != null) {
             p = new CreateSequence(ctx.create_sequence_statement(), db);
         } else if (ctx.create_schema_statement() != null) {
-            p = new CreateSchema(ctx.create_schema_statement(), db, this);
+            p = new CreateSchema(ctx.create_schema_statement(), db);
         } else if (ctx.create_view_statement() != null) {
             p = new CreateView(ctx.create_view_statement(), db);
         } else if (ctx.create_type_statement() != null) {

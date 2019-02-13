@@ -23,13 +23,7 @@ public class CustomParserListener {
     private final List<AntlrError> errors;
     private final IProgressMonitor monitor;
 
-    protected String defaultSchema = null;
-
     private final List<StatementBodyContainer> statementBodies = new ArrayList<>();
-
-    public void setDefaultSchema(String defaultSchema) {
-        this.defaultSchema = defaultSchema;
-    }
 
     public CustomParserListener(PgDatabase database, String filename,
             boolean refMode, List<AntlrError> errors, IProgressMonitor monitor) {
@@ -44,7 +38,7 @@ public class CustomParserListener {
      * @param ctx statememnt's first token rule
      */
     protected void safeParseStatement(ParserAbstract p, ParserRuleContext ctx) {
-        safeParseStatement(() -> p.parseObject(filename, defaultSchema, refMode, statementBodies), ctx);
+        safeParseStatement(() -> p.parseObject(filename, refMode, statementBodies), ctx);
     }
 
     protected void safeParseStatement(Runnable r, ParserRuleContext ctx) {
