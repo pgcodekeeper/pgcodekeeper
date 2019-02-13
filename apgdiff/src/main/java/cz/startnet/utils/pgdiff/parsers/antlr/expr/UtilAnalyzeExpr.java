@@ -10,7 +10,6 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class UtilAnalyzeExpr {
 
@@ -33,9 +32,8 @@ public class UtilAnalyzeExpr {
         analyze(ctx, valExptWithNmspc, statement);
     }
 
-    public static <T extends ParserRuleContext> void analyzeFuncDefin(
-            T ctx, AbstractExprWithNmspc<T> analyzer, PgStatement pg,
-            List<Pair<String, String>> params) {
+    public static <T extends ParserRuleContext> void analyzeFuncDefin(T ctx,
+            AbstractExprWithNmspc<T> analyzer, PgStatement pg, List<String> params) {
         analyzer.addFuncParams(params);
         analyze(ctx, analyzer, pg);
     }

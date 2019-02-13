@@ -15,18 +15,17 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.Insert;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Update;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
+import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
-import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class FunctionDefinAnalyze {
 
     protected static void funcDefinAnalyze(SqlContext funcDefSqlCtx, String rootFuncSchema,
             PgStatementWithSearchPath rootFunc, PgDatabase db) {
-        List<Pair<String, String>> funcParams = ((IFunction) rootFunc).getArguments()
-                .stream().map(a -> new Pair<>(a.getName(), a.getDataType()))
-                .collect(Collectors.toList());
+        List<String> funcParams = ((IFunction) rootFunc).getArguments()
+                .stream().map(Argument::getDataType).collect(Collectors.toList());
         for (StatementContext s : funcDefSqlCtx.statement()) {
             Data_statementContext ds = s.data_statement();
             if (ds != null) {
