@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
 import java.util.List;
+import java.util.Map;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -10,6 +11,7 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class UtilAnalyzeExpr {
 
@@ -33,8 +35,10 @@ public class UtilAnalyzeExpr {
     }
 
     public static <T extends ParserRuleContext> void analyzeFuncDefin(T ctx,
-            AbstractExprWithNmspc<T> analyzer, PgStatement pg, List<String> params) {
-        analyzer.addFuncParams(params);
+            AbstractExprWithNmspc<T> analyzer, PgStatement pg,
+            Map<String, GenericColumn> relFuncArgs,
+            Map<String, List<Pair<String, String>>> simpleFuncArgs) {
+        analyzer.addFuncArgsToNmsp(relFuncArgs, simpleFuncArgs);
         analyze(ctx, analyzer, pg);
     }
 

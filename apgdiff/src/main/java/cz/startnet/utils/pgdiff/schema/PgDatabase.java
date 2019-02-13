@@ -21,6 +21,7 @@ import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -47,6 +48,8 @@ public class PgDatabase extends PgStatement {
     private final Map<String, List<PgObjLocation>> objReferences = new HashMap<>();
     // Contains PgStatement's contexts for analysis (for getting dependencies).
     private final List<Entry<PgStatementWithSearchPath, ParserRuleContext>> contextsForAnalyze = new ArrayList<>();
+    // Contains PgFunction's arguments contexts for analysis (for getting dependencies).
+    private final List<Entry<PgStatementWithSearchPath, List<Function_argumentsContext>>> funcArgsCtxsForAnalyze = new ArrayList<>();
 
     private PgDiffArguments arguments;
 
@@ -91,13 +94,28 @@ public class PgDatabase extends PgStatement {
     }
 
     /**
-     * Add context to the map for analyze.
+     * Add context for analyze.
      *
      * @param stmt statement to which the context belongs
      * @param ctx context for analyze
      */
     public void addContextForAnalyze(PgStatementWithSearchPath stmt, ParserRuleContext ctx) {
         contextsForAnalyze.add(new SimpleEntry<>(stmt, ctx));
+    }
+
+    public List<Entry<PgStatementWithSearchPath, List<Function_argumentsContext>>> getFuncArgsCtxsForAnalyze() {
+        return funcArgsCtxsForAnalyze;
+    }
+
+    /**
+     * Add function's arguments contexts for analyze.
+     *
+     * @param stmt function to which the contexts of  arguments belongs
+     * @param ctxs contexts for analyze
+     */
+    public void addFuncArgsCtxsForAnalyze(PgStatementWithSearchPath stmt,
+            List<Function_argumentsContext> ctxs) {
+        funcArgsCtxsForAnalyze.add(new SimpleEntry<>(stmt, ctxs));
     }
 
     public SupportedVersion getPostgresVersion() {

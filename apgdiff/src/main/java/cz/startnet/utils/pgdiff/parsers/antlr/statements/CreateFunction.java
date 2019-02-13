@@ -48,9 +48,14 @@ public class CreateFunction extends ParserAbstract {
         AbstractPgFunction function = ctx.PROCEDURE() != null ? new PgProcedure(name)
                 : new PgFunction(name);
 
-        fillArguments(function);
+        // TODO add processing for case when (funcArgsCtx == null)
+        List<Function_argumentsContext> funcArgsCtx = ctx.function_parameters()
+                .function_args().function_arguments();
+
+
+        fillArguments(function, funcArgsCtx);
         function.setBody(db.getArguments(), getFullCtxText(ctx.funct_body));
-        fillFunction(ctx.funct_body, function);
+        fillFunction(ctx.funct_body, function, funcArgsCtx);
 
         if (ctx.ret_table != null) {
             function.setReturns(getFullCtxText(ctx.ret_table));
@@ -67,7 +72,7 @@ public class CreateFunction extends ParserAbstract {
     }
 
     private void fillFunction(Create_funct_paramsContext params,
-            AbstractPgFunction function) {
+            AbstractPgFunction function, List<Function_argumentsContext> funcArgsCtx) {
         Function_defContext funcDef = null;
         for (Function_actions_commonContext action  : params.function_actions_common()) {
             if (action.WINDOW() != null) {
@@ -126,6 +131,7 @@ public class CreateFunction extends ParserAbstract {
             db.addContextForAnalyze(function, AntlrParser.parseSqlStringSqlCtx(SQLParser.class,
                     SQLParser::sql, funcCommandsStr, "function definition of " + function.getBareName(),
                     errors, getFullCtxText(ctx.getParent()).indexOf(funcCommandsStr)));
+            db.addFuncArgsCtxsForAnalyze(function, funcArgsCtx);
         }
 
         With_storage_parameterContext storage = params.with_storage_parameter();
@@ -140,9 +146,9 @@ public class CreateFunction extends ParserAbstract {
         }
     }
 
-    private void fillArguments(AbstractPgFunction function) {
-        for (Function_argumentsContext argument : ctx.function_parameters()
-                .function_args().function_arguments()) {
+    private void fillArguments(AbstractPgFunction function,
+            List<Function_argumentsContext> funcArgsCtx) {
+        for (Function_argumentsContext argument : funcArgsCtx) {
             Argument arg = new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
                     argument.argname != null ? argument.argname.getText() : null,
                             getTypeName(argument.argtype_data));

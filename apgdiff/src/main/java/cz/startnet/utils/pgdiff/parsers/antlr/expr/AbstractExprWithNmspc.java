@@ -1,7 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,7 +22,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_queryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
-import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -75,16 +73,6 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
      */
     protected final Map<String, List<Pair<String, String>>> complexNamespace = new LinkedHashMap<>();
 
-    /**
-     * Function simple arguments for analyze function definition.
-     */
-    protected List<String> funcParamsSimple = new ArrayList<>();
-
-    /**
-     * Function complex arguments for analyze function definition.
-     */
-    protected List<String> funcParamsComplex = new ArrayList<>();
-
     public AbstractExprWithNmspc(String schema, PgDatabase db) {
         super(schema, db);
     }
@@ -93,22 +81,10 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
         super(parent);
     }
 
-    public void addFuncParams(List<String> funcParams) {
-        for (String paramType : funcParams) {
-            if (paramType.contains(".") && isTableOrView(paramType)) {
-                funcParamsComplex.add(paramType);
-            } else {
-                funcParamsSimple.add(paramType);
-            }
-        }
-    }
-
-    private boolean isTableOrView(String paramType) {
-        int dotIdx = paramType.indexOf(".");
-        String schemaName = paramType.substring(0, dotIdx);
-        String tblOrView = paramType.substring(dotIdx + 1, paramType.length());
-        AbstractSchema schema = db.getSchema(schemaName);
-        return schema.getTable(tblOrView) != null || schema.getView(tblOrView) != null;
+    public void addFuncArgsToNmsp(Map<String, GenericColumn> relFuncArgs,
+            Map<String, List<Pair<String, String>>> simpleFuncArgs) {
+        namespace.putAll(relFuncArgs);
+        complexNamespace.putAll(simpleFuncArgs);
     }
 
     @Override
