@@ -82,7 +82,7 @@ public class CreateTrigger extends ParserAbstract {
                 .append('.');
                 sb.append(PgDiffUtils.getQuotedName(refRelName));
 
-                addDepSafe(trigger, refName, DbObjType.TABLE);
+                addDepSafe(trigger, refName, DbObjType.TABLE, true);
                 trigger.setRefTableName(sb.toString());
             }
         }
@@ -101,7 +101,7 @@ public class CreateTrigger extends ParserAbstract {
         IdentifierContext sch = funcNameCtx.schema;
         if (sch != null) {
             addDepSafe(trigger, Arrays.asList(sch, funcNameCtx.identifier_nontype()),
-                    DbObjType.FUNCTION);
+                    DbObjType.FUNCTION, true);
         }
 
         for (Columns_listContext column : ctx.columns_list()) {
@@ -119,7 +119,7 @@ public class CreateTrigger extends ParserAbstract {
 
         PgTriggerContainer cont = getSafe(AbstractSchema::getTriggerContainer, getSchemaSafe(ids),
                 QNameParser.getFirstNameCtx(ctx.table_name.identifier()));
-        addSafe(PgTriggerContainer::addTrigger, cont, trigger);
+        doSafe(PgTriggerContainer::addTrigger, cont, trigger);
         fillObjDefinition(new PgObjLocation(schemaName,
                 tableName, trigger.getName(), DbObjType.TRIGGER), ctx.name, trigger);
     }

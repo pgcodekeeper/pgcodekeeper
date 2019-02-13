@@ -35,15 +35,15 @@ public class CreateOperator extends ParserAbstract {
         for (Operator_optionContext option : ctx.operator_option()) {
             if (option.PROCEDURE() != null || option.FUNCTION() != null) {
                 oper.setProcedure(getFullCtxText(option.func_name));
-                addDepSafe(oper, option.func_name.identifier(), DbObjType.FUNCTION);
+                addDepSafe(oper, option.func_name.identifier(), DbObjType.FUNCTION, true);
             } else if (option.LEFTARG() != null) {
                 Data_typeContext leftArgTypeCtx = option.type;
                 oper.setLeftArg(getTypeName(leftArgTypeCtx));
-                addTypeAsDepcy(leftArgTypeCtx, oper);
+                addPgTypeDepcy(leftArgTypeCtx, oper);
             } else if (option.RIGHTARG() != null) {
                 Data_typeContext rightArgTypeCtx = option.type;
                 oper.setRightArg(getTypeName(rightArgTypeCtx));
-                addTypeAsDepcy(rightArgTypeCtx, oper);
+                addPgTypeDepcy(rightArgTypeCtx, oper);
             } else if (option.COMMUTATOR() != null || option.NEGATOR() != null) {
                 All_op_refContext comutNameCtx = option.addition_oper_name;
                 IdentifierContext schemaNameCxt = comutNameCtx.identifier();
@@ -69,10 +69,10 @@ public class CreateOperator extends ParserAbstract {
                 oper.setHashes(true);
             } else if (option.RESTRICT() != null) {
                 oper.setRestrict(getFullCtxText(option.restr_name));
-                addDepSafe(oper, option.restr_name.identifier(), DbObjType.FUNCTION);
+                addDepSafe(oper, option.restr_name.identifier(), DbObjType.FUNCTION, true);
             } else if (option.JOIN() != null) {
                 oper.setJoin(getFullCtxText(option.join_name));
-                addDepSafe(oper, option.join_name.identifier(), DbObjType.FUNCTION);
+                addDepSafe(oper, option.join_name.identifier(), DbObjType.FUNCTION, true);
             }
         }
 

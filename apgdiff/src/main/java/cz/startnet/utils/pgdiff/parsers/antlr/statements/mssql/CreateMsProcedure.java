@@ -59,7 +59,8 @@ public class CreateMsProcedure extends BatchContextProcessor {
             MsClrProcedure procedure = new MsClrProcedure(nameCtx.getText(),
                     assembly, assemblyClass, assemblyMethod);
 
-            addDepSafe(procedure, assemblyCtx.assembly_name, DbObjType.ASSEMBLY);
+            addDepSafe(procedure, Arrays.asList(assemblyCtx.assembly_name),
+                    DbObjType.ASSEMBLY, false);
             fillArguments(procedure);
 
             for (Procedure_optionContext option : ctx.procedure_option()) {
@@ -93,7 +94,7 @@ public class CreateMsProcedure extends BatchContextProcessor {
             Argument arg = new Argument(
                     argument.arg_mode != null ? argument.arg_mode.getText() : null,
                             argument.name.getText(), getFullCtxText(argument.data_type()));
-            addTypeAsDepcy(argument.data_type(), function);
+            addMsTypeDepcy(argument.data_type(), function);
             if (argument.default_val != null) {
                 arg.setDefaultExpression(getFullCtxText(argument.default_val));
             }

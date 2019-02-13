@@ -48,7 +48,7 @@ public class CreateIndex extends ParserAbstract {
         if (name != null) {
             AbstractTable table = getSafe(AbstractSchema::getTable,
                     getSchemaSafe(ids), QNameParser.getFirstNameCtx(ids));
-            addSafe(AbstractTable::addIndex, table, ind);
+            doSafe(AbstractTable::addIndex, table, ind);
             fillObjDefinition(new PgObjLocation(schemaName, tableName, name, DbObjType.INDEX),
                     nameCtx, ind);
         }

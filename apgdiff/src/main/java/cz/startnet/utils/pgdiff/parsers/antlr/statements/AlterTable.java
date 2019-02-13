@@ -76,7 +76,7 @@ public class AlterTable extends TableAbstract {
                     con = parseAlterTableConstraint(tablAction,
                             createTableConstraintBlank(tablAction.tabl_constraint), db,
                             schema.getName(), nameCtx.getText());
-                    addSafe(AbstractPgTable::addConstraint, tabl, con);
+                    doSafe(AbstractPgTable::addConstraint, tabl, con);
                 }
 
                 if (!con.getName().isEmpty()) {

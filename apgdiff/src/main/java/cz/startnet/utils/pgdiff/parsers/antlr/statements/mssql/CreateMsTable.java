@@ -86,7 +86,7 @@ public class CreateMsTable extends TableAbstract {
             MsColumn col = new MsColumn(colCtx.id().getText());
             if (colCtx.data_type() != null) {
                 Data_typeContext dt = colCtx.data_type();
-                addTypeAsDepcy(dt, col);
+                addMsTypeDepcy(dt, col);
                 col.setType(getFullCtxText(dt));
             } else {
                 col.setExpression(getFullCtxText(colCtx.expression()));

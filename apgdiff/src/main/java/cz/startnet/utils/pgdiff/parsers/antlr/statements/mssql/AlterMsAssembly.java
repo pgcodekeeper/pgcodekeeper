@@ -28,7 +28,7 @@ public class AlterMsAssembly extends TableAbstract {
         if (options != null) {
             for (Assembly_optionContext option : options) {
                 if (option.VISIBILITY() != null) {
-                    setSafe(MsAssembly::setVisible, assembly, option.ON() != null);
+                    doSafe(MsAssembly::setVisible, assembly, option.ON() != null);
                 }
             }
         }

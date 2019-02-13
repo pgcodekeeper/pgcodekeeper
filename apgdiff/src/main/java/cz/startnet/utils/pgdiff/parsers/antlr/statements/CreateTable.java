@@ -97,7 +97,7 @@ public class CreateTable extends TableAbstract {
         String ofType = getTypeName(typeName);
         TypedPgTable table = new TypedPgTable(tableName, ofType);
         fillTypeColumns(typeCtx.list_of_type_column_def(), table, schemaName);
-        addTypeAsDepcy(typeName, table);
+        addPgTypeDepcy(typeName, table);
         fillRegularTable(table);
         return table;
     }

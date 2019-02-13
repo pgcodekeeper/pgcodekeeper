@@ -147,7 +147,7 @@ public abstract class ParserAbstract {
     protected AbstractColumn getColumn(Table_column_definitionContext colCtx) {
         AbstractColumn col = new PgColumn(colCtx.column_name.getText());
         col.setType(getTypeName(colCtx.datatype));
-        addTypeAsDepcy(colCtx.datatype, col);
+        addPgTypeDepcy(colCtx.datatype, col);
         if (colCtx.collate_name != null) {
             col.setCollation(getFullCtxText(colCtx.collate_name.collation));
         }
@@ -372,7 +372,7 @@ public abstract class ParserAbstract {
 
     protected <U extends PgStatement> void addSafe(BiConsumer<AbstractSchema, U> adder,
             AbstractSchema parent, U child, List<? extends ParserRuleContext> ids) {
-        addSafe(adder, parent, child);
+        doSafe(adder, parent, child);
         ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
         if (schemaCtx != null) {
             addReferenceOnSchema(schemaCtx);
@@ -385,14 +385,14 @@ public abstract class ParserAbstract {
 
     protected <T extends IStatement, U extends PgStatement> void addSafe(BiConsumer<T, U> adder,
             T parent, U child, ParserRuleContext nameCtx) {
-        addSafe(adder, parent, child);
+        doSafe(adder, parent, child);
         PgObjLocation loc = new PgObjLocation(nameCtx.getText(), child.getStatementType());
         fillObjDefinition(loc, nameCtx, child);
     }
 
     protected <T extends IStatement, U extends PgStatement> void addSafe(BiConsumer<T, U> adder,
             T parent, U child, IdContext schemaCtx, IdContext parentCtx, IdContext nameCtx) {
-        addSafe(adder, parent, child);
+        doSafe(adder, parent, child);
         if (schemaCtx != null) {
             PgObjLocation loc = new PgObjLocation(schemaCtx.getText(),
                     parentCtx.getText(), nameCtx.getText(), child.getStatementType());
@@ -410,26 +410,11 @@ public abstract class ParserAbstract {
         db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
     }
 
-    protected <T extends IStatement, U extends IStatement> void addSafe(BiConsumer<T, U> adder,
-            T parent, U child) {
-        if (!refMode && parent != null) {
-            adder.accept(parent, child);
-        }
-    }
-
-    protected <T extends IStatement, U extends Object> void setSafe(BiConsumer<T, U> adder,
+    protected <T extends IStatement, U extends Object> void doSafe(BiConsumer<T, U> adder,
             T statement, U object) {
-        if (!refMode) {
+        if (!refMode && statement != null) {
             adder.accept(statement, object);
         }
-    }
-
-    protected void addDepSafe(PgStatement st, ParserRuleContext name, DbObjType type) {
-        addDepSafe(st, Arrays.asList(name), type);
-    }
-
-    protected void addDepSafe(PgStatement st, List<? extends ParserRuleContext> ids, DbObjType type) {
-        addDepSafe(st, ids, type, st.isPostgres());
     }
 
     protected void addDepSafe(PgStatement st, List<? extends ParserRuleContext> ids,
@@ -562,7 +547,7 @@ public abstract class ParserAbstract {
         }
     }
 
-    protected void addTypeAsDepcy(Data_typeContext ctx, PgStatement st) {
+    protected void addPgTypeDepcy(Data_typeContext ctx, PgStatement st) {
         Schema_qualified_name_nontypeContext qname = ctx.predefined_type().schema_qualified_name_nontype();
         if (qname != null) {
             IdentifierContext schemaCtx = qname.identifier();
@@ -579,7 +564,7 @@ public abstract class ParserAbstract {
         }
     }
 
-    protected void addTypeAsDepcy(cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Data_typeContext ctx,
+    protected void addMsTypeDepcy(cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Data_typeContext ctx,
             PgStatement st) {
         Qualified_nameContext qname = ctx.qualified_name();
         if (qname != null) {

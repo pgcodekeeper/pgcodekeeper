@@ -31,7 +31,7 @@ public class CreateFtsDictionary extends ParserAbstract {
 
         List<IdentifierContext> templateIds = ctx.template.identifier();
         dictionary.setTemplate(ParserAbstract.getFullCtxText(ctx.template));
-        addDepSafe(dictionary, templateIds, DbObjType.FTS_TEMPLATE);
+        addDepSafe(dictionary, templateIds, DbObjType.FTS_TEMPLATE, true);
         addSafe(AbstractSchema::addFtsDictionary, getSchemaSafe(ids), dictionary, ids);
     }
 }

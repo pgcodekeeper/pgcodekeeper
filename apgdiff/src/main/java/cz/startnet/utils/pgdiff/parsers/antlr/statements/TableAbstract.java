@@ -153,7 +153,7 @@ public abstract class TableAbstract extends ParserAbstract {
         PgColumn col = new PgColumn(columnName);
         if (datatype != null) {
             col.setType(getTypeName(datatype));
-            addTypeAsDepcy(datatype, col);
+            addPgTypeDepcy(datatype, col);
         }
         if (collate != null) {
             col.setCollation(getFullCtxText(collate.collation));
@@ -167,7 +167,7 @@ public abstract class TableAbstract extends ParserAbstract {
                 fillOptionParams(value, option.name.getText(), false, col::addForeignOption);
             }
         }
-        addSafe(AbstractTable::addColumn, table, col);
+        doSafe(AbstractTable::addColumn, table, col);
     }
 
     protected void addColumn(String columnName, Data_typeContext datatype,

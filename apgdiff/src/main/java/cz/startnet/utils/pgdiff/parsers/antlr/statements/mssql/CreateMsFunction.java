@@ -74,7 +74,8 @@ public class CreateMsFunction extends BatchContextProcessor {
             MsClrFunction func = new MsClrFunction(name, assembly,
                     assemblyClass, assemblyMethod);
 
-            addDepSafe(func, assemblyCtx.assembly_name, DbObjType.ASSEMBLY);
+            addDepSafe(func, Arrays.asList(assemblyCtx.assembly_name),
+                    DbObjType.ASSEMBLY, false);
             fillArguments(func);
 
             for (Function_optionContext option : ctx.function_option()) {
@@ -147,11 +148,11 @@ public class CreateMsFunction extends BatchContextProcessor {
             for (Column_def_table_constraintContext con : cons.column_def_table_constraint()) {
                 Data_typeContext dt = con.data_type();
                 if (dt != null) {
-                    addTypeAsDepcy(dt, function);
+                    addMsTypeDepcy(dt, function);
                 }
             }
         } else {
-            addTypeAsDepcy(ret.data_type(), function);
+            addMsTypeDepcy(ret.data_type(), function);
         }
     }
 
@@ -160,7 +161,7 @@ public class CreateMsFunction extends BatchContextProcessor {
             Argument arg = new Argument(
                     argument.arg_mode != null ? argument.arg_mode.getText() : null,
                             argument.name.getText(), getFullCtxText(argument.data_type()));
-            addTypeAsDepcy(argument.data_type(), function);
+            addMsTypeDepcy(argument.data_type(), function);
             if (argument.default_val != null) {
                 arg.setDefaultExpression(getFullCtxText(argument.default_val));
             }

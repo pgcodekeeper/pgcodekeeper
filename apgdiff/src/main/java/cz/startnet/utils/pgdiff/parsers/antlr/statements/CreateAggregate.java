@@ -42,7 +42,7 @@ public class CreateAggregate extends ParserAbstract {
 
         Data_typeContext sTypeCtx = ctx.type;
         aggregate.setSType(getFullCtxText(sTypeCtx));
-        addTypeAsDepcy(sTypeCtx, aggregate);
+        addPgTypeDepcy(sTypeCtx, aggregate);
 
         fillAllArguments(aggregate);
 
@@ -71,7 +71,7 @@ public class CreateAggregate extends ParserAbstract {
             String baseType = getFullCtxText(baseTypeCtx);
             if (!"ANY".equals(baseType)) {
                 aggregate.addArgument(new Argument(null, baseType));
-                addTypeAsDepcy(baseTypeCtx, aggregate);
+                addPgTypeDepcy(baseTypeCtx, aggregate);
                 aggregate.setDirectCount(1);
             }
         }
@@ -82,7 +82,7 @@ public class CreateAggregate extends ParserAbstract {
             Argument arg = new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
                     argument.argname != null ? argument.argname.getText() : null,
                             getFullCtxText(argument.argtype_data));
-            addTypeAsDepcy(argument.data_type(), aggr);
+            addPgTypeDepcy(argument.data_type(), aggr);
             aggr.addArgument(arg);
         }
     }
@@ -99,7 +99,7 @@ public class CreateAggregate extends ParserAbstract {
             if (mSTypeParamCtx != null) {
                 Data_typeContext mSTypeCtx = mSTypeParamCtx.ms_type;
                 aggregate.setMSType(getFullCtxText(mSTypeCtx));
-                addTypeAsDepcy(mSTypeCtx, aggregate);
+                addPgTypeDepcy(mSTypeCtx, aggregate);
             }
 
             for (Aggregate_paramContext paramOpt : params) {

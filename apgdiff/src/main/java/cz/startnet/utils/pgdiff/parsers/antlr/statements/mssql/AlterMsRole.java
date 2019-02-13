@@ -21,7 +21,7 @@ public class AlterMsRole extends TableAbstract {
         MsRole role = getSafe(PgDatabase::getRole, db, ctx.role_name);
 
         if (ctx.ADD() != null) {
-            setSafe(MsRole::addMember, role, ctx.database_principal.getText());
+            doSafe(MsRole::addMember, role, ctx.database_principal.getText());
         }
 
         addObjReference(ctx.role_name, DbObjType.ROLE, StatementActions.ALTER);

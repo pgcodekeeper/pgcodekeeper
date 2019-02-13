@@ -49,14 +49,14 @@ public class AlterMsTable extends TableAbstract {
                 addSafe(AbstractTable::addConstraint, table, con,
                         schemaCtx, nameCtx, colCtx.table_constraint().id());
             } else {
-                addSafe(AbstractTable::addConstraint, table, con);
+                doSafe(AbstractTable::addConstraint, table, con);
             }
         } else if (ctx.con != null) {
             MsConstraint con = (MsConstraint) getSafe(AbstractTable::getConstraint, table, ctx.con);
             if (ctx.WITH() != null) {
-                setSafe(AbstractConstraint::setNotValid, con, ctx.nocheck_check != null);
+                doSafe(AbstractConstraint::setNotValid, con, ctx.nocheck_check != null);
             }
-            setSafe(MsConstraint::setDisabled, con, ctx.nocheck != null);
+            doSafe(MsConstraint::setDisabled, con, ctx.nocheck != null);
         } else if (ctx.DROP() != null && ctx.COLUMN() != null) {
             ref.setWarningText(PgObjLocation.DROP_COLUMN);
         } else if (ctx.ALTER() != null && ctx.COLUMN() != null) {
@@ -66,12 +66,12 @@ public class AlterMsTable extends TableAbstract {
         IdContext trigger = ctx.trigger;
         if (trigger != null) {
             MsTrigger tr = (MsTrigger) getSafe(AbstractTable::getTrigger, table, trigger);
-            setSafe(MsTrigger::setDisable, tr, ctx.ENABLE() == null);
+            doSafe(MsTrigger::setDisable, tr, ctx.ENABLE() == null);
             PgObjLocation loc = new PgObjLocation(schemaCtx.getText(),
                     nameCtx.getText(), trigger.getText(), DbObjType.TRIGGER);
             addObjReference(loc, StatementActions.ALTER, trigger);
         } else if (ctx.CHANGE_TRACKING() != null && ctx.ENABLE() != null) {
-            setSafe(MsTable::setTracked, ((MsTable) table), ctx.ON() != null);
+            doSafe(MsTable::setTracked, ((MsTable) table), ctx.ON() != null);
         }
     }
 }

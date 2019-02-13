@@ -246,7 +246,7 @@ public class CreateRule extends ParserAbstract {
 
     private void addPrivilege(PgStatement st, PgPrivilege privilege) {
         if (overrides == null) {
-            setSafe(PgStatement::addPrivilege, st, privilege);
+            doSafe(PgStatement::addPrivilege, st, privilege);
         } else {
             overrides.computeIfAbsent(st,
                     k -> new StatementOverride()).addPrivilege(privilege);

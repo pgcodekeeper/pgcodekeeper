@@ -43,7 +43,7 @@ public class DisableMsTrigger extends ParserAbstract {
             addFullObjReference(Arrays.asList(schemaCtx, parent.name, qname.name),
                     DbObjType.TRIGGER, StatementActions.ALTER);
             if (ctx.DISABLE() != null) {
-                setSafe(MsTrigger::setDisable, trig, true);
+                doSafe(MsTrigger::setDisable, trig, true);
             }
         }
     }

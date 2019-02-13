@@ -35,7 +35,7 @@ public class AlterSequence extends ParserAbstract {
                 Tokens_nonreserved_except_function_typeContext word;
                 if (col.size() != 1 || (word = col.get(0).tokens_nonreserved_except_function_type()) == null
                         || word.NONE() == null) {
-                    setSafe(PgSequence::setOwnedBy, sequence, getFullCtxText(seqbody.col_name));
+                    doSafe(PgSequence::setOwnedBy, sequence, getFullCtxText(seqbody.col_name));
                 }
 
                 addFullObjReference(col, DbObjType.TABLE, StatementActions.NONE);
