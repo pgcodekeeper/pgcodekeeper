@@ -27,11 +27,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraint_bodyContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.exception.ObjectCreationException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
-import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsConstraint;
@@ -202,11 +202,12 @@ public abstract class TableAbstract extends ParserAbstract {
 
             List<IdentifierContext> ids = tblRef.reftable.identifier();
             String refTableName = QNameParser.getFirstName(ids);
+            String refSchemaName = QNameParser.getSchemaName(ids);
 
-            AbstractSchema s = db.getDefaultSchema();
-            String defSchemaName = s == null ? null : s.getName();
+            if (refSchemaName == null) {
+                throw new ObjectCreationException(SCHEMA_ERROR + getFullCtxText(tblRef.reftable));
+            }
 
-            String refSchemaName = QNameParser.getSchemaName(ids, defSchemaName);
             GenericColumn ftable = new GenericColumn(refSchemaName, refTableName, DbObjType.TABLE);
             constrBlank.setForeignTable(ftable);
             constrBlank.addDep(ftable);

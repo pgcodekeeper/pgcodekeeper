@@ -52,7 +52,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  */
 public abstract class ParserAbstract {
 
-    private static final String SCHEMA_ERROR = "Object must be schema qualified: ";
+    protected static final String SCHEMA_ERROR = "Object must be schema qualified: ";
 
     protected final PgDatabase db;
 

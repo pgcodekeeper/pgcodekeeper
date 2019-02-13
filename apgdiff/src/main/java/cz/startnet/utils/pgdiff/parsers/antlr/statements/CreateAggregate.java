@@ -212,7 +212,7 @@ public class CreateAggregate extends ParserAbstract {
     private void addFuncAsDepcy(String paramName,
             Schema_qualified_nameContext paramFuncCtx, PgAggregate aggr) {
         List<IdentifierContext> ids = paramFuncCtx.identifier();
-        String schemaName = QNameParser.getSchemaName(ids, null);
+        String schemaName = QNameParser.getSchemaName(ids);
         if (schemaName != null && !ApgdiffUtils.isPgSystemSchema(schemaName)) {
             addDepSafe(aggr, new PgObjLocation(schemaName,
                     getParamFuncSignature(aggr, QNameParser.getFirstName(ids), paramName),
