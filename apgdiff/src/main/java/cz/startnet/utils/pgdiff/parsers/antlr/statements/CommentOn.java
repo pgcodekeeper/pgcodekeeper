@@ -65,6 +65,11 @@ public class CommentOn extends ParserAbstract {
             }
             ParserRuleContext schemaCtx = QNameParser.getThirdNameCtx(ids);
             getSchemaNameSafe(ids);
+            if (schemaCtx == null) {
+                throw new UnresolvedReferenceException(
+                        "Schema name is missing for commented column!", nameCtx.getStart());
+            }
+
             AbstractSchema schema = getSafe(PgDatabase::getSchema, db, schemaCtx);
             ParserRuleContext tableCtx = QNameParser.getSecondNameCtx(ids);
             if (tableCtx == null) {
