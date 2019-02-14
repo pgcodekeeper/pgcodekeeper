@@ -38,7 +38,7 @@ public class AlterFtsStatement extends ParserAbstract {
             tt = DbObjType.FTS_CONFIGURATION;
         }
 
-        addFullObjReference(ids, tt, StatementActions.ALTER);
+        addObjReference(ids, tt, StatementActions.ALTER);
 
         if (tt != DbObjType.FTS_CONFIGURATION) {
             return;

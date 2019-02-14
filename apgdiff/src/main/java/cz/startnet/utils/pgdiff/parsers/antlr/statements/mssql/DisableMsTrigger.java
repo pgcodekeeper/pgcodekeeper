@@ -35,12 +35,13 @@ public class DisableMsTrigger extends ParserAbstract {
         PgTriggerContainer cont = getSafe(AbstractSchema::getTriggerContainer,
                 getSchemaSafe(Arrays.asList(schemaCtx, parent.name)),
                 parent.name.getText(), parent.name.start);
-        addFullObjReference(parent.schema, parent.name, DbObjType.TABLE, StatementActions.NONE);
+        addObjReference(Arrays.asList(parent.schema, parent.name),
+                DbObjType.TABLE, StatementActions.NONE);
 
         for (Qualified_nameContext qname : triggers.qualified_name()) {
             MsTrigger trig = (MsTrigger) getSafe(PgTriggerContainer::getTrigger,
                     cont, qname.name.getText(), qname.name.start);
-            addFullObjReference(Arrays.asList(schemaCtx, parent.name, qname.name),
+            addObjReference(Arrays.asList(schemaCtx, parent.name, qname.name),
                     DbObjType.TRIGGER, StatementActions.ALTER);
             if (ctx.DISABLE() != null) {
                 doSafe(MsTrigger::setDisable, trig, true);

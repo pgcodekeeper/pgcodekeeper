@@ -35,7 +35,7 @@ public class CreateTrigger extends ParserAbstract {
         List<IdentifierContext> ids = ctx.table_name.identifier();
         String schemaName = getSchemaNameSafe(ids);
         String tableName = QNameParser.getFirstName(ids);
-        addFullObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
+        addObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
 
         PgTrigger trigger = new PgTrigger(ctx.name.getText(),
                 ParserAbstract.getFullCtxText(ctx.table_name));

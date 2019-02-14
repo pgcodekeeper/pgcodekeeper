@@ -238,34 +238,23 @@ public abstract class ParserAbstract {
         }
     }
 
-    protected PgObjLocation addObjReference(PgObjLocation loc, StatementActions action,
+    protected PgObjLocation addObjReference(List<? extends ParserRuleContext> ids, DbObjType type,
+            StatementActions action) {
+        PgObjLocation loc = getLocation(ids, type, false);
+        if (loc != null) {
+            addObjReference(loc, action, QNameParser.getFirstNameCtx(ids));
+        }
+
+        return loc;
+    }
+
+    private void addObjReference(PgObjLocation loc, StatementActions action,
             ParserRuleContext nameCtx) {
         loc.setOffset(getStart(nameCtx));
         loc.setLine(nameCtx.start.getLine());
         loc.setFilePath(fileName);
         loc.setAction(action);
         db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
-        return loc;
-    }
-
-    protected PgObjLocation addFullObjReference(IdContext schemaCtx, IdContext name, DbObjType type,
-            StatementActions action) {
-        return addFullObjReference(Arrays.asList(schemaCtx, name), type, action);
-    }
-
-    protected PgObjLocation addObjReference(ParserRuleContext name, DbObjType type,
-            StatementActions action) {
-        return addFullObjReference(Arrays.asList(name), type, action);
-    }
-
-    protected PgObjLocation addFullObjReference(List<? extends ParserRuleContext> ids, DbObjType type,
-            StatementActions action) {
-        PgObjLocation loc = getLocation(ids, type, false);
-        if (loc != null) {
-            return addObjReference(loc, action, QNameParser.getFirstNameCtx(ids));
-        }
-
-        return null;
     }
 
     private int getStart(ParserRuleContext ctx) {
@@ -383,7 +372,7 @@ public abstract class ParserAbstract {
 
     protected <T extends IStatement, U extends Object> void doSafe(BiConsumer<T, U> adder,
             T statement, U object) {
-        if (!refMode && statement != null) {
+        if (!refMode) {
             adder.accept(statement, object);
         }
     }

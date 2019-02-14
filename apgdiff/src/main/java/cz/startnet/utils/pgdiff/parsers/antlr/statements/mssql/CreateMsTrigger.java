@@ -44,7 +44,7 @@ public class CreateMsTrigger extends BatchContextProcessor {
             schemaCtx = ctx.table_name.schema;
         }
         List<IdContext> ids = Arrays.asList(schemaCtx, ctx.table_name.name);
-        addFullObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
+        addObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
         getObject(getSchemaSafe(ids));
     }
 
@@ -67,7 +67,7 @@ public class CreateMsTrigger extends BatchContextProcessor {
         } else {
             List<IdContext> ids = Arrays.asList(schemaCtx, tableNameCtx);
             schemaName = getSchemaNameSafe(ids);
-            addFullObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
+            addObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
         }
 
         MsSqlClauses clauses = new MsSqlClauses(schemaName);

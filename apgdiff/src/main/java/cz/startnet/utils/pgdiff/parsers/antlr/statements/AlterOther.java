@@ -45,22 +45,22 @@ public class AlterOther extends ParserAbstract {
             type = DbObjType.AGGREGATE;
         }
 
-        addFullObjReference(ctx.function_parameters().name.identifier(),
+        addObjReference(ctx.function_parameters().name.identifier(),
                 type, StatementActions.ALTER);
     }
 
     public void alterSchema(Alter_schema_statementContext ctx) {
         IdentifierContext nameCtx = ctx.schema_with_name().name;
-        addObjReference(nameCtx, DbObjType.SCHEMA, StatementActions.ALTER);
+        addObjReference(Arrays.asList(nameCtx), DbObjType.SCHEMA, StatementActions.ALTER);
     }
 
     public void alterType(Alter_type_statementContext ctx) {
-        addFullObjReference(ctx.name.identifier(), DbObjType.TYPE, StatementActions.ALTER);
+        addObjReference(ctx.name.identifier(), DbObjType.TYPE, StatementActions.ALTER);
     }
 
     private void alterOperator(Alter_operator_statementContext ctx) {
         Operator_nameContext nameCtx = ctx.target_operator().operator_name();
-        addFullObjReference(Arrays.asList(nameCtx.schema_name, nameCtx.operator),
+        addObjReference(Arrays.asList(nameCtx.schema_name, nameCtx.operator),
                 DbObjType.OPERATOR, StatementActions.ALTER);
     }
 }

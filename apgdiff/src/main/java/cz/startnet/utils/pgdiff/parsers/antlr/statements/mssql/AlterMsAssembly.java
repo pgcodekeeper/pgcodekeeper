@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
+import java.util.Arrays;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_assemblyContext;
@@ -22,7 +23,7 @@ public class AlterMsAssembly extends TableAbstract {
     @Override
     public void parseObject() {
         MsAssembly assembly = getSafe(PgDatabase::getAssembly, db, ctx.name);
-        addObjReference(ctx.name, DbObjType.ASSEMBLY, StatementActions.ALTER);
+        addObjReference(Arrays.asList(ctx.name), DbObjType.ASSEMBLY, StatementActions.ALTER);
 
         List<Assembly_optionContext> options = ctx.assembly_option();
         if (options != null) {

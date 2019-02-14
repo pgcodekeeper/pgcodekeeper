@@ -37,7 +37,8 @@ public class CreateMsIndex extends ParserAbstract {
         IdContext nameCtx = ctx.name;
         List<IdContext> ids = Arrays.asList(schemaCtx, nameCtx);
         AbstractSchema schema = getSchemaSafe(ids);
-        addFullObjReference(schemaCtx, tableCtx, DbObjType.TABLE, StatementActions.NONE);
+        addObjReference(Arrays.asList(schemaCtx, tableCtx),
+                DbObjType.TABLE, StatementActions.NONE);
 
         AbstractIndex ind = new MsIndex(nameCtx.getText(), tableCtx.getText());
         ind.setUnique(ctx.UNIQUE() != null);

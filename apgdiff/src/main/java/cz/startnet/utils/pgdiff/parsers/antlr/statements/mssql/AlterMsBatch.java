@@ -34,7 +34,7 @@ public class AlterMsBatch extends ParserAbstract {
     }
 
     private void alter(Qualified_nameContext qname, DbObjType type) {
-        addFullObjReference(qname.schema, qname.name, type, StatementActions.ALTER);
+        addObjReference(Arrays.asList(qname.schema, qname.name), type, StatementActions.ALTER);
     }
 
     private void alterTrigger(Create_or_alter_triggerContext ctx) {
@@ -47,7 +47,7 @@ public class AlterMsBatch extends ParserAbstract {
         // second schema ref
         // CREATE TRIGGER schema.trigger ON schema.table ...
         addReferenceOnSchema(ctx.table_name.schema);
-        addFullObjReference(Arrays.asList(schemaCtx, ctx.table_name.name, qname.name),
+        addObjReference(Arrays.asList(schemaCtx, ctx.table_name.name, qname.name),
                 DbObjType.TRIGGER, StatementActions.ALTER);
     }
 }

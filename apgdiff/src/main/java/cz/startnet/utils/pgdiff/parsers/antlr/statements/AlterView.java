@@ -33,6 +33,6 @@ public class AlterView extends ParserAbstract {
             doSafe(PgView::removeColumnDefaultValue, dbView, getFullCtxText(ctx.column_name));
         }
 
-        addFullObjReference(ids, DbObjType.VIEW, StatementActions.ALTER);
+        addObjReference(ids, DbObjType.VIEW, StatementActions.ALTER);
     }
 }

@@ -42,6 +42,6 @@ public class AlterDomain extends ParserAbstract {
             doSafe(PgDomain::addConstraint, domain, constr);
         }
 
-        addFullObjReference(ids, DbObjType.DOMAIN, StatementActions.ALTER);
+        addObjReference(ids, DbObjType.DOMAIN, StatementActions.ALTER);
     }
 }

@@ -38,8 +38,8 @@ public class AlterMsTable extends TableAbstract {
         List<IdContext> ids = Arrays.asList(schemaCtx, nameCtx);
         AbstractSchema schema = getSchemaSafe(ids);
         AbstractTable table = getSafe(AbstractSchema::getTable, schema, nameCtx);
-        PgObjLocation ref = addFullObjReference(schemaCtx,
-                nameCtx, DbObjType.TABLE, StatementActions.ALTER);
+        PgObjLocation ref = addObjReference(Arrays.asList(schemaCtx, nameCtx),
+                DbObjType.TABLE, StatementActions.ALTER);
 
         Column_def_table_constraintContext colCtx = ctx.column_def_table_constraint();
         if (colCtx != null && colCtx.table_constraint() != null) {
@@ -67,9 +67,8 @@ public class AlterMsTable extends TableAbstract {
         if (trigger != null) {
             MsTrigger tr = (MsTrigger) getSafe(AbstractTable::getTrigger, table, trigger);
             doSafe(MsTrigger::setDisable, tr, ctx.ENABLE() == null);
-            PgObjLocation loc = new PgObjLocation(schemaCtx.getText(),
-                    nameCtx.getText(), trigger.getText(), DbObjType.TRIGGER);
-            addObjReference(loc, StatementActions.ALTER, trigger);
+            addObjReference(Arrays.asList(schemaCtx, nameCtx, trigger),
+                    DbObjType.TRIGGER, StatementActions.ALTER);
         } else if (ctx.CHANGE_TRACKING() != null && ctx.ENABLE() != null) {
             doSafe(MsTable::setTracked, ((MsTable) table), ctx.ON() != null);
         }

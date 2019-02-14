@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +25,6 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
@@ -89,7 +89,7 @@ public class CreateRule extends ParserAbstract {
                 StringBuilder sb = new StringBuilder();
                 DbObjType type = ctx.PROCEDURE() == null ?
                         DbObjType.FUNCTION : DbObjType.PROCEDURE;
-                addFullObjReference(funcIds, type, StatementActions.NONE);
+                addObjReference(funcIds, type, StatementActions.NONE);
 
                 if (isRefMode()) {
                     continue;
@@ -131,7 +131,7 @@ public class CreateRule extends ParserAbstract {
 
         if (type != null) {
             for (Schema_qualified_nameContext name : objName) {
-                addFullObjReference(name.identifier(), type, StatementActions.NONE);
+                addObjReference(name.identifier(), type, StatementActions.NONE);
                 for (String role : roles) {
                     addToDB(name, type, new PgPrivilege(state, permissions,
                             type + " " + name.getText(), role, isGO));
@@ -167,7 +167,7 @@ public class CreateRule extends ParserAbstract {
         String tableName = getFullCtxText(tbl);
         List<IdentifierContext> ids = tbl.identifier();
 
-        PgObjLocation loc = addFullObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
+        addObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
         AbstractSchema schema = getSchemaSafe(ids);
         IdentifierContext firstPart = QNameParser.getFirstNameCtx(ids);
 
@@ -196,9 +196,8 @@ public class CreateRule extends ParserAbstract {
                     addPrivilege(st, priv);
                 } else {
                     IdentifierContext colName = colPriv.getValue().getKey();
-                    addObjReference(new PgObjLocation(loc.schema,
-                            loc.table, colName.getText(), DbObjType.COLUMN),
-                            StatementActions.NONE, colName);
+                    addObjReference(Arrays.asList(QNameParser.getSchemaNameCtx(ids),firstPart, colName),
+                            DbObjType.COLUMN, StatementActions.NONE);
                     AbstractColumn col = getSafe(AbstractTable::getColumn,
                             (AbstractTable) st, colName);
                     addPrivilege(col, priv);

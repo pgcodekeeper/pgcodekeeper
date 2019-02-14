@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.Arrays;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
@@ -44,7 +45,7 @@ public class AlterTable extends TableAbstract {
         IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
         AbstractPgTable tabl = null;
 
-        PgObjLocation loc = addFullObjReference(ids, DbObjType.TABLE, StatementActions.ALTER);
+        PgObjLocation loc = addObjReference(ids, DbObjType.TABLE, StatementActions.ALTER);
 
         for (Table_actionContext tablAction : ctx.table_action()) {
             if (tablAction.column != null && tablAction.DROP() != null) {
@@ -88,10 +89,9 @@ public class AlterTable extends TableAbstract {
 
 
             if (tablAction.drop_constraint() != null) {
-                IdentifierContext conName = tablAction.drop_constraint().constraint_name;
-                addObjReference(new PgObjLocation(loc.schema,
-                        loc.table, conName.getText(), DbObjType.CONSTRAINT),
-                        StatementActions.DROP, conName);
+                addObjReference(Arrays.asList(QNameParser.getSchemaNameCtx(ids), nameCtx,
+                        tablAction.drop_constraint().constraint_name),
+                        DbObjType.CONSTRAINT, StatementActions.DROP);
             }
 
             if (isRefMode()) {

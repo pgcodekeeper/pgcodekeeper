@@ -55,7 +55,7 @@ public class AlterOwner extends ParserAbstract {
                     parseSignature(operNameCtx.operator.getText(), targetOperCtx),
                     operNameCtx.operator.getStart());
             setOwner(st, owner);
-            addFullObjReference(ids, DbObjType.OPERATOR, StatementActions.ALTER);
+            addObjReference(ids, DbObjType.OPERATOR, StatementActions.ALTER);
             return;
         }
 
@@ -100,7 +100,7 @@ public class AlterOwner extends ParserAbstract {
         }
 
         if (type != null)  {
-            addFullObjReference(ids, type, StatementActions.ALTER);
+            addObjReference(ids, type, StatementActions.ALTER);
         }
 
         if (st == null || (type == DbObjType.SCHEMA

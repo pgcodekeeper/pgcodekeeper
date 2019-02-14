@@ -123,7 +123,7 @@ public class CommentOn extends ParserAbstract {
         } else if (ctx.CONSTRAINT() != null && !isRefMode()) {
             List<IdentifierContext> parentIds = ctx.table_name.identifier();
             AbstractTable table = schema.getTable(QNameParser.getFirstName(parentIds));
-            addFullObjReference(parentIds, DbObjType.TABLE, StatementActions.NONE);
+            addObjReference(parentIds, DbObjType.TABLE, StatementActions.NONE);
             if (table == null) {
                 PgDomain domain = getSafe(AbstractSchema::getDomain, schema, nameCtx);
                 getSafe(PgDomain::getConstraint, domain, nameCtx).setComment(db.getArguments(), comment);
@@ -202,7 +202,7 @@ public class CommentOn extends ParserAbstract {
             if (!isRefMode()) {
                 st.setComment(db.getArguments(), comment);
             }
-            PgObjLocation ref = addFullObjReference(ids, type, StatementActions.COMMENT);
+            PgObjLocation ref = addObjReference(ids, type, StatementActions.COMMENT);
             setCommentToDefinition(ref, comment);
         }
     }

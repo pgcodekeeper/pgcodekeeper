@@ -1,5 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
+import java.util.Arrays;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_db_roleContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.TableAbstract;
 import cz.startnet.utils.pgdiff.schema.MsRole;
@@ -24,6 +26,6 @@ public class AlterMsRole extends TableAbstract {
             doSafe(MsRole::addMember, role, ctx.database_principal.getText());
         }
 
-        addObjReference(ctx.role_name, DbObjType.ROLE, StatementActions.ALTER);
+        addObjReference(Arrays.asList(ctx.role_name), DbObjType.ROLE, StatementActions.ALTER);
     }
 }
