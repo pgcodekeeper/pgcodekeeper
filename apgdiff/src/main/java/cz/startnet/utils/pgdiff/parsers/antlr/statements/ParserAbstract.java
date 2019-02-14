@@ -231,30 +231,19 @@ public abstract class ParserAbstract {
         return oper.getSignature();
     }
 
-    protected void addReferenceOnSchema(ParserRuleContext schemaCtx) {
-        if (schemaCtx != null) {
-            addObjReference(new PgObjLocation(schemaCtx.getText(), DbObjType.SCHEMA),
-                    StatementActions.NONE, schemaCtx);
-        }
-    }
-
-    protected PgObjLocation addObjReference(List<? extends ParserRuleContext> ids, DbObjType type,
-            StatementActions action) {
-        PgObjLocation loc = getLocation(ids, type, false);
+    protected PgObjLocation addObjReference(List<? extends ParserRuleContext> ids,
+            DbObjType type, StatementActions action) {
+        PgObjLocation loc = getLocation(ids, type, false, null);
         if (loc != null) {
-            addObjReference(loc, action, QNameParser.getFirstNameCtx(ids));
+            ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
+            loc.setOffset(getStart(nameCtx));
+            loc.setLine(nameCtx.start.getLine());
+            loc.setFilePath(fileName);
+            loc.setAction(action);
+            db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
         }
 
         return loc;
-    }
-
-    private void addObjReference(PgObjLocation loc, StatementActions action,
-            ParserRuleContext nameCtx) {
-        loc.setOffset(getStart(nameCtx));
-        loc.setLine(nameCtx.start.getLine());
-        loc.setFilePath(fileName);
-        loc.setAction(action);
-        db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
     }
 
     private int getStart(ParserRuleContext ctx) {
@@ -301,14 +290,14 @@ public abstract class ParserAbstract {
     protected <T extends IStatement, U extends PgStatement> void addSafe(BiConsumer<T, U> adder,
             T parent, U child, List<? extends ParserRuleContext> ids) {
         doSafe(adder, parent, child);
-        PgObjLocation loc = getLocation(ids, child.getStatementType(), false);
+        PgObjLocation loc = getLocation(ids, child.getStatementType(), false, null);
         if (loc != null) {
             fillObjDefinition(loc, QNameParser.getFirstNameCtx(ids), child);
         }
     }
 
     private PgObjLocation getLocation(List<? extends ParserRuleContext> ids,
-            DbObjType type, boolean isDep) {
+            DbObjType type, boolean isDep, String signature) {
         ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
         switch (type) {
         case ASSEMBLY:
@@ -323,16 +312,19 @@ public abstract class ParserAbstract {
         }
 
         ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
-        String schemaName;
+
         if (schemaCtx != null) {
-            schemaName = schemaCtx.getText();
-            addReferenceOnSchema(schemaCtx);
+            addObjReference(Arrays.asList(schemaCtx), DbObjType.SCHEMA, StatementActions.NONE);
         } else if (refMode || isDep) {
             return null;
         } else {
             throw new ObjectCreationException(SCHEMA_ERROR + getFullCtxText(nameCtx));
         }
 
+        String name = nameCtx.getText();
+        if (signature != null) {
+            name+= signature;
+        }
         switch (type) {
         case DOMAIN:
         case FTS_CONFIGURATION:
@@ -347,14 +339,14 @@ public abstract class ParserAbstract {
         case TABLE:
         case TYPE:
         case VIEW:
-            return new PgObjLocation(schemaName, nameCtx.getText(), type);
+            return new PgObjLocation(schemaCtx.getText(), name, type);
         case CONSTRAINT:
         case INDEX:
         case TRIGGER:
         case RULE:
         case COLUMN:
-            return new PgObjLocation(schemaName, QNameParser.getSecondName(ids),
-                    nameCtx.getText(), type);
+            return new PgObjLocation(schemaCtx.getText(), QNameParser.getSecondName(ids),
+                    name, type);
         default:
             return null;
         }
@@ -379,20 +371,22 @@ public abstract class ParserAbstract {
 
     protected void addDepSafe(PgStatement st, List<? extends ParserRuleContext> ids,
             DbObjType type, boolean isPostgres) {
-        PgObjLocation loc = getLocation(ids, type, true);
-        if (loc != null && !ApgdiffUtils.isSystemSchema(loc.schema, isPostgres)) {
-            addDepSafe(st, loc, QNameParser.getFirstNameCtx(ids));
-        }
+        addDepSafe(st, ids, type, isPostgres, null);
     }
 
-    protected void addDepSafe(PgStatement st, PgObjLocation loc, ParserRuleContext nameCtx) {
-        loc.setOffset(getStart(nameCtx));
-        loc.setLine(nameCtx.start.getLine());
-        loc.setFilePath(fileName);
-        if (!refMode) {
-            st.addDep(loc);
+    protected void addDepSafe(PgStatement st, List<? extends ParserRuleContext> ids,
+            DbObjType type, boolean isPostgres, String signature) {
+        PgObjLocation loc = getLocation(ids, type, true, signature);
+        if (loc != null && !ApgdiffUtils.isSystemSchema(loc.schema, isPostgres)) {
+            ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
+            loc.setOffset(getStart(nameCtx));
+            loc.setLine(nameCtx.start.getLine());
+            loc.setFilePath(fileName);
+            if (!refMode) {
+                st.addDep(loc);
+            }
+            db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
         }
-        db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
     }
 
     protected AbstractSchema getSchemaSafe(List<? extends ParserRuleContext> ids) {

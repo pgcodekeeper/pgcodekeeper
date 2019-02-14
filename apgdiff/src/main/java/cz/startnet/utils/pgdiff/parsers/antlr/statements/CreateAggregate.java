@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.Arrays;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -20,8 +21,6 @@ import cz.startnet.utils.pgdiff.schema.PgAggregate;
 import cz.startnet.utils.pgdiff.schema.PgAggregate.AggKinds;
 import cz.startnet.utils.pgdiff.schema.PgAggregate.ModifyType;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateAggregate extends ParserAbstract {
@@ -165,13 +164,8 @@ public class CreateAggregate extends ParserAbstract {
                     aggregate.setSortOp(sb.toString());
 
                     if (schemaNameCxt != null) {
-                        String schemaName = schemaNameCxt.getText();
-                        if (!ApgdiffUtils.isPgSystemSchema(schemaName)) {
-                            addReferenceOnSchema(schemaNameCxt);
-                            addDepSafe(aggregate, new PgObjLocation(schemaName,
-                                    getSortOperSign(aggregate, op.getText()),
-                                    DbObjType.OPERATOR), op);
-                        }
+                        addDepSafe(aggregate, Arrays.asList(schemaNameCxt, op),
+                                DbObjType.OPERATOR, true, getSortOperSign(aggregate));
                     }
                 } else if (paramOpt.PARALLEL() != null) {
                     String parallel = null;
@@ -212,12 +206,10 @@ public class CreateAggregate extends ParserAbstract {
     private void addFuncAsDepcy(String paramName,
             Schema_qualified_nameContext paramFuncCtx, PgAggregate aggr) {
         List<IdentifierContext> ids = paramFuncCtx.identifier();
-        String schemaName = QNameParser.getSchemaName(ids);
-        if (schemaName != null && !ApgdiffUtils.isPgSystemSchema(schemaName)) {
-            addReferenceOnSchema(QNameParser.getSchemaNameCtx(ids));
-            addDepSafe(aggr, new PgObjLocation(schemaName,
-                    getParamFuncSignature(aggr, QNameParser.getFirstName(ids), paramName),
-                    DbObjType.FUNCTION), paramFuncCtx);
+        IdentifierContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
+        if (schemaCtx != null) {
+            addDepSafe(aggr, Arrays.asList(schemaCtx, QNameParser.getFirstNameCtx(ids)),
+                    DbObjType.FUNCTION, true, getParamFuncSignature(aggr, paramName));
         }
     }
 
@@ -225,14 +217,12 @@ public class CreateAggregate extends ParserAbstract {
      * Gets the signature for the given function name.
      *
      * @param aggregate aggregate object
-     * @param funcName function name
      * @param paramName name of parameter
      * @return
      */
-    public static String getParamFuncSignature(PgAggregate aggregate, String funcName,
-            String paramName) {
+    public static String getParamFuncSignature(PgAggregate aggregate, String paramName) {
         StringBuilder sb = new StringBuilder();
-        sb.append(funcName).append('(');
+        sb.append('(');
 
         String sType = aggregate.getSType();
         String mSType = aggregate.getMSType();
@@ -285,9 +275,8 @@ public class CreateAggregate extends ParserAbstract {
         }
     }
 
-    public static String getSortOperSign(PgAggregate aggr, String operName) {
+    public static String getSortOperSign(PgAggregate aggr) {
         String argType = aggr.getArguments().get(0).getDataType();
-        return operName + '(' + argType + ", " + argType + ')';
+        return '(' + argType + ", " + argType + ')';
     }
-
 }

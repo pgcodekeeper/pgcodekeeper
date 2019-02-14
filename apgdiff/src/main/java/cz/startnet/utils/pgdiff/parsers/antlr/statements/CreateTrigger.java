@@ -100,7 +100,7 @@ public class CreateTrigger extends ParserAbstract {
         IdentifierContext sch = funcNameCtx.schema;
         if (sch != null) {
             addDepSafe(trigger, Arrays.asList(sch, funcNameCtx.identifier_nontype()),
-                    DbObjType.FUNCTION, true);
+                    DbObjType.FUNCTION, true, "()");
         }
 
         for (Columns_listContext column : ctx.columns_list()) {

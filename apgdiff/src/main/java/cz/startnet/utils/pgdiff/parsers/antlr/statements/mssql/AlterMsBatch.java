@@ -40,13 +40,18 @@ public class AlterMsBatch extends ParserAbstract {
     private void alterTrigger(Create_or_alter_triggerContext ctx) {
         Qualified_nameContext qname = ctx.trigger_name;
         IdContext schemaCtx = qname.schema;
+        IdContext secondCtx = ctx.table_name.schema;
         if (schemaCtx == null) {
-            schemaCtx = ctx.table_name.schema;
+            schemaCtx = secondCtx;
         }
 
         // second schema ref
         // CREATE TRIGGER schema.trigger ON schema.table ...
-        addReferenceOnSchema(ctx.table_name.schema);
+        if (secondCtx != null) {
+            addObjReference(Arrays.asList(secondCtx), DbObjType.SCHEMA, StatementActions.NONE);
+        }
+        addObjReference(Arrays.asList(schemaCtx, ctx.table_name.name),
+                DbObjType.TABLE, StatementActions.NONE);
         addObjReference(Arrays.asList(schemaCtx, ctx.table_name.name, qname.name),
                 DbObjType.TRIGGER, StatementActions.ALTER);
     }
