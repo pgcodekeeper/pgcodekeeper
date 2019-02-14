@@ -214,6 +214,7 @@ public class CreateAggregate extends ParserAbstract {
         List<IdentifierContext> ids = paramFuncCtx.identifier();
         String schemaName = QNameParser.getSchemaName(ids);
         if (schemaName != null && !ApgdiffUtils.isPgSystemSchema(schemaName)) {
+            addReferenceOnSchema(QNameParser.getSchemaNameCtx(ids));
             addDepSafe(aggr, new PgObjLocation(schemaName,
                     getParamFuncSignature(aggr, QNameParser.getFirstName(ids), paramName),
                     DbObjType.FUNCTION), paramFuncCtx);

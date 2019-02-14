@@ -1,5 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.Arrays;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_schema_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
@@ -29,6 +31,7 @@ public class CreateSchema extends ParserAbstract {
                 && (!name.equals(ApgdiffConsts.PUBLIC) || !"postgres".equals(userName.getText()))) {
             schema.setOwner(userName.getText());
         }
-        addSafe(PgDatabase::addSchema, db, schema, nameCtx);
+
+        addSafe(PgDatabase::addSchema, db, schema, Arrays.asList(nameCtx));
     }
 }

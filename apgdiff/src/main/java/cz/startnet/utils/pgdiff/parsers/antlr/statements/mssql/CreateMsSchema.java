@@ -1,5 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
+import java.util.Arrays;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_schemaContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
@@ -25,6 +27,6 @@ public class CreateMsSchema extends ParserAbstract {
             schema.setOwner(ctx.owner_name.getText());
         }
 
-        addSafe(PgDatabase::addSchema, db, schema, nameCtx);
+        addSafe(PgDatabase::addSchema, db, schema, Arrays.asList(nameCtx));
     }
 }

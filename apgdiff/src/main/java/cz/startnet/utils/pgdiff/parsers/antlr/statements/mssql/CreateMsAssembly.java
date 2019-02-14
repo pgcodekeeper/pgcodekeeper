@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
@@ -41,7 +42,7 @@ public class CreateMsAssembly extends ParserAbstract {
             ass.setPermission(getFullCtxText(permission).toUpperCase());
         }
 
-        addSafe(PgDatabase::addAssembly, db, ass, nameCtx);
+        addSafe(PgDatabase::addAssembly, db, ass, Arrays.asList(nameCtx));
     }
 
     public static String formatBinary(String hex) {

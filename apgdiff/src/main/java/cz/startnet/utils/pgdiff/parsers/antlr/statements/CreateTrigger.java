@@ -21,7 +21,6 @@ import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgTrigger.TgTypes;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateTrigger extends ParserAbstract {
@@ -106,13 +105,9 @@ public class CreateTrigger extends ParserAbstract {
 
         for (Columns_listContext column : ctx.columns_list()) {
             for (IdentifierContext nameCol : column.name) {
-                String colName = nameCol.getText();
                 trigger.addUpdateColumn(nameCol.getText());
-                if (!ApgdiffUtils.isPgSystemSchema(schemaName)) {
-                    addDepSafe(trigger, new PgObjLocation(schemaName, tableName,
-                            colName, DbObjType.COLUMN),
-                            nameCol);
-                }
+                addDepSafe(trigger, Arrays.asList(sch, QNameParser.getFirstNameCtx(ids), nameCol),
+                        DbObjType.COLUMN, true);
             }
         }
         parseWhen(ctx.when_trigger(), trigger, db);

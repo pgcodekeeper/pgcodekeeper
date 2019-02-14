@@ -19,7 +19,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Id_tokenContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Including_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Predefined_typeContext;
@@ -261,62 +260,12 @@ public abstract class ParserAbstract {
 
     protected PgObjLocation addFullObjReference(List<? extends ParserRuleContext> ids, DbObjType type,
             StatementActions action) {
-        ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
-        switch (type) {
-        case ASSEMBLY:
-        case EXTENSION:
-        case SCHEMA:
-        case ROLE:
-        case USER:
-        case DATABASE:
-            return addObjReference(new PgObjLocation(nameCtx.getText(), type),
-                    action, nameCtx);
-        default:
-            break;
+        PgObjLocation loc = getLocation(ids, type, false);
+        if (loc != null) {
+            return addObjReference(loc, action, QNameParser.getFirstNameCtx(ids));
         }
 
-        ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
-        String schemaName;
-        if (schemaCtx != null) {
-            schemaName = schemaCtx.getText();
-            addReferenceOnSchema(schemaCtx);
-        } else {
-            if (refMode) {
-                return null;
-            }
-            throw new ObjectCreationException(SCHEMA_ERROR + getFullCtxText(nameCtx));
-        }
-
-        switch (type) {
-        case DOMAIN:
-        case FTS_CONFIGURATION:
-        case FTS_DICTIONARY:
-        case FTS_PARSER:
-        case FTS_TEMPLATE:
-        case FUNCTION:
-        case OPERATOR:
-        case PROCEDURE:
-        case AGGREGATE:
-        case SEQUENCE:
-        case TABLE:
-        case TYPE:
-        case VIEW:
-            return addObjReference(new PgObjLocation(schemaName, nameCtx.getText(), type),
-                    action,nameCtx);
-        case CONSTRAINT:
-        case INDEX:
-        case TRIGGER:
-        case RULE:
-            ParserRuleContext parent = QNameParser.getSecondNameCtx(ids);
-            String parentName = parent.getText();
-            addObjReference(new PgObjLocation(schemaName,
-                    parentName, DbObjType.TABLE), StatementActions.NONE, parent);
-
-            return addObjReference(new PgObjLocation(schemaName,
-                    parentName, nameCtx.getText(), type), action,nameCtx);
-        default:
-            return null;
-        }
+        return null;
     }
 
     private int getStart(ParserRuleContext ctx) {
@@ -360,33 +309,65 @@ public abstract class ParserAbstract {
         return getSafe(getter, container, name, errToken, refMode);
     }
 
-    protected <U extends PgStatement> void addSafe(BiConsumer<AbstractSchema, U> adder,
-            AbstractSchema parent, U child, List<? extends ParserRuleContext> ids) {
+    protected <T extends IStatement, U extends PgStatement> void addSafe(BiConsumer<T, U> adder,
+            T parent, U child, List<? extends ParserRuleContext> ids) {
         doSafe(adder, parent, child);
-        ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
-        if (schemaCtx != null) {
-            addReferenceOnSchema(schemaCtx);
-            ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
-            PgObjLocation loc = new PgObjLocation(schemaCtx.getText(),
-                    nameCtx.getText(), child.getStatementType());
-            fillObjDefinition(loc, nameCtx, child);
+        PgObjLocation loc = getLocation(ids, child.getStatementType(), false);
+        if (loc != null) {
+            fillObjDefinition(loc, QNameParser.getFirstNameCtx(ids), child);
         }
     }
 
-    protected <T extends IStatement, U extends PgStatement> void addSafe(BiConsumer<T, U> adder,
-            T parent, U child, ParserRuleContext nameCtx) {
-        doSafe(adder, parent, child);
-        PgObjLocation loc = new PgObjLocation(nameCtx.getText(), child.getStatementType());
-        fillObjDefinition(loc, nameCtx, child);
-    }
+    private PgObjLocation getLocation(List<? extends ParserRuleContext> ids,
+            DbObjType type, boolean isDep) {
+        ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
+        switch (type) {
+        case ASSEMBLY:
+        case EXTENSION:
+        case SCHEMA:
+        case ROLE:
+        case USER:
+        case DATABASE:
+            return new PgObjLocation(nameCtx.getText(), type);
+        default:
+            break;
+        }
 
-    protected <T extends IStatement, U extends PgStatement> void addSafe(BiConsumer<T, U> adder,
-            T parent, U child, IdContext schemaCtx, IdContext parentCtx, IdContext nameCtx) {
-        doSafe(adder, parent, child);
+        ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
+        String schemaName;
         if (schemaCtx != null) {
-            PgObjLocation loc = new PgObjLocation(schemaCtx.getText(),
-                    parentCtx.getText(), nameCtx.getText(), child.getStatementType());
-            fillObjDefinition(loc, nameCtx, child);
+            schemaName = schemaCtx.getText();
+            addReferenceOnSchema(schemaCtx);
+        } else if (refMode || isDep) {
+            return null;
+        } else {
+            throw new ObjectCreationException(SCHEMA_ERROR + getFullCtxText(nameCtx));
+        }
+
+        switch (type) {
+        case DOMAIN:
+        case FTS_CONFIGURATION:
+        case FTS_DICTIONARY:
+        case FTS_PARSER:
+        case FTS_TEMPLATE:
+        case FUNCTION:
+        case OPERATOR:
+        case PROCEDURE:
+        case AGGREGATE:
+        case SEQUENCE:
+        case TABLE:
+        case TYPE:
+        case VIEW:
+            return new PgObjLocation(schemaName, nameCtx.getText(), type);
+        case CONSTRAINT:
+        case INDEX:
+        case TRIGGER:
+        case RULE:
+        case COLUMN:
+            return new PgObjLocation(schemaName, QNameParser.getSecondName(ids),
+                    nameCtx.getText(), type);
+        default:
+            return null;
         }
     }
 
@@ -409,60 +390,10 @@ public abstract class ParserAbstract {
 
     protected void addDepSafe(PgStatement st, List<? extends ParserRuleContext> ids,
             DbObjType type, boolean isPostgres) {
-        ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
-        switch (type) {
-        case ASSEMBLY:
-        case EXTENSION:
-        case SCHEMA:
-        case ROLE:
-        case USER:
-        case DATABASE:
-            addDepSafe(st, new PgObjLocation(nameCtx.getText(), type), nameCtx);
-            return;
-        default:
-            break;
+        PgObjLocation loc = getLocation(ids, type, true);
+        if (loc != null && !ApgdiffUtils.isSystemSchema(loc.schema, isPostgres)) {
+            addDepSafe(st, loc, QNameParser.getFirstNameCtx(ids));
         }
-
-        ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
-
-        if (schemaCtx == null || ApgdiffUtils.isSystemSchema(schemaCtx.getText(), isPostgres)) {
-            return;
-        }
-
-        String schemaName = schemaCtx.getText();
-
-        PgObjLocation loc;
-        switch (type) {
-        case DOMAIN:
-        case FTS_CONFIGURATION:
-        case FTS_DICTIONARY:
-        case FTS_PARSER:
-        case FTS_TEMPLATE:
-        case FUNCTION:
-        case OPERATOR:
-        case PROCEDURE:
-        case AGGREGATE:
-        case SEQUENCE:
-        case TABLE:
-        case TYPE:
-        case VIEW:
-            loc = new PgObjLocation(schemaName, nameCtx.getText(), type);
-            break;
-        case CONSTRAINT:
-        case INDEX:
-        case TRIGGER:
-        case RULE:
-        case COLUMN:
-            ParserRuleContext parent = QNameParser.getSecondNameCtx(ids);
-            String parentName = parent.getText();
-            loc = new PgObjLocation(schemaName, parentName, nameCtx.getText(), type);
-            break;
-        default:
-            return;
-        }
-
-        addReferenceOnSchema(schemaCtx);
-        addDepSafe(st, loc, nameCtx);
     }
 
     protected void addDepSafe(PgStatement st, PgObjLocation loc, ParserRuleContext nameCtx) {
@@ -528,35 +459,17 @@ public abstract class ParserAbstract {
 
     protected void addPgTypeDepcy(Data_typeContext ctx, PgStatement st) {
         Schema_qualified_name_nontypeContext qname = ctx.predefined_type().schema_qualified_name_nontype();
-        if (qname != null) {
-            IdentifierContext schemaCtx = qname.identifier();
-            String schemaName = schemaCtx != null ? schemaCtx.getText() : null;
-
-            if (schemaName == null || ApgdiffUtils.isPgSystemSchema(schemaName)) {
-                return;
-            }
-
-            addReferenceOnSchema(schemaCtx);
-            Identifier_nontypeContext name = qname.identifier_nontype();
-            PgObjLocation loc = new PgObjLocation(schemaName, name.getText(), DbObjType.TYPE);
-            addDepSafe(st, loc, name);
+        if (qname != null && qname.identifier() != null) {
+            addDepSafe(st, Arrays.asList(qname.identifier(), qname.identifier_nontype()),
+                    DbObjType.TYPE, true);
         }
     }
 
     protected void addMsTypeDepcy(cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Data_typeContext ctx,
             PgStatement st) {
         Qualified_nameContext qname = ctx.qualified_name();
-        if (qname != null) {
-            IdContext schemaCtx = qname.schema;
-            String schemaName = schemaCtx != null ? schemaCtx.getText() : null;
-            if (schemaName == null || ApgdiffUtils.isMsSystemSchema(schemaName)) {
-                return;
-            }
-
-            addReferenceOnSchema(schemaCtx);
-            IdContext name = qname.name;
-            PgObjLocation loc = new PgObjLocation(schemaName, name.getText(), DbObjType.TYPE);
-            addDepSafe(st, loc, name);
+        if (qname != null && qname.schema != null) {
+            addDepSafe(st, Arrays.asList(qname.schema, qname.name), DbObjType.TYPE, false);
         }
     }
 

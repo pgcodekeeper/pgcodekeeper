@@ -47,7 +47,8 @@ public class CreateMsIndex extends ParserAbstract {
         parseIndex(ctx.index_rest(), ind);
 
         AbstractTable table = getSafe(AbstractSchema::getTable, schema, tableCtx);
-        addSafe(AbstractTable::addIndex, table, ind, schemaCtx, tableCtx, nameCtx);
+        addSafe(AbstractTable::addIndex, table, ind,
+                Arrays.asList(schemaCtx, tableCtx, nameCtx));
     }
 
     static void parseIndex(Index_restContext rest, AbstractIndex ind) {
