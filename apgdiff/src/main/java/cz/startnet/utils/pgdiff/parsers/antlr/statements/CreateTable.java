@@ -70,7 +70,7 @@ public class CreateTable extends TableAbstract {
         } else {
             String partBound = ParserAbstract.getFullCtxText(partCtx.for_values_bound());
             table = fillRegularTable(new PartitionPgTable(tableName, partBound));
-            fillTypeColumns(partCtx.list_of_type_column_def(), table, schemaName);
+            fillTypeColumns(partCtx.list_of_type_column_def(), table, schemaName, tablespace);
             addInherit(table, partCtx.parent_table.identifier());
         }
 
@@ -80,7 +80,7 @@ public class CreateTable extends TableAbstract {
     private void fillColumns(Define_columnsContext columnsCtx, AbstractPgTable table, String schemaName) {
         for (Table_column_defContext colCtx : columnsCtx.table_col_def) {
             if (colCtx.tabl_constraint != null) {
-                addTableConstraint(colCtx.tabl_constraint, table, schemaName);
+                addTableConstraint(colCtx.tabl_constraint, table, schemaName, tablespace);
             } else if (colCtx.table_column_definition() != null) {
                 Table_column_definitionContext column = colCtx.table_column_definition();
                 addColumn(column.column_name.getText(), column.datatype,
@@ -100,7 +100,7 @@ public class CreateTable extends TableAbstract {
             String schemaName) {
         Data_typeContext typeName = typeCtx.type_name;
         TypedPgTable table = new TypedPgTable(tableName, getTypeName(typeName));
-        fillTypeColumns(typeCtx.list_of_type_column_def(), table, schemaName);
+        fillTypeColumns(typeCtx.list_of_type_column_def(), table, schemaName, tablespace);
         addTypeAsDepcy(typeName, table, getDefSchemaName());
         fillRegularTable(table);
         return table;

@@ -14,6 +14,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionC
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
+import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.AbstractRegularTable;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -21,14 +22,16 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 
 public class AlterTable extends TableAbstract {
 
     private final Alter_table_statementContext ctx;
-    public AlterTable(Alter_table_statementContext ctx, PgDatabase db) {
+    private final String tablespace;
+
+    public AlterTable(Alter_table_statementContext ctx, PgDatabase db, String tablespace) {
         super(db);
         this.ctx = ctx;
+        this.tablespace = tablespace;
     }
 
     @Override
@@ -139,7 +142,7 @@ public class AlterTable extends TableAbstract {
             if (tablAction.tabl_constraint != null) {
                 tabl.addConstraint(parseAlterTableConstraint(tablAction,
                         createTableConstraintBlank(tablAction.tabl_constraint), db,
-                        schema.getName(), nameCtx.getText()));
+                        schema.getName(), nameCtx.getText(), tablespace));
             }
             if (tablAction.index_name != null) {
                 IdentifierContext indexName = QNameParser.getFirstNameCtx(tablAction.index_name.identifier());
@@ -188,10 +191,11 @@ public class AlterTable extends TableAbstract {
     }
 
     public static AbstractConstraint parseAlterTableConstraint(Table_actionContext tableAction,
-            AbstractConstraint constrBlank, PgDatabase db, String schemaName, String tableName) {
+            AbstractConstraint constrBlank, PgDatabase db, String schemaName,
+            String tableName, String tablespace) {
         constrBlank.setNotValid(tableAction.not_valid != null);
         processTableConstraintBlank(tableAction.tabl_constraint, constrBlank, db,
-                schemaName, tableName);
+                schemaName, tableName, tablespace);
         return constrBlank;
     }
 }

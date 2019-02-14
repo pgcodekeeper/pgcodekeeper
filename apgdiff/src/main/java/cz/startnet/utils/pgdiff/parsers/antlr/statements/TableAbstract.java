@@ -14,6 +14,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_foreign_optionsCo
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Foreign_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Including_indexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_parametersContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.List_of_type_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_of_type_column_defContext;
@@ -48,13 +49,13 @@ public abstract class TableAbstract extends ParserAbstract {
     }
 
     protected void fillTypeColumns(List_of_type_column_defContext columns,
-            AbstractTable table, String schemaName) {
+            AbstractTable table, String schemaName, String tablespace) {
         if (columns == null) {
             return;
         }
         for (Table_of_type_column_defContext colCtx : columns.table_col_def) {
             if (colCtx.tabl_constraint != null) {
-                addTableConstraint(colCtx.tabl_constraint, table, schemaName);
+                addTableConstraint(colCtx.tabl_constraint, table, schemaName, tablespace);
             } else if (colCtx.table_of_type_column_definition() != null) {
                 Table_of_type_column_definitionContext column = colCtx.table_of_type_column_definition();
                 addColumn(column.column_name.getText(), column.colmn_constraint, table);
@@ -63,9 +64,9 @@ public abstract class TableAbstract extends ParserAbstract {
     }
 
     protected void addTableConstraint(Constraint_commonContext tblConstrCtx,
-            AbstractTable table, String schemaName) {
+            AbstractTable table, String schemaName, String tablespace) {
         AbstractConstraint constrBlank = createTableConstraintBlank(tblConstrCtx);
-        processTableConstraintBlank(tblConstrCtx, constrBlank, db, schemaName, table.getName());
+        processTableConstraintBlank(tblConstrCtx, constrBlank, db, schemaName, table.getName(), tablespace);
         table.addConstraint(constrBlank);
     }
 
@@ -195,7 +196,8 @@ public abstract class TableAbstract extends ParserAbstract {
     }
 
     protected static void processTableConstraintBlank(Constraint_commonContext ctx,
-            AbstractConstraint constrBlank, PgDatabase db, String schemaName, String tableName) {
+            AbstractConstraint constrBlank, PgDatabase db, String schemaName,
+            String tableName, String tablespace) {
         Constr_bodyContext constrBody = ctx.constr_body();
 
         if (constrBody.FOREIGN() != null) {
@@ -224,7 +226,19 @@ public abstract class TableAbstract extends ParserAbstract {
             setPrimaryUniq(tableUniquePrkey, constrBlank, schemaName, tableName);
         }
 
-        constrBlank.setDefinition(getFullCtxText(constrBody));
+        StringBuilder sb = new StringBuilder(getFullCtxText(constrBody));
+        if (tablespace != null) {
+            Index_parametersContext param = constrBody.index_parameters();
+            if (param == null && tableUniquePrkey != null) {
+                param = tableUniquePrkey.index_parameters();
+            }
+
+            if (param != null && param.USING() == null) {
+                sb.append("\n\tUSING INDEX TABLESPACE ").append(tablespace);
+            }
+        }
+
+        constrBlank.setDefinition(sb.toString());
 
         VexContext exp = null;
         Common_constraintContext common = constrBody.common_constraint();
