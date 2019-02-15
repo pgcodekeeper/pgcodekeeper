@@ -17,4 +17,4 @@ CREATE TYPE public.typ_range AS RANGE (
 ALTER TYPE public.typ_range OWNER TO botov_av;
 
 ALTER TABLE public.distributors
-	ADD COLUMN did typ_range;
+	ADD COLUMN did public.typ_range;

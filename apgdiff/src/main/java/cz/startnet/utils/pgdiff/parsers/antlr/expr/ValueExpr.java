@@ -229,7 +229,7 @@ public class ValueExpr extends AbstractExpr {
             } else if ((cast = primary.cast_specification()) != null) {
                 ret = analyze(new Vex(cast.vex()));
                 Data_typeContext dataTypeCtx = cast.data_type();
-                ret.setValue(ParserAbstract.getFullCtxText(dataTypeCtx));
+                ret.setValue(ParserAbstract.getTypeName(dataTypeCtx));
                 addTypeDepcy(dataTypeCtx);
             } else if ((compMod = primary.comparison_mod()) != null) {
                 VexContext compModVex = compMod.vex();
@@ -457,7 +457,7 @@ public class ValueExpr extends AbstractExpr {
                 coltype = TypesSetManually.BOOLEAN;
             } else if (xml.XMLSERIALIZE() != null) {
                 Data_typeContext type = xml.data_type();
-                coltype = ParserAbstract.getFullCtxText(type);
+                coltype = ParserAbstract.getTypeName(type);
                 addTypeDepcy(type);
             } else {
                 // defaults work

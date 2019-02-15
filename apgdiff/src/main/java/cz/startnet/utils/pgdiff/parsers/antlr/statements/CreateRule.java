@@ -19,7 +19,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rule_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_privilegesContext;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
-import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
@@ -80,7 +79,8 @@ public class CreateRule extends ParserAbstract {
                 List<IdentifierContext> funcIds = funct.name.identifier();
                 IdentifierContext functNameCtx = QNameParser.getFirstNameCtx(funcIds);
                 AbstractSchema schema = getSchemaSafe(funcIds, db.getDefaultSchema());
-                AbstractFunction func = getSafe(schema::getFunction,
+
+                AbstractPgFunction func = (AbstractPgFunction) getSafe(schema::getFunction,
                         parseSignature(functNameCtx.getText(), funct.function_args()),
                         functNameCtx.getStart());
 
@@ -88,7 +88,10 @@ public class CreateRule extends ParserAbstract {
                 sb.append(ctx.PROCEDURE() == null ?
                         DbObjType.FUNCTION : DbObjType.PROCEDURE).append(' ');
                 sb.append(PgDiffUtils.getQuotedName(schema.getName())).append('.');
-                ((AbstractPgFunction) func).appendFunctionSignature(sb, false, true);
+
+                // For AGGREGATEs in GRANT/REVOKE the signature will be the same as in FUNCTIONs;
+                // important: asterisk (*) and 'ORDER BY' are not displayed.
+                func.appendFunctionSignature(sb, false, true);
 
                 for (String role : roles) {
                     addPrivilege(func, new PgPrivilege(state, permissions,

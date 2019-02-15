@@ -70,6 +70,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         case FUNCTION:
         case OPERATOR:
         case PROCEDURE:
+        case AGGREGATE:
         case SEQUENCE:
         case TYPE:
         case DOMAIN:
@@ -185,6 +186,11 @@ public abstract class PgStatement implements IStatement, IHashable {
             .append('.');
             ((AbstractPgFunction) this).appendFunctionSignature(sb, false, true);
             break;
+        case AGGREGATE:
+            sb.append(PgDiffUtils.getQuotedName(getParent().getName()))
+            .append('.');
+            ((PgAggregate) this).appendAggSignature(sb);
+            break;
         case OPERATOR:
             sb.append(PgDiffUtils.getQuotedName(getParent().getName()))
             .append('.');
@@ -268,6 +274,8 @@ public abstract class PgStatement implements IStatement, IHashable {
                 switch (getStatementType()) {
                 // revoke public is non-default for these
                 case FUNCTION:
+                case PROCEDURE:
+                case AGGREGATE:
                 case DOMAIN:
                 case TYPE:
                     break;
@@ -397,6 +405,8 @@ public abstract class PgStatement implements IStatement, IHashable {
                 sb.append(PgDiffUtils.getQuotedName(st.getParent().getName())).append('.');
                 if (type == DbObjType.FUNCTION || type == DbObjType.PROCEDURE) {
                     ((AbstractPgFunction) st).appendFunctionSignature(sb, false, true);
+                } else if (type == DbObjType.AGGREGATE) {
+                    ((PgAggregate) st).appendAggSignature(sb);
                 } else if (type == DbObjType.OPERATOR) {
                     ((PgOperator) st).appendOperatorSignature(sb);
                 } else {

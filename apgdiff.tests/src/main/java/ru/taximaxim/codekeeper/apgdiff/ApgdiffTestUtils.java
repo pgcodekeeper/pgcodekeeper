@@ -13,10 +13,8 @@ public final class ApgdiffTestUtils {
 
     public static PgDatabase loadTestDump(String resource, Class<?> c, PgDiffArguments args)
             throws IOException, InterruptedException {
-        try (PgDumpLoader loader = new PgDumpLoader(c.getResourceAsStream(resource),
-                "test:/" + c.getName() + '/' + resource, args)) {
-            return loader.load();
-        }
+        return new PgDumpLoader(() -> c.getResourceAsStream(resource),
+                "test:/" + c.getName() + '/' + resource, args).load();
     }
 
     public static PgDatabase createDumpDB() {

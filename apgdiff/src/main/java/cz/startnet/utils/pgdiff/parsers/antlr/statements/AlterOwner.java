@@ -76,7 +76,8 @@ public class AlterOwner extends ParserAbstract {
                 st = getSafe(schema::getSequence, nameCtx);
             } else if (ctx.TYPE() != null) {
                 st = getSafe(schema::getType, nameCtx);
-            } else if (ctx.PROCEDURE() != null || ctx.FUNCTION() != null) {
+            } else if (ctx.PROCEDURE() != null || ctx.FUNCTION() != null
+                    || ctx.AGGREGATE() != null) {
                 st = getSafe(schema::getFunction, parseSignature(nameCtx.getText(),
                         ctx.function_args()), nameCtx.getStart());
             }

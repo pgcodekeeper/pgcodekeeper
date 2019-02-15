@@ -1,77 +1,50 @@
-CREATE OR REPLACE PROCEDURAL LANGUAGE plpgsql;
-
-ALTER PROCEDURAL LANGUAGE plpgsql OWNER TO postgres;
-
-
-SET search_path = public, pg_catalog;
-
-CREATE TYPE typ_composite AS (
+CREATE TYPE public.typ_composite AS (
     key character varying(80) COLLATE pg_catalog."ru_RU.utf8",
     val text COLLATE pg_catalog."en_GB"
 );
 
-ALTER TYPE typ_composite OWNER TO fordfrog;
-
-CREATE DOMAIN dom AS integer NOT NULL DEFAULT (-1)
+CREATE DOMAIN public.dom AS integer NOT NULL DEFAULT (-1)
 	CONSTRAINT dom_check CHECK ((VALUE <> 0));
 	
-ALTER DOMAIN dom OWNER TO fordfrog;
-
-CREATE FUNCTION test_fnc(arg character varying) RETURNS boolean
+CREATE FUNCTION public.test_fnc(arg character varying) RETURNS boolean
     LANGUAGE plpgsql
     AS $$BEGIN
 RETURN true;
 END;$$;
 
-ALTER FUNCTION public.test_fnc(arg character varying) OWNER TO fordfrog;
-
-
-CREATE FUNCTION trigger_fnc() RETURNS trigger
+CREATE FUNCTION public.trigger_fnc() RETURNS trigger
     LANGUAGE plpgsql
     AS $$begin
 end;$$;
 
-ALTER FUNCTION public.trigger_fnc() OWNER TO fordfrog;
-
-
-CREATE TABLE test (
+CREATE TABLE public.test (
     id integer NOT NULL,
     text character varying(20) NOT NULL,
     CONSTRAINT text_check CHECK ((length((text)::text) > 0))
 );
 
-ALTER TABLE public.test OWNER TO fordfrog;
-
-
-CREATE SEQUENCE test_id_seq
+CREATE SEQUENCE public.test_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
 
-ALTER TABLE public.test_id_seq OWNER TO fordfrog;
+ALTER SEQUENCE public.test_id_seq OWNED BY public.test.id;
 
-ALTER SEQUENCE test_id_seq OWNED BY test.id;
+CREATE VIEW public.test_view AS
+    SELECT test.id, test.text FROM public.test;
+ 
+ALTER TABLE public.test ALTER COLUMN id SET DEFAULT nextval('public.test_id_seq'::regclass);
 
-
-CREATE VIEW test_view AS
-    SELECT test.id, test.text FROM test;
-
-ALTER TABLE public.test_view OWNER TO fordfrog;
-
-
-ALTER TABLE test ALTER COLUMN id SET DEFAULT nextval('test_id_seq'::regclass);
-
-
-ALTER TABLE ONLY test
+ALTER TABLE ONLY public.test
     ADD CONSTRAINT test_pkey PRIMARY KEY (id);
 
 
-CREATE TRIGGER test_trigger BEFORE UPDATE ON test FOR EACH STATEMENT EXECUTE PROCEDURE trigger_fnc();
+CREATE TRIGGER test_trigger BEFORE UPDATE ON public.test
+FOR EACH STATEMENT EXECUTE PROCEDURE trigger_fnc();
 
-
-CREATE RULE test_rule AS ON DELETE TO test DO NOTHING;
+CREATE RULE test_rule AS ON DELETE TO public.test DO NOTHING;
 
 CREATE TEXT SEARCH TEMPLATE public.test_template (
     LEXIZE = dsnowball_lexize );

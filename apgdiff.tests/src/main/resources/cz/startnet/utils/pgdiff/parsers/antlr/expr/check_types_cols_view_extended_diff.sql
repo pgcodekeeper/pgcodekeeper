@@ -44,7 +44,7 @@ Schema: public
      vex_op__numeric - numeric
      vex_op_2__numeric - numeric
      operrrr__integer - integer
-     func_user_type_return__custom_type - custom_type
+     func_user_type_return__custom_type - public.custom_type
      recurs__character_varying_1000 - character varying(1000)
      recurs_myview___integer - integer
      recurs_nums_1_100_fn___integerr - integer

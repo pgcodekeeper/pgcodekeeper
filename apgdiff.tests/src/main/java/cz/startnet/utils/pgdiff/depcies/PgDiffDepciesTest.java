@@ -143,7 +143,10 @@ public class PgDiffDepciesTest {
             {"chg_fts_statements", "chg_fts_statements_usr_template"},
             // изменение зависимых объектов полнотекстового поиска
             // пользователь выбрал конфигурацию
-            {"chg_fts_statements", "chg_fts_statements_usr_configuration"}
+            {"chg_fts_statements", "chg_fts_statements_usr_configuration"},
+            // добавление агрегатов с зависимыми от них функциями,
+            // пользователь выбрал только агрегаты
+            {"add_aggr_func", "add_aggr_func_usr_aggr"}
         });
     }
 

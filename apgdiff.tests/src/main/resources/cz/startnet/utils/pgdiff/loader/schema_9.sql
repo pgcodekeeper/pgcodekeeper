@@ -1,5 +1,3 @@
-SET search_path = pg_catalog;
-
 CREATE TABLE public.user_data (
     id bigint NOT NULL,
     email character varying(128) NOT NULL,

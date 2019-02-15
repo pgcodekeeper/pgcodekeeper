@@ -29,14 +29,14 @@ public class CreateOperator extends ParserAbstract {
         PgOperator oper = new PgOperator(operNameCtx.operator.getText());
         for (Operator_optionContext option : ctx.operator_option()) {
             if (option.PROCEDURE() != null || option.FUNCTION() != null) {
-                oper.setProcedure(option.func_name.getText());
+                oper.setProcedure(getFullCtxText(option.func_name));
             } else if (option.LEFTARG() != null) {
                 Data_typeContext leftArgTypeCtx = option.type;
-                oper.setLeftArg(leftArgTypeCtx.getText());
+                oper.setLeftArg(getTypeName(leftArgTypeCtx));
                 addTypeAsDepcy(leftArgTypeCtx, oper, operSchemaName);
             } else if (option.RIGHTARG() != null) {
                 Data_typeContext rightArgTypeCtx = option.type;
-                oper.setRightArg(rightArgTypeCtx.getText());
+                oper.setRightArg(getTypeName(rightArgTypeCtx));
                 addTypeAsDepcy(rightArgTypeCtx, oper, operSchemaName);
             } else if (option.COMMUTATOR() != null || option.NEGATOR() != null) {
                 All_op_refContext comutNameCtx = option.addition_oper_name;
@@ -62,9 +62,9 @@ public class CreateOperator extends ParserAbstract {
             } else if (option.HASHES() != null) {
                 oper.setHashes(true);
             } else if (option.RESTRICT() != null) {
-                oper.setRestrict(option.restr_name.getText());
+                oper.setRestrict(getFullCtxText(option.restr_name));
             } else if (option.JOIN() != null) {
-                oper.setJoin(option.join_name.getText());
+                oper.setJoin(getFullCtxText(option.join_name));
             }
         }
 
