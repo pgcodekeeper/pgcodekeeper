@@ -27,7 +27,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraint_bodyContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.exception.ObjectCreationException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
@@ -205,7 +204,8 @@ public abstract class TableAbstract extends ParserAbstract {
             String refSchemaName = QNameParser.getSchemaName(ids);
 
             if (refSchemaName == null) {
-                throw new ObjectCreationException(SCHEMA_ERROR + getFullCtxText(tblRef.reftable));
+                throw new UnresolvedReferenceException(SCHEMA_ERROR + getFullCtxText(tblRef.reftable),
+                        tblRef.reftable.start);
             }
 
             GenericColumn ftable = new GenericColumn(refSchemaName, refTableName, DbObjType.TABLE);

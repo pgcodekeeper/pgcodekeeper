@@ -5,13 +5,13 @@ import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_assemblyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Assembly_optionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.TableAbstract;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.MsAssembly;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class AlterMsAssembly extends TableAbstract {
+public class AlterMsAssembly extends ParserAbstract {
 
     private final Alter_assemblyContext ctx;
 

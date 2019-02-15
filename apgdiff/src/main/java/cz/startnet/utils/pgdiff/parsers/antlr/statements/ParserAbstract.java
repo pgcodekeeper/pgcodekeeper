@@ -29,7 +29,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.exception.ObjectCreationException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
@@ -326,7 +325,8 @@ public abstract class ParserAbstract {
         } else if (refMode || isDep) {
             return null;
         } else {
-            throw new ObjectCreationException(SCHEMA_ERROR + getFullCtxText(nameCtx));
+            throw new UnresolvedReferenceException(SCHEMA_ERROR + getFullCtxText(nameCtx),
+                    nameCtx.getStart());
         }
 
         String name = nameCtx.getText();
@@ -394,7 +394,8 @@ public abstract class ParserAbstract {
             if (refMode) {
                 return null;
             }
-            throw new ObjectCreationException(SCHEMA_ERROR + QNameParser.getFirstName(ids));
+            throw new UnresolvedReferenceException(SCHEMA_ERROR + QNameParser.getFirstName(ids),
+                    QNameParser.getFirstNameCtx(ids).start);
         }
 
         AbstractSchema schema = getSafe(PgDatabase::getSchema, db, schemaCtx);
@@ -416,7 +417,8 @@ public abstract class ParserAbstract {
             return null;
         }
 
-        throw new ObjectCreationException(SCHEMA_ERROR + QNameParser.getFirstName(ids));
+        throw new UnresolvedReferenceException(SCHEMA_ERROR + QNameParser.getFirstName(ids),
+                QNameParser.getFirstNameCtx(ids).start);
     }
 
     protected void setCommentToDefinition(PgObjLocation ref, String comment) {

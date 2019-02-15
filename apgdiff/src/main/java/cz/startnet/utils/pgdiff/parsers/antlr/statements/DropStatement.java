@@ -43,9 +43,15 @@ public class DropStatement extends ParserAbstract {
     }
 
     public void dropFunction(Drop_function_statementContext ctx) {
-        addObjReference(ctx.function_parameters().name.identifier(),
-                ctx.PROCEDURE() == null ? DbObjType.FUNCTION : DbObjType.PROCEDURE,
-                        StatementActions.DROP);
+        DbObjType type;
+        if (ctx.PROCEDURE() != null) {
+            type = DbObjType.PROCEDURE;
+        } else if (ctx.FUNCTION() != null) {
+            type = DbObjType.FUNCTION;
+        } else {
+            type = DbObjType.AGGREGATE;
+        }
+        addObjReference(ctx.function_parameters().name.identifier(), type, StatementActions.DROP);
     }
 
     public void dropOperator(Drop_operator_statementContext ctx) {
