@@ -227,13 +227,24 @@ public abstract class TableAbstract extends ParserAbstract {
             }
         }
 
-        StringBuilder sb = new StringBuilder(getFullCtxText(constrBody));
+        StringBuilder sb = new StringBuilder();
+        String where = null;
+        if (constrBody.WHERE() != null) {
+            where = getFullCtxText(constrBody.where, constrBody.exp.getStop());
+            sb.append(getFullCtxText(constrBody, constrBody.index_parameters()));
+        } else {
+            sb.append(getFullCtxText(constrBody));
+        }
 
         if (tablespace != null) {
             Index_parametersContext param = constrBody.index_parameters();
             if (param == null || param.USING() == null) {
                 sb.append("\n\tUSING INDEX TABLESPACE ").append(tablespace);
             }
+        }
+
+        if (where != null) {
+            sb.append(' ').append(where);
         }
 
         Table_deferrableContext defer = ctx.table_deferrable();
