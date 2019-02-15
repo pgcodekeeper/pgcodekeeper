@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.Arrays;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
@@ -20,7 +21,6 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -40,17 +40,19 @@ public class CreateIndex extends ParserAbstract {
         String schemaName = getSchemaNameSafe(ids);
         String tableName = QNameParser.getFirstName(ids);
         addObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
+
         IdentifierContext nameCtx = ctx.name;
-        String name = nameCtx.getText();
-        PgIndex ind = new PgIndex(name != null ? name : "", tableName);
+        String name = nameCtx != null ? nameCtx.getText() : "";
+        PgIndex ind = new PgIndex(name, tableName);
         parseIndex(ctx.index_rest(), tablespace, schemaName, tableName, ind, db);
         ind.setUnique(ctx.UNIQUE() != null);
-        if (name != null) {
+
+        if (nameCtx != null) {
+            IdentifierContext parent = QNameParser.getFirstNameCtx(ids);
             AbstractTable table = getSafe(AbstractSchema::getTable,
-                    getSchemaSafe(ids), QNameParser.getFirstNameCtx(ids));
-            doSafe(AbstractTable::addIndex, table, ind);
-            fillObjDefinition(new PgObjLocation(schemaName, tableName, name, DbObjType.INDEX),
-                    nameCtx, ind);
+                    getSchemaSafe(ids), parent);
+            addSafe(AbstractTable::addIndex, table, ind, Arrays.asList(
+                    QNameParser.getSchemaNameCtx(ids), parent, nameCtx));
         }
     }
 

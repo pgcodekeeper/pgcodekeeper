@@ -21,7 +21,6 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
-import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgRule;
@@ -67,23 +66,15 @@ public class AlterTable extends TableAbstract {
 
             if (tablAction.tabl_constraint != null) {
                 IdentifierContext conNameCtx = tablAction.tabl_constraint.constraint_name;
-                String conName = conNameCtx != null ? conNameCtx.getText() : "";
-
-                AbstractConstraint con;
-                if (isRefMode()) {
-                    con = new PgConstraint(conName);
-                } else {
-                    // static method can create real dep
-                    con = parseAlterTableConstraint(tablAction,
-                            createTableConstraintBlank(tablAction.tabl_constraint), db,
-                            schema.getName(), nameCtx.getText());
-                    doSafe(AbstractPgTable::addConstraint, tabl, con);
-                }
+                AbstractConstraint con = parseAlterTableConstraint(tablAction,
+                        createTableConstraintBlank(tablAction.tabl_constraint), db,
+                        schema.getName(), nameCtx.getText());
 
                 if (!con.getName().isEmpty()) {
-                    fillObjDefinition(new PgObjLocation(loc.schema,
-                            loc.table, con.getName(), DbObjType.CONSTRAINT),
-                            conNameCtx, con);
+                    addSafe(AbstractPgTable::addConstraint, tabl, con, Arrays.asList(
+                            QNameParser.getSchemaNameCtx(ids), nameCtx, conNameCtx));
+                } else {
+                    doSafe(AbstractPgTable::addConstraint, tabl, con);
                 }
             }
 

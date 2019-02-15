@@ -16,7 +16,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.When_triggerContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgTrigger.TgTypes;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
@@ -34,7 +33,6 @@ public class CreateTrigger extends ParserAbstract {
     public void parseObject() {
         List<IdentifierContext> ids = ctx.table_name.identifier();
         String schemaName = getSchemaNameSafe(ids);
-        String tableName = QNameParser.getFirstName(ids);
         addObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
 
         PgTrigger trigger = new PgTrigger(ctx.name.getText(),
@@ -114,9 +112,10 @@ public class CreateTrigger extends ParserAbstract {
 
         PgTriggerContainer cont = getSafe(AbstractSchema::getTriggerContainer, getSchemaSafe(ids),
                 QNameParser.getFirstNameCtx(ctx.table_name.identifier()));
-        doSafe(PgTriggerContainer::addTrigger, cont, trigger);
-        fillObjDefinition(new PgObjLocation(schemaName,
-                tableName, trigger.getName(), DbObjType.TRIGGER), ctx.name, trigger);
+
+        IdentifierContext parent = QNameParser.getFirstNameCtx(ids);
+        addSafe(PgTriggerContainer::addTrigger, cont, trigger, Arrays.asList(
+                QNameParser.getSchemaNameCtx(ids), parent, ctx.name));
     }
 
     public static void parseWhen(When_triggerContext whenCtx, PgTrigger trigger,

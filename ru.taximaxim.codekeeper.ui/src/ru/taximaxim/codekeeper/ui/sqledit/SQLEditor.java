@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -200,7 +201,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
     public void setLineBackground() {
         // TODO who deletes stale annotations after editor refresh?
-        List<PgObjLocation> refs = getParser().getObjsForEditor(getEditorInput());
+        Set<PgObjLocation> refs = getParser().getObjsForEditor(getEditorInput());
         IAnnotationModel model = getSourceViewer().getAnnotationModel();
         for (PgObjLocation loc : refs) {
             if (loc.getWarningText() != null) {

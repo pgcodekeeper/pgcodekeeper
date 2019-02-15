@@ -1,9 +1,10 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
@@ -240,7 +241,7 @@ public abstract class ParserAbstract {
             loc.setLine(nameCtx.start.getLine());
             loc.setFilePath(fileName);
             loc.setAction(action);
-            db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
+            db.getObjReferences().computeIfAbsent(fileName, k -> new HashSet<>()).add(loc);
         }
 
         return loc;
@@ -352,14 +353,14 @@ public abstract class ParserAbstract {
         }
     }
 
-    protected void fillObjDefinition(PgObjLocation loc, ParserRuleContext nameCtx, PgStatement st) {
+    private void fillObjDefinition(PgObjLocation loc, ParserRuleContext nameCtx, PgStatement st) {
         loc.setOffset(getStart(nameCtx));
         loc.setLine(nameCtx.start.getLine());
         loc.setFilePath(fileName);
         loc.setAction(StatementActions.CREATE);
         st.setLocation(loc);
-        db.getObjDefinitions().computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
-        db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
+        db.getObjDefinitions().computeIfAbsent(fileName, k -> new HashSet<>()).add(loc);
+        db.getObjReferences().computeIfAbsent(fileName, k -> new HashSet<>()).add(loc);
     }
 
     protected <T extends IStatement, U extends Object> void doSafe(BiConsumer<T, U> adder,
@@ -385,7 +386,7 @@ public abstract class ParserAbstract {
             if (!refMode) {
                 st.addDep(loc);
             }
-            db.getObjReferences().computeIfAbsent(fileName, k -> new ArrayList<>()).add(loc);
+            db.getObjReferences().computeIfAbsent(fileName, k -> new HashSet<>()).add(loc);
         }
     }
 
@@ -422,7 +423,7 @@ public abstract class ParserAbstract {
     }
 
     protected void setCommentToDefinition(PgObjLocation ref, String comment) {
-        db.getObjDefinitions().values().stream().flatMap(List::stream)
+        db.getObjDefinitions().values().stream().flatMap(Set::stream)
         .filter(ref::compare).forEach(def -> def.setComment(comment));
     }
 
