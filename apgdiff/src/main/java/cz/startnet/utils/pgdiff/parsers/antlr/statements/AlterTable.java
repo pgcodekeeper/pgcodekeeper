@@ -68,7 +68,7 @@ public class AlterTable extends TableAbstract {
                 IdentifierContext conNameCtx = tablAction.tabl_constraint.constraint_name;
                 AbstractConstraint con = parseAlterTableConstraint(tablAction,
                         createTableConstraintBlank(tablAction.tabl_constraint), db,
-                        schema.getName(), nameCtx.getText());
+                        getSchemaNameSafe(ids), nameCtx.getText());
 
                 if (!con.getName().isEmpty()) {
                     addSafe(AbstractPgTable::addConstraint, tabl, con, Arrays.asList(

@@ -293,7 +293,14 @@ public abstract class ParserAbstract {
         doSafe(adder, parent, child);
         PgObjLocation loc = getLocation(ids, child.getStatementType(), false, null);
         if (loc != null) {
-            fillObjDefinition(loc, QNameParser.getFirstNameCtx(ids), child);
+            ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
+            loc.setOffset(getStart(nameCtx));
+            loc.setLine(nameCtx.start.getLine());
+            loc.setFilePath(fileName);
+            loc.setAction(StatementActions.CREATE);
+            child.setLocation(loc);
+            db.getObjDefinitions().computeIfAbsent(fileName, k -> new HashSet<>()).add(loc);
+            db.getObjReferences().computeIfAbsent(fileName, k -> new HashSet<>()).add(loc);
         }
     }
 
@@ -351,16 +358,6 @@ public abstract class ParserAbstract {
         default:
             return null;
         }
-    }
-
-    private void fillObjDefinition(PgObjLocation loc, ParserRuleContext nameCtx, PgStatement st) {
-        loc.setOffset(getStart(nameCtx));
-        loc.setLine(nameCtx.start.getLine());
-        loc.setFilePath(fileName);
-        loc.setAction(StatementActions.CREATE);
-        st.setLocation(loc);
-        db.getObjDefinitions().computeIfAbsent(fileName, k -> new HashSet<>()).add(loc);
-        db.getObjReferences().computeIfAbsent(fileName, k -> new HashSet<>()).add(loc);
     }
 
     protected <T extends IStatement, U extends Object> void doSafe(BiConsumer<T, U> adder,

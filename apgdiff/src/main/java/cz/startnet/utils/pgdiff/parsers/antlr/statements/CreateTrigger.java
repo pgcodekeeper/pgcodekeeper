@@ -110,10 +110,9 @@ public class CreateTrigger extends ParserAbstract {
         }
         parseWhen(ctx.when_trigger(), trigger, db);
 
-        PgTriggerContainer cont = getSafe(AbstractSchema::getTriggerContainer, getSchemaSafe(ids),
-                QNameParser.getFirstNameCtx(ctx.table_name.identifier()));
-
         IdentifierContext parent = QNameParser.getFirstNameCtx(ids);
+        PgTriggerContainer cont = getSafe(AbstractSchema::getTriggerContainer,
+                getSchemaSafe(ids), parent);
         addSafe(PgTriggerContainer::addTrigger, cont, trigger, Arrays.asList(
                 QNameParser.getSchemaNameCtx(ids), parent, ctx.name));
     }

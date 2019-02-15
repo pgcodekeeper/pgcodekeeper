@@ -2,7 +2,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +22,6 @@ import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
-import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -168,17 +166,20 @@ public class CreateRule extends ParserAbstract {
         List<IdentifierContext> ids = tbl.identifier();
 
         addObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
+
+        // TODO waits for column references
+        // addObjReference(Arrays.asList(QNameParser.getSchemaNameCtx(ids),firstPart, colName),
+        //    DbObjType.COLUMN, StatementActions.NONE);
+
+        if (isRefMode()) {
+            return;
+        }
+
         AbstractSchema schema = getSchemaSafe(ids);
         IdentifierContext firstPart = QNameParser.getFirstNameCtx(ids);
 
         //привилегии пишем так как получили одной строкой
-        PgStatement st = null;
-        IRelation r = getSafe(AbstractSchema::getRelation, schema, firstPart);
-        if (r instanceof PgStatement) {
-            st = (PgStatement) r;
-        } else {
-            return;
-        }
+        PgStatement st = (PgStatement) getSafe(AbstractSchema::getRelation, schema, firstPart);
 
         for (Entry<String, Entry<IdentifierContext, List<String>>> colPriv : colPrivs.entrySet()) {
             StringBuilder permission = new StringBuilder();
@@ -196,8 +197,6 @@ public class CreateRule extends ParserAbstract {
                     addPrivilege(st, priv);
                 } else {
                     IdentifierContext colName = colPriv.getValue().getKey();
-                    addObjReference(Arrays.asList(QNameParser.getSchemaNameCtx(ids),firstPart, colName),
-                            DbObjType.COLUMN, StatementActions.NONE);
                     AbstractColumn col = getSafe(AbstractTable::getColumn,
                             (AbstractTable) st, colName);
                     addPrivilege(col, priv);
@@ -214,10 +213,7 @@ public class CreateRule extends ParserAbstract {
         PgStatement statement = null;
         switch (type) {
         case TABLE:
-            IRelation r = getSafe(AbstractSchema::getRelation, schema, idCtx);
-            if (r instanceof PgStatement) {
-                statement = (PgStatement) r;
-            }
+            statement = (PgStatement) getSafe(AbstractSchema::getRelation, schema, idCtx);
             break;
         case SEQUENCE:
             statement = getSafe(AbstractSchema::getSequence, schema, idCtx);

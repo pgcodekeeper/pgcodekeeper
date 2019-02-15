@@ -36,9 +36,9 @@ public class CreateRewrite extends ParserAbstract {
 
         setConditionAndAddCommands(ctx, rule, db);
 
-        PgRuleContainer cont = getSafe(AbstractSchema::getRuleContainer,
-                getSchemaSafe(ids), QNameParser.getFirstNameCtx(ids));
         IdentifierContext parent = QNameParser.getFirstNameCtx(ids);
+        PgRuleContainer cont = getSafe(AbstractSchema::getRuleContainer,
+                getSchemaSafe(ids), parent);
         addSafe(PgRuleContainer::addRule, cont, rule, Arrays.asList(
                 QNameParser.getSchemaNameCtx(ids), parent, ctx.name));
     }
