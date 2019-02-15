@@ -64,7 +64,7 @@ public class AlterTable extends TableAbstract {
             if (tablAction.table_column_definition() != null) {
                 Table_column_definitionContext column = tablAction.table_column_definition();
                 addColumn(column.column_name.getText(), column.datatype,
-                        column.collate_name, column.colmn_constraint, tabl);
+                        column.collate_name, column.constraint_common(), tabl);
             }
 
             if (tablAction.column != null) {

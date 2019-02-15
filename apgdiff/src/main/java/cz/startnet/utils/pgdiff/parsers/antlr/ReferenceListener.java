@@ -74,7 +74,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.StatementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_of_type_column_defContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
@@ -961,10 +960,10 @@ public class ReferenceListener implements SqlContextProcessor {
 
     private void getTableConstraint(Constraint_commonContext ctx) {
         if (ctx.constr_body().FOREIGN() != null) {
-            Table_referencesContext tblRef = ctx.constr_body().table_references();
-            List<IdentifierContext> ids = tblRef.reftable.identifier();
+            Schema_qualified_nameContext tblRef = ctx.constr_body().schema_qualified_name();
+            List<IdentifierContext> ids = tblRef.identifier();
             addFullObjReference(QNameParser.getSchemaName(ids, getDefSchemaName()),
-                    QNameParser.getFirstName(ids), tblRef.reftable,
+                    QNameParser.getFirstName(ids), tblRef,
                     DbObjType.TABLE, StatementActions.NONE, ctx.getParent());
         }
 

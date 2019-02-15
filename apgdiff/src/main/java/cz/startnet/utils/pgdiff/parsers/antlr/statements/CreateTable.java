@@ -84,7 +84,7 @@ public class CreateTable extends TableAbstract {
             } else if (colCtx.table_column_definition() != null) {
                 Table_column_definitionContext column = colCtx.table_column_definition();
                 addColumn(column.column_name.getText(), column.datatype,
-                        column.collate_name, column.colmn_constraint, table);
+                        column.collate_name, column.constraint_common(), table);
             }
         }
 

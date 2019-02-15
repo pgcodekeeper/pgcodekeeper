@@ -80,7 +80,7 @@ implements SqlContextProcessor {
         if (ctx.create_table_statement() != null) {
             p = new CreateTable(ctx.create_table_statement(), db, tablespace, oids);
         } else if (ctx.create_foreign_table_statement() != null) {
-            p = new CreateForeignTable(ctx.create_foreign_table_statement(), db, tablespace);
+            p = new CreateForeignTable(ctx.create_foreign_table_statement(), db);
         } else if (ctx.create_index_statement() != null) {
             p = new CreateIndex(ctx.create_index_statement(), db, tablespace);
         } else if (ctx.create_extension_statement() != null) {

@@ -4,11 +4,11 @@ import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_domain_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Check_boolean_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Domain_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -29,12 +29,10 @@ public class AlterDomain extends ParserAbstract {
         PgDomain domain = getSafe(schema::getDomain, QNameParser.getFirstNameCtx(ids));
 
         Domain_constraintContext constrCtx = ctx.dom_constraint;
-        Check_boolean_expressionContext boolExpCtx;
-        if (constrCtx != null
-                && (boolExpCtx = constrCtx.common_constraint()
-                .check_boolean_expression()) != null) {
-            AbstractConstraint constr = CreateDomain.processDomainConstraintCtx(constrCtx,
-                    boolExpCtx, domain, db);
+        if (constrCtx != null && constrCtx.CHECK() != null) {
+            IdentifierContext name = constrCtx.name;
+            AbstractConstraint constr = new PgConstraint(name != null ? name.getText() : "");
+            CreateDomain.parseDomainConstraint(domain, constr, constrCtx, db);
             if (ctx.not_valid != null) {
                 constr.setNotValid(true);
             }

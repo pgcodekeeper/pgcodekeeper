@@ -103,8 +103,7 @@ public class TypesReader extends JdbcReader {
                 checkObjectValidity(definition, DbObjType.CONSTRAINT, conName);
                 loader.submitAntlrTask(ADD_CONSTRAINT + definition + ';',
                         p -> p.sql().statement(0).schema_statement().schema_alter()
-                        .alter_domain_statement().dom_constraint.common_constraint()
-                        .check_boolean_expression(),
+                        .alter_domain_statement().dom_constraint,
                         ctx -> CreateDomain.parseDomainConstraint(d, c, ctx, dataBase));
 
                 d.addConstraint(c);
