@@ -112,8 +112,15 @@ public class CommentOn extends ParserAbstract {
             schema = getSchemaSafe(ids);
         }
 
-        if (ctx.FUNCTION() != null || ctx.AGGREGATE() != null) {
-            type = ctx.FUNCTION() != null ? DbObjType.FUNCTION : DbObjType.AGGREGATE;
+        // function or procedure or aggregate
+        if (ctx.FUNCTION() != null || ctx.PROCEDURE() != null || ctx.AGGREGATE() != null) {
+            if (ctx.PROCEDURE() != null) {
+                type = DbObjType.PROCEDURE;
+            } else if (ctx.FUNCTION() != null) {
+                type = DbObjType.FUNCTION;
+            } else {
+                type = DbObjType.AGGREGATE;
+            }
             st = getSafe(AbstractSchema::getFunction, schema,
                     parseSignature(name, ctx.function_args()), nameCtx.getStart());
         } else if (ctx.OPERATOR() != null) {

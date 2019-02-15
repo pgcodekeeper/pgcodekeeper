@@ -284,20 +284,11 @@ public class GenericColumn implements Serializable {
         return eq;
     }
 
-    public final boolean compare(Object obj) {
-        boolean eq = false;
-
-        if (this == obj) {
-            eq = true;
-        } else if (obj instanceof GenericColumn) {
-            GenericColumn col = (GenericColumn) obj;
-            eq = Objects.equals(schema, col.schema)
-                    && Objects.equals(table, col.table)
-                    && Objects.equals(column, col.column)
-                    && compareTypes(col.type);
-        }
-
-        return eq;
+    public final boolean compare(GenericColumn col) {
+        return Objects.equals(schema, col.schema)
+                && Objects.equals(table, col.table)
+                && Objects.equals(column, col.column)
+                && compareTypes(col.type);
     }
 
     private boolean compareTypes(DbObjType objType) {
