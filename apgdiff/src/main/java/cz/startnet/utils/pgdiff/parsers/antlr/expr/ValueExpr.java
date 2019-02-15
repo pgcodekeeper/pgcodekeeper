@@ -267,7 +267,9 @@ public class ValueExpr extends AbstractExpr {
             } else if ((typeCoercion = primary.type_coercion()) != null) {
                 Build_in_typeContext coercionDataType = typeCoercion.build_in_type();
                 // addTypeDepcy(coercionDataType);
-                String type = ParserAbstract.getFullCtxText(coercionDataType);
+                String type = ParserAbstract.convertAlias(
+                        ParserAbstract.getFullCtxText(coercionDataType));
+
                 // since this cast can only convert string literals into a type
                 // and types are restricted to the simplest
                 // column name here will always be derived from type name

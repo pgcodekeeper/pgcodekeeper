@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -131,14 +132,15 @@ public abstract class ParserAbstract {
         }
 
         String newType = convertAlias(type);
-        if (newType != null) {
+        if (!Objects.equals(type, newType)) {
             return full.replace(type, newType);
         }
 
         return full;
     }
 
-    private static String convertAlias(String type) {
+
+    public static String convertAlias(String type) {
         String alias = type.toLowerCase(Locale.ENGLISH);
 
         switch (alias) {
@@ -176,7 +178,7 @@ public abstract class ParserAbstract {
             return "timestamp" + type.substring("timestamptz".length()) + " with time zone";
         }
 
-        return null;
+        return type;
     }
 
     public static String parseSignature(String name, Function_argsContext argsContext) {
