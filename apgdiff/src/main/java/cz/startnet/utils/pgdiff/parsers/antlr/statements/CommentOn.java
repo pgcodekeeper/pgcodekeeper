@@ -112,7 +112,6 @@ public class CommentOn extends ParserAbstract {
             schema = getSchemaSafe(ids);
         }
 
-        // function or procedure or aggregate
         if (ctx.FUNCTION() != null || ctx.PROCEDURE() != null || ctx.AGGREGATE() != null) {
             if (ctx.PROCEDURE() != null) {
                 type = DbObjType.PROCEDURE;
