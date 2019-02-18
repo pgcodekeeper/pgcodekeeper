@@ -30,10 +30,6 @@ public class AlterMsTable extends TableAbstract {
     @Override
     public void parseObject() {
         IdContext schemaCtx = ctx.name.schema;
-        if (schemaCtx == null) {
-            return;
-        }
-
         IdContext nameCtx = ctx.name.name;
         List<IdContext> ids = Arrays.asList(schemaCtx, nameCtx);
         AbstractSchema schema = getSchemaSafe(ids);
