@@ -52,17 +52,17 @@ public class AlterMsAuthorization extends ParserAbstract {
                     .findAny().orElse(null), schema, nameCtx);
 
             // when type is not defined (sometimes in ref mode), suppose it is a table
-            addFullObjReference(schemaCtx, nameCtx,
+            addObjReference(Arrays.asList(schemaCtx, nameCtx),
                     st != null ? st.getStatementType() : DbObjType.TABLE, StatementActions.ALTER);
         } else if (type.ASSEMBLY() != null) {
             st = getSafe(PgDatabase::getAssembly, db, nameCtx);
-            addObjReference(nameCtx, DbObjType.ASSEMBLY, StatementActions.ALTER);
+            addObjReference(Arrays.asList(nameCtx), DbObjType.ASSEMBLY, StatementActions.ALTER);
         } else if (type.ROLE() != null) {
             st = getSafe(PgDatabase::getRole, db, nameCtx);
-            addObjReference(nameCtx, DbObjType.ROLE, StatementActions.ALTER);
+            addObjReference(Arrays.asList(nameCtx), DbObjType.ROLE, StatementActions.ALTER);
         } else if (type.SCHEMA() != null) {
             st = getSafe(PgDatabase::getSchema, db, nameCtx);
-            addObjReference(nameCtx, DbObjType.SCHEMA, StatementActions.ALTER);
+            addObjReference(Arrays.asList(nameCtx), DbObjType.SCHEMA, StatementActions.ALTER);
         }
 
         if (st != null) {

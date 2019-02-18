@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.Arrays;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
@@ -19,6 +20,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.AbstractRegularTable;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
+import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
@@ -43,7 +45,7 @@ public class AlterTable extends TableAbstract {
         IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
         AbstractPgTable tabl = null;
 
-        PgObjLocation loc = addFullObjReference(ids, DbObjType.TABLE, StatementActions.ALTER);
+        PgObjLocation loc = addObjReference(ids, DbObjType.TABLE, StatementActions.ALTER);
 
         for (Table_actionContext tablAction : ctx.table_action()) {
             if (tablAction.column != null && tablAction.DROP() != null) {
@@ -52,18 +54,10 @@ public class AlterTable extends TableAbstract {
                 loc.setWarningText(DangerStatement.ALTER_COLUMN);
             }
 
-            // for owners try to get any relation, fail if the last attempt fails
             if (tablAction.owner_to() != null) {
-                String name = nameCtx.getText();
-                PgStatement st = schema.getTable(name);
-                if (st == null) {
-                    st = schema.getSequence(name);
-                }
-                if (st == null) {
-                    st = getSafe(AbstractSchema::getView, schema, nameCtx);
-                }
-                if (st != null) {
-                    fillOwnerTo(tablAction.owner_to(), st);
+                IRelation r = getSafe(AbstractSchema::getRelation, schema, nameCtx);
+                if (r instanceof PgStatement) {
+                    fillOwnerTo(tablAction.owner_to(), (PgStatement) r);
                 }
                 continue;
             }
@@ -72,24 +66,24 @@ public class AlterTable extends TableAbstract {
             tabl = (AbstractPgTable) getSafe(AbstractSchema::getTable, schema, nameCtx);
 
             if (tablAction.tabl_constraint != null) {
+                IdentifierContext conNameCtx = tablAction.tabl_constraint.constraint_name;
                 AbstractConstraint con = parseAlterTableConstraint(tablAction,
                         createTableConstraintBlank(tablAction.tabl_constraint), db,
-                        schema.getName(), nameCtx.getText());
-                if (!con.getName().isEmpty()) {
-                    fillObjDefinition(new PgObjLocation(loc.schema,
-                            loc.table, con.getName(), DbObjType.CONSTRAINT),
-                            tablAction.tabl_constraint, con);
-                }
+                        getSchemaNameSafe(ids), nameCtx.getText());
 
-                tabl.addConstraint(con);
+                if (!con.getName().isEmpty()) {
+                    addSafe(AbstractPgTable::addConstraint, tabl, con, Arrays.asList(
+                            QNameParser.getSchemaNameCtx(ids), nameCtx, conNameCtx));
+                } else {
+                    doSafe(AbstractPgTable::addConstraint, tabl, con);
+                }
             }
 
 
             if (tablAction.drop_constraint() != null) {
-                IdentifierContext conName = tablAction.drop_constraint().constraint_name;
-                addObjReference(new PgObjLocation(loc.schema,
-                        loc.table, conName.getText(), DbObjType.CONSTRAINT),
-                        StatementActions.DROP, conName);
+                addObjReference(Arrays.asList(QNameParser.getSchemaNameCtx(ids), nameCtx,
+                        tablAction.drop_constraint().constraint_name),
+                        DbObjType.CONSTRAINT, StatementActions.DROP);
             }
 
             if (isRefMode()) {

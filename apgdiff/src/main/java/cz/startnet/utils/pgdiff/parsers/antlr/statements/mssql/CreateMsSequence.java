@@ -42,7 +42,7 @@ public class CreateMsSequence extends ParserAbstract {
         for (Sequence_bodyContext body : list) {
             if (body.data_type() != null) {
                 Data_typeContext data = body.data_type();
-                addTypeAsDepcy(data, sequence);
+                addMsTypeDepcy(data, sequence);
                 dataType = data.qualified_name().getText().toLowerCase();
                 sequence.setDataType(dataType);
                 Data_type_sizeContext size = data.size;

@@ -44,7 +44,7 @@ public class CreateMsTrigger extends BatchContextProcessor {
             schemaCtx = ctx.table_name.schema;
         }
         List<IdContext> ids = Arrays.asList(schemaCtx, ctx.table_name.name);
-        addFullObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
+        addObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
         getObject(getSchemaSafe(ids));
     }
 
@@ -61,15 +61,24 @@ public class CreateMsTrigger extends BatchContextProcessor {
         trigger.setQuotedIdentified(quotedIdentifier);
         setSourceParts(trigger);
 
-        MsSqlClauses clauses = new MsSqlClauses();
+        String schemaName;
+        if (schema != null) {
+            schemaName = schema.getName();
+        } else {
+            List<IdContext> ids = Arrays.asList(schemaCtx, tableNameCtx);
+            schemaName = getSchemaNameSafe(ids);
+            addObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
+        }
+
+        MsSqlClauses clauses = new MsSqlClauses(schemaName);
         clauses.analyze(ctx.sql_clauses());
         trigger.addAllDeps(clauses.getDepcies());
 
         PgTriggerContainer cont = getSafe(AbstractSchema::getTriggerContainer,
                 schema, tableNameCtx);
 
-        addSafe(PgTriggerContainer::addTrigger, cont, trigger, schemaCtx,
-                tableNameCtx, nameCtx);
+        addSafe(PgTriggerContainer::addTrigger, cont, trigger,
+                Arrays.asList(schemaCtx, tableNameCtx, nameCtx));
         return trigger;
     }
 }

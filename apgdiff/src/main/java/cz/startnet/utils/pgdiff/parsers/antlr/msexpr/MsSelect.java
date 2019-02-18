@@ -55,8 +55,8 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
         super(parent);
     }
 
-    public MsSelect() {
-        super();
+    public MsSelect(String schema) {
+        super(schema);
     }
 
     @Override

@@ -26,7 +26,7 @@ public class CreateFtsConfiguration extends ParserAbstract {
         PgFtsConfiguration config = new PgFtsConfiguration(name);
         List<IdentifierContext> parserIds = ctx.parser_name.identifier();
         config.setParser(ParserAbstract.getFullCtxText(ctx.parser_name));
-        addDepSafe(config, parserIds, DbObjType.FTS_PARSER);
+        addDepSafe(config, parserIds, DbObjType.FTS_PARSER, true);
         addSafe(AbstractSchema::addFtsConfiguration, getSchemaSafe(ids), config, ids);
     }
 }

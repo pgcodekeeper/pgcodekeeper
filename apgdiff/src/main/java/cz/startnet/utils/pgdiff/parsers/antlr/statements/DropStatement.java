@@ -44,15 +44,21 @@ public class DropStatement extends ParserAbstract {
     }
 
     public void dropFunction(Drop_function_statementContext ctx) {
-        addFullObjReference(ctx.function_parameters().name.identifier(),
-                ctx.PROCEDURE() == null ? DbObjType.FUNCTION : DbObjType.PROCEDURE,
-                        StatementActions.DROP);
+        DbObjType type;
+        if (ctx.PROCEDURE() != null) {
+            type = DbObjType.PROCEDURE;
+        } else if (ctx.FUNCTION() != null) {
+            type = DbObjType.FUNCTION;
+        } else {
+            type = DbObjType.AGGREGATE;
+        }
+        addObjReference(ctx.function_parameters().name.identifier(), type, StatementActions.DROP);
     }
 
     public void dropOperator(Drop_operator_statementContext ctx) {
         for (Target_operatorContext targetOperCtx : ctx.target_operator()) {
             Operator_nameContext nameCtx = targetOperCtx.operator_name();
-            addFullObjReference(Arrays.asList(nameCtx.schema_name, nameCtx.operator),
+            addObjReference(Arrays.asList(nameCtx.schema_name, nameCtx.operator),
                     DbObjType.OPERATOR, StatementActions.DROP);
         }
     }
@@ -67,7 +73,7 @@ public class DropStatement extends ParserAbstract {
 
     public void dropChild(List<IdentifierContext> tableIds, IdentifierContext nameCtx, DbObjType type) {
         tableIds.add(nameCtx);
-        addFullObjReference(tableIds, type, StatementActions.DROP);
+        addObjReference(tableIds, type, StatementActions.DROP);
     }
 
     public void drop(Drop_statementsContext ctx) {
@@ -107,7 +113,7 @@ public class DropStatement extends ParserAbstract {
         for (Schema_qualified_nameContext objName :
             ctx.if_exist_names_restrict_cascade().names_references().name) {
             List<IdentifierContext> ids = objName.identifier();
-            PgObjLocation loc = addFullObjReference(ids, type, StatementActions.DROP);
+            PgObjLocation loc = addObjReference(ids, type, StatementActions.DROP);
 
             if (type == DbObjType.TABLE) {
                 loc.setWarningText(DangerStatement.DROP_TABLE);

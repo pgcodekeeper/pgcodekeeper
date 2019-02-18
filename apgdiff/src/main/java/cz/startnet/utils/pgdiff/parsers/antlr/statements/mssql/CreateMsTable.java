@@ -80,13 +80,13 @@ public class CreateMsTable extends TableAbstract {
             ClusteredContext cluster = indCtx.clustered();
             index.setClusterIndex(cluster != null && cluster.CLUSTERED() != null);
             CreateMsIndex.parseIndex(indCtx.index_rest(), index);
-            addSafe(MsTable::addIndex, table, index, ctx.qualified_name().schema,
-                    ctx.qualified_name().name, indCtx.index_name);
+            addSafe(MsTable::addIndex, table, index, Arrays.asList(ctx.qualified_name().schema,
+                    ctx.qualified_name().name, indCtx.index_name));
         } else {
             MsColumn col = new MsColumn(colCtx.id().getText());
             if (colCtx.data_type() != null) {
                 Data_typeContext dt = colCtx.data_type();
-                addTypeAsDepcy(dt, col);
+                addMsTypeDepcy(dt, col);
                 col.setType(getFullCtxText(dt));
             } else {
                 col.setExpression(getFullCtxText(colCtx.expression()));

@@ -303,7 +303,7 @@ public class TypesReader extends JdbcReader {
     private void setFunctionWithDep(BiConsumer<PgType, String> setter, PgType type, String function) {
         if (function.contains(".")) {
             QNameParser<IdentifierContext> parser = QNameParser.parsePg(function);
-            String schemaName = parser.getSchemaName(null);
+            String schemaName = parser.getSchemaName();
             if (schemaName != null && !ApgdiffUtils.isPgSystemSchema(schemaName)) {
                 type.addDep(new GenericColumn(schemaName, parser.getFirstName(), DbObjType.FUNCTION));
             }

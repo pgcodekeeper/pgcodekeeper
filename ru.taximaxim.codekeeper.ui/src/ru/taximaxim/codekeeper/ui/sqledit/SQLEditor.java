@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -27,6 +28,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
@@ -203,7 +205,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
     public void setLineBackground() {
         // TODO who deletes stale annotations after editor refresh?
-        List<PgObjLocation> refs = getParser().getObjsForEditor(getEditorInput());
+        Set<PgObjLocation> refs = getParser().getObjsForEditor(getEditorInput());
         IAnnotationModel model = getSourceViewer().getAnnotationModel();
         for (PgObjLocation loc : refs) {
             if (loc.getWarningText() != null) {
@@ -214,12 +216,14 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     }
 
     @Override
+    // NOTE: this method's monitor is weird / useless / bad, do not use it
+    // see Eclipse bug 543782
     public void doSave(IProgressMonitor progressMonitor) {
         super.doSave(progressMonitor);
         IResource res = ResourceUtil.getResource(getEditorInput());
         try {
             if (res == null || !UIProjectLoader.isInProject(res)) {
-                refreshParser(getParser(), res, progressMonitor);
+                refreshParser(getParser(), res, new NullProgressMonitor());
             }
         } catch (Exception ex) {
             Log.log(ex);

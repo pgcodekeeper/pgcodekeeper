@@ -1,5 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
+import java.util.Arrays;
+
 import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_sequenceContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
@@ -22,10 +24,10 @@ public class AlterMsOther extends ParserAbstract {
     @Override
     public void parseObject() {
         if (ctx.alter_schema_sql() != null) {
-            addObjReference(ctx.alter_schema_sql().schema_name,
+            addObjReference(Arrays.asList(ctx.alter_schema_sql().schema_name),
                     DbObjType.SCHEMA, StatementActions.ALTER);
         } else if (ctx.alter_user() != null) {
-            addObjReference(ctx.alter_user().username,
+            addObjReference(Arrays.asList(ctx.alter_user().username),
                     DbObjType.USER, StatementActions.ALTER);
         } else if (ctx.alter_sequence() != null) {
             alterSequence(ctx.alter_sequence());
@@ -34,7 +36,7 @@ public class AlterMsOther extends ParserAbstract {
 
     private void alterSequence(Alter_sequenceContext alter) {
         Qualified_nameContext qname = alter.qualified_name();
-        PgObjLocation ref = addFullObjReference(qname.schema, qname.name,
+        PgObjLocation ref = addObjReference(Arrays.asList(qname.schema, qname.name),
                 DbObjType.SEQUENCE, StatementActions.ALTER);
         if (!alter.RESTART().isEmpty()) {
             ref.setWarningText(DangerStatement.RESTART_WITH);

@@ -31,7 +31,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceExcep
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
-import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsConstraint;
@@ -152,8 +151,8 @@ public abstract class TableAbstract extends ParserAbstract {
             Define_foreign_optionsContext options, AbstractTable table) {
         PgColumn col = new PgColumn(columnName);
         if (datatype != null) {
-            col.setType(getFullCtxText(datatype));
-            addTypeAsDepcy(datatype, col);
+            col.setType(getTypeName(datatype));
+            addPgTypeDepcy(datatype, col);
         }
         if (collate != null) {
             col.setCollation(getFullCtxText(collate.collation));
@@ -167,7 +166,7 @@ public abstract class TableAbstract extends ParserAbstract {
                 fillOptionParams(value, option.name.getText(), false, col::addForeignOption);
             }
         }
-        addSafe(AbstractTable::addColumn, table, col);
+        doSafe(AbstractTable::addColumn, table, col);
     }
 
     protected void addColumn(String columnName, Data_typeContext datatype,
@@ -202,11 +201,13 @@ public abstract class TableAbstract extends ParserAbstract {
 
             List<IdentifierContext> ids = tblRef.reftable.identifier();
             String refTableName = QNameParser.getFirstName(ids);
+            String refSchemaName = QNameParser.getSchemaName(ids);
 
-            AbstractSchema s = db.getDefaultSchema();
-            String defSchemaName = s == null ? null : s.getName();
+            if (refSchemaName == null) {
+                throw new UnresolvedReferenceException(SCHEMA_ERROR + getFullCtxText(tblRef.reftable),
+                        tblRef.reftable.start);
+            }
 
-            String refSchemaName = QNameParser.getSchemaName(ids, defSchemaName);
             GenericColumn ftable = new GenericColumn(refSchemaName, refTableName, DbObjType.TABLE);
             constrBlank.setForeignTable(ftable);
             constrBlank.addDep(ftable);

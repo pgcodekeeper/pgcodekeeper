@@ -25,7 +25,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsRule;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.StatementOverride;
-
 public class TSQLOverridesListener extends CustomParserListener
 implements TSqlContextProcessor {
 

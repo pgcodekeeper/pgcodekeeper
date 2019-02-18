@@ -28,7 +28,7 @@ public class DropMsStatement extends ParserAbstract {
     public void parseObject() {
         if (ctx.drop_assembly() != null) {
             for (IdContext id : ctx.drop_assembly().id()) {
-                addObjReference(id, DbObjType.ASSEMBLY, StatementActions.DROP);
+                addObjReference(Arrays.asList(id), DbObjType.ASSEMBLY, StatementActions.DROP);
             }
         } else if (ctx.drop_index() != null) {
             for (Drop_relational_or_xml_or_spatial_indexContext ind :
@@ -37,7 +37,7 @@ public class DropMsStatement extends ParserAbstract {
                 IdContext schemaCtx = tableIds.schema;
                 IdContext parentCtx = tableIds.name;
                 IdContext nameCtx = ind.index_name;
-                addFullObjReference(Arrays.asList(schemaCtx, parentCtx, nameCtx),
+                addObjReference(Arrays.asList(schemaCtx, parentCtx, nameCtx),
                         DbObjType.INDEX, StatementActions.DROP);
             }
         } else if (ctx.drop_statements() != null) {
@@ -57,7 +57,14 @@ public class DropMsStatement extends ParserAbstract {
 
         if (type != null) {
             for (Qualified_nameContext qname : ctx.qualified_name()) {
-                addObjReference(qname.name, type, StatementActions.DROP);
+                addObjReference(Arrays.asList(qname.name), type, StatementActions.DROP);
+            }
+            return;
+        } else if (ctx.TRIGGER() != null) {
+            for (Qualified_nameContext qname : ctx.qualified_name()) {
+                // TODO ref to table, need ctx
+                addObjReference(Arrays.asList(qname.schema, null, qname.name),
+                        type, StatementActions.DROP);
             }
             return;
         }
@@ -75,15 +82,11 @@ public class DropMsStatement extends ParserAbstract {
         } else if (ctx.VIEW() != null) {
             type = DbObjType.VIEW;
         }
-        // need table name
-        /* else if (ctx.TRIGGER() != null) {
-            type = DbObjType.TRIGGER;
-        }*/
 
         if (type != null) {
             for (Qualified_nameContext qname : ctx.qualified_name()) {
                 List<IdContext> ids = Arrays.asList(qname.schema, qname.name);
-                PgObjLocation ref = addFullObjReference(ids, type, StatementActions.DROP);
+                PgObjLocation ref = addObjReference(ids, type, StatementActions.DROP);
                 if (type == DbObjType.TABLE) {
                     ref.setWarningText(DangerStatement.DROP_TABLE);
                 }

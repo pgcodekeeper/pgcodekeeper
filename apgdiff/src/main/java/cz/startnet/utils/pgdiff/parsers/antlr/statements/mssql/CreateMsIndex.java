@@ -37,7 +37,8 @@ public class CreateMsIndex extends ParserAbstract {
         IdContext nameCtx = ctx.name;
         List<IdContext> ids = Arrays.asList(schemaCtx, nameCtx);
         AbstractSchema schema = getSchemaSafe(ids);
-        addFullObjReference(schemaCtx, tableCtx, DbObjType.TABLE, StatementActions.NONE);
+        addObjReference(Arrays.asList(schemaCtx, tableCtx),
+                DbObjType.TABLE, StatementActions.NONE);
 
         AbstractIndex ind = new MsIndex(nameCtx.getText(), tableCtx.getText());
         ind.setUnique(ctx.UNIQUE() != null);
@@ -47,7 +48,8 @@ public class CreateMsIndex extends ParserAbstract {
         parseIndex(ctx.index_rest(), ind);
 
         AbstractTable table = getSafe(AbstractSchema::getTable, schema, tableCtx);
-        addSafe(AbstractTable::addIndex, table, ind, schemaCtx, tableCtx, nameCtx);
+        addSafe(AbstractTable::addIndex, table, ind,
+                Arrays.asList(schemaCtx, tableCtx, nameCtx));
     }
 
     static void parseIndex(Index_restContext rest, AbstractIndex ind) {

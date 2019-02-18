@@ -38,7 +38,7 @@ public class AlterFtsStatement extends ParserAbstract {
             tt = DbObjType.FTS_CONFIGURATION;
         }
 
-        addFullObjReference(ids, tt, StatementActions.ALTER);
+        addObjReference(ids, tt, StatementActions.ALTER);
 
         if (tt != DbObjType.FTS_CONFIGURATION) {
             return;
@@ -54,7 +54,7 @@ public class AlterFtsStatement extends ParserAbstract {
                 for (Schema_qualified_nameContext dictionary : afc.dictionaries) {
                     List<IdentifierContext> dIds = dictionary.identifier();
                     dics.add(getFullCtxText(dictionary));
-                    addDepSafe(config, dIds, DbObjType.FTS_DICTIONARY);
+                    addDepSafe(config, dIds, DbObjType.FTS_DICTIONARY, true);
                 }
 
                 if (!isRefMode()) {

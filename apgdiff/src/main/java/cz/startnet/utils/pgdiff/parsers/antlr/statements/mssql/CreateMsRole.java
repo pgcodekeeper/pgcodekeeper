@@ -1,5 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
+import java.util.Arrays;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_db_roleContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
@@ -24,6 +26,6 @@ public class CreateMsRole extends ParserAbstract {
             role.setOwner(ctx.owner_name.getText());
         }
 
-        addSafe(PgDatabase::addRole, db, role, nameCtx);
+        addSafe(PgDatabase::addRole, db, role, Arrays.asList(nameCtx));
     }
 }

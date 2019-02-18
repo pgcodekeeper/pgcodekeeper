@@ -130,13 +130,12 @@ public class LibraryLoader {
             return loadZip(p, args, isIgnorePriv);
         }
 
-        List<AntlrError> errList = null;
-        try (PgDumpLoader loader = new PgDumpLoader(new File(path), args)) {
-            errList = loader.getErrors();
+        PgDumpLoader loader = new PgDumpLoader(new File(path), args);
+        try {
             return loader.load();
         } finally {
-            if (errors != null && errList != null && !errList.isEmpty()) {
-                errors.addAll(errList);
+            if (errors != null) {
+                errors.addAll(loader.getErrors());
             }
         }
     }
@@ -257,13 +256,12 @@ public class LibraryLoader {
                     if (filePath.endsWith(".zip")) {
                         db.addLib(getLibrary(filePath, args, args.isIgnorePrivileges()));
                     } else if (filePath.endsWith(".sql")) {
-                        List<AntlrError> errList = null;
-                        try (PgDumpLoader loader = new PgDumpLoader(sub.toFile(), args)) {
-                            errList = loader.getErrors();
+                        PgDumpLoader loader = new PgDumpLoader(sub.toFile(), args);
+                        try {
                             loader.loadDatabase(db, antlrTasks);
                         } finally {
-                            if (errors != null && errList != null && !errList.isEmpty()) {
-                                errors.addAll(errList);
+                            if (errors != null) {
+                                errors.addAll(loader.getErrors());
                             }
                         }
                     }

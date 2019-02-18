@@ -15,47 +15,42 @@ public final class PgObjLocation extends GenericColumn implements Serializable {
 
     private String text;
     private String comment = "";
-    private StatementActions action = StatementActions.NONE;
+    private final StatementActions action;
 
     public PgObjLocation(String filePath) {
         super(null, null);
         this.filePath = filePath;
+        this.action = StatementActions.NONE;
     }
 
-    public PgObjLocation(String schema, String table, String column, DbObjType type) {
+    public PgObjLocation(String schema, String table, String column,
+            DbObjType type, StatementActions action) {
         super(schema, table, column, type);
+        this.action = action;
     }
 
-    public PgObjLocation(String schema, String object, DbObjType type) {
-        this(schema, object, null, type);
+    public PgObjLocation(String schema, String object, DbObjType type, StatementActions action) {
+        this(schema, object, null, type, action);
     }
 
-    public PgObjLocation(String schema, DbObjType type) {
-        this(schema, null, type);
+    public PgObjLocation(String schema, DbObjType type, StatementActions action) {
+        this(schema, null, type, action);
     }
 
     public StatementActions getAction() {
         return action;
     }
 
-    public PgObjLocation setAction(StatementActions action) {
-        this.action = action;
-        return this;
-    }
-
-    public PgObjLocation setOffset(int offset) {
+    public void setOffset(int offset) {
         this.offset = offset;
-        return this;
     }
 
-    public PgObjLocation setLine(int lineNumber) {
+    public void setLine(int lineNumber) {
         this.lineNumber = lineNumber;
-        return this;
     }
 
-    public PgObjLocation setFilePath(String filePath) {
+    public void setFilePath(String filePath) {
         this.filePath = filePath;
-        return this;
     }
 
     public int getOffset() {
@@ -138,28 +133,5 @@ public final class PgObjLocation extends GenericColumn implements Serializable {
 
     public boolean isDanger() {
         return text != null;
-    }
-
-    public static PgObjLocation create(IStatement st) {
-        DbObjType type = st.getStatementType();
-        switch (type) {
-        case DATABASE:
-        case COLUMN:
-            return null;
-        case ASSEMBLY:
-        case EXTENSION:
-        case SCHEMA:
-        case ROLE:
-        case USER:
-            return new PgObjLocation(st.getName(), type);
-        case CONSTRAINT:
-        case INDEX:
-        case TRIGGER:
-        case RULE:
-            return new PgObjLocation(st.getParent().getParent().getName(),
-                    st.getParent().getName(), st.getName(), type);
-        default:
-            return new PgObjLocation(st.getParent().getName(), st.getName(), type);
-        }
     }
 }

@@ -1,5 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
+import java.util.Arrays;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_userContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.User_loginContext;
@@ -33,6 +35,6 @@ public class CreateMsUser extends ParserAbstract {
             }
         }
 
-        addSafe(PgDatabase::addUser, db, user, nameCtx);
+        addSafe(PgDatabase::addUser, db, user, Arrays.asList(nameCtx));
     }
 }

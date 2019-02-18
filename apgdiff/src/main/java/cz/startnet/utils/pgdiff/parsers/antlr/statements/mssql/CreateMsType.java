@@ -45,7 +45,8 @@ public class CreateMsType extends ParserAbstract {
         } else if (def.EXTERNAL() != null) {
             String assemblyName = def.assembly_name.getText();
             type.setAssemblyName(assemblyName);
-            addDepSafe(type, def.assembly_name, DbObjType.ASSEMBLY);
+            addDepSafe(type, Arrays.asList(def.assembly_name),
+                    DbObjType.ASSEMBLY, false);
             String assemblyClass;
             if (def.class_name != null) {
                 assemblyClass = def.class_name.getText();
@@ -76,7 +77,7 @@ public class CreateMsType extends ParserAbstract {
 
             if (colCtx.data_type() != null) {
                 col.setType(getFullCtxText(colCtx.data_type()));
-                addTypeAsDepcy(colCtx.data_type(), type);
+                addMsTypeDepcy(colCtx.data_type(), type);
             } else {
                 col.setExpression(getFullCtxText(colCtx.expression()));
             }

@@ -39,17 +39,16 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.StatementOverride;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.fileutils.InputStreamProvider;
 
 /**
  * Loads PostgreSQL dump into classes.
  *
  * @author fordfrog
  */
-public class PgDumpLoader implements AutoCloseable {
+public class PgDumpLoader {
 
-    private final InputStream input;
-    private boolean isInputInAntlrParser;
-
+    private final InputStreamProvider input;
     private final String inputObjectName;
     private final PgDiffArguments args;
 
@@ -78,7 +77,7 @@ public class PgDumpLoader implements AutoCloseable {
         return statementBodyReferences;
     }
 
-    public PgDumpLoader(InputStream input, String inputObjectName,
+    public PgDumpLoader(InputStreamProvider input, String inputObjectName,
             PgDiffArguments args, IProgressMonitor monitor, int monitoringLevel) {
         this.input = input;
         this.inputObjectName = inputObjectName;
@@ -90,7 +89,7 @@ public class PgDumpLoader implements AutoCloseable {
     /**
      * This constructor sets the monitoring level to the default of 1.
      */
-    public PgDumpLoader(InputStream input, String inputObjectName,
+    public PgDumpLoader(InputStreamProvider input, String inputObjectName,
             PgDiffArguments args, IProgressMonitor monitor) {
         this(input, inputObjectName, args, monitor, 1);
     }
@@ -98,8 +97,7 @@ public class PgDumpLoader implements AutoCloseable {
     /**
      * This constructor uses {@link NullProgressMonitor}.
      */
-    public PgDumpLoader(InputStream input, String inputObjectName,
-            PgDiffArguments args) {
+    public PgDumpLoader(InputStreamProvider input, String inputObjectName, PgDiffArguments args) {
         this(input, inputObjectName, args, new NullProgressMonitor(), 0);
     }
 
@@ -109,17 +107,15 @@ public class PgDumpLoader implements AutoCloseable {
      * or wrap usage of the instance with try-with-resources.
      */
     public PgDumpLoader(File inputFile, PgDiffArguments args,
-            IProgressMonitor monitor, int monitoringLevel) throws IOException {
-        this(new FileInputStream(inputFile), inputFile.toString(), args,
-                monitor, monitoringLevel);
+            IProgressMonitor monitor, int monitoringLevel) {
+        this(() -> new FileInputStream(inputFile), inputFile.toString(), args, monitor, monitoringLevel);
     }
 
     /**
      * @see #PgDumpLoader(File, PgDiffArguments, IProgressMonitor, int)
      * @see #PgDumpLoader(InputStream, String, PgDiffArguments, IProgressMonitor)
      */
-    public PgDumpLoader(File inputFile, PgDiffArguments args,
-            IProgressMonitor monitor) throws IOException {
+    public PgDumpLoader(File inputFile, PgDiffArguments args, IProgressMonitor monitor) {
         this(inputFile, args, monitor, 1);
     }
 
@@ -127,7 +123,7 @@ public class PgDumpLoader implements AutoCloseable {
      * @see #PgDumpLoader(File, PgDiffArguments, IProgressMonitor, int)
      * @see #PgDumpLoader(InputStream, String, PgDiffArguments)
      */
-    public PgDumpLoader(File inputFile, PgDiffArguments args) throws IOException {
+    public PgDumpLoader(File inputFile, PgDiffArguments args) {
         this(inputFile, args, new NullProgressMonitor(), 0);
     }
 
@@ -152,7 +148,7 @@ public class PgDumpLoader implements AutoCloseable {
         return d;
     }
 
-    protected PgDatabase loadDatabase(PgDatabase intoDb, Queue<AntlrTask<?>> antlrTasks)
+    public PgDatabase loadDatabase(PgDatabase intoDb, Queue<AntlrTask<?>> antlrTasks)
             throws InterruptedException {
         PgDiffUtils.checkCancelled(monitor);
 
@@ -166,7 +162,6 @@ public class PgDumpLoader implements AutoCloseable {
                         intoDb, inputObjectName, refMode, errors, monitor);
                 statementBodyReferences = Collections.emptyList();
             }
-            isInputInAntlrParser = true;
             AntlrParser.parseTSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
                     monitor, monitoringLevel, listener, antlrTasks);
         } else {
@@ -181,18 +176,10 @@ public class PgDumpLoader implements AutoCloseable {
                 listener = cust;
             }
 
-            isInputInAntlrParser = true;
             AntlrParser.parseSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
                     monitor, monitoringLevel, listener, antlrTasks);
         }
 
         return intoDb;
-    }
-
-    @Override
-    public void close() throws IOException {
-        if (!isInputInAntlrParser) {
-            input.close();
-        }
     }
 }

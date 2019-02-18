@@ -65,6 +65,11 @@ public class CommentOn extends ParserAbstract {
             }
             ParserRuleContext schemaCtx = QNameParser.getThirdNameCtx(ids);
             getSchemaNameSafe(ids);
+            if (schemaCtx == null) {
+                throw new UnresolvedReferenceException(
+                        "Schema name is missing for commented column!", nameCtx.getStart());
+            }
+
             AbstractSchema schema = getSafe(PgDatabase::getSchema, db, schemaCtx);
             ParserRuleContext tableCtx = QNameParser.getSecondNameCtx(ids);
             if (tableCtx == null) {
@@ -107,23 +112,29 @@ public class CommentOn extends ParserAbstract {
             schema = getSchemaSafe(ids);
         }
 
-        if (ctx.FUNCTION() != null) {
-            type = DbObjType.FUNCTION;
+        if (ctx.FUNCTION() != null || ctx.PROCEDURE() != null || ctx.AGGREGATE() != null) {
+            if (ctx.PROCEDURE() != null) {
+                type = DbObjType.PROCEDURE;
+            } else if (ctx.FUNCTION() != null) {
+                type = DbObjType.FUNCTION;
+            } else {
+                type = DbObjType.AGGREGATE;
+            }
             st = getSafe(AbstractSchema::getFunction, schema,
                     parseSignature(name, ctx.function_args()), nameCtx.getStart());
-        }  else if (ctx.OPERATOR() != null) {
+        } else if (ctx.OPERATOR() != null) {
             type = DbObjType.OPERATOR;
             Target_operatorContext targetOperCtx = ctx.target_operator();
             st = getSafe(AbstractSchema::getOperator, schema,
                     parseSignature(targetOperCtx.name.operator.getText(),
                             targetOperCtx), targetOperCtx.getStart());
-        }  else if (ctx.EXTENSION() != null) {
+        } else if (ctx.EXTENSION() != null) {
             type = DbObjType.EXTENSION;
             st = getSafe(PgDatabase::getExtension, db, nameCtx);
         } else if (ctx.CONSTRAINT() != null && !isRefMode()) {
             List<IdentifierContext> parentIds = ctx.table_name.identifier();
             AbstractTable table = schema.getTable(QNameParser.getFirstName(parentIds));
-            addFullObjReference(parentIds, DbObjType.TABLE, StatementActions.NONE);
+            addObjReference(parentIds, DbObjType.TABLE, StatementActions.NONE);
             if (table == null) {
                 PgDomain domain = getSafe(AbstractSchema::getDomain, schema, nameCtx);
                 getSafe(PgDomain::getConstraint, domain, nameCtx).setComment(db.getArguments(), comment);
@@ -202,7 +213,7 @@ public class CommentOn extends ParserAbstract {
             if (!isRefMode()) {
                 st.setComment(db.getArguments(), comment);
             }
-            PgObjLocation ref = addFullObjReference(ids, type, StatementActions.COMMENT);
+            PgObjLocation ref = addObjReference(ids, type, StatementActions.COMMENT);
             setCommentToDefinition(ref, comment);
         }
     }

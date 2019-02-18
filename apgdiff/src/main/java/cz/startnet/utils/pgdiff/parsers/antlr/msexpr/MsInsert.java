@@ -21,8 +21,8 @@ public class MsInsert extends MsAbstractExprWithNmspc<Insert_statementContext> {
         super(parent);
     }
 
-    protected MsInsert() {
-        super();
+    protected MsInsert(String schema) {
+        super(schema);
     }
 
     @Override

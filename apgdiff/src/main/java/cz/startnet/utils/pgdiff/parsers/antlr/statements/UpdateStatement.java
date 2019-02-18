@@ -22,7 +22,7 @@ public class UpdateStatement extends ParserAbstract {
     @Override
     public void parseObject() {
         List<IdentifierContext> ids = ctx.update_table_name.identifier();
-        PgObjLocation loc = addFullObjReference(ids, DbObjType.TABLE, StatementActions.UPDATE);
+        PgObjLocation loc = addObjReference(ids, DbObjType.TABLE, StatementActions.UPDATE);
         loc.setWarningText(DangerStatement.UPDATE);
     }
 }

@@ -288,7 +288,7 @@ public abstract class AbstractExpr {
 
     protected void addColumnsDepcies(Schema_qualified_nameContext table, List<IdentifierContext> cols) {
         List<IdentifierContext> ids = table.identifier();
-        String schemaName = QNameParser.getSchemaName(ids, null);
+        String schemaName = QNameParser.getSchemaName(ids);
         String tableName = QNameParser.getFirstName(ids);
         for (IdentifierContext col : cols) {
             addFilteredColumnDepcy(schemaName, tableName, col.getText());

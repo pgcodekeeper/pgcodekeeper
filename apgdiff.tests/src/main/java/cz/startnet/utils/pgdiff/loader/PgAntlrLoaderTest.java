@@ -232,7 +232,7 @@ class PgDB1 extends PgDatabaseObjectCreator {
         table.addColumn(col);
 
         col = new PgColumn("fax_box_id");
-        col.setType("int4");
+        col.setType("integer");
         table.addColumn(col);
 
         col = new PgColumn("from_name");
@@ -244,11 +244,11 @@ class PgDB1 extends PgDatabaseObjectCreator {
         table.addColumn(col);
 
         col = new PgColumn("status");
-        col.setType("int4");
+        col.setType("integer");
         table.addColumn(col);
 
         col = new PgColumn("pages");
-        col.setType("int4");
+        col.setType("integer");
         table.addColumn(col);
 
         col = new PgColumn("time_received");
@@ -261,7 +261,7 @@ class PgDB1 extends PgDatabaseObjectCreator {
         table.addColumn(col);
 
         col = new PgColumn("read");
-        col.setType("int2");
+        col.setType("smallint");
         col.setDefaultValue("0");
         table.addColumn(col);
 
@@ -312,15 +312,15 @@ class PgDB2 extends PgDatabaseObjectCreator {
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("id");
-        col.setType("int");
+        col.setType("integer");
         table.addColumn(col);
 
         col = new PgColumn("number_pool_id");
-        col.setType("int");
+        col.setType("integer");
         table.addColumn(col);
 
         col = new PgColumn("name");
-        col.setType("varchar(50)");
+        col.setType("character varying(50)");
         table.addColumn(col);
 
         AbstractIndex idx = new PgIndex("contacts_number_pool_id_idx", "contacts");
@@ -693,7 +693,7 @@ class PgDB9 extends PgDatabaseObjectCreator {
         schema.addTable(table);
 
         col = new PgColumn("c1");
-        col.setType("int");
+        col.setType("integer");
         table.addColumn(col);
 
         PgView view = new PgView("user");
@@ -811,7 +811,7 @@ class PgDB10 extends PgDatabaseObjectCreator {
         table.addIndex(idx);
 
         constraint = new PgConstraint("user_role_id_fkey");
-        constraint.setDefinition("FOREIGN KEY (role_id) REFERENCES acl_role(id)");
+        constraint.setDefinition("FOREIGN KEY (role_id) REFERENCES admin.acl_role(id)");
         table.addConstraint(constraint);
 
         table.setOwner("postgres");

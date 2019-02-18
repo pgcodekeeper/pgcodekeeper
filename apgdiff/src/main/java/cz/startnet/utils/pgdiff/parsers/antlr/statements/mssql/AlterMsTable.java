@@ -31,16 +31,12 @@ public class AlterMsTable extends TableAbstract {
     @Override
     public void parseObject() {
         IdContext schemaCtx = ctx.name.schema;
-        if (schemaCtx == null) {
-            return;
-        }
-
         IdContext nameCtx = ctx.name.name;
         List<IdContext> ids = Arrays.asList(schemaCtx, nameCtx);
         AbstractSchema schema = getSchemaSafe(ids);
         AbstractTable table = getSafe(AbstractSchema::getTable, schema, nameCtx);
-        PgObjLocation ref = addFullObjReference(schemaCtx,
-                nameCtx, DbObjType.TABLE, StatementActions.ALTER);
+        PgObjLocation ref = addObjReference(Arrays.asList(schemaCtx, nameCtx),
+                DbObjType.TABLE, StatementActions.ALTER);
 
         Column_def_table_constraintContext colCtx = ctx.column_def_table_constraint();
         if (colCtx != null && colCtx.table_constraint() != null) {
@@ -48,16 +44,16 @@ public class AlterMsTable extends TableAbstract {
             con.setNotValid(ctx.nocheck_add != null);
             if (colCtx.table_constraint().id() != null) {
                 addSafe(AbstractTable::addConstraint, table, con,
-                        schemaCtx, nameCtx, colCtx.table_constraint().id());
+                        Arrays.asList(schemaCtx, nameCtx, colCtx.table_constraint().id()));
             } else {
-                addSafe(AbstractTable::addConstraint, table, con);
+                doSafe(AbstractTable::addConstraint, table, con);
             }
         } else if (ctx.con != null) {
             MsConstraint con = (MsConstraint) getSafe(AbstractTable::getConstraint, table, ctx.con);
             if (ctx.WITH() != null) {
-                setSafe(AbstractConstraint::setNotValid, con, ctx.nocheck_check != null);
+                doSafe(AbstractConstraint::setNotValid, con, ctx.nocheck_check != null);
             }
-            setSafe(MsConstraint::setDisabled, con, ctx.nocheck != null);
+            doSafe(MsConstraint::setDisabled, con, ctx.nocheck != null);
         } else if (ctx.DROP() != null && ctx.COLUMN() != null) {
             ref.setWarningText(DangerStatement.DROP_COLUMN);
         } else if (ctx.ALTER() != null && ctx.COLUMN() != null) {
@@ -67,12 +63,11 @@ public class AlterMsTable extends TableAbstract {
         IdContext trigger = ctx.trigger;
         if (trigger != null) {
             MsTrigger tr = (MsTrigger) getSafe(AbstractTable::getTrigger, table, trigger);
-            setSafe(MsTrigger::setDisable, tr, ctx.ENABLE() == null);
-            PgObjLocation loc = new PgObjLocation(schemaCtx.getText(),
-                    nameCtx.getText(), trigger.getText(), DbObjType.TRIGGER);
-            addObjReference(loc, StatementActions.ALTER, trigger);
+            doSafe(MsTrigger::setDisable, tr, ctx.ENABLE() == null);
+            addObjReference(Arrays.asList(schemaCtx, nameCtx, trigger),
+                    DbObjType.TRIGGER, StatementActions.ALTER);
         } else if (ctx.CHANGE_TRACKING() != null && ctx.ENABLE() != null) {
-            setSafe(MsTable::setTracked, ((MsTable) table), ctx.ON() != null);
+            doSafe(MsTable::setTracked, ((MsTable) table), ctx.ON() != null);
         }
     }
 }

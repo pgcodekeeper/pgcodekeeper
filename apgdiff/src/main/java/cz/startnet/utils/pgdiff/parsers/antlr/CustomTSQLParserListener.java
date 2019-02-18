@@ -120,9 +120,8 @@ implements TSqlContextProcessor {
 
         ParserAbstract p;
 
-
         if (ctx.create_schema() != null) {
-            p = new CreateMsSchema(ctx.create_schema(), db, this, stream);
+            p = new CreateMsSchema(ctx.create_schema(), db);
         } else if (body.create_or_alter_procedure() != null) {
             p = new CreateMsProcedure(ctx, db, ansiNulls, quotedIdentifier, stream);
         } else if (body.create_or_alter_function() != null) {
