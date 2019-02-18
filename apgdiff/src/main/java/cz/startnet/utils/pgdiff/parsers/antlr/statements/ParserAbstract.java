@@ -76,8 +76,7 @@ public abstract class ParserAbstract {
     }
 
     protected void addStatementBody(ParserRuleContext ctx) {
-        // if not refMode FullAnalyze must find all dependencies
-        if (/*refMode && */statementBodies != null) {
+        if (statementBodies != null) {
             statementBodies.add(new StatementBodyContainer(fileName, ctx));
         }
     }
@@ -233,13 +232,12 @@ public abstract class ParserAbstract {
 
     protected PgObjLocation addObjReference(List<? extends ParserRuleContext> ids,
             DbObjType type, StatementActions action) {
-        PgObjLocation loc = getLocation(ids, type, false, null);
+        PgObjLocation loc = getLocation(ids, type, action, false, null);
         if (loc != null) {
             ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
             loc.setOffset(getStart(nameCtx));
             loc.setLine(nameCtx.start.getLine());
             loc.setFilePath(fileName);
-            loc.setAction(action);
             db.getObjReferences().computeIfAbsent(fileName, k -> new HashSet<>()).add(loc);
         }
 
@@ -290,13 +288,13 @@ public abstract class ParserAbstract {
     protected <T extends IStatement, U extends PgStatement> void addSafe(BiConsumer<T, U> adder,
             T parent, U child, List<? extends ParserRuleContext> ids) {
         doSafe(adder, parent, child);
-        PgObjLocation loc = getLocation(ids, child.getStatementType(), false, null);
+        PgObjLocation loc = getLocation(ids, child.getStatementType(),
+                StatementActions.CREATE, false, null);
         if (loc != null) {
             ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
             loc.setOffset(getStart(nameCtx));
             loc.setLine(nameCtx.start.getLine());
             loc.setFilePath(fileName);
-            loc.setAction(StatementActions.CREATE);
             child.setLocation(loc);
             db.getObjDefinitions().computeIfAbsent(fileName, k -> new HashSet<>()).add(loc);
             db.getObjReferences().computeIfAbsent(fileName, k -> new HashSet<>()).add(loc);
@@ -304,7 +302,7 @@ public abstract class ParserAbstract {
     }
 
     private PgObjLocation getLocation(List<? extends ParserRuleContext> ids,
-            DbObjType type, boolean isDep, String signature) {
+            DbObjType type, StatementActions action, boolean isDep, String signature) {
         ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
         switch (type) {
         case ASSEMBLY:
@@ -313,7 +311,7 @@ public abstract class ParserAbstract {
         case ROLE:
         case USER:
         case DATABASE:
-            return new PgObjLocation(nameCtx.getText(), type);
+            return new PgObjLocation(nameCtx.getText(), type, action);
         default:
             break;
         }
@@ -347,14 +345,14 @@ public abstract class ParserAbstract {
         case TABLE:
         case TYPE:
         case VIEW:
-            return new PgObjLocation(schemaCtx.getText(), name, type);
+            return new PgObjLocation(schemaCtx.getText(), name, type, action);
         case CONSTRAINT:
         case INDEX:
         case TRIGGER:
         case RULE:
         case COLUMN:
             return new PgObjLocation(schemaCtx.getText(), QNameParser.getSecondName(ids),
-                    name, type);
+                    name, type, action);
         default:
             return null;
         }
@@ -374,7 +372,7 @@ public abstract class ParserAbstract {
 
     protected void addDepSafe(PgStatement st, List<? extends ParserRuleContext> ids,
             DbObjType type, boolean isPostgres, String signature) {
-        PgObjLocation loc = getLocation(ids, type, true, signature);
+        PgObjLocation loc = getLocation(ids, type, StatementActions.NONE, true, signature);
         if (loc != null && !ApgdiffUtils.isSystemSchema(loc.schema, isPostgres)) {
             ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
             loc.setOffset(getStart(nameCtx));

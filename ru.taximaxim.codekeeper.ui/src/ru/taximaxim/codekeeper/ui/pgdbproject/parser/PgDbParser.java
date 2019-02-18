@@ -194,11 +194,10 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
                     if ((index == 0 || !PgDiffUtils.isValidIdChar(body.charAt(index - 1))) &&
                             (next >= body.length() || !PgDiffUtils.isValidIdChar(body.charAt(next)))) {
                         PgObjLocation loc = new PgObjLocation(def.schema,
-                                def.table, def.column, def.type);
+                                def.table, def.column, def.type, StatementActions.NONE);
                         loc.setOffset(statementBody.getOffset() + index);
                         loc.setFilePath(statementBody.getPath());
                         loc.setLine(statementBody.getLineNumber());
-                        loc.setAction(StatementActions.NONE);
                         newRefs.add(loc);
                     }
                     index = body.indexOf(name, index + 1);
