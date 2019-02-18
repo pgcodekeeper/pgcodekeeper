@@ -59,6 +59,13 @@ public class DropMsStatement extends ParserAbstract {
                 addObjReference(Arrays.asList(qname.name), type, StatementActions.DROP);
             }
             return;
+        } else if (ctx.TRIGGER() != null) {
+            for (Qualified_nameContext qname : ctx.qualified_name()) {
+                // TODO ref to table, need ctx
+                addObjReference(Arrays.asList(qname.schema, null, qname.name),
+                        type, StatementActions.DROP);
+            }
+            return;
         }
 
         if (ctx.FUNCTION() != null) {
@@ -74,10 +81,6 @@ public class DropMsStatement extends ParserAbstract {
         } else if (ctx.VIEW() != null) {
             type = DbObjType.VIEW;
         }
-        // need table name
-        /* else if (ctx.TRIGGER() != null) {
-            type = DbObjType.TRIGGER;
-        }*/
 
         if (type != null) {
             for (Qualified_nameContext qname : ctx.qualified_name()) {
