@@ -2,9 +2,12 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.function.BiConsumer;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateDomain;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
@@ -17,6 +20,7 @@ import cz.startnet.utils.pgdiff.schema.PgDomain;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgType.PgTypeForm;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class TypesReader extends JdbcReader {
@@ -125,22 +129,22 @@ public class TypesReader extends JdbcReader {
         case "b":
             t = new PgType(name, PgTypeForm.BASE);
 
-            t.setInputFunction(res.getString("typinput"));
-            t.setOutputFunction(res.getString("typoutput"));
+            setFunctionWithDep(PgType::setInputFunction, t, res.getString("typinput"));
+            setFunctionWithDep(PgType::setOutputFunction, t, res.getString("typoutput"));
             if (res.getBoolean("typreceiveset")) {
-                t.setReceiveFunction(res.getString("typreceive"));
+                setFunctionWithDep(PgType::setReceiveFunction, t, res.getString("typreceive"));
             }
             if (res.getBoolean("typsendset")) {
-                t.setSendFunction(res.getString("typsend"));
+                setFunctionWithDep(PgType::setSendFunction, t, res.getString("typsend"));
             }
             if (res.getBoolean("typmodinset")) {
-                t.setTypmodInputFunction(res.getString("typmodin"));
+                setFunctionWithDep(PgType::setTypmodInputFunction, t, res.getString("typmodin"));
             }
             if (res.getBoolean("typmodoutset")) {
-                t.setTypmodOutputFunction(res.getString("typmodout"));
+                setFunctionWithDep(PgType::setTypmodOutputFunction, t, res.getString("typmodout"));
             }
             if (res.getBoolean("typanalyzeset")) {
-                t.setAnalyzeFunction(res.getString("typanalyze"));
+                setFunctionWithDep(PgType::setAnalyzeFunction, t, res.getString("typanalyze"));
             }
 
             short len = res.getShort("typlen");
@@ -284,16 +288,27 @@ public class TypesReader extends JdbcReader {
             }
 
             if (res.getBoolean("rngcanonicalset")) {
-                t.setCanonical(res.getString("rngcanonical"));
+                setFunctionWithDep(PgType::setCanonical, t, res.getString("rngcanonical"));
             }
             if (res.getBoolean("rngsubdiffset")) {
-                t.setCanonical(res.getString("rngsubdiff"));
+                setFunctionWithDep(PgType::setSubtypeDiff, t, res.getString("rngsubdiff"));
             }
             break;
         default:
             t = null;
         }
         return t;
+    }
+
+    private void setFunctionWithDep(BiConsumer<PgType, String> setter, PgType type, String function) {
+        if (function.contains(".")) {
+            QNameParser<IdentifierContext> parser = QNameParser.parsePg(function);
+            String schemaName = parser.getSchemaName();
+            if (schemaName != null && !ApgdiffUtils.isPgSystemSchema(schemaName)) {
+                type.addDep(new GenericColumn(schemaName, parser.getFirstName(), DbObjType.FUNCTION));
+            }
+        }
+        setter.accept(type, function);
     }
 
     @Override

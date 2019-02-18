@@ -93,11 +93,11 @@ public abstract class PgStatement implements IStatement, IHashable {
         return parent;
     }
 
-    public String getLocation() {
+    public PgObjLocation getLocation() {
         return getMeta().getLocation();
     }
 
-    public void setLocation(String location) {
+    public void setLocation(PgObjLocation location) {
         getMeta().setLocation(location);
     }
 

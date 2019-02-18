@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.Arrays;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
@@ -14,14 +15,19 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionC
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
+import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.AbstractRegularTable;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
+import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class AlterTable extends TableAbstract {
 
@@ -32,31 +38,56 @@ public class AlterTable extends TableAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public void parseObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
+        AbstractSchema schema = getSchemaSafe(ids);
         IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
         AbstractPgTable tabl = null;
 
+        PgObjLocation loc = addObjReference(ids, DbObjType.TABLE, StatementActions.ALTER);
+
         for (Table_actionContext tablAction : ctx.table_action()) {
-            // for owners try to get any relation, fail if the last attempt fails
+            if (tablAction.column != null && tablAction.DROP() != null) {
+                loc.setWarningText(PgObjLocation.DROP_COLUMN);
+            } else if (tablAction.datatype != null) {
+                loc.setWarningText(PgObjLocation.ALTER_COLUMN_TYPE);
+            }
+
             if (tablAction.owner_to() != null) {
-                String name = nameCtx.getText();
-                PgStatement st = schema.getTable(name);
-                if (st == null) {
-                    st = schema.getSequence(name);
-                }
-                if (st == null) {
-                    st = getSafe(schema::getView, nameCtx);
-                }
-                if (st != null) {
-                    fillOwnerTo(tablAction.owner_to(), st);
+                IRelation r = getSafe(AbstractSchema::getRelation, schema, nameCtx);
+                if (r instanceof PgStatement) {
+                    fillOwnerTo(tablAction.owner_to(), (PgStatement) r);
                 }
                 continue;
             }
 
             // everything else requires a real table, so fail immediately
-            tabl = (AbstractPgTable) getSafe(schema::getTable, nameCtx);
+            tabl = (AbstractPgTable) getSafe(AbstractSchema::getTable, schema, nameCtx);
+
+            if (tablAction.tabl_constraint != null) {
+                IdentifierContext conNameCtx = tablAction.tabl_constraint.constraint_name;
+                AbstractConstraint con = parseAlterTableConstraint(tablAction,
+                        createTableConstraintBlank(tablAction.tabl_constraint), db,
+                        getSchemaNameSafe(ids), nameCtx.getText());
+
+                if (!con.getName().isEmpty()) {
+                    addSafe(AbstractPgTable::addConstraint, tabl, con, Arrays.asList(
+                            QNameParser.getSchemaNameCtx(ids), nameCtx, conNameCtx));
+                } else {
+                    doSafe(AbstractPgTable::addConstraint, tabl, con);
+                }
+            }
+
+
+            if (tablAction.drop_constraint() != null) {
+                addObjReference(Arrays.asList(QNameParser.getSchemaNameCtx(ids), nameCtx,
+                        tablAction.drop_constraint().constraint_name),
+                        DbObjType.CONSTRAINT, StatementActions.DROP);
+            }
+
+            if (isRefMode()) {
+                continue;
+            }
 
             if (tablAction.table_column_definition() != null) {
                 Table_column_definitionContext column = tablAction.table_column_definition();
@@ -67,7 +98,7 @@ public class AlterTable extends TableAbstract {
             if (tablAction.column != null) {
                 PgColumn col;
                 if (tabl.getInherits().isEmpty()) {
-                    col = (PgColumn) getSafe(tabl::getColumn,
+                    col = (PgColumn) getSafe(AbstractTable::getColumn, tabl,
                             QNameParser.getFirstNameCtx(tablAction.column.identifier()));
                 } else {
                     String colName = QNameParser.getFirstName(tablAction.column.identifier());
@@ -136,14 +167,9 @@ public class AlterTable extends TableAbstract {
                 }
             }
 
-            if (tablAction.tabl_constraint != null) {
-                tabl.addConstraint(parseAlterTableConstraint(tablAction,
-                        createTableConstraintBlank(tablAction.tabl_constraint), db,
-                        schema.getName(), nameCtx.getText()));
-            }
             if (tablAction.index_name != null) {
                 IdentifierContext indexName = QNameParser.getFirstNameCtx(tablAction.index_name.identifier());
-                AbstractIndex index = getSafe(tabl::getIndex, indexName);
+                AbstractIndex index = getSafe(AbstractTable::getIndex, tabl, indexName);
                 index.setClusterIndex(true);
             }
 
@@ -157,23 +183,20 @@ public class AlterTable extends TableAbstract {
                 createRule(tabl, tablAction);
             }
 
-            if (tabl instanceof AbstractRegularTable) {
-                AbstractRegularTable regTable = (AbstractRegularTable)tabl;
+            if (tablAction.SECURITY() != null && tabl instanceof AbstractRegularTable) {
+                AbstractRegularTable regTable = (AbstractRegularTable) tabl;
                 // since 9.5 PostgreSQL
-                if (tablAction.SECURITY() != null) {
-                    if (tablAction.FORCE() != null) {
-                        regTable.setForceSecurity(tablAction.NO() == null);
-                    } else {
-                        regTable.setRowSecurity(tablAction.ENABLE() != null);
-                    }
+                if (tablAction.FORCE() != null) {
+                    regTable.setForceSecurity(tablAction.NO() == null);
+                } else {
+                    regTable.setRowSecurity(tablAction.ENABLE() != null);
                 }
             }
         }
-        return tabl;
     }
 
     private void createRule(AbstractPgTable tabl, Table_actionContext tablAction) {
-        PgRule rule = getSafe(tabl::getRule, tablAction.rewrite_rule_name.identifier(0));
+        PgRule rule = getSafe(AbstractTable::getRule, tabl, tablAction.rewrite_rule_name.identifier(0));
         if (rule != null) {
             if (tablAction.DISABLE() != null) {
                 rule.setEnabledState("DISABLE");

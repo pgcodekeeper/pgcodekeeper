@@ -17,8 +17,8 @@ public class Delete extends AbstractExprWithNmspc<Delete_stmt_for_psqlContext> {
         super(parent);
     }
 
-    public Delete(String schema, PgDatabase db) {
-        super(schema, db);
+    public Delete(PgDatabase db) {
+        super(db);
     }
 
     @Override

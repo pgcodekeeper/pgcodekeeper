@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.Arrays;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
@@ -15,12 +16,13 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_option
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expression_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_storage_parameterContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateIndex extends ParserAbstract {
     private final Create_index_statementContext ctx;
@@ -33,21 +35,25 @@ public class CreateIndex extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public void parseObject() {
         List<IdentifierContext> ids = ctx.table_name.identifier();
-        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
-        String schemaName = schema.getName();
+        String schemaName = getSchemaNameSafe(ids);
         String tableName = QNameParser.getFirstName(ids);
-        String name = ctx.name.getText();
-        PgIndex ind = new PgIndex(name != null ? name : "", tableName);
+        addObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
+
+        IdentifierContext nameCtx = ctx.name;
+        String name = nameCtx != null ? nameCtx.getText() : "";
+        PgIndex ind = new PgIndex(name, tableName);
         parseIndex(ctx.index_rest(), tablespace, schemaName, tableName, ind, db);
         ind.setUnique(ctx.UNIQUE() != null);
-        if (name != null) {
-            getSafe(schema::getTable, QNameParser.getFirstNameCtx(ids))
-            .addIndex(ind);
-        }
 
-        return ind;
+        if (nameCtx != null) {
+            IdentifierContext parent = QNameParser.getFirstNameCtx(ids);
+            AbstractTable table = getSafe(AbstractSchema::getTable,
+                    getSchemaSafe(ids), parent);
+            addSafe(AbstractTable::addIndex, table, ind, Arrays.asList(
+                    QNameParser.getSchemaNameCtx(ids), parent, nameCtx));
+        }
     }
 
     public static void parseIndex(Index_restContext rest, String tablespace,
@@ -103,22 +109,6 @@ public class CreateIndex extends ParserAbstract {
                     ind.addColumn(colName.getText());
                 }
             }
-        }
-    }
-
-    public static void analyzeIndexRest(Index_restContext rest, PgStatement indexStmt,
-            String schemaName, PgDatabase db) {
-        String rawTableReference = indexStmt.getParent().getName();
-
-        for (Sort_specifierContext sort_ctx : rest.index_sort().sort_specifier_list()
-                .sort_specifier()) {
-            UtilAnalyzeExpr.analyzeWithNmspc(sort_ctx.key, indexStmt, schemaName,
-                    rawTableReference, db);
-        }
-
-        if (rest.index_where() != null){
-            UtilAnalyzeExpr.analyzeWithNmspc(rest.index_where().vex(), indexStmt,
-                    schemaName, rawTableReference, db);
         }
     }
 }

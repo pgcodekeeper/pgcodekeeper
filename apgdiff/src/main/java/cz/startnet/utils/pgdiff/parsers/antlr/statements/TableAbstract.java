@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.Arrays;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -27,18 +28,15 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraint_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
-import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsConstraint;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class TableAbstract extends ParserAbstract {
@@ -87,7 +85,7 @@ public abstract class TableAbstract extends ParserAbstract {
             Table_referencesContext tblRef = ctx.constr_body().table_references();
             List<IdentifierContext> ids = tblRef.reftable.identifier();
             String refTableName = QNameParser.getFirstName(ids);
-            String refSchemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+            String refSchemaName = getSchemaNameSafe(ids);
             GenericColumn ftable = new GenericColumn(refSchemaName, refTableName, DbObjType.TABLE);
             String constrName = ctx.constraint_name == null ?
                     table.getName() + '_' + colName + "_fkey" : ctx.constraint_name.getText();
@@ -154,7 +152,7 @@ public abstract class TableAbstract extends ParserAbstract {
         PgColumn col = new PgColumn(columnName);
         if (datatype != null) {
             col.setType(getTypeName(datatype));
-            addTypeAsDepcy(datatype, col, getDefSchemaName());
+            addPgTypeDepcy(datatype, col);
         }
         if (collate != null) {
             col.setCollation(getFullCtxText(collate.collation));
@@ -168,7 +166,7 @@ public abstract class TableAbstract extends ParserAbstract {
                 fillOptionParams(value, option.name.getText(), false, col::addForeignOption);
             }
         }
-        table.addColumn(col);
+        doSafe(AbstractTable::addColumn, table, col);
     }
 
     protected void addColumn(String columnName, Data_typeContext datatype,
@@ -183,7 +181,7 @@ public abstract class TableAbstract extends ParserAbstract {
     }
 
     protected void addInherit(AbstractPgTable table, List<IdentifierContext> idsInh) {
-        String inhSchemaName = QNameParser.getSchemaName(idsInh, getDefSchemaName());
+        String inhSchemaName = getSchemaNameSafe(idsInh);
         String inhTableName = QNameParser.getFirstName(idsInh);
         table.addInherits(inhSchemaName, inhTableName);
         table.addDep(new GenericColumn(inhSchemaName, inhTableName, DbObjType.TABLE));
@@ -203,15 +201,18 @@ public abstract class TableAbstract extends ParserAbstract {
 
             List<IdentifierContext> ids = tblRef.reftable.identifier();
             String refTableName = QNameParser.getFirstName(ids);
+            String refSchemaName = QNameParser.getSchemaName(ids);
 
-            AbstractSchema s = db.getDefaultSchema();
-            String defSchemaName = s == null ? null : s.getName();
+            if (refSchemaName == null) {
+                throw new UnresolvedReferenceException(SCHEMA_ERROR + getFullCtxText(tblRef.reftable),
+                        tblRef.reftable.start);
+            }
 
-            String refSchemaName = QNameParser.getSchemaName(ids, defSchemaName);
             GenericColumn ftable = new GenericColumn(refSchemaName, refTableName, DbObjType.TABLE);
             constrBlank.setForeignTable(ftable);
             constrBlank.addDep(ftable);
 
+            // TODO need ref to table
             for (Schema_qualified_nameContext name : tblRef.column_references().names_references().name) {
                 String colName = QNameParser.getFirstName(name.identifier());
                 constrBlank.addForeignColumn(colName);
@@ -256,12 +257,6 @@ public abstract class TableAbstract extends ParserAbstract {
         }
     }
 
-    public static void analyzeConstraintCtx(VexContext ctx, PgStatement statement,
-            String schemaName, PgDatabase db) {
-        UtilAnalyzeExpr.analyzeWithNmspc(ctx, statement, schemaName,
-                statement.getParent().getName(), db);
-    }
-
     protected AbstractConstraint getMsConstraint(Table_constraintContext conCtx) {
         String conName = conCtx.id() == null ? "" : conCtx.id().getText();
         AbstractConstraint con = new MsConstraint(conName);
@@ -272,8 +267,7 @@ public abstract class TableAbstract extends ParserAbstract {
 
         if (body.REFERENCES() != null) {
             Qualified_nameContext ref = body.qualified_name();
-            IdContext schCtx = ref.schema;
-            String fschema = schCtx == null ? getDefSchemaName() : schCtx.getText();
+            String fschema = getSchemaNameSafe(Arrays.asList(ref.schema, ref.name));
             String ftable = ref.name.getText();
 
             GenericColumn ftableRef = new GenericColumn(fschema, ftable, DbObjType.TABLE);
