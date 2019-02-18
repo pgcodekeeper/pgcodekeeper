@@ -42,16 +42,12 @@ public class CreateTable extends TableAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public void parseObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
         String tableName = QNameParser.getFirstName(ids);
-        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
-        String schemaName = schema.getName();
-
+        String schemaName = getSchemaNameSafe(ids);
         AbstractTable table = defineTable(tableName, schemaName);
-
-        schema.addTable(table);
-        return table;
+        addSafe(AbstractSchema::addTable, getSchemaSafe(ids), table, ids);
     }
 
     private AbstractTable defineTable(String tableName, String schemaName) {
@@ -99,9 +95,10 @@ public class CreateTable extends TableAbstract {
     private TypedPgTable defineType(Define_typeContext typeCtx, String tableName,
             String schemaName) {
         Data_typeContext typeName = typeCtx.type_name;
-        TypedPgTable table = new TypedPgTable(tableName, getTypeName(typeName));
+        String ofType = getTypeName(typeName);
+        TypedPgTable table = new TypedPgTable(tableName, ofType);
         fillTypeColumns(typeCtx.list_of_type_column_def(), table, schemaName, tablespace);
-        addTypeAsDepcy(typeName, table, getDefSchemaName());
+        addPgTypeDepcy(typeName, table);
         fillRegularTable(table);
         return table;
     }

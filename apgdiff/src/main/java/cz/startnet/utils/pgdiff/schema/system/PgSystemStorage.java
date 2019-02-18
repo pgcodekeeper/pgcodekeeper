@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
@@ -21,12 +22,10 @@ public class PgSystemStorage implements Serializable {
     private static final ConcurrentMap<SupportedVersion, PgSystemStorage> STORAGE_CACHE = new ConcurrentHashMap<>();
 
     public static final String FILE_NAME = "SYSTEM_OBJECTS_";
-    public static final String SCHEMA_PG_CATALOG = "pg_catalog";
-    public static final String SCHEMA_INFORMATION_SCHEMA = "information_schema";
 
     private final List<PgSystemCast> casts = new ArrayList<>();
-    private final PgSystemSchema pgCatalogSchema = new PgSystemSchema(SCHEMA_PG_CATALOG);
-    private final PgSystemSchema informationSchema = new PgSystemSchema(SCHEMA_INFORMATION_SCHEMA);
+    private final PgSystemSchema pgCatalogSchema = new PgSystemSchema(ApgdiffConsts.PG_CATALOG);
+    private final PgSystemSchema informationSchema = new PgSystemSchema(ApgdiffConsts.INFORMATION_SCHEMA);
     private final List<PgSystemSchema> schemas = Collections.unmodifiableList(
             Arrays.asList(pgCatalogSchema, informationSchema));
 
@@ -77,9 +76,9 @@ public class PgSystemStorage implements Serializable {
     }
 
     public PgSystemSchema getSchema(String schemaName) {
-        if (SCHEMA_PG_CATALOG.equals(schemaName)) {
+        if (ApgdiffConsts.PG_CATALOG.equals(schemaName)) {
             return pgCatalogSchema;
-        } else if (SCHEMA_INFORMATION_SCHEMA.equals(schemaName)) {
+        } else if (ApgdiffConsts.INFORMATION_SCHEMA.equals(schemaName)) {
             return informationSchema;
         }
         return null;

@@ -9,8 +9,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Tokens_nonreserved_except_function_typeContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class AlterSequence extends ParserAbstract {
     private final Alter_sequence_statementContext ctx;
@@ -20,10 +22,12 @@ public class AlterSequence extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public void parseObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
-        PgSequence sequence = (PgSequence) getSafe(schema::getSequence, QNameParser.getFirstNameCtx(ids));
+        PgSequence sequence = (PgSequence) getSafe(AbstractSchema::getSequence,
+                getSchemaSafe(ids), QNameParser.getFirstNameCtx(ids));
+
+        PgObjLocation loc = addObjReference(ids, DbObjType.SEQUENCE, StatementActions.ALTER);
 
         for (Sequence_bodyContext seqbody : ctx.sequence_body()) {
             if (seqbody.OWNED() != null && seqbody.col_name != null) {
@@ -31,11 +35,15 @@ public class AlterSequence extends ParserAbstract {
                 Tokens_nonreserved_except_function_typeContext word;
                 if (col.size() != 1 || (word = col.get(0).tokens_nonreserved_except_function_type()) == null
                         || word.NONE() == null) {
-                    sequence.setOwnedBy(getFullCtxText(seqbody.col_name));
+                    doSafe(PgSequence::setOwnedBy, sequence, getFullCtxText(seqbody.col_name));
                 }
+
+                addObjReference(col, DbObjType.TABLE, StatementActions.NONE);
             }
         }
-        return null;
-    }
 
+        if (!ctx.RESTART().isEmpty()) {
+            loc.setWarningText(PgObjLocation.RESTART_WITH);
+        }
+    }
 }

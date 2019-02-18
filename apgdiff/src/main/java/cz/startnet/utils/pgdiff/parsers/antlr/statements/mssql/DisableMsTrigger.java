@@ -1,5 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
+import java.util.Arrays;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Enable_disable_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Names_referencesContext;
@@ -8,8 +10,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class DisableMsTrigger extends ParserAbstract {
 
@@ -21,24 +24,27 @@ public class DisableMsTrigger extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public void parseObject() {
         Names_referencesContext triggers = ctx.names_references();
         Qualified_nameContext parent = ctx.qualified_name();
         if (triggers == null || parent == null) {
-            return null;
+            return;
         }
 
         IdContext schemaCtx = parent.schema;
-        AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
-        PgTriggerContainer cont = schema.getTable(parent.name.getText());
-        if (cont == null) {
-            cont = getSafe(schema::getView, parent.name);
-        }
+        PgTriggerContainer cont = getSafe(AbstractSchema::getTriggerContainer,
+                getSchemaSafe(Arrays.asList(schemaCtx, parent.name)), parent.name);
+        addObjReference(Arrays.asList(parent.schema, parent.name),
+                DbObjType.TABLE, StatementActions.NONE);
 
-        for (Qualified_nameContext trigger : triggers.qualified_name()) {
-            ((MsTrigger) cont.getTrigger(trigger.name.getText())).setDisable(true);
+        for (Qualified_nameContext qname : triggers.qualified_name()) {
+            MsTrigger trig = (MsTrigger) getSafe(PgTriggerContainer::getTrigger,
+                    cont, qname.name);
+            addObjReference(Arrays.asList(schemaCtx, parent.name, qname.name),
+                    DbObjType.TRIGGER, StatementActions.ALTER);
+            if (ctx.DISABLE() != null) {
+                doSafe(MsTrigger::setDisable, trig, true);
+            }
         }
-
-        return null;
     }
 }

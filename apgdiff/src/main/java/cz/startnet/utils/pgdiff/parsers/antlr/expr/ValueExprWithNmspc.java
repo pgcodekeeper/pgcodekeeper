@@ -17,8 +17,8 @@ public class ValueExprWithNmspc extends AbstractExprWithNmspc<VexContext> {
 
     private final ValueExpr vex;
 
-    public ValueExprWithNmspc(String schema, PgDatabase db) {
-        super(schema, db);
+    public ValueExprWithNmspc(PgDatabase db) {
+        super(db);
         vex = new ValueExpr(this);
     }
 

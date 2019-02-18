@@ -13,7 +13,6 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class CreateDomain extends ParserAbstract {
 
@@ -24,12 +23,11 @@ public class CreateDomain extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public void parseObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         PgDomain domain = new PgDomain(QNameParser.getFirstName(ids));
         domain.setDataType(getTypeName(ctx.dat_type));
-        addTypeAsDepcy(ctx.dat_type, domain, getDefSchemaName());
+        addPgTypeDepcy(ctx.dat_type, domain);
         for (Collate_identifierContext coll : ctx.collate_identifier()) {
             domain.setCollation(getFullCtxText(coll.collation));
         }
@@ -51,8 +49,8 @@ public class CreateDomain extends ParserAbstract {
                 domain.setNotNull(constrCtx.NOT() != null);
             }
         }
-        schema.addDomain(domain);
-        return domain;
+
+        addSafe(AbstractSchema::addDomain, getSchemaSafe(ids), domain, ids);
     }
 
     public static void parseDomainConstraint(PgDomain domain, AbstractConstraint constr,

@@ -1,5 +1,8 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -15,6 +18,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Func_returnContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Function_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Procedure_paramContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Select_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Sql_clausesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSelect;
@@ -25,11 +29,9 @@ import cz.startnet.utils.pgdiff.schema.AbstractMsClrFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.FuncTypes;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsClrFunction;
 import cz.startnet.utils.pgdiff.schema.MsFunction;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsFunction extends BatchContextProcessor {
@@ -53,15 +55,15 @@ public class CreateMsFunction extends BatchContextProcessor {
     }
 
     @Override
-    public PgStatement getObject() {
-        IdContext schemaCtx = ctx.qualified_name().schema;
-        AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
-        return getObject(schema);
+    public void parseObject() {
+        Qualified_nameContext qname = ctx.qualified_name();
+        getObject(getSchemaSafe(Arrays.asList(qname.schema, qname.name)));
     }
 
     public AbstractFunction getObject(AbstractSchema schema) {
-        String name = ctx.qualified_name().name.getText();
-        boolean isKeepNewlines = db.getArguments().isKeepNewlines();
+        IdContext nameCtx = ctx.qualified_name().name;
+        List<IdContext> ids = Arrays.asList(ctx.qualified_name().schema, nameCtx);
+        String name = nameCtx.getText();
         Func_bodyContext bodyRet = ctx.func_body();
         if (bodyRet.EXTERNAL() != null) {
             Assembly_specifierContext assemblyCtx = bodyRet.assembly_specifier();
@@ -71,7 +73,9 @@ public class CreateMsFunction extends BatchContextProcessor {
 
             MsClrFunction func = new MsClrFunction(name, assembly,
                     assemblyClass, assemblyMethod);
-            func.addDep(new GenericColumn(assembly, DbObjType.ASSEMBLY));
+
+            addDepSafe(func, Arrays.asList(assemblyCtx.assembly_name),
+                    DbObjType.ASSEMBLY, false);
             fillArguments(func);
 
             for (Function_optionContext option : ctx.function_option()) {
@@ -80,6 +84,7 @@ public class CreateMsFunction extends BatchContextProcessor {
 
             String returns = getFullCtxText(ctx.func_return());
             analyzeReturn(ctx.func_return(), func);
+            boolean isKeepNewlines = db.getArguments().isKeepNewlines();
             func.setReturns(isKeepNewlines ? returns : returns.replace("\r", ""));
 
             Func_returnContext ret = ctx.func_return();
@@ -89,7 +94,7 @@ public class CreateMsFunction extends BatchContextProcessor {
                 func.setFuncType(FuncTypes.TABLE);
             }
 
-            schema.addFunction(func);
+            addSafe(AbstractSchema::addFunction, schema, func, ids);
             return func;
         }
 
@@ -99,7 +104,13 @@ public class CreateMsFunction extends BatchContextProcessor {
         setSourceParts(func);
 
         Select_statementContext select = bodyRet.select_statement();
-        String schemaName = schema.getName();
+        String schemaName;
+        if (schema != null) {
+            schemaName = schema.getName();
+        } else {
+            schemaName = getSchemaNameSafe(ids);
+        }
+
         if (select != null) {
             MsSelect sel = new MsSelect(schemaName);
             sel.analyze(select);
@@ -127,7 +138,7 @@ public class CreateMsFunction extends BatchContextProcessor {
             func.setFuncType(FuncTypes.TABLE);
         }
 
-        schema.addFunction(func);
+        addSafe(AbstractSchema::addFunction, schema, func, ids);
         return func;
     }
 
@@ -137,11 +148,11 @@ public class CreateMsFunction extends BatchContextProcessor {
             for (Column_def_table_constraintContext con : cons.column_def_table_constraint()) {
                 Data_typeContext dt = con.data_type();
                 if (dt != null) {
-                    addTypeAsDepcy(dt, function);
+                    addMsTypeDepcy(dt, function);
                 }
             }
         } else {
-            addTypeAsDepcy(ret.data_type(), function);
+            addMsTypeDepcy(ret.data_type(), function);
         }
     }
 
@@ -150,7 +161,7 @@ public class CreateMsFunction extends BatchContextProcessor {
             Argument arg = new Argument(
                     argument.arg_mode != null ? argument.arg_mode.getText() : null,
                             argument.name.getText(), getFullCtxText(argument.data_type()));
-            addTypeAsDepcy(argument.data_type(), function);
+            addMsTypeDepcy(argument.data_type(), function);
             if (argument.default_val != null) {
                 arg.setDefaultExpression(getFullCtxText(argument.default_val));
             }

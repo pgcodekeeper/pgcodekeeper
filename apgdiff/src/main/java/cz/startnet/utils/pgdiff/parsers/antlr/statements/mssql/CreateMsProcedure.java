@@ -1,5 +1,8 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -9,11 +12,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_procedu
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Procedure_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Procedure_paramContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSqlClauses;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsClrProcedure;
 import cz.startnet.utils.pgdiff.schema.MsProcedure;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -40,40 +43,49 @@ public class CreateMsProcedure extends BatchContextProcessor {
     }
 
     @Override
-    public AbstractFunction getObject() {
-        IdContext schemaCtx = ctx.qualified_name().schema;
-        AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
-        return getObject(schema);
+    public void parseObject() {
+        Qualified_nameContext qname = ctx.qualified_name();
+        getObject(getSchemaSafe(Arrays.asList(qname.schema, qname.name)));
     }
 
     public AbstractFunction getObject(AbstractSchema schema) {
+        IdContext nameCtx = ctx.qualified_name().name;
+        List<IdContext> ids = Arrays.asList(ctx.qualified_name().schema, nameCtx);
         if (ctx.proc_body().EXTERNAL() != null) {
             Assembly_specifierContext assemblyCtx = ctx.proc_body().assembly_specifier();
             String assembly = assemblyCtx.assembly_name.getText();
             String assemblyClass = assemblyCtx.class_name.getText();
             String assemblyMethod = assemblyCtx.method_name.getText();
-            MsClrProcedure procedure = new MsClrProcedure(ctx.qualified_name().name.getText(),
+            MsClrProcedure procedure = new MsClrProcedure(nameCtx.getText(),
                     assembly, assemblyClass, assemblyMethod);
-            procedure.addDep(new GenericColumn(assembly, DbObjType.ASSEMBLY));
+
+            addDepSafe(procedure, Arrays.asList(assemblyCtx.assembly_name),
+                    DbObjType.ASSEMBLY, false);
             fillArguments(procedure);
 
             for (Procedure_optionContext option : ctx.procedure_option()) {
                 procedure.addOption(getFullCtxText(option));
             }
 
-            schema.addFunction(procedure);
+            addSafe(AbstractSchema::addFunction, schema, procedure, ids);
             return procedure;
         }
 
-        MsProcedure procedure = new MsProcedure(ctx.qualified_name().name.getText());
+        MsProcedure procedure = new MsProcedure(nameCtx.getText());
         procedure.setAnsiNulls(ansiNulls);
         procedure.setQuotedIdentified(quotedIdentifier);
         setSourceParts(procedure);
 
-        MsSqlClauses clauses = new MsSqlClauses(schema.getName());
+        String schemaName;
+        if (schema != null) {
+            schemaName = schema.getName();
+        } else {
+            schemaName = getSchemaNameSafe(ids);
+        }
+        MsSqlClauses clauses = new MsSqlClauses(schemaName);
         clauses.analyze(ctx.proc_body().sql_clauses());
         procedure.addAllDeps(clauses.getDepcies());
-        schema.addFunction(procedure);
+        addSafe(AbstractSchema::addFunction, schema, procedure, ids);
         return procedure;
     }
 
@@ -82,7 +94,7 @@ public class CreateMsProcedure extends BatchContextProcessor {
             Argument arg = new Argument(
                     argument.arg_mode != null ? argument.arg_mode.getText() : null,
                             argument.name.getText(), getFullCtxText(argument.data_type()));
-            addTypeAsDepcy(argument.data_type(), function);
+            addMsTypeDepcy(argument.data_type(), function);
             if (argument.default_val != null) {
                 arg.setDefaultExpression(getFullCtxText(argument.default_val));
             }

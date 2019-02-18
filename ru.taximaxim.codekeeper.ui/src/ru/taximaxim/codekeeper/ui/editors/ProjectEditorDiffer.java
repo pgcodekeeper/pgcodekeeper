@@ -613,7 +613,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private void openElementInEditor(TreeElement el) {
         if (el != null && el.getSide() != DiffSide.RIGHT) {
             try {
-                FileUtilsUi.openFileInSqlEditor(el.getPgStatement(dbProject.getDbObject()).getLocation());
+                FileUtilsUi.openFileInSqlEditor(el.getPgStatement(
+                        dbProject.getDbObject()).getLocation().getFilePath());
             } catch (PartInitException e) {
                 ExceptionNotifier.notifyDefault(e.getLocalizedMessage(), e);
             }

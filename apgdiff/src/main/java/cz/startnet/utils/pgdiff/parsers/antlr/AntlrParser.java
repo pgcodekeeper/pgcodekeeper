@@ -3,7 +3,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Collection;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.Callable;
@@ -109,7 +108,8 @@ public class AntlrParser {
 
     public static void parseSqlStream(InputStreamProvider inputStream, String charsetName,
             String parsedObjectName, List<AntlrError> errors, IProgressMonitor mon, int monitoringLevel,
-            Collection<SqlContextProcessor> listeners, Queue<AntlrTask<?>> antlrTasks) {
+            SqlContextProcessor listener, Queue<AntlrTask<?>> antlrTasks)
+                    throws InterruptedException {
         submitAntlrTask(antlrTasks, () -> {
             try(InputStream stream = inputStream.getStream()) {
                 SQLParser parser = makeBasicParser(SQLParser.class, stream,
@@ -122,7 +122,7 @@ public class AntlrParser {
             }
         }, ctx -> {
             try {
-                listeners.forEach(listener -> listener.process(ctx, null));
+                listener.process(ctx, null);
             } catch (UnresolvedReferenceException ex) {
                 errors.add(CustomSQLParserListener.handleUnresolvedReference(ex, parsedObjectName));
             }
@@ -131,7 +131,8 @@ public class AntlrParser {
 
     public static void parseTSqlStream(InputStreamProvider inputStream, String charsetName,
             String parsedObjectName, List<AntlrError> errors, IProgressMonitor mon, int monitoringLevel,
-            Collection<TSqlContextProcessor> listeners, Queue<AntlrTask<?>> antlrTasks) {
+            TSqlContextProcessor listener, Queue<AntlrTask<?>> antlrTasks)
+                    throws InterruptedException {
         submitAntlrTask(antlrTasks, () -> {
             try(InputStream stream = inputStream.getStream()) {
                 TSQLParser parser = makeBasicParser(TSQLParser.class,
@@ -144,8 +145,8 @@ public class AntlrParser {
             }
         }, pair -> {
             try {
-                listeners.forEach(listener -> listener.process(pair.getSecond(),
-                        (CommonTokenStream) pair.getFirst().getInputStream()));
+                listener.process(pair.getSecond(),
+                        (CommonTokenStream) pair.getFirst().getInputStream());
             } catch (UnresolvedReferenceException ex) {
                 errors.add(CustomTSQLParserListener.handleUnresolvedReference(ex, parsedObjectName));
             }

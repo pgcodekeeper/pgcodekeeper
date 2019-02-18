@@ -1,5 +1,10 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.All_op_refContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.All_simple_opContext;
@@ -8,11 +13,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_optionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgOperator;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateOperator extends ParserAbstract {
     private final Create_operator_statementContext ctx;
@@ -22,22 +26,24 @@ public class CreateOperator extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public void parseObject() {
         Operator_nameContext operNameCtx = ctx.name;
-        AbstractSchema operSchema = getSchemaSafe(operNameCtx, db.getDefaultSchema(), db);
-        String operSchemaName = operSchema.getName();
-        PgOperator oper = new PgOperator(operNameCtx.operator.getText());
+        IdentifierContext schemaCtx = operNameCtx.schema_name;
+        List<ParserRuleContext> ids = Arrays.asList(schemaCtx, operNameCtx);
+        All_simple_opContext operName = operNameCtx.operator;
+        PgOperator oper = new PgOperator(operName.getText());
         for (Operator_optionContext option : ctx.operator_option()) {
             if (option.PROCEDURE() != null || option.FUNCTION() != null) {
                 oper.setProcedure(getFullCtxText(option.func_name));
+                addDepSafe(oper, option.func_name.identifier(), DbObjType.FUNCTION, true);
             } else if (option.LEFTARG() != null) {
                 Data_typeContext leftArgTypeCtx = option.type;
                 oper.setLeftArg(getTypeName(leftArgTypeCtx));
-                addTypeAsDepcy(leftArgTypeCtx, oper, operSchemaName);
+                addPgTypeDepcy(leftArgTypeCtx, oper);
             } else if (option.RIGHTARG() != null) {
                 Data_typeContext rightArgTypeCtx = option.type;
                 oper.setRightArg(getTypeName(rightArgTypeCtx));
-                addTypeAsDepcy(rightArgTypeCtx, oper, operSchemaName);
+                addPgTypeDepcy(rightArgTypeCtx, oper);
             } else if (option.COMMUTATOR() != null || option.NEGATOR() != null) {
                 All_op_refContext comutNameCtx = option.addition_oper_name;
                 IdentifierContext schemaNameCxt = comutNameCtx.identifier();
@@ -63,26 +69,13 @@ public class CreateOperator extends ParserAbstract {
                 oper.setHashes(true);
             } else if (option.RESTRICT() != null) {
                 oper.setRestrict(getFullCtxText(option.restr_name));
+                addDepSafe(oper, option.restr_name.identifier(), DbObjType.FUNCTION, true);
             } else if (option.JOIN() != null) {
                 oper.setJoin(getFullCtxText(option.join_name));
+                addDepSafe(oper, option.join_name.identifier(), DbObjType.FUNCTION, true);
             }
         }
 
-        operSchema.addOperator(oper);
-        return oper;
-    }
-
-    public static AbstractSchema getSchemaSafe(Operator_nameContext operNameCtx,
-            AbstractSchema defaultSchema, PgDatabase db) {
-        IdentifierContext schemaCtx = operNameCtx.schema_name;
-        AbstractSchema foundSchema = schemaCtx == null ?
-                defaultSchema : getSafe(db::getSchema, schemaCtx);
-        if (foundSchema != null) {
-            return foundSchema;
-        }
-
-        All_simple_opContext opChars = operNameCtx.operator;
-        throw new UnresolvedReferenceException("Schema not found for " +
-                opChars.getText(), opChars.getStart());
+        addSafe(AbstractSchema::addOperator, getSchemaSafe(ids), oper, ids);
     }
 }
