@@ -269,11 +269,11 @@ public abstract class ParserAbstract {
 
     public static <T extends IStatement, R extends IStatement> R getSafe(BiFunction<T, String, R> getter,
             T container, String name, Token errToken, boolean refMode) {
-        if (container == null) {
+        if (refMode) {
             return null;
         }
         R statement = getter.apply(container, name);
-        if (statement == null && !refMode) {
+        if (statement == null) {
             throw new UnresolvedReferenceException("Cannot find object in database: "
                     + errToken.getText(), errToken);
         }
