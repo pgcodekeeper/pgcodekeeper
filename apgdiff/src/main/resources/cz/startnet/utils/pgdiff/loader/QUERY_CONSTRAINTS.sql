@@ -30,3 +30,4 @@ LEFT JOIN pg_catalog.pg_description d ON c.oid = d.objoid
 WHERE ccc.relkind IN ('r', 'p', 'f')
     AND c.contype != 't'
     AND ccc.relnamespace NOT IN (SELECT oid FROM sys_schemas)
+    AND NOT (c.contype = 'f' AND ccc.relhastriggers AND ccc.relkind != 'p')
