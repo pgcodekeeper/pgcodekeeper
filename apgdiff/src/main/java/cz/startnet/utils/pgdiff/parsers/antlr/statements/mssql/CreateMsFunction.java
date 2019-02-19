@@ -57,10 +57,10 @@ public class CreateMsFunction extends BatchContextProcessor {
     @Override
     public void parseObject() {
         Qualified_nameContext qname = ctx.qualified_name();
-        getObject(getSchemaSafe(Arrays.asList(qname.schema, qname.name)));
+        getObject(getSchemaSafe(Arrays.asList(qname.schema, qname.name)), false);
     }
 
-    public AbstractFunction getObject(AbstractSchema schema) {
+    public AbstractFunction getObject(AbstractSchema schema, boolean isJdbc) {
         IdContext nameCtx = ctx.qualified_name().name;
         List<IdContext> ids = Arrays.asList(ctx.qualified_name().schema, nameCtx);
         String name = nameCtx.getText();
@@ -94,7 +94,12 @@ public class CreateMsFunction extends BatchContextProcessor {
                 func.setFuncType(FuncTypes.TABLE);
             }
 
-            addSafe(AbstractSchema::addFunction, schema, func, ids);
+            if (isJdbc) {
+                schema.addFunction(func);
+            } else {
+                addSafe(AbstractSchema::addFunction, schema, func, ids);
+            }
+
             return func;
         }
 
@@ -138,7 +143,11 @@ public class CreateMsFunction extends BatchContextProcessor {
             func.setFuncType(FuncTypes.TABLE);
         }
 
-        addSafe(AbstractSchema::addFunction, schema, func, ids);
+        if (isJdbc && schema != null) {
+            schema.addFunction(func);
+        } else {
+            addSafe(AbstractSchema::addFunction, schema, func, ids);
+        }
         return func;
     }
 

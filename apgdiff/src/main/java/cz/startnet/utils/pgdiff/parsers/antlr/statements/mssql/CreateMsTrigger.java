@@ -45,10 +45,10 @@ public class CreateMsTrigger extends BatchContextProcessor {
         }
         List<IdContext> ids = Arrays.asList(schemaCtx, ctx.table_name.name);
         addObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
-        getObject(getSchemaSafe(ids));
+        getObject(getSchemaSafe(ids), false);
     }
 
-    public MsTrigger getObject(AbstractSchema schema) {
+    public MsTrigger getObject(AbstractSchema schema, boolean isJdbc) {
         IdContext schemaCtx = ctx.trigger_name.schema;
         if (schemaCtx == null) {
             schemaCtx = ctx.table_name.schema;
@@ -79,6 +79,13 @@ public class CreateMsTrigger extends BatchContextProcessor {
 
         addSafe(PgTriggerContainer::addTrigger, cont, trigger,
                 Arrays.asList(schemaCtx, tableNameCtx, nameCtx));
+
+        if (isJdbc && schema != null) {
+            cont.addTrigger(trigger);
+        } else {
+            addSafe(PgTriggerContainer::addTrigger, cont, trigger,
+                    Arrays.asList(schemaCtx, tableNameCtx, nameCtx));
+        }
         return trigger;
     }
 }
