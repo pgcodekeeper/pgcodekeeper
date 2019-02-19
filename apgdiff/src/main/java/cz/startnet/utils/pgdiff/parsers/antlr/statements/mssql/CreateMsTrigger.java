@@ -77,9 +77,6 @@ public class CreateMsTrigger extends BatchContextProcessor {
         PgTriggerContainer cont = getSafe(AbstractSchema::getTriggerContainer,
                 schema, tableNameCtx);
 
-        addSafe(PgTriggerContainer::addTrigger, cont, trigger,
-                Arrays.asList(schemaCtx, tableNameCtx, nameCtx));
-
         if (isJdbc && schema != null) {
             cont.addTrigger(trigger);
         } else {
