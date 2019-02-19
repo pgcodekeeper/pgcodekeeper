@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -77,7 +78,7 @@ public final class PgObjLocation extends GenericColumn implements Serializable {
         if (obj instanceof PgObjLocation && super.equals(obj)) {
             PgObjLocation loc = (PgObjLocation) obj;
             return loc.getOffset() == getOffset()
-                    && loc.getFilePath().equals(getFilePath());
+                    && Objects.equals(loc.getFilePath(), getFilePath());
         }
         return false;
     }
