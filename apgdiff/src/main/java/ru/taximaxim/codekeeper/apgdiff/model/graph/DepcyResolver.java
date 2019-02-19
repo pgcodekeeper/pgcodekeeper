@@ -18,6 +18,7 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.DepthFirstIterator;
 
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
+import cz.startnet.utils.pgdiff.schema.MsTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -337,7 +338,7 @@ public class DepcyResolver {
 
                 // проверить а не
                 // требует ли пересоздания(Drop/create) родителькие объекты
-                IsDropped iter = new IsDropped();
+                IsDropped iter = new IsDropped(oldObj);
                 customIteration(new DepthFirstIterator<>(oldDepcyGraph.getGraph(),
                         oldObj), iter);
                 if (iter.getDropped() != null && iter.getDropped() != oldObj) {
@@ -518,6 +519,11 @@ public class DepcyResolver {
 
     private class IsDropped extends TraversalListenerAdapter<PgStatement, DefaultEdge> {
         private PgStatement needDrop;
+        private final PgStatement starter;
+
+        public IsDropped(PgStatement starter) {
+            this.starter = starter;
+        }
 
         @Override
         public void vertexFinished(VertexTraversalEvent<PgStatement> e) {
@@ -525,6 +531,10 @@ public class DepcyResolver {
                 return;
             }
             PgStatement st = e.getVertex();
+            if (starter.getStatementType() == DbObjType.COLUMN
+                    && starter.getParent() == st) {
+                return;
+            }
             PgStatement newSt = st.getTwin(newDb);
             if (newSt == null) {
                 if (st.getStatementType() == DbObjType.FUNCTION) {
@@ -536,7 +546,13 @@ public class DepcyResolver {
                 return;
             }
             AtomicBoolean isNeedDepcy = new AtomicBoolean();
-            if (st.appendAlterSQL(newSt, new StringBuilder(), isNeedDepcy) && isNeedDepcy.get()) {
+
+            StringBuilder sb = new StringBuilder();
+            if (st.appendAlterSQL(newSt, sb, isNeedDepcy) && isNeedDepcy.get()) {
+                if (newSt instanceof MsTable && sb.length() > 0
+                        && !(starter instanceof SourceStatement)) {
+                    return;
+                }
                 needDrop = st;
             }
         }

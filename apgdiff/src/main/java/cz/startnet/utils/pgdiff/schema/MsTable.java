@@ -57,6 +57,20 @@ public class MsTable extends AbstractTable {
             return true;
         }
 
+        boolean skipDep = columns.size() == newTable.columns.size();
+
+        int i = 0;
+        while (skipDep && i < columns.size()) {
+            skipDep = columns.get(i).getName().equals(newTable.columns.get(i).getName());
+            i++;
+        }
+
+        if (!skipDep) {
+            // be careful, this case checks by DepcyResolver (some depcies can be skipped)
+            isNeedDepcies.set(true);
+            sb.append("-- no action; triggering depcies for " + getQualifiedName() + GO + "\n");
+        }
+
         compareOptions(newTable, sb);
         compareOwners(newTable, sb);
         compareTableOptions(newTable, sb);

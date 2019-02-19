@@ -4,3 +4,6 @@ GO
 ALTER TABLE [dbo].[table1]
 	DROP COLUMN c2
 GO
+
+-- no action; triggering depcies for [dbo].[table1]
+GO
