@@ -449,6 +449,11 @@ public abstract class AbstractPgFunction extends AbstractFunction {
 
     protected abstract AbstractPgFunction getFunctionCopy();
 
+    @Override
+    public String getQualifiedName() {
+        return getParent().getQualifiedName() + '.' + getName();
+    }
+
     public class PgArgument extends Argument {
 
         private static final long serialVersionUID = -6351018532827424260L;
