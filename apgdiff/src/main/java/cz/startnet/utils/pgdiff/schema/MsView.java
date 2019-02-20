@@ -54,6 +54,7 @@ public class MsView extends AbstractView implements SourceStatement {
         if (!Objects.equals(getFirstPart(), newView.getFirstPart())
                 || !Objects.equals(getSecondPart(), newView.getSecondPart())) {
             sb.append(newView.getViewFullSQL(false));
+            isNeedDepcies.set(true);
         }
 
         if (!Objects.equals(getOwner(), newView.getOwner())) {

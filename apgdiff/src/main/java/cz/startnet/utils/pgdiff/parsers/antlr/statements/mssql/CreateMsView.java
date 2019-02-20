@@ -48,17 +48,16 @@ public class CreateMsView extends BatchContextProcessor {
     @Override
     public void parseObject() {
         Qualified_nameContext qname = ctx.qualified_name();
-        getObject(getSchemaSafe(Arrays.asList(qname.schema, qname.name)));
+        getObject(getSchemaSafe(Arrays.asList(qname.schema, qname.name)), false);
     }
 
-    public MsView getObject(AbstractSchema schema) {
+    public MsView getObject(AbstractSchema schema, boolean isJdbc) {
         IdContext nameCtx = ctx.qualified_name().name;
         List<IdContext> ids = Arrays.asList(ctx.qualified_name().schema, nameCtx);
         MsView view = new MsView(nameCtx.getText());
         view.setAnsiNulls(ansiNulls);
         view.setQuotedIdentified(quotedIdentifier);
         setSourceParts(view);
-        addSafe(AbstractSchema::addView, schema, view, ids);
 
         Select_statementContext vQuery = ctx.select_statement();
         if (vQuery != null) {
@@ -74,6 +73,12 @@ public class CreateMsView extends BatchContextProcessor {
             view.addAllDeps(select.getDepcies());
         }
 
+
+        if (isJdbc && schema != null) {
+            schema.addView(view);
+        } else {
+            addSafe(AbstractSchema::addView, schema, view, ids);
+        }
         return view;
     }
 }

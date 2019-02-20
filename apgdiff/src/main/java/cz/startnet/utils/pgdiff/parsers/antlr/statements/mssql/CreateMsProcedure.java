@@ -45,10 +45,10 @@ public class CreateMsProcedure extends BatchContextProcessor {
     @Override
     public void parseObject() {
         Qualified_nameContext qname = ctx.qualified_name();
-        getObject(getSchemaSafe(Arrays.asList(qname.schema, qname.name)));
+        getObject(getSchemaSafe(Arrays.asList(qname.schema, qname.name)), false);
     }
 
-    public AbstractFunction getObject(AbstractSchema schema) {
+    public AbstractFunction getObject(AbstractSchema schema, boolean isJdbc) {
         IdContext nameCtx = ctx.qualified_name().name;
         List<IdContext> ids = Arrays.asList(ctx.qualified_name().schema, nameCtx);
         if (ctx.proc_body().EXTERNAL() != null) {
@@ -66,8 +66,11 @@ public class CreateMsProcedure extends BatchContextProcessor {
             for (Procedure_optionContext option : ctx.procedure_option()) {
                 procedure.addOption(getFullCtxText(option));
             }
-
-            addSafe(AbstractSchema::addFunction, schema, procedure, ids);
+            if (isJdbc) {
+                schema.addFunction(procedure);
+            } else {
+                addSafe(AbstractSchema::addFunction, schema, procedure, ids);
+            }
             return procedure;
         }
 
@@ -85,7 +88,12 @@ public class CreateMsProcedure extends BatchContextProcessor {
         MsSqlClauses clauses = new MsSqlClauses(schemaName);
         clauses.analyze(ctx.proc_body().sql_clauses());
         procedure.addAllDeps(clauses.getDepcies());
-        addSafe(AbstractSchema::addFunction, schema, procedure, ids);
+
+        if (isJdbc && schema != null) {
+            schema.addFunction(procedure);
+        } else {
+            addSafe(AbstractSchema::addFunction, schema, procedure, ids);
+        }
         return procedure;
     }
 

@@ -11,6 +11,7 @@ SELECT c.oid::bigint,
     c.conname,
     c.contype,
     cf.relname AS foreign_table_name,
+    ts.spcname,
     (SELECT nsp.nspname
      FROM pg_catalog.pg_namespace nsp
      WHERE nsp.oid = cf.relnamespace) AS foreign_schema_name,
@@ -27,6 +28,8 @@ FROM pg_catalog.pg_constraint c
 LEFT JOIN pg_catalog.pg_class ccc ON ccc.oid = c.conrelid
 LEFT JOIN pg_catalog.pg_class cf ON cf.oid = c.confrelid
 LEFT JOIN pg_catalog.pg_description d ON c.oid = d.objoid
+LEFT JOIN pg_catalog.pg_class ci ON ci.oid = c.conindid
+LEFT JOIN pg_catalog.pg_tablespace ts ON ts.oid = ci.reltablespace
 WHERE ccc.relkind IN ('r', 'p', 'f')
     AND c.contype != 't'
     AND ccc.relnamespace NOT IN (SELECT oid FROM sys_schemas)

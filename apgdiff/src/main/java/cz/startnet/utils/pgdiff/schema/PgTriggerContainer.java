@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface PgTriggerContainer extends IStatement {
 
-    void addTrigger(AbstractTrigger rule);
+    void addTrigger(AbstractTrigger trigger);
     AbstractTrigger getTrigger(String name);
     List<AbstractTrigger> getTriggers();
 
