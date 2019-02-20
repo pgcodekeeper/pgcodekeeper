@@ -194,15 +194,9 @@ public abstract class TableAbstract extends ParserAbstract {
         doSafe(AbstractTable::addColumn, table, col);
     }
 
-    protected void addColumn(String columnName, Data_typeContext datatype,
-            Collate_identifierContext collate, List<Constraint_commonContext> constraints,
-            AbstractTable table) {
-        addColumn(columnName, datatype, collate, constraints, null, table);
-    }
-
     protected void addColumn(String columnName, List<Constraint_commonContext> constraints,
             AbstractTable table) {
-        addColumn(columnName, null, null, constraints, table);
+        addColumn(columnName, null, null, constraints, null, table);
     }
 
     protected void addInherit(AbstractPgTable table, List<IdentifierContext> idsInh) {
