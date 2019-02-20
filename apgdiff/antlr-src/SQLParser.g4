@@ -2503,7 +2503,7 @@ sort_specifier
   ;
 
 order_specification
-  : ASC | DESC | USING (schema_qualified_name | all_op_ref)
+  : ASC | DESC | USING all_op_ref
   ;
 
 null_ordering
