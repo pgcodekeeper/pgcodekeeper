@@ -533,6 +533,7 @@ public class DepcyResolver {
             PgStatement st = e.getVertex();
             if (starter.getStatementType() == DbObjType.COLUMN
                     && starter.getParent() == st) {
+                // do not trigger explicit column drops when table changes
                 return;
             }
             PgStatement newSt = st.getTwin(newDb);
@@ -551,6 +552,8 @@ public class DepcyResolver {
             if (st.appendAlterSQL(newSt, sb, isNeedDepcy) && isNeedDepcy.get()) {
                 if (newSt instanceof MsTable && sb.length() > 0
                         && !(starter instanceof SourceStatement)) {
+                    // special case for "fake alter" in MS tables
+                    // used for triggering refreshes when columns are added or deleted
                     return;
                 }
                 needDrop = st;
