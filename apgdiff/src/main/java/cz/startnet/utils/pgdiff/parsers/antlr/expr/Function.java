@@ -42,8 +42,8 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
 
-    public Function(String schema, PgDatabase db) {
-        super(schema, db);
+    public Function(PgDatabase db) {
+        super(db);
     }
 
     protected Function(AbstractExpr parent) {

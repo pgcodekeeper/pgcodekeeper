@@ -62,6 +62,7 @@ public class MsProcedure extends AbstractMsFunction implements SourceStatement {
         if (!Objects.equals(getFirstPart(), newProcedure.getFirstPart())
                 || !Objects.equals(getSecondPart(), newProcedure.getSecondPart())) {
             sb.append(newProcedure.getProcedureFullSQL(false));
+            isNeedDepcies.set(true);
         }
 
         if (!Objects.equals(getOwner(), newProcedure.getOwner())) {

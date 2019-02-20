@@ -1,5 +1,8 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
+import java.util.Arrays;
+import java.util.List;
+
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ClusteredContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintContext;
@@ -15,11 +18,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Type_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.MsType;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsType extends ParserAbstract {
@@ -32,11 +33,9 @@ public class CreateMsType extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
-        MsType type = new MsType(ctx.qualified_name().name.getText());
-
-        IdContext schemaCtx = ctx.qualified_name().schema;
-        AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
+    public void parseObject() {
+        IdContext nameCtx = ctx.qualified_name().name;
+        MsType type = new MsType(nameCtx.getText());
 
         Type_definitionContext def = ctx.type_definition();
 
@@ -46,8 +45,8 @@ public class CreateMsType extends ParserAbstract {
         } else if (def.EXTERNAL() != null) {
             String assemblyName = def.assembly_name.getText();
             type.setAssemblyName(assemblyName);
-            type.addDep(new GenericColumn(assemblyName, DbObjType.ASSEMBLY));
-
+            addDepSafe(type, Arrays.asList(def.assembly_name),
+                    DbObjType.ASSEMBLY, false);
             String assemblyClass;
             if (def.class_name != null) {
                 assemblyClass = def.class_name.getText();
@@ -64,8 +63,8 @@ public class CreateMsType extends ParserAbstract {
             type.setMemoryOptimized(def.WITH() != null && def.on_off().ON() != null);
         }
 
-        schema.addType(type);
-        return type;
+        List<IdContext> ids = Arrays.asList(ctx.qualified_name().schema, nameCtx);
+        addSafe(AbstractSchema::addType, getSchemaSafe(ids), type, ids);
     }
 
     private void fillTableType(Column_def_table_constraintContext colCtx, MsType type) {
@@ -78,7 +77,7 @@ public class CreateMsType extends ParserAbstract {
 
             if (colCtx.data_type() != null) {
                 col.setType(getFullCtxText(colCtx.data_type()));
-                addTypeAsDepcy(colCtx.data_type(), type);
+                addMsTypeDepcy(colCtx.data_type(), type);
             } else {
                 col.setExpression(getFullCtxText(colCtx.expression()));
             }

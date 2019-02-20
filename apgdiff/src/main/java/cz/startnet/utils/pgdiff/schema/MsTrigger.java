@@ -74,6 +74,7 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
             if (!Objects.equals(getFirstPart(), newTrigger.getFirstPart())
                     || !Objects.equals(getSecondPart(), newTrigger.getSecondPart())) {
                 sb.append(newTrigger.getTriggerFullSQL(false));
+                isNeedDepcies.set(true);
             }
 
             if (isDisable() != newTrigger.isDisable()) {

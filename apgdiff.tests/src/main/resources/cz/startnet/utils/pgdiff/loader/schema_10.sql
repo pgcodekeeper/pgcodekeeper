@@ -28,4 +28,4 @@ ALTER TABLE admin."user" OWNER TO postgres;
 CREATE INDEX fki_user_role_id_fkey ON admin."user" USING btree (role_id);
 
 ALTER TABLE ONLY admin."user"
-    ADD CONSTRAINT user_role_id_fkey FOREIGN KEY (role_id) REFERENCES acl_role(id);
+    ADD CONSTRAINT user_role_id_fkey FOREIGN KEY (role_id) REFERENCES admin.acl_role(id);

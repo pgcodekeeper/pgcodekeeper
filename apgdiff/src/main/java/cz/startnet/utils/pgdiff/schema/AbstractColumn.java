@@ -73,8 +73,8 @@ public abstract class AbstractColumn extends PgStatementWithSearchPath {
     }
 
     @Override
-    public String getLocation() {
-        String location = getMeta().getLocation();
+    public PgObjLocation getLocation() {
+        PgObjLocation location = getMeta().getLocation();
         if (location == null) {
             location = getParent().getLocation();
         }
@@ -82,7 +82,7 @@ public abstract class AbstractColumn extends PgStatementWithSearchPath {
     }
 
     @Override
-    public void setLocation(String location) {
+    public void setLocation(PgObjLocation location) {
         getMeta().setLocation(location);
     }
 

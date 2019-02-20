@@ -15,8 +15,8 @@ public class Insert extends AbstractExprWithNmspc<Insert_stmt_for_psqlContext> {
         super(parent);
     }
 
-    public Insert(String schema, PgDatabase db) {
-        super(schema, db);
+    public Insert(PgDatabase db) {
+        super(db);
     }
 
     @Override

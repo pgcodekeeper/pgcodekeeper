@@ -27,6 +27,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -86,14 +87,14 @@ public class LibraryLoader {
                 db = new JdbcLoader(JdbcConnector.fromUrl(path, timezone), args).getDbFromJdbc();
             }
 
-            db.getDescendants().forEach(st -> st.setLocation(path));
+            db.getDescendants().forEach(st -> st.setLocation(new PgObjLocation(path)));
             return db;
 
         case URL:
             try {
                 URI uri = new URI(path);
                 db = loadURI(uri, args, isIgnorePriv);
-                db.getDescendants().forEach(st -> st.setLocation(path));
+                db.getDescendants().forEach(st -> st.setLocation(new PgObjLocation(path)));
                 return db;
             } catch (URISyntaxException ex) {
                 // shouldn't happen, already checked by getSource
@@ -154,7 +155,6 @@ public class LibraryLoader {
 
     private PgDatabase loadZip(Path path, PgDiffArguments args, boolean isIgnorePriv)
             throws InterruptedException, IOException {
-
         String hash;
         if (path.startsWith(metaPath)) {
             hash = metaPath.relativize(path).toString();
@@ -168,7 +168,7 @@ public class LibraryLoader {
         PgDatabase db = getLibrary(unzip(path, metaPath.resolve(name)),
                 args, isIgnorePriv);
 
-        db.getDescendants().forEach(st -> st.setLocation(path.toString()));
+        db.getDescendants().forEach(st -> st.setLocation(new PgObjLocation(path.toString())));
         return db;
     }
 

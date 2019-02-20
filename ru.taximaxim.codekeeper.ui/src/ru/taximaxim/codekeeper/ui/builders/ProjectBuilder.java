@@ -27,7 +27,8 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
     protected IProject[] build(int kind, Map<String, String> args,
             IProgressMonitor monitor) throws CoreException {
         IProject proj = getProject();
-        if (!proj.hasNature(NATURE.ID)) {
+        if (!proj.hasNature(NATURE.ID) ||
+                !OpenProjectUtils.checkVersion(proj, new StringBuilder())) {
             return null;
         }
 
@@ -37,12 +38,12 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
             switch (buildType[0]) {
             case IncrementalProjectBuilder.AUTO_BUILD:
             case IncrementalProjectBuilder.INCREMENTAL_BUILD:
-                IResourceDelta delta = getDelta(getProject());
-                buildIncrement(delta, parser, monitor);
+                IResourceDelta delta = getDelta(proj);
+                buildIncrement(delta, parser, monitor, OpenProjectUtils.checkMsSql(proj));
                 break;
 
             case IncrementalProjectBuilder.FULL_BUILD:
-                if (!PgDbParser.deserialize(proj.getName(), parser)) {
+                if (!parser.deserialize(proj.getName())) {
                     parser.getFullDBFromPgDbProject(proj, monitor);
                 }
                 break;
@@ -64,14 +65,15 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
 
     @Override
     protected void clean(IProgressMonitor monitor) throws CoreException {
-        PgDbParser.clean(this.getProject().getName());
+        PgDbParser.clean(getProject().getName());
     }
 
-    private void buildIncrement(IResourceDelta delta, PgDbParser parser, IProgressMonitor monitor)
-            throws CoreException, InterruptedException, IOException {
+    private void buildIncrement(IResourceDelta delta, PgDbParser parser,
+            IProgressMonitor monitor, boolean isMsSql)
+                    throws CoreException, InterruptedException, IOException {
         List<IFile> files = new ArrayList<>();
         delta.accept(d -> {
-            if (UIProjectLoader.isInProject(d, OpenProjectUtils.checkMsSql(getProject()))) {
+            if (UIProjectLoader.isInProject(d, isMsSql)) {
                 IResource res = d.getResource();
                 if (res.getType() == IResource.FILE) {
                     switch (d.getKind()) {
@@ -87,6 +89,6 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
             }
             return true;
         });
-        parser.getObjFromProjFiles(files, monitor);
+        parser.getObjFromProjFiles(files, monitor, isMsSql);
     }
 }

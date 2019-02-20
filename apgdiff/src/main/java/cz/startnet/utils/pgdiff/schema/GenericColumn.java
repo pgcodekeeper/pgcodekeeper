@@ -12,7 +12,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public final class GenericColumn implements Serializable {
+public class GenericColumn implements Serializable {
 
     private static final Collection<String> SYS_SCHEMAS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             "information_schema", "pg_catalog"
@@ -95,24 +95,22 @@ public final class GenericColumn implements Serializable {
             return null;
         }
 
-        AbstractSchema s = db.getSchema(schema);
-        if (s == null && type != DbObjType.DATABASE
-                && type != DbObjType.EXTENSION
-                && type != DbObjType.ASSEMBLY
-                && type != DbObjType.ROLE
-                && type != DbObjType.USER) {
-            return null;
-        }
-
-        AbstractTable t;
         switch (type) {
         case DATABASE: return db;
-        case SCHEMA: return s;
+        case SCHEMA: return db.getSchema(schema);
         case EXTENSION: return db.getExtension(schema);
         case ASSEMBLY: return db.getAssembly(schema);
         case USER: return db.getUser(schema);
         case ROLE: return db.getRole(schema);
+        default: break;
+        }
 
+        AbstractSchema s = db.getSchema(schema);
+        if (s == null) {
+            return null;
+        }
+
+        switch (type) {
         case TYPE: return getType(s);
         case DOMAIN: return s.getDomain(table);
         case SEQUENCE: return s.getSequence(table);
@@ -129,7 +127,7 @@ public final class GenericColumn implements Serializable {
         case FTS_CONFIGURATION: return s.getFtsConfiguration(table);
         // handled in getStatement, left here for consistency
         case COLUMN:
-            t = s.getTable(table);
+            AbstractTable t = s.getTable(table);
             return t == null ? null : t.getColumn(column);
         case CONSTRAINT:
             t = s.getTable(table);
@@ -246,6 +244,18 @@ public final class GenericColumn implements Serializable {
         return found == 1 ? oper : null;
     }
 
+    public String getObjName() {
+        if (column != null) {
+            return column;
+        } else if (table != null) {
+            return table;
+        } else if (schema != null) {
+            return schema;
+        }
+
+        return "";
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -272,6 +282,34 @@ public final class GenericColumn implements Serializable {
         }
 
         return eq;
+    }
+
+    public final boolean compare(GenericColumn col) {
+        return Objects.equals(schema, col.schema)
+                && Objects.equals(table, col.table)
+                && Objects.equals(column, col.column)
+                && compareTypes(col.type);
+    }
+
+    private boolean compareTypes(DbObjType objType) {
+        if (type == objType) {
+            return true;
+        }
+
+        switch (objType) {
+        case TABLE:
+        case VIEW:
+        case SEQUENCE:
+            return type == DbObjType.TABLE || type == DbObjType.VIEW || type == DbObjType.SEQUENCE;
+        case FUNCTION:
+        case AGGREGATE:
+            return type == DbObjType.FUNCTION || type == DbObjType.AGGREGATE;
+        case TYPE:
+        case DOMAIN:
+            return type == DbObjType.TYPE || type == DbObjType.DOMAIN;
+        default:
+            return false;
+        }
     }
 
     @Override

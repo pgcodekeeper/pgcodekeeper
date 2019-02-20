@@ -64,7 +64,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class ViewSelect {
 
-    private final String schema;
     private final ViewSelect parent;
     private final Set<GenericColumn> depcies;
 
@@ -77,14 +76,12 @@ public class ViewSelect {
      */
     private final Set<String> cte = new HashSet<>();
 
-    public ViewSelect(String schema) {
-        this.schema = schema;
+    public ViewSelect() {
         parent = null;
         depcies = new LinkedHashSet<>();
     }
 
     private ViewSelect(ViewSelect parent) {
-        this.schema = parent.schema;
         this.parent = parent;
         depcies = parent.depcies;
     }
@@ -102,9 +99,10 @@ public class ViewSelect {
         String firstName = QNameParser.getFirstName(ids);
 
         boolean isCte = ids.size() == 1 && findCte(firstName) != null;
-        if (!isCte) {
-            depcies.add(new GenericColumn(
-                    QNameParser.getSchemaName(ids, schema), QNameParser.getFirstName(ids), DbObjType.TABLE));
+        String schemaName = QNameParser.getSchemaName(ids);
+        if (!isCte && schemaName != null) {
+            depcies.add(new GenericColumn(schemaName,
+                    QNameParser.getFirstName(ids), DbObjType.TABLE));
         }
     }
 
@@ -225,8 +223,11 @@ public class ViewSelect {
             }
         } else if (primary.TABLE() != null) {
             List<IdentifierContext> ids = primary.schema_qualified_name().identifier();
-            depcies.add(new GenericColumn(
-                    QNameParser.getSchemaName(ids, schema), QNameParser.getFirstName(ids), DbObjType.TABLE));
+            String schemaName = QNameParser.getSchemaName(ids);
+            if (schemaName == null) {
+                depcies.add(new GenericColumn(schemaName, QNameParser.getFirstName(ids),
+                        DbObjType.TABLE));
+            }
         } else if ((values = primary.values_stmt()) != null) {
             for (Values_valuesContext vals : values.values_values()) {
                 for (VexContext v : vals.vex()) {

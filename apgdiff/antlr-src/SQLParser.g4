@@ -344,7 +344,7 @@ validate_constraint
     ;
 
 drop_constraint
-    : DROP CONSTRAINT (IF EXISTS)?  constraint_name=schema_qualified_name cascade_restrict?
+    : DROP CONSTRAINT (IF EXISTS)? constraint_name=identifier cascade_restrict?
     ;
 
 table_deferrable
@@ -777,8 +777,7 @@ target_operator
     ;
 
 domain_constraint
-    :(CONSTRAINT name=schema_qualified_name)?
-     common_constraint
+    : (CONSTRAINT name=identifier)? (CHECK LEFT_PAREN expression=vex RIGHT_PAREN | NOT? NULL)
     ;
 
 create_transform_statement
@@ -952,7 +951,8 @@ rewrite_command
 
 create_trigger_statement
     : CONSTRAINT? TRIGGER name=identifier (before_true=BEFORE | (INSTEAD OF) | AFTER)
-    (((insert_true=INSERT | delete_true=DELETE | truncate_true=TRUNCATE) | update_true=UPDATE (OF names_references )?)OR?)+
+    (((insert_true=INSERT | delete_true=DELETE | truncate_true=TRUNCATE) 
+    | update_true=UPDATE (OF columns_list)?)OR?)+
     ON table_name=schema_qualified_name
     (FROM referenced_table_name=schema_qualified_name)?
     table_deferrable? table_initialy_immed?
@@ -960,6 +960,10 @@ create_trigger_statement
     (for_each_true=FOR EACH? (ROW | STATEMENT))?
     when_trigger?
     EXECUTE (FUNCTION | PROCEDURE) func_name=function_call
+    ;
+
+columns_list
+    : name+=identifier (COMMA name+=identifier)*
     ;
 
 trigger_referencing
@@ -1147,11 +1151,7 @@ sign
   ;
 
 create_schema_statement
-    : SCHEMA (IF NOT EXISTS)? name=identifier? (AUTHORIZATION user_name=identifier)? schema_def=schema_definition?
-    ;
-
-schema_definition
-    : schema_element+=statement+
+    : SCHEMA (IF NOT EXISTS)? name=identifier? (AUTHORIZATION user_name=identifier)?
     ;
 
 create_view_statement
@@ -1284,21 +1284,17 @@ list_of_type_column_def
 
 table_column_def
     : table_column_definition
-       | tabl_constraint=constraint_common
-       | LIKE parent_table=schema_qualified_name (like_opt+=like_option)*
+    | tabl_constraint=constraint_common
+    | LIKE parent_table=schema_qualified_name (like_opt+=like_option)*
     ;
 
 table_of_type_column_def
-    : table_of_type_column_definition
-       | tabl_constraint=constraint_common
+    : identifier (WITH OPTIONS)? constraint_common*
+    | tabl_constraint=constraint_common
     ;
 
 table_column_definition
-    : column_name=identifier datatype=data_type collate_name=collate_identifier? (colmn_constraint+=constraint_common)*
-    ;
-
-table_of_type_column_definition
-    : column_name=identifier (WITH OPTIONS)? (colmn_constraint+=constraint_common)*
+    : column_name=identifier datatype=data_type collate_name=collate_identifier? constraint_common*
     ;
 
 like_option
@@ -1308,21 +1304,20 @@ like_option
 * EXCLUDE, FOREIGN KEY - table_constraint
 */
 constraint_common
-    : (CONSTRAINT constraint_name=identifier)?
-      constr_body
+    : (CONSTRAINT constraint_name=identifier)? constr_body table_deferrable? table_initialy_immed?
     ;
 
 constr_body
-    :((EXCLUDE (USING index_method=identifier)?
-            LEFT_PAREN exclude_element=identifier WITH operator=all_op RIGHT_PAREN
-            index_parameters (WHERE vex)?)
-       | (FOREIGN KEY column_references)? table_references
-       | common_constraint
-       | table_unique_prkey
-       | DEFAULT default_expr=vex
-       | identity_body
-      )
-      table_deferrable? table_initialy_immed?
+    : EXCLUDE (USING index_method=identifier)?
+            LEFT_PAREN identifier WITH all_op (COMMA identifier WITH all_op)* RIGHT_PAREN
+            index_parameters (where=WHERE exp=vex)?
+    | (FOREIGN KEY column_references)? REFERENCES schema_qualified_name ref=column_references
+        (MATCH (FULL | PARTIAL | SIMPLE) | ON (DELETE | UPDATE) action)*
+    | CHECK LEFT_PAREN expression=vex RIGHT_PAREN (NO INHERIT)?
+    | NOT? NULL
+    | (UNIQUE | PRIMARY KEY) col=column_references? index_parameters
+    | DEFAULT default_expr=vex
+    | identity_body
     ;
 
 all_op
@@ -1344,38 +1339,16 @@ op_chars
     | HASH_SIGN
     ;
 
-table_unique_prkey
-    : (UNIQUE | PRIMARY KEY) column_references? index_parameters_unique=index_parameters including_index?
-    ;
-
 index_parameters
-    : with_storage_parameter? (USING INDEX (table_space | schema_qualified_name))?
-    ;
-
-common_constraint
-    :check_boolean_expression
-    | null_false=NOT? null_value=NULL
-    ;
-
-table_references
-    : REFERENCES reftable=schema_qualified_name column_references
-            (match_all | (ON DELETE action_on_delete=action) | (ON UPDATE action_on_update=action))*
+    : including_index? with_storage_parameter? (USING INDEX (table_space | schema_qualified_name))?
     ;
 
 column_references
-    :LEFT_PAREN names_references RIGHT_PAREN
+    : LEFT_PAREN names_references RIGHT_PAREN
     ;
 
 names_references
     : name+=schema_qualified_name (COMMA name+=schema_qualified_name)*
-    ;
-
-match_all
-    : MATCH (FULL | PARTIAL | SIMPLE)
-    ;
-
-check_boolean_expression
-    : CHECK LEFT_PAREN expression=vex RIGHT_PAREN (NO? INHERIT)?
     ;
 
 storage_parameter

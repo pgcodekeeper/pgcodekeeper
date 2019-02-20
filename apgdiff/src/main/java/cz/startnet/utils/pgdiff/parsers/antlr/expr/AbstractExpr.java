@@ -28,9 +28,10 @@ import cz.startnet.utils.pgdiff.schema.DbObjNature;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.IRelation;
-import cz.startnet.utils.pgdiff.schema.ISchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
@@ -43,7 +44,6 @@ public abstract class AbstractExpr {
     // but I couldn't get it from PgDumpLoader(WRITER), that's why for
     // cases with 'PgDumpLoader(WRITER)' the version was hard-coded in 'PgDatabase'.
     protected final PgSystemStorage systemStorage;
-    protected final String schema;
     private final AbstractExpr parent;
     private final Set<GenericColumn> depcies;
 
@@ -53,8 +53,7 @@ public abstract class AbstractExpr {
         return Collections.unmodifiableSet(depcies);
     }
 
-    public AbstractExpr(String schema, PgDatabase db) {
-        this.schema = schema;
+    public AbstractExpr(PgDatabase db) {
         parent = null;
         depcies = new LinkedHashSet<>();
         this.db = db;
@@ -62,9 +61,8 @@ public abstract class AbstractExpr {
     }
 
     protected AbstractExpr(AbstractExpr parent) {
-        this.schema = parent.schema;
         this.parent = parent;
-        depcies = parent.depcies;
+        this.depcies = parent.depcies;
         this.db = parent.db;
         this.systemStorage = parent.systemStorage;
     }
@@ -114,23 +112,14 @@ public abstract class AbstractExpr {
         String relationName = QNameParser.getFirstName(ids);
         if (schemaNameCtx != null) {
             schemaName = schemaNameCtx.getText();
-        } else if (findSchema(schema, null).containsRelation(relationName)) {
-            schemaName = schema;
-        } else {
-            for (ISchema s : systemStorage.getSchemas()) {
-                if (s.containsRelation(relationName)) {
-                    schemaName = s.getName();
-                    break;
-                }
-            }
-            if (schemaName == null) {
-                Log.log(Log.LOG_WARNING, "Could not find schema for relation: " + relationName);
-                schemaName = schema;
-            }
+        }
+
+        if (schemaName == null) {
+            return new GenericColumn(ApgdiffConsts.PG_CATALOG, relationName, DbObjType.TABLE);
         }
 
         GenericColumn depcy = new GenericColumn(schemaName, relationName, DbObjType.TABLE);
-        if (!isSystemSchema(schemaName)) {
+        if (!ApgdiffUtils.isPgSystemSchema(schemaName)) {
             depcies.add(depcy);
         }
         return depcy;
@@ -141,9 +130,9 @@ public abstract class AbstractExpr {
 
         if (typeName != null) {
             IdentifierContext qual = typeName.identifier();
-            String schemaName = qual == null ? this.schema : qual.getText();
+            String schemaName = qual == null ? null : qual.getText();
 
-            if (!isSystemSchema(schemaName)) {
+            if (schemaName != null && !ApgdiffUtils.isPgSystemSchema(schemaName)) {
                 depcies.add(new GenericColumn(schemaName,
                         typeName.identifier_nontype().getText(), DbObjType.TYPE));
             }
@@ -299,7 +288,7 @@ public abstract class AbstractExpr {
 
     protected void addColumnsDepcies(Schema_qualified_nameContext table, List<IdentifierContext> cols) {
         List<IdentifierContext> ids = table.identifier();
-        String schemaName = QNameParser.getSchemaName(ids, schema);
+        String schemaName = QNameParser.getSchemaName(ids);
         String tableName = QNameParser.getFirstName(ids);
         for (IdentifierContext col : cols) {
             addFilteredColumnDepcy(schemaName, tableName, col.getText());
@@ -319,14 +308,13 @@ public abstract class AbstractExpr {
      */
     protected void addFunctionDepcyNotOverloaded(List<IdentifierContext> ids) {
         IdentifierContext schemaNameCtx = QNameParser.getSchemaNameCtx(ids);
-        String schemaName;
+        String schemaName = null;
         if (schemaNameCtx != null) {
             schemaName = schemaNameCtx.getText();
-            if (isSystemSchema(schemaName)) {
-                return;
-            }
-        } else {
-            schemaName = schema;
+        }
+
+        if (schemaName == null || ApgdiffUtils.isPgSystemSchema(schemaName)) {
+            return;
         }
 
         String functionName = QNameParser.getFirstName(ids);
@@ -347,24 +335,9 @@ public abstract class AbstractExpr {
         IdentifierContext schemaNameCtx = QNameParser.getSchemaNameCtx(ids);
         if (schemaNameCtx != null) {
             schemaName = schemaNameCtx.getText();
-        } else {
-            if (findSchema(schema, null).containsFunction(signature)) {
-                schemaName = schema;
-            }
-            for (ISchema s : systemStorage.getSchemas()) {
-                if (s.containsFunction(signature)) {
-                    schemaName = s.getName();
-                    break;
-                }
-            }
-
-            if (schemaName == null) {
-                Log.log(Log.LOG_WARNING, "Could not find schema for function: " + signature);
-                schemaName = schema;
-            }
         }
 
-        if (!isSystemSchema(schemaName)) {
+        if (schemaName != null && !ApgdiffUtils.isPgSystemSchema(schemaName)) {
             depcies.add(new GenericColumn(schemaName,
                     PgDiffUtils.getQuotedName(QNameParser.getFirstName(ids)) +
                     ParserAbstract.getFullCtxText(sig.function_args()), DbObjType.FUNCTION));
@@ -373,7 +346,7 @@ public abstract class AbstractExpr {
 
     protected void addSchemaDepcy(List<IdentifierContext> ids) {
         String schemaName = QNameParser.getFirstName(ids);
-        if (!isSystemSchema(schemaName)) {
+        if (!ApgdiffUtils.isPgSystemSchema(schemaName)) {
             depcies.add(new GenericColumn(schemaName, DbObjType.SCHEMA));
         }
     }
@@ -381,23 +354,18 @@ public abstract class AbstractExpr {
     protected Stream<IRelation> findRelations(String schemaName, String relationName) {
         Stream<IRelation> foundRelations;
         if (schemaName != null) {
-            if (isSystemSchema(schemaName)) {
+            if (ApgdiffUtils.isPgSystemSchema(schemaName)) {
                 foundRelations = systemStorage.getSchema(schemaName).getRelations()
                         .map(r -> (IRelation) r);
             } else {
                 foundRelations = findSchema(schemaName, null).getRelations();
             }
         } else {
-            foundRelations = Stream.concat(findSchema(schema, null).getRelations(),
-                    systemStorage.getPgCatalog().getRelations());
+            foundRelations = systemStorage.getPgCatalog().getRelations()
+                    .map(r -> (IRelation) r);
         }
 
         return foundRelations.filter(r -> r.getName().equals(relationName));
-    }
-
-    protected boolean isSystemSchema(String schemaName) {
-        return PgSystemStorage.SCHEMA_PG_CATALOG.equals(schemaName)
-                || PgSystemStorage.SCHEMA_INFORMATION_SCHEMA.equals(schemaName);
     }
 
     protected AbstractSchema findSchema(String schemaName, ParserRuleContext errorCtx) {
