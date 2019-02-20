@@ -113,7 +113,7 @@ implements SqlContextProcessor {
         } else if (ctx.create_schema_statement() != null) {
             p = new CreateSchema(ctx.create_schema_statement(), db);
         } else if (ctx.create_view_statement() != null) {
-            p = new CreateView(ctx.create_view_statement(), db);
+            p = new CreateView(ctx.create_view_statement(), db, tablespace);
         } else if (ctx.create_type_statement() != null) {
             p = new CreateType(ctx.create_type_statement(), db);
         } else if (ctx.create_domain_statement() != null) {
