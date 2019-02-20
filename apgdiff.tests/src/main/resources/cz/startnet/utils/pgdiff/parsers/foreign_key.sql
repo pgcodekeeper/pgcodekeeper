@@ -1332,15 +1332,15 @@ ALTER TABLE fk_partitioned_fk ATTACH PARTITION fk_partitioned_fk_2
 -- Test creating a constraint at the parent that already exists in partitions.
 -- There should be no duplicated constraints, and attempts to drop the
 -- constraint in partitions should raise appropriate errors.
-create schema fkpart0
-  create table pkey (a int primary key)
-  create table fk_part (a int) partition by list (a)
-  create table fk_part_1 partition of fk_part
-      (foreign key (a) references fkpart0.pkey) for values in (1)
-  create table fk_part_23 partition of fk_part
-      (foreign key (a) references fkpart0.pkey) for values in (2, 3)
-      partition by list (a)
-  create table fk_part_23_2 partition of fk_part_23 for values in (2);
+create schema fkpart0;
+create table fkpart0.pkey (a int primary key);
+create table fkpart0.fk_part (a int) partition by list (a);
+create table fkpart0.fkpart0.fk_part_1 partition of fk_part
+    (foreign key (a) references fkpart0.pkey) for values in (1);
+create table fkpart0.fk_part_23 partition of fk_part
+    (foreign key (a) references fkpart0.pkey) for values in (2, 3)
+    partition by list (a);
+create table fkpart0.fk_part_23_2 partition of fk_part_23 for values in (2);
 
 alter table fkpart0.fk_part add foreign key (a) references fkpart0.pkey;
 alter table fkpart0.fk_part_1 drop constraint fk_part_1_a_fkey;
@@ -1359,11 +1359,11 @@ alter table fkpart0.fk_part_56_5 drop constraint fk_part_a_fkey;
 
 -- verify that attaching and detaching partitions maintains the right set of
 -- triggers
-create schema fkpart1
-  create table pkey (a int primary key)
-  create table fk_part (a int) partition by list (a)
-  create table fk_part_1 partition of fk_part for values in (1) partition by list (a)
-  create table fk_part_1_1 partition of fk_part_1 for values in (1);
+create schema fkpart1;
+create table fkpart1.pkey (a int primary key);
+create table fkpart1.fk_part (a int) partition by list (a);
+create table fkpart1.fk_part_1 partition of fk_part for values in (1) partition by list (a);
+create table fkpart1.fk_part_1_1 partition of fk_part_1 for values in (1);
 alter table fkpart1.fk_part add foreign key (a) references fkpart1.pkey;
 insert into fkpart1.fk_part values (1);		-- should fail
 insert into fkpart1.pkey values (1);
@@ -1376,11 +1376,11 @@ delete from fkpart1.pkey where a = 1;
 
 -- verify that attaching and detaching partitions manipulates the inheritance
 -- properties of their FK constraints correctly
-create schema fkpart2
-  create table pkey (a int primary key)
-  create table fk_part (a int, constraint fkey foreign key (a) references fkpart2.pkey) partition by list (a)
-  create table fk_part_1 partition of fkpart2.fk_part for values in (1) partition by list (a)
-  create table fk_part_1_1 (a int, constraint my_fkey foreign key (a) references fkpart2.pkey);
+create schema fkpart2;
+create table fkpart2.pkey (a int primary key);
+create table fkpart2.fk_part (a int, constraint fkey foreign key (a) references fkpart2.pkey) partition by list (a);
+create table fkpart2.fk_part_1 partition of fkpart2.fk_part for values in (1) partition by list (a);
+create table fkpart2.fk_part_1_1 (a int, constraint my_fkey foreign key (a) references fkpart2.pkey);
 alter table fkpart2.fk_part_1 attach partition fkpart2.fk_part_1_1 for values in (1);
 alter table fkpart2.fk_part_1 drop constraint fkey;	-- should fail
 alter table fkpart2.fk_part_1_1 drop constraint my_fkey;	-- should fail

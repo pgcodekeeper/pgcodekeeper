@@ -65,9 +65,9 @@ DROP TABLE viewtest_tbl;
 
 -- tests for temporary views
 
-CREATE SCHEMA temp_view_test
-    CREATE TABLE base_table (a int, id int)
-    CREATE TABLE base_table2 (a int, id int);
+CREATE SCHEMA temp_view_test;
+CREATE TABLE temp_view_test.base_table (a int, id int);
+CREATE TABLE temp_view_test.base_table2 (a int, id int);
 
 SET search_path TO temp_view_test, public;
 
@@ -84,8 +84,8 @@ CREATE VIEW temp_view_test.v2 AS SELECT * FROM base_table;
 -- should fail
 CREATE VIEW temp_view_test.v3_temp AS SELECT * FROM temp_table;
 -- should fail
-CREATE SCHEMA test_view_schema
-    CREATE TEMP VIEW testview AS SELECT 1;
+CREATE SCHEMA test_view_schema;
+CREATE TEMP VIEW test_view_schema.testview AS SELECT 1;
 
 -- joins: if any of the join relations are temporary, the view
 -- should also be temporary

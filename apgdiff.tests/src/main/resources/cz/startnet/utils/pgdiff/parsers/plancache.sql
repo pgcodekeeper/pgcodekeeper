@@ -96,11 +96,11 @@ select cache_test_2();
 
 --- Check that change of search_path is honored when re-using cached plan
 
-create schema s1
-  create table abc (f1 int);
+create schema s1;
+create table s1.abc (f1 int);
 
-create schema s2
-  create table abc (f1 int);
+create schema s2;
+create table s2.abc (f1 int);
 
 insert into s1.abc values(123);
 insert into s2.abc values(456);

@@ -32,9 +32,12 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public class AlterTable extends TableAbstract {
 
     private final Alter_table_statementContext ctx;
-    public AlterTable(Alter_table_statementContext ctx, PgDatabase db) {
+    private final String tablespace;
+
+    public AlterTable(Alter_table_statementContext ctx, PgDatabase db, String tablespace) {
         super(db);
         this.ctx = ctx;
+        this.tablespace = tablespace;
     }
 
     @Override
@@ -68,7 +71,7 @@ public class AlterTable extends TableAbstract {
                 IdentifierContext conNameCtx = tablAction.tabl_constraint.constraint_name;
                 AbstractConstraint con = parseAlterTableConstraint(tablAction,
                         createTableConstraintBlank(tablAction.tabl_constraint), db,
-                        getSchemaNameSafe(ids), nameCtx.getText());
+                        getSchemaNameSafe(ids), nameCtx.getText(), tablespace);
 
                 if (!con.getName().isEmpty()) {
                     addSafe(AbstractPgTable::addConstraint, tabl, con, Arrays.asList(
@@ -92,7 +95,7 @@ public class AlterTable extends TableAbstract {
             if (tablAction.table_column_definition() != null) {
                 Table_column_definitionContext column = tablAction.table_column_definition();
                 addColumn(column.column_name.getText(), column.datatype,
-                        column.collate_name, column.colmn_constraint, tabl);
+                        column.collate_name, column.constraint_common(), tabl);
             }
 
             if (tablAction.column != null) {
@@ -211,10 +214,11 @@ public class AlterTable extends TableAbstract {
     }
 
     public static AbstractConstraint parseAlterTableConstraint(Table_actionContext tableAction,
-            AbstractConstraint constrBlank, PgDatabase db, String schemaName, String tableName) {
+            AbstractConstraint constrBlank, PgDatabase db, String schemaName,
+            String tableName, String tablespace) {
         constrBlank.setNotValid(tableAction.not_valid != null);
         processTableConstraintBlank(tableAction.tabl_constraint, constrBlank, db,
-                schemaName, tableName);
+                schemaName, tableName, tablespace);
         return constrBlank;
     }
 }

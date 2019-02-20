@@ -61,6 +61,7 @@ public class MsFunction extends AbstractMsFunction implements SourceStatement {
                 return true;
             } else {
                 sb.append(newFunction.getFunctionFullSQL(false));
+                isNeedDepcies.set(true);
             }
         }
 

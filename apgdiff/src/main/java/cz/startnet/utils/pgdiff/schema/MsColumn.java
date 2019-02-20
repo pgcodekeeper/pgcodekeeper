@@ -168,7 +168,7 @@ public class MsColumn extends AbstractColumn {
             compareDefaults(getDefaultName(), getDefaultValue(), null, null, sb);
         }
 
-        compareTypes(newColumn, sb);
+        compareTypes(newColumn, isNeedDepcies, sb);
 
         String oldDefaultName = isNeedDropDefault ? null : getDefaultName();
         String oldDefault = isNeedDropDefault ? null : getDefaultValue();
@@ -207,11 +207,11 @@ public class MsColumn extends AbstractColumn {
         }
     }
 
-    private void compareTypes(MsColumn newColumn, StringBuilder sb) {
+    private void compareTypes(MsColumn newColumn, AtomicBoolean isNeedDepcies, StringBuilder sb) {
         String newCollation = newColumn.getCollation();
         if (!Objects.equals(getType(), newColumn.getType())
                 || !Objects.equals(newCollation, getCollation())) {
-
+            isNeedDepcies.set(true);
             sb.append(getAlterColumn(true, false, newColumn.getName()))
             .append(' ').append(newColumn.getType());
 
