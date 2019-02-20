@@ -25,6 +25,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PartitionPgTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.SimplePgTable;
 import cz.startnet.utils.pgdiff.schema.TypedPgTable;
 
@@ -65,7 +66,7 @@ public class CreateTable extends TableAbstract {
         } else {
             String partBound = ParserAbstract.getFullCtxText(partCtx.for_values_bound());
             table = fillRegularTable(new PartitionPgTable(tableName, partBound));
-            fillTypeColumns(partCtx.list_of_type_column_def(), table, schemaName);
+            fillTypeColumns(partCtx.list_of_type_column_def(), table, schemaName, tablespace);
             addInherit(table, partCtx.parent_table.identifier());
         }
 
@@ -75,11 +76,11 @@ public class CreateTable extends TableAbstract {
     private void fillColumns(Define_columnsContext columnsCtx, AbstractPgTable table, String schemaName) {
         for (Table_column_defContext colCtx : columnsCtx.table_col_def) {
             if (colCtx.tabl_constraint != null) {
-                addTableConstraint(colCtx.tabl_constraint, table, schemaName);
+                addTableConstraint(colCtx.tabl_constraint, table, schemaName, tablespace);
             } else if (colCtx.table_column_definition() != null) {
                 Table_column_definitionContext column = colCtx.table_column_definition();
                 addColumn(column.column_name.getText(), column.datatype,
-                        column.collate_name, column.colmn_constraint, table);
+                        column.collate_name, column.constraint_common(), table);
             }
         }
 
@@ -96,7 +97,7 @@ public class CreateTable extends TableAbstract {
         Data_typeContext typeName = typeCtx.type_name;
         String ofType = getTypeName(typeName);
         TypedPgTable table = new TypedPgTable(tableName, ofType);
-        fillTypeColumns(typeCtx.list_of_type_column_def(), table, schemaName);
+        fillTypeColumns(typeCtx.list_of_type_column_def(), table, schemaName, tablespace);
         addPgTypeDepcy(typeName, table);
         fillRegularTable(table);
         return table;
