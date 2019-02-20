@@ -239,10 +239,13 @@ public abstract class TableAbstract extends ParserAbstract {
             constrBlank.addDep(ftable);
 
             // TODO need ref to table
-            for (Schema_qualified_nameContext name : constrBody.ref.names_references().name) {
-                String colName = QNameParser.getFirstName(name.identifier());
-                constrBlank.addForeignColumn(colName);
-                constrBlank.addDep(new GenericColumn(refSchemaName, refTableName, colName, DbObjType.COLUMN));
+            Column_referencesContext refs = constrBody.ref;
+            if (refs != null) {
+                for (Schema_qualified_nameContext name : refs.names_references().name) {
+                    String colName = QNameParser.getFirstName(name.identifier());
+                    constrBlank.addForeignColumn(colName);
+                    constrBlank.addDep(new GenericColumn(refSchemaName, refTableName, colName, DbObjType.COLUMN));
+                }
             }
         }
 
