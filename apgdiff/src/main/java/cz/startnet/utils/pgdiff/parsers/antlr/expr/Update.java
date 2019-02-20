@@ -19,8 +19,8 @@ public class Update extends AbstractExprWithNmspc<Update_stmt_for_psqlContext> {
         super(parent);
     }
 
-    public Update(String schema, PgDatabase db) {
-        super(schema, db);
+    public Update(PgDatabase db) {
+        super(db);
     }
 
     @Override

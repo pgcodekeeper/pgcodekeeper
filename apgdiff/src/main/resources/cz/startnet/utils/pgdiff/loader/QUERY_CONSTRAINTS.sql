@@ -6,7 +6,7 @@ WITH sys_schemas AS (
         OR EXISTS (SELECT 1 FROM pg_catalog.pg_depend dp WHERE dp.objid = n.oid AND dp.deptype = 'e')
 )
 
-SELECT ccc.oid::bigint, 
+SELECT c.oid::bigint, 
     ccc.relname,
     c.conname,
     c.contype,
@@ -23,10 +23,11 @@ SELECT ccc.oid::bigint,
     d.description,
     pg_catalog.pg_get_constraintdef(c.oid) AS definition,
     ccc.relnamespace AS schema_oid
-FROM pg_catalog.pg_class ccc
-RIGHT JOIN pg_catalog.pg_constraint c ON (ccc.oid = c.conrelid AND c.coninhcount = 0)
+FROM pg_catalog.pg_constraint c
+LEFT JOIN pg_catalog.pg_class ccc ON ccc.oid = c.conrelid
 LEFT JOIN pg_catalog.pg_class cf ON cf.oid = c.confrelid
 LEFT JOIN pg_catalog.pg_description d ON c.oid = d.objoid
 WHERE ccc.relkind IN ('r', 'p', 'f')
     AND c.contype != 't'
     AND ccc.relnamespace NOT IN (SELECT oid FROM sys_schemas)
+    AND c.coninhcount = 0

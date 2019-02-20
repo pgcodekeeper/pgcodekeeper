@@ -28,28 +28,27 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomTSQLParserListener;
-import cz.startnet.utils.pgdiff.parsers.antlr.ReferenceListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLOverridesListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLOverridesListener;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.StatementOverride;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.fileutils.InputStreamProvider;
 
 /**
  * Loads PostgreSQL dump into classes.
  *
  * @author fordfrog
  */
-public class PgDumpLoader implements AutoCloseable {
+public class PgDumpLoader {
 
-    private final InputStream input;
-    private boolean isInputInAntlrParser;
-
+    private final InputStreamProvider input;
     private final String inputObjectName;
     private final PgDiffArguments args;
 
@@ -58,8 +57,7 @@ public class PgDumpLoader implements AutoCloseable {
 
     private final List<AntlrError> errors = new ArrayList<>();
 
-    private boolean loadSchema = true;
-    private boolean loadReferences;
+    private boolean refMode;
     private List<StatementBodyContainer> statementBodyReferences;
     private Map<PgStatement, StatementOverride> overrides;
 
@@ -67,23 +65,19 @@ public class PgDumpLoader implements AutoCloseable {
         return errors;
     }
 
-    public void setLoadSchema(boolean loadSchema) {
-        this.loadSchema = loadSchema;
+    public void setRefMode(boolean refMode) {
+        this.refMode = refMode;
     }
 
     public void setOverridesMap(Map<PgStatement, StatementOverride> overrides) {
         this.overrides = overrides;
     }
 
-    public void setLoadReferences(boolean loadReferences) {
-        this.loadReferences = loadReferences;
-    }
-
     public List<StatementBodyContainer> getStatementBodyReferences() {
         return statementBodyReferences;
     }
 
-    public PgDumpLoader(InputStream input, String inputObjectName,
+    public PgDumpLoader(InputStreamProvider input, String inputObjectName,
             PgDiffArguments args, IProgressMonitor monitor, int monitoringLevel) {
         this.input = input;
         this.inputObjectName = inputObjectName;
@@ -95,7 +89,7 @@ public class PgDumpLoader implements AutoCloseable {
     /**
      * This constructor sets the monitoring level to the default of 1.
      */
-    public PgDumpLoader(InputStream input, String inputObjectName,
+    public PgDumpLoader(InputStreamProvider input, String inputObjectName,
             PgDiffArguments args, IProgressMonitor monitor) {
         this(input, inputObjectName, args, monitor, 1);
     }
@@ -103,7 +97,7 @@ public class PgDumpLoader implements AutoCloseable {
     /**
      * This constructor uses {@link NullProgressMonitor}.
      */
-    public PgDumpLoader(InputStream input, String inputObjectName, PgDiffArguments args) {
+    public PgDumpLoader(InputStreamProvider input, String inputObjectName, PgDiffArguments args) {
         this(input, inputObjectName, args, new NullProgressMonitor(), 0);
     }
 
@@ -113,15 +107,15 @@ public class PgDumpLoader implements AutoCloseable {
      * or wrap usage of the instance with try-with-resources.
      */
     public PgDumpLoader(File inputFile, PgDiffArguments args,
-            IProgressMonitor monitor, int monitoringLevel) throws IOException {
-        this(new FileInputStream(inputFile), inputFile.toString(), args, monitor, monitoringLevel);
+            IProgressMonitor monitor, int monitoringLevel) {
+        this(() -> new FileInputStream(inputFile), inputFile.toString(), args, monitor, monitoringLevel);
     }
 
     /**
      * @see #PgDumpLoader(File, PgDiffArguments, IProgressMonitor, int)
      * @see #PgDumpLoader(InputStream, String, PgDiffArguments, IProgressMonitor)
      */
-    public PgDumpLoader(File inputFile, PgDiffArguments args, IProgressMonitor monitor) throws IOException {
+    public PgDumpLoader(File inputFile, PgDiffArguments args, IProgressMonitor monitor) {
         this(inputFile, args, monitor, 1);
     }
 
@@ -129,7 +123,7 @@ public class PgDumpLoader implements AutoCloseable {
      * @see #PgDumpLoader(File, PgDiffArguments, IProgressMonitor, int)
      * @see #PgDumpLoader(InputStream, String, PgDiffArguments)
      */
-    public PgDumpLoader(File inputFile, PgDiffArguments args) throws IOException {
+    public PgDumpLoader(File inputFile, PgDiffArguments args) {
         this(inputFile, args, new NullProgressMonitor(), 0);
     }
 
@@ -145,9 +139,8 @@ public class PgDumpLoader implements AutoCloseable {
         AbstractSchema schema = args.isMsSql() ? new MsSchema(ApgdiffConsts.DBO) :
             new PgSchema(ApgdiffConsts.PUBLIC);
         d.addSchema(schema);
+        schema.setLocation(new PgObjLocation(inputObjectName));
         d.setDefaultSchema(schema.getName());
-        d.getSchema(schema.getName()).setLocation(inputObjectName);
-
         Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>(1);
         loadDatabase(d, antlrTasks);
         AntlrParser.finishAntlr(antlrTasks);
@@ -160,53 +153,33 @@ public class PgDumpLoader implements AutoCloseable {
         PgDiffUtils.checkCancelled(monitor);
 
         if (args.isMsSql()) {
-            List<TSqlContextProcessor> listeners = new ArrayList<>();
+            TSqlContextProcessor listener;
             if (overrides != null) {
-                listeners.add(new TSQLOverridesListener(intoDb, inputObjectName, errors, monitor, overrides));
-            } else if (loadSchema) {
-                listeners.add(new CustomTSQLParserListener(intoDb, inputObjectName, errors, monitor));
+                listener = new TSQLOverridesListener(
+                        intoDb, inputObjectName, refMode, errors, monitor, overrides);
+            } else {
+                listener = new CustomTSQLParserListener(
+                        intoDb, inputObjectName, refMode, errors, monitor);
+                statementBodyReferences = Collections.emptyList();
             }
-
-            // TODO Uncomment this code and use it instead of
-            // 'statementBodyReferences = Collections.emptyList()'
-            // when references-mechanism for MSSQL will be added.
-            /*
-            if (loadReferences) {
-                ReferenceListener refListener = new ReferenceListener(intoDb, inputObjectName, monitor);
-                statementBodyReferences = refListener.getStatementBodies();
-                listeners.add(refListener);
-            }
-             */
-            statementBodyReferences = Collections.emptyList();
-
-            isInputInAntlrParser = true;
             AntlrParser.parseTSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
-                    monitor, monitoringLevel, listeners, antlrTasks);
+                    monitor, monitoringLevel, listener, antlrTasks);
         } else {
-            List<SqlContextProcessor> listeners = new ArrayList<>();
+            SqlContextProcessor listener;
             if (overrides != null) {
-                listeners.add(new SQLOverridesListener(intoDb, inputObjectName, errors, monitor, overrides));
-            } else if (loadSchema) {
-                listeners.add(new CustomSQLParserListener(intoDb, inputObjectName, errors, monitor));
-            }
-            if (loadReferences) {
-                ReferenceListener refListener = new ReferenceListener(intoDb, inputObjectName, monitor);
-                statementBodyReferences = refListener.getStatementBodies();
-                listeners.add(refListener);
+                listener = new SQLOverridesListener(
+                        intoDb, inputObjectName, refMode, errors, monitor, overrides);
+            } else {
+                CustomSQLParserListener cust =
+                        new CustomSQLParserListener(intoDb, inputObjectName, refMode, errors, monitor);
+                statementBodyReferences = cust.getStatementBodies();
+                listener = cust;
             }
 
-            isInputInAntlrParser = true;
             AntlrParser.parseSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
-                    monitor, monitoringLevel, listeners, antlrTasks);
+                    monitor, monitoringLevel, listener, antlrTasks);
         }
 
         return intoDb;
-    }
-
-    @Override
-    public void close() throws IOException {
-        if (!isInputInAntlrParser) {
-            input.close();
-        }
     }
 }

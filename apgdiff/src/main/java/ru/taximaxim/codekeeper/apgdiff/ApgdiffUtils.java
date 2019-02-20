@@ -75,6 +75,18 @@ public final class ApgdiffUtils {
         return null;
     }
 
+    public static boolean isSystemSchema(String schema, boolean isPostgres) {
+        return isPostgres ? isPgSystemSchema(schema) : isMsSystemSchema(schema);
+    }
+
+    public static boolean isPgSystemSchema(String schema) {
+        return ApgdiffConsts.PG_CATALOG.equalsIgnoreCase(schema)
+                || ApgdiffConsts.INFORMATION_SCHEMA.equalsIgnoreCase(schema);
+    }
+
+    public static boolean isMsSystemSchema(String schema) {
+        return ApgdiffConsts.SYS.equalsIgnoreCase(schema);
+    }
 
     private ApgdiffUtils() {
     }

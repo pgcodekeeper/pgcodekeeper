@@ -1,5 +1,8 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -10,6 +13,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSqlClauses;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsTrigger extends BatchContextProcessor {
 
@@ -32,24 +38,54 @@ public class CreateMsTrigger extends BatchContextProcessor {
     }
 
     @Override
-    public MsTrigger getObject() {
+    public void parseObject() {
         IdContext schemaCtx = ctx.trigger_name.schema;
-        AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
-        return getObject(schema);
+        if (schemaCtx == null) {
+            schemaCtx = ctx.table_name.schema;
+        }
+        List<IdContext> ids = Arrays.asList(schemaCtx, ctx.table_name.name);
+        addObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
+        getObject(getSchemaSafe(ids), false);
     }
 
-    public MsTrigger getObject(AbstractSchema schema) {
-        MsTrigger trigger = new MsTrigger(ctx.trigger_name.name.getText(),
-                ctx.table_name.name.getText());
+    public MsTrigger getObject(AbstractSchema schema, boolean isJdbc) {
+        IdContext schemaCtx = ctx.trigger_name.schema;
+        if (schemaCtx == null) {
+            schemaCtx = ctx.table_name.schema;
+        }
+        IdContext tableNameCtx = ctx.table_name.name;
+        IdContext nameCtx = ctx.trigger_name.name;
+
+        MsTrigger trigger = new MsTrigger(nameCtx.getText(), tableNameCtx.getText());
         trigger.setAnsiNulls(ansiNulls);
         trigger.setQuotedIdentified(quotedIdentifier);
         setSourceParts(trigger);
 
-        MsSqlClauses clauses = new MsSqlClauses(schema.getName());
+        String schemaName;
+        if (schema != null) {
+            schemaName = schema.getName();
+        } else {
+            List<IdContext> ids = Arrays.asList(schemaCtx, tableNameCtx);
+            schemaName = getSchemaNameSafe(ids);
+            addObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
+        }
+
+        MsSqlClauses clauses = new MsSqlClauses(schemaName);
         clauses.analyze(ctx.sql_clauses());
         trigger.addAllDeps(clauses.getDepcies());
 
-        getSafe(schema::getTriggerContainer, ctx.table_name.name).addTrigger(trigger);
+        PgTriggerContainer cont = getSafe(AbstractSchema::getTriggerContainer,
+                schema, tableNameCtx);
+
+        addSafe(PgTriggerContainer::addTrigger, cont, trigger,
+                Arrays.asList(schemaCtx, tableNameCtx, nameCtx));
+
+        if (isJdbc && schema != null) {
+            cont.addTrigger(trigger);
+        } else {
+            addSafe(PgTriggerContainer::addTrigger, cont, trigger,
+                    Arrays.asList(schemaCtx, tableNameCtx, nameCtx));
+        }
         return trigger;
     }
 }

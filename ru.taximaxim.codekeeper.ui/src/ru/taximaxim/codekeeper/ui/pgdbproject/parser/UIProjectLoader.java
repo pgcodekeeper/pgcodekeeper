@@ -65,11 +65,15 @@ public class UIProjectLoader extends ProjectLoader {
      *
      * @return database schema
      */
-    public PgDatabase loadDatabaseSchemaFromPgProject()
+    public PgDatabase loadDatabaseSchemaFromProject()
             throws InterruptedException, IOException, CoreException {
         PgDatabase db = new PgDatabase();
         db.setArguments(arguments);
-        loadPgStructure(iProject, db);
+        if (arguments.isMsSql()) {
+            loadMsStructure(iProject, db);
+        } else {
+            loadPgStructure(iProject, db);
+        }
         finishLoaders();
 
         FullAnalyze.fullAnalyze(db, errors);
@@ -143,14 +147,12 @@ public class UIProjectLoader extends ProjectLoader {
         PgDiffArguments arguments = db.getArguments().clone();
         arguments.setInCharsetName(file.getCharset());
 
-        try (PgUIDumpLoader loader = new PgUIDumpLoader(file, arguments, monitor)) {
-            loader.setLoadReferences(statementBodies != null);
-            if (isOverrideMode) {
-                loader.setOverridesMap(overrides);
-            }
-            loader.loadDatabase(db, antlrTasks);
-            launchedLoaders.add(loader);
+        PgUIDumpLoader loader = new PgUIDumpLoader(file, arguments, monitor);
+        if (isOverrideMode) {
+            loader.setOverridesMap(overrides);
         }
+        loader.loadDatabase(db, antlrTasks);
+        launchedLoaders.add(loader);
     }
 
     public PgDatabase buildFiles(Collection<IFile> files, boolean isMsSql)
@@ -206,7 +208,8 @@ public class UIProjectLoader extends ProjectLoader {
         .filter(sc -> schemaFiles.contains(AbstractModelExporter.getExportedFilename(sc))
                 || sc.hasChildren())
         .forEach(st -> newDb.addSchema(st.deepCopy()));
-
+        newDb.getObjReferences().putAll(db.getObjReferences());
+        newDb.getObjDefinitions().putAll(db.getObjDefinitions());
         return newDb;
     }
 
@@ -342,13 +345,13 @@ public class UIProjectLoader extends ProjectLoader {
      */
     private static boolean isInProject(IPath path) {
         String dir = path.segment(0);
-        return dir == null ? false : Arrays.stream(ApgdiffConsts.WORK_DIR_NAMES.values())
+        return dir != null && Arrays.stream(ApgdiffConsts.WORK_DIR_NAMES.values())
                 .map(Enum::name).anyMatch(dir::equals);
     }
 
     private static boolean isInMsProject(IPath path) {
         String dir = path.segment(0);
-        return dir == null ? false : Arrays.stream(ApgdiffConsts.MS_WORK_DIR_NAMES.values())
+        return dir != null && Arrays.stream(ApgdiffConsts.MS_WORK_DIR_NAMES.values())
                 .map(MS_WORK_DIR_NAMES::getDirName).anyMatch(dir::equals);
     }
 
@@ -383,7 +386,7 @@ public class UIProjectLoader extends ProjectLoader {
 
     public static boolean isInProject(IEditorInput editorInput) {
         IResource res = ResourceUtil.getResource(editorInput);
-        return res == null ? false : isInProject(res);
+        return res != null && isInProject(res);
     }
 
     /**

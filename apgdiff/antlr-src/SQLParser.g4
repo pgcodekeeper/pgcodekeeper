@@ -343,7 +343,7 @@ validate_constraint
     ;
 
 drop_constraint
-    : DROP CONSTRAINT (IF EXISTS)?  constraint_name=schema_qualified_name cascade_restrict?
+    : DROP CONSTRAINT (IF EXISTS)? constraint_name=identifier cascade_restrict?
     ;
 
 table_deferrable
@@ -956,7 +956,8 @@ rewrite_command
 
 create_trigger_statement
     : CONSTRAINT? TRIGGER name=identifier (before_true=BEFORE | (INSTEAD OF) | AFTER)
-    (((insert_true=INSERT | delete_true=DELETE | truncate_true=TRUNCATE) | update_true=UPDATE (OF names_references )?)OR?)+
+    (((insert_true=INSERT | delete_true=DELETE | truncate_true=TRUNCATE) 
+    | update_true=UPDATE (OF columns_list)?)OR?)+
     ON table_name=schema_qualified_name
     (FROM referenced_table_name=schema_qualified_name)?
     table_deferrable? table_initialy_immed?
@@ -964,6 +965,10 @@ create_trigger_statement
     (for_each_true=FOR EACH? (ROW | STATEMENT))?
     when_trigger?
     EXECUTE (FUNCTION | PROCEDURE) func_name=function_call
+    ;
+
+columns_list
+    : name+=identifier (COMMA name+=identifier)*
     ;
 
 trigger_referencing
@@ -1157,11 +1162,7 @@ sign
   ;
 
 create_schema_statement
-    : SCHEMA if_not_exists? name=identifier? (AUTHORIZATION user_name=identifier)? schema_def=schema_definition?
-    ;
-
-schema_definition
-    : schema_element+=statement+
+    : SCHEMA if_not_exists? name=identifier? (AUTHORIZATION user_name=identifier)?
     ;
 
 create_view_statement

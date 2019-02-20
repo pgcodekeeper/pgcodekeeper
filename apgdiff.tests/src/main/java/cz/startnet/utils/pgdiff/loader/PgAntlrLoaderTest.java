@@ -811,7 +811,7 @@ class PgDB10 extends PgDatabaseObjectCreator {
         table.addIndex(idx);
 
         constraint = new PgConstraint("user_role_id_fkey");
-        constraint.setDefinition("FOREIGN KEY (role_id) REFERENCES acl_role(id)");
+        constraint.setDefinition("FOREIGN KEY (role_id) REFERENCES admin.acl_role(id)");
         table.addConstraint(constraint);
 
         table.setOwner("postgres");
