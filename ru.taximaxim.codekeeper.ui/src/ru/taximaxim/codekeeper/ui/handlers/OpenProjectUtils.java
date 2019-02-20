@@ -82,7 +82,7 @@ public final class OpenProjectUtils {
         return canContinue;
     }
 
-    private static boolean checkVersion(IProject proj, StringBuilder message) {
+    public static boolean checkVersion(IProject proj, StringBuilder message) {
         message.setLength(0);
 
         File markerFile = new File(proj.getLocation().toFile(),

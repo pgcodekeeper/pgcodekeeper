@@ -15,12 +15,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Foreign_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.schema.AbstractForeignTable;
+import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PartitionForeignPgTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.SimpleForeignPgTable;
 
 public class CreateForeignTable extends TableAbstract {
@@ -33,16 +32,11 @@ public class CreateForeignTable extends TableAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public void parseObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
         String tableName = QNameParser.getFirstName(ids);
-        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
-        String schemaName = schema.getName();
-
-        AbstractTable table = defineTable(tableName, schemaName);
-
-        schema.addTable(table);
-        return table;
+        AbstractTable table = defineTable(tableName, getSchemaNameSafe(ids));
+        addSafe(AbstractSchema::addTable, getSchemaSafe(ids), table, ids);
     }
 
     private AbstractTable defineTable(String tableName, String schemaName) {
@@ -61,7 +55,7 @@ public class CreateForeignTable extends TableAbstract {
             table = fillForeignTable(srvCtx, new PartitionForeignPgTable(
                     tableName, srvCtx.server_name.getText(), partBound));
 
-            fillTypeColumns(partCtx.list_of_type_column_def(), table, schemaName);
+            fillTypeColumns(partCtx.list_of_type_column_def(), table, schemaName, null);
             addInherit(table, partCtx.parent_table.identifier());
         }
 
@@ -72,7 +66,7 @@ public class CreateForeignTable extends TableAbstract {
             String schemaName) {
         for (Foreign_column_defContext colCtx : columnsCtx.columns) {
             if (colCtx.tabl_constraint != null) {
-                addTableConstraint(colCtx.tabl_constraint, table, schemaName);
+                addTableConstraint(colCtx.tabl_constraint, table, schemaName, null);
             } else if (colCtx.define_foreign_columns() != null) {
                 Define_foreign_columnsContext column = colCtx.define_foreign_columns();
                 addColumn(column.column_name.getText(), column.datatype,

@@ -59,14 +59,14 @@ import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.ISchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class ValueExpr extends AbstractExpr {
 
-    public ValueExpr(String schema, PgDatabase db) {
-        super(schema, db);
+    public ValueExpr(PgDatabase db) {
+        super(db);
     }
 
     protected ValueExpr(AbstractExpr parent) {
@@ -103,7 +103,7 @@ public class ValueExpr extends AbstractExpr {
             IdentifierContext typeSchema = customType == null ? null : customType.identifier();
             // TODO remove when tokens are refactored
             if (dataType.array_type().isEmpty() && dataType.SETOF() == null && customType != null &&
-                    (typeSchema == null || "pg_catalog".equals(typeSchema.getText()))) {
+                    (typeSchema == null || ApgdiffConsts.PG_CATALOG.equals(typeSchema.getText()))) {
                 // check simple built-in types for reg*** casts
                 Value_expression_primaryContext castPrimary = vex.vex().get(0).primary();
                 Unsigned_value_specificationContext value;
@@ -150,7 +150,7 @@ public class ValueExpr extends AbstractExpr {
         } else if ((operator = getOperatorToken(vex)) != null || (op = vex.op()) != null) {
             if (op != null) {
                 IdentifierContext opSchemaCtx = op.identifier();
-                if (opSchemaCtx == null || opSchemaCtx.getText().equals(PgSystemStorage.SCHEMA_PG_CATALOG)) {
+                if (opSchemaCtx == null || opSchemaCtx.getText().equals(ApgdiffConsts.PG_CATALOG)) {
                     operator = op.OP_CHARS();
                 }
             }
@@ -533,7 +533,7 @@ public class ValueExpr extends AbstractExpr {
         // TODO When the user's operators will be also process by codeKeeper,
         // put in 'findFunctions' operator's schema name instead of 'PgSystemStorage.SCHEMA_PG_CATALOG'.
         IFunction resultOperFunction = resolveCall(operator, Arrays.asList(sourceArgsTypes),
-                availableFunctions(PgSystemStorage.SCHEMA_PG_CATALOG));
+                availableFunctions(ApgdiffConsts.PG_CATALOG));
         return new Pair<>(null, resultOperFunction != null ? resultOperFunction.getReturns()
                 : TypesSetManually.FUNCTION_COLUMN);
     }
@@ -569,8 +569,7 @@ public class ValueExpr extends AbstractExpr {
             }
             return schema.getFunctions().stream();
         } else {
-            return Stream.concat(findSchema(schema, null).getFunctions().stream(),
-                    systemStorage.getPgCatalog().getFunctions().stream());
+            return systemStorage.getPgCatalog().getFunctions().stream();
         }
     }
 

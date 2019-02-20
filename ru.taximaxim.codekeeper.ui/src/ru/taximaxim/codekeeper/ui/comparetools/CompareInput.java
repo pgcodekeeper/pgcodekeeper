@@ -26,8 +26,8 @@ public class CompareInput extends CompareEditorInput {
         PgStatement oldStatement = override.getOldStatement();
         PgStatement newStatement = override.getNewStatement();
 
-        String oldPath = oldStatement.getLocation();
-        String newPath = newStatement.getLocation();
+        String oldPath = oldStatement.getLocation().getFilePath();
+        String newPath = newStatement.getLocation().getFilePath();
 
         left = new CompareItem(oldPath, oldStatement.getCreationSQL());
         right = new CompareItem(newPath, newStatement.getCreationSQL());

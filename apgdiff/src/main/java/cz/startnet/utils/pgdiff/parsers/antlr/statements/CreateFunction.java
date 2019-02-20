@@ -25,7 +25,6 @@ import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgProcedure;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class CreateFunction extends ParserAbstract {
     private List<AntlrError> errors;
@@ -40,10 +39,8 @@ public class CreateFunction extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public void parseObject() {
         List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
-        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
-
         String name = QNameParser.getFirstName(ids);
         AbstractPgFunction function = ctx.PROCEDURE() != null ? new PgProcedure(name)
                 : new PgFunction(name);
@@ -55,15 +52,14 @@ public class CreateFunction extends ParserAbstract {
         if (ctx.ret_table != null) {
             function.setReturns(getFullCtxText(ctx.ret_table));
             for (Function_column_name_typeContext ret_col : ctx.ret_table.function_column_name_type()) {
-                addTypeAsDepcy(ret_col.column_type, function, getDefSchemaName());
+                addPgTypeDepcy(ret_col.column_type, function);
                 function.addReturnsColumn(ret_col.column_name.getText(), getTypeName(ret_col.column_type));
             }
         } else if (ctx.rettype_data != null) {
             function.setReturns(getTypeName(ctx.rettype_data));
-            addTypeAsDepcy(ctx.rettype_data, function, getDefSchemaName());
+            addPgTypeDepcy(ctx.rettype_data, function);
         }
-        schema.addFunction(function);
-        return function;
+        addSafe(AbstractSchema::addFunction, getSchemaSafe(ids), function, ids);
     }
 
     private void fillFunction(Create_funct_paramsContext params,
@@ -146,7 +142,7 @@ public class CreateFunction extends ParserAbstract {
             Argument arg = new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
                     argument.argname != null ? argument.argname.getText() : null,
                             getTypeName(argument.argtype_data));
-            addTypeAsDepcy(argument.data_type(), function, getDefSchemaName());
+            addPgTypeDepcy(argument.data_type(), function);
 
             if (argument.function_def_value() != null) {
                 arg.setDefaultExpression(getFullCtxText(argument.function_def_value().def_value));

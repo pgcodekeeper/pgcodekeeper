@@ -7,9 +7,9 @@ import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class Segments extends Position {
-    private String name;
-    private DbObjType type;
-    private StatementActions action;
+    private final String name;
+    private final DbObjType type;
+    private final StatementActions action;
 
     /**
      * Creates a new segment covering the given range.
@@ -20,7 +20,7 @@ public class Segments extends Position {
     public Segments(PgObjLocation loc) {
         super(loc.getOffset(), loc.getObjLength());
         this.name = loc.getObjName();
-        this.type = loc.getObjType();
+        this.type = loc.type;
         this.action = loc.getAction();
     }
 

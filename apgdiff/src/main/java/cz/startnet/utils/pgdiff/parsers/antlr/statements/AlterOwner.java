@@ -1,7 +1,10 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_ownerContext;
@@ -12,8 +15,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
 import cz.startnet.utils.pgdiff.schema.StatementOverride;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class AlterOwner extends ParserAbstract {
 
@@ -32,11 +37,11 @@ public class AlterOwner extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public void parseObject() {
         Owner_toContext owner = ctx.owner_to();
 
         if (db.getArguments().isIgnorePrivileges() || owner.name == null) {
-            return null;
+            return;
         }
 
         PgStatement st = null;
@@ -44,51 +49,68 @@ public class AlterOwner extends ParserAbstract {
         if (ctx.OPERATOR() != null) {
             Target_operatorContext targetOperCtx = ctx.target_operator();
             Operator_nameContext operNameCtx = targetOperCtx.name;
-            st = getSafe(
-                    CreateOperator.getSchemaSafe(operNameCtx, db.getDefaultSchema(), db)::getOperator,
+            IdentifierContext schemaCtx = operNameCtx.schema_name;
+            List<ParserRuleContext> ids = Arrays.asList(schemaCtx, operNameCtx);
+            st = getSafe(AbstractSchema::getOperator, getSchemaSafe(ids),
                     parseSignature(operNameCtx.operator.getText(), targetOperCtx),
                     operNameCtx.operator.getStart());
             setOwner(st, owner);
-            return null;
+            addObjReference(ids, DbObjType.OPERATOR, StatementActions.ALTER);
+            return;
         }
-
 
         List<IdentifierContext> ids = ctx.name.identifier();
         IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
 
+        DbObjType type = null;
         if (ctx.SCHEMA() != null) {
-            st = getSafe(db::getSchema, nameCtx);
-            if (ApgdiffConsts.PUBLIC.equals(st.getName())
-                    && "postgres".equals(owner.name.getText())) {
-                return null;
-            }
+            st = getSafe(PgDatabase::getSchema, db, nameCtx);
+            type = DbObjType.SCHEMA;
         } else {
-            AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
+            AbstractSchema schema = getSchemaSafe(ids);
             if (ctx.DOMAIN() != null) {
-                st = getSafe(schema::getDomain, nameCtx);
+                st = getSafe(AbstractSchema::getDomain, schema, nameCtx);
+                type = DbObjType.DOMAIN;
             } else if (ctx.VIEW() != null) {
-                st = getSafe(schema::getView, nameCtx);
+                st = getSafe(AbstractSchema::getView, schema, nameCtx);
+                type = DbObjType.VIEW;
             } else if (ctx.DICTIONARY() != null) {
-                st = getSafe(schema::getFtsDictionary, nameCtx);
+                st = getSafe(AbstractSchema::getFtsDictionary, schema, nameCtx);
+                type = DbObjType.FTS_DICTIONARY;
             } else if (ctx.CONFIGURATION() != null) {
-                st = getSafe(schema::getFtsConfiguration, nameCtx);
+                st = getSafe(AbstractSchema::getFtsConfiguration, schema, nameCtx);
+                type = DbObjType.FTS_CONFIGURATION;
             } else if (ctx.SEQUENCE() != null) {
-                st = getSafe(schema::getSequence, nameCtx);
+                st = getSafe(AbstractSchema::getSequence, schema, nameCtx);
+                type = DbObjType.SEQUENCE;
             } else if (ctx.TYPE() != null) {
-                st = getSafe(schema::getType, nameCtx);
-            } else if (ctx.PROCEDURE() != null || ctx.FUNCTION() != null
-                    || ctx.AGGREGATE() != null) {
-                st = getSafe(schema::getFunction, parseSignature(nameCtx.getText(),
+                st = getSafe(AbstractSchema::getType, schema, nameCtx);
+                type = DbObjType.TYPE;
+            } else if (ctx.PROCEDURE() != null || ctx.FUNCTION() != null || ctx.AGGREGATE() != null) {
+                st = getSafe(AbstractSchema::getFunction, schema, parseSignature(nameCtx.getText(),
                         ctx.function_args()), nameCtx.getStart());
+                if (ctx.FUNCTION() != null) {
+                    type = DbObjType.FUNCTION;
+                } else if (ctx.PROCEDURE() != null) {
+                    type = DbObjType.PROCEDURE;
+                } else {
+                    type = DbObjType.AGGREGATE;
+                }
             }
         }
 
-        if (st != null) {
-            setOwner(st, owner);
+        if (type != null)  {
+            addObjReference(ids, type, StatementActions.ALTER);
         }
-        return null;
-    }
 
+        if (st == null || (type == DbObjType.SCHEMA
+                && ApgdiffConsts.PUBLIC.equals(nameCtx.getText())
+                && "postgres".equals(owner.name.getText()))) {
+            return;
+        }
+
+        setOwner(st, owner);
+    }
 
     private void setOwner(PgStatement st, Owner_toContext owner) {
         if (overrides == null) {

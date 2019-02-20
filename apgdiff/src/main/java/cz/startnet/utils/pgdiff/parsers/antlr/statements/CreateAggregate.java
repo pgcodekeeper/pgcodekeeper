@@ -1,11 +1,13 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.Arrays;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Aggregate_paramContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.All_op_refContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.All_simple_opContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_aggregate_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
@@ -15,13 +17,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameCon
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgAggregate;
 import cz.startnet.utils.pgdiff.schema.PgAggregate.AggKinds;
 import cz.startnet.utils.pgdiff.schema.PgAggregate.ModifyType;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateAggregate extends ParserAbstract {
@@ -32,11 +31,8 @@ public class CreateAggregate extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public void parseObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
-        String schemaName = schema.getName();
-
         PgAggregate aggregate = new PgAggregate(QNameParser.getFirstName(ids));
 
         //// The order is important for adding dependencies. Two steps.
@@ -45,7 +41,7 @@ public class CreateAggregate extends ParserAbstract {
 
         Data_typeContext sTypeCtx = ctx.type;
         aggregate.setSType(getFullCtxText(sTypeCtx));
-        addTypeAsDepcy(sTypeCtx, aggregate, schemaName);
+        addPgTypeDepcy(sTypeCtx, aggregate);
 
         fillAllArguments(aggregate);
 
@@ -53,12 +49,11 @@ public class CreateAggregate extends ParserAbstract {
 
         Schema_qualified_nameContext sFuncCtx = ctx.sfunc_name;
         aggregate.setSFunc(getFullCtxText(sFuncCtx));
-        addFuncAsDepcy(PgAggregate.SFUNC, sFuncCtx, aggregate, schemaName);
+        addFuncAsDepcy(PgAggregate.SFUNC, sFuncCtx, aggregate);
 
-        fillAggregate(ctx.aggregate_param(), aggregate, schema.getName(), schemaName);
+        fillAggregate(ctx.aggregate_param(), aggregate);
 
-        schema.addFunction(aggregate);
-        return aggregate;
+        addSafe(AbstractSchema::addFunction, getSchemaSafe(ids), aggregate, ids);
     }
 
     private void fillAllArguments(PgAggregate aggregate) {
@@ -75,7 +70,7 @@ public class CreateAggregate extends ParserAbstract {
             String baseType = getFullCtxText(baseTypeCtx);
             if (!"ANY".equals(baseType)) {
                 aggregate.addArgument(new Argument(null, baseType));
-                addTypeAsDepcy(baseTypeCtx, aggregate, getDefSchemaName());
+                addPgTypeDepcy(baseTypeCtx, aggregate);
                 aggregate.setDirectCount(1);
             }
         }
@@ -86,13 +81,12 @@ public class CreateAggregate extends ParserAbstract {
             Argument arg = new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
                     argument.argname != null ? argument.argname.getText() : null,
                             getFullCtxText(argument.argtype_data));
-            addTypeAsDepcy(argument.data_type(), aggr, getDefSchemaName());
+            addPgTypeDepcy(argument.data_type(), aggr);
             aggr.addArgument(arg);
         }
     }
 
-    private void fillAggregate(List<Aggregate_paramContext> params,
-            PgAggregate aggregate, String aggrSchemaName, String defSchemaName) {
+    private void fillAggregate(List<Aggregate_paramContext> params, PgAggregate aggregate) {
         ModifyType finalFuncModify = null;
         ModifyType mFinalFuncModify = null;
         if (params != null) {
@@ -104,7 +98,7 @@ public class CreateAggregate extends ParserAbstract {
             if (mSTypeParamCtx != null) {
                 Data_typeContext mSTypeCtx = mSTypeParamCtx.ms_type;
                 aggregate.setMSType(getFullCtxText(mSTypeCtx));
-                addTypeAsDepcy(mSTypeCtx, aggregate, aggrSchemaName);
+                addPgTypeDepcy(mSTypeCtx, aggregate);
             }
 
             for (Aggregate_paramContext paramOpt : params) {
@@ -113,7 +107,7 @@ public class CreateAggregate extends ParserAbstract {
                 } else if (paramOpt.FINALFUNC() != null) {
                     Schema_qualified_nameContext finalFuncCtx = paramOpt.final_func;
                     aggregate.setFinalFunc(getFullCtxText(finalFuncCtx));
-                    addFuncAsDepcy(PgAggregate.FINALFUNC, finalFuncCtx, aggregate, defSchemaName);
+                    addFuncAsDepcy(PgAggregate.FINALFUNC, finalFuncCtx, aggregate);
                 } else if (paramOpt.FINALFUNC_EXTRA() != null) {
                     aggregate.setFinalFuncExtra(true);
                 } else if (paramOpt.FINALFUNC_MODIFY() != null) {
@@ -121,31 +115,31 @@ public class CreateAggregate extends ParserAbstract {
                 } else if (paramOpt.COMBINEFUNC() != null) {
                     Schema_qualified_nameContext combineFuncCtx = paramOpt.combine_func;
                     aggregate.setCombineFunc(getFullCtxText(combineFuncCtx));
-                    addFuncAsDepcy(PgAggregate.COMBINEFUNC, combineFuncCtx, aggregate, defSchemaName);
+                    addFuncAsDepcy(PgAggregate.COMBINEFUNC, combineFuncCtx, aggregate);
                 } else if (paramOpt.SERIALFUNC() != null) {
                     Schema_qualified_nameContext serialFuncCtx = paramOpt.serial_func;
                     aggregate.setSerialFunc(getFullCtxText(serialFuncCtx));
-                    addFuncAsDepcy(PgAggregate.SERIALFUNC, serialFuncCtx, aggregate, defSchemaName);
+                    addFuncAsDepcy(PgAggregate.SERIALFUNC, serialFuncCtx, aggregate);
                 } else if (paramOpt.DESERIALFUNC() != null) {
                     Schema_qualified_nameContext deserialFuncCtx = paramOpt.deserial_func;
                     aggregate.setDeserialFunc(getFullCtxText(deserialFuncCtx));
-                    addFuncAsDepcy(PgAggregate.DESERIALFUNC, deserialFuncCtx, aggregate, defSchemaName);
+                    addFuncAsDepcy(PgAggregate.DESERIALFUNC, deserialFuncCtx, aggregate);
                 } else if (paramOpt.INITCOND() != null) {
                     aggregate.setInitCond(paramOpt.init_cond.getText());
                 } else if (paramOpt.MSFUNC() != null) {
                     Schema_qualified_nameContext mSFuncCtx = paramOpt.ms_func;
                     aggregate.setMSFunc(getFullCtxText(mSFuncCtx));
-                    addFuncAsDepcy(PgAggregate.MSFUNC, mSFuncCtx, aggregate, defSchemaName);
+                    addFuncAsDepcy(PgAggregate.MSFUNC, mSFuncCtx, aggregate);
                 } else if (paramOpt.MINVFUNC() != null) {
                     Schema_qualified_nameContext mInvFuncCtx = paramOpt.minv_func;
                     aggregate.setMInvFunc(getFullCtxText(mInvFuncCtx));
-                    addFuncAsDepcy(PgAggregate.MINVFUNC, mInvFuncCtx, aggregate, defSchemaName);
+                    addFuncAsDepcy(PgAggregate.MINVFUNC, mInvFuncCtx, aggregate);
                 } else if (paramOpt.MSSPACE() != null) {
                     aggregate.setMSSpace(Integer.parseInt(paramOpt.ms_space.getText()));
                 } else if (paramOpt.MFINALFUNC() != null) {
                     Schema_qualified_nameContext mFinalFuncCtx = paramOpt.mfinal_func;
                     aggregate.setMFinalFunc(getFullCtxText(mFinalFuncCtx));
-                    addFuncAsDepcy(PgAggregate.MFINALFUNC, mFinalFuncCtx, aggregate, defSchemaName);
+                    addFuncAsDepcy(PgAggregate.MFINALFUNC, mFinalFuncCtx, aggregate);
                 } else if (paramOpt.MFINALFUNC_EXTRA() != null) {
                     aggregate.setMFinalFuncExtra(true);
                 } else if (paramOpt.MFINALFUNC_MODIFY() != null) {
@@ -161,18 +155,18 @@ public class CreateAggregate extends ParserAbstract {
                         .append(PgDiffUtils.getQuotedName(schemaNameCxt.getText()))
                         .append('.');
                     }
-                    sb.append(operCtx.all_simple_op().getText());
+                    All_simple_opContext op = operCtx.all_simple_op();
+                    sb.append(op.getText());
                     if (schemaNameCxt != null) {
                         sb.append(')');
                     }
 
                     aggregate.setSortOp(sb.toString());
 
-                    // TODO waits task #16080
-                    // aggregate.addDep(new GenericColumn(schemaNameCxt == null ?
-                    //         defSchemaName : schemaNameCxt.getText(),
-                    //         getSortOperSign(aggregate, operCtx.all_simple_op().getText()),
-                    //         DbObjType.OPERATOR));
+                    if (schemaNameCxt != null) {
+                        addDepSafe(aggregate, Arrays.asList(schemaNameCxt, op),
+                                DbObjType.OPERATOR, true, getSortOperSign(aggregate));
+                    }
                 } else if (paramOpt.PARALLEL() != null) {
                     String parallel = null;
                     if (paramOpt.SAFE() != null) {
@@ -209,14 +203,13 @@ public class CreateAggregate extends ParserAbstract {
         }
     }
 
-    private void addFuncAsDepcy(String paramName, Schema_qualified_nameContext paramFuncCtx,
-            PgAggregate aggr, String defSchemaName) {
-        List<IdentifierContext> funcIds = paramFuncCtx.identifier();
-        String funcSchemaName = QNameParser.getSchemaName(funcIds, defSchemaName);
-        if (!PgSystemStorage.SCHEMA_PG_CATALOG.equalsIgnoreCase(funcSchemaName)) {
-            aggr.addDep(new GenericColumn(funcSchemaName,
-                    getParamFuncSignature(aggr, QNameParser.getFirstName(funcIds), paramName),
-                    DbObjType.FUNCTION));
+    private void addFuncAsDepcy(String paramName,
+            Schema_qualified_nameContext paramFuncCtx, PgAggregate aggr) {
+        List<IdentifierContext> ids = paramFuncCtx.identifier();
+        IdentifierContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
+        if (schemaCtx != null) {
+            addDepSafe(aggr, Arrays.asList(schemaCtx, QNameParser.getFirstNameCtx(ids)),
+                    DbObjType.FUNCTION, true, getParamFuncSignature(aggr, paramName));
         }
     }
 
@@ -224,14 +217,12 @@ public class CreateAggregate extends ParserAbstract {
      * Gets the signature for the given function name.
      *
      * @param aggregate aggregate object
-     * @param funcName function name
      * @param paramName name of parameter
      * @return
      */
-    public static String getParamFuncSignature(PgAggregate aggregate, String funcName,
-            String paramName) {
+    public static String getParamFuncSignature(PgAggregate aggregate, String paramName) {
         StringBuilder sb = new StringBuilder();
-        sb.append(funcName).append('(');
+        sb.append('(');
 
         String sType = aggregate.getSType();
         String mSType = aggregate.getMSType();
@@ -284,11 +275,8 @@ public class CreateAggregate extends ParserAbstract {
         }
     }
 
-    // It will be used in the 'CreateAggregate.fillAggregate' method - 'aggregate.addDep()'
-    // (which is waiting for task #16080).
-    public static String getSortOperSign(PgAggregate aggr, String operName) {
+    public static String getSortOperSign(PgAggregate aggr) {
         String argType = aggr.getArguments().get(0).getDataType();
-        return operName + '(' + argType + ", " + argType + ')';
+        return '(' + argType + ", " + argType + ')';
     }
-
 }

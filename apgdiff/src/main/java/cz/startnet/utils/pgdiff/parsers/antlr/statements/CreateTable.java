@@ -42,16 +42,12 @@ public class CreateTable extends TableAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public void parseObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
         String tableName = QNameParser.getFirstName(ids);
-        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
-        String schemaName = schema.getName();
-
+        String schemaName = getSchemaNameSafe(ids);
         AbstractTable table = defineTable(tableName, schemaName);
-
-        schema.addTable(table);
-        return table;
+        addSafe(AbstractSchema::addTable, getSchemaSafe(ids), table, ids);
     }
 
     private AbstractTable defineTable(String tableName, String schemaName) {
@@ -70,7 +66,7 @@ public class CreateTable extends TableAbstract {
         } else {
             String partBound = ParserAbstract.getFullCtxText(partCtx.for_values_bound());
             table = fillRegularTable(new PartitionPgTable(tableName, partBound));
-            fillTypeColumns(partCtx.list_of_type_column_def(), table, schemaName);
+            fillTypeColumns(partCtx.list_of_type_column_def(), table, schemaName, tablespace);
             addInherit(table, partCtx.parent_table.identifier());
         }
 
@@ -80,11 +76,11 @@ public class CreateTable extends TableAbstract {
     private void fillColumns(Define_columnsContext columnsCtx, AbstractPgTable table, String schemaName) {
         for (Table_column_defContext colCtx : columnsCtx.table_col_def) {
             if (colCtx.tabl_constraint != null) {
-                addTableConstraint(colCtx.tabl_constraint, table, schemaName);
+                addTableConstraint(colCtx.tabl_constraint, table, schemaName, tablespace);
             } else if (colCtx.table_column_definition() != null) {
                 Table_column_definitionContext column = colCtx.table_column_definition();
                 addColumn(column.column_name.getText(), column.datatype,
-                        column.collate_name, column.colmn_constraint, table);
+                        column.collate_name, column.constraint_common(), table);
             }
         }
 
@@ -99,9 +95,10 @@ public class CreateTable extends TableAbstract {
     private TypedPgTable defineType(Define_typeContext typeCtx, String tableName,
             String schemaName) {
         Data_typeContext typeName = typeCtx.type_name;
-        TypedPgTable table = new TypedPgTable(tableName, getTypeName(typeName));
-        fillTypeColumns(typeCtx.list_of_type_column_def(), table, schemaName);
-        addTypeAsDepcy(typeName, table, getDefSchemaName());
+        String ofType = getTypeName(typeName);
+        TypedPgTable table = new TypedPgTable(tableName, ofType);
+        fillTypeColumns(typeCtx.list_of_type_column_def(), table, schemaName, tablespace);
+        addPgTypeDepcy(typeName, table);
         fillRegularTable(table);
         return table;
     }

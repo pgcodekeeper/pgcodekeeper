@@ -5,9 +5,9 @@ import java.util.List;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_templateContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFtsTemplate;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class CreateFtsTemplate extends ParserAbstract {
 
@@ -19,7 +19,7 @@ public class CreateFtsTemplate extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public void parseObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
         PgFtsTemplate template = new PgFtsTemplate(QNameParser.getFirstName(ids));
 
@@ -29,7 +29,6 @@ public class CreateFtsTemplate extends ParserAbstract {
         }
 
         template.setLexizeFunction(ParserAbstract.getFullCtxText(ctx.lexize_name));
-        getSchemaSafe(ids, db.getDefaultSchema()).addFtsTemplate(template);
-        return template;
+        addSafe(AbstractSchema::addFtsTemplate, getSchemaSafe(ids), template, ids);
     }
 }
