@@ -2347,7 +2347,7 @@ array_brackets
     ;
 
 array_elements
-    : LEFT_BRACKET (vex | array_elements)? (COMMA (vex | array_elements))* RIGHT_BRACKET
+    : LEFT_BRACKET ((vex | array_elements) (COMMA (vex | array_elements))*)? RIGHT_BRACKET
     ;
 
 array_query
