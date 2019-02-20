@@ -77,9 +77,6 @@ public class CreateMsTrigger extends BatchContextProcessor {
         IStatementContainer cont = getSafe(AbstractSchema::getStatementContainer,
                 schema, tableNameCtx);
 
-        addSafe(IStatementContainer::addTrigger, cont, trigger,
-                Arrays.asList(schemaCtx, tableNameCtx, nameCtx));
-
         if (isJdbc && schema != null) {
             cont.addTrigger(trigger);
         } else {

@@ -142,7 +142,7 @@ implements SqlContextProcessor {
     private void alter(Schema_alterContext ctx) {
         ParserAbstract p;
         if (ctx.alter_table_statement() != null) {
-            p = new AlterTable(ctx.alter_table_statement(), db);
+            p = new AlterTable(ctx.alter_table_statement(), db, tablespace);
         } else if (ctx.alter_sequence_statement() != null) {
             p = new AlterSequence(ctx.alter_sequence_statement(), db);
         } else if (ctx.alter_view_statement() != null) {

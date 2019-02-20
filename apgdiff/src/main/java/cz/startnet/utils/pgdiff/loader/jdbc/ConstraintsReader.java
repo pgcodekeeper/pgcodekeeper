@@ -57,11 +57,12 @@ public class ConstraintsReader extends JdbcReader {
 
         String definition = res.getString("definition");
         checkObjectValidity(definition, getType(), constraintName);
+        String tablespace = res.getString("spcname");
         loader.submitAntlrTask(ADD_CONSTRAINT + definition + ';',
                 p -> p.sql().statement(0).schema_statement().schema_alter()
                 .alter_table_statement().table_action(0),
                 ctx -> AlterTable.parseAlterTableConstraint(ctx, c, schema.getDatabase(),
-                        schemaName, tableName));
+                        schemaName, tableName, tablespace));
         loader.setAuthor(c, res);
 
         String comment = res.getString("description");
