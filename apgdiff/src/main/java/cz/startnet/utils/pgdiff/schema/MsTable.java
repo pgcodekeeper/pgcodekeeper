@@ -59,10 +59,13 @@ public class MsTable extends AbstractTable {
 
         boolean skipDep = columns.size() == newTable.columns.size();
 
-        int i = 0;
-        while (skipDep && i < columns.size()) {
-            skipDep = columns.get(i).getName().equals(newTable.columns.get(i).getName());
-            i++;
+        if (skipDep) {
+            for (int i = 0; i < columns.size(); i++) {
+                if (!columns.get(i).getName().equals(newTable.columns.get(i).getName())) {
+                    skipDep = false;
+                    break;
+                }
+            }
         }
 
         if (!skipDep) {
