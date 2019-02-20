@@ -1207,26 +1207,8 @@ create_table_as_statement
 
 create_foreign_table_statement
    : FOREIGN TABLE if_not_exists? name=schema_qualified_name
-   (define_foreign_table | define_partition)
+   (define_columns | define_partition)
    define_server
-   ;
-
-define_foreign_table
-   : LEFT_PAREN
-       (columns+=foreign_column_def (COMMA columns+=foreign_column_def)*)?
-     RIGHT_PAREN
-     (INHERITS parent_table=column_references)?
-   ;
-
-foreign_column_def
-   : define_foreign_columns
-   | tabl_constraint=constraint_common
-   ;
-
-define_foreign_columns
-   : column_name=identifier datatype=data_type
-   define_foreign_options?
-   collate_name=collate_identifier? (column_constraint+=constraint_common)*
    ;
 
 define_table
@@ -1318,7 +1300,7 @@ table_of_type_column_def
     ;
 
 table_column_definition
-    : column_name=identifier datatype=data_type collate_name=collate_identifier? constraint_common*
+    : column_name=identifier datatype=data_type define_foreign_options? collate_name=collate_identifier? constraint_common*
     ;
 
 like_option

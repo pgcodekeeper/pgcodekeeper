@@ -2,16 +2,16 @@
 -- Regression tests for schemas (namespaces)
 --
 
-CREATE SCHEMA test_ns_schema_1
-       CREATE UNIQUE INDEX abc_a_idx ON abc (a)
+CREATE SCHEMA test_ns_schema_1;
+CREATE UNIQUE INDEX abc_a_idx ON abc (a);
 
-       CREATE VIEW abc_view AS
-              SELECT a+1 AS a, b+1 AS b FROM abc
+CREATE VIEW abc_view AS
+       SELECT a+1 AS a, b+1 AS b FROM abc;
 
-       CREATE TABLE abc (
-              a serial,
-              b int UNIQUE
-       );
+CREATE TABLE abc (
+       a serial,
+       b int UNIQUE
+);
 
 -- verify that the objects were created
 SELECT COUNT(*) FROM pg_class WHERE relnamespace =
@@ -31,11 +31,6 @@ SELECT COUNT(*) FROM pg_class WHERE relnamespace =
 -- test IF NOT EXISTS cases
 CREATE SCHEMA test_ns_schema_renamed; -- fail, already exists
 CREATE SCHEMA IF NOT EXISTS test_ns_schema_renamed; -- ok with notice
-CREATE SCHEMA IF NOT EXISTS test_ns_schema_renamed -- fail, disallowed
-       CREATE TABLE abc (
-              a serial,
-              b int UNIQUE
-       );
 
 DROP SCHEMA test_ns_schema_renamed CASCADE;
 

@@ -6,9 +6,11 @@ import java.util.List;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Collate_identifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Column_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_columnsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_foreign_optionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Foreign_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -16,6 +18,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Including_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_parametersContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.List_of_type_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_deferrableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_initialy_immedContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_of_type_column_defContext;
@@ -28,6 +32,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraint_bodyCo
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
+import cz.startnet.utils.pgdiff.schema.AbstractForeignTable;
 import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -141,6 +146,27 @@ public abstract class TableAbstract extends ParserAbstract {
         }
     }
 
+    protected void fillColumns(Define_columnsContext columnsCtx, AbstractPgTable table,
+            String schemaName, String tablespace) {
+        for (Table_column_defContext colCtx : columnsCtx.table_col_def) {
+            if (colCtx.tabl_constraint != null) {
+                addTableConstraint(colCtx.tabl_constraint, table, schemaName, tablespace);
+            } else if (colCtx.table_column_definition() != null) {
+                Table_column_definitionContext column = colCtx.table_column_definition();
+                addColumn(column.column_name.getText(), column.datatype,
+                        column.collate_name, column.constraint_common(),
+                        column.define_foreign_options(), table);
+            }
+        }
+
+        Column_referencesContext parentTable = columnsCtx.parent_table;
+        if (parentTable != null) {
+            for (Schema_qualified_nameContext nameInher : parentTable.names_references().name) {
+                addInherit(table, nameInher.identifier());
+            }
+        }
+    }
+
     protected void addColumn(String columnName, Data_typeContext datatype,
             Collate_identifierContext collate, List<Constraint_commonContext> constraints,
             Define_foreign_optionsContext options, AbstractTable table) {
@@ -156,9 +182,13 @@ public abstract class TableAbstract extends ParserAbstract {
             addTableConstraint(column_constraint, col, table);
         }
         if (options != null) {
-            for (Foreign_optionContext option : options.foreign_option()) {
-                String value = option.value == null ? "" : option.value.getText();
-                fillOptionParams(value, option.name.getText(), false, col::addForeignOption);
+            if (table instanceof AbstractForeignTable) {
+                for (Foreign_optionContext option : options.foreign_option()) {
+                    String value = option.value == null ? "" : option.value.getText();
+                    fillOptionParams(value, option.name.getText(), false, col::addForeignOption);
+                }
+            } else {
+                //throw new IllegalStateException("Options used only for foreign table");
             }
         }
         doSafe(AbstractTable::addColumn, table, col);
