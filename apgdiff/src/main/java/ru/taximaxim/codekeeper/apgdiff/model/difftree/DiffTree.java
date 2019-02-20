@@ -8,7 +8,6 @@ import org.eclipse.core.runtime.SubMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
@@ -43,7 +42,6 @@ public final class DiffTree {
         }
     }
 
-    private final List<PgStatement> equalsStatements = new ArrayList<>();
     private final IProgressMonitor monitor;
 
     public DiffTree(IProgressMonitor monitor) {
@@ -92,23 +90,6 @@ public final class DiffTree {
                     rv.add(new CompareResult(sLeft, null));
                 } else if(!sLeft.equals(foundRight)) {
                     rv.add(new CompareResult(sLeft, foundRight));
-
-                    if (sLeft.compare(foundRight)) {
-                        boolean add = true;
-                        if (sLeft.getStatementType() == DbObjType.TABLE) {
-                            // tables equality includes constraints for this purpose
-                            add = PgDiffUtils.setlikeEquals(
-                                    ((AbstractTable) sLeft).getConstraints(),
-                                    ((AbstractTable) foundRight).getConstraints());
-                        }
-                        if (add) {
-                            equalsStatements.add(sLeft);
-                        }
-                    }
-                } else {
-                    equalsStatements.add(sLeft);
-                    // equals includes all descendants so they are equal too
-                    sLeft.getDescendants().forEach(equalsStatements::add);
                 }
             });
         }
@@ -124,10 +105,6 @@ public final class DiffTree {
         }
 
         return rv;
-    }
-
-    public List<PgStatement> getEqualsObjects() {
-        return equalsStatements;
     }
 }
 

@@ -8,9 +8,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Names_referencesContext
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -32,13 +32,13 @@ public class DisableMsTrigger extends ParserAbstract {
         }
 
         IdContext schemaCtx = parent.schema;
-        PgTriggerContainer cont = getSafe(AbstractSchema::getTriggerContainer,
+        IStatementContainer cont = getSafe(AbstractSchema::getStatementContainer,
                 getSchemaSafe(Arrays.asList(schemaCtx, parent.name)), parent.name);
         addObjReference(Arrays.asList(parent.schema, parent.name),
                 DbObjType.TABLE, StatementActions.NONE);
 
         for (Qualified_nameContext qname : triggers.qualified_name()) {
-            MsTrigger trig = (MsTrigger) getSafe(PgTriggerContainer::getTrigger,
+            MsTrigger trig = (MsTrigger) getSafe(IStatementContainer::getTrigger,
                     cont, qname.name);
             addObjReference(Arrays.asList(schemaCtx, parent.name, qname.name),
                     DbObjType.TRIGGER, StatementActions.ALTER);

@@ -63,12 +63,9 @@ public class ModelExporter extends AbstractModelExporter {
             break;
         case CONSTRAINT:
         case INDEX:
-            TreeElement elParent = el.getParent();
-            processTableAndContents(elParent, elParent.getPgStatement(oldDb), el);
-            break;
         case TRIGGER:
         case RULE:
-            elParent = el.getParent();
+            TreeElement elParent = el.getParent();
             if (elParent.getType() == DbObjType.TABLE){
                 processTableAndContents(elParent, elParent.getPgStatement(oldDb), el);
             } else {
@@ -104,9 +101,6 @@ public class ModelExporter extends AbstractModelExporter {
             break;
         case CONSTRAINT:
         case INDEX:
-            createParentSchema(elParent.getParent());
-            processTableAndContents(elParent, elParent.getPgStatement(newDb), el);
-            break;
         case TRIGGER:
         case RULE:
             createParentSchema(elParent.getParent());
@@ -175,17 +169,10 @@ public class ModelExporter extends AbstractModelExporter {
             createParentSchema(elParent);
             processFuncOrOper(el, stInNew);
             break;
-
-        case CONSTRAINT:
-        case INDEX:
-            createParentSchema(elParent.getParent());
-            // table actually, not schema
-            createParentSchema(elParent);
-            processTableAndContents(elParent, elParent.getPgStatement(newDb), el);
-            break;
-
         case TRIGGER:
         case RULE:
+        case INDEX:
+        case CONSTRAINT:
             createParentSchema(elParent.getParent());
             // table actually, not schema
             createParentSchema(elParent);

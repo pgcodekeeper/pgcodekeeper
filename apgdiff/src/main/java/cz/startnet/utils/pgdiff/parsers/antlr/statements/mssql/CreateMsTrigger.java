@@ -11,9 +11,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_trigger
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSqlClauses;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -74,16 +74,16 @@ public class CreateMsTrigger extends BatchContextProcessor {
         clauses.analyze(ctx.sql_clauses());
         trigger.addAllDeps(clauses.getDepcies());
 
-        PgTriggerContainer cont = getSafe(AbstractSchema::getTriggerContainer,
+        IStatementContainer cont = getSafe(AbstractSchema::getStatementContainer,
                 schema, tableNameCtx);
 
-        addSafe(PgTriggerContainer::addTrigger, cont, trigger,
+        addSafe(IStatementContainer::addTrigger, cont, trigger,
                 Arrays.asList(schemaCtx, tableNameCtx, nameCtx));
 
         if (isJdbc && schema != null) {
             cont.addTrigger(trigger);
         } else {
-            addSafe(PgTriggerContainer::addTrigger, cont, trigger,
+            addSafe(IStatementContainer::addTrigger, cont, trigger,
                     Arrays.asList(schemaCtx, tableNameCtx, nameCtx));
         }
         return trigger;

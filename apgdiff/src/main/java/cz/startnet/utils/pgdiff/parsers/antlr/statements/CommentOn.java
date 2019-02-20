@@ -11,17 +11,15 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
-import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
+import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgView;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
@@ -43,8 +41,6 @@ public class CommentOn extends ParserAbstract {
         }
 
         List<? extends ParserRuleContext> ids = null;
-        ParserRuleContext nameCtx = null;
-        String name = null;
         if (ctx.target_operator() == null) {
             ids = ctx.name.identifier();
         } else {
@@ -52,8 +48,8 @@ public class CommentOn extends ParserAbstract {
             ids = Arrays.asList(operCtx.schema_name, operCtx.operator);
         }
 
-        nameCtx = QNameParser.getFirstNameCtx(ids);
-        name = nameCtx.getText();
+        ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
+        String name = nameCtx.getText();
 
         DbObjType type = null;
 
@@ -133,40 +129,39 @@ public class CommentOn extends ParserAbstract {
             st = getSafe(PgDatabase::getExtension, db, nameCtx);
         } else if (ctx.CONSTRAINT() != null && !isRefMode()) {
             List<IdentifierContext> parentIds = ctx.table_name.identifier();
-            AbstractTable table = schema.getTable(QNameParser.getFirstName(parentIds));
+            IStatementContainer table = schema.getStatementContainer(QNameParser.getFirstName(parentIds));
             addObjReference(parentIds, DbObjType.TABLE, StatementActions.NONE);
             if (table == null) {
                 PgDomain domain = getSafe(AbstractSchema::getDomain, schema, nameCtx);
-                getSafe(PgDomain::getConstraint, domain, nameCtx).setComment(db.getArguments(), comment);
+                getSafe(PgDomain::getConstraint, domain, nameCtx)
+                .setComment(db.getArguments(), comment);
             } else {
-                getSafe(AbstractTable::getConstraint, table, nameCtx).setComment(db.getArguments(), comment);
+                getSafe(IStatementContainer::getConstraint, table, nameCtx)
+                .setComment(db.getArguments(), comment);
             }
         } else if (ctx.TRIGGER() != null) {
             type = DbObjType.TRIGGER;
             List<IdentifierContext> parentIds = ctx.table_name.identifier();
             ids = Arrays.asList(QNameParser.getSchemaNameCtx(parentIds),
                     QNameParser.getFirstNameCtx(parentIds), nameCtx);
-            PgTriggerContainer c = getSafe(AbstractSchema::getTriggerContainer, schema,
+            IStatementContainer c = getSafe(AbstractSchema::getStatementContainer, schema,
                     QNameParser.getFirstNameCtx(ctx.table_name.identifier()));
-            st = getSafe(PgTriggerContainer::getTrigger, c, nameCtx);
+            st = getSafe(IStatementContainer::getTrigger, c, nameCtx);
         } else if (ctx.DATABASE() != null) {
             st = db;
             type = DbObjType.DATABASE;
         } else if (ctx.INDEX() != null && !isRefMode()) {
-            AbstractTable tab = schema.getTableByIndex(name);
+            IStatementContainer tab = schema.getContainerByIndex(name);
             if (tab != null) {
                 tab.getIndex(name).setComment(comment);
             } else {
-                AbstractConstraint constr = null;
-                for (AbstractTable table : schema.getTables()) {
-                    constr = table.getConstraint(name);
-                    if (constr != null) {
-                        constr.setComment(db.getArguments(), comment);
-                        break;
-                    }
-                }
-                if (constr == null) {
+                IStatementContainer cont = schema.getStatementContainers()
+                        .filter(c -> c.containsConstraint(name)).findAny().orElse(null);
+
+                if (cont == null) {
                     throw new UnresolvedReferenceException(nameCtx.getStart());
+                } else {
+                    cont.getConstraint(name).setComment(db.getArguments(), comment);
                 }
             }
         } else if (ctx.SCHEMA() != null && !ApgdiffConsts.PUBLIC.equals(name)) {
@@ -192,9 +187,9 @@ public class CommentOn extends ParserAbstract {
             List<IdentifierContext> parentIds = ctx.table_name.identifier();
             ids = Arrays.asList(QNameParser.getSchemaNameCtx(parentIds),
                     QNameParser.getFirstNameCtx(parentIds), nameCtx);
-            PgRuleContainer c = getSafe(AbstractSchema::getRuleContainer, schema,
+            IStatementContainer c = getSafe(AbstractSchema::getStatementContainer, schema,
                     QNameParser.getFirstNameCtx(ctx.table_name.identifier()));
-            st = getSafe(PgRuleContainer::getRule, c, nameCtx);
+            st = getSafe(IStatementContainer::getRule, c, nameCtx);
         } else if (ctx.CONFIGURATION() != null) {
             type = DbObjType.FTS_CONFIGURATION;
             st = getSafe(AbstractSchema::getFtsConfiguration, schema, nameCtx);

@@ -335,6 +335,15 @@ public class PgView extends AbstractView implements PgOptionContainer  {
         return isWithData;
     }
 
+    @Override
+    public void addIndex(AbstractIndex index) {
+        if (!isMatView()) {
+            throw new IllegalStateException("Only materialized view can have indexes");
+        }
+        super.addIndex(index);
+    }
+
+
     public void setIsWithData(final Boolean isWithData) {
         this.isWithData = isWithData;
         resetHash();
