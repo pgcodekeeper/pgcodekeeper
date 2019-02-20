@@ -262,7 +262,7 @@ alter_language_statement
 
 alter_table_statement
     : FOREIGN? TABLE (IF EXISTS)? ONLY? name=schema_qualified_name MULTIPLY?(
-        (table_action (COMMA? table_action)*
+        (table_action (COMMA table_action)*
         | RENAME COLUMN? column=schema_qualified_name TO new_column=schema_qualified_name)
     | set_schema
     | rename_to

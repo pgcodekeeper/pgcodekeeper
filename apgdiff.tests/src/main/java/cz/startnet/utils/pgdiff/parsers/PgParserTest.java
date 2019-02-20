@@ -261,7 +261,7 @@ public class PgParserTest {
                 .getResourceAsStream(fileNameTemplate + ".sql"));
 
         SQLParser parser = AntlrParser
-                .makeBasicParser(SQLParser.class, sql, fileNameTemplate);
+                .makeBasicParser(SQLParser.class, sql, fileNameTemplate, errors);
 
         parser.getInterpreter().setPredictionMode(PredictionMode.LL_EXACT_AMBIG_DETECTION);
         parser.addErrorListener(new BaseErrorListener() {
