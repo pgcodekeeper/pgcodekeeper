@@ -8,7 +8,6 @@ import java.util.ListIterator;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateAggregate;
@@ -40,7 +39,6 @@ public class FunctionsReader extends JdbcReader {
     protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException {
         String schemaName = schema.getName();
         String funcName = res.getString("proname");
-
         AbstractFunction f = res.getBoolean("proisagg") ? getAgg(res, schemaName, funcName)
                 : getFunc(res, schema, funcName);
 
@@ -208,9 +206,8 @@ public class FunctionsReader extends JdbcReader {
 
         // Parsing the function definition and adding its result context for analysis.
         if (!"-".equals(definition) && "SQL".equalsIgnoreCase(function.getLanguage())) {
-            db.addContextForAnalyze(function,
-                    AntlrParser.parseSqlString(SQLParser.class, SQLParser::sql,
-                            definition, "function definition of " + function.getBareName()));
+            loader.submitAntlrTask(definition, SQLParser::sql,
+                    ctx -> db.addContextForAnalyze(function, ctx));
         }
     }
 

@@ -170,8 +170,8 @@ public class PgDumpLoader {
                 listener = new SQLOverridesListener(
                         intoDb, inputObjectName, refMode, errors, monitor, overrides);
             } else {
-                CustomSQLParserListener cust =
-                        new CustomSQLParserListener(intoDb, inputObjectName, refMode, errors, monitor);
+                CustomSQLParserListener cust = new CustomSQLParserListener(intoDb,
+                        inputObjectName, refMode, errors, antlrTasks, monitor);
                 statementBodyReferences = cust.getStatementBodies();
                 listener = cust;
             }

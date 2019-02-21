@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr;
 
 import java.util.List;
+import java.util.Queue;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -55,10 +56,12 @@ implements SqlContextProcessor {
 
     private String tablespace;
     private String oids;
+    private final Queue<AntlrTask<?>> antlrTasks;
 
-    public CustomSQLParserListener(PgDatabase database, String filename,
-            boolean refMode, List<AntlrError> errors, IProgressMonitor monitor) {
+    public CustomSQLParserListener(PgDatabase database, String filename, boolean refMode,
+            List<AntlrError> errors, Queue<AntlrTask<?>> antlrTasks, IProgressMonitor monitor) {
         super(database, filename, refMode, errors, monitor);
+        this.antlrTasks = antlrTasks;
     }
 
     @Override
@@ -103,7 +106,7 @@ implements SqlContextProcessor {
         } else if (ctx.create_rewrite_statement() != null) {
             p = new CreateRewrite(ctx.create_rewrite_statement(), db);
         } else if (ctx.create_function_statement() != null) {
-            p = new CreateFunction(ctx.create_function_statement(), db);
+            p = new CreateFunction(ctx.create_function_statement(), db, antlrTasks);
             ((CreateFunction) p).setErrors(errors);
         } else if (ctx.create_aggregate_statement() != null) {
             p = new CreateAggregate(ctx.create_aggregate_statement(), db);

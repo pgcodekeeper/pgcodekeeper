@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.Callable;
@@ -154,31 +155,29 @@ public class AntlrParser {
         });
     }
 
-    public static <P extends Parser> SqlContext parseSqlString(Class<P> parserClass,
-            Function<P, SqlContext> parserEntry, String sql, String parsedObjectName) {
-        return parseSqlString(parserClass, parserEntry, sql, parsedObjectName, null, 0);
-    }
-
-    public static <P extends Parser> SqlContext parseSqlString(Class<P> parserClass,
-            Function<P, SqlContext> parserEntry, String sql, String parsedObjectName,
-            List<AntlrError> errors, int offsetToDefinition) {
-        SqlContext sqlCtx = getCtxFromFuture(submitAntlrTask(() -> parserEntry.apply(
-                makeBasicParser(parserClass, sql.endsWith(";") ? sql : sql +  "\n;",
-                        parsedObjectName, errors))));
-        if (offsetToDefinition > 0) {
-            errors.forEach(err -> err.setOffsetToDefinition(offsetToDefinition));
-        }
-        return sqlCtx;
+    public static void submitSqlCtxToAnalyze(String sql, List<AntlrError> errors,
+            int offsetToDefinition, String name, Consumer<SqlContext> finalizer,
+            Queue<AntlrTask<?>> antlrTasks) {
+        List<AntlrError> err = new ArrayList<>();
+        Function<SQLParser, SqlContext> entry = SQLParser::sql;
+        AntlrParser.submitAntlrTask(antlrTasks, () -> {
+            SQLParser p = AntlrParser.makeBasicParser(SQLParser.class,
+                    sql.endsWith(";") ? sql : sql +  "\n;", name,  err);
+            return entry.apply(p);
+        }, t -> {
+            if (offsetToDefinition > 0) {
+                err.forEach(e -> e.setOffsetToDefinition(offsetToDefinition));
+            }
+            errors.addAll(err);
+            finalizer.accept(t);
+        });
     }
 
     public static <T extends ParserRuleContext, P extends Parser>
     T parseSqlString(Class<P> parserClass, Function<P, T> parserEntry, String sql,
             String parsedObjectName, List<AntlrError> errors) {
-        return getCtxFromFuture(submitAntlrTask(() -> parserEntry.apply(
-                makeBasicParser(parserClass, sql, parsedObjectName, errors))));
-    }
-
-    private static <T extends ParserRuleContext>T getCtxFromFuture(Future<T> f) {
+        Future<T> f = submitAntlrTask(() -> parserEntry.apply(
+                makeBasicParser(parserClass, sql, parsedObjectName, errors)));
         try {
             return f.get();
         } catch (InterruptedException ex) {

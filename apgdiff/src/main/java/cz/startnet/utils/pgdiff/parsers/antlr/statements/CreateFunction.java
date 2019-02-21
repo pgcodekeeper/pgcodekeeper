@@ -1,12 +1,13 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
+import java.util.Queue;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_funct_paramsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statementContext;
@@ -27,11 +28,17 @@ import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgProcedure;
 
 public class CreateFunction extends ParserAbstract {
+
     private List<AntlrError> errors;
+    private final Queue<AntlrTask<?>> antlrTasks;
     private final Create_function_statementContext ctx;
-    public CreateFunction(Create_function_statementContext ctx, PgDatabase db) {
+
+
+    public CreateFunction(Create_function_statementContext ctx, PgDatabase db,
+            Queue<AntlrTask<?>> antlrTasks) {
         super(db);
         this.ctx = ctx;
+        this.antlrTasks = antlrTasks;
     }
 
     public void setErrors(List<AntlrError> errors) {
@@ -116,12 +123,13 @@ public class CreateFunction extends ParserAbstract {
         // Parsing the function definition and adding its result context for analysis.
         List<Character_stringContext> funcContent = funcDef.character_string();
         if ("SQL".equalsIgnoreCase(function.getLanguage()) && funcContent.size() == 1) {
-            StringBuilder funcCommands = new StringBuilder();
-            funcContent.get(0).Text_between_Dollar().forEach(funcCommands::append);
-            String funcCommandsStr = funcCommands.toString();
-            db.addContextForAnalyze(function, AntlrParser.parseSqlString(SQLParser.class,
-                    SQLParser::sql, funcCommandsStr, "function definition of " + function.getBareName(),
-                    errors, getFullCtxText(ctx.getParent()).indexOf(funcCommandsStr)));
+            StringBuilder sb = new StringBuilder();
+            funcContent.get(0).Text_between_Dollar().forEach(sb::append);
+            String def = sb.toString();
+            AntlrParser.submitSqlCtxToAnalyze(def, errors,
+                    getFullCtxText(ctx.getParent()).indexOf(def),
+                    "function definition of " + function.getBareName(),
+                    ctx -> db.addContextForAnalyze(function, ctx), antlrTasks);
         }
 
         With_storage_parameterContext storage = params.with_storage_parameter();

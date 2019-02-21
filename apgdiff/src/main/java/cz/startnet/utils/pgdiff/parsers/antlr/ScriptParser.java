@@ -61,7 +61,7 @@ public class ScriptParser {
         list.add(l);
 
         SqlContext sql = AntlrParser.parseSqlString(
-                SQLParser.class, SQLParser::sql, script, name, errors, 0);
+                SQLParser.class, SQLParser::sql, script, name, errors);
         if (!errors.isEmpty()) {
             return list;
         }
