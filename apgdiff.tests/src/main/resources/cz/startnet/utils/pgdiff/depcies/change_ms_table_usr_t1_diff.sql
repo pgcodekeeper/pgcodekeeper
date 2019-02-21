@@ -1,14 +1,14 @@
--- DEPCY: This VIEW depends on the TABLE: dbo.t1
+-- DEPCY: This VIEW depends on the TABLE: [dbo].[t1]
 
 DROP VIEW [dbo].[v4]
 GO
 
--- DEPCY: This VIEW depends on the TABLE: dbo.t1
+-- DEPCY: This VIEW depends on the TABLE: [dbo].[t1]
 
 DROP VIEW [dbo].[v2]
 GO
 
--- DEPCY: This VIEW depends on the TABLE: dbo.t1
+-- DEPCY: This VIEW depends on the TABLE: [dbo].[t1]
 
 DROP VIEW [dbo].[v1]
 GO
@@ -20,7 +20,7 @@ ALTER TABLE [dbo].[t1]
 	ADD [c3] [int]
 GO
 
--- DEPCY: This VIEW is a dependency of VIEW: dbo.v4
+-- DEPCY: This VIEW is a dependency of VIEW: [dbo].[v4]
 
 SET QUOTED_IDENTIFIER ON
 GO
@@ -33,7 +33,7 @@ from
     dbo.t1
 GO
 
--- DEPCY: This VIEW is a dependency of VIEW: dbo.v4
+-- DEPCY: This VIEW is a dependency of VIEW: [dbo].[v4]
 
 SET QUOTED_IDENTIFIER ON
 GO
@@ -46,7 +46,7 @@ from
     dbo.v1
 GO
 
--- DEPCY: This VIEW is a dependency of VIEW: dbo.v4
+-- DEPCY: This VIEW is a dependency of VIEW: [dbo].[v4]
 
 EXEC sys.sp_refreshsqlmodule '[dbo].[v3]' 
 GO
