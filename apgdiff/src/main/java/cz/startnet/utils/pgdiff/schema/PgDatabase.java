@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -43,9 +44,9 @@ public class PgDatabase extends PgStatement {
     private final List<MsUser> users = new ArrayList<>();
 
     // Contains object definitions
-    private final Map<String, List<PgObjLocation>> objDefinitions = new HashMap<>();
+    private final Map<String, Set<PgObjLocation>> objDefinitions = new HashMap<>();
     // Содержит ссылки на объекты
-    private final Map<String, List<PgObjLocation>> objReferences = new HashMap<>();
+    private final Map<String, Set<PgObjLocation>> objReferences = new HashMap<>();
     // Contains PgStatement's contexts for analysis (for getting dependencies).
     private final List<Entry<PgStatementWithSearchPath, ParserRuleContext>> contextsForAnalyze = new ArrayList<>();
     // Contains PgFunction's arguments contexts for analysis (for getting dependencies).
@@ -81,11 +82,11 @@ public class PgDatabase extends PgStatement {
         return arguments;
     }
 
-    public Map<String, List<PgObjLocation>> getObjDefinitions() {
+    public Map<String, Set<PgObjLocation>> getObjDefinitions() {
         return objDefinitions;
     }
 
-    public Map<String, List<PgObjLocation>> getObjReferences() {
+    public Map<String, Set<PgObjLocation>> getObjReferences() {
         return objReferences;
     }
 
@@ -488,26 +489,14 @@ public class PgDatabase extends PgStatement {
             break;
         case CONSTRAINT:
         case INDEX:
-            AbstractTable tab = getSchema(parent.getParent().getName()).getTable(parentName);
-            orig = tab.getChild(name, type);
-            if (orig == null) {
-                tab.addChild(st.shallowCopy());
-            }
-            break;
         case TRIGGER:
-            PgTriggerContainer tCont = getSchema(parent.getParent().getName())
-            .getTriggerContainer(parentName);
-            orig = tCont.getTrigger(name);
-            if (orig == null) {
-                tCont.addTrigger((AbstractTrigger) st.shallowCopy());
-            }
-            break;
         case RULE:
-            PgRuleContainer rCont = getSchema(parent.getParent().getName())
-            .getRuleContainer(parentName);
-            orig = rCont.getRule(name);
+            IStatementContainer cont = getSchema(parent.getParent().getName())
+            .getStatementContainer(parentName);
+
+            orig = ((PgStatement) cont).getChild(name, type);
             if (orig == null) {
-                rCont.addRule((PgRule) st.shallowCopy());
+                ((PgStatement) cont).addChild(st.shallowCopy());
             }
             break;
         default :

@@ -72,7 +72,7 @@ public class MsFPVTReader extends JdbcReader {
                 Batch_statementContext ctx = p.tsql_file().batch(0).batch_statement();
                 return new CreateMsTrigger(ctx, db, an, qi, (CommonTokenStream) p.getInputStream());
             }, creator -> {
-                MsTrigger tr = creator.getObject(schema);
+                MsTrigger tr = creator.getObject(schema, true);
                 tr.setDisable(isDisable);
             });
         } else if (tt == DbObjType.VIEW) {
@@ -80,7 +80,7 @@ public class MsFPVTReader extends JdbcReader {
                 Batch_statementContext ctx = p.tsql_file().batch(0).batch_statement();
                 return new CreateMsView(ctx, db, an, qi, (CommonTokenStream) p.getInputStream());
             }, creator -> {
-                MsView st = creator.getObject(schema);
+                MsView st = creator.getObject(schema, true);
                 loader.setOwner(st, owner);
                 loader.setPrivileges(st, acls);
             });
@@ -89,7 +89,7 @@ public class MsFPVTReader extends JdbcReader {
                 Batch_statementContext ctx = p.tsql_file().batch(0).batch_statement();
                 return new CreateMsProcedure(ctx, db, an, qi, (CommonTokenStream) p.getInputStream());
             }, creator -> {
-                AbstractFunction st = creator.getObject(schema);
+                AbstractFunction st = creator.getObject(schema, true);
                 loader.setOwner(st, owner);
                 loader.setPrivileges(st, acls);
             });
@@ -98,7 +98,7 @@ public class MsFPVTReader extends JdbcReader {
                 Batch_statementContext ctx = p.tsql_file().batch(0).batch_statement();
                 return new CreateMsFunction(ctx, db, an, qi, (CommonTokenStream) p.getInputStream());
             }, creator -> {
-                AbstractFunction st = creator.getObject(schema);
+                AbstractFunction st = creator.getObject(schema, true);
                 loader.setOwner(st, owner);
                 loader.setPrivileges(st, acls);
             });

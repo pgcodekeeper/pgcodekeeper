@@ -28,13 +28,13 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomTSQLParserListener;
-import cz.startnet.utils.pgdiff.parsers.antlr.ReferenceListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLOverridesListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLOverridesListener;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.StatementOverride;
@@ -57,8 +57,7 @@ public class PgDumpLoader {
 
     private final List<AntlrError> errors = new ArrayList<>();
 
-    private boolean loadSchema = true;
-    private boolean loadReferences;
+    private boolean refMode;
     private List<StatementBodyContainer> statementBodyReferences;
     private Map<PgStatement, StatementOverride> overrides;
 
@@ -66,16 +65,12 @@ public class PgDumpLoader {
         return errors;
     }
 
-    public void setLoadSchema(boolean loadSchema) {
-        this.loadSchema = loadSchema;
+    public void setRefMode(boolean refMode) {
+        this.refMode = refMode;
     }
 
     public void setOverridesMap(Map<PgStatement, StatementOverride> overrides) {
         this.overrides = overrides;
-    }
-
-    public void setLoadReferences(boolean loadReferences) {
-        this.loadReferences = loadReferences;
     }
 
     public List<StatementBodyContainer> getStatementBodyReferences() {
@@ -144,9 +139,8 @@ public class PgDumpLoader {
         AbstractSchema schema = args.isMsSql() ? new MsSchema(ApgdiffConsts.DBO) :
             new PgSchema(ApgdiffConsts.PUBLIC);
         d.addSchema(schema);
+        schema.setLocation(new PgObjLocation(inputObjectName));
         d.setDefaultSchema(schema.getName());
-        d.getSchema(schema.getName()).setLocation(inputObjectName);
-
         Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>(1);
         loadDatabase(d, antlrTasks);
         AntlrParser.finishAntlr(antlrTasks);
@@ -159,42 +153,31 @@ public class PgDumpLoader {
         PgDiffUtils.checkCancelled(monitor);
 
         if (args.isMsSql()) {
-            List<TSqlContextProcessor> listeners = new ArrayList<>();
+            TSqlContextProcessor listener;
             if (overrides != null) {
-                listeners.add(new TSQLOverridesListener(intoDb, inputObjectName, errors, monitor, overrides));
-            } else if (loadSchema) {
-                listeners.add(new CustomTSQLParserListener(intoDb, inputObjectName, errors, monitor));
+                listener = new TSQLOverridesListener(
+                        intoDb, inputObjectName, refMode, errors, monitor, overrides);
+            } else {
+                listener = new CustomTSQLParserListener(
+                        intoDb, inputObjectName, refMode, errors, monitor);
+                statementBodyReferences = Collections.emptyList();
             }
-
-            // TODO Uncomment this code and use it instead of
-            // 'statementBodyReferences = Collections.emptyList()'
-            // when references-mechanism for MSSQL will be added.
-            /*
-            if (loadReferences) {
-                ReferenceListener refListener = new ReferenceListener(intoDb, inputObjectName, monitor);
-                statementBodyReferences = refListener.getStatementBodies();
-                listeners.add(refListener);
-            }
-             */
-            statementBodyReferences = Collections.emptyList();
-
             AntlrParser.parseTSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
-                    monitor, monitoringLevel, listeners, antlrTasks);
+                    monitor, monitoringLevel, listener, antlrTasks);
         } else {
-            List<SqlContextProcessor> listeners = new ArrayList<>();
+            SqlContextProcessor listener;
             if (overrides != null) {
-                listeners.add(new SQLOverridesListener(intoDb, inputObjectName, errors, monitor, overrides));
-            } else if (loadSchema) {
-                listeners.add(new CustomSQLParserListener(intoDb, inputObjectName, errors, monitor));
-            }
-            if (loadReferences) {
-                ReferenceListener refListener = new ReferenceListener(intoDb, inputObjectName, monitor);
-                statementBodyReferences = refListener.getStatementBodies();
-                listeners.add(refListener);
+                listener = new SQLOverridesListener(
+                        intoDb, inputObjectName, refMode, errors, monitor, overrides);
+            } else {
+                CustomSQLParserListener cust = new CustomSQLParserListener(intoDb,
+                        inputObjectName, refMode, errors, antlrTasks, monitor);
+                statementBodyReferences = cust.getStatementBodies();
+                listener = cust;
             }
 
             AntlrParser.parseSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
-                    monitor, monitoringLevel, listeners, antlrTasks);
+                    monitor, monitoringLevel, listener, antlrTasks);
         }
 
         return intoDb;

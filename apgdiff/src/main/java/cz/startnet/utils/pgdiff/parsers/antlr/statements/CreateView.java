@@ -4,8 +4,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.text.MessageFormat;
 import java.util.List;
 
-import org.antlr.v4.runtime.ParserRuleContext;
-
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
@@ -16,15 +14,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameterContext
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_spaceContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ViewSelect;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
 public class CreateView extends ParserAbstract {
@@ -36,24 +29,27 @@ public class CreateView extends ParserAbstract {
             + "\nFROM {0};";
 
     private final Create_view_statementContext context;
+    private final String tablespace;
 
-    public CreateView(Create_view_statementContext context, PgDatabase db) {
+    public CreateView(Create_view_statementContext context, PgDatabase db, String tablespace) {
         super(db);
         this.context = context;
+        this.tablespace = tablespace;
     }
 
     @Override
-    public PgStatement getObject() {
+    public void parseObject() {
         Create_view_statementContext ctx = context;
         List<IdentifierContext> ids = ctx.name.identifier();
-        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         IdentifierContext name = QNameParser.getFirstNameCtx(ids);
         PgView view = new PgView(name.getText());
         if (ctx.MATERIALIZED() != null) {
             view.setIsWithData(ctx.NO() == null);
-            Table_spaceContext tablespace = ctx.table_space();
-            if (tablespace != null) {
-                view.setTablespace(tablespace.name.getText());
+            Table_spaceContext space = ctx.table_space();
+            if (space != null) {
+                view.setTablespace(space.name.getText());
+            } else if (tablespace != null) {
+                view.setTablespace(tablespace);
             }
         } else if (ctx.RECURSIVE() != null) {
             String sql = MessageFormat.format(RECURSIVE_PATTERN,
@@ -61,14 +57,15 @@ public class CreateView extends ParserAbstract {
                     ParserAbstract.getFullCtxText(ctx.column_names.column_name),
                     ParserAbstract.getFullCtxText(ctx.v_query));
 
-            ctx = AntlrParser.parseSqlStringSqlCtx(SQLParser.class, SQLParser::sql, sql, "recursive view")
+            ctx = AntlrParser.parseSqlString(SQLParser.class, SQLParser::sql, sql, "recursive view", null)
                     .statement(0).schema_statement().schema_create().create_view_statement();
         }
         Select_stmtContext vQuery = ctx.v_query;
         if (vQuery != null) {
+            addStatementBody(vQuery);
             view.setQuery(getFullCtxText(vQuery));
             db.addContextForAnalyze(view, vQuery);
-            ViewSelect select = new ViewSelect(schema.getName());
+            ViewSelect select = new ViewSelect();
             select.analyze(new SelectStmt(vQuery));
             view.addAllDeps(select.getDepcies());
         }
@@ -91,18 +88,6 @@ public class CreateView extends ParserAbstract {
                     ctx.with_check_option().LOCAL() != null ? "local" : "cascaded");
         }
 
-        schema.addView(view);
-        return view;
-    }
-
-    public static void analyzeViewCtx(ParserRuleContext ctx, AbstractView view,
-            String schemaName, PgDatabase db) {
-        if (ctx instanceof Select_stmtContext) {
-            Select select = new Select(schemaName, db);
-            view.addRelationColumns(select.analyze((Select_stmtContext) ctx));
-            view.addAllDeps(select.getDepcies());
-        } else {
-            UtilAnalyzeExpr.analyze((VexContext) ctx, new ValueExpr(schemaName, db), view);
-        }
+        addSafe(AbstractSchema::addView, getSchemaSafe(ids), view, ids);
     }
 }

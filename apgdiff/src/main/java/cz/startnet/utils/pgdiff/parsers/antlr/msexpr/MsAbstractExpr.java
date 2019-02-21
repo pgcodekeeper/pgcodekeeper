@@ -9,6 +9,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Full_column_nameContext
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class MsAbstractExpr {
@@ -59,17 +60,19 @@ public abstract class MsAbstractExpr {
         IdContext schemaCtx = qualifiedName.schema;
         String schemaName = schemaCtx == null ? schema : schemaCtx.getText();
         GenericColumn depcy = new GenericColumn(schemaName, relationName, type);
-        depcies.add(depcy);
+        if (!ApgdiffUtils.isMsSystemSchema(schemaName)) {
+            depcies.add(depcy);
+        }
         return depcy;
     }
 
     protected void addTypeDepcy(Data_typeContext dt) {
         Qualified_nameContext name = dt.qualified_name();
-        if (name != null && name.schema != null && !"sys".equals(name.schema.getText())) {
+        if (name != null && name.schema != null
+                && !ApgdiffUtils.isMsSystemSchema(name.schema.getText())) {
             addObjectDepcy(name, DbObjType.TYPE);
         }
     }
-
 
     protected void addDepcy(GenericColumn depcy) {
         depcies.add(depcy);
@@ -81,7 +84,11 @@ public abstract class MsAbstractExpr {
             String relationName = tableName.name.getText();
             IdContext schemaCtx = tableName.schema;
             String schemaName = schemaCtx == null ? schema : schemaCtx.getText();
-            depcies.add(new GenericColumn(schemaName, relationName, fcn.id().getText(), DbObjType.COLUMN));
+
+            if (!ApgdiffUtils.isMsSystemSchema(schemaName)) {
+                depcies.add(new GenericColumn(schemaName,
+                        relationName, fcn.id().getText(), DbObjType.COLUMN));
+            }
         }
     }
 }

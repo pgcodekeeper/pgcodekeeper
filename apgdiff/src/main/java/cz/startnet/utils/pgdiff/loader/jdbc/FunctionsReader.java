@@ -8,7 +8,6 @@ import java.util.ListIterator;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateAggregate;
@@ -21,9 +20,10 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgAggregate;
 import cz.startnet.utils.pgdiff.schema.PgAggregate.AggKinds;
 import cz.startnet.utils.pgdiff.schema.PgAggregate.ModifyType;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgProcedure;
-import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -39,7 +39,6 @@ public class FunctionsReader extends JdbcReader {
     protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException {
         String schemaName = schema.getName();
         String funcName = res.getString("proname");
-
         AbstractFunction f = res.getBoolean("proisagg") ? getAgg(res, schemaName, funcName)
                 : getFunc(res, schema, funcName);
 
@@ -69,7 +68,7 @@ public class FunctionsReader extends JdbcReader {
 
         AbstractPgFunction f = isProc ? new PgProcedure(funcName) : new PgFunction(funcName);
 
-        fillFunction(f, res, schema);
+        fillFunction(f, res, schema.getDatabase());
         fillArguments(f, res);
 
         String defaultValuesAsString = res.getString("default_values_as_string");
@@ -96,7 +95,7 @@ public class FunctionsReader extends JdbcReader {
         return f;
     }
 
-    private void fillFunction(AbstractPgFunction function, ResultSet res, AbstractSchema schema)
+    private void fillFunction(AbstractPgFunction function, ResultSet res, PgDatabase db)
             throws SQLException {
         StringBuilder body = new StringBuilder();
 
@@ -206,10 +205,9 @@ public class FunctionsReader extends JdbcReader {
         function.setBody(loader.args, body.toString());
 
         // Parsing the function definition and adding its result context for analysis.
-        if ("SQL".equalsIgnoreCase(function.getLanguage())) {
-            schema.getDatabase().addContextForAnalyze(function,
-                    AntlrParser.parseSqlStringSqlCtx(SQLParser.class, SQLParser::sql,
-                            definition, "function definition of " + function.getBareName()));
+        if (!"-".equals(definition) && "SQL".equalsIgnoreCase(function.getLanguage())) {
+            loader.submitAntlrTask(definition.endsWith(";") ? definition : definition + "\n;",
+                    SQLParser::sql, ctx -> db.addContextForAnalyze(function, ctx));
         }
     }
 
@@ -275,32 +273,12 @@ public class FunctionsReader extends JdbcReader {
                 break;
             }
 
-            String combineFuncName = res.getString("combinefunc");
-            if (combineFuncName != null) {
-                String combineFuncSchemaName = res.getString("combinefunc_nsp");
-                aggregate.setCombineFunc(getProcessedName(combineFuncSchemaName, combineFuncName));
-                addFuncAsDepcy(aggregate, combineFuncSchemaName,
-                        CreateAggregate.getParamFuncSignature(aggregate, combineFuncName,
-                                PgAggregate.COMBINEFUNC));
-            }
-
-            String serialFuncName = res.getString("serialfunc");
-            if (serialFuncName != null) {
-                String serialFuncSchemaName = res.getString("serialfunc_nsp");
-                aggregate.setSerialFunc(getProcessedName(serialFuncSchemaName, serialFuncName));
-                addFuncAsDepcy(aggregate, serialFuncSchemaName,
-                        CreateAggregate.getParamFuncSignature(aggregate, serialFuncName,
-                                PgAggregate.SERIALFUNC));
-            }
-
-            String deserialFuncName = res.getString("deserialfunc");
-            if (deserialFuncName != null) {
-                String deserialFuncSchemaName = res.getString("deserialfunc_nsp");
-                aggregate.setDeserialFunc(getProcessedName(deserialFuncSchemaName, deserialFuncName));
-                addFuncAsDepcy(aggregate, deserialFuncSchemaName,
-                        CreateAggregate.getParamFuncSignature(aggregate, deserialFuncName,
-                                PgAggregate.DESERIALFUNC));
-            }
+            aggregate.setCombineFunc(getProcessedName(aggregate, res.getString("combinefunc_nsp"),
+                    res.getString("combinefunc"), PgAggregate.COMBINEFUNC));
+            aggregate.setSerialFunc(getProcessedName(aggregate, res.getString("serialfunc_nsp"),
+                    res.getString("serialfunc"), PgAggregate.SERIALFUNC));
+            aggregate.setDeserialFunc(getProcessedName(aggregate, res.getString("deserialfunc_nsp"),
+                    res.getString("deserialfunc"), PgAggregate.DESERIALFUNC));
         }
 
         // since 11 PostgreSQL
@@ -315,23 +293,12 @@ public class FunctionsReader extends JdbcReader {
         aggregate.setSType(sType.getFullName());
         sType.addTypeDepcy(aggregate);
 
-        String sFuncSchemaName = res.getString("sfunc_nsp");
-        String sFuncName = res.getString("sfunc");
-        aggregate.setSFunc(getProcessedName(sFuncSchemaName, sFuncName));
-        addFuncAsDepcy(aggregate, sFuncSchemaName,
-                CreateAggregate.getParamFuncSignature(aggregate, sFuncName,
-                        PgAggregate.SFUNC));
-
         aggregate.setSSpace(res.getInt("sspace"));
 
-        String finalFuncName = res.getString("finalfunc");
-        if (finalFuncName != null) {
-            String finalFuncSchemaName = res.getString("finalfunc_nsp");
-            aggregate.setFinalFunc(getProcessedName(finalFuncSchemaName, finalFuncName));
-            addFuncAsDepcy(aggregate, finalFuncSchemaName,
-                    CreateAggregate.getParamFuncSignature(aggregate, finalFuncName,
-                            PgAggregate.FINALFUNC));
-        }
+        aggregate.setSFunc(getProcessedName(aggregate, res.getString("sfunc_nsp"),
+                res.getString("sfunc"), PgAggregate.SFUNC));
+        aggregate.setFinalFunc(getProcessedName(aggregate, res.getString("finalfunc_nsp"),
+                res.getString("finalfunc"), PgAggregate.FINALFUNC));
 
         aggregate.setFinalFuncExtra(res.getBoolean("is_finalfunc_extra"));
 
@@ -350,34 +317,16 @@ public class FunctionsReader extends JdbcReader {
             mSType.addTypeDepcy(aggregate);
         }
 
-        String msFuncName = res.getString("msfunc");
-        if (msFuncName != null) {
-            String mSFuncSchemaName = res.getString("msfunc_nsp");
-            aggregate.setMSFunc(getProcessedName(mSFuncSchemaName, msFuncName));
-            addFuncAsDepcy(aggregate, mSFuncSchemaName,
-                    CreateAggregate.getParamFuncSignature(aggregate, msFuncName,
-                            PgAggregate.MSFUNC));
-        }
 
-        String mInvFuncName = res.getString("minvfunc");
-        if (mInvFuncName != null) {
-            String mInvFuncSchemaName = res.getString("minvfunc_nsp");
-            aggregate.setMInvFunc(getProcessedName(mInvFuncSchemaName, mInvFuncName));
-            addFuncAsDepcy(aggregate, mInvFuncSchemaName,
-                    CreateAggregate.getParamFuncSignature(aggregate, mInvFuncName,
-                            PgAggregate.MINVFUNC));
-        }
+        aggregate.setMSFunc(getProcessedName(aggregate, res.getString("msfunc_nsp"),
+                res.getString("msfunc"), PgAggregate.MSFUNC));
+        aggregate.setMInvFunc(getProcessedName(aggregate, res.getString("minvfunc_nsp"),
+                res.getString("minvfunc"), PgAggregate.MINVFUNC));
 
         aggregate.setMSSpace(res.getInt("msspace"));
 
-        String mFinalFuncName = res.getString("mfinalfunc");
-        if (mFinalFuncName != null) {
-            String mFinalFuncSchemaName = res.getString("mfinalfunc_nsp");
-            aggregate.setMFinalFunc(getProcessedName(mFinalFuncSchemaName, mFinalFuncName));
-            addFuncAsDepcy(aggregate, mFinalFuncSchemaName,
-                    CreateAggregate.getParamFuncSignature(aggregate, mFinalFuncName,
-                            PgAggregate.MFINALFUNC));
-        }
+        aggregate.setMFinalFunc(getProcessedName(aggregate, res.getString("mfinalfunc_nsp"),
+                res.getString("mfinalfunc"), PgAggregate.MFINALFUNC));
 
         aggregate.setMFinalFuncExtra(res.getBoolean("is_mfinalfunc_extra"));
 
@@ -394,12 +343,27 @@ public class FunctionsReader extends JdbcReader {
                     .append('.').append(sortOpName).append(')');
             aggregate.setSortOp(sb.toString());
 
-            // TODO waits task #16080
-            // aggregate.addDep(new GenericColumn(operSchemaName,
-            // CreateAggregate.getSortOperSign(aggregate, sortOpName),
-            //    DbObjType.OPERATOR));
+            aggregate.addDep(new GenericColumn(operSchemaName,
+                    sortOpName + CreateAggregate.getSortOperSign(aggregate),
+                    DbObjType.OPERATOR));
         }
     }
+
+    private String getProcessedName(PgAggregate agg, String schemaName, String funcName, String funcType) {
+        if (funcName == null) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder();
+        if (!ApgdiffConsts.PG_CATALOG.equalsIgnoreCase(schemaName)) {
+            agg.addDep(new GenericColumn(schemaName,
+                    funcName + CreateAggregate.getParamFuncSignature(agg, funcType), DbObjType.FUNCTION));
+            sb.append(PgDiffUtils.getQuotedName(schemaName)).append('.');
+        }
+        sb.append(PgDiffUtils.getQuotedName(funcName));
+        return sb.toString();
+    }
+
+
 
     private ModifyType getModifyType(String modifier, AggKinds kind) {
         switch (modifier) {
@@ -411,12 +375,6 @@ public class FunctionsReader extends JdbcReader {
             return AggKinds.NORMAL != kind ? null : ModifyType.READ_WRITE;
         default :
             throw new IllegalStateException("FinalFuncModifier '"+ modifier + "' doesn't support by AGGREGATE!");
-        }
-    }
-
-    private void addFuncAsDepcy(PgAggregate aggr, String funcSchemaName, String funcName) {
-        if (!PgSystemStorage.SCHEMA_PG_CATALOG.equalsIgnoreCase(funcSchemaName)) {
-            aggr.addDep(new GenericColumn(funcSchemaName, funcName, DbObjType.FUNCTION));
         }
     }
 

@@ -1,12 +1,13 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
+import java.util.Queue;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_funct_paramsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statementContext;
@@ -25,14 +26,19 @@ import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgProcedure;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class CreateFunction extends ParserAbstract {
+
     private List<AntlrError> errors;
+    private final Queue<AntlrTask<?>> antlrTasks;
     private final Create_function_statementContext ctx;
-    public CreateFunction(Create_function_statementContext ctx, PgDatabase db) {
+
+
+    public CreateFunction(Create_function_statementContext ctx, PgDatabase db,
+            Queue<AntlrTask<?>> antlrTasks) {
         super(db);
         this.ctx = ctx;
+        this.antlrTasks = antlrTasks;
     }
 
     public void setErrors(List<AntlrError> errors) {
@@ -40,10 +46,8 @@ public class CreateFunction extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public void parseObject() {
         List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
-        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
-
         String name = QNameParser.getFirstName(ids);
         AbstractPgFunction function = ctx.PROCEDURE() != null ? new PgProcedure(name)
                 : new PgFunction(name);
@@ -60,15 +64,14 @@ public class CreateFunction extends ParserAbstract {
         if (ctx.ret_table != null) {
             function.setReturns(getFullCtxText(ctx.ret_table));
             for (Function_column_name_typeContext ret_col : ctx.ret_table.function_column_name_type()) {
-                addTypeAsDepcy(ret_col.column_type, function, getDefSchemaName());
+                addPgTypeDepcy(ret_col.column_type, function);
                 function.addReturnsColumn(ret_col.column_name.getText(), getTypeName(ret_col.column_type));
             }
         } else if (ctx.rettype_data != null) {
             function.setReturns(getTypeName(ctx.rettype_data));
-            addTypeAsDepcy(ctx.rettype_data, function, getDefSchemaName());
+            addPgTypeDepcy(ctx.rettype_data, function);
         }
-        schema.addFunction(function);
-        return function;
+        addSafe(AbstractSchema::addFunction, getSchemaSafe(ids), function, ids);
     }
 
     private void fillFunction(Create_funct_paramsContext params,
@@ -125,12 +128,13 @@ public class CreateFunction extends ParserAbstract {
         // Parsing the function definition and adding its result context for analysis.
         List<Character_stringContext> funcContent = funcDef.character_string();
         if ("SQL".equalsIgnoreCase(function.getLanguage()) && funcContent.size() == 1) {
-            StringBuilder funcCommands = new StringBuilder();
-            funcContent.get(0).Text_between_Dollar().forEach(funcCommands::append);
-            String funcCommandsStr = funcCommands.toString();
-            db.addContextForAnalyze(function, AntlrParser.parseSqlStringSqlCtx(SQLParser.class,
-                    SQLParser::sql, funcCommandsStr, "function definition of " + function.getBareName(),
-                    errors, getFullCtxText(ctx.getParent()).indexOf(funcCommandsStr)));
+            StringBuilder sb = new StringBuilder();
+            funcContent.get(0).Text_between_Dollar().forEach(sb::append);
+            String def = sb.toString();
+            AntlrParser.submitSqlCtxToAnalyze(def, errors,
+                    getFullCtxText(ctx.getParent()).indexOf(def),
+                    "function definition of " + function.getBareName(),
+                    ctx -> db.addContextForAnalyze(function, ctx), antlrTasks);
             db.addFuncArgsCtxsForAnalyze(function, funcArgsCtx);
         }
 
@@ -152,7 +156,7 @@ public class CreateFunction extends ParserAbstract {
             Argument arg = new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
                     argument.argname != null ? argument.argname.getText() : null,
                             getTypeName(argument.argtype_data));
-            addTypeAsDepcy(argument.data_type(), function, getDefSchemaName());
+            addPgTypeDepcy(argument.data_type(), function);
 
             if (argument.function_def_value() != null) {
                 arg.setDefaultExpression(getFullCtxText(argument.function_def_value().def_value));

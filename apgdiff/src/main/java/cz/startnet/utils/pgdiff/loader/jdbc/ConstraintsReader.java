@@ -5,11 +5,12 @@ import java.sql.SQLException;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterTable;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -23,9 +24,13 @@ public class ConstraintsReader extends JdbcReader {
 
     @Override
     protected void processResult(ResultSet result, AbstractSchema schema) throws SQLException {
-        AbstractTable table = schema.getTable(result.getString(CLASS_RELNAME));
-        if (table != null) {
-            table.addConstraint(getConstraint(result, schema, table.getName()));
+        if (SupportedVersion.VERSION_11.isLE(loader.version) && result.getInt("conparentid") != 0) {
+            return;
+        }
+
+        IStatementContainer cont = schema.getStatementContainer(result.getString(CLASS_RELNAME));
+        if (cont != null) {
+            cont.addConstraint(getConstraint(result, schema, cont.getName()));
         }
     }
 
@@ -52,11 +57,12 @@ public class ConstraintsReader extends JdbcReader {
 
         String definition = res.getString("definition");
         checkObjectValidity(definition, getType(), constraintName);
+        String tablespace = res.getString("spcname");
         loader.submitAntlrTask(ADD_CONSTRAINT + definition + ';',
                 p -> p.sql().statement(0).schema_statement().schema_alter()
                 .alter_table_statement().table_action(0),
                 ctx -> AlterTable.parseAlterTableConstraint(ctx, c, schema.getDatabase(),
-                        schemaName, tableName));
+                        schemaName, tableName, tablespace));
         loader.setAuthor(c, res);
 
         String comment = res.getString("description");

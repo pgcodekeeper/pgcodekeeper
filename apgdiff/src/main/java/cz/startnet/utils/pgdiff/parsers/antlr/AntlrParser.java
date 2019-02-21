@@ -3,7 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.Callable;
@@ -110,7 +110,8 @@ public class AntlrParser {
 
     public static void parseSqlStream(InputStreamProvider inputStream, String charsetName,
             String parsedObjectName, List<AntlrError> errors, IProgressMonitor mon, int monitoringLevel,
-            Collection<SqlContextProcessor> listeners, Queue<AntlrTask<?>> antlrTasks) {
+            SqlContextProcessor listener, Queue<AntlrTask<?>> antlrTasks)
+                    throws InterruptedException {
         submitAntlrTask(antlrTasks, () -> {
             try(InputStream stream = inputStream.getStream()) {
                 SQLParser parser = makeBasicParser(SQLParser.class, stream,
@@ -123,7 +124,7 @@ public class AntlrParser {
             }
         }, ctx -> {
             try {
-                listeners.forEach(listener -> listener.process(ctx, null));
+                listener.process(ctx, null);
             } catch (UnresolvedReferenceException ex) {
                 errors.add(CustomSQLParserListener.handleUnresolvedReference(ex, parsedObjectName));
             }
@@ -132,7 +133,8 @@ public class AntlrParser {
 
     public static void parseTSqlStream(InputStreamProvider inputStream, String charsetName,
             String parsedObjectName, List<AntlrError> errors, IProgressMonitor mon, int monitoringLevel,
-            Collection<TSqlContextProcessor> listeners, Queue<AntlrTask<?>> antlrTasks) {
+            TSqlContextProcessor listener, Queue<AntlrTask<?>> antlrTasks)
+                    throws InterruptedException {
         submitAntlrTask(antlrTasks, () -> {
             try(InputStream stream = inputStream.getStream()) {
                 TSQLParser parser = makeBasicParser(TSQLParser.class,
@@ -145,54 +147,37 @@ public class AntlrParser {
             }
         }, pair -> {
             try {
-                listeners.forEach(listener -> listener.process(pair.getSecond(),
-                        (CommonTokenStream) pair.getFirst().getInputStream()));
+                listener.process(pair.getSecond(),
+                        (CommonTokenStream) pair.getFirst().getInputStream());
             } catch (UnresolvedReferenceException ex) {
                 errors.add(CustomTSQLParserListener.handleUnresolvedReference(ex, parsedObjectName));
             }
         });
     }
 
-    public static <P extends Parser> SqlContext parseSqlStringSqlCtx(Class<P> parserClass,
-            Function<P, SqlContext> parserEntry, String sql,
-            String parsedObjectName) {
-        return parseSqlStringSqlCtx(parserClass, parserEntry, sql, parsedObjectName, null);
-    }
-
-    public static <P extends Parser> SqlContext parseSqlStringSqlCtx(Class<P> parserClass,
-            Function<P, SqlContext> parserEntry, String sql, String parsedObjectName,
-            List<AntlrError> errors) {
-        return parseSqlStringSqlCtx(parserClass, parserEntry, sql, parsedObjectName, errors, 0);
-    }
-
-    public static <P extends Parser> SqlContext parseSqlStringSqlCtx(Class<P> parserClass,
-            Function<P, SqlContext> parserEntry, String sql, String parsedObjectName,
-            List<AntlrError> errors, int offsetToDefinition) {
-        SqlContext sqlCtx = getCtxFromFuture(submitAntlrTask(() -> parserEntry.apply(
-                makeBasicParser(parserClass, getSqlWithSemicolon(sql),
-                        parsedObjectName, errors))));
-        if (offsetToDefinition > 0) {
-            errors.forEach(err -> err.setOffsetToDefinition(offsetToDefinition));
-        }
-        return sqlCtx;
-    }
-
-    private static String getSqlWithSemicolon(String sql) {
-        return ";".indexOf(sql.charAt(sql.length() - 1)) < 0 ? sql + "\n;" : sql;
+    public static void submitSqlCtxToAnalyze(String sql, List<AntlrError> errors,
+            int offsetToDefinition, String name, Consumer<SqlContext> finalizer,
+            Queue<AntlrTask<?>> antlrTasks) {
+        List<AntlrError> err = new ArrayList<>();
+        Function<SQLParser, SqlContext> entry = SQLParser::sql;
+        AntlrParser.submitAntlrTask(antlrTasks, () -> {
+            SQLParser p = AntlrParser.makeBasicParser(SQLParser.class,
+                    sql.endsWith(";") ? sql : sql +  "\n;", name,  err);
+            return entry.apply(p);
+        }, t -> {
+            if (offsetToDefinition > 0) {
+                err.forEach(e -> e.setOffsetToDefinition(offsetToDefinition));
+            }
+            errors.addAll(err);
+            finalizer.accept(t);
+        });
     }
 
     public static <T extends ParserRuleContext, P extends Parser>
     T parseSqlString(Class<P> parserClass, Function<P, T> parserEntry, String sql,
             String parsedObjectName, List<AntlrError> errors) {
-        return getCtxFromFuture(submitAntlrTask(() -> parserEntry.apply(
-                makeBasicParser(parserClass, sql, parsedObjectName, errors))));
-    }
-
-    public static <T> Future<T> submitAntlrTask(Callable<T> task) {
-        return ANTLR_POOL.submit(task);
-    }
-
-    private static <T extends ParserRuleContext>T getCtxFromFuture(Future<T> f) {
+        Future<T> f = submitAntlrTask(() -> parserEntry.apply(
+                makeBasicParser(parserClass, sql, parsedObjectName, errors)));
         try {
             return f.get();
         } catch (InterruptedException ex) {
@@ -201,6 +186,10 @@ public class AntlrParser {
         } catch (ExecutionException ex) {
             throw new IllegalStateException(ex);
         }
+    }
+
+    public static <T> Future<T> submitAntlrTask(Callable<T> task) {
+        return ANTLR_POOL.submit(task);
     }
 
     public static <T> void submitAntlrTask(Queue<AntlrTask<?>> antlrTasks,
