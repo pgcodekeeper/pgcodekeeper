@@ -143,7 +143,8 @@ implements IStatementContainer, IRelation {
 
     @Override
     public void addConstraint(AbstractConstraint constraint) {
-        throw new IllegalStateException("Can't add constraint to view");
+        // no op
+        // throw error later?
     }
 
     @Override

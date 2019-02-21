@@ -423,11 +423,6 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         return Collections.unmodifiableList(operators);
     }
 
-    public IStatementContainer getContainerByIndex(String name) {
-        return getStatementContainers().filter(c -> c.containsIndex(name))
-                .findAny().orElse(null);
-    }
-
     public void addDomain(PgDomain dom) {
         assertUnique(this::getDomain, dom);
         domains.add(dom);

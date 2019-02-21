@@ -2,6 +2,9 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -35,10 +38,7 @@ public class CommentOn extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        String comment = null;
-        if (ctx.comment_text != null) {
-            comment = ctx.comment_text.getText();
-        }
+        String comment = ctx.comment_text == null ? null : ctx.comment_text.getText();
 
         List<? extends ParserRuleContext> ids = null;
         if (ctx.target_operator() == null) {
@@ -127,17 +127,17 @@ public class CommentOn extends ParserAbstract {
         } else if (ctx.EXTENSION() != null) {
             type = DbObjType.EXTENSION;
             st = getSafe(PgDatabase::getExtension, db, nameCtx);
-        } else if (ctx.CONSTRAINT() != null && !isRefMode()) {
+        } else if (ctx.CONSTRAINT() != null) {
             List<IdentifierContext> parentIds = ctx.table_name.identifier();
-            IStatementContainer table = schema.getStatementContainer(QNameParser.getFirstName(parentIds));
+            IStatementContainer table = getSafe(AbstractSchema::getStatementContainer,
+                    schema, QNameParser.getFirstNameCtx(parentIds));
             addObjReference(parentIds, DbObjType.TABLE, StatementActions.NONE);
+            type = DbObjType.CONSTRAINT;
             if (table == null) {
                 PgDomain domain = getSafe(AbstractSchema::getDomain, schema, nameCtx);
-                getSafe(PgDomain::getConstraint, domain, nameCtx)
-                .setComment(db.getArguments(), comment);
+                st = getSafe(PgDomain::getConstraint, domain, nameCtx);
             } else {
-                getSafe(IStatementContainer::getConstraint, table, nameCtx)
-                .setComment(db.getArguments(), comment);
+                st = getSafe(IStatementContainer::getConstraint, table, nameCtx);
             }
         } else if (ctx.TRIGGER() != null) {
             type = DbObjType.TRIGGER;
@@ -150,20 +150,17 @@ public class CommentOn extends ParserAbstract {
         } else if (ctx.DATABASE() != null) {
             st = db;
             type = DbObjType.DATABASE;
-        } else if (ctx.INDEX() != null && !isRefMode()) {
-            IStatementContainer tab = schema.getContainerByIndex(name);
-            if (tab != null) {
-                tab.getIndex(name).setComment(comment);
-            } else {
-                IStatementContainer cont = schema.getStatementContainers()
-                        .filter(c -> c.containsConstraint(name)).findAny().orElse(null);
+        } else if (ctx.INDEX() != null) {
 
-                if (cont == null) {
-                    throw new UnresolvedReferenceException(nameCtx.getStart());
-                } else {
-                    cont.getConstraint(name).setComment(db.getArguments(), comment);
-                }
-            }
+            PgStatement commentOn = getSafe((sc,n) -> sc.getStatementContainers()
+                    .flatMap(c -> Stream.concat(c.getIndexes().stream(), c.getConstraints().stream()))
+                    .filter(s -> s.getName().equals(n))
+                    .collect(Collectors.reducing((a,b) -> b.getStatementType() == DbObjType.INDEX ? b : a))
+                    .orElse(null),
+                    schema, nameCtx);
+
+            doSafe((s,c) -> s.setComment(db.getArguments(), c), commentOn, comment);
+
         } else if (ctx.SCHEMA() != null && !ApgdiffConsts.PUBLIC.equals(name)) {
             type = DbObjType.SCHEMA;
             st = getSafe(PgDatabase::getSchema, db, nameCtx);
@@ -205,11 +202,11 @@ public class CommentOn extends ParserAbstract {
         }
 
         if (type != null) {
-            if (!isRefMode()) {
-                st.setComment(db.getArguments(), comment);
-            }
+            doSafe((s,c) -> s.setComment(db.getArguments(), c), st, comment);
             PgObjLocation ref = addObjReference(ids, type, StatementActions.COMMENT);
-            setCommentToDefinition(ref, comment);
+
+            db.getObjDefinitions().values().stream().flatMap(Set::stream)
+            .filter(ref::compare).forEach(def -> def.setComment(comment));
         }
     }
 }

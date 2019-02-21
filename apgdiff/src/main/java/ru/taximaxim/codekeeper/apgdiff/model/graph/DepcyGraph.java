@@ -93,14 +93,15 @@ public class DepcyGraph {
         Set<String> refs = con.getForeignColumns();
         GenericColumn refTable = con.getForeignTable();
         if (!refs.isEmpty() && refTable != null) {
-            IStatementContainer cont = (IStatementContainer) refTable.getStatement(db);
-            if (cont != null) {
-                for (AbstractConstraint refCon : cont.getConstraints()) {
+            PgStatement cont = refTable.getStatement(db);
+            if (cont instanceof IStatementContainer) {
+                IStatementContainer c = (IStatementContainer) cont;
+                for (AbstractConstraint refCon : c.getConstraints()) {
                     if ((refCon.isPrimaryKey() || refCon.isUnique()) && refs.equals(refCon.getColumns())) {
                         graph.addEdge(con, refCon);
                     }
                 }
-                for (AbstractIndex refInd : cont.getIndexes()) {
+                for (AbstractIndex refInd : c.getIndexes()) {
                     if (refInd.isUnique() && refs.equals(refInd.getColumns())) {
                         graph.addEdge(con, refInd);
                     }
