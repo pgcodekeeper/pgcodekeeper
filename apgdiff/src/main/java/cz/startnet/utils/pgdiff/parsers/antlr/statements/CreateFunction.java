@@ -119,7 +119,7 @@ public class CreateFunction extends ParserAbstract {
             StringBuilder funcCommands = new StringBuilder();
             funcContent.get(0).Text_between_Dollar().forEach(funcCommands::append);
             String funcCommandsStr = funcCommands.toString();
-            db.addContextForAnalyze(function, AntlrParser.parseSqlStringSqlCtx(SQLParser.class,
+            db.addContextForAnalyze(function, AntlrParser.parseSqlString(SQLParser.class,
                     SQLParser::sql, funcCommandsStr, "function definition of " + function.getBareName(),
                     errors, getFullCtxText(ctx.getParent()).indexOf(funcCommandsStr)));
         }

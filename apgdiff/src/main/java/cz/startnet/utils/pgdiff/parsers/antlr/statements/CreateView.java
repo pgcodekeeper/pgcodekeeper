@@ -53,7 +53,7 @@ public class CreateView extends ParserAbstract {
                     ParserAbstract.getFullCtxText(ctx.column_names.column_name),
                     ParserAbstract.getFullCtxText(ctx.v_query));
 
-            ctx = AntlrParser.parseSqlStringSqlCtx(SQLParser.class, SQLParser::sql, sql, "recursive view")
+            ctx = AntlrParser.parseSqlString(SQLParser.class, SQLParser::sql, sql, "recursive view")
                     .statement(0).schema_statement().schema_create().create_view_statement();
         }
         Select_stmtContext vQuery = ctx.v_query;

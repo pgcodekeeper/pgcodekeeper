@@ -154,32 +154,21 @@ public class AntlrParser {
         });
     }
 
-    public static <P extends Parser> SqlContext parseSqlStringSqlCtx(Class<P> parserClass,
-            Function<P, SqlContext> parserEntry, String sql,
-            String parsedObjectName) {
-        return parseSqlStringSqlCtx(parserClass, parserEntry, sql, parsedObjectName, null);
+    public static <P extends Parser> SqlContext parseSqlString(Class<P> parserClass,
+            Function<P, SqlContext> parserEntry, String sql, String parsedObjectName) {
+        return parseSqlString(parserClass, parserEntry, sql, parsedObjectName, null, 0);
     }
 
-    public static <P extends Parser> SqlContext parseSqlStringSqlCtx(Class<P> parserClass,
-            Function<P, SqlContext> parserEntry, String sql, String parsedObjectName,
-            List<AntlrError> errors) {
-        return parseSqlStringSqlCtx(parserClass, parserEntry, sql, parsedObjectName, errors, 0);
-    }
-
-    public static <P extends Parser> SqlContext parseSqlStringSqlCtx(Class<P> parserClass,
+    public static <P extends Parser> SqlContext parseSqlString(Class<P> parserClass,
             Function<P, SqlContext> parserEntry, String sql, String parsedObjectName,
             List<AntlrError> errors, int offsetToDefinition) {
         SqlContext sqlCtx = getCtxFromFuture(submitAntlrTask(() -> parserEntry.apply(
-                makeBasicParser(parserClass, getSqlWithSemicolon(sql),
+                makeBasicParser(parserClass, sql.endsWith(";") ? sql : sql +  "\n;",
                         parsedObjectName, errors))));
         if (offsetToDefinition > 0) {
             errors.forEach(err -> err.setOffsetToDefinition(offsetToDefinition));
         }
         return sqlCtx;
-    }
-
-    private static String getSqlWithSemicolon(String sql) {
-        return ";".indexOf(sql.charAt(sql.length() - 1)) < 0 ? sql + "\n;" : sql;
     }
 
     public static <T extends ParserRuleContext, P extends Parser>
