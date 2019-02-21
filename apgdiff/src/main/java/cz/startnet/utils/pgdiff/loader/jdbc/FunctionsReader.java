@@ -206,8 +206,8 @@ public class FunctionsReader extends JdbcReader {
 
         // Parsing the function definition and adding its result context for analysis.
         if (!"-".equals(definition) && "SQL".equalsIgnoreCase(function.getLanguage())) {
-            loader.submitAntlrTask(definition, SQLParser::sql,
-                    ctx -> db.addContextForAnalyze(function, ctx));
+            loader.submitAntlrTask(definition.endsWith(";") ? definition : definition + "\n;",
+                    SQLParser::sql, ctx -> db.addContextForAnalyze(function, ctx));
         }
     }
 
