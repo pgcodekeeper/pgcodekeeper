@@ -11,9 +11,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTrigger;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgTrigger.TgTypes;
-import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class TriggersReader extends JdbcReader {
@@ -36,7 +36,7 @@ public class TriggersReader extends JdbcReader {
     @Override
     protected void processResult(ResultSet result, AbstractSchema schema) throws SQLException {
         String contName = result.getString(CLASS_RELNAME);
-        PgTriggerContainer c = schema.getTriggerContainer(contName);
+        IStatementContainer c = schema.getStatementContainer(contName);
         if (c != null) {
             c.addTrigger(getTrigger(result, schema, contName));
         }

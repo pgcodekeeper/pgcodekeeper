@@ -471,26 +471,14 @@ public class PgDatabase extends PgStatement {
             break;
         case CONSTRAINT:
         case INDEX:
-            AbstractTable tab = getSchema(parent.getParent().getName()).getTable(parentName);
-            orig = tab.getChild(name, type);
-            if (orig == null) {
-                tab.addChild(st.shallowCopy());
-            }
-            break;
         case TRIGGER:
-            PgTriggerContainer tCont = getSchema(parent.getParent().getName())
-            .getTriggerContainer(parentName);
-            orig = tCont.getTrigger(name);
-            if (orig == null) {
-                tCont.addTrigger((AbstractTrigger) st.shallowCopy());
-            }
-            break;
         case RULE:
-            PgRuleContainer rCont = getSchema(parent.getParent().getName())
-            .getRuleContainer(parentName);
-            orig = rCont.getRule(name);
+            IStatementContainer cont = getSchema(parent.getParent().getName())
+            .getStatementContainer(parentName);
+
+            orig = ((PgStatement) cont).getChild(name, type);
             if (orig == null) {
-                rCont.addRule((PgRule) st.shallowCopy());
+                ((PgStatement) cont).addChild(st.shallowCopy());
             }
             break;
         default :

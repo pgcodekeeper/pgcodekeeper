@@ -57,9 +57,8 @@ public class AlterFtsStatement extends ParserAbstract {
                     addDepSafe(config, dIds, DbObjType.FTS_DICTIONARY, true);
                 }
 
-                if (!isRefMode()) {
-                    config.addDictionary(getFullCtxText(type), dics);
-                }
+                doSafe((s,o) -> s.addDictionary(getFullCtxText(type), dics),
+                        config, null);
             }
         }
     }

@@ -29,10 +29,12 @@ public class CreateView extends ParserAbstract {
             + "\nFROM {0};";
 
     private final Create_view_statementContext context;
+    private final String tablespace;
 
-    public CreateView(Create_view_statementContext context, PgDatabase db) {
+    public CreateView(Create_view_statementContext context, PgDatabase db, String tablespace) {
         super(db);
         this.context = context;
+        this.tablespace = tablespace;
     }
 
     @Override
@@ -43,9 +45,11 @@ public class CreateView extends ParserAbstract {
         PgView view = new PgView(name.getText());
         if (ctx.MATERIALIZED() != null) {
             view.setIsWithData(ctx.NO() == null);
-            Table_spaceContext tablespace = ctx.table_space();
-            if (tablespace != null) {
-                view.setTablespace(tablespace.name.getText());
+            Table_spaceContext space = ctx.table_space();
+            if (space != null) {
+                view.setTablespace(space.name.getText());
+            } else if (tablespace != null) {
+                view.setTablespace(tablespace);
             }
         } else if (ctx.RECURSIVE() != null) {
             String sql = MessageFormat.format(RECURSIVE_PATTERN,

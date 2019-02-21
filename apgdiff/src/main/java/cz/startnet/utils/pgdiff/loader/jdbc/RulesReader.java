@@ -8,9 +8,9 @@ import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateRewrite;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgRule.PgRuleEventType;
-import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class RulesReader extends JdbcReader {
@@ -22,7 +22,7 @@ public class RulesReader extends JdbcReader {
     @Override
     protected void processResult(ResultSet result, AbstractSchema schema) throws SQLException {
         String contName = result.getString(CLASS_RELNAME);
-        PgRuleContainer c = schema.getRuleContainer(contName);
+        IStatementContainer c = schema.getStatementContainer(contName);
         if (c != null) {
             c.addRule(getRule(result, schema, contName));
         }
