@@ -51,7 +51,7 @@ public class DropStatement extends ParserAbstract {
         } else {
             type = DbObjType.AGGREGATE;
         }
-        addObjReference(ctx.function_parameters().name.identifier(), type, StatementActions.DROP);
+        addObjReference(ctx.name.identifier(), type, StatementActions.DROP);
     }
 
     public void dropOperator(Drop_operator_statementContext ctx) {
