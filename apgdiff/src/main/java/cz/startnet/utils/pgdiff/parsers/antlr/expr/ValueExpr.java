@@ -14,7 +14,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_bracketsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_elementsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_expressionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Build_in_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Case_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Cast_specificationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Collate_identifierContext;
@@ -73,6 +72,7 @@ public class ValueExpr extends AbstractExpr {
     protected ValueExpr(AbstractExpr parent) {
         super(parent);
     }
+
 
     public Pair<String, String> analyze(Vex vex) {
         Pair<String, String> ret ;
@@ -194,7 +194,6 @@ public class ValueExpr extends AbstractExpr {
         } else if ((primary = vex.primary()) != null) {
             Select_stmt_no_parensContext subSelectStmt = primary.select_stmt_no_parens();
             Case_expressionContext caseExpr;
-            Cast_specificationContext cast;
             Comparison_modContext compMod;
             Table_subqueryContext subquery;
             Function_callContext function;
@@ -225,11 +224,6 @@ public class ValueExpr extends AbstractExpr {
                 if (ret.getFirst() == null) {
                     ret.setFirst("case");
                 }
-            } else if ((cast = primary.cast_specification()) != null) {
-                ret = analyze(new Vex(cast.vex()));
-                Data_typeContext dataTypeCtx = cast.data_type();
-                ret.setValue(ParserAbstract.getTypeName(dataTypeCtx));
-                addTypeDepcy(dataTypeCtx);
             } else if ((compMod = primary.comparison_mod()) != null) {
                 VexContext compModVex = compMod.vex();
                 if (compModVex != null) {
@@ -264,11 +258,14 @@ public class ValueExpr extends AbstractExpr {
                 ret.setFirst("array");
                 ret.setSecond(ret.getSecond() + "[]");
             } else if ((typeCoercion = primary.type_coercion()) != null) {
-                Build_in_typeContext coercionDataType = typeCoercion.build_in_type();
-                // addTypeDepcy(coercionDataType);
-                String type = ParserAbstract.convertAlias(
-                        ParserAbstract.getFullCtxText(coercionDataType));
-
+                String type;
+                if (typeCoercion.INTERVAL() != null) {
+                    type = "interval";
+                } else {
+                    Data_typeContext coercionDataType = typeCoercion.data_type();
+                    addTypeDepcy(coercionDataType);
+                    type = ParserAbstract.getTypeName(coercionDataType);
+                }
                 // since this cast can only convert string literals into a type
                 // and types are restricted to the simplest
                 // column name here will always be derived from type name
@@ -308,8 +305,7 @@ public class ValueExpr extends AbstractExpr {
             return functionSpecial(function);
         }
 
-        Orderby_clauseContext orderBy = function.orderby_clause();
-        if (orderBy != null) {
+        for (Orderby_clauseContext orderBy : function.orderby_clause()) {
             orderBy(orderBy);
         }
         Filter_clauseContext filter = function.filter_clause();
@@ -399,9 +395,17 @@ public class ValueExpr extends AbstractExpr {
             // parser defines this as a call to an overload of pg_catalog.date_part
             ret = new Pair<>("date_part", TypesSetManually.DOUBLE);
         } else if ((system = function.system_function()) != null) {
-            ret = new Pair<>(system.USER() != null ? "current_user"
-                    : system.getChild(0).getText().toLowerCase(),
-                    TypesSetManually.NAME);
+            Cast_specificationContext cast = system.cast_specification();
+            if (cast != null) {
+                ret = analyze(new Vex(cast.vex()));
+                Data_typeContext dataTypeCtx = cast.data_type();
+                ret.setValue(ParserAbstract.getTypeName(dataTypeCtx));
+                addTypeDepcy(dataTypeCtx);
+            } else {
+                ret = new Pair<>(system.USER() != null ? "current_user"
+                        : system.getChild(0).getText().toLowerCase(),
+                        TypesSetManually.NAME);
+            }
         } else if ((datetime = function.date_time_function()) != null) {
             String colname;
             String coltype;

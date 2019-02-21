@@ -5,7 +5,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
@@ -164,7 +163,7 @@ public abstract class ParserAbstract {
         return full;
     }
 
-    public static String convertAlias(String type) {
+    private static String convertAlias(String type) {
         String alias = type.toLowerCase(Locale.ENGLISH);
 
         switch (alias) {
@@ -418,11 +417,6 @@ public abstract class ParserAbstract {
 
         throw new UnresolvedReferenceException(SCHEMA_ERROR + QNameParser.getFirstName(ids),
                 QNameParser.getFirstNameCtx(ids).start);
-    }
-
-    protected void setCommentToDefinition(PgObjLocation ref, String comment) {
-        db.getObjDefinitions().values().stream().flatMap(Set::stream)
-        .filter(ref::compare).forEach(def -> def.setComment(comment));
     }
 
     /**

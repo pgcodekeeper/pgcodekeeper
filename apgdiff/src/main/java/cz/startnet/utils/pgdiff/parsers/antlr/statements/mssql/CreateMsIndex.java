@@ -15,7 +15,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_whereContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
+import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.MsIndex;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
@@ -47,8 +47,8 @@ public class CreateMsIndex extends ParserAbstract {
 
         parseIndex(ctx.index_rest(), ind);
 
-        AbstractTable table = getSafe(AbstractSchema::getTable, schema, tableCtx);
-        addSafe(AbstractTable::addIndex, table, ind,
+        IStatementContainer table = getSafe(AbstractSchema::getStatementContainer, schema, tableCtx);
+        addSafe(IStatementContainer::addIndex, table, ind,
                 Arrays.asList(schemaCtx, tableCtx, nameCtx));
     }
 

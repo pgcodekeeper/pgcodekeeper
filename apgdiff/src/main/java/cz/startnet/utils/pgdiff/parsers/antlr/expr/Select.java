@@ -18,13 +18,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Groupby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_elementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_set_listContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_element_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Orderby_clauseContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Ordinary_grouping_setContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Perform_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Qualified_asteriskContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Row_value_predicand_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_opsContext;
@@ -142,7 +140,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
 
         Groupby_clauseContext groupBy = perform.groupby_clause();
         if (groupBy != null) {
-            groupBy(groupBy, vex);
+            groupby(groupBy.grouping_element_list(), vex);
         }
 
         if (perform.WINDOW() != null) {
@@ -227,7 +225,6 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
             Log.log(Log.LOG_WARNING, "No alternative in SelectOps!");
             ret = Collections.emptyList();
         }
-
         return ret;
     }
 
@@ -256,6 +253,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
                 sublist(list.select_sublist(), vex, ret);
             }
 
+
             if ((primary.set_qualifier() != null && primary.ON() != null)
                     || primary.WHERE() != null || primary.HAVING() != null) {
                 for (VexContext v : primary.vex()) {
@@ -265,7 +263,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
 
             Groupby_clauseContext groupBy = primary.groupby_clause();
             if (groupBy != null) {
-                groupBy(groupBy, vex);
+                groupby(groupBy.grouping_element_list(), vex);
             }
 
             if (primary.WINDOW() != null) {
@@ -317,17 +315,14 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
         }
     }
 
-    private void groupBy(Groupby_clauseContext groupBy, ValueExpr vex) {
-        for (Grouping_elementContext group : groupBy.grouping_element_list().grouping_element()) {
-            Ordinary_grouping_setContext groupingSet = group.ordinary_grouping_set();
-            Grouping_set_listContext groupingSets;
-
-            if (groupingSet != null) {
-                groupingSet(groupingSet, vex);
-            } else if ((groupingSets = group.grouping_set_list()) != null) {
-                for (Ordinary_grouping_setContext groupingSubset : groupingSets.ordinary_grouping_set_list().ordinary_grouping_set()) {
-                    groupingSet(groupingSubset, vex);
-                }
+    private void groupby(Grouping_element_listContext list, ValueExpr vex) {
+        for (Grouping_elementContext el : list.grouping_element()) {
+            VexContext vexCtx = el.vex();
+            Grouping_element_listContext sub;
+            if (vexCtx != null) {
+                vex.analyze(new Vex(vexCtx));
+            } else if ((sub = el.c) != null) {
+                groupby(sub, vex);
             }
         }
     }
@@ -374,18 +369,6 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
             } else {
                 Log.log(Log.LOG_WARNING, "Complex not found: " + relation);
                 return Collections.emptyList();
-            }
-        }
-    }
-
-    private void groupingSet(Ordinary_grouping_setContext groupingSet, ValueExpr vex) {
-        VexContext v = groupingSet.vex();
-        Row_value_predicand_listContext predicandList;
-        if (v != null) {
-            vex.analyze(new Vex(v));
-        } else if ((predicandList = groupingSet.row_value_predicand_list()) != null) {
-            for (VexContext predicand : predicandList.vex()) {
-                vex.analyze(new Vex(predicand));
             }
         }
     }

@@ -129,19 +129,19 @@ public class GenericColumn implements Serializable {
         case COLUMN:
             AbstractTable t = s.getTable(table);
             return t == null ? null : t.getColumn(column);
-        case CONSTRAINT:
-            t = s.getTable(table);
-            return t == null ? null : t.getConstraint(column);
-        case INDEX:
-            t = s.getTable(table);
-            return t == null ? null : t.getIndex(column);
+        default: break;
+        }
 
+        IStatementContainer sc = s.getStatementContainer(table);
+        switch (type) {
+        case CONSTRAINT:
+            return sc == null ? null : sc.getConstraint(column);
+        case INDEX:
+            return sc == null ? null : sc.getIndex(column);
         case TRIGGER:
-            PgTriggerContainer ct = s.getTriggerContainer(table);
-            return ct == null ? null : ct.getTrigger(column);
+            return sc == null ? null : sc.getTrigger(column);
         case RULE:
-            PgRuleContainer cr = s.getRuleContainer(table);
-            return cr == null ? null : cr.getRule(column);
+            return sc == null ? null : sc.getRule(column);
 
         default: throw new IllegalStateException("Unhandled DbObjType: " + type);
         }
@@ -160,7 +160,7 @@ public class GenericColumn implements Serializable {
         if (st != null) {
             return st;
         }
-        // TODO matviews, foreign tables probably go here (they have relkind values in pg_class)
+        // matviews, foreign tables probably go here (they have relkind values in pg_class)
         // indices and composite types are also pg_class relations
         // but they should never be reffered to as tables (or other "selectable" relations)
         return null;
