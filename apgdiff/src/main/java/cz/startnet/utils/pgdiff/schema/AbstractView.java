@@ -11,10 +11,11 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public abstract class AbstractView extends PgStatementWithSearchPath
-implements PgRuleContainer, PgTriggerContainer, IRelation {
+implements IStatementContainer, IRelation {
 
     private final List<PgRule> rules = new ArrayList<>();
     private final List<AbstractTrigger> triggers = new ArrayList<>();
+    private final List<AbstractIndex> indexes = new ArrayList<>();
     private final List<Pair<String, String>> relationColumns = new ArrayList<>();
 
     @Override
@@ -30,12 +31,19 @@ implements PgRuleContainer, PgTriggerContainer, IRelation {
     protected void fillChildrenList(List<List<? extends PgStatement>> l) {
         l.add(rules);
         l.add(triggers);
+        l.add(indexes);
     }
 
     @Override
     public void addChild(PgStatement st) {
         DbObjType type = st.getStatementType();
         switch (type) {
+        case INDEX:
+            addIndex((AbstractIndex) st);
+            break;
+        case CONSTRAINT:
+            addConstraint((AbstractConstraint) st);
+            break;
         case TRIGGER:
             addTrigger((AbstractTrigger) st);
             break;
@@ -110,6 +118,46 @@ implements PgRuleContainer, PgTriggerContainer, IRelation {
     }
 
     @Override
+    public AbstractIndex getIndex(String name) {
+        for (AbstractIndex index : indexes) {
+            if (index.getName().equals(name)) {
+                return index;
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public List<AbstractIndex> getIndexes() {
+        return Collections.unmodifiableList(indexes);
+    }
+
+    @Override
+    public void addIndex(AbstractIndex index) {
+        assertUnique(this::getIndex, index);
+        indexes.add(index);
+        index.setParent(this);
+        resetHash();
+    }
+
+    @Override
+    public void addConstraint(AbstractConstraint constraint) {
+        // no op
+        // throw error later?
+    }
+
+    @Override
+    public AbstractConstraint getConstraint(String name) {
+        return null;
+    }
+
+    @Override
+    public List<AbstractConstraint> getConstraints() {
+        return Collections.emptyList();
+    }
+
+    @Override
     public Stream<Pair<String, String>> getRelationColumns() {
         return relationColumns.stream();
     }
@@ -128,7 +176,8 @@ implements PgRuleContainer, PgTriggerContainer, IRelation {
         if(obj instanceof AbstractView) {
             AbstractView view = (AbstractView) obj;
             return PgDiffUtils.setlikeEquals(rules, view.rules)
-                    && PgDiffUtils.setlikeEquals(triggers, view.triggers);
+                    && PgDiffUtils.setlikeEquals(triggers, view.triggers)
+                    && PgDiffUtils.setlikeEquals(indexes, view.indexes);
         }
         return false;
     }
@@ -137,6 +186,7 @@ implements PgRuleContainer, PgTriggerContainer, IRelation {
     protected void computeChildrenHash(Hasher hasher) {
         hasher.putUnordered(rules);
         hasher.putUnordered(triggers);
+        hasher.putUnordered(indexes);
     }
 
     @Override
@@ -159,6 +209,10 @@ implements PgRuleContainer, PgTriggerContainer, IRelation {
 
         for (AbstractTrigger trigger : triggers) {
             copy.addTrigger(trigger.deepCopy());
+        }
+
+        for (AbstractIndex index : indexes) {
+            copy.addIndex(index.deepCopy());
         }
 
         return copy;

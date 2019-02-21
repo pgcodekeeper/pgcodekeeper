@@ -257,19 +257,15 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     }
 
     /**
-     * @return rule-containing element with matching name (either TABLE or VIEW)
+     * @return child-containing element with matching name (either TABLE or VIEW)
      */
-    public PgRuleContainer getRuleContainer(String name) {
-        PgRuleContainer container = getTable(name);
+    public IStatementContainer getStatementContainer(String name) {
+        IStatementContainer container = getTable(name);
         return container == null ? getView(name) : container;
     }
 
-    /**
-     * @return trigger-containing element with matching name (either TABLE or VIEW)
-     */
-    public PgTriggerContainer getTriggerContainer(String name) {
-        PgTriggerContainer container = getTable(name);
-        return container == null ? getView(name) : container;
+    public Stream<IStatementContainer> getStatementContainers() {
+        return Stream.concat(getTables().stream(), getViews().stream());
     }
 
     /**
@@ -425,15 +421,6 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      */
     public List<PgOperator> getOperators() {
         return Collections.unmodifiableList(operators);
-    }
-
-    public AbstractTable getTableByIndex(String name) {
-        for (AbstractTable t : getTables()) {
-            if (t.getIndex(name) != null) {
-                return t;
-            }
-        }
-        return null;
     }
 
     public void addDomain(PgDomain dom) {

@@ -7,7 +7,7 @@
     <parent>
         <artifactId>ru.taximaxim.codeKeeper</artifactId>
         <groupId>ru.taximaxim.codeKeeper</groupId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>${global.version}</version>
         <relativePath>../ru.taximaxim.codeKeeper/</relativePath>
     </parent>
 

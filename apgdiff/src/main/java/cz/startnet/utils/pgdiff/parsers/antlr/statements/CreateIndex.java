@@ -18,7 +18,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_storage_parameterContext;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
+import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
@@ -49,9 +49,9 @@ public class CreateIndex extends ParserAbstract {
 
         if (nameCtx != null) {
             IdentifierContext parent = QNameParser.getFirstNameCtx(ids);
-            AbstractTable table = getSafe(AbstractSchema::getTable,
+            IStatementContainer table = getSafe(AbstractSchema::getStatementContainer,
                     getSchemaSafe(ids), parent);
-            addSafe(AbstractTable::addIndex, table, ind, Arrays.asList(
+            addSafe(IStatementContainer::addIndex, table, ind, Arrays.asList(
                     QNameParser.getSchemaNameCtx(ids), parent, nameCtx));
         }
     }
