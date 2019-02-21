@@ -13,3 +13,12 @@ ru.taximaxim.codekeeper.mainapp,\
 ru.taximaxim.codekeeper.feature \
 -DnewVersion=$1"-SNAPSHOT" \
 )
+
+( \
+cd "${DIR}/../ru.taximaxim.codekeeper.mainapp/ru.taximaxim.codeKeeper/" \
+&& \
+mvn org.codehaus.mojo:versions-maven-plugin:2.7:set-property \
+-Dproperty=global.version \
+-DnewVersion=$1 \
+-DgenerateBackupPoms=false \
+)
