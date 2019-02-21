@@ -21,6 +21,7 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgAggregate;
 import cz.startnet.utils.pgdiff.schema.PgAggregate.AggKinds;
 import cz.startnet.utils.pgdiff.schema.PgAggregate.ModifyType;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgProcedure;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -69,7 +70,7 @@ public class FunctionsReader extends JdbcReader {
 
         AbstractPgFunction f = isProc ? new PgProcedure(funcName) : new PgFunction(funcName);
 
-        fillFunction(f, res, schema);
+        fillFunction(f, res, schema.getDatabase());
         fillArguments(f, res);
 
         String defaultValuesAsString = res.getString("default_values_as_string");
@@ -96,7 +97,7 @@ public class FunctionsReader extends JdbcReader {
         return f;
     }
 
-    private void fillFunction(AbstractPgFunction function, ResultSet res, AbstractSchema schema)
+    private void fillFunction(AbstractPgFunction function, ResultSet res, PgDatabase db)
             throws SQLException {
         StringBuilder body = new StringBuilder();
 
@@ -206,8 +207,8 @@ public class FunctionsReader extends JdbcReader {
         function.setBody(loader.args, body.toString());
 
         // Parsing the function definition and adding its result context for analysis.
-        if ("SQL".equalsIgnoreCase(function.getLanguage())) {
-            schema.getDatabase().addContextForAnalyze(function,
+        if (!"-".equals(definition) && "SQL".equalsIgnoreCase(function.getLanguage())) {
+            db.addContextForAnalyze(function,
                     AntlrParser.parseSqlString(SQLParser.class, SQLParser::sql,
                             definition, "function definition of " + function.getBareName()));
         }

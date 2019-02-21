@@ -178,10 +178,6 @@ public class AntlrParser {
                 makeBasicParser(parserClass, sql, parsedObjectName, errors))));
     }
 
-    public static <T> Future<T> submitAntlrTask(Callable<T> task) {
-        return ANTLR_POOL.submit(task);
-    }
-
     private static <T extends ParserRuleContext>T getCtxFromFuture(Future<T> f) {
         try {
             return f.get();
@@ -191,6 +187,10 @@ public class AntlrParser {
         } catch (ExecutionException ex) {
             throw new IllegalStateException(ex);
         }
+    }
+
+    public static <T> Future<T> submitAntlrTask(Callable<T> task) {
+        return ANTLR_POOL.submit(task);
     }
 
     public static <T> void submitAntlrTask(Queue<AntlrTask<?>> antlrTasks,
