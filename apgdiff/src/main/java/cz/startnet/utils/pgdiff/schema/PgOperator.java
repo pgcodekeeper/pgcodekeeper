@@ -185,6 +185,11 @@ public class PgOperator extends PgStatementWithSearchPath {
     }
 
     @Override
+    public String getQualifiedName() {
+        return getParent().getQualifiedName() + '.' + getName();
+    }
+
+    @Override
     public boolean compare(PgStatement obj) {
         if (this == obj) {
             return true;

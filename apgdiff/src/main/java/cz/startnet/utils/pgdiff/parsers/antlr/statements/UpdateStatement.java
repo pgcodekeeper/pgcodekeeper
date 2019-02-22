@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
+import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -22,6 +23,6 @@ public class UpdateStatement extends ParserAbstract {
     public void parseObject() {
         List<IdentifierContext> ids = ctx.update_table_name.identifier();
         PgObjLocation loc = addObjReference(ids, DbObjType.TABLE, StatementActions.UPDATE);
-        loc.setWarningText(PgObjLocation.UPDATE);
+        loc.setWarningText(DangerStatement.UPDATE);
     }
 }

@@ -12,10 +12,8 @@ import cz.startnet.utils.pgdiff.NotAllowedObjectException;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -61,22 +59,12 @@ public class ActionsToScriptConverter {
                 PgStatement objStarter = action.getStarter();
                 if (objStarter != null && objStarter != oldObj
                         && objStarter != action.getNewObj()) {
-                    String objName = "";
-                    if (objStarter.getStatementType() == DbObjType.COLUMN) {
-                        objName = ((AbstractColumn) objStarter).getParent().getName()
-                                + '.';
-                    }
-                    objName += objStarter.getName();
-
-                    if (objStarter instanceof PgStatementWithSearchPath) {
-                        objName = ((PgStatementWithSearchPath)objStarter).getContainingSchema().getName() + '.' + objName;
-                    }
-
                     depcy = MessageFormat.format(
                             action.getAction() == StatementActions.CREATE ?
                                     CREATE_COMMENT : DROP_COMMENT,
                                     oldObj.getStatementType(),
-                                    objStarter.getStatementType(), objName);
+                                    objStarter.getStatementType(),
+                                    objStarter.getQualifiedName());
                 }
                 switch (action.getAction()) {
                 case CREATE:

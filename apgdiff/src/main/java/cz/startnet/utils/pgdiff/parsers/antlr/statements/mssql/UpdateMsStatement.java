@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import java.util.Arrays;
 
+import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Update_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
@@ -25,7 +26,7 @@ public class UpdateMsStatement extends ParserAbstract {
         if (qname != null) {
             PgObjLocation loc = addObjReference(Arrays.asList(qname.schema, qname.name),
                     DbObjType.TABLE, StatementActions.UPDATE);
-            loc.setWarningText(PgObjLocation.UPDATE);
+            loc.setWarningText(DangerStatement.UPDATE);
         }
     }
 }
