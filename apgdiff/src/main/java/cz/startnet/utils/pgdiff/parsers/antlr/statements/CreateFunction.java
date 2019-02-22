@@ -134,8 +134,10 @@ public class CreateFunction extends ParserAbstract {
             AntlrParser.submitSqlCtxToAnalyze(def, errors,
                     getFullCtxText(ctx.getParent()).indexOf(def),
                     "function definition of " + function.getBareName(),
-                    ctx -> db.addContextForAnalyze(function, ctx), antlrTasks);
-            db.addFuncArgsCtxsForAnalyze(function, funcArgsCtx);
+                    ctx -> {
+                        db.addFuncArgsCtxsForAnalyze(function, funcArgsCtx);
+                        db.addContextForAnalyze(function, ctx);
+                    }, antlrTasks);
         }
 
         With_storage_parameterContext storage = params.with_storage_parameter();

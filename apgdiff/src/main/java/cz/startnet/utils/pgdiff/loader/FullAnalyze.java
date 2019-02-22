@@ -255,6 +255,10 @@ public final class FullAnalyze {
                 .getFuncArgsCtxsForAnalyze().stream().filter(e -> func.equals(e.getKey()))
                 .findAny().orElse(null);
 
+        if (funcArgs == null) {
+            return;
+        }
+
         List<Function_argumentsContext> argCtxs = funcArgs.getValue();
         for (int i = 0; i < argCtxs.size(); i++) {
             String argDollarName = "$" + (i + 1);
