@@ -41,6 +41,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -120,7 +121,8 @@ public final class FullAnalyze {
                     if (ctx instanceof VexContext) {
                         analyze((VexContext) ctx, new ValueExpr(db), statement);
                     } else {
-                        analyzeDefinition((SqlContext) ctx, new Sql(db), statement);
+                        analyzeDefinition((SqlContext) ctx, new Sql(db),
+                                (AbstractFunction) statement);
                     }
                     break;
                 case DOMAIN:
@@ -159,7 +161,7 @@ public final class FullAnalyze {
             GenericColumn implicitTable = new GenericColumn(schemaName, rule.getParent().getName(), DbObjType.TABLE);
             vex.addReference("new", implicitTable);
             vex.addReference("old", implicitTable);
-            analyzeDefinition(ctx.vex(), vex, rule);
+            analyze(ctx.vex(), vex, rule);
         }
     }
 
@@ -185,7 +187,7 @@ public final class FullAnalyze {
         GenericColumn implicitTable = new GenericColumn(schemaName, rule.getParent().getName(), DbObjType.TABLE);
         analyzer.addReference("new", implicitTable);
         analyzer.addReference("old", implicitTable);
-        analyzeDefinition(ctx, analyzer, rule);
+        analyze(ctx, analyzer, rule);
     }
 
     private void analyzeTriggersWhen(VexContext ctx, PgTrigger trigger,
@@ -195,7 +197,7 @@ public final class FullAnalyze {
                 trigger.getParent().getName(), DbObjType.TABLE);
         vex.addReference("new", implicitTable);
         vex.addReference("old", implicitTable);
-        analyzeDefinition(ctx, vex, trigger);
+        analyze(ctx, vex, trigger);
     }
 
     private void analyzeIndexRest(Index_restContext rest, PgStatement indexStmt,
@@ -234,7 +236,7 @@ public final class FullAnalyze {
     }
 
     private <T extends ParserRuleContext> void analyzeDefinition(T ctx,
-            AbstractExprWithNmspc<T> analyzer, PgStatementWithSearchPath st) {
+            AbstractExprWithNmspc<T> analyzer, AbstractFunction st) {
         List<Pair<String, String>> simpleFuncArgs = new ArrayList<>();
         Map<String, GenericColumn> relFuncArgs = new LinkedHashMap<>();
         splitFuncArgs(db, st, relFuncArgs, simpleFuncArgs);
@@ -247,10 +249,10 @@ public final class FullAnalyze {
     /**
      * Splits function arguments into simple arguments and arguments with relations.
      */
-    private void splitFuncArgs(PgDatabase db, PgStatementWithSearchPath rootFunc,
+    private void splitFuncArgs(PgDatabase db, AbstractFunction func,
             Map<String, GenericColumn> rels, List<Pair<String, String>> prims) {
         Entry<PgStatementWithSearchPath, List<Function_argumentsContext>> funcArgs = db
-                .getFuncArgsCtxsForAnalyze().stream().filter(e -> rootFunc.equals(e.getKey()))
+                .getFuncArgsCtxsForAnalyze().stream().filter(e -> func.equals(e.getKey()))
                 .findAny().orElse(null);
 
         List<Function_argumentsContext> argCtxs = funcArgs.getValue();
