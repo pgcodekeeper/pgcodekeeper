@@ -8,10 +8,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statement
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgRule.PgRuleEventType;
-import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -37,9 +37,9 @@ public class CreateRewrite extends ParserAbstract {
         setConditionAndAddCommands(ctx, rule, db);
 
         IdentifierContext parent = QNameParser.getFirstNameCtx(ids);
-        PgRuleContainer cont = getSafe(AbstractSchema::getRuleContainer,
+        IStatementContainer cont = getSafe(AbstractSchema::getStatementContainer,
                 getSchemaSafe(ids), parent);
-        addSafe(PgRuleContainer::addRule, cont, rule, Arrays.asList(
+        addSafe(IStatementContainer::addRule, cont, rule, Arrays.asList(
                 QNameParser.getSchemaNameCtx(ids), parent, ctx.name));
     }
 

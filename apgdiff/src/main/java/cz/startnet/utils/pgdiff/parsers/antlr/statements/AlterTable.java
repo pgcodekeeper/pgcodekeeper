@@ -96,7 +96,8 @@ public class AlterTable extends TableAbstract {
             if (tablAction.table_column_definition() != null) {
                 Table_column_definitionContext column = tablAction.table_column_definition();
                 addColumn(column.column_name.getText(), column.datatype,
-                        column.collate_name, column.constraint_common(), tabl);
+                        column.collate_name, column.constraint_common(),
+                        column.define_foreign_options(), tabl);
             }
 
             if (tablAction.column != null) {
@@ -116,7 +117,7 @@ public class AlterTable extends TableAbstract {
 
                 // column statistics
                 if (tablAction.STATISTICS() != null) {
-                    col.setStatistics(Integer.valueOf(tablAction.integer.getText()));
+                    col.setStatistics(Integer.valueOf(tablAction.signed_number_literal().getText()));
                 }
 
                 // column not null constraint

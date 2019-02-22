@@ -15,10 +15,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Trigger_referencingConte
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.When_triggerContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgTrigger.TgTypes;
-import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -111,9 +111,9 @@ public class CreateTrigger extends ParserAbstract {
         parseWhen(ctx.when_trigger(), trigger, db);
 
         IdentifierContext parent = QNameParser.getFirstNameCtx(ids);
-        PgTriggerContainer cont = getSafe(AbstractSchema::getTriggerContainer,
+        IStatementContainer cont = getSafe(AbstractSchema::getStatementContainer,
                 getSchemaSafe(ids), parent);
-        addSafe(PgTriggerContainer::addTrigger, cont, trigger, Arrays.asList(
+        addSafe(IStatementContainer::addTrigger, cont, trigger, Arrays.asList(
                 QNameParser.getSchemaNameCtx(ids), parent, ctx.name));
     }
 
