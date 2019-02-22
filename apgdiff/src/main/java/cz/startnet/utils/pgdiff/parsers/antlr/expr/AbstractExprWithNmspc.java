@@ -35,6 +35,9 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
  */
 public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends AbstractExpr {
 
+
+    private static final String FUNC_ARGS_KEY = "_SPECIAL_CONTAINER_FOR_FUNCTION_ARGUMENTS";
+
     /**
      * The local namespace of this Select.<br>
      * String-Reference pairs keep track of external table aliases and
@@ -82,9 +85,9 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
     }
 
     public void addFuncArgsToNmsp(Map<String, GenericColumn> relFuncArgs,
-            Map<String, List<Pair<String, String>>> simpleFuncArgs) {
+            List<Pair<String, String>> simpleFuncArgs) {
         namespace.putAll(relFuncArgs);
-        complexNamespace.putAll(simpleFuncArgs);
+        complexNamespace.put(FUNC_ARGS_KEY, simpleFuncArgs);
     }
 
     @Override

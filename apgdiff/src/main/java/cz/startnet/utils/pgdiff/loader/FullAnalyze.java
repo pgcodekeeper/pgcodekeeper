@@ -16,7 +16,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Delete_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
@@ -29,7 +28,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_no
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sort_specifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.StatementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
@@ -37,6 +35,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.AbstractExprWithNmspc;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Delete;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Insert;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.Sql;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Update;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc;
@@ -50,13 +49,12 @@ import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public final class FullAnalyze {
-
-    public static final String FUNC_ARGS_KEY = "_SPECIAL_CONTAINER_FOR_FUNCTION_ARGUMENTS";
 
     private final List<AntlrError> errors;
     private final PgDatabase db;
@@ -120,10 +118,9 @@ public final class FullAnalyze {
                 case FUNCTION:
                 case PROCEDURE:
                     if (ctx instanceof VexContext) {
-                        analyze((VexContext) ctx, new ValueExpr(db),
-                                statement);
+                        analyze((VexContext) ctx, new ValueExpr(db), statement);
                     } else {
-                        funcDefinAnalyze((SqlContext) ctx, statement);
+                        analyzeDefinition((SqlContext) ctx, new Sql(db), statement);
                     }
                     break;
                 case DOMAIN:
@@ -162,7 +159,7 @@ public final class FullAnalyze {
             GenericColumn implicitTable = new GenericColumn(schemaName, rule.getParent().getName(), DbObjType.TABLE);
             vex.addReference("new", implicitTable);
             vex.addReference("old", implicitTable);
-            analyze(ctx.vex(), vex, rule);
+            analyzeDefinition(ctx.vex(), vex, rule);
         }
     }
 
@@ -188,7 +185,7 @@ public final class FullAnalyze {
         GenericColumn implicitTable = new GenericColumn(schemaName, rule.getParent().getName(), DbObjType.TABLE);
         analyzer.addReference("new", implicitTable);
         analyzer.addReference("old", implicitTable);
-        analyze(ctx, analyzer, rule);
+        analyzeDefinition(ctx, analyzer, rule);
     }
 
     private void analyzeTriggersWhen(VexContext ctx, PgTrigger trigger,
@@ -198,7 +195,7 @@ public final class FullAnalyze {
                 trigger.getParent().getName(), DbObjType.TABLE);
         vex.addReference("new", implicitTable);
         vex.addReference("old", implicitTable);
-        analyze(ctx, vex, trigger);
+        analyzeDefinition(ctx, vex, trigger);
     }
 
     private void analyzeIndexRest(Index_restContext rest, PgStatement indexStmt,
@@ -236,43 +233,22 @@ public final class FullAnalyze {
         analyze(ctx, valExptWithNmspc, statement);
     }
 
-    protected void funcDefinAnalyze(SqlContext funcDefSqlCtx, PgStatementWithSearchPath st) {
-        Map<String, List<Pair<String, String>>> simpleFuncArgs = new LinkedHashMap<>();
-        simpleFuncArgs.put(FUNC_ARGS_KEY, new ArrayList<>());
+    private <T extends ParserRuleContext> void analyzeDefinition(T ctx,
+            AbstractExprWithNmspc<T> analyzer, PgStatementWithSearchPath st) {
+        List<Pair<String, String>> simpleFuncArgs = new ArrayList<>();
         Map<String, GenericColumn> relFuncArgs = new LinkedHashMap<>();
         splitFuncArgs(db, st, relFuncArgs, simpleFuncArgs);
+        analyzer.addFuncArgsToNmsp(relFuncArgs, simpleFuncArgs);
 
-        for (StatementContext s : funcDefSqlCtx.statement()) {
-            Data_statementContext ds = s.data_statement();
-            if (ds != null) {
-                Select_stmtContext selCtx = ds.select_stmt();
-                Insert_stmt_for_psqlContext insCtx;
-                Update_stmt_for_psqlContext updCtx;
-                Delete_stmt_for_psqlContext delCtx;
-                if (selCtx != null) {
-                    analyzeFuncDefin(selCtx, new Select(db),
-                            st, relFuncArgs, simpleFuncArgs);
-                } else if ((insCtx = ds.insert_stmt_for_psql()) != null) {
-                    analyzeFuncDefin(insCtx, new Insert(db),
-                            st, relFuncArgs, simpleFuncArgs);
-                } else if ((updCtx = ds.update_stmt_for_psql()) != null) {
-                    analyzeFuncDefin(updCtx, new Update(db),
-                            st, relFuncArgs, simpleFuncArgs);
-                } else if ((delCtx = ds.delete_stmt_for_psql()) != null) {
-                    analyzeFuncDefin(delCtx, new Delete(db),
-                            st, relFuncArgs, simpleFuncArgs);
-                }
-            }
-            // TODO add processing for elements of 's.schema_statement()'
-        }
+        analyzer.analyze(ctx);
+        st.addAllDeps(analyzer.getDepcies());
     }
 
     /**
      * Splits function arguments into simple arguments and arguments with relations.
      */
     private void splitFuncArgs(PgDatabase db, PgStatementWithSearchPath rootFunc,
-            Map<String, GenericColumn> relFuncArgs,
-            Map<String, List<Pair<String, String>>> simpleFuncArgs) {
+            Map<String, GenericColumn> rels, List<Pair<String, String>> prims) {
         Entry<PgStatementWithSearchPath, List<Function_argumentsContext>> funcArgs = db
                 .getFuncArgsCtxsForAnalyze().stream().filter(e -> rootFunc.equals(e.getKey()))
                 .findAny().orElse(null);
@@ -294,58 +270,40 @@ public final class FullAnalyze {
             if (typeQname != null) {
                 IdentifierContext schemaCtx = typeQname.identifier();
 
-                String schemaName = rootFunc.getContainingSchema().getName();
                 if (schemaCtx != null) {
-                    schemaName = ParserAbstract.getFullCtxText(schemaCtx);
+                    String schemaName = ParserAbstract.getFullCtxText(schemaCtx);
                     String typeNameOfObj = ParserAbstract.getFullCtxText(typeQname.identifier_nontype());
-                    DbObjType objGenericType = DbObjType.TYPE;
-                    if ("pg_catalog".equals(schemaName)
-                            || "information_schema".equals(schemaName)) {
+
+                    if (ApgdiffUtils.isPgSystemSchema(schemaName)) {
                         // put result to the 'simpleFuncArgs'
-                        simpleFuncArgs.get(FUNC_ARGS_KEY).add(new Pair<>(argDollarName,
-                                typeNameOfObj));
+                        prims.add(new Pair<>(argDollarName, typeNameOfObj));
                     } else {
                         // check if it is TABLE OR VIEW OR TYPE then put it to the 'relFuncArgs'
-
+                        DbObjType type = null;
                         AbstractSchema schema = db.getSchema(schemaName);
-
-                        boolean isRelArg = false;
                         if (schema.getTable(typeNameOfObj) != null) {
-                            isRelArg = true;
-                            objGenericType = DbObjType.TABLE;
+                            type = DbObjType.TABLE;
                         } else if (schema.getView(typeNameOfObj) != null) {
-                            isRelArg = true;
-                            objGenericType = DbObjType.VIEW;
-                        } else if(schema.getType(typeNameOfObj) != null) {
-                            isRelArg = true;
-                        }
-                        if (isRelArg) {
-                            relFuncArgs.put(argDollarName,
-                                    new GenericColumn(schemaName, typeNameOfObj, objGenericType));
-                            continue;
+                            type = DbObjType.VIEW;
+                        } else if (schema.getType(typeNameOfObj) != null) {
+                            type = DbObjType.TYPE;
+                        } else {
+                            // else put it to the 'simpleFuncArgs'
+                            prims.add(new Pair<>(argDollarName, typeNameOfObj));
                         }
 
-                        // else put it to the 'simpleFuncArgs'
-                        simpleFuncArgs.get(FUNC_ARGS_KEY).add(new Pair<>(argDollarName,
-                                typeNameOfObj));
+                        if (type != null) {
+                            rels.put(argDollarName,
+                                    new GenericColumn(schemaName, typeNameOfObj, type));
+                        }
                     }
-                    continue;
                 }
             } else {
                 // put it to the 'simpleFuncArgs'
-                simpleFuncArgs.get(FUNC_ARGS_KEY).add(new Pair<>(argDollarName,
-                        ParserAbstract.getFullCtxText(dataTypeCtx)));
+                prims.add(new Pair<>(argDollarName,
+                        ParserAbstract.getTypeName(dataTypeCtx)));
             }
         }
-    }
-
-
-    public <T extends ParserRuleContext> void analyzeFuncDefin(T ctx,
-            AbstractExprWithNmspc<T> analyzer, PgStatement pg,
-            Map<String, GenericColumn> relFuncArgs,
-            Map<String, List<Pair<String, String>>> simpleFuncArgs) {
-        analyzer.addFuncArgsToNmsp(relFuncArgs, simpleFuncArgs);
-        analyze(ctx, analyzer, pg);
     }
 
 
