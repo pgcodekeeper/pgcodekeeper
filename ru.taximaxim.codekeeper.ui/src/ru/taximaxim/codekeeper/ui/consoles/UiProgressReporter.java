@@ -19,7 +19,7 @@ public class UiProgressReporter implements IProgressReporter {
     }
 
     /**
-     * Initial, write one error message and terminate console console
+     * Initial, write one error message and terminate console
      */
     public static void writeSingleError(String error) {
         UiProgressReporter reporter = new UiProgressReporter(new NullProgressMonitor());

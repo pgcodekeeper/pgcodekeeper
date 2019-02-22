@@ -2,12 +2,11 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_sequence_statementContext;
@@ -32,58 +31,40 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 public class ScriptParser {
 
     private final String script;
-
+    private final List<List<String>> batches = new ArrayList<>();
     private final List<AntlrError> errors = new ArrayList<>();
-    private final Set<DangerStatement> dangerStatements = new HashSet<>();
+    private final Set<DangerStatement> dangerStatements = EnumSet.noneOf(DangerStatement.class);
 
-    private CommonTokenStream stream;
-    private ParserRuleContext rootCtx;
-
-    private ScriptParser(String script) {
+    public ScriptParser(String name, String script, boolean isMsSql) {
         this.script = script;
-    }
-
-    public static ScriptParser parse(String name, String script, boolean isMsSql) {
-        ScriptParser sp = new ScriptParser(script);
-
+        SqlContext sql = null;
+        Tsql_fileContext tsql = null;
         if (isMsSql) {
             TSQLParser[] parser = new TSQLParser[1];
-            sp.rootCtx = AntlrParser.parseSqlString(TSQLParser.class,
-                    p -> {
-                        parser[0] = p;
-                        return p.tsql_file();
-                    }, script, name, sp.errors);
-            sp.stream = (CommonTokenStream) parser[0].getInputStream();
+            tsql = AntlrParser.parseSqlString(TSQLParser.class,
+                    p -> { parser[0] = p; return p.tsql_file(); },
+                    script, name, errors);
+            if (!errors.isEmpty()) {
+                return;
+            }
+            checkMsDanger(tsql);
+            batchMs(tsql, (CommonTokenStream) parser[0].getInputStream());
         } else {
-            sp.rootCtx = AntlrParser.parseSqlString(SQLParser.class, SQLParser::sql,
-                    script, name, sp.errors);
-        }
-
-        return sp;
-    }
-
-
-    public void checkDanger() {
-        if (rootCtx instanceof SqlContext) {
-            checkPgDanger((SqlContext) rootCtx);
-        } else if (rootCtx instanceof Tsql_fileContext) {
-            checkMsDanger((Tsql_fileContext) rootCtx);
-        } else {
-            throw new IllegalStateException("Script not parsed yet");
+            sql = AntlrParser.parseSqlString(SQLParser.class, SQLParser::sql,
+                    script, name, errors);
+            if (!errors.isEmpty()) {
+                return;
+            }
+            checkPgDanger(sql);
+            batchPg(sql);
         }
     }
 
     public List<List<String>> batch() {
-        if (rootCtx instanceof SqlContext) {
-            return batchPg((SqlContext) rootCtx);
-        } else if (rootCtx instanceof Tsql_fileContext) {
-            return batchMs((Tsql_fileContext) rootCtx);
-        }
-
-        throw new IllegalStateException("Script not parsed yet");
+        return batches;
     }
 
-    private List<List<String>> batchMs(Tsql_fileContext rootCtx) {
+    private List<List<String>> batchMs(Tsql_fileContext rootCtx, CommonTokenStream stream) {
         List<List<String>> list = new ArrayList<>();
 
         for (BatchContext batch : rootCtx.batch()) {
@@ -201,7 +182,7 @@ public class ScriptParser {
     }
 
     public Set<DangerStatement> getDangerDdl(Collection<DangerStatement> allowedDangers) {
-        Set<DangerStatement> danger = new HashSet<>();
+        Set<DangerStatement> danger = EnumSet.noneOf(DangerStatement.class);
 
         for (DangerStatement d : dangerStatements) {
             if (!allowedDangers.contains(d)) {

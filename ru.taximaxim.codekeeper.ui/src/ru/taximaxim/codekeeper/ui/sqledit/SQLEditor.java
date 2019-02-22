@@ -431,13 +431,12 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
         ScriptParser [] parsers = new ScriptParser[1];
         IRunnableWithProgress runnable = monitor -> {
-            ScriptParser parser = ScriptParser.parse(
+            ScriptParser parser = new ScriptParser(
                     getEditorInput().getName(), textRetrieved, dbInfo.isMsSql());
             String error = parser.getErrorMessage();
             if (error != null) {
                 UiProgressReporter.writeSingleError(error);
             } else {
-                parser.checkDanger();
                 parsers[0] = parser;
             }
         };

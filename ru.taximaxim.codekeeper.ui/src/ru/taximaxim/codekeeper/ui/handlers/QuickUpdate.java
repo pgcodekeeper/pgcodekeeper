@@ -213,13 +213,12 @@ class QuickUpdateJob extends SingletonEditorJob {
         }
 
         try {
-            ScriptParser parser = ScriptParser.parse(file.getName(), differ.getDiffDirect(), isMsSql);
+            ScriptParser parser = new ScriptParser(file.getName(), differ.getDiffDirect(), isMsSql);
             String error = parser.getErrorMessage();
             if (error != null) {
                 throw new PgCodekeeperUIException(error);
             }
 
-            parser.checkDanger();
             if (parser.isDangerDdl(EnumSet.noneOf(DangerStatement.class))) {
                 throw new PgCodekeeperUIException(Messages.QuickUpdate_danger);
             }

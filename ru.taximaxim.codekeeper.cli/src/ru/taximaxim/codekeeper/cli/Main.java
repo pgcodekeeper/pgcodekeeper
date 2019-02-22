@@ -81,8 +81,7 @@ public final class Main {
             String text = script.getText();
 
             if (arguments.isSafeMode()) {
-                ScriptParser parser = ScriptParser.parse("CLI", text, arguments.isMsSql());
-                parser.checkDanger();
+                ScriptParser parser = new ScriptParser("CLI", text, arguments.isMsSql());
                 Set<DangerStatement> dangerTypes =
                         parser.getDangerDdl(arguments.getAllowedDangers());
 
