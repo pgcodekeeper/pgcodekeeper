@@ -133,6 +133,8 @@ public class CommentOn extends ParserAbstract {
                     schema, QNameParser.getFirstNameCtx(parentIds));
             addObjReference(parentIds, DbObjType.TABLE, StatementActions.NONE);
             type = DbObjType.CONSTRAINT;
+            ids = Arrays.asList(QNameParser.getSchemaNameCtx(parentIds),
+                    QNameParser.getFirstNameCtx(parentIds), nameCtx);
             if (table == null) {
                 PgDomain domain = getSafe(AbstractSchema::getDomain, schema, nameCtx);
                 st = getSafe(PgDomain::getConstraint, domain, nameCtx);
