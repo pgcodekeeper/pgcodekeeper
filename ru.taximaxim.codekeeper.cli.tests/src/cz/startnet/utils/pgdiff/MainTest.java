@@ -86,9 +86,10 @@ public class MainTest {
             break;
         case TEST_PARSE:
             Main.main(args.args());
-            assertTrue(args.getClass().getSimpleName() + " - .pgcodekeeper doesn't exist",
+            String name = args.getClass().getSimpleName();
+            assertTrue(name + " - .pgcodekeeper doesn't exist",
                     Files.isRegularFile(args.getParseResultDir().get().resolve(".pgcodekeeper")));
-            assertTrue(args.getClass().getSimpleName() + " - SCHEMA doesn't exist",
+            assertTrue(name + " - SCHEMA doesn't exist",
                     Files.isDirectory(args.getParseResultDir().get().resolve("SCHEMA")));
             break;
         case TEST_OUTPUT:
@@ -101,18 +102,18 @@ public class MainTest {
         Main.main(args.args());
         File resFile = args.getDiffResultFile();
         File predefined = args.getPredefinedResultFile();
-        assertTrue(args.getClass().getSimpleName() + " - Predefined file does not exist: "
+        String name = args.getClass().getSimpleName();
+        assertTrue(name + " - Predefined file does not exist: "
                 + predefined.getAbsolutePath(), predefined.exists());
-        assertTrue(args.getClass().getSimpleName() + " - Resulting file does not exist: "
+        assertTrue(name + " - Resulting file does not exist: "
                 + resFile.getAbsolutePath(), resFile.exists());
 
-        assertFalse(args.getClass().getSimpleName() + " - Predefined file is a directory: "
+        assertFalse(name + " - Predefined file is a directory: "
                 + predefined.getAbsolutePath(), predefined.isDirectory());
-        assertFalse(args.getClass().getSimpleName() + " - Resulting file is a directory: "
+        assertFalse(name + " - Resulting file is a directory: "
                 + resFile.getAbsolutePath(), resFile.isDirectory());
         if (!filesEqualIgnoreNewLines(predefined, resFile)) {
-            assertEquals(args.getClass().getSimpleName()
-                    + " - Predefined and resulting script differ",
+            assertEquals(name + " - Predefined and resulting script differ",
                     new String(Files.readAllBytes(predefined.toPath()), StandardCharsets.UTF_8),
                     new String(Files.readAllBytes(resFile.toPath()), StandardCharsets.UTF_8));
         }
