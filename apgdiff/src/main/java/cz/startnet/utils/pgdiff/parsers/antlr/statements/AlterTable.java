@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.util.Arrays;
 import java.util.List;
 
+import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Foreign_optionContext;
@@ -51,9 +52,9 @@ public class AlterTable extends TableAbstract {
 
         for (Table_actionContext tablAction : ctx.table_action()) {
             if (tablAction.column != null && tablAction.DROP() != null) {
-                loc.setWarningText(PgObjLocation.DROP_COLUMN);
+                loc.setWarningText(DangerStatement.DROP_COLUMN);
             } else if (tablAction.datatype != null) {
-                loc.setWarningText(PgObjLocation.ALTER_COLUMN_TYPE);
+                loc.setWarningText(DangerStatement.ALTER_COLUMN);
             }
 
             if (tablAction.owner_to() != null) {

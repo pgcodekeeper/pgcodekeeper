@@ -1,7 +1,7 @@
 DROP TABLE [dbo].[table1]
 GO
 
--- DEPCY: This TABLE is a dependency of COLUMN: dbo.table1.c4
+-- DEPCY: This TABLE is a dependency of COLUMN: [dbo].[table1].[c4]
 
 SET QUOTED_IDENTIFIER ON
 GO

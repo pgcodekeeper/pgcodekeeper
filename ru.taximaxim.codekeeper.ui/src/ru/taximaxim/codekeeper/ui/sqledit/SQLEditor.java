@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -33,6 +34,8 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -70,6 +73,7 @@ import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.osgi.service.prefs.BackingStoreException;
 
+import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcMsConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
@@ -425,7 +429,46 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             }
         }
 
-        scriptThreadJobWrapper = new ScriptThreadJobWrapper(dbInfo, textRetrieved);
+        ScriptParser [] parsers = new ScriptParser[1];
+        IRunnableWithProgress runnable = monitor -> {
+            ScriptParser parser = new ScriptParser(
+                    getEditorInput().getName(), textRetrieved, dbInfo.isMsSql());
+            String error = parser.getErrorMessage();
+            if (error != null) {
+                UiProgressReporter.writeSingleError(error);
+            } else {
+                parsers[0] = parser;
+            }
+        };
+
+        try {
+            new ProgressMonitorDialog(parentComposite.getShell()).run(false, true, runnable);
+        } catch (InterruptedException | InvocationTargetException ex) {
+            Log.log(ex);
+        }
+
+        if (parsers[0] == null) {
+            return;
+        }
+
+        if (parsers[0].isDangerDdl(DangerStatement.getAllowedDanger(
+                !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT),
+                !mainPrefs.getBoolean(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT),
+                !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_TABLE_STATEMENT),
+                !mainPrefs.getBoolean(DB_UPDATE_PREF.RESTART_WITH_STATEMENT),
+                !mainPrefs.getBoolean(DB_UPDATE_PREF.UPDATE_STATEMENT)))) {
+
+            MessageBox mb = new MessageBox(parentComposite.getShell(),
+                    SWT.ICON_WARNING | SWT.OK | SWT.CANCEL);
+            mb.setText(Messages.sqlScriptDialog_warning);
+            mb.setMessage(Messages.sqlScriptDialog_script_contains_statements_that_may_modify_data);
+
+            if (mb.open() != SWT.OK) {
+                return;
+            }
+        }
+
+        scriptThreadJobWrapper = new ScriptThreadJobWrapper(dbInfo, parsers[0]);
         scriptThreadJobWrapper.setUser(true);
         scriptThreadJobWrapper.schedule();
 
@@ -436,13 +479,13 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     private class ScriptThreadJobWrapper extends SingletonEditorJob {
 
         private final DbInfo dbInfo;
-        private final String script;
+        private final ScriptParser parser;
 
-        public ScriptThreadJobWrapper(DbInfo dbInfo, String script) {
+        public ScriptThreadJobWrapper(DbInfo dbInfo, ScriptParser parser) {
             super(Messages.SqlEditor_update_ddl + getEditorInput().getName(),
                     SQLEditor.this, UpdateDdlJobTester.EVAL_PROP);
             this.dbInfo = dbInfo;
-            this.script = script;
+            this.parser = parser;
         }
 
         @Override
@@ -470,15 +513,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
             UiProgressReporter reporter = new UiProgressReporter(monitor);
             try {
-                ScriptParser parser = new ScriptParser(getEditorInput().getName());
-                List<List<String>> batches = parser.parse(script, dbInfo.isMsSql());
-                String error = parser.getErrorMessage();
-                if (error != null) {
-                    reporter.writeError(error);
-                    return new Status(IStatus.WARNING, PLUGIN_ID.THIS,
-                            Messages.sqlScriptDialog_exception_during_script_execution);
-                }
-
+                List<List<String>> batches = parser.batch();
                 new JdbcRunner(monitor).runBatches(connector, batches, reporter);
                 ProjectEditorDiffer.notifyDbChanged(dbInfo);
                 return Status.OK_STATUS;
@@ -500,8 +535,9 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
             UiProgressReporter reporter = new UiProgressReporter(monitor);
 
-            Thread scriptThread = new Thread(new RunScriptExternal(script, reporter, new ArrayList<>(Arrays.asList(
-                    getReplacedCmd(mainPrefs.getString(DB_UPDATE_PREF.MIGRATION_COMMAND), dbInfo).split(" "))))); //$NON-NLS-1$
+            Thread scriptThread = new Thread(new RunScriptExternal(parser.getScript(),
+                    reporter, new ArrayList<>(Arrays.asList(
+                            getReplacedCmd(mainPrefs.getString(DB_UPDATE_PREF.MIGRATION_COMMAND), dbInfo).split(" "))))); //$NON-NLS-1$
             scriptThread.setUncaughtExceptionHandler((t, e) ->  ExceptionNotifier.notifyDefault(
                     Messages.sqlScriptDialog_exception_during_script_execution, e));
             scriptThread.start();

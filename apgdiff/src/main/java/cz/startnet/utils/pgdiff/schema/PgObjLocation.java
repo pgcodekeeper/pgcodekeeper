@@ -1,19 +1,14 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import java.io.Serializable;
+import java.util.Objects;
 
+import cz.startnet.utils.pgdiff.DangerStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public final class PgObjLocation extends GenericColumn implements Serializable {
 
     private static final long serialVersionUID = -2207831039348997758L;
-
-    // danger statement desc
-    public static final String DROP_TABLE = "DROP TABLE statement";
-    public static final String ALTER_COLUMN_TYPE = "ALTER COLUMN ... TYPE statement";
-    public static final String DROP_COLUMN = "DROP COLUMN statement";
-    public static final String RESTART_WITH = "ALTER SEQUENCE ... RESTART WITH statement";
-    public static final String UPDATE = "UPDATE statement";
 
     private int offset;
     private String filePath;
@@ -83,7 +78,7 @@ public final class PgObjLocation extends GenericColumn implements Serializable {
         if (obj instanceof PgObjLocation && super.equals(obj)) {
             PgObjLocation loc = (PgObjLocation) obj;
             return loc.getOffset() == getOffset()
-                    && loc.getFilePath().equals(getFilePath());
+                    && Objects.equals(loc.getFilePath(), getFilePath());
         }
         return false;
     }
@@ -115,8 +110,26 @@ public final class PgObjLocation extends GenericColumn implements Serializable {
         return text;
     }
 
-    public void setWarningText(String text) {
-        this.text = text;
+    public void setWarningText(DangerStatement danger) {
+        switch(danger) {
+        case ALTER_COLUMN:
+            text = "ALTER COLUMN ... TYPE statement";
+            break;
+        case DROP_COLUMN:
+            text = "DROP COLUMN statement";
+            break;
+        case DROP_TABLE:
+            text = "DROP TABLE statement";
+            break;
+        case RESTART_WITH:
+            text =  "ALTER SEQUENCE ... RESTART WITH statement";
+            break;
+        case UPDATE:
+            text = "UPDATE statement";
+            break;
+        default:
+            return;
+        }
     }
 
     public boolean isDanger() {
