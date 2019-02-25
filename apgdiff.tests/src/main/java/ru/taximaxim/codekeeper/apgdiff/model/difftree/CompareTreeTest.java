@@ -13,9 +13,9 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 public class CompareTreeTest {
 
     private static final int N = 1000;
-    
+
     private List<TreeElement> list;
-    
+
     @Before
     public void beforeTest() {
         list = new ArrayList<>(N * DiffSide.values().length * DbObjType.values().length);
@@ -30,17 +30,17 @@ public class CompareTreeTest {
     }
 
     @Test
-    public void Test() {
+    public void test() {
         DiffSide prevSide = DiffSide.LEFT;
         DbObjType prevType = DbObjType.values()[DbObjType.values().length - 1];
-        
+
         Collections.sort(list, new CompareTree());
         for (TreeElement el : list) {
             if (el.getSide() == DiffSide.LEFT
                     && prevSide != DiffSide.LEFT) {
                 Assert.fail("Side left is after another type");
             }
-            
+
             int res = el.getType().ordinal() - prevType.ordinal();
 
             if (el.getSide() == DiffSide.RIGHT
@@ -49,7 +49,7 @@ public class CompareTreeTest {
                 Assert.fail("Side wrong");
             }
             if (el.getSide() == DiffSide.LEFT) {
-                res = -res;  
+                res = -res;
             }
             if (res < 0) {
                 Assert.fail("Element type is less than expected");
