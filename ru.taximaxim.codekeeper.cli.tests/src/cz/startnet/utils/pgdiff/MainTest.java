@@ -86,8 +86,10 @@ public class MainTest {
             break;
         case TEST_PARSE:
             Main.main(args.args());
-            assertTrue(".pgcodekeeper doesn't exist", Files.isRegularFile(args.getParseResultDir().get().resolve(".pgcodekeeper")));
-            assertTrue("SCHEMA doesn't exist", Files.isDirectory(args.getParseResultDir().get().resolve("SCHEMA")));
+            assertTrue(args.getClass().getSimpleName() + " - .pgcodekeeper doesn't exist",
+                    Files.isRegularFile(args.getParseResultDir().get().resolve(".pgcodekeeper")));
+            assertTrue(args.getClass().getSimpleName() + " - SCHEMA doesn't exist",
+                    Files.isDirectory(args.getParseResultDir().get().resolve("SCHEMA")));
             break;
         case TEST_OUTPUT:
             output();
@@ -99,13 +101,18 @@ public class MainTest {
         Main.main(args.args());
         File resFile = args.getDiffResultFile();
         File predefined = args.getPredefinedResultFile();
-        assertTrue("Predefined file does not exist: " + predefined.getAbsolutePath(), predefined.exists());
-        assertTrue("Resulting file does not exist: " + resFile.getAbsolutePath(), resFile.exists());
+        assertTrue(args.getClass().getSimpleName() + " - Predefined file does not exist: "
+                + predefined.getAbsolutePath(), predefined.exists());
+        assertTrue(args.getClass().getSimpleName() + " - Resulting file does not exist: "
+                + resFile.getAbsolutePath(), resFile.exists());
 
-        assertFalse("Predefined file is a directory: " + predefined.getAbsolutePath(), predefined.isDirectory());
-        assertFalse("Resulting file is a directory: " + resFile.getAbsolutePath(), resFile.isDirectory());
+        assertFalse(args.getClass().getSimpleName() + " - Predefined file is a directory: "
+                + predefined.getAbsolutePath(), predefined.isDirectory());
+        assertFalse(args.getClass().getSimpleName() + " - Resulting file is a directory: "
+                + resFile.getAbsolutePath(), resFile.isDirectory());
         if (!filesEqualIgnoreNewLines(predefined, resFile)) {
-            assertEquals("Predefined and resulting script differ",
+            assertEquals(args.getClass().getSimpleName()
+                    + " - Predefined and resulting script differ",
                     new String(Files.readAllBytes(predefined.toPath()), StandardCharsets.UTF_8),
                     new String(Files.readAllBytes(resFile.toPath()), StandardCharsets.UTF_8));
         }
@@ -122,7 +129,8 @@ public class MainTest {
             Main.main(args.args());
 
             System.out.flush();
-            assertEquals("Output is not as expected", args.output(), baos.toString());
+            assertEquals(args.getClass().getSimpleName() + " - Output is not as expected",
+                    args.output(), baos.toString());
         } finally {
             System.setOut(old);
             System.setErr(olde);
