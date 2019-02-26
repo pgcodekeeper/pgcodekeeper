@@ -1,10 +1,8 @@
 package cz.startnet.utils.pgdiff;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Locale;
@@ -18,7 +16,6 @@ import org.junit.runners.Parameterized.Parameters;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.Log;
-import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 
 /**
  * Tests for MS SQL statements
@@ -70,8 +67,6 @@ public class MsDiffTest {
 
                     // Tests scenario where MS SCHEMA is added.
                     {"add_ms_schema"},
-                    // Tests scenario where MS SCHEMA with definition is added.
-                    // FIXME {"add_ms_schema_with_definition"},
                     // Tests scenario where MS SCHEMA is dropped.
                     {"drop_ms_schema"},
                     // Tests scenario where name of MS SCHEMA is modified.
@@ -301,14 +296,10 @@ public class MsDiffTest {
     }
 
     public void runDiffSame(PgDatabase db) throws IOException, InterruptedException {
-        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
-        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         final PgDiffArguments arguments = new PgDiffArguments();
         arguments.setMsSql(true);
-        PgDiff.diffDatabaseSchemas(writer, arguments, db, db, null);
-        writer.flush();
-
-        Assert.assertEquals("File name template: " + fileNameTemplate, "", diffInput.toString().trim());
+        String script = PgDiff.diffDatabaseSchemas(arguments, db, db, null).getText();
+        Assert.assertEquals("File name template: " + fileNameTemplate, "", script.trim());
     }
 
     @Test
@@ -324,10 +315,7 @@ public class MsDiffTest {
         runDiffSame(dbOld);
         runDiffSame(dbNew);
 
-        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
-        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
-        PgDiff.diffDatabaseSchemas(writer, args, dbOld, dbNew, null);
-        writer.flush();
+        String script = PgDiff.diffDatabaseSchemas(args, dbOld, dbNew, null).getText();
 
         StringBuilder sbExpDiff;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(
@@ -343,7 +331,6 @@ public class MsDiffTest {
         }
 
         Assert.assertEquals("File name template: " + fileNameTemplate,
-                sbExpDiff.toString().trim(),
-                diffInput.toString().trim());
+                sbExpDiff.toString().trim(), script.trim());
     }
 }

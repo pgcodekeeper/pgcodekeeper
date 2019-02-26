@@ -246,7 +246,7 @@ public class ViewSelect {
             VexContext vexCtx = el.vex();
             Grouping_element_listContext sub;
             if (vexCtx != null) {
-                analyze(vexCtx);
+                analyze(new Vex(vexCtx));
             } else if ((sub = el.c) != null) {
                 groupBy(sub);
             }

@@ -102,7 +102,8 @@ public class CommentOn extends ParserAbstract {
 
         PgStatement st = null;
         AbstractSchema schema = null;
-        if (ctx.TRIGGER() != null || ctx.RULE() != null || ctx.CONSTRAINT() != null) {
+        if (ctx.RULE() != null || ctx.CONSTRAINT() != null
+                || (ctx.TRIGGER() != null && ctx.EVENT() == null)) {
             schema = getSchemaSafe(ctx.table_name.identifier());
         } else if (ctx.EXTENSION() == null && ctx.SCHEMA() == null && ctx.DATABASE() == null) {
             schema = getSchemaSafe(ids);
@@ -133,13 +134,15 @@ public class CommentOn extends ParserAbstract {
                     schema, QNameParser.getFirstNameCtx(parentIds));
             addObjReference(parentIds, DbObjType.TABLE, StatementActions.NONE);
             type = DbObjType.CONSTRAINT;
+            ids = Arrays.asList(QNameParser.getSchemaNameCtx(parentIds),
+                    QNameParser.getFirstNameCtx(parentIds), nameCtx);
             if (table == null) {
                 PgDomain domain = getSafe(AbstractSchema::getDomain, schema, nameCtx);
                 st = getSafe(PgDomain::getConstraint, domain, nameCtx);
             } else {
                 st = getSafe(IStatementContainer::getConstraint, table, nameCtx);
             }
-        } else if (ctx.TRIGGER() != null) {
+        } else if (ctx.TRIGGER() != null && ctx.EVENT() == null) {
             type = DbObjType.TRIGGER;
             List<IdentifierContext> parentIds = ctx.table_name.identifier();
             ids = Arrays.asList(QNameParser.getSchemaNameCtx(parentIds),

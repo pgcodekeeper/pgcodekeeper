@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 import java.util.Arrays;
 import java.util.List;
 
+import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Drop_relational_or_xml_or_spatial_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Drop_statementsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
@@ -87,7 +88,7 @@ public class DropMsStatement extends ParserAbstract {
                 List<IdContext> ids = Arrays.asList(qname.schema, qname.name);
                 PgObjLocation ref = addObjReference(ids, type, StatementActions.DROP);
                 if (type == DbObjType.TABLE) {
-                    ref.setWarningText(PgObjLocation.DROP_TABLE);
+                    ref.setWarningText(DangerStatement.DROP_TABLE);
                 }
             }
         }

@@ -65,8 +65,9 @@ public abstract class TableAbstract extends ParserAbstract {
     protected void addTableConstraint(Constraint_commonContext tblConstrCtx,
             AbstractTable table, String schemaName, String tablespace) {
         AbstractConstraint constrBlank = createTableConstraintBlank(tblConstrCtx);
-        processTableConstraintBlank(tblConstrCtx, constrBlank, db, schemaName, table.getName(), tablespace);
-        table.addConstraint(constrBlank);
+        processTableConstraintBlank(tblConstrCtx, constrBlank, db, schemaName,
+                table.getName(), tablespace, isRefMode());
+        doSafe(AbstractTable::addConstraint, table, constrBlank);
     }
 
     private void addTableConstraint(Constraint_commonContext ctx,
@@ -86,6 +87,9 @@ public abstract class TableAbstract extends ParserAbstract {
             List<IdentifierContext> ids = tblRef.identifier();
             String refTableName = QNameParser.getFirstName(ids);
             String refSchemaName = QNameParser.getSchemaName(ids);
+            if (refSchemaName == null) {
+                return;
+            }
             GenericColumn ftable = new GenericColumn(refSchemaName, refTableName, DbObjType.TABLE);
             String constrName = ctx.constraint_name == null ?
                     table.getName() + '_' + colName + "_fkey" : ctx.constraint_name.getText();
@@ -213,7 +217,7 @@ public abstract class TableAbstract extends ParserAbstract {
 
     protected static void processTableConstraintBlank(Constraint_commonContext ctx,
             AbstractConstraint constrBlank, PgDatabase db, String schemaName,
-            String tableName, String tablespace) {
+            String tableName, String tablespace, boolean isRefMode) {
         Constr_bodyContext constrBody = ctx.constr_body();
 
         if (constrBody.REFERENCES() != null) {
@@ -224,6 +228,9 @@ public abstract class TableAbstract extends ParserAbstract {
             String refSchemaName = QNameParser.getSchemaName(ids);
 
             if (refSchemaName == null) {
+                if (isRefMode) {
+                    return;
+                }
                 throw new UnresolvedReferenceException(SCHEMA_ERROR + getFullCtxText(tblRef),
                         tblRef.start);
             }
@@ -246,8 +253,11 @@ public abstract class TableAbstract extends ParserAbstract {
         if (constrBody.UNIQUE() != null || constrBody.PRIMARY() != null) {
             constrBlank.setUnique(constrBody.UNIQUE() != null);
             constrBlank.setPrimaryKey(constrBody.PRIMARY() != null);
-            for (Schema_qualified_nameContext name : constrBody.col.names_references().name) {
-                constrBlank.addColumn(QNameParser.getFirstName(name.identifier()));
+            Column_referencesContext cols = constrBody.col;
+            if (cols != null) {
+                for (Schema_qualified_nameContext name : cols.names_references().name) {
+                    constrBlank.addColumn(QNameParser.getFirstName(name.identifier()));
+                }
             }
             Including_indexContext incl = constrBody.index_parameters().including_index();
             if (incl != null) {

@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import java.util.Arrays;
 
+import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_sequenceContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_alterContext;
@@ -38,7 +39,7 @@ public class AlterMsOther extends ParserAbstract {
         PgObjLocation ref = addObjReference(Arrays.asList(qname.schema, qname.name),
                 DbObjType.SEQUENCE, StatementActions.ALTER);
         if (!alter.RESTART().isEmpty()) {
-            ref.setWarningText(PgObjLocation.RESTART_WITH);
+            ref.setWarningText(DangerStatement.RESTART_WITH);
         }
     }
 }
