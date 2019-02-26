@@ -1,7 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.Arrays;
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.BiConsumer;
@@ -237,7 +237,7 @@ public abstract class ParserAbstract {
             loc.setOffset(getStart(nameCtx));
             loc.setLine(nameCtx.start.getLine());
             loc.setFilePath(fileName);
-            db.getObjReferences().computeIfAbsent(fileName, k -> new LinkedHashSet<>()).add(loc);
+            db.getObjReferences().computeIfAbsent(fileName, k -> new HashSet<>()).add(loc);
         }
 
         return loc;
@@ -295,8 +295,8 @@ public abstract class ParserAbstract {
             loc.setLine(nameCtx.start.getLine());
             loc.setFilePath(fileName);
             child.setLocation(loc);
-            db.getObjDefinitions().computeIfAbsent(fileName, k -> new LinkedHashSet<>()).add(loc);
-            db.getObjReferences().computeIfAbsent(fileName, k -> new LinkedHashSet<>()).add(loc);
+            db.getObjDefinitions().computeIfAbsent(fileName, k -> new HashSet<>()).add(loc);
+            db.getObjReferences().computeIfAbsent(fileName, k -> new HashSet<>()).add(loc);
         }
     }
 
@@ -384,7 +384,7 @@ public abstract class ParserAbstract {
             if (!refMode) {
                 st.addDep(loc);
             }
-            db.getObjReferences().computeIfAbsent(fileName, k -> new LinkedHashSet<>()).add(loc);
+            db.getObjReferences().computeIfAbsent(fileName, k -> new HashSet<>()).add(loc);
         }
     }
 
