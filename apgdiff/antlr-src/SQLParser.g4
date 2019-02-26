@@ -2218,7 +2218,8 @@ vex_b
   : vex_b CAST_EXPRESSION data_type
   | LEFT_PAREN vex RIGHT_PAREN
   | LEFT_PAREN vex (COMMA vex)+ RIGHT_PAREN
-  | vex_b LEFT_BRACKET vex (COLON vex)? RIGHT_BRACKET
+  | vex_b LEFT_BRACKET vex RIGHT_BRACKET
+  | vex_b LEFT_BRACKET vex? COLON vex? RIGHT_BRACKET
   | <assoc=right> (PLUS | MINUS) vex_b
   | vex_b EXP vex_b
   | vex_b (MULTIPLY | DIVIDE | MODULAR) vex_b
@@ -2229,6 +2230,8 @@ vex_b
   | vex_b (LTH | GTH | LEQ | GEQ | EQUAL | NOT_EQUAL) vex_b
   | vex_b IS NOT? DISTINCT FROM vex_b
   | vex_b IS NOT? DOCUMENT
+  | vex_b IS NOT? UNKNOWN
+  | vex_b IS NOT? OF LEFT_PAREN type_list RIGHT_PAREN
   | value_expression_primary
   ;
 
