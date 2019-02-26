@@ -26,8 +26,10 @@ public class AlterView extends ParserAbstract {
                 getSchemaSafe(ids), QNameParser.getFirstNameCtx(ids));
         if (ctx.set_def_column() != null) {
             VexContext exp = ctx.set_def_column().expression;
-            dbView.addColumnDefaultValue(getFullCtxText(ctx.column_name), getFullCtxText(exp));
-            db.addContextForAnalyze(dbView, exp);
+            doSafe((s,o) -> {
+                s.addColumnDefaultValue(getFullCtxText(ctx.column_name), getFullCtxText(exp));
+                db.addContextForAnalyze(s, exp);
+            }, dbView, null);
         }
         if (ctx.drop_def() != null) {
             doSafe(PgView::removeColumnDefaultValue, dbView, getFullCtxText(ctx.column_name));

@@ -81,7 +81,8 @@ public class MsDiffDepciesTest {
                 getUsrSelName(FILES_POSTFIX.ORIGINAL_SQL), MsDiffDepciesTest.class, args);
         PgDatabase newDatabase = ApgdiffTestUtils.loadTestDump(
                 getUsrSelName(FILES_POSTFIX.NEW_SQL), MsDiffDepciesTest.class, args);
-        PgDatabase oldDbFull, newDbFull;
+        PgDatabase oldDbFull;
+        PgDatabase newDbFull;
         if (userSelTemplate.equals(dbTemplate)) {
             oldDbFull = oldDatabase;
             newDbFull = newDatabase;

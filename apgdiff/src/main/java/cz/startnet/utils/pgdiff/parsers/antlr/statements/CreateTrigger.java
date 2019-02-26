@@ -75,8 +75,10 @@ public class CreateTrigger extends ParserAbstract {
                 if (refSchemaName == null) {
                     refSchemaName = schemaName;
                 }
-                sb.append(PgDiffUtils.getQuotedName(refSchemaName))
-                .append('.');
+
+                if (refSchemaName != null) {
+                    sb.append(PgDiffUtils.getQuotedName(refSchemaName)).append('.');
+                }
                 sb.append(PgDiffUtils.getQuotedName(refRelName));
 
                 addDepSafe(trigger, refName, DbObjType.TABLE, true);
