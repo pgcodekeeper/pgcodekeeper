@@ -222,7 +222,7 @@ public class CreateRule extends ParserAbstract {
             statement = getSafe(PgDatabase::getSchema, db, idCtx);
             break;
         case TYPE:
-            statement = schema.getType(idCtx.getText());
+            statement = getSafe(AbstractSchema::getType, schema, idCtx);
             // if type not found try domain
             if (statement == null) {
                 statement = getSafe(AbstractSchema::getDomain, schema, idCtx);
@@ -234,7 +234,7 @@ public class CreateRule extends ParserAbstract {
         default:
             break;
         }
-        if (statement != null){
+        if (statement != null) {
             addPrivilege(statement, pgPrivilege);
         }
     }

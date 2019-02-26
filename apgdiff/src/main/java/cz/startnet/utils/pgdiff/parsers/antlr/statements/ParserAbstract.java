@@ -316,11 +316,15 @@ public abstract class ParserAbstract {
         }
 
         ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
-
+        String schemaName;
         if (schemaCtx != null) {
             addObjReference(Arrays.asList(schemaCtx), DbObjType.SCHEMA, StatementActions.NONE);
-        } else if (refMode || isDep) {
-            return null;
+            schemaName = schemaCtx.getText();
+        } else if (refMode) {
+            if (isDep) {
+                return null;
+            }
+            schemaName = null;
         } else {
             throw new UnresolvedReferenceException(SCHEMA_ERROR + getFullCtxText(nameCtx),
                     nameCtx.getStart());
@@ -344,13 +348,13 @@ public abstract class ParserAbstract {
         case TABLE:
         case TYPE:
         case VIEW:
-            return new PgObjLocation(schemaCtx.getText(), name, type, action);
+            return new PgObjLocation(schemaName, name, type, action);
         case CONSTRAINT:
         case INDEX:
         case TRIGGER:
         case RULE:
         case COLUMN:
-            return new PgObjLocation(schemaCtx.getText(), QNameParser.getSecondName(ids),
+            return new PgObjLocation(schemaName, QNameParser.getSecondName(ids),
                     name, type, action);
         default:
             return null;

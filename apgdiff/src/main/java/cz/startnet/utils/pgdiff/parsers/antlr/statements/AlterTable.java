@@ -72,7 +72,7 @@ public class AlterTable extends TableAbstract {
                 IdentifierContext conNameCtx = tablAction.tabl_constraint.constraint_name;
                 AbstractConstraint con = parseAlterTableConstraint(tablAction,
                         createTableConstraintBlank(tablAction.tabl_constraint), db,
-                        getSchemaNameSafe(ids), nameCtx.getText(), tablespace);
+                        getSchemaNameSafe(ids), nameCtx.getText(), tablespace, isRefMode());
 
                 if (!con.getName().isEmpty()) {
                     addSafe(AbstractPgTable::addConstraint, tabl, con, Arrays.asList(
@@ -217,10 +217,10 @@ public class AlterTable extends TableAbstract {
 
     public static AbstractConstraint parseAlterTableConstraint(Table_actionContext tableAction,
             AbstractConstraint constrBlank, PgDatabase db, String schemaName,
-            String tableName, String tablespace) {
+            String tableName, String tablespace, boolean isRefMode) {
         constrBlank.setNotValid(tableAction.not_valid != null);
         processTableConstraintBlank(tableAction.tabl_constraint, constrBlank, db,
-                schemaName, tableName, tablespace);
+                schemaName, tableName, tablespace, isRefMode);
         return constrBlank;
     }
 }
