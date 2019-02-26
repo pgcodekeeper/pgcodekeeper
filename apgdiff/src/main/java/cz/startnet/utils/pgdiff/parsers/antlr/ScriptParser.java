@@ -64,9 +64,7 @@ public class ScriptParser {
         return batches;
     }
 
-    private List<List<String>> batchMs(Tsql_fileContext rootCtx, CommonTokenStream stream) {
-        List<List<String>> list = new ArrayList<>();
-
+    private void batchMs(Tsql_fileContext rootCtx, CommonTokenStream stream) {
         for (BatchContext batch : rootCtx.batch()) {
             List<String> l = new ArrayList<>();
             if (batch.batch_statement() != null) {
@@ -77,22 +75,17 @@ public class ScriptParser {
                     l.add(ParserAbstract.getFullCtxText(clause));
                 }
             }
-            list.add(l);
+            batches.add(l);
         }
-
-        return list;
     }
 
-    private List<List<String>> batchPg(SqlContext rootCtx) {
+    private void batchPg(SqlContext rootCtx) {
         List<String> l = new ArrayList<>();
-        List<List<String>> list = new ArrayList<>(1);
-        list.add(l);
+        batches.add(l);
 
         for (StatementContext st : rootCtx.statement()) {
             l.add(ParserAbstract.getFullCtxText(st));
         }
-
-        return list;
     }
 
     private void checkPgDanger(SqlContext rootCtx) {
