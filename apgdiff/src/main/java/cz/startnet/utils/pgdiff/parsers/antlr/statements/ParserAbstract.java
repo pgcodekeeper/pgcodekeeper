@@ -320,11 +320,10 @@ public abstract class ParserAbstract {
         if (schemaCtx != null) {
             addObjReference(Arrays.asList(schemaCtx), DbObjType.SCHEMA, StatementActions.NONE);
             schemaName = schemaCtx.getText();
-        } else if (refMode) {
-            if (isDep) {
-                return null;
-            }
+        } else if (refMode && !isDep) {
             schemaName = null;
+        } else if (refMode || isDep) {
+            return null;
         } else {
             throw new UnresolvedReferenceException(SCHEMA_ERROR + getFullCtxText(nameCtx),
                     nameCtx.getStart());
