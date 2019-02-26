@@ -455,21 +455,7 @@
             <toolbar 
             		id="ru.taximaxim.codekeeper.ui.toolbar"
             		label="%menu.label.pgcodekeeper.main">
-                <control
-                    class="ru.taximaxim.codekeeper.ui.menuitems.DBStoreCombo"
-                    id="ru.taximaxim.codekeeper.ui.DBStoreCombo">
-                    <visibleWhen checkEnabled="true">
-                        <with variable="activeEditorId">
-                            <or>
-                                <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
-                                </equals>
-                                <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
-                                </equals>
-                            </or>
-                        </with>
-                    </visibleWhen>
-                </control>
-                <command
+        		 <command
                     commandId="ru.taximaxim.codekeeper.ui.command.OpenDbStore"
                     icon="icons/editor_area.png"
                     label="%command.commandname.OpenDbStore"
@@ -485,6 +471,20 @@
                         </with>
                     </visibleWhen>
                 </command>
+                <control
+                    class="ru.taximaxim.codekeeper.ui.menuitems.DBStoreCombo"
+                    id="ru.taximaxim.codekeeper.ui.DBStoreCombo">
+                    <visibleWhen checkEnabled="true">
+                        <with variable="activeEditorId">
+                            <or>
+                                <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
+                                </equals>
+                                <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
+                                </equals>
+                            </or>
+                        </with>
+                    </visibleWhen>
+                </control>
                 <separator
                       name="ru.taximaxim.codekeeper.ui.separator1"
                       visible="true">

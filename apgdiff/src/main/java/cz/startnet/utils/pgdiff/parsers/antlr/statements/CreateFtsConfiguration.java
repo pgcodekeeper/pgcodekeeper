@@ -24,9 +24,11 @@ public class CreateFtsConfiguration extends ParserAbstract {
         List<IdentifierContext> ids = ctx.name.identifier();
         String name = QNameParser.getFirstName(ids);
         PgFtsConfiguration config = new PgFtsConfiguration(name);
-        List<IdentifierContext> parserIds = ctx.parser_name.identifier();
-        config.setParser(ParserAbstract.getFullCtxText(ctx.parser_name));
-        addDepSafe(config, parserIds, DbObjType.FTS_PARSER, true);
+        if (ctx.parser_name != null) {
+            List<IdentifierContext> parserIds = ctx.parser_name.identifier();
+            config.setParser(ParserAbstract.getFullCtxText(ctx.parser_name));
+            addDepSafe(config, parserIds, DbObjType.FTS_PARSER, true);
+        }
         addSafe(AbstractSchema::addFtsConfiguration, getSchemaSafe(ids), config, ids);
     }
 }

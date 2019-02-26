@@ -130,6 +130,11 @@ public class CreateRule extends ParserAbstract {
         if (type != null) {
             for (Schema_qualified_nameContext name : objName) {
                 addObjReference(name.identifier(), type, StatementActions.NONE);
+
+                if (isRefMode()) {
+                    continue;
+                }
+
                 for (String role : roles) {
                     addToDB(name, type, new PgPrivilege(state, permissions,
                             type + " " + name.getText(), role, isGO));
@@ -219,10 +224,11 @@ public class CreateRule extends ParserAbstract {
             statement = getSafe(AbstractSchema::getSequence, schema, idCtx);
             break;
         case SCHEMA:
-            statement = getSafe(PgDatabase::getSchema, db, idCtx);
+            statement = schema;
             break;
         case TYPE:
             statement = schema.getType(idCtx.getText());
+
             // if type not found try domain
             if (statement == null) {
                 statement = getSafe(AbstractSchema::getDomain, schema, idCtx);
@@ -234,7 +240,7 @@ public class CreateRule extends ParserAbstract {
         default:
             break;
         }
-        if (statement != null){
+        if (statement != null) {
             addPrivilege(statement, pgPrivilege);
         }
     }

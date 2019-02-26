@@ -142,7 +142,8 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
         public Object[] getElements(Object inputElement) {
             Stream<PgObjLocation> stream = sqlEditor.getParser().getObjsForEditor(
                     sqlEditor.getEditorInput()).stream().filter(
-                            e -> e.getAction() != StatementActions.NONE);
+                            e -> e.getAction() != StatementActions.NONE)
+                    .sorted((a, b) -> Integer.compare(a.getOffset(), b.getOffset()));
             if (filterDangerous) {
                 stream = stream.filter(PgObjLocation::isDanger);
             }

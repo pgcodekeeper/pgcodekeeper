@@ -1,7 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.Arrays;
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.BiConsumer;
@@ -237,7 +237,7 @@ public abstract class ParserAbstract {
             loc.setOffset(getStart(nameCtx));
             loc.setLine(nameCtx.start.getLine());
             loc.setFilePath(fileName);
-            db.getObjReferences().computeIfAbsent(fileName, k -> new LinkedHashSet<>()).add(loc);
+            db.getObjReferences().computeIfAbsent(fileName, k -> new HashSet<>()).add(loc);
         }
 
         return loc;
@@ -295,8 +295,8 @@ public abstract class ParserAbstract {
             loc.setLine(nameCtx.start.getLine());
             loc.setFilePath(fileName);
             child.setLocation(loc);
-            db.getObjDefinitions().computeIfAbsent(fileName, k -> new LinkedHashSet<>()).add(loc);
-            db.getObjReferences().computeIfAbsent(fileName, k -> new LinkedHashSet<>()).add(loc);
+            db.getObjDefinitions().computeIfAbsent(fileName, k -> new HashSet<>()).add(loc);
+            db.getObjReferences().computeIfAbsent(fileName, k -> new HashSet<>()).add(loc);
         }
     }
 
@@ -316,9 +316,12 @@ public abstract class ParserAbstract {
         }
 
         ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
-
+        String schemaName;
         if (schemaCtx != null) {
             addObjReference(Arrays.asList(schemaCtx), DbObjType.SCHEMA, StatementActions.NONE);
+            schemaName = schemaCtx.getText();
+        } else if (refMode && !isDep) {
+            schemaName = null;
         } else if (refMode || isDep) {
             return null;
         } else {
@@ -344,13 +347,13 @@ public abstract class ParserAbstract {
         case TABLE:
         case TYPE:
         case VIEW:
-            return new PgObjLocation(schemaCtx.getText(), name, type, action);
+            return new PgObjLocation(schemaName, name, type, action);
         case CONSTRAINT:
         case INDEX:
         case TRIGGER:
         case RULE:
         case COLUMN:
-            return new PgObjLocation(schemaCtx.getText(), QNameParser.getSecondName(ids),
+            return new PgObjLocation(schemaName, QNameParser.getSecondName(ids),
                     name, type, action);
         default:
             return null;
@@ -380,7 +383,7 @@ public abstract class ParserAbstract {
             if (!refMode) {
                 st.addDep(loc);
             }
-            db.getObjReferences().computeIfAbsent(fileName, k -> new LinkedHashSet<>()).add(loc);
+            db.getObjReferences().computeIfAbsent(fileName, k -> new HashSet<>()).add(loc);
         }
     }
 
