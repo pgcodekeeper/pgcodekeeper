@@ -955,7 +955,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
 
         view.setOwner("fordfrog");
 
-        PgTrigger trigger = new PgTrigger("test_trigger", "public.test");
+        PgTrigger trigger = new PgTrigger("test_trigger");
         trigger.setType(TgTypes.BEFORE);
         trigger.setOnUpdate(true);
         trigger.setForEachRow(false);

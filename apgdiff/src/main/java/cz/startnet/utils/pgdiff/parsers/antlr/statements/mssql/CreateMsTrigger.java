@@ -56,7 +56,7 @@ public class CreateMsTrigger extends BatchContextProcessor {
         IdContext tableNameCtx = ctx.table_name.name;
         IdContext nameCtx = ctx.trigger_name.name;
 
-        MsTrigger trigger = new MsTrigger(nameCtx.getText(), tableNameCtx.getText());
+        MsTrigger trigger = new MsTrigger(nameCtx.getText());
         trigger.setAnsiNulls(ansiNulls);
         trigger.setQuotedIdentified(quotedIdentifier);
         setSourceParts(trigger);

@@ -160,10 +160,11 @@ public class AlterTable extends TableAbstract {
                     String name = null;
                     for (Sequence_bodyContext body : identity.sequence_body()) {
                         if (body.NAME() != null) {
-                            name = body.name.getText();
+                            name = QNameParser.getFirstName(body.name.identifier());
                         }
                     }
                     PgSequence sequence = new PgSequence(name);
+                    sequence.setDataType(col.getType());
                     CreateSequence.fillSequence(sequence, identity.sequence_body());
 
                     col.setSequence(sequence);

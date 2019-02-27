@@ -35,8 +35,7 @@ public class CreateTrigger extends ParserAbstract {
         String schemaName = getSchemaNameSafe(ids);
         addObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
 
-        PgTrigger trigger = new PgTrigger(ctx.name.getText(),
-                ParserAbstract.getFullCtxText(ctx.table_name));
+        PgTrigger trigger = new PgTrigger(ctx.name.getText());
         if (ctx.AFTER() != null) {
             trigger.setType(TgTypes.AFTER);
         } else if (ctx.BEFORE() != null) {

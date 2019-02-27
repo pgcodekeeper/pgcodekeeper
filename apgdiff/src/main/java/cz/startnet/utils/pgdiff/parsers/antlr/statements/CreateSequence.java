@@ -29,11 +29,9 @@ public class CreateSequence extends ParserAbstract {
         long inc = 1;
         Long maxValue = null;
         Long minValue = null;
-        String dataType = null;
         for (Sequence_bodyContext body : list) {
             if (body.type != null) {
-                dataType = body.type.getText().toLowerCase();
-                sequence.setDataType(dataType);
+                sequence.setDataType(body.type.getText().toLowerCase());
             } else if (body.cache_val != null) {
                 sequence.setCache(body.cache_val.getText());
             } else if (body.incr != null) {
@@ -52,6 +50,6 @@ public class CreateSequence extends ParserAbstract {
                 sequence.setOwnedBy(ParserAbstract.getFullCtxText(body.col_name));
             }
         }
-        sequence.setMinMaxInc(inc, maxValue, minValue, dataType, 0L);
+        sequence.setMinMaxInc(inc, maxValue, minValue, sequence.getDataType(), 0L);
     }
 }

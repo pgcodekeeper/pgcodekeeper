@@ -774,7 +774,7 @@ class MsDB8 extends MsDatabaseObjectCreator {
         view.setOwner("ms_user");
         schema.addView(view);
 
-        MsTrigger trigger = new MsTrigger("instead_of_delete", "\"user\"");
+        MsTrigger trigger = new MsTrigger("instead_of_delete");
         trigger.setAnsiNulls(true);
         trigger.setQuotedIdentified(true);
         trigger.setFirstPart("");
@@ -787,7 +787,7 @@ class MsDB8 extends MsDatabaseObjectCreator {
                 "    END");
         view.addTrigger(trigger);
 
-        trigger = new MsTrigger("instead_of_insert", "\"user\"");
+        trigger = new MsTrigger("instead_of_insert");
         trigger.setAnsiNulls(true);
         trigger.setQuotedIdentified(true);
         trigger.setFirstPart("");
@@ -800,7 +800,7 @@ class MsDB8 extends MsDatabaseObjectCreator {
                 "    END");
         view.addTrigger(trigger);
 
-        trigger = new MsTrigger("instead_of_update", "\"user\"");
+        trigger = new MsTrigger("instead_of_update");
         trigger.setAnsiNulls(true);
         trigger.setQuotedIdentified(true);
         trigger.setFirstPart("");
@@ -1207,7 +1207,7 @@ class MsDB13 extends MsDatabaseObjectCreator {
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
         // idx.setComment("view id col");
 
-        MsTrigger trigger = new MsTrigger("test_trigger", "test");
+        MsTrigger trigger = new MsTrigger("test_trigger");
         trigger.setQuotedIdentified(true);
         trigger.setAnsiNulls(true);
         trigger.setFirstPart("");

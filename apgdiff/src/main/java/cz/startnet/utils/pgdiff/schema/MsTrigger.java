@@ -15,8 +15,8 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
     private String firstPart;
     private String secondPart;
 
-    public MsTrigger(String name, String tableName) {
-        super(name, tableName);
+    public MsTrigger(String name) {
+        super(name);
     }
 
     @Override
@@ -30,9 +30,7 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
             sb.append('.');
             sb.append(MsDiffUtils.quoteName(getName()));
             sb.append(" ON ");
-            sb.append(MsDiffUtils.quoteName(getContainingSchema().getName()));
-            sb.append(".");
-            sb.append(MsDiffUtils.quoteName(getTableName()));
+            sb.append(getParent().getQualifiedName());
             sb.append(GO);
         }
 
@@ -58,9 +56,7 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
         .append('.')
         .append(MsDiffUtils.quoteName(getName()))
         .append(" ON ")
-        .append(MsDiffUtils.quoteName(getContainingSchema().getName()))
-        .append('.')
-        .append(MsDiffUtils.quoteName(getTableName()));
+        .append(getParent().getQualifiedName());
         return sb;
     }
 
@@ -85,9 +81,7 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
                 sb.append('.');
                 sb.append(MsDiffUtils.quoteName(newTrigger.getName()));
                 sb.append(" ON ");
-                sb.append(MsDiffUtils.quoteName(newTrigger.getContainingSchema().getName()));
-                sb.append(".");
-                sb.append(MsDiffUtils.quoteName(newTrigger.getTableName()));
+                sb.append(getParent().getQualifiedName());
                 sb.append(GO);
             }
 
@@ -124,7 +118,6 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
 
     @Override
     public void computeHash(Hasher hasher) {
-        super.computeHash(hasher);
         hasher.put(getFirstPart());
         hasher.put(getSecondPart());
         hasher.put(isQuotedIdentified());
@@ -134,7 +127,7 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
 
     @Override
     protected AbstractTrigger getTriggerCopy() {
-        MsTrigger trigger = new MsTrigger(getName(), getTableName());
+        MsTrigger trigger = new MsTrigger(getName());
         trigger.setFirstPart(getFirstPart());
         trigger.setSecondPart(getSecondPart());
         trigger.setAnsiNulls(isAnsiNulls());

@@ -81,10 +81,8 @@ public class ConstraintsReader extends JdbcReader {
 
         String[] referencedColumnNames = getColArray(res, "foreign_cols");
         for (String colName : referencedColumnNames) {
-            if (colName != null) {
-                c.addForeignColumn(colName);
-                c.addDep(new GenericColumn(fschema, ftable, colName, DbObjType.COLUMN));
-            }
+            c.addForeignColumn(colName);
+            c.addDep(new GenericColumn(fschema, ftable, colName, DbObjType.COLUMN));
         }
     }
 
