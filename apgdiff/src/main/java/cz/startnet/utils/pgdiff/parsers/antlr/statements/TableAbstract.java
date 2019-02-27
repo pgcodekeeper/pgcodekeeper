@@ -250,8 +250,7 @@ public abstract class TableAbstract extends ParserAbstract {
             }
         }
 
-        boolean isPkOrUn = constrBody.UNIQUE() != null || constrBody.PRIMARY() != null;
-        if (isPkOrUn) {
+        if (constrBody.UNIQUE() != null || constrBody.PRIMARY() != null) {
             constrBlank.setUnique(constrBody.UNIQUE() != null);
             constrBlank.setPrimaryKey(constrBody.PRIMARY() != null);
             Column_referencesContext cols = constrBody.col;
@@ -275,7 +274,7 @@ public abstract class TableAbstract extends ParserAbstract {
             sb.append(getFullCtxText(constrBody));
         }
 
-        if (tablespace != null && (isPkOrUn || constrBody.EXCLUDE() != null)) {
+        if (tablespace != null) {
             Index_parametersContext param = constrBody.index_parameters();
             if (param == null || param.USING() == null) {
                 sb.append("\n\tUSING INDEX TABLESPACE ").append(tablespace);
