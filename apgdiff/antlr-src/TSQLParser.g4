@@ -8,7 +8,7 @@ options {
 @header {package cz.startnet.utils.pgdiff.parsers.antlr;}
 
 tsql_file
-    : BOM? batch* EOF
+    : BOM? go_statement* batch* EOF
     ;
 
 batch
