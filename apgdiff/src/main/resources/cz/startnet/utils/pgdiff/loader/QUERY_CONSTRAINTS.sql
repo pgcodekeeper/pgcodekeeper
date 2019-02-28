@@ -28,7 +28,7 @@ FROM pg_catalog.pg_constraint c
 LEFT JOIN pg_catalog.pg_class ccc ON ccc.oid = c.conrelid
 LEFT JOIN pg_catalog.pg_class cf ON cf.oid = c.confrelid
 LEFT JOIN pg_catalog.pg_description d ON c.oid = d.objoid
-LEFT JOIN pg_catalog.pg_class ci ON ci.oid = c.conindid
+LEFT JOIN pg_catalog.pg_class ci ON ci.oid = c.conindid AND c.contype != 'f'
 LEFT JOIN pg_catalog.pg_tablespace ts ON ts.oid = ci.reltablespace
 WHERE ccc.relkind IN ('r', 'p', 'f')
     AND c.contype != 't'
