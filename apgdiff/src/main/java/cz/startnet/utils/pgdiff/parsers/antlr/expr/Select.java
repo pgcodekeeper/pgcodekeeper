@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -278,10 +277,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
         List<Pair<String, String>> cols = new ArrayList<>();
 
         for (GenericColumn gc : unaliasedNamespace) {
-            Stream<Pair<String, String>> stream = addFilteredRelationColumnsDepcies(gc.schema, gc.table, ANY);
-            if (stream != null) {
-                stream.forEach(cols::add);
-            }
+            addFilteredRelationColumnsDepcies(gc.schema, gc.table, ANY).forEach(cols::add);
         }
 
         for (Entry<String, GenericColumn> nmsp : namespace.entrySet()) {
