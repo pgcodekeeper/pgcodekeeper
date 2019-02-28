@@ -154,6 +154,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         case FTS_TEMPLATE:
             addFtsTemplate((PgFtsTemplate) st);
             break;
+        case AGGREGATE:
         case FUNCTION:
         case PROCEDURE:
             addFunction((AbstractFunction) st);

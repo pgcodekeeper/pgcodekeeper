@@ -14,6 +14,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -80,7 +81,7 @@ public class CreateMsTrigger extends BatchContextProcessor {
         if (isJdbc && schema != null) {
             cont.addTrigger(trigger);
         } else {
-            addSafe(IStatementContainer::addTrigger, cont, trigger,
+            addSafe((PgStatement) cont, trigger,
                     Arrays.asList(schemaCtx, tableNameCtx, nameCtx));
         }
         return trigger;

@@ -5,7 +5,6 @@ import java.util.List;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_parserContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
-import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFtsParser;
 
@@ -32,6 +31,6 @@ public class CreateFtsParser extends ParserAbstract {
             parser.setHeadLineFunction(ParserAbstract.getFullCtxText(ctx.headline_func));
         }
 
-        addSafe(AbstractSchema::addFtsParser, getSchemaSafe(ids), parser, ids);
+        addSafe(getSchemaSafe(ids), parser, ids);
     }
 }

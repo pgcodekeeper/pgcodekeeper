@@ -18,6 +18,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.MsIndex;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -48,7 +49,7 @@ public class CreateMsIndex extends ParserAbstract {
         parseIndex(ctx.index_rest(), ind);
 
         IStatementContainer table = getSafe(AbstractSchema::getStatementContainer, schema, tableCtx);
-        addSafe(IStatementContainer::addIndex, table, ind,
+        addSafe((PgStatement) table, ind,
                 Arrays.asList(schemaCtx, tableCtx, nameCtx));
     }
 

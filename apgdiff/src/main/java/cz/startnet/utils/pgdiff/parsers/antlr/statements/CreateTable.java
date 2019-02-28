@@ -18,7 +18,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_storage_parameterContext;
 import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.AbstractRegularTable;
-import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PartitionPgTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -43,7 +42,7 @@ public class CreateTable extends TableAbstract {
         String tableName = QNameParser.getFirstName(ids);
         String schemaName = getSchemaNameSafe(ids);
         AbstractTable table = defineTable(tableName, schemaName);
-        addSafe(AbstractSchema::addTable, getSchemaSafe(ids), table, ids);
+        addSafe(getSchemaSafe(ids), table, ids);
     }
 
     private AbstractTable defineTable(String tableName, String schemaName) {

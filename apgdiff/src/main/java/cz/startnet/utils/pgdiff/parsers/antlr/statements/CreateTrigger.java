@@ -17,6 +17,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.When_triggerContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgTrigger.TgTypes;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
@@ -114,7 +115,7 @@ public class CreateTrigger extends ParserAbstract {
         IdentifierContext parent = QNameParser.getFirstNameCtx(ids);
         IStatementContainer cont = getSafe(AbstractSchema::getStatementContainer,
                 getSchemaSafe(ids), parent);
-        addSafe(IStatementContainer::addTrigger, cont, trigger, Arrays.asList(
+        addSafe((PgStatement) cont, trigger, Arrays.asList(
                 QNameParser.getSchemaNameCtx(ids), parent, ctx.name));
     }
 

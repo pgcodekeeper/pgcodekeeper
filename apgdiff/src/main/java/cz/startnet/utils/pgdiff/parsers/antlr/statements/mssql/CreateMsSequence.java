@@ -30,7 +30,7 @@ public class CreateMsSequence extends ParserAbstract {
         fillSequence(sequence, ctx.sequence_body());
         List<IdContext> ids = Arrays.asList(ctx.qualified_name().schema, nameCtx);
         AbstractSchema schema = getSchemaSafe(ids);
-        addSafe(AbstractSchema::addSequence, schema, sequence, ids);
+        addSafe(schema, sequence, ids);
     }
 
     private void fillSequence(MsSequence sequence, List<Sequence_bodyContext> list) {

@@ -6,7 +6,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_sequence_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
-import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 
@@ -22,7 +21,7 @@ public class CreateSequence extends ParserAbstract {
         List<IdentifierContext> ids = ctx.name.identifier();
         PgSequence sequence = new PgSequence(QNameParser.getFirstName(ids));
         fillSequence(sequence, ctx.sequence_body());
-        addSafe(AbstractSchema::addSequence, getSchemaSafe(ids), sequence, ids);
+        addSafe(getSchemaSafe(ids), sequence, ids);
     }
 
     public static void fillSequence(PgSequence sequence, List<Sequence_bodyContext> list) {

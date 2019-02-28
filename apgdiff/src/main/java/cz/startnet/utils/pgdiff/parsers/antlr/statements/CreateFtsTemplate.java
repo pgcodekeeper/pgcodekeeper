@@ -5,7 +5,6 @@ import java.util.List;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_templateContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
-import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFtsTemplate;
 
@@ -29,6 +28,6 @@ public class CreateFtsTemplate extends ParserAbstract {
         }
 
         template.setLexizeFunction(ParserAbstract.getFullCtxText(ctx.lexize_name));
-        addSafe(AbstractSchema::addFtsTemplate, getSchemaSafe(ids), template, ids);
+        addSafe(getSchemaSafe(ids), template, ids);
     }
 }

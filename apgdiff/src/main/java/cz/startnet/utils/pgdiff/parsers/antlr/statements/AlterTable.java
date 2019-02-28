@@ -75,7 +75,7 @@ public class AlterTable extends TableAbstract {
                         getSchemaNameSafe(ids), nameCtx.getText(), tablespace, isRefMode());
 
                 if (!con.getName().isEmpty()) {
-                    addSafe(AbstractPgTable::addConstraint, tabl, con, Arrays.asList(
+                    addSafe(tabl, con, Arrays.asList(
                             QNameParser.getSchemaNameCtx(ids), nameCtx, conNameCtx));
                 } else {
                     doSafe(AbstractPgTable::addConstraint, tabl, con);
