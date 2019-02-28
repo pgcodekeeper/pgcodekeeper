@@ -127,6 +127,8 @@ public class PgDiffTest {
                     {"modify_table_unlogged"},
                     // Tests scenario where TABLE CONSTRAINT is added.
                     {"add_constraint"},
+                    // Tests scenario where TABLE CONSTRAINT with tablespace is added.
+                    {"add_constraint_with_tablespace"},
                     // Tests scenario where TABLE EXCLUDE CONSTRAINT is added.
                     {"add_exclude_constraint"},
                     // Tests scenario where TABLE CONSTRAINT is modified.
