@@ -254,7 +254,7 @@ public abstract class AbstractExpr {
                 .orElse(null);
         if (relation == null) {
             Log.log(Log.LOG_WARNING, "Relation not found: " + schemaName + '.' + relationName);
-            return null;
+            return Stream.empty();
         }
 
         Stream<Pair<String, String>> cols = relation.getRelationColumns()
