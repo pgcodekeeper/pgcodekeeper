@@ -6,10 +6,8 @@
 package cz.startnet.utils.pgdiff;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Locale;
@@ -23,7 +21,6 @@ import org.junit.runners.Parameterized.Parameters;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.Log;
-import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 
 /**
  * Tests for PgDiff class.
@@ -487,14 +484,9 @@ public class PgDiffTest {
     }
 
     public void runDiffSame(PgDatabase db) throws IOException, InterruptedException {
-        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
-        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
-        final PgDiffArguments arguments = new PgDiffArguments();
-        PgDiff.diffDatabaseSchemas(writer, arguments, db, db, null);
-        writer.flush();
-
+        String script = PgDiff.diffDatabaseSchemas(new PgDiffArguments(), db, db, null).getText();
         Assert.assertEquals("File name template: " + fileNameTemplate,
-                "", diffInput.toString().trim());
+                "", script.trim());
     }
 
     @Test
@@ -508,10 +500,7 @@ public class PgDiffTest {
         runDiffSame(dbOld);
         runDiffSame(dbNew);
 
-        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
-        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
-        PgDiff.diffDatabaseSchemas(writer, args, dbOld, dbNew, null);
-        writer.flush();
+        String script = PgDiff.diffDatabaseSchemas(args, dbOld, dbNew, null).getText();
 
         StringBuilder sbExpDiff;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(
@@ -528,6 +517,6 @@ public class PgDiffTest {
 
         Assert.assertEquals("File name template: " + fileNameTemplate,
                 sbExpDiff.toString().trim(),
-                diffInput.toString().trim());
+                script.trim());
     }
 }

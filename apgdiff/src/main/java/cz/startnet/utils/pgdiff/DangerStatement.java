@@ -1,42 +1,34 @@
 package cz.startnet.utils.pgdiff;
 
-import java.util.regex.Pattern;
+import java.util.EnumSet;
+import java.util.Set;
 
 public enum DangerStatement {
+    DROP_TABLE,
+    ALTER_COLUMN,
+    DROP_COLUMN,
+    RESTART_WITH,
+    UPDATE;
 
-    DROP_TABLE("^DROP[\\s]+TABLE.+"),
+    public static Set<DangerStatement> getAllowedDanger(boolean ignoreDropCol, boolean ignoreAlterCol,
+            boolean ignoreDropTable, boolean ignoreRestartWith, boolean ignoreUpdate) {
+        Set<DangerStatement> allowedDangers = EnumSet.noneOf(DangerStatement.class);
+        if (ignoreDropCol) {
+            allowedDangers.add(DangerStatement.DROP_COLUMN);
+        }
+        if (ignoreAlterCol) {
+            allowedDangers.add(DangerStatement.ALTER_COLUMN);
+        }
+        if (ignoreDropTable) {
+            allowedDangers.add(DangerStatement.DROP_TABLE);
+        }
+        if (ignoreRestartWith) {
+            allowedDangers.add(DangerStatement.RESTART_WITH);
+        }
+        if (ignoreUpdate) {
+            allowedDangers.add(DangerStatement.UPDATE);
+        }
 
-    ALTER_COLUMN(AlterTableStatic.ALTER_TABLE_PATTERN
-            // match ALTER [ COLUMN ] column_name [ SET DATA ] TYPE data_type
-            + "ALTER[\\s]+(COLUMN[\\s]+)?([\\w]+[\\s]+)"
-            + "(SET[\\s]+DATA[\\s]+)?(TYPE).+"),
-
-    DROP_COLUMN(AlterTableStatic.ALTER_TABLE_PATTERN
-            // match 'DROP COLUMN' or 'DROP column_name'
-            // but *not* 'DROP CONSTRAINT constraint_name'
-            + "DROP[\\s]+(?!CONSTRAINT[\\s]+)([\\w]+).*"),
-
-    RESTART_WITH("^ALTER[\\s]+SEQUENCE.*[\\s]+RESTART[\\s]+.*"),
-
-    UPDATE("^UPDATE[\\s].+");
-
-    private static class AlterTableStatic {
-
-        static final String ALTER_TABLE_PATTERN =
-                "^ALTER[\\s]+TABLE[\\s]+"
-                        + "(IF[\\s]+EXISTS[\\s]+)?"
-                        + "(ONLY[\\s]+)?"
-                        + "([\\w]+(\\.\\w+)?+[\\s]+)"
-                        + "(\\*[\\s]+)?";
-    }
-
-    private final Pattern regex;
-
-    private DangerStatement(String regex) {
-        this.regex = Pattern.compile(regex, Pattern.CASE_INSENSITIVE | Pattern.DOTALL | Pattern.MULTILINE);
-    }
-
-    public Pattern getRegex() {
-        return regex;
+        return allowedDangers;
     }
 }

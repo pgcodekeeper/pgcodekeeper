@@ -183,11 +183,6 @@ public class PgFunction extends AbstractPgFunction {
     }
 
     @Override
-    public String getQualifiedName() {
-        return getParent().getQualifiedName() + '.' + getName();
-    }
-
-    @Override
     protected AbstractPgFunction getFunctionCopy() {
         return new PgFunction(getBareName());
     }
