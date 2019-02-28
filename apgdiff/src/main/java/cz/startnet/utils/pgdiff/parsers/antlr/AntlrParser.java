@@ -160,17 +160,15 @@ public class AntlrParser {
             Queue<AntlrTask<?>> antlrTasks) {
         List<AntlrError> err = new ArrayList<>();
         Function<SQLParser, SqlContext> entry = SQLParser::sql;
-        AntlrParser.submitAntlrTask(antlrTasks, () -> {
-            SQLParser p = AntlrParser.makeBasicParser(SQLParser.class,
-                    sql.endsWith(";") ? sql : sql +  "\n;", name,  err);
-            return entry.apply(p);
-        }, t -> {
-            if (offsetToDefinition > 0) {
-                err.forEach(e -> e.setOffsetToDefinition(offsetToDefinition));
-            }
-            errors.addAll(err);
-            finalizer.accept(t);
-        });
+        submitAntlrTask(antlrTasks, () -> entry.apply(
+                makeBasicParser(SQLParser.class, sql, name, err)),
+                ctx -> {
+                    if (offsetToDefinition > 0) {
+                        err.forEach(e -> e.setOffsetToDefinition(offsetToDefinition));
+                    }
+                    errors.addAll(err);
+                    finalizer.accept(ctx);
+                });
     }
 
     public static <T extends ParserRuleContext, P extends Parser>
