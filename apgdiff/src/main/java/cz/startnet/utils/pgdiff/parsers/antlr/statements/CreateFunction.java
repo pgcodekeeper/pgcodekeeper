@@ -52,10 +52,8 @@ public class CreateFunction extends ParserAbstract {
         AbstractPgFunction function = ctx.PROCEDURE() != null ? new PgProcedure(name)
                 : new PgFunction(name);
 
-        // TODO add processing for case when (funcArgsCtx == null)
         List<Function_argumentsContext> funcArgsCtx = ctx.function_parameters()
                 .function_args().function_arguments();
-
 
         fillArguments(function, funcArgsCtx);
         function.setBody(db.getArguments(), getFullCtxText(ctx.funct_body));
