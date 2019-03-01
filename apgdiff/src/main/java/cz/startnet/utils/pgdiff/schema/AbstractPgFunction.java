@@ -18,22 +18,22 @@ public abstract class AbstractPgFunction extends AbstractFunction {
 
     public static final String FROM_CURRENT = "FROM CURRENT";
 
+    protected static final float DEFAULT_INTERNAL_PROCOST = 1.0f;
     protected static final float DEFAULT_PROCOST = 100.0f;
     protected static final float DEFAULT_PROROWS = 1000.0f;
 
-    private float cost = DEFAULT_PROCOST;
     private float rows = DEFAULT_PROROWS;
     private boolean isWindow;
     private boolean isStrict;
     private boolean isLeakproof;
     private boolean isSecurityDefiner;
+    private String cost;
     private String language;
     private String parallel;
     private String volatileType;
     private String body;
     private String returns;
 
-    protected final List<String> options = new ArrayList<>();
     protected final List<Argument> arguments = new ArrayList<>();
     protected final List<String> transforms = new ArrayList<>();
     protected final Map<String, String> configurations = new LinkedHashMap<>();
@@ -67,7 +67,7 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         final int startLength = sb.length();
         AbstractPgFunction newAbstractPgFunction;
         if (newCondition instanceof AbstractPgFunction) {
-            newAbstractPgFunction = (AbstractPgFunction)newCondition;
+            newAbstractPgFunction = (AbstractPgFunction) newCondition;
         } else {
             return false;
         }
@@ -186,10 +186,24 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         return language;
     }
 
-    public void setLanguage(String language) {
+    public void setLanguageCost(String language, Float cost) {
         this.language = language;
+
+        if (cost != null) {
+            String val = cost % 1 == 0 ? Integer.toString(Math.round(cost)) : Float.toString(cost);
+
+            if ("internal".equals(getLanguage()) || "c".equals(getLanguage())) {
+                if (DEFAULT_INTERNAL_PROCOST != cost) {
+                    this.cost = val;
+                }
+            } else if (DEFAULT_PROCOST != cost) {
+                this.cost = val;
+            }
+        }
+
         resetHash();
     }
+
 
     public String getVolatileType() {
         return volatileType;
@@ -227,13 +241,8 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         resetHash();
     }
 
-    public float getCost() {
+    public String getCost() {
         return cost;
-    }
-
-    public void setCost(float cost) {
-        this.cost = cost;
-        resetHash();
     }
 
     public float getRows() {
@@ -332,15 +341,6 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         returnsColumns.put(name, type);
     }
 
-    public List<String> getOptions() {
-        return Collections.unmodifiableList(options);
-    }
-
-    public void addOption(final String option) {
-        options.add(option);
-        resetHash();
-    }
-
     /**
      * Returns function signature. It consists of unquoted name and argument
      * data types.
@@ -379,10 +379,9 @@ public abstract class AbstractPgFunction extends AbstractFunction {
                     && isSecurityDefiner == func.isSecurityDefiner()
                     && isLeakproof == func.isLeakproof()
                     && rows == func.getRows()
-                    && cost == func.getCost()
+                    && cost == func.cost
                     && Objects.equals(returns, func.getReturns())
                     && arguments.equals(func.arguments)
-                    && options.equals(func.options)
                     && transforms.equals(func.transforms)
                     && configurations.equals(func.configurations);
         }
@@ -404,7 +403,6 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         hasher.putOrdered(arguments);
         hasher.put(returns);
         hasher.put(body);
-        hasher.put(options);
         hasher.put(transforms);
         hasher.put(configurations);
         hasher.put(isWindow);
@@ -425,13 +423,13 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         functionDst.setReturns(getReturns());
         functionDst.setBody(getBody());
         functionDst.setWindow(isWindow());
-        functionDst.setLanguage(getLanguage());
+        functionDst.language = getLanguage();
         functionDst.setVolatileType(getVolatileType());
         functionDst.setStrict(isStrict());
         functionDst.setSecurityDefiner(isSecurityDefiner());
         functionDst.setLeakproof(isLeakproof());
         functionDst.setRows(getRows());
-        functionDst.setCost(getCost());
+        functionDst.cost = getCost();
         functionDst.setParallel(getParallel());
         for (Argument argSrc : arguments) {
             Argument argDst = new Argument(argSrc.getMode(), argSrc.getName(), argSrc.getDataType());
@@ -439,7 +437,6 @@ public abstract class AbstractPgFunction extends AbstractFunction {
             argDst.setReadOnly(argSrc.isReadOnly());
             functionDst.addArgument(argDst);
         }
-        functionDst.options.addAll(options);
         functionDst.transforms.addAll(transforms);
         functionDst.returnsColumns.putAll(returnsColumns);
         functionDst.configurations.putAll(configurations);

@@ -74,26 +74,8 @@ public class PgFunction extends AbstractPgFunction {
             sbSQL.append(" PARALLEL ").append(getParallel());
         }
 
-        if ("internal".equals(getLanguage()) || "c".equals(getLanguage())) {
-            /* default cost is 1 */
-            if (1.0f != getCost()) {
-                sbSQL.append(" COST ");
-                if (getCost() % 1 == 0) {
-                    sbSQL.append((int)getCost());
-                } else {
-                    sbSQL.append(getCost());
-                }
-            }
-        } else {
-            /* default cost is 100 */
-            if (DEFAULT_PROCOST != getCost()) {
-                sbSQL.append(" COST ");
-                if (getCost() % 1 == 0) {
-                    sbSQL.append((int)getCost());
-                } else {
-                    sbSQL.append(getCost());
-                }
-            }
+        if (getCost() != null) {
+            sbSQL.append(" COST ").append(getCost());
         }
 
         if (DEFAULT_PROROWS != getRows()) {
