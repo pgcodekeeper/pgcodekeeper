@@ -41,7 +41,7 @@ public class CreateMsIndex extends ParserAbstract {
         addObjReference(Arrays.asList(schemaCtx, tableCtx),
                 DbObjType.TABLE, StatementActions.NONE);
 
-        AbstractIndex ind = new MsIndex(nameCtx.getText(), tableCtx.getText());
+        AbstractIndex ind = new MsIndex(nameCtx.getText());
         ind.setUnique(ctx.UNIQUE() != null);
         ClusteredContext cluster = ctx.clustered();
         ind.setClusterIndex(cluster != null && cluster.CLUSTERED() != null);

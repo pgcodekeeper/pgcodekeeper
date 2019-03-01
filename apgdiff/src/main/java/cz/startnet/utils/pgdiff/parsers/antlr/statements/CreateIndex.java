@@ -44,7 +44,7 @@ public class CreateIndex extends ParserAbstract {
 
         IdentifierContext nameCtx = ctx.name;
         String name = nameCtx != null ? nameCtx.getText() : "";
-        PgIndex ind = new PgIndex(name, tableName);
+        PgIndex ind = new PgIndex(name);
         parseIndex(ctx.index_rest(), tablespace, schemaName, tableName, ind, db);
         ind.setUnique(ctx.UNIQUE() != null);
 
