@@ -183,8 +183,12 @@ public class MsDiffTest {
                     {"modify_ms_function_args_default"},
                     // Tests scenario where with option of MS FUNCTION with args is modified.
                     {"modify_ms_function_args_with"},
+                    // Tests scenario where external name of MS FUNCTION with args is added.
+                    {"add_ms_function_args_external"},
                     // Tests scenario where external name of MS FUNCTION with args is modified.
                     {"modify_ms_function_args_external"},
+                    // Tests scenario where external name of MS FUNCTION with args is dropped.
+                    {"drop_ms_function_args_external"},
                     // Tests scenario where type of MS FUNCTION is modified.
                     {"modify_ms_function_type"},
 
@@ -235,6 +239,8 @@ public class MsDiffTest {
                     {"add_ms_procedure"},
                     // Tests scenario where external MS PROCEDURE is added.
                     {"add_external_ms_procedure"},
+                    // Tests scenario where external MS PROCEDURE is dropped.
+                    {"drop_external_ms_procedure"},
                     // Tests scenario where MS PROCEDURE is dropped.
                     {"drop_ms_procedure"},
                     // Tests scenario where MS PROCEDURE is modified.

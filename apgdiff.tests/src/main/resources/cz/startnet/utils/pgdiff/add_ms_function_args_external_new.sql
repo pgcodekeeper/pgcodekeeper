@@ -1,0 +1,16 @@
+-- Assume that assembly binary is correct
+
+CREATE ASSEMBLY [Hi]
+FROM 0x4D5A90
+WITH PERMISSION_SET = SAFE
+GO
+
+SET QUOTED_IDENTIFIER OFF
+GO
+SET ANSI_NULLS OFF
+GO
+CREATE FUNCTION [dbo].[helloWorld](@i1 [int] = 0)
+RETURNS [int] 
+WITH EXECUTE AS CALLER
+AS 
+EXTERNAL NAME [Hi].[Hello].[returnIntSecond] 
