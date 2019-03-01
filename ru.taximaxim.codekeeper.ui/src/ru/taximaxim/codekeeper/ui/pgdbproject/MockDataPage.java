@@ -691,7 +691,7 @@ public class MockDataPage extends WizardPage {
             }
             if (table != null) {
                 parsedTableName = table.getName();
-                parsedSchemaName = table.getContainingSchema().getName();
+                parsedSchemaName = table.getSchemaName();
                 table.getColumns().forEach(this::parseColumns);
                 table.getConstraints().forEach(this::parseConstraints);
                 return;

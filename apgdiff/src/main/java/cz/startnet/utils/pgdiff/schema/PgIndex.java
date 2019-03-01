@@ -86,7 +86,7 @@ public class PgIndex extends AbstractIndex {
 
     @Override
     public String getDropSQL() {
-        return "DROP INDEX " + PgDiffUtils.getQuotedName(getContainingSchema().getName()) + '.'
+        return "DROP INDEX " + PgDiffUtils.getQuotedName(getSchemaName()) + '.'
                 + PgDiffUtils.getQuotedName(getName()) + ";";
     }
 

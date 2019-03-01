@@ -75,7 +75,7 @@ public class CreateMsTable extends TableAbstract {
             table.addConstraint(getMsConstraint(colCtx.table_constraint()));
         } else if (colCtx.table_index() != null) {
             Table_indexContext indCtx = colCtx.table_index();
-            MsIndex index = new MsIndex(indCtx.index_name.getText(), table.getName());
+            MsIndex index = new MsIndex(indCtx.index_name.getText());
             ClusteredContext cluster = indCtx.clustered();
             index.setClusterIndex(cluster != null && cluster.CLUSTERED() != null);
             CreateMsIndex.parseIndex(indCtx.index_rest(), index);

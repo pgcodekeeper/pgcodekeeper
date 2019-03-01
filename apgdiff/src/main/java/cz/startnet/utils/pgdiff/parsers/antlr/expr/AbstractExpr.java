@@ -262,7 +262,7 @@ public abstract class AbstractExpr {
         if (DbObjNature.USER == relation.getStatementNature()) {
             // hack
             cols = cols.peek(col -> depcies.add(
-                    new GenericColumn(relation.getContainingSchema().getName(),
+                    new GenericColumn(relation.getSchemaName(),
                             relation.getName(), col.getFirst(), DbObjType.COLUMN)));
         }
         return cols;
@@ -279,7 +279,7 @@ public abstract class AbstractExpr {
             IRelation rel = relCol.getFirst();
             col = relCol.getSecond();
             if (rel.getStatementNature() == DbObjNature.USER) {
-                depcies.add(new GenericColumn(rel.getContainingSchema().getName(), rel.getName(),
+                depcies.add(new GenericColumn(rel.getSchemaName(), rel.getName(),
                         col.getFirst(), DbObjType.COLUMN));
             }
         }
@@ -297,7 +297,7 @@ public abstract class AbstractExpr {
 
     protected void addFunctionDepcy(IFunction function) {
         if (DbObjNature.USER == function.getStatementNature()) {
-            depcies.add(new GenericColumn(function.getContainingSchema().getName(),
+            depcies.add(new GenericColumn(function.getSchemaName(),
                     function.getName(), DbObjType.FUNCTION));
         }
     }

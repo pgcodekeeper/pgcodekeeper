@@ -26,11 +26,7 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
 
         if (isDisable()) {
             sb.append("\nDISABLE TRIGGER ");
-            sb.append(MsDiffUtils.quoteName(getContainingSchema().getName()));
-            sb.append('.');
-            sb.append(MsDiffUtils.quoteName(getName()));
-            sb.append(" ON ");
-            sb.append(getParent().getQualifiedName());
+            appendName(sb);
             sb.append(GO);
         }
 
@@ -52,7 +48,7 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
 
     @Override
     public StringBuilder appendName(StringBuilder sb) {
-        sb.append(MsDiffUtils.quoteName(getContainingSchema().getName()))
+        sb.append(MsDiffUtils.quoteName(getSchemaName()))
         .append('.')
         .append(MsDiffUtils.quoteName(getName()))
         .append(" ON ")
@@ -77,11 +73,7 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
                 sb.append('\n');
                 sb.append(newTrigger.isDisable() ? "DISABLE" : "ENABLE");
                 sb.append(" TRIGGER ");
-                sb.append(MsDiffUtils.quoteName(newTrigger.getContainingSchema().getName()));
-                sb.append('.');
-                sb.append(MsDiffUtils.quoteName(newTrigger.getName()));
-                sb.append(" ON ");
-                sb.append(getParent().getQualifiedName());
+                appendName(sb);
                 sb.append(GO);
             }
 
@@ -93,7 +85,7 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
 
     @Override
     public String getDropSQL() {
-        return "DROP TRIGGER " + MsDiffUtils.quoteName(getContainingSchema().getName()) +
+        return "DROP TRIGGER " + MsDiffUtils.quoteName(getSchemaName()) +
                 '.' + MsDiffUtils.quoteName(getName()) + GO;
     }
 

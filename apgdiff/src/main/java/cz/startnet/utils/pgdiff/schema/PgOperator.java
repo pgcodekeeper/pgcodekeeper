@@ -32,7 +32,7 @@ public class PgOperator extends PgStatementWithSearchPath {
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE OPERATOR ");
-        sbSQL.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
+        sbSQL.append(PgDiffUtils.getQuotedName(getSchemaName())).append('.');
         sbSQL.append(getBareName());
         sbSQL.append(" (\n\tPROCEDURE = ");
         sbSQL.append(procedure);
@@ -92,7 +92,7 @@ public class PgOperator extends PgStatementWithSearchPath {
     public String getDropSQL() {
         final StringBuilder sbString = new StringBuilder();
         sbString.append("DROP OPERATOR ");
-        sbString.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
+        sbString.append(PgDiffUtils.getQuotedName(getSchemaName())).append('.');
         appendOperatorSignature(sbString);
         sbString.append(';');
         return sbString.toString();
@@ -134,8 +134,7 @@ public class PgOperator extends PgStatementWithSearchPath {
         boolean joinChanged = !Objects.equals(join, newOperJoin);
         if (restrChanged || joinChanged) {
             sb.append("\n\nALTER OPERATOR ")
-            .append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.')
-            .append(getName())
+            .append(getQualifiedName())
             .append("\n\tSET (");
             if (restrChanged) {
                 sb.append("RESTRICT = ").append(newOperRestr != null ? newOperRestr : "NONE");
