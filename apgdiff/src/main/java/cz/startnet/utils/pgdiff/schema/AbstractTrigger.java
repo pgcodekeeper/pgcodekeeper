@@ -26,11 +26,6 @@ public abstract class AbstractTrigger extends PgStatementWithSearchPath {
     protected abstract AbstractTrigger getTriggerCopy();
 
     @Override
-    public AbstractTrigger deepCopy() {
-        return shallowCopy();
-    }
-
-    @Override
     public AbstractSchema getContainingSchema() {
         return (AbstractSchema) getParent().getParent();
     }

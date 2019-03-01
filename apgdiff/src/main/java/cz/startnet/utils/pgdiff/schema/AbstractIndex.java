@@ -177,11 +177,6 @@ implements PgOptionContainer {
     protected abstract AbstractIndex getIndexCopy();
 
     @Override
-    public AbstractIndex deepCopy() {
-        return shallowCopy();
-    }
-
-    @Override
     public AbstractSchema getContainingSchema() {
         return (AbstractSchema) getParent().getParent();
     }

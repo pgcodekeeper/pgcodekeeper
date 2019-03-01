@@ -146,11 +146,6 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
     }
 
     @Override
-    public PgFtsConfiguration deepCopy() {
-        return shallowCopy();
-    }
-
-    @Override
     public boolean compare(PgStatement obj) {
         if (this == obj) {
             return true;

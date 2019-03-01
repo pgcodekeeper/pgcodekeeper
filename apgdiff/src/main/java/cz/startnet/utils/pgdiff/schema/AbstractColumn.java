@@ -130,11 +130,6 @@ public abstract class AbstractColumn extends PgStatementWithSearchPath {
     protected abstract AbstractColumn getColumnCopy();
 
     @Override
-    public AbstractColumn deepCopy() {
-        return shallowCopy();
-    }
-
-    @Override
     public AbstractSchema getContainingSchema() {
         return (AbstractSchema) getParent().getParent();
     }

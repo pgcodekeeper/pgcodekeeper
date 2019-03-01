@@ -169,11 +169,6 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
     public abstract void fillSequenceBody(StringBuilder sbSQL);
 
     @Override
-    public AbstractSequence deepCopy() {
-        return shallowCopy();
-    }
-
-    @Override
     public AbstractSchema getContainingSchema() {
         return (AbstractSchema) getParent();
     }

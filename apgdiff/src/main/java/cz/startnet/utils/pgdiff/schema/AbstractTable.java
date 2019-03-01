@@ -421,32 +421,13 @@ implements IStatementContainer, PgOptionContainer, IRelation {
         AbstractTable tableDst = getTableCopy();
         copyBaseFields(tableDst);
         for (AbstractColumn colSrc : columns) {
-            tableDst.addColumn(colSrc.deepCopy());
+            tableDst.addColumn((AbstractColumn) colSrc.deepCopy());
         }
         tableDst.options.putAll(options);
         return tableDst;
     }
 
     protected abstract AbstractTable getTableCopy();
-
-    @Override
-    public AbstractTable deepCopy() {
-        AbstractTable copy = shallowCopy();
-
-        for (AbstractConstraint constraint : constraints) {
-            copy.addConstraint(constraint.deepCopy());
-        }
-        for (AbstractIndex index : indexes) {
-            copy.addIndex(index.deepCopy());
-        }
-        for (AbstractTrigger trigger : triggers) {
-            copy.addTrigger(trigger.deepCopy());
-        }
-        for (PgRule rule : rules) {
-            copy.addRule(rule.deepCopy());
-        }
-        return copy;
-    }
 
     @Override
     public AbstractSchema getContainingSchema() {

@@ -316,11 +316,6 @@ public class PgOperator extends PgStatementWithSearchPath {
     }
 
     @Override
-    public PgOperator deepCopy() {
-        return shallowCopy();
-    }
-
-    @Override
     public AbstractSchema getContainingSchema() {
         return (AbstractSchema) getParent();
     }
