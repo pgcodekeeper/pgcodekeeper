@@ -264,10 +264,8 @@ public final class FullAnalyze {
             String argDollarName = "$" + (i + 1);
             Identifier_nontypeContext argNameCtx = argCtxs.get(i).argname;
 
-            // TODO if (argName != null) need to put this with argDollarName
             String argName = argNameCtx == null ? null :
                 ParserAbstract.getFullCtxText(argCtxs.get(i).argname);
-
 
             Data_typeContext dataTypeCtx = argCtxs.get(i).data_type();
             Schema_qualified_name_nontypeContext typeQname = dataTypeCtx.predefined_type()
@@ -278,40 +276,53 @@ public final class FullAnalyze {
 
                 if (schemaCtx != null) {
                     String schemaName = ParserAbstract.getFullCtxText(schemaCtx);
-                    String typeNameOfObj = ParserAbstract.getFullCtxText(typeQname.identifier_nontype());
+                    String argType = ParserAbstract.getFullCtxText(typeQname.identifier_nontype());
 
                     if (ApgdiffUtils.isPgSystemSchema(schemaName)) {
-                        // put result to the 'simpleFuncArgs'
-                        prims.add(new Pair<>(argDollarName, typeNameOfObj));
+                        addArgToPrims(argDollarName, argName, argType, prims);
                     } else {
-                        // check if it is TABLE OR VIEW OR TYPE then put it to the 'relFuncArgs'
-                        DbObjType type = null;
+                        DbObjType argDbObjType = null;
                         AbstractSchema schema = db.getSchema(schemaName);
-                        if (schema.getTable(typeNameOfObj) != null) {
-                            type = DbObjType.TABLE;
-                        } else if (schema.getView(typeNameOfObj) != null) {
-                            type = DbObjType.VIEW;
-                        } else if (schema.getType(typeNameOfObj) != null) {
-                            type = DbObjType.TYPE;
-                        } else {
-                            // else put it to the 'simpleFuncArgs'
-                            prims.add(new Pair<>(argDollarName, typeNameOfObj));
+                        if (schema.getTable(argType) != null) {
+                            argDbObjType = DbObjType.TABLE;
+                        } else if (schema.getView(argType) != null) {
+                            argDbObjType = DbObjType.VIEW;
+                        } else if (schema.getType(argType) != null) {
+                            argDbObjType = DbObjType.TYPE;
                         }
 
-                        if (type != null) {
-                            rels.put(argDollarName,
-                                    new GenericColumn(schemaName, typeNameOfObj, type));
+                        if (argDbObjType == null) {
+                            addArgToPrims(argDollarName, argName, argType, prims);
+                        } else {
+                            addArgToRels(argDollarName, argName, argType, schemaName,
+                                    argDbObjType, rels);
                         }
                     }
                 }
             } else {
-                // put it to the 'simpleFuncArgs'
-                prims.add(new Pair<>(argDollarName,
-                        ParserAbstract.getTypeName(dataTypeCtx)));
+                addArgToPrims(argDollarName, argName,
+                        ParserAbstract.getTypeName(dataTypeCtx), prims);
             }
         }
     }
 
+    private void addArgToPrims(String argDollarName, String argName, String argType,
+            List<Pair<String, String>> prims) {
+        prims.add(new Pair<>(argDollarName, argType));
+        if (argName != null) {
+            prims.add(new Pair<>(argName, argType));
+        }
+    }
+
+    private void addArgToRels(String argDollarName, String argName, String argTypeAndObjName,
+            String schemaName, DbObjType argDbObjType, Map<String, GenericColumn> rels) {
+        rels.put(argDollarName,
+                new GenericColumn(schemaName, argTypeAndObjName, argDbObjType));
+        if (argName != null) {
+            rels.put(argName,
+                    new GenericColumn(schemaName, argTypeAndObjName, argDbObjType));
+        }
+    }
 
     private class AnalyzeTraversalListenerAdapter extends TraversalListenerAdapter<PgStatement, DefaultEdge> {
 
