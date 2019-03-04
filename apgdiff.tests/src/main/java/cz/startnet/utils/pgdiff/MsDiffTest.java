@@ -154,6 +154,8 @@ public class MsDiffTest {
                     {"modify_ms_type"},
                     // Tests scenario where MS TYPE owner is modified.
                     {"modify_ms_type_owner"},
+                    // Tests scenario where MS TYPE with function dep is modified.
+                    {"modify_ms_type_with_dep"},
 
                     // Tests scenario where MS INDEX is added.
                     {"add_ms_index"},
