@@ -45,12 +45,12 @@ import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
@@ -273,30 +273,24 @@ public final class FullAnalyze {
 
             if (typeQname != null) {
                 IdentifierContext schemaCtx = typeQname.identifier();
-
                 if (schemaCtx != null) {
                     String schemaName = ParserAbstract.getFullCtxText(schemaCtx);
                     String argType = ParserAbstract.getFullCtxText(typeQname.identifier_nontype());
 
-                    if (ApgdiffUtils.isPgSystemSchema(schemaName)) {
+                    DbObjType argDbObjType = null;
+                    AbstractSchema schema = db.getSchema(schemaName);
+                    IRelation rel = schema.getRelation(argType);
+                    if (rel != null) {
+                        argDbObjType = rel.getStatementType();
+                    } else if (schema.getType(argType) != null) {
+                        argDbObjType = DbObjType.TYPE;
+                    }
+
+                    if (argDbObjType == null) {
                         addArgToPrims(argDollarName, argName, argType, prims);
                     } else {
-                        DbObjType argDbObjType = null;
-                        AbstractSchema schema = db.getSchema(schemaName);
-                        if (schema.getTable(argType) != null) {
-                            argDbObjType = DbObjType.TABLE;
-                        } else if (schema.getView(argType) != null) {
-                            argDbObjType = DbObjType.VIEW;
-                        } else if (schema.getType(argType) != null) {
-                            argDbObjType = DbObjType.TYPE;
-                        }
-
-                        if (argDbObjType == null) {
-                            addArgToPrims(argDollarName, argName, argType, prims);
-                        } else {
-                            addArgToRels(argDollarName, argName, argType, schemaName,
-                                    argDbObjType, rels);
-                        }
+                        addArgToRels(argDollarName, argName, argType, schemaName,
+                                argDbObjType, rels);
                     }
                 }
             } else {
