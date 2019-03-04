@@ -32,4 +32,6 @@ public interface SourceStatement extends ISearchPath {
     default StringBuilder appendName(StringBuilder sb) {
         return sb.append(getQualifiedName());
     }
+
+    boolean usedInSignature(PgStatement st);
 }
