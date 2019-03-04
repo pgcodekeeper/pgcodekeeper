@@ -284,6 +284,8 @@ public final class FullAnalyze {
                         argDbObjType = rel.getStatementType();
                     } else if (schema.getType(argType) != null) {
                         argDbObjType = DbObjType.TYPE;
+                    } else if (schema.getDomain(argType) != null) {
+                        argDbObjType = DbObjType.DOMAIN;
                     }
 
                     if (argDbObjType == null) {
