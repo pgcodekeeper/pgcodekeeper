@@ -124,6 +124,7 @@ public class CreateFunction extends ParserAbstract {
         }
 
         // Parsing the function definition and adding its result context for analysis.
+        // Adding contexts of function arguments for analysis.
         List<Character_stringContext> funcContent = funcDef.character_string();
         if ("SQL".equalsIgnoreCase(function.getLanguage()) && funcContent.size() == 1) {
             StringBuilder sb = new StringBuilder();

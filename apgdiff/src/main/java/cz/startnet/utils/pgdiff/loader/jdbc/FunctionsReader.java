@@ -92,6 +92,14 @@ public class FunctionsReader extends JdbcReader {
                     });
         }
 
+        // Parsing the arguments of function (without default values)
+        // and adding its result context for analysis.
+        if (!f.getArguments().isEmpty()) {
+            loader.submitAntlrTask(f.appendFunctionSignature(new StringBuilder(), false, true).toString(),
+                    SQLParser::function_args_parser, ctx -> schema.getDatabase()
+                    .addFuncArgsCtxsForAnalyze(f, ctx.function_args().function_arguments()));
+        }
+
         return f;
     }
 
