@@ -19,6 +19,7 @@ import org.jgrapht.traverse.DepthFirstIterator;
 
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.MsTable;
+import cz.startnet.utils.pgdiff.schema.MsView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -179,7 +180,7 @@ public class DepcyResolver {
             for (PgStatement drop : toRecreate) {
                 PgStatement newSt = drop.getTwin(newDb);
                 if (newSt != null) {
-                    if (newSt instanceof SourceStatement && newSt.equals(drop)) {
+                    if (newSt instanceof MsView && newSt.equals(drop)) {
                         toRefresh.add(newSt);
                     }
 
@@ -534,6 +535,10 @@ public class DepcyResolver {
             if (starter.getStatementType() == DbObjType.COLUMN
                     && starter.getParent() == st) {
                 // do not trigger explicit column drops when table changes
+                return;
+            }
+            if (starter instanceof SourceStatement
+                    && !((SourceStatement) starter).usedInSignature(st)) {
                 return;
             }
             PgStatement newSt = st.getTwin(newDb);
