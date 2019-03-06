@@ -874,6 +874,12 @@
             class="ru.taximaxim.codekeeper.ui.views.ProjectOverrideView"
             icon="icons/lib.gif"
             category="ru.taximaxim.codekeeper.ui.viewsCategory" />
+        <view
+            id="ru.taximaxim.codekeeper.ui.resultsetview"
+            name="%view.name.ResultSetView"
+            class="ru.taximaxim.codekeeper.ui.views.ResultSetView"
+            icon="icons/app_icon16.png"
+            category="ru.taximaxim.codekeeper.ui.viewsCategory" />
     </extension>
     <extension point="org.eclipse.ui.perspectives">
         <perspective
