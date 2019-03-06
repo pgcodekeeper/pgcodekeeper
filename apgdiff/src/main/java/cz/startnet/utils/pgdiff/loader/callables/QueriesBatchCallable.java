@@ -52,7 +52,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
                     currQuery = query;
 
                     if (st.execute(query) && reporter != null) {
-                        writeResult();
+                        writeResult(query);
                     }
                     writeWarnings();
                     writeStatus(query);
@@ -101,7 +101,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
         return JDBC_CONSTS.JDBC_SUCCESS;
     }
 
-    private void writeResult() throws Exception {
+    private void writeResult(String query) throws Exception {
         List<List<Object>> results = new ArrayList<>();
         try (ResultSet res = st.getResultSet()) {
 
@@ -128,7 +128,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
             }
         }
 
-        reporter.showData(results);
+        reporter.showData(query, results);
     }
 
     private void writeWarnings() throws SQLException {

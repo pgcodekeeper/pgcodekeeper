@@ -16,6 +16,7 @@ import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.part.ViewPart;
 
 import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
@@ -32,7 +33,7 @@ public class ResultSetView extends ViewPart {
         tabFolder.setLayoutData(gd);
     }
 
-    public void addData(List<List<Object>> results) {
+    public void addData(String query, List<List<Object>> results) {
         if (results.isEmpty()) {
             return;
         }
@@ -44,6 +45,12 @@ public class ResultSetView extends ViewPart {
         CTabItem tabItem = new CTabItem(tabFolder, SWT.CLOSE);
         tabItem.setText(FileUtils.getFileDate());
         tabItem.setControl(tabComposite);
+
+        Label l = new Label(tabComposite, SWT.NONE);
+
+        String preview = query.replaceAll("\\s+", " ").trim();
+        l.setText(preview.length() > 60 ? preview.substring(0, 60) + " <...> " : preview);
+        l.setToolTipText(query);
 
         TableViewer viewer = new TableViewer(tabComposite);
 
@@ -89,7 +96,7 @@ public class ResultSetView extends ViewPart {
         public String getText(Object element) {
             List<?> l = (List<?>) element;
             Object obj = l.get(i);
-            return obj == null ? null : obj.toString();
+            return obj == null ? "<NULL>" : obj.toString();
         }
     }
 

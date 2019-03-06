@@ -7,5 +7,5 @@ public interface IProgressReporter {
     void writeWarning(String message);
     void writeError(String message);
     void terminate();
-    void showData(List<List<Object>> Object);
+    void showData(String query, List<List<Object>> Object);
 }
