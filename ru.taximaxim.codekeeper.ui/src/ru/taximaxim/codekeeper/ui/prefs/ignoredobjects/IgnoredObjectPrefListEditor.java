@@ -33,12 +33,14 @@ import ru.taximaxim.codekeeper.ui.prefs.PrefListEditor;
 
 public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject, TableViewer> {
 
+    private final IgnoreList ignoreList;
+
     enum BooleanChangeValues {
         REGULAR, IGNORE_CONTENT;
     }
 
     public static IgnoredObjectPrefListEditor create(Composite parent, IgnoreList ignoreList) {
-        return new IgnoredObjectPrefListEditor(createComposite(parent, ignoreList));
+        return new IgnoredObjectPrefListEditor(createComposite(parent, ignoreList), ignoreList);
     }
 
     private static Composite createComposite(Composite composite, IgnoreList ignoreList) {
@@ -80,13 +82,14 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject, T
         return composite;
     }
 
-    private IgnoredObjectPrefListEditor(Composite parent) {
+    private IgnoredObjectPrefListEditor(Composite parent, IgnoreList ignoreList) {
         super(parent);
+        this.ignoreList = ignoreList;
     }
 
     @Override
     protected IgnoredObject getNewObject(IgnoredObject oldObject) {
-        NewIgnoredObjectDialog d = new NewIgnoredObjectDialog(getShell(), oldObject);
+        NewIgnoredObjectDialog d = new NewIgnoredObjectDialog(getShell(), oldObject, ignoreList.isShow());
         return d.open() == NewIgnoredObjectDialog.OK ? d.getIgnoredObject() : null;
     }
 
@@ -191,17 +194,19 @@ class NewIgnoredObjectDialog extends InputDialog {
     private IgnoredObject ignoredObject;
     private Button btnPattern;
     private Button btnContent;
+    private final boolean isShow;
     private ComboViewer comboType;
 
     public IgnoredObject getIgnoredObject() {
         return ignoredObject;
     }
 
-    public NewIgnoredObjectDialog(Shell shell, IgnoredObject objInitial) {
+    public NewIgnoredObjectDialog(Shell shell, IgnoredObject objInitial, boolean isShow) {
         super(shell, Messages.IgnoredObjectPrefListEditor_new_ignored, Messages.IgnoredObjectPrefListEditor_object_name,
                 objInitial == null ? null : objInitial.getName(),
                         text ->  text.isEmpty() ? Messages.IgnoredObjectPrefListEditor_enter_name : null);
         this.objInitial = objInitial;
+        this.isShow = isShow;
     }
 
     @Override
@@ -225,7 +230,11 @@ class NewIgnoredObjectDialog extends InputDialog {
         btnPattern.setText(Messages.IgnoredObjectPrefListEditor_pattern);
 
         btnContent = new Button(c, SWT.CHECK);
-        btnContent.setText(Messages.IgnoredObjectPrefListEditor_contents);
+        if (isShow) {
+            btnContent.setText(Messages.IgnoredObjectPrefListEditor_contents_ignore_list);
+        } else {
+            btnContent.setText(Messages.IgnoredObjectPrefListEditor_contents_white_list);
+        }
 
         if (objInitial != null) {
             btnPattern.setSelection(objInitial.isRegular());

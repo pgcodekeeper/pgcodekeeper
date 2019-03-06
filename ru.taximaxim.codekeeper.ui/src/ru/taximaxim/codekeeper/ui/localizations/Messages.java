@@ -410,7 +410,9 @@ public final class Messages extends NLS {
 
     public static String IgnoredObjectPrefListEditor_already_present;
 
-    public static String IgnoredObjectPrefListEditor_contents;
+    public static String IgnoredObjectPrefListEditor_contents_ignore_list;
+
+    public static String IgnoredObjectPrefListEditor_contents_white_list;
 
     public static String IgnoredObjectPrefListEditor_enter_name;
 
