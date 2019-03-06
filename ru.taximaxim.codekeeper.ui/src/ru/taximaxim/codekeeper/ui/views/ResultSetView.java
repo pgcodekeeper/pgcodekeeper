@@ -2,10 +2,12 @@ package ru.taximaxim.codekeeper.ui.views;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ColumnViewer;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.ViewerCell;
@@ -13,12 +15,18 @@ import org.eclipse.jface.viewers.ViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.part.ViewPart;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
 
 public class ResultSetView extends ViewPart {
@@ -48,8 +56,8 @@ public class ResultSetView extends ViewPart {
 
         Label l = new Label(tabComposite, SWT.NONE);
 
-        String preview = query.replaceAll("\\s+", " ").trim();
-        l.setText(preview.length() > 60 ? preview.substring(0, 60) + " <...> " : preview);
+        String preview = query.replaceAll("\\s+", " ").trim(); //$NON-NLS-1$ //$NON-NLS-2$
+        l.setText(preview.length() > 60 ? preview.substring(0, 60) + " <...> " : preview); //$NON-NLS-1$
         l.setToolTipText(query);
 
         TableViewer viewer = new TableViewer(tabComposite);
@@ -59,11 +67,41 @@ public class ResultSetView extends ViewPart {
         viewer.getTable().setLinesVisible(true);
         viewer.getTable().setHeaderVisible(true);
 
+        viewer.getTable().addKeyListener(new KeyAdapter() {
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if ((e.stateMask & SWT.CTRL) == SWT.CTRL && e.keyCode == 'c') {
+                    IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
+                    if (selection.isEmpty()) {
+                        return;
+                    }
+
+                    List<?> obj = (List<?>) selection.getFirstElement();
+                    String data = obj.stream().map(o -> {
+                        if (o == null) {
+                            return ""; //$NON-NLS-1$
+                        } else {
+                            String s = o.toString();
+                            if (s.isEmpty() || s.contains(",") || s.contains(";") //$NON-NLS-1$ //$NON-NLS-2$
+                                    || s.contains("\n") || s.contains("\"")) { //$NON-NLS-1$ //$NON-NLS-2$
+                                s = PgDiffUtils.quoteName(s);
+                            }
+                            return s;
+                        }
+                    }).collect(Collectors.joining(",")); //$NON-NLS-1$
+
+                    final Clipboard cb = new Clipboard(viewer.getControl().getDisplay());
+                    cb.setContents(new Object[] {data}, new Transfer[] {TextTransfer.getInstance()});
+                }
+            }
+        });
+
+
         List<Object> names = results.get(0);
 
         TableViewerColumn num = new TableViewerColumn(viewer, SWT.LEFT);
         num.getColumn().setResizable(true);
-        num.getColumn().setText("");
         num.setLabelProvider(new RowNumberLabelProvider());
         num.getColumn().setWidth(40);
 
@@ -96,7 +134,7 @@ public class ResultSetView extends ViewPart {
         public String getText(Object element) {
             List<?> l = (List<?>) element;
             Object obj = l.get(i);
-            return obj == null ? "<NULL>" : obj.toString();
+            return obj == null ? "<NULL>" : obj.toString(); //$NON-NLS-1$
         }
     }
 
@@ -118,7 +156,7 @@ public class ResultSetView extends ViewPart {
             super.update(cell);
             if (viewer != null) {
                 int index = Arrays.asList(viewer.getTable().getItems()).indexOf(cell.getItem());
-                cell.setText("" + (index + 1));
+                cell.setText("" + (index + 1)); //$NON-NLS-1$
             }
         }
     }
