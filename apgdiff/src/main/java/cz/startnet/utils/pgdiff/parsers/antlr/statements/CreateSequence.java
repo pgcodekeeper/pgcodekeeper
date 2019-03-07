@@ -30,7 +30,7 @@ public class CreateSequence extends ParserAbstract {
         Long minValue = null;
         for (Sequence_bodyContext body : list) {
             if (body.type != null) {
-                sequence.setDataType(body.type.getText().toLowerCase());
+                sequence.setDataType(body.type.getText());
             } else if (body.cache_val != null) {
                 sequence.setCache(body.cache_val.getText());
             } else if (body.incr != null) {
