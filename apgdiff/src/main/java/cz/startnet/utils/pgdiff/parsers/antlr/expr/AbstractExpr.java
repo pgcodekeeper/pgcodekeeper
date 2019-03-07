@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -213,17 +212,12 @@ public abstract class AbstractExpr {
         default:
             break;
         }
-        if (columns != null) {
-            Optional<String> type = columns.findAny()
-                    .map(Pair::getSecond);
-            if (type.isPresent()) {
-                return type.get();
-            } else {
-                Log.log(Log.LOG_WARNING, "Column " + colName + " not found in relation "
-                        + relationName);
-            }
-        }
-        return TypesSetManually.COLUMN;
+
+        return columns.findAny().map(Pair::getSecond).orElseGet(() -> {
+            Log.log(Log.LOG_WARNING,
+                    "Column " + colName + " not found in relation " + relationName);
+            return TypesSetManually.COLUMN;
+        });
     }
 
     /**
@@ -245,7 +239,7 @@ public abstract class AbstractExpr {
      * @param relationName
      * @param colNamePredicate
      * @return column stream with  attached depcy-addition peek-step;
-     *          null if no relation found
+     *          empty stream if no relation found
      */
     protected Stream<Pair<String, String>> addFilteredRelationColumnsDepcies(String schemaName,
             String relationName, Predicate<String> colNamePredicate) {
