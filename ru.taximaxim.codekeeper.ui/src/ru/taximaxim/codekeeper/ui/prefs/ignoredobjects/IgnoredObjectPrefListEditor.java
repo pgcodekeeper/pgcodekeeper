@@ -227,7 +227,7 @@ class NewIgnoredObjectDialog extends InputDialog {
         btnPattern.setText(Messages.IgnoredObjectPrefListEditor_pattern);
 
         btnContent = new Button(c, SWT.CHECK);
-        btnContent.setText(Messages.IgnoredObjectPrefListEditor_contents_ignore);
+        btnContent.setText(Messages.IgnoredObjectPrefListEditor_contents);
 
         if (objInitial != null) {
             btnPattern.setSelection(objInitial.isRegular());
