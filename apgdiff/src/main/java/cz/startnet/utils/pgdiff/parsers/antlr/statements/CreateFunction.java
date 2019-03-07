@@ -20,6 +20,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statement_valueConte
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Transform_for_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_storage_parameterContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.launcher.FuncProcAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
@@ -134,8 +135,10 @@ public class CreateFunction extends ParserAbstract {
                     getFullCtxText(ctx.getParent()).indexOf(def),
                     "function definition of " + function.getBareName(),
                     ctx -> {
-                        db.addFuncArgsCtxsForAnalyze(function, funcArgsCtx);
-                        db.addContextForAnalyze(function, ctx);
+                        FuncProcAnalysisLauncher launcher = new FuncProcAnalysisLauncher(function, ctx);
+                        launcher.addFuncArgsCtxsForAnalyze(funcArgsCtx);
+                        launcher.setErrors(errors);
+                        db.addAnalysisLauncher(launcher);
                     }, antlrTasks);
         }
 
@@ -161,7 +164,11 @@ public class CreateFunction extends ParserAbstract {
 
             if (argument.function_def_value() != null) {
                 arg.setDefaultExpression(getFullCtxText(argument.function_def_value().def_value));
-                db.addContextForAnalyze(function, argument.function_def_value().def_value);
+
+                FuncProcAnalysisLauncher analysisLauncher = new FuncProcAnalysisLauncher(function,
+                        argument.function_def_value().def_value);
+                analysisLauncher.setErrors(errors);
+                db.addAnalysisLauncher(analysisLauncher);
             }
 
             function.addArgument(arg);

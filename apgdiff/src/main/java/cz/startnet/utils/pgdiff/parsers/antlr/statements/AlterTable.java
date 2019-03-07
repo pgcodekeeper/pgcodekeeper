@@ -14,6 +14,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_option
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.launcher.ColDomAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
@@ -129,7 +130,7 @@ public class AlterTable extends TableAbstract {
                 if (tablAction.set_def_column() != null) {
                     VexContext exp = tablAction.set_def_column().expression;
                     col.setDefaultValue(getFullCtxText(exp));
-                    db.addContextForAnalyze(col, exp);
+                    db.addAnalysisLauncher(new ColDomAnalysisLauncher(col, exp));
                 }
 
                 // column options

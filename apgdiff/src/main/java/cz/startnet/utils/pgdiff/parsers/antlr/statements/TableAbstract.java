@@ -30,6 +30,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraint_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
+import cz.startnet.utils.pgdiff.parsers.antlr.launcher.ColDomAnalysisLauncher;
+import cz.startnet.utils.pgdiff.parsers.antlr.launcher.ConstraintAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractForeignTable;
@@ -79,7 +81,7 @@ public abstract class TableAbstract extends ParserAbstract {
         VexContext def = body.default_expr;
         if (def != null) {
             col.setDefaultValue(getFullCtxText(def));
-            db.addContextForAnalyze(col, def);
+            db.addAnalysisLauncher(new ColDomAnalysisLauncher(col, def));
         } else if (body.NULL() != null) {
             col.setNullValue(body.NOT() == null);
         } else if (body.REFERENCES() != null) {
@@ -142,7 +144,7 @@ public abstract class TableAbstract extends ParserAbstract {
             constr = new PgConstraint(constrName);
             VexContext expCtx = body.expression;
             constr.setDefinition("CHECK ((" + getFullCtxText(expCtx) + "))");
-            db.addContextForAnalyze(constr, expCtx);
+            db.addAnalysisLauncher(new ConstraintAnalysisLauncher(constr, expCtx));
         }
 
         if (constr != null) {
@@ -299,7 +301,7 @@ public abstract class TableAbstract extends ParserAbstract {
 
         VexContext exp = constrBody.vex();
         if (exp != null) {
-            db.addContextForAnalyze(constrBlank, exp);
+            db.addAnalysisLauncher(new ConstraintAnalysisLauncher(constrBlank, exp));
         }
     }
 

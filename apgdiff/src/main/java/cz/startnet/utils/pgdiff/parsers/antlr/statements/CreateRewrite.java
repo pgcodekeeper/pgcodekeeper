@@ -7,6 +7,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.launcher.RuleAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -52,6 +53,6 @@ public class CreateRewrite extends ParserAbstract {
             rule.addCommand(db.getArguments(), getFullCtxText(cmd));
         }
 
-        db.addContextForAnalyze(rule, ctx);
+        db.addAnalysisLauncher(new RuleAnalysisLauncher(rule, ctx));
     }
 }

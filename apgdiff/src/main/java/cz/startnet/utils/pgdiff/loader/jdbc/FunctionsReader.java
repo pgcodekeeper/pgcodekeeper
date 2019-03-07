@@ -10,6 +10,7 @@ import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.launcher.FuncProcAnalysisLauncher;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateAggregate;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
@@ -68,7 +69,9 @@ public class FunctionsReader extends JdbcReader {
 
         AbstractPgFunction f = isProc ? new PgProcedure(funcName) : new PgFunction(funcName);
 
-        fillFunction(f, res, schema.getDatabase());
+        PgDatabase db = schema.getDatabase();
+
+        fillFunction(f, res, db);
         fillArguments(f, res);
 
         String defaultValuesAsString = res.getString("default_values_as_string");
@@ -86,7 +89,7 @@ public class FunctionsReader extends JdbcReader {
                             if ("IN".equals(a.getMode()) || "INOUT".equals(a.getMode())) {
                                 VexContext vx = vexCtxListIterator.previous();
                                 a.setDefaultExpression(ParserAbstract.getFullCtxText(vx));
-                                schema.getDatabase().addContextForAnalyze(f, vx);
+                                db.addAnalysisLauncher(new FuncProcAnalysisLauncher(f, vx));
                             }
                         }
                     });
@@ -96,8 +99,8 @@ public class FunctionsReader extends JdbcReader {
         // and adding its result context for analysis.
         if (!f.getArguments().isEmpty()) {
             loader.submitAntlrTask(f.appendFunctionSignature(new StringBuilder(), false, true).toString(),
-                    SQLParser::function_args_parser, ctx -> schema.getDatabase()
-                    .addFuncArgsCtxsForAnalyze(f, ctx.function_args().function_arguments()));
+                    SQLParser::function_args_parser, ctx -> db.addAnalysisLauncher(
+                            new FuncProcAnalysisLauncher(f, ctx.function_args().function_arguments())));
         }
 
         return f;
@@ -215,7 +218,8 @@ public class FunctionsReader extends JdbcReader {
         // Parsing the function definition and adding its result context for analysis.
         if (!"-".equals(definition) && "SQL".equalsIgnoreCase(function.getLanguage())) {
             loader.submitAntlrTask(definition.endsWith(";") ? definition : definition + "\n;",
-                    SQLParser::sql, ctx -> db.addContextForAnalyze(function, ctx));
+                    SQLParser::sql, ctx -> db.addAnalysisLauncher(
+                            new FuncProcAnalysisLauncher(function, ctx)));
         }
     }
 
