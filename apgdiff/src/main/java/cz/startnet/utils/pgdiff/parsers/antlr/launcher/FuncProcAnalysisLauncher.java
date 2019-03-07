@@ -4,11 +4,9 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -37,9 +35,13 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
     // Contains PgFunction's arguments contexts for analysis (for getting dependencies).
     private final List<Function_argumentsContext> funcArgsCtxsForAnalyze = new ArrayList<>();
 
-    public FuncProcAnalysisLauncher(PgStatementWithSearchPath stmt, PgDatabase db,
-            List<AntlrError> errors) {
-        super(stmt, db, errors);
+    public FuncProcAnalysisLauncher(PgStatementWithSearchPath stmt, ParserRuleContext ctx) {
+        super(stmt, ctx);
+    }
+
+    public FuncProcAnalysisLauncher(PgStatementWithSearchPath stmt, List<Function_argumentsContext> ctxs) {
+        super(stmt);
+        addFuncArgsCtxsForAnalyze(ctxs);
     }
 
     /**
@@ -77,23 +79,18 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
      */
     private void splitFuncArgs(PgDatabase db, AbstractFunction func,
             Map<String, GenericColumn> rels, List<Pair<String, String>> prims) {
-        Entry<PgStatementWithSearchPath, List<Function_argumentsContext>> funcArgs = db
-                .getFuncArgsCtxsForAnalyze().stream().filter(e -> func.equals(e.getKey()))
-                .findAny().orElse(null);
-
-        if (funcArgs == null) {
+        if (funcArgsCtxsForAnalyze == null) {
             return;
         }
 
-        List<Function_argumentsContext> argCtxs = funcArgs.getValue();
-        for (int i = 0; i < argCtxs.size(); i++) {
+        for (int i = 0; i < funcArgsCtxsForAnalyze.size(); i++) {
             String argDollarName = "$" + (i + 1);
-            Identifier_nontypeContext argNameCtx = argCtxs.get(i).argname;
+            Identifier_nontypeContext argNameCtx = funcArgsCtxsForAnalyze.get(i).argname;
 
             String argName = argNameCtx == null ? null :
-                ParserAbstract.getFullCtxText(argCtxs.get(i).argname);
+                ParserAbstract.getFullCtxText(funcArgsCtxsForAnalyze.get(i).argname);
 
-            Data_typeContext dataTypeCtx = argCtxs.get(i).data_type();
+            Data_typeContext dataTypeCtx = funcArgsCtxsForAnalyze.get(i).data_type();
             Schema_qualified_name_nontypeContext typeQname = dataTypeCtx.predefined_type()
                     .schema_qualified_name_nontype();
 

@@ -1,10 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.launcher;
 
-import java.util.List;
-
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
@@ -18,9 +15,8 @@ import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
  */
 public class ViewAnalysisLauncher extends AbstractAnalysisLauncher {
 
-    public ViewAnalysisLauncher(PgStatementWithSearchPath stmt, PgDatabase db,
-            List<AntlrError> errors) {
-        super(stmt, db, errors);
+    public ViewAnalysisLauncher(PgStatementWithSearchPath stmt, ParserRuleContext ctx) {
+        super(stmt, ctx);
     }
 
     @Override

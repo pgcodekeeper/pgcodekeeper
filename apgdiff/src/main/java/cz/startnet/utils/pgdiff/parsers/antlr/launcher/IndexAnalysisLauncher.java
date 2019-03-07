@@ -1,10 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.launcher;
 
-import java.util.List;
-
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_restContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sort_specifierContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -16,9 +13,8 @@ import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
  */
 public class IndexAnalysisLauncher extends AbstractAnalysisLauncher {
 
-    public IndexAnalysisLauncher(PgStatementWithSearchPath stmt, PgDatabase db,
-            List<AntlrError> errors) {
-        super(stmt, db, errors);
+    public IndexAnalysisLauncher(PgStatementWithSearchPath stmt, ParserRuleContext ctx) {
+        super(stmt, ctx);
     }
 
     @Override

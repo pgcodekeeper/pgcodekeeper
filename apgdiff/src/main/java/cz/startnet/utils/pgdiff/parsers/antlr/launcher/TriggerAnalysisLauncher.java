@@ -1,10 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.launcher;
 
-import java.util.List;
-
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -18,9 +15,8 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  */
 public class TriggerAnalysisLauncher extends AbstractAnalysisLauncher {
 
-    public TriggerAnalysisLauncher(PgStatementWithSearchPath stmt, PgDatabase db,
-            List<AntlrError> errors) {
-        super(stmt, db, errors);
+    public TriggerAnalysisLauncher(PgStatementWithSearchPath stmt, ParserRuleContext ctx) {
+        super(stmt, ctx);
     }
 
     @Override

@@ -26,22 +26,37 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  */
 public abstract class AbstractAnalysisLauncher {
 
-    protected PgStatementWithSearchPath stmt;
+    private PgDatabase finalDb;
     protected PgDatabase db;
+    protected PgStatementWithSearchPath stmt;
     protected List<AntlrError> errors;
 
     // Contains PgStatement's contexts for analysis (for getting dependencies).
     protected final List<ParserRuleContext> contextsForAnalyze = new ArrayList<>();
 
-    public AbstractAnalysisLauncher(PgStatementWithSearchPath stmt, PgDatabase db,
-            List<AntlrError> errors) {
+    public AbstractAnalysisLauncher(PgStatementWithSearchPath stmt) {
         this.stmt = stmt;
-        this.db = db;
-        this.errors = errors;
+    }
+
+    public AbstractAnalysisLauncher(PgStatementWithSearchPath stmt, ParserRuleContext ctx) {
+        this(stmt);
+        addContextForAnalyze(ctx);
     }
 
     public PgStatementWithSearchPath getStmt() {
         return stmt;
+    }
+
+    public void setDb(PgDatabase db) {
+        this.db = db;
+    }
+
+    public void setFinalDb(PgDatabase finalDb) {
+        this.finalDb = finalDb;
+    }
+
+    public void setErrors(List<AntlrError> errors) {
+        this.errors = errors;
     }
 
     /**
@@ -53,19 +68,19 @@ public abstract class AbstractAnalysisLauncher {
         contextsForAnalyze.add(ctx);
     }
 
-    protected void launchAnalyze() {
+    public void launchAnalyze() {
+        // Duplicated objects doesn't have parent, skip them
+        if (stmt.getParent() == null) {
+            return;
+        }
+
+        if (stmt.getDatabase() != finalDb) {
+            // statement came from another DB object, probably a library
+            // for proper depcy processing, find its twin in the final DB object
+            stmt = (PgStatementWithSearchPath) stmt.getTwin(finalDb);
+        }
+
         for (ParserRuleContext ctx : contextsForAnalyze) {
-            // Duplicated objects doesn't have parent, skip them
-            if (stmt.getParent() == null) {
-                continue;
-            }
-
-            if (stmt.getDatabase() != db) {
-                // statement came from another DB object, probably a library
-                // for proper depcy processing, find its twin in the final DB object
-                stmt = (PgStatementWithSearchPath) stmt.getTwin(db);
-            }
-
             try {
                 analyzeOneCtx(ctx, stmt.getContainingSchema().getName());
             } catch (UnresolvedReferenceException ex) {
@@ -77,7 +92,7 @@ public abstract class AbstractAnalysisLauncher {
         }
     }
 
-    public abstract void analyzeOneCtx(ParserRuleContext ctx, String schemaName);
+    protected abstract void analyzeOneCtx(ParserRuleContext ctx, String schemaName);
 
     protected <T extends ParserRuleContext> void analyze(
             T ctx, AbstractExprWithNmspc<T> analyzer, PgStatement pg) {

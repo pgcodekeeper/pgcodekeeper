@@ -1,10 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.launcher;
 
-import java.util.List;
-
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Delete_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Insert_stmt_for_psqlContext;
@@ -26,11 +23,10 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 /**
  * {@link AbstractAnalysisLauncher}
  */
-public class RuleLauncher extends AbstractAnalysisLauncher {
+public class RuleAnalysisLauncher extends AbstractAnalysisLauncher {
 
-    public RuleLauncher(PgStatementWithSearchPath stmt, PgDatabase db,
-            List<AntlrError> errors) {
-        super(stmt, db, errors);
+    public RuleAnalysisLauncher(PgStatementWithSearchPath stmt, ParserRuleContext ctx) {
+        super(stmt, ctx);
     }
 
     @Override
