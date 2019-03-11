@@ -37,7 +37,14 @@ public class PgIndex extends AbstractIndex {
         }
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
         sbSQL.append(" ON ");
-        sbSQL.append(getParent().getQualifiedName());
+
+        PgStatement par = getParent();
+        if (par instanceof AbstractRegularTable
+                && ((AbstractRegularTable) par).getPartitionBy() != null) {
+            sbSQL.append("ONLY ");
+        }
+
+        sbSQL.append(par.getQualifiedName());
         if (getMethod() != null) {
             sbSQL.append(" USING ").append(PgDiffUtils.getQuotedName(getMethod()));
         }

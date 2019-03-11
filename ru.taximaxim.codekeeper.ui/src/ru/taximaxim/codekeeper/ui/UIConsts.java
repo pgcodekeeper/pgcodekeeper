@@ -37,6 +37,7 @@ public interface UIConsts {
 
     interface VIEW {
         String OVERRIDE_VIEW = PLUGIN_ID.THIS + ".pgoverrideview"; //$NON-NLS-1$
+        String RESULT_SET_VIEW = PLUGIN_ID.THIS + ".resultsetview"; //$NON-NLS-1$
     }
 
     interface WIZARD {

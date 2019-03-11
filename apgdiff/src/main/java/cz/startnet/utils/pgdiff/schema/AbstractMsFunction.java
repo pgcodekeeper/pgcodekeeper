@@ -106,13 +106,8 @@ implements SourceStatement {
 
     @Override
     public boolean usedInSignature(PgStatement st) {
-        for (GenericColumn dep : signatureDeps) {
-            if (st.equals(dep.getStatement(getDatabase()))) {
-                return true;
-            }
-        }
-
-        return false;
+        return signatureDeps.stream().anyMatch(d -> st.getBareName().equals(d.getObjName())
+                && st.equals(d.getStatement(getDatabase())));
     }
 
     @Override

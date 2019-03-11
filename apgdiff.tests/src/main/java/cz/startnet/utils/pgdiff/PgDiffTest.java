@@ -62,6 +62,8 @@ public class PgDiffTest {
                     {"drop_with_oids"},
                     // Tests scenario where INDEX is added.
                     {"add_index"},
+                    // Tests scenario where PARTITION INDEX is added.
+                    {"add_partition_index"},
                     // Tests scenario where VIEW INDEX is added.
                     {"add_view_index"},
                     // Tests scenario where INDEX is dropped.
