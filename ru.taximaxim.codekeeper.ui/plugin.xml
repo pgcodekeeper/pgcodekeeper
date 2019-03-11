@@ -878,7 +878,7 @@
             id="ru.taximaxim.codekeeper.ui.resultsetview"
             name="%view.name.ResultSetView"
             class="ru.taximaxim.codekeeper.ui.views.ResultSetView"
-            icon="icons/app_icon16.png"
+            icon="icons/data_table_row.png"
             category="ru.taximaxim.codekeeper.ui.viewsCategory" />
     </extension>
     <extension point="org.eclipse.ui.perspectives">
@@ -946,12 +946,6 @@
             <view
                 id="org.eclipse.ui.views.ContentOutline"
                 minimized="false"
-                relationship="stack"
-                relative="org.eclipse.ui.views.ProgressView">
-            </view>
-            <view
-                id="org.eclipse.ui.views.ContentOutline"
-                minimized="false"
                 ratio="0.80"
                 relationship="right"
                 relative="org.eclipse.ui.editorss">
@@ -963,6 +957,20 @@
                 relationship="bottom"
                 visible="false"
                 relative="org.eclipse.ui.editorss">
+            </view>
+            <view
+                id="ru.taximaxim.codekeeper.ui.resultsetview"
+                minimized="false"
+                relationship="stack"
+                visible="false"
+                relative="ru.taximaxim.codekeeper.ui.pgoverrideview">
+            </view>
+            <view
+                id="org.eclipse.ui.console.ConsoleView"
+                minimized="false"
+                relationship="stack"
+                visible="false"
+                relative="ru.taximaxim.codekeeper.ui.pgoverrideview">
             </view>
             <showInPart id="org.eclipse.ui.navigator.ProjectExplorer">
             </showInPart>

@@ -101,7 +101,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
         return JDBC_CONSTS.JDBC_SUCCESS;
     }
 
-    private void writeResult(String query) throws Exception {
+    private void writeResult(String query) throws SQLException {
         List<List<Object>> results = new ArrayList<>();
         try (ResultSet res = st.getResultSet()) {
 

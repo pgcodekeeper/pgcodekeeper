@@ -2,7 +2,6 @@ package ru.taximaxim.codekeeper.ui.views;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
@@ -28,6 +27,7 @@ import org.eclipse.ui.part.ViewPart;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
+import ru.taximaxim.codekeeper.ui.UIConsts;
 
 public class ResultSetView extends ViewPart {
 
@@ -37,7 +37,7 @@ public class ResultSetView extends ViewPart {
     public void createPartControl(Composite parent) {
         tabFolder = new CTabFolder(parent, SWT.BOTTOM);
         GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        gd.minimumWidth = 700;
+        gd.widthHint = 700;
         tabFolder.setLayoutData(gd);
     }
 
@@ -71,29 +71,25 @@ public class ResultSetView extends ViewPart {
 
             @Override
             public void keyPressed(KeyEvent e) {
-                if ((e.stateMask & SWT.CTRL) == SWT.CTRL && e.keyCode == 'c') {
-                    IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
-                    if (selection.isEmpty()) {
-                        return;
-                    }
-
-                    List<?> obj = (List<?>) selection.getFirstElement();
-                    String data = obj.stream().map(o -> {
-                        if (o == null) {
-                            return ""; //$NON-NLS-1$
-                        } else {
-                            String s = o.toString();
-                            if (s.isEmpty() || s.contains(",") || s.contains(";") //$NON-NLS-1$ //$NON-NLS-2$
-                                    || s.contains("\n") || s.contains("\"")) { //$NON-NLS-1$ //$NON-NLS-2$
-                                s = PgDiffUtils.quoteName(s);
-                            }
-                            return s;
-                        }
-                    }).collect(Collectors.joining(",")); //$NON-NLS-1$
-
-                    final Clipboard cb = new Clipboard(viewer.getControl().getDisplay());
-                    cb.setContents(new Object[] {data}, new Transfer[] {TextTransfer.getInstance()});
+                IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
+                if (selection.isEmpty() || (e.stateMask & SWT.CTRL) != SWT.CTRL || e.keyCode != 'c') {
+                    return;
                 }
+
+                StringBuilder sb = new StringBuilder();
+                for (Object r : selection.toList()) {
+                    List<?> row = (List<?>) r;
+                    for (Object val : row) {
+                        sb.append(valueForCsv(val));
+                        sb.append(',');
+                    }
+                    // remove trailing comma
+                    sb.setLength(sb.length() - 1);
+                    sb.append(UIConsts._NL);
+                }
+
+                final Clipboard cb = new Clipboard(viewer.getControl().getDisplay());
+                cb.setContents(new Object[] {sb.toString()}, new Transfer[] {TextTransfer.getInstance()});
             }
         });
 
@@ -123,7 +119,20 @@ public class ResultSetView extends ViewPart {
         tabFolder.setFocus();
     }
 
-    private final class IndexedColumnLabelProvider extends ColumnLabelProvider {
+    private String valueForCsv(Object val) {
+        if (val == null) {
+            return ""; //$NON-NLS-1$
+        }
+        String s = val.toString();
+        if (s.isEmpty() || s.indexOf(',') != -1 || s.indexOf(';') != -1
+                || s.indexOf('\n') != -1 || s.indexOf('"') != -1) {
+            return PgDiffUtils.quoteName(s);
+        } else {
+            return s;
+        }
+    }
+
+    private static class IndexedColumnLabelProvider extends ColumnLabelProvider {
         private final int i;
 
         private IndexedColumnLabelProvider(int i) {
@@ -138,7 +147,7 @@ public class ResultSetView extends ViewPart {
         }
     }
 
-    private final class RowNumberLabelProvider extends ColumnLabelProvider {
+    private static class RowNumberLabelProvider extends ColumnLabelProvider {
 
         private TableViewer viewer;
 
