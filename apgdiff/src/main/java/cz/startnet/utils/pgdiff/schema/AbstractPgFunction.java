@@ -190,7 +190,7 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         this.language = language;
 
         if (cost != null) {
-            String val = cost % 1 == 0 ? Integer.toString(Math.round(cost)) : Float.toString(cost);
+            String val = "" + (cost % 1 == 0 ? cost.intValue() : cost);
 
             if ("internal".equals(getLanguage()) || "c".equals(getLanguage())) {
                 if (DEFAULT_INTERNAL_PROCOST != cost) {
