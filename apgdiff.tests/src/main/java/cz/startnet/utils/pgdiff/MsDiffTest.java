@@ -214,6 +214,8 @@ public class MsDiffTest {
 
                     // Tests scenario where MS SEQUENCE is added.
                     {"add_ms_sequence"},
+                    // Tests scenario where MS SEQUENCE with user-definied type is added.
+                    {"add_ms_sequence_with_user_type"},
                     // Tests scenario where MS SEQUENCE is dropped.
                     {"drop_ms_sequence"},
                     // Tests scenario where MS SEQUENCE is modified.
