@@ -2,8 +2,11 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
@@ -26,6 +29,7 @@ import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgProcedure;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 /**
  * Reads FUNCTIONs, PROCEDUREs and AGGREGATEs from JDBC.
@@ -71,8 +75,7 @@ public class FunctionsReader extends JdbcReader {
 
         PgDatabase db = schema.getDatabase();
 
-        fillFunction(f, res, db);
-        fillArguments(f, res);
+        fillFunction(f, res, db, fillArguments(f, res));
 
         String defaultValuesAsString = res.getString("default_values_as_string");
         if (defaultValuesAsString != null) {
@@ -95,19 +98,12 @@ public class FunctionsReader extends JdbcReader {
                     });
         }
 
-        // Parsing the arguments of function (without default values)
-        // and adding its result context for analysis.
-        if (!f.getArguments().isEmpty()) {
-            loader.submitAntlrTask(f.appendFunctionSignature(new StringBuilder(), false, true).toString(),
-                    SQLParser::function_args_parser, ctx -> db.addAnalysisLauncher(
-                            new FuncProcAnalysisLauncher(f, ctx.function_args().function_arguments())));
-        }
-
         return f;
     }
 
-    private void fillFunction(AbstractPgFunction function, ResultSet res, PgDatabase db)
-            throws SQLException {
+    private void fillFunction(AbstractPgFunction function, ResultSet res,
+            PgDatabase db, List<Pair<String, Pair<String, String>>> argsQualifiedTypes)
+                    throws SQLException {
         StringBuilder body = new StringBuilder();
 
         function.setLanguage(res.getString("lang_name"));
@@ -218,8 +214,19 @@ public class FunctionsReader extends JdbcReader {
         // Parsing the function definition and adding its result context for analysis.
         if (!"-".equals(definition) && "SQL".equalsIgnoreCase(function.getLanguage())) {
             loader.submitAntlrTask(definition.endsWith(";") ? definition : definition + "\n;",
-                    SQLParser::sql, ctx -> db.addAnalysisLauncher(
-                            new FuncProcAnalysisLauncher(function, ctx)));
+                    SQLParser::sql, ctx -> {
+                        FuncProcAnalysisLauncher analysisLauncher = new FuncProcAnalysisLauncher(
+                                function, ctx);
+                        if (!argsQualifiedTypes.isEmpty()) {
+                            // Processing and sending the arguments of function
+                            // to the namespaces in launcher for correct analysis.
+                            List<Pair<String, String>> simpleFuncArgs = new ArrayList<>();
+                            Map<String, GenericColumn> relFuncArgs = new LinkedHashMap<>();
+                            splitFuncArgs(argsQualifiedTypes, simpleFuncArgs, relFuncArgs, db);
+                            analysisLauncher.setSplitFuncArgs(simpleFuncArgs, relFuncArgs);
+                        }
+                        db.addAnalysisLauncher(analysisLauncher);
+                    });
         }
     }
 
@@ -236,6 +243,20 @@ public class FunctionsReader extends JdbcReader {
         }
 
         return quote.concat("$");
+    }
+
+    /**
+     * Splits function arguments into simple arguments and arguments with relations.
+     */
+    private void splitFuncArgs(List<Pair<String, Pair<String, String>>> argsQualifiedTypes,
+            List<Pair<String, String>> prims, Map<String, GenericColumn> rels,
+            PgDatabase db) {
+        for (int i = 0; i < argsQualifiedTypes.size(); i++) {
+            Pair<String, Pair<String, String>> arg = argsQualifiedTypes.get(i);
+            FuncProcAnalysisLauncher.splitProcessingOfQualType(db, arg.getSecond().getFirst(),
+                    arg.getSecond().getSecond(), "$" + (i + 1), arg.getFirst(),
+                    prims,  rels);
+        }
     }
 
     private AbstractFunction getAgg(ResultSet res, String schemaName,
@@ -390,12 +411,21 @@ public class FunctionsReader extends JdbcReader {
         }
     }
 
-    private void fillArguments(AbstractPgFunction f, ResultSet res) throws SQLException {
+    /**
+     * Returns a list of pairs, each of which contains the name of the argument
+     * and its full type name.
+     */
+    private List<Pair<String, Pair<String, String>>> fillArguments(AbstractPgFunction f,
+            ResultSet res) throws SQLException {
         StringBuilder sb = new StringBuilder();
         String[] argModes = getColArray(res, "proargmodes");
         String[] argNames = getColArray(res, "proargnames");
         Long[] argTypeOids = getColArray(res, "proallargtypes");
         Long[] argTypes = argTypeOids != null ? argTypeOids : getColArray(res, "argtypes");
+
+        // It will be used for sending the arguments of function to the namespaces
+        // in launcher for correct analysis.
+        List<Pair<String, Pair<String, String>>> argsQualifiedTypes = new ArrayList<>();
 
         for (int i = 0; argTypes.length > i; i++) {
             String aMode = argModes != null ? argModes[i] : "i";
@@ -427,9 +457,13 @@ public class FunctionsReader extends JdbcReader {
                 break;
             }
 
+            JdbcType argJdbcType = loader.cachedTypesByOid.get(argTypes[i]);
+            String argName = argNames != null ? argNames[i] : null;
+
             // these require resetHash functionality for defaults
-            Argument a = f.new PgArgument(aMode, argNames != null ? argNames[i] : null,
-                    loader.cachedTypesByOid.get(argTypes[i]).getFullName());
+            Argument a = f.new PgArgument(aMode, argName, argJdbcType.getFullName());
+
+            argsQualifiedTypes.add(new Pair<>(argName, argJdbcType.getQualifiedName()));
 
             f.addArgument(a);
         }
@@ -446,6 +480,8 @@ public class FunctionsReader extends JdbcReader {
                 returnType.addTypeDepcy(f);
             }
         }
+
+        return argsQualifiedTypes;
     }
 
     @Override
