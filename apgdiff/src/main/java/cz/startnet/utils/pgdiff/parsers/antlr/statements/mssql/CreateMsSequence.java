@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_sequenceContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Data_typeContext;
@@ -43,12 +44,12 @@ public class CreateMsSequence extends ParserAbstract {
             if (body.data_type() != null) {
                 Data_typeContext data = body.data_type();
                 addMsTypeDepcy(data, sequence);
-                dataType = data.qualified_name().getText().toLowerCase();
-                sequence.setDataType(dataType);
+                // try to catch tinyint, smallint, int, bigint, numeric, decimal
+                dataType = data.qualified_name().getText().toLowerCase(Locale.ENGLISH);
+                sequence.setDataType(getFullCtxText(data));
                 Data_type_sizeContext size = data.size;
                 if (size != null && size.presicion != null) {
                     precision = size.presicion.getText();
-                    sequence.setPresicion(precision);
                 }
             } else if (body.start_val != null) {
                 sequence.setStartWith(body.start_val.getText());

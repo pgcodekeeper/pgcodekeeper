@@ -27,7 +27,7 @@ public class PgSequence extends AbstractSequence {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE SEQUENCE ").append(getQualifiedName());
 
-        if (!"bigint".equals(getDataType())) {
+        if (!BIGINT.equals(getDataType())) {
             sbSQL.append("\n\tAS ").append(getDataType());
         }
 

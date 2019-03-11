@@ -9,10 +9,10 @@ import cz.startnet.utils.pgdiff.hashers.Hasher;
 public class MsSequence extends AbstractSequence {
 
     private boolean isCached;
-    private String presicion;
 
     public MsSequence(String name) {
         super(name);
+        setDataType(MsDiffUtils.quoteName(BIGINT));
     }
 
     @Override
@@ -21,10 +21,7 @@ public class MsSequence extends AbstractSequence {
         sbSQL.append("CREATE SEQUENCE ");
         sbSQL.append(getQualifiedName());
 
-        sbSQL.append("\n\tAS ").append(MsDiffUtils.quoteName(getDataType()));
-        if (getPresicion() != null) {
-            sbSQL.append('(').append(getPresicion()).append(", 0)");
-        }
+        sbSQL.append("\n\tAS ").append(getDataType());
 
         fillSequenceBody(sbSQL);
         sbSQL.append(GO);
@@ -77,8 +74,7 @@ public class MsSequence extends AbstractSequence {
             return false;
         }
 
-        if (!newSequence.getDataType().equals(getDataType())  ||
-                !Objects.equals(newSequence.getPresicion(), getPresicion())) {
+        if (!newSequence.getDataType().equals(getDataType())) {
             isNeedDepcies.set(true);
             return true;
         }
@@ -179,15 +175,6 @@ public class MsSequence extends AbstractSequence {
         resetHash();
     }
 
-    public String getPresicion() {
-        return presicion;
-    }
-
-    public void setPresicion(String presicion) {
-        this.presicion = presicion;
-        resetHash();
-    }
-
     public boolean isCached() {
         return isCached;
     }
@@ -200,15 +187,12 @@ public class MsSequence extends AbstractSequence {
     @Override
     public boolean compare(PgStatement obj) {
         return obj instanceof MsSequence && super.compare(obj)
-                && Objects.equals(presicion, ((MsSequence) obj).getPresicion())
                 && isCached == ((MsSequence) obj).isCached();
     }
-
 
     @Override
     public void computeHash(Hasher hasher) {
         super.computeHash(hasher);
-        hasher.put(presicion);
         hasher.put(isCached);
     }
 
@@ -220,7 +204,6 @@ public class MsSequence extends AbstractSequence {
     @Override
     protected AbstractSequence getSequenceCopy() {
         MsSequence sequence = new MsSequence(getName());
-        sequence.setPresicion(getPresicion());
         sequence.setCached(isCached());
         return sequence;
     }
