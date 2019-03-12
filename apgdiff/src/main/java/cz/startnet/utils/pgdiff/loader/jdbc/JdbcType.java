@@ -10,7 +10,6 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class JdbcType{
 
@@ -93,16 +92,17 @@ public class JdbcType{
     }
 
     /**
-     *  Returns the Pair which contains type's schema name and type's name.
+     *  Returns the GenericColumn which contains type's schema name and type's name.
      */
-    public Pair<String, String> getQualifiedName() {
+    public GenericColumn getQualifiedName() {
         if (ApgdiffConsts.PG_CATALOG.equals(parentSchema)) {
             String dealias = DATA_TYPE_ALIASES.get(typeName);
-            return new Pair<>(parentSchema,
-                    dealias == null ? PgDiffUtils.getQuotedName(typeName) : dealias);
-
+            return new GenericColumn(parentSchema,
+                    dealias == null ? PgDiffUtils.getQuotedName(typeName) : dealias,
+                            DbObjType.TYPE);
         }
-        return new Pair<>(parentSchema, PgDiffUtils.getQuotedName(typeName));
+        return new GenericColumn(parentSchema, PgDiffUtils.getQuotedName(typeName),
+                DbObjType.TYPE);
     }
 
     public void addTypeDepcy(PgStatement st) {

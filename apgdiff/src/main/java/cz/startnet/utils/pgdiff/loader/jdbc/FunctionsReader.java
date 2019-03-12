@@ -102,7 +102,7 @@ public class FunctionsReader extends JdbcReader {
     }
 
     private void fillFunction(AbstractPgFunction function, ResultSet res,
-            PgDatabase db, List<Pair<String, Pair<String, String>>> argsQualifiedTypes)
+            PgDatabase db, List<Pair<String, GenericColumn>> argsQualifiedTypes)
                     throws SQLException {
         StringBuilder body = new StringBuilder();
 
@@ -248,13 +248,13 @@ public class FunctionsReader extends JdbcReader {
     /**
      * Splits function arguments into simple arguments and arguments with relations.
      */
-    private void splitFuncArgs(List<Pair<String, Pair<String, String>>> argsQualifiedTypes,
+    private void splitFuncArgs(List<Pair<String, GenericColumn>> argsQualifiedTypes,
             List<Pair<String, String>> prims, Map<String, GenericColumn> rels,
             PgDatabase db) {
         for (int i = 0; i < argsQualifiedTypes.size(); i++) {
-            Pair<String, Pair<String, String>> arg = argsQualifiedTypes.get(i);
-            FuncProcAnalysisLauncher.splitProcessingOfQualType(db, arg.getSecond().getFirst(),
-                    arg.getSecond().getSecond(), "$" + (i + 1), arg.getFirst(),
+            Pair<String, GenericColumn> arg = argsQualifiedTypes.get(i);
+            FuncProcAnalysisLauncher.splitProcessingOfQualType(db, arg.getSecond().schema,
+                    arg.getSecond().table, "$" + (i + 1), arg.getFirst(),
                     prims,  rels);
         }
     }
@@ -415,7 +415,7 @@ public class FunctionsReader extends JdbcReader {
      * Returns a list of pairs, each of which contains the name of the argument
      * and its full type name.
      */
-    private List<Pair<String, Pair<String, String>>> fillArguments(AbstractPgFunction f,
+    private List<Pair<String, GenericColumn>> fillArguments(AbstractPgFunction f,
             ResultSet res) throws SQLException {
         StringBuilder sb = new StringBuilder();
         String[] argModes = getColArray(res, "proargmodes");
@@ -425,7 +425,7 @@ public class FunctionsReader extends JdbcReader {
 
         // It will be used for sending the arguments of function to the namespaces
         // in launcher for correct analysis.
-        List<Pair<String, Pair<String, String>>> argsQualifiedTypes = new ArrayList<>();
+        List<Pair<String, GenericColumn>> argsQualifiedTypes = new ArrayList<>();
 
         for (int i = 0; argTypes.length > i; i++) {
             String aMode = argModes != null ? argModes[i] : "i";
@@ -442,12 +442,14 @@ public class FunctionsReader extends JdbcReader {
                 continue;
             }
 
+            boolean isOutModeArg = false;
             switch(aMode) {
             case "i":
                 aMode = "IN";
                 break;
             case "o":
                 aMode = "OUT";
+                isOutModeArg = true;
                 break;
             case "b":
                 aMode = "INOUT";
@@ -463,7 +465,9 @@ public class FunctionsReader extends JdbcReader {
             // these require resetHash functionality for defaults
             Argument a = f.new PgArgument(aMode, argName, argJdbcType.getFullName());
 
-            argsQualifiedTypes.add(new Pair<>(argName, argJdbcType.getQualifiedName()));
+            if (!isOutModeArg) {
+                argsQualifiedTypes.add(new Pair<>(argName, argJdbcType.getQualifiedName()));
+            }
 
             f.addArgument(a);
         }
