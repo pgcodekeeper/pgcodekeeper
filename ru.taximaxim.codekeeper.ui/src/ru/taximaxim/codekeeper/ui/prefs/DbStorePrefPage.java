@@ -53,7 +53,8 @@ implements IWorkbenchPreferencePage {
     protected void performDefaults() {
         dbList.setInputList(Arrays.asList(
                 new DbInfo("default", "", "", "", "", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
-                        0, false, false, new ArrayList<>(), new HashMap<>(), false, false)));
+                        0, false, false, new ArrayList<>(), new HashMap<>(), false, false,
+                        DbInfo.DEFAULT_EXECUTE_PATH, DbInfo.DEFAULT_CUSTOM_PARAMS, false)));
     }
 
     @Override

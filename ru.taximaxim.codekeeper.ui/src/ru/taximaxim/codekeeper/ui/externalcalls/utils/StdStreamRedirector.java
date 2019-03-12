@@ -2,11 +2,11 @@
 package ru.taximaxim.codekeeper.ui.externalcalls.utils;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.MessageFormat;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import cz.startnet.utils.pgdiff.IProgressReporter;
@@ -17,15 +17,17 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class StdStreamRedirector {
 
-    private final StringBuilder storage = new StringBuilder();
+    private byte[] outStorage;
+    private final StringBuilder errStorage = new StringBuilder();
     private final IProgressReporter reporter;
+    private volatile boolean isDestroyed = false;
 
     public StdStreamRedirector(IProgressReporter reporter) {
         this.reporter = reporter;
     }
 
-    public String getStorage() {
-        return storage.toString();
+    public byte[] getInputArray() {
+        return outStorage;
     }
 
     /**
@@ -34,12 +36,11 @@ public class StdStreamRedirector {
      *
      * @author Alexander Levsha
      */
-    private static class StdStreamRedirectorWorker implements Runnable {
+    private class StdStreamRedirectorWorker implements Runnable {
 
         private final BufferedReader in;
         private final StringBuilder storage;
         private final IProgressReporter reporter;
-        private final AtomicBoolean isDestroyed = new AtomicBoolean();
         /**
          * @param in {@link InputStream} to
          * @param reporter
@@ -56,12 +57,12 @@ public class StdStreamRedirector {
             String line = null;
             try {
                 while((line = in.readLine()) != null) {
-                    reporter.writeMessage(line);
+                    reporter.writeError(line);
                     storage.append(line);
                     storage.append(UIConsts._NL);
                 }
             } catch(IOException ex) {
-                if (isDestroyed.get()) {
+                if (isDestroyed) {
                     // the process was destroyed by us, exit silently
                     return;
                 }
@@ -81,34 +82,31 @@ public class StdStreamRedirector {
      * @return captured stdout & stderr output
      * @throws IOException
      */
-    public String launchAndRedirect(ProcessBuilder pb) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        for(String param : pb.command()) {
-            sb.append(param);
-            sb.append(' ');
-        }
-        String cmd = sb.toString();
+    public void launchAndRedirect(ProcessBuilder pb) throws IOException {
+        String cmd = String.join(" ", pb.command());
         reporter.writeMessage(cmd);
 
-        pb.redirectErrorStream(true);
         final Process p = pb.start();
 
-        final StdStreamRedirectorWorker redirector = new StdStreamRedirectorWorker(
-                p.getInputStream(), storage, reporter);
-        try (BufferedReader t = redirector.in) {
-            Thread redirectorThread = new Thread(redirector);
-            final AtomicReference<Throwable> lastException = new AtomicReference<>();
-            redirectorThread.setUncaughtExceptionHandler((t1, e) -> {
-                lastException.set(e);
-                redirector.isDestroyed.set(true);
+        final StdStreamRedirectorWorker redirectorErr = new StdStreamRedirectorWorker(
+                p.getErrorStream(), errStorage, reporter);
+
+        try (InputStream in = p.getInputStream();
+                BufferedReader err = redirectorErr.in) {
+
+            Thread redirectorThreadErr = new Thread(redirectorErr);
+            final AtomicReference<Throwable> lastExceptionErr = new AtomicReference<>();
+            redirectorThreadErr.setUncaughtExceptionHandler((t1, e) -> {
+                lastExceptionErr.set(e);
+                isDestroyed = true;
                 p.destroy();
             });
-            redirectorThread.start();
+            redirectorThreadErr.start();
 
             try {
                 p.waitFor();
             } catch (InterruptedException ex) {
-                redirector.isDestroyed.set(true);
+                isDestroyed = true;
                 p.destroy();
                 try {
                     // wait for destroy to get the exitValue()
@@ -122,7 +120,17 @@ public class StdStreamRedirector {
             }
 
             try {
-                redirectorThread.join();
+                redirectorThreadErr.join();
+                InputStream os = p.getInputStream();
+                ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+                int nRead;
+                byte[] data = new byte[1024];
+                while ((nRead = os.read(data, 0, data.length)) != -1) {
+                    buffer.write(data, 0, nRead);
+                }
+
+                buffer.flush();
+                outStorage = buffer.toByteArray();
             } catch (InterruptedException ex) {
                 throw new IOException(
                         MessageFormat.format(
@@ -133,25 +141,21 @@ public class StdStreamRedirector {
                     Messages.stdStreamRedirector_completed_with_code, pb
                     .command().get(0), p.exitValue()));
 
-            if (!redirector.isDestroyed.get() && p.exitValue() != 0) {
+            if (!isDestroyed && p.exitValue() != 0) {
                 throw new IOException(MessageFormat.format(Messages.StdStreamRedirector_process_returned_with_error,
                         p.exitValue()));
             }
 
-            if (lastException.get() != null){
+            if (lastExceptionErr.get() != null) {
                 throw new IOException(MessageFormat.format(Messages.StdStreamRedirector_error_reading_std_external,
-                        lastException.get()), lastException.get());
+                        lastExceptionErr.get()), lastExceptionErr.get());
             }
-            return storage.toString();
         } finally {
-            StringBuilder msg = new StringBuilder(cmd.length() + storage.length() + 128);
+            StringBuilder msg = new StringBuilder(cmd.length() + 128);
             msg.append("External command:") //$NON-NLS-1$
             .append(UIConsts._NL)
             .append(cmd)
-            .append(UIConsts._NL)
-            .append("Output: ") //$NON-NLS-1$
-            .append(UIConsts._NL)
-            .append(storage);
+            .append(UIConsts._NL);
 
             Log.log(Log.LOG_INFO, msg.toString());
         }

@@ -233,6 +233,18 @@ public final class Messages extends NLS {
 
     public static String DbStoreEditorDialog_connection_properties;
 
+    public static String DbStoreEditorDialog_dump_custom_parameters;
+
+    public static String DbStoreEditorDialog_dump_executable;
+
+    public static String DbStoreEditorDialog_dump_file_dialog_header;
+
+    public static String DbStoreEditorDialog_dump_filter;
+
+    public static String DbStoreEditorDialog_dump_properties;
+
+    public static String DbStoreEditorDialog_dump_switch;
+
     public static String DbStoreEditorDialog_pgcodekeeperignore_files_filter;
 
     public static String DbStoreEditorDialog_read_only;
@@ -401,9 +413,7 @@ public final class Messages extends NLS {
     public static String ProjectProperties_force_unix_newlines;
 
     public static String ProjectProperties_force_unix_newlines_desc;
-    public static String generalPrefPage_pg_dump_custom_parameters;
-    public static String generalPrefPage_pg_dump_switch;
-    public static String generalPrefPage_pg_dump_executable;
+
     public static String generalPrefPage_show_console_when_program_write_to_console;
 
     public static String generalPrefPage_use_depcy_on_commit_page;

@@ -97,7 +97,7 @@ class DbSourcePicker extends Composite {
         File file;
         File dir;
         if ((dbInfo = storePicker.getDbInfo()) != null) {
-            return DbSource.fromDbInfo(dbInfo, mainPrefs, forceUnixNewlines, getEncoding(), pageDiff.getTimezone());
+            return DbSource.fromDbInfo(dbInfo, forceUnixNewlines, getEncoding(), pageDiff.getTimezone());
         } else if ((file = storePicker.getPathOfFile()) != null) {
             return DbSource.fromFile(forceUnixNewlines, file, getEncoding(), isMsSql);
         } else if ((dir = storePicker.getPathOfDir()) != null) {

@@ -482,7 +482,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         if (isDbInfo) {
             DbInfo dbInfo = (DbInfo) currentRemote;
-            DbSource dbRemote = DbSource.fromDbInfo(dbInfo, mainPrefs, forceUnixNewlines,
+            DbSource dbRemote = DbSource.fromDbInfo(dbInfo, forceUnixNewlines,
                     charset, projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
             newDiffer = new TreeDiffer(dbProject, dbRemote);
             name = dbInfo.getName();

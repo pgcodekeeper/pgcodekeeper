@@ -166,7 +166,7 @@ implements IExecutableExtension, INewWizard {
         if (!pageDb.isInit()) {
             src = DbSource.fromDbObject(new PgDatabase(), "Empty DB"); //$NON-NLS-1$
         } else if (dbinfo != null) {
-            src = DbSource.fromDbInfo(dbinfo, mainPrefStore, forceUnixNewlines, charset, timezone);
+            src = DbSource.fromDbInfo(dbinfo, forceUnixNewlines, charset, timezone);
         } else if ((dump = pageDb.getDumpPath()) != null) {
             src = DbSource.fromFile(forceUnixNewlines, dump, charset, !isPostgres);
         } else {
