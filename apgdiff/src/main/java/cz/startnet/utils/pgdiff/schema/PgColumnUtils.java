@@ -24,7 +24,7 @@ public final class PgColumnUtils {
      */
     public static String getDefaultValue(final String type) {
         final String defaultValue;
-        final String adjType = type.toLowerCase(Locale.ENGLISH);
+        final String adjType = type.toLowerCase(Locale.ROOT);
 
         if ("smallint".equals(adjType)
                 || "integer".equals(adjType)

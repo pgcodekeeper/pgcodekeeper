@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -96,7 +97,7 @@ public class PgView extends AbstractView implements PgOptionContainer  {
             String chekOption = options.get(CHECK_OPTION);
             sbSQL.append("\nWITH ");
             if (chekOption != null){
-                sbSQL.append(chekOption.toUpperCase());
+                sbSQL.append(chekOption.toUpperCase(Locale.ROOT));
             }
             sbSQL.append(" CHECK OPTION");
         }

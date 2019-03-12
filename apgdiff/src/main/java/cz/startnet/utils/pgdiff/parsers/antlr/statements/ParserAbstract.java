@@ -164,7 +164,7 @@ public abstract class ParserAbstract {
     }
 
     private static String convertAlias(String type) {
-        String alias = type.toLowerCase(Locale.ENGLISH);
+        String alias = type.toLowerCase(Locale.ROOT);
 
         switch (alias) {
         case "int8": return "bigint";

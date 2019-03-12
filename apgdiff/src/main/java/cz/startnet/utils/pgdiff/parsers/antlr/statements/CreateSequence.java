@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
+import java.util.Locale;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_sequence_statementContext;
@@ -32,7 +33,7 @@ public class CreateSequence extends ParserAbstract {
         String dataType = null;
         for (Sequence_bodyContext body : list) {
             if (body.type != null) {
-                dataType = body.type.getText().toLowerCase();
+                dataType = body.type.getText().toLowerCase(Locale.ROOT);
                 sequence.setDataType(dataType);
             } else if (body.cache_val != null) {
                 sequence.setCache(body.cache_val.getText());

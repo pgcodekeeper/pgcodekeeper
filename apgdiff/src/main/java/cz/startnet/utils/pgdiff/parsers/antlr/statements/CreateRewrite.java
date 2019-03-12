@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
@@ -29,7 +30,7 @@ public class CreateRewrite extends ParserAbstract {
         addObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
 
         PgRule rule = new PgRule(ctx.name.getText());
-        rule.setEvent(PgRuleEventType.valueOf(ctx.event.getText().toUpperCase()));
+        rule.setEvent(PgRuleEventType.valueOf(ctx.event.getText().toUpperCase(Locale.ROOT)));
         if (ctx.INSTEAD() != null){
             rule.setInstead(true);
         }
