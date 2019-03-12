@@ -72,7 +72,7 @@ public class MsMerge extends MsAbstractExprWithNmspc<Merge_statementContext> {
                     vex.analyze(exp);
                     Full_column_nameContext fcn = elem.full_column_name();
                     if (fcn != null) {
-                        addColumnDepcy(fcn);
+                        select.addColumnDepcy(fcn);
                     }
                 } else {
                     vex.expressionList(elem.expression_list());

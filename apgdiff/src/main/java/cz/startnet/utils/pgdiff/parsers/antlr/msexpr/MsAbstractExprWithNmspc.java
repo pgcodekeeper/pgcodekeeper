@@ -4,6 +4,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -30,17 +31,17 @@ public abstract class MsAbstractExprWithNmspc<T> extends MsAbstractExpr {
      * String-null pairs keep track of internal query names that have only the
      * Alias.
      */
-    protected final Map<String, GenericColumn> namespace = new HashMap<>();
+    private final Map<String, GenericColumn> namespace = new HashMap<>();
     /**
      * Unaliased namespace keeps track of tables that have no Alias.<br>
      * It has to be separate since same-named unaliased tables from different
      * schemas can be used, requiring qualification.
      */
-    protected final Set<GenericColumn> unaliasedNamespace = new HashSet<>();
+    private final Set<GenericColumn> unaliasedNamespace = new HashSet<>();
     /**
      * CTE names that current level of FROM has access to.
      */
-    protected final Set<String> cte = new HashSet<>();
+    private final Set<String> cte = new HashSet<>();
 
     public MsAbstractExprWithNmspc(String schema) {
         super(schema);
@@ -56,9 +57,9 @@ public abstract class MsAbstractExprWithNmspc<T> extends MsAbstractExpr {
     }
 
     @Override
-    protected Entry<String, GenericColumn> findReference(String schema, String name) {
+    protected Entry<String, GenericColumn> findReferenceRecursive(String schema, String name) {
         Entry<String, GenericColumn> ref = findReferenceInNmspc(schema, name);
-        return ref == null ? super.findReference(schema, name) : ref;
+        return ref == null ? super.findReferenceRecursive(schema, name) : ref;
     }
 
     protected Entry<String, GenericColumn> findReferenceInNmspc(String schema, String name) {
@@ -71,8 +72,8 @@ public abstract class MsAbstractExprWithNmspc<T> extends MsAbstractExpr {
             // simple empty check to save some allocations
             // it will almost always be empty
             for (GenericColumn unaliased : unaliasedNamespace) {
-                if (unaliased.table.equals(name) &&
-                        (schema == null || unaliased.schema.equals(schema))) {
+                if (unaliased.table.equalsIgnoreCase(name) &&
+                        (schema == null || unaliased.schema.equalsIgnoreCase(schema))) {
                     if (dereferenced == null) {
                         dereferenced = unaliased;
                         if (schema != null) {
@@ -96,11 +97,12 @@ public abstract class MsAbstractExprWithNmspc<T> extends MsAbstractExpr {
      * Clients may use this to setup pseudo-variable names before expression analysis.
      */
     public boolean addReference(String alias, GenericColumn object) {
-        boolean exists = namespace.containsKey(alias);
+        String aliasCi = alias.toLowerCase(Locale.ROOT);
+        boolean exists = namespace.containsKey(aliasCi);
         if (exists) {
-            Log.log(Log.LOG_WARNING, "Duplicate namespace entry: " + alias);
+            Log.log(Log.LOG_WARNING, "Duplicate namespace entry: " + aliasCi);
         } else {
-            namespace.put(alias, object);
+            namespace.put(aliasCi, object);
         }
         return !exists;
     }
