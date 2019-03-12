@@ -45,7 +45,7 @@ public class CreateMsSequence extends ParserAbstract {
                 Data_typeContext data = body.data_type();
                 addMsTypeDepcy(data, sequence);
                 // try to catch tinyint, smallint, int, bigint, numeric, decimal
-                dataType = data.qualified_name().getText().toLowerCase(Locale.ENGLISH);
+                dataType = data.qualified_name().getText().toLowerCase(Locale.ROOT);
                 sequence.setDataType(getFullCtxText(data));
                 Data_type_sizeContext size = data.size;
                 if (size != null && size.presicion != null) {
