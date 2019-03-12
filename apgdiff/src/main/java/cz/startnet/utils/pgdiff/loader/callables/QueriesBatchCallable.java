@@ -155,7 +155,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
             return;
         }
 
-        String message = arr[0].toUpperCase(Locale.ENGLISH);
+        String message = arr[0].toUpperCase(Locale.ROOT);
         if (arr.length > 1) {
             switch (message) {
             case "CREATE":
@@ -163,7 +163,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
             case "DROP":
             case "START":
             case "BEGIN":
-                message += ' ' + arr[1].toUpperCase(Locale.ENGLISH);
+                message += ' ' + arr[1].toUpperCase(Locale.ROOT);
             }
         }
 

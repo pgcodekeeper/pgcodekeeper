@@ -249,7 +249,7 @@ public class PgSequence extends AbstractSequence {
 
     @Override
     public void setDataType(String dataType) {
-        super.setDataType(dataType.toLowerCase(Locale.ENGLISH));
+        super.setDataType(dataType.toLowerCase(Locale.ROOT));
     }
 
     @Override

@@ -280,8 +280,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
             addFilteredRelationColumnsDepcies(gc.schema, gc.table, ANY).forEach(cols::add);
         }
 
-        for (Entry<String, GenericColumn> nmsp : namespace.entrySet()) {
-            GenericColumn gc = nmsp.getValue();
+        for (GenericColumn gc : namespace.values()) {
             if (gc != null) {
                 addFilteredRelationColumnsDepcies(gc.schema, gc.table, ANY).forEach(cols::add);
             }

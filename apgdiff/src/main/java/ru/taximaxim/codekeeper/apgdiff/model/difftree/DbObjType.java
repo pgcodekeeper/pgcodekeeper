@@ -18,6 +18,7 @@ public enum DbObjType {
     SEQUENCE,
     // TODO workaround for function call dependencies from COLUMN DEFAULT
     // maybe move back after COLUMN, when proper function call dependencies are implemented
+    // see test case PgDiffTest#177 (tabl_to_func)
     FUNCTION,
     PROCEDURE,
     AGGREGATE,

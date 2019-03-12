@@ -3,6 +3,7 @@ package ru.taximaxim.codekeeper.ui.dialogs;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
@@ -50,7 +51,7 @@ class PgStatementProposalProvider implements IContentProposalProvider {
 
     @Override
     public IContentProposal[] getProposals(String contents, int position) {
-        String contentsLc = contents.toLowerCase();
+        String contentsLc = contents.toLowerCase(Locale.ROOT);
         String contentsNq = PATTERN_QUOTE.matcher(contentsLc).replaceAll(""); //$NON-NLS-1$
 
         List<IContentProposal> list = new ArrayList<>();

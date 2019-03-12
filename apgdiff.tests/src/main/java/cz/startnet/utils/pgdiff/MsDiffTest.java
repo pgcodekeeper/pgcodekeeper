@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Locale;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -301,7 +300,6 @@ public class MsDiffTest {
 
     public MsDiffTest(final String fileNameTemplate) {
         this.fileNameTemplate = fileNameTemplate;
-        Locale.setDefault(Locale.ENGLISH);
         Log.log(Log.LOG_DEBUG, fileNameTemplate);
     }
 
