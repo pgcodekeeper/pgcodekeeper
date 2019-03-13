@@ -782,7 +782,7 @@ DOLLAR_NUMBER
 Identifier
     : IdentifierStartChar IdentifierChar*
     // always lowercase unquoted ids
-        { setText(getText().toLowerCase()); }
+        { setText(getText().toLowerCase(java.util.Locale.ROOT)); }
     ;
 fragment
 IdentifierStartChar

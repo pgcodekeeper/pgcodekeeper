@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Locale;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -62,6 +61,8 @@ public class PgDiffTest {
                     {"drop_with_oids"},
                     // Tests scenario where INDEX is added.
                     {"add_index"},
+                    // Tests scenario where PARTITION INDEX is added.
+                    {"add_partition_index"},
                     // Tests scenario where INDEX is dropped.
                     {"drop_index"},
                     // Tests scenario where INDEX with including is added.
@@ -481,7 +482,6 @@ public class PgDiffTest {
 
     public PgDiffTest(final String fileNameTemplate) {
         this.fileNameTemplate = fileNameTemplate;
-        Locale.setDefault(Locale.ENGLISH);
         Log.log(Log.LOG_DEBUG, fileNameTemplate);
     }
 
