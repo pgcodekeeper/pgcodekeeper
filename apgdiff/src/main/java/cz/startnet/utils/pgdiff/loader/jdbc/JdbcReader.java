@@ -64,7 +64,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
     public static void checkTypeValidity(String type) {
         checkObjectValidity(type, DbObjType.TYPE, "");
         if ("???".equals(type) || "???[]".equals(type)) {
-            throw new IllegalStateException("Concurrent type modification");
+            throw new ConcurrentModificationException("Concurrent type modification");
         }
     }
 
