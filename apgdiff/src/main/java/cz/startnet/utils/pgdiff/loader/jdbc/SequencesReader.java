@@ -182,9 +182,4 @@ public class SequencesReader extends JdbcReader {
             }
         }
     }
-
-    @Override
-    protected DbObjType getType() {
-        return DbObjType.SEQUENCE;
-    }
 }

@@ -137,7 +137,7 @@ public class TriggersReader extends JdbcReader {
         }
 
         String definition = res.getString("definition");
-        checkObjectValidity(definition, getType(), triggerName);
+        checkObjectValidity(definition, DbObjType.TRIGGER, triggerName);
         loader.submitAntlrTask(definition, p -> p.sql().statement(0).schema_statement()
                 .schema_create().create_trigger_statement().when_trigger(),
                 ctx -> CreateTrigger.parseWhen(ctx, t, schema.getDatabase()));
@@ -150,10 +150,5 @@ public class TriggersReader extends JdbcReader {
             t.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
         return t;
-    }
-
-    @Override
-    protected DbObjType getType() {
-        return DbObjType.TRIGGER;
     }
 }

@@ -67,9 +67,4 @@ public class FtsConfigurationsReader extends JdbcReader {
         loader.setAuthor(config, res);
         schema.addFtsConfiguration(config);
     }
-
-    @Override
-    protected DbObjType getType() {
-        return DbObjType.FTS_CONFIGURATION;
-    }
 }

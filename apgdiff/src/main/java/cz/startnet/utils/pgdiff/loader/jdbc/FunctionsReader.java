@@ -429,9 +429,4 @@ public class FunctionsReader extends JdbcReader {
             }
         }
     }
-
-    @Override
-    protected DbObjType getType() {
-        return DbObjType.FUNCTION;
-    }
 }

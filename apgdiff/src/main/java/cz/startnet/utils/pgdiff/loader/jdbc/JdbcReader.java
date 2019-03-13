@@ -80,9 +80,4 @@ public abstract class JdbcReader implements PgCatalogStrings {
 
     protected abstract void processResult(ResultSet result, AbstractSchema schema)
             throws SQLException, XmlReaderException;
-
-    protected DbObjType getType() {
-        // PG subclasses must override
-        return null;
-    }
 }
