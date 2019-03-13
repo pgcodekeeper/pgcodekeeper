@@ -118,7 +118,9 @@ public final class Messages extends NLS {
     public static String differ_reverse_diff;
     public static String diffTableViewer_change_type;
     public static String diffTableViewer_container;
+    public static String diffTableViewer_db_user;
     public static String diffTableViewer_deselect_child_elements;
+    public static String diffTableViewer_git_user;
     public static String diffTableViewer_mark_selected_elements;
     public static String diffTableViewer_unmark_selected_elements;
     public static String diffTableViewer_invert_selection;
@@ -347,8 +349,6 @@ public final class Messages extends NLS {
     public static String DiffTableViewer_copy_as_regex;
 
     public static String DiffTableViewer_database;
-
-    public static String DiffTableViewer_db_user;
 
     public static String DiffTableViewer_directory;
 

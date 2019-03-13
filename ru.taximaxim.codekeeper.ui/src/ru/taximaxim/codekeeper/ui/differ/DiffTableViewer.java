@@ -141,7 +141,7 @@ public class DiffTableViewer extends Composite {
     private final Set<TreeElement> elements = elementInfoMap.keySet();
     private final DiffContentProvider contentProvider = new DiffContentProvider();
     private final CheckStateProvider checkProvider;
-    private final TableViewerComparator comparator = new TableViewerComparator();
+    private final TableViewerComparator comparator = new TableViewerComparator(elementInfoMap);
     private IStructuredSelection oldSelection;
     private IStructuredSelection newSelection;
 
@@ -170,7 +170,7 @@ public class DiffTableViewer extends Composite {
     private final List<ICheckStateListener> programmaticCheckListeners = new ArrayList<>();
 
     private enum Columns {
-        CHECK, NAME, TYPE, CHANGE, LOCATION
+        CHANGE, CHECK, GIT_USER, LOCATION, NAME, TYPE, USERS
     }
 
     public StructuredViewer getViewer() {
@@ -554,12 +554,16 @@ public class DiffTableViewer extends Composite {
         setColumnHeaders();
 
         columnCheck.getColumn().setToolTipText(Messages.DiffTableViewer_reset_sorting);
+        columnDbUser.getColumn().setToolTipText(Messages.DiffTableViewer_reset_sorting);
+        columnGitUser.getColumn().setToolTipText(Messages.DiffTableViewer_reset_sorting);
         columnName.getColumn().setToolTipText(Messages.DiffTableViewer_reset_sorting);
         columnType.getColumn().setToolTipText(Messages.DiffTableViewer_reset_sorting);
         columnChange.getColumn().setToolTipText(Messages.DiffTableViewer_reset_sorting);
         columnLocation.getColumn().setToolTipText(Messages.DiffTableViewer_reset_sorting);
 
         columnName.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.NAME));
+        columnDbUser.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.USERS));
+        columnGitUser.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.GIT_USER));
         columnType.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.TYPE));
         columnChange.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.CHANGE));
         columnLocation.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.LOCATION));
@@ -662,8 +666,8 @@ public class DiffTableViewer extends Composite {
         columnType.getColumn().setText(Messages.diffTableViewer_object_type);
         columnChange.getColumn().setText(Messages.diffTableViewer_change_type);
         columnLocation.getColumn().setText(Messages.diffTableViewer_container);
-        columnGitUser.getColumn().setText(Messages.DiffTableViewer_user);
-        columnDbUser.getColumn().setText(Messages.DiffTableViewer_db_user);
+        columnGitUser.getColumn().setText(Messages.diffTableViewer_git_user);
+        columnDbUser.getColumn().setText(Messages.diffTableViewer_db_user);
     }
 
     private void updateColumnsWidth() {
@@ -724,6 +728,12 @@ public class DiffTableViewer extends Composite {
                 break;
             case LOCATION:
                 columnLocation.getColumn().setText(sb.append(Messages.diffTableViewer_container).toString());
+                break;
+            case GIT_USER:
+                columnGitUser.getColumn().setText(sb.append(Messages.diffTableViewer_git_user).toString());
+                break;
+            case USERS:
+                columnDbUser.getColumn().setText(sb.append(Messages.diffTableViewer_db_user).toString());
                 break;
             default:
                 break;
@@ -793,6 +803,7 @@ public class DiffTableViewer extends Composite {
         // no full re-sorts, no full refreshes
         viewer.setInput(null);
         comparator.clearSortList();
+        setColumnHeaders();
         sortViewer(Columns.NAME);
         sortViewer(Columns.CHANGE);
         sortViewer(Columns.TYPE);
@@ -1233,8 +1244,12 @@ public class DiffTableViewer extends Composite {
                 return col.hashCode();
             }
         }
-
+        private final Map<TreeElement, ElementMetaInfo> elementInfoMap;
         private final Deque<SortingColumn> sortOrder = new LinkedList<>();
+
+        public TableViewerComparator(Map<TreeElement, ElementMetaInfo> elementInfoMap) {
+            this.elementInfoMap = elementInfoMap;
+        }
 
         public void clearSortList() {
             sortOrder.clear();
@@ -1264,6 +1279,9 @@ public class DiffTableViewer extends Composite {
                 case CHANGE:
                     res = el1.getSide().toString().compareTo(el2.getSide().toString());
                     break;
+                case GIT_USER:
+                    res = elementInfoMap.get(el1).getGitUser().compareTo(elementInfoMap.get(el2).getGitUser());
+                    break;
                 case LOCATION:
                     res = el1.getContainerQName().compareTo(el2.getContainerQName());
                     break;
@@ -1275,6 +1293,9 @@ public class DiffTableViewer extends Composite {
                     break;
                 case TYPE:
                     res = el1.getType().toString().compareTo(el2.getType().toString());
+                    break;
+                case USERS:
+                    res = elementInfoMap.get(el1).getDbUser().compareTo(elementInfoMap.get(el2).getDbUser());
                     break;
                 default:
                     break;
