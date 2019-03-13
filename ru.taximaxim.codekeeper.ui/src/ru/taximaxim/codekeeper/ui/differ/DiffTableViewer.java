@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -1312,7 +1313,7 @@ public class DiffTableViewer extends Composite {
                 filterName = null;
                 regExPattern = null;
             } else {
-                filterName = value.toLowerCase();
+                filterName = value.toLowerCase(Locale.ROOT);
                 try {
                     regExPattern = Pattern.compile(value, Pattern.CASE_INSENSITIVE);
                 } catch (PatternSyntaxException e) {
@@ -1407,7 +1408,7 @@ public class DiffTableViewer extends Composite {
 
         private Region getMatchingLocation(String text, String filter, Pattern regExPattern) {
             if (filter != null && !filter.isEmpty() && text != null) {
-                String textLc = text.toLowerCase();
+                String textLc = text.toLowerCase(Locale.ROOT);
                 int offset = -1;
                 int length = 0;
                 if (regExPattern != null) {

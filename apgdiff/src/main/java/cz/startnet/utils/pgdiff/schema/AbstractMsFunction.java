@@ -1,10 +1,16 @@
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Set;
 
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 
-public abstract class AbstractMsFunction extends AbstractFunction {
+public abstract class AbstractMsFunction extends AbstractFunction
+implements SourceStatement {
+
+    protected final Set<GenericColumn> signatureDeps = new LinkedHashSet<>();
 
     private boolean ansiNulls;
     private boolean quotedIdentified;
@@ -15,19 +21,23 @@ public abstract class AbstractMsFunction extends AbstractFunction {
         super(name);
     }
 
+    @Override
     public String getFirstPart() {
         return firstPart;
     }
 
+    @Override
     public void setFirstPart(String firstPart) {
         this.firstPart = firstPart;
         resetHash();
     }
 
+    @Override
     public String getSecondPart() {
         return secondPart;
     }
 
+    @Override
     public void setSecondPart(String secondPart) {
         this.secondPart = secondPart;
         resetHash();
@@ -49,6 +59,14 @@ public abstract class AbstractMsFunction extends AbstractFunction {
 
     public boolean isQuotedIdentified() {
         return quotedIdentified;
+    }
+
+    public Set<GenericColumn> getSignatureDeps() {
+        return Collections.unmodifiableSet(signatureDeps);
+    }
+
+    public void addSignatureDep(final GenericColumn dep) {
+        signatureDeps.add(dep);
     }
 
     @Override
@@ -80,10 +98,17 @@ public abstract class AbstractMsFunction extends AbstractFunction {
         functionDst.setQuotedIdentified(isQuotedIdentified());
         functionDst.setFirstPart(getFirstPart());
         functionDst.setSecondPart(getSecondPart());
+        functionDst.signatureDeps.addAll(signatureDeps);
         return functionDst;
     }
 
     protected abstract AbstractMsFunction getFunctionCopy();
+
+    @Override
+    public boolean usedInSignature(PgStatement st) {
+        return signatureDeps.stream().anyMatch(d -> st.getBareName().equals(d.getObjName())
+                && st.equals(d.getStatement(getDatabase())));
+    }
 
     @Override
     public boolean isPostgres() {

@@ -1,5 +1,6 @@
 package ru.taximaxim.codekeeper.ui.differ.filters;
 
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -82,6 +83,6 @@ public abstract class AbstractFilter {
             Matcher matcher = regExPattern.matcher(string);
             return matcher.find();
         }
-        return string.toLowerCase().indexOf(pattern.toLowerCase()) > -1;
+        return string.toLowerCase(Locale.ROOT).indexOf(pattern.toLowerCase(Locale.ROOT)) > -1;
     }
 }

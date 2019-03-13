@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Locale;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -154,6 +153,8 @@ public class MsDiffTest {
                     {"modify_ms_type"},
                     // Tests scenario where MS TYPE owner is modified.
                     {"modify_ms_type_owner"},
+                    // Tests scenario where MS TYPE with function dep is modified.
+                    {"modify_ms_type_with_dep"},
 
                     // Tests scenario where MS INDEX is added.
                     {"add_ms_index"},
@@ -291,7 +292,6 @@ public class MsDiffTest {
 
     public MsDiffTest(final String fileNameTemplate) {
         this.fileNameTemplate = fileNameTemplate;
-        Locale.setDefault(Locale.ENGLISH);
         Log.log(Log.LOG_DEBUG, fileNameTemplate);
     }
 

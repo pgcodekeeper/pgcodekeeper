@@ -5,6 +5,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -58,7 +59,7 @@ public class JdbcMsConnector extends JdbcConnector {
                     // 1 = no value, not interested
                     continue;
                 }
-                String s = m.group(1).toLowerCase();
+                String s = m.group(1).toLowerCase(Locale.ROOT);
                 switch (s) {
                 case "user":
                 case "username":

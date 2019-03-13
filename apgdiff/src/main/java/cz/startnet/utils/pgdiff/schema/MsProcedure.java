@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class MsProcedure extends AbstractMsFunction implements SourceStatement {
+public class MsProcedure extends AbstractMsFunction {
 
     public MsProcedure(String name) {
         super(name);

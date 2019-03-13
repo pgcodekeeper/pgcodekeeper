@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Queue;
 
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -185,7 +186,7 @@ implements SqlContextProcessor {
         List<Set_statement_valueContext> confValueCtx = sesLocOpt.config_param_val;
         String confValue = confValueCtx.get(0).getText();
 
-        switch (confParam.toLowerCase()) {
+        switch (confParam.toLowerCase(Locale.ROOT)) {
         case "search_path":
             if (!refMode && (confValueCtx.size() != 1 || !ApgdiffConsts.PG_CATALOG.equals(confValue))) {
                 throw new UnresolvedReferenceException("Unsupported search_path", ctx.start);

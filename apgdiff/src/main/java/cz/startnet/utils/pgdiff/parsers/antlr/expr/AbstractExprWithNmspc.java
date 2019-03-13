@@ -62,11 +62,11 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
     // SELECT (SELECT a.a) FROM (SELECT 1, 2, 3) a(a, b, c)
     // SELECT (SELECT a.a) FROM (SELECT 1 z, 2 x, 3 c) a(a, b, c)
     // SELECT (SELECT a.z) FROM (SELECT 1 z, 2 x, 3 c) a
-    protected final Map<String, Set<String>> columnAliases = new HashMap<>();
+    private final Map<String, Set<String>> columnAliases = new HashMap<>();
     /**
      * CTEs that current level of FROM has access to stored as their names and signatures.
      */
-    protected final Map<String, List<Pair<String, String>>> cte = new HashMap<>();
+    private final Map<String, List<Pair<String, String>>> cte = new HashMap<>();
 
     /**
      * Non-table from items stored as their aliases and signatures.

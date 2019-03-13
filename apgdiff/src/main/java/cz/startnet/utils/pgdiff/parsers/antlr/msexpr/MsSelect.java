@@ -243,8 +243,9 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
             try {
                 lateralAllowed = true;
                 GenericColumn func = new MsValueExpr(this).functionCall(call);
-                if (func != null) {
-                    String funcAlias = alias == null ? func.table : alias.getText();
+                String funcAlias = alias != null ? alias.id().getText()
+                        : func != null ? func.table : null;
+                if (funcAlias != null) {
                     addReference(funcAlias, null);
                 }
             } finally {

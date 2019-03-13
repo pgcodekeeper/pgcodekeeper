@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
@@ -183,7 +184,7 @@ public class ProjectLoader {
     private void loadFiles(File[] files, PgDatabase db) throws InterruptedException {
         Arrays.sort(files);
         for (File f : files) {
-            if (f.isFile() && f.getName().toLowerCase().endsWith(".sql")) {
+            if (f.isFile() && f.getName().toLowerCase(Locale.ROOT).endsWith(".sql")) {
                 PgDumpLoader loader = new PgDumpLoader(f, arguments, monitor);
                 try {
                     if (isOverrideMode) {

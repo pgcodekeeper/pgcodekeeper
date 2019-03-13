@@ -3,6 +3,7 @@ package ru.taximaxim.codekeeper.ui.sqledit;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -31,7 +32,10 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
 
     public SQLEditorCompletionProcessor(SQLEditor editor) {
         this.editor = editor;
-        keywords = Keyword.KEYWORDS.keySet().stream().sorted().map(String::toUpperCase).collect(Collectors.toList());
+        keywords = Keyword.KEYWORDS.keySet().stream()
+                .sorted()
+                .map(s -> s.toUpperCase(Locale.ROOT))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -82,7 +86,7 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
             keywords.forEach(k -> result.add(new CompletionProposal(k, offset, 0, k.length())));
             result.addAll(new SQLEditorTemplateAssistProcessor().getAllTemplates(viewer, offset));
         } else {
-            String textUpper = text.toUpperCase();
+            String textUpper = text.toUpperCase(Locale.ROOT);
             for (String keyword : keywords) {
                 int location = keyword.indexOf(textUpper);
                 if (location != -1) {
