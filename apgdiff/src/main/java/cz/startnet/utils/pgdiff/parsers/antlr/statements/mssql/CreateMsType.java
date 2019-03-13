@@ -17,7 +17,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_whereContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Type_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
-import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.MsType;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -64,7 +63,7 @@ public class CreateMsType extends ParserAbstract {
         }
 
         List<IdContext> ids = Arrays.asList(ctx.qualified_name().schema, nameCtx);
-        addSafe(AbstractSchema::addType, getSchemaSafe(ids), type, ids);
+        addSafe(getSchemaSafe(ids), type, ids);
     }
 
     private void fillTableType(Column_def_table_constraintContext colCtx, MsType type) {

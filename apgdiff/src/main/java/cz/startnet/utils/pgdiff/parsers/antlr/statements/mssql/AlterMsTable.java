@@ -43,8 +43,7 @@ public class AlterMsTable extends TableAbstract {
             AbstractConstraint con = getMsConstraint(colCtx.table_constraint());
             con.setNotValid(ctx.nocheck_add != null);
             if (colCtx.table_constraint().id() != null) {
-                addSafe(AbstractTable::addConstraint, table, con,
-                        Arrays.asList(schemaCtx, nameCtx, colCtx.table_constraint().id()));
+                addSafe(table, con, Arrays.asList(schemaCtx, nameCtx, colCtx.table_constraint().id()));
             } else {
                 doSafe(AbstractTable::addConstraint, table, con);
             }

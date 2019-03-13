@@ -35,6 +35,6 @@ public class CreateMsUser extends ParserAbstract {
             }
         }
 
-        addSafe(PgDatabase::addUser, db, user, Arrays.asList(nameCtx));
+        addSafe(db, user, Arrays.asList(nameCtx));
     }
 }

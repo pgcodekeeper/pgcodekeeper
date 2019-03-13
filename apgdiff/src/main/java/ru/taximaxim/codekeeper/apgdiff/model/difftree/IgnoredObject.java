@@ -80,10 +80,6 @@ public class IgnoredObject {
                 EnumSet.copyOf(objTypes));
     }
 
-    public boolean match(String objName, DbObjType objType) {
-        return match(objName, objType, (String[]) null);
-    }
-
     public boolean match(String objName, DbObjType objType, String... dbNames) {
         boolean matches;
         if (isRegular) {

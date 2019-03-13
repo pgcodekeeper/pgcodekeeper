@@ -5,6 +5,7 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -26,7 +27,7 @@ public class PgSequence extends AbstractSequence {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE SEQUENCE ").append(getQualifiedName());
 
-        if (!"bigint".equals(getDataType())) {
+        if (!BIGINT.equals(getDataType())) {
             sbSQL.append("\n\tAS ").append(getDataType());
         }
 
@@ -244,6 +245,11 @@ public class PgSequence extends AbstractSequence {
     public void setOwnedBy(final String ownedBy) {
         this.ownedBy = ownedBy;
         resetHash();
+    }
+
+    @Override
+    public void setDataType(String dataType) {
+        super.setDataType(dataType.toLowerCase(Locale.ROOT));
     }
 
     @Override

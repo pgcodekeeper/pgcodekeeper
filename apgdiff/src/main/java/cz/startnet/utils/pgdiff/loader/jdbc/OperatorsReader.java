@@ -53,7 +53,7 @@ public class OperatorsReader extends JdbcReader {
                 res.getString("procedure")));
 
         String commutator = res.getString("commutator");
-        if (comment != null) {
+        if (commutator != null) {
             StringBuilder sb = new StringBuilder().append("OPERATOR(")
                     .append(PgDiffUtils.getQuotedName(res.getString("commutator_nsp")))
                     .append('.').append(commutator).append(')');

@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -42,9 +41,7 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
         sbSql.append("PARSER = ").append(parser).append(" );");
 
         dictionariesMap.forEach((fragment, dictionaries) -> {
-            sbSql.append(ALTER_CONFIGURATION)
-            .append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.')
-            .append(PgDiffUtils.getQuotedName(getName()));
+            sbSql.append(ALTER_CONFIGURATION).append(getQualifiedName());
             sbSql.append("\n\tADD MAPPING FOR ").append(fragment)
             .append("\n\tWITH ").append(dictionaries).append(";");
         });
@@ -113,13 +110,11 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
 
             if (newDictionaries == null) {
                 sb.append(ALTER_CONFIGURATION)
-                .append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
-                .append('.').append(PgDiffUtils.getQuotedName(getName()))
+                .append(getQualifiedName())
                 .append("\n\tDROP MAPPING FOR ").append(fragment).append(';');
             } else if (!dictionaries.equals(newDictionaries)) {
                 sb.append(ALTER_CONFIGURATION)
-                .append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
-                .append('.').append(PgDiffUtils.getQuotedName(getName()))
+                .append(getQualifiedName())
                 .append("\n\tALTER MAPPING FOR ").append(fragment)
                 .append("\n\tWITH ").append(newDictionaries).append(";");
             }
@@ -128,8 +123,7 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
         newMap.forEach((fragment, dictionaries) -> {
             if (!oldMap.containsKey(fragment)) {
                 sb.append(ALTER_CONFIGURATION)
-                .append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
-                .append('.').append(PgDiffUtils.getQuotedName(getName()))
+                .append(getQualifiedName())
                 .append("\n\tADD MAPPING FOR ").append(fragment)
                 .append("\n\tWITH ").append(dictionaries).append(";");
             }
@@ -143,11 +137,6 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
         confDst.setParser(getParser());
         confDst.dictionariesMap.putAll(dictionariesMap);
         return confDst;
-    }
-
-    @Override
-    public PgFtsConfiguration deepCopy() {
-        return shallowCopy();
     }
 
     @Override

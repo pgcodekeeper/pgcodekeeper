@@ -26,6 +26,6 @@ public class CreateMsRole extends ParserAbstract {
             role.setOwner(ctx.owner_name.getText());
         }
 
-        addSafe(PgDatabase::addRole, db, role, Arrays.asList(nameCtx));
+        addSafe(db, role, Arrays.asList(nameCtx));
     }
 }

@@ -9,7 +9,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Domain_constraintContext
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
-import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
@@ -50,7 +49,7 @@ public class CreateDomain extends ParserAbstract {
             }
         }
 
-        addSafe(AbstractSchema::addDomain, getSchemaSafe(ids), domain, ids);
+        addSafe(getSchemaSafe(ids), domain, ids);
     }
 
     public static void parseDomainConstraint(PgDomain domain, AbstractConstraint constr,

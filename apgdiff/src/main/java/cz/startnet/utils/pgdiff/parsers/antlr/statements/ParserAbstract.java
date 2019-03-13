@@ -285,9 +285,9 @@ public abstract class ParserAbstract {
         return getSafe(getter, container, name, errToken, refMode);
     }
 
-    protected <T extends IStatement, U extends PgStatement> void addSafe(BiConsumer<T, U> adder,
-            T parent, U child, List<? extends ParserRuleContext> ids) {
-        doSafe(adder, parent, child);
+    protected void addSafe(PgStatement parent, PgStatement child,
+            List<? extends ParserRuleContext> ids) {
+        doSafe(PgStatement::addChild, parent, child);
         PgObjLocation loc = getLocation(ids, child.getStatementType(),
                 StatementActions.CREATE, false, null);
         if (loc != null) {

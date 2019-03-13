@@ -63,7 +63,7 @@ public class PgAggregate extends AbstractPgFunction {
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE AGGREGATE ");
-        sbSQL.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
+        sbSQL.append(PgDiffUtils.getQuotedName(getSchemaName())).append('.');
 
         appendAggSignature(sbSQL);
 

@@ -142,7 +142,10 @@ public class PgDiffDepciesTest {
             {"chg_fts_statements", "chg_fts_statements_usr_configuration"},
             // добавление агрегатов с зависимыми от них функциями,
             // пользователь выбрал только агрегаты
-            {"add_aggr_func", "add_aggr_func_usr_aggr"}
+            {"add_aggr_func", "add_aggr_func_usr_aggr"},
+            // добавление вьюхи с зависимыми от нее объектами,
+            // пользователь выбрал только вьюху
+            {"add_view", "add_view_usr_view"},
         });
     }
 
@@ -178,7 +181,8 @@ public class PgDiffDepciesTest {
                 getUsrSelName(FILES_POSTFIX.ORIGINAL_SQL), PgDiffDepciesTest.class, args);
         PgDatabase newDatabase = ApgdiffTestUtils.loadTestDump(
                 getUsrSelName(FILES_POSTFIX.NEW_SQL), PgDiffDepciesTest.class, args);
-        PgDatabase oldDbFull, newDbFull;
+        PgDatabase oldDbFull;
+        PgDatabase newDbFull;
         if (userSelTemplate.equals(dbTemplate)) {
             oldDbFull = oldDatabase;
             newDbFull = newDatabase;
