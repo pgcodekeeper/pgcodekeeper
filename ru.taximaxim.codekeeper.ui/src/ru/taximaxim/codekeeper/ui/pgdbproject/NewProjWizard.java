@@ -121,6 +121,21 @@ implements IExecutableExtension, INewWizard {
                 }
             }
 
+            if (pageDb.isBinded()) {
+                DbInfo dbInfo = pageDb.getDbInfo();
+                String nameOfBindedDb = dbInfo != null ? dbInfo.getName()
+                        : pageDb.getDumpPath().getPath();
+
+                props.getPrefs().put(PROJ_PREF.NAME_OF_BINDED_DB, nameOfBindedDb);
+                props.getPrefs().put(PROJ_PREF.LAST_DB_STORE, nameOfBindedDb);
+
+                try {
+                    props.getPrefs().flush();
+                } catch (BackingStoreException e) {
+                    Log.log(Log.LOG_WARNING, "Error while flushing project properties!", e); //$NON-NLS-1$
+                }
+            }
+
             getContainer().run(true, true, new InitProjectFromSource(
                     props, getDbSource(props)));
             initSuccess = true;
@@ -239,6 +254,7 @@ class PageDb extends WizardPage {
     private final boolean isPostgres;
 
     private Button btnInit;
+    private Button btnBind;
     private Button btnGetTz;
     private DbStorePicker storePicker;
     private ComboViewer timezoneCombo;
@@ -260,6 +276,10 @@ class PageDb extends WizardPage {
 
     public boolean isInit() {
         return btnInit.getSelection();
+    }
+
+    public boolean isBinded() {
+        return btnBind.getSelection();
     }
 
     public String getTimeZone(){
@@ -296,6 +316,10 @@ class PageDb extends WizardPage {
                 modifyButtons();
             }
         });
+
+        btnBind = new Button(group, SWT.CHECK);
+        btnBind.setText(Messages.NewProjWizard_binding_db_connection);
+        btnBind.setSelection(false);
 
         storePicker = new DbStorePicker(group, mainPrefs, true, false, false);
         storePicker.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));

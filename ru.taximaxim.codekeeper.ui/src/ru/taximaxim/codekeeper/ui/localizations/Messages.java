@@ -518,6 +518,8 @@ public final class Messages extends NLS {
 
     public static String NewProjWizard_initializing_title;
 
+    public static String NewProjWizard_binding_db_connection;
+
     public static String NewProjWizard_proj_init;
 
     public static String NewProjWizard_proj_init_src;

@@ -1,7 +1,11 @@
 package ru.taximaxim.codekeeper.ui.menuitems;
 
+import java.io.File;
+import java.util.List;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -17,8 +21,11 @@ import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.IPartAdapter2;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
+import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
+import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
+import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 
 public class DBStoreCombo extends WorkbenchWindowControlContribution {
@@ -52,6 +59,40 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
         });
 
         setSelectionFromPart(getWorkbenchWindow().getActivePage().getActiveEditor());
+
+        IEditorPart ed = getWorkbenchWindow().getActivePage().getActiveEditor();
+        if (ed instanceof SQLEditor) {
+
+            /// TODO add processing for this case
+
+        } else if (ed instanceof ProjectEditorDiffer) {
+            ProjectEditorDiffer projEd = (ProjectEditorDiffer) ed;
+            IEclipsePreferences projPref = PgDbProject.getPrefs(projEd.getProject());
+
+            String nameOfBindedDb = projPref.get(PROJ_PREF.NAME_OF_BINDED_DB, "");
+
+            if (!"".equals(nameOfBindedDb)) {
+                List<DbInfo> store = DbInfo.readStoreFromXml();
+                Object source = store.stream()
+                        .filter(dbInf -> dbInf.getName().equals(nameOfBindedDb))
+                        .findAny().orElse(null);
+
+                boolean isDumpFile = source == null;
+
+                if (isDumpFile) {
+                    File dumpFile = new File(nameOfBindedDb);
+                    if (dumpFile.isFile() &&
+                            storePicker.checkMatchWith(nameOfBindedDb
+                                    .substring(nameOfBindedDb.lastIndexOf(File.separator) + 1))) {
+                        source = dumpFile;
+                    }
+                }
+
+                storePicker.setSelection(new StructuredSelection(source));
+                storePicker.setComboEnabled(isDumpFile);
+                projEd.setCurrentDb(source);
+            }
+        }
 
         return storePicker;
     }
