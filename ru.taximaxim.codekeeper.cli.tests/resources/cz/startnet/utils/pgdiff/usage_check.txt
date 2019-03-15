@@ -77,6 +77,8 @@ Usage
                                           library objects otherwise, in case of
                                           conflicts objects loaded first have
                                           priority
+ --ignore-concurrent-modification       : ignore concurrent modification errors
+                                          of database objects
  --ms-sql                               : work with MS SQL
 
 DANGER_STATEMENT : [DROP_TABLE | ALTER_COLUMN | DROP_COLUMN | RESTART_WITH | UPDATE]

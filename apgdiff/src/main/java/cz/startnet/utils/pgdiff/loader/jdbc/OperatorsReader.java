@@ -101,9 +101,4 @@ public class OperatorsReader extends JdbcReader {
         sb.append(PgDiffUtils.getQuotedName(funcName));
         return sb.toString();
     }
-
-    @Override
-    protected DbObjType getType() {
-        return DbObjType.OPERATOR;
-    }
 }

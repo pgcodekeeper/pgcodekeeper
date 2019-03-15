@@ -56,7 +56,7 @@ public class ConstraintsReader extends JdbcReader {
         }
 
         String definition = res.getString("definition");
-        checkObjectValidity(definition, getType(), constraintName);
+        checkObjectValidity(definition, DbObjType.CONSTRAINT, constraintName);
         String tablespace = res.getString("spcname");
         loader.submitAntlrTask(ADD_CONSTRAINT + definition + ';',
                 p -> p.sql().statement(0).schema_statement().schema_alter()
@@ -97,10 +97,5 @@ public class ConstraintsReader extends JdbcReader {
         for (String name : concols) {
             c.addColumn(name);
         }
-    }
-
-    @Override
-    protected DbObjType getType() {
-        return DbObjType.CONSTRAINT;
     }
 }

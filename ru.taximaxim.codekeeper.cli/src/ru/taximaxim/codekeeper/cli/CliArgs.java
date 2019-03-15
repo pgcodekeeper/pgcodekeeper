@@ -189,6 +189,10 @@ public class CliArgs extends PgDiffArguments {
                     + " otherwise, in case of conflicts objects loaded first have priority")
     private boolean libSafeMode;
 
+    @Option(name="--ignore-concurrent-modification",
+            usage="ignore concurrent modification errors of database objects")
+    private boolean ignoreConcurrentModification;
+
     @Option(name="--ms-sql",
             usage="work with MS SQL")
     private boolean msSql;
@@ -321,6 +325,16 @@ public class CliArgs extends PgDiffArguments {
     @Override
     public void setMsSql(boolean msSql) {
         this.msSql = msSql;
+    }
+
+    @Override
+    public boolean isIgnoreConcurrentModification() {
+        return ignoreConcurrentModification;
+    }
+
+    @Override
+    public void setIgnoreConcurrentModification(boolean ignoreConcurrentModification) {
+        this.ignoreConcurrentModification = ignoreConcurrentModification;
     }
 
     public boolean isDebug() {
