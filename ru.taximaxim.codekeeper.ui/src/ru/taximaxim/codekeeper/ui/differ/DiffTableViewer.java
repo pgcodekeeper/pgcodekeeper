@@ -1275,12 +1275,13 @@ public class DiffTableViewer extends Composite {
             while (it.hasNext()) {
                 SortingColumn c = it.next();
                 int res = 0;
-                switch (c.col) {
+                Columns col = c.col;
+                switch (col) {
                 case CHANGE:
                     res = el1.getSide().toString().compareTo(el2.getSide().toString());
                     break;
                 case GIT_USER:
-                    res = elementInfoMap.get(el1).getGitUser().compareTo(elementInfoMap.get(el2).getGitUser());
+                    res = compareUsrColElements(col, el1, el2);
                     break;
                 case LOCATION:
                     res = el1.getContainerQName().compareTo(el2.getContainerQName());
@@ -1295,7 +1296,7 @@ public class DiffTableViewer extends Composite {
                     res = el1.getType().toString().compareTo(el2.getType().toString());
                     break;
                 case USERS:
-                    res = elementInfoMap.get(el1).getDbUser().compareTo(elementInfoMap.get(el2).getDbUser());
+                    res = compareUsrColElements(col, el1, el2);
                     break;
                 default:
                     break;
@@ -1309,6 +1310,27 @@ public class DiffTableViewer extends Composite {
             }
 
             return 0;
+        }
+
+        private int compareUsrColElements(Columns col, TreeElement el1, TreeElement el2) {
+            ElementMetaInfo el1Meta = elementInfoMap.get(el1);
+            ElementMetaInfo el2Meta = elementInfoMap.get(el2);
+
+            if (el1Meta == null || el2Meta == null) {
+                return -1;
+            }
+
+            String el1Value;
+            String el2Value;
+            if (Columns.USERS == col) {
+                el1Value = el1Meta.getDbUser();
+                el2Value = el2Meta.getDbUser();
+            } else {
+                el1Value = el1Meta.getGitUser();
+                el2Value = el2Meta.getGitUser();
+            }
+
+            return el1Value.compareTo(el2Value);
         }
     }
 
