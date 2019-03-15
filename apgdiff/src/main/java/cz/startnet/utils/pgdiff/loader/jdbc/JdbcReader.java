@@ -35,7 +35,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
                         if (loader.args.isIgnoreConcurrentModification()) {
                             Log.log(ex);
                         } else {
-                            throw new IllegalStateException(ex);
+                            throw ex;
                         }
                     }
                 } else {

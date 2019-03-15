@@ -106,10 +106,6 @@ public class CliArgs extends PgDiffArguments {
             usage="ignore privileges and owners of database objects")
     private boolean ignorePrivileges;
 
-    @Option(name="-M", aliases="--ignore-concurrent-modification",
-            usage="ignore concurrent modification errors of database objects")
-    private boolean ignoreConcurrentModification;
-
     @Option(name="-L", aliases="--keep-newlines",
             usage="keep newline characters as is (don't convert to Unix newlines)")
     private boolean keepNewlines;
@@ -192,6 +188,10 @@ public class CliArgs extends PgDiffArguments {
             usage="exit with an error if a library object conflicts with other schema or library objects"
                     + " otherwise, in case of conflicts objects loaded first have priority")
     private boolean libSafeMode;
+
+    @Option(name="--ignore-concurrent-modification",
+            usage="ignore concurrent modification errors of database objects")
+    private boolean ignoreConcurrentModification;
 
     @Option(name="--ms-sql",
             usage="work with MS SQL")
