@@ -144,6 +144,18 @@ public class DbStoreEditorDialog extends TrayDialog {
                         btnWinAuth.setSelection(dbInitial.isWinAuth());
                     }
                     msStateUpdater.widgetSelected(null);
+
+                    btnUseDump.setSelection(dbInitial.isPgDumpSwitch());
+
+                    String pgdumpExePath = dbInitial.getPgdumpExePath();
+                    if (pgdumpExePath != null) {
+                        txtDumpFile.setText(dbInitial.getPgdumpExePath());
+                    }
+
+                    String pgdumpCustomParams = dbInitial.getPgdumpCustomParams();
+                    if (pgdumpCustomParams != null) {
+                        txtDumpParameters.setText(dbInitial.getPgdumpCustomParams());
+                    }
                 }
 
                 txtDbHost.setText(dbHost);
@@ -362,13 +374,11 @@ public class DbStoreEditorDialog extends TrayDialog {
         btnUseDump = new Button(tabPGDupmConfigProperties, SWT.CHECK);
         btnUseDump.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, false, false, 3, 1));
         btnUseDump.setText(Messages.DbStoreEditorDialog_dump_switch);
-        btnUseDump.setSelection(dbInitial.isPgDumpSwitch());
 
         new Label(tabPGDupmConfigProperties, SWT.NONE).setText(Messages.DbStoreEditorDialog_dump_executable);
 
         txtDumpFile = new Text(tabPGDupmConfigProperties, SWT.BORDER);
         txtDumpFile.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        txtDumpFile.setText(dbInitial.getPgdumpExePath());
         txtDumpFile.addModifyListener(modifyListener);
 
         btnDumpChoose = new Button(tabPGDupmConfigProperties, SWT.PUSH);
@@ -399,7 +409,6 @@ public class DbStoreEditorDialog extends TrayDialog {
 
         txtDumpParameters = new Text(tabPGDupmConfigProperties, SWT.BORDER);
         txtDumpParameters.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, false, false, 2, 1));
-        txtDumpParameters.setText(dbInitial.getPgdumpCustomParams());
         txtDumpParameters.addModifyListener(modifyListener);
 
         return area;
