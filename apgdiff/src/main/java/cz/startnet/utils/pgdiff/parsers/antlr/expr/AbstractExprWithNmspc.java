@@ -84,10 +84,10 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
         super(parent);
     }
 
-    public void addFuncArgsToNmsp(Map<String, GenericColumn> relFuncArgs,
-            List<Pair<String, String>> simpleFuncArgs) {
-        namespace.putAll(relFuncArgs);
+    public void addArgsToNmsps(List<Pair<String, String>> simpleFuncArgs,
+            Map<String, GenericColumn> relFuncArgs) {
         complexNamespace.put(FUNC_ARGS_KEY, simpleFuncArgs);
+        namespace.putAll(relFuncArgs);
     }
 
     @Override

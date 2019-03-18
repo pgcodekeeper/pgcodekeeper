@@ -80,19 +80,25 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
         if (simpleFuncArgs == null && relFuncArgs == null) {
             simpleFuncArgs = new ArrayList<>();
             relFuncArgs = new LinkedHashMap<>();
-            splitFuncArgs(db, st, relFuncArgs, simpleFuncArgs);
+            fillArgStoragesForNmsps(simpleFuncArgs, relFuncArgs, db);
         }
-        analyzer.addFuncArgsToNmsp(relFuncArgs, simpleFuncArgs);
+        analyzer.addArgsToNmsps(simpleFuncArgs, relFuncArgs);
 
         analyzer.analyze(ctx);
         st.addAllDeps(analyzer.getDepcies());
     }
 
     /**
-     * Splits function arguments into simple arguments and arguments with relations.
+     * Fill storage of simple-arguments and storage of relation-arguments
+     * by function arguments.
+     * <br />(These storages will be added to namespaces for correct analysis).
+     *
+     * @param prims storage for function arguments with simple-types
+     * @param rels storage for function arguments with relation-types
+     * @param db database statement
      */
-    private void splitFuncArgs(PgDatabase db, AbstractFunction func,
-            Map<String, GenericColumn> rels, List<Pair<String, String>> prims) {
+    private void fillArgStoragesForNmsps(List<Pair<String, String>> prims,
+            Map<String, GenericColumn> rels, PgDatabase db) {
         if (funcArgsCtxsForAnalyze == null) {
             return;
         }
@@ -111,9 +117,10 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
             if (typeQname != null) {
                 IdentifierContext schemaCtx = typeQname.identifier();
                 if (schemaCtx != null) {
-                    splitProcessingOfQualType(db, ParserAbstract.getFullCtxText(schemaCtx),
+                    putArgToStorageForNmsp(prims, rels, db,
+                            ParserAbstract.getFullCtxText(schemaCtx),
                             ParserAbstract.getFullCtxText(typeQname.identifier_nontype()),
-                            argDollarName, argName, prims, rels);
+                            argDollarName, argName);
                 }
             } else {
                 addArgToPrims(argDollarName, argName,
@@ -123,19 +130,23 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
     }
 
     /**
-     * Splits function arguments with qualified types into simple arguments and arguments with relations.
+     * Put the function argument with a qualified type, depending on the
+     * conditions, either in the storage of simple arguments, or in the storage
+     * with relation arguments.
+     * <br />(These storages will be added to namespaces for correct analysis).
      *
+     * @param prims storage for function arguments with simple-types
+     * @param rels storage for function arguments with relation-types
      * @param db database statement
      * @param argTypeSchema schema name to which the argument type belongs
      * @param argType type of argument
      * @param argDollarName dollar name of argument
      * @param argName argument name
-     * @param prims list for function arguments with simple-types
-     * @param rels list for function arguments with relation-types
      */
-    public static void splitProcessingOfQualType(PgDatabase db, String argTypeSchema,
-            String argType, String argDollarName, String argName,
-            List<Pair<String, String>> prims, Map<String, GenericColumn> rels) {
+    public static void putArgToStorageForNmsp(
+            List<Pair<String, String>> prims, Map<String, GenericColumn> rels,
+            PgDatabase db, String argTypeSchema, String argType, String argDollarName,
+            String argName) {
         if (ApgdiffUtils.isPgSystemSchema(argTypeSchema)
                 && "record".equalsIgnoreCase(argType)) {
             addArgToRels(argDollarName, argName, argType, argTypeSchema,

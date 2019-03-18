@@ -102,7 +102,7 @@ public class FunctionsReader extends JdbcReader {
     }
 
     private void fillFunction(AbstractPgFunction function, ResultSet res,
-            PgDatabase db, List<Pair<String, GenericColumn>> argsQualifiedTypes)
+            PgDatabase db, List<Pair<String, GenericColumn>> argsQualTypes)
                     throws SQLException {
         StringBuilder body = new StringBuilder();
 
@@ -217,12 +217,12 @@ public class FunctionsReader extends JdbcReader {
                     SQLParser::sql, ctx -> {
                         FuncProcAnalysisLauncher analysisLauncher = new FuncProcAnalysisLauncher(
                                 function, ctx);
-                        if (!argsQualifiedTypes.isEmpty()) {
+                        if (!argsQualTypes.isEmpty()) {
                             // Processing and sending the arguments of function
                             // to the namespaces in launcher for correct analysis.
                             List<Pair<String, String>> simpleFuncArgs = new ArrayList<>();
                             Map<String, GenericColumn> relFuncArgs = new LinkedHashMap<>();
-                            splitFuncArgs(argsQualifiedTypes, simpleFuncArgs, relFuncArgs, db);
+                            fillArgStoragesForNmsps(simpleFuncArgs, relFuncArgs, db, argsQualTypes);
                             analysisLauncher.setSplitFuncArgs(simpleFuncArgs, relFuncArgs);
                         }
                         db.addAnalysisLauncher(analysisLauncher);
@@ -246,16 +246,23 @@ public class FunctionsReader extends JdbcReader {
     }
 
     /**
-     * Splits function arguments into simple arguments and arguments with relations.
+     * Fill storage of simple-arguments and storage of relation-arguments
+     * by function arguments.
+     * <br />(These storages will be added to namespaces for correct analysis).
+     *
+     * @param prims storage for function arguments with simple-types
+     * @param rels storage for function arguments with relation-types
+     * @param db database statement
+     * @param argsQualTypes list of pairs with function argument names and their qualified types
      */
-    private void splitFuncArgs(List<Pair<String, GenericColumn>> argsQualifiedTypes,
-            List<Pair<String, String>> prims, Map<String, GenericColumn> rels,
-            PgDatabase db) {
-        for (int i = 0; i < argsQualifiedTypes.size(); i++) {
-            Pair<String, GenericColumn> arg = argsQualifiedTypes.get(i);
-            FuncProcAnalysisLauncher.splitProcessingOfQualType(db, arg.getSecond().schema,
-                    arg.getSecond().table, "$" + (i + 1), arg.getFirst(),
-                    prims,  rels);
+    private void fillArgStoragesForNmsps(List<Pair<String, String>> prims,
+            Map<String, GenericColumn> rels, PgDatabase db,
+            List<Pair<String, GenericColumn>> argsQualTypes) {
+        for (int i = 0; i < argsQualTypes.size(); i++) {
+            Pair<String, GenericColumn> arg = argsQualTypes.get(i);
+            FuncProcAnalysisLauncher.putArgToStorageForNmsp(prims,  rels, db,
+                    arg.getSecond().schema, arg.getSecond().table, "$" + (i + 1),
+                    arg.getFirst());
         }
     }
 
