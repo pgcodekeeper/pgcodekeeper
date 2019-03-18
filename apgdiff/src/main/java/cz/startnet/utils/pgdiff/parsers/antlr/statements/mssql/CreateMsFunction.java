@@ -65,6 +65,11 @@ public class CreateMsFunction extends BatchContextProcessor {
         List<IdContext> ids = Arrays.asList(ctx.qualified_name().schema, nameCtx);
         String name = nameCtx.getText();
         Func_bodyContext bodyRet = ctx.func_body();
+
+        AbstractFunction f;
+
+        String returns = getFullCtxText(ctx.func_return());
+
         if (bodyRet.EXTERNAL() != null) {
             Assembly_specifierContext assemblyCtx = bodyRet.assembly_specifier();
             String assembly = assemblyCtx.assembly_name.getText();
@@ -76,14 +81,11 @@ public class CreateMsFunction extends BatchContextProcessor {
 
             addDepSafe(func, Arrays.asList(assemblyCtx.assembly_name),
                     DbObjType.ASSEMBLY, false);
-            fillArguments(func);
 
             for (Function_optionContext option : ctx.function_option()) {
                 func.addOption(getFullCtxText(option));
             }
 
-            String returns = getFullCtxText(ctx.func_return());
-            analyzeReturn(ctx.func_return(), func);
             boolean isKeepNewlines = db.getArguments().isKeepNewlines();
             func.setReturns(isKeepNewlines ? returns : returns.replace("\r", ""));
 
@@ -94,61 +96,61 @@ public class CreateMsFunction extends BatchContextProcessor {
                 func.setFuncType(FuncTypes.TABLE);
             }
 
-            if (isJdbc) {
-                schema.addFunction(func);
+            f = func;
+        } else {
+            MsFunction func = new MsFunction(name);
+            func.setAnsiNulls(ansiNulls);
+            func.setQuotedIdentified(quotedIdentifier);
+            setSourceParts(func);
+
+            Select_statementContext select = bodyRet.select_statement();
+            String schemaName;
+            if (schema != null) {
+                schemaName = schema.getName();
             } else {
-                addSafe(AbstractSchema::addFunction, schema, func, ids);
+                schemaName = getSchemaNameSafe(ids);
             }
 
-            return func;
-        }
+            if (select != null) {
+                MsSelect sel = new MsSelect(schemaName);
+                sel.analyze(select);
+                func.addAllDeps(sel.getDepcies());
+            } else {
+                ExpressionContext exp = bodyRet.expression();
+                if (exp != null) {
+                    MsValueExpr vex = new MsValueExpr(schemaName);
+                    vex.analyze(exp);
+                    func.addAllDeps(vex.getDepcies());
+                }
 
-        MsFunction func = new MsFunction(name);
-        func.setAnsiNulls(ansiNulls);
-        func.setQuotedIdentified(quotedIdentifier);
-        setSourceParts(func);
-
-        Select_statementContext select = bodyRet.select_statement();
-        String schemaName;
-        if (schema != null) {
-            schemaName = schema.getName();
-        } else {
-            schemaName = getSchemaNameSafe(ids);
-        }
-
-        if (select != null) {
-            MsSelect sel = new MsSelect(schemaName);
-            sel.analyze(select);
-            func.addAllDeps(sel.getDepcies());
-        } else {
-            ExpressionContext exp = bodyRet.expression();
-            if (exp != null) {
-                MsValueExpr vex = new MsValueExpr(schemaName);
-                vex.analyze(exp);
-                func.addAllDeps(vex.getDepcies());
+                Sql_clausesContext clausesCtx = bodyRet.sql_clauses();
+                if (clausesCtx != null) {
+                    MsSqlClauses clauses = new MsSqlClauses(schemaName);
+                    clauses.analyze(clausesCtx);
+                    func.addAllDeps(clauses.getDepcies());
+                }
             }
 
-            Sql_clausesContext clausesCtx = bodyRet.sql_clauses();
-            if (clausesCtx != null) {
-                MsSqlClauses clauses = new MsSqlClauses(schemaName);
-                clauses.analyze(clausesCtx);
-                func.addAllDeps(clauses.getDepcies());
+            Func_returnContext ret = ctx.func_return();
+            if (ret.LOCAL_ID() != null) {
+                func.setFuncType(FuncTypes.MULTI);
+            } else if (ret.data_type() == null) {
+                func.setFuncType(FuncTypes.TABLE);
             }
+
+            f = func;
         }
 
-        Func_returnContext ret = ctx.func_return();
-        if (ret.LOCAL_ID() != null) {
-            func.setFuncType(FuncTypes.MULTI);
-        } else if (ret.data_type() == null) {
-            func.setFuncType(FuncTypes.TABLE);
-        }
+        fillArguments(f);
+        analyzeReturn(ctx.func_return(), f);
 
         if (isJdbc && schema != null) {
-            schema.addFunction(func);
+            schema.addFunction(f);
         } else {
-            addSafe(AbstractSchema::addFunction, schema, func, ids);
+            addSafe(schema, f, ids);
         }
-        return func;
+
+        return f;
     }
 
     private void analyzeReturn(Func_returnContext ret, AbstractFunction function) {
@@ -160,22 +162,25 @@ public class CreateMsFunction extends BatchContextProcessor {
                     addMsTypeDepcy(dt, function);
                 }
             }
-        } else {
+        } else if (ret.data_type() != null) {
             addMsTypeDepcy(ret.data_type(), function);
         }
     }
 
-    private void fillArguments(AbstractMsClrFunction function) {
+    private void fillArguments(AbstractFunction function) {
         for (Procedure_paramContext argument : ctx.procedure_param()) {
-            Argument arg = new Argument(
-                    argument.arg_mode != null ? argument.arg_mode.getText() : null,
-                            argument.name.getText(), getFullCtxText(argument.data_type()));
             addMsTypeDepcy(argument.data_type(), function);
-            if (argument.default_val != null) {
-                arg.setDefaultExpression(getFullCtxText(argument.default_val));
-            }
 
-            function.addArgument(arg);
+            if (function instanceof AbstractMsClrFunction) {
+                Argument arg = new Argument(
+                        argument.arg_mode != null ? argument.arg_mode.getText() : null,
+                                argument.name.getText(), getFullCtxText(argument.data_type()));
+                if (argument.default_val != null) {
+                    arg.setDefaultExpression(getFullCtxText(argument.default_val));
+                }
+
+                ((AbstractMsClrFunction) function).addArgument(arg);
+            }
         }
     }
 }

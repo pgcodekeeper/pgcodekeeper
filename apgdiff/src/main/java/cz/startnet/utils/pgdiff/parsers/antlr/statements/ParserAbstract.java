@@ -31,6 +31,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
+import cz.startnet.utils.pgdiff.schema.AbstractMsFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
@@ -164,7 +165,7 @@ public abstract class ParserAbstract {
     }
 
     private static String convertAlias(String type) {
-        String alias = type.toLowerCase(Locale.ENGLISH);
+        String alias = type.toLowerCase(Locale.ROOT);
 
         switch (alias) {
         case "int8": return "bigint";
@@ -285,9 +286,9 @@ public abstract class ParserAbstract {
         return getSafe(getter, container, name, errToken, refMode);
     }
 
-    protected <T extends IStatement, U extends PgStatement> void addSafe(BiConsumer<T, U> adder,
-            T parent, U child, List<? extends ParserRuleContext> ids) {
-        doSafe(adder, parent, child);
+    protected void addSafe(PgStatement parent, PgStatement child,
+            List<? extends ParserRuleContext> ids) {
+        doSafe(PgStatement::addChild, parent, child);
         PgObjLocation loc = getLocation(ids, child.getStatementType(),
                 StatementActions.CREATE, false, null);
         if (loc != null) {
@@ -383,6 +384,9 @@ public abstract class ParserAbstract {
             loc.setFilePath(fileName);
             if (!refMode) {
                 st.addDep(loc);
+                if (st instanceof AbstractMsFunction) {
+                    ((AbstractMsFunction) st).addSignatureDep(loc);
+                }
             }
             db.getObjReferences().computeIfAbsent(fileName, k -> new HashSet<>()).add(loc);
         }

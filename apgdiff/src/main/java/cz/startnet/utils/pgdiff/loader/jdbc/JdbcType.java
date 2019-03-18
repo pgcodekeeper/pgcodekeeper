@@ -12,7 +12,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class JdbcType{
 
-    private static final Map<String, String> DATA_TYPE_ALIASES;
+    public static final Map<String, String> DATA_TYPE_ALIASES;
     static {
         Map<String, String> aliases = new HashMap<>();
 

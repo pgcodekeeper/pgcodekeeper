@@ -39,17 +39,17 @@ public class CreateMsAssembly extends ParserAbstract {
 
         Assembly_permissionContext permission = ctx.assembly_permission();
         if (permission != null) {
-            ass.setPermission(getFullCtxText(permission).toUpperCase());
+            ass.setPermission(getFullCtxText(permission).toUpperCase(Locale.ROOT));
         }
 
-        addSafe(PgDatabase::addAssembly, db, ass, Arrays.asList(nameCtx));
+        addSafe(db, ass, Arrays.asList(nameCtx));
     }
 
     public static String formatBinary(String hex) {
         if (!hex.startsWith("0x")) {
             return hex;
         }
-        hex = hex.toLowerCase(Locale.ENGLISH);
+        hex = hex.toLowerCase(Locale.ROOT);
         if (hex.indexOf('\\') != -1) {
             hex = BINARY_NEWLINE.matcher(hex).replaceAll("");
         }

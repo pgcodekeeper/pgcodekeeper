@@ -27,6 +27,6 @@ public class CreateExtension extends ParserAbstract {
             addDepSafe(ext, Arrays.asList(id), DbObjType.SCHEMA, true);
         }
 
-        addSafe(PgDatabase::addExtension, db, ext, Arrays.asList(nameCtx));
+        addSafe(db, ext, Arrays.asList(nameCtx));
     }
 }

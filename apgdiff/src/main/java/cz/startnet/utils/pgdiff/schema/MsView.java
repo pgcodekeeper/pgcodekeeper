@@ -145,4 +145,9 @@ public class MsView extends AbstractView implements SourceStatement {
         this.secondPart = secondPart;
         resetHash();
     }
+
+    @Override
+    public boolean usedInSignature(PgStatement st) {
+        return true;
+    }
 }

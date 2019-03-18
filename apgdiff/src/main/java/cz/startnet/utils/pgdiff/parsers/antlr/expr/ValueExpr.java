@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -403,7 +404,7 @@ public class ValueExpr extends AbstractExpr {
                 addTypeDepcy(dataTypeCtx);
             } else {
                 ret = new Pair<>(system.USER() != null ? "current_user"
-                        : system.getChild(0).getText().toLowerCase(),
+                        : system.getChild(0).getText().toLowerCase(Locale.ROOT),
                         TypesSetManually.NAME);
             }
         } else if ((datetime = function.date_time_function()) != null) {
@@ -437,7 +438,7 @@ public class ValueExpr extends AbstractExpr {
                 analyze(new Vex(vexB));
             }
 
-            String colname = string.getChild(0).getText().toLowerCase();
+            String colname = string.getChild(0).getText().toLowerCase(Locale.ROOT);
             String coltype = TypesSetManually.TEXT;
             if (string.TRIM() != null) {
                 if (string.LEADING() != null) {
@@ -456,7 +457,7 @@ public class ValueExpr extends AbstractExpr {
         } else if ((xml = function.xml_function()) != null) {
             args = xml.vex();
 
-            String colname = xml.getChild(0).getText().toLowerCase();
+            String colname = xml.getChild(0).getText().toLowerCase(Locale.ROOT);
             String coltype = TypesSetManually.XML;
             if (xml.XMLEXISTS() != null) {
                 coltype = TypesSetManually.BOOLEAN;

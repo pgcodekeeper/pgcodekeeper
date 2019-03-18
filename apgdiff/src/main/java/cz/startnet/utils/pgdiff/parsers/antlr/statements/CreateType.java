@@ -142,7 +142,7 @@ public class CreateType extends ParserAbstract {
         }
         if (newType != null) {
             // add only newly created type, not a filled SHELL that was added before
-            addSafe(AbstractSchema::addType, schema, type, ids);
+            addSafe(schema, type, ids);
         }
     }
 }

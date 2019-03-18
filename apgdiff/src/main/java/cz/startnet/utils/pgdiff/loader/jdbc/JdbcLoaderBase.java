@@ -355,13 +355,11 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
 
             if (st instanceof PgStatementWithSearchPath) {
                 col = acl.getString("c");
-                PgStatementWithSearchPath pswsp = (PgStatementWithSearchPath) st;
                 if (st.getStatementType() == DbObjType.TYPE) {
                     sb.append("TYPE::");
                 }
 
-                sb.append(MsDiffUtils.quoteName(pswsp.getContainingSchema().getName()))
-                .append('.').append(MsDiffUtils.quoteName(st.getBareName()));
+                sb.append(st.getQualifiedName());
 
                 if (col != null) {
                     sb.append('(').append(MsDiffUtils.quoteName(col)).append(')');

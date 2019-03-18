@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ConcurrentModificationException;
 
 import cz.startnet.utils.pgdiff.loader.JdbcQuery;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
@@ -28,7 +29,15 @@ public abstract class JdbcReader implements PgCatalogStrings {
                 long schemaId = result.getLong("schema_oid");
                 AbstractSchema schema = loader.schemaIds.get(schemaId);
                 if (schema != null) {
-                    processResult(result, schema);
+                    try {
+                        processResult(result, schema);
+                    } catch (ConcurrentModificationException ex) {
+                        if (loader.args.isIgnoreConcurrentModification()) {
+                            Log.log(ex);
+                        } else {
+                            throw ex;
+                        }
+                    }
                 } else {
                     Log.log(Log.LOG_WARNING, "No schema found for id " + schemaId);
                 }
@@ -43,7 +52,8 @@ public abstract class JdbcReader implements PgCatalogStrings {
      */
     public static void checkObjectValidity(Object object, DbObjType type, String name) {
         if (object == null) {
-            throw new IllegalStateException("Statement concurrent modification: " + type + ' ' + name);
+            throw new ConcurrentModificationException(
+                    "Statement concurrent modification: " + type + ' ' + name);
         }
     }
 
@@ -54,7 +64,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
     public static void checkTypeValidity(String type) {
         checkObjectValidity(type, DbObjType.TYPE, "");
         if ("???".equals(type) || "???[]".equals(type)) {
-            throw new IllegalStateException("Concurrent type modification");
+            throw new ConcurrentModificationException("Concurrent type modification");
         }
     }
 
@@ -70,9 +80,4 @@ public abstract class JdbcReader implements PgCatalogStrings {
 
     protected abstract void processResult(ResultSet result, AbstractSchema schema)
             throws SQLException, XmlReaderException;
-
-    protected DbObjType getType() {
-        // PG subclasses must override
-        return null;
-    }
 }

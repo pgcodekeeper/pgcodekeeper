@@ -31,7 +31,6 @@ implements PgOptionContainer {
     private boolean unique;
     private boolean clusterIndex;
 
-    private final String tableName;
     private final Set<String> columns = new HashSet<>();
 
     protected final Set<String> includes = new LinkedHashSet<>();
@@ -42,9 +41,8 @@ implements PgOptionContainer {
         return DbObjType.INDEX;
     }
 
-    public AbstractIndex(String name, String tableName) {
+    public AbstractIndex(String name) {
         super(name);
-        this.tableName = tableName;
     }
 
     public void setDefinition(final String definition) {
@@ -79,10 +77,6 @@ implements PgOptionContainer {
 
     public Set<String> getIncludes(){
         return Collections.unmodifiableSet(includes);
-    }
-
-    public String getTableName() {
-        return tableName;
     }
 
     public boolean isUnique() {
@@ -140,7 +134,6 @@ implements PgOptionContainer {
 
     protected boolean compareUnalterable(AbstractIndex index) {
         return Objects.equals(definition, index.getDefinition())
-                && Objects.equals(tableName, index.getTableName())
                 && Objects.equals(where, index.getWhere())
                 && Objects.equals(tableSpace, index.getTableSpace())
                 && Objects.equals(includes, index.includes)
@@ -150,7 +143,6 @@ implements PgOptionContainer {
     @Override
     public void computeHash(Hasher hasher) {
         hasher.put(definition);
-        hasher.put(tableName);
         hasher.put(unique);
         hasher.put(clusterIndex);
         hasher.put(where);
@@ -175,11 +167,6 @@ implements PgOptionContainer {
     }
 
     protected abstract AbstractIndex getIndexCopy();
-
-    @Override
-    public AbstractIndex deepCopy() {
-        return shallowCopy();
-    }
 
     @Override
     public AbstractSchema getContainingSchema() {

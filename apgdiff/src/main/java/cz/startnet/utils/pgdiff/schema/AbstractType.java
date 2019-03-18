@@ -21,11 +21,6 @@ public abstract class AbstractType extends PgStatementWithSearchPath {
     }
 
     @Override
-    public AbstractType deepCopy() {
-        return shallowCopy();
-    }
-
-    @Override
     public boolean compare(PgStatement obj) {
         return this == obj || obj instanceof AbstractType && super.compare(obj);
     }

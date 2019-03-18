@@ -251,25 +251,30 @@ public class LibraryLoader {
                 if (Files.isDirectory(sub)) {
                     dirs.add(sub);
                 } else {
-                    String filePath = sub.toString();
-                    PgDiffArguments args = db.getArguments();
-                    if (filePath.endsWith(".zip")) {
-                        db.addLib(getLibrary(filePath, args, args.isIgnorePrivileges()));
-                    } else if (filePath.endsWith(".sql")) {
-                        PgDumpLoader loader = new PgDumpLoader(sub.toFile(), args);
-                        try {
-                            loader.loadDatabase(db, antlrTasks);
-                        } finally {
-                            if (errors != null) {
-                                errors.addAll(loader.getErrors());
-                            }
-                        }
-                    }
+                    readStatementsFromFile(sub, db, antlrTasks);
                 }
             }
 
             for (Path sub : dirs) {
                 readStatementsFromDirectory(sub, db, antlrTasks);
+            }
+        }
+    }
+
+    private void readStatementsFromFile(Path sub, PgDatabase db, Queue<AntlrTask<?>> antlrTasks)
+            throws InterruptedException, IOException {
+        String filePath = sub.toString();
+        PgDiffArguments args = db.getArguments();
+        if (filePath.endsWith(".zip")) {
+            db.addLib(getLibrary(filePath, args, args.isIgnorePrivileges()));
+        } else if (filePath.endsWith(".sql")) {
+            PgDumpLoader loader = new PgDumpLoader(sub.toFile(), args);
+            try {
+                loader.loadDatabase(db, antlrTasks);
+            } finally {
+                if (errors != null) {
+                    errors.addAll(loader.getErrors());
+                }
             }
         }
     }

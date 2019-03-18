@@ -8,7 +8,7 @@ options {
 @header {package cz.startnet.utils.pgdiff.parsers.antlr;}
 
 tsql_file
-    : BOM? batch* EOF
+    : BOM? go_statement* batch* EOF
     ;
 
 batch
@@ -3034,9 +3034,9 @@ file_spec
     ;
 
 qualified_name
-    : (server=id DOT database=id DOT  schema=id   DOT
-      |              database=id DOT (schema=id)? DOT
-      |                               schema=id   DOT)? name=id
+    : (id DOT id DOT  schema=id   DOT
+      |       id DOT (schema=id)? DOT
+      |               schema=id   DOT)? name=id
     ;
 
 full_column_name
