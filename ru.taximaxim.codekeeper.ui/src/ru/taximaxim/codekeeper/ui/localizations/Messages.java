@@ -245,6 +245,8 @@ public final class Messages extends NLS {
 
     public static String DbStoreEditorDialog_dump_switch;
 
+    public static String DbStoreEditorDialog_dump_browse;
+
     public static String DbStoreEditorDialog_pgcodekeeperignore_files_filter;
 
     public static String DbStoreEditorDialog_read_only;

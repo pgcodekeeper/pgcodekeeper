@@ -383,7 +383,7 @@ public class DbStoreEditorDialog extends TrayDialog {
 
         btnDumpChoose = new Button(tabPGDupmConfigProperties, SWT.PUSH);
         btnDumpChoose.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, false, false, 1, 1));
-        btnDumpChoose.setText("Browse.."); //$NON-NLS-1$
+        btnDumpChoose.setText(Messages.DbStoreEditorDialog_dump_browse);
         btnDumpChoose.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent event) {
