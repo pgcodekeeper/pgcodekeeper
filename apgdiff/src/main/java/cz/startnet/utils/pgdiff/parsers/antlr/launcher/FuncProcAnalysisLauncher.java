@@ -136,6 +136,13 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
     public static void splitProcessingOfQualType(PgDatabase db, String argTypeSchema,
             String argType, String argDollarName, String argName,
             List<Pair<String, String>> prims, Map<String, GenericColumn> rels) {
+        if (ApgdiffUtils.isPgSystemSchema(argTypeSchema)
+                && "record".equalsIgnoreCase(argType)) {
+            addArgToRels(argDollarName, argName, argType, argTypeSchema,
+                    DbObjType.TABLE, rels);
+            return;
+        }
+
         boolean isSystemSchema = ApgdiffUtils.isPgSystemSchema(argTypeSchema);
         ISchema schemaOfType = !isSystemSchema ? db.getSchema(argTypeSchema) : PgSystemStorage
                 .getObjectsFromResources(db.getPostgresVersion()).getSchema(argTypeSchema);
