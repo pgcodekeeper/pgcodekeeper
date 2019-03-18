@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Arguments_listContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Assign_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Base_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Case_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Control_statementContext;
@@ -14,6 +15,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_type_decContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.DeclarationsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Delete_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Exception_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Execute_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_blockContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_statementsContext;
@@ -27,13 +29,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Perform_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Plpgsql_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Raise_usingContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Return_stmtContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Type_declarationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Using_vexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Var_assign_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
@@ -119,8 +119,8 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
     }
 
     private void base(Base_statementContext base) {
-        Var_assign_valueContext assign = base.var_assign_value();
-        VexContext vexCtx;
+        Assign_stmtContext assign = base.assign_stmt();
+        Execute_stmtContext exec;
         Perform_stmtContext perform;
 
         if (assign != null) {
@@ -130,17 +130,21 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
             } else {
                 new Select(this).analyze(assign.perform_stmt());
             }
-        } else if ((vexCtx = base.vex()) != null) {
-            ValueExpr vex = new ValueExpr(this);
-            vex.analyze(new Vex(vexCtx));
-            Using_vexContext using = base.using_vex();
-            if (using != null) {
-                for (VexContext v : using.vex()) {
-                    vex.analyze(new Vex(v));
-                }
-            }
+        } else if ((exec = base.execute_stmt()) != null) {
+            execute(exec);
         } else if ((perform = base.perform_stmt()) != null) {
             new Select(this).analyze(perform);
+        }
+    }
+
+    private void execute(Execute_stmtContext exec) {
+        ValueExpr vex = new ValueExpr(this);
+        vex.analyze(new Vex(exec.vex()));
+        Using_vexContext using = exec.using_vex();
+        if (using != null) {
+            for (VexContext v : using.vex()) {
+                vex.analyze(new Vex(v));
+            }
         }
     }
 
@@ -185,16 +189,16 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
             statements(statements);
             Loop_startContext start = loop.loop_start();
             if (start != null) {
-                start(start);
+                loopStart(start);
             }
         } else if ((vexCtx = loop.vex()) != null) {
             vex.analyze(new Vex(vexCtx));
         }
     }
 
-    private void start(Loop_startContext start) {
-        Using_vexContext using = start.using_vex();
-        Select_stmt_no_parensContext select;
+    private void loopStart(Loop_startContext start) {
+        Execute_stmtContext exec = start.execute_stmt();
+        Select_stmtContext select;
         ValueExpr vex = new ValueExpr(this);
 
         for (VexContext v : start.vex()) {
@@ -205,29 +209,23 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
             vex.analyze(new Vex(option.vex()));
         }
 
-        if (using != null) {
-            for (VexContext v : using.vex()) {
-                vex.analyze(new Vex(v));
-            }
-        } else if ((select = start.select_stmt_no_parens())!= null) {
+        if (exec != null) {
+            execute(exec);
+        } else if ((select = start.select_stmt())!= null) {
             new Select(this).analyze(new SelectStmt(select));
         }
     }
 
     private void returnStmt(Return_stmtContext returnStmt) {
-        ValueExpr vex = new ValueExpr(this);
-
         VexContext vexCtx = returnStmt.vex();
+        Execute_stmtContext exec;
         Select_stmtContext select;
 
         if (vexCtx != null) {
+            ValueExpr vex = new ValueExpr(this);
             vex.analyze(new Vex(vexCtx));
-            Using_vexContext using = returnStmt.using_vex();
-            if (using != null) {
-                for (VexContext v : using.vex()) {
-                    vex.analyze(new Vex(v));
-                }
-            }
+        } else if ((exec = returnStmt.execute_stmt()) != null) {
+            execute(exec);
         } else if ((select = returnStmt.select_stmt())!= null) {
             new Select(this).analyze(new SelectStmt(select));
         }
@@ -237,24 +235,16 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
         ValueExpr vex = new ValueExpr(this);
         List<OptionContext> options = cursor.option();
         Select_stmtContext select;
-        Schema_qualified_nameContext name;
-        VexContext vexCtx;
+        Execute_stmtContext exec;
+
         if (!options.isEmpty()) {
             for (OptionContext option : options) {
                 vex.analyze(new Vex(option.vex()));
             }
         } else if ((select = cursor.select_stmt()) != null) {
             new Select(this).analyze(new SelectStmt(select));
-        } else if ((vexCtx = cursor.vex()) != null) {
-            vex.analyze(new Vex(vexCtx));
-            Using_vexContext using = cursor.using_vex();
-            if (using != null) {
-                for (VexContext v : using.vex()) {
-                    vex.analyze(new Vex(v));
-                }
-            }
-        } else if ((name = cursor.schema_qualified_name()) != null) {
-            addNameReference(name, null);
+        } else if ((exec = cursor.execute_stmt()) != null) {
+            execute(exec);
         }
     }
 

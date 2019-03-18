@@ -98,7 +98,8 @@ lock_mode
     ;
 
 script_additional
-    : LISTEN identifier
+    : anonymous_block
+    | LISTEN identifier
     | UNLISTEN (identifier | MULTIPLY)
     | ANALYZE VERBOSE? table_cols_list?
     | CLUSTER VERBOSE? (identifier (ON schema_qualified_name | USING identifier)?)?
@@ -110,7 +111,6 @@ script_additional
     | DEALLOCATE PREPARE? (identifier | ALL)
     | (FETCH | MOVE) fetch_move_derection? (FROM | IN)? identifier
     | CLOSE (identifier | ALL)
-    | DO (LANGUAGE identifier)? character_string
     | CALL function_call
     | REINDEX (LEFT_PAREN VERBOSE RIGHT_PAREN)? (INDEX | TABLE | SCHEMA | DATABASE | SYSTEM) identifier
     | RESET (identifier | TIME ZONE | SESSION AUTHORIZATION | ALL)
@@ -2673,16 +2673,15 @@ function_statement
     ;
 
 base_statement
-    : var_assign_value
-    | EXECUTE vex (INTO (STRICT)? schema_qualified_name)? using_vex?
+    : assign_stmt
+    | execute_stmt
     | PERFORM perform_stmt
     | GET (CURRENT | STACKED)? DIAGNOSTICS diagnostic_option (COMMA diagnostic_option)*
     | NULL
     ;
 
 var
-    : identifier array_elements?
-    | DOLLAR_NUMBER
+    : (schema_qualified_name | DOLLAR_NUMBER) (LEFT_BRACKET vex RIGHT_BRACKET)*
     ;
 
 diagnostic_option
@@ -2698,8 +2697,12 @@ perform_stmt
     after_ops*
     ;
 
-var_assign_value
-    : schema_qualified_name array_elements? (COLON_EQUAL | EQUAL) (select_stmt_no_parens | perform_stmt)
+assign_stmt
+    : var (COLON_EQUAL | EQUAL) (select_stmt_no_parens | perform_stmt)
+    ;
+
+execute_stmt
+    : EXECUTE vex (INTO (STRICT)? schema_qualified_name)? using_vex?
     ;
 
 control_statement
@@ -2711,12 +2714,10 @@ control_statement
     ;
 
 cursor_statement
-    : OPEN var ((NO)? SCROLL)? FOR select_stmt
-    | OPEN var ((NO)? SCROLL)? FOR EXECUTE vex using_vex?
+    : OPEN var ((NO)? SCROLL)? FOR (select_stmt | execute_stmt)
     | OPEN var (option (COMMA option)*)?
-    | FETCH (fetch_move_derection? (FROM | IN)?) var INTO identifier_list
-    | MOVE (fetch_move_derection? (FROM | IN)?) var
-    | DELETE FROM schema_qualified_name WHERE CURRENT OF var
+    | FETCH fetch_move_derection? (FROM | IN)? var INTO identifier_list
+    | MOVE fetch_move_derection? (FROM | IN)? var
     | CLOSE var
     ;
 
@@ -2762,8 +2763,7 @@ raise_param
 return_stmt
     : RETURN vex?
     | RETURN NEXT vex
-    | RETURN QUERY select_stmt
-    | RETURN QUERY EXECUTE vex using_vex?
+    | RETURN QUERY (select_stmt | execute_stmt)
     ;
 
 loop_statement
@@ -2774,9 +2774,8 @@ loop_statement
 loop_start
     : WHILE vex
     | FOR identifier IN REVERSE? vex DOUBLE_DOT vex (BY vex)?
-    | FOR identifier_list IN select_stmt_no_parens
-    | FOR identifier_list IN vex using_vex?
-    | FOR identifier IN identifier (LEFT_PAREN option (COMMA option)* RIGHT_PAREN)?
+    | FOR identifier_list IN (select_stmt | execute_stmt)
+    | FOR identifier IN identifier (LEFT_PAREN option (COMMA option)* RIGHT_PAREN)? // cursor loop
     | FOREACH identifier_list (SLICE NUMBER_LITERAL)? IN ARRAY vex
     ;
 
@@ -2794,7 +2793,7 @@ if_statement
 
 // plpgsql case
 case_statement
-    : CASE vex? (WHEN vex (COMMA vex)* THEN (function_statements | vex))+ (ELSE (function_statements | vex))? END CASE
+    : CASE vex? (WHEN vex (COMMA vex)* THEN function_statements)+ (ELSE function_statements)? END CASE
     ;
 
 into_statement
