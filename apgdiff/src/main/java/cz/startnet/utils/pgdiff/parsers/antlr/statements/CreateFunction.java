@@ -1,7 +1,10 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
+
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
@@ -11,11 +14,14 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_funct_paramsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_actions_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_column_name_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statement_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Transform_for_typeContext;
@@ -24,9 +30,13 @@ import cz.startnet.utils.pgdiff.parsers.antlr.launcher.FuncProcAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgProcedure;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class CreateFunction extends ParserAbstract {
 
@@ -136,7 +146,7 @@ public class CreateFunction extends ParserAbstract {
                     "function definition of " + function.getBareName(),
                     ctx -> {
                         FuncProcAnalysisLauncher launcher = new FuncProcAnalysisLauncher(function, ctx);
-                        launcher.setFuncArgsCtxs(funcArgsCtx);
+                        launcher.setFuncArgs(getArgsFromArgCtxs(funcArgsCtx));
                         launcher.setErrors(errors);
                         db.addAnalysisLauncher(launcher);
                     }, antlrTasks);
@@ -152,6 +162,40 @@ public class CreateFunction extends ParserAbstract {
                 }
             }
         }
+    }
+
+    /**
+     * Returns a list of pairs, each of which contains the name of the argument
+     * and its full type name in GenericColumn object (typeSchema, typeName, DbObjType.TYPE).
+     */
+    private List<Pair<String, GenericColumn>> getArgsFromArgCtxs(List<Function_argumentsContext> funcArgsCtxs) {
+        List<Pair<String, GenericColumn>> funcArgs = new ArrayList<>();
+
+        for (Function_argumentsContext funcCtx : funcArgsCtxs) {
+            Identifier_nontypeContext argNameCtx = funcCtx.argname;
+            String argName = argNameCtx == null ? null :
+                ParserAbstract.getFullCtxText(argNameCtx);
+
+            Data_typeContext dataTypeCtx = funcCtx.data_type();
+
+            String typeSchema = ApgdiffConsts.PG_CATALOG;
+            ParserRuleContext typeNameCtx = dataTypeCtx;
+
+            Schema_qualified_name_nontypeContext typeQname = dataTypeCtx.predefined_type()
+                    .schema_qualified_name_nontype();
+            if (typeQname != null) {
+                IdentifierContext schemaCtx = typeQname.schema;
+                if (schemaCtx != null) {
+                    typeSchema = ParserAbstract.getFullCtxText(schemaCtx);
+                }
+                typeNameCtx = typeQname.identifier_nontype();
+            }
+
+            funcArgs.add(new Pair<>(argName, new GenericColumn(typeSchema,
+                    ParserAbstract.getFullCtxText(typeNameCtx), DbObjType.TYPE)));
+        }
+
+        return funcArgs;
     }
 
     private void fillArguments(AbstractPgFunction function,

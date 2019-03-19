@@ -215,11 +215,7 @@ public class FunctionsReader extends JdbcReader {
                     SQLParser::sql, ctx -> {
                         FuncProcAnalysisLauncher analysisLauncher = new FuncProcAnalysisLauncher(
                                 function, ctx);
-                        if (!argsQualTypes.isEmpty()) {
-                            // Setting the arguments of function to the namespaces
-                            // through launcher, for correct analysis.
-                            analysisLauncher.setFuncArgs(argsQualTypes);
-                        }
+                        analysisLauncher.setFuncArgs(argsQualTypes);
                         db.addAnalysisLauncher(analysisLauncher);
                     });
         }

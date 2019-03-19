@@ -7,17 +7,11 @@ import java.util.Map;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.AbstractExprWithNmspc;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Sql;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IRelation;
@@ -35,33 +29,13 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
  */
 public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
 
-    // Contains PgFunction's arguments contexts for analysis (for getting dependencies).
-    // Used in case working with project.
-    private List<Function_argumentsContext> funcArgsCtxs;
-
-    // Contains pairs, each of which contains the name of the argument and its
-    // full type name in GenericColumn object (typeSchema, typeName, DbObjType.TYPE).
+    // Contains pairs, each of which contains the name of the function argument
+    // and its full type name in GenericColumn object (typeSchema, typeName, DbObjType.TYPE).
     // It's need for analysis (for getting dependencies).
-    // Used in case working with db.
     private List<Pair<String, GenericColumn>> funcArgs;
 
     public FuncProcAnalysisLauncher(PgStatementWithSearchPath stmt, ParserRuleContext ctx) {
         super(stmt, ctx);
-    }
-
-    public FuncProcAnalysisLauncher(PgStatementWithSearchPath stmt,
-            List<Function_argumentsContext> funcArgsCtxs) {
-        super(stmt);
-        setFuncArgsCtxs(funcArgsCtxs);
-    }
-
-    /**
-     * Set function's arguments contexts for processing and analyze.
-     *
-     * @param ctxs contexts which belongs to stmt
-     */
-    public void setFuncArgsCtxs(List<Function_argumentsContext> funcArgsCtxs) {
-        this.funcArgsCtxs = funcArgsCtxs;
     }
 
     /**
@@ -89,57 +63,10 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
             AbstractExprWithNmspc<T> analyzer, AbstractFunction st) {
         List<Pair<String, String>> simpleFuncArgs = new ArrayList<>();
         Map<String, GenericColumn> relFuncArgs = new LinkedHashMap<>();
-        if (funcArgs != null) {
-            // In this case, the data which was got from db is analyzed.
-            fillArgStoresFromArgs(simpleFuncArgs, relFuncArgs);
-        } else {
-            // In this case, the data which was got from project is analyzed.
-            fillArgStoresFromArgsCtxs(simpleFuncArgs, relFuncArgs);
-        }
+        fillArgStoresFromArgs(simpleFuncArgs, relFuncArgs);
         analyzer.addArgsToNmsps(simpleFuncArgs, relFuncArgs);
-
         analyzer.analyze(ctx);
         st.addAllDeps(analyzer.getDepcies());
-    }
-
-    /**
-     * Fill storage of simple-arguments and storage of relation-arguments
-     * by function arguments.
-     * <br />(These storages will be added to namespaces for correct analysis).
-     *
-     * @param prims storage for function arguments with simple-types
-     * @param rels storage for function arguments with relation-types
-     */
-    private void fillArgStoresFromArgsCtxs(List<Pair<String, String>> prims,
-            Map<String, GenericColumn> rels) {
-        if (funcArgsCtxs == null) {
-            return;
-        }
-
-        for (int i = 0; i < funcArgsCtxs.size(); i++) {
-            String argDollarName = "$" + (i + 1);
-            Identifier_nontypeContext argNameCtx = funcArgsCtxs.get(i).argname;
-
-            String argName = argNameCtx == null ? null :
-                ParserAbstract.getFullCtxText(funcArgsCtxs.get(i).argname);
-
-            Data_typeContext dataTypeCtx = funcArgsCtxs.get(i).data_type();
-            Schema_qualified_name_nontypeContext typeQname = dataTypeCtx.predefined_type()
-                    .schema_qualified_name_nontype();
-
-            if (typeQname != null) {
-                IdentifierContext schemaCtx = typeQname.identifier();
-                if (schemaCtx != null) {
-                    putArgToStorageForNmsp(prims, rels, db,
-                            ParserAbstract.getFullCtxText(schemaCtx),
-                            ParserAbstract.getFullCtxText(typeQname.identifier_nontype()),
-                            argDollarName, argName);
-                }
-            } else {
-                addArgToPrims(argDollarName, argName,
-                        ParserAbstract.getTypeName(dataTypeCtx), prims);
-            }
-        }
     }
 
     /**
