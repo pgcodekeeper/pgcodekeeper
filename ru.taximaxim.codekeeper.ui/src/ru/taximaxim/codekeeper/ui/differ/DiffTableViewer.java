@@ -1323,10 +1323,13 @@ public class DiffTableViewer extends Composite {
             }
 
             ElementMetaInfo el1Meta = elementInfoMap.get(el1);
+            ElementMetaInfo el2Meta = elementInfoMap.get(el2);
             if (el1Meta == null) {
+                if (el2Meta == null) {
+                    return 0;
+                }
                 return -1;
             }
-            ElementMetaInfo el2Meta = elementInfoMap.get(el2);
             if (el2Meta == null) {
                 return 1;
             }
