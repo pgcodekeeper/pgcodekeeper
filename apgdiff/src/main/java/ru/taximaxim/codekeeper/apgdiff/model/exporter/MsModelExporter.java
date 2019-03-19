@@ -302,8 +302,8 @@ public class MsModelExporter extends AbstractModelExporter {
 
         String fileName = addExtension ? getExportedFilenameSql(st) : getExportedFilename(st);
         if (st instanceof PgStatementWithSearchPath) {
-            fileName = FileUtils.getValidFilename(((PgStatementWithSearchPath)st)
-                    .getContainingSchema().getName()) + '.' + fileName;
+            fileName = FileUtils.getValidFilename(
+                    ((PgStatementWithSearchPath)st).getSchemaName()) + '.' + fileName;
         }
 
         return path.resolve(fileName);

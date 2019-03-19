@@ -42,7 +42,7 @@ public class CreateMsAssembly extends ParserAbstract {
             ass.setPermission(getFullCtxText(permission).toUpperCase(Locale.ROOT));
         }
 
-        addSafe(PgDatabase::addAssembly, db, ass, Arrays.asList(nameCtx));
+        addSafe(db, ass, Arrays.asList(nameCtx));
     }
 
     public static String formatBinary(String hex) {

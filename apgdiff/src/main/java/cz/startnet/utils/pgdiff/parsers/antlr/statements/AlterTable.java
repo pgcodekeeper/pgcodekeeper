@@ -75,7 +75,7 @@ public class AlterTable extends TableAbstract {
                         getSchemaNameSafe(ids), nameCtx.getText(), tablespace, isRefMode());
 
                 if (!con.getName().isEmpty()) {
-                    addSafe(AbstractPgTable::addConstraint, tabl, con, Arrays.asList(
+                    addSafe(tabl, con, Arrays.asList(
                             QNameParser.getSchemaNameCtx(ids), nameCtx, conNameCtx));
                 } else {
                     doSafe(AbstractPgTable::addConstraint, tabl, con);
@@ -160,10 +160,11 @@ public class AlterTable extends TableAbstract {
                     String name = null;
                     for (Sequence_bodyContext body : identity.sequence_body()) {
                         if (body.NAME() != null) {
-                            name = body.name.getText();
+                            name = QNameParser.getFirstName(body.name.identifier());
                         }
                     }
                     PgSequence sequence = new PgSequence(name);
+                    sequence.setDataType(col.getType());
                     CreateSequence.fillSequence(sequence, identity.sequence_body());
 
                     col.setSequence(sequence);

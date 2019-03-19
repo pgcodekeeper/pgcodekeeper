@@ -154,6 +154,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         case FTS_TEMPLATE:
             addFtsTemplate((PgFtsTemplate) st);
             break;
+        case AGGREGATE:
         case FUNCTION:
         case PROCEDURE:
             addFunction((AbstractFunction) st);
@@ -500,46 +501,6 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         resetHash();
     }
 
-    public boolean containsSequence(final String name) {
-        return getSequence(name) != null;
-    }
-
-    public boolean containsTable(final String name) {
-        return getTable(name) != null;
-    }
-
-    public boolean containsView(final String name) {
-        return getView(name) != null;
-    }
-
-    public boolean containsType(final String name) {
-        return getType(name) != null;
-    }
-
-    public boolean containsDomain(final String name) {
-        return getDomain(name) != null;
-    }
-
-    public boolean containsFtsParser(final String name) {
-        return getFtsParser(name) != null;
-    }
-
-    public boolean containsFtsTemplate(final String name) {
-        return getFtsTemplate(name) != null;
-    }
-
-    public boolean containsFtsDictionary(final String name) {
-        return getFtsDictionary(name) != null;
-    }
-
-    public boolean containsFtsConfiguration(final String name) {
-        return getFtsConfiguration(name) != null;
-    }
-
-    public boolean containsOperator(final String name) {
-        return getOperator(name) != null;
-    }
-
     @Override
     public boolean compare(PgStatement obj) {
         return this == obj || obj instanceof AbstractSchema && super.compare(obj);
@@ -592,44 +553,4 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     }
 
     protected abstract AbstractSchema getSchemaCopy();
-
-    @Override
-    public AbstractSchema deepCopy() {
-        AbstractSchema copy = shallowCopy();
-
-        for (PgDomain dom : domains) {
-            copy.addDomain(dom.deepCopy());
-        }
-        for (AbstractSequence seq : sequences) {
-            copy.addSequence(seq.deepCopy());
-        }
-        for (AbstractFunction func : functions) {
-            copy.addFunction(func.deepCopy());
-        }
-        for (AbstractView view : views) {
-            copy.addView(view.deepCopy());
-        }
-        for (AbstractTable table : tables) {
-            copy.addTable(table.deepCopy());
-        }
-        for (AbstractType type : types) {
-            copy.addType(type.deepCopy());
-        }
-        for (PgFtsParser parser : parsers) {
-            copy.addFtsParser(parser.deepCopy());
-        }
-        for (PgFtsTemplate template : templates) {
-            copy.addFtsTemplate(template.deepCopy());
-        }
-        for (PgFtsDictionary dictionary : dictionaries) {
-            copy.addFtsDictionary(dictionary.deepCopy());
-        }
-        for (PgFtsConfiguration configuration : configurations) {
-            copy.addFtsConfiguration(configuration.deepCopy());
-        }
-        for (PgOperator oper : operators) {
-            copy.addOperator(oper.deepCopy());
-        }
-        return copy;
-    }
 }

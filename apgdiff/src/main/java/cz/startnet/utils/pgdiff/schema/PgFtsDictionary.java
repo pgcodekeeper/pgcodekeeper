@@ -136,11 +136,6 @@ implements PgOptionContainer {
     }
 
     @Override
-    public PgFtsDictionary deepCopy() {
-        return shallowCopy();
-    }
-
-    @Override
     public boolean compare(PgStatement obj) {
         if (this == obj) {
             return true;

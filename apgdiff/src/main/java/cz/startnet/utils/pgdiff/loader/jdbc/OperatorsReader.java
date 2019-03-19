@@ -53,7 +53,7 @@ public class OperatorsReader extends JdbcReader {
                 res.getString("procedure")));
 
         String commutator = res.getString("commutator");
-        if (comment != null) {
+        if (commutator != null) {
             StringBuilder sb = new StringBuilder().append("OPERATOR(")
                     .append(PgDiffUtils.getQuotedName(res.getString("commutator_nsp")))
                     .append('.').append(commutator).append(')');
@@ -100,10 +100,5 @@ public class OperatorsReader extends JdbcReader {
         }
         sb.append(PgDiffUtils.getQuotedName(funcName));
         return sb.toString();
-    }
-
-    @Override
-    protected DbObjType getType() {
-        return DbObjType.OPERATOR;
     }
 }

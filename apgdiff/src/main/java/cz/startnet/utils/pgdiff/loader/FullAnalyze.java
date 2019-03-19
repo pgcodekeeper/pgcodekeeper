@@ -81,7 +81,7 @@ public final class FullAnalyze {
                 // for proper depcy processing, find its twin in the final DB object
                 statement = (PgStatementWithSearchPath) statement.getTwin(db);
             }
-            String schemaName = statement.getContainingSchema().getName();
+            String schemaName = statement.getSchemaName();
 
             try {
                 switch (statementType) {

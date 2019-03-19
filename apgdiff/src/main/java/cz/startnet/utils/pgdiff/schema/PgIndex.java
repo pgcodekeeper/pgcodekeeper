@@ -17,8 +17,8 @@ public class PgIndex extends AbstractIndex {
 
     private String method;
 
-    public PgIndex(String name, String tableName) {
-        super(name, tableName);
+    public PgIndex(String name) {
+        super(name);
     }
 
     @Override
@@ -44,8 +44,7 @@ public class PgIndex extends AbstractIndex {
             sbSQL.append("ONLY ");
         }
 
-        sbSQL.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
-        sbSQL.append(PgDiffUtils.getQuotedName(getTableName()));
+        sbSQL.append(par.getQualifiedName());
         if (getMethod() != null) {
             sbSQL.append(" USING ").append(PgDiffUtils.getQuotedName(getMethod()));
         }
@@ -94,7 +93,7 @@ public class PgIndex extends AbstractIndex {
 
     @Override
     public String getDropSQL() {
-        return "DROP INDEX " + PgDiffUtils.getQuotedName(getContainingSchema().getName()) + '.'
+        return "DROP INDEX " + PgDiffUtils.getQuotedName(getSchemaName()) + '.'
                 + PgDiffUtils.getQuotedName(getName()) + ";";
     }
 
@@ -116,8 +115,7 @@ public class PgIndex extends AbstractIndex {
         if (isClusterIndex() && !newIndex.isClusterIndex() &&
                 !((AbstractPgTable)newIndex.getParent()).isClustered()) {
             sb.append("\n\nALTER TABLE ")
-            .append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
-            .append('.').append(PgDiffUtils.getQuotedName(getTableName()))
+            .append(getParent().getQualifiedName())
             .append(" SET WITHOUT CLUSTER;");
         }
 
@@ -134,8 +132,7 @@ public class PgIndex extends AbstractIndex {
         final StringBuilder sbSQL = new StringBuilder();
         if (isClusterIndex()) {
             sbSQL.append("\n\nALTER TABLE ");
-            sbSQL.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
-            sbSQL.append(PgDiffUtils.getQuotedName(getTableName()));
+            sbSQL.append(getParent().getQualifiedName());
             sbSQL.append(" CLUSTER ON ");
             sbSQL.append(getName());
             sbSQL.append(';');
@@ -167,7 +164,7 @@ public class PgIndex extends AbstractIndex {
 
     @Override
     protected AbstractIndex getIndexCopy() {
-        PgIndex index =  new PgIndex(getName(), getTableName());
+        PgIndex index =  new PgIndex(getName());
         index.setMethod(getMethod());
         return index;
     }

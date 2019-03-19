@@ -68,15 +68,12 @@ public class SequencesReader extends JdbcReader {
 
         if (SupportedVersion.VERSION_10.isLE(loader.version)) {
             s.setStartWith(Long.toString(res.getLong("seqstart")));
-            String dataType = identityType != null ? null :
-                loader.cachedTypesByOid.get(res.getLong("data_type")).getFullName();
+            String dataType = loader.cachedTypesByOid.get(res.getLong("data_type")).getFullName();
             s.setMinMaxInc(res.getLong("seqincrement"), res.getLong("seqmax"),
                     res.getLong("seqmin"), dataType, 0L);
             s.setCache(Long.toString(res.getLong("seqcache")));
             s.setCycle(res.getBoolean("seqcycle"));
-            if (identityType == null) {
-                s.setDataType(dataType);
-            }
+            s.setDataType(dataType);
         }
 
         if ("d".equals(identityType) || "a".equals(identityType)) {
@@ -181,10 +178,5 @@ public class SequencesReader extends JdbcReader {
                 seq.setCycle(res.getBoolean("is_cycled"));
             }
         }
-    }
-
-    @Override
-    protected DbObjType getType() {
-        return DbObjType.SEQUENCE;
     }
 }

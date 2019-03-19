@@ -10,11 +10,6 @@ public abstract class AbstractFunction extends PgStatementWithSearchPath impleme
     }
 
     @Override
-    public AbstractFunction deepCopy() {
-        return (AbstractFunction) shallowCopy();
-    }
-
-    @Override
     public AbstractSchema getContainingSchema() {
         return (AbstractSchema) getParent();
     }

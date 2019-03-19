@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -57,6 +56,8 @@ public class MainTest {
             {new DangerAlterColArgumentsProvider()},
             {new FailDangerRestartArgumentsProvider()},
             {new DangerRestartAgumentsProvider()},
+            {new FailDangerUpdateArgumentsProvider()},
+            {new DangerUpdateAgumentsProvider()},
             {new FlagsArgumentsProvider()},
             {new ParseTestArgumentsProvider()},
             {new IgnoreListsArgumentsProvider()},
@@ -69,6 +70,8 @@ public class MainTest {
             {new FailCompareArgumentsProvider()},
             {new FailMsParseArgumentsProvider()},
             {new FailPgParseArgumentsProvider()},
+            {new LibrariesArgumentsProvider()},
+            {new OverrideArgumentsProvider()},
         });
     }
 
@@ -181,7 +184,7 @@ public class MainTest {
     }
 }
 
-abstract class ArgumentsProvider implements Closeable {
+abstract class ArgumentsProvider {
 
     protected static final String STANDALONE = "pgcodekeeper_standalone_";
 
@@ -236,7 +239,6 @@ abstract class ArgumentsProvider implements Closeable {
         return resDir;
     }
 
-    @Override
     public void close() {
         try {
             if (resFile != null && !resFile.isDirectory()){
@@ -246,7 +248,7 @@ abstract class ArgumentsProvider implements Closeable {
             // do nothing
         }
 
-        try{
+        try {
             if (resDir != null) {
                 resDir.close();
             }
@@ -328,8 +330,12 @@ class EmptyArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String output() {
-        try (ArgumentsProvider a = new UsageArgumentsProvider()) {
-            return a.output();
+        try {
+            return new String(Files.readAllBytes(ApgdiffUtils.getFileFromOsgiRes(
+                    MainTest.class.getResource("usage_check.txt")).toPath()),
+                    StandardCharsets.UTF_8);
+        } catch (IOException | URISyntaxException ex) {
+            throw new IllegalStateException(ex);
         }
     }
 }
@@ -611,6 +617,50 @@ class DangerRestartAgumentsProvider extends ArgumentsProvider {
 }
 
 /**
+ * {@link ArgumentsProvider} implementation testing UPDATE dangerous statements
+ */
+class FailDangerUpdateArgumentsProvider extends ArgumentsProvider {
+
+    public FailDangerUpdateArgumentsProvider() {
+        super(TestType.TEST_OUTPUT, "add_column_add_defaults");
+    }
+
+    @Override
+    public String[] args() throws URISyntaxException, IOException {
+        File fNew = getFile(FILES_POSTFIX.NEW_SQL);
+        File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
+
+        return new String[]{"--safe-mode", "-o", getDiffResultFile().getAbsolutePath(),
+                fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
+    }
+
+    @Override
+    public String output() {
+        return "Script contains dangerous statements: UPDATE. Use --allow-danger-ddl to override.\n";
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing successfull UPDATE dangerous statements
+ */
+class DangerUpdateAgumentsProvider extends ArgumentsProvider {
+
+    public DangerUpdateAgumentsProvider() {
+        super(TestType.TEST_OUTPUT, "add_column_add_defaults");
+    }
+
+    @Override
+    public String[] args() throws URISyntaxException, IOException {
+        File fNew = getFile(FILES_POSTFIX.NEW_SQL);
+        File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
+
+        return new String[]{"--safe-mode", "--allow-danger-ddl",
+                "UPDATE", "-o", getDiffResultFile().getAbsolutePath(),
+                fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
+    }
+}
+
+/**
  * {@link ArgumentsProvider} implementation testing all other flags
  */
 class FlagsArgumentsProvider extends ArgumentsProvider {
@@ -838,3 +888,44 @@ class FailPgParseArgumentsProvider extends ArgumentsProvider {
     }
 }
 
+/**
+ * {@link ArgumentsProvider} implementation for libraries test
+ */
+class LibrariesArgumentsProvider extends ArgumentsProvider {
+
+    public LibrariesArgumentsProvider() {
+        super(TestType.TEST_DIFF, "libraries");
+    }
+
+    @Override
+    protected String[] args() throws URISyntaxException, IOException {
+        File fNew = getFile(FILES_POSTFIX.NEW_SQL);
+        File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
+        File lib = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource("lib.sql"));
+
+        return new String[] {"-o", getDiffResultFile().getAbsolutePath(),
+                "-t", fOriginal.getAbsolutePath(), "-s", fNew.getAbsolutePath(),
+                "--tgt-lib", lib.getAbsolutePath()};
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation for libraries test with override
+ */
+class OverrideArgumentsProvider extends ArgumentsProvider {
+
+    public OverrideArgumentsProvider() {
+        super(TestType.TEST_OUTPUT, "libraries");
+    }
+
+    @Override
+    protected String[] args() throws URISyntaxException, IOException {
+        File fNew = getFile(FILES_POSTFIX.NEW_SQL);
+        File fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
+        File lib = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource("lib.sql"));
+
+        return new String[] {"-o", getDiffResultFile().getAbsolutePath(),
+                "-t", fOriginal.getAbsolutePath(), "-s", fNew.getAbsolutePath(),
+                "--src-lib", lib.getAbsolutePath()};
+    }
+}
