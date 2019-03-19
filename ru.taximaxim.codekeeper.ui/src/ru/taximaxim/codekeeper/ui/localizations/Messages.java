@@ -118,7 +118,9 @@ public final class Messages extends NLS {
     public static String differ_reverse_diff;
     public static String diffTableViewer_change_type;
     public static String diffTableViewer_container;
+    public static String diffTableViewer_db_user;
     public static String diffTableViewer_deselect_child_elements;
+    public static String diffTableViewer_git_user;
     public static String diffTableViewer_mark_selected_elements;
     public static String diffTableViewer_unmark_selected_elements;
     public static String diffTableViewer_invert_selection;
@@ -348,8 +350,6 @@ public final class Messages extends NLS {
 
     public static String DiffTableViewer_database;
 
-    public static String DiffTableViewer_db_user;
-
     public static String DiffTableViewer_directory;
 
     public static String DiffTableViewer_file;
@@ -381,8 +381,6 @@ public final class Messages extends NLS {
     public static String DiffTableViewer_type;
 
     public static String DiffTableViewer_uri;
-
-    public static String DiffTableViewer_user;
 
     public static String DiffWizard_db_tz;
 
@@ -726,8 +724,6 @@ public final class Messages extends NLS {
 
     public static String TreeDiffer_loading_schema_from;
 
-    public static String TreeDiffer_reverting_tree;
-
     public static String TreeDiffer_schema_load_error;
 
     public static String e_mail;
@@ -793,13 +789,9 @@ public final class Messages extends NLS {
 
     public static String generalPrefPage_perspective_changing_status;
 
-    public static String GeneralPrefPage_extension_desc;
-
     public static String GeneralPrefPage_ignore_concurrent_modification;
 
     public static String GeneralPrefPage_reuse_open_compare_editor;
-
-    public static String GeneralPrefPage_use_extension;
 
     public static String GetChanges_select_source;
 
