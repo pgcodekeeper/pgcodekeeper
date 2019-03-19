@@ -59,7 +59,7 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
         funcArgsCtxsForAnalyze.addAll(ctxs);
     }
 
-    public void setSplitFuncArgs(List<Pair<String, String>> simpleFuncArgs,
+    public void setArgStoragesForNmsps(List<Pair<String, String>> simpleFuncArgs,
             Map<String, GenericColumn> relFuncArgs) {
         this.simpleFuncArgs = simpleFuncArgs;
         this.relFuncArgs = relFuncArgs;

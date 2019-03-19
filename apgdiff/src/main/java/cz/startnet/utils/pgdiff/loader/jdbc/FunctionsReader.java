@@ -223,7 +223,7 @@ public class FunctionsReader extends JdbcReader {
                             List<Pair<String, String>> simpleFuncArgs = new ArrayList<>();
                             Map<String, GenericColumn> relFuncArgs = new LinkedHashMap<>();
                             fillArgStoragesForNmsps(simpleFuncArgs, relFuncArgs, db, argsQualTypes);
-                            analysisLauncher.setSplitFuncArgs(simpleFuncArgs, relFuncArgs);
+                            analysisLauncher.setArgStoragesForNmsps(simpleFuncArgs, relFuncArgs);
                         }
                         db.addAnalysisLauncher(analysisLauncher);
                     });
