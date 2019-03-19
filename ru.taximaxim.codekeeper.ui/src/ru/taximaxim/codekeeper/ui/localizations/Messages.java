@@ -382,8 +382,6 @@ public final class Messages extends NLS {
 
     public static String DiffTableViewer_uri;
 
-    public static String DiffTableViewer_user;
-
     public static String DiffWizard_db_tz;
 
     public static String DiffWizard_ms_sql_dump;
@@ -726,8 +724,6 @@ public final class Messages extends NLS {
 
     public static String TreeDiffer_loading_schema_from;
 
-    public static String TreeDiffer_reverting_tree;
-
     public static String TreeDiffer_schema_load_error;
 
     public static String e_mail;
@@ -793,11 +789,7 @@ public final class Messages extends NLS {
 
     public static String generalPrefPage_perspective_changing_status;
 
-    public static String GeneralPrefPage_extension_desc;
-
     public static String GeneralPrefPage_reuse_open_compare_editor;
-
-    public static String GeneralPrefPage_use_extension;
 
     public static String GetChanges_select_source;
 
