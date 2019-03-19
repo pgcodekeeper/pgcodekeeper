@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -141,7 +142,7 @@ public class DiffTableViewer extends Composite {
     private final Set<TreeElement> elements = elementInfoMap.keySet();
     private final DiffContentProvider contentProvider = new DiffContentProvider();
     private final CheckStateProvider checkProvider;
-    private final TableViewerComparator comparator = new TableViewerComparator(elementInfoMap);
+    private final TableViewerComparator comparator = new TableViewerComparator();
     private IStructuredSelection oldSelection;
     private IStructuredSelection newSelection;
 
@@ -164,13 +165,12 @@ public class DiffTableViewer extends Composite {
     private DbSource dbProject;
     private DbSource dbRemote;
 
-
     private final IStatusLineManager lineManager;
 
     private final List<ICheckStateListener> programmaticCheckListeners = new ArrayList<>();
 
     private enum Columns {
-        CHANGE, CHECK, GIT_USER, LOCATION, NAME, TYPE, USERS
+        CHECK, NAME, TYPE, CHANGE, LOCATION, GIT_USER, DB_USER
     }
 
     public StructuredViewer getViewer() {
@@ -562,7 +562,7 @@ public class DiffTableViewer extends Composite {
         columnLocation.getColumn().setToolTipText(Messages.DiffTableViewer_reset_sorting);
 
         columnName.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.NAME));
-        columnDbUser.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.USERS));
+        columnDbUser.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.DB_USER));
         columnGitUser.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.GIT_USER));
         columnType.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.TYPE));
         columnChange.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.CHANGE));
@@ -706,7 +706,7 @@ public class DiffTableViewer extends Composite {
     private void updateSortIndexes(){
         int i = 0;
         StringBuilder sb = new StringBuilder();
-        for (TableViewerComparator.SortingColumn col : comparator.sortOrder) {
+        for (SortingColumn col : comparator.sortOrder) {
             sb.setLength(0);
             sb.append(comparator.sortOrder.size() - i++)
             .append(!col.desc ? '\u25BF' : '\u25B5')
@@ -732,7 +732,7 @@ public class DiffTableViewer extends Composite {
             case GIT_USER:
                 columnGitUser.getColumn().setText(sb.append(Messages.diffTableViewer_git_user).toString());
                 break;
-            case USERS:
+            case DB_USER:
                 columnDbUser.getColumn().setText(sb.append(Messages.diffTableViewer_db_user).toString());
                 break;
             default:
@@ -943,7 +943,9 @@ public class DiffTableViewer extends Composite {
             public void done(IJobChangeEvent event) {
                 if (event.getResult().isOK()) {
                     UiSync.exec(getDisplay(), () -> {
-                        if (viewerFilter.isLocalChange.get() || !viewerFilter.gitUserFilter.isEmpty()) {
+                        if (viewerFilter.isLocalChange.get()
+                                || !viewerFilter.gitUserFilter.isEmpty()
+                                || comparator.sortOrder.stream().anyMatch(c -> c.col == Columns.GIT_USER)) {
                             viewer.refresh();
                         } else {
                             viewer.update(elements.toArray(new TreeElement[0]),
@@ -1221,35 +1223,31 @@ public class DiffTableViewer extends Composite {
         }
     }
 
-    private static class TableViewerComparator extends ViewerComparator {
+    private static class SortingColumn {
 
-        private static class SortingColumn {
+        private final Columns col;
+        private final boolean desc;
 
-            private final Columns col;
-            private final boolean desc;
-
-            public SortingColumn(Columns col, boolean desc) {
-                this.col = col;
-                this.desc = desc;
-            }
-
-            @Override
-            public boolean equals(Object obj) {
-                return obj instanceof SortingColumn
-                        && ((SortingColumn) obj).col == col;
-            }
-
-            @Override
-            public int hashCode() {
-                return col.hashCode();
-            }
+        public SortingColumn(Columns col, boolean desc) {
+            this.col = col;
+            this.desc = desc;
         }
-        private final Map<TreeElement, ElementMetaInfo> elementInfoMap;
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof SortingColumn
+                    && ((SortingColumn) obj).col == col;
+        }
+
+        @Override
+        public int hashCode() {
+            return col.hashCode();
+        }
+    }
+
+    private class TableViewerComparator extends ViewerComparator {
+
         private final Deque<SortingColumn> sortOrder = new LinkedList<>();
-
-        public TableViewerComparator(Map<TreeElement, ElementMetaInfo> elementInfoMap) {
-            this.elementInfoMap = elementInfoMap;
-        }
 
         public void clearSortList() {
             sortOrder.clear();
@@ -1275,13 +1273,12 @@ public class DiffTableViewer extends Composite {
             while (it.hasNext()) {
                 SortingColumn c = it.next();
                 int res = 0;
-                Columns col = c.col;
-                switch (col) {
+                switch (c.col) {
                 case CHANGE:
                     res = el1.getSide().toString().compareTo(el2.getSide().toString());
                     break;
                 case GIT_USER:
-                    res = compareUsrColElements(col, el1, el2);
+                    res = compareUsers(c.col, el1, el2);
                     break;
                 case LOCATION:
                     res = el1.getContainerQName().compareTo(el2.getContainerQName());
@@ -1295,8 +1292,8 @@ public class DiffTableViewer extends Composite {
                 case TYPE:
                     res = el1.getType().toString().compareTo(el2.getType().toString());
                     break;
-                case USERS:
-                    res = compareUsrColElements(col, el1, el2);
+                case DB_USER:
+                    res = compareUsers(c.col, el1, el2);
                     break;
                 default:
                     break;
@@ -1312,25 +1309,29 @@ public class DiffTableViewer extends Composite {
             return 0;
         }
 
-        private int compareUsrColElements(Columns col, TreeElement el1, TreeElement el2) {
-            ElementMetaInfo el1Meta = elementInfoMap.get(el1);
-            ElementMetaInfo el2Meta = elementInfoMap.get(el2);
+        private int compareUsers(Columns col, TreeElement el1, TreeElement el2) {
+            Function<ElementMetaInfo, String> getter;
+            switch(col) {
+            case DB_USER:
+                getter = ElementMetaInfo::getDbUser;
+                break;
+            case GIT_USER:
+                getter = ElementMetaInfo::getGitUser;
+                break;
+            default:
+                return 0;
+            }
 
-            if (el1Meta == null || el2Meta == null) {
+            ElementMetaInfo el1Meta = elementInfoMap.get(el1);
+            if (el1Meta == null) {
                 return -1;
             }
-
-            String el1Value;
-            String el2Value;
-            if (Columns.USERS == col) {
-                el1Value = el1Meta.getDbUser();
-                el2Value = el2Meta.getDbUser();
-            } else {
-                el1Value = el1Meta.getGitUser();
-                el2Value = el2Meta.getGitUser();
+            ElementMetaInfo el2Meta = elementInfoMap.get(el2);
+            if (el2Meta == null) {
+                return 1;
             }
 
-            return el1Value.compareTo(el2Value);
+            return getter.apply(el1Meta).compareTo(getter.apply(el2Meta));
         }
     }
 
@@ -1341,8 +1342,8 @@ public class DiffTableViewer extends Composite {
 
         private final AbstractFilter codeFilter = new CodeFilter();
         private final AbstractFilter schemaFilter = new SchemaFilter();
-        private final AbstractFilter gitUserFilter = new UserFilter(m -> m.getGitUser());
-        private final AbstractFilter dbUserFilter = new UserFilter(m -> m.getDbUser());
+        private final AbstractFilter gitUserFilter = new UserFilter(ElementMetaInfo::getGitUser);
+        private final AbstractFilter dbUserFilter = new UserFilter(ElementMetaInfo::getDbUser);
 
         private final AtomicBoolean isLocalChange = new AtomicBoolean(false);
         private final AtomicBoolean isHideLibs = new AtomicBoolean(false);
