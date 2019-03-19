@@ -136,7 +136,7 @@ public class CreateFunction extends ParserAbstract {
                     "function definition of " + function.getBareName(),
                     ctx -> {
                         FuncProcAnalysisLauncher launcher = new FuncProcAnalysisLauncher(function, ctx);
-                        launcher.addFuncArgsCtxsForAnalyze(funcArgsCtx);
+                        launcher.setFuncArgsCtxs(funcArgsCtx);
                         launcher.setErrors(errors);
                         db.addAnalysisLauncher(launcher);
                     }, antlrTasks);

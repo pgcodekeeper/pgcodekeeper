@@ -36,33 +36,43 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
 
     // Contains PgFunction's arguments contexts for analysis (for getting dependencies).
-    private final List<Function_argumentsContext> funcArgsCtxsForAnalyze = new ArrayList<>();
+    // Used in case working with project.
+    private List<Function_argumentsContext> funcArgsCtxs;
 
-    private List<Pair<String, String>> simpleFuncArgs;
-    private Map<String, GenericColumn> relFuncArgs;
+    // Contains pairs, each of which contains the name of the argument and its
+    // full type name in GenericColumn object (typeSchema, typeName, DbObjType.TYPE).
+    // It's need for analysis (for getting dependencies).
+    // Used in case working with db.
+    private List<Pair<String, GenericColumn>> funcArgs;
 
     public FuncProcAnalysisLauncher(PgStatementWithSearchPath stmt, ParserRuleContext ctx) {
         super(stmt, ctx);
     }
 
-    public FuncProcAnalysisLauncher(PgStatementWithSearchPath stmt, List<Function_argumentsContext> ctxs) {
+    public FuncProcAnalysisLauncher(PgStatementWithSearchPath stmt,
+            List<Function_argumentsContext> funcArgsCtxs) {
         super(stmt);
-        addFuncArgsCtxsForAnalyze(ctxs);
+        setFuncArgsCtxs(funcArgsCtxs);
     }
 
     /**
-     * Add function's arguments contexts for analyze.
+     * Set function's arguments contexts for processing and analyze.
      *
      * @param ctxs contexts which belongs to stmt
      */
-    public void addFuncArgsCtxsForAnalyze(List<Function_argumentsContext> ctxs) {
-        funcArgsCtxsForAnalyze.addAll(ctxs);
+    public void setFuncArgsCtxs(List<Function_argumentsContext> funcArgsCtxs) {
+        this.funcArgsCtxs = funcArgsCtxs;
     }
 
-    public void setArgStoragesForNmsps(List<Pair<String, String>> simpleFuncArgs,
-            Map<String, GenericColumn> relFuncArgs) {
-        this.simpleFuncArgs = simpleFuncArgs;
-        this.relFuncArgs = relFuncArgs;
+    /**
+     * Set function arguments for processing and analyze.
+     * Each pair contains the name of the argument and its full type name
+     * in GenericColumn object (typeSchema, typeName, DbObjType.TYPE)
+     *
+     * @param funcArgs function arguments which belongs to stmt
+     */
+    public void setFuncArgs(List<Pair<String, GenericColumn>> funcArgs) {
+        this.funcArgs = funcArgs;
     }
 
     @Override
@@ -77,10 +87,14 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
 
     private <T extends ParserRuleContext> void analyzeDefinition(T ctx,
             AbstractExprWithNmspc<T> analyzer, AbstractFunction st) {
-        if (simpleFuncArgs == null && relFuncArgs == null) {
-            simpleFuncArgs = new ArrayList<>();
-            relFuncArgs = new LinkedHashMap<>();
-            fillArgStoragesForNmsps(simpleFuncArgs, relFuncArgs, db);
+        List<Pair<String, String>> simpleFuncArgs = new ArrayList<>();
+        Map<String, GenericColumn> relFuncArgs = new LinkedHashMap<>();
+        if (funcArgs != null) {
+            // In this case, the data which was got from db is analyzed.
+            fillArgStoresFromArgs(simpleFuncArgs, relFuncArgs);
+        } else {
+            // In this case, the data which was got from project is analyzed.
+            fillArgStoresFromArgsCtxs(simpleFuncArgs, relFuncArgs);
         }
         analyzer.addArgsToNmsps(simpleFuncArgs, relFuncArgs);
 
@@ -95,22 +109,21 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
      *
      * @param prims storage for function arguments with simple-types
      * @param rels storage for function arguments with relation-types
-     * @param db database statement
      */
-    private void fillArgStoragesForNmsps(List<Pair<String, String>> prims,
-            Map<String, GenericColumn> rels, PgDatabase db) {
-        if (funcArgsCtxsForAnalyze == null) {
+    private void fillArgStoresFromArgsCtxs(List<Pair<String, String>> prims,
+            Map<String, GenericColumn> rels) {
+        if (funcArgsCtxs == null) {
             return;
         }
 
-        for (int i = 0; i < funcArgsCtxsForAnalyze.size(); i++) {
+        for (int i = 0; i < funcArgsCtxs.size(); i++) {
             String argDollarName = "$" + (i + 1);
-            Identifier_nontypeContext argNameCtx = funcArgsCtxsForAnalyze.get(i).argname;
+            Identifier_nontypeContext argNameCtx = funcArgsCtxs.get(i).argname;
 
             String argName = argNameCtx == null ? null :
-                ParserAbstract.getFullCtxText(funcArgsCtxsForAnalyze.get(i).argname);
+                ParserAbstract.getFullCtxText(funcArgsCtxs.get(i).argname);
 
-            Data_typeContext dataTypeCtx = funcArgsCtxsForAnalyze.get(i).data_type();
+            Data_typeContext dataTypeCtx = funcArgsCtxs.get(i).data_type();
             Schema_qualified_name_nontypeContext typeQname = dataTypeCtx.predefined_type()
                     .schema_qualified_name_nontype();
 
@@ -126,6 +139,24 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
                 addArgToPrims(argDollarName, argName,
                         ParserAbstract.getTypeName(dataTypeCtx), prims);
             }
+        }
+    }
+
+    /**
+     * Fill storage of simple-arguments and storage of relation-arguments
+     * by function arguments.
+     * <br />(These storages will be added to namespaces for correct analysis).
+     *
+     * @param prims storage for function arguments with simple-types
+     * @param rels storage for function arguments with relation-types
+     */
+    private void fillArgStoresFromArgs(List<Pair<String, String>> prims,
+            Map<String, GenericColumn> rels) {
+        for (int i = 0; i < funcArgs.size(); i++) {
+            Pair<String, GenericColumn> arg = funcArgs.get(i);
+            FuncProcAnalysisLauncher.putArgToStorageForNmsp(prims,  rels, db,
+                    arg.getSecond().schema, arg.getSecond().table, "$" + (i + 1),
+                    arg.getFirst());
         }
     }
 

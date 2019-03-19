@@ -3,10 +3,8 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
@@ -218,12 +216,9 @@ public class FunctionsReader extends JdbcReader {
                         FuncProcAnalysisLauncher analysisLauncher = new FuncProcAnalysisLauncher(
                                 function, ctx);
                         if (!argsQualTypes.isEmpty()) {
-                            // Processing and sending the arguments of function
-                            // to the namespaces in launcher for correct analysis.
-                            List<Pair<String, String>> simpleFuncArgs = new ArrayList<>();
-                            Map<String, GenericColumn> relFuncArgs = new LinkedHashMap<>();
-                            fillArgStoragesForNmsps(simpleFuncArgs, relFuncArgs, db, argsQualTypes);
-                            analysisLauncher.setArgStoragesForNmsps(simpleFuncArgs, relFuncArgs);
+                            // Setting the arguments of function to the namespaces
+                            // through launcher, for correct analysis.
+                            analysisLauncher.setFuncArgs(argsQualTypes);
                         }
                         db.addAnalysisLauncher(analysisLauncher);
                     });
@@ -243,27 +238,6 @@ public class FunctionsReader extends JdbcReader {
         }
 
         return quote.concat("$");
-    }
-
-    /**
-     * Fill storage of simple-arguments and storage of relation-arguments
-     * by function arguments.
-     * <br />(These storages will be added to namespaces for correct analysis).
-     *
-     * @param prims storage for function arguments with simple-types
-     * @param rels storage for function arguments with relation-types
-     * @param db database statement
-     * @param argsQualTypes list of pairs with function argument names and their qualified types
-     */
-    private void fillArgStoragesForNmsps(List<Pair<String, String>> prims,
-            Map<String, GenericColumn> rels, PgDatabase db,
-            List<Pair<String, GenericColumn>> argsQualTypes) {
-        for (int i = 0; i < argsQualTypes.size(); i++) {
-            Pair<String, GenericColumn> arg = argsQualTypes.get(i);
-            FuncProcAnalysisLauncher.putArgToStorageForNmsp(prims,  rels, db,
-                    arg.getSecond().schema, arg.getSecond().table, "$" + (i + 1),
-                    arg.getFirst());
-        }
     }
 
     private AbstractFunction getAgg(ResultSet res, String schemaName,
@@ -420,7 +394,7 @@ public class FunctionsReader extends JdbcReader {
 
     /**
      * Returns a list of pairs, each of which contains the name of the argument
-     * and its full type name.
+     * and its full type name in GenericColumn object (typeSchema, typeName, DbObjType.TYPE).
      */
     private List<Pair<String, GenericColumn>> fillArguments(AbstractPgFunction f,
             ResultSet res) throws SQLException {
