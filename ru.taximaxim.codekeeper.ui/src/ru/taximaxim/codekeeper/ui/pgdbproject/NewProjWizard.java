@@ -128,6 +128,7 @@ implements IExecutableExtension, INewWizard {
 
                 props.getPrefs().put(PROJ_PREF.NAME_OF_BINDED_DB, nameOfBindedDb);
                 props.getPrefs().put(PROJ_PREF.LAST_DB_STORE, nameOfBindedDb);
+                props.getPrefs().put(PROJ_PREF.LAST_DB_STORE_EDITOR, nameOfBindedDb);
 
                 try {
                     props.getPrefs().flush();

@@ -1,11 +1,9 @@
 package ru.taximaxim.codekeeper.ui.menuitems;
 
-import java.io.File;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -60,41 +58,34 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
 
         setSelectionFromPart(getWorkbenchWindow().getActivePage().getActiveEditor());
 
+        checkBindingToDb();
+
+        return storePicker;
+    }
+
+    private void checkBindingToDb() {
         IEditorPart ed = getWorkbenchWindow().getActivePage().getActiveEditor();
+        DbInfo dbSource = null;
         if (ed instanceof SQLEditor) {
-
-            /// TODO add processing for this case
-
+            SQLEditor sqlEd = ((SQLEditor) ed);
+            dbSource = sqlEd.getCurrentDb();
+            sqlEd.setCurrentDb(dbSource);
         } else if (ed instanceof ProjectEditorDiffer) {
             ProjectEditorDiffer projEd = (ProjectEditorDiffer) ed;
-            IEclipsePreferences projPref = PgDbProject.getPrefs(projEd.getProject());
-
-            String nameOfBindedDb = projPref.get(PROJ_PREF.NAME_OF_BINDED_DB, "");
-
+            String nameOfBindedDb = PgDbProject.getPrefs(projEd.getProject())
+                    .get(PROJ_PREF.NAME_OF_BINDED_DB, "");
             if (!"".equals(nameOfBindedDb)) {
                 List<DbInfo> store = DbInfo.readStoreFromXml();
-                Object source = store.stream()
+                dbSource = store.stream()
                         .filter(dbInf -> dbInf.getName().equals(nameOfBindedDb))
                         .findAny().orElse(null);
-
-                boolean isDumpFile = source == null;
-
-                if (isDumpFile) {
-                    File dumpFile = new File(nameOfBindedDb);
-                    if (dumpFile.isFile() &&
-                            storePicker.checkMatchWith(nameOfBindedDb
-                                    .substring(nameOfBindedDb.lastIndexOf(File.separator) + 1))) {
-                        source = dumpFile;
-                    }
-                }
-
-                storePicker.setSelection(new StructuredSelection(source));
-                storePicker.setComboEnabled(isDumpFile);
-                projEd.setCurrentDb(source);
+                projEd.setCurrentDb(dbSource);
             }
         }
 
-        return storePicker;
+        boolean isDumpFile = dbSource == null;
+        storePicker.setSelection(isDumpFile ? null : new StructuredSelection(dbSource));
+        storePicker.setComboEnabled(isDumpFile);
     }
 
     @Override
