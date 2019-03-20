@@ -351,7 +351,7 @@ public abstract class AbstractExpr {
         }
     }
 
-    protected Stream<IRelation> findRelations(String schemaName, String relationName) {
+    public Stream<IRelation> findRelations(String schemaName, String relationName) {
         Stream<IRelation> foundRelations;
         if (schemaName != null) {
             if (ApgdiffUtils.isPgSystemSchema(schemaName)) {

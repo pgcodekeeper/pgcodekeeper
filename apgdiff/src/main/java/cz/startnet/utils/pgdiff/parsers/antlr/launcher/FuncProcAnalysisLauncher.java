@@ -15,11 +15,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IRelation;
-import cz.startnet.utils.pgdiff.schema.ISchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
-import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
@@ -63,7 +61,7 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
             AbstractExprWithNmspc<T> analyzer, AbstractFunction st) {
         List<Pair<String, String>> simpleFuncArgs = new ArrayList<>();
         Map<String, GenericColumn> relFuncArgs = new LinkedHashMap<>();
-        fillArgStoresFromArgs(simpleFuncArgs, relFuncArgs);
+        fillArgStoresFromArgs(simpleFuncArgs, relFuncArgs, analyzer);
         analyzer.addArgsToNmsps(simpleFuncArgs, relFuncArgs);
         analyzer.analyze(ctx);
         st.addAllDeps(analyzer.getDepcies());
@@ -76,14 +74,16 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
      *
      * @param prims storage for function arguments with simple-types
      * @param rels storage for function arguments with relation-types
+     * @param analyzer analyzer is used here to search relations
      */
-    private void fillArgStoresFromArgs(List<Pair<String, String>> prims,
-            Map<String, GenericColumn> rels) {
+    private <T extends ParserRuleContext> void fillArgStoresFromArgs(
+            List<Pair<String, String>> prims, Map<String, GenericColumn> rels,
+            AbstractExprWithNmspc<T> analyzer) {
         for (int i = 0; i < funcArgs.size(); i++) {
             Pair<String, GenericColumn> arg = funcArgs.get(i);
             FuncProcAnalysisLauncher.putArgToStorageForNmsp(prims,  rels, db,
                     arg.getSecond().schema, arg.getSecond().table, "$" + (i + 1),
-                    arg.getFirst());
+                    arg.getFirst(), analyzer);
         }
     }
 
@@ -100,11 +100,12 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
      * @param argType type of argument
      * @param argDollarName dollar name of argument
      * @param argName argument name
+     * @param analyzer analyzer is used here to search relations
      */
-    public static void putArgToStorageForNmsp(
+    public static <T extends ParserRuleContext> void putArgToStorageForNmsp(
             List<Pair<String, String>> prims, Map<String, GenericColumn> rels,
             PgDatabase db, String argTypeSchema, String argType, String argDollarName,
-            String argName) {
+            String argName, AbstractExprWithNmspc<T> analyzer) {
         if (ApgdiffUtils.isPgSystemSchema(argTypeSchema)
                 && "record".equalsIgnoreCase(argType)) {
             addArgToRels(argDollarName, argName, argType, argTypeSchema,
@@ -112,18 +113,15 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
             return;
         }
 
-        boolean isSystemSchema = ApgdiffUtils.isPgSystemSchema(argTypeSchema);
-        ISchema schemaOfType = !isSystemSchema ? db.getSchema(argTypeSchema) : PgSystemStorage
-                .getObjectsFromResources(db.getPostgresVersion()).getSchema(argTypeSchema);
-
         DbObjType argDbObjType = null;
-        IRelation rel = schemaOfType.getRelation(argType);
+        IRelation rel = analyzer.findRelations(argTypeSchema, argType).findAny().orElse(null);
         if (rel != null) {
             argDbObjType = rel.getStatementType();
-        } else if (!isSystemSchema) {
-            if (((PgSchema) schemaOfType).getType(argType) != null) {
+        } else if (!ApgdiffUtils.isPgSystemSchema(argTypeSchema)) {
+            PgSchema schemaOfType = (PgSchema) db.getSchema(argTypeSchema);
+            if (schemaOfType.getType(argType) != null) {
                 argDbObjType = DbObjType.TYPE;
-            } else if (((PgSchema) schemaOfType).getDomain(argType) != null) {
+            } else if (schemaOfType.getDomain(argType) != null) {
                 argDbObjType = DbObjType.DOMAIN;
             }
         }
