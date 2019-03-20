@@ -77,10 +77,12 @@ Usage
                                           library objects otherwise, in case of
                                           conflicts objects loaded first have
                                           priority
+ --ignore-concurrent-modification       : ignore concurrent modification errors
+                                          of database objects
  --ms-sql                               : work with MS SQL
 
 DANGER_STATEMENT : [DROP_TABLE | ALTER_COLUMN | DROP_COLUMN | RESTART_WITH | UPDATE]
-OBJECT_TYPE : [USER | ROLE | ASSEMBLY | SCHEMA | EXTENSION | TYPE | DOMAIN | SEQUENCE | FUNCTION | PROCEDURE | AGGREGATE | OPERATOR | FTS_PARSER | FTS_TEMPLATE | FTS_DICTIONARY | FTS_CONFIGURATION | TABLE | CONSTRAINT | INDEX | VIEW | TRIGGER | RULE]
+OBJECT_TYPE : [USER | ROLE | ASSEMBLY | SCHEMA | EXTENSION | TYPE | DOMAIN | SEQUENCE | FUNCTION | PROCEDURE | AGGREGATE | OPERATOR | FTS_PARSER | FTS_TEMPLATE | FTS_DICTIONARY | FTS_CONFIGURATION | TABLE | CONSTRAINT | VIEW | INDEX | TRIGGER | RULE]
 
 Library load order
 	Libraries are loaded in the following order:

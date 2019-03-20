@@ -475,7 +475,11 @@ public abstract class PgStatement implements IStatement, IHashable {
      *
      * @return a fully recursive copy of this statement.
      */
-    public abstract PgStatement deepCopy();
+    public final PgStatement deepCopy() {
+        PgStatement copy = shallowCopy();
+        getChildren().forEach(st -> copy.addChild(st.deepCopy()));
+        return copy;
+    }
 
     /**
      * This method does not account for nested child PgStatements.

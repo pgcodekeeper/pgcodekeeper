@@ -147,7 +147,7 @@ public class CreateMsFunction extends BatchContextProcessor {
         if (isJdbc && schema != null) {
             schema.addFunction(f);
         } else {
-            addSafe(AbstractSchema::addFunction, schema, f, ids);
+            addSafe(schema, f, ids);
         }
 
         return f;

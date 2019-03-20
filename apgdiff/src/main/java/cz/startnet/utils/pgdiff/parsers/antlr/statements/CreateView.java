@@ -17,7 +17,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ViewSelect;
 import cz.startnet.utils.pgdiff.parsers.antlr.launcher.ViewAnalysisLauncher;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
-import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
@@ -89,6 +88,6 @@ public class CreateView extends ParserAbstract {
                     ctx.with_check_option().LOCAL() != null ? "local" : "cascaded");
         }
 
-        addSafe(AbstractSchema::addView, getSchemaSafe(ids), view, ids);
+        addSafe(getSchemaSafe(ids), view, ids);
     }
 }

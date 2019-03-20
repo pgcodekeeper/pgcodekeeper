@@ -150,11 +150,6 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath {
     protected abstract AbstractConstraint getConstraintCopy();
 
     @Override
-    public AbstractConstraint deepCopy() {
-        return shallowCopy();
-    }
-
-    @Override
     public AbstractSchema getContainingSchema() {
         return (AbstractSchema) getParent().getParent();
     }

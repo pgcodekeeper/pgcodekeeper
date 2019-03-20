@@ -28,7 +28,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Transform_for_typeContex
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_storage_parameterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.launcher.FuncProcAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
-import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -80,12 +79,14 @@ public class CreateFunction extends ParserAbstract {
             function.setReturns(getTypeName(ctx.rettype_data));
             addPgTypeDepcy(ctx.rettype_data, function);
         }
-        addSafe(AbstractSchema::addFunction, getSchemaSafe(ids), function, ids);
+        addSafe(getSchemaSafe(ids), function, ids);
     }
 
     private void fillFunction(Create_funct_paramsContext params,
             AbstractPgFunction function, List<Function_argumentsContext> funcArgsCtx) {
         Function_defContext funcDef = null;
+        Float cost = null;
+        String language = null;
         for (Function_actions_commonContext action  : params.function_actions_common()) {
             if (action.WINDOW() != null) {
                 function.setWindow(true);
@@ -100,9 +101,9 @@ public class CreateFunction extends ParserAbstract {
             } else if (action.LEAKPROOF() != null) {
                 function.setLeakproof(true);
             } else if (action.LANGUAGE() != null) {
-                function.setLanguage(action.lang_name.getText());
+                language = action.lang_name.getText();
             } else if (action.COST() != null) {
-                function.setCost(Float.parseFloat(action.execution_cost.getText()));
+                cost = Float.parseFloat(action.execution_cost.getText());
             } else if (action.ROWS() != null) {
                 float f = Float.parseFloat(action.result_rows.getText());
                 if (0.0f != f) {
@@ -137,7 +138,7 @@ public class CreateFunction extends ParserAbstract {
         // Parsing the function definition and adding its result context for analysis.
         // Adding contexts of function arguments for analysis.
         List<Character_stringContext> funcContent = funcDef.character_string();
-        if ("SQL".equalsIgnoreCase(function.getLanguage()) && funcContent.size() == 1) {
+        if ("SQL".equalsIgnoreCase(language) && funcContent.size() == 1) {
             StringBuilder sb = new StringBuilder();
             funcContent.get(0).Text_between_Dollar().forEach(sb::append);
             String def = sb.toString();
@@ -162,6 +163,8 @@ public class CreateFunction extends ParserAbstract {
                 }
             }
         }
+
+        function.setLanguageCost(language, cost);
     }
 
     /**

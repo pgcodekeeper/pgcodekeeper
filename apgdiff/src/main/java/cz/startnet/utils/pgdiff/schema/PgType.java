@@ -573,7 +573,7 @@ public class PgType extends AbstractType {
     protected AbstractType getTypeCopy() {
         PgType copy = new PgType(getName(), getForm());
         for (AbstractColumn attr : attrs) {
-            copy.addAttr(attr.deepCopy());
+            copy.addAttr((AbstractColumn) attr.deepCopy());
         }
         copy.enums.addAll(enums);
         copy.setSubtype(getSubtype());

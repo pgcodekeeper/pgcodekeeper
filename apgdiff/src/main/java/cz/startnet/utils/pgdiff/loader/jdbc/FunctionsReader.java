@@ -104,7 +104,7 @@ public class FunctionsReader extends JdbcReader {
                     throws SQLException {
         StringBuilder body = new StringBuilder();
 
-        function.setLanguage(res.getString("lang_name"));
+        function.setLanguageCost(res.getString("lang_name"), res.getFloat("procost"));
 
         // since 9.5 PostgreSQL
         if (SupportedVersion.VERSION_9_5.isLE(loader.version)) {
@@ -154,7 +154,6 @@ public class FunctionsReader extends JdbcReader {
         if (0.0f != rows) {
             function.setRows(rows);
         }
-        function.setCost(res.getFloat("procost"));
 
         String[] proconfig = getColArray(res, "proconfig");
         if (proconfig != null) {
@@ -463,10 +462,5 @@ public class FunctionsReader extends JdbcReader {
         }
 
         return argsQualifiedTypes;
-    }
-
-    @Override
-    protected DbObjType getType() {
-        return DbObjType.FUNCTION;
     }
 }

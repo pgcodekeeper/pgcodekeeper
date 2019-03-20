@@ -13,7 +13,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_optionContext;
-import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgOperator;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -76,6 +75,6 @@ public class CreateOperator extends ParserAbstract {
             }
         }
 
-        addSafe(AbstractSchema::addOperator, getSchemaSafe(ids), oper, ids);
+        addSafe(getSchemaSafe(ids), oper, ids);
     }
 }

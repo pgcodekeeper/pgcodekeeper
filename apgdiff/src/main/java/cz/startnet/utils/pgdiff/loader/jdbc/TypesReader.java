@@ -310,9 +310,4 @@ public class TypesReader extends JdbcReader {
         }
         setter.accept(type, function);
     }
-
-    @Override
-    protected DbObjType getType() {
-        return DbObjType.TYPE;
-    }
 }

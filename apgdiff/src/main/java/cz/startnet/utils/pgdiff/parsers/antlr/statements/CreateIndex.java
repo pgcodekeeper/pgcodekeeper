@@ -22,6 +22,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -44,7 +45,7 @@ public class CreateIndex extends ParserAbstract {
 
         IdentifierContext nameCtx = ctx.name;
         String name = nameCtx != null ? nameCtx.getText() : "";
-        PgIndex ind = new PgIndex(name, tableName);
+        PgIndex ind = new PgIndex(name);
         parseIndex(ctx.index_rest(), tablespace, schemaName, tableName, ind, db);
         ind.setUnique(ctx.UNIQUE() != null);
 
@@ -52,7 +53,7 @@ public class CreateIndex extends ParserAbstract {
             IdentifierContext parent = QNameParser.getFirstNameCtx(ids);
             IStatementContainer table = getSafe(AbstractSchema::getStatementContainer,
                     getSchemaSafe(ids), parent);
-            addSafe(IStatementContainer::addIndex, table, ind, Arrays.asList(
+            addSafe((PgStatement) table, ind, Arrays.asList(
                     QNameParser.getSchemaNameCtx(ids), parent, nameCtx));
         }
     }

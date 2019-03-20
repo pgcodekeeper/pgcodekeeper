@@ -27,6 +27,6 @@ public class CreateMsSchema extends ParserAbstract {
             schema.setOwner(ctx.owner_name.getText());
         }
 
-        addSafe(PgDatabase::addSchema, db, schema, Arrays.asList(nameCtx));
+        addSafe(db, schema, Arrays.asList(nameCtx));
     }
 }

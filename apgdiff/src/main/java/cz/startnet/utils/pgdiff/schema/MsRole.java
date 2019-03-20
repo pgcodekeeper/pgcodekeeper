@@ -125,11 +125,6 @@ public class MsRole extends PgStatement {
     }
 
     @Override
-    public MsRole deepCopy() {
-        return shallowCopy();
-    }
-
-    @Override
     public boolean compare(PgStatement obj) {
         if (obj == this) {
             return true;
