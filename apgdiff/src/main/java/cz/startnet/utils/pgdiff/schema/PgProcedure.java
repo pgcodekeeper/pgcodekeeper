@@ -29,7 +29,7 @@ public class PgProcedure extends AbstractPgFunction {
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE OR REPLACE PROCEDURE ");
-        sbSQL.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
+        sbSQL.append(PgDiffUtils.getQuotedName(getSchemaName())).append('.');
         appendFunctionSignature(sbSQL, true, true);
         sbSQL.append("\n    ");
 

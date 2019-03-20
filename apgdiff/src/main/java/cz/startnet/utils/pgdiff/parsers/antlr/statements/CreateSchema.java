@@ -32,6 +32,6 @@ public class CreateSchema extends ParserAbstract {
             schema.setOwner(userName.getText());
         }
 
-        addSafe(PgDatabase::addSchema, db, schema, Arrays.asList(nameCtx));
+        addSafe(db, schema, Arrays.asList(nameCtx));
     }
 }

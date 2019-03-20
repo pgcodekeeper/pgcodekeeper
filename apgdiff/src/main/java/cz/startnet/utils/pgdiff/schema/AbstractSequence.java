@@ -72,8 +72,11 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
 
     protected long getBoundaryTypeVal(String type, boolean needMaxVal, long presicion) {
         switch (type) {
+        case "tinyint":
+            return needMaxVal ? 255 : 0;
         case "smallint":
             return needMaxVal ? Short.MAX_VALUE : Short.MIN_VALUE;
+        case "int":
         case "integer":
             return needMaxVal ? Integer.MAX_VALUE : Integer.MIN_VALUE;
         case "numeric":
@@ -167,11 +170,6 @@ public abstract class AbstractSequence extends PgStatementWithSearchPath impleme
     protected abstract AbstractSequence getSequenceCopy();
 
     public abstract void fillSequenceBody(StringBuilder sbSQL);
-
-    @Override
-    public AbstractSequence deepCopy() {
-        return shallowCopy();
-    }
 
     @Override
     public AbstractSchema getContainingSchema() {

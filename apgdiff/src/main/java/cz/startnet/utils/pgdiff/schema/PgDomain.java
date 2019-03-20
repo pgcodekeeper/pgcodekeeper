@@ -207,14 +207,9 @@ public class PgDomain extends PgStatementWithSearchPath {
         domainDst.setDefaultValue(getDefaultValue());
         domainDst.setNotNull(isNotNull());
         for (AbstractConstraint constr : constraints) {
-            domainDst.addConstraint(constr.deepCopy());
+            domainDst.addConstraint((AbstractConstraint) constr.deepCopy());
         }
         return domainDst;
-    }
-
-    @Override
-    public PgDomain deepCopy() {
-        return shallowCopy();
     }
 
     @Override

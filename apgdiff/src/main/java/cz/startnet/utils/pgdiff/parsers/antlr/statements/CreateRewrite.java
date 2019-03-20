@@ -13,6 +13,7 @@ import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgRule.PgRuleEventType;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -40,7 +41,7 @@ public class CreateRewrite extends ParserAbstract {
         IdentifierContext parent = QNameParser.getFirstNameCtx(ids);
         IStatementContainer cont = getSafe(AbstractSchema::getStatementContainer,
                 getSchemaSafe(ids), parent);
-        addSafe(IStatementContainer::addRule, cont, rule, Arrays.asList(
+        addSafe((PgStatement) cont, rule, Arrays.asList(
                 QNameParser.getSchemaNameCtx(ids), parent, ctx.name));
     }
 

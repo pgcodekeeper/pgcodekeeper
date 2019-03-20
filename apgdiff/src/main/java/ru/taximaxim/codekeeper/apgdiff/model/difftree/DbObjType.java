@@ -30,8 +30,8 @@ public enum DbObjType {
     TABLE,
     COLUMN,
     CONSTRAINT,
-    INDEX,
     VIEW,
+    INDEX,
     TRIGGER,
     RULE
 }

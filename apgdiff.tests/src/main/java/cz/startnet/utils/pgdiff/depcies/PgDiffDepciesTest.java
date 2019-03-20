@@ -155,7 +155,10 @@ public class PgDiffDepciesTest {
             // (опеределение обеих функций написано на языке SQL)
             // ('f2' зависит от 'f1')
             // (обе функции находятся в разных схемах)
-            { "change_func_arg_name_sch", "change_func_arg_name_sch_usr_f1" }
+            { "change_func_arg_name_sch", "change_func_arg_name_sch_usr_f1" },
+            // добавление вьюхи с зависимыми от нее объектами,
+            // пользователь выбрал только вьюху
+            {"add_view", "add_view_usr_view"},
         });
     }
 
@@ -191,7 +194,8 @@ public class PgDiffDepciesTest {
                 getUsrSelName(FILES_POSTFIX.ORIGINAL_SQL), PgDiffDepciesTest.class, args);
         PgDatabase newDatabase = ApgdiffTestUtils.loadTestDump(
                 getUsrSelName(FILES_POSTFIX.NEW_SQL), PgDiffDepciesTest.class, args);
-        PgDatabase oldDbFull, newDbFull;
+        PgDatabase oldDbFull;
+        PgDatabase newDbFull;
         if (userSelTemplate.equals(dbTemplate)) {
             oldDbFull = oldDatabase;
             newDbFull = newDatabase;

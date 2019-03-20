@@ -50,9 +50,4 @@ public class FtsDictionariesReader extends JdbcReader {
         loader.setAuthor(dic, res);
         schema.addFtsDictionary(dic);
     }
-
-    @Override
-    protected DbObjType getType() {
-        return DbObjType.FTS_DICTIONARY;
-    }
 }

@@ -34,7 +34,7 @@ public class RulesReader extends JdbcReader {
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, ruleName, DbObjType.RULE));
 
         String command = res.getString("rule_string");
-        checkObjectValidity(command, getType(), ruleName);
+        checkObjectValidity(command, DbObjType.RULE, ruleName);
         PgRule r = new PgRule(ruleName);
 
         switch (res.getString("ev_type")) {
@@ -78,10 +78,5 @@ public class RulesReader extends JdbcReader {
             r.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
         return r;
-    }
-
-    @Override
-    protected DbObjType getType() {
-        return DbObjType.RULE;
     }
 }

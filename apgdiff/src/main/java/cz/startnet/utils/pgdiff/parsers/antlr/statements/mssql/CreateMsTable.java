@@ -15,7 +15,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_optionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.TableAbstract;
-import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.MsIndex;
 import cz.startnet.utils.pgdiff.schema.MsTable;
@@ -68,7 +67,7 @@ public class CreateMsTable extends TableAbstract {
         }
 
         List<IdContext> ids = Arrays.asList(ctx.qualified_name().schema, nameCtx);
-        addSafe(AbstractSchema::addTable, getSchemaSafe(ids), table, ids);
+        addSafe(getSchemaSafe(ids), table, ids);
     }
 
     private void fillColumn(Column_def_table_constraintContext colCtx, MsTable table) {
@@ -76,11 +75,11 @@ public class CreateMsTable extends TableAbstract {
             table.addConstraint(getMsConstraint(colCtx.table_constraint()));
         } else if (colCtx.table_index() != null) {
             Table_indexContext indCtx = colCtx.table_index();
-            MsIndex index = new MsIndex(indCtx.index_name.getText(), table.getName());
+            MsIndex index = new MsIndex(indCtx.index_name.getText());
             ClusteredContext cluster = indCtx.clustered();
             index.setClusterIndex(cluster != null && cluster.CLUSTERED() != null);
             CreateMsIndex.parseIndex(indCtx.index_rest(), index);
-            addSafe(MsTable::addIndex, table, index, Arrays.asList(ctx.qualified_name().schema,
+            addSafe(table, index, Arrays.asList(ctx.qualified_name().schema,
                     ctx.qualified_name().name, indCtx.index_name));
         } else {
             MsColumn col = new MsColumn(colCtx.id().getText());

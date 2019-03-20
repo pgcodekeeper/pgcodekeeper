@@ -45,7 +45,7 @@ public class ViewsReader extends JdbcReader {
         }
 
         String definition = res.getString("definition");
-        checkObjectValidity(definition, getType(), viewName);
+        checkObjectValidity(definition, DbObjType.VIEW, viewName);
         String viewDef = definition.trim();
         int semicolonPos = viewDef.length() - 1;
         v.setQuery(viewDef.charAt(semicolonPos) == ';' ? viewDef.substring(0, semicolonPos) : viewDef);
@@ -111,10 +111,5 @@ public class ViewsReader extends JdbcReader {
         }
 
         return v;
-    }
-
-    @Override
-    protected DbObjType getType() {
-        return DbObjType.VIEW;
     }
 }

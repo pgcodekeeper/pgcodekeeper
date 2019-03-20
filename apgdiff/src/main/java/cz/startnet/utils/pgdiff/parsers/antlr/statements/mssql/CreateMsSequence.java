@@ -31,7 +31,7 @@ public class CreateMsSequence extends ParserAbstract {
         fillSequence(sequence, ctx.sequence_body());
         List<IdContext> ids = Arrays.asList(ctx.qualified_name().schema, nameCtx);
         AbstractSchema schema = getSchemaSafe(ids);
-        addSafe(AbstractSchema::addSequence, schema, sequence, ids);
+        addSafe(schema, sequence, ids);
     }
 
     private void fillSequence(MsSequence sequence, List<Sequence_bodyContext> list) {
@@ -44,12 +44,12 @@ public class CreateMsSequence extends ParserAbstract {
             if (body.data_type() != null) {
                 Data_typeContext data = body.data_type();
                 addMsTypeDepcy(data, sequence);
+                // try to catch tinyint, smallint, int, bigint, numeric, decimal
                 dataType = data.qualified_name().getText().toLowerCase(Locale.ROOT);
-                sequence.setDataType(dataType);
+                sequence.setDataType(getFullCtxText(data));
                 Data_type_sizeContext size = data.size;
                 if (size != null && size.presicion != null) {
                     precision = size.presicion.getText();
-                    sequence.setPresicion(precision);
                 }
             } else if (body.start_val != null) {
                 sequence.setStartWith(body.start_val.getText());

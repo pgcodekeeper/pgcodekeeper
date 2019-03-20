@@ -200,25 +200,6 @@ implements IStatementContainer, IRelation {
     protected abstract AbstractView getViewCopy();
 
     @Override
-    public AbstractView deepCopy() {
-        AbstractView copy = shallowCopy();
-
-        for (PgRule rule : rules) {
-            copy.addRule(rule.deepCopy());
-        }
-
-        for (AbstractTrigger trigger : triggers) {
-            copy.addTrigger(trigger.deepCopy());
-        }
-
-        for (AbstractIndex index : indexes) {
-            copy.addIndex(index.deepCopy());
-        }
-
-        return copy;
-    }
-
-    @Override
     public AbstractSchema getContainingSchema() {
         return (AbstractSchema)this.getParent();
     }
