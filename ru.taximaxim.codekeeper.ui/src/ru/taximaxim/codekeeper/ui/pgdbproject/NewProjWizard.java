@@ -321,6 +321,7 @@ class PageDb extends WizardPage {
         btnBind = new Button(group, SWT.CHECK);
         btnBind.setText(Messages.NewProjWizard_binding_db_connection);
         btnBind.setSelection(false);
+        btnBind.setEnabled(false);
 
         storePicker = new DbStorePicker(group, mainPrefs, true, false, false);
         storePicker.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
@@ -388,6 +389,14 @@ class PageDb extends WizardPage {
             btnGetTz.setEnabled(init && storePicker.getDbInfo() != null);
         }
         storePicker.setComboEnabled(init);
+
+        if (getDbInfo() == null) {
+            btnBind.setSelection(false);
+            btnBind.setEnabled(false);
+        } else {
+            btnBind.setEnabled(true);
+        }
+
         getWizard().getContainer().updateButtons();
         getWizard().getContainer().updateMessage();
     }
