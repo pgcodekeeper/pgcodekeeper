@@ -58,12 +58,12 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
 
         setSelectionFromPart(getWorkbenchWindow().getActivePage().getActiveEditor());
 
-        checkBindingToDb();
+        checkProjBindingToDb();
 
         return storePicker;
     }
 
-    private void checkBindingToDb() {
+    private void checkProjBindingToDb() {
         IEditorPart ed = getWorkbenchWindow().getActivePage().getActiveEditor();
         DbInfo dbSource = null;
         if (ed instanceof SQLEditor) {
