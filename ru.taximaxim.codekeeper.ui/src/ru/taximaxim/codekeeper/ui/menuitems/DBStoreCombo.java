@@ -24,6 +24,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 
@@ -79,6 +80,7 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
         boolean isDumpFile = bindedDb == null;
         storePicker.setSelection(isDumpFile ? null : new StructuredSelection(bindedDb));
         storePicker.setComboEnabled(isDumpFile);
+        storePicker.setToolTipText(isDumpFile ? null : Messages.DbStoreCombo_db_binding_property);
     }
 
     /**
