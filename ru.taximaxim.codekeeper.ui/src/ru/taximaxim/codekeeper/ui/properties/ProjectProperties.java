@@ -31,9 +31,12 @@ public class ProjectProperties extends PropertyPage {
 
     private Button btnForceUnixNewlines;
     private Button btnDisableParser;
+    private Button btnBindProjToLastDb;
     private Combo cmbTimezone;
     private CLabel lblWarn;
     private CLabel lblWarnPosix;
+
+    String lastDbForBinding;
 
     private IEclipsePreferences prefs;
 
@@ -65,6 +68,16 @@ public class ProjectProperties extends PropertyPage {
         btnForceUnixNewlines.setToolTipText(Messages.ProjectProperties_force_unix_newlines_desc);
         btnForceUnixNewlines.setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, false, false, 2, 1));
         btnForceUnixNewlines.setSelection(prefs.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true));
+
+        btnBindProjToLastDb = new Button(panel, SWT.CHECK);
+        btnBindProjToLastDb.setText(Messages.NewProjWizard_binding_db_connection);
+        btnBindProjToLastDb.setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, false, false, 2, 1));
+        btnBindProjToLastDb.setSelection(!"".equals(prefs.get(PROJ_PREF.NAME_OF_BINDED_DB, "")));
+        lastDbForBinding = prefs.get(PROJ_PREF.LAST_DB_STORE, "");
+        if (lastDbForBinding.isEmpty()) {
+            lastDbForBinding = prefs.get(PROJ_PREF.LAST_DB_STORE_EDITOR, "");
+        }
+        btnBindProjToLastDb.setEnabled(!lastDbForBinding.isEmpty());
 
         if (!isMsSql) {
             new Label(panel, SWT.NONE).setText(Messages.projectProperties_timezone_for_all_db_connections);
@@ -151,6 +164,11 @@ public class ProjectProperties extends PropertyPage {
     private void fillPrefs() throws BackingStoreException {
         prefs.putBoolean(PROJ_PREF.DISABLE_PARSER_IN_EXTERNAL_FILES, btnDisableParser.getSelection());
         prefs.putBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, btnForceUnixNewlines.getSelection());
+        if (btnBindProjToLastDb.getSelection()) {
+            prefs.put(PROJ_PREF.NAME_OF_BINDED_DB, lastDbForBinding);
+        } else {
+            prefs.put(PROJ_PREF.NAME_OF_BINDED_DB, "");
+        }
         if (!isMsSql) {
             prefs.put(PROJ_PREF.TIMEZONE, cmbTimezone.getText());
         }

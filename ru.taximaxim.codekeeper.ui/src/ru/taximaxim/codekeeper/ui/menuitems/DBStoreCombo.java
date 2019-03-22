@@ -95,7 +95,7 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
             return null;
         }
         String nameOfBindedDb = prefs.get(PROJ_PREF.NAME_OF_BINDED_DB, "");  //$NON-NLS-1$
-        if (!"".equals(nameOfBindedDb)) {
+        if (!nameOfBindedDb.isEmpty()) {
             DbInfo dbSource = DbInfo.getLastDb(nameOfBindedDb);
             setDbToEditor.accept(dbSource);
             return dbSource;
