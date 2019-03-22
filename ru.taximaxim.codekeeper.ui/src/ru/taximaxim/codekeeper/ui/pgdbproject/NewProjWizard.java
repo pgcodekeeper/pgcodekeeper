@@ -123,17 +123,16 @@ implements IExecutableExtension, INewWizard {
 
             if (pageDb.isBinded()) {
                 DbInfo dbInfo = pageDb.getDbInfo();
-                String nameOfBindedDb = dbInfo != null ? dbInfo.getName()
-                        : pageDb.getDumpPath().getPath();
-
-                props.getPrefs().put(PROJ_PREF.NAME_OF_BINDED_DB, nameOfBindedDb);
-                props.getPrefs().put(PROJ_PREF.LAST_DB_STORE, nameOfBindedDb);
-                props.getPrefs().put(PROJ_PREF.LAST_DB_STORE_EDITOR, nameOfBindedDb);
-
-                try {
-                    props.getPrefs().flush();
-                } catch (BackingStoreException e) {
-                    Log.log(Log.LOG_WARNING, "Error while flushing project properties!", e); //$NON-NLS-1$
+                if (dbInfo != null) {
+                    String nameOfBindedDb = dbInfo.getName();
+                    props.getPrefs().put(PROJ_PREF.NAME_OF_BINDED_DB, nameOfBindedDb);
+                    props.getPrefs().put(PROJ_PREF.LAST_DB_STORE, nameOfBindedDb);
+                    props.getPrefs().put(PROJ_PREF.LAST_DB_STORE_EDITOR, nameOfBindedDb);
+                    try {
+                        props.getPrefs().flush();
+                    } catch (BackingStoreException e) {
+                        Log.log(Log.LOG_WARNING, "Error while flushing project properties!", e); //$NON-NLS-1$
+                    }
                 }
             }
 

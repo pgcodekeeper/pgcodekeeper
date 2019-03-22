@@ -177,14 +177,14 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             return currentDB;
         }
 
+        IEclipsePreferences prefs = getProjPrefs();
+        return prefs == null ? null :
+            DbInfo.getLastDb(prefs.get(PROJ_PREF.LAST_DB_STORE_EDITOR, "")); //$NON-NLS-1$
+    }
+
+    public IEclipsePreferences getProjPrefs() {
         IResource res = ResourceUtil.getResource(getEditorInput());
-        if (res != null) {
-            IEclipsePreferences prefs = PgDbProject.getPrefs(res.getProject());
-            if (prefs != null) {
-                return DbInfo.getLastDb(prefs.get(PROJ_PREF.LAST_DB_STORE_EDITOR, "")); //$NON-NLS-1$
-            }
-        }
-        return null;
+        return res != null ? PgDbProject.getPrefs(res.getProject()) : null;
     }
 
     @Override

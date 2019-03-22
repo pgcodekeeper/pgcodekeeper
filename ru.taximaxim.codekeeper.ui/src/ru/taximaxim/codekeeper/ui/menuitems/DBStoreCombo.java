@@ -1,9 +1,10 @@
 package ru.taximaxim.codekeeper.ui.menuitems;
 
-import java.util.List;
+import java.util.function.Consumer;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -65,27 +66,41 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
 
     private void checkProjBindingToDb() {
         IEditorPart ed = getWorkbenchWindow().getActivePage().getActiveEditor();
-        DbInfo dbSource = null;
+        DbInfo bindedDb = null;
         if (ed instanceof SQLEditor) {
-            SQLEditor sqlEd = ((SQLEditor) ed);
-            dbSource = sqlEd.getCurrentDb();
-            sqlEd.setCurrentDb(dbSource);
+            SQLEditor sqlEd = (SQLEditor) ed;
+            bindedDb = setBindedDbToProj(sqlEd.getProjPrefs(), db -> sqlEd.setCurrentDb(db));
         } else if (ed instanceof ProjectEditorDiffer) {
             ProjectEditorDiffer projEd = (ProjectEditorDiffer) ed;
-            String nameOfBindedDb = PgDbProject.getPrefs(projEd.getProject())
-                    .get(PROJ_PREF.NAME_OF_BINDED_DB, "");
-            if (!"".equals(nameOfBindedDb)) {
-                List<DbInfo> store = DbInfo.readStoreFromXml();
-                dbSource = store.stream()
-                        .filter(dbInf -> dbInf.getName().equals(nameOfBindedDb))
-                        .findAny().orElse(null);
-                projEd.setCurrentDb(dbSource);
-            }
+            bindedDb = setBindedDbToProj(PgDbProject.getPrefs(projEd.getProject()),
+                    db -> projEd.setCurrentDb(db));
         }
 
-        boolean isDumpFile = dbSource == null;
-        storePicker.setSelection(isDumpFile ? null : new StructuredSelection(dbSource));
+        boolean isDumpFile = bindedDb == null;
+        storePicker.setSelection(isDumpFile ? null : new StructuredSelection(bindedDb));
         storePicker.setComboEnabled(isDumpFile);
+    }
+
+    /**
+     * Sets binded database to the project as currentDB.
+     *
+     * @param prefs project preferences
+     * @param setDbToEditor consumer for set DB to SQLEditor or to ProjectEditorDiffer
+     *
+     * @return binded database, If there is no binded database then returns null.
+     */
+    private DbInfo setBindedDbToProj(IEclipsePreferences prefs,
+            Consumer<DbInfo> setDbToEditor) {
+        if (prefs == null) {
+            return null;
+        }
+        String nameOfBindedDb = prefs.get(PROJ_PREF.NAME_OF_BINDED_DB, "");  //$NON-NLS-1$
+        if (!"".equals(nameOfBindedDb)) {
+            DbInfo dbSource = DbInfo.getLastDb(nameOfBindedDb);
+            setDbToEditor.accept(dbSource);
+            return dbSource;
+        }
+        return null;
     }
 
     @Override
