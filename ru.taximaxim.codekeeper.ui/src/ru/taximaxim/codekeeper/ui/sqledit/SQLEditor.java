@@ -442,7 +442,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         };
 
         try {
-            new ProgressMonitorDialog(parentComposite.getShell()).run(false, true, runnable);
+            new ProgressMonitorDialog(parentComposite.getShell()).run(true, true, runnable);
         } catch (InterruptedException | InvocationTargetException ex) {
             Log.log(ex);
         }
