@@ -51,13 +51,17 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
             IEditorPart editor = getWorkbenchWindow().getActivePage().getActiveEditor();
 
             if (editor instanceof SQLEditor) {
-                ((SQLEditor) editor).setCurrentDb(storePicker.getDbInfo());
+                SQLEditor sqlEditor = ((SQLEditor) editor);
+                sqlEditor.setCurrentDb(storePicker.getDbInfo());
+                setDbComboEnableState(sqlEditor.getProjPrefs());
             } else if (editor instanceof ProjectEditorDiffer) {
                 Object selection = storePicker.getDbInfo();
                 if (selection == null) {
                     selection = storePicker.getPathOfFile();
                 }
-                ((ProjectEditorDiffer) editor).setCurrentDb(selection);
+                ProjectEditorDiffer projEditor = ((ProjectEditorDiffer) editor);
+                projEditor.setCurrentDb(selection);
+                setDbComboEnableState(PgDbProject.getPrefs(projEditor.getProject()));
             }
         });
 
@@ -78,6 +82,11 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
         checkProjBindingToDb();
 
         return storePicker;
+    }
+
+    private void setDbComboEnableState(IEclipsePreferences prefs) {
+        storePicker.setComboEnabled(prefs == null ? true :
+            prefs.get(PROJ_PREF.NAME_OF_BINDED_DB, "").isEmpty());
     }
 
     private void checkProjBindingToDb() {
