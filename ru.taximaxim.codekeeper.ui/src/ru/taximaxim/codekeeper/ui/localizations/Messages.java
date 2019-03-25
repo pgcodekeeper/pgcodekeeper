@@ -224,6 +224,7 @@ public final class Messages extends NLS {
     public static String DbPropertyListEditor_tbl_col_value;
 
     public static String DbStoreCombo_db_binding_property;
+    public static String DbStoreCombo_db_binding_property_title;
 
     public static String DbStoreEditorDialog_failed_connection;
 
