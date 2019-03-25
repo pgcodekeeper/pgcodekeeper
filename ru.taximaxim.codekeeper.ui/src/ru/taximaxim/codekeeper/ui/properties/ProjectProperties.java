@@ -165,7 +165,7 @@ public class ProjectProperties extends PropertyPage {
         prefs.putBoolean(PROJ_PREF.DISABLE_PARSER_IN_EXTERNAL_FILES, btnDisableParser.getSelection());
         prefs.putBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, btnForceUnixNewlines.getSelection());
         if (btnBindProjToLastDb.getSelection()) {
-            prefs.put(PROJ_PREF.NAME_OF_BINDED_DB, lastDbForBinding);
+            setBindedDbToPref(prefs, lastDbForBinding);
         } else {
             prefs.put(PROJ_PREF.NAME_OF_BINDED_DB, "");
         }
@@ -175,5 +175,11 @@ public class ProjectProperties extends PropertyPage {
         prefs.flush();
         setValid(true);
         setErrorMessage(null);
+    }
+
+    public static void setBindedDbToPref(IEclipsePreferences prefs, String dbName) {
+        prefs.put(PROJ_PREF.NAME_OF_BINDED_DB, dbName);
+        prefs.put(PROJ_PREF.LAST_DB_STORE, dbName);
+        prefs.put(PROJ_PREF.LAST_DB_STORE_EDITOR, dbName);
     }
 }

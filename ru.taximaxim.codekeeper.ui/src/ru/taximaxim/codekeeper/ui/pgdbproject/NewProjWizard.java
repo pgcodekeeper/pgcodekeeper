@@ -62,6 +62,7 @@ import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.handlers.OpenEditor;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.properties.ProjectProperties;
 
 public class NewProjWizard extends Wizard
 implements IExecutableExtension, INewWizard {
@@ -124,10 +125,7 @@ implements IExecutableExtension, INewWizard {
             if (pageDb.isBinded()) {
                 DbInfo dbInfo = pageDb.getDbInfo();
                 if (dbInfo != null) {
-                    String nameOfBindedDb = dbInfo.getName();
-                    props.getPrefs().put(PROJ_PREF.NAME_OF_BINDED_DB, nameOfBindedDb);
-                    props.getPrefs().put(PROJ_PREF.LAST_DB_STORE, nameOfBindedDb);
-                    props.getPrefs().put(PROJ_PREF.LAST_DB_STORE_EDITOR, nameOfBindedDb);
+                    ProjectProperties.setBindedDbToPref(props.getPrefs(), dbInfo.getName());
                     try {
                         props.getPrefs().flush();
                     } catch (BackingStoreException e) {
