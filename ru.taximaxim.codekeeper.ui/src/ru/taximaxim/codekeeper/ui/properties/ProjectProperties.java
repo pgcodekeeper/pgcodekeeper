@@ -16,7 +16,9 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.osgi.service.prefs.BackingStoreException;
 
@@ -151,6 +153,11 @@ public class ProjectProperties extends PropertyPage {
     public boolean performOk() {
         try {
             fillPrefs();
+            IEditorPart activeEditor = PlatformUI.getWorkbench()
+                    .getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+            if (activeEditor != null) {
+                activeEditor.setFocus();
+            }
         } catch (BackingStoreException e) {
             setErrorMessage(MessageFormat.format(
                     Messages.projectProperties_error_occurs_while_saving_properties,
