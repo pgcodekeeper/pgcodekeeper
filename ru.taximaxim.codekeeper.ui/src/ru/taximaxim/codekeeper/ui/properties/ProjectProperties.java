@@ -7,8 +7,11 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -26,6 +29,8 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
+import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
+import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -33,12 +38,13 @@ public class ProjectProperties extends PropertyPage {
 
     private Button btnForceUnixNewlines;
     private Button btnDisableParser;
-    private Button btnBindProjToLastDb;
+    private Button btnBindProjToDb;
+    private DbStorePicker storePicker;
     private Combo cmbTimezone;
     private CLabel lblWarn;
     private CLabel lblWarnPosix;
 
-    String lastDbForBinding;
+    private DbInfo dbForBinding;
 
     private IEclipsePreferences prefs;
 
@@ -71,15 +77,29 @@ public class ProjectProperties extends PropertyPage {
         btnForceUnixNewlines.setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, false, false, 2, 1));
         btnForceUnixNewlines.setSelection(prefs.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true));
 
-        btnBindProjToLastDb = new Button(panel, SWT.CHECK);
-        btnBindProjToLastDb.setText(Messages.NewProjWizard_binding_db_connection);
-        btnBindProjToLastDb.setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, false, false, 2, 1));
-        btnBindProjToLastDb.setSelection(!"".equals(prefs.get(PROJ_PREF.NAME_OF_BINDED_DB, "")));
-        lastDbForBinding = prefs.get(PROJ_PREF.LAST_DB_STORE, "");
-        if (lastDbForBinding.isEmpty()) {
-            lastDbForBinding = prefs.get(PROJ_PREF.LAST_DB_STORE_EDITOR, "");
-        }
-        btnBindProjToLastDb.setEnabled(!lastDbForBinding.isEmpty());
+        String nameOfBindedDb = prefs.get(PROJ_PREF.NAME_OF_BINDED_DB, "");
+        btnBindProjToDb = new Button(panel, SWT.CHECK);
+        btnBindProjToDb.setText(Messages.ProjectProperties_binding_to_db_connection);
+        btnBindProjToDb.setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, false, false, 1, 1));
+        btnBindProjToDb.setSelection(!nameOfBindedDb.isEmpty());
+        btnBindProjToDb.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                storePicker.setEnabled(btnBindProjToDb.getSelection());
+                if (!btnBindProjToDb.getSelection()) {
+                    storePicker.setSelection(null);
+                }
+            }
+        });
+
+        dbForBinding = DbInfo.getLastDb(nameOfBindedDb);
+        storePicker = new DbStorePicker(panel, Activator.getDefault().getPreferenceStore(),
+                false, false, true);
+        storePicker.setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, false, false, 1, 1));
+        storePicker.setSelection(dbForBinding != null ? new StructuredSelection(dbForBinding) : null);
+        storePicker.setEnabled(btnBindProjToDb.getSelection());
+        storePicker.addListenerToCombo(e -> dbForBinding = storePicker.getDbInfo());
 
         if (!isMsSql) {
             new Label(panel, SWT.NONE).setText(Messages.projectProperties_timezone_for_all_db_connections);
@@ -171,8 +191,8 @@ public class ProjectProperties extends PropertyPage {
     private void fillPrefs() throws BackingStoreException {
         prefs.putBoolean(PROJ_PREF.DISABLE_PARSER_IN_EXTERNAL_FILES, btnDisableParser.getSelection());
         prefs.putBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, btnForceUnixNewlines.getSelection());
-        if (btnBindProjToLastDb.getSelection()) {
-            setBindedDbToPref(prefs, lastDbForBinding);
+        if (btnBindProjToDb.getSelection() && dbForBinding != null) {
+            setBindedDbToPref(prefs, dbForBinding.getName());
         } else {
             prefs.put(PROJ_PREF.NAME_OF_BINDED_DB, "");
         }

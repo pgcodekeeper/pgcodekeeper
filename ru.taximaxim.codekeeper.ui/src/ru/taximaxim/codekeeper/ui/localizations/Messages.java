@@ -521,8 +521,6 @@ public final class Messages extends NLS {
 
     public static String NewProjWizard_initializing_title;
 
-    public static String NewProjWizard_binding_db_connection;
-
     public static String NewProjWizard_proj_init;
 
     public static String NewProjWizard_proj_init_src;
@@ -704,6 +702,8 @@ public final class Messages extends NLS {
     public static String ProjectProperties_change_projprefs_warn;
 
     public static String ProjectProperties_posix_is_used_warn;
+
+    public static String ProjectProperties_binding_to_db_connection;
 
     public static String ProjectProperties_disable_parser_in_external_files;
     public static String ProjectUpdater_error_backup_restore;

@@ -316,7 +316,7 @@ class PageDb extends WizardPage {
         });
 
         btnBind = new Button(group, SWT.CHECK);
-        btnBind.setText(Messages.NewProjWizard_binding_db_connection);
+        btnBind.setText(Messages.ProjectProperties_binding_to_db_connection);
         btnBind.setSelection(false);
         btnBind.setEnabled(false);
 
