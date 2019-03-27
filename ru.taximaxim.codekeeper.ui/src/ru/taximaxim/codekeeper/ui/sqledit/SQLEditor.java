@@ -173,10 +173,19 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     }
 
     public DbInfo getCurrentDb() {
+        DbInfo bindedDb = getDbFromPref(PROJ_PREF.NAME_OF_BINDED_DB);
+        if (bindedDb != null) {
+            return bindedDb;
+        }
+
         if (currentDB != null) {
             return currentDB;
         }
 
+        return getDbFromPref(PROJ_PREF.LAST_DB_STORE_EDITOR);
+    }
+
+    private DbInfo getDbFromPref(String prefName) {
         IEclipsePreferences prefs = getProjPrefs();
         return prefs == null ? null :
             DbInfo.getLastDb(prefs.get(PROJ_PREF.LAST_DB_STORE_EDITOR, "")); //$NON-NLS-1$
