@@ -163,6 +163,8 @@ public class ProjectProperties extends PropertyPage {
     protected void performDefaults() {
         btnDisableParser.setSelection(false);
         btnForceUnixNewlines.setSelection(true);
+        btnBindProjToDb.setSelection(false);
+        storePicker.setSelection(null);
         if (!isMsSql) {
             cmbTimezone.setText(ApgdiffConsts.UTC);
         }
@@ -185,15 +187,18 @@ public class ProjectProperties extends PropertyPage {
                     .getActiveWorkbenchWindow().getActivePage();
             IEditorPart activeEditor = activePage.getActiveEditor();
             if (activeEditor != null) {
-                if (activeEditor instanceof ProjectEditorDiffer
-                        && projName.equals(((ProjectEditorDiffer) activeEditor)
-                                .getProject().getName())) {
-                    // TODO replace by logic which refresh state and content of the DbCombo
-                    activePage.activate(activeEditor);
+                if (activeEditor instanceof ProjectEditorDiffer) {
+                    ProjectEditorDiffer projEd = (ProjectEditorDiffer) activeEditor;
+                    if (projName.equals(projEd.getProject().getName())) {
+                        projEd.setCurrentDb(dbForBinding);
+                        // TODO replace by logic which refresh state and content of the DbCombo
+                        activePage.activate(activeEditor);
+                    }
                 } else if (activeEditor instanceof SQLEditor) {
-                    IResource res = ResourceUtil.getResource(((SQLEditor) activeEditor)
-                            .getEditorInput());
+                    SQLEditor sqlEd = (SQLEditor) activeEditor;
+                    IResource res = ResourceUtil.getResource(sqlEd.getEditorInput());
                     if (res != null && projName.equals(res.getProject().getName())) {
+                        sqlEd.setCurrentDb(dbForBinding);
                         // TODO replace by logic which refresh state and content of the DbCombo
                         activePage.activate(activeEditor);
                     }
