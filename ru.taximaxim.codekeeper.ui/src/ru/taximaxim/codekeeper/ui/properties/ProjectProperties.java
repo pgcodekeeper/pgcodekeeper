@@ -4,6 +4,7 @@ package ru.taximaxim.codekeeper.ui.properties;
 import java.text.MessageFormat;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
@@ -21,8 +22,10 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PropertyPage;
+import org.eclipse.ui.ide.ResourceUtil;
 import org.osgi.service.prefs.BackingStoreException;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -31,8 +34,10 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
+import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 
 public class ProjectProperties extends PropertyPage {
 
@@ -44,6 +49,7 @@ public class ProjectProperties extends PropertyPage {
     private CLabel lblWarn;
     private CLabel lblWarnPosix;
 
+    private String projName;
     private DbInfo dbForBinding;
 
     private IEclipsePreferences prefs;
@@ -54,6 +60,7 @@ public class ProjectProperties extends PropertyPage {
     public void setElement(IAdaptable element) {
         super.setElement(element);
         IProject project = element.getAdapter(IProject.class);
+        projName = project.getName();
         prefs = new ProjectScope(project).getNode(UIConsts.PLUGIN_ID.THIS);
         isMsSql = OpenProjectUtils.checkMsSql(project);
     }
@@ -173,10 +180,24 @@ public class ProjectProperties extends PropertyPage {
     public boolean performOk() {
         try {
             fillPrefs();
-            IEditorPart activeEditor = PlatformUI.getWorkbench()
-                    .getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+
+            IWorkbenchPage activePage = PlatformUI.getWorkbench()
+                    .getActiveWorkbenchWindow().getActivePage();
+            IEditorPart activeEditor = activePage.getActiveEditor();
             if (activeEditor != null) {
-                activeEditor.setFocus();
+                if (activeEditor instanceof ProjectEditorDiffer
+                        && projName.equals(((ProjectEditorDiffer) activeEditor)
+                                .getProject().getName())) {
+                    // TODO replace by logic which refresh state and content of the DbCombo
+                    activePage.activate(activeEditor);
+                } else if (activeEditor instanceof SQLEditor) {
+                    IResource res = ResourceUtil.getResource(((SQLEditor) activeEditor)
+                            .getEditorInput());
+                    if (res != null && projName.equals(res.getProject().getName())) {
+                        // TODO replace by logic which refresh state and content of the DbCombo
+                        activePage.activate(activeEditor);
+                    }
+                }
             }
         } catch (BackingStoreException e) {
             setErrorMessage(MessageFormat.format(
