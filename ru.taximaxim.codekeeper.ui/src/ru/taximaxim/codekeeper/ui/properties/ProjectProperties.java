@@ -86,7 +86,7 @@ public class ProjectProperties extends PropertyPage {
 
         String nameOfBindedDb = prefs.get(PROJ_PREF.NAME_OF_BINDED_DB, "");
         btnBindProjToDb = new Button(panel, SWT.CHECK);
-        btnBindProjToDb.setText(Messages.ProjectProperties_binding_to_db_connection);
+        btnBindProjToDb.setText(Messages.ProjectProperties_binding_to_db_connection + ':');
         btnBindProjToDb.setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, false, false, 1, 1));
         btnBindProjToDb.setSelection(!nameOfBindedDb.isEmpty());
         btnBindProjToDb.addSelectionListener(new SelectionAdapter() {
@@ -103,7 +103,7 @@ public class ProjectProperties extends PropertyPage {
         dbForBinding = DbInfo.getLastDb(nameOfBindedDb);
         storePicker = new DbStorePicker(panel, Activator.getDefault().getPreferenceStore(),
                 false, false, true);
-        storePicker.setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, false, false, 1, 1));
+        storePicker.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         storePicker.setSelection(dbForBinding != null ? new StructuredSelection(dbForBinding) : null);
         storePicker.setEnabled(btnBindProjToDb.getSelection());
         storePicker.addListenerToCombo(e -> dbForBinding = storePicker.getDbInfo());
