@@ -64,7 +64,7 @@ public class DropMsStatement extends ParserAbstract {
             for (Qualified_nameContext qname : ctx.qualified_name()) {
                 // TODO ref to table, need ctx
                 addObjReference(Arrays.asList(qname.schema, null, qname.name),
-                        type, StatementActions.DROP);
+                        DbObjType.TRIGGER, StatementActions.DROP);
             }
             return;
         }
