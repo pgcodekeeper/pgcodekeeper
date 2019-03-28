@@ -50,6 +50,12 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
         storePicker.addListenerToCombo(e -> {
             IEditorPart editor = getWorkbenchWindow().getActivePage().getActiveEditor();
 
+            // Using here the method 'checkProjBindingToDb()' instead of this code,
+            // can give as result the endless cycle, because of setting the selection
+            // to the StorePicker.
+            // Thats why setting the selection to the StorePicker is made in
+            // ru.taximaxim.codekeeper.ui.properties.ProjectProperties#performOk()
+            // through 'setCurrentDb()' and 'IWorkbenchPage.activate(IEditorPart)'.
             if (editor instanceof SQLEditor) {
                 SQLEditor sqlEditor = ((SQLEditor) editor);
                 sqlEditor.setCurrentDb(storePicker.getDbInfo());

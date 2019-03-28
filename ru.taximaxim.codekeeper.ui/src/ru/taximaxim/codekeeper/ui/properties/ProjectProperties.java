@@ -191,7 +191,9 @@ public class ProjectProperties extends PropertyPage {
                     ProjectEditorDiffer projEd = (ProjectEditorDiffer) activeEditor;
                     if (projName.equals(projEd.getProject().getName())) {
                         projEd.setCurrentDb(dbForBinding);
-                        // TODO replace by logic which refresh state and content of the DbCombo
+                        // it's need to do for refresh state and content DbCombo
+                        // of opened and active project editor, after setting of the binding
+                        // in the project properties.
                         activePage.activate(activeEditor);
                     }
                 } else if (activeEditor instanceof SQLEditor) {
@@ -199,7 +201,9 @@ public class ProjectProperties extends PropertyPage {
                     IResource res = ResourceUtil.getResource(sqlEd.getEditorInput());
                     if (res != null && projName.equals(res.getProject().getName())) {
                         sqlEd.setCurrentDb(dbForBinding);
-                        // TODO replace by logic which refresh state and content of the DbCombo
+                        // it's need to do for refresh state and content DbCombo
+                        // of opened and active sql editor, after setting of the
+                        // binding in the project properties
                         activePage.activate(activeEditor);
                     }
                 }
