@@ -26,7 +26,7 @@ public class MsSequencesReader extends JdbcReader {
         int precision = res.getInt("precision");
 
         s.setDataType(JdbcLoaderBase.getMsType(s, res.getString("type_schema"),
-                dataType, res.getBoolean("is_user_defined"), 0, precision, 0));
+                dataType, res.getBoolean("is_user_defined"), 0, precision, 0, false));
 
         s.setStartWith(Long.toString(res.getLong("start_value")));
         s.setMinMaxInc(res.getLong("increment"), res.getLong("maximum_value"),
