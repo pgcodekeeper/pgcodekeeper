@@ -204,35 +204,39 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 layout.marginWidth = 0;
                 container.setLayout(layout);
 
-                Label l = new Label(container, SWT.NONE);
-                l.setForeground(l.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
-                l.setText(Messages.DiffTableViewer_apply_to);
-                l.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
+                Group group = new Group(container, SWT.NONE);
+                group.setLayout(new GridLayout(3, false));
+                group.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
 
-                Button btnCommit = new Button(container, SWT.PUSH);
-                btnCommit.setText(Messages.DiffTableViewer_to_project);
-                btnCommit.setImage(Activator.getRegisteredImage(FILE.ICONAPPSMALL));
-                btnCommit.addSelectionListener(new SelectionAdapter() {
+                Button btnApply = new Button(group, SWT.PUSH);
+                btnApply.setText(Messages.DiffTableViewer_apply_to);
+                btnApply.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
+
+                Button btnToProj = new Button(group, SWT.RADIO);
+                btnToProj.setText(Messages.DiffTableViewer_to_project);
+                btnToProj.setImage(Activator.getRegisteredImage(FILE.ICONAPPSMALL));
+                btnToProj.setSelection(true);
+
+                Button btnToDb = new Button(group, SWT.RADIO);
+                btnToDb.setText(Messages.DiffTableViewer_to_database);
+                btnToDb.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
+                        .getBundle().getResource(FILE.ICONDATABASE))));
+
+                btnApply.addSelectionListener(new SelectionAdapter() {
 
                     @Override
                     public void widgetSelected(SelectionEvent e) {
+                        if (btnToDb.getSelection()) {
+                            diff();
+                            return;
+                        }
+
                         try {
                             commit();
                         } catch (PgCodekeeperException ex) {
-                            ExceptionNotifier.notifyDefault(Messages.error_creating_dependency_graph, ex);
+                            ExceptionNotifier
+                            .notifyDefault(Messages.error_creating_dependency_graph, ex);
                         }
-                    }
-                });
-
-                Button btnDiff = new Button(container, SWT.PUSH);
-                btnDiff.setText(Messages.DiffTableViewer_to_database);
-                btnDiff.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
-                        .getBundle().getResource(FILE.ICONDATABASE))));
-                btnDiff.addSelectionListener(new SelectionAdapter() {
-
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        diff();
                     }
                 });
 
