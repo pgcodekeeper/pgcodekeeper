@@ -192,8 +192,6 @@ public interface UIConsts {
         String ICONAPPBIG = "/icons/app_icon128.png"; //$NON-NLS-1$
         String ICONBALLBLUE = "/icons/ball_blue.png"; //$NON-NLS-1$
         String ICONBALLGREEN = "/icons/ball_green.png"; //$NON-NLS-1$
-        String ICONCREATE = "/icons/create.png"; //$NON-NLS-1$
-        String ICONDROP = "/icons/drop.png"; //$NON-NLS-1$
         String ICONADDDEP = "/icons/add_dep.png"; //$NON-NLS-1$
         String PGPASS = "/icons/pg_pass.png"; //$NON-NLS-1$
 

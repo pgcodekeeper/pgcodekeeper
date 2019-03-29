@@ -204,12 +204,13 @@ public class DiffTableViewer extends Composite {
         PixelConverter pc = new PixelConverter(this);
         lrm = new LocalResourceManager(JFaceResources.getResources(), this);
         Bundle bundle = Activator.getContext().getBundle();
+
         iSideBoth = lrm.createImage(ImageDescriptor.createFromURL(bundle
                 .getResource(FILE.ICONEDIT)));
-        iSideLeft = lrm.createImage(ImageDescriptor.createFromURL(bundle
-                .getResource(isRollOnProj ? FILE.ICONDROP : FILE.ICONCREATE)));
-        iSideRight = lrm.createImage(ImageDescriptor.createFromURL(bundle
-                .getResource(isRollOnProj ? FILE.ICONCREATE : FILE.ICONDROP)));
+        Image imgCreate = Activator.getEclipseImage(ISharedImages.IMG_OBJ_ADD);
+        Image imgDrop = Activator.getEclipseImage(ISharedImages.IMG_ETOOL_DELETE);
+        iSideLeft = isRollOnProj ? imgDrop : imgCreate;
+        iSideRight = isRollOnProj ? imgCreate : imgDrop;
 
         GridLayout gl = new GridLayout();
         gl.marginHeight = gl.marginWidth = 0;
@@ -227,7 +228,7 @@ public class DiffTableViewer extends Composite {
             Button btnSelectAll = new Button(upperComp, SWT.PUSH);
             btnSelectAll.setToolTipText(Messages.select_all);
             btnSelectAll.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                    Activator.getContext().getBundle().getResource(FILE.ICONSELECTALL))));
+                    bundle.getResource(FILE.ICONSELECTALL))));
             btnSelectAll.addSelectionListener(new SelectionAdapter() {
 
                 @Override
@@ -239,7 +240,7 @@ public class DiffTableViewer extends Composite {
             Button btnSelectNone = new Button(upperComp, SWT.PUSH);
             btnSelectNone.setToolTipText(Messages.select_none);
             btnSelectNone.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                    Activator.getContext().getBundle().getResource(FILE.ICONSELECTNONE))));
+                    bundle.getResource(FILE.ICONSELECTNONE))));
             btnSelectNone.addSelectionListener(new SelectionAdapter() {
 
                 @Override
@@ -251,7 +252,7 @@ public class DiffTableViewer extends Composite {
             Button btnInvertSelection = new Button(upperComp, SWT.PUSH);
             btnInvertSelection.setToolTipText(Messages.diffTableViewer_invert_selection);
             btnInvertSelection.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                    Activator.getContext().getBundle().getResource(FILE.ICONINVERTSELECTION))));
+                    bundle.getResource(FILE.ICONINVERTSELECTION))));
             btnInvertSelection.addSelectionListener(new SelectionAdapter() {
 
                 @Override
@@ -273,7 +274,7 @@ public class DiffTableViewer extends Composite {
 
             Button btnTypeFilter = new Button(upperComp, SWT.NONE);
             btnTypeFilter.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                    Activator.getContext().getBundle().getResource(FILE.ICONEMPTYFILTER))));
+                    bundle.getResource(FILE.ICONEMPTYFILTER))));
             btnTypeFilter.setToolTipText(Messages.DiffTableViewer_show_filters);
             btnTypeFilter.addSelectionListener(new SelectionAdapter() {
 
@@ -286,7 +287,7 @@ public class DiffTableViewer extends Composite {
                             viewerFilter.isLocalChange, viewerFilter.isHideLibs);
                     if (dialog.open() == Dialog.OK) {
                         btnTypeFilter.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                                Activator.getContext().getBundle().getResource(
+                                bundle.getResource(
                                         viewerFilter.isAdvancedEmpty() ? FILE.ICONEMPTYFILTER : FILE.ICONFILTER))));
                         viewer.refresh();
                     }
