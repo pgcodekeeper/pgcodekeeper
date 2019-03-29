@@ -87,6 +87,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.ISharedImages;
+import org.osgi.framework.Bundle;
 
 import cz.startnet.utils.pgdiff.libraries.PgLibrary;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
@@ -165,6 +166,8 @@ public class DiffTableViewer extends Composite {
     private DbSource dbProject;
     private DbSource dbRemote;
 
+    private boolean isRollOnProj = true;
+
     private final IStatusLineManager lineManager;
 
     private final List<ICheckStateListener> programmaticCheckListeners = new ArrayList<>();
@@ -196,12 +199,13 @@ public class DiffTableViewer extends Composite {
 
         PixelConverter pc = new PixelConverter(this);
         lrm = new LocalResourceManager(JFaceResources.getResources(), this);
-        iSideBoth = lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
-                .getBundle().getResource(FILE.ICONEDIT)));
-        iSideLeft = lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
-                .getBundle().getResource(FILE.ICONFROMPROJECT)));
-        iSideRight = lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
-                .getBundle().getResource(FILE.ICONFROMREMOTE)));
+        Bundle bundle = Activator.getContext().getBundle();
+        iSideBoth = lrm.createImage(ImageDescriptor.createFromURL(bundle
+                .getResource(FILE.ICONEDIT)));
+        iSideLeft = lrm.createImage(ImageDescriptor.createFromURL(bundle
+                .getResource(isRollOnProj ? FILE.ICONDROP : FILE.ICONCREATE)));
+        iSideRight = lrm.createImage(ImageDescriptor.createFromURL(bundle
+                .getResource(isRollOnProj ? FILE.ICONCREATE : FILE.ICONDROP)));
 
         GridLayout gl = new GridLayout();
         gl.marginHeight = gl.marginWidth = 0;
@@ -609,9 +613,9 @@ public class DiffTableViewer extends Composite {
             @Override
             public String getText(Object element) {
                 switch (((TreeElement) element).getSide()) {
-                case BOTH: return "edit"; //$NON-NLS-1$
-                case LEFT: return "project"; //$NON-NLS-1$
-                case RIGHT: return "remote"; //$NON-NLS-1$
+                case BOTH: return isRollOnProj ? "edit" : "ALTER"; //$NON-NLS-1$ //$NON-NLS-2$
+                case LEFT: return isRollOnProj ? "delete" : "CREATE"; //$NON-NLS-1$ //$NON-NLS-2$
+                case RIGHT: return isRollOnProj ? "add" : "DROP"; //$NON-NLS-1$ //$NON-NLS-2$
                 default: return null;
                 }
             }
@@ -620,8 +624,8 @@ public class DiffTableViewer extends Composite {
             public Image getImage(Object element) {
                 switch (((TreeElement) element).getSide()) {
                 case BOTH: return iSideBoth;
-                case LEFT: return iSideLeft;
-                case RIGHT: return iSideRight;
+                case LEFT: return isRollOnProj ? iSideLeft : iSideRight;
+                case RIGHT: return isRollOnProj ? iSideRight : iSideLeft;
                 default: return null;
                 }
             }
@@ -1054,6 +1058,10 @@ public class DiffTableViewer extends Composite {
         for (TreeElement child : element.getChildren()) {
             setSubTreeChecked(child, selected);
         }
+    }
+
+    public void setRollOnProj(boolean isRollOnProj) {
+        this.isRollOnProj = isRollOnProj;
     }
 
     public static boolean isContainer(TreeElement el) {

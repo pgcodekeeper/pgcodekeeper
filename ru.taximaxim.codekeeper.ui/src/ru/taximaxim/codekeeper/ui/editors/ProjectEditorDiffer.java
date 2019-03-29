@@ -216,11 +216,27 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 btnToProj.setText(Messages.DiffTableViewer_to_project);
                 btnToProj.setImage(Activator.getRegisteredImage(FILE.ICONAPPSMALL));
                 btnToProj.setSelection(true);
+                btnToProj.addSelectionListener(new SelectionAdapter()  {
+
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        diffTable.setRollOnProj(((Button) e.getSource()).getSelection());
+                        diffTable.getViewer().refresh();
+                    }
+                });
 
                 Button btnToDb = new Button(group, SWT.RADIO);
                 btnToDb.setText(Messages.DiffTableViewer_to_database);
                 btnToDb.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
                         .getBundle().getResource(FILE.ICONDATABASE))));
+                btnToDb.addSelectionListener(new SelectionAdapter()  {
+
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        diffTable.setRollOnProj(!((Button) e.getSource()).getSelection());
+                        diffTable.getViewer().refresh();
+                    }
+                });
 
                 btnApply.addSelectionListener(new SelectionAdapter() {
 
