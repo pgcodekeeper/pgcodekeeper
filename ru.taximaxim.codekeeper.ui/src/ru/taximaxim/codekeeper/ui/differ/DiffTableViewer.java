@@ -1059,6 +1059,9 @@ public class DiffTableViewer extends Composite {
             setSubTreeChecked(child, selected);
         }
     }
+    public boolean isRollOnProj() {
+        return isRollOnProj;
+    }
 
     public void setRollOnProj(boolean isRollOnProj) {
         this.isRollOnProj = isRollOnProj;

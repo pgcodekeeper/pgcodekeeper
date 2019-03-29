@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -36,6 +37,7 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.FontDescriptor;
@@ -156,6 +158,18 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         return proj.getProject();
     }
 
+    public void refreshChangeDirectionCol(boolean isRoolOnProj, boolean showWarning) {
+        if (showWarning && isRoolOnProj != diffTable.isRollOnProj()) {
+            MessageDialog.openInformation(parent.getShell(),
+                    Messages.ProjectEditorDiffer_changed_direction_of_roll_on_title,
+                    MessageFormat.format(Messages.ProjectEditorDiffer_changed_direction_of_roll_on,
+                            isRoolOnProj ? Messages.ProjectEditorDiffer_project
+                                    : Messages.ProjectEditorDiffer_database));
+        }
+        diffTable.setRollOnProj(isRoolOnProj);
+        diffTable.getViewer().refresh();
+    }
+
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         if (!(input instanceof ProjectEditorInput)) {
@@ -220,8 +234,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        diffTable.setRollOnProj(((Button) e.getSource()).getSelection());
-                        diffTable.getViewer().refresh();
+                        refreshChangeDirectionCol(((Button) e.getSource())
+                                .getSelection(), false);
                     }
                 });
 
@@ -233,8 +247,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        diffTable.setRollOnProj(!((Button) e.getSource()).getSelection());
-                        diffTable.getViewer().refresh();
+                        refreshChangeDirectionCol(!((Button) e.getSource())
+                                .getSelection(), false);
                     }
                 });
 
