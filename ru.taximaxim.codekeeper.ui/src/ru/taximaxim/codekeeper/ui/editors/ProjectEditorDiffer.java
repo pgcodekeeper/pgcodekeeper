@@ -10,6 +10,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -163,11 +164,12 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             MessageDialog.openInformation(parent.getShell(),
                     Messages.ProjectEditorDiffer_changed_direction_of_roll_on_title,
                     MessageFormat.format(Messages.ProjectEditorDiffer_changed_direction_of_roll_on,
-                            isRoolOnProj ? Messages.ProjectEditorDiffer_project
-                                    : Messages.ProjectEditorDiffer_database));
+                            isRoolOnProj ? Messages.ProjectEditorDiffer_project.toUpperCase(Locale.ROOT)
+                                    : Messages.ProjectEditorDiffer_database.toUpperCase(Locale.ROOT)));
         }
         diffTable.setRollOnProj(isRoolOnProj);
         diffTable.getViewer().refresh();
+        diffTable.refreshColumnChangeHeader();
     }
 
     @Override

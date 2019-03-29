@@ -184,6 +184,10 @@ public class DiffTableViewer extends Composite {
         return Collections.unmodifiableCollection(elements);
     }
 
+    public void refreshColumnChangeHeader() {
+        updateSortIndexes();
+    }
+
     public DiffTableViewer(Composite parent, boolean viewOnly) {
         this(parent, viewOnly, null, null);
     }
@@ -668,7 +672,8 @@ public class DiffTableViewer extends Composite {
         columnCheck.getColumn().setText("✓"); //$NON-NLS-1$
         columnName.getColumn().setText(Messages.diffTableViewer_object_name);
         columnType.getColumn().setText(Messages.diffTableViewer_object_type);
-        columnChange.getColumn().setText(Messages.diffTableViewer_change_type);
+        columnChange.getColumn().setText(MessageFormat.format(Messages.diffTableViewer_change_type,
+                Messages.diffTableViewer_for_project + '/' + Messages.diffTableViewer_for_database));
         columnLocation.getColumn().setText(Messages.diffTableViewer_container);
         columnGitUser.getColumn().setText(Messages.diffTableViewer_git_user);
         columnDbUser.getColumn().setText(Messages.diffTableViewer_db_user);
@@ -678,7 +683,7 @@ public class DiffTableViewer extends Composite {
         PixelConverter pc = new PixelConverter(viewer.getControl());
         columnCheck.getColumn().setWidth(viewOnly ? 0 : pc.convertWidthInCharsToPixels(10));
         columnType.getColumn().setWidth(pc.convertWidthInCharsToPixels(25));
-        columnChange.getColumn().setWidth(pc.convertWidthInCharsToPixels(19));
+        columnChange.getColumn().setWidth(pc.convertWidthInCharsToPixels(35));
         // name column will take half of the space
         int width = (int)(viewer.getControl().getSize().x * 0.4f);
         columnName.getColumn().setWidth(Math.max(width, 200));
@@ -725,7 +730,10 @@ public class DiffTableViewer extends Composite {
                 columnType.getColumn().setText(sb.append(Messages.diffTableViewer_object_type).toString());
                 break;
             case CHANGE:
-                columnChange.getColumn().setText(sb.append(Messages.diffTableViewer_change_type).toString());
+                columnChange.getColumn().setText(sb.append(MessageFormat
+                        .format(Messages.diffTableViewer_change_type,
+                                isRollOnProj ? Messages.diffTableViewer_for_project
+                                        : Messages.diffTableViewer_for_database)).toString());
                 break;
             case NAME:
                 columnName.getColumn().setText(sb.append(Messages.diffTableViewer_object_name).toString());

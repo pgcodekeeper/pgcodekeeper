@@ -117,6 +117,8 @@ public final class Messages extends NLS {
     public static String differ_get_differ;
     public static String differ_reverse_diff;
     public static String diffTableViewer_change_type;
+    public static String diffTableViewer_for_database;
+    public static String diffTableViewer_for_project;
     public static String diffTableViewer_container;
     public static String diffTableViewer_db_user;
     public static String diffTableViewer_deselect_child_elements;
