@@ -18,8 +18,6 @@ CREATE TABLE [dbo].[t1](
 )
 GO
 
--- DEPCY: This VIEW is a dependency of VIEW: [dbo].[v3]
-
 EXEC sys.sp_refreshsqlmodule '[dbo].[v1]' 
 GO
 
