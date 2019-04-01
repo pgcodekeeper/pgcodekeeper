@@ -56,12 +56,11 @@ public class MsFunction extends AbstractMsFunction {
 
         if (!Objects.equals(getFirstPart(), newFunction.getFirstPart())
                 || !Objects.equals(getSecondPart(), newFunction.getSecondPart())) {
+            isNeedDepcies.set(true);
             if (!getFuncType().equals(newFunction.getFuncType())) {
-                isNeedDepcies.set(true);
                 return true;
             } else {
                 sb.append(newFunction.getFunctionFullSQL(false));
-                isNeedDepcies.set(true);
             }
         }
 

@@ -1,9 +1,12 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.msexpr;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Full_column_nameContext;
@@ -19,21 +22,31 @@ public abstract class MsAbstractExpr {
     private final String schema;
     private final MsAbstractExpr parent;
     private final Set<GenericColumn> depcies;
+    private final Set<DbObjType> disabledDepcies;
 
     public Set<GenericColumn> getDepcies() {
         return Collections.unmodifiableSet(depcies);
     }
 
     public MsAbstractExpr(String schema) {
-        this.schema = schema;
-        parent = null;
-        depcies = new LinkedHashSet<>();
+        this(schema, null, new LinkedHashSet<>(), EnumSet.noneOf(DbObjType.class));
+    }
+
+    public MsAbstractExpr(String schema, DbObjType... disabledDepcies) {
+        this(schema, null, new LinkedHashSet<>(),
+                Arrays.stream(disabledDepcies)
+                .collect(Collectors.toCollection(() -> EnumSet.noneOf(DbObjType.class))));
     }
 
     protected MsAbstractExpr(MsAbstractExpr parent) {
-        this.schema = parent.schema;
+        this(parent.schema, parent, parent.depcies, parent.disabledDepcies);
+    }
+
+    private MsAbstractExpr(String schema, MsAbstractExpr parent, Set<GenericColumn> depcies, Set<DbObjType> allowedDepcies) {
+        this.schema = schema;
         this.parent = parent;
-        depcies = parent.depcies;
+        this.depcies = depcies;
+        this.disabledDepcies = allowedDepcies;
     }
 
     protected MsAbstractExprWithNmspc<?> findCte(String cteName) {
@@ -68,7 +81,7 @@ public abstract class MsAbstractExpr {
         String schemaName = schemaCtx == null ? schema : schemaCtx.getText();
         GenericColumn depcy = new GenericColumn(schemaName, relationName, type);
         if (!ApgdiffUtils.isMsSystemSchema(schemaName)) {
-            depcies.add(depcy);
+            addDepcy(depcy);
         }
         return depcy;
     }
@@ -82,7 +95,9 @@ public abstract class MsAbstractExpr {
     }
 
     protected void addDepcy(GenericColumn depcy) {
-        depcies.add(depcy);
+        if (!disabledDepcies.contains(depcy.type)) {
+            depcies.add(depcy);
+        }
     }
 
     protected void addColumnDepcy(Full_column_nameContext fcn) {
@@ -98,7 +113,7 @@ public abstract class MsAbstractExpr {
         if (ref != null) {
             GenericColumn referencedTable = ref.getValue();
             if (referencedTable != null && !ApgdiffUtils.isMsSystemSchema(referencedTable.schema)) {
-                depcies.add(new GenericColumn(referencedTable.schema,
+                addDepcy(new GenericColumn(referencedTable.schema,
                         referencedTable.table, columnName, DbObjType.COLUMN));
             }
         } else {
