@@ -159,17 +159,17 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         return proj.getProject();
     }
 
-    public void refreshChangeDirectionCol(boolean isRoolOnProj, boolean showWarning) {
-        if (showWarning && isRoolOnProj != diffTable.isRollOnProj()) {
+    public void refreshChangeDirectionCol(boolean isApplyToProj, boolean showWarning) {
+        if (showWarning && isApplyToProj != diffTable.isApplyToProj()) {
             MessageDialog.openInformation(parent.getShell(),
                     Messages.ProjectEditorDiffer_changed_direction_of_roll_on_title,
                     MessageFormat.format(Messages.ProjectEditorDiffer_changed_direction_of_roll_on,
-                            isRoolOnProj ? Messages.ProjectEditorDiffer_project.toUpperCase(Locale.ROOT)
+                            isApplyToProj ? Messages.ProjectEditorDiffer_project.toUpperCase(Locale.ROOT)
                                     : Messages.ProjectEditorDiffer_database.toUpperCase(Locale.ROOT)));
+
         }
-        diffTable.setRollOnProj(isRoolOnProj);
+        diffTable.setApplyToProj(isApplyToProj);
         diffTable.getViewer().refresh();
-        diffTable.refreshColumnChangeHeader();
     }
 
     @Override

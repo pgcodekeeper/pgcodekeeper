@@ -166,7 +166,7 @@ public class DiffTableViewer extends Composite {
     private DbSource dbProject;
     private DbSource dbRemote;
 
-    private boolean isRollOnProj = true;
+    private boolean isApplyToProj = true;
 
     private final IStatusLineManager lineManager;
 
@@ -182,10 +182,6 @@ public class DiffTableViewer extends Composite {
 
     public Collection<TreeElement> getElements() {
         return Collections.unmodifiableCollection(elements);
-    }
-
-    public void refreshColumnChangeHeader() {
-        updateSortIndexes();
     }
 
     public DiffTableViewer(Composite parent, boolean viewOnly) {
@@ -207,10 +203,8 @@ public class DiffTableViewer extends Composite {
 
         iSideBoth = lrm.createImage(ImageDescriptor.createFromURL(bundle
                 .getResource(FILE.ICONEDIT)));
-        Image imgCreate = Activator.getEclipseImage(ISharedImages.IMG_OBJ_ADD);
-        Image imgDrop = Activator.getEclipseImage(ISharedImages.IMG_ETOOL_DELETE);
-        iSideLeft = isRollOnProj ? imgDrop : imgCreate;
-        iSideRight = isRollOnProj ? imgCreate : imgDrop;
+        iSideRight = Activator.getEclipseImage(ISharedImages.IMG_OBJ_ADD);
+        iSideLeft = Activator.getEclipseImage(ISharedImages.IMG_ETOOL_DELETE);
 
         GridLayout gl = new GridLayout();
         gl.marginHeight = gl.marginWidth = 0;
@@ -618,9 +612,9 @@ public class DiffTableViewer extends Composite {
             @Override
             public String getText(Object element) {
                 switch (((TreeElement) element).getSide()) {
-                case BOTH: return isRollOnProj ? "edit" : "ALTER"; //$NON-NLS-1$ //$NON-NLS-2$
-                case LEFT: return isRollOnProj ? "delete" : "CREATE"; //$NON-NLS-1$ //$NON-NLS-2$
-                case RIGHT: return isRollOnProj ? "add" : "DROP"; //$NON-NLS-1$ //$NON-NLS-2$
+                case BOTH: return isApplyToProj ? "edit" : "ALTER"; //$NON-NLS-1$ //$NON-NLS-2$
+                case LEFT: return isApplyToProj ? "delete" : "CREATE"; //$NON-NLS-1$ //$NON-NLS-2$
+                case RIGHT: return isApplyToProj ? "add" : "DROP"; //$NON-NLS-1$ //$NON-NLS-2$
                 default: return null;
                 }
             }
@@ -629,8 +623,8 @@ public class DiffTableViewer extends Composite {
             public Image getImage(Object element) {
                 switch (((TreeElement) element).getSide()) {
                 case BOTH: return iSideBoth;
-                case LEFT: return isRollOnProj ? iSideLeft : iSideRight;
-                case RIGHT: return isRollOnProj ? iSideRight : iSideLeft;
+                case LEFT: return isApplyToProj ? iSideLeft : iSideRight;
+                case RIGHT: return isApplyToProj ? iSideRight : iSideLeft;
                 default: return null;
                 }
             }
@@ -733,7 +727,7 @@ public class DiffTableViewer extends Composite {
             case CHANGE:
                 columnChange.getColumn().setText(sb.append(MessageFormat
                         .format(Messages.diffTableViewer_change_type,
-                                isRollOnProj ? Messages.diffTableViewer_for_project
+                                isApplyToProj ? Messages.diffTableViewer_for_project
                                         : Messages.diffTableViewer_for_database)).toString());
                 break;
             case NAME:
@@ -1068,12 +1062,13 @@ public class DiffTableViewer extends Composite {
             setSubTreeChecked(child, selected);
         }
     }
-    public boolean isRollOnProj() {
-        return isRollOnProj;
+    public boolean isApplyToProj() {
+        return isApplyToProj;
     }
 
-    public void setRollOnProj(boolean isRollOnProj) {
-        this.isRollOnProj = isRollOnProj;
+    public void setApplyToProj(boolean isApplyToProj) {
+        this.isApplyToProj = isApplyToProj;
+        updateSortIndexes();
     }
 
     public static boolean isContainer(TreeElement el) {
