@@ -10,7 +10,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -38,7 +37,6 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.FontDescriptor;
@@ -162,13 +160,14 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         return proj.getProject();
     }
 
-    public void refreshChangeDirectionCol(boolean isApplyToProj, boolean showWarning) {
+    public void changeMigrationDireciton(boolean isApplyToProj, boolean showWarning) {
         if (showWarning && isApplyToProj != diffTable.isApplyToProj()) {
-            MessageDialog.openInformation(parent.getShell(),
-                    Messages.ProjectEditorDiffer_changed_direction_of_roll_on_title,
-                    MessageFormat.format(Messages.ProjectEditorDiffer_changed_direction_of_roll_on,
-                            isApplyToProj ? Messages.ProjectEditorDiffer_project.toUpperCase(Locale.ROOT)
-                                    : Messages.ProjectEditorDiffer_database.toUpperCase(Locale.ROOT)));
+            MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_WARNING);
+            mb.setText(Messages.ProjectEditorDiffer_changed_direction_of_roll_on_title);
+            mb.setMessage(MessageFormat.format(Messages.ProjectEditorDiffer_changed_direction_of_roll_on,
+                    isApplyToProj ? Messages.ProjectEditorDiffer_project
+                            : Messages.ProjectEditorDiffer_database));
+            mb.open();
 
             btnToProj.setSelection(isApplyToProj);
             btnToDb.setSelection(!isApplyToProj);
@@ -231,7 +230,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
                 Button btnApply = new Button(group, SWT.PUSH);
                 btnApply.setText(Messages.DiffTableViewer_apply_to);
-                btnApply.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
 
                 btnToProj = new Button(group, SWT.RADIO);
                 btnToProj.setText(Messages.DiffTableViewer_to_project);
@@ -241,8 +239,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        refreshChangeDirectionCol(((Button) e.getSource())
-                                .getSelection(), false);
+                        changeMigrationDireciton(true, false);
                     }
                 });
 
@@ -254,8 +251,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        refreshChangeDirectionCol(!((Button) e.getSource())
-                                .getSelection(), false);
+                        changeMigrationDireciton(false, false);
                     }
                 });
 
