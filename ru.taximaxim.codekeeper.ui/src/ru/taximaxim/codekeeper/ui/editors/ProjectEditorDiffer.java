@@ -146,6 +146,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private Link linkRefresh;
     private Button btnGetChanges;
 
+    private Button btnToProj;
+    private Button btnToDb;
+
     private DiffTableViewer diffTable;
     private DiffPaneViewer diffPane;
 
@@ -167,6 +170,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                             isApplyToProj ? Messages.ProjectEditorDiffer_project.toUpperCase(Locale.ROOT)
                                     : Messages.ProjectEditorDiffer_database.toUpperCase(Locale.ROOT)));
 
+            btnToProj.setSelection(isApplyToProj);
+            btnToDb.setSelection(!isApplyToProj);
         }
         diffTable.setApplyToProj(isApplyToProj);
         diffTable.getViewer().refresh();
@@ -228,7 +233,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 btnApply.setText(Messages.DiffTableViewer_apply_to);
                 btnApply.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
 
-                Button btnToProj = new Button(group, SWT.RADIO);
+                btnToProj = new Button(group, SWT.RADIO);
                 btnToProj.setText(Messages.DiffTableViewer_to_project);
                 btnToProj.setImage(Activator.getRegisteredImage(FILE.ICONAPPSMALL));
                 btnToProj.setSelection(true);
@@ -241,7 +246,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     }
                 });
 
-                Button btnToDb = new Button(group, SWT.RADIO);
+                btnToDb = new Button(group, SWT.RADIO);
                 btnToDb.setText(Messages.DiffTableViewer_to_database);
                 btnToDb.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
                         .getBundle().getResource(FILE.ICONDATABASE))));
