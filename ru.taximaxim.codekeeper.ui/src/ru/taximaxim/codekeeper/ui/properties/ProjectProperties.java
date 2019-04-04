@@ -50,7 +50,7 @@ public class ProjectProperties extends PropertyPage {
     private CLabel lblWarnPosix;
 
     private String projName;
-    private DbInfo dbForBinding;
+    private DbInfo dbForBind;
 
     private IEclipsePreferences prefs;
 
@@ -84,11 +84,11 @@ public class ProjectProperties extends PropertyPage {
         btnForceUnixNewlines.setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, false, false, 2, 1));
         btnForceUnixNewlines.setSelection(prefs.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true));
 
-        String nameOfBindedDb = prefs.get(PROJ_PREF.NAME_OF_BINDED_DB, "");
+        String nameOfBoundDb = prefs.get(PROJ_PREF.NAME_OF_BOUND_DB, "");
         btnBindProjToDb = new Button(panel, SWT.CHECK);
         btnBindProjToDb.setText(Messages.ProjectProperties_binding_to_db_connection + ':');
         btnBindProjToDb.setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, false, false, 1, 1));
-        btnBindProjToDb.setSelection(!nameOfBindedDb.isEmpty());
+        btnBindProjToDb.setSelection(!nameOfBoundDb.isEmpty());
         btnBindProjToDb.addSelectionListener(new SelectionAdapter() {
 
             @Override
@@ -100,13 +100,13 @@ public class ProjectProperties extends PropertyPage {
             }
         });
 
-        dbForBinding = DbInfo.getLastDb(nameOfBindedDb);
+        dbForBind = DbInfo.getLastDb(nameOfBoundDb);
         storePicker = new DbStorePicker(panel, Activator.getDefault().getPreferenceStore(),
                 false, false, true);
         storePicker.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        storePicker.setSelection(dbForBinding != null ? new StructuredSelection(dbForBinding) : null);
+        storePicker.setSelection(dbForBind != null ? new StructuredSelection(dbForBind) : null);
         storePicker.setEnabled(btnBindProjToDb.getSelection());
-        storePicker.addListenerToCombo(e -> dbForBinding = storePicker.getDbInfo());
+        storePicker.addListenerToCombo(e -> dbForBind = storePicker.getDbInfo());
 
         if (!isMsSql) {
             new Label(panel, SWT.NONE).setText(Messages.projectProperties_timezone_for_all_db_connections);
@@ -190,7 +190,7 @@ public class ProjectProperties extends PropertyPage {
                 if (activeEditor instanceof ProjectEditorDiffer) {
                     ProjectEditorDiffer projEd = (ProjectEditorDiffer) activeEditor;
                     if (projName.equals(projEd.getProject().getName())) {
-                        projEd.setCurrentDb(dbForBinding);
+                        projEd.setCurrentDb(dbForBind);
                         // it's need to do for refresh state and content DbCombo
                         // of opened and active project editor, after setting of the binding
                         // in the project properties.
@@ -200,7 +200,7 @@ public class ProjectProperties extends PropertyPage {
                     SQLEditor sqlEd = (SQLEditor) activeEditor;
                     IResource res = ResourceUtil.getResource(sqlEd.getEditorInput());
                     if (res != null && projName.equals(res.getProject().getName())) {
-                        sqlEd.setCurrentDb(dbForBinding);
+                        sqlEd.setCurrentDb(dbForBind);
                         // it's need to do for refresh state and content DbCombo
                         // of opened and active sql editor, after setting of the
                         // binding in the project properties
@@ -221,10 +221,10 @@ public class ProjectProperties extends PropertyPage {
     private void fillPrefs() throws BackingStoreException {
         prefs.putBoolean(PROJ_PREF.DISABLE_PARSER_IN_EXTERNAL_FILES, btnDisableParser.getSelection());
         prefs.putBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, btnForceUnixNewlines.getSelection());
-        if (btnBindProjToDb.getSelection() && dbForBinding != null) {
-            setBindedDbToPref(prefs, dbForBinding.getName());
+        if (btnBindProjToDb.getSelection() && dbForBind != null) {
+            setBoundDbToPref(prefs, dbForBind.getName());
         } else {
-            prefs.put(PROJ_PREF.NAME_OF_BINDED_DB, "");
+            prefs.put(PROJ_PREF.NAME_OF_BOUND_DB, "");
         }
         if (!isMsSql) {
             prefs.put(PROJ_PREF.TIMEZONE, cmbTimezone.getText());
@@ -234,8 +234,8 @@ public class ProjectProperties extends PropertyPage {
         setErrorMessage(null);
     }
 
-    public static void setBindedDbToPref(IEclipsePreferences prefs, String dbName) {
-        prefs.put(PROJ_PREF.NAME_OF_BINDED_DB, dbName);
+    public static void setBoundDbToPref(IEclipsePreferences prefs, String dbName) {
+        prefs.put(PROJ_PREF.NAME_OF_BOUND_DB, dbName);
         prefs.put(PROJ_PREF.LAST_DB_STORE, dbName);
         prefs.put(PROJ_PREF.LAST_DB_STORE_EDITOR, dbName);
     }

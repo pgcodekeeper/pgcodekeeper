@@ -92,42 +92,42 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
 
     private void setDbComboEnableState(IEclipsePreferences prefs) {
         storePicker.setComboEnabled(prefs == null ? true :
-            prefs.get(PROJ_PREF.NAME_OF_BINDED_DB, "").isEmpty());
+            prefs.get(PROJ_PREF.NAME_OF_BOUND_DB, "").isEmpty());
     }
 
     private void checkProjBindingToDb() {
         IEditorPart ed = getWorkbenchWindow().getActivePage().getActiveEditor();
-        DbInfo bindedDb = null;
+        DbInfo boundDb = null;
         if (ed instanceof SQLEditor) {
             SQLEditor sqlEd = (SQLEditor) ed;
-            bindedDb = setBindedDbToProj(sqlEd.getProjPrefs(), db -> sqlEd.setCurrentDb(db));
+            boundDb = setBoundDbToProj(sqlEd.getProjPrefs(), db -> sqlEd.setCurrentDb(db));
         } else if (ed instanceof ProjectEditorDiffer) {
             ProjectEditorDiffer projEd = (ProjectEditorDiffer) ed;
-            bindedDb = setBindedDbToProj(PgDbProject.getPrefs(projEd.getProject()),
+            boundDb = setBoundDbToProj(PgDbProject.getPrefs(projEd.getProject()),
                     db -> projEd.setCurrentDb(db));
         }
 
-        boolean isDumpFile = bindedDb == null;
-        storePicker.setSelection(isDumpFile ? null : new StructuredSelection(bindedDb));
+        boolean isDumpFile = boundDb == null;
+        storePicker.setSelection(isDumpFile ? null : new StructuredSelection(boundDb));
         storePicker.setComboEnabled(isDumpFile);
     }
 
     /**
-     * Sets binded database to the project as currentDB.
+     * Sets bound database to the project as currentDB.
      *
      * @param prefs project preferences
      * @param setDbToEditor consumer for set DB to SQLEditor or to ProjectEditorDiffer
      *
-     * @return binded database, If there is no binded database then returns null.
+     * @return bound database, If there is no bound database then returns null.
      */
-    private DbInfo setBindedDbToProj(IEclipsePreferences prefs,
+    private DbInfo setBoundDbToProj(IEclipsePreferences prefs,
             Consumer<DbInfo> setDbToEditor) {
         if (prefs == null) {
             return null;
         }
-        String nameOfBindedDb = prefs.get(PROJ_PREF.NAME_OF_BINDED_DB, "");  //$NON-NLS-1$
-        if (!nameOfBindedDb.isEmpty()) {
-            DbInfo dbSource = DbInfo.getLastDb(nameOfBindedDb);
+        String nameOfBoundDb = prefs.get(PROJ_PREF.NAME_OF_BOUND_DB, "");  //$NON-NLS-1$
+        if (!nameOfBoundDb.isEmpty()) {
+            DbInfo dbSource = DbInfo.getLastDb(nameOfBoundDb);
             setDbToEditor.accept(dbSource);
             return dbSource;
         }

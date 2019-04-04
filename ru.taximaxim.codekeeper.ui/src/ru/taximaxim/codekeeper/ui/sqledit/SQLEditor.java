@@ -176,9 +176,9 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         // it's need to do for refresh content and state of DbCombo in SQLEditor
         // when it's opened as inactive second tab, while setting the binding in
         // project properties
-        DbInfo bindedDb = getDbFromPref(PROJ_PREF.NAME_OF_BINDED_DB);
-        if (bindedDb != null) {
-            return bindedDb;
+        DbInfo boundDb = getDbFromPref(PROJ_PREF.NAME_OF_BOUND_DB);
+        if (boundDb != null) {
+            return boundDb;
         }
 
         if (currentDB != null) {

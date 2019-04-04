@@ -122,10 +122,10 @@ implements IExecutableExtension, INewWizard {
                 }
             }
 
-            if (pageDb.isBinded()) {
+            if (pageDb.isBound()) {
                 DbInfo dbInfo = pageDb.getDbInfo();
                 if (dbInfo != null) {
-                    ProjectProperties.setBindedDbToPref(props.getPrefs(), dbInfo.getName());
+                    ProjectProperties.setBoundDbToPref(props.getPrefs(), dbInfo.getName());
                     try {
                         props.getPrefs().flush();
                     } catch (BackingStoreException e) {
@@ -276,7 +276,7 @@ class PageDb extends WizardPage {
         return btnInit.getSelection();
     }
 
-    public boolean isBinded() {
+    public boolean isBound() {
         return btnBind.getSelection();
     }
 
