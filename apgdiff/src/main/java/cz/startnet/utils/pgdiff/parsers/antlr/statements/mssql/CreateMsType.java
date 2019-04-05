@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ClusteredContext;
@@ -108,7 +109,12 @@ public class CreateMsType extends ParserAbstract {
 
         Index_restContext rest = indCtx.index_rest();
 
-        sb.append(getFullCtxText(rest.index_sort()));
+        sb.append("(\n\t");
+        sb.append(rest.index_sort().column_name_list_with_order().column_with_order()
+                .stream().map(ParserAbstract::getFullCtxText)
+                .collect(Collectors.joining(",\n\t")));
+        sb.append("\n)");
+
         Index_whereContext wherePart = rest.index_where();
         if (wherePart != null) {
             sb.append(" WHERE ").append(getFullCtxText(wherePart.where));

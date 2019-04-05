@@ -3044,7 +3044,15 @@ full_column_name
     ; 
 
 column_name_list_with_order
-    : id (ASC | DESC)? (COMMA id (ASC | DESC)?)*
+    : column_with_order (COMMA column_with_order)*
+    ;
+
+column_with_order
+    : id (order=asc_desc)?
+    ;
+
+asc_desc
+    : ASC | DESC
     ;
 
 column_name_list
