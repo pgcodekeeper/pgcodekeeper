@@ -2707,7 +2707,7 @@ xml_common_directives
     ;
 
 order_by_expression
-    : expression (ASC | DESC)?
+    : expression asc_desc?
     ;
 
 option_clause
@@ -3048,7 +3048,7 @@ column_name_list_with_order
     ;
 
 column_with_order
-    : id (order=asc_desc)?
+    : id asc_desc?
     ;
 
 asc_desc
