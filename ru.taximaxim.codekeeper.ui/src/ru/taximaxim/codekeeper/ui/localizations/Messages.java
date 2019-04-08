@@ -117,6 +117,8 @@ public final class Messages extends NLS {
     public static String differ_get_differ;
     public static String differ_reverse_diff;
     public static String diffTableViewer_change_type;
+    public static String diffTableViewer_for_database;
+    public static String diffTableViewer_for_project;
     public static String diffTableViewer_container;
     public static String diffTableViewer_db_user;
     public static String diffTableViewer_deselect_child_elements;
@@ -636,6 +638,9 @@ public final class Messages extends NLS {
 
     public static String PrefListEditor_cannot_add;
 
+    public static String ProjectEditorDiffer_changed_direction_of_roll_on_title;
+    public static String ProjectEditorDiffer_changed_direction_of_roll_on;
+
     public static String ProjectEditorDiffer_commit_error;
     public static String ProjectEditorDiffer_error_bad_input_type;
 
@@ -655,6 +660,8 @@ public final class Messages extends NLS {
     public static String ProjectEditorDiffer_library_duplication_exception;
 
     public static String ProjectEditorDiffer_no_differences;
+
+    public static String ProjectEditorDiffer_database;
 
     public static String ProjectEditorDiffer_project;
     public static String ProjectEditorDiffer_script_creation_message;
