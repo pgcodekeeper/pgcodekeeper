@@ -667,8 +667,7 @@ public class DiffTableViewer extends Composite {
         columnCheck.getColumn().setText("✓"); //$NON-NLS-1$
         columnName.getColumn().setText(Messages.diffTableViewer_object_name);
         columnType.getColumn().setText(Messages.diffTableViewer_object_type);
-        columnChange.getColumn().setText(MessageFormat.format(Messages.diffTableViewer_change_type,
-                Messages.diffTableViewer_for_project + '/' + Messages.diffTableViewer_for_database));
+        columnChange.getColumn().setText(Messages.diffTableViewer_change_type);
         columnLocation.getColumn().setText(Messages.diffTableViewer_container);
         columnGitUser.getColumn().setText(Messages.diffTableViewer_git_user);
         columnDbUser.getColumn().setText(Messages.diffTableViewer_db_user);
@@ -725,10 +724,10 @@ public class DiffTableViewer extends Composite {
                 columnType.getColumn().setText(sb.append(Messages.diffTableViewer_object_type).toString());
                 break;
             case CHANGE:
-                columnChange.getColumn().setText(sb.append(MessageFormat
-                        .format(Messages.diffTableViewer_change_type,
-                                isApplyToProj ? Messages.diffTableViewer_for_project
-                                        : Messages.diffTableViewer_for_database)).toString());
+                sb.append(Messages.diffTableViewer_change_type);
+                sb.append(isApplyToProj ? Messages.diffTableViewer_for_project
+                        : Messages.diffTableViewer_for_database);
+                columnChange.getColumn().setText(sb.toString());
                 break;
             case NAME:
                 columnName.getColumn().setText(sb.append(Messages.diffTableViewer_object_name).toString());

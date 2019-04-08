@@ -224,14 +224,11 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 layout.marginWidth = 0;
                 container.setLayout(layout);
 
-                Group group = new Group(container, SWT.NONE);
-                group.setLayout(new GridLayout(3, false));
-                group.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
-
-                Button btnApply = new Button(group, SWT.PUSH);
+                Button btnApply = new Button(container, SWT.PUSH);
                 btnApply.setText(Messages.DiffTableViewer_apply_to);
+                btnApply.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
 
-                btnToProj = new Button(group, SWT.RADIO);
+                btnToProj = new Button(container, SWT.RADIO);
                 btnToProj.setText(Messages.DiffTableViewer_to_project);
                 btnToProj.setImage(Activator.getRegisteredImage(FILE.ICONAPPSMALL));
                 btnToProj.setSelection(true);
@@ -243,7 +240,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     }
                 });
 
-                btnToDb = new Button(group, SWT.RADIO);
+                btnToDb = new Button(container, SWT.RADIO);
                 btnToDb.setText(Messages.DiffTableViewer_to_database);
                 btnToDb.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
                         .getBundle().getResource(FILE.ICONDATABASE))));
@@ -277,6 +274,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 btnGetChanges.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
                         .getBundle().getResource(FILE.ICONREFRESH))));
                 btnGetChanges.setText(Messages.DiffTableViewer_get_changes);
+                GridData gd = new GridData();
+                gd.horizontalIndent = 8;
+                btnGetChanges.setLayoutData(gd);
                 btnGetChanges.addSelectionListener(new SelectionAdapter() {
 
                     @Override
