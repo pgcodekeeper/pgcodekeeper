@@ -5,7 +5,8 @@
     name="select"
     description="%select.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.select">SELECT
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.select"
+    >SELECT
   ${columnName} 
 FROM
   ${tableName}</template>
@@ -14,64 +15,32 @@ FROM
     name="select"
     description="%select2.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.select2">SELECT
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.select2"
+    >SELECT
   *
 FROM
   ${tableName}</template>
 
 <template 
-    name="insert"
-    description="%insert.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.insert">INSERT INTO ${tableName}
-  ( ${columnName} )
-VALUES
-  ( ${value} )</template>
-
-<template 
-    name="insert"
-    description="%insert2.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.insert2">INSERT INTO ${tableName}
-VALUES
-  ( ${value} )</template>
-
-<template 
-    name="update"
-    description="%update.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.update">UPDATE ${tableName}
-  SET ${columnName} = ${value}</template>
-
-<template 
-    name="delete"
-    description="%delete.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.delete">DELETE FROM ${tableName}</template>
-
-<template 
-    name="truncate"
-    description="%truncate.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.truncate">TRUNCATE TABLE ${tableName}</template>
-
-<template 
     name="order"
     description="%order.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.order">ORDER BY ${columnName}</template>
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.order"
+    >ORDER BY ${columnName}</template>
 
 <template 
     name="group"
     description="%group.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.group">GROUP BY ${columnName}</template>
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.group"
+    >GROUP BY ${columnName}</template>
 
 <template 
     name="case"
     description="%case.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.case">CASE ${columnName} 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.case"
+    >CASE ${columnName} 
     WHEN ${value} THEN ${value} 
     ELSE ${value} 
 END</template>
@@ -80,65 +49,298 @@ END</template>
     name="case"
     description="%case2.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.case2">CASE
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.case2"
+    >CASE
     WHEN ${columnName} = ${value} THEN ${value} 
     ELSE ${value} 
 END</template>
 
 <template 
+    name="insert"
+    description="%insert.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.insert"
+    >INSERT INTO ${tableName}
+  ( ${columnName} )
+VALUES
+  ( ${value} )</template>
+
+<template 
+    name="insert"
+    description="%insert2.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.insert2"
+    >INSERT INTO ${tableName}
+VALUES
+  ( ${value} )</template>
+
+<template 
+    name="update"
+    description="%update.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.update"
+    >UPDATE ${tableName}
+  SET ${columnName} = ${value}</template>
+
+<template 
+    name="delete"
+    description="%delete.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.delete"
+    >DELETE FROM ${tableName}</template>
+
+<template 
+    name="truncate"
+    description="%truncate.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.truncate"
+    >TRUNCATE TABLE ${tableName}</template>
+
+<template 
     name="create_table"
     description="%create.table.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createtable">CREATE TABLE ${tableName} (
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createtable"
+    >CREATE TABLE ${tableName} (
 	${columnName} ${dataType}
 )</template>
-
-<template 
-    name="drop_table"
-    description="%drop.table.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.droptable">DROP TABLE ${tableName}</template>
 
 <template 
     name="alter_table_column"
     description="%alter.add.column.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.addcolumn">ALTER TABLE ${tableName}
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.addcolumn"
+    >ALTER TABLE ${tableName}
     ADD COLUMN ${columnName} ${dataType}</template>
     
 <template 
     name="alter_table_column"
     description="%alter.alter.column.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.altercolumn">ALTER TABLE ${tableName}
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.altercolumn"
+    >ALTER TABLE ${tableName}
     ALTER COLUMN ${columnName} ${operation}</template>
 
 <template 
     name="alter_table_column"
     description="%alter.drop.column.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.delcolumn">ALTER TABLE ${tableName}
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.delcolumn"
+    >ALTER TABLE ${tableName}
     DROP COLUMN ${columnName}</template>
 
 <template 
     name="alter_table_constraint"
     description="%alter.add.constraint.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.addconstraint">ALTER TABLE ${tableName}
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.addconstraint"
+    >ALTER TABLE ${tableName}
     ADD CONSTRAINT ${constraintName} ${constraintType}(${columnName})</template>
 
 <template 
     name="alter_table_constraint"
     description="%alter.drop.constraint.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.delconstraint">ALTER TABLE ${tableName}
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.delconstraint"
+    >ALTER TABLE ${tableName}
     DROP CONSTRAINT ${constraintName}</template>
+
+<template 
+    name="create_type"
+    description="%create.type.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createtype"
+    >CREATE TYPE ${typeName} AS (
+    ${columnName} ${dataType}
+)</template>
+
+<template 
+    name="create_type"
+    description="%create.type2.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createtype2"
+    >CREATE TYPE ${typeName} AS ENUM (
+    '${label}'
+)</template>
+
+<template 
+    name="create_type"
+    description="%create.type3.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createtype3"
+    >CREATE TYPE ${typeName} AS RANGE (
+    SUBTYPE = ${subtype}
+)</template>
+
+<template 
+    name="create_type"
+    description="%create.type4.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createtype4"
+    >CREATE TYPE ${typeName} (
+    INPUT = ${input_function},
+    OUTPUT = ${output_function},
+)</template>
+
+<template 
+    name="create_domain"
+    description="%create.domain.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createdomain"
+    >CREATE DOMAIN ${domainName} AS ${dataType}
+    ${conditions}</template>
+
+<template 
+    name="create_function"
+    description="%create.function.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createfunction"
+    >CREATE OR REPLACE FUNCTION ${functionName} RETURNS ${dataType}
+    LANGUAGE sql
+    AS ${write_here_two_dollar_symbols}
+    --function body
+${write_here_two_dollar_symbols};</template>
+
+<template 
+    name="create_procedure"
+    description="%create.procedure.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createprocedure"
+    >CREATE OR REPLACE PROCEDURE ${procedureName}
+    LANGUAGE sql
+    AS ${write_here_two_dollar_symbols}
+    --procedure body 
+${write_here_two_dollar_symbols};</template>
+
+<template 
+    name="create_view"
+    description="%create.view.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createview"
+    >CREATE VIEW ${viewName} AS
+    SELECT ${expression}</template>
+
+<template 
+    name="create_fts_parser"
+    description="%create.fts_parser.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createftsparser"
+    >CREATE TEXT SEARCH PARSER ${ftsParserName} (
+    START = ${startFunction},
+    GETTOKEN = ${gettokenFunction},
+    END = ${endFunction},
+    LEXTYPES = ${lextypesFunction} )</template>
+
+<template 
+    name="create_fts_template"
+    description="%create.fts_template.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createftstemplate"
+    >CREATE TEXT SEARCH TEMPLATE ${ftsTemplateName} (
+    LEXIZE = ${lexizeFunction} )</template>
+
+<template 
+    name="create_fts_dictionary"
+    description="%create.fts_dictionary.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createftsdictionary"
+    >CREATE TEXT SEARCH DICTIONARY ${ftsDictionaryName} (
+    TEMPLATE = ${templateName} )</template>
+
+<template 
+    name="create_fts_configuration"
+    description="%create.fts_configuration.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createftsconfiguration"
+    >CREATE TEXT SEARCH CONFIGURATION ${ftsConfigurationName} (
+    PARSER = ${parserName} )</template>
+
+<template 
+    name="create_index"
+    description="%create.index.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createindex"
+    >CREATE INDEX ${indexName} ON ${tableName} USING btree (${columnName})</template>
+
+<template 
+    name="create_trigger"
+    description="%create.trigger.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createtrigger"
+    >CREATE TRIGGER ${triggerName}
+    BEFORE UPDATE ON ${tableName}
+    FOR EACH STATEMENT
+    EXECUTE PROCEDURE ${functionName}</template>
+
+<template 
+    name="alter_trigger"
+    description="%alter.trigger.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.altertrigger"
+    >ALTER TRIGGER ${triggerName} ON ${tableName} ${operation}</template>
+
+<template 
+    name="drop_trigger"
+    description="%drop.trigger.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.droptrigger"
+    >DROP TRIGGER ${triggerName} ON ${tableName}</template>
+
+<template 
+    name="create_rule"
+    description="%create.rule.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createrule"
+    >CREATE RULE ${ruleName} AS
+    ON UPDATE TO ${tableName} DO NOTHING</template>
+
+<template 
+    name="alter_rule"
+    description="%alter.rule.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.alterrule"
+    >ALTER RULE ${ruleName} ON ${tableName} RENAME TO ${newRuleName}</template>
+
+<template 
+    name="drop_rule"
+    description="%drop.rule.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.droprule"
+    >DROP RULE ${ruleName} ON ${tableName}</template>
+
+<template 
+    name="revoke"
+    description="%revoke.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.revoke"
+    >REVOKE ALL ON ${statementType} ${statementName} FROM PUBLIC</template>
+
+<template 
+    name="grant"
+    description="%grant.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.grant"
+    >GRANT ALL ON ${statementType} ${statementName} TO PUBLIC</template>
+
+<template 
+    name="comment"
+    description="%comment.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.comment"
+    >COMMENT ON ${statementType} ${statementName} IS '${text}'</template>
+
+<template 
+    name="comment"
+    description="%comment2.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.comment2"
+    >COMMENT ON ${statementType} ${statementName} ON ${tableName} IS '${text}'</template>
 
 <template 
     name="count"
     description="%count.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.count">COUNT(${columnName}) </template>
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.count">COUNT(${columnName})</template>
 
 <template 
     name="max"
