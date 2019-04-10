@@ -83,9 +83,9 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
             }
         });
 
-        setSelectionFromPart(getWorkbenchWindow().getActivePage().getActiveEditor());
+        setSelectionFromPart(editorPart);
 
-        checkProjBindingToDb();
+        checkProjBindingToDb(editorPart);
 
         return storePicker;
     }
@@ -95,16 +95,15 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
             prefs.get(PROJ_PREF.NAME_OF_BOUND_DB, "").isEmpty());
     }
 
-    private void checkProjBindingToDb() {
-        IEditorPart ed = getWorkbenchWindow().getActivePage().getActiveEditor();
+    private void checkProjBindingToDb(IEditorPart ed) {
         DbInfo boundDb = null;
         if (ed instanceof SQLEditor) {
             SQLEditor sqlEd = (SQLEditor) ed;
-            boundDb = setBoundDbToProj(sqlEd.getProjPrefs(), db -> sqlEd.setCurrentDb(db));
+            boundDb = setBoundDbToProj(sqlEd.getProjPrefs(), sqlEd::setCurrentDb);
         } else if (ed instanceof ProjectEditorDiffer) {
             ProjectEditorDiffer projEd = (ProjectEditorDiffer) ed;
             boundDb = setBoundDbToProj(PgDbProject.getPrefs(projEd.getProject()),
-                    db -> projEd.setCurrentDb(db));
+                    projEd::setCurrentDb);
         }
 
         boolean isDumpFile = boundDb == null;

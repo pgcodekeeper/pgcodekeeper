@@ -2,7 +2,6 @@ package ru.taximaxim.codekeeper.ui.dbstore;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
@@ -196,11 +195,6 @@ public class DbStorePicker extends Composite {
         }
         cmbDbNames.setInput(input);
         cmbDbNames.setSelection(selection);
-    }
-
-    public boolean checkMatchWith(String item) {
-        return Arrays.stream(cmbDbNames.getCombo().getItems())
-                .anyMatch(i -> i.equals(item));
     }
 
     public DbInfo getDbInfo() {
