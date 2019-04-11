@@ -4,7 +4,6 @@ package ru.taximaxim.codekeeper.ui.properties;
 import java.text.MessageFormat;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
@@ -25,7 +24,6 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PropertyPage;
-import org.eclipse.ui.ide.ResourceUtil;
 import org.osgi.service.prefs.BackingStoreException;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -34,10 +32,8 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
-import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 
 public class ProjectProperties extends PropertyPage {
 
@@ -49,7 +45,6 @@ public class ProjectProperties extends PropertyPage {
     private CLabel lblWarn;
     private CLabel lblWarnPosix;
 
-    private String projName;
     private DbInfo dbForBind;
 
     private IEclipsePreferences prefs;
@@ -60,7 +55,6 @@ public class ProjectProperties extends PropertyPage {
     public void setElement(IAdaptable element) {
         super.setElement(element);
         IProject project = element.getAdapter(IProject.class);
-        projName = project.getName();
         prefs = new ProjectScope(project).getNode(UIConsts.PLUGIN_ID.THIS);
         isMsSql = OpenProjectUtils.checkMsSql(project);
     }
@@ -185,28 +179,10 @@ public class ProjectProperties extends PropertyPage {
             IWorkbenchPage activePage = PlatformUI.getWorkbench()
                     .getActiveWorkbenchWindow().getActivePage();
             IEditorPart activeEditor = activePage.getActiveEditor();
-            if (activeEditor != null) {
-                if (activeEditor instanceof ProjectEditorDiffer) {
-                    ProjectEditorDiffer projEd = (ProjectEditorDiffer) activeEditor;
-                    if (projName.equals(projEd.getProject().getName())) {
-                        projEd.setCurrentDb(dbForBind);
-                        // it's need to do for refresh state and content DbCombo
-                        // of opened and active project editor, after setting of the binding
-                        // in the project properties.
-                        activePage.activate(activeEditor);
-                    }
-                } else if (activeEditor instanceof SQLEditor) {
-                    SQLEditor sqlEd = (SQLEditor) activeEditor;
-                    IResource res = ResourceUtil.getResource(sqlEd.getEditorInput());
-                    if (res != null && projName.equals(res.getProject().getName())) {
-                        sqlEd.setCurrentDb(dbForBind);
-                        // it's need to do for refresh state and content DbCombo
-                        // of opened and active sql editor, after setting of the
-                        // binding in the project properties
-                        activePage.activate(activeEditor);
-                    }
-                }
-            }
+            // it's need to do for refresh state and content DbCombo
+            // of opened and active sql/project editor, after setting of the binding
+            // in the project properties.
+            activePage.activate(activeEditor);
         } catch (BackingStoreException e) {
             setErrorMessage(MessageFormat.format(
                     Messages.projectProperties_error_occurs_while_saving_properties,
