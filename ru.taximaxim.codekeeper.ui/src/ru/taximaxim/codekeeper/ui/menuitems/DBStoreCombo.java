@@ -83,6 +83,8 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
             }
         });
 
+        checkProjBindingToDb(editorPart);
+
         setSelectionFromPart(editorPart);
 
         checkProjBindingToDb(editorPart);
@@ -107,7 +109,6 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
         }
 
         boolean isDumpFile = boundDb == null;
-        storePicker.setSelection(isDumpFile ? null : new StructuredSelection(boundDb));
         storePicker.setComboEnabled(isDumpFile);
     }
 
