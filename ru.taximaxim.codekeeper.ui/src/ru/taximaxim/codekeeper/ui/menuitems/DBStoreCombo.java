@@ -1,7 +1,5 @@
 package ru.taximaxim.codekeeper.ui.menuitems;
 
-import java.util.function.Consumer;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
@@ -25,7 +23,6 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.IPartAdapter2;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
-import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -50,13 +47,6 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
 
         storePicker.addListenerToCombo(e -> {
             IEditorPart editor = getWorkbenchWindow().getActivePage().getActiveEditor();
-
-            // Using here the method 'checkProjBindingToDb()' instead of this code,
-            // can give as result the endless cycle, because of setting the selection
-            // to the StorePicker.
-            // Thats why setting the selection to the StorePicker is made in
-            // ru.taximaxim.codekeeper.ui.properties.ProjectProperties#performOk()
-            // through 'setCurrentDb()' and 'IWorkbenchPage.activate(IEditorPart)'.
             if (editor instanceof SQLEditor) {
                 SQLEditor sqlEditor = ((SQLEditor) editor);
                 sqlEditor.setCurrentDb(storePicker.getDbInfo());
@@ -85,11 +75,7 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
             }
         });
 
-        checkProjBindingToDb(editorPart);
-
         setSelectionFromPart(editorPart);
-
-        checkProjBindingToDb(editorPart);
 
         return storePicker;
     }
@@ -97,43 +83,6 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
     private void setDbComboEnableState(IEclipsePreferences prefs) {
         storePicker.setComboEnabled(prefs == null ? true :
             prefs.get(PROJ_PREF.NAME_OF_BOUND_DB, "").isEmpty());
-    }
-
-    private void checkProjBindingToDb(IEditorPart ed) {
-        DbInfo boundDb = null;
-        if (ed instanceof SQLEditor) {
-            SQLEditor sqlEd = (SQLEditor) ed;
-            boundDb = setBoundDbToProj(sqlEd.getProjPrefs(), sqlEd::setCurrentDb);
-        } else if (ed instanceof ProjectEditorDiffer) {
-            ProjectEditorDiffer projEd = (ProjectEditorDiffer) ed;
-            boundDb = setBoundDbToProj(PgDbProject.getPrefs(projEd.getProject()),
-                    projEd::setCurrentDb);
-        }
-
-        boolean isDumpFile = boundDb == null;
-        storePicker.setComboEnabled(isDumpFile);
-    }
-
-    /**
-     * Sets bound database to the project as currentDB.
-     *
-     * @param prefs project preferences
-     * @param setDbToEditor consumer for set DB to SQLEditor or to ProjectEditorDiffer
-     *
-     * @return bound database, If there is no bound database then returns null.
-     */
-    private DbInfo setBoundDbToProj(IEclipsePreferences prefs,
-            Consumer<DbInfo> setDbToEditor) {
-        if (prefs == null) {
-            return null;
-        }
-        String nameOfBoundDb = prefs.get(PROJ_PREF.NAME_OF_BOUND_DB, "");  //$NON-NLS-1$
-        if (!nameOfBoundDb.isEmpty()) {
-            DbInfo dbSource = DbInfo.getLastDb(nameOfBoundDb);
-            setDbToEditor.accept(dbSource);
-            return dbSource;
-        }
-        return null;
     }
 
     @Override
