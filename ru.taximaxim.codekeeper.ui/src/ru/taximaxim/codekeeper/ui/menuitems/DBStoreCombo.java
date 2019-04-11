@@ -5,12 +5,13 @@ import java.util.function.Consumer;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
@@ -76,9 +77,10 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
             @Override
             public void mouseDown(MouseEvent e) {
                 if (!storePicker.isComboEnabled()) {
-                    MessageDialog.openInformation(parent.getShell(),
-                            Messages.DbStoreCombo_db_binding_property_title,
-                            Messages.DbStoreCombo_db_binding_property);
+                    MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_INFORMATION);
+                    mb.setText(Messages.DbStoreCombo_db_binding_property_title);
+                    mb.setMessage(Messages.DbStoreCombo_db_binding_property);
+                    mb.open();
                 }
             }
         });
