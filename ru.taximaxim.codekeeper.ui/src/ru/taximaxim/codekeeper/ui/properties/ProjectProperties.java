@@ -87,7 +87,6 @@ public class ProjectProperties extends PropertyPage {
         String nameOfBoundDb = prefs.get(PROJ_PREF.NAME_OF_BOUND_DB, "");
         btnBindProjToDb = new Button(panel, SWT.CHECK);
         btnBindProjToDb.setText(Messages.ProjectProperties_binding_to_db_connection + ':');
-        btnBindProjToDb.setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, false, false, 1, 1));
         btnBindProjToDb.setSelection(!nameOfBoundDb.isEmpty());
         btnBindProjToDb.addSelectionListener(new SelectionAdapter() {
 
@@ -95,7 +94,7 @@ public class ProjectProperties extends PropertyPage {
             public void widgetSelected(SelectionEvent e) {
                 storePicker.setEnabled(btnBindProjToDb.getSelection());
                 if (!btnBindProjToDb.getSelection()) {
-                    storePicker.setSelection(null);
+                    storePicker.setSelection(StructuredSelection.EMPTY);
                 }
             }
         });
@@ -164,7 +163,7 @@ public class ProjectProperties extends PropertyPage {
         btnDisableParser.setSelection(false);
         btnForceUnixNewlines.setSelection(true);
         btnBindProjToDb.setSelection(false);
-        storePicker.setSelection(null);
+        storePicker.setSelection(StructuredSelection.EMPTY);
         if (!isMsSql) {
             cmbTimezone.setText(ApgdiffConsts.UTC);
         }
