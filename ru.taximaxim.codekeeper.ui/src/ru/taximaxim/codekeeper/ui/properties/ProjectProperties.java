@@ -51,6 +51,8 @@ public class ProjectProperties extends PropertyPage {
 
     private boolean isMsSql;
 
+    private boolean isEditorActivationOff;
+
     @Override
     public void setElement(IAdaptable element) {
         super.setElement(element);
@@ -97,7 +99,7 @@ public class ProjectProperties extends PropertyPage {
         storePicker = new DbStorePicker(panel, Activator.getDefault().getPreferenceStore(),
                 false, false, true);
         storePicker.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        storePicker.setSelection(dbForBind != null ? new StructuredSelection(dbForBind) : null);
+        storePicker.setSelection(dbForBind != null ? new StructuredSelection(dbForBind) : StructuredSelection.EMPTY);
         storePicker.setEnabled(btnBindProjToDb.getSelection());
         storePicker.addListenerToCombo(e -> dbForBind = storePicker.getDbInfo());
 
@@ -172,17 +174,25 @@ public class ProjectProperties extends PropertyPage {
     }
 
     @Override
+    public boolean performCancel() {
+        activateEditor();
+        return super.performCancel();
+    }
+
+    @Override
+    protected void performApply() {
+        isEditorActivationOff = true;
+        super.performApply();
+        isEditorActivationOff = false;
+    }
+
+    @Override
     public boolean performOk() {
         try {
             fillPrefs();
-
-            IWorkbenchPage activePage = PlatformUI.getWorkbench()
-                    .getActiveWorkbenchWindow().getActivePage();
-            IEditorPart activeEditor = activePage.getActiveEditor();
-            // it's need to do for refresh state and content DbCombo
-            // of opened and active sql/project editor, after setting of the binding
-            // in the project properties.
-            activePage.activate(activeEditor);
+            if (!isEditorActivationOff) {
+                activateEditor();
+            }
         } catch (BackingStoreException e) {
             setErrorMessage(MessageFormat.format(
                     Messages.projectProperties_error_occurs_while_saving_properties,
@@ -196,11 +206,7 @@ public class ProjectProperties extends PropertyPage {
     private void fillPrefs() throws BackingStoreException {
         prefs.putBoolean(PROJ_PREF.DISABLE_PARSER_IN_EXTERNAL_FILES, btnDisableParser.getSelection());
         prefs.putBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, btnForceUnixNewlines.getSelection());
-        if (btnBindProjToDb.getSelection() && dbForBind != null) {
-            setBoundDbToPref(prefs, dbForBind.getName());
-        } else {
-            prefs.put(PROJ_PREF.NAME_OF_BOUND_DB, "");
-        }
+        prefs.put(PROJ_PREF.NAME_OF_BOUND_DB, dbForBind != null ? dbForBind.getName() : "");
         if (!isMsSql) {
             prefs.put(PROJ_PREF.TIMEZONE, cmbTimezone.getText());
         }
@@ -209,9 +215,13 @@ public class ProjectProperties extends PropertyPage {
         setErrorMessage(null);
     }
 
-    public static void setBoundDbToPref(IEclipsePreferences prefs, String dbName) {
-        prefs.put(PROJ_PREF.NAME_OF_BOUND_DB, dbName);
-        prefs.put(PROJ_PREF.LAST_DB_STORE, dbName);
-        prefs.put(PROJ_PREF.LAST_DB_STORE_EDITOR, dbName);
+    private void activateEditor() {
+        IWorkbenchPage activePage = PlatformUI.getWorkbench()
+                .getActiveWorkbenchWindow().getActivePage();
+        IEditorPart activeEditor = activePage.getActiveEditor();
+        // it's need to do for refresh state and content DbCombo
+        // of opened and active sql/project editor, after setting of the binding
+        // in the project properties.
+        activePage.activate(activeEditor);
     }
 }
