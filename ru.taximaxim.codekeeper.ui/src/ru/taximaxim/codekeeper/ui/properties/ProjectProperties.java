@@ -51,7 +51,7 @@ public class ProjectProperties extends PropertyPage {
 
     private boolean isMsSql;
 
-    private boolean isEditorActivationOff;
+    private boolean inApply;
 
     @Override
     public void setElement(IAdaptable element) {
@@ -181,16 +181,16 @@ public class ProjectProperties extends PropertyPage {
 
     @Override
     protected void performApply() {
-        isEditorActivationOff = true;
+        inApply = true;
         super.performApply();
-        isEditorActivationOff = false;
+        inApply = false;
     }
 
     @Override
     public boolean performOk() {
         try {
             fillPrefs();
-            if (!isEditorActivationOff) {
+            if (!inApply) {
                 activateEditor();
             }
         } catch (BackingStoreException e) {

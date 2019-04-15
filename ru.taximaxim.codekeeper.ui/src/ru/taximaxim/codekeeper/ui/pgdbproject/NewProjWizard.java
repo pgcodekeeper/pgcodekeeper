@@ -109,15 +109,12 @@ implements IExecutableExtension, INewWizard {
                 props.setProjectCharset(charset);
             }
 
+            boolean applyProps = false;
             if (isPostgres) {
                 String timezone = pageDb.getTimeZone();
                 if (!timezone.isEmpty() && !ApgdiffConsts.UTC.equals(timezone)) {
                     props.getPrefs().put(PROJ_PREF.TIMEZONE, timezone);
-                    try {
-                        props.getPrefs().flush();
-                    } catch (BackingStoreException e) {
-                        Log.log(Log.LOG_WARNING, "Error while flushing project properties!", e); //$NON-NLS-1$
-                    }
+                    applyProps = true;
                 }
             }
 
@@ -125,11 +122,15 @@ implements IExecutableExtension, INewWizard {
                 DbInfo dbInfo = pageDb.getDbInfo();
                 if (dbInfo != null) {
                     props.getPrefs().put(PROJ_PREF.NAME_OF_BOUND_DB, dbInfo.getName());
-                    try {
-                        props.getPrefs().flush();
-                    } catch (BackingStoreException e) {
-                        Log.log(Log.LOG_WARNING, "Error while flushing project properties!", e); //$NON-NLS-1$
-                    }
+                    applyProps = true;
+                }
+            }
+
+            if (applyProps) {
+                try {
+                    props.getPrefs().flush();
+                } catch (BackingStoreException e) {
+                    Log.log(Log.LOG_WARNING, "Error while flushing project properties!", e); //$NON-NLS-1$
                 }
             }
 
