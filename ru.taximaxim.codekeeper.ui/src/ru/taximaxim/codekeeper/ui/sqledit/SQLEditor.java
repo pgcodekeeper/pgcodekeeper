@@ -173,18 +173,30 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     }
 
     public DbInfo getCurrentDb() {
+        // it's need to do for refresh content and state of DbCombo in SQLEditor
+        // when it's opened as inactive second tab, while setting the binding in
+        // project properties
+        DbInfo boundDb = getDbFromPref(PROJ_PREF.NAME_OF_BOUND_DB);
+        if (boundDb != null) {
+            return boundDb;
+        }
+
         if (currentDB != null) {
             return currentDB;
         }
 
+        return getDbFromPref(PROJ_PREF.LAST_DB_STORE_EDITOR);
+    }
+
+    private DbInfo getDbFromPref(String prefName) {
+        IEclipsePreferences prefs = getProjPrefs();
+        return prefs == null ? null :
+            DbInfo.getLastDb(prefs.get(prefName, "")); //$NON-NLS-1$
+    }
+
+    public IEclipsePreferences getProjPrefs() {
         IResource res = ResourceUtil.getResource(getEditorInput());
-        if (res != null) {
-            IEclipsePreferences prefs = PgDbProject.getPrefs(res.getProject());
-            if (prefs != null) {
-                return DbInfo.getLastDb(prefs.get(PROJ_PREF.LAST_DB_STORE_EDITOR, "")); //$NON-NLS-1$
-            }
-        }
-        return null;
+        return res != null ? PgDbProject.getPrefs(res.getProject()) : null;
     }
 
     @Override

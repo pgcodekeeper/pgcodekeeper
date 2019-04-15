@@ -227,6 +227,9 @@ public final class Messages extends NLS {
     public static String DbPropertyListEditor_tbl_col_name;
     public static String DbPropertyListEditor_tbl_col_value;
 
+    public static String DbStoreCombo_db_binding_property;
+    public static String DbStoreCombo_db_binding_property_title;
+
     public static String DbStoreEditorDialog_failed_connection;
 
     public static String DbStoreEditorDialog_failed_connection_reason;
@@ -704,6 +707,8 @@ public final class Messages extends NLS {
     public static String ProjectProperties_change_projprefs_warn;
 
     public static String ProjectProperties_posix_is_used_warn;
+
+    public static String ProjectProperties_binding_to_db_connection;
 
     public static String ProjectProperties_disable_parser_in_external_files;
     public static String ProjectUpdater_error_backup_restore;

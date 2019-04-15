@@ -670,11 +670,17 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     }
 
     public Object getCurrentDb() {
+        IEclipsePreferences prefs = proj.getPrefs();
+        DbInfo boundDb = DbInfo.getLastDb(prefs.get(PROJ_PREF.NAME_OF_BOUND_DB, "")); //$NON-NLS-1$
+        if (boundDb != null) {
+            return boundDb;
+        }
+
         if (currentRemote != null) {
             return currentRemote;
         }
 
-        return DbInfo.getLastDb(proj.getPrefs().get(PROJ_PREF.LAST_DB_STORE, "")); //$NON-NLS-1$
+        return DbInfo.getLastDb(prefs.get(PROJ_PREF.LAST_DB_STORE, "")); //$NON-NLS-1$
     }
 
     public void saveLastDb(DbInfo lastDb) {
