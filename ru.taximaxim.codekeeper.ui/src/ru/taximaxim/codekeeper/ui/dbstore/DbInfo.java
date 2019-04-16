@@ -109,8 +109,8 @@ public class DbInfo {
         this.properties = properties;
         this.msSql = msSql;
         this.winAuth = winAuth;
-        this.pgdumpExePath = pgdumpExePath;
-        this.pgdumpCustomParams = pgdumpCustomParams;
+        this.pgdumpExePath = pgdumpExePath == null ? DEFAULT_EXECUTE_PATH : pgdumpExePath;
+        this.pgdumpCustomParams = pgdumpCustomParams == null ? DEFAULT_CUSTOM_PARAMS : pgdumpCustomParams;
         this.pgDumpSwitch = pgDumpSwitch;
     }
 

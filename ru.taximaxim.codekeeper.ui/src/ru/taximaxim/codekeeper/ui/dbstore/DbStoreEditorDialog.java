@@ -1,7 +1,6 @@
 package ru.taximaxim.codekeeper.ui.dbstore;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.MessageFormat;
@@ -43,11 +42,10 @@ import cz.startnet.utils.pgdiff.loader.JdbcMsConnector;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts.CMD_VARS;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.properties.IgnoreListProperties.IgnoreListEditor;
-import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
-import ru.taximaxim.pgpass.PgPass;
 
 public class DbStoreEditorDialog extends TrayDialog {
 
@@ -146,16 +144,8 @@ public class DbStoreEditorDialog extends TrayDialog {
                     msStateUpdater.widgetSelected(null);
 
                     btnUseDump.setSelection(dbInitial.isPgDumpSwitch());
-
-                    String pgdumpExePath = dbInitial.getPgdumpExePath();
-                    if (pgdumpExePath != null) {
-                        txtDumpFile.setText(dbInitial.getPgdumpExePath());
-                    }
-
-                    String pgdumpCustomParams = dbInitial.getPgdumpCustomParams();
-                    if (pgdumpCustomParams != null) {
-                        txtDumpParameters.setText(dbInitial.getPgdumpCustomParams());
-                    }
+                    txtDumpFile.setText(dbInitial.getPgdumpExePath());
+                    txtDumpParameters.setText(dbInitial.getPgdumpCustomParams());
                 }
 
                 txtDbHost.setText(dbHost);
@@ -382,18 +372,16 @@ public class DbStoreEditorDialog extends TrayDialog {
         txtDumpFile.addModifyListener(modifyListener);
 
         btnDumpChoose = new Button(tabPGDupmConfigProperties, SWT.PUSH);
-        btnDumpChoose.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, false, false, 1, 1));
         btnDumpChoose.setText(Messages.DbStoreEditorDialog_dump_browse);
         btnDumpChoose.addSelectionListener(new SelectionAdapter() {
+
             @Override
             public void widgetSelected(SelectionEvent event) {
                 FileDialog dialog = new FileDialog(getShell());
                 dialog.setText(Messages.DbStoreEditorDialog_dump_file_dialog_header);
                 dialog.setFilterExtensions(new String[] {"*"}); //$NON-NLS-1$
                 dialog.setFilterNames(new String[] {Messages.DbStoreEditorDialog_dump_filter});
-                Path path = PgPass.getPgPassPath();
-                dialog.setFilterPath(path.getParent().toString());
-                dialog.setFileName(path.getFileName().toString());
+                dialog.setFileName(DbInfo.DEFAULT_EXECUTE_PATH);
                 String path2Dump = dialog.open();
                 if(path2Dump != null) {
                     txtDumpFile.setText(path2Dump);
@@ -403,9 +391,9 @@ public class DbStoreEditorDialog extends TrayDialog {
 
         new Label(tabPGDupmConfigProperties, SWT.NONE).setText(
                 MessageFormat.format(Messages.DbStoreEditorDialog_dump_custom_parameters,
-                        SQLEditor.DB_NAME_PLACEHOLDER, SQLEditor.DB_HOST_PLACEHOLDER,
-                        SQLEditor.DB_PORT_PLACEHOLDER, SQLEditor.DB_USER_PLACEHOLDER,
-                        SQLEditor.DB_PASS_PLACEHOLDER));
+                        CMD_VARS.DB_NAME_PLACEHOLDER, CMD_VARS.DB_HOST_PLACEHOLDER,
+                        CMD_VARS.DB_PORT_PLACEHOLDER, CMD_VARS.DB_USER_PLACEHOLDER,
+                        CMD_VARS.DB_PASS_PLACEHOLDER));
 
         txtDumpParameters = new Text(tabPGDupmConfigProperties, SWT.BORDER);
         txtDumpParameters.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, false, false, 2, 1));

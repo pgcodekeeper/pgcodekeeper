@@ -22,11 +22,10 @@ public class UiProgressReporter implements IProgressReporter {
      * Initial, write one error message and terminate console
      */
     public static void writeSingleError(String error) {
-        UiProgressReporter reporter = new UiProgressReporter(new NullProgressMonitor());
-        reporter.writeError(error);
-        reporter.terminate();
+        try (UiProgressReporter reporter = new UiProgressReporter(new NullProgressMonitor())) {
+            reporter.writeError(error);
+        }
     }
-
 
     @Override
     public void writeMessage(String message) {

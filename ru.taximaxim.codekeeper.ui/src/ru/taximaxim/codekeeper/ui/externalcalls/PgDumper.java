@@ -2,16 +2,14 @@ package ru.taximaxim.codekeeper.ui.externalcalls;
 
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
-
 import cz.startnet.utils.pgdiff.IProgressReporter;
-import ru.taximaxim.codekeeper.ui.consoles.UiProgressReporter;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.ProcBuilderUtils;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -47,8 +45,9 @@ public class PgDumper {
         this.encoding = encoding;
         this.timezone = timezone;
 
-        this.customParams = Collections.unmodifiableList(
-                Arrays.asList(customParams.split(" ", -1)));//$NON-NLS-1$
+        List<String> listCustom = new ArrayList<>(Arrays.asList(customParams.split(" "))); //$NON-NLS-1$
+        listCustom.removeAll(Arrays.asList("")); //$NON-NLS-1$
+        this.customParams = Collections.unmodifiableList(listCustom);
         this.reporter = reporter;
     }
 
@@ -60,13 +59,13 @@ public class PgDumper {
      *
      * @param exePgdump
      */
-    public PgDumper(String exePgdump) {
+    public PgDumper(String exePgdump, IProgressReporter reporter) {
         this.exePgdump = exePgdump;
 
         customParams = Arrays.asList();
         host = user = pass = dbname = encoding = timezone = null;
         port = 0;
-        reporter = new UiProgressReporter(new NullProgressMonitor());
+        this.reporter = reporter;
     }
 
     public byte[] pgDump() throws IOException {
@@ -83,17 +82,13 @@ public class PgDumper {
         env.addEnv("PGCLIENTENCODING", encoding); //$NON-NLS-1$
         env.addEnv("PGTZ", timezone); //$NON-NLS-1$
 
-        StdStreamRedirector redirector = new StdStreamRedirector(reporter);
-        redirector.launchAndRedirect(pgdump);
-        return redirector.getInputArray();
+        return new StdStreamRedirector(reporter).launchAndRedirect(pgdump);
     }
 
     public String getVersion() throws IOException {
         ProcessBuilder pgdump = new ProcessBuilder(exePgdump,
                 "--version", "--no-password"); //$NON-NLS-1$ //$NON-NLS-2$
-        StdStreamRedirector redirector = new StdStreamRedirector(reporter);
-        redirector.launchAndRedirect(pgdump);
-        String version = new String(redirector.getInputArray()).trim();
+        String version = new String(new StdStreamRedirector(reporter).launchAndRedirect(pgdump)).trim();
         Matcher m = PATTERN_VERSION.matcher(version);
         if (!m.matches()) {
             throw new IOException(MessageFormat.format(

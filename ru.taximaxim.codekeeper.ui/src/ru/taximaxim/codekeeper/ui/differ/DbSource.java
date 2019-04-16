@@ -17,6 +17,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
 
+import cz.startnet.utils.pgdiff.IProgressReporter;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcLoader;
@@ -313,11 +314,12 @@ class DbSourceDb extends DbSource {
 
         pm.newChild(1).subTask(Messages.dbSource_executing_pg_dump);
 
-        PgDumper pgDumper = new PgDumper(exePgdump, customParams,
-                host, port, user, pass, dbname, encoding, timezone,
-                new UiProgressReporter(monitor));
-
-        byte[] dump = pgDumper.pgDump();
+        byte[] dump;
+        try (IProgressReporter progress = new UiProgressReporter(monitor)) {
+            dump = new PgDumper(exePgdump, customParams,
+                    host, port, user, pass, dbname, encoding, timezone, progress)
+                    .pgDump();
+        }
         InputStreamProvider streamProvider = () -> new ByteArrayInputStream(dump, 0, dump.length);
 
         pm.newChild(1).subTask(Messages.dbSource_loading_dump);
