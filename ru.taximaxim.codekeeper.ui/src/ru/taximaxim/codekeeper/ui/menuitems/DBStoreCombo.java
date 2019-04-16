@@ -129,7 +129,7 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
 
     private void setDbComboEnableState(IEclipsePreferences prefs) {
         storePicker.setComboEnabled(prefs == null ? true :
-            prefs.get(PROJ_PREF.NAME_OF_BOUND_DB, "").isEmpty());
+            prefs.get(PROJ_PREF.NAME_OF_BOUND_DB, "").isEmpty()); //$NON-NLS-1$
     }
 
     private class EditorPartListener extends IPartAdapter2 {

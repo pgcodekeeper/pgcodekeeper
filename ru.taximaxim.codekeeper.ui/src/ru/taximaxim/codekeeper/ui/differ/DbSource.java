@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -16,6 +17,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
 
+import cz.startnet.utils.pgdiff.IProgressReporter;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcLoader;
@@ -26,7 +28,7 @@ import cz.startnet.utils.pgdiff.loader.ProjectLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.fileutils.TempFile;
+import ru.taximaxim.codekeeper.apgdiff.fileutils.InputStreamProvider;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
@@ -122,36 +124,13 @@ public abstract class DbSource {
         return new DbSourceFile(forceUnixNewlines, filename, encoding, isMsSql);
     }
 
-    public static DbSource fromDbInfo(DbInfo dbinfo, IPreferenceStore prefs,
+    public static DbSource fromDbInfo(DbInfo dbinfo,
             boolean forceUnixNewlines, String charset, String timezone) {
-        if (!dbinfo.isMsSql() && prefs.getBoolean(PREF.PGDUMP_SWITCH)) {
-            return DbSource.fromDb(forceUnixNewlines,
-                    prefs.getString(PREF.PGDUMP_EXE_PATH),
-                    prefs.getString(PREF.PGDUMP_CUSTOM_PARAMS),
-                    dbinfo.getDbHost(), dbinfo.getDbPort(),
-                    dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),
-                    charset, timezone);
+        if (dbinfo.isPgDumpSwitch()) {
+            return new DbSourceDb(forceUnixNewlines, dbinfo, charset, timezone);
         } else {
-            return DbSource.fromJdbc(dbinfo.getDbHost(), dbinfo.getDbPort(),
-                    dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),
-                    dbinfo.getProperties(), dbinfo.isReadOnly(), timezone,
-                    forceUnixNewlines, dbinfo.isMsSql(), dbinfo.isWinAuth());
+            return new DbSourceJdbc(dbinfo, timezone, forceUnixNewlines);
         }
-    }
-
-    public static DbSource fromDb(boolean forceUnixNewlines,
-            String exePgdump, String customParams,
-            String host, int port, String user, String pass, String dbname,
-            String encoding, String timezone) {
-        return new DbSourceDb(forceUnixNewlines, exePgdump, customParams,
-                host, port, user, pass, dbname, encoding, timezone);
-    }
-
-    public static DbSource fromJdbc(String host, int port, String user, String pass, String dbname,
-            Map<String, String> properties, boolean readOnly, String timezone,
-            boolean forceUnixNewlines, boolean isMsSql, boolean winAuth) {
-        return new DbSourceJdbc(host, port, user, pass, dbname, properties, readOnly, timezone,
-                forceUnixNewlines, isMsSql, winAuth);
     }
 
     public static DbSource fromDbObject(PgDatabase db, String origin) {
@@ -314,19 +293,17 @@ class DbSourceDb extends DbSource {
     }
 
     DbSourceDb(boolean forceUnixNewlines,
-            String exePgdump, String customParams,
-            String host, int port, String user, String pass,
-            String dbname, String encoding, String timezone) {
-        super(dbname);
+            DbInfo dbinfo, String encoding, String timezone) {
+        super(dbinfo.getDbName());
 
         this.forceUnixNewlines = forceUnixNewlines;
-        this.exePgdump = exePgdump;
-        this.customParams = customParams;
-        this.host = host;
-        this.port = port;
-        this.user = user;
-        this.pass = pass;
-        this.dbname = dbname;
+        this.exePgdump = dbinfo.getPgdumpExePath();
+        this.customParams = dbinfo.getPgdumpCustomParams();
+        this.host = dbinfo.getDbHost();
+        this.port = dbinfo.getDbPort();
+        this.user = dbinfo.getDbUser();
+        this.pass = dbinfo.getDbPass();
+        this.dbname = dbinfo.getDbName();
         this.encoding = encoding;
         this.timezone = timezone;
     }
@@ -336,24 +313,24 @@ class DbSourceDb extends DbSource {
             throws IOException, InterruptedException {
         SubMonitor pm = SubMonitor.convert(monitor, 2);
 
-        try (TempFile tf = new TempFile("tmp_dump_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
-            File dump = tf.get().toFile();
+        pm.newChild(1).subTask(Messages.dbSource_executing_pg_dump);
 
-            pm.newChild(1).subTask(Messages.dbSource_executing_pg_dump);
+        byte[] dump;
+        try (IProgressReporter progress = new UiProgressReporter(monitor)) {
+            dump = new PgDumper(exePgdump, customParams,
+                    host, port, user, pass, dbname, encoding, timezone, progress)
+                    .pgDump();
+        }
+        InputStreamProvider streamProvider = () -> new ByteArrayInputStream(dump, 0, dump.length);
 
-            new PgDumper(exePgdump, customParams,
-                    host, port, user, pass, dbname, encoding, timezone,
-                    dump.getAbsolutePath(), new UiProgressReporter(monitor)).pgDump();
+        pm.newChild(1).subTask(Messages.dbSource_loading_dump);
 
-            pm.newChild(1).subTask(Messages.dbSource_loading_dump);
-
-            PgDumpLoader loader = new PgDumpLoader(dump,
-                    getPgDiffArgs(encoding, forceUnixNewlines, false), monitor);
-            try {
-                return loader.load();
-            } finally {
-                errors = loader.getErrors();
-            }
+        PgDumpLoader loader = new PgDumpLoader(streamProvider,
+                "pg_dump", getPgDiffArgs(encoding, forceUnixNewlines, false), monitor); //$NON-NLS-1$
+        try {
+            return loader.load();
+        } finally {
+            errors = loader.getErrors();
         }
     }
 }
@@ -370,13 +347,21 @@ class DbSourceJdbc extends DbSource {
         return dbName;
     }
 
-    DbSourceJdbc(String host, int port, String user, String pass, String dbName,
-            Map<String, String> properties, boolean readOnly, String timezone,
-            boolean forceUnixNewlines, boolean isMsSql, boolean winAuth) {
-        super(dbName);
-        this.dbName = dbName;
+    DbSourceJdbc(DbInfo dbinfo, String timezone,
+            boolean forceUnixNewlines) {
+        super(dbinfo.getDbName());
+
+        String host = dbinfo.getDbHost();
+        int port = dbinfo.getDbPort();
+        String user = dbinfo.getDbUser();
+        String pass = dbinfo.getDbPass();
+        Map<String, String> properties = dbinfo.getProperties();
+        boolean readOnly = dbinfo.isReadOnly();
+        boolean winAuth = dbinfo.isWinAuth();
+
+        this.dbName = dbinfo.getDbName();
         this.forceUnixNewlines = forceUnixNewlines;
-        this.isMsSql = isMsSql;
+        this.isMsSql =  dbinfo.isMsSql();
         if (isMsSql) {
             jdbcConnector = new JdbcMsConnector(host, port, user, pass, dbName, properties,
                     readOnly, winAuth);

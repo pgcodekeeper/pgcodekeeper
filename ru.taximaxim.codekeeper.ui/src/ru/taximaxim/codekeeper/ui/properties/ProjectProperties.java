@@ -80,7 +80,7 @@ public class ProjectProperties extends PropertyPage {
         btnForceUnixNewlines.setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, false, false, 2, 1));
         btnForceUnixNewlines.setSelection(prefs.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true));
 
-        String nameOfBoundDb = prefs.get(PROJ_PREF.NAME_OF_BOUND_DB, "");
+        String nameOfBoundDb = prefs.get(PROJ_PREF.NAME_OF_BOUND_DB, ""); //$NON-NLS-1$
         btnBindProjToDb = new Button(panel, SWT.CHECK);
         btnBindProjToDb.setText(Messages.ProjectProperties_binding_to_db_connection + ':');
         btnBindProjToDb.setSelection(!nameOfBoundDb.isEmpty());
@@ -206,7 +206,7 @@ public class ProjectProperties extends PropertyPage {
     private void fillPrefs() throws BackingStoreException {
         prefs.putBoolean(PROJ_PREF.DISABLE_PARSER_IN_EXTERNAL_FILES, btnDisableParser.getSelection());
         prefs.putBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, btnForceUnixNewlines.getSelection());
-        prefs.put(PROJ_PREF.NAME_OF_BOUND_DB, dbForBind != null ? dbForBind.getName() : "");
+        prefs.put(PROJ_PREF.NAME_OF_BOUND_DB, dbForBind != null ? dbForBind.getName() : ""); //$NON-NLS-1$
         if (!isMsSql) {
             prefs.put(PROJ_PREF.TIMEZONE, cmbTimezone.getText());
         }

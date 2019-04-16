@@ -60,9 +60,6 @@ public interface UIConsts {
     }
 
     interface PREF {
-        String PGDUMP_EXE_PATH = "prefPgdumpExePath"; //$NON-NLS-1$
-        String PGDUMP_CUSTOM_PARAMS = "prefPgdumpCustomParams"; //$NON-NLS-1$
-        String PGDUMP_SWITCH = "prefPgDumpSwitch"; //$NON-NLS-1$
         String FORCE_SHOW_CONSOLE = "prefForceShowConsole"; //$NON-NLS-1$
         String DB_STORE_FILES = "prefDbStoreHistory"; //$NON-NLS-1$
         //String IGNORE_OBJECTS = "prefIgnoreObjects"; //$NON-NLS-1$
@@ -232,6 +229,15 @@ public interface UIConsts {
         String IGNORED_OBJS_ELEMENT = "obj"; //$NON-NLS-1$
     }
 
+    interface CMD_VARS {
+        String SCRIPT_PLACEHOLDER = "%script"; //$NON-NLS-1$
+        String DB_HOST_PLACEHOLDER = "%host"; //$NON-NLS-1$
+        String DB_PORT_PLACEHOLDER = "%port"; //$NON-NLS-1$
+        String DB_NAME_PLACEHOLDER = "%db"; //$NON-NLS-1$
+        String DB_USER_PLACEHOLDER = "%user"; //$NON-NLS-1$
+        String DB_PASS_PLACEHOLDER = "%pass"; //$NON-NLS-1$
+    }
+
     String DDL_DEFAULT_CMD = "psql -e -1 -w --set ON_ERROR_STOP=1 -X -h %host -p %port -U %user -f %script %db"; //$NON-NLS-1$
 
     List<String> TIME_ZONES = Collections.unmodifiableList(Arrays.asList(
@@ -272,4 +278,3 @@ public interface UIConsts {
             "windows-1252" //$NON-NLS-1$
             ));
 }
-

@@ -34,6 +34,12 @@ public final class Messages extends NLS {
 
     // ui
     public static String sqlScriptDialog_exception_during_script_execution;
+    public static String ShowConsoleParticipant_remove;
+
+    public static String ShowConsoleParticipant_remove_all;
+
+    public static String ShowConsoleParticipant_terminate;
+
     public static String SQLEditorContentOutlinePage_hide_non_dangerous;
 
     public static String SQLEditorContentOutlinePage_sort_alphabetically;
@@ -81,6 +87,8 @@ public final class Messages extends NLS {
     public static String SqlEditor_selected_text_error;
 
     public static String SqlEditor_update_ddl;
+
+    public static String UiProgressReporter_warning;
 
     public static String UpdateDdl_read_only_db_message;
 
@@ -239,6 +247,20 @@ public final class Messages extends NLS {
     public static String DbStoreEditorDialog_connect_to_ms;
 
     public static String DbStoreEditorDialog_connection_properties;
+
+    public static String DbStoreEditorDialog_dump_custom_parameters;
+
+    public static String DbStoreEditorDialog_dump_executable;
+
+    public static String DbStoreEditorDialog_dump_file_dialog_header;
+
+    public static String DbStoreEditorDialog_dump_filter;
+
+    public static String DbStoreEditorDialog_dump_properties;
+
+    public static String DbStoreEditorDialog_dump_switch;
+
+    public static String DbStoreEditorDialog_dump_browse;
 
     public static String DbStoreEditorDialog_pgcodekeeperignore_files_filter;
 
@@ -404,9 +426,7 @@ public final class Messages extends NLS {
     public static String ProjectProperties_force_unix_newlines;
 
     public static String ProjectProperties_force_unix_newlines_desc;
-    public static String generalPrefPage_pg_dump_custom_parameters;
-    public static String generalPrefPage_pg_dump_switch;
-    public static String generalPrefPage_pg_dump_executable;
+
     public static String generalPrefPage_show_console_when_program_write_to_console;
 
     public static String generalPrefPage_use_depcy_on_commit_page;

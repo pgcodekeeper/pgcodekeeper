@@ -177,8 +177,7 @@ class QuickUpdateJob extends SingletonEditorJob {
 
         checkFileModified();
 
-        DbSource dbRemote = DbSource.fromDbInfo(dbinfo, prefs,
-                projPrefs.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
+        DbSource dbRemote = DbSource.fromDbInfo(dbinfo, projPrefs.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
                 proj.getProjectCharset(), timezone);
         DbSource dbProject = DbSource.fromProject(proj);
 
