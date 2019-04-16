@@ -74,6 +74,13 @@ public class StdStreamRedirector {
             });
             redirectorThread.start();
 
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            int nRead;
+            byte[] data = new byte[1024];
+            while ((nRead = in.read(data, 0, data.length)) != -1) {
+                buffer.write(data, 0, nRead);
+            }
+
             try {
                 p.waitFor();
             } catch (InterruptedException ex) {
@@ -115,12 +122,6 @@ public class StdStreamRedirector {
                         lastException.get().getLocalizedMessage()), lastException.get());
             }
 
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            int nRead;
-            byte[] data = new byte[1024];
-            while ((nRead = in.read(data, 0, data.length)) != -1) {
-                buffer.write(data, 0, nRead);
-            }
             return buffer.toByteArray();
         }
     }
