@@ -65,14 +65,14 @@ public class StdStreamRedirector {
 
         Process p = pb.start();
         try (InputStream in = p.getInputStream(); InputStream err = p.getErrorStream()) {
-            Thread redirectorThreadErr = new Thread(new StdStreamRedirectorWorker(err));
+            Thread redirectorThread = new Thread(new StdStreamRedirectorWorker(err));
             AtomicReference<Throwable> lastException = new AtomicReference<>();
-            redirectorThreadErr.setUncaughtExceptionHandler((t1, e) -> {
+            redirectorThread.setUncaughtExceptionHandler((t1, e) -> {
                 lastException.set(e);
                 isDestroyed = true;
                 p.destroy();
             });
-            redirectorThreadErr.start();
+            redirectorThread.start();
 
             try {
                 p.waitFor();
@@ -92,7 +92,7 @@ public class StdStreamRedirector {
             int exitValue = p.exitValue();
 
             try {
-                redirectorThreadErr.join();
+                redirectorThread.join();
             } catch (InterruptedException ex) {
                 throw new IOException(
                         MessageFormat.format(
