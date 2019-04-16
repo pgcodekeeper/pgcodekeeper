@@ -326,7 +326,7 @@ class DbSourceDb extends DbSource {
         pm.newChild(1).subTask(Messages.dbSource_loading_dump);
 
         PgDumpLoader loader = new PgDumpLoader(streamProvider,
-                "pg_dump", getPgDiffArgs(encoding, forceUnixNewlines, false), monitor);
+                "pg_dump", getPgDiffArgs(encoding, forceUnixNewlines, false), monitor); //$NON-NLS-1$
         try {
             return loader.load();
         } finally {

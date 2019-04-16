@@ -14,8 +14,8 @@ import ru.taximaxim.codekeeper.ui.xmlstore.DbXmlStore;
 
 public class DbInfo {
 
-    public static final String DEFAULT_EXECUTE_PATH = "pg_dump";
-    public static final String DEFAULT_CUSTOM_PARAMS = "--schema-only --no-password";
+    public static final String DEFAULT_EXECUTE_PATH = "pg_dump"; //$NON-NLS-1$
+    public static final String DEFAULT_CUSTOM_PARAMS = "--schema-only --no-password"; //$NON-NLS-1$
 
     private final String name;
     private final String dbname;

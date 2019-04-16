@@ -59,7 +59,7 @@ public class StdStreamRedirector {
      * @throws IOException
      */
     public byte[] launchAndRedirect(ProcessBuilder pb) throws IOException {
-        String cmd = String.join(" ", pb.command());
+        String cmd = String.join(" ", pb.command()); //$NON-NLS-1$
         Log.log(Log.LOG_INFO, cmd);
         reporter.writeMessage(cmd);
 

@@ -14,6 +14,7 @@ import org.eclipse.ui.console.IConsoleManager;
 import cz.startnet.utils.pgdiff.IProgressReporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.VIEW;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.views.ResultSetView;
 
@@ -43,7 +44,7 @@ public class UiProgressReporter implements IProgressReporter {
 
     @Override
     public void writeWarning(String message) {
-        console.writeWarning("WARNING: " + message);
+        console.writeWarning(Messages.UiProgressReporter_warning + message);
     }
 
     @Override

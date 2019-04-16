@@ -34,6 +34,12 @@ public final class Messages extends NLS {
 
     // ui
     public static String sqlScriptDialog_exception_during_script_execution;
+    public static String ShowConsoleParticipant_remove;
+
+    public static String ShowConsoleParticipant_remove_all;
+
+    public static String ShowConsoleParticipant_terminate;
+
     public static String SQLEditorContentOutlinePage_hide_non_dangerous;
 
     public static String SQLEditorContentOutlinePage_sort_alphabetically;
@@ -81,6 +87,8 @@ public final class Messages extends NLS {
     public static String SqlEditor_selected_text_error;
 
     public static String SqlEditor_update_ddl;
+
+    public static String UiProgressReporter_warning;
 
     public static String UpdateDdl_read_only_db_message;
 
