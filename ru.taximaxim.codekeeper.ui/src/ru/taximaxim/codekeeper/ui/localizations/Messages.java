@@ -117,8 +117,12 @@ public final class Messages extends NLS {
     public static String differ_get_differ;
     public static String differ_reverse_diff;
     public static String diffTableViewer_change_type;
+    public static String diffTableViewer_for_database;
+    public static String diffTableViewer_for_project;
     public static String diffTableViewer_container;
+    public static String diffTableViewer_db_user;
     public static String diffTableViewer_deselect_child_elements;
+    public static String diffTableViewer_git_user;
     public static String diffTableViewer_mark_selected_elements;
     public static String diffTableViewer_unmark_selected_elements;
     public static String diffTableViewer_invert_selection;
@@ -222,6 +226,9 @@ public final class Messages extends NLS {
     public static String DbPropertyListEditor_already_present;
     public static String DbPropertyListEditor_tbl_col_name;
     public static String DbPropertyListEditor_tbl_col_value;
+
+    public static String DbStoreCombo_db_binding_property;
+    public static String DbStoreCombo_db_binding_property_title;
 
     public static String DbStoreEditorDialog_failed_connection;
 
@@ -362,8 +369,6 @@ public final class Messages extends NLS {
 
     public static String DiffTableViewer_database;
 
-    public static String DiffTableViewer_db_user;
-
     public static String DiffTableViewer_directory;
 
     public static String DiffTableViewer_file;
@@ -395,8 +400,6 @@ public final class Messages extends NLS {
     public static String DiffTableViewer_type;
 
     public static String DiffTableViewer_uri;
-
-    public static String DiffTableViewer_user;
 
     public static String DiffWizard_db_tz;
 
@@ -650,6 +653,9 @@ public final class Messages extends NLS {
 
     public static String PrefListEditor_cannot_add;
 
+    public static String ProjectEditorDiffer_changed_direction_of_roll_on_title;
+    public static String ProjectEditorDiffer_changed_direction_of_roll_on;
+
     public static String ProjectEditorDiffer_commit_error;
     public static String ProjectEditorDiffer_error_bad_input_type;
 
@@ -669,6 +675,8 @@ public final class Messages extends NLS {
     public static String ProjectEditorDiffer_library_duplication_exception;
 
     public static String ProjectEditorDiffer_no_differences;
+
+    public static String ProjectEditorDiffer_database;
 
     public static String ProjectEditorDiffer_project;
     public static String ProjectEditorDiffer_script_creation_message;
@@ -712,6 +720,8 @@ public final class Messages extends NLS {
 
     public static String ProjectProperties_posix_is_used_warn;
 
+    public static String ProjectProperties_binding_to_db_connection;
+
     public static String ProjectProperties_disable_parser_in_external_files;
     public static String ProjectUpdater_error_backup_restore;
     public static String ProjectUpdater_error_no_tempdir;
@@ -737,8 +747,6 @@ public final class Messages extends NLS {
     public static String TreeDiffer_loading_schema;
 
     public static String TreeDiffer_loading_schema_from;
-
-    public static String TreeDiffer_reverting_tree;
 
     public static String TreeDiffer_schema_load_error;
 
@@ -805,11 +813,9 @@ public final class Messages extends NLS {
 
     public static String generalPrefPage_perspective_changing_status;
 
-    public static String GeneralPrefPage_extension_desc;
+    public static String GeneralPrefPage_ignore_concurrent_modification;
 
     public static String GeneralPrefPage_reuse_open_compare_editor;
-
-    public static String GeneralPrefPage_use_extension;
 
     public static String GetChanges_select_source;
 

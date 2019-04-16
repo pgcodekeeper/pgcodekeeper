@@ -6,7 +6,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_dictionaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Option_with_valueContext;
-import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFtsDictionary;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -32,6 +31,6 @@ public class CreateFtsDictionary extends ParserAbstract {
         List<IdentifierContext> templateIds = ctx.template.identifier();
         dictionary.setTemplate(ParserAbstract.getFullCtxText(ctx.template));
         addDepSafe(dictionary, templateIds, DbObjType.FTS_TEMPLATE, true);
-        addSafe(AbstractSchema::addFtsDictionary, getSchemaSafe(ids), dictionary, ids);
+        addSafe(getSchemaSafe(ids), dictionary, ids);
     }
 }

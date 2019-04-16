@@ -46,8 +46,7 @@ public class TriggersReader extends JdbcReader {
         String schemaName = schema.getName();
         String triggerName = res.getString("tgname");
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, triggerName, DbObjType.TRIGGER));
-        PgTrigger t = new PgTrigger(triggerName, PgDiffUtils.getQuotedName(schemaName) + '.'
-                + PgDiffUtils.getQuotedName(tableName));
+        PgTrigger t = new PgTrigger(triggerName);
 
         int firingConditions = res.getInt("tgtype");
         if ((firingConditions & TRIGGER_TYPE_DELETE) != 0) {
@@ -137,7 +136,7 @@ public class TriggersReader extends JdbcReader {
         }
 
         String definition = res.getString("definition");
-        checkObjectValidity(definition, getType(), triggerName);
+        checkObjectValidity(definition, DbObjType.TRIGGER, triggerName);
         loader.submitAntlrTask(definition, p -> p.sql().statement(0).schema_statement()
                 .schema_create().create_trigger_statement().when_trigger(),
                 ctx -> CreateTrigger.parseWhen(ctx, t, schema.getDatabase()));
@@ -150,10 +149,5 @@ public class TriggersReader extends JdbcReader {
             t.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
         return t;
-    }
-
-    @Override
-    protected DbObjType getType() {
-        return DbObjType.TRIGGER;
     }
 }

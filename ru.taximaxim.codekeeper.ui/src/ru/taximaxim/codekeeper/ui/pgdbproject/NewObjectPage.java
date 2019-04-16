@@ -132,7 +132,7 @@ public final class NewObjectPage extends WizardPage {
             if (st != null) {
                 type = st.getStatementType();
                 if (st instanceof PgStatementWithSearchPath) {
-                    schema = ((PgStatementWithSearchPath)st).getContainingSchema().getName();
+                    schema = ((PgStatementWithSearchPath) st).getSchemaName();
                 }
 
                 if (type == DbObjType.TABLE || type == DbObjType.VIEW) {

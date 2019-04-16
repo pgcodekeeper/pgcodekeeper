@@ -207,7 +207,7 @@ public class UIProjectLoader extends ProjectLoader {
         db.getSchemas().stream()
         .filter(sc -> schemaFiles.contains(AbstractModelExporter.getExportedFilename(sc))
                 || sc.hasChildren())
-        .forEach(st -> newDb.addSchema(st.deepCopy()));
+        .forEach(st -> newDb.addChild(st.deepCopy()));
         newDb.getObjReferences().putAll(db.getObjReferences());
         newDb.getObjDefinitions().putAll(db.getObjDefinitions());
         return newDb;

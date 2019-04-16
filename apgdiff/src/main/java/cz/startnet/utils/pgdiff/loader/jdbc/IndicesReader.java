@@ -33,11 +33,11 @@ public class IndicesReader extends JdbcReader {
         String schemaName = schema.getName();
         String indexName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, indexName, DbObjType.INDEX));
-        PgIndex i = new PgIndex(indexName, tableName);
+        PgIndex i = new PgIndex(indexName);
 
         String tablespace = res.getString("table_space");
         String definition = res.getString("definition");
-        checkObjectValidity(definition, getType(), indexName);
+        checkObjectValidity(definition, DbObjType.INDEX, indexName);
         loader.submitAntlrTask(definition,
                 p -> p.sql().statement(0).schema_statement().schema_create()
                 .create_index_statement().index_rest(),
@@ -55,10 +55,5 @@ public class IndicesReader extends JdbcReader {
         }
 
         return i;
-    }
-
-    @Override
-    protected DbObjType getType() {
-        return DbObjType.INDEX;
     }
 }

@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
@@ -12,6 +13,7 @@ import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgRule.PgRuleEventType;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -29,7 +31,7 @@ public class CreateRewrite extends ParserAbstract {
         addObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
 
         PgRule rule = new PgRule(ctx.name.getText());
-        rule.setEvent(PgRuleEventType.valueOf(ctx.event.getText().toUpperCase()));
+        rule.setEvent(PgRuleEventType.valueOf(ctx.event.getText().toUpperCase(Locale.ROOT)));
         if (ctx.INSTEAD() != null){
             rule.setInstead(true);
         }
@@ -39,7 +41,7 @@ public class CreateRewrite extends ParserAbstract {
         IdentifierContext parent = QNameParser.getFirstNameCtx(ids);
         IStatementContainer cont = getSafe(AbstractSchema::getStatementContainer,
                 getSchemaSafe(ids), parent);
-        addSafe(IStatementContainer::addRule, cont, rule, Arrays.asList(
+        addSafe((PgStatement) cont, rule, Arrays.asList(
                 QNameParser.getSchemaNameCtx(ids), parent, ctx.name));
     }
 

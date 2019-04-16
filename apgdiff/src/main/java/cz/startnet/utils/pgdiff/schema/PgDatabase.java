@@ -419,27 +419,6 @@ public class PgDatabase extends PgStatement {
         return dbDst;
     }
 
-    @Override
-    public PgDatabase deepCopy() {
-        PgDatabase copy = shallowCopy();
-        for (PgExtension ext : extensions) {
-            copy.addExtension(ext.deepCopy());
-        }
-        for (AbstractSchema schema : schemas) {
-            copy.addSchema(schema.deepCopy());
-        }
-        for (MsAssembly ass : assemblies) {
-            copy.addAssembly(ass.deepCopy());
-        }
-        for (MsRole role : roles) {
-            copy.addRole(role.deepCopy());
-        }
-        for (MsUser user : users) {
-            copy.addUser(user.deepCopy());
-        }
-        return copy;
-    }
-
     public void addLib(PgDatabase database) {
         database.getDescendants().forEach(st -> {
             st.markAsLib();

@@ -51,7 +51,7 @@ public class DepcyGraph {
     }
 
     public DepcyGraph(PgDatabase graphSrc) {
-        db = graphSrc.deepCopy();
+        db = (PgDatabase) graphSrc.deepCopy();
         create();
     }
 

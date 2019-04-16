@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Locale;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -154,6 +153,8 @@ public class MsDiffTest {
                     {"modify_ms_type"},
                     // Tests scenario where MS TYPE owner is modified.
                     {"modify_ms_type_owner"},
+                    // Tests scenario where MS TYPE with function dep is modified.
+                    {"modify_ms_type_with_dep"},
 
                     // Tests scenario where MS INDEX is added.
                     {"add_ms_index"},
@@ -183,8 +184,12 @@ public class MsDiffTest {
                     {"modify_ms_function_args_default"},
                     // Tests scenario where with option of MS FUNCTION with args is modified.
                     {"modify_ms_function_args_with"},
+                    // Tests scenario where external name of MS FUNCTION with args is added.
+                    {"add_ms_function_args_external"},
                     // Tests scenario where external name of MS FUNCTION with args is modified.
                     {"modify_ms_function_args_external"},
+                    // Tests scenario where external name of MS FUNCTION with args is dropped.
+                    {"drop_ms_function_args_external"},
                     // Tests scenario where type of MS FUNCTION is modified.
                     {"modify_ms_function_type"},
 
@@ -208,6 +213,8 @@ public class MsDiffTest {
 
                     // Tests scenario where MS SEQUENCE is added.
                     {"add_ms_sequence"},
+                    // Tests scenario where MS SEQUENCE with user-definied type is added.
+                    {"add_ms_sequence_with_user_type"},
                     // Tests scenario where MS SEQUENCE is dropped.
                     {"drop_ms_sequence"},
                     // Tests scenario where MS SEQUENCE is modified.
@@ -235,6 +242,8 @@ public class MsDiffTest {
                     {"add_ms_procedure"},
                     // Tests scenario where external MS PROCEDURE is added.
                     {"add_external_ms_procedure"},
+                    // Tests scenario where external MS PROCEDURE is dropped.
+                    {"drop_external_ms_procedure"},
                     // Tests scenario where MS PROCEDURE is dropped.
                     {"drop_ms_procedure"},
                     // Tests scenario where MS PROCEDURE is modified.
@@ -291,7 +300,6 @@ public class MsDiffTest {
 
     public MsDiffTest(final String fileNameTemplate) {
         this.fileNameTemplate = fileNameTemplate;
-        Locale.setDefault(Locale.ENGLISH);
         Log.log(Log.LOG_DEBUG, fileNameTemplate);
     }
 

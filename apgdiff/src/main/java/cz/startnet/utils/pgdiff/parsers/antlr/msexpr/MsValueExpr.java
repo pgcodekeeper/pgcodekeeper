@@ -39,6 +39,10 @@ public class MsValueExpr extends MsAbstractExpr {
         super(schema);
     }
 
+    public MsValueExpr(String schema, DbObjType... disabledDepcies) {
+        super(schema, disabledDepcies);
+    }
+
     public void analyze(ExpressionContext exp) {
         for (ExpressionContext v : exp.expression()) {
             analyze(v);
@@ -62,15 +66,15 @@ public class MsValueExpr extends MsAbstractExpr {
         } else if ((fc = exp.function_call()) != null) {
             functionCall(fc);
 
-            Full_column_nameContext fcn = exp.full_column_name();
             Object_expressionContext object = exp.object_expression();
-
             if (object != null) {
                 objectExp(exp.object_expression());
             }
-            if (fcn != null) {
-                addColumnDepcy(fcn);
-            }
+        }
+
+        Full_column_nameContext fcn = exp.full_column_name();
+        if (fcn != null) {
+            addColumnDepcy(fcn);
         }
     }
 

@@ -4,7 +4,8 @@ import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 
-public abstract class AbstractMsFunction extends AbstractFunction {
+public abstract class AbstractMsFunction extends AbstractFunction
+implements SourceStatement {
 
     private boolean ansiNulls;
     private boolean quotedIdentified;
@@ -15,19 +16,23 @@ public abstract class AbstractMsFunction extends AbstractFunction {
         super(name);
     }
 
+    @Override
     public String getFirstPart() {
         return firstPart;
     }
 
+    @Override
     public void setFirstPart(String firstPart) {
         this.firstPart = firstPart;
         resetHash();
     }
 
+    @Override
     public String getSecondPart() {
         return secondPart;
     }
 
+    @Override
     public void setSecondPart(String secondPart) {
         this.secondPart = secondPart;
         resetHash();

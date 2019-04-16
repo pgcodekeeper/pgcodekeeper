@@ -57,7 +57,6 @@ public class CommitDialog extends TrayDialog {
     private Button btnAutocommit;
     private Button btnSaveOverrides;
     private Label warningLbl;
-    private boolean isOverridesOnly;
 
     public CommitDialog(Shell parentShell, Set<TreeElement> depcyElementsSet,
             DbSource dbProject, DbSource dbRemote, TreeElement diffTree,
@@ -157,7 +156,6 @@ public class CommitDialog extends TrayDialog {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                isOverridesOnly = btnSaveOverrides.getSelection();
                 checkState();
             }
         });
@@ -167,17 +165,14 @@ public class CommitDialog extends TrayDialog {
         return area;
     }
 
-    public boolean isOverridesOnly() {
-        return isOverridesOnly;
-    }
-
     @Override
     protected void okPressed() {
         getButton(IDialogConstants.OK_ID).setEnabled(false);
         getButton(IDialogConstants.CANCEL_ID).setEnabled(false);
 
         Log.log(Log.LOG_INFO, "Updating project " + proj.getProjectName()); //$NON-NLS-1$
-        Job job = new JobProjectUpdater(Messages.projectEditorDiffer_save_project);
+        Job job = new JobProjectUpdater(Messages.projectEditorDiffer_save_project,
+                btnSaveOverrides.getSelection());
         job.addJobChangeListener(new JobChangeAdapter() {
 
             @Override
@@ -276,8 +271,11 @@ public class CommitDialog extends TrayDialog {
 
     private class JobProjectUpdater extends Job {
 
-        JobProjectUpdater(String name) {
+        private final boolean isOverridesOnly;
+
+        JobProjectUpdater(String name, boolean isOverridesOnly) {
             super(name);
+            this.isOverridesOnly = isOverridesOnly;
         }
 
         @Override

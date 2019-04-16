@@ -98,8 +98,7 @@ public class MsClrFunction extends AbstractMsClrFunction {
         sbSQL.append("SET ANSI_NULLS OFF").append(GO).append('\n');
         sbSQL.append(isCreate ? "CREATE" : "ALTER");
         sbSQL.append(" FUNCTION ");
-        sbSQL.append(MsDiffUtils.quoteName(getContainingSchema().getName())).append('.');
-        sbSQL.append(MsDiffUtils.quoteName(name)).append('(');
+        sbSQL.append(getQualifiedName()).append('(');
         sbSQL.append(arguments.stream().map(arg -> getDeclaration(arg, true, true))
                 .collect(Collectors.joining(", ")));
         sbSQL.append(')');

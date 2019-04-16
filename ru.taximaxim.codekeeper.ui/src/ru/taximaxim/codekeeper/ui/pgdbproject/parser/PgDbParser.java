@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -183,10 +184,10 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
 
     private void fillStatementBodies(List<StatementBodyContainer> statementBodies) {
         for (StatementBodyContainer statementBody : statementBodies) {
-            String body = statementBody.getBody().toLowerCase();
+            String body = statementBody.getBody().toLowerCase(Locale.ROOT);
             Set<PgObjLocation> newRefs = new LinkedHashSet<>();
             getAllObjDefinitions().forEach(def -> {
-                String name = def.getObjName().toLowerCase();
+                String name = def.getObjName().toLowerCase(Locale.ROOT);
                 int index = body.indexOf(name);
                 while (index >= 0) {
                     int next = index + def.getObjLength();

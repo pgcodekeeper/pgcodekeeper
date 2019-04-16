@@ -84,12 +84,7 @@ public class CreateMsRule extends ParserAbstract {
             name.append(st.getStatementType()).append("::");
         }
 
-        if (st instanceof PgStatementWithSearchPath) {
-            name.append(MsDiffUtils.quoteName(((PgStatementWithSearchPath) st).getContainingSchema().getName()))
-            .append('.');
-        }
-
-        name.append(MsDiffUtils.quoteName(st.getBareName()));
+        name.append(st.getQualifiedName());
 
         Table_columnsContext columns = nameCtx.table_columns();
 
@@ -166,16 +161,13 @@ public class CreateMsRule extends ParserAbstract {
             return;
         }
 
-        String schemaName = ((PgStatementWithSearchPath)st).getContainingSchema().getName();
-
         // 1 permission for 1 column = 1 privilege
         for (Entry<String, Entry<IdContext, List<String>>> colPriv : colPrivs.entrySet()) {
             for (String pr : colPriv.getValue().getValue()) {
 
                 IdContext col = colPriv.getValue().getKey();
-                String objectName = MsDiffUtils.quoteName(schemaName) + '.' +
-                        MsDiffUtils.quoteName(st.getBareName()) + " (" +
-                        MsDiffUtils.quoteName(col.getText()) + ')';
+                String objectName = st.getQualifiedName()
+                        + " (" + MsDiffUtils.quoteName(col.getText()) + ')';
 
                 for (String role : roles) {
                     PgPrivilege priv = new PgPrivilege(state, pr, objectName, role, isGO);

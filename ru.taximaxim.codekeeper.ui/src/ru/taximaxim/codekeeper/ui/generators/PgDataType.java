@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -33,43 +34,43 @@ public enum PgDataType {
 
     private PgDataType(Supplier<PgData<?>> factory) {
         this.generators = EnumSet.allOf(PgDataGenerator.class);
-        this.type = name().toLowerCase();
+        this.type = name().toLowerCase(Locale.ROOT);
         this.factory = factory;
     }
 
     private PgDataType(Function<PgDataType, PgData<?>> factory) {
         this.generators = EnumSet.allOf(PgDataGenerator.class);
-        this.type = name().toLowerCase();
+        this.type = name().toLowerCase(Locale.ROOT);
         this.factory = () -> factory.apply(this);
     }
 
     private PgDataType(Function<PgDataType, PgData<?>> factory, String type) {
         this.generators = EnumSet.allOf(PgDataGenerator.class);
-        this.type = type.toLowerCase();
+        this.type = type.toLowerCase(Locale.ROOT);
         this.factory = () -> factory.apply(this);
     }
 
     private PgDataType(Supplier<PgData<?>> factory, String type) {
         this.generators = EnumSet.allOf(PgDataGenerator.class);
-        this.type = type.toLowerCase();
+        this.type = type.toLowerCase(Locale.ROOT);
         this.factory = factory;
     }
 
     private PgDataType(Supplier<PgData<?>> factory,  PgDataGenerator... generators) {
         this.generators = setOfGenerators(Arrays.asList(generators));
-        this.type = name().toLowerCase();
+        this.type = name().toLowerCase(Locale.ROOT);
         this.factory = factory;
     }
 
     private PgDataType(Function<PgDataType, PgData<?>> factory, PgDataGenerator... generators) {
         this.generators = setOfGenerators(Arrays.asList(generators));
-        this.type = name().toLowerCase();
+        this.type = name().toLowerCase(Locale.ROOT);
         this.factory = () -> factory.apply(this);
     }
 
     private PgDataType(Supplier<PgData<?>> factory, String type, PgDataGenerator... generators) {
         this.generators = setOfGenerators(Arrays.asList(generators));
-        this.type = type.toLowerCase();
+        this.type = type.toLowerCase(Locale.ROOT);
         this.factory = factory;
     }
 
@@ -109,7 +110,7 @@ public enum PgDataType {
     }
 
     public static PgData<?> dataForType(String text) {
-        String type = text.toLowerCase();
+        String type = text.toLowerCase(Locale.ROOT);
         PgDataType t = null;
         for (PgDataType e : values()) {
             if (e.type.equalsIgnoreCase(type)) {

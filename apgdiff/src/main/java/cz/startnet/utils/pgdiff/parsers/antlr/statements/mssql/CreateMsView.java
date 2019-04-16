@@ -77,7 +77,7 @@ public class CreateMsView extends BatchContextProcessor {
         if (isJdbc && schema != null) {
             schema.addView(view);
         } else {
-            addSafe(AbstractSchema::addView, schema, view, ids);
+            addSafe(schema, view, ids);
         }
         return view;
     }

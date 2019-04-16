@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -143,6 +144,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private Link linkRefresh;
     private Button btnGetChanges;
 
+    private Button btnToProj;
+    private Button btnToDb;
+
     private DiffTableViewer diffTable;
     private DiffPaneViewer diffPane;
 
@@ -154,6 +158,22 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
     public IProject getProject() {
         return proj.getProject();
+    }
+
+    public void changeMigrationDireciton(boolean isApplyToProj, boolean showWarning) {
+        if (showWarning && isApplyToProj != diffTable.isApplyToProj()) {
+            MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_WARNING);
+            mb.setText(Messages.ProjectEditorDiffer_changed_direction_of_roll_on_title);
+            mb.setMessage(MessageFormat.format(Messages.ProjectEditorDiffer_changed_direction_of_roll_on,
+                    isApplyToProj ? Messages.ProjectEditorDiffer_project
+                            : Messages.ProjectEditorDiffer_database));
+            mb.open();
+
+            btnToProj.setSelection(isApplyToProj);
+            btnToDb.setSelection(!isApplyToProj);
+        }
+        diffTable.setApplyToProj(isApplyToProj);
+        diffTable.getViewer().refresh();
     }
 
     @Override
@@ -204,35 +224,49 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 layout.marginWidth = 0;
                 container.setLayout(layout);
 
-                Label l = new Label(container, SWT.NONE);
-                l.setForeground(l.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
-                l.setText(Messages.DiffTableViewer_apply_to);
-                l.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
+                Button btnApply = new Button(container, SWT.PUSH);
+                btnApply.setText(Messages.DiffTableViewer_apply_to);
+                btnApply.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
 
-                Button btnCommit = new Button(container, SWT.PUSH);
-                btnCommit.setText(Messages.DiffTableViewer_to_project);
-                btnCommit.setImage(Activator.getRegisteredImage(FILE.ICONAPPSMALL));
-                btnCommit.addSelectionListener(new SelectionAdapter() {
+                btnToProj = new Button(container, SWT.RADIO);
+                btnToProj.setText(Messages.DiffTableViewer_to_project);
+                btnToProj.setImage(Activator.getRegisteredImage(FILE.ICONAPPSMALL));
+                btnToProj.setSelection(true);
+                btnToProj.addSelectionListener(new SelectionAdapter()  {
 
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        try {
-                            commit();
-                        } catch (PgCodekeeperException ex) {
-                            ExceptionNotifier.notifyDefault(Messages.error_creating_dependency_graph, ex);
-                        }
+                        changeMigrationDireciton(true, false);
                     }
                 });
 
-                Button btnDiff = new Button(container, SWT.PUSH);
-                btnDiff.setText(Messages.DiffTableViewer_to_database);
-                btnDiff.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
+                btnToDb = new Button(container, SWT.RADIO);
+                btnToDb.setText(Messages.DiffTableViewer_to_database);
+                btnToDb.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
                         .getBundle().getResource(FILE.ICONDATABASE))));
-                btnDiff.addSelectionListener(new SelectionAdapter() {
+                btnToDb.addSelectionListener(new SelectionAdapter()  {
 
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        diff();
+                        changeMigrationDireciton(false, false);
+                    }
+                });
+
+                btnApply.addSelectionListener(new SelectionAdapter() {
+
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        if (btnToDb.getSelection()) {
+                            diff();
+                            return;
+                        }
+
+                        try {
+                            commit();
+                        } catch (PgCodekeeperException ex) {
+                            ExceptionNotifier
+                            .notifyDefault(Messages.error_creating_dependency_graph, ex);
+                        }
                     }
                 });
 
@@ -240,6 +274,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 btnGetChanges.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
                         .getBundle().getResource(FILE.ICONREFRESH))));
                 btnGetChanges.setText(Messages.DiffTableViewer_get_changes);
+                GridData gd = new GridData();
+                gd.horizontalIndent = 8;
+                btnGetChanges.setLayoutData(gd);
                 btnGetChanges.addSelectionListener(new SelectionAdapter() {
 
                     @Override
@@ -633,11 +670,17 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     }
 
     public Object getCurrentDb() {
+        IEclipsePreferences prefs = proj.getPrefs();
+        DbInfo boundDb = DbInfo.getLastDb(prefs.get(PROJ_PREF.NAME_OF_BOUND_DB, "")); //$NON-NLS-1$
+        if (boundDb != null) {
+            return boundDb;
+        }
+
         if (currentRemote != null) {
             return currentRemote;
         }
 
-        return DbInfo.getLastDb(proj.getPrefs().get(PROJ_PREF.LAST_DB_STORE, "")); //$NON-NLS-1$
+        return DbInfo.getLastDb(prefs.get(PROJ_PREF.LAST_DB_STORE, "")); //$NON-NLS-1$
     }
 
     public void saveLastDb(DbInfo lastDb) {

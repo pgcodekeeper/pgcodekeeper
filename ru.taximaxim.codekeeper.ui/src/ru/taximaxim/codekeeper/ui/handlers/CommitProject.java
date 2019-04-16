@@ -19,6 +19,7 @@ public class CommitProject extends AbstractHandler {
         IWorkbenchPart part = HandlerUtil.getActiveEditor(event);
         if (part instanceof ProjectEditorDiffer){
             ProjectEditorDiffer differ = (ProjectEditorDiffer) part;
+            differ.changeMigrationDireciton(true, true);
             try {
                 differ.commit();
             } catch (PgCodekeeperException ex) {

@@ -37,6 +37,7 @@ public interface UIConsts {
 
     interface VIEW {
         String OVERRIDE_VIEW = PLUGIN_ID.THIS + ".pgoverrideview"; //$NON-NLS-1$
+        String RESULT_SET_VIEW = PLUGIN_ID.THIS + ".resultsetview"; //$NON-NLS-1$
     }
 
     interface WIZARD {
@@ -75,6 +76,8 @@ public interface UIConsts {
         String EXPLICIT_TYPE_CAST = "explicitTypeCast"; //$NON-NLS-1$
 
         String REUSE_OPEN_COMPARE_EDITOR = "reuseOpenCompareEditors"; //$NON-NLS-1$
+
+        String IGNORE_CONCURRENT_MODIFICATION = "ignoreConcurrentModification"; //$NON-NLS-1$
     }
 
     interface COMMIT_PREF {
@@ -155,6 +158,7 @@ public interface UIConsts {
         String DISABLE_PARSER_IN_EXTERNAL_FILES = "disableParserInExternalFiles"; //$NON-NLS-1$
         String LIB_SAFE_MODE = "libSafeMode"; //$NON-NLS-1$
         String STORAGE_LIST = "storageList"; //$NON-NLS-1$
+        String NAME_OF_BOUND_DB = "nameOfBoundDatabase"; //$NON-NLS-1$
     }
 
     interface PROJ_PATH {
@@ -186,8 +190,6 @@ public interface UIConsts {
         String ICONAPPBIG = "/icons/app_icon128.png"; //$NON-NLS-1$
         String ICONBALLBLUE = "/icons/ball_blue.png"; //$NON-NLS-1$
         String ICONBALLGREEN = "/icons/ball_green.png"; //$NON-NLS-1$
-        String ICONFROMPROJECT = "/icons/arrow_left_blue.png"; //$NON-NLS-1$
-        String ICONFROMREMOTE = "/icons/arrow_right_green.png"; //$NON-NLS-1$
         String ICONADDDEP = "/icons/add_dep.png"; //$NON-NLS-1$
         String PGPASS = "/icons/pg_pass.png"; //$NON-NLS-1$
 

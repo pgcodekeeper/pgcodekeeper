@@ -15,7 +15,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContex
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
-import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.PgAggregate;
 import cz.startnet.utils.pgdiff.schema.PgAggregate.AggKinds;
@@ -53,7 +52,7 @@ public class CreateAggregate extends ParserAbstract {
 
         fillAggregate(ctx.aggregate_param(), aggregate);
 
-        addSafe(AbstractSchema::addFunction, getSchemaSafe(ids), aggregate, ids);
+        addSafe(getSchemaSafe(ids), aggregate, ids);
     }
 
     private void fillAllArguments(PgAggregate aggregate) {

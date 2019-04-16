@@ -34,5 +34,9 @@ implements IWorkbenchPreferencePage  {
         addField(new BooleanFieldEditor(PREF.REUSE_OPEN_COMPARE_EDITOR,
                 Messages.GeneralPrefPage_reuse_open_compare_editor,
                 getFieldEditorParent()));
+
+        addField(new BooleanFieldEditor(PREF.IGNORE_CONCURRENT_MODIFICATION,
+                Messages.GeneralPrefPage_ignore_concurrent_modification,
+                getFieldEditorParent()));
     }
 }

@@ -145,6 +145,7 @@ public class CommentOn extends ParserAbstract {
         } else if (ctx.TRIGGER() != null && ctx.EVENT() == null) {
             type = DbObjType.TRIGGER;
             List<IdentifierContext> parentIds = ctx.table_name.identifier();
+            addObjReference(parentIds, DbObjType.TABLE, StatementActions.NONE);
             ids = Arrays.asList(QNameParser.getSchemaNameCtx(parentIds),
                     QNameParser.getFirstNameCtx(parentIds), nameCtx);
             IStatementContainer c = getSafe(AbstractSchema::getStatementContainer, schema,
@@ -185,6 +186,7 @@ public class CommentOn extends ParserAbstract {
         } else if (ctx.RULE() != null) {
             type = DbObjType.RULE;
             List<IdentifierContext> parentIds = ctx.table_name.identifier();
+            addObjReference(parentIds, DbObjType.TABLE, StatementActions.NONE);
             ids = Arrays.asList(QNameParser.getSchemaNameCtx(parentIds),
                     QNameParser.getFirstNameCtx(parentIds), nameCtx);
             IStatementContainer c = getSafe(AbstractSchema::getStatementContainer, schema,

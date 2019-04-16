@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.antlr.v4.runtime.BaseErrorListener;
@@ -238,7 +237,6 @@ public class PgParserTest {
     public PgParserTest(final String fileNameTemplate, int allowedAmbiguity) {
         this.fileNameTemplate = fileNameTemplate;
         this.allowedAmbiguity = allowedAmbiguity;
-        Locale.setDefault(Locale.ENGLISH);
         Log.log(Log.LOG_DEBUG, fileNameTemplate);
     }
 

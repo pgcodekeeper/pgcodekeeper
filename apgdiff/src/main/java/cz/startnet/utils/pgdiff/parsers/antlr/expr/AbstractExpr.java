@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -213,17 +212,12 @@ public abstract class AbstractExpr {
         default:
             break;
         }
-        if (columns != null) {
-            Optional<String> type = columns.findAny()
-                    .map(Pair::getSecond);
-            if (type.isPresent()) {
-                return type.get();
-            } else {
-                Log.log(Log.LOG_WARNING, "Column " + colName + " not found in relation "
-                        + relationName);
-            }
-        }
-        return TypesSetManually.COLUMN;
+
+        return columns.findAny().map(Pair::getSecond).orElseGet(() -> {
+            Log.log(Log.LOG_WARNING,
+                    "Column " + colName + " not found in relation " + relationName);
+            return TypesSetManually.COLUMN;
+        });
     }
 
     /**
@@ -245,7 +239,7 @@ public abstract class AbstractExpr {
      * @param relationName
      * @param colNamePredicate
      * @return column stream with  attached depcy-addition peek-step;
-     *          null if no relation found
+     *          empty stream if no relation found
      */
     protected Stream<Pair<String, String>> addFilteredRelationColumnsDepcies(String schemaName,
             String relationName, Predicate<String> colNamePredicate) {
@@ -254,7 +248,7 @@ public abstract class AbstractExpr {
                 .orElse(null);
         if (relation == null) {
             Log.log(Log.LOG_WARNING, "Relation not found: " + schemaName + '.' + relationName);
-            return null;
+            return Stream.empty();
         }
 
         Stream<Pair<String, String>> cols = relation.getRelationColumns()
@@ -262,7 +256,7 @@ public abstract class AbstractExpr {
         if (DbObjNature.USER == relation.getStatementNature()) {
             // hack
             cols = cols.peek(col -> depcies.add(
-                    new GenericColumn(relation.getContainingSchema().getName(),
+                    new GenericColumn(relation.getSchemaName(),
                             relation.getName(), col.getFirst(), DbObjType.COLUMN)));
         }
         return cols;
@@ -279,7 +273,7 @@ public abstract class AbstractExpr {
             IRelation rel = relCol.getFirst();
             col = relCol.getSecond();
             if (rel.getStatementNature() == DbObjNature.USER) {
-                depcies.add(new GenericColumn(rel.getContainingSchema().getName(), rel.getName(),
+                depcies.add(new GenericColumn(rel.getSchemaName(), rel.getName(),
                         col.getFirst(), DbObjType.COLUMN));
             }
         }
@@ -297,7 +291,7 @@ public abstract class AbstractExpr {
 
     protected void addFunctionDepcy(IFunction function) {
         if (DbObjNature.USER == function.getStatementNature()) {
-            depcies.add(new GenericColumn(function.getContainingSchema().getName(),
+            depcies.add(new GenericColumn(function.getSchemaName(),
                     function.getName(), DbObjType.FUNCTION));
         }
     }

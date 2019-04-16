@@ -19,8 +19,7 @@ public class MsConstraint extends AbstractConstraint {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("ALTER ").append(getParent().getStatementType().name());
         sbSQL.append(' ');
-        sbSQL.append(MsDiffUtils.quoteName(getContainingSchema().getName()));
-        sbSQL.append('.').append(MsDiffUtils.quoteName(getParent().getName()));
+        sbSQL.append(getParent().getQualifiedName());
         if (isNotValid()) {
             sbSQL.append(" WITH NOCHECK");
         }
@@ -35,8 +34,7 @@ public class MsConstraint extends AbstractConstraint {
         // 2) can't be valid if disabled
         if (isNotValid()) {
             sbSQL.append("\n\nALTER ").append(getParent().getStatementType().name())
-            .append(' ').append(MsDiffUtils.quoteName(getContainingSchema().getName()))
-            .append('.').append(MsDiffUtils.quoteName(getParent().getName())).append(' ');
+            .append(' ').append(getParent().getQualifiedName()).append(' ');
             if (isDisabled()) {
                 sbSQL.append("NO");
             }
@@ -59,8 +57,7 @@ public class MsConstraint extends AbstractConstraint {
 
             if (isNotValid() != newConstr.isNotValid() || isDisabled() != newConstr.isDisabled()) {
                 sb.append("\nALTER ").append(newConstr.getParent().getStatementType().name())
-                .append(' ').append(MsDiffUtils.quoteName(newConstr.getContainingSchema().getName()))
-                .append('.').append(MsDiffUtils.quoteName(newConstr.getParent().getName()))
+                .append(' ').append(newConstr.getParent().getQualifiedName())
                 .append(" WITH ");
                 if (newConstr.isNotValid()) {
                     sb.append("NO");
@@ -82,8 +79,7 @@ public class MsConstraint extends AbstractConstraint {
     public String getDropSQL() {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("ALTER ").append(getParent().getStatementType().name()).append(' ');
-        sbSQL.append(MsDiffUtils.quoteName(getContainingSchema().getName()));
-        sbSQL.append('.').append(MsDiffUtils.quoteName(getParent().getName()));
+        sbSQL.append(getParent().getQualifiedName());
         sbSQL.append("\n\tDROP CONSTRAINT ");
         sbSQL.append(MsDiffUtils.quoteName(getName()));
         sbSQL.append(GO);

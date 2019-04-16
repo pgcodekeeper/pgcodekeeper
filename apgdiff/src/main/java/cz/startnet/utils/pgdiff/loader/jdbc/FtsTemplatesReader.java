@@ -7,7 +7,6 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgFtsTemplate;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class FtsTemplatesReader extends JdbcReader {
 
@@ -34,10 +33,5 @@ public class FtsTemplatesReader extends JdbcReader {
 
         loader.setAuthor(template, res);
         schema.addFtsTemplate(template);
-    }
-
-    @Override
-    protected DbObjType getType() {
-        return DbObjType.FTS_TEMPLATE;
     }
 }

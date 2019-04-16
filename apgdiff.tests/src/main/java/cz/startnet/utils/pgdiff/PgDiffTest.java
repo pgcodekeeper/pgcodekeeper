@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Locale;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -62,6 +61,10 @@ public class PgDiffTest {
                     {"drop_with_oids"},
                     // Tests scenario where INDEX is added.
                     {"add_index"},
+                    // Tests scenario where PARTITION INDEX is added.
+                    {"add_partition_index"},
+                    // Tests scenario where VIEW INDEX is added.
+                    {"add_view_index"},
                     // Tests scenario where INDEX is dropped.
                     {"drop_index"},
                     // Tests scenario where INDEX with including is added.
@@ -127,6 +130,8 @@ public class PgDiffTest {
                     {"modify_table_unlogged"},
                     // Tests scenario where TABLE CONSTRAINT is added.
                     {"add_constraint"},
+                    // Tests scenario where TABLE CONSTRAINT with tablespace is added.
+                    {"add_constraint_with_tablespace"},
                     // Tests scenario where TABLE EXCLUDE CONSTRAINT is added.
                     {"add_exclude_constraint"},
                     // Tests scenario where TABLE CONSTRAINT is modified.
@@ -467,6 +472,10 @@ public class PgDiffTest {
                     {"add_aggregate_privileges"},
                     // Tests scenario where COLUMN types compared with aliases.
                     {"compare_column_type_aliases"},
+                    // Tests scenario where new FUNCTION with specific options is added.
+                    {"add_specific_function"},
+                    // Tests scenario where TABLE tablespace is modified.
+                    {"modify_tablespace"},
                 });
     }
 
@@ -479,7 +488,6 @@ public class PgDiffTest {
 
     public PgDiffTest(final String fileNameTemplate) {
         this.fileNameTemplate = fileNameTemplate;
-        Locale.setDefault(Locale.ENGLISH);
         Log.log(Log.LOG_DEBUG, fileNameTemplate);
     }
 

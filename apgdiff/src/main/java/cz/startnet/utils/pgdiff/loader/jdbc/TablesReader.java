@@ -40,7 +40,7 @@ public class TablesReader extends JdbcReader {
 
         if (SupportedVersion.VERSION_10.isLE(loader.version) && res.getBoolean("relispartition")) {
             partitionBound = res.getString("partition_bound");
-            checkObjectValidity(partitionBound, getType(), tableName);
+            checkObjectValidity(partitionBound, DbObjType.TABLE, tableName);
         }
         AbstractPgTable t;
         String serverName = res.getString("server_name");
@@ -124,7 +124,7 @@ public class TablesReader extends JdbcReader {
             // since 10 PostgreSQL
             if (SupportedVersion.VERSION_10.isLE(loader.version) && "p".equals(res.getString("relkind"))) {
                 String partitionBy = res.getString("partition_by");
-                checkObjectValidity(partitionBy, getType(), tableName);
+                checkObjectValidity(partitionBy, DbObjType.TABLE, tableName);
                 regTable.setPartitionBy(partitionBy);
             }
 
@@ -260,10 +260,5 @@ public class TablesReader extends JdbcReader {
                 t.addColumn(column);
             }
         }
-    }
-
-    @Override
-    protected DbObjType getType() {
-        return DbObjType.TABLE;
     }
 }

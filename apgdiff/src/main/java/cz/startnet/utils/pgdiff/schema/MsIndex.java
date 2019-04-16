@@ -8,8 +8,8 @@ import cz.startnet.utils.pgdiff.PgDiffArguments;
 
 public class MsIndex extends AbstractIndex {
 
-    public MsIndex(String name, String tableName) {
-        super(name, tableName);
+    public MsIndex(String name) {
+        super(name);
     }
 
     @Override
@@ -29,8 +29,7 @@ public class MsIndex extends AbstractIndex {
         sbSQL.append("INDEX ");
         sbSQL.append(MsDiffUtils.quoteName(getName()));
         sbSQL.append(" ON ");
-        sbSQL.append(MsDiffUtils.quoteName(getContainingSchema().getName()));
-        sbSQL.append('.').append(MsDiffUtils.quoteName(getTableName()));
+        sbSQL.append(getParent().getQualifiedName());
         sbSQL.append(' ');
         sbSQL.append(getDefinition());
 
@@ -94,8 +93,7 @@ public class MsIndex extends AbstractIndex {
     @Override
     public String getDropSQL() {
         return "DROP INDEX " + MsDiffUtils.quoteName(getName()) + " ON "
-                + MsDiffUtils.quoteName(getContainingSchema().getName()) + '.'
-                + MsDiffUtils.quoteName(getTableName()) + GO;
+                + getParent().getQualifiedName() + GO;
     }
 
     @Override
@@ -105,6 +103,6 @@ public class MsIndex extends AbstractIndex {
 
     @Override
     protected AbstractIndex getIndexCopy() {
-        return new MsIndex(getName(), getTableName());
+        return new MsIndex(getName());
     }
 }

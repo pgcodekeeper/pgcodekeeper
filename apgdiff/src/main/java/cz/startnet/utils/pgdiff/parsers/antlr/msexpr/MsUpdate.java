@@ -59,7 +59,7 @@ public class MsUpdate extends MsAbstractExprWithNmspc<Update_statementContext> {
                 vex.analyze(expr);
                 Full_column_nameContext fcn = elem.full_column_name();
                 if (fcn != null) {
-                    addColumnDepcy(fcn);
+                    select.addColumnDepcy(fcn);
                 }
             } else {
                 vex.expressionList(elem.expression_list());

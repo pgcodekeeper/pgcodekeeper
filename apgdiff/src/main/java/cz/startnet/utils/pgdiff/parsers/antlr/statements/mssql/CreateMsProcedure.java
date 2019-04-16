@@ -69,7 +69,7 @@ public class CreateMsProcedure extends BatchContextProcessor {
             if (isJdbc) {
                 schema.addFunction(procedure);
             } else {
-                addSafe(AbstractSchema::addFunction, schema, procedure, ids);
+                addSafe(schema, procedure, ids);
             }
             return procedure;
         }
@@ -85,14 +85,14 @@ public class CreateMsProcedure extends BatchContextProcessor {
         } else {
             schemaName = getSchemaNameSafe(ids);
         }
-        MsSqlClauses clauses = new MsSqlClauses(schemaName);
+        MsSqlClauses clauses = new MsSqlClauses(schemaName, DbObjType.FUNCTION, DbObjType.PROCEDURE);
         clauses.analyze(ctx.proc_body().sql_clauses());
         procedure.addAllDeps(clauses.getDepcies());
 
         if (isJdbc && schema != null) {
             schema.addFunction(procedure);
         } else {
-            addSafe(AbstractSchema::addFunction, schema, procedure, ids);
+            addSafe(schema, procedure, ids);
         }
         return procedure;
     }

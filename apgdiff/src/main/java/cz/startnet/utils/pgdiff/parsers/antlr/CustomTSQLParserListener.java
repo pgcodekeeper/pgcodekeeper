@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -187,7 +188,7 @@ implements TSqlContextProcessor {
         }
 
         String set = ctx.name.getText();
-        switch (set.toLowerCase()) {
+        switch (set.toLowerCase(Locale.ROOT)) {
         case "ansi_nulls":
             if (ctx.ON() != null) {
                 ansiNulls = true;

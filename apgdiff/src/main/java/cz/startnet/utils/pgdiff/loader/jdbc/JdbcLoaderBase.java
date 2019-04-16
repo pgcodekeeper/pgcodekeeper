@@ -39,6 +39,7 @@ import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -355,13 +356,11 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
 
             if (st instanceof PgStatementWithSearchPath) {
                 col = acl.getString("c");
-                PgStatementWithSearchPath pswsp = (PgStatementWithSearchPath) st;
                 if (st.getStatementType() == DbObjType.TYPE) {
                     sb.append("TYPE::");
                 }
 
-                sb.append(MsDiffUtils.quoteName(pswsp.getContainingSchema().getName()))
-                .append('.').append(MsDiffUtils.quoteName(st.getBareName()));
+                sb.append(st.getQualifiedName());
 
                 if (col != null) {
                     sb.append('(').append(MsDiffUtils.quoteName(col)).append(')');
@@ -383,6 +382,11 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
 
     protected static String getMsType(PgStatement statement, String schema, String dataType,
             boolean isUserDefined, int size, int precision, int scale) {
+        return getMsType(statement, schema, dataType, isUserDefined, size, precision, scale, true);
+    }
+
+    protected static String getMsType(PgStatement statement, String schema, String dataType,
+            boolean isUserDefined, int size, int precision, int scale, boolean quoteSysTypes) {
         StringBuilder sb = new StringBuilder();
 
         if (isUserDefined) {
@@ -390,7 +394,8 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             sb.append(MsDiffUtils.quoteName(schema)).append('.');
         }
 
-        sb.append(MsDiffUtils.quoteName(dataType));
+        boolean quoteName = isUserDefined || quoteSysTypes || !ApgdiffUtils.isMsSystemSchema(schema);
+        sb.append(quoteName ? MsDiffUtils.quoteName(dataType) : dataType);
 
         if ("varbinary".equals(dataType) || "nvarchar".equals(dataType)
                 || "varchar".equals(dataType)) {

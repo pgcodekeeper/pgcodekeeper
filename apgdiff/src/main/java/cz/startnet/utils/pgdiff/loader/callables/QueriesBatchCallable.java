@@ -1,9 +1,12 @@
 package cz.startnet.utils.pgdiff.loader.callables;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
@@ -15,6 +18,7 @@ import org.postgresql.util.ServerErrorMessage;
 
 import cz.startnet.utils.pgdiff.IProgressReporter;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.jdbc.JdbcType;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
 
 public class QueriesBatchCallable extends StatementCallable<String> {
@@ -44,12 +48,15 @@ public class QueriesBatchCallable extends StatementCallable<String> {
                 List<String> queries = batches.get(0);
                 subMonitor.setWorkRemaining(queries.size());
                 for (String query : queries) {
-                    currQuery = query;
                     PgDiffUtils.checkCancelled(monitor);
-                    st.execute(query);
+                    currQuery = query;
 
+                    if (st.execute(query) && reporter != null) {
+                        writeResult(query);
+                    }
                     writeWarnings();
                     writeStatus(query);
+
                     subMonitor.worked(1);
                 }
             } else {
@@ -78,7 +85,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
                 reporter.writeMessage("Script finished");
             }
         } catch (PSQLException ex) {
-            if (reporter == null) {
+            if (reporter == null || ex.getServerErrorMessage() == null) {
                 throw ex;
             }
             ServerErrorMessage sem = ex.getServerErrorMessage();
@@ -92,6 +99,36 @@ public class QueriesBatchCallable extends StatementCallable<String> {
         }
 
         return JDBC_CONSTS.JDBC_SUCCESS;
+    }
+
+    private void writeResult(String query) throws SQLException {
+        List<List<Object>> results = new ArrayList<>();
+        try (ResultSet res = st.getResultSet()) {
+
+            ResultSetMetaData meta = res.getMetaData();
+            int count = meta.getColumnCount();
+
+            // add column names as first list
+            List<Object> names = new ArrayList<>(count);
+            for (int i = 1; i <= count; i++) {
+                String type = meta.getColumnTypeName(i);
+                String dealias = JdbcType.DATA_TYPE_ALIASES.get(type);
+                names.add(meta.getColumnLabel(i) + '\n' +
+                        (dealias == null ? type : dealias));
+            }
+            results.add(names);
+
+            // add other rows
+            while (res.next()) {
+                List<Object> row = new ArrayList<>(count);
+                results.add(row);
+                for (int i = 1; i <= count; i++) {
+                    row.add(res.getObject(i));
+                }
+            }
+        }
+
+        reporter.showData(query, results);
     }
 
     private void writeWarnings() throws SQLException {
@@ -118,7 +155,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
             return;
         }
 
-        String message = arr[0].toUpperCase(Locale.ENGLISH);
+        String message = arr[0].toUpperCase(Locale.ROOT);
         if (arr.length > 1) {
             switch (message) {
             case "CREATE":
@@ -126,7 +163,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
             case "DROP":
             case "START":
             case "BEGIN":
-                message += ' ' + arr[1].toUpperCase(Locale.ENGLISH);
+                message += ' ' + arr[1].toUpperCase(Locale.ROOT);
             }
         }
 
