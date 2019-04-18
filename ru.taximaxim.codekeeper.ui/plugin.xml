@@ -1037,8 +1037,12 @@
             name="SQLEditor Context Type MicrosoftSQL">
         </contextType>
         <include
-            file="sql_templates/templates.xml"
-            translations="sql_templates/sqlTemplate.properties">
+            file="sql_templates/templates_pg.xml"
+            translations="sql_templates/sqlTemplatePg.properties">
+        </include>
+        <include
+            file="sql_templates/templates_ms.xml"
+            translations="sql_templates/sqlTemplateMs.properties">
         </include>
     </extension>
     <extension point="org.eclipse.ui.elementFactories">
