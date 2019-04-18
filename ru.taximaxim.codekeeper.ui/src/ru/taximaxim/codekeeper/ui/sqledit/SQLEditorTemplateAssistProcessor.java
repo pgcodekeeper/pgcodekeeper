@@ -3,6 +3,8 @@ package ru.taximaxim.codekeeper.ui.sqledit;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -16,25 +18,41 @@ import org.eclipse.jface.text.templates.TemplateContext;
 import org.eclipse.jface.text.templates.TemplateContextType;
 import org.eclipse.jface.text.templates.TemplateException;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.ide.ResourceUtil;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 
 public class SQLEditorTemplateAssistProcessor extends TemplateCompletionProcessor {
 
     @Override
     protected Template[] getTemplates(String contextTypeId) {
-        SQLEditorTemplateManager manager = SQLEditorTemplateManager
-                .getInstance();
-        return manager.getTemplateStore().getTemplates();
+        return SQLEditorTemplateManager.getInstance().getTemplateStore().getTemplates();
     }
 
     @Override
     protected TemplateContextType getContextType(ITextViewer viewer,
             IRegion region) {
-        SQLEditorTemplateManager manager = SQLEditorTemplateManager
-                .getInstance();
-        return manager.getContextTypeRegistry().getContextType(
-                SQLEditorTemplateContextType.CONTEXT_TYPE);
+        boolean isMsEditor = false;
+        IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+                .getActivePage().getActiveEditor();
+        if (editor instanceof SQLEditor) {
+            IResource res = ResourceUtil.getResource(editor.getEditorInput());
+            if (res != null) {
+                try {
+                    isMsEditor = res.getProject().hasNature(NATURE.MS);
+                } catch (CoreException e) {
+                    Log.log(Log.LOG_WARNING, "Nature error", e); //$NON-NLS-1$
+                }
+            }
+        }
+
+        return SQLEditorTemplateManager.getInstance().getContextTypeRegistry()
+                .getContextType(isMsEditor ? SQLEditorTemplateContextType.CONTEXT_TYPE_MS
+                        : SQLEditorTemplateContextType.CONTEXT_TYPE_PG);
     }
 
     @Override

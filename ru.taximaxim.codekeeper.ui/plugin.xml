@@ -1028,8 +1028,13 @@
         point="org.eclipse.ui.editors.templates">
         <contextType
             class="ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateContextType"
-            id="ru.taximaxim.codekeeper.ui.sqlEditorContextType"
-            name="SQLEditor Context Type">
+            id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg"
+            name="SQLEditor Context Type PostgreSQL">
+        </contextType>
+        <contextType
+            class="ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateContextType"
+            id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs"
+            name="SQLEditor Context Type MicrosoftSQL">
         </contextType>
         <include
             file="sql_templates/templates.xml"

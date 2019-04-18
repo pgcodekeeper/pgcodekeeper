@@ -8,39 +8,39 @@
 <template 
     name="create_domain"
     description="%create.domain.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createdomain"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createdomain"
     >CREATE DOMAIN ${domainName} AS ${dataType}
     ${conditions}</template>
 
 <template 
     name="create_index"
     description="%create.index.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createindex"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createindex"
     >CREATE INDEX ${indexName} ON ${tableName} USING btree (${columnName})</template>
 
 <template 
     name="create_fts_configuration"
     description="%create.fts_configuration.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createftsconfiguration"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createftsconfiguration"
     >CREATE TEXT SEARCH CONFIGURATION ${ftsConfigurationName} (
     PARSER = ${parserName} )</template>
 
 <template 
     name="create_fts_dictionary"
     description="%create.fts_dictionary.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createftsdictionary"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createftsdictionary"
     >CREATE TEXT SEARCH DICTIONARY ${ftsDictionaryName} (
     TEMPLATE = ${templateName} )</template>
 
 <template 
     name="create_fts_parser"
     description="%create.fts_parser.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createftsparser"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createftsparser"
     >CREATE TEXT SEARCH PARSER ${ftsParserName} (
     START = ${startFunction},
     GETTOKEN = ${gettokenFunction},
@@ -50,16 +50,16 @@
 <template 
     name="create_fts_template"
     description="%create.fts_template.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createftstemplate"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createftstemplate"
     >CREATE TEXT SEARCH TEMPLATE ${ftsTemplateName} (
     LEXIZE = ${lexizeFunction} )</template>
 
 <template 
     name="create_function"
     description="%create.function.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createfunction"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createfunction"
     >CREATE OR REPLACE FUNCTION ${functionName} RETURNS ${dataType}
     LANGUAGE sql
     AS $$$$
@@ -69,8 +69,8 @@ $$$$;</template>
 <template 
     name="create_procedure"
     description="%create.procedure.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createprocedure"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createprocedure"
     >CREATE OR REPLACE PROCEDURE ${procedureName}
     LANGUAGE sql
     AS $$$$
@@ -80,16 +80,16 @@ $$$$;</template>
 <template 
     name="create_rule"
     description="%create.rule.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createrule"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createrule"
     >CREATE RULE ${ruleName} AS
     ON UPDATE TO ${tableName} DO NOTHING</template>
 
 <template 
     name="create_sequence"
     description="%create.sequence.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createsequence"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createsequence"
     >CREATE SEQUENCE ${sequenceName}
     START WITH 1
     INCREMENT BY 1
@@ -100,8 +100,8 @@ $$$$;</template>
 <template 
     name="create_table"
     description="%create.table.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createtable"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createtable"
     >CREATE TABLE ${tableName} (
     ${columnName} ${dataType}
 )</template>
@@ -109,8 +109,8 @@ $$$$;</template>
 <template 
     name="create_trigger"
     description="%create.trigger.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createtrigger"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createtrigger"
     >CREATE TRIGGER ${triggerName}
     BEFORE UPDATE ON ${tableName}
     FOR EACH STATEMENT
@@ -119,8 +119,8 @@ $$$$;</template>
 <template 
     name="create_type"
     description="%create.type.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createtype"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createtype"
     >CREATE TYPE ${typeName} AS (
     ${columnName} ${dataType}
 )</template>
@@ -128,8 +128,8 @@ $$$$;</template>
 <template 
     name="create_type"
     description="%create.type2.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createtype2"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createtype2"
     >CREATE TYPE ${typeName} AS ENUM (
     '${label}'
 )</template>
@@ -137,8 +137,8 @@ $$$$;</template>
 <template 
     name="create_type"
     description="%create.type3.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createtype3"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createtype3"
     >CREATE TYPE ${typeName} AS RANGE (
     SUBTYPE = ${subtype}
 )</template>
@@ -146,8 +146,8 @@ $$$$;</template>
 <template 
     name="create_type"
     description="%create.type4.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createtype4"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createtype4"
     >CREATE TYPE ${typeName} (
     INPUT = ${input_function},
     OUTPUT = ${output_function},
@@ -156,8 +156,8 @@ $$$$;</template>
 <template 
     name="create_view"
     description="%create.view.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createview"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createview"
     >CREATE VIEW ${viewName} AS
     SELECT ${expression}</template>
 
@@ -168,55 +168,55 @@ $$$$;</template>
 <template 
     name="alter_table_add_column"
     description="%alter.add.column.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.addcolumn"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.addcolumn"
     >ALTER TABLE ${tableName}
     ADD COLUMN ${columnName} ${dataType}</template>
     
 <template 
     name="alter_table_alter_column"
     description="%alter.alter.column.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.altercolumn"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.altercolumn"
     >ALTER TABLE ${tableName}
     ALTER COLUMN ${columnName} ${operation}</template>
 
 <template 
     name="alter_table_drop_column"
     description="%alter.drop.column.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.dropcolumn"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.dropcolumn"
     >ALTER TABLE ${tableName}
     DROP COLUMN ${columnName}</template>
 
 <template 
     name="alter_table_constraint"
     description="%alter.add.constraint.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.addconstraint"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.addconstraint"
     >ALTER TABLE ${tableName}
     ADD CONSTRAINT ${constraintName} ${constraintType}(${columnName})</template>
 
 <template 
     name="alter_table_constraint"
     description="%alter.drop.constraint.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.delconstraint"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.delconstraint"
     >ALTER TABLE ${tableName}
     DROP CONSTRAINT ${constraintName}</template>
 
 <template 
     name="alter_rule"
     description="%alter.rule.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.alterrule"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.alterrule"
     >ALTER RULE ${ruleName} ON ${tableName} RENAME TO ${newRuleName}</template>
 
 <template 
     name="alter_trigger"
     description="%alter.trigger.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.altertrigger"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.altertrigger"
     >ALTER TRIGGER ${triggerName} ON ${tableName} ${operation}</template>
 
 
@@ -226,15 +226,15 @@ $$$$;</template>
 <template 
     name="drop_trigger"
     description="%drop.trigger.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.droptrigger"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.droptrigger"
     >DROP TRIGGER ${triggerName} ON ${tableName}</template>
 
 <template 
     name="drop_rule"
     description="%drop.rule.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.droprule"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.droprule"
     >DROP RULE ${ruleName} ON ${tableName}</template>
 
 
@@ -244,15 +244,15 @@ $$$$;</template>
 <template 
     name="comment"
     description="%comment.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.comment"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.comment"
     >COMMENT ON ${statementType} ${statementName} IS '${text}'</template>
 
 <template 
     name="comment"
     description="%comment2.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.comment2"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.comment2"
     >COMMENT ON ${statementType} ${statementName} ON ${tableName} IS '${text}'</template>
 
 
@@ -262,15 +262,15 @@ $$$$;</template>
 <template 
     name="grant"
     description="%grant.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.grant"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.grant"
     >GRANT ALL ON ${statementType} ${statementName} TO ${role}</template>
 
 <template 
     name="revoke"
     description="%revoke.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.revoke"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.revoke"
     >REVOKE ALL ON ${statementType} ${statementName} FROM ${role}</template>
 
 
@@ -280,8 +280,8 @@ $$$$;</template>
 <template 
     name="select"
     description="%select.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.select"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.select"
     >SELECT
   ${columnName} 
 FROM
@@ -290,8 +290,8 @@ FROM
 <template 
     name="select"
     description="%select2.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.select2"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.select2"
     >SELECT
   *
 FROM
@@ -300,8 +300,8 @@ FROM
 <template 
     name="insert"
     description="%insert.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.insert"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.insert"
     >INSERT INTO ${tableName}
   ( ${columnName} )
 VALUES
@@ -310,8 +310,8 @@ VALUES
 <template 
     name="insert"
     description="%insert2.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.insert2"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.insert2"
     >INSERT INTO ${tableName}
 VALUES
   ( ${value} )</template>
@@ -319,30 +319,30 @@ VALUES
 <template 
     name="update"
     description="%update.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.update"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.update"
     >UPDATE ${tableName}
   SET ${columnName} = ${value}</template>
 
 <template 
     name="delete"
     description="%delete.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.delete"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.delete"
     >DELETE FROM ${tableName}</template>
 
 <template 
     name="truncate"
     description="%truncate.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.truncate"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.truncate"
     >TRUNCATE TABLE ${tableName}</template>
 
 <template 
     name="case"
     description="%case.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.case"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.case"
     >CASE ${columnName} 
     WHEN ${value} THEN ${value} 
     ELSE ${value} 
@@ -351,8 +351,8 @@ END</template>
 <template 
     name="case"
     description="%case2.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.case2"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.case2"
     >CASE
     WHEN ${columnName} = ${value} THEN ${value} 
     ELSE ${value} 
@@ -361,15 +361,15 @@ END</template>
 <template 
     name="group"
     description="%group.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.group"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.group"
     >GROUP BY ${columnName}</template>
 
 <template 
     name="order"
     description="%order.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.order"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.order"
     >ORDER BY ${columnName}</template>
 
 
@@ -379,62 +379,62 @@ END</template>
 <template 
     name="count"
     description="%count.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.count">COUNT(${columnName})</template>
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.count">COUNT(${columnName})</template>
 
 <template 
     name="max"
     description="%max.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.max">MAX(${columnName})</template>
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.max">MAX(${columnName})</template>
 
 <template 
     name="min"
     description="%min.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.min">MIN(${columnName})</template>
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.min">MIN(${columnName})</template>
 
 <template 
     name="avg"
     description="%avg.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.avg">AVG(${columnName})</template>
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.avg">AVG(${columnName})</template>
 
 <template 
     name="sum"
     description="%sum.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.sum">SUM(${columnName})</template>
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.sum">SUM(${columnName})</template>
 
 <template 
     name="to_char"
     description="%to_char.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.tochar">TO_CHAR(${value}, ${template})</template>
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.tochar">TO_CHAR(${value}, ${template})</template>
 
 <template 
     name="to_number"
     description="%to_number.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.tonumber">TO_NUMBER(${value}, ${template})</template>
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.tonumber">TO_NUMBER(${value}, ${template})</template>
 
 <template 
     name="to_date"
     description="%to_date.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.todate">TO_DATE(${value}, ${template})</template>
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.todate">TO_DATE(${value}, ${template})</template>
 
 <template 
     name="decode"
     description="%decode.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.decode">DECODE(${text}, ${format})</template>
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.decode">DECODE(${text}, ${format})</template>
 
 <template 
     name="encode"
     description="%encode.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.encode">ENCODE(${data}, ${format})</template>
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.encode">ENCODE(${data}, ${format})</template>
 
 
 
@@ -445,8 +445,8 @@ END</template>
 <template 
     name="ms_create_function"
     description="%ms.create.function.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.mscreatefunction"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.mscreatefunction"
     >CREATE FUNCTION [${functionName}]() RETURNS ${typeName}
 AS
 BEGIN
@@ -458,8 +458,8 @@ GO</template>
 <template 
     name="ms_create_function"
     description="%ms.create.function2.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.mscreatefunction2"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.mscreatefunction2"
     >CREATE FUNCTION [${functionName}]() 
 RETURNS TABLE
 AS  
@@ -472,8 +472,8 @@ GO</template>
 <template 
     name="ms_create_sequence"
     description="%ms.create.sequence.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.mscreatesequence"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.mscreatesequence"
     >CREATE SEQUENCE [${sequenceName}]
 AS bigint
 START WITH 1
@@ -484,8 +484,8 @@ CACHE</template>
 <template 
     name="ms_create_procedure"
     description="%ms.create.procedure.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.mscreateprocedure"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.mscreateprocedure"
     >CREATE PROCEDURE [${procedureName}]
 AS
 BEGIN
@@ -496,8 +496,8 @@ GO</template>
 <template 
     name="ms_create_table"
     description="%ms.create.table.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.mscreatetable"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.mscreatetable"
     >CREATE TABLE [${tableName}](
     [${columnName}] [${typeName}] NOT NULL
 ) ON [PRIMARY]</template>
@@ -505,8 +505,8 @@ GO</template>
 <template 
     name="ms_create_type"
     description="%ms.create.type.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.mscreatetype"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.mscreatetype"
     >CREATE TYPE [${typeName}] AS TABLE(
     [${columnName}] [${columnType}] NOT NULL,
     INDEX [IX_${typeName}_${columnName}] NONCLUSTERED
@@ -519,8 +519,8 @@ WITH ( MEMORY_OPTIMIZED = ON )</template>
 <template 
     name="ms_create_view"
     description="%ms.create.view.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.mscreateview"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.mscreateview"
     >CREATE VIEW [${viewName}]
 AS
 SELECT ${alias}.[${columnName}]
@@ -533,8 +533,8 @@ FROM [${tableName}] ${alias}</template>
 <template 
     name="ms_add_extended_property"
     description="%ms.extended.property.add.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.msaddextendedproperty"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.msaddextendedproperty"
     >EXECUTE sys.sp_addextendedproperty 
 @name=N'MS_Description', 
 @value=N'${comment}', 
@@ -547,8 +547,8 @@ GO</template>
 <template 
     name="ms_drop_extended_property"
     description="%ms.extended.property.drop.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.msdropextendedproperty"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.msdropextendedproperty"
     >EXECUTE sys.sp_dropextendedproperty 
 @name=N'MS_Description', 
 @level0type=N'SCHEMA',
@@ -560,8 +560,8 @@ GO</template>
 <template 
     name="ms_update_extended_property"
     description="%ms.extended.property.update.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.msupdateextendedproperty"
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.msupdateextendedproperty"
     >EXECUTE sys.sp_updateextendedproperty 
 @name=N'MS_Description', 
 @value=N'${comment}', 

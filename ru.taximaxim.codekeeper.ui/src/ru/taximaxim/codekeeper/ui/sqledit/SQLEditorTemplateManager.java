@@ -48,7 +48,8 @@ public class SQLEditorTemplateManager {
         if (fRegistry == null) {
             fRegistry = new ContributionContextTypeRegistry();
         }
-        fRegistry.addContextType(SQLEditorTemplateContextType.CONTEXT_TYPE);
+        fRegistry.addContextType(SQLEditorTemplateContextType.CONTEXT_TYPE_PG);
+        fRegistry.addContextType(SQLEditorTemplateContextType.CONTEXT_TYPE_MS);
         return fRegistry;
     }
 
