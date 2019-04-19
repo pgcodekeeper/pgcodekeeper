@@ -1036,6 +1036,11 @@
             id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs"
             name="SQLEditor Context Type MicrosoftSQL">
         </contextType>
+        <contextType
+            class="ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateContextType"
+            id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon"
+            name="SQLEditor Context Type Common">
+        </contextType>
         <include
             file="sql_templates/templates_pg.xml"
             translations="sql_templates/sqlTemplatePg.properties">
@@ -1043,6 +1048,10 @@
         <include
             file="sql_templates/templates_ms.xml"
             translations="sql_templates/sqlTemplateMs.properties">
+        </include>
+        <include
+            file="sql_templates/templates_common.xml"
+            translations="sql_templates/sqlTemplateCommon.properties">
         </include>
     </extension>
     <extension point="org.eclipse.ui.elementFactories">

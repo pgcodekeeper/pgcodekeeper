@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.ui.sqledit;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.core.resources.IResource;
@@ -34,7 +35,7 @@ public class SQLEditorTemplateAssistProcessor extends TemplateCompletionProcesso
 
     @Override
     protected Template[] getTemplates(String contextTypeId) {
-        return SQLEditorTemplateManager.getInstance().getTemplateStore().getTemplates();
+        return SQLEditorTemplateManager.getInstance().getTemplateStore().getTemplates(contextTypeId);
     }
 
     @Override
@@ -115,7 +116,7 @@ public class SQLEditorTemplateAssistProcessor extends TemplateCompletionProcesso
             return new ICompletionProposal[0];
         }
         context.setVariable("selection", selection.getText()); // name of the selection variables {line, word_selection //$NON-NLS-1$
-        Template[] templates = getTemplates(context.getContextType().getId());
+        Template[] templates = getTemplatesWithCommonPart(context.getContextType().getId());
         List<ICompletionProposal> matches = new ArrayList<>();
         for (Template template : templates) {
             try {
@@ -127,13 +128,39 @@ public class SQLEditorTemplateAssistProcessor extends TemplateCompletionProcesso
                 prefix = prefix.substring(1);
             }
             if (!prefix.equals("") //$NON-NLS-1$
-                    && (template.getName().startsWith(prefix) && template
-                            .matches(prefix, context.getContextType().getId()))) {
+                    && (isPrefixContainedInTmpl(prefix, template, context.getContextType().getId())
+                            || isPrefixContainedInTmpl(prefix, template,
+                                    SQLEditorTemplateContextType.CONTEXT_TYPE_COMMON))) {
                 matches.add(createProposal(template, context, (IRegion) region,
                         getRelevance(template, prefix)));
             }
         }
         return matches.toArray(new ICompletionProposal[matches.size()]);
+    }
+
+    /**
+     * Returns array which contains the templates of 'tmplCtxId' and common templates.
+     */
+    private Template[] getTemplatesWithCommonPart(String tmplCtxId) {
+        Template[] specTmpls = getTemplates(tmplCtxId);
+        Template[] commonTmpls = getTemplates(SQLEditorTemplateContextType.CONTEXT_TYPE_COMMON);
+        Template[] unitedTmpls = Arrays.copyOf(specTmpls, specTmpls.length + commonTmpls.length);
+        System.arraycopy(commonTmpls, 0, unitedTmpls, specTmpls.length, commonTmpls.length);
+        return unitedTmpls;
+    }
+
+    /**
+     * Returns true if template is enabled, matches the context and starts with
+     * the specified prefix, false otherwise.
+     *
+     * @param tmpl template for check
+     * @param prefix typed word
+     * @param ctxId id of templateCtx for check belonging of template to TemplateContext
+     * @return true if template is enabled, matches the context and starts with
+     * the specified prefix, false otherwise
+     */
+    private boolean isPrefixContainedInTmpl(String prefix, Template tmpl, String ctxId) {
+        return tmpl.getName().startsWith(prefix) && tmpl.matches(prefix, ctxId);
     }
 
     public List<ICompletionProposal> getAllTemplates(ITextViewer viewer,
@@ -142,7 +169,8 @@ public class SQLEditorTemplateAssistProcessor extends TemplateCompletionProcesso
         String prefix = extractPrefix(viewer, offset);
         Region region = new Region(offset - prefix.length(), prefix.length());
         TemplateContext context = createContext(viewer, region);
-        Template[] templates = getTemplates(context.getContextType().getId());
+        Template[] templates = SQLEditorTemplateManager.getInstance()
+                .getTemplateStore().getTemplates();
         for (Template template : templates) {
             result.add(createProposal(template, context, (IRegion) region,
                     getRelevance(template, prefix)));
