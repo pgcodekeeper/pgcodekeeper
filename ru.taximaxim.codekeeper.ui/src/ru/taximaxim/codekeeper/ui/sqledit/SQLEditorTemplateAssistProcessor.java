@@ -1,5 +1,6 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,13 +19,16 @@ import org.eclipse.jface.text.templates.TemplateContext;
 import org.eclipse.jface.text.templates.TemplateContextType;
 import org.eclipse.jface.text.templates.TemplateException;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.ResourceUtil;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
+import ru.taximaxim.codekeeper.ui.UIConsts.TEMP_DIR_PATH;
 
 public class SQLEditorTemplateAssistProcessor extends TemplateCompletionProcessor {
 
@@ -42,10 +46,18 @@ public class SQLEditorTemplateAssistProcessor extends TemplateCompletionProcesso
         if (editor instanceof SQLEditor) {
             IResource res = ResourceUtil.getResource(editor.getEditorInput());
             if (res != null) {
+                // if in SQLEdotor opened project file
                 try {
                     isMsEditor = res.getProject().hasNature(NATURE.MS);
                 } catch (CoreException e) {
                     Log.log(Log.LOG_WARNING, "Nature error", e); //$NON-NLS-1$
+                }
+            } else {
+                // if in SQLEdotor opened temp file
+                IEditorInput in = editor.getEditorInput();
+                if (in instanceof IURIEditorInput) {
+                    isMsEditor = Paths.get(((IURIEditorInput) in).getURI()).getParent()
+                            .equals(Paths.get(System.getProperty("java.io.tmpdir"), TEMP_DIR_PATH.MS)); //$NON-NLS-1$
                 }
             }
         }
