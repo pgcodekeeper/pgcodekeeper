@@ -36,11 +36,12 @@ GO</template>
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.createsequence"
     >CREATE SEQUENCE [${sequenceName}]
-AS bigint
-START WITH 1
-INCREMENT BY 1
-CYCLE
-CACHE</template>
+    AS bigint
+    START WITH 1
+    INCREMENT BY 1
+    CYCLE
+    CACHE
+GO</template>
 
 <template 
     name="create_procedure"
@@ -61,7 +62,8 @@ GO</template>
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.createtable"
     >CREATE TABLE [${tableName}](
     [${columnName}] [${typeName}] NOT NULL
-) ON [PRIMARY]</template>
+) ON [PRIMARY]
+GO</template>
 
 <template 
     name="create_type"
@@ -75,7 +77,8 @@ GO</template>
     ${columnName} ASC
 )
 )
-WITH ( MEMORY_OPTIMIZED = ON )</template>
+WITH ( MEMORY_OPTIMIZED = ON )
+GO</template>
 
 <template 
     name="create_view"
@@ -85,7 +88,8 @@ WITH ( MEMORY_OPTIMIZED = ON )</template>
     >CREATE VIEW [${viewName}]
 AS
 SELECT ${alias}.[${columnName}]
-FROM [${tableName}] ${alias}</template>
+FROM [${tableName}] ${alias}
+GO</template>
 
 
 

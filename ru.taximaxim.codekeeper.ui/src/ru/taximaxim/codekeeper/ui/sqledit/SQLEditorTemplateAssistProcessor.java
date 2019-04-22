@@ -139,13 +139,13 @@ public class SQLEditorTemplateAssistProcessor extends TemplateCompletionProcesso
     }
 
     /**
-     * Returns array which contains the templates of 'tmplCtxId' and common templates.
+     * Returns array which contains the templates of 'contextTypeId' and common templates.
      */
-    private Template[] getTemplatesWithCommonPart(String tmplCtxId) {
-        Template[] specTmpls = getTemplates(tmplCtxId);
+    private Template[] getTemplatesWithCommonPart(String contextTypeId) {
+        Template[] ctxTypeIdTmpls = getTemplates(contextTypeId);
         Template[] commonTmpls = getTemplates(SQLEditorTemplateContextType.CONTEXT_TYPE_COMMON);
-        Template[] unitedTmpls = Arrays.copyOf(specTmpls, specTmpls.length + commonTmpls.length);
-        System.arraycopy(commonTmpls, 0, unitedTmpls, specTmpls.length, commonTmpls.length);
+        Template[] unitedTmpls = Arrays.copyOf(ctxTypeIdTmpls, ctxTypeIdTmpls.length + commonTmpls.length);
+        System.arraycopy(commonTmpls, 0, unitedTmpls, ctxTypeIdTmpls.length, commonTmpls.length);
         return unitedTmpls;
     }
 

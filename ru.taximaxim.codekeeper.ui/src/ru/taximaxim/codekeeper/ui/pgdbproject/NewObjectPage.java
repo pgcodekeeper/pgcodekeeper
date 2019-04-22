@@ -6,6 +6,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -16,6 +17,7 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.text.templates.Template;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -52,6 +54,8 @@ import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
+import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateContextType;
+import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateManager;
 
 public final class NewObjectPage extends WizardPage {
 
@@ -434,53 +438,23 @@ public final class NewObjectPage extends WizardPage {
         IFile file = folder.getFile(AbstractModelExporter.getExportedFilenameSql(name));
 
         if (!file.exists()) {
-            StringBuilder sb = new StringBuilder("CREATE "); //$NON-NLS-1$
-            switch (type) {
-            case TYPE:
-                sb.append(type).append(' ').append(schema).append('.')
-                .append(objectName).append(';');
-                break;
-            case DOMAIN:
-                sb.append(type).append(' ').append(schema).append('.')
-                .append(objectName).append(" AS datatype;"); //$NON-NLS-1$
-                break;
-            case FUNCTION:
-                sb.append(" OR REPLACE FUNCTION ").append(schema).append('.') //$NON-NLS-1$
-                .append(objectName).append("() RETURNS void\n\tLANGUAGE sql\n    AS $$\n\t--function body \n$$;\n"); //$NON-NLS-1$
-                break;
-            case PROCEDURE:
-                sb.append(" OR REPLACE PROCEDURE ").append(schema).append('.') //$NON-NLS-1$
-                .append(objectName).append("()\n\tLANGUAGE sql\n    AS $$\n--procedure body \n$$;\n"); //$NON-NLS-1$
-                break;
-            case TABLE:
-                sb.append(type).append(' ').append(schema).append('.')
-                .append(objectName).append(" (\n);"); //$NON-NLS-1$
-                break;
-            case VIEW:
-                sb.append(type).append(' ').append(schema).append('.')
-                .append(objectName).append(" AS\n\tSELECT 'select_text'::text AS text;"); //$NON-NLS-1$
-                break;
-            case FTS_PARSER:
-                sb.append("TEXT SEARCH PARSER ").append(schema).append('.').append(objectName) //$NON-NLS-1$
-                .append(" (\n\tSTART = start_function,\n\tGETTOKEN = gettoken_function,\n\tEND = end_function,\n\tLEXTYPES = lextypes_function );"); //$NON-NLS-1$
-                break;
-            case FTS_TEMPLATE:
-                sb.append("TEXT SEARCH TEMPLATE ").append(schema).append('.') //$NON-NLS-1$
-                .append(objectName).append(" (\n\tLEXIZE = lexize_function );"); //$NON-NLS-1$
-                break;
-            case FTS_DICTIONARY:
-                sb.append("TEXT SEARCH DICTIONARY ").append(schema).append('.') //$NON-NLS-1$
-                .append(objectName).append(" (\n\tTEMPLATE = template_name );"); //$NON-NLS-1$
-                break;
-            case FTS_CONFIGURATION:
-                sb.append("TEXT SEARCH CONFIGURATION ").append(schema).append('.') //$NON-NLS-1$
-                .append(objectName).append(" (\n\tPARSER = parser_name );"); //$NON-NLS-1$
-                break;
-            default:
-                break;
+            Template tmpl = SQLEditorTemplateManager.getInstance().getTemplateStore()
+                    .findTemplateById(SQLEditorTemplateContextType.CONTEXT_TYPE_PG
+                            + ".create" + type.name().toLowerCase(Locale.ROOT)); //$NON-NLS-1$
+
+            String tmplStr = tmpl != null ? tmpl.getPattern() : ""; //$NON-NLS-1$
+
+            String schemaNamePlaceHolder = "${schemaName}"; //$NON-NLS-1$
+            if (tmplStr.contains(schemaNamePlaceHolder)) {
+                tmplStr = tmplStr.replace(schemaNamePlaceHolder, schema);
             }
 
-            file.create(new ByteArrayInputStream(sb.toString().getBytes()), false, null);
+            String objectNamePlaceHolder = "${objectName}"; //$NON-NLS-1$
+            if (tmplStr.contains(objectNamePlaceHolder)) {
+                tmplStr = tmplStr.replace(objectNamePlaceHolder, objectName);
+            }
+
+            file.create(new ByteArrayInputStream(tmplStr.getBytes()), false, null);
         }
         if (open) {
             openFileInEditor(file);

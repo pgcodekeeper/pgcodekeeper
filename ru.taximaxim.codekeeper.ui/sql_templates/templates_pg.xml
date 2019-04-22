@@ -8,57 +8,57 @@
     description="%create.domain.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createdomain"
-    >CREATE DOMAIN ${domainName} AS ${dataType}
-    ${conditions}</template>
+    >CREATE DOMAIN ${schemaName}.${objectName} AS ${dataType}
+    ${conditions};</template>
 
 <template 
     name="create_index"
     description="%create.index.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createindex"
-    >CREATE INDEX ${indexName} ON ${tableName} USING btree (${columnName})</template>
+    >CREATE INDEX ${indexName} ON ${tableName} USING btree (${columnName});</template>
 
 <template 
     name="create_fts_configuration"
     description="%create.fts_configuration.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createftsconfiguration"
-    >CREATE TEXT SEARCH CONFIGURATION ${ftsConfigurationName} (
-    PARSER = ${parserName} )</template>
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createfts_configuration"
+    >CREATE TEXT SEARCH CONFIGURATION ${schemaName}.${objectName} (
+    PARSER = ${parserName} );</template>
 
 <template 
     name="create_fts_dictionary"
     description="%create.fts_dictionary.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createftsdictionary"
-    >CREATE TEXT SEARCH DICTIONARY ${ftsDictionaryName} (
-    TEMPLATE = ${templateName} )</template>
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createfts_dictionary"
+    >CREATE TEXT SEARCH DICTIONARY ${schemaName}.${objectName} (
+    TEMPLATE = ${templateName} );</template>
 
 <template 
     name="create_fts_parser"
     description="%create.fts_parser.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createftsparser"
-    >CREATE TEXT SEARCH PARSER ${ftsParserName} (
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createfts_parser"
+    >CREATE TEXT SEARCH PARSER ${schemaName}.${objectName} (
     START = ${startFunction},
     GETTOKEN = ${gettokenFunction},
     END = ${endFunction},
-    LEXTYPES = ${lextypesFunction} )</template>
+    LEXTYPES = ${lextypesFunction} );</template>
 
 <template 
     name="create_fts_template"
     description="%create.fts_template.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createftstemplate"
-    >CREATE TEXT SEARCH TEMPLATE ${ftsTemplateName} (
-    LEXIZE = ${lexizeFunction} )</template>
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createfts_template"
+    >CREATE TEXT SEARCH TEMPLATE ${schemaName}.${objectName} (
+    LEXIZE = ${lexizeFunction} );</template>
 
 <template 
     name="create_function"
     description="%create.function.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createfunction"
-    >CREATE OR REPLACE FUNCTION ${functionName} RETURNS ${dataType}
+    >CREATE OR REPLACE FUNCTION ${schemaName}.${objectName} RETURNS ${dataType}
     LANGUAGE sql
     AS $$$$
     --function body
@@ -69,7 +69,7 @@ $$$$;</template>
     description="%create.procedure.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createprocedure"
-    >CREATE OR REPLACE PROCEDURE ${procedureName}
+    >CREATE OR REPLACE PROCEDURE ${schemaName}.${objectName}
     LANGUAGE sql
     AS $$$$
     --procedure body 
@@ -81,14 +81,14 @@ $$$$;</template>
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createrule"
     >CREATE RULE ${ruleName} AS
-    ON UPDATE TO ${tableName} DO NOTHING</template>
+    ON UPDATE TO ${schemaName}.${tableName} DO NOTHING;</template>
 
 <template 
     name="create_sequence"
     description="%create.sequence.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createsequence"
-    >CREATE SEQUENCE ${sequenceName}
+    >CREATE SEQUENCE ${schemaName}.${sequenceName}
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
@@ -100,9 +100,9 @@ $$$$;</template>
     description="%create.table.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createtable"
-    >CREATE TABLE ${tableName} (
+    >CREATE TABLE ${schemaName}.${objectName} (
     ${columnName} ${dataType}
-)</template>
+);</template>
 
 <template 
     name="create_trigger"
@@ -110,54 +110,54 @@ $$$$;</template>
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createtrigger"
     >CREATE TRIGGER ${triggerName}
-    BEFORE UPDATE ON ${tableName}
+    BEFORE UPDATE ON ${schemaName}.${tableName}
     FOR EACH STATEMENT
-    EXECUTE PROCEDURE ${functionName}</template>
+    EXECUTE PROCEDURE ${schemaName}.${functionName};</template>
 
 <template 
     name="create_type"
     description="%create.type.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createtype"
-    >CREATE TYPE ${typeName} AS (
+    >CREATE TYPE ${schemaName}.${objectName} AS (
     ${columnName} ${dataType}
-)</template>
+);</template>
 
 <template 
     name="create_type"
     description="%create.type2.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createtype2"
-    >CREATE TYPE ${typeName} AS ENUM (
+    >CREATE TYPE ${schemaName}.${objectName} AS ENUM (
     '${label}'
-)</template>
+);</template>
 
 <template 
     name="create_type"
     description="%create.type3.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createtype3"
-    >CREATE TYPE ${typeName} AS RANGE (
+    >CREATE TYPE ${schemaName}.${objectName} AS RANGE (
     SUBTYPE = ${subtype}
-)</template>
+);</template>
 
 <template 
     name="create_type"
     description="%create.type4.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createtype4"
-    >CREATE TYPE ${typeName} (
+    >CREATE TYPE ${schemaName}.${objectName} (
     INPUT = ${input_function},
     OUTPUT = ${output_function},
-)</template>
+);</template>
 
 <template 
     name="create_view"
     description="%create.view.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createview"
-    >CREATE VIEW ${viewName} AS
-    SELECT ${expression}</template>
+    >CREATE VIEW ${schemaName}.${objectName} AS
+    SELECT ${expression};</template>
 
 
 
@@ -168,14 +168,14 @@ $$$$;</template>
     description="%alter.rule.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.alterrule"
-    >ALTER RULE ${ruleName} ON ${tableName} RENAME TO ${newRuleName}</template>
+    >ALTER RULE ${ruleName} ON ${tableName} RENAME TO ${newRuleName};</template>
 
 <template 
     name="alter_trigger"
     description="%alter.trigger.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.altertrigger"
-    >ALTER TRIGGER ${triggerName} ON ${tableName} ${operation}</template>
+    >ALTER TRIGGER ${triggerName} ON ${tableName} ${operation};</template>
 
 
 
@@ -186,14 +186,14 @@ $$$$;</template>
     description="%drop.trigger.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.droptrigger"
-    >DROP TRIGGER ${triggerName} ON ${tableName}</template>
+    >DROP TRIGGER ${triggerName} ON ${tableName};</template>
 
 <template 
     name="drop_rule"
     description="%drop.rule.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.droprule"
-    >DROP RULE ${ruleName} ON ${tableName}</template>
+    >DROP RULE ${ruleName} ON ${tableName};</template>
 
 
 
@@ -204,14 +204,14 @@ $$$$;</template>
     description="%comment.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.comment"
-    >COMMENT ON ${statementType} ${statementName} IS '${text}'</template>
+    >COMMENT ON ${statementType} ${statementName} IS '${text}';</template>
 
 <template 
     name="comment"
     description="%comment2.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.comment2"
-    >COMMENT ON ${statementType} ${statementName} ON ${tableName} IS '${text}'</template>
+    >COMMENT ON ${statementType} ${statementName} ON ${tableName} IS '${text}';</template>
 
 
 
