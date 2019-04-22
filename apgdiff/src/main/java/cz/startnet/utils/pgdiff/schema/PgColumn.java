@@ -70,7 +70,7 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
         StringBuilder sb = new StringBuilder();
 
         if (getType() != null) {
-            sb.append(getAlterTable());
+            sb.append(getAlterTable(false, false));
             sb.append("\n\tADD COLUMN ")
             .append(PgDiffUtils.getQuotedName(name))
             .append(' ')
@@ -108,7 +108,7 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
     @Override
     public String getDropSQL() {
         if (getType() != null) {
-            return getAlterTable() + "\n\tDROP COLUMN "
+            return getAlterTable(false, true) + "\n\tDROP COLUMN "
                     + PgDiffUtils.getQuotedName(getName()) + ';';
         }
 
