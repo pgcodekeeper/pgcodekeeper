@@ -20,7 +20,7 @@ DROP VIEW public.v5;
 
 DROP VIEW public.v2;
 
-ALTER TABLE public.t2
+ALTER TABLE ONLY public.t2
 	DROP COLUMN c3;
 
 CREATE TABLE public.t3 (

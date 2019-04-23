@@ -6,7 +6,7 @@ DROP VIEW public.v1;
 
 -- DEPCY: This COLUMN depends on the TYPE: public.ty1
 
-ALTER TABLE public.t1
+ALTER TABLE ONLY public.t1
 	DROP COLUMN c1;
 
 DROP TYPE public.ty1;

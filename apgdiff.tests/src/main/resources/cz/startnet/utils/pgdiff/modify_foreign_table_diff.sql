@@ -1,6 +1,6 @@
 SET search_path = pg_catalog;
 
-ALTER FOREIGN TABLE public.new_films
+ALTER FOREIGN TABLE ONLY public.new_films
 	DROP COLUMN len;
 
 ALTER FOREIGN TABLE public.films OPTIONS (SET table_name 'all_films');
