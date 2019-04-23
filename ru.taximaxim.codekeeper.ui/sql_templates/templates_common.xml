@@ -32,16 +32,16 @@
     description="%alter.add.constraint.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.addconstraint"
-    >ALTER TABLE ${tableName}
-    ADD CONSTRAINT ${constraintName} ${constraintType}(${columnName})</template>
+    >ALTER TABLE ${schemaName}.${parentName}
+    ADD CONSTRAINT ${objectName} ${constraintType} (${columnName})</template>
 
 <template 
     name="alter_table_constraint"
     description="%alter.drop.constraint.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.delconstraint"
-    >ALTER TABLE ${tableName}
-    DROP CONSTRAINT ${constraintName}</template>
+    >ALTER TABLE ${schemaName}.${parentName}
+    DROP CONSTRAINT ${objectName}</template>
 
 
 

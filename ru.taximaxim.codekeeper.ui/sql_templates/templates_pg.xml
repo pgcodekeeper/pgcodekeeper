@@ -16,7 +16,7 @@
     description="%create.index.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createindex"
-    >CREATE INDEX ${indexName} ON ${tableName} USING btree (${columnName});</template>
+    >CREATE INDEX ${objectName} ON ${schemaName}.${parentName} USING btree (${columnName});</template>
 
 <template 
     name="create_fts_configuration"
@@ -80,8 +80,8 @@ $$$$;</template>
     description="%create.rule.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createrule"
-    >CREATE RULE ${ruleName} AS
-    ON UPDATE TO ${schemaName}.${tableName} DO NOTHING;</template>
+    >CREATE RULE ${objectName} AS
+    ON UPDATE TO ${schemaName}.${parentName} DO NOTHING;</template>
 
 <template 
     name="create_sequence"
@@ -109,8 +109,8 @@ $$$$;</template>
     description="%create.trigger.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createtrigger"
-    >CREATE TRIGGER ${triggerName}
-    BEFORE UPDATE ON ${schemaName}.${tableName}
+    >CREATE TRIGGER ${objectName}
+    BEFORE UPDATE ON ${schemaName}.${parentName}
     FOR EACH STATEMENT
     EXECUTE PROCEDURE ${schemaName}.${functionName};</template>
 

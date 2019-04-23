@@ -444,15 +444,8 @@ public final class NewObjectPage extends WizardPage {
 
             String tmplStr = tmpl != null ? tmpl.getPattern() : ""; //$NON-NLS-1$
 
-            String schemaNamePlaceHolder = "${schemaName}"; //$NON-NLS-1$
-            if (tmplStr.contains(schemaNamePlaceHolder)) {
-                tmplStr = tmplStr.replace(schemaNamePlaceHolder, schema);
-            }
-
-            String objectNamePlaceHolder = "${objectName}"; //$NON-NLS-1$
-            if (tmplStr.contains(objectNamePlaceHolder)) {
-                tmplStr = tmplStr.replace(objectNamePlaceHolder, objectName);
-            }
+            tmplStr = fillPlaceHolder(tmplStr, "${schemaName}", schema); //$NON-NLS-1$
+            tmplStr = fillPlaceHolder(tmplStr, "${objectName}", objectName); //$NON-NLS-1$
 
             file.create(new ByteArrayInputStream(tmplStr.getBytes()), false, null);
         }
@@ -468,18 +461,34 @@ public final class NewObjectPage extends WizardPage {
         IFile file = createObject(schema, parent, parentType, false, project);
         StringBuilder sb = new StringBuilder(GROUP_DELIMITER);
         String objectName = PgDiffUtils.getQuotedName(name);
-        String parentName = schema + '.' + parent;
-        if (type == DbObjType.RULE) {
-            sb.append(MessageFormat.format(RULE_PATTERN, objectName, parentName));
-        } else if (type == DbObjType.TRIGGER) {
-            sb.append(MessageFormat.format(TRIGGER_PATTERN, objectName, parentName));
-        } else if (type == DbObjType.CONSTRAINT) {
-            sb.append(MessageFormat.format(CONSTRAINT_PATTERN, parentName, objectName));
-        } else {
-            sb.append(MessageFormat.format(INDEX_PATTERN, objectName, parentName));
+
+        String tmplCtxTypeId = SQLEditorTemplateContextType.CONTEXT_TYPE_PG;
+        String tmplIdPostfix = ".create"; //$NON-NLS-1$
+        if (type == DbObjType.CONSTRAINT) {
+            tmplCtxTypeId = SQLEditorTemplateContextType.CONTEXT_TYPE_COMMON;
+            tmplIdPostfix = ".add"; //$NON-NLS-1$
         }
+
+        String tmplStr = SQLEditorTemplateManager.getInstance().getTemplateStore()
+                .findTemplateById(tmplCtxTypeId + tmplIdPostfix
+                        + type.name().toLowerCase(Locale.ROOT)).getPattern();
+
+        tmplStr = fillPlaceHolder(tmplStr, "${objectName}", objectName); //$NON-NLS-1$
+        tmplStr = fillPlaceHolder(tmplStr, "${schemaName}", schema); //$NON-NLS-1$
+        tmplStr = fillPlaceHolder(tmplStr, "${parentName}", parent); //$NON-NLS-1$
+        tmplStr = fillPlaceHolder(tmplStr, "${constraintType}", "PRIMARY KEY"); //$NON-NLS-1$ //$NON-NLS-2$
+
+        sb.append(tmplStr).append(tmplStr.endsWith(";") ? "" : ';');
+
         file.appendContents(new ByteArrayInputStream(sb.toString().getBytes()), true, true, null);
         openFileInEditor(file);
+    }
+
+    private String fillPlaceHolder(String template, String placeHolder, String replacement) {
+        if (template.contains(placeHolder)) {
+            return template.replace(placeHolder, replacement);
+        }
+        return template;
     }
 
     private IFolder getFolder(String name, DbObjType type, IProject project) throws CoreException {
