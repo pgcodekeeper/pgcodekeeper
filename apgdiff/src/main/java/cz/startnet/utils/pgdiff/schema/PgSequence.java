@@ -125,7 +125,6 @@ public class PgSequence extends AbstractSequence {
         }
         PgSequence oldSequence = this;
         StringBuilder sbSQL = new StringBuilder();
-        sbSQL.setLength(0);
 
         if (compareSequenceBody(newSequence, oldSequence, sbSQL)) {
             sb.append("\n\nALTER SEQUENCE ").append(newSequence.getQualifiedName()).
