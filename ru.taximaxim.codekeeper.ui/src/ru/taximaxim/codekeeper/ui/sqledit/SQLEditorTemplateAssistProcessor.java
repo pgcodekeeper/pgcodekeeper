@@ -177,4 +177,10 @@ public class SQLEditorTemplateAssistProcessor extends TemplateCompletionProcesso
         }
         return result;
     }
+
+    @Override
+    protected ICompletionProposal createProposal(Template template,
+            TemplateContext context, IRegion region, int relevance) {
+        return new SqlEditorTemplateProposal(template, context, region, getImage(template), relevance);
+    }
 }

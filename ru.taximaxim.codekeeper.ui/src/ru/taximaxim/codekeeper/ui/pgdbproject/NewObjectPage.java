@@ -17,6 +17,8 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.text.ITextOperationTarget;
+import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.templates.Template;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
@@ -54,8 +56,11 @@ import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
+import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
+import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateAssistProcessor;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateContextType;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateManager;
+import ru.taximaxim.codekeeper.ui.sqledit.SqlEditorTemplateProposal;
 
 public final class NewObjectPage extends WizardPage {
 
@@ -65,16 +70,7 @@ public final class NewObjectPage extends WizardPage {
     private static final String SCHEMA = "schema"; //$NON-NLS-1$
     private static final String CONTAINER = "container"; //$NON-NLS-1$
 
-    private static final String GROUP_DELIMITER =
-            "\n--------------------------------------------------------------------------------\n\n"; //$NON-NLS-1$
     private static final String PATTERN = "CREATE {0} {1};"; //$NON-NLS-1$
-
-    private static final String RULE_PATTERN = "CREATE RULE {0} AS\n\tON UPDATE TO {1} DO NOTHING;\n";//$NON-NLS-1$
-    private static final String TRIGGER_PATTERN = "CREATE TRIGGER {0}\n\tBEFORE UPDATE ON {1}" //$NON-NLS-1$
-            + "\n\tFOR EACH STATEMENT\n\tEXECUTE PROCEDURE schema_name.function_name_placeholder();\n"; //$NON-NLS-1$
-    private static final String CONSTRAINT_PATTERN = "ALTER TABLE {0}\n\tADD CONSTRAINT {1}" //$NON-NLS-1$
-            + " PRIMARY KEY (COLUMN_NAME);\n"; //$NON-NLS-1$
-    private static final String INDEX_PATTERN = "CREATE INDEX {0} ON {1} USING btree (COLUMN_NAME);\n"; //$NON-NLS-1$
 
     private DbObjType type;
     private String name = NAME;
@@ -397,6 +393,31 @@ public final class NewObjectPage extends WizardPage {
         .openEditor(new FileEditorInput(file), EDITOR.SQL);
     }
 
+    private void openFileInEditor(IFile file, String tmplId, String schema,
+            String objectName, String parent, String parentCode) throws PartInitException {
+        ITextOperationTarget txtOperTarget = ((SQLEditor) PlatformUI.getWorkbench()
+                .getActiveWorkbenchWindow().getActivePage()
+                .openEditor(new FileEditorInput(file), EDITOR.SQL))
+                .getAdapter(ITextOperationTarget.class);
+
+        if (txtOperTarget instanceof ITextViewer) {
+            ITextViewer textViewer = (ITextViewer) txtOperTarget;
+
+            Template newObjTmpl = SQLEditorTemplateManager.getInstance()
+                    .getTemplateStore().findTemplateById(tmplId);
+            SqlEditorTemplateProposal tmplProplOfNewObj = new SQLEditorTemplateAssistProcessor()
+                    .getAllTemplates(textViewer, 0).stream()
+                    .map(e -> (SqlEditorTemplateProposal) e)
+                    .filter(tp -> tp.equalsWithTmplOfProposal(newObjTmpl))
+                    .findAny().orElse(null);
+
+            if (tmplProplOfNewObj != null) {
+                tmplProplOfNewObj.fillTmplAndInsertToViewer(tmplProplOfNewObj,
+                        schema, objectName, parent, parentCode, textViewer);
+            }
+        }
+    }
+
     private IFolder createSchema(String name, boolean open, IProject project) throws CoreException {
         IFolder projectFolder = project.getFolder(WORK_DIR_NAMES.SCHEMA.name());
         if (!projectFolder.exists()) {
@@ -433,34 +454,30 @@ public final class NewObjectPage extends WizardPage {
 
     private IFile createObject(String schema, String name, DbObjType type,
             boolean open, IProject project) throws CoreException {
-        String objectName = PgDiffUtils.getQuotedName(name);
-        IFolder folder = getFolder(schema, type, project);
-        IFile file = folder.getFile(AbstractModelExporter.getExportedFilenameSql(name));
-
+        IFile file = getFolder(schema, type, project)
+                .getFile(AbstractModelExporter.getExportedFilenameSql(name));
         if (!file.exists()) {
-            Template tmpl = SQLEditorTemplateManager.getInstance().getTemplateStore()
-                    .findTemplateById(SQLEditorTemplateContextType.CONTEXT_TYPE_PG
-                            + ".create" + type.name().toLowerCase(Locale.ROOT)); //$NON-NLS-1$
-
-            String tmplStr = tmpl != null ? tmpl.getPattern() : ""; //$NON-NLS-1$
-
-            tmplStr = fillPlaceHolder(tmplStr, "${schemaName}", schema); //$NON-NLS-1$
-            tmplStr = fillPlaceHolder(tmplStr, "${objectName}", objectName); //$NON-NLS-1$
-
-            file.create(new ByteArrayInputStream(tmplStr.getBytes()), false, null);
+            file.create(new ByteArrayInputStream(new byte[0]), false, null);
         }
         if (open) {
-            openFileInEditor(file);
+            openFileInEditor(file, SQLEditorTemplateContextType.CONTEXT_TYPE_PG
+                    + ".create" + type.name().toLowerCase(Locale.ROOT), schema, //$NON-NLS-1$
+                    PgDiffUtils.getQuotedName(name), null, null);
         }
         return file;
     }
 
     private void createSubElement(String schema, String parent,
             String name, boolean parentIsTable,  IProject project, DbObjType type) throws CoreException {
-        DbObjType parentType = parentIsTable? DbObjType.TABLE : DbObjType.VIEW;
-        IFile file = createObject(schema, parent, parentType, false, project);
-        StringBuilder sb = new StringBuilder(GROUP_DELIMITER);
-        String objectName = PgDiffUtils.getQuotedName(name);
+        DbObjType parentType = parentIsTable ? DbObjType.TABLE : DbObjType.VIEW;
+        IFile file = getFolder(schema, parentType, project)
+                .getFile(AbstractModelExporter.getExportedFilenameSql(parent));
+
+        String parentCode = ""; //$NON-NLS-1$
+        if (!file.exists()) {
+            parentCode = createParentCodeOfSubEl(schema, parent, parentType);
+            file.create(new ByteArrayInputStream(new byte[0]), false, null);
+        }
 
         String tmplCtxTypeId = SQLEditorTemplateContextType.CONTEXT_TYPE_PG;
         String tmplIdPostfix = ".create"; //$NON-NLS-1$
@@ -469,26 +486,26 @@ public final class NewObjectPage extends WizardPage {
             tmplIdPostfix = ".add"; //$NON-NLS-1$
         }
 
-        String tmplStr = SQLEditorTemplateManager.getInstance().getTemplateStore()
-                .findTemplateById(tmplCtxTypeId + tmplIdPostfix
-                        + type.name().toLowerCase(Locale.ROOT)).getPattern();
-
-        tmplStr = fillPlaceHolder(tmplStr, "${objectName}", objectName); //$NON-NLS-1$
-        tmplStr = fillPlaceHolder(tmplStr, "${schemaName}", schema); //$NON-NLS-1$
-        tmplStr = fillPlaceHolder(tmplStr, "${parentName}", parent); //$NON-NLS-1$
-        tmplStr = fillPlaceHolder(tmplStr, "${constraintType}", "PRIMARY KEY"); //$NON-NLS-1$ //$NON-NLS-2$
-
-        sb.append(tmplStr).append(tmplStr.endsWith(";") ? "" : ';');
-
-        file.appendContents(new ByteArrayInputStream(sb.toString().getBytes()), true, true, null);
-        openFileInEditor(file);
+        openFileInEditor(file, tmplCtxTypeId + tmplIdPostfix + type.name().toLowerCase(Locale.ROOT),
+                schema, PgDiffUtils.getQuotedName(name), parent, parentCode);
     }
 
-    private String fillPlaceHolder(String template, String placeHolder, String replacement) {
-        if (template.contains(placeHolder)) {
-            return template.replace(placeHolder, replacement);
+    private String createParentCodeOfSubEl(String schema, String parent, DbObjType parentType) {
+        String objectName = PgDiffUtils.getQuotedName(parent);
+        StringBuilder sb = new StringBuilder("CREATE "); //$NON-NLS-1$
+        switch (parentType) {
+        case TABLE:
+            sb.append(parentType).append(' ').append(schema).append('.')
+            .append(objectName).append(" (\n);"); //$NON-NLS-1$
+            break;
+        case VIEW:
+            sb.append(parentType).append(' ').append(schema).append('.')
+            .append(objectName).append(" AS\n\tSELECT 'select_text'::text AS text;"); //$NON-NLS-1$
+            break;
+        default:
+            return "";
         }
-        return template;
+        return sb.toString();
     }
 
     private IFolder getFolder(String name, DbObjType type, IProject project) throws CoreException {

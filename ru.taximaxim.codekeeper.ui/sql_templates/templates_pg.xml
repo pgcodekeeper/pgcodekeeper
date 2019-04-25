@@ -58,7 +58,7 @@
     description="%create.function.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createfunction"
-    >CREATE OR REPLACE FUNCTION ${schemaName}.${objectName} RETURNS ${dataType}
+    >CREATE OR REPLACE FUNCTION ${schemaName}.${objectName}() RETURNS ${dataType}
     LANGUAGE sql
     AS $$$$
     --function body
@@ -69,7 +69,7 @@ $$$$;</template>
     description="%create.procedure.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createprocedure"
-    >CREATE OR REPLACE PROCEDURE ${schemaName}.${objectName}
+    >CREATE OR REPLACE PROCEDURE ${schemaName}.${objectName}()
     LANGUAGE sql
     AS $$$$
     --procedure body 
@@ -112,7 +112,7 @@ $$$$;</template>
     >CREATE TRIGGER ${objectName}
     BEFORE UPDATE ON ${schemaName}.${parentName}
     FOR EACH STATEMENT
-    EXECUTE PROCEDURE ${schemaName}.${functionName};</template>
+    EXECUTE PROCEDURE ${schemaName}.${functionName}();</template>
 
 <template 
     name="create_type"
