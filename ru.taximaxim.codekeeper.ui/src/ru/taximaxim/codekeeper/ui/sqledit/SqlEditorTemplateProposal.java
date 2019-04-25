@@ -10,7 +10,7 @@ import org.eclipse.swt.graphics.Image;
 public class SqlEditorTemplateProposal extends TemplateProposal {
 
     private static final String GROUP_DELIMITER =
-            "\n--------------------------------------------------------------------------------\n\n"; //$NON-NLS-1$
+            "\n\n--------------------------------------------------------------------------------\n\n"; //$NON-NLS-1$
 
     private final IRegion region;
 

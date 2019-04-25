@@ -1,12 +1,17 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -16,6 +21,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.jface.text.ITextViewer;
@@ -473,10 +479,20 @@ public final class NewObjectPage extends WizardPage {
         IFile file = getFolder(schema, parentType, project)
                 .getFile(AbstractModelExporter.getExportedFilenameSql(parent));
 
-        String parentCode = ""; //$NON-NLS-1$
+        String parentCode = null;
         if (!file.exists()) {
             parentCode = createParentCodeOfSubEl(schema, parent, parentType);
             file.create(new ByteArrayInputStream(new byte[0]), false, null);
+        } else {
+            try (BufferedReader br = new BufferedReader(
+                    new InputStreamReader(file.getContents(), StandardCharsets.UTF_8));
+                    InputStream emptyContent = new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8))) {
+                parentCode = br.lines().collect(Collectors.joining(System.lineSeparator()));
+                file.setContents(emptyContent, IResource.FORCE, new NullProgressMonitor());
+            } catch (IOException e) {
+                Log.log(e);
+                parentCode = "// parent object code"; //$NON-NLS-1$
+            }
         }
 
         String tmplCtxTypeId = SQLEditorTemplateContextType.CONTEXT_TYPE_PG;
