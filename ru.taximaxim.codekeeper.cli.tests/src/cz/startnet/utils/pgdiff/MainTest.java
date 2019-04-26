@@ -622,7 +622,7 @@ class DangerRestartAgumentsProvider extends ArgumentsProvider {
 class FailDangerUpdateArgumentsProvider extends ArgumentsProvider {
 
     public FailDangerUpdateArgumentsProvider() {
-        super(TestType.TEST_OUTPUT, "add_column_add_defaults");
+        super(TestType.TEST_OUTPUT, "add_not_null");
     }
 
     @Override
