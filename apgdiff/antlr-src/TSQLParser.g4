@@ -1717,14 +1717,17 @@ view_attribute
 alter_table
     : TABLE name=qualified_name 
     (SET LR_BRACKET LOCK_ESCALATION EQUAL (AUTO | TABLE | DISABLE) RR_BRACKET
-        | (WITH (CHECK | nocheck_add=NOCHECK))? ADD column_def_table_constraint
+        | (WITH (CHECK | nocheck_add=NOCHECK))? ADD column_def_table_constraints
         | ALTER COLUMN column_definition
-        | DROP COLUMN id
-        | DROP CONSTRAINT constraint=id
-        | (WITH (CHECK | nocheck_check=NOCHECK))? (CHECK | nocheck=NOCHECK) CONSTRAINT con=id
-        | (ENABLE | DISABLE) TRIGGER trigger=id?
+        | DROP table_action_drop (COMMA table_action_drop)*
+        | (WITH (CHECK | nocheck_check=NOCHECK))? (CHECK | nocheck=NOCHECK) CONSTRAINT id (COMMA id)*
+        | (ENABLE | DISABLE) TRIGGER id (COMMA id)*
         | (ENABLE | DISABLE) CHANGE_TRACKING (WITH LR_BRACKET TRACK_COLUMNS_UPDATED EQUAL (ON|OFF) RR_BRACKET)?
         | REBUILD table_options)
+    ;
+
+table_action_drop
+    : (COLUMN | CONSTRAINT?) (IF EXISTS)? id (COMMA id)*
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms174269.aspx
@@ -2411,7 +2414,7 @@ xml_schema_collection
     ;
 
 column_def_table_constraints
-    : column_def_table_constraint (COMMA? column_def_table_constraint)*
+    : column_def_table_constraint (COMMA column_def_table_constraint)*
     ;
 
 column_def_table_constraint
