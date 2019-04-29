@@ -51,7 +51,7 @@ public class AlterTable extends TableAbstract {
         PgObjLocation loc = addObjReference(ids, DbObjType.TABLE, StatementActions.ALTER);
 
         for (Table_actionContext tablAction : ctx.table_action()) {
-            if (tablAction.column != null && tablAction.DROP() != null) {
+            if (tablAction.column != null && tablAction.DROP() != null && tablAction.ALTER() == null) {
                 loc.setWarningText(DangerStatement.DROP_COLUMN);
             } else if (tablAction.datatype != null) {
                 loc.setWarningText(DangerStatement.ALTER_COLUMN);

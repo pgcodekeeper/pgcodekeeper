@@ -349,12 +349,12 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
                 sb.append(" DROP").append(NOT_NULL).append(';');
             } else {
                 if (hasDefault) {
-                    sb.append("\n\nUPDATE ONLY ").append(getParent().getQualifiedName())
+                    sb.append("\n\nUPDATE ").append(getParent().getQualifiedName())
                     .append("\n\tSET ").append(PgDiffUtils.getQuotedName(name))
                     .append(" = DEFAULT WHERE ").append(PgDiffUtils.getQuotedName(name))
                     .append(" IS").append(NULL).append(';');
                 }
-                sb.append(getAlterColumn(true, true, PgDiffUtils.getQuotedName(name)));
+                sb.append(getAlterColumn(true, false, PgDiffUtils.getQuotedName(name)));
                 sb.append(" SET").append(NOT_NULL).append(';');
             }
         }

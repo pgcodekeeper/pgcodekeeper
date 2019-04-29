@@ -54,5 +54,5 @@ ALTER TABLE ONLY public.testtable
 ALTER TABLE ONLY public.testtable
 	ALTER COLUMN field2 SET DEFAULT 1000;
 
-ALTER TABLE ONLY public.testtable
+ALTER TABLE public.testtable
 	ALTER COLUMN field1 SET NOT NULL;
