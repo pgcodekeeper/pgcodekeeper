@@ -33,6 +33,8 @@ public class SQLContentAssistant extends ContentAssistant {
     public SQLContentAssistant() {
         setStatusMessage(mesTemplates);
 
+        // it's necessary for resets switcher to its original position after
+        // selecting one of the ContentAssistant offers
         addCompletionListener(new ICompletionListener() {
 
             @Override
@@ -111,6 +113,15 @@ public class SQLContentAssistant extends ContentAssistant {
             super.verifyKey(event);
         }
 
+        /**
+         * Makes switch to the given ContentAssistProcessor.
+         * And puts information about next ContentAssistProcessor to the message
+         * and switcher.
+         *
+         * @param proc ContentAssistProcessor to switch on
+         * @param newSwitcherPosition position name of next ContentAssistProcessor
+         * @param messageForNewSwitchPos information about next ContentAssistProcessor
+         */
         private void switchToProc(IContentAssistProcessor proc, Switcher newSwitcherPosition,
                 String messageForNewSwitchPos) {
             SQLContentAssistant.super.setContentAssistProcessor(null,
