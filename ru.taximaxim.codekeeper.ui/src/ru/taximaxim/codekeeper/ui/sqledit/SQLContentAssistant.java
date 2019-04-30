@@ -33,7 +33,7 @@ public class SQLContentAssistant extends ContentAssistant {
 
     @Override
     public void setContentAssistProcessor(IContentAssistProcessor processor, String contentType) {
-        superSetContentAssistProcessor(processor, contentType);
+        Assert.isNotNull(contentType);
 
         if (allProcs == null) {
             allProcs= new HashMap<>();
@@ -45,10 +45,6 @@ public class SQLContentAssistant extends ContentAssistant {
             editor = ((SQLEditorCompletionProcessorAbstract) processor).getEditor();
             allProcs.put(contentType, Collections.singleton(processor));
         }
-    }
-
-    private void superSetContentAssistProcessor(IContentAssistProcessor processor, String contentType) {
-        super.setContentAssistProcessor(processor, contentType);
     }
 
     @Override
@@ -89,15 +85,16 @@ public class SQLContentAssistant extends ContentAssistant {
                     switchToProc(new SQLEditorCompletionProcessorTmpls(editor),
                             Switcher.KEYWORDS, mesKeywords);
                 }
-                showAssist(1);
             }
             super.verifyKey(event);
         }
 
         private void switchToProc(IContentAssistProcessor proc, Switcher newSwitcherPosition,
                 String messageForNewSwitchPos) {
-            superSetContentAssistProcessor(null, SQLEditorCommonDocumentProvider.SQL_CODE);
-            superSetContentAssistProcessor(proc, SQLEditorCommonDocumentProvider.SQL_CODE);
+            SQLContentAssistant.super.setContentAssistProcessor(null,
+                    SQLEditorCommonDocumentProvider.SQL_CODE);
+            SQLContentAssistant.super.setContentAssistProcessor(proc,
+                    SQLEditorCommonDocumentProvider.SQL_CODE);
             switcherPosition = newSwitcherPosition;
             setStatusMessage(messageForNewSwitchPos);
         }
