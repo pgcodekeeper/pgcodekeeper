@@ -6,7 +6,6 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.TextAttribute;
-import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
@@ -61,13 +60,18 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         if (editor == null) {
             return null;
         }
-        ContentAssistant assistant= new ContentAssistant();
-        assistant.setContentAssistProcessor(new SQLEditorCompletionProcessor(editor), SQLEditorCommonDocumentProvider.SQL_CODE);
+        SQLContentAssistant assistant= new SQLContentAssistant();
+        assistant.setContentAssistProcessor(new SQLEditorCompletionProcessorKeys(editor),
+                SQLEditorCommonDocumentProvider.SQL_CODE);
         assistant.enableAutoActivation(true);
         assistant.enableAutoInsert(true);
         assistant.setAutoActivationDelay(500);
         assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);
         assistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
+        assistant.addContentAssistProcessor(new SQLEditorCompletionProcessorTmpls(editor),
+                "SQL_TEMPLATES"); //$NON-NLS-1$
+        assistant.setRepeatedInvocationMode(true);
+        assistant.setStatusLineVisible(true);
         return assistant;
     }
 

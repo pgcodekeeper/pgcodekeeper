@@ -1,6 +1,5 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -12,9 +11,7 @@ import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.CompletionProposal;
 import org.eclipse.jface.text.contentassist.ContextInformation;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
-import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
-import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import org.eclipse.swt.graphics.Image;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -25,13 +22,12 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
-public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
+public class SQLEditorCompletionProcessorKeys extends SQLEditorCompletionProcessorAbstract {
 
-    private final SQLEditor editor;
     private final List<String> keywords;
 
-    public SQLEditorCompletionProcessor(SQLEditor editor) {
-        this.editor = editor;
+    public SQLEditorCompletionProcessorKeys(SQLEditor editor) {
+        super(editor);
         keywords = Keyword.KEYWORDS.keySet().stream()
                 .sorted()
                 .map(s -> s.toUpperCase(Locale.ROOT))
@@ -81,10 +77,9 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
             }
         });
 
-        // SQL Templates + Keywords
+        // Keywords
         if (text.isEmpty()) {
             keywords.forEach(k -> result.add(new CompletionProposal(k, offset, 0, k.length())));
-            result.addAll(new SQLEditorTemplateAssistProcessor().getAllTemplates(viewer, offset));
         } else {
             String textUpper = text.toUpperCase(Locale.ROOT);
             for (String keyword : keywords) {
@@ -101,40 +96,8 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
             }
 
             result.addAll(partResult);
-
-            ICompletionProposal[] templates = new SQLEditorTemplateAssistProcessor()
-                    .computeCompletionProposals(viewer, offset);
-            if (templates != null) {
-                result.addAll(Arrays.asList(templates));
-            }
         }
 
         return result.toArray(new ICompletionProposal[result.size()]);
-    }
-
-    @Override
-    public IContextInformation[] computeContextInformation(ITextViewer viewer,
-            int offset) {
-        return null;
-    }
-
-    @Override
-    public char[] getCompletionProposalAutoActivationCharacters() {
-        return new char[] { '.', '(' };
-    }
-
-    @Override
-    public char[] getContextInformationAutoActivationCharacters() {
-        return new char[] { '#' };
-    }
-
-    @Override
-    public String getErrorMessage() {
-        return null;
-    }
-
-    @Override
-    public IContextInformationValidator getContextInformationValidator() {
-        return null;
     }
 }
