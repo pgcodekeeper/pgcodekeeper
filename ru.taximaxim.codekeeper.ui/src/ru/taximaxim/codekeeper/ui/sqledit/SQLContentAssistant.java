@@ -7,7 +7,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.jface.text.contentassist.ContentAssistEvent;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
+import org.eclipse.jface.text.contentassist.ICompletionListener;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.VerifyEvent;
@@ -29,6 +32,25 @@ public class SQLContentAssistant extends ContentAssistant {
 
     public SQLContentAssistant() {
         setStatusMessage(mesTemplates);
+
+        addCompletionListener(new ICompletionListener() {
+
+            @Override
+            public void assistSessionEnded(ContentAssistEvent event) {
+                switcherPosition = Switcher.KEYWORDS;
+            }
+
+            @Override
+            public void assistSessionStarted(ContentAssistEvent event) {
+                // no impl
+            }
+
+            @Override
+            public void selectionChanged(ICompletionProposal proposal,
+                    boolean smartToggle) {
+                // no impl
+            }
+        });
     }
 
     @Override
