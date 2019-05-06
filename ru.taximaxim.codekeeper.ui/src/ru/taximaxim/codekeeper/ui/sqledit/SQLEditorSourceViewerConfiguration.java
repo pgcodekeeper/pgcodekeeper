@@ -60,7 +60,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         if (editor == null) {
             return null;
         }
-        SQLContentAssistant assistant= new SQLContentAssistant();
+        SQLContentAssistant assistant = new SQLContentAssistant();
         assistant.setContentAssistProcessor(new SQLEditorCompletionProcessorKeys(editor),
                 SQLEditorCommonDocumentProvider.SQL_CODE);
         assistant.enableAutoActivation(true);

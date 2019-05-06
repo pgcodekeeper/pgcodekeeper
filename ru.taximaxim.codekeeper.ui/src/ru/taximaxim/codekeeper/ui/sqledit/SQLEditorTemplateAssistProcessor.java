@@ -41,6 +41,11 @@ public class SQLEditorTemplateAssistProcessor extends TemplateCompletionProcesso
     @Override
     protected TemplateContextType getContextType(ITextViewer viewer,
             IRegion region) {
+        return SQLEditorTemplateManager.getInstance().getContextTypeRegistry()
+                .getContextType(getCtxTypeId());
+    }
+
+    private String getCtxTypeId() {
         boolean isMsEditor = false;
         IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
                 .getActivePage().getActiveEditor();
@@ -63,9 +68,8 @@ public class SQLEditorTemplateAssistProcessor extends TemplateCompletionProcesso
             }
         }
 
-        return SQLEditorTemplateManager.getInstance().getContextTypeRegistry()
-                .getContextType(isMsEditor ? SQLEditorTemplateContextType.CONTEXT_TYPE_MS
-                        : SQLEditorTemplateContextType.CONTEXT_TYPE_PG);
+        return isMsEditor ? SQLEditorTemplateContextType.CONTEXT_TYPE_MS
+                : SQLEditorTemplateContextType.CONTEXT_TYPE_PG;
     }
 
     @Override
@@ -169,8 +173,7 @@ public class SQLEditorTemplateAssistProcessor extends TemplateCompletionProcesso
         String prefix = extractPrefix(viewer, offset);
         Region region = new Region(offset - prefix.length(), prefix.length());
         TemplateContext context = createContext(viewer, region);
-        Template[] templates = SQLEditorTemplateManager.getInstance()
-                .getTemplateStore().getTemplates();
+        Template[] templates = getTemplatesWithCommonPart(getCtxTypeId());
         for (Template template : templates) {
             result.add(createProposal(template, context, (IRegion) region,
                     getRelevance(template, prefix)));
