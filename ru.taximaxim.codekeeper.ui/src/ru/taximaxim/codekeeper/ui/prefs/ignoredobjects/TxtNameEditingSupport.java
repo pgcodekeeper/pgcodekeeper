@@ -30,11 +30,16 @@ public class TxtNameEditingSupport extends CommonEditingSupport<TextCellEditor> 
     @Override
     protected void setValue(Object element, Object value) {
         if (element instanceof IgnoredObject && value instanceof String) {
+            String text = (String) value;
+            if (text.isEmpty()) {
+                return;
+            }
+
             ListIterator<IgnoredObject> ignoredObjsIter = ignoredObjectPrefListEditor
                     .getList().listIterator();
             while (ignoredObjsIter.hasNext()) {
                 if (ignoredObjsIter.next().equals(element)) {
-                    ignoredObjsIter.set(((IgnoredObject) element).copy((String) value));
+                    ignoredObjsIter.set(((IgnoredObject) element).copy(text));
                     break;
                 }
             }
