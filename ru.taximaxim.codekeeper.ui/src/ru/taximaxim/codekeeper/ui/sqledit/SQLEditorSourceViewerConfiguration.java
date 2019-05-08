@@ -6,6 +6,11 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.TextAttribute;
+import org.eclipse.jface.text.contentassist.ContentAssistEvent;
+import org.eclipse.jface.text.contentassist.ContentAssistant;
+import org.eclipse.jface.text.contentassist.ICompletionListener;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
@@ -60,19 +65,71 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         if (editor == null) {
             return null;
         }
-        SQLContentAssistant assistant = new SQLContentAssistant();
-        assistant.setContentAssistProcessor(new SQLEditorCompletionProcessorKeys(editor),
-                SQLEditorCommonDocumentProvider.SQL_CODE);
+
+        String tmplMsg = "Press 'Ctrl+Space' to show SQL TEMPLATES"; //$NON-NLS-1$
+        String keyMsg = "Press 'Ctrl+Space' to show KEYWORDS"; //$NON-NLS-1$
+
+        IContentAssistProcessor keyProc = new SQLEditorCompletionProcessorKeys(editor);
+        IContentAssistProcessor tmplProc = new SQLEditorCompletionProcessorTmpls(editor);
+
+        ContentAssistant assistant = new ContentAssistant();
+        assistant.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
+        assistant.setStatusMessage(tmplMsg);
+        assistant.setContentAssistProcessor(keyProc, SQLEditorCommonDocumentProvider.SQL_CODE);
         assistant.enableAutoActivation(true);
         assistant.enableAutoInsert(true);
         assistant.setAutoActivationDelay(500);
         assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);
         assistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
-        assistant.addContentAssistProcessor(new SQLEditorCompletionProcessorTmpls(editor),
-                "SQL_TEMPLATES"); //$NON-NLS-1$
         assistant.setRepeatedInvocationMode(true);
         assistant.setStatusLineVisible(true);
+        assistant.setShowEmptyList(true);
+        assistant.setInformationControlCreator(this.getInformationControlCreator(sourceViewer));
+
+        assistant.addCompletionListener(new ICompletionListener() {
+
+            private boolean isTmplAssist;
+
+            @Override
+            public void assistSessionEnded(ContentAssistEvent event) {
+                isTmplAssist = false;
+                switchToProc(assistant, isTmplAssist ? tmplProc : keyProc,
+                        isTmplAssist ? keyMsg : tmplMsg);
+            }
+
+            @Override
+            public void assistSessionStarted(ContentAssistEvent event) {
+                isTmplAssist = true;
+            }
+
+            @Override
+            public void selectionChanged(ICompletionProposal proposal,
+                    boolean smartToggle) {
+                if (smartToggle) {
+                    switchToProc(assistant, isTmplAssist ? tmplProc : keyProc,
+                            isTmplAssist ? keyMsg : tmplMsg);
+                    isTmplAssist = !isTmplAssist;
+                }
+            }
+        });
+
         return assistant;
+    }
+
+    /**
+     * Makes switch to the given ContentAssistProcessor.
+     * And puts information about next ContentAssistProcessor to the message
+     * and switcher.
+     *
+     * @param assist content assistant
+     * @param proc ContentAssistProcessor to switch on
+     * @param msg information about next ContentAssistProcessor
+     */
+    private void switchToProc(ContentAssistant assist, IContentAssistProcessor proc,
+            String msg) {
+        assist.setContentAssistProcessor(null, SQLEditorCommonDocumentProvider.SQL_CODE);
+        assist.setContentAssistProcessor(proc, SQLEditorCommonDocumentProvider.SQL_CODE);
+        assist.setStatusMessage(msg);
     }
 
     @Override
