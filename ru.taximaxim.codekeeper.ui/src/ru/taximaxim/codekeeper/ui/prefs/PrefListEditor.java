@@ -108,7 +108,7 @@ public abstract class PrefListEditor<T, V extends StructuredViewer> extends Comp
         }
     }
 
-    private boolean hasDuplicate(T newObj) {
+    protected boolean hasDuplicate(T newObj) {
         return objsList.stream().anyMatch(obj -> predicateAlreadyExists.test(obj, newObj));
     }
 

@@ -138,6 +138,13 @@ public class DependencyProperties extends PropertyPage {
         }
 
         @Override
+        protected boolean hasDuplicate(PgLibrary newObj) {
+            String newObjPath = newObj.getPath();
+            return getList().stream().map(PgLibrary::getPath)
+                    .anyMatch(path -> path.equals(newObjPath));
+        }
+
+        @Override
         protected String errorAlreadyExists(PgLibrary obj) {
             return MessageFormat.format(Messages.DbStorePrefPage_already_present, obj.getPath());
         }
