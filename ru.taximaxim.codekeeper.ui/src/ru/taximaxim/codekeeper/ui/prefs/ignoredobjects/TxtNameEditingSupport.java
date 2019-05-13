@@ -1,5 +1,6 @@
 package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
 
+import java.text.MessageFormat;
 import java.util.ListIterator;
 
 import org.eclipse.jface.viewers.ColumnViewer;
@@ -33,8 +34,14 @@ public class TxtNameEditingSupport extends CommonEditingSupport<TextCellEditor> 
     @Override
     protected void setValue(Object element, Object value) {
         if (element instanceof IgnoredObject && value instanceof String) {
-            String text = (String) value;
-            if (text.isEmpty()) {
+            IgnoredObject selectedObj = ((IgnoredObject) element);
+            String newName = ((String) value);
+
+            if (newName.equalsIgnoreCase(selectedObj.getName())) {
+                return;
+            }
+
+            if (newName.isEmpty()) {
                 MessageBox mb = new MessageBox(getViewer().getControl().getShell(),
                         SWT.ICON_WARNING);
                 mb.setText(Messages.PrefListEditor_cannot_add);
@@ -45,9 +52,23 @@ public class TxtNameEditingSupport extends CommonEditingSupport<TextCellEditor> 
 
             ListIterator<IgnoredObject> ignoredObjsIter = ignoredObjectPrefListEditor
                     .getList().listIterator();
+
             while (ignoredObjsIter.hasNext()) {
-                if (ignoredObjsIter.next().equals(element)) {
-                    ignoredObjsIter.set(((IgnoredObject) element).copy(text));
+                IgnoredObject ignObjIter = ignoredObjsIter.next();
+                if (!selectedObj.equals(ignObjIter) && newName.equals(ignObjIter.getName())) {
+                    MessageBox mb = new MessageBox(getViewer().getControl().getShell(),
+                            SWT.ICON_WARNING);
+                    mb.setText(Messages.PrefListEditor_cannot_add);
+                    mb.setMessage(MessageFormat.format(
+                            Messages.IgnoredObjectPrefListEditor_already_present, newName));
+                    mb.open();
+                    return;
+                }
+            }
+
+            while (ignoredObjsIter.hasPrevious()) {
+                if (ignoredObjsIter.previous().equals(selectedObj)) {
+                    ignoredObjsIter.set(selectedObj.copy(newName));
                     break;
                 }
             }
