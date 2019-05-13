@@ -213,6 +213,8 @@ public final class Messages extends NLS {
     public static String newProjWizard_error_in_initializing_repo_from_source;
     public static String newProjWizard_new_pg_db_project;
 
+    public static String txtNameEditingSupport_cannot_add_empty;
+
     // ui.prefs
     public static String dBUpdatePrefPage_alter_column_statement;
     public static String dBUpdatePrefPage_drop_column_statement;
