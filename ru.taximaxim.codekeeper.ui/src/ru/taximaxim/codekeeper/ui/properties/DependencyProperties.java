@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
@@ -17,6 +18,7 @@ import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckboxCellEditor;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.TextCellEditor;
@@ -31,6 +33,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.ISharedImages;
@@ -179,6 +182,7 @@ public class DependencyProperties extends PropertyPage {
                     return obj.getPath();
                 }
             });
+            path.setEditingSupport(new TxtLibPathEditingSupport(viewer, this));
 
             TableViewerColumn owner = new TableViewerColumn(viewer, SWT.CENTER);
             owner.getColumn().setText(Messages.DependencyProperties_owner);
@@ -331,6 +335,75 @@ public class DependencyProperties extends PropertyPage {
         protected void setValue(Object element, Object value) {
             ((PgLibrary) element).setOwner((String) value);
             getViewer().update(element, null);
+        }
+    }
+
+    private static class TxtLibPathEditingSupport extends CommonEditingSupport<TextCellEditor> {
+
+        private final DependenciesListEditor dependenciesListEditor;
+
+        public TxtLibPathEditingSupport(ColumnViewer viewer,
+                DependenciesListEditor dependenciesListEditor) {
+            super(viewer, new TextCellEditor((Composite) viewer.getControl()));
+            this.dependenciesListEditor = dependenciesListEditor;
+        }
+
+        @Override
+        protected Object getValue(Object element) {
+            if (element instanceof PgLibrary) {
+                return ((PgLibrary) element).getPath();
+            }
+            return null;
+        }
+
+        @Override
+        protected void setValue(Object element, Object value) {
+            if (element instanceof PgLibrary && value instanceof String) {
+                PgLibrary selectedLib = ((PgLibrary) element);
+                String newPath = ((String) value);
+
+                if (newPath.equalsIgnoreCase(selectedLib.getPath())) {
+                    return;
+                }
+
+                if (newPath.isEmpty()) {
+                    MessageBox mb = new MessageBox(getViewer().getControl().getShell(),
+                            SWT.ICON_WARNING);
+                    mb.setText(Messages.PrefListEditor_cannot_add);
+                    mb.setMessage(Messages.txtNameEditingSupport_cannot_add_empty);
+                    mb.open();
+                    return;
+                }
+
+                ListIterator<PgLibrary> depcyLibsIter = dependenciesListEditor
+                        .getList().listIterator();
+
+                while (depcyLibsIter.hasNext()) {
+                    PgLibrary depcyLibIter = depcyLibsIter.next();
+                    if (!(selectedLib.getPath().equals(depcyLibIter.getPath())
+                            && selectedLib.getSource() == depcyLibIter.getSource()
+                            && selectedLib.isIgnorePriv() == depcyLibIter.isIgnorePriv()
+                            && selectedLib.getOwner().equals(depcyLibIter.getOwner()))
+                            && newPath.equals(depcyLibIter.getPath())) {
+                        MessageBox mb = new MessageBox(getViewer().getControl().getShell(),
+                                SWT.ICON_WARNING);
+                        mb.setText(Messages.PrefListEditor_cannot_add);
+                        mb.setMessage(MessageFormat.format(
+                                Messages.IgnoredObjectPrefListEditor_already_present, newPath));
+                        mb.open();
+                        return;
+                    }
+                }
+
+                while (depcyLibsIter.hasPrevious()) {
+                    if (depcyLibsIter.previous().equals(selectedLib)) {
+                        depcyLibsIter.set(new PgLibrary(newPath,
+                                selectedLib.isIgnorePriv(), selectedLib.getOwner()));
+                        break;
+                    }
+                }
+                getViewer().refresh();
+            }
         }
     }
 }
