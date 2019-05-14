@@ -7,7 +7,6 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ListIterator;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
@@ -33,7 +32,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.ISharedImages;
@@ -52,6 +50,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.prefs.AbstractTxtEditingSupport;
 import ru.taximaxim.codekeeper.ui.prefs.PrefListEditor;
 
 public class DependencyProperties extends PropertyPage {
@@ -338,72 +337,38 @@ public class DependencyProperties extends PropertyPage {
         }
     }
 
-    private static class TxtLibPathEditingSupport extends CommonEditingSupport<TextCellEditor> {
-
-        private final DependenciesListEditor dependenciesListEditor;
+    private static class TxtLibPathEditingSupport extends
+    AbstractTxtEditingSupport<PgLibrary, DependenciesListEditor> {
 
         public TxtLibPathEditingSupport(ColumnViewer viewer,
                 DependenciesListEditor dependenciesListEditor) {
-            super(viewer, new TextCellEditor((Composite) viewer.getControl()));
-            this.dependenciesListEditor = dependenciesListEditor;
+            super(viewer, dependenciesListEditor);
         }
 
         @Override
-        protected Object getValue(Object element) {
-            if (element instanceof PgLibrary) {
-                return ((PgLibrary) element).getPath();
-            }
-            return null;
+        protected boolean checkInstance(Object obj) {
+            return obj instanceof PgLibrary;
         }
 
         @Override
-        protected void setValue(Object element, Object value) {
-            if (element instanceof PgLibrary && value instanceof String) {
-                PgLibrary selectedLib = ((PgLibrary) element);
-                String newPath = ((String) value);
+        protected String getText(Object obj) {
+            return ((PgLibrary) obj).getPath();
+        }
 
-                if (newPath.equalsIgnoreCase(selectedLib.getPath())) {
-                    return;
-                }
+        @Override
+        protected boolean checkEquals(PgLibrary obj, Object selectedObj) {
+            PgLibrary selectedLib = (PgLibrary) selectedObj;
+            return selectedLib.getPath().equals(obj.getPath())
+                    && selectedLib.getSource() == obj.getSource()
+                    && selectedLib.isIgnorePriv() == obj.isIgnorePriv()
+                    && selectedLib.getOwner().equals(obj.getOwner());
+        }
 
-                if (newPath.isEmpty()) {
-                    MessageBox mb = new MessageBox(getViewer().getControl().getShell(),
-                            SWT.ICON_WARNING);
-                    mb.setText(Messages.PrefListEditor_cannot_add);
-                    mb.setMessage(Messages.txtNameEditingSupport_cannot_add_empty);
-                    mb.open();
-                    return;
-                }
-
-                ListIterator<PgLibrary> depcyLibsIter = dependenciesListEditor
-                        .getList().listIterator();
-
-                while (depcyLibsIter.hasNext()) {
-                    PgLibrary depcyLibIter = depcyLibsIter.next();
-                    if (!(selectedLib.getPath().equals(depcyLibIter.getPath())
-                            && selectedLib.getSource() == depcyLibIter.getSource()
-                            && selectedLib.isIgnorePriv() == depcyLibIter.isIgnorePriv()
-                            && selectedLib.getOwner().equals(depcyLibIter.getOwner()))
-                            && newPath.equals(depcyLibIter.getPath())) {
-                        MessageBox mb = new MessageBox(getViewer().getControl().getShell(),
-                                SWT.ICON_WARNING);
-                        mb.setText(Messages.PrefListEditor_cannot_add);
-                        mb.setMessage(MessageFormat.format(
-                                Messages.IgnoredObjectPrefListEditor_already_present, newPath));
-                        mb.open();
-                        return;
-                    }
-                }
-
-                while (depcyLibsIter.hasPrevious()) {
-                    if (depcyLibsIter.previous().equals(selectedLib)) {
-                        depcyLibsIter.set(new PgLibrary(newPath,
-                                selectedLib.isIgnorePriv(), selectedLib.getOwner()));
-                        break;
-                    }
-                }
-                getViewer().refresh();
-            }
+        @Override
+        protected PgLibrary getCopyWithNewTxt(Object obj, String newText) {
+            PgLibrary selectedLib = (PgLibrary) obj;
+            return new PgLibrary(newText, selectedLib.isIgnorePriv(),
+                    selectedLib.getOwner());
         }
     }
 }

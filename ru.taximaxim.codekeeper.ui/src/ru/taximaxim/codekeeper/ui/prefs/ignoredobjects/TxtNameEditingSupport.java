@@ -1,78 +1,35 @@
 package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
 
-import java.text.MessageFormat;
-import java.util.ListIterator;
-
 import org.eclipse.jface.viewers.ColumnViewer;
-import org.eclipse.jface.viewers.TextCellEditor;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.MessageBox;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject;
-import ru.taximaxim.codekeeper.ui.CommonEditingSupport;
-import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.prefs.AbstractTxtEditingSupport;
 
-public class TxtNameEditingSupport extends CommonEditingSupport<TextCellEditor> {
-
-    private final IgnoredObjectPrefListEditor ignoredObjectPrefListEditor;
+public class TxtNameEditingSupport extends
+AbstractTxtEditingSupport<IgnoredObject, IgnoredObjectPrefListEditor> {
 
     public TxtNameEditingSupport(ColumnViewer viewer,
             IgnoredObjectPrefListEditor ignoredObjectPrefListEditor) {
-        super(viewer, new TextCellEditor((Composite) viewer.getControl()));
-        this.ignoredObjectPrefListEditor = ignoredObjectPrefListEditor;
+        super(viewer, ignoredObjectPrefListEditor);
     }
 
     @Override
-    protected Object getValue(Object element) {
-        if (element instanceof IgnoredObject) {
-            return ((IgnoredObject) element).getName();
-        }
-        return null;
+    protected boolean checkInstance(Object obj) {
+        return obj instanceof IgnoredObject;
     }
 
     @Override
-    protected void setValue(Object element, Object value) {
-        if (element instanceof IgnoredObject && value instanceof String) {
-            IgnoredObject selectedObj = ((IgnoredObject) element);
-            String newName = ((String) value);
+    protected String getText(Object obj) {
+        return ((IgnoredObject) obj).getName();
+    }
 
-            if (newName.equalsIgnoreCase(selectedObj.getName())) {
-                return;
-            }
+    @Override
+    protected boolean checkEquals(IgnoredObject obj, Object selectedObj) {
+        return obj.equals(selectedObj);
+    }
 
-            if (newName.isEmpty()) {
-                MessageBox mb = new MessageBox(getViewer().getControl().getShell(),
-                        SWT.ICON_WARNING);
-                mb.setText(Messages.PrefListEditor_cannot_add);
-                mb.setMessage(Messages.txtNameEditingSupport_cannot_add_empty);
-                mb.open();
-                return;
-            }
-
-            ListIterator<IgnoredObject> ignoredObjsIter = ignoredObjectPrefListEditor
-                    .getList().listIterator();
-
-            while (ignoredObjsIter.hasNext()) {
-                IgnoredObject ignObjIter = ignoredObjsIter.next();
-                if (!selectedObj.equals(ignObjIter) && newName.equals(ignObjIter.getName())) {
-                    MessageBox mb = new MessageBox(getViewer().getControl().getShell(),
-                            SWT.ICON_WARNING);
-                    mb.setText(Messages.PrefListEditor_cannot_add);
-                    mb.setMessage(MessageFormat.format(
-                            Messages.IgnoredObjectPrefListEditor_already_present, newName));
-                    mb.open();
-                    return;
-                }
-            }
-
-            while (ignoredObjsIter.hasPrevious()) {
-                if (ignoredObjsIter.previous().equals(selectedObj)) {
-                    ignoredObjsIter.set(selectedObj.copy(newName));
-                    break;
-                }
-            }
-            getViewer().refresh();
-        }
+    @Override
+    protected IgnoredObject getCopyWithNewTxt(Object obj, String newText) {
+        return ((IgnoredObject) obj).copy(newText);
     }
 }
