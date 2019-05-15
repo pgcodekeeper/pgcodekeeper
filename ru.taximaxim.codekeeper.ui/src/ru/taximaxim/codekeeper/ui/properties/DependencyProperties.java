@@ -128,6 +128,7 @@ public class DependencyProperties extends PropertyPage {
 
         public DependenciesListEditor(Composite parent) {
             super(parent);
+            setPredicateAlreadyExists((oldObj, newObj) -> oldObj.getPath().equals(newObj.getPath()));
         }
 
         @Override
@@ -137,13 +138,6 @@ public class DependencyProperties extends PropertyPage {
             dialog.setFilterPath(defaultPath);
             String path = dialog.open();
             return path != null ? new PgLibrary(path) : null;
-        }
-
-        @Override
-        protected boolean hasDuplicate(PgLibrary newObj) {
-            String newObjPath = newObj.getPath();
-            return getList().stream().map(PgLibrary::getPath)
-                    .anyMatch(path -> path.equals(newObjPath));
         }
 
         @Override
