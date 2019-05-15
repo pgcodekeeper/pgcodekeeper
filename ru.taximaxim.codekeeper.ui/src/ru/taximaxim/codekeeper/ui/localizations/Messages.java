@@ -115,6 +115,7 @@ public final class Messages extends NLS {
     public static String dbStoreEditorDialog_db_info;
     public static String dbStoreEditorDialog_db_store_editor;
     public static String dbStoreEditorDialog_not_valid_port_number;
+    public static String dbStoreEditorDialog_empty_name;
 
     // ui.differ
     public static String dbSource_db_is_not_loaded_yet_object_is_null;
