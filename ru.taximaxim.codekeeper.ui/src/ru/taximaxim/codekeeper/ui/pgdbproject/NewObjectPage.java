@@ -42,6 +42,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
@@ -394,16 +395,14 @@ public final class NewObjectPage extends WizardPage {
         }
     }
 
-    private void openFileInEditor(IFile file) throws PartInitException {
-        PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-        .openEditor(new FileEditorInput(file), EDITOR.SQL);
+    private IEditorPart openFileInEditor(IFile file) throws PartInitException {
+        return PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+                .openEditor(new FileEditorInput(file), EDITOR.SQL);
     }
 
     private void openFileInEditor(IFile file, String tmplId, String schema,
             String objectName, String parent, String parentCode) throws PartInitException {
-        ITextOperationTarget txtOperTarget = ((SQLEditor) PlatformUI.getWorkbench()
-                .getActiveWorkbenchWindow().getActivePage()
-                .openEditor(new FileEditorInput(file), EDITOR.SQL))
+        ITextOperationTarget txtOperTarget = ((SQLEditor) openFileInEditor(file))
                 .getAdapter(ITextOperationTarget.class);
 
         if (txtOperTarget instanceof ITextViewer) {
