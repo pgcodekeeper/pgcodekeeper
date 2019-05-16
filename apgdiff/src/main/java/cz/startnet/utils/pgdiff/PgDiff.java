@@ -83,12 +83,11 @@ public final class PgDiff {
         newLib.loadLibraries(arguments, false, arguments.getTargetLibs());
         newLib.loadLibraries(arguments, true, arguments.getTargetLibsWithoutPriv());
 
-        if (arguments.isLibSafeMode()) {
+        if (arguments.isLibSafeMode() &&
+                !oldDatabase.getOverrides().isEmpty() || !newDatabase.getOverrides().isEmpty()) {
             List<PgOverride> overrides = oldDatabase.getOverrides();
             overrides.addAll(newDatabase.getOverrides());
-            if (!overrides.isEmpty()) {
-                throw new LibraryObjectDuplicationException(overrides);
-            }
+            throw new LibraryObjectDuplicationException(overrides);
         }
 
         // read additional privileges from special folder

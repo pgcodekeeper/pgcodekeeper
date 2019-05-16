@@ -469,7 +469,7 @@ public class PgDatabase extends PgStatement {
             break;
         }
 
-        if (orig != null) {
+        if (orig != null && !orig.compare(st)) {
             overrides.add(new PgOverride(orig, st));
         }
     }
