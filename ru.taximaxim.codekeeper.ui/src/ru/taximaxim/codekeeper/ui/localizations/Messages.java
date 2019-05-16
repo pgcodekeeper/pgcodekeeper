@@ -2,7 +2,6 @@ package ru.taximaxim.codekeeper.ui.localizations;
 
 import org.eclipse.osgi.util.NLS;
 
-@javax.annotation.Generated("externalized-strings")
 public final class Messages extends NLS {
     public static final String BUNDLE_NAME = "ru.taximaxim.codekeeper.ui.localizations.messages"; //$NON-NLS-1$
 
