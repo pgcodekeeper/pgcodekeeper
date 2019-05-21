@@ -167,15 +167,15 @@ public class SQLEditorTemplateAssistProcessor extends TemplateCompletionProcesso
         return tmpl.getName().startsWith(prefix) && tmpl.matches(prefix, ctxId);
     }
 
-    public List<ICompletionProposal> getAllTemplates(ITextViewer viewer,
+    public List<SqlEditorTemplateProposal> getAllTemplates(ITextViewer viewer,
             int offset) {
-        List<ICompletionProposal> result = new ArrayList<>();
+        List<SqlEditorTemplateProposal> result = new ArrayList<>();
         String prefix = extractPrefix(viewer, offset);
         Region region = new Region(offset - prefix.length(), prefix.length());
         TemplateContext context = createContext(viewer, region);
         Template[] templates = getTemplatesWithCommonPart(getCtxTypeId());
         for (Template template : templates) {
-            result.add(createProposal(template, context, (IRegion) region,
+            result.add(createSqlEditorTemplateProposal(template, context, region,
                     getRelevance(template, prefix)));
         }
         return result;
@@ -184,6 +184,12 @@ public class SQLEditorTemplateAssistProcessor extends TemplateCompletionProcesso
     @Override
     protected ICompletionProposal createProposal(Template template,
             TemplateContext context, IRegion region, int relevance) {
-        return new SqlEditorTemplateProposal(template, context, region, getImage(template), relevance);
+        return createSqlEditorTemplateProposal(template, context, region, relevance);
+    }
+
+    private SqlEditorTemplateProposal createSqlEditorTemplateProposal(Template template,
+            TemplateContext context, IRegion region, int relevance) {
+        return new SqlEditorTemplateProposal(template, context, region,
+                getImage(template), relevance);
     }
 }

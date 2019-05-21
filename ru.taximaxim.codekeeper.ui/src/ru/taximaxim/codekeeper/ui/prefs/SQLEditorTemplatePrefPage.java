@@ -52,12 +52,12 @@ public class SQLEditorTemplatePrefPage extends TemplatePreferencePage {
 
         @Override
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-            fStore= (TemplateStore) newInput;
+            fStore = (TemplateStore) newInput;
         }
 
         @Override
         public void dispose() {
-            fStore= null;
+            fStore = null;
         }
     }
 }

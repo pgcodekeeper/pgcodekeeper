@@ -20,8 +20,8 @@ public class SqlEditorTemplateProposal extends TemplateProposal {
         this.region = region;
     }
 
-    public boolean equalsWithTmplOfProposal(Template template) {
-        return getTemplate().equals(template);
+    public Template getTempalteOfProposal() {
+        return getTemplate();
     }
 
     public void fillTmplAndInsertToViewer(SqlEditorTemplateProposal tmplProplOfNewObj,

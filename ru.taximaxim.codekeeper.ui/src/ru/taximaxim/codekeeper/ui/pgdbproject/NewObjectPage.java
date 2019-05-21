@@ -63,7 +63,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
-import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateAssistProcessor;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateContextType;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateManager;
@@ -402,24 +401,20 @@ public final class NewObjectPage extends WizardPage {
 
     private void openFileInEditor(IFile file, String tmplId, String schema,
             String objectName, String parent, String parentCode) throws PartInitException {
-        ITextOperationTarget txtOperTarget = ((SQLEditor) openFileInEditor(file))
+        Template newObjTmpl = SQLEditorTemplateManager.getInstance()
+                .getTemplateStore().findTemplateById(tmplId);
+
+        ITextViewer textViewer = (ITextViewer) openFileInEditor(file)
                 .getAdapter(ITextOperationTarget.class);
 
-        if (txtOperTarget instanceof ITextViewer) {
-            ITextViewer textViewer = (ITextViewer) txtOperTarget;
+        SqlEditorTemplateProposal tmplProplOfNewObj = new SQLEditorTemplateAssistProcessor()
+                .getAllTemplates(textViewer, 0).stream()
+                .filter(tp -> tp.getTempalteOfProposal().equals(newObjTmpl))
+                .findAny().orElse(null);
 
-            Template newObjTmpl = SQLEditorTemplateManager.getInstance()
-                    .getTemplateStore().findTemplateById(tmplId);
-            SqlEditorTemplateProposal tmplProplOfNewObj = new SQLEditorTemplateAssistProcessor()
-                    .getAllTemplates(textViewer, 0).stream()
-                    .map(e -> (SqlEditorTemplateProposal) e)
-                    .filter(tp -> tp.equalsWithTmplOfProposal(newObjTmpl))
-                    .findAny().orElse(null);
-
-            if (tmplProplOfNewObj != null) {
-                tmplProplOfNewObj.fillTmplAndInsertToViewer(tmplProplOfNewObj,
-                        schema, objectName, parent, parentCode, textViewer);
-            }
+        if (tmplProplOfNewObj != null) {
+            tmplProplOfNewObj.fillTmplAndInsertToViewer(tmplProplOfNewObj,
+                    schema, objectName, parent, parentCode, textViewer);
         }
     }
 
