@@ -24,10 +24,9 @@ public class SqlEditorTemplateProposal extends TemplateProposal {
         return getTemplate();
     }
 
-    public void fillTmplAndInsertToViewer(SqlEditorTemplateProposal tmplProplOfNewObj,
-            String schema, String objectName, String parent, String parentCode,
-            ITextViewer textViewer) {
-        tmplProplOfNewObj.getFilledTmplPropos(schema, objectName, parent, parentCode)
+    public void fillTmplAndInsertToViewer(String schema, String objectName,
+            String parent, String parentCode, ITextViewer textViewer) {
+        getFilledTmplPropos(schema, objectName, parent, parentCode)
         .apply(textViewer, Character.MIN_VALUE, 0, 0);
     }
 

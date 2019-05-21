@@ -66,7 +66,6 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateAssistProcessor;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateContextType;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateManager;
-import ru.taximaxim.codekeeper.ui.sqledit.SqlEditorTemplateProposal;
 
 public final class NewObjectPage extends WizardPage {
 
@@ -407,15 +406,10 @@ public final class NewObjectPage extends WizardPage {
         ITextViewer textViewer = (ITextViewer) openFileInEditor(file)
                 .getAdapter(ITextOperationTarget.class);
 
-        SqlEditorTemplateProposal tmplProplOfNewObj = new SQLEditorTemplateAssistProcessor()
-                .getAllTemplates(textViewer, 0).stream()
-                .filter(tp -> tp.getTempalteOfProposal().equals(newObjTmpl))
-                .findAny().orElse(null);
-
-        if (tmplProplOfNewObj != null) {
-            tmplProplOfNewObj.fillTmplAndInsertToViewer(tmplProplOfNewObj,
-                    schema, objectName, parent, parentCode, textViewer);
-        }
+        new SQLEditorTemplateAssistProcessor().getAllTemplates(textViewer, 0)
+        .stream().filter(tmplProp -> tmplProp.getTempalteOfProposal().equals(newObjTmpl))
+        .findAny().ifPresent(tmplProp -> tmplProp.fillTmplAndInsertToViewer(schema,
+                objectName, parent, parentCode, textViewer));
     }
 
     private IFolder createSchema(String name, boolean open, IProject project) throws CoreException {
