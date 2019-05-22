@@ -4,6 +4,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -164,7 +165,8 @@ public class SQLEditorTemplateAssistProcessor extends TemplateCompletionProcesso
      * the specified prefix, false otherwise
      */
     private boolean isPrefixContainedInTmpl(String prefix, Template tmpl, String ctxId) {
-        return tmpl.getName().startsWith(prefix) && tmpl.matches(prefix, ctxId);
+        String lowerPrefix = prefix.toLowerCase(Locale.ROOT);
+        return tmpl.getName().startsWith(lowerPrefix) && tmpl.matches(lowerPrefix, ctxId);
     }
 
     public List<SqlEditorTemplateProposal> getAllTemplates(ITextViewer viewer,
