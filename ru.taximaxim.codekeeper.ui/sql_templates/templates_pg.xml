@@ -164,6 +164,13 @@ $$$$;</template>
 <!-- templates for ALTER -->
 
 <template 
+    name="alter_owner"
+    description="%alter.owner.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.alterowner"
+    >ALTER ${objectType} ${objectName} OWNER TO ${userName};</template>
+
+<template 
     name="alter_rule"
     description="%alter.rule.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
