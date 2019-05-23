@@ -413,11 +413,13 @@ public final class NewObjectPage extends WizardPage {
                 .getAdapter(ITextOperationTarget.class);
 
         if (parent == null) {
+            // creation element
             new SQLEditorTemplateAssistProcessor().getAllTemplates(textViewer, 0)
             .stream().filter(tmplProp -> tmplProp.getTempalteOfProposal().equals(newObjTmpl))
             .findAny().ifPresent(tmplProp -> tmplProp.fillTmplAndInsertToViewer(schema,
                     objectName, parent, textViewer, 0));
         } else {
+            // creation sub-element
             try {
                 // inserting the group delimiter at the end of the parent element
                 // code and getting the offset from it
@@ -433,6 +435,8 @@ public final class NewObjectPage extends WizardPage {
                                 new SQLEditorTemplateContextType(), doc, new Position(offset, 0)),
                         new Region(offset, 0), null, 0)
                 .fillTmplAndInsertToViewer(schema, objectName, parent, textViewer, 0);
+
+                provider.disconnect(file);
             } catch (BadLocationException e) {
                 Log.log(Log.LOG_ERROR, "File with location exception: " + file.getName(), e); //$NON-NLS-1$
             }
