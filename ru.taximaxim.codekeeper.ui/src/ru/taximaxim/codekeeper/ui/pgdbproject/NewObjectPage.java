@@ -1,17 +1,13 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -21,10 +17,14 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.Position;
+import org.eclipse.jface.text.Region;
+import org.eclipse.jface.text.templates.DocumentTemplateContext;
 import org.eclipse.jface.text.templates.Template;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
@@ -45,7 +45,9 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
@@ -66,6 +68,7 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateAssistProcessor;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateContextType;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateManager;
+import ru.taximaxim.codekeeper.ui.sqledit.SqlEditorTemplateProposal;
 
 public final class NewObjectPage extends WizardPage {
 
@@ -76,6 +79,9 @@ public final class NewObjectPage extends WizardPage {
     private static final String CONTAINER = "container"; //$NON-NLS-1$
 
     private static final String PATTERN = "CREATE {0} {1};"; //$NON-NLS-1$
+
+    private static final String GROUP_DELIMITER =
+            "\n\n--------------------------------------------------------------------------------\n\n"; //$NON-NLS-1$
 
     private DbObjType type;
     private String name = NAME;
@@ -399,17 +405,38 @@ public final class NewObjectPage extends WizardPage {
     }
 
     private void openFileInEditor(IFile file, String tmplId, String schema,
-            String objectName, String parent, String parentCode) throws PartInitException {
+            String objectName, String parent) throws CoreException {
         Template newObjTmpl = SQLEditorTemplateManager.getInstance()
                 .getTemplateStore().findTemplateById(tmplId);
 
         ITextViewer textViewer = (ITextViewer) openFileInEditor(file)
                 .getAdapter(ITextOperationTarget.class);
 
-        new SQLEditorTemplateAssistProcessor().getAllTemplates(textViewer, 0)
-        .stream().filter(tmplProp -> tmplProp.getTempalteOfProposal().equals(newObjTmpl))
-        .findAny().ifPresent(tmplProp -> tmplProp.fillTmplAndInsertToViewer(schema,
-                objectName, parent, parentCode, textViewer));
+        if (parent == null) {
+            new SQLEditorTemplateAssistProcessor().getAllTemplates(textViewer, 0)
+            .stream().filter(tmplProp -> tmplProp.getTempalteOfProposal().equals(newObjTmpl))
+            .findAny().ifPresent(tmplProp -> tmplProp.fillTmplAndInsertToViewer(schema,
+                    objectName, parent, textViewer, 0));
+        } else {
+            try {
+                // inserting the group delimiter at the end of the parent element
+                // code and getting the offset from it
+                IDocumentProvider provider = new TextFileDocumentProvider();
+                provider.connect(file);
+                IDocument doc = provider.getDocument(file);
+                int offset = doc.getLength();
+                doc.replace(offset, 0, GROUP_DELIMITER);
+                offset += GROUP_DELIMITER.length();
+
+                new SqlEditorTemplateProposal(newObjTmpl,
+                        new DocumentTemplateContext(
+                                new SQLEditorTemplateContextType(), doc, new Position(offset, 0)),
+                        new Region(offset, 0), null, 0)
+                .fillTmplAndInsertToViewer(schema, objectName, parent, textViewer, 0);
+            } catch (BadLocationException e) {
+                Log.log(Log.LOG_ERROR, "File with location exception: " + file.getName(), e); //$NON-NLS-1$
+            }
+        }
     }
 
     private IFolder createSchema(String name, boolean open, IProject project) throws CoreException {
@@ -456,7 +483,7 @@ public final class NewObjectPage extends WizardPage {
         if (open) {
             openFileInEditor(file, SQLEditorTemplateContextType.CONTEXT_TYPE_PG
                     + ".create" + type.name().toLowerCase(Locale.ROOT), schema, //$NON-NLS-1$
-                    PgDiffUtils.getQuotedName(name), null, null);
+                    PgDiffUtils.getQuotedName(name), null);
         }
         return file;
     }
@@ -467,20 +494,10 @@ public final class NewObjectPage extends WizardPage {
         IFile file = getFolder(schema, parentType, project)
                 .getFile(AbstractModelExporter.getExportedFilenameSql(parent));
 
-        String parentCode = null;
         if (!file.exists()) {
-            parentCode = createParentCodeOfSubEl(schema, parent, parentType);
-            file.create(new ByteArrayInputStream(new byte[0]), false, null);
-        } else {
-            try (BufferedReader br = new BufferedReader(
-                    new InputStreamReader(file.getContents(), StandardCharsets.UTF_8));
-                    InputStream emptyContent = new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8))) {
-                parentCode = br.lines().collect(Collectors.joining(System.lineSeparator()));
-                file.setContents(emptyContent, IResource.FORCE, new NullProgressMonitor());
-            } catch (IOException e) {
-                Log.log(e);
-                parentCode = "// parent object code"; //$NON-NLS-1$
-            }
+            file.create(new ByteArrayInputStream(
+                    createParentCodeOfSubEl(schema, parent, parentType)
+                    .getBytes(StandardCharsets.UTF_8)), false, null);
         }
 
         String tmplCtxTypeId = SQLEditorTemplateContextType.CONTEXT_TYPE_PG;
@@ -491,7 +508,7 @@ public final class NewObjectPage extends WizardPage {
         }
 
         openFileInEditor(file, tmplCtxTypeId + tmplIdPostfix + type.name().toLowerCase(Locale.ROOT),
-                schema, PgDiffUtils.getQuotedName(name), parent, parentCode);
+                schema, PgDiffUtils.getQuotedName(name), parent);
     }
 
     private String createParentCodeOfSubEl(String schema, String parent, DbObjType parentType) {

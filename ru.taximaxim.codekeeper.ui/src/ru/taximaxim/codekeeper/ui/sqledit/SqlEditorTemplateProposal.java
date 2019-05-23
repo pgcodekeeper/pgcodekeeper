@@ -9,9 +9,6 @@ import org.eclipse.swt.graphics.Image;
 
 public class SqlEditorTemplateProposal extends TemplateProposal {
 
-    private static final String GROUP_DELIMITER =
-            "\n\n--------------------------------------------------------------------------------\n\n"; //$NON-NLS-1$
-
     private final IRegion region;
 
     public SqlEditorTemplateProposal(Template template, TemplateContext context,
@@ -25,20 +22,19 @@ public class SqlEditorTemplateProposal extends TemplateProposal {
     }
 
     public void fillTmplAndInsertToViewer(String schema, String objectName,
-            String parent, String parentCode, ITextViewer textViewer) {
-        getFilledTmplPropos(schema, objectName, parent, parentCode)
-        .apply(textViewer, Character.MIN_VALUE, 0, 0);
+            String parent, ITextViewer textViewer, int offset) {
+        getFilledTmplPropos(schema, objectName, parent)
+        .apply(textViewer, (char) 0, 0, offset);
     }
 
     private SqlEditorTemplateProposal getFilledTmplPropos(String schema,
-            String objectName, String parent, String parentCode) {
+            String objectName, String parent) {
         Template tmpl = getTemplate();
         String tmplPatt = tmpl.getPattern();
         StringBuilder sbTmplPatt = new StringBuilder();
 
         // For cases when template is template for subelement.
         if (parent != null) {
-            sbTmplPatt.append(parentCode).append(GROUP_DELIMITER);
             tmplPatt = fillPlaceHolder(tmplPatt, "${parentName}", parent); //$NON-NLS-1$
             tmplPatt = fillPlaceHolder(tmplPatt, "${constraintType}", "PRIMARY KEY"); //$NON-NLS-1$ //$NON-NLS-2$
         }
