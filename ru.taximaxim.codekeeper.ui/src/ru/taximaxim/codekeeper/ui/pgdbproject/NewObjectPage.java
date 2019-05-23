@@ -479,11 +479,13 @@ public final class NewObjectPage extends WizardPage {
                 .getFile(AbstractModelExporter.getExportedFilenameSql(name));
         if (!file.exists()) {
             file.create(new ByteArrayInputStream(new byte[0]), false, null);
-        }
-        if (open) {
-            openFileInEditor(file, SQLEditorTemplateContextType.CONTEXT_TYPE_PG
-                    + ".create" + type.name().toLowerCase(Locale.ROOT), schema, //$NON-NLS-1$
-                    PgDiffUtils.getQuotedName(name), null);
+            if (open) {
+                openFileInEditor(file, SQLEditorTemplateContextType.CONTEXT_TYPE_PG
+                        + ".create" + type.name().toLowerCase(Locale.ROOT), schema, //$NON-NLS-1$
+                        PgDiffUtils.getQuotedName(name), null);
+            }
+        } else if (file.exists() && open) {
+            openFileInEditor(file);
         }
         return file;
     }
