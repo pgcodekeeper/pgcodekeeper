@@ -10,26 +10,16 @@ AbstractTxtEditingSupport<IgnoredObject, IgnoredObjectPrefListEditor> {
 
     public TxtNameEditingSupport(ColumnViewer viewer,
             IgnoredObjectPrefListEditor ignoredObjectPrefListEditor) {
-        super(viewer, ignoredObjectPrefListEditor);
+        super(viewer, ignoredObjectPrefListEditor, IgnoredObject.class);
     }
 
     @Override
-    protected boolean checkInstance(Object obj) {
-        return obj instanceof IgnoredObject;
+    protected String getText(IgnoredObject obj) {
+        return obj.getName();
     }
 
     @Override
-    protected String getText(Object obj) {
-        return ((IgnoredObject) obj).getName();
-    }
-
-    @Override
-    protected boolean checkEquals(IgnoredObject obj, Object selectedObj) {
-        return obj.equals(selectedObj);
-    }
-
-    @Override
-    protected IgnoredObject getCopyWithNewTxt(Object obj, String newText) {
-        return ((IgnoredObject) obj).copy(newText);
+    protected IgnoredObject getCopyWithNewTxt(IgnoredObject obj, String newText) {
+        return obj.copy(newText);
     }
 }

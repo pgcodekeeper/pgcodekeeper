@@ -16,28 +16,31 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 public abstract class AbstractTxtEditingSupport<T, K extends PrefListEditor<T, TableViewer>>
 extends CommonEditingSupport<TextCellEditor> {
 
+    protected final Class<T> klass;
     private final K prefListEditor;
 
-    public AbstractTxtEditingSupport(ColumnViewer viewer, K prefListEditor) {
+    public AbstractTxtEditingSupport(ColumnViewer viewer, K prefListEditor, Class<T> klass) {
         super(viewer, new TextCellEditor((Composite) viewer.getControl()));
+        this.klass = klass;
         this.prefListEditor = prefListEditor;
     }
 
     @Override
     protected Object getValue(Object element) {
-        if (checkInstance(element)) {
-            return getText(element);
+        if (klass.isInstance(element)) {
+            return getText(klass.cast(element));
         }
         return null;
     }
 
     @Override
     protected void setValue(Object element, Object value) {
-        if (checkInstance(element) && value instanceof String) {
-            String newText = ((String) value);
+        if (klass.isInstance(element) && value instanceof String) {
+            T el = klass.cast(element);
+            String newText = (String) value;
 
             // for case when text parameter has not changed
-            if (newText.equalsIgnoreCase(getText(element))) {
+            if (newText.equalsIgnoreCase(getText(el))) {
                 return;
             }
 
@@ -52,11 +55,13 @@ extends CommonEditingSupport<TextCellEditor> {
             }
 
             ListIterator<T> objsIter = prefListEditor.getList().listIterator();
+            T copy = getCopyWithNewTxt(el, newText);
 
             // for the case when the text parameter has duplicate
+            // do not warn for the element we currently edit
             while (objsIter.hasNext()) {
                 T iterObj = objsIter.next();
-                if (!checkEquals(iterObj, element) && newText.equals(getText(iterObj))) {
+                if (iterObj != el && prefListEditor.checkDuplicate(iterObj, copy)) {
                     MessageBox mb = new MessageBox(getViewer().getControl().getShell(),
                             SWT.ICON_WARNING);
                     mb.setText(Messages.PrefListEditor_cannot_add);
@@ -68,8 +73,8 @@ extends CommonEditingSupport<TextCellEditor> {
             }
 
             while (objsIter.hasPrevious()) {
-                if (checkEquals(objsIter.previous(), element)) {
-                    objsIter.set(getCopyWithNewTxt(element, newText));
+                if (objsIter.previous() == el) {
+                    objsIter.set(copy);
                     break;
                 }
             }
@@ -78,32 +83,15 @@ extends CommonEditingSupport<TextCellEditor> {
     }
 
     /**
-     * Checks if the given object is an instance of a T-class.
-     *
-     * @param obj given object
-     * @return true if it is an instance of a T-class
-     */
-    protected abstract boolean checkInstance(Object obj);
-
-    /**
      * Returns text of editable field.
      *
      * @param obj object which contains text of editable field.
      * @return text of editable field
      */
-    protected abstract String getText(Object obj);
-
-    /**
-     * Checks equals between the 'obj' and 'selectedObj' objects.
-     *
-     * @param obj object to compare
-     * @param selectedObj selected object from list editor
-     * @return true if object is equals
-     */
-    protected abstract boolean checkEquals(T obj, Object selectedObj);
+    protected abstract String getText(T obj);
 
     /**
      * Returns copy of given object with new text parameter.
      */
-    protected abstract T getCopyWithNewTxt(Object obj, String newText);
+    protected abstract T getCopyWithNewTxt(T obj, String newText);
 }

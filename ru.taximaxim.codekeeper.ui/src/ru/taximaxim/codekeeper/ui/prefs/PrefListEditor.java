@@ -3,7 +3,6 @@ package ru.taximaxim.codekeeper.ui.prefs;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.function.BiPredicate;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
@@ -42,8 +41,6 @@ public abstract class PrefListEditor<T, V extends StructuredViewer> extends Comp
     protected final LocalResourceManager lrm = new LocalResourceManager(JFaceResources.getResources(), this);
 
     private final V viewerObjs;
-
-    private BiPredicate<T, T> predicateAlreadyExists = (oldObj, newObj) -> oldObj.equals(newObj);
 
     public PrefListEditor(Composite parent) {
         super(parent, SWT.NONE);
@@ -109,7 +106,7 @@ public abstract class PrefListEditor<T, V extends StructuredViewer> extends Comp
     }
 
     private boolean hasDuplicate(T newObj) {
-        return objsList.stream().anyMatch(obj -> predicateAlreadyExists.test(obj, newObj));
+        return objsList.stream().anyMatch(obj -> checkDuplicate(obj, newObj));
     }
 
     private void copyObject() {
@@ -242,8 +239,8 @@ public abstract class PrefListEditor<T, V extends StructuredViewer> extends Comp
 
     protected abstract String errorAlreadyExists(T obj);
 
-    protected void setPredicateAlreadyExists(BiPredicate<T, T> predicateAlreadyExists) {
-        this.predicateAlreadyExists = predicateAlreadyExists;
+    public boolean checkDuplicate(T o1, T o2) {
+        return o1.equals(o2);
     }
 
     public List<T> getList(){

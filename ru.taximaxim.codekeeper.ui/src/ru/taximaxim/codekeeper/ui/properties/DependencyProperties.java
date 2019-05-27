@@ -128,7 +128,11 @@ public class DependencyProperties extends PropertyPage {
 
         public DependenciesListEditor(Composite parent) {
             super(parent);
-            setPredicateAlreadyExists((oldObj, newObj) -> oldObj.getPath().equals(newObj.getPath()));
+        }
+
+        @Override
+        public boolean checkDuplicate(PgLibrary o1, PgLibrary o2) {
+            return o1.getPath().equals(o2.getPath());
         }
 
         @Override
@@ -336,33 +340,17 @@ public class DependencyProperties extends PropertyPage {
 
         public TxtLibPathEditingSupport(ColumnViewer viewer,
                 DependenciesListEditor dependenciesListEditor) {
-            super(viewer, dependenciesListEditor);
+            super(viewer, dependenciesListEditor, PgLibrary.class);
         }
 
         @Override
-        protected boolean checkInstance(Object obj) {
-            return obj instanceof PgLibrary;
+        protected String getText(PgLibrary obj) {
+            return obj.getPath();
         }
 
         @Override
-        protected String getText(Object obj) {
-            return ((PgLibrary) obj).getPath();
-        }
-
-        @Override
-        protected boolean checkEquals(PgLibrary obj, Object selectedObj) {
-            PgLibrary selectedLib = (PgLibrary) selectedObj;
-            return selectedLib.getPath().equals(obj.getPath())
-                    && selectedLib.getSource() == obj.getSource()
-                    && selectedLib.isIgnorePriv() == obj.isIgnorePriv()
-                    && selectedLib.getOwner().equals(obj.getOwner());
-        }
-
-        @Override
-        protected PgLibrary getCopyWithNewTxt(Object obj, String newText) {
-            PgLibrary selectedLib = (PgLibrary) obj;
-            return new PgLibrary(newText, selectedLib.isIgnorePriv(),
-                    selectedLib.getOwner());
+        protected PgLibrary getCopyWithNewTxt(PgLibrary obj, String newText) {
+            return new PgLibrary(newText, obj.isIgnorePriv(), obj.getOwner());
         }
     }
 }
