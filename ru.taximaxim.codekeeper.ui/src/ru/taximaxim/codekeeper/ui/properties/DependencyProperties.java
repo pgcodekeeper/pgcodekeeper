@@ -17,6 +17,7 @@ import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckboxCellEditor;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.TextCellEditor;
@@ -49,6 +50,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.prefs.AbstractTxtEditingSupport;
 import ru.taximaxim.codekeeper.ui.prefs.PrefListEditor;
 
 public class DependencyProperties extends PropertyPage {
@@ -129,6 +131,11 @@ public class DependencyProperties extends PropertyPage {
         }
 
         @Override
+        public boolean checkDuplicate(PgLibrary o1, PgLibrary o2) {
+            return o1.getPath().equals(o2.getPath());
+        }
+
+        @Override
         protected PgLibrary getNewObject(PgLibrary oldObject) {
             DirectoryDialog dialog = new DirectoryDialog(getShell());
             dialog.setText(Messages.DependencyProperties_select_directory);
@@ -172,6 +179,7 @@ public class DependencyProperties extends PropertyPage {
                     return obj.getPath();
                 }
             });
+            path.setEditingSupport(new TxtLibPathEditingSupport(viewer, this));
 
             TableViewerColumn owner = new TableViewerColumn(viewer, SWT.CENTER);
             owner.getColumn().setText(Messages.DependencyProperties_owner);
@@ -324,6 +332,25 @@ public class DependencyProperties extends PropertyPage {
         protected void setValue(Object element, Object value) {
             ((PgLibrary) element).setOwner((String) value);
             getViewer().update(element, null);
+        }
+    }
+
+    private static class TxtLibPathEditingSupport extends
+    AbstractTxtEditingSupport<PgLibrary, DependenciesListEditor> {
+
+        public TxtLibPathEditingSupport(ColumnViewer viewer,
+                DependenciesListEditor dependenciesListEditor) {
+            super(viewer, dependenciesListEditor, PgLibrary.class);
+        }
+
+        @Override
+        protected String getText(PgLibrary obj) {
+            return obj.getPath();
+        }
+
+        @Override
+        protected PgLibrary getCopyWithNewTxt(PgLibrary obj, String newText) {
+            return new PgLibrary(newText, obj.isIgnorePriv(), obj.getOwner());
         }
     }
 }

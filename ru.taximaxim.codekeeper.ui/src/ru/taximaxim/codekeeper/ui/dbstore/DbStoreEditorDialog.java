@@ -502,15 +502,23 @@ public class DbStoreEditorDialog extends TrayDialog {
             exePath = txtDumpFile.getText();
         }
 
-        dbInfo = new DbInfo(txtName.getText(), txtDbName.getText(),
-                txtDbUser.getText(), txtDbPass.getText(),
-                txtDbHost.getText(), dbport, btnReadOnly.getSelection(),
-                btnGenerateName.getSelection(), ignoreListEditor.getList(),
-                propertyListEditor.getList().stream()
-                .collect(Collectors.toMap(Entry::getKey, Entry::getValue)),
-                btnMsSql.getSelection(), isWinAuth(), exePath,
-                txtDumpParameters.getText(), btnUseDump.getSelection());
-        super.okPressed();
+        if (txtName.getText().isEmpty()) {
+            MessageBox mb = new MessageBox(getShell(),
+                    SWT.ICON_WARNING);
+            mb.setText(Messages.dbStoreEditorDialog_cannot_save_entry);
+            mb.setMessage(Messages.dbStoreEditorDialog_empty_name);
+            mb.open();
+        } else {
+            dbInfo = new DbInfo(txtName.getText(), txtDbName.getText(),
+                    txtDbUser.getText(), txtDbPass.getText(),
+                    txtDbHost.getText(), dbport, btnReadOnly.getSelection(),
+                    btnGenerateName.getSelection(), ignoreListEditor.getList(),
+                    propertyListEditor.getList().stream()
+                    .collect(Collectors.toMap(Entry::getKey, Entry::getValue)),
+                    btnMsSql.getSelection(), isWinAuth(), exePath,
+                    txtDumpParameters.getText(), btnUseDump.getSelection());
+            super.okPressed();
+        }
     }
 
     @Override
