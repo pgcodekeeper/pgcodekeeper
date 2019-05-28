@@ -327,12 +327,14 @@ public abstract class PgStatement implements IStatement, IHashable {
             }
         }
 
-        // only for PG FUNCTION, PROCEDURE and AGGREGATE
         // now set default owner privilege if it is not 'REVOKE' any more
+        // (only for PG : FUNCTION, PROCEDURE, AGGREGATE, TYPE and DOMAIN)
         if (newObj.isPostgres()
                 && (getStatementType() == DbObjType.FUNCTION
                 || getStatementType() == DbObjType.PROCEDURE
-                || getStatementType() == DbObjType.AGGREGATE)) {
+                || getStatementType() == DbObjType.AGGREGATE
+                || getStatementType() == DbObjType.TYPE
+                || getStatementType() == DbObjType.DOMAIN)) {
             PgPrivilege removerOfDefPriv = getDefOwnerPriv(true);
             if (privileges.contains(removerOfDefPriv)
                     && !newPrivileges.contains(removerOfDefPriv)) {
@@ -343,14 +345,24 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     private PgPrivilege getDefOwnerPriv(boolean isRemoveOfDefPriv) {
-        AbstractPgFunction thisFunc = (AbstractPgFunction) this;
+        String stmtType = null;
+        String stmtName = null;
+        StringBuilder objWithType = new StringBuilder();
+        if (getStatementType() == DbObjType.TYPE
+                || getStatementType() == DbObjType.DOMAIN) {
+            stmtType = getStatementType().name();
+            stmtName = getName();
+        } else {
+            stmtType = getStatementType() == DbObjType.PROCEDURE ?
+                    "PROCEDURE" : "FUNCTION";
+            stmtName = ((AbstractPgFunction) this).appendFunctionSignature(
+                    new StringBuilder(), false, true).toString();
+        }
+
         return new PgPrivilege(isRemoveOfDefPriv ? "REVOKE" : "GRANT", "ALL",
-                new StringBuilder()
-                .append(getStatementType() == DbObjType.PROCEDURE ?
-                        "PROCEDURE" : "FUNCTION")
-                .append(' ').append(thisFunc.getSchemaName()).append('.')
-                .append(thisFunc.appendFunctionSignature(
-                        new StringBuilder(), false, true)).toString(),
+                objWithType.append(stmtType).append(' ')
+                .append(((PgStatementWithSearchPath) this).getSchemaName())
+                .append('.').append(stmtName).toString(),
                 getOwner(), false);
     }
 
