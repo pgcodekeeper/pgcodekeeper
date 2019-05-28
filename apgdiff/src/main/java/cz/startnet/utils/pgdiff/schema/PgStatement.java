@@ -345,8 +345,10 @@ public abstract class PgStatement implements IStatement, IHashable {
     private PgPrivilege getDefOwnerPriv(boolean isRemoveOfDefPriv) {
         AbstractPgFunction thisFunc = (AbstractPgFunction) this;
         return new PgPrivilege(isRemoveOfDefPriv ? "REVOKE" : "GRANT", "ALL",
-                new StringBuilder().append(getStatementType()).append(' ')
-                .append(thisFunc.getSchemaName()).append('.')
+                new StringBuilder()
+                .append(getStatementType() == DbObjType.PROCEDURE ?
+                        "PROCEDURE" : "FUNCTION")
+                .append(' ').append(thisFunc.getSchemaName()).append('.')
                 .append(thisFunc.appendFunctionSignature(
                         new StringBuilder(), false, true)).toString(),
                 getOwner(), false);
