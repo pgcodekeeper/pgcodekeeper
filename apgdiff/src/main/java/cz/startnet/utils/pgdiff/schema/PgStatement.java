@@ -326,6 +326,30 @@ public abstract class PgStatement implements IStatement, IHashable {
                 PgPrivilege.appendDefaultPrivileges(newObj, sb);
             }
         }
+
+        // only for PG FUNCTION, PROCEDURE and AGGREGATE
+        // now set default owner privilege if it is not 'REVOKE' any more
+        if (newObj.isPostgres()
+                && (getStatementType() == DbObjType.FUNCTION
+                || getStatementType() == DbObjType.PROCEDURE
+                || getStatementType() == DbObjType.AGGREGATE)) {
+            PgPrivilege removerOfDefPriv = getDefOwnerPriv(true);
+            if (privileges.contains(removerOfDefPriv)
+                    && !newPrivileges.contains(removerOfDefPriv)) {
+                sb.append('\n').append(getDefOwnerPriv(false).getCreationSQL())
+                .append(';');
+            }
+        }
+    }
+
+    private PgPrivilege getDefOwnerPriv(boolean isRemoveOfDefPriv) {
+        AbstractPgFunction thisFunc = (AbstractPgFunction) this;
+        return new PgPrivilege(isRemoveOfDefPriv ? "REVOKE" : "GRANT", "ALL",
+                new StringBuilder().append(getStatementType()).append(' ')
+                .append(thisFunc.getSchemaName()).append('.')
+                .append(thisFunc.appendFunctionSignature(
+                        new StringBuilder(), false, true)).toString(),
+                getOwner(), false);
     }
 
     public String getOwner() {
