@@ -42,6 +42,20 @@ ALTER FUNCTION public.f(s text) OWNER TO shamsutdinov_lr;
 REVOKE ALL ON FUNCTION public.f(s text) FROM PUBLIC;
 
 --
+-- Name: t; Type: TYPE; Schema: public; Owner: shamsutdinov_lr
+--
+
+CREATE TYPE public.t AS (c1 int, c2 text);
+
+ALTER TYPE public.t OWNER TO shamsutdinov_lr;
+
+--
+-- Name: TYPE public.t; Type: ACL; Schema: public; Owner: shamsutdinov_lr
+--
+
+REVOKE ALL ON TYPE public.t FROM PUBLIC;
+
+--
 -- Name: public; Type: ACL; Schema: -; Owner: postgres
 --
 
