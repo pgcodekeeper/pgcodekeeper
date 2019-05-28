@@ -368,6 +368,8 @@ public class PgDiffTest {
                     {"add_privilege"},
                     {"drop_privilege"},
                     {"chg_privilege"},
+                    // Test default owner privilege
+                    {"chg_def_owner_privilege"},
                     // Test change owner
                     {"chg_owner"},
                     // Тест зависимости от колонки к функции default
