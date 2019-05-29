@@ -89,6 +89,9 @@ public class PgPrivilege implements IHashable {
                     || (DbObjType.DOMAIN == type);
             if (type == DbObjType.VIEW) {
                 type = DbObjType.TABLE;
+            } else if (type == DbObjType.AGGREGATE) {
+                // for AGGREGATEs in GRANT/REVOKE the type will be the same as in FUNCTIONs
+                type = DbObjType.FUNCTION;
             }
         }
 
