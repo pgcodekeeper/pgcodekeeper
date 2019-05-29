@@ -66,6 +66,12 @@ CREATE TABLE public.tbl (
 ALTER TABLE public.tbl OWNER TO shamsutdinov_lr;
 
 --
+-- Name: TABLE public.tbl; Type: ACL; Schema: public; Owner: shamsutdinov_lr
+--
+
+GRANT ALL ON TABLE public.tbl TO PUBLIC;
+
+--
 -- Name: public; Type: ACL; Schema: -; Owner: postgres
 --
 

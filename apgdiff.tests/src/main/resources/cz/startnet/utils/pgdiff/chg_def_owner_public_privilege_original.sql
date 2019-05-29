@@ -40,6 +40,7 @@ ALTER FUNCTION public.f(s text) OWNER TO shamsutdinov_lr;
 --
 
 REVOKE ALL ON FUNCTION public.f(s text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.f(s text) FROM shamsutdinov_lr;
 
 --
 -- Name: t; Type: TYPE; Schema: public; Owner: shamsutdinov_lr
@@ -54,6 +55,7 @@ ALTER TYPE public.t OWNER TO shamsutdinov_lr;
 --
 
 REVOKE ALL ON TYPE public.t FROM PUBLIC;
+REVOKE ALL ON TYPE public.t FROM shamsutdinov_lr;
 
 --
 -- Name: tbl; Type: TABLE; Schema: public; Owner: shamsutdinov_lr
@@ -64,6 +66,13 @@ CREATE TABLE public.tbl (
 );
 
 ALTER TABLE public.tbl OWNER TO shamsutdinov_lr;
+
+--
+-- Name: TABLE public.tbl; Type: ACL; Schema: public; Owner: shamsutdinov_lr
+--
+
+GRANT ALL ON TABLE public.tbl TO PUBLIC;
+REVOKE ALL ON TABLE public.tbl FROM shamsutdinov_lr;
 
 --
 -- Name: public; Type: ACL; Schema: -; Owner: postgres

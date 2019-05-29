@@ -368,8 +368,14 @@ public class PgDiffTest {
                     {"add_privilege"},
                     {"drop_privilege"},
                     {"chg_privilege"},
-                    // Test default owner privilege
+                    // Test restoring the default owner privilege
                     {"chg_def_owner_privilege"},
+                    // Test restoring the default public privilege
+                    {"chg_def_public_privilege"},
+                    // Test restoring the default owner and public privilege
+                    {"chg_def_owner_public_privilege"},
+                    // Test restoring the default privileges of AGGREGATE
+                    {"chg_def_privilege_aggr"},
                     // Test change owner
                     {"chg_owner"},
                     // Тест зависимости от колонки к функции default

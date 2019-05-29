@@ -58,6 +58,22 @@ REVOKE ALL ON TYPE public.t FROM PUBLIC;
 REVOKE ALL ON TYPE public.t FROM shamsutdinov_lr;
 
 --
+-- Name: tbl; Type: TABLE; Schema: public; Owner: shamsutdinov_lr
+--
+
+CREATE TABLE public.tbl (
+    c1 integer
+);
+
+ALTER TABLE public.tbl OWNER TO shamsutdinov_lr;
+
+--
+-- Name: TABLE public.tbl; Type: ACL; Schema: public; Owner: shamsutdinov_lr
+--
+
+REVOKE ALL ON TABLE public.tbl FROM shamsutdinov_lr;
+
+--
 -- Name: public; Type: ACL; Schema: -; Owner: postgres
 --
 
