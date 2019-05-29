@@ -1,6 +1,6 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -50,8 +50,8 @@ public class SQLEditorCompletionProcessorKeys extends SQLEditorCompletionProcess
         }
         String text = part.substring(nonid + 1, offset);
 
-        List<ICompletionProposal> result = new LinkedList<>();
-        List<ICompletionProposal> partResult = new LinkedList<>();
+        List<ICompletionProposal> result = new ArrayList<>();
+        List<ICompletionProposal> partResult = new ArrayList<>();
 
         PgDbParser parser = editor.getParser();
         Stream<PgObjLocation> loc = parser.getAllObjDefinitions();

@@ -1,9 +1,5 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -33,19 +29,14 @@ public class SQLEditorCompletionProcessorTmpls extends SQLEditorCompletionProces
         }
         String text = part.substring(nonid + 1, offset);
 
-        List<ICompletionProposal> result = new LinkedList<>();
-
         // SQL Templates
         if (text.isEmpty()) {
-            result.addAll(new SQLEditorTemplateAssistProcessor().getAllTemplates(viewer, offset));
+            return new SQLEditorTemplateAssistProcessor().getAllTemplates(viewer, offset)
+                    .toArray(new ICompletionProposal[0]);
         } else {
             ICompletionProposal[] templates = new SQLEditorTemplateAssistProcessor()
                     .computeCompletionProposals(viewer, offset);
-            if (templates != null) {
-                result.addAll(Arrays.asList(templates));
-            }
+            return templates != null ? templates : new ICompletionProposal[0];
         }
-
-        return result.toArray(new ICompletionProposal[result.size()]);
     }
 }
