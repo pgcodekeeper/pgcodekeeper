@@ -84,7 +84,7 @@ public final class PgDiff {
         newLib.loadLibraries(arguments, true, arguments.getTargetLibsWithoutPriv());
 
         if (arguments.isLibSafeMode() &&
-                !oldDatabase.getOverrides().isEmpty() || !newDatabase.getOverrides().isEmpty()) {
+                (!oldDatabase.getOverrides().isEmpty() || !newDatabase.getOverrides().isEmpty())) {
             List<PgOverride> overrides = oldDatabase.getOverrides();
             overrides.addAll(newDatabase.getOverrides());
             throw new LibraryObjectDuplicationException(overrides);
