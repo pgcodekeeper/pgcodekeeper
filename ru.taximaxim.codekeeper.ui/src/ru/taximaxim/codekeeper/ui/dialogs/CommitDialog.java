@@ -48,6 +48,7 @@ public class CommitDialog extends TrayDialog {
     private final IPreferenceStore prefs;
     private final boolean egitCommitAvailable;
     private final boolean forceOverridesOnly;
+    private final boolean initialOverrides;
 
     private final DbSource dbProject;
     private final DbSource dbRemote;
@@ -61,7 +62,7 @@ public class CommitDialog extends TrayDialog {
     public CommitDialog(Shell parentShell, Set<TreeElement> depcyElementsSet,
             DbSource dbProject, DbSource dbRemote, TreeElement diffTree,
             IPreferenceStore mainPrefs, boolean egitCommitAvailable,
-            boolean forceOverridesOnly, PgDbProject proj) {
+            boolean forceOverridesOnly, boolean initialOverrides, PgDbProject proj) {
         super(parentShell);
         this.depcyElementsSet = depcyElementsSet;
         this.dbProject = dbProject;
@@ -70,6 +71,7 @@ public class CommitDialog extends TrayDialog {
         this.prefs = mainPrefs;
         this.egitCommitAvailable = egitCommitAvailable;
         this.forceOverridesOnly = forceOverridesOnly;
+        this.initialOverrides = initialOverrides;
         this.proj = proj;
 
         setShellStyle(getShellStyle() & ~SWT.CLOSE);
@@ -160,7 +162,7 @@ public class CommitDialog extends TrayDialog {
             }
         });
 
-        btnSaveOverrides.setSelection(forceOverridesOnly);
+        btnSaveOverrides.setSelection(initialOverrides);
 
         return area;
     }

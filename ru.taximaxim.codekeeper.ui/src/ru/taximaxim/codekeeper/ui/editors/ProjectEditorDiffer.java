@@ -37,6 +37,7 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.FontDescriptor;
@@ -885,6 +886,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
 
         boolean forceSave = false;
+        boolean saveOverrides = false;
 
         if (diffTable.checkLibChange()) {
             if (proj.getPrefs().getBoolean(PROJ_PREF.LIB_SAFE_MODE, true)) {
@@ -893,14 +895,25 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 mb.setText(Messages.ProjectEditorDiffer_lib_change_warning_title);
                 if (mb.open() == SWT.YES) {
                     forceSave = true;
+                    saveOverrides = true;
                 } else {
                     return;
                 }
             } else {
-                MessageBox mb = new MessageBox(getEditorSite().getShell(), SWT.ICON_WARNING | SWT.YES | SWT.NO);
-                mb.setMessage(Messages.ProjectEditorDiffer_lib_change_warning_message);
-                mb.setText(Messages.ProjectEditorDiffer_lib_change_warning_title);
-                if (SWT.YES != mb.open()) {
+                MessageDialog mb = new MessageDialog(parent.getShell(),
+                        Messages.ProjectEditorDiffer_lib_change_warning_title, null,
+                        Messages.ProjectEditorDiffer_lib_change_warning_message, MessageDialog.WARNING,
+                        new String[] { Messages.ProjectEditorDiffer_override_privileges,
+                                Messages.ProjectEditorDiffer_override_objects,
+                                Messages.ProjectEditorDiffer_override_cancel }, 0);
+                int override = mb.open();
+                switch (override) {
+                case 0:
+                case 1:
+                    saveOverrides = override == 0;
+                    break;
+                default:
+                    // cancelled
                     return;
                 }
             }
@@ -919,7 +932,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         // display commit dialog
         CommitDialog cd = new CommitDialog(parent.getShell(), sumNewAndDelete,
                 dbProject, dbRemote, treeCopy, mainPrefs, isCommitCommandAvailable,
-                forceSave, proj);
+                forceSave, saveOverrides, proj);
         if (cd.open() != CommitDialog.OK) {
             return;
         }

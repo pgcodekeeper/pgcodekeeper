@@ -700,6 +700,12 @@ public final class Messages extends NLS {
     public static String ProjectEditorDiffer_different_types;
     public static String ProjectEditorDiffer_different_types_msg;
 
+    public static String ProjectEditorDiffer_override_cancel;
+
+    public static String ProjectEditorDiffer_override_objects;
+
+    public static String ProjectEditorDiffer_override_privileges;
+
     public static String ProjectEditorInput_pgcodekeeper_project;
 
     public static String ProjectEditorPrefPage_action_no_action;
