@@ -80,6 +80,9 @@ public final class Messages extends NLS {
     public static String SqlEditor_script_delete_dialog_title;
     public static String SqlEditor_selected_text_error;
 
+    public static String SQLEditorSourceViewerConfiguration_ctrl_space_show_templates;
+    public static String SQLEditorSourceViewerConfiguration_ctrl_space_show_keywords;
+
     public static String SqlEditor_update_ddl;
 
     public static String UpdateDdl_read_only_db_message;

@@ -40,7 +40,7 @@ public class SQLEditorTemplatePrefPage extends TemplatePreferencePage {
         return control;
     }
 
-    private class OnlyUserTemplatesContentProvider implements IStructuredContentProvider {
+    private static class OnlyUserTemplatesContentProvider implements IStructuredContentProvider {
 
         private TemplateStore fStore;
 

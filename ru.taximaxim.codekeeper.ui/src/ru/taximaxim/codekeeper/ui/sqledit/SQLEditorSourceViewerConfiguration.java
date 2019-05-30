@@ -27,6 +27,7 @@ import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfiguration {
 
@@ -66,8 +67,8 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
             return null;
         }
 
-        String tmplMsg = "Press 'Ctrl+Space' to show SQL TEMPLATES"; //$NON-NLS-1$
-        String keyMsg = "Press 'Ctrl+Space' to show KEYWORDS"; //$NON-NLS-1$
+        String tmplMsg = Messages.SQLEditorSourceViewerConfiguration_ctrl_space_show_templates;
+        String keyMsg = Messages.SQLEditorSourceViewerConfiguration_ctrl_space_show_keywords;
 
         IContentAssistProcessor keyProc = new SQLEditorCompletionProcessorKeys(editor);
         IContentAssistProcessor tmplProc = new SQLEditorCompletionProcessorTmpls(editor);

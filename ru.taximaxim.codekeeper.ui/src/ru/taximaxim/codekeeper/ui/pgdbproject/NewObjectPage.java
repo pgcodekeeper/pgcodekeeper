@@ -420,10 +420,10 @@ public final class NewObjectPage extends WizardPage {
                     objectName, parent, textViewer, 0));
         } else {
             // creation sub-element
+            IDocumentProvider provider = new TextFileDocumentProvider();
             try {
                 // inserting the group delimiter at the end of the parent element
                 // code and getting the offset from it
-                IDocumentProvider provider = new TextFileDocumentProvider();
                 provider.connect(file);
                 IDocument doc = provider.getDocument(file);
                 int offset = doc.getLength();
@@ -435,10 +435,10 @@ public final class NewObjectPage extends WizardPage {
                                 new SQLEditorTemplateContextType(), doc, new Position(offset, 0)),
                         new Region(offset, 0), null, 0)
                 .fillTmplAndInsertToViewer(schema, objectName, parent, textViewer, 0);
-
-                provider.disconnect(file);
             } catch (BadLocationException e) {
                 Log.log(Log.LOG_ERROR, "File with location exception: " + file.getName(), e); //$NON-NLS-1$
+            } finally {
+                provider.disconnect(file);
             }
         }
     }
@@ -488,8 +488,10 @@ public final class NewObjectPage extends WizardPage {
                         + ".create" + type.name().toLowerCase(Locale.ROOT), schema, //$NON-NLS-1$
                         PgDiffUtils.getQuotedName(name), null);
             }
-        } else if (file.exists() && open) {
-            openFileInEditor(file);
+        } else {
+            if (open) {
+                openFileInEditor(file);
+            }
         }
         return file;
     }
@@ -502,7 +504,8 @@ public final class NewObjectPage extends WizardPage {
 
         if (!file.exists()) {
             file.create(new ByteArrayInputStream(
-                    createParentCodeOfSubEl(schema, parent, parentType)
+                    createParentCodeOfSubEl(PgDiffUtils.getQuotedName(schema),
+                            PgDiffUtils.getQuotedName(parent), parentType)
                     .getBytes(StandardCharsets.UTF_8)), false, null);
         }
 
@@ -514,7 +517,8 @@ public final class NewObjectPage extends WizardPage {
         }
 
         openFileInEditor(file, tmplCtxTypeId + tmplIdPostfix + type.name().toLowerCase(Locale.ROOT),
-                schema, PgDiffUtils.getQuotedName(name), parent);
+                PgDiffUtils.getQuotedName(schema), PgDiffUtils.getQuotedName(name),
+                PgDiffUtils.getQuotedName(parent));
     }
 
     private String createParentCodeOfSubEl(String schema, String parent, DbObjType parentType) {
