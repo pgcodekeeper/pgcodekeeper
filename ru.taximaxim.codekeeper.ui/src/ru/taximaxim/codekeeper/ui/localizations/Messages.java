@@ -334,6 +334,8 @@ public final class Messages extends NLS {
 
     public static String DependencyProperties_add_uri;
 
+    public static String DependencyProperties_attention;
+
     public static String DependencyProperties_connection_start;
 
     public static String DependencyProperties_empty_scheme;
@@ -341,6 +343,8 @@ public final class Messages extends NLS {
     public static String DependencyProperties_enter_connection_string;
 
     public static String DependencyProperties_enter_uri;
+
+    public static String DependencyProperties_ignore_priv_warn;
 
     public static String DependencyProperties_ignore_privileges;
 

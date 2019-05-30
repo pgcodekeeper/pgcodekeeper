@@ -32,6 +32,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.ISharedImages;
@@ -312,8 +313,15 @@ public class DependencyProperties extends PropertyPage {
 
         @Override
         protected void setValue(Object element, Object value) {
-            ((PgLibrary) element).setIgnorePriv((boolean) value);
+            boolean val = (boolean) value;
+            ((PgLibrary) element).setIgnorePriv(val);
             getViewer().update(element, null);
+            if (val) {
+                MessageBox mb = new MessageBox(getViewer().getControl().getShell(), SWT.ICON_INFORMATION);
+                mb.setText(Messages.DependencyProperties_attention);
+                mb.setMessage(Messages.DependencyProperties_ignore_priv_warn);
+                mb.open();
+            }
         }
     }
 
