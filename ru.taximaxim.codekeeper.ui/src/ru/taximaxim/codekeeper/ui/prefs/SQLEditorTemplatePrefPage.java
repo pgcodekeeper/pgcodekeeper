@@ -2,12 +2,12 @@ package ru.taximaxim.codekeeper.ui.prefs;
 
 import java.util.Arrays;
 
-import org.eclipse.jface.text.templates.persistence.TemplatePersistenceData;
 import org.eclipse.jface.text.templates.persistence.TemplateStore;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.text.templates.TemplatePersistenceData;
 import org.eclipse.ui.texteditor.templates.TemplatePreferencePage;
 
 import ru.taximaxim.codekeeper.ui.Activator;
