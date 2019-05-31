@@ -1,8 +1,11 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
+import java.text.MessageFormat;
 import java.util.Map;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.jface.bindings.TriggerSequence;
+import org.eclipse.jface.bindings.keys.KeySequence;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.TextAttribute;
@@ -23,7 +26,10 @@ import org.eclipse.jface.text.rules.WordRule;
 import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
+import org.eclipse.ui.keys.IBindingService;
+import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -67,8 +73,13 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
             return null;
         }
 
-        String tmplMsg = Messages.SQLEditorSourceViewerConfiguration_ctrl_space_show_templates;
-        String keyMsg = Messages.SQLEditorSourceViewerConfiguration_ctrl_space_show_keywords;
+        KeySequence binding = getIterationBinding();
+
+        String hotKey = binding != null ? binding.toString() : "no key"; //$NON-NLS-1$
+        String tmplMsg = MessageFormat
+                .format(Messages.SQLEditorSourceViewerConfiguration_show_templates, hotKey);
+        String keyMsg = MessageFormat
+                .format(Messages.SQLEditorSourceViewerConfiguration_show_keywords, hotKey);
 
         IContentAssistProcessor keyProc = new SQLEditorCompletionProcessorKeys(editor);
         IContentAssistProcessor tmplProc = new SQLEditorCompletionProcessorTmpls(editor);
@@ -131,6 +142,15 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         assist.setContentAssistProcessor(null, SQLEditorCommonDocumentProvider.SQL_CODE);
         assist.setContentAssistProcessor(proc, SQLEditorCommonDocumentProvider.SQL_CODE);
         assist.setStatusMessage(msg);
+    }
+
+    private KeySequence getIterationBinding() {
+        final IBindingService bindingSvc= PlatformUI.getWorkbench().getAdapter(IBindingService.class);
+        TriggerSequence binding= bindingSvc.getBestActiveBindingFor(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
+        if (binding instanceof KeySequence) {
+            return (KeySequence) binding;
+        }
+        return null;
     }
 
     @Override
