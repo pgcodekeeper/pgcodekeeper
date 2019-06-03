@@ -72,7 +72,7 @@ public class PgPrivilege implements IHashable {
     public static StringBuilder appendDefaultPrivileges(PgStatement newObj, StringBuilder sb) {
         DbObjType type = newObj.getStatementType();
         String owner = newObj.getOwner();
-        if (type == DbObjType.COLUMN || owner == null) {
+        if (type == DbObjType.COLUMN) {
             return sb;
         }
 
@@ -95,13 +95,16 @@ public class PgPrivilege implements IHashable {
             }
         }
 
-        owner =  PgDiffUtils.getQuotedName(owner);
-
         // FUNCTION/PROCEDURE/AGGREGATE/TYPE/DOMAIN by default has "GRANT ALL to PUBLIC".
         // That's why for them set "GRANT ALL to PUBLIC".
         PgPrivilege priv = new PgPrivilege(isFunctionOrTypeOrDomain ? "GRANT" : "REVOKE",
                 "ALL" + column, type + " " + name, "PUBLIC", false);
         sb.append('\n').append(priv.getCreationSQL()).append(';');
+
+        if (owner == null) {
+            return sb;
+        }
+        owner = PgDiffUtils.getQuotedName(owner);
 
         priv = new PgPrivilege("REVOKE", "ALL" + column, type + " " + name, owner, false);
         sb.append('\n').append(priv.getCreationSQL()).append(';');
