@@ -335,15 +335,19 @@ public abstract class PgStatement implements IStatement, IHashable {
                 || getStatementType() == DbObjType.AGGREGATE
                 || getStatementType() == DbObjType.TYPE
                 || getStatementType() == DbObjType.DOMAIN)) {
-            if (privileges.contains(getDefOwnerPriv(true, this))
-                    && !newPrivileges.contains(getDefOwnerPriv(true, newObj))) {
-                sb.append('\n').append(getDefOwnerPriv(false, newObj).getCreationSQL())
+            if (privileges.contains(getPrivOfFPATD(false, getOwner()))
+                    && !newPrivileges.contains(getPrivOfFPATD(false, newObj.getOwner()))) {
+                sb.append('\n').append(getPrivOfFPATD(true, newObj.getOwner()).getCreationSQL())
                 .append(';');
             }
         }
     }
 
-    private PgPrivilege getDefOwnerPriv(boolean isRemoveOfDefPriv, PgStatement newObj) {
+    /**
+     * Returns GRANT/REVOKE privilege object for given role.
+     * (only for PG : FUNCTION, PROCEDURE, AGGREGATE, TYPE and DOMAIN)
+     */
+    private PgPrivilege getPrivOfFPATD(boolean getGrant, String role) {
         String stmtType = null;
         String stmtName = null;
         StringBuilder objWithType = new StringBuilder();
@@ -358,11 +362,10 @@ public abstract class PgStatement implements IStatement, IHashable {
                     new StringBuilder(), false, true).toString();
         }
 
-        return new PgPrivilege(isRemoveOfDefPriv ? "REVOKE" : "GRANT", "ALL",
+        return new PgPrivilege(getGrant ? "GRANT" : "REVOKE", "ALL",
                 objWithType.append(stmtType).append(' ')
                 .append(((PgStatementWithSearchPath) this).getSchemaName())
-                .append('.').append(stmtName).toString(),
-                newObj.getOwner(), false);
+                .append('.').append(stmtName).toString(), role, false);
     }
 
     public String getOwner() {
