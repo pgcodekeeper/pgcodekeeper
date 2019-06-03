@@ -370,9 +370,11 @@ public class PgDiffTest {
                     {"chg_privilege"},
                     // Test restoring the default owner privilege
                     {"chg_def_owner_privilege"},
-                    // Test restoring the default public privilege
+                    // Test restoring the default PUBLIC privilege
                     {"chg_def_public_privilege"},
-                    // Test restoring the default owner and public privilege
+                    // Test restoring the default PUBLIC privilege even if the owner is unavailable
+                    {"chg_def_public_privilege_no_owner"},
+                    // Test restoring the default owner and PUBLIC privilege
                     {"chg_def_owner_public_privilege"},
                     // Test restoring the default privileges of AGGREGATE
                     {"chg_def_privilege_aggr"},
