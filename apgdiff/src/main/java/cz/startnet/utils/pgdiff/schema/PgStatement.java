@@ -335,16 +335,15 @@ public abstract class PgStatement implements IStatement, IHashable {
                 || getStatementType() == DbObjType.AGGREGATE
                 || getStatementType() == DbObjType.TYPE
                 || getStatementType() == DbObjType.DOMAIN)) {
-            PgPrivilege removerOfDefPriv = getDefOwnerPriv(true);
-            if (privileges.contains(removerOfDefPriv)
-                    && !newPrivileges.contains(removerOfDefPriv)) {
-                sb.append('\n').append(getDefOwnerPriv(false).getCreationSQL())
+            if (privileges.contains(getDefOwnerPriv(true, this))
+                    && !newPrivileges.contains(getDefOwnerPriv(true, newObj))) {
+                sb.append('\n').append(getDefOwnerPriv(false, newObj).getCreationSQL())
                 .append(';');
             }
         }
     }
 
-    private PgPrivilege getDefOwnerPriv(boolean isRemoveOfDefPriv) {
+    private PgPrivilege getDefOwnerPriv(boolean isRemoveOfDefPriv, PgStatement newObj) {
         String stmtType = null;
         String stmtName = null;
         StringBuilder objWithType = new StringBuilder();
@@ -363,7 +362,7 @@ public abstract class PgStatement implements IStatement, IHashable {
                 objWithType.append(stmtType).append(' ')
                 .append(((PgStatementWithSearchPath) this).getSchemaName())
                 .append('.').append(stmtName).toString(),
-                getOwner(), false);
+                newObj.getOwner(), false);
     }
 
     public String getOwner() {
