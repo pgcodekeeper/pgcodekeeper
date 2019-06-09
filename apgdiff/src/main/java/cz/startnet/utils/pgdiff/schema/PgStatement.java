@@ -327,19 +327,35 @@ public abstract class PgStatement implements IStatement, IHashable {
             }
         }
 
-        // now set default owner privilege if it is not 'REVOKE' any more
-        // (only for PG : FUNCTION, PROCEDURE, AGGREGATE, TYPE and DOMAIN)
-        if (newObj.isPostgres()
-                && (getStatementType() == DbObjType.FUNCTION
-                || getStatementType() == DbObjType.PROCEDURE
-                || getStatementType() == DbObjType.AGGREGATE
-                || getStatementType() == DbObjType.TYPE
-                || getStatementType() == DbObjType.DOMAIN)) {
-            if (privileges.contains(getPrivOfFPATD(false, getOwner()))
-                    && !newPrivileges.contains(getPrivOfFPATD(false, newObj.getOwner()))) {
-                sb.append('\n').append(getPrivOfFPATD(true, newObj.getOwner()).getCreationSQL())
-                .append(';');
+        switch (getStatementType()) {
+        case FUNCTION:
+        case PROCEDURE:
+        case AGGREGATE:
+        case TYPE:
+        case DOMAIN:
+            if (isPostgres() && !newPrivileges.isEmpty()) {
+                // restore owner grant only if owner is unchanged
+                if (newObj.getOwner() != null && newObj.getOwner().equals(getOwner())) {
+                    restoreDefaultPrivFPATD(newObj, sb, true);
+                }
+                restoreDefaultPrivFPATD(newObj, sb, false);
             }
+            break;
+        default:
+            break;
+        }
+    }
+
+    /**
+     * Restores default grants on owner or public.
+     * @param owner restore for owner if true or for PUBLIC if false
+     */
+    private void restoreDefaultPrivFPATD(PgStatement newObj, StringBuilder sb, boolean owner) {
+        String role = owner ? getOwner() : "PUBLIC";
+        PgPrivilege revoke = getDefaultPrivFPATD(false, role);
+        if (privileges.contains(revoke) && !newObj.getPrivileges().contains(revoke)) {
+            sb.append('\n').append(getDefaultPrivFPATD(true, role).getCreationSQL())
+            .append(';');
         }
     }
 
@@ -347,25 +363,29 @@ public abstract class PgStatement implements IStatement, IHashable {
      * Returns GRANT/REVOKE privilege object for given role.
      * (only for PG : FUNCTION, PROCEDURE, AGGREGATE, TYPE and DOMAIN)
      */
-    private PgPrivilege getPrivOfFPATD(boolean getGrant, String role) {
-        String stmtType = null;
-        String stmtName = null;
-        StringBuilder objWithType = new StringBuilder();
-        if (getStatementType() == DbObjType.TYPE
-                || getStatementType() == DbObjType.DOMAIN) {
-            stmtType = getStatementType().name();
-            stmtName = getName();
-        } else {
-            stmtType = getStatementType() == DbObjType.PROCEDURE ?
-                    "PROCEDURE" : "FUNCTION";
+    private PgPrivilege getDefaultPrivFPATD(boolean grant, String role) {
+        String stmtType = getStatementType().name();
+        String stmtName;
+        switch (getStatementType()) {
+        case TYPE:
+        case DOMAIN:
+            stmtName = PgDiffUtils.getQuotedName(getName());
+            break;
+        case AGGREGATE:
+            stmtType = DbObjType.FUNCTION.name();
+            //$FALL-THROUGH$
+        case PROCEDURE:
+        case FUNCTION:
             stmtName = ((AbstractPgFunction) this).appendFunctionSignature(
                     new StringBuilder(), false, true).toString();
+            break;
+        default:
+            throw new IllegalArgumentException("Unacceptable type: " + getStatementType());
         }
 
-        return new PgPrivilege(getGrant ? "GRANT" : "REVOKE", "ALL",
-                objWithType.append(stmtType).append(' ')
-                .append(((PgStatementWithSearchPath) this).getSchemaName())
-                .append('.').append(stmtName).toString(), role, false);
+        return new PgPrivilege(grant ? "GRANT" : "REVOKE", "ALL", stmtType + ' '
+                + PgDiffUtils.getQuotedName(((PgStatementWithSearchPath) this).getSchemaName())
+                + '.' + stmtName, role, false);
     }
 
     public String getOwner() {
