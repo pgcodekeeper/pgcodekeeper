@@ -1,6 +1,5 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
-import java.text.MessageFormat;
 import java.util.Map;
 
 import org.eclipse.core.runtime.IAdaptable;
@@ -9,11 +8,7 @@ import org.eclipse.jface.bindings.keys.KeySequence;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.TextAttribute;
-import org.eclipse.jface.text.contentassist.ContentAssistEvent;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
-import org.eclipse.jface.text.contentassist.ICompletionListener;
-import org.eclipse.jface.text.contentassist.ICompletionProposal;
-import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
@@ -33,7 +28,6 @@ import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfiguration {
 
@@ -75,19 +69,11 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
 
         KeySequence binding = getIterationBinding();
 
-        String hotKey = binding != null ? binding.toString() : "no key"; //$NON-NLS-1$
-        String tmplMsg = MessageFormat
-                .format(Messages.SQLEditorSourceViewerConfiguration_show_templates, hotKey);
-        String keyMsg = MessageFormat
-                .format(Messages.SQLEditorSourceViewerConfiguration_show_keywords, hotKey);
-
-        IContentAssistProcessor keyProc = new SQLEditorCompletionProcessorKeys(editor);
-        IContentAssistProcessor tmplProc = new SQLEditorCompletionProcessorTmpls(editor);
-
         ContentAssistant assistant = new ContentAssistant();
         assistant.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
-        assistant.setStatusMessage(tmplMsg);
-        assistant.setContentAssistProcessor(keyProc, SQLEditorCommonDocumentProvider.SQL_CODE);
+        assistant.setContentAssistProcessor(new SQLEditorCompletionProcessor(assistant,
+                editor, binding != null ? binding.toString() : "no key"), //$NON-NLS-1$
+                SQLEditorCommonDocumentProvider.SQL_CODE);
         assistant.enableAutoActivation(true);
         assistant.enableAutoInsert(true);
         assistant.setAutoActivationDelay(500);
@@ -97,51 +83,9 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         assistant.setStatusLineVisible(true);
         assistant.setShowEmptyList(true);
         assistant.setInformationControlCreator(this.getInformationControlCreator(sourceViewer));
-
-        assistant.addCompletionListener(new ICompletionListener() {
-
-            private boolean isTmplAssist;
-
-            @Override
-            public void assistSessionEnded(ContentAssistEvent event) {
-                isTmplAssist = false;
-                switchToProc(assistant, isTmplAssist ? tmplProc : keyProc,
-                        isTmplAssist ? keyMsg : tmplMsg);
-            }
-
-            @Override
-            public void assistSessionStarted(ContentAssistEvent event) {
-                isTmplAssist = true;
-            }
-
-            @Override
-            public void selectionChanged(ICompletionProposal proposal,
-                    boolean smartToggle) {
-                if (smartToggle) {
-                    switchToProc(assistant, isTmplAssist ? tmplProc : keyProc,
-                            isTmplAssist ? keyMsg : tmplMsg);
-                    isTmplAssist = !isTmplAssist;
-                }
-            }
-        });
+        assistant.setRepeatedInvocationTrigger(binding);
 
         return assistant;
-    }
-
-    /**
-     * Makes switch to the given ContentAssistProcessor.
-     * And puts information about next ContentAssistProcessor to the message
-     * and switcher.
-     *
-     * @param assist content assistant
-     * @param proc ContentAssistProcessor to switch on
-     * @param msg information about next ContentAssistProcessor
-     */
-    private void switchToProc(ContentAssistant assist, IContentAssistProcessor proc,
-            String msg) {
-        assist.setContentAssistProcessor(null, SQLEditorCommonDocumentProvider.SQL_CODE);
-        assist.setContentAssistProcessor(proc, SQLEditorCommonDocumentProvider.SQL_CODE);
-        assist.setStatusMessage(msg);
     }
 
     private KeySequence getIterationBinding() {

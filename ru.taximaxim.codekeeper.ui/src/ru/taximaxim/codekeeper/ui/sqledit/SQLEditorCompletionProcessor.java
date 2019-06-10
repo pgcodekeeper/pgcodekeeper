@@ -1,5 +1,6 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -9,9 +10,15 @@ import java.util.stream.Stream;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.CompletionProposal;
+import org.eclipse.jface.text.contentassist.ContentAssistEvent;
+import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.ContextInformation;
+import org.eclipse.jface.text.contentassist.ICompletionListener;
+import org.eclipse.jface.text.contentassist.ICompletionListenerExtension;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
+import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import org.eclipse.swt.graphics.Image;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -20,22 +27,80 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.sql.Keyword;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
-public class SQLEditorCompletionProcessorKeys extends SQLEditorCompletionProcessorAbstract {
+public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
 
+    protected final SQLEditor editor;
+    private final ContentAssistant assistant;
     private final List<String> keywords;
 
-    public SQLEditorCompletionProcessorKeys(SQLEditor editor) {
-        super(editor);
+    private final String tmplMsg;
+    private final String keyMsg;
+
+    private int repetition= -1;
+
+    public SQLEditorCompletionProcessor(ContentAssistant assistant, SQLEditor editor,
+            String hotKey) {
+        this.editor = editor;
+        this.assistant = assistant;
+
         keywords = Keyword.KEYWORDS.keySet().stream()
                 .sorted()
                 .map(s -> s.toUpperCase(Locale.ROOT))
                 .collect(Collectors.toList());
+
+        tmplMsg = MessageFormat.format(Messages.SQLEditorCompletionProcessor_show_templates, hotKey);
+        keyMsg = MessageFormat.format(Messages.SQLEditorCompletionProcessor_show_keywords, hotKey);
+
+        assistant.addCompletionListener(new CompletionListener());
     }
 
     @Override
     public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer,
+            int offset) {
+        ICompletionProposal[] res;
+        if (repetition % 2 == 0) {
+            res = getKeys(viewer, offset);
+            assistant.setStatusMessage(tmplMsg);
+        } else {
+            res = getTmpls(viewer, offset);
+            assistant.setStatusMessage(keyMsg);
+        }
+
+        repetition++;
+
+        return res;
+    };
+
+    private ICompletionProposal[] getTmpls(ITextViewer viewer,
+            int offset) {
+        String part;
+        try {
+            part = viewer.getDocument().get(0, offset);
+        } catch (BadLocationException ex) {
+            Log.log(Log.LOG_ERROR, "Document doesn't contain such offset", ex); //$NON-NLS-1$
+            return null;
+        }
+        int nonid = offset - 1;
+        while (nonid > 0 && PgDiffUtils.isValidIdChar(part.charAt(nonid))) {
+            --nonid;
+        }
+        String text = part.substring(nonid + 1, offset);
+
+        // SQL Templates
+        if (text.isEmpty()) {
+            return new SQLEditorTemplateAssistProcessor().getAllTemplates(viewer, offset)
+                    .toArray(new ICompletionProposal[0]);
+        } else {
+            ICompletionProposal[] templates = new SQLEditorTemplateAssistProcessor()
+                    .computeCompletionProposals(viewer, offset);
+            return templates != null ? templates : new ICompletionProposal[0];
+        }
+    }
+
+    private ICompletionProposal[] getKeys(ITextViewer viewer,
             int offset) {
         String part;
         try {
@@ -99,5 +164,59 @@ public class SQLEditorCompletionProcessorKeys extends SQLEditorCompletionProcess
         }
 
         return result.toArray(new ICompletionProposal[result.size()]);
+    }
+
+    @Override
+    public IContextInformation[] computeContextInformation(ITextViewer viewer,
+            int offset) {
+        return null;
+    }
+
+    @Override
+    public char[] getCompletionProposalAutoActivationCharacters() {
+        return new char[] { '.', '(' };
+    }
+
+    @Override
+    public char[] getContextInformationAutoActivationCharacters() {
+        return new char[] { '#' };
+    }
+
+    @Override
+    public String getErrorMessage() {
+        return null;
+    }
+
+    @Override
+    public IContextInformationValidator getContextInformationValidator() {
+        return null;
+    }
+
+    /**
+     * Listener for cyclic work of the content assistant ("Ctrl + Space").
+     */
+    private final class CompletionListener implements ICompletionListener,
+    ICompletionListenerExtension {
+
+        @Override
+        public void assistSessionStarted(ContentAssistEvent event) {
+            repetition = 0;
+        }
+
+        @Override
+        public void assistSessionEnded(ContentAssistEvent event) {
+            repetition = -1;
+        }
+
+        @Override
+        public void selectionChanged(ICompletionProposal proposal,
+                boolean smartToggle) {
+            // no impl
+        }
+
+        @Override
+        public void assistSessionRestarted(ContentAssistEvent event) {
+            repetition = 0;
+        }
     }
 }
