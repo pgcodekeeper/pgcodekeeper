@@ -131,7 +131,9 @@ public class PgIndex extends AbstractIndex {
                 .append(PgDiffUtils.getQuotedName(tmpName))
                 .append(" RENAME TO ")
                 .append(PgDiffUtils.getQuotedName(getName()))
-                .append(";\nCOMMIT TRANSACTION;");
+                .append(";\n");
+                newIndex.appendCommentSql(sb);
+                sb.append("\nCOMMIT TRANSACTION;");
             }
             return true;
         }
