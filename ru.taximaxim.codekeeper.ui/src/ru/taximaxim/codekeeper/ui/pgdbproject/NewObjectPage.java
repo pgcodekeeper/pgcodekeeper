@@ -2,7 +2,7 @@ package ru.taximaxim.codekeeper.ui.pgdbproject;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -405,7 +405,10 @@ public final class NewObjectPage extends WizardPage {
     }
 
     private void openFileInEditor(IFile file, String tmplId, String schema,
-            String objectName, String parent) throws CoreException {
+            String object, String parent) throws CoreException {
+        String schemaName = PgDiffUtils.getQuotedName(schema);
+        String objectName = PgDiffUtils.getQuotedName(object);
+
         Template newObjTmpl = SQLEditorTemplateManager.getInstance()
                 .getTemplateStore().findTemplateById(tmplId);
 
@@ -416,7 +419,7 @@ public final class NewObjectPage extends WizardPage {
             // creation element
             new SQLEditorTemplateAssistProcessor().getAllTemplates(textViewer, 0)
             .stream().filter(tmplProp -> tmplProp.getTempalteOfProposal().equals(newObjTmpl))
-            .findAny().ifPresent(tmplProp -> tmplProp.fillTmplAndInsertToViewer(schema,
+            .findAny().ifPresent(tmplProp -> tmplProp.fillTmplAndInsertToViewer(schemaName,
                     objectName, parent, textViewer, 0));
         } else {
             // creation sub-element
@@ -434,7 +437,8 @@ public final class NewObjectPage extends WizardPage {
                         new DocumentTemplateContext(
                                 new SQLEditorTemplateContextType(), doc, new Position(offset, 0)),
                         new Region(offset, 0), null, 0)
-                .fillTmplAndInsertToViewer(schema, objectName, parent, textViewer, 0);
+                .fillTmplAndInsertToViewer(schemaName, objectName, PgDiffUtils.getQuotedName(parent),
+                        textViewer, 0);
             } catch (BadLocationException e) {
                 Log.log(Log.LOG_ERROR, "File with location exception: " + file.getName(), e); //$NON-NLS-1$
             } finally {
@@ -485,13 +489,10 @@ public final class NewObjectPage extends WizardPage {
             file.create(new ByteArrayInputStream(new byte[0]), false, null);
             if (open) {
                 openFileInEditor(file, SQLEditorTemplateContextType.CONTEXT_TYPE_PG
-                        + ".create" + type.name().toLowerCase(Locale.ROOT), schema, //$NON-NLS-1$
-                        PgDiffUtils.getQuotedName(name), null);
+                        + ".create" + type.name().toLowerCase(Locale.ROOT), schema, name, null); //$NON-NLS-1$
             }
-        } else {
-            if (open) {
-                openFileInEditor(file);
-            }
+        } else if (open) {
+            openFileInEditor(file);
         }
         return file;
     }
@@ -504,9 +505,8 @@ public final class NewObjectPage extends WizardPage {
 
         if (!file.exists()) {
             file.create(new ByteArrayInputStream(
-                    createParentCodeOfSubEl(PgDiffUtils.getQuotedName(schema),
-                            PgDiffUtils.getQuotedName(parent), parentType)
-                    .getBytes(StandardCharsets.UTF_8)), false, null);
+                    createParentCodeOfSubEl(schema, parent, parentType)
+                    .getBytes(Charset.forName(file.getCharset()))), false, null);
         }
 
         String tmplCtxTypeId = SQLEditorTemplateContextType.CONTEXT_TYPE_PG;
@@ -517,20 +517,20 @@ public final class NewObjectPage extends WizardPage {
         }
 
         openFileInEditor(file, tmplCtxTypeId + tmplIdPostfix + type.name().toLowerCase(Locale.ROOT),
-                PgDiffUtils.getQuotedName(schema), PgDiffUtils.getQuotedName(name),
-                PgDiffUtils.getQuotedName(parent));
+                schema, name, parent);
     }
 
     private String createParentCodeOfSubEl(String schema, String parent, DbObjType parentType) {
+        String schemaName = PgDiffUtils.getQuotedName(schema);
         String objectName = PgDiffUtils.getQuotedName(parent);
         StringBuilder sb = new StringBuilder("CREATE "); //$NON-NLS-1$
         switch (parentType) {
         case TABLE:
-            sb.append(parentType).append(' ').append(schema).append('.')
+            sb.append(parentType).append(' ').append(schemaName).append('.')
             .append(objectName).append(" (\n);"); //$NON-NLS-1$
             break;
         case VIEW:
-            sb.append(parentType).append(' ').append(schema).append('.')
+            sb.append(parentType).append(' ').append(schemaName).append('.')
             .append(objectName).append(" AS\n\tSELECT 'select_text'::text AS text;"); //$NON-NLS-1$
             break;
         default:
