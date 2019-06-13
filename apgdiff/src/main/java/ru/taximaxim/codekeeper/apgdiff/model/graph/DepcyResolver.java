@@ -561,9 +561,9 @@ public class DepcyResolver {
             PgStatement oldSt = e.getVertex();
             PgStatement newSt = oldSt.getTwin(newDb);
             if (newSt == null) {
-                if (isNeedDropForFunc(oldSt)) {
+                if (oldSt.getStatementType() == DbObjType.FUNCTION && isNeedDropForFunc(oldSt)) {
                     // when function's signature changes it has no twin
-                    // but the dependent object might not be unchanged
+                    // but the dependent object might be unchanged
                     // due to default arguments changing in the signature
                     needDrop = oldSt;
                 }
@@ -576,31 +576,22 @@ public class DepcyResolver {
         }
 
         private boolean isNeedDropForFunc(PgStatement oldSt) {
-            if (oldSt.getStatementType() == DbObjType.FUNCTION) {
-                if (oldSt.isPostgres()) {
-                    AbstractPgFunction oldFunc = (AbstractPgFunction) oldSt;
-                    if (oldFunc.getArguments().stream()
-                            .anyMatch(arg -> arg.getDefaultExpression() != null)) {
-                        // in the new database, find all the functions for which
-                        // the signature will be the same (without taking into
-                        // account the default values ​​of the arguments),
-                        // if there is such, then the drop is not necessary,
-                        // if there is no such, then the drop is necessary
-                        String oldFuncSign = oldFunc.appendFunctionSignature(new StringBuilder(),
-                                false, true).toString();
-                        AbstractSchema newSchema = newDb.getSchema(oldFunc.getSchemaName());
-                        return !(newSchema != null && newSchema.getFunctions().stream()
-                                .anyMatch(newFunc -> oldFuncSign.equals(((AbstractPgFunction) newFunc)
-                                        .appendFunctionSignature(new StringBuilder(), false, true)
-                                        .toString())));
-                    } else {
-                        return true;
-                    }
-                } else {
-                    return true;
-                }
+            if (!oldSt.isPostgres()) {
+                return false;
             }
-            return false;
+            AbstractPgFunction oldFunc = (AbstractPgFunction) oldSt;
+            // in the new database, search the function for which
+            // the signature will be the same (without taking into
+            // account the default values ​​of the arguments),
+            // if there is such, then the drop is necessary,
+            // if there is no such, then the drop is not necessary
+            String oldFuncSign = oldFunc.appendFunctionSignature(new StringBuilder(),
+                    false, true).toString();
+            AbstractSchema newSchema = newDb.getSchema(oldFunc.getSchemaName());
+            return newSchema != null && newSchema.getFunctions().stream()
+                    .anyMatch(newFunc -> oldFuncSign.equals(((AbstractPgFunction) newFunc)
+                            .appendFunctionSignature(new StringBuilder(), false, true)
+                            .toString()));
         }
 
         public PgStatement getDropped() {
