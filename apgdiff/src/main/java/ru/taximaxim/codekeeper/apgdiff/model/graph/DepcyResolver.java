@@ -18,6 +18,8 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.DepthFirstIterator;
 
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
+import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.MsTable;
 import cz.startnet.utils.pgdiff.schema.MsView;
@@ -556,21 +558,49 @@ public class DepcyResolver {
             if (needDrop != null) {
                 return;
             }
-            PgStatement st = e.getVertex();
-            PgStatement newSt = st.getTwin(newDb);
+            PgStatement oldSt = e.getVertex();
+            PgStatement newSt = oldSt.getTwin(newDb);
             if (newSt == null) {
-                if (st.getStatementType() == DbObjType.FUNCTION) {
+                if (isNeedDropForFunc(oldSt)) {
                     // when function's signature changes it has no twin
-                    // but the dependent object might be unchanged
+                    // but the dependent object might not be unchanged
                     // due to default arguments changing in the signature
-                    needDrop = st;
+                    needDrop = oldSt;
                 }
                 return;
             }
             AtomicBoolean isNeedDepcy = new AtomicBoolean();
-            if (st.appendAlterSQL(newSt, new StringBuilder(), isNeedDepcy) && isNeedDepcy.get()) {
-                needDrop = st;
+            if (oldSt.appendAlterSQL(newSt, new StringBuilder(), isNeedDepcy) && isNeedDepcy.get()) {
+                needDrop = oldSt;
             }
+        }
+
+        private boolean isNeedDropForFunc(PgStatement oldSt) {
+            if (oldSt.getStatementType() == DbObjType.FUNCTION) {
+                if (oldSt.isPostgres()) {
+                    AbstractPgFunction oldFunc = (AbstractPgFunction) oldSt;
+                    if (oldFunc.getArguments().stream()
+                            .anyMatch(arg -> arg.getDefaultExpression() != null)) {
+                        // in the new database, find all the functions for which
+                        // the signature will be the same (without taking into
+                        // account the default values ​​of the arguments),
+                        // if there is such, then the drop is not necessary,
+                        // if there is no such, then the drop is necessary
+                        String oldFuncSign = oldFunc.appendFunctionSignature(new StringBuilder(),
+                                false, true).toString();
+                        AbstractSchema newSchema = newDb.getSchema(oldFunc.getSchemaName());
+                        return !(newSchema != null && newSchema.getFunctions().stream()
+                                .anyMatch(newFunc -> oldFuncSign.equals(((AbstractPgFunction) newFunc)
+                                        .appendFunctionSignature(new StringBuilder(), false, true)
+                                        .toString())));
+                    } else {
+                        return true;
+                    }
+                } else {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public PgStatement getDropped() {
