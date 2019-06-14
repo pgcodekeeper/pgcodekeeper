@@ -8,10 +8,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.event.TraversalListenerAdapter;
@@ -21,7 +22,6 @@ import org.jgrapht.traverse.DepthFirstIterator;
 
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
-import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.Argument;
@@ -378,7 +378,7 @@ public class DepcyResolver {
                 IsDropped iter = new IsDropped();
                 customIteration(new DepthFirstIterator<>(oldDepcyGraph.getGraph(),
                         oldObj), iter);
-                if (iter.getDropped() != null && iter.getDropped() != oldObj) {
+                if (iter.needDrop != null && iter.needDrop != oldObj) {
                     action = StatementActions.DROP;
                 }
 
@@ -565,7 +565,8 @@ public class DepcyResolver {
             PgStatement oldSt = e.getVertex();
             PgStatement newSt = oldSt.getTwin(newDb);
             if (newSt == null) {
-                if (oldSt.getStatementType() == DbObjType.FUNCTION && isNeedDropForFunc(oldSt)) {
+                if (oldSt.getStatementType() == DbObjType.FUNCTION && oldSt.isPostgres()
+                        && isDefaultsOnlyChange((AbstractFunction) oldSt)) {
                     // when function's signature changes it has no twin
                     // but the dependent object might be unchanged
                     // due to default arguments changing in the signature
@@ -579,41 +580,31 @@ public class DepcyResolver {
             }
         }
 
-        private boolean isNeedDropForFunc(PgStatement oldSt) {
-            if (!oldSt.isPostgres()) {
-                return false;
-            }
-
-            AbstractPgFunction oldFunc = (AbstractPgFunction) oldSt;
+        private boolean isDefaultsOnlyChange(AbstractFunction oldFunc) {
             AbstractSchema newSchema = newDb.getSchema(oldFunc.getSchemaName());
             if (newSchema == null) {
                 return false;
             }
 
-            List<AbstractFunction> funcsWithSameBareName = newSchema.getFunctions().stream()
-                    .filter(nFunc -> oldFunc.getBareName().equals(nFunc.getBareName()))
-                    .collect(Collectors.toList());
-            if (funcsWithSameBareName.isEmpty()) {
-                return false;
-            }
-
             // in the new database, search the function for which
-            // the signature will be the same (without taking into
-            // account the default values ​​of the arguments),
+            // the signature before first default argument will be the same
             // if there is such, then the drop is necessary,
             // if there is no such, then the drop is not necessary
 
-            Function<AbstractPgFunction, List<Argument>> getArgsWithoutDef = f ->
-            f.getArguments().stream().filter(a -> a.getDefaultExpression() == null)
-            .collect(Collectors.toList());
+            Function<AbstractFunction, List<Argument>> argsBeforeDefaults = f -> {
+                List<Argument> args = f.getArguments();
+                OptionalInt firstDefault = IntStream.range(0, args.size())
+                        .filter(i -> args.get(i).getDefaultExpression() != null)
+                        .findFirst();
+                return firstDefault.isPresent() ? args.subList(0, firstDefault.getAsInt()) : args;
+            };
 
-            return funcsWithSameBareName.stream()
-                    .anyMatch(f -> getArgsWithoutDef.apply(oldFunc)
-                            .equals(getArgsWithoutDef.apply((AbstractPgFunction) f)));
-        }
+            List<Argument> oldArgs = argsBeforeDefaults.apply(oldFunc);
 
-        public PgStatement getDropped() {
-            return needDrop;
+            return newSchema.getFunctions().stream()
+                    .filter(f -> oldFunc.getBareName().equals(f.getBareName()))
+                    .map(argsBeforeDefaults)
+                    .anyMatch(oldArgs::equals);
         }
     }
 
