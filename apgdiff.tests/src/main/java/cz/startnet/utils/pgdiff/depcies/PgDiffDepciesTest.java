@@ -146,6 +146,9 @@ public class PgDiffDepciesTest {
             // добавление вьюхи с зависимыми от нее объектами,
             // пользователь выбрал только вьюху
             {"add_view", "add_view_usr_view"},
+            // изменение типа колонки таблицы, зависящей от функции, удаление функции
+            // пользователь выбрал таблицу tbl
+            {"chg_col_type_dep_from_func", "chg_col_type_dep_from_func_usr_tbl"},
         });
     }
 
