@@ -10,6 +10,8 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.event.TraversalListenerAdapter;
@@ -18,9 +20,11 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.DepthFirstIterator;
 
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
+import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
+import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.MsTable;
 import cz.startnet.utils.pgdiff.schema.MsView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -579,19 +583,33 @@ public class DepcyResolver {
             if (!oldSt.isPostgres()) {
                 return false;
             }
+
             AbstractPgFunction oldFunc = (AbstractPgFunction) oldSt;
+            AbstractSchema newSchema = newDb.getSchema(oldFunc.getSchemaName());
+            if (newSchema == null) {
+                return false;
+            }
+
+            List<AbstractFunction> funcsWithSameBareName = newSchema.getFunctions().stream()
+                    .filter(nFunc -> oldFunc.getBareName().equals(nFunc.getBareName()))
+                    .collect(Collectors.toList());
+            if (funcsWithSameBareName.isEmpty()) {
+                return false;
+            }
+
             // in the new database, search the function for which
             // the signature will be the same (without taking into
             // account the default values ​​of the arguments),
             // if there is such, then the drop is necessary,
             // if there is no such, then the drop is not necessary
-            String oldFuncSign = oldFunc.appendFunctionSignature(new StringBuilder(),
-                    false, true).toString();
-            AbstractSchema newSchema = newDb.getSchema(oldFunc.getSchemaName());
-            return newSchema != null && newSchema.getFunctions().stream()
-                    .anyMatch(newFunc -> oldFuncSign.equals(((AbstractPgFunction) newFunc)
-                            .appendFunctionSignature(new StringBuilder(), false, true)
-                            .toString()));
+
+            Function<AbstractPgFunction, List<Argument>> getArgsWithoutDef = f ->
+            f.getArguments().stream().filter(a -> a.getDefaultExpression() == null)
+            .collect(Collectors.toList());
+
+            return funcsWithSameBareName.stream()
+                    .anyMatch(f -> getArgsWithoutDef.apply(oldFunc)
+                            .equals(getArgsWithoutDef.apply((AbstractPgFunction) f)));
         }
 
         public PgStatement getDropped() {
