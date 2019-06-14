@@ -230,6 +230,8 @@ public class PgDiffTest {
                     {"modify_function_similar"},
                     // Tests scenario where FUNCTION with parallel mode is modified
                     {"modify_function_parallel"},
+                    // Tests scenario where FUNCTION with depended column is modified
+                    {"modify_function_depcy_col"},
                     // Tests scenario where TRIGGER is added.
                     {"add_trigger"},
                     // Tests scenario where TRIGGER with referencing is added.
