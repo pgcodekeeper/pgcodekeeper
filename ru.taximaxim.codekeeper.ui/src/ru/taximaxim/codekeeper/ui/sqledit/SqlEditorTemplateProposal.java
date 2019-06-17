@@ -35,7 +35,6 @@ public class SqlEditorTemplateProposal extends TemplateProposal {
         // For cases when template is template for subelement.
         if (parent != null) {
             tmplPatt = tmplPatt.replace("${parentName}", parent); //$NON-NLS-1$
-            tmplPatt = tmplPatt.replace("${constraintType}", "PRIMARY KEY"); //$NON-NLS-1$ //$NON-NLS-2$
         }
 
         tmplPatt = tmplPatt.replace("${objectName}", objectName); //$NON-NLS-1$
