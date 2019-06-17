@@ -31,27 +31,18 @@ public class SqlEditorTemplateProposal extends TemplateProposal {
             String objectName, String parent) {
         Template tmpl = getTemplate();
         String tmplPatt = tmpl.getPattern();
-        StringBuilder sbTmplPatt = new StringBuilder();
 
         // For cases when template is template for subelement.
         if (parent != null) {
-            tmplPatt = fillPlaceHolder(tmplPatt, "${parentName}", parent); //$NON-NLS-1$
-            tmplPatt = fillPlaceHolder(tmplPatt, "${constraintType}", "PRIMARY KEY"); //$NON-NLS-1$ //$NON-NLS-2$
+            tmplPatt = tmplPatt.replace("${parentName}", parent); //$NON-NLS-1$
+            tmplPatt = tmplPatt.replace("${constraintType}", "PRIMARY KEY"); //$NON-NLS-1$ //$NON-NLS-2$
         }
 
-        tmplPatt = fillPlaceHolder(tmplPatt, "${objectName}", objectName); //$NON-NLS-1$
-        tmplPatt = fillPlaceHolder(tmplPatt, "${schemaName}", schema); //$NON-NLS-1$
-        sbTmplPatt.append(tmplPatt);
+        tmplPatt = tmplPatt.replace("${objectName}", objectName); //$NON-NLS-1$
+        tmplPatt = tmplPatt.replace("${schemaName}", schema); //$NON-NLS-1$
 
         return new SqlEditorTemplateProposal(new Template(tmpl.getName(), tmpl.getDescription(),
-                tmpl.getContextTypeId(), sbTmplPatt.toString(), tmpl.isAutoInsertable()),
+                tmpl.getContextTypeId(), tmplPatt, tmpl.isAutoInsertable()),
                 getContext(), region, getImage(), getRelevance());
-    }
-
-    private String fillPlaceHolder(String template, String placeHolder, String replacement) {
-        if (template.contains(placeHolder)) {
-            return template.replace(placeHolder, replacement);
-        }
-        return template;
     }
 }

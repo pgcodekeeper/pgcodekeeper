@@ -74,8 +74,7 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
         return res;
     };
 
-    private ICompletionProposal[] getTmpls(ITextViewer viewer,
-            int offset) {
+    private String getTypedText(ITextViewer viewer, int offset) {
         String part;
         try {
             part = viewer.getDocument().get(0, offset);
@@ -87,10 +86,11 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
         while (nonid > 0 && PgDiffUtils.isValidIdChar(part.charAt(nonid))) {
             --nonid;
         }
-        String text = part.substring(nonid + 1, offset);
+        return part.substring(nonid + 1, offset);
+    }
 
-        // SQL Templates
-        if (text.isEmpty()) {
+    private ICompletionProposal[] getTmpls(ITextViewer viewer, int offset) {
+        if (getTypedText(viewer, offset).isEmpty()) {
             return new SQLEditorTemplateAssistProcessor().getAllTemplates(viewer, offset)
                     .toArray(new ICompletionProposal[0]);
         } else {
@@ -100,20 +100,8 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
         }
     }
 
-    private ICompletionProposal[] getKeys(ITextViewer viewer,
-            int offset) {
-        String part;
-        try {
-            part = viewer.getDocument().get(0, offset);
-        } catch (BadLocationException ex) {
-            Log.log(Log.LOG_ERROR, "Document doesn't contain such offset", ex); //$NON-NLS-1$
-            return null;
-        }
-        int nonid = offset - 1;
-        while (nonid > 0 && PgDiffUtils.isValidIdChar(part.charAt(nonid))) {
-            --nonid;
-        }
-        String text = part.substring(nonid + 1, offset);
+    private ICompletionProposal[] getKeys(ITextViewer viewer, int offset) {
+        String text = getTypedText(viewer, offset).toUpperCase(Locale.ROOT);
 
         List<ICompletionProposal> result = new ArrayList<>();
         List<ICompletionProposal> partResult = new ArrayList<>();
@@ -121,7 +109,7 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
         PgDbParser parser = editor.getParser();
         Stream<PgObjLocation> loc = parser.getAllObjDefinitions();
         loc
-        .filter(o -> text.isEmpty() || o.getObjName().startsWith(text))
+        .filter(o -> text.isEmpty() || o.getObjName().toUpperCase(Locale.ROOT).contains(text))
         .filter(o -> o.type != DbObjType.SEQUENCE && o.type != DbObjType.INDEX)
         .sorted((o1, o2) -> o1.getFilePath().compareTo(o2.getFilePath()))
         .forEach(obj -> {
@@ -146,9 +134,8 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
         if (text.isEmpty()) {
             keywords.forEach(k -> result.add(new CompletionProposal(k, offset, 0, k.length())));
         } else {
-            String textUpper = text.toUpperCase(Locale.ROOT);
             for (String keyword : keywords) {
-                int location = keyword.indexOf(textUpper);
+                int location = keyword.indexOf(text);
                 if (location != -1) {
                     CompletionProposal proposal = new CompletionProposal(keyword + ' ',
                             offset - text.length(), text.length(), keyword.length() + 1);

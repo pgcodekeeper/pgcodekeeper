@@ -114,7 +114,7 @@ public class SQLEditorTemplateAssistProcessor extends TemplateCompletionProcesso
         if (selection.getOffset() == offset) {
             offset = selection.getOffset() + selection.getLength();
         }
-        String prefix = extractPrefix(viewer, offset);
+        String prefix = extractPrefix(viewer, offset).toLowerCase(Locale.ROOT);
         Region region = new Region(offset - prefix.length(), prefix.length());
         TemplateContext context = createContext(viewer, region);
         if (context == null) {
@@ -165,8 +165,7 @@ public class SQLEditorTemplateAssistProcessor extends TemplateCompletionProcesso
      * the specified prefix, false otherwise
      */
     private boolean isPrefixContainedInTmpl(String prefix, Template tmpl, String ctxId) {
-        String lowerPrefix = prefix.toLowerCase(Locale.ROOT);
-        return tmpl.getName().startsWith(lowerPrefix) && tmpl.matches(lowerPrefix, ctxId);
+        return tmpl.getName().startsWith(prefix) && tmpl.matches(prefix, ctxId);
     }
 
     public List<SqlEditorTemplateProposal> getAllTemplates(ITextViewer viewer,
@@ -181,12 +180,6 @@ public class SQLEditorTemplateAssistProcessor extends TemplateCompletionProcesso
                     getRelevance(template, prefix)));
         }
         return result;
-    }
-
-    @Override
-    protected ICompletionProposal createProposal(Template template,
-            TemplateContext context, IRegion region, int relevance) {
-        return createSqlEditorTemplateProposal(template, context, region, relevance);
     }
 
     private SqlEditorTemplateProposal createSqlEditorTemplateProposal(Template template,
