@@ -165,7 +165,7 @@ public class SQLEditorTemplateAssistProcessor extends TemplateCompletionProcesso
      * the specified prefix, false otherwise
      */
     private boolean isPrefixContainedInTmpl(String prefix, Template tmpl, String ctxId) {
-        return tmpl.getName().startsWith(prefix) && tmpl.matches(prefix, ctxId);
+        return tmpl.getName().toLowerCase(Locale.ROOT).contains(prefix) && tmpl.matches(prefix, ctxId);
     }
 
     public List<SqlEditorTemplateProposal> getAllTemplates(ITextViewer viewer,
