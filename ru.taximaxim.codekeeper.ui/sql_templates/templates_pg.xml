@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates>
 
-<!-- templates for CREATE -->
+<!-- PROTECTED templates for using in wizard of creating new object -->
+<!-- 
+     The id of such templates ends with a special postfix “.protected”, 
+     and such templates are not displayed in the properties and cannot 
+     be changed by users. 
+-->
 
 <template 
     name="create_domain"
     description="%create.domain.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createdomain"
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createdomain.protected"
     >CREATE DOMAIN ${schemaName}.${objectName} AS ${dataType}
     ${conditions};</template>
 
@@ -15,14 +20,14 @@
     name="create_index"
     description="%create.index.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createindex"
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createindex.protected"
     >CREATE INDEX ${objectName} ON ${schemaName}.${parentName} USING btree (${columnName});</template>
 
 <template 
     name="create_fts_configuration"
     description="%create.fts_configuration.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createfts_configuration"
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createfts_configuration.protected"
     >CREATE TEXT SEARCH CONFIGURATION ${schemaName}.${objectName} (
     PARSER = ${parserName} );</template>
 
@@ -30,7 +35,7 @@
     name="create_fts_dictionary"
     description="%create.fts_dictionary.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createfts_dictionary"
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createfts_dictionary.protected"
     >CREATE TEXT SEARCH DICTIONARY ${schemaName}.${objectName} (
     TEMPLATE = ${templateName} );</template>
 
@@ -38,7 +43,7 @@
     name="create_fts_parser"
     description="%create.fts_parser.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createfts_parser"
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createfts_parser.protected"
     >CREATE TEXT SEARCH PARSER ${schemaName}.${objectName} (
     START = ${startFunction},
     GETTOKEN = ${gettokenFunction},
@@ -49,7 +54,7 @@
     name="create_fts_template"
     description="%create.fts_template.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createfts_template"
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createfts_template.protected"
     >CREATE TEXT SEARCH TEMPLATE ${schemaName}.${objectName} (
     LEXIZE = ${lexizeFunction} );</template>
 
@@ -57,7 +62,7 @@
     name="create_function"
     description="%create.function.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createfunction"
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createfunction.protected"
     >CREATE OR REPLACE FUNCTION ${schemaName}.${objectName}() RETURNS ${dataType}
     LANGUAGE sql
     AS $$$$
@@ -68,7 +73,7 @@ $$$$;</template>
     name="create_procedure"
     description="%create.procedure.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createprocedure"
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createprocedure.protected"
     >CREATE OR REPLACE PROCEDURE ${schemaName}.${objectName}()
     LANGUAGE sql
     AS $$$$
@@ -79,9 +84,49 @@ $$$$;</template>
     name="create_rule"
     description="%create.rule.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createrule"
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createrule.protected"
     >CREATE RULE ${objectName} AS
     ON UPDATE TO ${schemaName}.${parentName} DO NOTHING;</template>
+
+<template 
+    name="create_table"
+    description="%create.table.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createtable.protected"
+    >CREATE TABLE ${schemaName}.${objectName} (
+    ${columnName} ${dataType}
+);</template>
+
+<template 
+    name="create_trigger"
+    description="%create.trigger.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createtrigger.protected"
+    >CREATE TRIGGER ${objectName}
+    BEFORE UPDATE ON ${schemaName}.${parentName}
+    FOR EACH STATEMENT
+    EXECUTE PROCEDURE ${schemaName}.${functionName}();</template>
+
+<template 
+    name="create_type"
+    description="%create.type.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createtype.protected"
+    >CREATE TYPE ${schemaName}.${objectName} AS (
+    ${columnName} ${dataType}
+);</template>
+
+<template 
+    name="create_view"
+    description="%create.view.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createview.protected"
+    >CREATE VIEW ${schemaName}.${objectName} AS
+    SELECT ${expression};</template>
+
+
+
+<!-- templates for CREATE (UNPROTECTED) -->
 
 <template 
     name="create_sequence"
@@ -94,34 +139,6 @@ $$$$;</template>
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;</template>
-
-<template 
-    name="create_table"
-    description="%create.table.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createtable"
-    >CREATE TABLE ${schemaName}.${objectName} (
-    ${columnName} ${dataType}
-);</template>
-
-<template 
-    name="create_trigger"
-    description="%create.trigger.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createtrigger"
-    >CREATE TRIGGER ${objectName}
-    BEFORE UPDATE ON ${schemaName}.${parentName}
-    FOR EACH STATEMENT
-    EXECUTE PROCEDURE ${schemaName}.${functionName}();</template>
-
-<template 
-    name="create_type"
-    description="%create.type.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createtype"
-    >CREATE TYPE ${schemaName}.${objectName} AS (
-    ${columnName} ${dataType}
-);</template>
 
 <template 
     name="create_type"
@@ -150,14 +167,6 @@ $$$$;</template>
     INPUT = ${input_function},
     OUTPUT = ${output_function},
 );</template>
-
-<template 
-    name="create_view"
-    description="%create.view.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createview"
-    >CREATE VIEW ${schemaName}.${objectName} AS
-    SELECT ${expression};</template>
 
 
 

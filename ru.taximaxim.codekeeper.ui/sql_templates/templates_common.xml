@@ -1,6 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates>
 
+<!-- PROTECTED templates for using in wizard of creating new object -->
+<!-- 
+     The id of such templates ends with a special postfix “.protected”, 
+     and such templates are not displayed in the properties and cannot 
+     be changed by users. 
+-->
+
+<template 
+    name="alter_table_constraint"
+    description="%alter.add.constraint.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.addconstraint.protected"
+    >ALTER TABLE ${schemaName}.${parentName}
+    ADD CONSTRAINT ${objectName} ${constraintType} (${columnName})</template>
+
+
+
 <!-- templates for ALTER -->
 
 <template 
@@ -26,14 +43,6 @@
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.dropcolumn"
     >ALTER TABLE ${tableName}
     DROP COLUMN ${columnName}</template>
-
-<template 
-    name="alter_table_constraint"
-    description="%alter.add.constraint.desc" 
-    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
-    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.addconstraint"
-    >ALTER TABLE ${schemaName}.${parentName}
-    ADD CONSTRAINT ${objectName} ${constraintType} (${columnName})</template>
 
 <template 
     name="alter_table_constraint"

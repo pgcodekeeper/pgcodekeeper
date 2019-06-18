@@ -65,6 +65,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
+import ru.taximaxim.codekeeper.ui.prefs.SQLEditorTemplatePrefPage;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateAssistProcessor;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateContextType;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateManager;
@@ -488,8 +489,8 @@ public final class NewObjectPage extends WizardPage {
         if (!file.exists()) {
             file.create(new ByteArrayInputStream(new byte[0]), false, null);
             if (open) {
-                openFileInEditor(file, SQLEditorTemplateContextType.CONTEXT_TYPE_PG
-                        + ".create" + type.name().toLowerCase(Locale.ROOT), schema, name, null); //$NON-NLS-1$
+                openFileInEditor(file, getTmplIdProtected(SQLEditorTemplateContextType.CONTEXT_TYPE_PG,
+                        ".create", type), schema, name, null); //$NON-NLS-1$
             }
         } else if (open) {
             openFileInEditor(file);
@@ -516,7 +517,7 @@ public final class NewObjectPage extends WizardPage {
             tmplIdPostfix = ".add"; //$NON-NLS-1$
         }
 
-        openFileInEditor(file, tmplCtxTypeId + tmplIdPostfix + type.name().toLowerCase(Locale.ROOT),
+        openFileInEditor(file, getTmplIdProtected(tmplCtxTypeId, tmplIdPostfix, type),
                 schema, name, parent);
     }
 
@@ -537,6 +538,26 @@ public final class NewObjectPage extends WizardPage {
             return "";
         }
         return sb.toString();
+    }
+
+    /**
+     * Returns template id with special postfix ".protected".
+     * <br /><br />
+     * ".protected" - this is a marker of belonging to the templates of
+     * mechanism for creating new objects;
+     * <br />
+     * such marker is written at the end of the template id and means that this
+     * template is not displayed in the properties and cannot be edited by users.
+     *
+     * @param tmplCtxTypeId template context type id
+     * @param tmplIdPostfix postfix of template id
+     * @param objType type of creating object
+     * @return
+     */
+    private String getTmplIdProtected(String tmplCtxTypeId, String tmplIdPostfix,
+            DbObjType objType) {
+        return tmplCtxTypeId + tmplIdPostfix + objType.name().toLowerCase(Locale.ROOT)
+                + SQLEditorTemplatePrefPage.TEMPLATE_ID_PROTECTION_MARKER;
     }
 
     private IFolder getFolder(String name, DbObjType type, IProject project) throws CoreException {

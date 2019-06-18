@@ -2,7 +2,6 @@ package ru.taximaxim.codekeeper.ui.prefs;
 
 import java.util.Arrays;
 
-import org.eclipse.jface.text.templates.persistence.TemplatePersistenceData;
 import org.eclipse.jface.text.templates.persistence.TemplateStore;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.Viewer;
@@ -15,6 +14,8 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateManager;
 
 public class SQLEditorTemplatePrefPage extends TemplatePreferencePage {
+
+    public static final String TEMPLATE_ID_PROTECTION_MARKER = ".protected"; //$NON-NLS-1$
 
     public SQLEditorTemplatePrefPage() {
         try {
@@ -46,8 +47,12 @@ public class SQLEditorTemplatePrefPage extends TemplatePreferencePage {
 
         @Override
         public Object[] getElements(Object input) {
+            // to users are shown only unprotected templates, because protected
+            // templates used in wizard of creating new object
             return Arrays.stream(fStore.getTemplateData(false))
-                    .filter(TemplatePersistenceData::isUserAdded).toArray();
+                    .filter(tmplPersData -> !tmplPersData.getId()
+                            .endsWith(TEMPLATE_ID_PROTECTION_MARKER))
+                    .toArray();
         }
 
         @Override
