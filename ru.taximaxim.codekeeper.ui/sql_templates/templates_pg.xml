@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+
+<!-- PROTECTED templates for using in wizard of creating new object -->
+<!-- 
+     The id of such templates ends with a special postfix “.protected”, 
+     and such templates are not displayed in the properties and cannot 
+     be changed by users. 
+-->
+
+<template 
+    name="create_domain"
+    description="%create.domain.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createdomain.protected"
+    >CREATE DOMAIN ${schemaName}.${objectName} AS ${dataType}
+    ${conditions};</template>
+
+<template 
+    name="create_index"
+    description="%create.index.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createindex.protected"
+    >CREATE INDEX ${objectName} ON ${schemaName}.${parentName} USING btree (${columnName});</template>
+
+<template 
+    name="create_fts_configuration"
+    description="%create.fts_configuration.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createfts_configuration.protected"
+    >CREATE TEXT SEARCH CONFIGURATION ${schemaName}.${objectName} (
+    PARSER = ${parserName} );</template>
+
+<template 
+    name="create_fts_dictionary"
+    description="%create.fts_dictionary.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createfts_dictionary.protected"
+    >CREATE TEXT SEARCH DICTIONARY ${schemaName}.${objectName} (
+    TEMPLATE = ${templateName} );</template>
+
+<template 
+    name="create_fts_parser"
+    description="%create.fts_parser.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createfts_parser.protected"
+    >CREATE TEXT SEARCH PARSER ${schemaName}.${objectName} (
+    START = ${startFunction},
+    GETTOKEN = ${gettokenFunction},
+    END = ${endFunction},
+    LEXTYPES = ${lextypesFunction} );</template>
+
+<template 
+    name="create_fts_template"
+    description="%create.fts_template.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createfts_template.protected"
+    >CREATE TEXT SEARCH TEMPLATE ${schemaName}.${objectName} (
+    LEXIZE = ${lexizeFunction} );</template>
+
+<template 
+    name="create_function"
+    description="%create.function.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createfunction.protected"
+    >CREATE OR REPLACE FUNCTION ${schemaName}.${objectName}() RETURNS ${dataType}
+    LANGUAGE sql
+    AS $$$$
+    --function body
+$$$$;</template>
+
+<template 
+    name="create_procedure"
+    description="%create.procedure.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createprocedure.protected"
+    >CREATE OR REPLACE PROCEDURE ${schemaName}.${objectName}()
+    LANGUAGE sql
+    AS $$$$
+    --procedure body 
+$$$$;</template>
+
+<template 
+    name="create_rule"
+    description="%create.rule.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createrule.protected"
+    >CREATE RULE ${objectName} AS
+    ON UPDATE TO ${schemaName}.${parentName} DO NOTHING;</template>
+
+<template 
+    name="create_table"
+    description="%create.table.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createtable.protected"
+    >CREATE TABLE ${schemaName}.${objectName} (
+    ${columnName} ${dataType}
+);</template>
+
+<template 
+    name="create_trigger"
+    description="%create.trigger.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createtrigger.protected"
+    >CREATE TRIGGER ${objectName}
+    BEFORE UPDATE ON ${schemaName}.${parentName}
+    FOR EACH STATEMENT
+    EXECUTE PROCEDURE ${schemaName}.${functionName}();</template>
+
+<template 
+    name="create_type"
+    description="%create.type.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createtype.protected"
+    >CREATE TYPE ${schemaName}.${objectName} AS (
+    ${columnName} ${dataType}
+);</template>
+
+<template 
+    name="create_view"
+    description="%create.view.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createview.protected"
+    >CREATE VIEW ${schemaName}.${objectName} AS
+    SELECT ${expression};</template>
+
+
+
+<!-- templates for CREATE (UNPROTECTED) -->
+
+<template 
+    name="create_sequence"
+    description="%create.sequence.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createsequence"
+    >CREATE SEQUENCE ${schemaName}.${sequenceName}
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;</template>
+
+<template 
+    name="create_type"
+    description="%create.type2.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createtype2"
+    >CREATE TYPE ${schemaName}.${objectName} AS ENUM (
+    '${label}'
+);</template>
+
+<template 
+    name="create_type"
+    description="%create.type3.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createtype3"
+    >CREATE TYPE ${schemaName}.${objectName} AS RANGE (
+    SUBTYPE = ${subtype}
+);</template>
+
+<template 
+    name="create_type"
+    description="%create.type4.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createtype4"
+    >CREATE TYPE ${schemaName}.${objectName} (
+    INPUT = ${input_function},
+    OUTPUT = ${output_function},
+);</template>
+
+
+
+<!-- templates for ALTER -->
+
+<template 
+    name="alter_owner"
+    description="%alter.owner.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.alterowner"
+    >ALTER ${objectType} ${objectName} OWNER TO ${userName};</template>
+
+<template 
+    name="alter_rule"
+    description="%alter.rule.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.alterrule"
+    >ALTER RULE ${ruleName} ON ${tableName} RENAME TO ${newRuleName};</template>
+
+<template 
+    name="alter_trigger"
+    description="%alter.trigger.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.altertrigger"
+    >ALTER TRIGGER ${triggerName} ON ${tableName} ${operation};</template>
+
+
+
+<!-- templates for DROP -->
+
+<template 
+    name="drop_trigger"
+    description="%drop.trigger.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.droptrigger"
+    >DROP TRIGGER ${triggerName} ON ${tableName};</template>
+
+<template 
+    name="drop_rule"
+    description="%drop.rule.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.droprule"
+    >DROP RULE ${ruleName} ON ${tableName};</template>
+
+
+
+<!-- templates for COMMENT -->
+
+<template 
+    name="comment"
+    description="%comment.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.comment"
+    >COMMENT ON ${statementType} ${statementName} IS '${text}';</template>
+
+<template 
+    name="comment"
+    description="%comment2.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.comment2"
+    >COMMENT ON ${statementType} ${statementName} ON ${tableName} IS '${text}';</template>
+
+
+
+<!-- templates for aggregate functions -->
+
+<template 
+    name="to_char"
+    description="%to_char.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.tochar">TO_CHAR(${value}, ${template})</template>
+
+<template 
+    name="to_number"
+    description="%to_number.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.tonumber">TO_NUMBER(${value}, ${template})</template>
+
+<template 
+    name="to_date"
+    description="%to_date.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.todate">TO_DATE(${value}, ${template})</template>
+
+<template 
+    name="decode"
+    description="%decode.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.decode">DECODE(${text}, ${format})</template>
+
+<template 
+    name="encode"
+    description="%encode.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.encode">ENCODE(${data}, ${format})</template>
+
+</templates>

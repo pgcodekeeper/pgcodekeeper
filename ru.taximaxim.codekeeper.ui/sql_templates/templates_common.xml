@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+
+<!-- PROTECTED templates for using in wizard of creating new object -->
+<!-- 
+     The id of such templates ends with a special postfix “.protected”, 
+     and such templates are not displayed in the properties and cannot 
+     be changed by users. 
+-->
+
+<template 
+    name="alter_table_constraint"
+    description="%alter.add.constraint.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.addconstraint.protected"
+    >ALTER TABLE ${schemaName}.${parentName}
+    ADD CONSTRAINT ${objectName} ${constraintType} (${columnName})</template>
+
+
+
+<!-- templates for ALTER -->
+
+<template 
+    name="alter_table_add_column"
+    description="%alter.add.column.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.addcolumn"
+    >ALTER TABLE ${tableName}
+    ADD COLUMN ${columnName} ${dataType}</template>
+    
+<template 
+    name="alter_table_alter_column"
+    description="%alter.alter.column.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.altercolumn"
+    >ALTER TABLE ${tableName}
+    ALTER COLUMN ${columnName} ${operation}</template>
+
+<template 
+    name="alter_table_drop_column"
+    description="%alter.drop.column.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.dropcolumn"
+    >ALTER TABLE ${tableName}
+    DROP COLUMN ${columnName}</template>
+
+<template 
+    name="alter_table_constraint"
+    description="%alter.drop.constraint.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.delconstraint"
+    >ALTER TABLE ${schemaName}.${parentName}
+    DROP CONSTRAINT ${objectName}</template>
+
+
+
+<!-- templates for privileges -->
+
+<template 
+    name="grant"
+    description="%grant.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.grant"
+    >GRANT ALL ON ${statementType} ${statementName} TO ${role}</template>
+
+<template 
+    name="revoke"
+    description="%revoke.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.revoke"
+    >REVOKE ALL ON ${statementType} ${statementName} FROM ${role}</template>
+
+
+
+<!-- templates for data processing -->
+
+<template 
+    name="select"
+    description="%select.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.select"
+    >SELECT
+  ${columnName} 
+FROM
+  ${tableName}</template>
+
+<template 
+    name="select"
+    description="%select2.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.select2"
+    >SELECT
+  *
+FROM
+  ${tableName}</template>
+
+<template 
+    name="insert"
+    description="%insert.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.insert"
+    >INSERT INTO ${tableName}
+  ( ${columnName} )
+VALUES
+  ( ${value} )</template>
+
+<template 
+    name="insert"
+    description="%insert2.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.insert2"
+    >INSERT INTO ${tableName}
+VALUES
+  ( ${value} )</template>
+
+<template 
+    name="update"
+    description="%update.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.update"
+    >UPDATE ${tableName}
+  SET ${columnName} = ${value}</template>
+
+<template 
+    name="delete"
+    description="%delete.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.delete"
+    >DELETE FROM ${tableName}</template>
+
+<template 
+    name="truncate"
+    description="%truncate.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.truncate"
+    >TRUNCATE TABLE ${tableName}</template>
+
+<template 
+    name="case"
+    description="%case.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.case"
+    >CASE ${columnName} 
+    WHEN ${value} THEN ${value} 
+    ELSE ${value} 
+END</template>
+
+<template 
+    name="case"
+    description="%case2.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.case2"
+    >CASE
+    WHEN ${columnName} = ${value} THEN ${value} 
+    ELSE ${value} 
+END</template>
+
+<template 
+    name="group"
+    description="%group.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.group"
+    >GROUP BY ${columnName}</template>
+
+<template 
+    name="order"
+    description="%order.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.order"
+    >ORDER BY ${columnName}</template>
+
+
+
+<!-- templates for aggregate functions -->
+
+<template 
+    name="count"
+    description="%count.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.count">COUNT(${columnName})</template>
+
+<template 
+    name="max"
+    description="%max.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.max">MAX(${columnName})</template>
+
+<template 
+    name="min"
+    description="%min.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.min">MIN(${columnName})</template>
+
+<template 
+    name="avg"
+    description="%avg.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.avg">AVG(${columnName})</template>
+
+<template 
+    name="sum"
+    description="%sum.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.sum">SUM(${columnName})</template>
+
+</templates>

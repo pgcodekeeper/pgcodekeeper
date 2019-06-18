@@ -2,10 +2,12 @@ package ru.taximaxim.codekeeper.ui.pgdbproject;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -16,6 +18,14 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.ITextOperationTarget;
+import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.Position;
+import org.eclipse.jface.text.Region;
+import org.eclipse.jface.text.templates.DocumentTemplateContext;
+import org.eclipse.jface.text.templates.Template;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -32,9 +42,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
@@ -52,6 +65,10 @@ import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
+import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateAssistProcessor;
+import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateContextType;
+import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateManager;
+import ru.taximaxim.codekeeper.ui.sqledit.SqlEditorTemplateProposal;
 
 public final class NewObjectPage extends WizardPage {
 
@@ -61,16 +78,10 @@ public final class NewObjectPage extends WizardPage {
     private static final String SCHEMA = "schema"; //$NON-NLS-1$
     private static final String CONTAINER = "container"; //$NON-NLS-1$
 
-    private static final String GROUP_DELIMITER =
-            "\n--------------------------------------------------------------------------------\n\n"; //$NON-NLS-1$
     private static final String PATTERN = "CREATE {0} {1};"; //$NON-NLS-1$
 
-    private static final String RULE_PATTERN = "CREATE RULE {0} AS\n\tON UPDATE TO {1} DO NOTHING;\n";//$NON-NLS-1$
-    private static final String TRIGGER_PATTERN = "CREATE TRIGGER {0}\n\tBEFORE UPDATE ON {1}" //$NON-NLS-1$
-            + "\n\tFOR EACH STATEMENT\n\tEXECUTE PROCEDURE schema_name.function_name_placeholder();\n"; //$NON-NLS-1$
-    private static final String CONSTRAINT_PATTERN = "ALTER TABLE {0}\n\tADD CONSTRAINT {1}" //$NON-NLS-1$
-            + " PRIMARY KEY (COLUMN_NAME);\n"; //$NON-NLS-1$
-    private static final String INDEX_PATTERN = "CREATE INDEX {0} ON {1} USING btree (COLUMN_NAME);\n"; //$NON-NLS-1$
+    private static final String GROUP_DELIMITER =
+            "\n\n--------------------------------------------------------------------------------\n\n"; //$NON-NLS-1$
 
     private DbObjType type;
     private String name = NAME;
@@ -388,9 +399,52 @@ public final class NewObjectPage extends WizardPage {
         }
     }
 
-    private void openFileInEditor(IFile file) throws PartInitException {
-        PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-        .openEditor(new FileEditorInput(file), EDITOR.SQL);
+    private IEditorPart openFileInEditor(IFile file) throws PartInitException {
+        return PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+                .openEditor(new FileEditorInput(file), EDITOR.SQL);
+    }
+
+    private void openFileInEditor(IFile file, String tmplId, String schema,
+            String object, String parent) throws CoreException {
+        String schemaName = PgDiffUtils.getQuotedName(schema);
+        String objectName = PgDiffUtils.getQuotedName(object);
+
+        Template newObjTmpl = SQLEditorTemplateManager.getInstance()
+                .getTemplateStore().findTemplateById(tmplId);
+
+        ITextViewer textViewer = (ITextViewer) openFileInEditor(file)
+                .getAdapter(ITextOperationTarget.class);
+
+        if (parent == null) {
+            // creation element
+            new SQLEditorTemplateAssistProcessor().getAllTemplates(textViewer, 0)
+            .stream().filter(tmplProp -> tmplProp.getTempalteOfProposal().equals(newObjTmpl))
+            .findAny().ifPresent(tmplProp -> tmplProp.fillTmplAndInsertToViewer(schemaName,
+                    objectName, parent, textViewer, 0));
+        } else {
+            // creation sub-element
+            IDocumentProvider provider = new TextFileDocumentProvider();
+            try {
+                // inserting the group delimiter at the end of the parent element
+                // code and getting the offset from it
+                provider.connect(file);
+                IDocument doc = provider.getDocument(file);
+                int offset = doc.getLength();
+                doc.replace(offset, 0, GROUP_DELIMITER);
+                offset += GROUP_DELIMITER.length();
+
+                new SqlEditorTemplateProposal(newObjTmpl,
+                        new DocumentTemplateContext(
+                                new SQLEditorTemplateContextType(), doc, new Position(offset, 0)),
+                        new Region(offset, 0), null, 0)
+                .fillTmplAndInsertToViewer(schemaName, objectName, PgDiffUtils.getQuotedName(parent),
+                        textViewer, 0);
+            } catch (BadLocationException e) {
+                Log.log(Log.LOG_ERROR, "File with location exception: " + file.getName(), e); //$NON-NLS-1$
+            } finally {
+                provider.disconnect(file);
+            }
+        }
     }
 
     private IFolder createSchema(String name, boolean open, IProject project) throws CoreException {
@@ -429,60 +483,15 @@ public final class NewObjectPage extends WizardPage {
 
     private IFile createObject(String schema, String name, DbObjType type,
             boolean open, IProject project) throws CoreException {
-        String objectName = PgDiffUtils.getQuotedName(name);
-        IFolder folder = getFolder(schema, type, project);
-        IFile file = folder.getFile(AbstractModelExporter.getExportedFilenameSql(name));
-
+        IFile file = getFolder(schema, type, project)
+                .getFile(AbstractModelExporter.getExportedFilenameSql(name));
         if (!file.exists()) {
-            StringBuilder sb = new StringBuilder("CREATE "); //$NON-NLS-1$
-            switch (type) {
-            case TYPE:
-                sb.append(type).append(' ').append(schema).append('.')
-                .append(objectName).append(';');
-                break;
-            case DOMAIN:
-                sb.append(type).append(' ').append(schema).append('.')
-                .append(objectName).append(" AS datatype;"); //$NON-NLS-1$
-                break;
-            case FUNCTION:
-                sb.append(" OR REPLACE FUNCTION ").append(schema).append('.') //$NON-NLS-1$
-                .append(objectName).append("() RETURNS void\n\tLANGUAGE sql\n    AS $$\n\t--function body \n$$;\n"); //$NON-NLS-1$
-                break;
-            case PROCEDURE:
-                sb.append(" OR REPLACE PROCEDURE ").append(schema).append('.') //$NON-NLS-1$
-                .append(objectName).append("()\n\tLANGUAGE sql\n    AS $$\n--procedure body \n$$;\n"); //$NON-NLS-1$
-                break;
-            case TABLE:
-                sb.append(type).append(' ').append(schema).append('.')
-                .append(objectName).append(" (\n);"); //$NON-NLS-1$
-                break;
-            case VIEW:
-                sb.append(type).append(' ').append(schema).append('.')
-                .append(objectName).append(" AS\n\tSELECT 'select_text'::text AS text;"); //$NON-NLS-1$
-                break;
-            case FTS_PARSER:
-                sb.append("TEXT SEARCH PARSER ").append(schema).append('.').append(objectName) //$NON-NLS-1$
-                .append(" (\n\tSTART = start_function,\n\tGETTOKEN = gettoken_function,\n\tEND = end_function,\n\tLEXTYPES = lextypes_function );"); //$NON-NLS-1$
-                break;
-            case FTS_TEMPLATE:
-                sb.append("TEXT SEARCH TEMPLATE ").append(schema).append('.') //$NON-NLS-1$
-                .append(objectName).append(" (\n\tLEXIZE = lexize_function );"); //$NON-NLS-1$
-                break;
-            case FTS_DICTIONARY:
-                sb.append("TEXT SEARCH DICTIONARY ").append(schema).append('.') //$NON-NLS-1$
-                .append(objectName).append(" (\n\tTEMPLATE = template_name );"); //$NON-NLS-1$
-                break;
-            case FTS_CONFIGURATION:
-                sb.append("TEXT SEARCH CONFIGURATION ").append(schema).append('.') //$NON-NLS-1$
-                .append(objectName).append(" (\n\tPARSER = parser_name );"); //$NON-NLS-1$
-                break;
-            default:
-                break;
+            file.create(new ByteArrayInputStream(new byte[0]), false, null);
+            if (open) {
+                openFileInEditor(file, getTmplIdProtected(SQLEditorTemplateContextType.CONTEXT_TYPE_PG,
+                        ".create", type), schema, name, null); //$NON-NLS-1$
             }
-
-            file.create(new ByteArrayInputStream(sb.toString().getBytes()), false, null);
-        }
-        if (open) {
+        } else if (open) {
             openFileInEditor(file);
         }
         return file;
@@ -490,22 +499,64 @@ public final class NewObjectPage extends WizardPage {
 
     private void createSubElement(String schema, String parent,
             String name, boolean parentIsTable,  IProject project, DbObjType type) throws CoreException {
-        DbObjType parentType = parentIsTable? DbObjType.TABLE : DbObjType.VIEW;
-        IFile file = createObject(schema, parent, parentType, false, project);
-        StringBuilder sb = new StringBuilder(GROUP_DELIMITER);
-        String objectName = PgDiffUtils.getQuotedName(name);
-        String parentName = schema + '.' + parent;
-        if (type == DbObjType.RULE) {
-            sb.append(MessageFormat.format(RULE_PATTERN, objectName, parentName));
-        } else if (type == DbObjType.TRIGGER) {
-            sb.append(MessageFormat.format(TRIGGER_PATTERN, objectName, parentName));
-        } else if (type == DbObjType.CONSTRAINT) {
-            sb.append(MessageFormat.format(CONSTRAINT_PATTERN, parentName, objectName));
-        } else {
-            sb.append(MessageFormat.format(INDEX_PATTERN, objectName, parentName));
+        DbObjType parentType = parentIsTable ? DbObjType.TABLE : DbObjType.VIEW;
+        IFile file = getFolder(schema, parentType, project)
+                .getFile(AbstractModelExporter.getExportedFilenameSql(parent));
+
+        if (!file.exists()) {
+            file.create(new ByteArrayInputStream(
+                    createParentCodeOfSubEl(schema, parent, parentType)
+                    .getBytes(Charset.forName(file.getCharset()))), false, null);
         }
-        file.appendContents(new ByteArrayInputStream(sb.toString().getBytes()), true, true, null);
-        openFileInEditor(file);
+
+        String tmplCtxTypeId = SQLEditorTemplateContextType.CONTEXT_TYPE_PG;
+        String tmplIdPostfix = ".create"; //$NON-NLS-1$
+        if (type == DbObjType.CONSTRAINT) {
+            tmplCtxTypeId = SQLEditorTemplateContextType.CONTEXT_TYPE_COMMON;
+            tmplIdPostfix = ".add"; //$NON-NLS-1$
+        }
+
+        openFileInEditor(file, getTmplIdProtected(tmplCtxTypeId, tmplIdPostfix, type),
+                schema, name, parent);
+    }
+
+    private String createParentCodeOfSubEl(String schema, String parent, DbObjType parentType) {
+        String schemaName = PgDiffUtils.getQuotedName(schema);
+        String objectName = PgDiffUtils.getQuotedName(parent);
+        StringBuilder sb = new StringBuilder("CREATE "); //$NON-NLS-1$
+        switch (parentType) {
+        case TABLE:
+            sb.append(parentType).append(' ').append(schemaName).append('.')
+            .append(objectName).append(" (\n);"); //$NON-NLS-1$
+            break;
+        case VIEW:
+            sb.append(parentType).append(' ').append(schemaName).append('.')
+            .append(objectName).append(" AS\n\tSELECT 'select_text'::text AS text;"); //$NON-NLS-1$
+            break;
+        default:
+            return "";
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Returns template id with special postfix ".protected".
+     * <br /><br />
+     * ".protected" - this is a marker of belonging to the templates of
+     * mechanism for creating new objects;
+     * <br />
+     * such marker is written at the end of the template id and means that this
+     * template is not displayed in the properties and cannot be edited by users.
+     *
+     * @param tmplCtxTypeId template context type id
+     * @param tmplIdPostfix postfix of template id
+     * @param objType type of creating object
+     * @return
+     */
+    private String getTmplIdProtected(String tmplCtxTypeId, String tmplIdPostfix,
+            DbObjType objType) {
+        return tmplCtxTypeId + tmplIdPostfix + objType.name().toLowerCase(Locale.ROOT)
+                + SQLEditorTemplateManager.TEMPLATE_ID_PROTECTION_MARKER;
     }
 
     private IFolder getFolder(String name, DbObjType type, IProject project) throws CoreException {
