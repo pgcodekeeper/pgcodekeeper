@@ -65,7 +65,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
-import ru.taximaxim.codekeeper.ui.prefs.SQLEditorTemplatePrefPage;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateAssistProcessor;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateContextType;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateManager;
@@ -557,7 +556,7 @@ public final class NewObjectPage extends WizardPage {
     private String getTmplIdProtected(String tmplCtxTypeId, String tmplIdPostfix,
             DbObjType objType) {
         return tmplCtxTypeId + tmplIdPostfix + objType.name().toLowerCase(Locale.ROOT)
-                + SQLEditorTemplatePrefPage.TEMPLATE_ID_PROTECTION_MARKER;
+                + SQLEditorTemplateManager.TEMPLATE_ID_PROTECTION_MARKER;
     }
 
     private IFolder getFolder(String name, DbObjType type, IProject project) throws CoreException {

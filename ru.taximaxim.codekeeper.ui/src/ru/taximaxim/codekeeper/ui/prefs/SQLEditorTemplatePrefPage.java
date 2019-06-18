@@ -15,8 +15,6 @@ import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateManager;
 
 public class SQLEditorTemplatePrefPage extends TemplatePreferencePage {
 
-    public static final String TEMPLATE_ID_PROTECTION_MARKER = ".protected"; //$NON-NLS-1$
-
     public SQLEditorTemplatePrefPage() {
         try {
             setPreferenceStore(Activator.getDefault().getPreferenceStore());
@@ -51,7 +49,7 @@ public class SQLEditorTemplatePrefPage extends TemplatePreferencePage {
             // templates used in wizard of creating new object
             return Arrays.stream(fStore.getTemplateData(false))
                     .filter(tmplPersData -> !tmplPersData.getId()
-                            .endsWith(TEMPLATE_ID_PROTECTION_MARKER))
+                            .endsWith(SQLEditorTemplateManager.TEMPLATE_ID_PROTECTION_MARKER))
                     .toArray();
         }
 
