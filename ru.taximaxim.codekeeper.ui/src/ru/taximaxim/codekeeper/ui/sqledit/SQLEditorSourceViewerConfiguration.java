@@ -72,7 +72,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         ContentAssistant assistant = new ContentAssistant();
         assistant.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
         assistant.setContentAssistProcessor(new SQLEditorCompletionProcessor(assistant,
-                editor, binding != null ? binding.toString() : "no key"), //$NON-NLS-1$
+                editor, binding != null ? binding.format() : "no key"), //$NON-NLS-1$
                 SQLEditorCommonDocumentProvider.SQL_CODE);
         assistant.enableAutoActivation(true);
         assistant.enableAutoInsert(true);
