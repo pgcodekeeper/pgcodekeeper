@@ -60,21 +60,6 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
     @Override
     public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer,
             int offset) {
-        ICompletionProposal[] res;
-        if (repetition % 2 == 0) {
-            res = getKeys(viewer, offset);
-            assistant.setStatusMessage(tmplMsg);
-        } else {
-            res = getTmpls(viewer, offset);
-            assistant.setStatusMessage(keyMsg);
-        }
-
-        repetition++;
-
-        return res;
-    };
-
-    private String getTypedText(ITextViewer viewer, int offset) {
         String part;
         try {
             part = viewer.getDocument().get(0, offset);
@@ -86,11 +71,24 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
         while (nonid > 0 && PgDiffUtils.isValidIdChar(part.charAt(nonid))) {
             --nonid;
         }
-        return part.substring(nonid + 1, offset);
-    }
+        String typedText = part.substring(nonid + 1, offset).toUpperCase(Locale.ROOT);
 
-    private ICompletionProposal[] getTmpls(ITextViewer viewer, int offset) {
-        if (getTypedText(viewer, offset).isEmpty()) {
+        ICompletionProposal[] res;
+        if (repetition % 2 == 0) {
+            res = getKeys(offset, typedText);
+            assistant.setStatusMessage(tmplMsg);
+        } else {
+            res = getTmpls(viewer, offset, typedText);
+            assistant.setStatusMessage(keyMsg);
+        }
+
+        repetition++;
+
+        return res;
+    };
+
+    private ICompletionProposal[] getTmpls(ITextViewer viewer, int offset, String text) {
+        if (text.isEmpty()) {
             return new SQLEditorTemplateAssistProcessor().getAllTemplates(viewer, offset)
                     .toArray(new ICompletionProposal[0]);
         } else {
@@ -100,9 +98,7 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
         }
     }
 
-    private ICompletionProposal[] getKeys(ITextViewer viewer, int offset) {
-        String text = getTypedText(viewer, offset).toUpperCase(Locale.ROOT);
-
+    private ICompletionProposal[] getKeys(int offset, String text) {
         List<ICompletionProposal> result = new ArrayList<>();
         List<ICompletionProposal> partResult = new ArrayList<>();
 
