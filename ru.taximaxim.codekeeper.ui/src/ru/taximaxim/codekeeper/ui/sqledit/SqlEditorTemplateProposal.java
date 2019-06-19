@@ -1,5 +1,8 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.DocumentEvent;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.templates.Template;
@@ -43,5 +46,21 @@ public class SqlEditorTemplateProposal extends TemplateProposal {
         return new SqlEditorTemplateProposal(new Template(tmpl.getName(), tmpl.getDescription(),
                 tmpl.getContextTypeId(), tmplPatt, tmpl.isAutoInsertable()),
                 getContext(), region, getImage(), getRelevance());
+    }
+
+    // This override is necessary for correct filtering the proposed templates
+    // while typing text (here used 'contains' method instead of 'startsWith').
+    @Override
+    public boolean validate(IDocument document, int offset, DocumentEvent event) {
+        try {
+            int replaceOffset= getReplaceOffset();
+            if (offset >= replaceOffset) {
+                String content= document.get(replaceOffset, offset - replaceOffset);
+                return getTemplate().getName().toLowerCase().contains(content.toLowerCase());
+            }
+        } catch (BadLocationException e) {
+            // concurrent modification - ignore
+        }
+        return false;
     }
 }
