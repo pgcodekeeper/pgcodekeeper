@@ -182,6 +182,15 @@ public class SQLEditorTemplateAssistProcessor extends TemplateCompletionProcesso
         return result;
     }
 
+    // This override is necessary for correct filtering of proposals for cases when
+    // the text typing starts for pop-up proposals of keys, and then user switched to
+    // the pop-up proposals of templates and continues typing.
+    @Override
+    protected ICompletionProposal createProposal(Template template,
+            TemplateContext context, IRegion region, int relevance) {
+        return createSqlEditorTemplateProposal(template, context, region, relevance);
+    }
+
     private SqlEditorTemplateProposal createSqlEditorTemplateProposal(Template template,
             TemplateContext context, IRegion region, int relevance) {
         return new SqlEditorTemplateProposal(template, context, region,
