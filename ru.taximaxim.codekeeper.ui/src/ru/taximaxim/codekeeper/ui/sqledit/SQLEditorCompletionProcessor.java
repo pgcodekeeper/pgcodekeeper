@@ -136,8 +136,8 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
             for (String keyword : keywords) {
                 int location = keyword.indexOf(text);
                 if (location != -1) {
-                    CompletionProposal proposal = new SqlEditorKeywordProposal(keyword + ' ',
-                            offset - text.length(), text.length(), keyword.length() + 1);
+                    CompletionProposal proposal = new SqlEditorKeywordProposal(keyword,
+                            offset - text.length(), text.length(), keyword.length());
                     if (location  == 0) {
                         result.add(proposal);
                     } else {
@@ -206,10 +206,8 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
         }
     }
 
-    private final class SqlEditorKeywordProposal extends CompletionProposal
+    private static final class SqlEditorKeywordProposal extends CompletionProposal
     implements ICompletionProposalExtension2 {
-
-        private String typedText;
 
         public SqlEditorKeywordProposal(String replacementString, int replacementOffset,
                 int replacementLength, int cursorPosition) {
@@ -232,7 +230,7 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
             try {
                 int replaceOffset = getReplacementOffset();
                 if (offset >= replaceOffset) {
-                    typedText = document.get(replaceOffset, offset - replaceOffset);
+                    String typedText = document.get(replaceOffset, offset - replaceOffset);
                     return getReplacementString().toLowerCase().contains(typedText.toLowerCase());
                 }
             } catch (BadLocationException e) {
@@ -244,9 +242,8 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
         @Override
         public void apply(ITextViewer viewer, char trigger, int stateMask, int offset) {
             try {
-                viewer.getDocument().replace(getReplacementOffset(), getReplacementLength()
-                        + (typedText != null ? typedText.length() : 0),
-                        getReplacementString());
+                viewer.getDocument().replace(getReplacementOffset(),
+                        offset - getReplacementOffset(), getReplacementString());
             } catch (BadLocationException x) {
                 // ignore
             }
