@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+
+<!-- templates for CREATE -->
+
+<template 
+    name="create_function"
+    description="%create.function.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.createfunction"
+    >CREATE FUNCTION [${functionName}]() RETURNS ${typeName}
+AS
+BEGIN
+  --function body
+  RETURN ${result}
+END
+GO</template>
+
+<template 
+    name="create_function"
+    description="%create.function2.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.createfunction2"
+    >CREATE FUNCTION [${functionName}]() 
+RETURNS TABLE
+AS  
+RETURN   
+(
+    --select statement
+)
+GO</template>
+
+<template 
+    name="create_sequence"
+    description="%create.sequence.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.createsequence"
+    >CREATE SEQUENCE [${sequenceName}]
+    AS bigint
+    START WITH 1
+    INCREMENT BY 1
+    CYCLE
+    CACHE
+GO</template>
+
+<template 
+    name="create_procedure"
+    description="%create.procedure.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.createprocedure"
+    >CREATE PROCEDURE [${procedureName}]
+AS
+BEGIN
+  --procedure body
+END
+GO</template>
+
+<template 
+    name="create_table"
+    description="%create.table.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.createtable"
+    >CREATE TABLE [${tableName}](
+    [${columnName}] [${typeName}] NOT NULL
+) ON [PRIMARY]
+GO</template>
+
+<template 
+    name="create_type"
+    description="%create.type.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.createtype"
+    >CREATE TYPE [${typeName}] AS TABLE(
+    [${columnName}] [${columnType}] NOT NULL,
+    INDEX [IX_${typeName}_${columnName}] NONCLUSTERED
+(
+    ${columnName} ASC
+)
+)
+WITH ( MEMORY_OPTIMIZED = ON )
+GO</template>
+
+<template 
+    name="create_view"
+    description="%create.view.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.createview"
+    >CREATE VIEW [${viewName}]
+AS
+SELECT ${alias}.[${columnName}]
+FROM [${tableName}] ${alias}
+GO</template>
+
+
+
+<!-- templates for COMMENT -->
+
+<template 
+    name="extended_property_add"
+    description="%extended.property.add.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.extendedpropertyadd"
+    >EXECUTE sys.sp_addextendedproperty 
+@name=N'MS_Description', 
+@value=N'${comment}', 
+@level0type=N'SCHEMA',
+@level0name=N'${schemaName}', 
+@level1type=N'TABLE',
+@level1name=N'${tableName}'
+GO</template>
+
+<template 
+    name="extended_property_drop"
+    description="%extended.property.drop.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.extendedpropertydrop"
+    >EXECUTE sys.sp_dropextendedproperty 
+@name=N'MS_Description', 
+@level0type=N'SCHEMA',
+@level0name=N'${schemaName}', 
+@level1type=N'TABLE',
+@level1name=N'${tableName}'
+GO</template>
+
+<template 
+    name="extended_property_update"
+    description="%extended.property.update.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.extendedpropertyupdate"
+    >EXECUTE sys.sp_updateextendedproperty 
+@name=N'MS_Description', 
+@value=N'${comment}', 
+@level0type=N'SCHEMA',
+@level0name=N'${schemaName}', 
+@level1type=N'TABLE',
+@level1name=N'${tableName}'
+GO</template>
+
+</templates>

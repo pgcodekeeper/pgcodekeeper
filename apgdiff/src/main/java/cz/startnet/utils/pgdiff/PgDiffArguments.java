@@ -43,6 +43,7 @@ public class PgDiffArguments implements Cloneable {
     private final List<String> targetLibsWithoutPriv = new ArrayList<>();
     private boolean libSafeMode;
     private boolean msSql;
+    private boolean ignoreConcurrentModification;
 
     public void setModeParse(final boolean modeParse) {
         this.modeParse = modeParse;
@@ -162,6 +163,14 @@ public class PgDiffArguments implements Cloneable {
 
     public void setMsSql(boolean msSql) {
         this.msSql = msSql;
+    }
+
+    public boolean isIgnoreConcurrentModification() {
+        return ignoreConcurrentModification;
+    }
+
+    public void setIgnoreConcurrentModification(boolean ignoreConcurrentModification) {
+        this.ignoreConcurrentModification = ignoreConcurrentModification;
     }
 
     public String getInCharsetName() {

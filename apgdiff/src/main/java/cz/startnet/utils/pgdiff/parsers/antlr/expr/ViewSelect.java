@@ -13,6 +13,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alias_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_bracketsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_elementsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Case_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Cast_specificationContext;
@@ -28,13 +29,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Groupby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_elementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_set_listContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_element_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_identifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Orderby_clauseContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Ordinary_grouping_setContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Partition_by_columnsContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Row_value_predicand_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
@@ -42,6 +41,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_sublistContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sort_specifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.String_value_functionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.System_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_subqueryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expression_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Values_stmtContext;
@@ -62,7 +62,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class ViewSelect {
 
-    private final String schema;
     private final ViewSelect parent;
     private final Set<GenericColumn> depcies;
 
@@ -75,14 +74,12 @@ public class ViewSelect {
      */
     private final Set<String> cte = new HashSet<>();
 
-    public ViewSelect(String schema) {
-        this.schema = schema;
+    public ViewSelect() {
         parent = null;
         depcies = new LinkedHashSet<>();
     }
 
     private ViewSelect(ViewSelect parent) {
-        this.schema = parent.schema;
         this.parent = parent;
         depcies = parent.depcies;
     }
@@ -100,9 +97,10 @@ public class ViewSelect {
         String firstName = QNameParser.getFirstName(ids);
 
         boolean isCte = ids.size() == 1 && findCte(firstName) != null;
-        if (!isCte) {
-            depcies.add(new GenericColumn(
-                    QNameParser.getSchemaName(ids, schema), QNameParser.getFirstName(ids), DbObjType.TABLE));
+        String schemaName = QNameParser.getSchemaName(ids);
+        if (!isCte && schemaName != null) {
+            depcies.add(new GenericColumn(schemaName,
+                    QNameParser.getFirstName(ids), DbObjType.TABLE));
         }
     }
 
@@ -171,15 +169,26 @@ public class ViewSelect {
 
     private void selectOps(SelectOps selectOps) {
         Select_stmtContext selectStmt = selectOps.selectStmt();
-        Select_primaryContext primary;
+        Select_primaryContext primary = selectOps.selectPrimary();
 
-        if (selectOps.leftParen() != null && selectOps.rightParen() != null && selectStmt != null) {
-            analyze(selectStmt);
-        } else if (selectOps.intersect() != null || selectOps.union() != null || selectOps.except() != null) {
+        if (selectOps.intersect() != null || selectOps.union() != null || selectOps.except() != null) {
             // analyze each in a separate scope
             new ViewSelect(this).selectOps(selectOps.selectOps(0));
-            new ViewSelect(this).selectOps(selectOps.selectOps(1));
-        } else if ((primary = selectOps.selectPrimary()) != null) {
+
+            ViewSelect viewSelect = new ViewSelect(this);
+            SelectOps ops = selectOps.selectOps(1);
+            if (ops != null) {
+                viewSelect.selectOps(ops);
+            } else if (primary != null) {
+                viewSelect.selectPrimary(primary);
+            } else if (selectStmt != null) {
+                viewSelect.analyze(selectStmt);
+            } else {
+                Log.log(Log.LOG_WARNING, "No alternative in right part of SelectOps!");
+            }
+        } else if (selectOps.leftParen() != null && selectOps.rightParen() != null && selectStmt != null) {
+            analyze(selectStmt);
+        } else if (primary != null) {
             selectPrimary(primary);
         } else {
             Log.log(Log.LOG_WARNING, "No alternative in SelectOps!");
@@ -208,7 +217,10 @@ public class ViewSelect {
                 }
             }
 
-            groupBy(primary);
+            Groupby_clauseContext groupBy = primary.groupby_clause();
+            if (groupBy != null) {
+                groupBy(groupBy.grouping_element_list());
+            }
 
             if (primary.WINDOW() != null) {
                 for (Window_definitionContext window : primary.window_definition()) {
@@ -217,8 +229,11 @@ public class ViewSelect {
             }
         } else if (primary.TABLE() != null) {
             List<IdentifierContext> ids = primary.schema_qualified_name().identifier();
-            depcies.add(new GenericColumn(
-                    QNameParser.getSchemaName(ids, schema), QNameParser.getFirstName(ids), DbObjType.TABLE));
+            String schemaName = QNameParser.getSchemaName(ids);
+            if (schemaName == null) {
+                depcies.add(new GenericColumn(schemaName, QNameParser.getFirstName(ids),
+                        DbObjType.TABLE));
+            }
         } else if ((values = primary.values_stmt()) != null) {
             for (Values_valuesContext vals : values.values_values()) {
                 for (VexContext v : vals.vex()) {
@@ -230,32 +245,14 @@ public class ViewSelect {
         }
     }
 
-    private void groupBy(Select_primaryContext primary) {
-        Groupby_clauseContext groupBy = primary.groupby_clause();
-        if (groupBy != null) {
-            for (Grouping_elementContext group : groupBy.grouping_element_list().grouping_element()) {
-                Ordinary_grouping_setContext groupingSet = group.ordinary_grouping_set();
-                Grouping_set_listContext groupingSets;
-
-                if (groupingSet != null) {
-                    groupingSet(groupingSet);
-                } else if ((groupingSets = group.grouping_set_list()) != null) {
-                    for (Ordinary_grouping_setContext s : groupingSets.ordinary_grouping_set_list().ordinary_grouping_set()) {
-                        groupingSet(s);
-                    }
-                }
-            }
-        }
-    }
-
-    private void groupingSet(Ordinary_grouping_setContext groupingSet) {
-        VexContext v = groupingSet.vex();
-        Row_value_predicand_listContext predicandList;
-        if (v != null) {
-            analyze(new Vex(v));
-        } else if ((predicandList = groupingSet.row_value_predicand_list()) != null) {
-            for (VexContext vex : predicandList.vex()) {
-                analyze(vex);
+    private void groupBy(Grouping_element_listContext list) {
+        for (Grouping_elementContext el : list.grouping_element()) {
+            VexContext vexCtx = el.vex();
+            Grouping_element_listContext sub;
+            if (vexCtx != null) {
+                analyze(new Vex(vexCtx));
+            } else if ((sub = el.c) != null) {
+                groupBy(sub);
             }
         }
     }
@@ -336,7 +333,6 @@ public class ViewSelect {
     private void analysePrimary(Value_expression_primaryContext primary) {
         Select_stmt_no_parensContext subSelectStmt = primary.select_stmt_no_parens();
         Case_expressionContext caseExpr;
-        Cast_specificationContext cast;
         Comparison_modContext compMod;
         Table_subqueryContext subquery;
         Function_callContext function;
@@ -349,8 +345,6 @@ public class ViewSelect {
             new ViewSelect(this).analyze(subSelectStmt);
         } else if ((caseExpr = primary.case_expression()) != null) {
             subOperands = addVexCtxtoList(subOperands, caseExpr.vex());
-        } else if ((cast = primary.cast_specification()) != null) {
-            analyze(new Vex(cast.vex()));
         } else if ((compMod = primary.comparison_mod()) != null) {
             VexContext compModVex = compMod.vex();
             if (compModVex != null) {
@@ -368,7 +362,7 @@ public class ViewSelect {
         } else if ((array = primary.array_expression()) != null) {
             Array_bracketsContext arrayb = array.array_brackets();
             if (arrayb != null) {
-                subOperands = addVexCtxtoList(subOperands, arrayb.vex());
+                arrayElements(subOperands, arrayb.array_elements());
             } else {
                 new ViewSelect(this).analyze(array.array_query().table_subquery().select_stmt());
             }
@@ -378,6 +372,13 @@ public class ViewSelect {
             for (Vex v : subOperands) {
                 analyze(v);
             }
+        }
+    }
+
+    private void arrayElements(ArrayList<Vex> subOperands, Array_elementsContext elements) {
+        addVexCtxtoList(subOperands,  elements.vex());
+        for (Array_elementsContext sub : elements.array_elements()) {
+            arrayElements(subOperands, sub);
         }
     }
 
@@ -421,14 +422,14 @@ public class ViewSelect {
 
         Extract_functionContext extract;
         String_value_functionContext string;
+        System_functionContext sys;
         Xml_functionContext xml;
 
         if (name != null){
             args = addVexCtxtoList(args, function.vex_or_named_notation(),
                     Vex_or_named_notationContext::vex);
 
-            Orderby_clauseContext orderBy = function.orderby_clause();
-            if (orderBy != null) {
+            for (Orderby_clauseContext orderBy : function.orderby_clause()) {
                 orderBy(orderBy);
             }
             Filter_clauseContext filter = function.filter_clause();
@@ -450,6 +451,11 @@ public class ViewSelect {
             }
         } else if ((xml = function.xml_function()) != null) {
             args = addVexCtxtoList(args, xml.vex());
+        } else if ((sys = function.system_function()) != null) {
+            Cast_specificationContext cast = sys.cast_specification();
+            if (cast != null) {
+                analyze(new Vex(cast.vex()));
+            }
         }
 
         if (args != null) {

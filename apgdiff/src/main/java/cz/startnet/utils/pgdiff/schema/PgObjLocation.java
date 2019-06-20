@@ -1,38 +1,57 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class PgObjLocation implements Serializable {
+public final class PgObjLocation extends GenericColumn implements Serializable {
 
-    private static final long serialVersionUID = -7110926210150404390L;
-    private final GenericColumn objName;
-    private final int offset;
-    private final String filePath;
-    private final int lineNumber;
+    private static final long serialVersionUID = -2207831039348997758L;
+
+    private int offset;
+    private String filePath;
+    private int lineNumber;
 
     private String text;
-    private DbObjType type;
     private String comment = "";
-    private StatementActions action;
+    private final StatementActions action;
+
+    public PgObjLocation(String filePath) {
+        super(null, null);
+        this.filePath = filePath;
+        this.action = StatementActions.NONE;
+    }
+
+    public PgObjLocation(String schema, String table, String column,
+            DbObjType type, StatementActions action) {
+        super(schema, table, column, type);
+        this.action = action;
+    }
+
+    public PgObjLocation(String schema, String object, DbObjType type, StatementActions action) {
+        this(schema, object, null, type, action);
+    }
+
+    public PgObjLocation(String schema, DbObjType type, StatementActions action) {
+        this(schema, null, type, action);
+    }
 
     public StatementActions getAction() {
         return action;
     }
 
-    public PgObjLocation setAction(StatementActions action) {
-        this.action = action;
-        return this;
+    public void setOffset(int offset) {
+        this.offset = offset;
     }
 
-    public GenericColumn getObject() {
-        return objName;
+    public void setLine(int lineNumber) {
+        this.lineNumber = lineNumber;
     }
 
-    public String getObjName() {
-        return objName.table != null ? objName.table : "";
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
     }
 
     public int getOffset() {
@@ -40,7 +59,7 @@ public class PgObjLocation implements Serializable {
     }
 
     public int getObjLength() {
-        return objName.table != null ? objName.table.length() : 0;
+        return getObjName().length();
     }
 
     public int getLineNumber() {
@@ -51,34 +70,15 @@ public class PgObjLocation implements Serializable {
         return filePath;
     }
 
-    public DbObjType getObjType() {
-        return type;
-    }
-
-    public void setObjType(DbObjType type) {
-        this.type = type;
-    }
-
-    public PgObjLocation(String schema, String name, String column, int offset,
-            String filePath, int lineNumber) {
-        // TODO pass through object type from caller if it becomes necessary
-        this.objName = new GenericColumn(schema, name, column, null);
-        this.offset = offset;
-        this.filePath = filePath;
-        this.lineNumber = lineNumber;
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
         }
-        if (obj instanceof PgObjLocation) {
+        if (obj instanceof PgObjLocation && super.equals(obj)) {
             PgObjLocation loc = (PgObjLocation) obj;
-            return loc.getObject().equals(getObject())
-                    && loc.getOffset() == getOffset()
-                    && loc.getFilePath().equals(getFilePath())
-                    && loc.getObjType().equals(getObjType());
+            return loc.getOffset() == getOffset()
+                    && Objects.equals(loc.getFilePath(), getFilePath());
         }
         return false;
     }
@@ -86,17 +86,16 @@ public class PgObjLocation implements Serializable {
     @Override
     public int hashCode() {
         final int prime = 31;
-        int result = 1;
-        result = prime * result + ((objName == null) ? 0 : objName.hashCode());
+        int result = super.hashCode();
         result = prime * result + offset;
         result = prime * result + ((filePath == null) ? 0 : filePath.hashCode());
-        result = prime * result + ((type == null) ? 0 : type.hashCode());
         return result;
     }
 
     @Override
     public String toString() {
-        return getObjName() + " " + filePath + " " + offset + " " + getObjLength() + " " + type;
+        return getObjName() + ' ' + filePath + ' ' + offset + ' '
+                + getObjLength() + ' ' + type;
     }
 
     public String getComment() {
@@ -107,33 +106,33 @@ public class PgObjLocation implements Serializable {
         this.comment = comment;
     }
 
-    public String getText() {
+    public String getWarningText() {
         return text;
     }
 
-    public void setText(String text) {
-        this.text = text;
+    public void setWarningText(DangerStatement danger) {
+        switch(danger) {
+        case ALTER_COLUMN:
+            text = "ALTER COLUMN ... TYPE statement";
+            break;
+        case DROP_COLUMN:
+            text = "DROP COLUMN statement";
+            break;
+        case DROP_TABLE:
+            text = "DROP TABLE statement";
+            break;
+        case RESTART_WITH:
+            text =  "ALTER SEQUENCE ... RESTART WITH statement";
+            break;
+        case UPDATE:
+            text = "UPDATE statement";
+            break;
+        default:
+            return;
+        }
     }
 
     public boolean isDanger() {
-        if (action == StatementActions.UPDATE) {
-            return true;
-        }
-
-        if (action == StatementActions.DROP && type == DbObjType.TABLE){
-            return true;
-        }
-
-        if (action == StatementActions.ALTER) {
-            if (type == DbObjType.TABLE) {
-                return DangerStatement.ALTER_COLUMN.getRegex().matcher(text).matches()
-                        || DangerStatement.DROP_COLUMN.getRegex().matcher(text).matches();
-            } else {
-                return type == DbObjType.SEQUENCE &&
-                        DangerStatement.RESTART_WITH.getRegex().matcher(text).matches();
-            }
-        }
-
-        return false;
+        return text != null;
     }
 }

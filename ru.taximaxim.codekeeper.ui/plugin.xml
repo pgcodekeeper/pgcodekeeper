@@ -455,6 +455,40 @@
             <toolbar 
             		id="ru.taximaxim.codekeeper.ui.toolbar"
             		label="%menu.label.pgcodekeeper.main">
+        		 <command
+                    commandId="ru.taximaxim.codekeeper.ui.command.OpenDbStore"
+                    icon="icons/editor_area.png"
+                    label="%command.commandname.OpenDbStore"
+                    style="push">
+                    <visibleWhen checkEnabled="true">
+                        <with variable="activeEditorId">
+                            <or>
+                                <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
+                                </equals>
+                                <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
+                                </equals>
+                            </or>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <control
+                    class="ru.taximaxim.codekeeper.ui.menuitems.DBStoreCombo"
+                    id="ru.taximaxim.codekeeper.ui.DBStoreCombo">
+                    <visibleWhen checkEnabled="true">
+                        <with variable="activeEditorId">
+                            <or>
+                                <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
+                                </equals>
+                                <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
+                                </equals>
+                            </or>
+                        </with>
+                    </visibleWhen>
+                </control>
+                <separator
+                      name="ru.taximaxim.codekeeper.ui.separator1"
+                      visible="true">
+                </separator>
                 <command
                     commandId="ru.taximaxim.codekeeper.ui.command.QuickUpdate"
                     icon="icons/quick_update.png"
@@ -509,36 +543,6 @@
                         </with>
                     </visibleWhen>
                 </command>
-                <command
-                    commandId="ru.taximaxim.codekeeper.ui.command.OpenDbStore"
-                    icon="icons/editor_area.png"
-                    label="%command.commandname.OpenDbStore"
-                    style="push">
-                    <visibleWhen checkEnabled="true">
-                        <with variable="activeEditorId">
-                            <or>
-                                <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
-                                </equals>
-                                <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
-                                </equals>
-                            </or>
-                        </with>
-                    </visibleWhen>
-                </command>
-                <control
-                    class="ru.taximaxim.codekeeper.ui.menuitems.DBStoreCombo"
-                    id="ru.taximaxim.codekeeper.ui.DBStoreCombo">
-                    <visibleWhen checkEnabled="true">
-                        <with variable="activeEditorId">
-                            <or>
-                                <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
-                                </equals>
-                                <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
-                                </equals>
-                            </or>
-                        </with>
-                    </visibleWhen>
-                </control>
             </toolbar>
         </menuContribution>
         <menuContribution
@@ -870,6 +874,12 @@
             class="ru.taximaxim.codekeeper.ui.views.ProjectOverrideView"
             icon="icons/lib.gif"
             category="ru.taximaxim.codekeeper.ui.viewsCategory" />
+        <view
+            id="ru.taximaxim.codekeeper.ui.resultsetview"
+            name="%view.name.ResultSetView"
+            class="ru.taximaxim.codekeeper.ui.views.ResultSetView"
+            icon="icons/data_table_row.png"
+            category="ru.taximaxim.codekeeper.ui.viewsCategory" />
     </extension>
     <extension point="org.eclipse.ui.perspectives">
         <perspective
@@ -936,12 +946,6 @@
             <view
                 id="org.eclipse.ui.views.ContentOutline"
                 minimized="false"
-                relationship="stack"
-                relative="org.eclipse.ui.views.ProgressView">
-            </view>
-            <view
-                id="org.eclipse.ui.views.ContentOutline"
-                minimized="false"
                 ratio="0.80"
                 relationship="right"
                 relative="org.eclipse.ui.editorss">
@@ -953,6 +957,20 @@
                 relationship="bottom"
                 visible="false"
                 relative="org.eclipse.ui.editorss">
+            </view>
+            <view
+                id="ru.taximaxim.codekeeper.ui.resultsetview"
+                minimized="false"
+                relationship="stack"
+                visible="false"
+                relative="ru.taximaxim.codekeeper.ui.pgoverrideview">
+            </view>
+            <view
+                id="org.eclipse.ui.console.ConsoleView"
+                minimized="false"
+                relationship="stack"
+                visible="false"
+                relative="ru.taximaxim.codekeeper.ui.pgoverrideview">
             </view>
             <showInPart id="org.eclipse.ui.navigator.ProjectExplorer">
             </showInPart>
@@ -1010,12 +1028,30 @@
         point="org.eclipse.ui.editors.templates">
         <contextType
             class="ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateContextType"
-            id="ru.taximaxim.codekeeper.ui.sqlEditorContextType"
-            name="SQLEditor Context Type">
+            id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg"
+            name="SQLEditor Context Type PostgreSQL">
+        </contextType>
+        <contextType
+            class="ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateContextType"
+            id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs"
+            name="SQLEditor Context Type MicrosoftSQL">
+        </contextType>
+        <contextType
+            class="ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateContextType"
+            id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon"
+            name="SQLEditor Context Type Common">
         </contextType>
         <include
-            file="sql_templates/templates.xml"
-            translations="sql_templates/sqlTemplate.properties">
+            file="sql_templates/templates_pg.xml"
+            translations="sql_templates/sqlTemplatePg.properties">
+        </include>
+        <include
+            file="sql_templates/templates_ms.xml"
+            translations="sql_templates/sqlTemplateMs.properties">
+        </include>
+        <include
+            file="sql_templates/templates_common.xml"
+            translations="sql_templates/sqlTemplateCommon.properties">
         </include>
     </extension>
     <extension point="org.eclipse.ui.elementFactories">

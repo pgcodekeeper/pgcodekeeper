@@ -33,9 +33,9 @@ implements SqlContextProcessor {
 
     private final Map<PgStatement, StatementOverride> overrides;
 
-    public SQLOverridesListener(PgDatabase db, String filename, List<AntlrError> errors,
+    public SQLOverridesListener(PgDatabase db, String filename, boolean refMode, List<AntlrError> errors,
             IProgressMonitor mon, Map<PgStatement, StatementOverride> overrides) {
-        super(db, filename, errors, mon);
+        super(db, filename, refMode, errors, mon);
         this.overrides = overrides;
     }
 
@@ -81,7 +81,7 @@ implements SqlContextProcessor {
             return;
         }
 
-        PgStatement st = ParserAbstract.getSafe(db::getSchema, ctx.name);
+        PgStatement st = ParserAbstract.getSafe(PgDatabase::getSchema, db, ctx.name, false);
         if (st.getName().equals(ApgdiffConsts.PUBLIC) && "postgres".equals(owner.getText())) {
             return;
         }
@@ -93,7 +93,7 @@ implements SqlContextProcessor {
         List<IdentifierContext> ids = ctx.name.identifier();
         IdentifierContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
         AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() :
-            ParserAbstract.getSafe(db::getSchema, schemaCtx);
+            ParserAbstract.getSafe(PgDatabase::getSchema, db, schemaCtx, false);
 
         IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
 
@@ -107,7 +107,7 @@ implements SqlContextProcessor {
                 }
 
                 if (st == null) {
-                    st = ParserAbstract.getSafe(schema::getView, nameCtx);
+                    st = ParserAbstract.getSafe(AbstractSchema::getView, schema, nameCtx, false);
                 }
 
                 overrides.computeIfAbsent(st,

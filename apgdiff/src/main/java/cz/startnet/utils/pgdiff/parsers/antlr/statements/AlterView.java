@@ -8,8 +8,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgView;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class AlterView extends ParserAbstract {
     private final Alter_view_statementContext ctx;
@@ -19,18 +20,21 @@ public class AlterView extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public void parseObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
-        PgView dbView = (PgView) getSafe(schema::getView, QNameParser.getFirstNameCtx(ids));
+        PgView dbView = (PgView) getSafe(AbstractSchema::getView,
+                getSchemaSafe(ids), QNameParser.getFirstNameCtx(ids));
         if (ctx.set_def_column() != null) {
             VexContext exp = ctx.set_def_column().expression;
-            dbView.addColumnDefaultValue(getFullCtxText(ctx.column_name), getFullCtxText(exp));
-            db.addContextForAnalyze(dbView, exp);
+            doSafe((s,o) -> {
+                s.addColumnDefaultValue(getFullCtxText(ctx.column_name), getFullCtxText(exp));
+                db.addContextForAnalyze(s, exp);
+            }, dbView, null);
         }
         if (ctx.drop_def() != null) {
-            dbView.removeColumnDefaultValue(getFullCtxText(ctx.column_name));
+            doSafe(PgView::removeColumnDefaultValue, dbView, getFullCtxText(ctx.column_name));
         }
-        return null;
+
+        addObjReference(ids, DbObjType.VIEW, StatementActions.ALTER);
     }
 }

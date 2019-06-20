@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -43,6 +44,9 @@ public class DbXmlStore extends XmlStore<DbInfo> {
         GENERATE_NAME("generate_name"), //$NON-NLS-1$
         IGNORE_LIST("ignore_list"), //$NON-NLS-1$
         IGNORE_FILE("ignore_file"), //$NON-NLS-1$
+        PGDUMP_EXE_PATH("pgdump_exe_path"), //$NON-NLS-1$
+        PGDUMP_CUSTOM_PARAMS("pgdump_custom_params"), //$NON-NLS-1$
+        PG_DUMP_SWITCH("pg_dump_switch"), //$NON-NLS-1$
         PROPERTY_LIST("property_list"), //$NON-NLS-1$
         PROPERTY("property"), //$NON-NLS-1$
         PROPERTY_NAME("name"), //$NON-NLS-1$
@@ -98,6 +102,9 @@ public class DbXmlStore extends XmlStore<DbInfo> {
             createSubElement(xml, keyElement, Tags.GENERATE_NAME.toString(), String.valueOf(dbInfo.isGeneratedName()));
             createSubElement(xml, keyElement, Tags.MSSQL.toString(), String.valueOf(dbInfo.isMsSql()));
             createSubElement(xml, keyElement, Tags.WIN_AUTH.toString(), String.valueOf(dbInfo.isWinAuth()));
+            createSubElement(xml, keyElement, Tags.PG_DUMP_SWITCH.toString(), String.valueOf(dbInfo.isPgDumpSwitch()));
+            createSubElement(xml, keyElement, Tags.PGDUMP_CUSTOM_PARAMS.toString(), dbInfo.getPgdumpCustomParams());
+            createSubElement(xml, keyElement, Tags.PGDUMP_EXE_PATH.toString(), dbInfo.getPgdumpExePath());
 
             Element ignoreList = xml.createElement(Tags.IGNORE_LIST.toString());
             keyElement.appendChild(ignoreList);
@@ -127,7 +134,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
             if (param.getNodeType() == Node.ELEMENT_NODE) {
                 Tags tag;
                 try {
-                    tag = Tags.valueOf(param.getNodeName().toUpperCase());
+                    tag = Tags.valueOf(param.getNodeName().toUpperCase(Locale.ROOT));
                 } catch (IllegalArgumentException ex) {
                     Log.log(ex);
                     continue;
@@ -143,6 +150,9 @@ public class DbXmlStore extends XmlStore<DbInfo> {
                 case GENERATE_NAME:
                 case MSSQL:
                 case WIN_AUTH:
+                case PG_DUMP_SWITCH:
+                case PGDUMP_CUSTOM_PARAMS:
+                case PGDUMP_EXE_PATH:
                     object.put(tag, param.getTextContent());
                     break;
                 case IGNORE_LIST:
@@ -164,7 +174,9 @@ public class DbXmlStore extends XmlStore<DbInfo> {
                 Boolean.parseBoolean(object.get(Tags.GENERATE_NAME)),
                 ignoreFiles, properties,
                 Boolean.parseBoolean(object.get(Tags.MSSQL)),
-                Boolean.parseBoolean(object.get(Tags.WIN_AUTH)));
+                Boolean.parseBoolean(object.get(Tags.WIN_AUTH)),
+                object.get(Tags.PGDUMP_EXE_PATH), object.get(Tags.PGDUMP_CUSTOM_PARAMS),
+                Boolean.parseBoolean(object.get(Tags.PG_DUMP_SWITCH)));
     }
 
     private void fillIgnoreFileList(NodeList xml, List<String> list) {

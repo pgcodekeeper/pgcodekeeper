@@ -12,6 +12,9 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.console.ConsolePlugin;
+import org.eclipse.ui.console.IConsole;
+import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.IOConsole;
 import org.eclipse.ui.console.IOConsoleOutputStream;
 
@@ -19,6 +22,7 @@ import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UiSync;
 
@@ -26,6 +30,7 @@ class CodekeeperConsole extends IOConsole implements IPropertyChangeListener {
 
     private static final String NAME = "pgCodeKeeper"; //$NON-NLS-1$
     private static final String TERMINATED = "<terminated>"; //$NON-NLS-1$
+    private static final int MAX_OLD_INSTANCES = 10;
 
     private final Color colorWarn;
     private final Color colorErr;
@@ -38,8 +43,28 @@ class CodekeeperConsole extends IOConsole implements IPropertyChangeListener {
 
     private volatile boolean isTerminated;
 
-    public CodekeeperConsole(IProgressMonitor monitor) {
-        super(FileUtils.getFileDate() + ' ' + CodekeeperConsole.NAME, null);
+    public static CodekeeperConsole createInstance(IProgressMonitor monitor) {
+        IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
+        IConsole[] consoles = manager.getConsoles();
+        int c = 0;
+        List<IConsole> toRemove = new ArrayList<>();
+        for (int i = consoles.length - 1; i >= 0; --i) {
+            if (consoles[i] instanceof CodekeeperConsole
+                    && ((CodekeeperConsole) consoles[i]).isTerminated()
+                    && c++ > MAX_OLD_INSTANCES) {
+                toRemove.add(consoles[i]);
+            }
+        }
+        if (!toRemove.isEmpty()) {
+            manager.removeConsoles(toRemove.toArray(new IConsole[toRemove.size()]));
+        }
+
+        return new CodekeeperConsole(monitor);
+    }
+
+    private CodekeeperConsole(IProgressMonitor monitor) {
+        super(FileUtils.getFileDate() + ' ' + CodekeeperConsole.NAME,
+                Activator.getRegisteredDescriptor(FILE.ICONAPPSMALL));
         this.monitor = monitor;
         baseOuter = this.newOutputStream();
         baseOuter.setActivateOnWrite(Activator.getDefault()

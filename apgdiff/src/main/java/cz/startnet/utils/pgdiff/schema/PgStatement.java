@@ -70,6 +70,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         case FUNCTION:
         case OPERATOR:
         case PROCEDURE:
+        case AGGREGATE:
         case SEQUENCE:
         case TYPE:
         case DOMAIN:
@@ -92,11 +93,11 @@ public abstract class PgStatement implements IStatement, IHashable {
         return parent;
     }
 
-    public String getLocation() {
+    public PgObjLocation getLocation() {
         return getMeta().getLocation();
     }
 
-    public void setLocation(String location) {
+    public void setLocation(PgObjLocation location) {
         getMeta().setLocation(location);
     }
 
@@ -185,6 +186,11 @@ public abstract class PgStatement implements IStatement, IHashable {
             .append('.');
             ((AbstractPgFunction) this).appendFunctionSignature(sb, false, true);
             break;
+        case AGGREGATE:
+            sb.append(PgDiffUtils.getQuotedName(getParent().getName()))
+            .append('.');
+            ((PgAggregate) this).appendAggSignature(sb);
+            break;
         case OPERATOR:
             sb.append(PgDiffUtils.getQuotedName(getParent().getName()))
             .append('.');
@@ -268,6 +274,8 @@ public abstract class PgStatement implements IStatement, IHashable {
                 switch (getStatementType()) {
                 // revoke public is non-default for these
                 case FUNCTION:
+                case PROCEDURE:
+                case AGGREGATE:
                 case DOMAIN:
                 case TYPE:
                     break;
@@ -318,6 +326,66 @@ public abstract class PgStatement implements IStatement, IHashable {
                 PgPrivilege.appendDefaultPrivileges(newObj, sb);
             }
         }
+
+        switch (getStatementType()) {
+        case FUNCTION:
+        case PROCEDURE:
+        case AGGREGATE:
+        case TYPE:
+        case DOMAIN:
+            if (isPostgres() && !newPrivileges.isEmpty()) {
+                // restore owner grant only if owner is unchanged
+                if (newObj.getOwner() != null && newObj.getOwner().equals(getOwner())) {
+                    restoreDefaultPrivFPATD(newObj, sb, true);
+                }
+                restoreDefaultPrivFPATD(newObj, sb, false);
+            }
+            break;
+        default:
+            break;
+        }
+    }
+
+    /**
+     * Restores default grants on owner or public.
+     * @param owner restore for owner if true or for PUBLIC if false
+     */
+    private void restoreDefaultPrivFPATD(PgStatement newObj, StringBuilder sb, boolean owner) {
+        String role = owner ? getOwner() : "PUBLIC";
+        PgPrivilege revoke = getDefaultPrivFPATD(false, role);
+        if (privileges.contains(revoke) && !newObj.getPrivileges().contains(revoke)) {
+            sb.append('\n').append(getDefaultPrivFPATD(true, role).getCreationSQL())
+            .append(';');
+        }
+    }
+
+    /**
+     * Returns GRANT/REVOKE privilege object for given role.
+     * (only for PG : FUNCTION, PROCEDURE, AGGREGATE, TYPE and DOMAIN)
+     */
+    private PgPrivilege getDefaultPrivFPATD(boolean grant, String role) {
+        String stmtType = getStatementType().name();
+        String stmtName;
+        switch (getStatementType()) {
+        case TYPE:
+        case DOMAIN:
+            stmtName = PgDiffUtils.getQuotedName(getName());
+            break;
+        case AGGREGATE:
+            stmtType = DbObjType.FUNCTION.name();
+            //$FALL-THROUGH$
+        case PROCEDURE:
+        case FUNCTION:
+            stmtName = ((AbstractPgFunction) this).appendFunctionSignature(
+                    new StringBuilder(), false, true).toString();
+            break;
+        default:
+            throw new IllegalArgumentException("Unacceptable type: " + getStatementType());
+        }
+
+        return new PgPrivilege(grant ? "GRANT" : "REVOKE", "ALL", stmtType + ' '
+                + PgDiffUtils.getQuotedName(((PgStatementWithSearchPath) this).getSchemaName())
+                + '.' + stmtName, role, false);
     }
 
     public String getOwner() {
@@ -397,6 +465,8 @@ public abstract class PgStatement implements IStatement, IHashable {
                 sb.append(PgDiffUtils.getQuotedName(st.getParent().getName())).append('.');
                 if (type == DbObjType.FUNCTION || type == DbObjType.PROCEDURE) {
                     ((AbstractPgFunction) st).appendFunctionSignature(sb, false, true);
+                } else if (type == DbObjType.AGGREGATE) {
+                    ((PgAggregate) st).appendAggSignature(sb);
                 } else if (type == DbObjType.OPERATOR) {
                     ((PgOperator) st).appendOperatorSignature(sb);
                 } else {
@@ -465,7 +535,11 @@ public abstract class PgStatement implements IStatement, IHashable {
      *
      * @return a fully recursive copy of this statement.
      */
-    public abstract PgStatement deepCopy();
+    public final PgStatement deepCopy() {
+        PgStatement copy = shallowCopy();
+        getChildren().forEach(st -> copy.addChild(st.deepCopy()));
+        return copy;
+    }
 
     /**
      * This method does not account for nested child PgStatements.

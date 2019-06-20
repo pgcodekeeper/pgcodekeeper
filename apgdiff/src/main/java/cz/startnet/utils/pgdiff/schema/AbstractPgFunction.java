@@ -6,32 +6,34 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class AbstractPgFunction extends AbstractFunction {
 
     public static final String FROM_CURRENT = "FROM CURRENT";
 
+    protected static final float DEFAULT_INTERNAL_PROCOST = 1.0f;
     protected static final float DEFAULT_PROCOST = 100.0f;
     protected static final float DEFAULT_PROROWS = 1000.0f;
 
-    private float cost = DEFAULT_PROCOST;
     private float rows = DEFAULT_PROROWS;
     private boolean isWindow;
     private boolean isStrict;
     private boolean isLeakproof;
     private boolean isSecurityDefiner;
+    private String cost;
     private String language;
     private String parallel;
     private String volatileType;
     private String body;
     private String returns;
 
-    protected final List<String> options = new ArrayList<>();
     protected final List<Argument> arguments = new ArrayList<>();
     protected final List<String> transforms = new ArrayList<>();
     protected final Map<String, String> configurations = new LinkedHashMap<>();
@@ -43,6 +45,76 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         super(name);
     }
 
+    @Override
+    public String getDropSQL() {
+        final StringBuilder sbString = new StringBuilder();
+        sbString.append("DROP ");
+        sbString.append(getStatementType().name());
+        sbString.append(' ');
+        sbString.append(PgDiffUtils.getQuotedName(getSchemaName())).append('.');
+        if (getStatementType() == DbObjType.AGGREGATE) {
+            ((PgAggregate) this).appendAggSignature(sbString);
+        } else {
+            appendFunctionSignature(sbString, false, true);
+        }
+        sbString.append(';');
+        return sbString.toString();
+    }
+
+    @Override
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+            AtomicBoolean isNeedDepcies) {
+        final int startLength = sb.length();
+        AbstractPgFunction newAbstractPgFunction;
+        if (newCondition instanceof AbstractPgFunction) {
+            newAbstractPgFunction = (AbstractPgFunction) newCondition;
+        } else {
+            return false;
+        }
+
+        if (!compareUnalterable(newAbstractPgFunction)) {
+            if (needDrop(newAbstractPgFunction)) {
+                isNeedDepcies.set(true);
+                return true;
+            } else {
+                sb.append(newAbstractPgFunction.getCreationSQL());
+            }
+        }
+
+        if (!Objects.equals(getOwner(), newAbstractPgFunction.getOwner())) {
+            newAbstractPgFunction.alterOwnerSQL(sb);
+        }
+        alterPrivileges(newAbstractPgFunction, sb);
+        if (!Objects.equals(getComment(), newAbstractPgFunction.getComment())) {
+            sb.append("\n\n");
+            newAbstractPgFunction.appendCommentSql(sb);
+        }
+        return sb.length() > startLength;
+    }
+
+    protected abstract boolean needDrop(AbstractPgFunction newFunction);
+
+    /**
+     * Alias for {@link #getSignature()} which provides a unique function ID.
+     *
+     * Use {@link #getBareName()} to get just the function name.
+     */
+    @Override
+    public String getName() {
+        return getSignature();
+    }
+
+    /**
+     * Appends signature of statement to sb.<br />
+     *
+     * Used for PRIVILEGES in Functions, Procedures, Aggregates.<br />
+     *
+     * Used for CREATE, ALTER, DROP, COMMENT operations in Functions and Procedures.<br /><br />
+     *
+     * (For CREATE, ALTER, DROP, COMMENT operations in Aggregates used own method
+     * {@link PgAggregate#appendAggSignature(StringBuilder)}.)
+     *
+     */
     public StringBuilder appendFunctionSignature(StringBuilder sb,
             boolean includeDefaultValues, boolean includeArgNames) {
         boolean cache = !includeDefaultValues && !includeArgNames;
@@ -71,8 +143,35 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         return sb;
     }
 
-    protected abstract String getDeclaration(Argument arg,
-            boolean includeDefaultValue, boolean includeArgName);
+    public static String getDeclaration(Argument arg, boolean includeDefaultValue, boolean includeArgName) {
+        final StringBuilder sbString = new StringBuilder();
+
+        if (includeArgName) {
+            String mode = arg.getMode();
+            if (mode != null && !"IN".equalsIgnoreCase(mode)) {
+                sbString.append(mode);
+                sbString.append(' ');
+            }
+
+            String name = arg.getName();
+
+            if (name != null && !name.isEmpty()) {
+                sbString.append(PgDiffUtils.getQuotedName(name));
+                sbString.append(' ');
+            }
+        }
+
+        sbString.append(arg.getDataType());
+
+        String def = arg.getDefaultExpression();
+
+        if (includeDefaultValue && def != null && !def.isEmpty()) {
+            sbString.append(" = ");
+            sbString.append(def);
+        }
+
+        return sbString.toString();
+    }
 
     public boolean isWindow() {
         return isWindow;
@@ -87,10 +186,24 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         return language;
     }
 
-    public void setLanguage(String language) {
+    public void setLanguageCost(String language, Float cost) {
         this.language = language;
+
+        if (cost != null) {
+            String val = "" + (cost % 1 == 0 ? cost.intValue() : cost);
+
+            if ("internal".equals(getLanguage()) || "c".equals(getLanguage())) {
+                if (DEFAULT_INTERNAL_PROCOST != cost) {
+                    this.cost = val;
+                }
+            } else if (DEFAULT_PROCOST != cost) {
+                this.cost = val;
+            }
+        }
+
         resetHash();
     }
+
 
     public String getVolatileType() {
         return volatileType;
@@ -128,13 +241,8 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         resetHash();
     }
 
-    public float getCost() {
+    public String getCost() {
         return cost;
-    }
-
-    public void setCost(float cost) {
-        this.cost = cost;
-        resetHash();
     }
 
     public float getRows() {
@@ -233,15 +341,6 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         returnsColumns.put(name, type);
     }
 
-    public List<String> getOptions() {
-        return Collections.unmodifiableList(options);
-    }
-
-    public void addOption(final String option) {
-        options.add(option);
-        resetHash();
-    }
-
     /**
      * Returns function signature. It consists of unquoted name and argument
      * data types.
@@ -280,10 +379,9 @@ public abstract class AbstractPgFunction extends AbstractFunction {
                     && isSecurityDefiner == func.isSecurityDefiner()
                     && isLeakproof == func.isLeakproof()
                     && rows == func.getRows()
-                    && cost == func.getCost()
+                    && Objects.equals(cost, func.getCost())
                     && Objects.equals(returns, func.getReturns())
                     && arguments.equals(func.arguments)
-                    && options.equals(func.options)
                     && transforms.equals(func.transforms)
                     && configurations.equals(func.configurations);
         }
@@ -305,7 +403,6 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         hasher.putOrdered(arguments);
         hasher.put(returns);
         hasher.put(body);
-        hasher.put(options);
         hasher.put(transforms);
         hasher.put(configurations);
         hasher.put(isWindow);
@@ -326,13 +423,13 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         functionDst.setReturns(getReturns());
         functionDst.setBody(getBody());
         functionDst.setWindow(isWindow());
-        functionDst.setLanguage(getLanguage());
+        functionDst.language = getLanguage();
         functionDst.setVolatileType(getVolatileType());
         functionDst.setStrict(isStrict());
         functionDst.setSecurityDefiner(isSecurityDefiner());
         functionDst.setLeakproof(isLeakproof());
         functionDst.setRows(getRows());
-        functionDst.setCost(getCost());
+        functionDst.cost = getCost();
         functionDst.setParallel(getParallel());
         for (Argument argSrc : arguments) {
             Argument argDst = new Argument(argSrc.getMode(), argSrc.getName(), argSrc.getDataType());
@@ -340,7 +437,6 @@ public abstract class AbstractPgFunction extends AbstractFunction {
             argDst.setReadOnly(argSrc.isReadOnly());
             functionDst.addArgument(argDst);
         }
-        functionDst.options.addAll(options);
         functionDst.transforms.addAll(transforms);
         functionDst.returnsColumns.putAll(returnsColumns);
         functionDst.configurations.putAll(configurations);
@@ -349,6 +445,11 @@ public abstract class AbstractPgFunction extends AbstractFunction {
     }
 
     protected abstract AbstractPgFunction getFunctionCopy();
+
+    @Override
+    public String getQualifiedName() {
+        return getParent().getQualifiedName() + '.' + getName();
+    }
 
     public class PgArgument extends Argument {
 

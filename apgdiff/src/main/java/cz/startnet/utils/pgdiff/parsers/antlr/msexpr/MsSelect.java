@@ -59,6 +59,10 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
         super(schema);
     }
 
+    public MsSelect(String schema, DbObjType... disabledDepcies) {
+        super(schema, disabledDepcies);
+    }
+
     @Override
     protected Entry<String, GenericColumn> findReferenceInNmspc(String schema, String name) {
         return !inFrom || lateralAllowed ? super.findReferenceInNmspc(schema, name) : null;
@@ -243,8 +247,9 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
             try {
                 lateralAllowed = true;
                 GenericColumn func = new MsValueExpr(this).functionCall(call);
-                if (func != null) {
-                    String funcAlias = alias == null ? func.table : alias.getText();
+                String funcAlias = alias != null ? alias.id().getText()
+                        : func != null ? func.table : null;
+                if (funcAlias != null) {
                     addReference(funcAlias, null);
                 }
             } finally {

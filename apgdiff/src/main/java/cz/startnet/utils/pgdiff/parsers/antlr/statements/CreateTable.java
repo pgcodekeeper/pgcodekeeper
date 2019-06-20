@@ -3,7 +3,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Column_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_columnsContext;
@@ -15,17 +14,13 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Partition_byContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_oidContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_storage_parameterContext;
+import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.AbstractRegularTable;
-import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PartitionPgTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.SimplePgTable;
 import cz.startnet.utils.pgdiff.schema.TypedPgTable;
 
@@ -42,16 +37,12 @@ public class CreateTable extends TableAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public void parseObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
         String tableName = QNameParser.getFirstName(ids);
-        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
-        String schemaName = schema.getName();
-
+        String schemaName = getSchemaNameSafe(ids);
         AbstractTable table = defineTable(tableName, schemaName);
-
-        schema.addTable(table);
-        return table;
+        addSafe(getSchemaSafe(ids), table, ids);
     }
 
     private AbstractTable defineTable(String tableName, String schemaName) {
@@ -66,43 +57,24 @@ public class CreateTable extends TableAbstract {
             table = defineType(typeCtx, tableName, schemaName);
         } else if (colCtx != null) {
             table = fillRegularTable(new SimplePgTable(tableName));
-            fillColumns(colCtx, table, schemaName);
+            fillColumns(colCtx, table, schemaName, tablespace);
         } else {
             String partBound = ParserAbstract.getFullCtxText(partCtx.for_values_bound());
             table = fillRegularTable(new PartitionPgTable(tableName, partBound));
-            fillTypeColumns(partCtx.list_of_type_column_def(), table, schemaName);
+            fillTypeColumns(partCtx.list_of_type_column_def(), table, schemaName, tablespace);
             addInherit(table, partCtx.parent_table.identifier());
         }
 
         return table;
     }
 
-    private void fillColumns(Define_columnsContext columnsCtx, AbstractPgTable table, String schemaName) {
-        for (Table_column_defContext colCtx : columnsCtx.table_col_def) {
-            if (colCtx.tabl_constraint != null) {
-                addTableConstraint(colCtx.tabl_constraint, table, schemaName);
-            } else if (colCtx.table_column_definition() != null) {
-                Table_column_definitionContext column = colCtx.table_column_definition();
-                addColumn(column.column_name.getText(), column.datatype,
-                        column.collate_name, column.colmn_constraint, table);
-            }
-        }
-
-        Column_referencesContext parentTable = columnsCtx.parent_table;
-        if (parentTable != null) {
-            for (Schema_qualified_nameContext nameInher : parentTable.names_references().name) {
-                addInherit(table, nameInher.identifier());
-            }
-        }
-    }
-
     private TypedPgTable defineType(Define_typeContext typeCtx, String tableName,
             String schemaName) {
         Data_typeContext typeName = typeCtx.type_name;
-        String ofType = getFullCtxText(typeName);
+        String ofType = getTypeName(typeName);
         TypedPgTable table = new TypedPgTable(tableName, ofType);
-        fillTypeColumns(typeCtx.list_of_type_column_def(), table, schemaName);
-        addTypeAsDepcy(typeName, table, getDefSchemaName());
+        fillTypeColumns(typeCtx.list_of_type_column_def(), table, schemaName, tablespace);
+        addPgTypeDepcy(typeName, table);
         fillRegularTable(table);
         return table;
     }

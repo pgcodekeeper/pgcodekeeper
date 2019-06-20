@@ -1,27 +1,26 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.Arrays;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Columns_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_trigger_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Names_referencesContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_deferrableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_initialy_immedContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Trigger_referencingContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.When_triggerContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgTrigger.TgTypes;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateTrigger extends ParserAbstract {
@@ -32,13 +31,12 @@ public class CreateTrigger extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public void parseObject() {
         List<IdentifierContext> ids = ctx.table_name.identifier();
-        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
-        String schemaName = schema.getName();
-        String tableName = QNameParser.getFirstName(ids);
-        PgTrigger trigger = new PgTrigger(ctx.name.getText(),
-                ParserAbstract.getFullCtxText(ctx.table_name));
+        String schemaName = getSchemaNameSafe(ids);
+        addObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
+
+        PgTrigger trigger = new PgTrigger(ctx.name.getText());
         if (ctx.AFTER() != null) {
             trigger.setType(TgTypes.AFTER);
         } else if (ctx.BEFORE() != null) {
@@ -68,7 +66,7 @@ public class CreateTrigger extends ParserAbstract {
                 }
             }
 
-            if (ctx.referenced_table_name != null){
+            if (ctx.referenced_table_name != null) {
                 List<IdentifierContext> refName = ctx.referenced_table_name.identifier();
                 String refSchemaName = QNameParser.getSecondName(refName);
                 String refRelName = QNameParser.getFirstName(refName);
@@ -77,11 +75,13 @@ public class CreateTrigger extends ParserAbstract {
                 if (refSchemaName == null) {
                     refSchemaName = schemaName;
                 }
-                sb.append(PgDiffUtils.getQuotedName(refSchemaName))
-                .append('.');
+
+                if (refSchemaName != null) {
+                    sb.append(PgDiffUtils.getQuotedName(refSchemaName)).append('.');
+                }
                 sb.append(PgDiffUtils.getQuotedName(refRelName));
 
-                trigger.addDep(new GenericColumn(refSchemaName, refRelName, DbObjType.TABLE));
+                addDepSafe(trigger, refName, DbObjType.TABLE, true);
                 trigger.setRefTableName(sb.toString());
             }
         }
@@ -98,22 +98,25 @@ public class CreateTrigger extends ParserAbstract {
         Schema_qualified_name_nontypeContext funcNameCtx = ctx.func_name.function_name()
                 .schema_qualified_name_nontype();
         IdentifierContext sch = funcNameCtx.schema;
-        String schName = sch != null ?  sch.getText() : getDefSchemaName();
-        String objName = funcNameCtx.identifier_nontype().getText();
-        trigger.addDep(new GenericColumn(schName, objName + "()", DbObjType.FUNCTION));
+        if (sch != null) {
+            addDepSafe(trigger, Arrays.asList(sch, funcNameCtx.identifier_nontype()),
+                    DbObjType.FUNCTION, true, "()");
+        }
 
-        for (Names_referencesContext column : ctx.names_references()) {
-            for (Schema_qualified_nameContext nameCol : column.name) {
-                String col = QNameParser.getFirstName(nameCol.identifier());
-                trigger.addUpdateColumn(col);
-                trigger.addDep(new GenericColumn(schemaName, tableName, col, DbObjType.COLUMN));
+        for (Columns_listContext column : ctx.columns_list()) {
+            for (IdentifierContext nameCol : column.name) {
+                trigger.addUpdateColumn(nameCol.getText());
+                addDepSafe(trigger, Arrays.asList(sch, QNameParser.getFirstNameCtx(ids), nameCol),
+                        DbObjType.COLUMN, true);
             }
         }
         parseWhen(ctx.when_trigger(), trigger, db);
 
-        getSafe(schema::getTriggerContainer, QNameParser.getFirstNameCtx(ctx.table_name.identifier()))
-        .addTrigger(trigger);
-        return trigger;
+        IdentifierContext parent = QNameParser.getFirstNameCtx(ids);
+        IStatementContainer cont = getSafe(AbstractSchema::getStatementContainer,
+                getSchemaSafe(ids), parent);
+        addSafe((PgStatement) cont, trigger, Arrays.asList(
+                QNameParser.getSchemaNameCtx(ids), parent, ctx.name));
     }
 
     public static void parseWhen(When_triggerContext whenCtx, PgTrigger trigger,
@@ -123,15 +126,5 @@ public class CreateTrigger extends ParserAbstract {
             trigger.setWhen(getFullCtxText(vex));
             db.addContextForAnalyze(trigger, vex);
         }
-    }
-
-    public static void analyzeTriggersWhen(VexContext ctx, PgTrigger trigger,
-            String schemaName, PgDatabase db) {
-        ValueExprWithNmspc vex = new ValueExprWithNmspc(schemaName, db);
-        GenericColumn implicitTable = new GenericColumn(schemaName,
-                trigger.getParent().getName(), DbObjType.TABLE);
-        vex.addReference("new", implicitTable);
-        vex.addReference("old", implicitTable);
-        UtilAnalyzeExpr.analyze(ctx, vex, trigger);
     }
 }

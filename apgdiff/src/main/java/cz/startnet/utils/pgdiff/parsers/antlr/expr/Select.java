@@ -8,6 +8,8 @@ import java.util.Map.Entry;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alias_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_itemContext;
@@ -15,12 +17,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Groupby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_elementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_set_listContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_element_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Orderby_clauseContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Ordinary_grouping_setContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Qualified_asteriskContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Row_value_predicand_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
@@ -58,8 +58,8 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
      */
     private boolean lateralAllowed;
 
-    public Select(String schema, PgDatabase db) {
-        super(schema, db);
+    public Select(PgDatabase db) {
+        super(db);
     }
 
     protected Select(AbstractExpr parent) {
@@ -132,11 +132,9 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
     private List<Pair<String, String>> selectOps(SelectOps selectOps, With_queryContext recursiveCteCtx) {
         List<Pair<String, String>> ret;
         Select_stmtContext selectStmt = selectOps.selectStmt();
-        Select_primaryContext primary;
+        Select_primaryContext primary = selectOps.selectPrimary();
 
-        if (selectOps.leftParen() != null && selectOps.rightParen() != null && selectStmt != null) {
-            ret = analyze(selectStmt);
-        } else if (selectOps.intersect() != null || selectOps.union() != null || selectOps.except() != null) {
+        if (selectOps.intersect() != null || selectOps.union() != null || selectOps.except() != null) {
             // analyze each in a separate scope
             // use column names from the first one
             ret = new Select(this).selectOps(selectOps.selectOps(0));
@@ -161,9 +159,21 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
                 addCteSignature(recursiveCteCtx, ret);
             }
 
-            new Select(this).selectOps(selectOps.selectOps(1));
-        } else if ((primary = selectOps.selectPrimary()) != null) {
+            Select select = new Select(this);
+            SelectOps ops = selectOps.selectOps(1);
+            if (ops != null) {
+                select.selectOps(ops);
+            } else if (primary != null) {
+                select.primary(primary);
+            } else if (selectStmt != null) {
+                select.analyze(selectStmt);
+            } else {
+                Log.log(Log.LOG_WARNING, "No alternative in right part of SelectOps!");
+            }
+        } else if (primary != null) {
             ret = primary(primary);
+        } else if (selectOps.leftParen() != null && selectOps.rightParen() != null && selectStmt != null) {
+            ret = analyze(selectStmt);
         } else {
             Log.log(Log.LOG_WARNING, "No alternative in SelectOps!");
             ret = Collections.emptyList();
@@ -202,8 +212,10 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
                 } else {
                     Pair<String, String> columnPair = vex.analyze(selectSublistVex);
 
-                    if (target.alias != null && columnPair != null) {
-                        columnPair.setFirst(target.alias.getText());
+                    IdentifierContext id = target.identifier();
+                    ParserRuleContext aliasCtx = id != null ? id : target.id_token();
+                    if (aliasCtx != null) {
+                        columnPair.setFirst(aliasCtx.getText());
                     }
 
                     ret.add(columnPair);
@@ -220,18 +232,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
 
             Groupby_clauseContext groupBy = primary.groupby_clause();
             if (groupBy != null) {
-                for (Grouping_elementContext group : groupBy.grouping_element_list().grouping_element()) {
-                    Ordinary_grouping_setContext groupingSet = group.ordinary_grouping_set();
-                    Grouping_set_listContext groupingSets;
-
-                    if (groupingSet != null) {
-                        groupingSet(groupingSet, vex);
-                    } else if ((groupingSets = group.grouping_set_list()) != null) {
-                        for (Ordinary_grouping_setContext groupingSubset : groupingSets.ordinary_grouping_set_list().ordinary_grouping_set()) {
-                            groupingSet(groupingSubset, vex);
-                        }
-                    }
-                }
+                groupby(groupBy.grouping_element_list(), vex);
             }
 
             if (primary.WINDOW() != null) {
@@ -258,6 +259,18 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
         return ret;
     }
 
+    private void groupby(Grouping_element_listContext list, ValueExpr vex) {
+        for (Grouping_elementContext el : list.grouping_element()) {
+            VexContext vexCtx = el.vex();
+            Grouping_element_listContext sub;
+            if (vexCtx != null) {
+                vex.analyze(new Vex(vexCtx));
+            } else if ((sub = el.c) != null) {
+                groupby(sub, vex);
+            }
+        }
+    }
+
     private static final Predicate<String> ANY = s -> true;
 
     private List<Pair<String, String>> unqualAster() {
@@ -267,8 +280,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
             addFilteredRelationColumnsDepcies(gc.schema, gc.table, ANY).forEach(cols::add);
         }
 
-        for (Entry<String, GenericColumn> nmsp : namespace.entrySet()) {
-            GenericColumn gc = nmsp.getValue();
+        for (GenericColumn gc : namespace.values()) {
             if (gc != null) {
                 addFilteredRelationColumnsDepcies(gc.schema, gc.table, ANY).forEach(cols::add);
             }
@@ -300,18 +312,6 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
             } else {
                 Log.log(Log.LOG_WARNING, "Complex not found: " + relation);
                 return Collections.emptyList();
-            }
-        }
-    }
-
-    private void groupingSet(Ordinary_grouping_setContext groupingSet, ValueExpr vex) {
-        VexContext v = groupingSet.vex();
-        Row_value_predicand_listContext predicandList;
-        if (v != null) {
-            vex.analyze(new Vex(v));
-        } else if ((predicandList = groupingSet.row_value_predicand_list()) != null) {
-            for (VexContext predicand : predicandList.vex()) {
-                vex.analyze(new Vex(predicand));
             }
         }
     }

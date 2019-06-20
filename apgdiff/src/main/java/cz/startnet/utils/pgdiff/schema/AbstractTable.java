@@ -17,7 +17,7 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
  * Stores table information.
  */
 public abstract class AbstractTable extends PgStatementWithSearchPath
-implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
+implements IStatementContainer, PgOptionContainer, IRelation {
 
     protected static final String ALTER_COLUMN = " ALTER COLUMN ";
 
@@ -123,6 +123,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
      *
      * @return found constraint or null if no such constraint has been found
      */
+    @Override
     public AbstractConstraint getConstraint(final String name) {
         for (AbstractConstraint constraint : constraints) {
             if (constraint.getName().equals(name)) {
@@ -138,6 +139,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
      *
      * @return {@link #constraints}
      */
+    @Override
     public List<AbstractConstraint> getConstraints() {
         return Collections.unmodifiableList(constraints);
     }
@@ -241,6 +243,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
      *
      * @return found index or null if no such index has been found
      */
+    @Override
     public AbstractIndex getIndex(final String name) {
         for (AbstractIndex index : indexes) {
             if (index.getName().equals(name)) {
@@ -292,6 +295,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
      *
      * @return {@link #indexes}
      */
+    @Override
     public List<AbstractIndex> getIndexes() {
         return Collections.unmodifiableList(indexes);
     }
@@ -334,6 +338,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         resetHash();
     }
 
+    @Override
     public void addConstraint(final AbstractConstraint constraint) {
         assertUnique(this::getConstraint, constraint);
         constraints.add(constraint);
@@ -341,6 +346,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         resetHash();
     }
 
+    @Override
     public void addIndex(final AbstractIndex index) {
         assertUnique(this::getIndex, index);
         indexes.add(index);
@@ -366,14 +372,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
     public boolean containsColumn(final String name) {
         return getColumn(name) != null;
-    }
-
-    public boolean containsConstraint(final String name) {
-        return getConstraint(name) != null;
-    }
-
-    public boolean containsIndex(final String name) {
-        return getIndex(name) != null;
     }
 
     @Override
@@ -423,32 +421,13 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         AbstractTable tableDst = getTableCopy();
         copyBaseFields(tableDst);
         for (AbstractColumn colSrc : columns) {
-            tableDst.addColumn(colSrc.deepCopy());
+            tableDst.addColumn((AbstractColumn) colSrc.deepCopy());
         }
         tableDst.options.putAll(options);
         return tableDst;
     }
 
     protected abstract AbstractTable getTableCopy();
-
-    @Override
-    public AbstractTable deepCopy() {
-        AbstractTable copy = shallowCopy();
-
-        for (AbstractConstraint constraint : constraints) {
-            copy.addConstraint(constraint.deepCopy());
-        }
-        for (AbstractIndex index : indexes) {
-            copy.addIndex(index.deepCopy());
-        }
-        for (AbstractTrigger trigger : triggers) {
-            copy.addTrigger(trigger.deepCopy());
-        }
-        for (PgRule rule : rules) {
-            copy.addRule(rule.deepCopy());
-        }
-        return copy;
-    }
 
     @Override
     public AbstractSchema getContainingSchema() {

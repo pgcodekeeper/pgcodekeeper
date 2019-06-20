@@ -62,6 +62,7 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject, T
             public void widgetSelected(SelectionEvent e) {
                 ignoreList.setShow(true);
                 descriptionLabel.setText(Messages.IgnoredObjectsPrefPage_these_objects_are_ignored_info);
+                composite.layout();
             }
         });
 
@@ -74,6 +75,7 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject, T
             public void widgetSelected(SelectionEvent e) {
                 ignoreList.setShow(false);
                 descriptionLabel.setText(Messages.IgnoredObjectsPrefPage_these_objects_are_ignored_info_white);
+                composite.layout();
             }
         });
 

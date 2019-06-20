@@ -53,6 +53,12 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
             }
         }
 
+        definitionDefaultNotNull(sbDefinition);
+
+        return sbDefinition.toString();
+    }
+
+    private StringBuilder definitionDefaultNotNull(StringBuilder sbDefinition) {
         if (getDefaultValue() != null) {
             sbDefinition.append(" DEFAULT ");
             sbDefinition.append(getDefaultValue());
@@ -62,15 +68,16 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
             sbDefinition.append(NOT_NULL);
         }
 
-        return sbDefinition.toString();
+        return sbDefinition;
     }
 
     @Override
     public String getCreationSQL() {
         StringBuilder sb = new StringBuilder();
 
+        boolean mergeDefaultNotNull = false;
         if (getType() != null) {
-            sb.append(getAlterTable());
+            sb.append(getAlterTable(false, false));
             sb.append("\n\tADD COLUMN ")
             .append(PgDiffUtils.getQuotedName(name))
             .append(' ')
@@ -78,11 +85,22 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
             if (getCollation() != null) {
                 sb.append(COLLATE).append(getCollation());
             }
+
+            mergeDefaultNotNull = !getNullValue();
+            if (mergeDefaultNotNull) {
+                // for NOT NULL columns we'd emit a time consuming UPDATE column=DEFAULT anyway
+                // so we can merge DEFAULT with column definition with no performance loss
+                // this operation also becomes fast on PostgreSQL 11+ (metadata only operation)
+                definitionDefaultNotNull(sb);
+            }
+
             sb.append(';');
         }
 
-        compareDefaults(null, getDefaultValue(), new AtomicBoolean(), sb);
-        compareNullValues(true, getNullValue(), getDefaultValue() != null, sb);
+        if (!mergeDefaultNotNull) {
+            compareDefaults(null, getDefaultValue(), new AtomicBoolean(), sb);
+            compareNullValues(true, getNullValue(), getDefaultValue() != null, sb);
+        }
         compareStorages(null, getStorage(), sb);
 
         appendPrivileges(sb);
@@ -108,7 +126,7 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
     @Override
     public String getDropSQL() {
         if (getType() != null) {
-            return getAlterTable() + "\n\tDROP COLUMN "
+            return getAlterTable(false, true) + "\n\tDROP COLUMN "
                     + PgDiffUtils.getQuotedName(getName()) + ';';
         }
 
@@ -331,12 +349,12 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
                 sb.append(" DROP").append(NOT_NULL).append(';');
             } else {
                 if (hasDefault) {
-                    sb.append("\n\nUPDATE ONLY ").append(getParent().getQualifiedName())
+                    sb.append("\n\nUPDATE ").append(getParent().getQualifiedName())
                     .append("\n\tSET ").append(PgDiffUtils.getQuotedName(name))
                     .append(" = DEFAULT WHERE ").append(PgDiffUtils.getQuotedName(name))
                     .append(" IS").append(NULL).append(';');
                 }
-                sb.append(getAlterColumn(true, true, PgDiffUtils.getQuotedName(name)));
+                sb.append(getAlterColumn(true, false, PgDiffUtils.getQuotedName(name)));
                 sb.append(" SET").append(NOT_NULL).append(';');
             }
         }

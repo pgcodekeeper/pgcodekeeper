@@ -7,11 +7,12 @@ import java.util.Map;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class JdbcType{
 
-    private static final Map<String, String> DATA_TYPE_ALIASES;
+    public static final Map<String, String> DATA_TYPE_ALIASES;
     static {
         Map<String, String> aliases = new HashMap<>();
 
@@ -56,7 +57,7 @@ public class JdbcType{
         this.parentSchema = parentSchema;
         this.isArrayType = typarray == 0L && typelem != 0L;
         this.typeName = isArrayType ? elemname : typeName;
-        this.isPgCatalog = "pg_catalog".equals(parentSchema);
+        this.isPgCatalog = ApgdiffConsts.PG_CATALOG.equals(parentSchema);
         this.lastSysOid = lastSysOid;
     }
 

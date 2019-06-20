@@ -25,12 +25,15 @@ to update all relevant poms and metadatas
     
     update site:
     updatesite/pom.xml
+    
+    this file:
+    property 'global.version' (also updated by the script)
  -->
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>ru.taximaxim.codeKeeper</groupId>
     <artifactId>ru.taximaxim.codeKeeper</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>${global.version}</version>
     <packaging>pom</packaging>
     <modules>
         <module>..</module>
@@ -46,6 +49,7 @@ to update all relevant poms and metadatas
     </modules>
 
     <properties>
+        <global.version>5.5.0-SNAPSHOT</global.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <tycho.version>1.2.0</tycho.version>
@@ -143,7 +147,7 @@ to update all relevant poms and metadatas
                         <artifact>
                             <groupId>ru.taximaxim.codeKeeper</groupId>
                             <artifactId>ru.taximaxim.codeKeeper</artifactId>
-                            <version>0.0.1-SNAPSHOT</version>
+                            <version>${global.version}</version>
                             <classifier>../${target.definition.file}</classifier>
                         </artifact>
                     </target>

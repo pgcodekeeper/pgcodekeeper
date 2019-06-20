@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
@@ -21,6 +22,8 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
+import cz.startnet.utils.pgdiff.schema.AbstractColumn;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
@@ -29,6 +32,7 @@ import cz.startnet.utils.pgdiff.schema.StatementOverride;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.MS_WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class ProjectLoader {
     /**
@@ -37,9 +41,9 @@ public class ProjectLoader {
      * those directories are here for backward compatibility only
      */
     protected static final String[] DIR_LOAD_ORDER = new String[] { "TYPE",
-            "DOMAIN", "SEQUENCE", "FUNCTION", "PROCEDURE", "OPERATOR", "TABLE",
-            "CONSTRAINT", "INDEX", "TRIGGER", "VIEW", "FTS_PARSER", "FTS_TEMPLATE",
-            "FTS_DICTIONARY", "FTS_CONFIGURATION" };
+            "DOMAIN", "SEQUENCE", "FUNCTION", "PROCEDURE", "AGGREGATE", "OPERATOR",
+            "TABLE", "CONSTRAINT", "INDEX", "TRIGGER", "VIEW", "FTS_PARSER",
+            "FTS_TEMPLATE", "FTS_DICTIONARY", "FTS_CONFIGURATION" };
 
     private final String dirPath;
     protected final PgDiffArguments arguments;
@@ -49,7 +53,8 @@ public class ProjectLoader {
 
     protected boolean isOverrideMode;
 
-    private final Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
+    protected final Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
+    protected final Queue<PgDumpLoader> launchedLoaders = new ArrayDeque<>();
 
     public ProjectLoader(String dirPath, PgDiffArguments arguments) {
         this(dirPath, arguments, null, null);
@@ -96,7 +101,7 @@ public class ProjectLoader {
             loadPgStructure(dir, db);
         }
 
-        AntlrParser.finishAntlr(antlrTasks);
+        finishLoaders();
 
         return db;
     }
@@ -113,7 +118,7 @@ public class ProjectLoader {
             } else {
                 loadPgStructure(dir, db);
             }
-            AntlrParser.finishAntlr(antlrTasks);
+            finishLoaders();
             replaceOverrides();
         } finally {
             isOverrideMode = false;
@@ -179,21 +184,19 @@ public class ProjectLoader {
         }
     }
 
-    private void loadFiles(File[] files, PgDatabase db)
-            throws IOException, InterruptedException {
+    private void loadFiles(File[] files, PgDatabase db) throws InterruptedException {
         Arrays.sort(files);
         for (File f : files) {
-            if (f.isFile() && f.getName().toLowerCase().endsWith(".sql")) {
-                List<AntlrError> errList = null;
-                try (PgDumpLoader loader = new PgDumpLoader(f, arguments, monitor)) {
+            if (f.isFile() && f.getName().toLowerCase(Locale.ROOT).endsWith(".sql")) {
+                PgDumpLoader loader = new PgDumpLoader(f, arguments, monitor);
+                try {
                     if (isOverrideMode) {
                         loader.setOverridesMap(overrides);
                     }
-                    errList = loader.getErrors();
                     loader.loadDatabase(db, antlrTasks);
                 } finally {
-                    if (errors != null && errList != null && !errList.isEmpty()) {
-                        errors.addAll(errList);
+                    if (errors != null) {
+                        errors.addAll(loader.getErrors());
                     }
                 }
             }
@@ -226,10 +229,27 @@ public class ProjectLoader {
 
             if (!override.getPrivileges().isEmpty()) {
                 st.clearPrivileges();
+                if (st.getStatementType() == DbObjType.TABLE) {
+                    for (AbstractColumn col : ((AbstractTable) st).getColumns()) {
+                        col.clearPrivileges();
+                    }
+                }
                 for (PgPrivilege privilege : override.getPrivileges()) {
                     st.addPrivilege(privilege);
                 }
             }
         }
+    }
+
+    protected void finishLoaders() throws InterruptedException, IOException {
+        AntlrParser.finishAntlr(antlrTasks);
+        PgDumpLoader l;
+        while ((l = launchedLoaders.poll()) != null) {
+            finishLoader(l);
+        }
+    }
+
+    protected void finishLoader(PgDumpLoader l) {
+        errors.addAll(l.getErrors());
     }
 }

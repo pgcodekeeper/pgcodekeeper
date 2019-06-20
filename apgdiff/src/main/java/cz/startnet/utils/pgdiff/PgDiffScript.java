@@ -1,13 +1,10 @@
 package cz.startnet.utils.pgdiff;
 
-import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.PgDiffStatement.DiffStatementType;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -27,45 +24,6 @@ public class PgDiffScript {
     // List.contains() is O(n)
     // also String caches hashcodes, so that's a minor performance plus
     private final Set<PgDiffStatement> unique = new HashSet<>();
-
-    public boolean isDangerDdl(boolean ignoreDropCol, boolean ignoreAlterCol,
-            boolean ignoreDropTable, boolean ignoreRestartWith, boolean ignoreUpdate) {
-        Set<DangerStatement> allowedDangers = EnumSet.noneOf(DangerStatement.class);
-        if (ignoreDropCol) {
-            allowedDangers.add(DangerStatement.DROP_COLUMN);
-        }
-        if (ignoreAlterCol) {
-            allowedDangers.add(DangerStatement.ALTER_COLUMN);
-        }
-        if (ignoreDropTable) {
-            allowedDangers.add(DangerStatement.DROP_TABLE);
-        }
-        if (ignoreRestartWith) {
-            allowedDangers.add(DangerStatement.RESTART_WITH);
-        }
-        if (ignoreUpdate) {
-            allowedDangers.add(DangerStatement.UPDATE);
-        }
-
-        return !findDangers(allowedDangers).isEmpty();
-    }
-
-    public Set<DangerStatement> findDangers(Collection<DangerStatement> allowedDangers) {
-        Set<DangerStatement> allDangers = EnumSet.allOf(DangerStatement.class);
-        if (allowedDangers.containsAll(allDangers)) {
-            return Collections.emptySet();
-        }
-
-        Set<DangerStatement> dangerTypes = EnumSet.noneOf(DangerStatement.class);
-        for (PgDiffStatement st : statements) {
-            for (DangerStatement d : allDangers) {
-                if (!allowedDangers.contains(d) && st.isDangerStatement(d)) {
-                    dangerTypes.add(d);
-                }
-            }
-        }
-        return dangerTypes;
-    }
 
     public void addStatement(String statement) {
         PgDiffStatement st = new PgDiffStatement(DiffStatementType.OTHER, null, statement.trim());
@@ -102,20 +60,13 @@ public class PgDiffScript {
             }
             statements.add(st);
             unique.add(st);
-        } else {
-            if (replaceExisting) {
-                statements.set(statements.indexOf(st), st);
-            }
+        } else if (replaceExisting) {
+            statements.set(statements.indexOf(st), st);
         }
     }
 
-    /**
-     * Prints all statements into {@link PrintWriter}.
-     */
-    public void printStatements(PrintWriter printer) {
-        for (PgDiffStatement st : statements) {
-            printer.println(st.statement.trim());
-            printer.println();
-        }
+    public String getText() {
+        return statements.stream().map(st -> st.statement.trim())
+                .collect(Collectors.joining("\n\n"));
     }
 }

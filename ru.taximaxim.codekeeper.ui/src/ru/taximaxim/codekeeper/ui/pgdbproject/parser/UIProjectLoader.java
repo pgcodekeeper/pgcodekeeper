@@ -2,12 +2,10 @@ package ru.taximaxim.codekeeper.ui.pgdbproject.parser;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Queue;
 import java.util.Set;
 
 import org.eclipse.core.resources.IContainer;
@@ -29,10 +27,10 @@ import org.eclipse.ui.ide.ResourceUtil;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.FullAnalyze;
 import cz.startnet.utils.pgdiff.loader.LibraryLoader;
+import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.loader.ProjectLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -50,7 +48,6 @@ public class UIProjectLoader extends ProjectLoader {
 
     private final IProject iProject;
     private final List<StatementBodyContainer> statementBodies;
-    private final Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
 
     public UIProjectLoader(IProgressMonitor monitor, List<StatementBodyContainer> statementBodies) {
         this(null, null, monitor, statementBodies, null);
@@ -68,12 +65,16 @@ public class UIProjectLoader extends ProjectLoader {
      *
      * @return database schema
      */
-    public PgDatabase loadDatabaseSchemaFromPgProject()
+    public PgDatabase loadDatabaseSchemaFromProject()
             throws InterruptedException, IOException, CoreException {
         PgDatabase db = new PgDatabase();
         db.setArguments(arguments);
-        loadPgStructure(iProject, db);
-        AntlrParser.finishAntlr(antlrTasks);
+        if (arguments.isMsSql()) {
+            loadMsStructure(iProject, db);
+        } else {
+            loadPgStructure(iProject, db);
+        }
+        finishLoaders();
 
         FullAnalyze.fullAnalyze(db, errors);
         return db;
@@ -146,29 +147,19 @@ public class UIProjectLoader extends ProjectLoader {
         PgDiffArguments arguments = db.getArguments().clone();
         arguments.setInCharsetName(file.getCharset());
 
-        List<AntlrError> errList = null;
-        try (PgUIDumpLoader loader = new PgUIDumpLoader(file, arguments, monitor)) {
-            errList = loader.getErrors();
-            loader.setLoadReferences(statementBodies != null);
-            if (isOverrideMode) {
-                loader.setOverridesMap(overrides);
-            }
-            loader.loadFile(db, antlrTasks);
-            if (statementBodies != null) {
-                statementBodies.addAll(loader.getStatementBodyReferences());
-            }
-        } finally {
-            if (errors != null && errList != null && !errList.isEmpty()) {
-                errors.addAll(errList);
-            }
+        PgUIDumpLoader loader = new PgUIDumpLoader(file, arguments, monitor);
+        if (isOverrideMode) {
+            loader.setOverridesMap(overrides);
         }
+        loader.loadDatabase(db, antlrTasks);
+        launchedLoaders.add(loader);
     }
 
     public PgDatabase buildFiles(Collection<IFile> files, boolean isMsSql)
             throws InterruptedException, IOException, CoreException {
         SubMonitor mon = SubMonitor.convert(monitor, files.size());
         PgDatabase d = isMsSql ? buildMsFiles(files, mon) : buildPgFiles(files, mon);
-        AntlrParser.finishAntlr(antlrTasks);
+        finishLoaders();
         return d;
     }
 
@@ -195,6 +186,8 @@ public class UIProjectLoader extends ProjectLoader {
                 // load all schemas, because we don't know in which schema the object
                 IProject proj = file.getProject();
                 loadSubdir(proj.getFolder(schemasPath), db);
+                // DBO schema check requires schema loads to finish first
+                AntlrParser.finishAntlr(antlrTasks);
                 addDboSchema(db);
                 isLoaded = true;
             }
@@ -205,6 +198,7 @@ public class UIProjectLoader extends ProjectLoader {
                 loadFile(file, mon, db);
             }
         }
+        AntlrParser.finishAntlr(antlrTasks);
 
         PgDatabase newDb = new PgDatabase();
         newDb.setArguments(args);
@@ -213,10 +207,9 @@ public class UIProjectLoader extends ProjectLoader {
         db.getSchemas().stream()
         .filter(sc -> schemaFiles.contains(AbstractModelExporter.getExportedFilename(sc))
                 || sc.hasChildren())
-        .forEach(st -> {
-            newDb.addSchema(st.deepCopy());
-        });
-
+        .forEach(st -> newDb.addChild(st.deepCopy()));
+        newDb.getObjReferences().putAll(db.getObjReferences());
+        newDb.getObjDefinitions().putAll(db.getObjDefinitions());
         return newDb;
     }
 
@@ -307,6 +300,7 @@ public class UIProjectLoader extends ProjectLoader {
                 isOverrideMode = false;
             }
         }
+        finishLoaders();
         FullAnalyze.fullAnalyze(db, errors);
         return db;
     }
@@ -317,6 +311,14 @@ public class UIProjectLoader extends ProjectLoader {
                         .append("dependencies").toString()), errors); //$NON-NLS-1$
         ll.loadXml(new DependenciesXmlStore(Paths.get(iProject.getLocation()
                 .append(DependenciesXmlStore.FILE_NAME).toString())), arguments);
+    }
+
+    @Override
+    protected void finishLoader(PgDumpLoader l) {
+        if (statementBodies != null) {
+            statementBodies.addAll(l.getStatementBodyReferences());
+        }
+        ((PgUIDumpLoader) l).updateMarkers();
     }
 
     public static PgStatement parseStatement(IFile file, Collection<DbObjType> types)
@@ -343,13 +345,13 @@ public class UIProjectLoader extends ProjectLoader {
      */
     private static boolean isInProject(IPath path) {
         String dir = path.segment(0);
-        return dir == null ? false : Arrays.stream(ApgdiffConsts.WORK_DIR_NAMES.values())
+        return dir != null && Arrays.stream(ApgdiffConsts.WORK_DIR_NAMES.values())
                 .map(Enum::name).anyMatch(dir::equals);
     }
 
     private static boolean isInMsProject(IPath path) {
         String dir = path.segment(0);
-        return dir == null ? false : Arrays.stream(ApgdiffConsts.MS_WORK_DIR_NAMES.values())
+        return dir != null && Arrays.stream(ApgdiffConsts.MS_WORK_DIR_NAMES.values())
                 .map(MS_WORK_DIR_NAMES::getDirName).anyMatch(dir::equals);
     }
 
@@ -384,7 +386,7 @@ public class UIProjectLoader extends ProjectLoader {
 
     public static boolean isInProject(IEditorInput editorInput) {
         IResource res = ResourceUtil.getResource(editorInput);
-        return res == null ? false : isInProject(res);
+        return res != null && isInProject(res);
     }
 
     /**

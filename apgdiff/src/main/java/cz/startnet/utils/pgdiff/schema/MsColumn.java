@@ -76,7 +76,7 @@ public class MsColumn extends AbstractColumn {
     public String getCreationSQL() {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(getAlterTable());
+        sb.append(getAlterTable(false, false));
         sb.append("\n\tADD ").append(MsDiffUtils.quoteName(name)).append(' ');
         if (getExpression() != null) {
             sb.append("AS ").append(getExpression());
@@ -168,7 +168,7 @@ public class MsColumn extends AbstractColumn {
             compareDefaults(getDefaultName(), getDefaultValue(), null, null, sb);
         }
 
-        compareTypes(newColumn, sb);
+        compareTypes(newColumn, isNeedDepcies, sb);
 
         String oldDefaultName = isNeedDropDefault ? null : getDefaultName();
         String oldDefault = isNeedDropDefault ? null : getDefaultValue();
@@ -192,13 +192,13 @@ public class MsColumn extends AbstractColumn {
         if (!Objects.equals(oldDefault, newDefault)
                 || !Objects.equals(oldDefaultName, newDefaultName)) {
             if (oldDefault != null) {
-                sb.append(((AbstractTable)this.getParent()).getAlterTable(true, false));
+                sb.append(getAlterTable(true, false));
                 sb.append(" DROP CONSTRAINT ").append(MsDiffUtils.quoteName(oldDefaultName));
                 sb.append(GO);
             }
 
             if (newDefault != null) {
-                sb.append(((AbstractTable)this.getParent()).getAlterTable(true, false));
+                sb.append(getAlterTable(true, false));
                 sb.append(" ADD CONSTRAINT ").append(MsDiffUtils.quoteName(newDefaultName));
                 sb.append(" DEFAULT ").append(newDefault);
                 sb.append(" FOR ").append(MsDiffUtils.quoteName(name));
@@ -207,11 +207,11 @@ public class MsColumn extends AbstractColumn {
         }
     }
 
-    private void compareTypes(MsColumn newColumn, StringBuilder sb) {
+    private void compareTypes(MsColumn newColumn, AtomicBoolean isNeedDepcies, StringBuilder sb) {
         String newCollation = newColumn.getCollation();
         if (!Objects.equals(getType(), newColumn.getType())
                 || !Objects.equals(newCollation, getCollation())) {
-
+            isNeedDepcies.set(true);
             sb.append(getAlterColumn(true, false, newColumn.getName()))
             .append(' ').append(newColumn.getType());
 
@@ -259,7 +259,7 @@ public class MsColumn extends AbstractColumn {
 
     @Override
     public String getDropSQL() {
-        return getAlterTable() + "\n\tDROP COLUMN " + MsDiffUtils.getQuotedName(getName()) + GO;
+        return getAlterTable(false, false) + "\n\tDROP COLUMN " + MsDiffUtils.getQuotedName(getName()) + GO;
     }
 
     @Override

@@ -14,7 +14,7 @@ CREATE TYPE public.typ_base (
 	STORAGE = plain,
 	CATEGORY = 'U',
 	PREFERRED = true,
-	DEFAULT = NULL,
+	DEFAULT = '',
 	COLLATABLE = false
 );
 

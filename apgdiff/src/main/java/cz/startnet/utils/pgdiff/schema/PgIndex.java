@@ -7,6 +7,7 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
@@ -17,12 +18,16 @@ public class PgIndex extends AbstractIndex {
 
     private String method;
 
-    public PgIndex(String name, String tableName) {
-        super(name, tableName);
+    public PgIndex(String name) {
+        super(name);
     }
 
     @Override
     public String getCreationSQL() {
+        return getCreationSQL(getName());
+    }
+
+    private String getCreationSQL(String name) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE ");
 
@@ -35,10 +40,16 @@ public class PgIndex extends AbstractIndex {
         if (args != null && args.isConcurrentlyMode()) {
             sbSQL.append("CONCURRENTLY ");
         }
-        sbSQL.append(PgDiffUtils.getQuotedName(getName()));
+        sbSQL.append(PgDiffUtils.getQuotedName(name));
         sbSQL.append(" ON ");
-        sbSQL.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
-        sbSQL.append(PgDiffUtils.getQuotedName(getTableName()));
+
+        PgStatement par = getParent();
+        if (par instanceof AbstractRegularTable
+                && ((AbstractRegularTable) par).getPartitionBy() != null) {
+            sbSQL.append("ONLY ");
+        }
+
+        sbSQL.append(par.getQualifiedName());
         if (getMethod() != null) {
             sbSQL.append(" USING ").append(PgDiffUtils.getQuotedName(getMethod()));
         }
@@ -87,7 +98,7 @@ public class PgIndex extends AbstractIndex {
 
     @Override
     public String getDropSQL() {
-        return "DROP INDEX " + PgDiffUtils.getQuotedName(getContainingSchema().getName()) + '.'
+        return "DROP INDEX " + PgDiffUtils.getQuotedName(getSchemaName()) + '.'
                 + PgDiffUtils.getQuotedName(getName()) + ";";
     }
 
@@ -103,14 +114,34 @@ public class PgIndex extends AbstractIndex {
         }
         if (!compareUnalterable(newIndex)) {
             isNeedDepcies.set(true);
+
+            PgDiffArguments args = getDatabase().getArguments();
+            boolean concurrently = args != null && args.isConcurrentlyMode();
+            if (concurrently) {
+                // generate optimized command sequence for concurrent index creation
+                String tmpName = "tmp" + new Random().nextInt(Integer.MAX_VALUE)
+                        + "_" + getName();
+                sb.append("\n\n")
+                .append(newIndex.getCreationSQL(tmpName))
+                .append("\n\nBEGIN TRANSACTION;\n")
+                .append(getDropSQL())
+                .append("\nALTER INDEX ")
+                .append(PgDiffUtils.getQuotedName(getSchemaName()))
+                .append('.')
+                .append(PgDiffUtils.getQuotedName(tmpName))
+                .append(" RENAME TO ")
+                .append(PgDiffUtils.getQuotedName(getName()))
+                .append(";\n");
+                newIndex.appendCommentSql(sb);
+                sb.append("\nCOMMIT TRANSACTION;");
+            }
             return true;
         }
 
         if (isClusterIndex() && !newIndex.isClusterIndex() &&
                 !((AbstractPgTable)newIndex.getParent()).isClustered()) {
             sb.append("\n\nALTER TABLE ")
-            .append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
-            .append('.').append(PgDiffUtils.getQuotedName(getTableName()))
+            .append(getParent().getQualifiedName())
             .append(" SET WITHOUT CLUSTER;");
         }
 
@@ -127,8 +158,7 @@ public class PgIndex extends AbstractIndex {
         final StringBuilder sbSQL = new StringBuilder();
         if (isClusterIndex()) {
             sbSQL.append("\n\nALTER TABLE ");
-            sbSQL.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
-            sbSQL.append(PgDiffUtils.getQuotedName(getTableName()));
+            sbSQL.append(getParent().getQualifiedName());
             sbSQL.append(" CLUSTER ON ");
             sbSQL.append(getName());
             sbSQL.append(';');
@@ -160,7 +190,7 @@ public class PgIndex extends AbstractIndex {
 
     @Override
     protected AbstractIndex getIndexCopy() {
-        PgIndex index =  new PgIndex(getName(), getTableName());
+        PgIndex index =  new PgIndex(getName());
         index.setMethod(getMethod());
         return index;
     }

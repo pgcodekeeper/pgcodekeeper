@@ -8,8 +8,8 @@ import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -21,11 +21,11 @@ public class IndicesReader extends JdbcReader {
 
     @Override
     protected void processResult(ResultSet result, AbstractSchema schema) throws SQLException {
-        AbstractTable table = schema.getTable(result.getString("table_name"));
-        if (table != null) {
-            AbstractIndex index = getIndex(result, schema, table.getName());
+        IStatementContainer cont = schema.getStatementContainer(result.getString("table_name"));
+        if (cont != null) {
+            AbstractIndex index = getIndex(result, schema, cont.getName());
             loader.monitor.worked(1);
-            table.addIndex(index);
+            cont.addIndex(index);
         }
     }
 
@@ -33,11 +33,11 @@ public class IndicesReader extends JdbcReader {
         String schemaName = schema.getName();
         String indexName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, indexName, DbObjType.INDEX));
-        PgIndex i = new PgIndex(indexName, tableName);
+        PgIndex i = new PgIndex(indexName);
 
         String tablespace = res.getString("table_space");
         String definition = res.getString("definition");
-        checkObjectValidity(definition, getType(), indexName);
+        checkObjectValidity(definition, DbObjType.INDEX, indexName);
         loader.submitAntlrTask(definition,
                 p -> p.sql().statement(0).schema_statement().schema_create()
                 .create_index_statement().index_rest(),
@@ -55,10 +55,5 @@ public class IndicesReader extends JdbcReader {
         }
 
         return i;
-    }
-
-    @Override
-    protected DbObjType getType() {
-        return DbObjType.INDEX;
     }
 }

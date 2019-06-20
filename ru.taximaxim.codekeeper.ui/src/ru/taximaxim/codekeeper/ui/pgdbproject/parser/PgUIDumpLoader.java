@@ -33,9 +33,14 @@ public class PgUIDumpLoader extends PgDumpLoader {
 
     private final IFile file;
 
-    public PgUIDumpLoader(IFile ifile, PgDiffArguments args, IProgressMonitor monitor, int monitoringLevel)
-            throws CoreException {
-        super(ifile.getContents(), ifile.getLocation().toOSString(), args, monitor, monitoringLevel);
+    public PgUIDumpLoader(IFile ifile, PgDiffArguments args, IProgressMonitor monitor, int monitoringLevel) {
+        super(() -> {
+            try {
+                return ifile.getContents();
+            } catch (CoreException ex) {
+                throw new IOException(ex.getLocalizedMessage(), ex);
+            }
+        }, ifile.getLocation().toOSString(), args, monitor, monitoringLevel);
         file = ifile;
     }
 
@@ -43,8 +48,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
      * This constructor sets the monitoring level to the default of 1.
      * @throws CoreException
      */
-    public PgUIDumpLoader(IFile ifile, PgDiffArguments args, IProgressMonitor monitor)
-            throws CoreException {
+    public PgUIDumpLoader(IFile ifile, PgDiffArguments args, IProgressMonitor monitor) {
         this(ifile, args, monitor, 1);
     }
 
@@ -52,28 +56,22 @@ public class PgUIDumpLoader extends PgDumpLoader {
      * This constructor uses {@link NullProgressMonitor}.
      * @throws CoreException
      */
-    public PgUIDumpLoader(IFile ifile, PgDiffArguments args) throws CoreException {
+    public PgUIDumpLoader(IFile ifile, PgDiffArguments args) {
         this(ifile, args, new NullProgressMonitor(), 0);
     }
 
     public PgDatabase loadFile(PgDatabase db) throws InterruptedException, IOException {
         Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>(1);
-        loadFile(db, antlrTasks);
-        AntlrParser.finishAntlr(antlrTasks);
-        return db;
-    }
-
-    protected PgDatabase loadFile(PgDatabase db, Queue<AntlrTask<?>> antlrTasks)
-            throws InterruptedException {
+        loadDatabase(db, antlrTasks);
         try {
-            loadDatabase(db, antlrTasks);
-            return db;
+            AntlrParser.finishAntlr(antlrTasks);
         } finally {
             updateMarkers();
         }
+        return db;
     }
 
-    private void updateMarkers() {
+    protected void updateMarkers() {
         try {
             file.deleteMarkers(MARKER.ERROR, false, IResource.DEPTH_ZERO);
         } catch (CoreException ex) {

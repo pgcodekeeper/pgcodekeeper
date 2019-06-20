@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -12,6 +13,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_bracketsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_elementsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Case_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Cast_specificationContext;
@@ -58,14 +60,14 @@ import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.ISchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class ValueExpr extends AbstractExpr {
 
-    public ValueExpr(String schema, PgDatabase db) {
-        super(schema, db);
+    public ValueExpr(PgDatabase db) {
+        super(db);
     }
 
     protected ValueExpr(AbstractExpr parent) {
@@ -101,8 +103,8 @@ public class ValueExpr extends AbstractExpr {
             Schema_qualified_name_nontypeContext customType = pType.schema_qualified_name_nontype();
             IdentifierContext typeSchema = customType == null ? null : customType.identifier();
             // TODO remove when tokens are refactored
-            if (dataType.LEFT_BRACKET() == null && dataType.SETOF() == null && customType != null &&
-                    (typeSchema == null || "pg_catalog".equals(typeSchema.getText()))) {
+            if (dataType.array_type().isEmpty() && dataType.SETOF() == null && customType != null &&
+                    (typeSchema == null || ApgdiffConsts.PG_CATALOG.equals(typeSchema.getText()))) {
                 // check simple built-in types for reg*** casts
                 Value_expression_primaryContext castPrimary = vex.vex().get(0).primary();
                 Unsigned_value_specificationContext value;
@@ -149,7 +151,7 @@ public class ValueExpr extends AbstractExpr {
         } else if ((operator = getOperatorToken(vex)) != null || (op = vex.op()) != null) {
             if (op != null) {
                 IdentifierContext opSchemaCtx = op.identifier();
-                if (opSchemaCtx == null || opSchemaCtx.getText().equals(PgSystemStorage.SCHEMA_PG_CATALOG)) {
+                if (opSchemaCtx == null || opSchemaCtx.getText().equals(ApgdiffConsts.PG_CATALOG)) {
                     operator = op.OP_CHARS();
                 }
             }
@@ -191,7 +193,6 @@ public class ValueExpr extends AbstractExpr {
         } else if ((primary = vex.primary()) != null) {
             Select_stmt_no_parensContext subSelectStmt = primary.select_stmt_no_parens();
             Case_expressionContext caseExpr;
-            Cast_specificationContext cast;
             Comparison_modContext compMod;
             Table_subqueryContext subquery;
             Function_callContext function;
@@ -222,11 +223,6 @@ public class ValueExpr extends AbstractExpr {
                 if (ret.getFirst() == null) {
                     ret.setFirst("case");
                 }
-            } else if ((cast = primary.cast_specification()) != null) {
-                ret = analyze(new Vex(cast.vex()));
-                Data_typeContext dataTypeCtx = cast.data_type();
-                ret.setValue(ParserAbstract.getFullCtxText(dataTypeCtx));
-                addTypeDepcy(dataTypeCtx);
             } else if ((compMod = primary.comparison_mod()) != null) {
                 VexContext compModVex = compMod.vex();
                 if (compModVex != null) {
@@ -252,11 +248,7 @@ public class ValueExpr extends AbstractExpr {
             } else if ((array = primary.array_expression()) != null) {
                 Array_bracketsContext arrayb = array.array_brackets();
                 if (arrayb != null) {
-                    List<VexContext> arraybVexCtxList = arrayb.vex();
-                    ret = analyze(new Vex(arraybVexCtxList.get(0)));
-                    for (int i = 1; i < arraybVexCtxList.size(); ++i) {
-                        analyze(new Vex(arraybVexCtxList.get(i)));
-                    }
+                    ret = arrayElements(arrayb.array_elements());
                 } else {
                     ret = new Select(this)
                             .analyze(array.array_query().table_subquery().select_stmt())
@@ -265,9 +257,14 @@ public class ValueExpr extends AbstractExpr {
                 ret.setFirst("array");
                 ret.setSecond(ret.getSecond() + "[]");
             } else if ((typeCoercion = primary.type_coercion()) != null) {
-                Data_typeContext coercionDataType = typeCoercion.data_type();
-                addTypeDepcy(coercionDataType);
-                String type = ParserAbstract.getFullCtxText(coercionDataType);
+                String type;
+                if (typeCoercion.INTERVAL() != null) {
+                    type = "interval";
+                } else {
+                    Data_typeContext coercionDataType = typeCoercion.data_type();
+                    addTypeDepcy(coercionDataType);
+                    type = ParserAbstract.getTypeName(coercionDataType);
+                }
                 // since this cast can only convert string literals into a type
                 // and types are restricted to the simplest
                 // column name here will always be derived from type name
@@ -284,6 +281,20 @@ public class ValueExpr extends AbstractExpr {
         return ret;
     }
 
+    private Pair<String, String> arrayElements(Array_elementsContext elements) {
+        Pair<String, String> ret = new Pair<>(null, TypesSetManually.UNKNOWN);
+        for (Array_elementsContext sub : elements.array_elements()) {
+            ret = arrayElements(sub);
+        }
+
+        for (VexContext vex : elements.vex()) {
+            ret = analyze(new Vex(vex));
+        }
+
+        return ret;
+    }
+
+
     /**
      * @return return signature
      */
@@ -293,8 +304,7 @@ public class ValueExpr extends AbstractExpr {
             return functionSpecial(function);
         }
 
-        Orderby_clauseContext orderBy = function.orderby_clause();
-        if (orderBy != null) {
+        for (Orderby_clauseContext orderBy : function.orderby_clause()) {
             orderBy(orderBy);
         }
         Filter_clauseContext filter = function.filter_clause();
@@ -384,9 +394,17 @@ public class ValueExpr extends AbstractExpr {
             // parser defines this as a call to an overload of pg_catalog.date_part
             ret = new Pair<>("date_part", TypesSetManually.DOUBLE);
         } else if ((system = function.system_function()) != null) {
-            ret = new Pair<>(system.USER() != null ? "current_user"
-                    : system.getChild(0).getText().toLowerCase(),
-                    TypesSetManually.NAME);
+            Cast_specificationContext cast = system.cast_specification();
+            if (cast != null) {
+                ret = analyze(new Vex(cast.vex()));
+                Data_typeContext dataTypeCtx = cast.data_type();
+                ret.setValue(ParserAbstract.getTypeName(dataTypeCtx));
+                addTypeDepcy(dataTypeCtx);
+            } else {
+                ret = new Pair<>(system.USER() != null ? "current_user"
+                        : system.getChild(0).getText().toLowerCase(Locale.ROOT),
+                        TypesSetManually.NAME);
+            }
         } else if ((datetime = function.date_time_function()) != null) {
             String colname;
             String coltype;
@@ -418,7 +436,7 @@ public class ValueExpr extends AbstractExpr {
                 analyze(new Vex(vexB));
             }
 
-            String colname = string.getChild(0).getText().toLowerCase();
+            String colname = string.getChild(0).getText().toLowerCase(Locale.ROOT);
             String coltype = TypesSetManually.TEXT;
             if (string.TRIM() != null) {
                 if (string.LEADING() != null) {
@@ -437,13 +455,13 @@ public class ValueExpr extends AbstractExpr {
         } else if ((xml = function.xml_function()) != null) {
             args = xml.vex();
 
-            String colname = xml.getChild(0).getText().toLowerCase();
+            String colname = xml.getChild(0).getText().toLowerCase(Locale.ROOT);
             String coltype = TypesSetManually.XML;
             if (xml.XMLEXISTS() != null) {
                 coltype = TypesSetManually.BOOLEAN;
             } else if (xml.XMLSERIALIZE() != null) {
                 Data_typeContext type = xml.data_type();
-                coltype = ParserAbstract.getFullCtxText(type);
+                coltype = ParserAbstract.getTypeName(type);
                 addTypeDepcy(type);
             } else {
                 // defaults work
@@ -522,7 +540,7 @@ public class ValueExpr extends AbstractExpr {
         // TODO When the user's operators will be also process by codeKeeper,
         // put in 'findFunctions' operator's schema name instead of 'PgSystemStorage.SCHEMA_PG_CATALOG'.
         IFunction resultOperFunction = resolveCall(operator, Arrays.asList(sourceArgsTypes),
-                availableFunctions(PgSystemStorage.SCHEMA_PG_CATALOG));
+                availableFunctions(ApgdiffConsts.PG_CATALOG));
         return new Pair<>(null, resultOperFunction != null ? resultOperFunction.getReturns()
                 : TypesSetManually.FUNCTION_COLUMN);
     }
@@ -558,8 +576,7 @@ public class ValueExpr extends AbstractExpr {
             }
             return schema.getFunctions().stream();
         } else {
-            return Stream.concat(findSchema(schema, null).getFunctions().stream(),
-                    systemStorage.getPgCatalog().getFunctions().stream());
+            return systemStorage.getPgCatalog().getFunctions().stream();
         }
     }
 

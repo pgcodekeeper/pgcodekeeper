@@ -3,6 +3,7 @@ package ru.taximaxim.codekeeper.apgdiff.model.graph;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -12,10 +13,9 @@ import cz.startnet.utils.pgdiff.NotAllowedObjectException;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.schema.AbstractColumn;
+import cz.startnet.utils.pgdiff.schema.MsView;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -36,6 +36,9 @@ public class ActionsToScriptConverter {
         this(actions, Collections.emptySet(), arguments);
     }
 
+    /**
+     * @param toRefresh an ordered set of refreshed statements in reverse order
+     */
     public ActionsToScriptConverter(Set<ActionContainer> actions, Set<PgStatement> toRefresh,
             PgDiffArguments arguments) {
         this.actions = actions;
@@ -49,6 +52,7 @@ public class ActionsToScriptConverter {
      */
     public void fillScript(PgDiffScript script) {
         Collection<DbObjType> allowedTypes = arguments.getAllowedTypes();
+        Set<PgStatement> refreshed = new HashSet<>(toRefresh.size());
         for (ActionContainer action : actions) {
             DbObjType type = action.getOldObj().getStatementType();
             if(type == DbObjType.COLUMN){
@@ -61,32 +65,28 @@ public class ActionsToScriptConverter {
                 PgStatement objStarter = action.getStarter();
                 if (objStarter != null && objStarter != oldObj
                         && objStarter != action.getNewObj()) {
-                    String objName = "";
-                    if (objStarter.getStatementType() == DbObjType.COLUMN) {
-                        objName = ((AbstractColumn) objStarter).getParent().getName()
-                                + '.';
-                    }
-                    objName += objStarter.getName();
-
-                    if (objStarter instanceof PgStatementWithSearchPath) {
-                        objName = ((PgStatementWithSearchPath)objStarter).getContainingSchema().getName() + '.' + objName;
-                    }
-
                     depcy = MessageFormat.format(
                             action.getAction() == StatementActions.CREATE ?
                                     CREATE_COMMENT : DROP_COMMENT,
                                     oldObj.getStatementType(),
-                                    objStarter.getStatementType(), objName);
+                                    objStarter.getStatementType(),
+                                    objStarter.getQualifiedName());
                 }
                 switch (action.getAction()) {
                 case CREATE:
-                    if (depcy != null) {
-                        script.addStatement(depcy);
-                    }
                     if (toRefresh.contains(oldObj)) {
-                        script.addStatement(MessageFormat.format(REFRESH_MODULE,
-                                PgDiffUtils.quoteString(oldObj.getQualifiedName())));
+                        // emit refreshes for views only
+                        // refreshes for other objects serve as markers
+                        // that allow us to skip unmodified drop+create pairs
+                        if (oldObj instanceof MsView) {
+                            script.addStatement(MessageFormat.format(REFRESH_MODULE,
+                                    PgDiffUtils.quoteString(oldObj.getQualifiedName())));
+                        }
+                        refreshed.add(oldObj);
                     } else {
+                        if (depcy != null) {
+                            script.addStatement(depcy);
+                        }
                         script.addCreate(oldObj, null, oldObj.getCreationSQL(), true);
                     }
                     break;
@@ -128,6 +128,16 @@ public class ActionsToScriptConverter {
             if (!ownedBy.isEmpty()) {
                 script.addStatement(ownedBy);
             }
+        }
+
+        // if any refreshes were not emitted as statement replacements
+        // add them explicitly in reverse order (the resolver adds them in "drop order")
+        PgStatement[] orphanRefreshes = toRefresh.stream()
+                .filter(r -> r instanceof MsView && !refreshed.contains(r))
+                .toArray(PgStatement[]::new);
+        for (int i = orphanRefreshes.length - 1; i >= 0; --i) {
+            script.addStatement(MessageFormat.format(REFRESH_MODULE,
+                    PgDiffUtils.quoteString(orphanRefreshes[i].getQualifiedName())));
         }
     }
 

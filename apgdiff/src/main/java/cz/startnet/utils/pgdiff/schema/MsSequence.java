@@ -1,18 +1,18 @@
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 
 public class MsSequence extends AbstractSequence {
 
     private boolean isCached;
-    private String presicion;
 
     public MsSequence(String name) {
         super(name);
+        setDataType(BIGINT);
     }
 
     @Override
@@ -21,10 +21,7 @@ public class MsSequence extends AbstractSequence {
         sbSQL.append("CREATE SEQUENCE ");
         sbSQL.append(getQualifiedName());
 
-        sbSQL.append("\n\tAS ").append(MsDiffUtils.quoteName(getDataType()));
-        if (getPresicion() != null) {
-            sbSQL.append('(').append(getPresicion()).append(", 0)");
-        }
+        sbSQL.append("\n\tAS ").append(getDataType());
 
         fillSequenceBody(sbSQL);
         sbSQL.append(GO);
@@ -77,8 +74,7 @@ public class MsSequence extends AbstractSequence {
             return false;
         }
 
-        if (!newSequence.getDataType().equals(getDataType())  ||
-                !Objects.equals(newSequence.getPresicion(), getPresicion())) {
+        if (!newSequence.getDataType().equals(getDataType())) {
             isNeedDepcies.set(true);
             return true;
         }
@@ -168,6 +164,25 @@ public class MsSequence extends AbstractSequence {
     }
 
     @Override
+    public void setDataType(String dataType) {
+        String type = dataType.toLowerCase(Locale.ROOT);
+        switch (type) {
+        case "tinyint":
+        case "smallint":
+        case "int":
+        case BIGINT:
+        case "numeric":
+        case "decimal":
+            // set lowercased version for simple system types
+            break;
+        default:
+            // set exactly as given
+            type = dataType;
+        }
+        super.setDataType(type);
+    }
+
+    @Override
     public void setMinMaxInc(long inc, Long max, Long min, String dataType,
             long precision) {
         String type = dataType != null ? dataType : BIGINT;
@@ -176,15 +191,6 @@ public class MsSequence extends AbstractSequence {
                 getBoundaryTypeVal(type, true, precision) : max);
         this.minValue = Long.toString(min == null ?
                 getBoundaryTypeVal(type, false, precision) : min);
-        resetHash();
-    }
-
-    public String getPresicion() {
-        return presicion;
-    }
-
-    public void setPresicion(String presicion) {
-        this.presicion = presicion;
         resetHash();
     }
 
@@ -200,15 +206,12 @@ public class MsSequence extends AbstractSequence {
     @Override
     public boolean compare(PgStatement obj) {
         return obj instanceof MsSequence && super.compare(obj)
-                && Objects.equals(presicion, ((MsSequence) obj).getPresicion())
                 && isCached == ((MsSequence) obj).isCached();
     }
-
 
     @Override
     public void computeHash(Hasher hasher) {
         super.computeHash(hasher);
-        hasher.put(presicion);
         hasher.put(isCached);
     }
 
@@ -220,7 +223,6 @@ public class MsSequence extends AbstractSequence {
     @Override
     protected AbstractSequence getSequenceCopy() {
         MsSequence sequence = new MsSequence(getName());
-        sequence.setPresicion(getPresicion());
         sequence.setCached(isCached());
         return sequence;
     }

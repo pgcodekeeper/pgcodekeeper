@@ -1,4 +1,4 @@
-CREATE FUNCTION afunction(text, text, numeric) RETURNS numeric
+CREATE FUNCTION public.afunction(text, text, numeric) RETURNS numeric
     AS '
 DECLARE
   param1 ALIAS FOR $1;

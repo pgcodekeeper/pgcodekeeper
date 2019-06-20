@@ -5,9 +5,7 @@
  */
 package cz.startnet.utils.pgdiff.loader;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
@@ -37,6 +35,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
+import ru.taximaxim.codekeeper.apgdiff.fileutils.TempDir;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.MsModelExporter;
 
 /**
@@ -174,8 +173,8 @@ public class MsAntlrLoaderTest {
 
         PgDatabase dbPredefined = DB_OBJS[fileIndex].getDatabase();
         Path exportDir = null;
-        try {
-            exportDir = Files.createTempDirectory("pgCodekeeper-test-files");
+        try (TempDir dir = new TempDir("pgCodekeeper-test-files")) {
+            exportDir = dir.get();
             new MsModelExporter(exportDir, dbPredefined, encoding).exportFull();
 
             args = new PgDiffArguments();
@@ -190,23 +189,7 @@ public class MsAntlrLoaderTest {
 
             Assert.assertEquals("ModelExporter: exported predefined object is not "
                     + "equal to file " + filename, dbAfterExport, dbFromFile);
-        } finally {
-            if (exportDir != null) {
-                deleteRecursive(exportDir.toFile());
-            }
         }
-    }
-
-    /**
-     * Deletes folder and its contents recursively. FOLLOWS SYMLINKS!
-     */
-    private static void deleteRecursive(File f) throws IOException {
-        if (f.isDirectory()) {
-            for (File sub : f.listFiles()) {
-                deleteRecursive(sub);
-            }
-        }
-        Files.delete(f.toPath());
     }
 }
 
@@ -357,7 +340,7 @@ class MsDB1 extends MsDatabaseObjectCreator {
         col.setType("[varchar](50)");
         table.addColumn(col);
 
-        AbstractIndex idx = new MsIndex("IX_contacts_number_pool_id", "contacts");
+        AbstractIndex idx = new MsIndex("IX_contacts_number_pool_id");
         table.addIndex(idx);
         idx.setDefinition("([number_pool_id])");
 
@@ -644,7 +627,7 @@ class MsDB5 extends MsDatabaseObjectCreator {
 
         table.setOwner("ms_user");
 
-        AbstractIndex idx = new MsIndex("IX_test_table_date_deleted", "test_table");
+        AbstractIndex idx = new MsIndex("IX_test_table_date_deleted");
         idx.setDefinition("([date_deleted])");
         idx.setWhere("(date_deleted IS NULL)");
         table.addIndex(idx);
@@ -791,7 +774,7 @@ class MsDB8 extends MsDatabaseObjectCreator {
         view.setOwner("ms_user");
         schema.addView(view);
 
-        MsTrigger trigger = new MsTrigger("instead_of_delete", "\"user\"");
+        MsTrigger trigger = new MsTrigger("instead_of_delete");
         trigger.setAnsiNulls(true);
         trigger.setQuotedIdentified(true);
         trigger.setFirstPart("");
@@ -804,7 +787,7 @@ class MsDB8 extends MsDatabaseObjectCreator {
                 "    END");
         view.addTrigger(trigger);
 
-        trigger = new MsTrigger("instead_of_insert", "\"user\"");
+        trigger = new MsTrigger("instead_of_insert");
         trigger.setAnsiNulls(true);
         trigger.setQuotedIdentified(true);
         trigger.setFirstPart("");
@@ -817,7 +800,7 @@ class MsDB8 extends MsDatabaseObjectCreator {
                 "    END");
         view.addTrigger(trigger);
 
-        trigger = new MsTrigger("instead_of_update", "\"user\"");
+        trigger = new MsTrigger("instead_of_update");
         trigger.setAnsiNulls(true);
         trigger.setQuotedIdentified(true);
         trigger.setFirstPart("");
@@ -943,7 +926,7 @@ class MsDB9 extends MsDatabaseObjectCreator {
         constraint.setDefinition("DEFAULT (getdate()) FOR last_visit");
         table.addConstraint(constraint);
 
-        AbstractIndex idx = new MsIndex("IX_user_role_id", "\"user\"");
+        AbstractIndex idx = new MsIndex("IX_user_role_id");
         idx.setDefinition("([role_id])");
         table.addIndex(idx);
 
@@ -1217,14 +1200,14 @@ class MsDB13 extends MsDatabaseObjectCreator {
 
         view.setOwner("ms_user");
 
-        AbstractIndex idx = new MsIndex("IX_test_id", "test");
+        AbstractIndex idx = new MsIndex("IX_test_id");
         table.addIndex(idx);
         idx.setDefinition("([id])");
 
         // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
         // idx.setComment("view id col");
 
-        MsTrigger trigger = new MsTrigger("test_trigger", "test");
+        MsTrigger trigger = new MsTrigger("test_trigger");
         trigger.setQuotedIdentified(true);
         trigger.setAnsiNulls(true);
         trigger.setFirstPart("");

@@ -1,13 +1,11 @@
 SET search_path = pg_catalog;
 
-ALTER TABLE public.parenttable
+ALTER TABLE ONLY public.parenttable
 	DROP COLUMN id;
 
 CREATE TABLE public.parenttable2 (
 	id bigserial NOT NULL
 );
-
-ALTER TABLE public.parenttable2 OWNER TO fordfrog;
 
 ALTER TABLE public.testtable
 	NO INHERIT public.parenttable;

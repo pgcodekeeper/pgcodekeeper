@@ -8,6 +8,7 @@ import static ru.taximaxim.codekeeper.apgdiff.sql.Keyword.KeywordCategory.UNRESE
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -516,7 +517,7 @@ public class Keyword {
                 map.put(v.getCategory(), sb);
             }
             String k = v.getKeyword();
-            String kUpper = k.toUpperCase();
+            String kUpper = k.toUpperCase(Locale.ROOT);
             sb.append("    ").append(kUpper).append(':');
             for (int i = 0; i < k.length(); ++i){
                 char ch = k.charAt(i);
@@ -548,7 +549,7 @@ public class Keyword {
                 sb = new StringBuilder();
                 map.put(v.getCategory(), sb);
             }
-            sb.append("  | ").append(v.getKeyword().toUpperCase()).append("\n");
+            sb.append("  | ").append(v.getKeyword().toUpperCase(Locale.ROOT)).append("\n");
         });
         // SONAR-OFF
         map.keySet().stream().sorted().forEach(k -> {

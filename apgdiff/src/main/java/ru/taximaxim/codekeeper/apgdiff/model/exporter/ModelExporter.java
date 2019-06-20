@@ -57,17 +57,15 @@ public class ModelExporter extends AbstractModelExporter {
             break;
         case FUNCTION:
         case PROCEDURE:
+        case AGGREGATE:
         case OPERATOR:
             processFuncOrOper(el, st);
             break;
         case CONSTRAINT:
         case INDEX:
-            TreeElement elParent = el.getParent();
-            processTableAndContents(elParent, elParent.getPgStatement(oldDb), el);
-            break;
         case TRIGGER:
         case RULE:
-            elParent = el.getParent();
+            TreeElement elParent = el.getParent();
             if (elParent.getType() == DbObjType.TABLE){
                 processTableAndContents(elParent, elParent.getPgStatement(oldDb), el);
             } else {
@@ -96,15 +94,13 @@ public class ModelExporter extends AbstractModelExporter {
             break;
         case FUNCTION:
         case PROCEDURE:
+        case AGGREGATE:
         case OPERATOR:
             createParentSchema(elParent);
             processFuncOrOper(el, stInNew);
             break;
         case CONSTRAINT:
         case INDEX:
-            createParentSchema(elParent.getParent());
-            processTableAndContents(elParent, elParent.getPgStatement(newDb), el);
-            break;
         case TRIGGER:
         case RULE:
             createParentSchema(elParent.getParent());
@@ -168,21 +164,15 @@ public class ModelExporter extends AbstractModelExporter {
             break;
         case FUNCTION:
         case PROCEDURE:
+        case AGGREGATE:
         case OPERATOR:
             createParentSchema(elParent);
             processFuncOrOper(el, stInNew);
             break;
-
-        case CONSTRAINT:
-        case INDEX:
-            createParentSchema(elParent.getParent());
-            // table actually, not schema
-            createParentSchema(elParent);
-            processTableAndContents(elParent, elParent.getPgStatement(newDb), el);
-            break;
-
         case TRIGGER:
         case RULE:
+        case INDEX:
+        case CONSTRAINT:
             createParentSchema(elParent.getParent());
             // table actually, not schema
             createParentSchema(elParent);
@@ -211,6 +201,7 @@ public class ModelExporter extends AbstractModelExporter {
         switch(type) {
         case FUNCTION:
         case PROCEDURE:
+        case AGGREGATE:
             return schema.getFunctions().stream()
                     .filter(s -> type == s.getStatementType())
                     .collect(Collectors.toList());
@@ -225,6 +216,7 @@ public class ModelExporter extends AbstractModelExporter {
         switch(type) {
         case FUNCTION:
         case PROCEDURE:
+        case AGGREGATE:
             return schema.getFunctions().stream()
                     .filter(s -> type == s.getStatementType() && name.equals(s.getName()))
                     .findAny().orElse(null);
@@ -354,6 +346,7 @@ public class ModelExporter extends AbstractModelExporter {
 
             dumpAbstrFunctionsOrOperators(getAbstrFuncsOrOpers(schema, DbObjType.FUNCTION), schemaDir, DbObjType.FUNCTION);
             dumpAbstrFunctionsOrOperators(getAbstrFuncsOrOpers(schema, DbObjType.PROCEDURE), schemaDir, DbObjType.PROCEDURE);
+            dumpAbstrFunctionsOrOperators(getAbstrFuncsOrOpers(schema, DbObjType.AGGREGATE), schemaDir, DbObjType.AGGREGATE);
             dumpAbstrFunctionsOrOperators(schema.getOperators(), schemaDir, DbObjType.OPERATOR);
             dumpObjects(schema.getSequences(), schemaDir);
             dumpObjects(schema.getTypes(), schemaDir);
@@ -448,6 +441,7 @@ public class ModelExporter extends AbstractModelExporter {
         case TABLE:
         case FUNCTION:
         case PROCEDURE:
+        case AGGREGATE:
         case OPERATOR:
         case FTS_TEMPLATE:
         case FTS_PARSER:

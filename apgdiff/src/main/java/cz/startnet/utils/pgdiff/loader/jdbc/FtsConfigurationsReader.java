@@ -12,6 +12,7 @@ import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgFtsConfiguration;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class FtsConfigurationsReader extends JdbcReader {
@@ -42,7 +43,7 @@ public class FtsConfigurationsReader extends JdbcReader {
                 String dictSchema = dictSchemas[i];
                 String dictName = dictionaries[i];
 
-                if (!"pg_catalog".equals(dictSchema)) {
+                if (!ApgdiffConsts.PG_CATALOG.equals(dictSchema)) {
                     config.addDep(new GenericColumn(dictSchema, dictName, DbObjType.FTS_DICTIONARY));
                 }
 
@@ -65,10 +66,5 @@ public class FtsConfigurationsReader extends JdbcReader {
 
         loader.setAuthor(config, res);
         schema.addFtsConfiguration(config);
-    }
-
-    @Override
-    protected DbObjType getType() {
-        return DbObjType.FTS_CONFIGURATION;
     }
 }

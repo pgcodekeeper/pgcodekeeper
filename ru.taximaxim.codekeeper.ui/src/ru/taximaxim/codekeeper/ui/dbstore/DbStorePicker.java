@@ -157,6 +157,10 @@ public class DbStorePicker extends Composite {
         cmbDbNames.getControl().setEnabled(enabled);
     }
 
+    public boolean isComboEnabled() {
+        return cmbDbNames.getControl().getEnabled();
+    }
+
     private void loadStore(ISelection newSelection) {
         ISelection selection = newSelection == null ? cmbDbNames.getSelection() : newSelection;
 

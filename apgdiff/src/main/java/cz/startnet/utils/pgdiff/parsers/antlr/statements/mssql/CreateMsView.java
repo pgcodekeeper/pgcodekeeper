@@ -1,11 +1,15 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_viewContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Select_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSelect;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.MsSelectStmt;
@@ -42,27 +46,39 @@ public class CreateMsView extends BatchContextProcessor {
     }
 
     @Override
-    public MsView getObject() {
-        IdContext schemaCtx = ctx.qualified_name().schema;
-        AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
-        return getObject(schema);
+    public void parseObject() {
+        Qualified_nameContext qname = ctx.qualified_name();
+        getObject(getSchemaSafe(Arrays.asList(qname.schema, qname.name)), false);
     }
 
-    public MsView getObject(AbstractSchema schema) {
-        String name = ctx.qualified_name().name.getText();
-        MsView view = new MsView(name);
+    public MsView getObject(AbstractSchema schema, boolean isJdbc) {
+        IdContext nameCtx = ctx.qualified_name().name;
+        List<IdContext> ids = Arrays.asList(ctx.qualified_name().schema, nameCtx);
+        MsView view = new MsView(nameCtx.getText());
         view.setAnsiNulls(ansiNulls);
         view.setQuotedIdentified(quotedIdentifier);
         setSourceParts(view);
-        schema.addView(view);
 
         Select_statementContext vQuery = ctx.select_statement();
         if (vQuery != null) {
-            MsSelect select = new MsSelect(schema.getName());
+            String schemaName;
+            if (schema != null) {
+                schemaName = schema.getName();
+            } else {
+                schemaName = getSchemaNameSafe(ids);
+            }
+
+            MsSelect select = new MsSelect(schemaName);
             select.analyze(new MsSelectStmt(vQuery));
             view.addAllDeps(select.getDepcies());
         }
 
+
+        if (isJdbc && schema != null) {
+            schema.addView(view);
+        } else {
+            addSafe(schema, view, ids);
+        }
         return view;
     }
 }

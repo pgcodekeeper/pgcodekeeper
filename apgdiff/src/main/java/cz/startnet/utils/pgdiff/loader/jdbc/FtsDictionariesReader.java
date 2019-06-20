@@ -9,6 +9,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgFtsDictionary;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class FtsDictionariesReader extends JdbcReader {
@@ -32,7 +33,7 @@ public class FtsDictionariesReader extends JdbcReader {
         String tmplname = res.getString("tmplname");
         String templateSchema = res.getString("tmplnspname");
 
-        if ("pg_catalog".equals(templateSchema)) {
+        if (ApgdiffConsts.PG_CATALOG.equals(templateSchema)) {
             dic.setTemplate(PgDiffUtils.getQuotedName(tmplname));
         } else {
             dic.setTemplate(PgDiffUtils.getQuotedName(templateSchema) + '.'
@@ -48,10 +49,5 @@ public class FtsDictionariesReader extends JdbcReader {
 
         loader.setAuthor(dic, res);
         schema.addFtsDictionary(dic);
-    }
-
-    @Override
-    protected DbObjType getType() {
-        return DbObjType.FTS_DICTIONARY;
     }
 }

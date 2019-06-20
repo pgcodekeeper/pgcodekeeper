@@ -140,12 +140,9 @@ public class MsModelExporter extends AbstractModelExporter {
             break;
         case CONSTRAINT:
         case INDEX:
-            TreeElement elParent = el.getParent();
-            processTableAndContents(elParent, elParent.getPgStatement(oldDb), el);
-            break;
         case TRIGGER:
         case RULE:
-            elParent = el.getParent();
+            TreeElement elParent = el.getParent();
             if (elParent.getType() == DbObjType.TABLE){
                 processTableAndContents(elParent, elParent.getPgStatement(oldDb), el);
             } else {
@@ -305,8 +302,8 @@ public class MsModelExporter extends AbstractModelExporter {
 
         String fileName = addExtension ? getExportedFilenameSql(st) : getExportedFilename(st);
         if (st instanceof PgStatementWithSearchPath) {
-            fileName = FileUtils.getValidFilename(((PgStatementWithSearchPath)st)
-                    .getContainingSchema().getName()) + '.' + fileName;
+            fileName = FileUtils.getValidFilename(
+                    ((PgStatementWithSearchPath)st).getSchemaName()) + '.' + fileName;
         }
 
         return path.resolve(fileName);

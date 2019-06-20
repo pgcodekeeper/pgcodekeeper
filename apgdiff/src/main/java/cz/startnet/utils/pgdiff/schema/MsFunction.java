@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class MsFunction extends AbstractMsFunction implements SourceStatement {
+public class MsFunction extends AbstractMsFunction {
 
     private FuncTypes funcType = FuncTypes.SCALAR;
 
@@ -46,7 +46,7 @@ public class MsFunction extends AbstractMsFunction implements SourceStatement {
         final int startLength = sb.length();
         MsFunction newFunction;
         if (newCondition instanceof MsFunction) {
-            newFunction = (MsFunction)newCondition;
+            newFunction = (MsFunction) newCondition;
         } else if (newCondition instanceof MsClrFunction) {
             isNeedDepcies.set(true);
             return true;
@@ -56,8 +56,8 @@ public class MsFunction extends AbstractMsFunction implements SourceStatement {
 
         if (!Objects.equals(getFirstPart(), newFunction.getFirstPart())
                 || !Objects.equals(getSecondPart(), newFunction.getSecondPart())) {
+            isNeedDepcies.set(true);
             if (!getFuncType().equals(newFunction.getFuncType())) {
-                isNeedDepcies.set(true);
                 return true;
             } else {
                 sb.append(newFunction.getFunctionFullSQL(false));

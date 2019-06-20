@@ -103,8 +103,8 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath {
     }
 
     @Override
-    public String getLocation() {
-        String location = getMeta().getLocation();
+    public PgObjLocation getLocation() {
+        PgObjLocation location = getMeta().getLocation();
         if (location == null) {
             location = getParent().getLocation();
         }
@@ -112,7 +112,7 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath {
     }
 
     @Override
-    public void setLocation(String location) {
+    public void setLocation(PgObjLocation location) {
         getMeta().setLocation(location);
     }
 
@@ -148,11 +148,6 @@ public abstract class AbstractConstraint extends PgStatementWithSearchPath {
     }
 
     protected abstract AbstractConstraint getConstraintCopy();
-
-    @Override
-    public AbstractConstraint deepCopy() {
-        return shallowCopy();
-    }
 
     @Override
     public AbstractSchema getContainingSchema() {

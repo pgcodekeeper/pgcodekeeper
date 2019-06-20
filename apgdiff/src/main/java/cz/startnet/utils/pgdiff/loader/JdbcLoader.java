@@ -83,6 +83,7 @@ public class JdbcLoader extends JdbcLoaderBase {
             new RulesReader(this).read();
             new TriggersReader(this).read();
             new IndicesReader(this).read();
+            // Reads FUNCTIONs, PROCEDUREs and AGGREGATEs from JDBC.
             new FunctionsReader(this).read();
             // non-ANTLR tasks
             new ConstraintsReader(this).read();

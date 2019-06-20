@@ -4,9 +4,9 @@ DROP RULE notify_me ON public.emp;
 
 DROP TRIGGER emp_stamp ON public.emp;
 
-DROP VIEW public.emp_view;
-
 DROP INDEX public.name_ind;
+
+DROP VIEW public.emp_view;
 
 DROP TABLE public.emp;
 
@@ -79,8 +79,6 @@ CREATE TABLE test.emp (
 
 ALTER TABLE test.emp OWNER TO galiev_mr;
 
-CREATE UNIQUE INDEX name_ind ON test.emp USING btree (empname);
-
 CREATE VIEW test.emp_view AS
 	SELECT emp.empname,
     emp.last_date,
@@ -89,6 +87,8 @@ CREATE VIEW test.emp_view AS
    FROM test.emp;
 
 ALTER VIEW test.emp_view OWNER TO galiev_mr;
+
+CREATE UNIQUE INDEX name_ind ON test.emp USING btree (empname);
 
 CREATE TRIGGER emp_stamp
 	BEFORE INSERT OR UPDATE ON test.emp

@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,6 +33,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.ide.ResourceUtil;
 
+import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcMsConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
@@ -175,8 +177,7 @@ class QuickUpdateJob extends SingletonEditorJob {
 
         checkFileModified();
 
-        DbSource dbRemote = DbSource.fromDbInfo(dbinfo, prefs,
-                projPrefs.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
+        DbSource dbRemote = DbSource.fromDbInfo(dbinfo, projPrefs.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
                 proj.getProjectCharset(), timezone);
         DbSource dbProject = DbSource.fromProject(proj);
 
@@ -195,10 +196,6 @@ class QuickUpdateJob extends SingletonEditorJob {
                 treeFull, false, timezone, isMsSql);
         differ.run(monitor.newChild(1));
 
-        if (differ.getScript().isDangerDdl(false, false, false, false, false)) {
-            throw new PgCodekeeperUIException(Messages.QuickUpdate_danger);
-        }
-
         checkFileModified();
 
         monitor.newChild(1).subTask(Messages.QuickUpdate_updating_db);
@@ -215,12 +212,18 @@ class QuickUpdateJob extends SingletonEditorJob {
         }
 
         try {
-            ScriptParser parser = new ScriptParser(file.getName());
-            List<List<String>> batches = parser.parse(differ.getDiffDirect(), dbinfo.isMsSql());
+            ScriptParser parser = new ScriptParser(file.getName(), differ.getDiffDirect(), isMsSql);
             String error = parser.getErrorMessage();
-            if (dbinfo.isMsSql() && error != null) {
+            if (error != null) {
                 throw new PgCodekeeperUIException(error);
             }
+
+            if (parser.isDangerDdl(EnumSet.noneOf(DangerStatement.class))) {
+                throw new PgCodekeeperUIException(Messages.QuickUpdate_danger);
+            }
+
+            List<List<String>> batches = parser.batch();
+
 
             new JdbcRunner(monitor).runBatches(connector, batches, null);
         } catch (SQLException e) {

@@ -1,5 +1,8 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -15,6 +18,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Func_returnContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Function_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Procedure_paramContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Select_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Sql_clausesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSelect;
@@ -25,11 +29,9 @@ import cz.startnet.utils.pgdiff.schema.AbstractMsClrFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.FuncTypes;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsClrFunction;
 import cz.startnet.utils.pgdiff.schema.MsFunction;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsFunction extends BatchContextProcessor {
@@ -53,16 +55,21 @@ public class CreateMsFunction extends BatchContextProcessor {
     }
 
     @Override
-    public PgStatement getObject() {
-        IdContext schemaCtx = ctx.qualified_name().schema;
-        AbstractSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
-        return getObject(schema);
+    public void parseObject() {
+        Qualified_nameContext qname = ctx.qualified_name();
+        getObject(getSchemaSafe(Arrays.asList(qname.schema, qname.name)), false);
     }
 
-    public AbstractFunction getObject(AbstractSchema schema) {
-        String name = ctx.qualified_name().name.getText();
-        boolean isKeepNewlines = db.getArguments().isKeepNewlines();
+    public AbstractFunction getObject(AbstractSchema schema, boolean isJdbc) {
+        IdContext nameCtx = ctx.qualified_name().name;
+        List<IdContext> ids = Arrays.asList(ctx.qualified_name().schema, nameCtx);
+        String name = nameCtx.getText();
         Func_bodyContext bodyRet = ctx.func_body();
+
+        AbstractFunction f;
+
+        String returns = getFullCtxText(ctx.func_return());
+
         if (bodyRet.EXTERNAL() != null) {
             Assembly_specifierContext assemblyCtx = bodyRet.assembly_specifier();
             String assembly = assemblyCtx.assembly_name.getText();
@@ -71,15 +78,15 @@ public class CreateMsFunction extends BatchContextProcessor {
 
             MsClrFunction func = new MsClrFunction(name, assembly,
                     assemblyClass, assemblyMethod);
-            func.addDep(new GenericColumn(assembly, DbObjType.ASSEMBLY));
-            fillArguments(func);
+
+            addDepSafe(func, Arrays.asList(assemblyCtx.assembly_name),
+                    DbObjType.ASSEMBLY, false);
 
             for (Function_optionContext option : ctx.function_option()) {
                 func.addOption(getFullCtxText(option));
             }
 
-            String returns = getFullCtxText(ctx.func_return());
-            analyzeReturn(ctx.func_return(), func);
+            boolean isKeepNewlines = db.getArguments().isKeepNewlines();
             func.setReturns(isKeepNewlines ? returns : returns.replace("\r", ""));
 
             Func_returnContext ret = ctx.func_return();
@@ -89,46 +96,63 @@ public class CreateMsFunction extends BatchContextProcessor {
                 func.setFuncType(FuncTypes.TABLE);
             }
 
-            schema.addFunction(func);
-            return func;
-        }
-
-        MsFunction func = new MsFunction(name);
-        func.setAnsiNulls(ansiNulls);
-        func.setQuotedIdentified(quotedIdentifier);
-        setSourceParts(func);
-
-        Select_statementContext select = bodyRet.select_statement();
-        String schemaName = schema.getName();
-        if (select != null) {
-            MsSelect sel = new MsSelect(schemaName);
-            sel.analyze(select);
-            func.addAllDeps(sel.getDepcies());
+            f = func;
         } else {
-            ExpressionContext exp = bodyRet.expression();
-            if (exp != null) {
-                MsValueExpr vex = new MsValueExpr(schemaName);
-                vex.analyze(exp);
-                func.addAllDeps(vex.getDepcies());
+            MsFunction func = new MsFunction(name);
+            func.setAnsiNulls(ansiNulls);
+            func.setQuotedIdentified(quotedIdentifier);
+            setSourceParts(func);
+
+            Select_statementContext select = bodyRet.select_statement();
+            String schemaName;
+            if (schema != null) {
+                schemaName = schema.getName();
+            } else {
+                schemaName = getSchemaNameSafe(ids);
             }
 
-            Sql_clausesContext clausesCtx = bodyRet.sql_clauses();
-            if (clausesCtx != null) {
-                MsSqlClauses clauses = new MsSqlClauses(schemaName);
-                clauses.analyze(clausesCtx);
-                func.addAllDeps(clauses.getDepcies());
+            if (select != null) {
+                MsSelect sel = new MsSelect(schemaName, DbObjType.FUNCTION, DbObjType.PROCEDURE);
+                sel.analyze(select);
+                func.addAllDeps(sel.getDepcies());
+            } else {
+                ExpressionContext exp = bodyRet.expression();
+                if (exp != null) {
+                    MsValueExpr vex = new MsValueExpr(schemaName,
+                            DbObjType.FUNCTION, DbObjType.PROCEDURE);
+                    vex.analyze(exp);
+                    func.addAllDeps(vex.getDepcies());
+                }
+
+                Sql_clausesContext clausesCtx = bodyRet.sql_clauses();
+                if (clausesCtx != null) {
+                    MsSqlClauses clauses = new MsSqlClauses(schemaName,
+                            DbObjType.FUNCTION, DbObjType.PROCEDURE);
+                    clauses.analyze(clausesCtx);
+                    func.addAllDeps(clauses.getDepcies());
+                }
             }
+
+            Func_returnContext ret = ctx.func_return();
+            if (ret.LOCAL_ID() != null) {
+                func.setFuncType(FuncTypes.MULTI);
+            } else if (ret.data_type() == null) {
+                func.setFuncType(FuncTypes.TABLE);
+            }
+
+            f = func;
         }
 
-        Func_returnContext ret = ctx.func_return();
-        if (ret.LOCAL_ID() != null) {
-            func.setFuncType(FuncTypes.MULTI);
-        } else if (ret.data_type() == null) {
-            func.setFuncType(FuncTypes.TABLE);
+        fillArguments(f);
+        analyzeReturn(ctx.func_return(), f);
+
+        if (isJdbc && schema != null) {
+            schema.addFunction(f);
+        } else {
+            addSafe(schema, f, ids);
         }
 
-        schema.addFunction(func);
-        return func;
+        return f;
     }
 
     private void analyzeReturn(Func_returnContext ret, AbstractFunction function) {
@@ -137,25 +161,28 @@ public class CreateMsFunction extends BatchContextProcessor {
             for (Column_def_table_constraintContext con : cons.column_def_table_constraint()) {
                 Data_typeContext dt = con.data_type();
                 if (dt != null) {
-                    addTypeAsDepcy(dt, function);
+                    addMsTypeDepcy(dt, function);
                 }
             }
-        } else {
-            addTypeAsDepcy(ret.data_type(), function);
+        } else if (ret.data_type() != null) {
+            addMsTypeDepcy(ret.data_type(), function);
         }
     }
 
-    private void fillArguments(AbstractMsClrFunction function) {
+    private void fillArguments(AbstractFunction function) {
         for (Procedure_paramContext argument : ctx.procedure_param()) {
-            Argument arg = new Argument(
-                    argument.arg_mode != null ? argument.arg_mode.getText() : null,
-                            argument.name.getText(), getFullCtxText(argument.data_type()));
-            addTypeAsDepcy(argument.data_type(), function);
-            if (argument.default_val != null) {
-                arg.setDefaultExpression(getFullCtxText(argument.default_val));
-            }
+            addMsTypeDepcy(argument.data_type(), function);
 
-            function.addArgument(arg);
+            if (function instanceof AbstractMsClrFunction) {
+                Argument arg = new Argument(
+                        argument.arg_mode != null ? argument.arg_mode.getText() : null,
+                                argument.name.getText(), getFullCtxText(argument.data_type()));
+                if (argument.default_val != null) {
+                    arg.setDefaultExpression(getFullCtxText(argument.default_val));
+                }
+
+                ((AbstractMsClrFunction) function).addArgument(arg);
+            }
         }
     }
 }

@@ -34,9 +34,9 @@ public final class QNameParser<T extends ParserRuleContext> {
         return getLastIdCtx(ids, 3);
     }
 
-    public static <T extends ParserRuleContext> String getSchemaName(List<T> ids, String defaultSchema) {
+    public static <T extends ParserRuleContext> String getSchemaName(List<T> ids) {
         ParserRuleContext schemaCtx = getSchemaNameCtx(ids);
-        return schemaCtx == null ? defaultSchema : schemaCtx.getText();
+        return schemaCtx == null ? null : schemaCtx.getText();
     }
 
     public static <T extends ParserRuleContext> T getSchemaNameCtx(List<T> ids) {
@@ -87,8 +87,8 @@ public final class QNameParser<T extends ParserRuleContext> {
         return getThirdName(parts);
     }
 
-    public String getSchemaName(String defaultSchema) {
-        return getSchemaName(parts, defaultSchema);
+    public String getSchemaName() {
+        return getSchemaName(parts);
     }
 
     public boolean hasErrors() {

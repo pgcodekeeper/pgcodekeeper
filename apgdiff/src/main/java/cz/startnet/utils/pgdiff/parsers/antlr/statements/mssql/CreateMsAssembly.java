@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
@@ -10,7 +11,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.MsAssembly;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class CreateMsAssembly extends ParserAbstract {
 
@@ -25,7 +25,8 @@ public class CreateMsAssembly extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public void parseObject() {
+        IdContext nameCtx = ctx.assembly_name;
         MsAssembly ass = new MsAssembly(ctx.assembly_name.getText());
         IdContext owner = ctx.owner_name;
         if (owner != null && !db.getArguments().isIgnorePrivileges()) {
@@ -38,18 +39,17 @@ public class CreateMsAssembly extends ParserAbstract {
 
         Assembly_permissionContext permission = ctx.assembly_permission();
         if (permission != null) {
-            ass.setPermission(getFullCtxText(permission).toUpperCase());
+            ass.setPermission(getFullCtxText(permission).toUpperCase(Locale.ROOT));
         }
 
-        db.addAssembly(ass);
-        return ass;
+        addSafe(db, ass, Arrays.asList(nameCtx));
     }
 
     public static String formatBinary(String hex) {
         if (!hex.startsWith("0x")) {
             return hex;
         }
-        hex = hex.toLowerCase(Locale.ENGLISH);
+        hex = hex.toLowerCase(Locale.ROOT);
         if (hex.indexOf('\\') != -1) {
             hex = BINARY_NEWLINE.matcher(hex).replaceAll("");
         }

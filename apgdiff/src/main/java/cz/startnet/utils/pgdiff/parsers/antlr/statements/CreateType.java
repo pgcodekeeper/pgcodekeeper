@@ -11,9 +11,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgType.PgTypeForm;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateType extends ParserAbstract {
 
@@ -24,10 +24,10 @@ public class CreateType extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public void parseObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
         String name = QNameParser.getFirstName(ids);
-        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
+        AbstractSchema schema = getSchemaSafe(ids);
         PgTypeForm form = PgTypeForm.SHELL;
         if (ctx.RANGE() != null) {
             form = PgTypeForm.RANGE;
@@ -40,7 +40,7 @@ public class CreateType extends ParserAbstract {
         }
         PgType type = null;
         PgType newType = null;
-        if (form == PgTypeForm.BASE) {
+        if (form == PgTypeForm.BASE && schema != null) {
             type = (PgType) schema.getType(name);
             if (type != null && type.getForm() != PgTypeForm.SHELL) {
                 throw new IllegalStateException("Duplicate type but existing is not SHELL type!");
@@ -53,14 +53,14 @@ public class CreateType extends ParserAbstract {
 
         for (Table_column_definitionContext attr : ctx.attrs) {
             type.addAttr(getColumn(attr));
-            addTypeAsDepcy(attr.datatype, type, getDefSchemaName());
+            addPgTypeDepcy(attr.datatype, type);
         }
         for (Character_stringContext enume : ctx.enums) {
             type.addEnum(enume.getText());
         }
         if (ctx.subtype_name != null) {
-            type.setSubtype(getFullCtxText(ctx.subtype_name));
-            addTypeAsDepcy(ctx.subtype_name, type, getDefSchemaName());
+            type.setSubtype(getTypeName(ctx.subtype_name));
+            addPgTypeDepcy(ctx.subtype_name, type);
         }
         if (ctx.subtype_operator_class != null) {
             type.setSubtypeOpClass(getFullCtxText(ctx.subtype_operator_class));
@@ -70,31 +70,39 @@ public class CreateType extends ParserAbstract {
         }
         if (ctx.canonical_function != null) {
             type.setCanonical(getFullCtxText(ctx.canonical_function));
+            addDepSafe(type, ctx.canonical_function.identifier(), DbObjType.FUNCTION, true);
         }
         if (ctx.subtype_diff_function != null) {
             type.setSubtypeDiff(getFullCtxText(ctx.subtype_diff_function));
+            addDepSafe(type, ctx.subtype_diff_function.identifier(), DbObjType.FUNCTION, true);
         }
-        // TODO function depcies; caution: may introduce cyclic depcies
         if (ctx.input_function != null) {
             type.setInputFunction(getFullCtxText(ctx.input_function));
+            addDepSafe(type, ctx.input_function.identifier(), DbObjType.FUNCTION, true);
         }
         if (ctx.output_function != null) {
             type.setOutputFunction(getFullCtxText(ctx.output_function));
+            addDepSafe(type, ctx.output_function.identifier(), DbObjType.FUNCTION, true);
         }
         if (ctx.receive_function != null) {
             type.setReceiveFunction(getFullCtxText(ctx.receive_function));
+            addDepSafe(type, ctx.receive_function.identifier(), DbObjType.FUNCTION, true);
         }
         if (ctx.send_function != null) {
             type.setSendFunction(getFullCtxText(ctx.send_function));
+            addDepSafe(type, ctx.send_function.identifier(), DbObjType.FUNCTION, true);
         }
         if (ctx.type_modifier_input_function != null) {
             type.setTypmodInputFunction(getFullCtxText(ctx.type_modifier_input_function));
+            addDepSafe(type, ctx.type_modifier_input_function.identifier(), DbObjType.FUNCTION, true);
         }
         if (ctx.type_modifier_output_function != null) {
             type.setTypmodOutputFunction(getFullCtxText(ctx.type_modifier_output_function));
+            addDepSafe(type, ctx.type_modifier_output_function.identifier(), DbObjType.FUNCTION, true);
         }
         if (ctx.analyze_function != null) {
             type.setAnalyzeFunction(getFullCtxText(ctx.analyze_function));
+            addDepSafe(type, ctx.analyze_function.identifier(), DbObjType.FUNCTION, true);
         }
         if (ctx.internallength != null) {
             type.setInternalLength(getFullCtxText(ctx.internallength));
@@ -123,8 +131,8 @@ public class CreateType extends ParserAbstract {
             type.setDefaultValue(ctx.default_value.getText());
         }
         if (ctx.element != null) {
-            type.setElement(getFullCtxText(ctx.element));
-            addTypeAsDepcy(ctx.element, type, getDefSchemaName());
+            type.setElement(getTypeName(ctx.element));
+            addPgTypeDepcy(ctx.element, type);
         }
         if (ctx.delimiter != null) {
             type.setDelimiter(ctx.delimiter.getText());
@@ -134,8 +142,7 @@ public class CreateType extends ParserAbstract {
         }
         if (newType != null) {
             // add only newly created type, not a filled SHELL that was added before
-            schema.addType(type);
+            addSafe(schema, type, ids);
         }
-        return type;
     }
 }

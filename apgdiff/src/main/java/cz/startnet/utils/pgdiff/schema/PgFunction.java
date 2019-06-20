@@ -8,7 +8,6 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -31,7 +30,7 @@ public class PgFunction extends AbstractPgFunction {
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE OR REPLACE FUNCTION ");
-        sbSQL.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
+        sbSQL.append(PgDiffUtils.getQuotedName(getSchemaName())).append('.');
         appendFunctionSignature(sbSQL, true, true);
         sbSQL.append(' ');
         sbSQL.append("RETURNS ");
@@ -75,26 +74,8 @@ public class PgFunction extends AbstractPgFunction {
             sbSQL.append(" PARALLEL ").append(getParallel());
         }
 
-        if ("internal".equals(getLanguage()) || "c".equals(getLanguage())) {
-            /* default cost is 1 */
-            if (1.0f != getCost()) {
-                sbSQL.append(" COST ");
-                if (getCost() % 1 == 0) {
-                    sbSQL.append((int)getCost());
-                } else {
-                    sbSQL.append(getCost());
-                }
-            }
-        } else {
-            /* default cost is 100 */
-            if (DEFAULT_PROCOST != getCost()) {
-                sbSQL.append(" COST ");
-                if (getCost() % 1 == 0) {
-                    sbSQL.append((int)getCost());
-                } else {
-                    sbSQL.append(getCost());
-                }
-            }
+        if (getCost() != null) {
+            sbSQL.append(" COST ").append(getCost());
         }
 
         if (DEFAULT_PROROWS != getRows()) {
@@ -134,79 +115,7 @@ public class PgFunction extends AbstractPgFunction {
     }
 
     @Override
-    public String getDeclaration(Argument arg, boolean includeDefaultValue, boolean includeArgName) {
-        final StringBuilder sbString = new StringBuilder();
-
-        if (includeArgName) {
-            String mode = arg.getMode();
-            if (mode != null && !"IN".equalsIgnoreCase(mode)) {
-                sbString.append(mode);
-                sbString.append(' ');
-            }
-
-            String name = arg.getName();
-
-            if (name != null && !name.isEmpty()) {
-                sbString.append(PgDiffUtils.getQuotedName(name));
-                sbString.append(' ');
-            }
-        }
-
-        sbString.append(arg.getDataType());
-
-        String def = arg.getDefaultExpression();
-
-        if (includeDefaultValue && def != null && !def.isEmpty()) {
-            sbString.append(" = ");
-            sbString.append(def);
-        }
-
-        return sbString.toString();
-    }
-
-    @Override
-    public String getDropSQL() {
-        final StringBuilder sbString = new StringBuilder();
-        sbString.append("DROP FUNCTION ");
-        sbString.append(PgDiffUtils.getQuotedName(getContainingSchema().getName())).append('.');
-        appendFunctionSignature(sbString, false, true);
-        sbString.append(';');
-
-        return sbString.toString();
-    }
-
-    @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
-        PgFunction newFunction;
-        if (newCondition instanceof PgFunction) {
-            newFunction = (PgFunction)newCondition;
-        } else {
-            return false;
-        }
-
-        if (!compareUnalterable(newFunction)) {
-            if (needDrop(newFunction)) {
-                isNeedDepcies.set(true);
-                return true;
-            } else {
-                sb.append(newFunction.getCreationSQL());
-            }
-        }
-
-        if (!Objects.equals(getOwner(), newFunction.getOwner())) {
-            newFunction.alterOwnerSQL(sb);
-        }
-        alterPrivileges(newFunction, sb);
-        if (!Objects.equals(getComment(), newFunction.getComment())) {
-            sb.append("\n\n");
-            newFunction.appendCommentSql(sb);
-        }
-        return sb.length() > startLength;
-    }
-
-    private boolean needDrop(AbstractPgFunction newFunction) {
+    protected boolean needDrop(AbstractPgFunction newFunction) {
         if (newFunction == null ||
                 !Objects.equals(getReturns(), newFunction.getReturns())) {
             return true;
@@ -253,21 +162,6 @@ public class PgFunction extends AbstractPgFunction {
         }
 
         return false;
-    }
-
-    /**
-     * Alias for {@link #getSignature()} which provides a unique function ID.
-     *
-     * Use {@link #getBareName()} to get just the function name.
-     */
-    @Override
-    public String getName() {
-        return getSignature();
-    }
-
-    @Override
-    public String getQualifiedName() {
-        return getParent().getQualifiedName() + '.' + getName();
     }
 
     @Override

@@ -1,13 +1,10 @@
 package cz.startnet.utils.pgdiff.depcies;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Locale;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -21,7 +18,6 @@ import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.Log;
-import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 
@@ -143,7 +139,16 @@ public class PgDiffDepciesTest {
             {"chg_fts_statements", "chg_fts_statements_usr_template"},
             // изменение зависимых объектов полнотекстового поиска
             // пользователь выбрал конфигурацию
-            {"chg_fts_statements", "chg_fts_statements_usr_configuration"}
+            {"chg_fts_statements", "chg_fts_statements_usr_configuration"},
+            // добавление агрегатов с зависимыми от них функциями,
+            // пользователь выбрал только агрегаты
+            {"add_aggr_func", "add_aggr_func_usr_aggr"},
+            // добавление вьюхи с зависимыми от нее объектами,
+            // пользователь выбрал только вьюху
+            {"add_view", "add_view_usr_view"},
+            // изменение типа колонки таблицы, зависящей от функции, удаление функции
+            // пользователь выбрал таблицу tbl
+            {"chg_col_type_dep_from_func", "chg_col_type_dep_from_func_usr_tbl"},
         });
     }
 
@@ -163,32 +168,24 @@ public class PgDiffDepciesTest {
             final String userSelTemplate) {
         this.dbTemplate = fileNameTemplate;
         this.userSelTemplate = userSelTemplate;
-        Locale.setDefault(Locale.ENGLISH);
         Log.log(Log.LOG_DEBUG, dbTemplate + ' ' + userSelTemplate);
     }
 
     public void runDiffSame(PgDatabase db) throws IOException, InterruptedException {
-        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
-        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
-        final PgDiffArguments arguments = new PgDiffArguments();
-        PgDiff.diffDatabaseSchemas(writer, arguments, db, db, null);
-        writer.flush();
-
-        Assert.assertEquals("File name template: " + dbTemplate,
-                "", diffInput.toString().trim());
+        String script = PgDiff.diffDatabaseSchemas(new PgDiffArguments(), db, db, null).getText();
+        Assert.assertEquals("File name template: " + dbTemplate, "", script.trim());
     }
 
     @Test(timeout = 120000)
     public void runDiff() throws IOException, InterruptedException {
 
-        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
-        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         final PgDiffArguments args = new PgDiffArguments();
         PgDatabase oldDatabase = ApgdiffTestUtils.loadTestDump(
                 getUsrSelName(FILES_POSTFIX.ORIGINAL_SQL), PgDiffDepciesTest.class, args);
         PgDatabase newDatabase = ApgdiffTestUtils.loadTestDump(
                 getUsrSelName(FILES_POSTFIX.NEW_SQL), PgDiffDepciesTest.class, args);
-        PgDatabase oldDbFull, newDbFull;
+        PgDatabase oldDbFull;
+        PgDatabase newDbFull;
         if (userSelTemplate.equals(dbTemplate)) {
             oldDbFull = oldDatabase;
             newDbFull = newDatabase;
@@ -204,9 +201,8 @@ public class PgDiffDepciesTest {
 
         TreeElement tree = DiffTree.create(oldDatabase, newDatabase, null);
         tree.setAllChecked();
-        PgDiff.diffDatabaseSchemasAdditionalDepcies(writer, args,
-                tree, oldDbFull, newDbFull, null, null);
-        writer.flush();
+        String script = PgDiff.diffDatabaseSchemasAdditionalDepcies(
+                args, tree, oldDbFull, newDbFull, null, null).getText();
 
         StringBuilder sbExpDiff;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(
@@ -222,7 +218,7 @@ public class PgDiffDepciesTest {
 
         Assert.assertEquals("File name template: " + userSelTemplate,
                 sbExpDiff.toString().trim(),
-                diffInput.toString().trim());
+                script.trim());
     }
 
     private String getUsrSelName(FILES_POSTFIX postfix) {

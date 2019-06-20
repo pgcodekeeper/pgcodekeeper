@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Delete_stmt_for_psqlContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Using_tableContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_itemContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
@@ -17,8 +17,8 @@ public class Delete extends AbstractExprWithNmspc<Delete_stmt_for_psqlContext> {
         super(parent);
     }
 
-    public Delete(String schema, PgDatabase db) {
-        super(schema, db);
+    public Delete(PgDatabase db) {
+        super(db);
     }
 
     @Override
@@ -30,8 +30,9 @@ public class Delete extends AbstractExprWithNmspc<Delete_stmt_for_psqlContext> {
 
         addNameReference(delete.delete_table_name, delete.alias, null);
         if (delete.USING() != null) {
-            for (Using_tableContext usingTable : delete.using_table()) {
-                addNameReference(usingTable.schema_qualified_name(), usingTable.alias_clause());
+            for (From_itemContext fromItem : delete.from_item()) {
+                //TODO collect to current namespace
+                new Select(this).from(fromItem);
             }
         }
 

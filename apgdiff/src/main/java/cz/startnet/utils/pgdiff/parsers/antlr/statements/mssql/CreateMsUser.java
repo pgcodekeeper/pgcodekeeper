@@ -1,12 +1,14 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
+import java.util.Arrays;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_userContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.User_loginContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.User_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.MsUser;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class CreateMsUser extends ParserAbstract {
 
@@ -18,8 +20,9 @@ public class CreateMsUser extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
-        String name = ctx.user_name.getText();
+    public void parseObject() {
+        IdContext nameCtx = ctx.user_name;
+        String name = nameCtx.getText();
         MsUser user = new MsUser(name);
         User_loginContext login = ctx.user_login();
         if (login != null && login.login_name != null) {
@@ -32,7 +35,6 @@ public class CreateMsUser extends ParserAbstract {
             }
         }
 
-        db.addUser(user);
-        return user;
+        addSafe(db, user, Arrays.asList(nameCtx));
     }
 }

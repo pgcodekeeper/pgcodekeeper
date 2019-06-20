@@ -17,6 +17,7 @@ public class DiffProject extends AbstractHandler {
 
         if (part instanceof ProjectEditorDiffer){
             ProjectEditorDiffer differ = (ProjectEditorDiffer) part;
+            differ.changeMigrationDireciton(false, true);
             differ.diff();
         }
         return null;

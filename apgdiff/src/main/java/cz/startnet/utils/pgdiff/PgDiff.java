@@ -7,7 +7,6 @@ package cz.startnet.utils.pgdiff;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
@@ -55,7 +54,7 @@ public final class PgDiff {
      * @param writer    writer the output should be written to
      * @param arguments object containing arguments settings
      */
-    public static PgDiffScript createDiff(PrintWriter writer, PgDiffArguments arguments)
+    public static PgDiffScript createDiff(PgDiffArguments arguments)
             throws InterruptedException, IOException {
         PgDatabase oldDatabase = loadDatabaseSchema(
                 arguments.getOldSrcFormat(), arguments.getOldSrc(), arguments);
@@ -84,12 +83,11 @@ public final class PgDiff {
         newLib.loadLibraries(arguments, false, arguments.getTargetLibs());
         newLib.loadLibraries(arguments, true, arguments.getTargetLibsWithoutPriv());
 
-        if (arguments.isLibSafeMode()) {
+        if (arguments.isLibSafeMode() &&
+                (!oldDatabase.getOverrides().isEmpty() || !newDatabase.getOverrides().isEmpty())) {
             List<PgOverride> overrides = oldDatabase.getOverrides();
             overrides.addAll(newDatabase.getOverrides());
-            if (!overrides.isEmpty()) {
-                throw new LibraryObjectDuplicationException(overrides);
-            }
+            throw new LibraryObjectDuplicationException(overrides);
         }
 
         // read additional privileges from special folder
@@ -108,7 +106,7 @@ public final class PgDiff {
             ignoreParser.parse(Paths.get(listFilename));
         }
 
-        return diffDatabaseSchemas(writer, arguments, oldDatabase, newDatabase, ignoreParser.getIgnoreList());
+        return diffDatabaseSchemas(arguments, oldDatabase, newDatabase, ignoreParser.getIgnoreList());
     }
 
     /**
@@ -128,9 +126,7 @@ public final class PgDiff {
         db.setArguments(arguments);
 
         if ("dump".equals(format)) {
-            try (PgDumpLoader loader = new PgDumpLoader(new File(srcPath), arguments)) {
-                return loader.load(db);
-            }
+            return new PgDumpLoader(new File(srcPath), arguments).load(db);
         } else if ("parsed".equals(format)) {
             ProjectLoader loader = new ProjectLoader(srcPath, arguments);
             return loader.loadSchemaOnly();
@@ -163,14 +159,14 @@ public final class PgDiff {
      * @param newDatabase new database schema
      * @throws InterruptedException
      */
-    public static PgDiffScript diffDatabaseSchemas(PrintWriter writer,
-            PgDiffArguments arguments, PgDatabase oldDbFull, PgDatabase newDbFull,
-            IgnoreList ignoreList) throws InterruptedException {
+    public static PgDiffScript diffDatabaseSchemas(PgDiffArguments arguments,
+            PgDatabase oldDbFull, PgDatabase newDbFull, IgnoreList ignoreList)
+                    throws InterruptedException {
         TreeElement root = DiffTree.create(oldDbFull, newDbFull, null);
         root.setAllChecked();
-        return arguments.isMsSql() ? diffMsDatabaseSchemas(writer, arguments,
+        return arguments.isMsSql() ? diffMsDatabaseSchemas(arguments,
                 root, oldDbFull, newDbFull, null, null, ignoreList) :
-                    diffDatabaseSchemasAdditionalDepcies(writer, arguments,
+                    diffDatabaseSchemasAdditionalDepcies(arguments,
                             root, oldDbFull, newDbFull, null, null, ignoreList);
     }
 
@@ -178,20 +174,20 @@ public final class PgDiff {
      * Делает то же, что и метод выше, однако принимает TreeElement - как
      * элементы нужные для наката
      */
-    public static PgDiffScript diffDatabaseSchemasAdditionalDepcies(PrintWriter writer,
+    public static PgDiffScript diffDatabaseSchemasAdditionalDepcies(
             PgDiffArguments arguments, TreeElement root,
             PgDatabase oldDbFull, PgDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget) {
         if (arguments.isMsSql()) {
-            return diffMsDatabaseSchemas(writer, arguments, root,
+            return diffMsDatabaseSchemas(arguments, root,
                     oldDbFull, newDbFull, additionalDepciesSource, additionalDepciesTarget, null);
         }
-        return diffDatabaseSchemasAdditionalDepcies(writer, arguments, root,
+        return diffDatabaseSchemasAdditionalDepcies(arguments, root,
                 oldDbFull, newDbFull, additionalDepciesSource, additionalDepciesTarget, null);
     }
 
-    private static PgDiffScript diffDatabaseSchemasAdditionalDepcies(PrintWriter writer,
+    private static PgDiffScript diffDatabaseSchemasAdditionalDepcies(
             PgDiffArguments arguments, TreeElement root,
             PgDatabase oldDbFull, PgDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
@@ -224,14 +220,11 @@ public final class PgDiff {
             script.addStatement("COMMIT TRANSACTION;");
         }
 
-        script.printStatements(writer);
-
         return script;
     }
 
-    private static PgDiffScript diffMsDatabaseSchemas(PrintWriter writer,
-            PgDiffArguments arguments, TreeElement root,
-            PgDatabase oldDbFull, PgDatabase newDbFull,
+    private static PgDiffScript diffMsDatabaseSchemas(PgDiffArguments arguments,
+            TreeElement root, PgDatabase oldDbFull, PgDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
             IgnoreList ignoreList) {
@@ -251,8 +244,6 @@ public final class PgDiff {
         if (arguments.isAddTransaction()) {
             script.addStatement("COMMIT\nGO");
         }
-
-        script.printStatements(writer);
 
         return script;
     }

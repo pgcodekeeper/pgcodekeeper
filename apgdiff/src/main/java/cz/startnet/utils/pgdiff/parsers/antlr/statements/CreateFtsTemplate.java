@@ -7,7 +7,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_templateConte
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFtsTemplate;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateFtsTemplate extends ParserAbstract {
 
@@ -19,17 +19,18 @@ public class CreateFtsTemplate extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public void parseObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
         PgFtsTemplate template = new PgFtsTemplate(QNameParser.getFirstName(ids));
 
-        // TODO functions deps
         if (ctx.init_name != null) {
             template.setInitFunction(ParserAbstract.getFullCtxText(ctx.init_name));
+            addDepSafe(template, ctx.init_name.identifier(), DbObjType.FUNCTION, true);
         }
 
         template.setLexizeFunction(ParserAbstract.getFullCtxText(ctx.lexize_name));
-        getSchemaSafe(ids, db.getDefaultSchema()).addFtsTemplate(template);
-        return template;
+        addDepSafe(template, ctx.lexize_name.identifier(), DbObjType.FUNCTION, true);
+
+        addSafe(getSchemaSafe(ids), template, ids);
     }
 }

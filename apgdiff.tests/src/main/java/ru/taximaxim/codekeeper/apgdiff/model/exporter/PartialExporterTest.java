@@ -1,15 +1,16 @@
 package ru.taximaxim.codekeeper.apgdiff.model.exporter;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Assert;
@@ -25,6 +26,7 @@ import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
+import ru.taximaxim.codekeeper.apgdiff.fileutils.TempDir;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
@@ -104,26 +106,26 @@ public class PartialExporterTest {
     }
 
     private static final PartialExportInfo[] EXPORT_PRESETS = {
-            new PartialExportInfoImpl_1(),
-            new PartialExportInfoImpl_2(),
-            new PartialExportInfoImpl_3(),
-            new PartialExportInfoImpl_4(),
-            new PartialExportInfoImpl_5(),
-            new PartialExportInfoImpl_6(),
-            new PartialExportInfoImpl_7(),
-            new PartialExportInfoImpl_8(),
-            new PartialExportInfoImpl_9(),
-            new PartialExportInfoImpl_10(),
-            new PartialExportInfoImpl_11(),
-            new PartialExportInfoImpl_12(),
-            new PartialExportInfoImpl_13(),
-            new PartialExportInfoImpl_14(),
-            new PartialExportInfoImpl_15(),
-            new PartialExportInfoImpl_16(),
-            new PartialExportInfoImpl_17(),
-            new PartialExportInfoImpl_18(),
-            new PartialExportInfoImpl_19(),
-            new PartialExportInfoImpl_20()
+            new PartialExportInfoImpl1(),
+            new PartialExportInfoImpl2(),
+            new PartialExportInfoImpl3(),
+            new PartialExportInfoImpl4(),
+            new PartialExportInfoImpl5(),
+            new PartialExportInfoImpl6(),
+            new PartialExportInfoImpl7(),
+            new PartialExportInfoImpl8(),
+            new PartialExportInfoImpl9(),
+            new PartialExportInfoImpl10(),
+            new PartialExportInfoImpl11(),
+            new PartialExportInfoImpl12(),
+            new PartialExportInfoImpl13(),
+            new PartialExportInfoImpl14(),
+            new PartialExportInfoImpl15(),
+            new PartialExportInfoImpl16(),
+            new PartialExportInfoImpl17(),
+            new PartialExportInfoImpl18(),
+            new PartialExportInfoImpl19(),
+            new PartialExportInfoImpl20()
     };
 
     public PartialExporterTest(int index) {
@@ -158,9 +160,10 @@ public class PartialExporterTest {
 
         Path exportDirFull = null;
         Path exportDirPartial = null;
-        try {
-            exportDirFull = Files.createTempDirectory("pgCodekeeper-test-export-full");
-            exportDirPartial = Files.createTempDirectory("pgCodekeeper-test-export-partial");
+        try  (TempDir dirFull = new TempDir("pgCodekeeper-test-files");
+                TempDir dirPartial = new TempDir("pgCodekeeper-test-export-partial")) {
+            exportDirFull = dirFull.get();
+            exportDirPartial = dirPartial.get();
 
             // full export of source
             new ModelExporter(exportDirFull, dbSource, UTF_8).exportFull();
@@ -178,21 +181,14 @@ public class PartialExporterTest {
                     list, UTF_8).exportPartial();
 
             walkAndComare(exportDirFull, exportDirPartial, preset);
-        } finally {
-            if (exportDirFull != null) {
-                deleteRecursive(exportDirFull.toFile());
-            }
-            if (exportDirPartial != null) {
-                deleteRecursive(exportDirPartial.toFile());
-            }
         }
     }
 
     private void walkAndComare(Path exportDirFull, Path exportDirPartial, PartialExportInfo preset) throws IOException {
         // first compare full export to partial
         Map<String, String> modifiedFiles = preset.modifiedFiles();
-        LinkedList<String> newFiles = preset.newFiles();
-        LinkedList<String> deletedFiles = preset.deletedFiles();
+        List<String> newFiles = preset.newFiles();
+        List<String> deletedFiles = preset.deletedFiles();
         Files.walkFileTree(exportDirFull, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
                 new PartialExportTestFileVisitor(
                         exportDirFull, exportDirPartial,
@@ -216,18 +212,6 @@ public class PartialExporterTest {
                 + modifiedFiles + '\n' + newFiles,
                 modifiedFiles.isEmpty() && newFiles.isEmpty());
     }
-
-    /**
-     * Deletes folder and its contents recursively. FOLLOWS SYMLINKS!
-     */
-    private static void deleteRecursive(File f) throws IOException {
-        if (f.isDirectory()) {
-            for (File sub : f.listFiles()) {
-                deleteRecursive(sub);
-            }
-        }
-        Files.deleteIfExists(f.toPath());
-    }
 }
 
 /**
@@ -250,19 +234,19 @@ abstract class PartialExportInfo {
 
     public Map<String, String> modifiedFiles(){
         return new HashMap<>();
-    };
-    public LinkedList<String> newFiles(){
-        return new LinkedList<>();
-    };
-    public LinkedList<String> deletedFiles(){
-        return new LinkedList<>();
-    };
+    }
+    public List<String> newFiles(){
+        return Collections.emptyList();
+    }
+    public List<String> deletedFiles(){
+        return Collections.emptyList();
+    }
 }
 
 /**
  * Select modified constraint
  */
-class PartialExportInfoImpl_1 extends PartialExportInfo{
+class PartialExportInfoImpl1 extends PartialExportInfo {
 
     @Override
     public void setUserSelection() {
@@ -280,7 +264,7 @@ class PartialExportInfoImpl_1 extends PartialExportInfo{
 /**
  * Select deleted table with constraint
  */
-class PartialExportInfoImpl_2 extends PartialExportInfo{
+class PartialExportInfoImpl2 extends PartialExportInfo {
 
     @Override
     public void setUserSelection() {
@@ -291,7 +275,7 @@ class PartialExportInfoImpl_2 extends PartialExportInfo{
     }
 
     @Override
-    public LinkedList<String> deletedFiles() {
+    public List<String> deletedFiles() {
         return new LinkedList<>(Arrays.asList("SCHEMA/public/TABLE/t2.sql"));
     }
 }
@@ -299,7 +283,7 @@ class PartialExportInfoImpl_2 extends PartialExportInfo{
 /**
  * Select modified trigger
  */
-class PartialExportInfoImpl_3 extends PartialExportInfo{
+class PartialExportInfoImpl3 extends PartialExportInfo {
 
     @Override
     public void setUserSelection() {
@@ -317,7 +301,7 @@ class PartialExportInfoImpl_3 extends PartialExportInfo{
 /**
  * Select deleted function
  */
-class PartialExportInfoImpl_4 extends PartialExportInfo{
+class PartialExportInfoImpl4 extends PartialExportInfo {
 
     @Override
     public void setUserSelection() {
@@ -325,7 +309,7 @@ class PartialExportInfoImpl_4 extends PartialExportInfo{
     }
 
     @Override
-    public LinkedList<String> deletedFiles() {
+    public List<String> deletedFiles() {
         return new LinkedList<>(Arrays.asList("SCHEMA/public/FUNCTION/fun2.sql"));
     }
 }
@@ -333,7 +317,7 @@ class PartialExportInfoImpl_4 extends PartialExportInfo{
 /**
  * Select modified function
  */
-class PartialExportInfoImpl_5 extends PartialExportInfo{
+class PartialExportInfoImpl5 extends PartialExportInfo {
 
     @Override
     public void setUserSelection() {
@@ -351,7 +335,7 @@ class PartialExportInfoImpl_5 extends PartialExportInfo{
 /**
  * Select modified table
  */
-class PartialExportInfoImpl_6 extends PartialExportInfo{
+class PartialExportInfoImpl6 extends PartialExportInfo {
 
     @Override
     public void setUserSelection() {
@@ -369,7 +353,7 @@ class PartialExportInfoImpl_6 extends PartialExportInfo{
 /**
  * Select new function
  */
-class PartialExportInfoImpl_7 extends PartialExportInfo{
+class PartialExportInfoImpl7 extends PartialExportInfo {
 
     @Override
     public void setUserSelection() {
@@ -377,7 +361,7 @@ class PartialExportInfoImpl_7 extends PartialExportInfo{
     }
 
     @Override
-    public LinkedList<String> newFiles() {
+    public List<String> newFiles() {
         return new LinkedList<>(Arrays.asList("SCHEMA/public/FUNCTION/fun3.sql"));
     }
 }
@@ -385,7 +369,7 @@ class PartialExportInfoImpl_7 extends PartialExportInfo{
 /**
  * Select new function group
  */
-class PartialExportInfoImpl_8 extends PartialExportInfo{
+class PartialExportInfoImpl8 extends PartialExportInfo {
 
     @Override
     public void setUserSelection() {
@@ -395,7 +379,7 @@ class PartialExportInfoImpl_8 extends PartialExportInfo{
     }
 
     @Override
-    public LinkedList<String> newFiles() {
+    public List<String> newFiles() {
         return new LinkedList<>(Arrays.asList("SCHEMA/public/FUNCTION/fun3.sql"));
     }
 }
@@ -403,7 +387,7 @@ class PartialExportInfoImpl_8 extends PartialExportInfo{
 /**
  * Select new view
  */
-class PartialExportInfoImpl_9 extends PartialExportInfo{
+class PartialExportInfoImpl9 extends PartialExportInfo {
 
     @Override
     public void setUserSelection() {
@@ -411,7 +395,7 @@ class PartialExportInfoImpl_9 extends PartialExportInfo{
     }
 
     @Override
-    public LinkedList<String> newFiles() {
+    public List<String> newFiles() {
         return new LinkedList<>(Arrays.asList("SCHEMA/public/VIEW/v1.sql"));
     }
 }
@@ -419,7 +403,7 @@ class PartialExportInfoImpl_9 extends PartialExportInfo{
 /**
  * Select new constraint in modified table
  */
-class PartialExportInfoImpl_10 extends PartialExportInfo{
+class PartialExportInfoImpl10 extends PartialExportInfo {
 
     @Override
     public void setUserSelection() {
@@ -438,7 +422,7 @@ class PartialExportInfoImpl_10 extends PartialExportInfo{
 /**
  * Select new schema
  */
-class PartialExportInfoImpl_11 extends PartialExportInfo{
+class PartialExportInfoImpl11 extends PartialExportInfo {
 
     @Override
     public void setUserSelection() {
@@ -446,7 +430,7 @@ class PartialExportInfoImpl_11 extends PartialExportInfo{
     }
 
     @Override
-    public LinkedList<String> newFiles() {
+    public List<String> newFiles() {
         return new LinkedList<>(Arrays.asList("SCHEMA/newschema/newschema.sql"));
     }
 }
@@ -454,7 +438,7 @@ class PartialExportInfoImpl_11 extends PartialExportInfo{
 /**
  * Select deleted table in another schema
  */
-class PartialExportInfoImpl_12 extends PartialExportInfo{
+class PartialExportInfoImpl12 extends PartialExportInfo {
 
     @Override
     public void setUserSelection() {
@@ -462,7 +446,7 @@ class PartialExportInfoImpl_12 extends PartialExportInfo{
     }
 
     @Override
-    public LinkedList<String> deletedFiles() {
+    public List<String> deletedFiles() {
         return new LinkedList<>(Arrays.asList("SCHEMA/test/TABLE/test_table.sql"));
     }
 }
@@ -470,7 +454,7 @@ class PartialExportInfoImpl_12 extends PartialExportInfo{
 /**
  * Select 2 deleted table
  */
-class PartialExportInfoImpl_13 extends PartialExportInfo{
+class PartialExportInfoImpl13 extends PartialExportInfo {
 
     @Override
     public void setUserSelection() {
@@ -480,7 +464,7 @@ class PartialExportInfoImpl_13 extends PartialExportInfo{
     }
 
     @Override
-    public LinkedList<String> deletedFiles() {
+    public List<String> deletedFiles() {
         return new LinkedList<>(Arrays.asList("SCHEMA/test/TABLE/test_table.sql", "SCHEMA/test/TABLE/test_table_2.sql"));
     }
 }
@@ -488,7 +472,7 @@ class PartialExportInfoImpl_13 extends PartialExportInfo{
 /**
  * Select deleted schema
  */
-class PartialExportInfoImpl_14 extends PartialExportInfo{
+class PartialExportInfoImpl14 extends PartialExportInfo {
 
     @Override
     public void setUserSelection() {
@@ -496,7 +480,7 @@ class PartialExportInfoImpl_14 extends PartialExportInfo{
     }
 
     @Override
-    public LinkedList<String> deletedFiles() {
+    public List<String> deletedFiles() {
         return new LinkedList<>(Arrays.asList("SCHEMA/test/TABLE/test_table.sql", "SCHEMA/test/TABLE/test_table_2.sql", "SCHEMA/test/test.sql"));
     }
 }
@@ -504,7 +488,7 @@ class PartialExportInfoImpl_14 extends PartialExportInfo{
 /**
  * Select deleted function group
  */
-class PartialExportInfoImpl_15 extends PartialExportInfo{
+class PartialExportInfoImpl15 extends PartialExportInfo {
 
     @Override
     public void setUserSelection() {
@@ -514,7 +498,7 @@ class PartialExportInfoImpl_15 extends PartialExportInfo{
     }
 
     @Override
-    public LinkedList<String> deletedFiles() {
+    public List<String> deletedFiles() {
         return new LinkedList<>(Arrays.asList("SCHEMA/public/FUNCTION/proc.sql"));
     }
 }
@@ -522,7 +506,7 @@ class PartialExportInfoImpl_15 extends PartialExportInfo{
 /**
  * Select deleted index
  */
-class PartialExportInfoImpl_16 extends PartialExportInfo{
+class PartialExportInfoImpl16 extends PartialExportInfo {
 
     @Override
     public void setUserSelection() {
@@ -540,7 +524,7 @@ class PartialExportInfoImpl_16 extends PartialExportInfo{
 /**
  * Select deleted constraint
  */
-class PartialExportInfoImpl_17 extends PartialExportInfo{
+class PartialExportInfoImpl17 extends PartialExportInfo {
 
     @Override
     public void setUserSelection() {
@@ -558,7 +542,7 @@ class PartialExportInfoImpl_17 extends PartialExportInfo{
 /**
  * Select deleted constraint and trigger from 1 table
  */
-class PartialExportInfoImpl_18 extends PartialExportInfo{
+class PartialExportInfoImpl18 extends PartialExportInfo {
 
     @Override
     public void setUserSelection() {
@@ -578,7 +562,7 @@ class PartialExportInfoImpl_18 extends PartialExportInfo{
 /**
  * Select deleted constraint, index and trigger from 1 table
  */
-class PartialExportInfoImpl_19 extends PartialExportInfo{
+class PartialExportInfoImpl19 extends PartialExportInfo {
 
     @Override
     public void setUserSelection() {
@@ -600,7 +584,7 @@ class PartialExportInfoImpl_19 extends PartialExportInfo{
  * Select deleted table with constraint, index and trigger
  */
 
-class PartialExportInfoImpl_20 extends PartialExportInfo{
+class PartialExportInfoImpl20 extends PartialExportInfo {
 
     @Override
     public void setUserSelection() {
@@ -608,7 +592,7 @@ class PartialExportInfoImpl_20 extends PartialExportInfo{
     }
 
     @Override
-    public LinkedList<String> deletedFiles() {
+    public List<String> deletedFiles() {
         return new LinkedList<>(Arrays.asList("SCHEMA/public/TABLE/t2.sql"));
     }
 }

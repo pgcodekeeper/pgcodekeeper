@@ -1,13 +1,10 @@
 package cz.startnet.utils.pgdiff;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Locale;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -18,7 +15,6 @@ import org.junit.runners.Parameterized.Parameters;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.Log;
-import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 
 /**
  * Tests for MS SQL statements
@@ -70,8 +66,6 @@ public class MsDiffTest {
 
                     // Tests scenario where MS SCHEMA is added.
                     {"add_ms_schema"},
-                    // Tests scenario where MS SCHEMA with definition is added.
-                    // FIXME {"add_ms_schema_with_definition"},
                     // Tests scenario where MS SCHEMA is dropped.
                     {"drop_ms_schema"},
                     // Tests scenario where name of MS SCHEMA is modified.
@@ -159,6 +153,8 @@ public class MsDiffTest {
                     {"modify_ms_type"},
                     // Tests scenario where MS TYPE owner is modified.
                     {"modify_ms_type_owner"},
+                    // Tests scenario where MS TYPE with function dep is modified.
+                    {"modify_ms_type_with_dep"},
 
                     // Tests scenario where MS INDEX is added.
                     {"add_ms_index"},
@@ -188,8 +184,12 @@ public class MsDiffTest {
                     {"modify_ms_function_args_default"},
                     // Tests scenario where with option of MS FUNCTION with args is modified.
                     {"modify_ms_function_args_with"},
+                    // Tests scenario where external name of MS FUNCTION with args is added.
+                    {"add_ms_function_args_external"},
                     // Tests scenario where external name of MS FUNCTION with args is modified.
                     {"modify_ms_function_args_external"},
+                    // Tests scenario where external name of MS FUNCTION with args is dropped.
+                    {"drop_ms_function_args_external"},
                     // Tests scenario where type of MS FUNCTION is modified.
                     {"modify_ms_function_type"},
 
@@ -213,6 +213,8 @@ public class MsDiffTest {
 
                     // Tests scenario where MS SEQUENCE is added.
                     {"add_ms_sequence"},
+                    // Tests scenario where MS SEQUENCE with user-definied type is added.
+                    {"add_ms_sequence_with_user_type"},
                     // Tests scenario where MS SEQUENCE is dropped.
                     {"drop_ms_sequence"},
                     // Tests scenario where MS SEQUENCE is modified.
@@ -240,6 +242,8 @@ public class MsDiffTest {
                     {"add_ms_procedure"},
                     // Tests scenario where external MS PROCEDURE is added.
                     {"add_external_ms_procedure"},
+                    // Tests scenario where external MS PROCEDURE is dropped.
+                    {"drop_external_ms_procedure"},
                     // Tests scenario where MS PROCEDURE is dropped.
                     {"drop_ms_procedure"},
                     // Tests scenario where MS PROCEDURE is modified.
@@ -296,19 +300,14 @@ public class MsDiffTest {
 
     public MsDiffTest(final String fileNameTemplate) {
         this.fileNameTemplate = fileNameTemplate;
-        Locale.setDefault(Locale.ENGLISH);
         Log.log(Log.LOG_DEBUG, fileNameTemplate);
     }
 
     public void runDiffSame(PgDatabase db) throws IOException, InterruptedException {
-        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
-        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         final PgDiffArguments arguments = new PgDiffArguments();
         arguments.setMsSql(true);
-        PgDiff.diffDatabaseSchemas(writer, arguments, db, db, null);
-        writer.flush();
-
-        Assert.assertEquals("File name template: " + fileNameTemplate, "", diffInput.toString().trim());
+        String script = PgDiff.diffDatabaseSchemas(arguments, db, db, null).getText();
+        Assert.assertEquals("File name template: " + fileNameTemplate, "", script.trim());
     }
 
     @Test
@@ -324,10 +323,7 @@ public class MsDiffTest {
         runDiffSame(dbOld);
         runDiffSame(dbNew);
 
-        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
-        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
-        PgDiff.diffDatabaseSchemas(writer, args, dbOld, dbNew, null);
-        writer.flush();
+        String script = PgDiff.diffDatabaseSchemas(args, dbOld, dbNew, null).getText();
 
         StringBuilder sbExpDiff;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(
@@ -343,7 +339,6 @@ public class MsDiffTest {
         }
 
         Assert.assertEquals("File name template: " + fileNameTemplate,
-                sbExpDiff.toString().trim(),
-                diffInput.toString().trim());
+                sbExpDiff.toString().trim(), script.trim());
     }
 }

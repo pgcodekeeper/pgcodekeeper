@@ -190,6 +190,8 @@ public abstract class AbstractModelExporter {
             case VIEW:
                 elViewChange = elChange;
                 break;
+            case CONSTRAINT:
+            case INDEX:
             case RULE:
             case TRIGGER:
                 elViewChange = elChange.getParent();
@@ -215,6 +217,18 @@ public abstract class AbstractModelExporter {
                 viewChange = (elChange.getSide() == DiffSide.LEFT ?
                         oldParentSchema : newParentSchema).getView(elChange.getParent().getName());
                 switch (elChange.getType()) {
+                case CONSTRAINT:
+                    stChange = viewChange.getConstraint(elChange.getName());
+                    if (elChange.getSide() == DiffSide.BOTH) {
+                        stChangeOld = oldView.getConstraint(elChange.getName());
+                    }
+                    break;
+                case INDEX:
+                    stChange = viewChange.getIndex(elChange.getName());
+                    if (elChange.getSide() == DiffSide.BOTH) {
+                        stChangeOld = oldView.getIndex(elChange.getName());
+                    }
+                    break;
                 case RULE:
                     stChange = viewChange.getRule(elChange.getName());
                     if (elChange.getSide() == DiffSide.BOTH) {
@@ -387,6 +401,9 @@ public abstract class AbstractModelExporter {
         StringBuilder sb = new StringBuilder();
         PgStatement.appendOwnerSQL(st, st.getOwner(), false, sb);
         PgPrivilege.appendPrivileges(st.getPrivileges(), st.isPostgres(), sb);
+        if (st.getPrivileges().isEmpty()) {
+            PgPrivilege.appendDefaultPrivileges(st, sb);
+        }
 
         if (DbObjType.TABLE == st.getStatementType()) {
             for (AbstractColumn col : ((AbstractTable)st).getColumns()) {

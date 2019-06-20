@@ -5,11 +5,8 @@ import java.util.List;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_configurationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
-import cz.startnet.utils.pgdiff.schema.AbstractSchema;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFtsConfiguration;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateFtsConfiguration extends ParserAbstract {
@@ -22,20 +19,15 @@ public class CreateFtsConfiguration extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public void parseObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         String name = QNameParser.getFirstName(ids);
         PgFtsConfiguration config = new PgFtsConfiguration(name);
-        List<IdentifierContext> parserIds = ctx.parser_name.identifier();
-        config.setParser(ParserAbstract.getFullCtxText(ctx.parser_name));
-        String parserSchema = QNameParser.getSchemaName(parserIds, getDefSchemaName());
-        if (!"pg_catalog".equals(parserSchema)) {
-            config.addDep(new GenericColumn(parserSchema,
-                    QNameParser.getFirstName(parserIds), DbObjType.FTS_PARSER));
+        if (ctx.parser_name != null) {
+            List<IdentifierContext> parserIds = ctx.parser_name.identifier();
+            config.setParser(ParserAbstract.getFullCtxText(ctx.parser_name));
+            addDepSafe(config, parserIds, DbObjType.FTS_PARSER, true);
         }
-        schema.addFtsConfiguration(config);
-
-        return config;
+        addSafe(getSchemaSafe(ids), config, ids);
     }
 }

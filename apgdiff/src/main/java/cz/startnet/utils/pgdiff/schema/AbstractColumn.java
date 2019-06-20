@@ -73,8 +73,8 @@ public abstract class AbstractColumn extends PgStatementWithSearchPath {
     }
 
     @Override
-    public String getLocation() {
-        String location = getMeta().getLocation();
+    public PgObjLocation getLocation() {
+        PgObjLocation location = getMeta().getLocation();
         if (location == null) {
             location = getParent().getLocation();
         }
@@ -82,12 +82,12 @@ public abstract class AbstractColumn extends PgStatementWithSearchPath {
     }
 
     @Override
-    public void setLocation(String location) {
+    public void setLocation(PgObjLocation location) {
         getMeta().setLocation(location);
     }
 
-    protected String getAlterTable() {
-        return ((AbstractTable) getParent()).getAlterTable(false, false);
+    protected String getAlterTable(boolean nextLine, boolean only) {
+        return ((AbstractTable) getParent()).getAlterTable(nextLine, only);
     }
 
     @Override
@@ -128,11 +128,6 @@ public abstract class AbstractColumn extends PgStatementWithSearchPath {
     }
 
     protected abstract AbstractColumn getColumnCopy();
-
-    @Override
-    public AbstractColumn deepCopy() {
-        return shallowCopy();
-    }
 
     @Override
     public AbstractSchema getContainingSchema() {

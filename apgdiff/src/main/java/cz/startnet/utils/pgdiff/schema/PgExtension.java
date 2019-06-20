@@ -112,9 +112,4 @@ public class PgExtension extends PgStatement {
         extDst.setSchema(getSchema());
         return extDst;
     }
-
-    @Override
-    public PgExtension deepCopy() {
-        return shallowCopy();
-    }
 }

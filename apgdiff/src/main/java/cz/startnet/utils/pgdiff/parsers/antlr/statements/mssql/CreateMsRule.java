@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,11 +54,11 @@ public class CreateMsRule extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public void parseObject() {
         Object_typeContext nameCtx = ctx.object_type();
         // unsupported rules without object names
         if (db.getArguments().isIgnorePrivileges() || nameCtx == null) {
-            return null;
+            return;
         }
 
         List<String> roles = ctx.role_names().id().stream()
@@ -66,7 +67,7 @@ public class CreateMsRule extends ParserAbstract {
         Columns_permissionsContext columnsCtx = ctx.columns_permissions();
         if (columnsCtx != null) {
             parseColumns(columnsCtx, nameCtx, roles);
-            return null;
+            return;
         }
 
         List<String> permissions = ctx.permissions().permission().stream()
@@ -75,7 +76,7 @@ public class CreateMsRule extends ParserAbstract {
         PgStatement st = getStatement(nameCtx);
 
         if (st == null) {
-            return null;
+            return;
         }
 
         StringBuilder name = new StringBuilder();
@@ -83,12 +84,7 @@ public class CreateMsRule extends ParserAbstract {
             name.append(st.getStatementType()).append("::");
         }
 
-        if (st instanceof PgStatementWithSearchPath) {
-            name.append(MsDiffUtils.quoteName(((PgStatementWithSearchPath) st).getContainingSchema().getName()))
-            .append('.');
-        }
-
-        name.append(MsDiffUtils.quoteName(st.getBareName()));
+        name.append(st.getQualifiedName());
 
         Table_columnsContext columns = nameCtx.table_columns();
 
@@ -103,7 +99,7 @@ public class CreateMsRule extends ParserAbstract {
                         PgPrivilege priv = new PgPrivilege(state, per, name.toString(), role, isGO);
                         // table column privileges to columns, other columns to statement
                         if (st instanceof AbstractTable) {
-                            addPrivilege(getSafe(((AbstractTable)st)::getColumn, column), priv);
+                            addPrivilege(getSafe(AbstractTable::getColumn, (AbstractTable) st, column), priv);
                         } else {
                             addPrivilege(st, priv);
                         }
@@ -113,30 +109,27 @@ public class CreateMsRule extends ParserAbstract {
                 }
             }
         }
-
-        return null;
     }
 
     private PgStatement getStatement(Object_typeContext object) {
-
         IdContext nameCtx = object.qualified_name().name;
         Class_typeContext type = object.class_type();
 
         PgStatement st;
         if (type == null || type.OBJECT() != null || type.TYPE() != null) {
-            IdContext schemaName = object.qualified_name().schema;
-            AbstractSchema schema = schemaName != null ? getSafe(db::getSchema, schemaName) : db.getDefaultSchema();
-            st = getSafe(name -> schema.getChildren().filter(
-                    e -> e.getBareName().equals(name))
-                    .findAny().orElse(null), nameCtx);
+            List<IdContext> ids = Arrays.asList(object.qualified_name().schema, nameCtx);
+            AbstractSchema schema = getSchemaSafe(ids);
+            st = getSafe((k, v) -> k.getChildren().filter(
+                    e -> e.getBareName().equals(v))
+                    .findAny().orElse(null), schema, nameCtx);
         } else if (type.ASSEMBLY() != null) {
-            st = getSafe(db::getAssembly, nameCtx);
+            st = getSafe(PgDatabase::getAssembly, db, nameCtx);
         } else if (type.ROLE() != null) {
-            st = getSafe(db::getRole, nameCtx);
+            st = getSafe(PgDatabase::getRole, db, nameCtx);
         } else if (type.USER() != null) {
-            st = getSafe(db::getUser, nameCtx);
+            st = getSafe(PgDatabase::getUser, db, nameCtx);
         } else if (type.SCHEMA() != null) {
-            st = getSafe(db::getSchema, nameCtx);
+            st = getSafe(PgDatabase::getSchema, db, nameCtx);
         } else {
             return null;
         }
@@ -168,21 +161,18 @@ public class CreateMsRule extends ParserAbstract {
             return;
         }
 
-        String schemaName = ((PgStatementWithSearchPath)st).getContainingSchema().getName();
-
         // 1 permission for 1 column = 1 privilege
         for (Entry<String, Entry<IdContext, List<String>>> colPriv : colPrivs.entrySet()) {
             for (String pr : colPriv.getValue().getValue()) {
 
                 IdContext col = colPriv.getValue().getKey();
-                String objectName = MsDiffUtils.quoteName(schemaName) + '.' +
-                        MsDiffUtils.quoteName(st.getBareName()) + " (" +
-                        MsDiffUtils.quoteName(col.getText()) + ')';
+                String objectName = st.getQualifiedName()
+                        + " (" + MsDiffUtils.quoteName(col.getText()) + ')';
 
                 for (String role : roles) {
                     PgPrivilege priv = new PgPrivilege(state, pr, objectName, role, isGO);
                     if (st instanceof AbstractTable) {
-                        addPrivilege(getSafe(((AbstractTable)st)::getColumn, col), priv);
+                        addPrivilege(getSafe(AbstractTable::getColumn, (AbstractTable) st, col), priv);
                     } else {
                         addPrivilege(st, priv);
                     }

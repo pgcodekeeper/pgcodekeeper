@@ -6,7 +6,7 @@ CREATE DOMAIN public.dom2 AS integer NOT NULL DEFAULT (-100)
 ALTER DOMAIN public.dom2 OWNER TO botov_av;
 
 CREATE TABLE public.distributors (
-	did dom2,
+	did public.dom2,
 	name character varying(40)
 );
 

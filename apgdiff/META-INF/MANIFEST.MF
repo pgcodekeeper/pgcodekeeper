@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: apgdiff;singleton:=true
-Bundle-Version: 5.4.5.qualifier
+Bundle-Version: 5.7.0.qualifier
 Export-Package: cz.startnet.utils.pgdiff,
  cz.startnet.utils.pgdiff.libraries,
  cz.startnet.utils.pgdiff.loader,
@@ -26,7 +26,7 @@ Bundle-ClassPath: lib/jgrapht-core-0.9.0.jar,
  lib/antlr-runtime-4.6.jar,
  lib/postgresql-42.2.5.jar,
  lib/PgPass-0.0.2.jar,
- lib/mssql-jdbc-7.1.4.jre8-preview.jar
+ lib/mssql-jdbc-7.3.1.jre8-preview.jar
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: ru.taximaxim.codekeeper.apgdiff.Activator
 Import-Package: org.eclipse.core.runtime;version="[3.4.0,4.0.0)",

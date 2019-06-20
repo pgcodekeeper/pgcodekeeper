@@ -6,13 +6,10 @@
 package cz.startnet.utils.pgdiff;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Locale;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -23,7 +20,6 @@ import org.junit.runners.Parameterized.Parameters;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.Log;
-import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 
 /**
  * Tests for PgDiff class.
@@ -65,6 +61,10 @@ public class PgDiffTest {
                     {"drop_with_oids"},
                     // Tests scenario where INDEX is added.
                     {"add_index"},
+                    // Tests scenario where PARTITION INDEX is added.
+                    {"add_partition_index"},
+                    // Tests scenario where VIEW INDEX is added.
+                    {"add_view_index"},
                     // Tests scenario where INDEX is dropped.
                     {"drop_index"},
                     // Tests scenario where INDEX with including is added.
@@ -110,8 +110,6 @@ public class PgDiffTest {
                     {"add_table_with_exist_sequence"},
                     // Tests scenario where new TABLE with drop SEQUENCE is added.
                     {"add_table_with_drop_sequence"},
-                    // Tests scenario where new TABLE with drop SEQUENCE is added.
-                    {"add_table_with_not_existing_sequence"},
                     // Tests scenario where TABLE is dropped.
                     {"drop_table"},
                     // Tests scenario where new TYPED TABLE is added.
@@ -132,6 +130,8 @@ public class PgDiffTest {
                     {"modify_table_unlogged"},
                     // Tests scenario where TABLE CONSTRAINT is added.
                     {"add_constraint"},
+                    // Tests scenario where TABLE CONSTRAINT with tablespace is added.
+                    {"add_constraint_with_tablespace"},
                     // Tests scenario where TABLE EXCLUDE CONSTRAINT is added.
                     {"add_exclude_constraint"},
                     // Tests scenario where TABLE CONSTRAINT is modified.
@@ -230,6 +230,8 @@ public class PgDiffTest {
                     {"modify_function_similar"},
                     // Tests scenario where FUNCTION with parallel mode is modified
                     {"modify_function_parallel"},
+                    // Tests scenario where FUNCTION with depended column is modified
+                    {"modify_function_depcy_col"},
                     // Tests scenario where TRIGGER is added.
                     {"add_trigger"},
                     // Tests scenario where TRIGGER with referencing is added.
@@ -368,6 +370,16 @@ public class PgDiffTest {
                     {"add_privilege"},
                     {"drop_privilege"},
                     {"chg_privilege"},
+                    // Test restoring the default owner privilege
+                    {"chg_def_owner_privilege"},
+                    // Test restoring the default PUBLIC privilege
+                    {"chg_def_public_privilege"},
+                    // Test restoring the default PUBLIC privilege even if the owner is unavailable
+                    {"chg_def_public_privilege_no_owner"},
+                    // Test restoring the default owner and PUBLIC privilege
+                    {"chg_def_owner_public_privilege"},
+                    // Test restoring the default privileges of AGGREGATE
+                    {"chg_def_privilege_aggr"},
                     // Test change owner
                     {"chg_owner"},
                     // Тест зависимости от колонки к функции default
@@ -439,8 +451,7 @@ public class PgDiffTest {
                     // Tests scenario where only RESTRICT and JOIN options of OPERATOR is modified.
                     {"modify_operator_restr_join"},
                     // Tests scenario where function (from other schema) of OPERATOR is modified.
-                    // TODO uncomment this code when dependencies for OPERATOR will be fixed
-                    // {"modify_operator_use_other_schema"},
+                    {"modify_operator_use_other_schema"},
                     // Tests scenario where COLUMN is added to middle of TABLE definition.
                     {"add_column_middle"},
                     // Tests scenario where COLUMNS order is modified.
@@ -459,8 +470,24 @@ public class PgDiffTest {
                     {"modify_procedure"},
                     // Tests scenario where configuration of PROCEDURE is modified.
                     {"modify_procedure_configuration"},
-                    // Tests scenario where SCHEMA with definition is added.
-                    {"add_schema_with_definition"},
+                    // Tests scenario where new AGGREGATE is added.
+                    {"add_aggregate"},
+                    // Tests scenario where new overloaded AGGREGATE is added.
+                    {"add_aggregate_overloaded"},
+                    // Tests scenario where new AGGREGATE with using elements from other schemas is added.
+                    {"add_aggregate_use_other_schema"},
+                    // Tests scenario where AGGREGATE is dropped.
+                    {"drop_aggregate"},
+                    // Tests scenario where options of AGGREGATE is modified.
+                    {"modify_aggregate"},
+                    // Tests scenario for AGGREGATE where new privileges is added.
+                    {"add_aggregate_privileges"},
+                    // Tests scenario where COLUMN types compared with aliases.
+                    {"compare_column_type_aliases"},
+                    // Tests scenario where new FUNCTION with specific options is added.
+                    {"add_specific_function"},
+                    // Tests scenario where TABLE tablespace is modified.
+                    {"modify_tablespace"},
                 });
     }
 
@@ -473,19 +500,13 @@ public class PgDiffTest {
 
     public PgDiffTest(final String fileNameTemplate) {
         this.fileNameTemplate = fileNameTemplate;
-        Locale.setDefault(Locale.ENGLISH);
         Log.log(Log.LOG_DEBUG, fileNameTemplate);
     }
 
     public void runDiffSame(PgDatabase db) throws IOException, InterruptedException {
-        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
-        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
-        final PgDiffArguments arguments = new PgDiffArguments();
-        PgDiff.diffDatabaseSchemas(writer, arguments, db, db, null);
-        writer.flush();
-
+        String script = PgDiff.diffDatabaseSchemas(new PgDiffArguments(), db, db, null).getText();
         Assert.assertEquals("File name template: " + fileNameTemplate,
-                "", diffInput.toString().trim());
+                "", script.trim());
     }
 
     @Test
@@ -499,10 +520,7 @@ public class PgDiffTest {
         runDiffSame(dbOld);
         runDiffSame(dbNew);
 
-        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
-        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
-        PgDiff.diffDatabaseSchemas(writer, args, dbOld, dbNew, null);
-        writer.flush();
+        String script = PgDiff.diffDatabaseSchemas(args, dbOld, dbNew, null).getText();
 
         StringBuilder sbExpDiff;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(
@@ -519,6 +537,6 @@ public class PgDiffTest {
 
         Assert.assertEquals("File name template: " + fileNameTemplate,
                 sbExpDiff.toString().trim(),
-                diffInput.toString().trim());
+                script.trim());
     }
 }

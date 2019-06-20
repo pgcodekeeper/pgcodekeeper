@@ -27,6 +27,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -86,14 +87,14 @@ public class LibraryLoader {
                 db = new JdbcLoader(JdbcConnector.fromUrl(path, timezone), args).getDbFromJdbc();
             }
 
-            db.getDescendants().forEach(st -> st.setLocation(path));
+            db.getDescendants().forEach(st -> st.setLocation(new PgObjLocation(path)));
             return db;
 
         case URL:
             try {
                 URI uri = new URI(path);
                 db = loadURI(uri, args, isIgnorePriv);
-                db.getDescendants().forEach(st -> st.setLocation(path));
+                db.getDescendants().forEach(st -> st.setLocation(new PgObjLocation(path)));
                 return db;
             } catch (URISyntaxException ex) {
                 // shouldn't happen, already checked by getSource
@@ -129,13 +130,12 @@ public class LibraryLoader {
             return loadZip(p, args, isIgnorePriv);
         }
 
-        List<AntlrError> errList = null;
-        try (PgDumpLoader loader = new PgDumpLoader(new File(path), args)) {
-            errList = loader.getErrors();
+        PgDumpLoader loader = new PgDumpLoader(new File(path), args);
+        try {
             return loader.load();
         } finally {
-            if (errors != null && errList != null && !errList.isEmpty()) {
-                errors.addAll(errList);
+            if (errors != null) {
+                errors.addAll(loader.getErrors());
             }
         }
     }
@@ -155,7 +155,6 @@ public class LibraryLoader {
 
     private PgDatabase loadZip(Path path, PgDiffArguments args, boolean isIgnorePriv)
             throws InterruptedException, IOException {
-
         String hash;
         if (path.startsWith(metaPath)) {
             hash = metaPath.relativize(path).toString();
@@ -169,7 +168,7 @@ public class LibraryLoader {
         PgDatabase db = getLibrary(unzip(path, metaPath.resolve(name)),
                 args, isIgnorePriv);
 
-        db.getDescendants().forEach(st -> st.setLocation(path.toString()));
+        db.getDescendants().forEach(st -> st.setLocation(new PgObjLocation(path.toString())));
         return db;
     }
 
@@ -220,12 +219,17 @@ public class LibraryLoader {
         }
 
         Files.createDirectories(dir);
+        dir = dir.toRealPath();
 
         try (InputStream fis = Files.newInputStream(zip);
                 ZipInputStream zis = new ZipInputStream(fis)) {
             ZipEntry ze = zis.getNextEntry();
             while (ze != null) {
-                Path newFile = dir.resolve(ze.getName());
+                Path newFile = dir.resolve(ze.getName()).normalize();
+                if (!newFile.startsWith(dir)) {
+                    throw new SecurityException("Malicious zip-archive attempting to write outside target directory: "
+                            + newFile);
+                }
 
                 //create directories for sub directories in zip
                 if (!ze.isDirectory()) {
@@ -252,26 +256,30 @@ public class LibraryLoader {
                 if (Files.isDirectory(sub)) {
                     dirs.add(sub);
                 } else {
-                    String filePath = sub.toString();
-                    PgDiffArguments args = db.getArguments();
-                    if (filePath.endsWith(".zip")) {
-                        db.addLib(getLibrary(filePath, args, args.isIgnorePrivileges()));
-                    } else if (filePath.endsWith(".sql")) {
-                        List<AntlrError> errList = null;
-                        try (PgDumpLoader loader = new PgDumpLoader(sub.toFile(), args)) {
-                            errList = loader.getErrors();
-                            loader.loadDatabase(db, antlrTasks);
-                        } finally {
-                            if (errors != null && errList != null && !errList.isEmpty()) {
-                                errors.addAll(errList);
-                            }
-                        }
-                    }
+                    readStatementsFromFile(sub, db, antlrTasks);
                 }
             }
 
             for (Path sub : dirs) {
                 readStatementsFromDirectory(sub, db, antlrTasks);
+            }
+        }
+    }
+
+    private void readStatementsFromFile(Path sub, PgDatabase db, Queue<AntlrTask<?>> antlrTasks)
+            throws InterruptedException, IOException {
+        String filePath = sub.toString();
+        PgDiffArguments args = db.getArguments();
+        if (filePath.endsWith(".zip")) {
+            db.addLib(getLibrary(filePath, args, args.isIgnorePrivileges()));
+        } else if (filePath.endsWith(".sql")) {
+            PgDumpLoader loader = new PgDumpLoader(sub.toFile(), args);
+            try {
+                loader.loadDatabase(db, antlrTasks);
+            } finally {
+                if (errors != null) {
+                    errors.addAll(loader.getErrors());
+                }
             }
         }
     }

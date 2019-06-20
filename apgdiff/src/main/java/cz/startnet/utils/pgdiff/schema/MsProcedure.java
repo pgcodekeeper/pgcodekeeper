@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class MsProcedure extends AbstractMsFunction implements SourceStatement {
+public class MsProcedure extends AbstractMsFunction {
 
     public MsProcedure(String name) {
         super(name);
@@ -62,6 +62,7 @@ public class MsProcedure extends AbstractMsFunction implements SourceStatement {
         if (!Objects.equals(getFirstPart(), newProcedure.getFirstPart())
                 || !Objects.equals(getSecondPart(), newProcedure.getSecondPart())) {
             sb.append(newProcedure.getProcedureFullSQL(false));
+            isNeedDepcies.set(true);
         }
 
         if (!Objects.equals(getOwner(), newProcedure.getOwner())) {

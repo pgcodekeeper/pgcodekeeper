@@ -1,12 +1,15 @@
-CREATE TABLE fax_boxes (
+CREATE TABLE public.fax_boxes (
   fax_box_id serial NOT NULL,
   name text,
   CONSTRAINT fax_boxes_pkey PRIMARY KEY (fax_box_id)
 );
-CREATE TABLE extensions (id serial NOT NULL);
-ALTER TABLE fax_boxes OWNER TO postgres;
-ALTER TABLE extensions ADD CONSTRAINT extensions_fax_box_id_fkey FOREIGN KEY (fax_box_id) REFERENCES fax_boxes
-(fax_box_id)    ON UPDATE RESTRICT ON DELETE RESTRICT;              CREATE TABLE faxes (
+
+ALTER TABLE public.fax_boxes OWNER TO postgres;
+
+CREATE TABLE public.extensions (id serial NOT NULL);
+
+ALTER TABLE public.extensions ADD CONSTRAINT extensions_fax_box_id_fkey FOREIGN KEY (id) REFERENCES public.fax_boxes
+(fax_box_id)    ON UPDATE RESTRICT ON DELETE RESTRICT;              CREATE TABLE public.faxes (
 
 
   fax_id serial NOT NULL,
@@ -21,6 +24,6 @@ ALTER TABLE extensions ADD CONSTRAINT extensions_fax_box_id_fkey FOREIGN KEY (fa
   station_id text,
   CONSTRAINT faxes_pkey PRIMARY KEY (fax_id),
   CONSTRAINT faxes_fax_box_id_fkey FOREIGN KEY (fax_box_id)
-      REFERENCES fax_boxes (fax_box_id) MATCH SIMPLE
+      REFERENCES public.fax_boxes (fax_box_id) MATCH SIMPLE
       ON UPDATE RESTRICT ON DELETE CASCADE
 );

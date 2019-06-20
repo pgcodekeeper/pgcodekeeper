@@ -1,4 +1,3 @@
-CREATE FOREIGN TABLE testtable (
+CREATE FOREIGN TABLE public.testtable (
 )
-
 SERVER myserver;

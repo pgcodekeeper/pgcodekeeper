@@ -19,13 +19,13 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rule_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_privilegesContext;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
-import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
 import cz.startnet.utils.pgdiff.schema.StatementOverride;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -48,11 +48,11 @@ public class CreateRule extends ParserAbstract {
     }
 
     @Override
-    public PgStatement getObject() {
+    public void parseObject() {
         // unsupported roles rules, ALL TABLES/SEQUENCES/FUNCTIONS IN SCHENA
         if (db.getArguments().isIgnorePrivileges() || ctx.other_rules() != null
                 || ctx.all_objects() != null) {
-            return null;
+            return;
         }
 
         List<String> roles = new ArrayList<>();
@@ -69,7 +69,7 @@ public class CreateRule extends ParserAbstract {
 
         if (columnsCtx != null) {
             parseColumns(columnsCtx, roles);
-            return null;
+            return;
         }
 
         String permissions = ctx.permissions().permission().stream().map(ParserAbstract::getFullCtxText)
@@ -79,16 +79,26 @@ public class CreateRule extends ParserAbstract {
             for (Function_parametersContext funct : ctx.func_name) {
                 List<IdentifierContext> funcIds = funct.name.identifier();
                 IdentifierContext functNameCtx = QNameParser.getFirstNameCtx(funcIds);
-                AbstractSchema schema = getSchemaSafe(funcIds, db.getDefaultSchema());
-                AbstractFunction func = getSafe(schema::getFunction,
+                AbstractSchema schema = getSchemaSafe(funcIds);
+                AbstractPgFunction func = (AbstractPgFunction)  getSafe(AbstractSchema::getFunction, schema,
                         parseSignature(functNameCtx.getText(), funct.function_args()),
                         functNameCtx.getStart());
 
                 StringBuilder sb = new StringBuilder();
-                sb.append(ctx.PROCEDURE() == null ?
-                        DbObjType.FUNCTION : DbObjType.PROCEDURE).append(' ');
+                DbObjType type = ctx.PROCEDURE() == null ?
+                        DbObjType.FUNCTION : DbObjType.PROCEDURE;
+                addObjReference(funcIds, type, StatementActions.NONE);
+
+                if (isRefMode()) {
+                    continue;
+                }
+
+                sb.append(type).append(' ');
                 sb.append(PgDiffUtils.getQuotedName(schema.getName())).append('.');
-                ((AbstractPgFunction) func).appendFunctionSignature(sb, false, true);
+
+                // For AGGREGATEs in GRANT/REVOKE the signature will be the same as in FUNCTIONs;
+                // important: asterisk (*) and 'ORDER BY' are not displayed.
+                func.appendFunctionSignature(sb, false, true);
 
                 for (String role : roles) {
                     addPrivilege(func, new PgPrivilege(state, permissions,
@@ -96,7 +106,7 @@ public class CreateRule extends ParserAbstract {
                 }
             }
 
-            return null;
+            return;
         }
 
         DbObjType type = null;
@@ -112,21 +122,25 @@ public class CreateRule extends ParserAbstract {
         } else if (typeCtx.TYPE() != null) {
             type = DbObjType.TYPE;
         } else {
-            return null;
+            return;
         }
 
         List<Schema_qualified_nameContext> objName = ctx.names_references().name;
 
         if (type != null) {
             for (Schema_qualified_nameContext name : objName) {
+                addObjReference(name.identifier(), type, StatementActions.NONE);
+
+                if (isRefMode()) {
+                    continue;
+                }
+
                 for (String role : roles) {
                     addToDB(name, type, new PgPrivilege(state, permissions,
                             type + " " + name.getText(), role, isGO));
                 }
             }
         }
-
-        return null;
     }
 
     /**
@@ -155,24 +169,22 @@ public class CreateRule extends ParserAbstract {
             Map<String, Entry<IdentifierContext, List<String>>> colPrivs, List<String> roles) {
         String tableName = getFullCtxText(tbl);
         List<IdentifierContext> ids = tbl.identifier();
-        String firstPart = QNameParser.getFirstName(ids);
-        AbstractSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
-        //привилегии пишем так как получили одной строкой
-        PgStatement st = null;
-        AbstractTable tblSt = schema.getTable(firstPart);
 
-        // если таблица не найдена попробовать вьюхи и проч
-        if (tblSt == null) {
-            st = schema.getView(firstPart);
-        }
+        addObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
 
-        if (st == null) {
-            st = schema.getSequence(firstPart);
-        }
+        // TODO waits for column references
+        // addObjReference(Arrays.asList(QNameParser.getSchemaNameCtx(ids),firstPart, colName),
+        //    DbObjType.COLUMN, StatementActions.NONE);
 
-        if (tblSt == null && st == null) {
+        if (isRefMode()) {
             return;
         }
+
+        AbstractSchema schema = getSchemaSafe(ids);
+        IdentifierContext firstPart = QNameParser.getFirstNameCtx(ids);
+
+        //привилегии пишем так как получили одной строкой
+        PgStatement st = (PgStatement) getSafe(AbstractSchema::getRelation, schema, firstPart);
 
         for (Entry<String, Entry<IdentifierContext, List<String>>> colPriv : colPrivs.entrySet()) {
             StringBuilder permission = new StringBuilder();
@@ -186,10 +198,12 @@ public class CreateRule extends ParserAbstract {
             for (String role : roles) {
                 PgPrivilege priv = new PgPrivilege(state, permission.toString(),
                         "TABLE " + tableName, role, isGO);
-                if (tblSt == null) {
+                if (DbObjType.TABLE != st.getStatementType()) {
                     addPrivilege(st, priv);
                 } else {
-                    AbstractColumn col = getSafe(tblSt::getColumn, colPriv.getValue().getKey());
+                    IdentifierContext colName = colPriv.getValue().getKey();
+                    AbstractColumn col = getSafe(AbstractTable::getColumn,
+                            (AbstractTable) st, colName);
                     addPrivilege(col, priv);
                 }
             }
@@ -199,48 +213,41 @@ public class CreateRule extends ParserAbstract {
     private void addToDB(Schema_qualified_nameContext name, DbObjType type, PgPrivilege pgPrivilege) {
         List<IdentifierContext> ids = name.identifier();
         IdentifierContext idCtx = QNameParser.getFirstNameCtx(ids);
-        String id = idCtx.getText();
         AbstractSchema schema = (DbObjType.SCHEMA == type ?
-                getSafe(db::getSchema, idCtx)
-                : getSchemaSafe(ids, db.getDefaultSchema()));
+                getSafe(PgDatabase::getSchema, db, idCtx) : getSchemaSafe(ids));
         PgStatement statement = null;
         switch (type) {
         case TABLE:
-            statement = schema.getTable(id);
-            if (statement == null) {
-                statement = schema.getView(id);
-            }
-            if (statement == null) {
-                statement = getSafe(schema::getSequence, idCtx);
-            }
+            statement = (PgStatement) getSafe(AbstractSchema::getRelation, schema, idCtx);
             break;
         case SEQUENCE:
-            statement = getSafe(schema::getSequence, idCtx);
+            statement = getSafe(AbstractSchema::getSequence, schema, idCtx);
             break;
         case SCHEMA:
-            statement = getSafe(db::getSchema, idCtx);
+            statement = schema;
             break;
         case TYPE:
             statement = schema.getType(idCtx.getText());
+
             // if type not found try domain
             if (statement == null) {
-                statement = getSafe(schema::getDomain, idCtx);
+                statement = getSafe(AbstractSchema::getDomain, schema, idCtx);
             }
             break;
         case DOMAIN:
-            statement = getSafe(schema::getDomain, idCtx);
+            statement = getSafe(AbstractSchema::getDomain, schema, idCtx);
             break;
         default:
             break;
         }
-        if (statement != null){
+        if (statement != null) {
             addPrivilege(statement, pgPrivilege);
         }
     }
 
     private void addPrivilege(PgStatement st, PgPrivilege privilege) {
         if (overrides == null) {
-            st.addPrivilege(privilege);
+            doSafe(PgStatement::addPrivilege, st, privilege);
         } else {
             overrides.computeIfAbsent(st,
                     k -> new StatementOverride()).addPrivilege(privilege);

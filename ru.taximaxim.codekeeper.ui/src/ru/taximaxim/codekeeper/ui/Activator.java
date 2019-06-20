@@ -1,5 +1,7 @@
 package ru.taximaxim.codekeeper.ui;
 
+import java.util.Locale;
+
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.graphics.Image;
@@ -91,7 +93,7 @@ public class Activator extends AbstractUIPlugin {
 
         for (DbObjType dbObjType : DbObjType.values()) {
             reg.put(dbObjType.name(), ImageDescriptor.createFromURL(context.getBundle()
-                    .getResource(FILE.ICONPGADMIN + dbObjType.name().toLowerCase() + ".png"))); //$NON-NLS-1$
+                    .getResource(FILE.ICONPGADMIN + dbObjType.name().toLowerCase(Locale.ROOT) + ".png"))); //$NON-NLS-1$
         }
     }
 }

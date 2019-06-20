@@ -8,8 +8,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
+import java.util.stream.IntStream;
 
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.event.TraversalListenerAdapter;
@@ -17,7 +20,13 @@ import org.jgrapht.event.VertexTraversalEvent;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.DepthFirstIterator;
 
+import cz.startnet.utils.pgdiff.schema.AbstractColumn;
+import cz.startnet.utils.pgdiff.schema.AbstractFunction;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
+import cz.startnet.utils.pgdiff.schema.Argument;
+import cz.startnet.utils.pgdiff.schema.MsTable;
+import cz.startnet.utils.pgdiff.schema.MsView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -38,7 +47,7 @@ public class DepcyResolver {
     private final DepcyGraph oldDepcyGraph;
     private final DepcyGraph newDepcyGraph;
     private final Set<ActionContainer> actions = new LinkedHashSet<>();
-    private final Set<PgStatement> toRefresh = new HashSet<>();
+    private final Set<PgStatement> toRefresh = new LinkedHashSet<>();
     /**
      * Хранит запущенные итерации, используется для предотвращения циклического прохода по графу
      */
@@ -74,6 +83,9 @@ public class DepcyResolver {
         return Collections.unmodifiableSet(actions);
     }
 
+    /**
+     * @return ordered Set of statements to refresh in reverse order
+     */
     public Set<PgStatement> getToRefresh() {
         return Collections.unmodifiableSet(toRefresh);
     }
@@ -129,33 +141,57 @@ public class DepcyResolver {
     }
 
     /**
-     * Добавить выражение для изменения объекта, метод сам проверяет наличие обоих объектов
+     * Добавить выражение для изменения объекта
      * @param oldObj исходный объект
      * @param newObj новый объект
      */
     public void addAlterStatements(PgStatement oldObj, PgStatement newObj) {
-        if (newObj != null && oldObj != null) {
-            PgStatement oldObjStat = oldObj.getTwin(oldDb);
-            PgStatement newObjStat = newObj.getTwin(newDb);
-            StringBuilder sb = new StringBuilder();
-            AtomicBoolean isNeedDepcies = new AtomicBoolean();
-            boolean isChanged = (oldObjStat != null && oldObjStat.appendAlterSQL(newObjStat, sb, isNeedDepcies));
+        PgStatement oldObjStat = oldObj.getTwin(oldDb);
+        PgStatement newObjStat = newObj.getTwin(newDb);
+        StringBuilder sb = new StringBuilder();
+        AtomicBoolean isNeedDepcies = new AtomicBoolean();
+        boolean isChanged = (oldObjStat != null && oldObjStat.appendAlterSQL(newObjStat, sb, isNeedDepcies));
 
-            if (isChanged) {
-                if (isNeedDepcies.get()) {
-                    // is state alterable (sb.length() > 0)
-                    // is checked in the depcy tracker in this case
-                    addDropStatements(oldObjStat);
-                } else if (!inDropsList(oldObjStat)
-                        && (oldObjStat.getStatementType() != DbObjType.COLUMN
-                        || !inDropsList(oldObjStat.getParent()))) {
-                    // объект будет пересоздан ниже в новом состоянии, поэтому
-                    // ничего делать не нужно
-                    // пропускаем колонки таблиц из дроп листа
-                    addToListWithoutDepcies(
-                            sb.length() > 0 ? StatementActions.ALTER : StatementActions.DROP,
-                                    oldObjStat, null);
+        if (isChanged) {
+            if (isNeedDepcies.get()) {
+                // is state alterable (sb.length() > 0)
+                // is checked in the depcy tracker in this case
+                addDropStatements(oldObjStat);
+            } else if (!inDropsList(oldObjStat)
+                    && (oldObjStat.getStatementType() != DbObjType.COLUMN
+                    || !inDropsList(oldObjStat.getParent()))) {
+                // объект будет пересоздан ниже в новом состоянии, поэтому
+                // ничего делать не нужно
+                // пропускаем колонки таблиц из дроп листа
+                addToListWithoutDepcies(
+                        sb.length() > 0 ? StatementActions.ALTER : StatementActions.DROP,
+                                oldObjStat, null);
+            }
+        }
+
+        // if no depcies were triggered for a MsTable alter
+        // check for column layout changes and refresh views
+        if (!isNeedDepcies.get() &&
+                oldObjStat instanceof MsTable && newObjStat instanceof MsTable) {
+            MsTable tOld = (MsTable) oldObjStat;
+            MsTable tNew = (MsTable) newObjStat;
+            List<AbstractColumn> cOld = tOld.getColumns();
+            List<AbstractColumn> cNew = tNew.getColumns();
+
+            // first check for columns added or removed
+            boolean colLayoutChanged = cOld.size() != cNew.size();
+            if (!colLayoutChanged) {
+                // second, columns replaced or reordered
+                for (int i = 0; i < cOld.size(); ++i) {
+                    if (!cOld.get(i).getName().equals(cNew.get(i).getName())) {
+                        colLayoutChanged = true;
+                        break;
+                    }
                 }
+            }
+            if (colLayoutChanged) {
+                customIteration(new DepthFirstIterator<>(oldDepcyGraph.getReversedGraph(), tOld),
+                        new RefreshTableDeps());
             }
         }
     }
@@ -178,6 +214,8 @@ public class DepcyResolver {
             for (PgStatement drop : toRecreate) {
                 PgStatement newSt = drop.getTwin(newDb);
                 if (newSt != null) {
+                    // add views to emit refreshes
+                    // others are to block drop+create pairs for unchanged statements
                     if (newSt instanceof SourceStatement && newSt.equals(drop)) {
                         toRefresh.add(newSt);
                     }
@@ -340,7 +378,7 @@ public class DepcyResolver {
                 IsDropped iter = new IsDropped();
                 customIteration(new DepthFirstIterator<>(oldDepcyGraph.getGraph(),
                         oldObj), iter);
-                if (iter.getDropped() != null && iter.getDropped() != oldObj) {
+                if (iter.needDrop != null && iter.needDrop != oldObj) {
                     action = StatementActions.DROP;
                 }
 
@@ -524,19 +562,60 @@ public class DepcyResolver {
             if (needDrop != null) {
                 return;
             }
-            PgStatement st = e.getVertex();
-            PgStatement newSt = st.getTwin(newDb);
+            PgStatement oldSt = e.getVertex();
+            PgStatement newSt = oldSt.getTwin(newDb);
             if (newSt == null) {
+                if (oldSt.getStatementType() == DbObjType.FUNCTION && oldSt.isPostgres()
+                        && isDefaultsOnlyChange((AbstractFunction) oldSt)) {
+                    // when function's signature changes it has no twin
+                    // but the dependent object might be unchanged
+                    // due to default arguments changing in the signature
+                    needDrop = oldSt;
+                }
                 return;
             }
             AtomicBoolean isNeedDepcy = new AtomicBoolean();
-            if (st.appendAlterSQL(newSt, new StringBuilder(), isNeedDepcy) && isNeedDepcy.get()) {
-                needDrop = st;
+            if (oldSt.appendAlterSQL(newSt, new StringBuilder(), isNeedDepcy) && isNeedDepcy.get()) {
+                needDrop = oldSt;
             }
         }
 
-        public PgStatement getDropped() {
-            return needDrop;
+        private boolean isDefaultsOnlyChange(AbstractFunction oldFunc) {
+            AbstractSchema newSchema = newDb.getSchema(oldFunc.getSchemaName());
+            if (newSchema == null) {
+                return false;
+            }
+
+            // in the new database, search the function for which
+            // the signature before first default argument will be the same
+            // if there is such, then the drop is necessary,
+            // if there is no such, then the drop is not necessary
+
+            Function<AbstractFunction, List<Argument>> argsBeforeDefaults = f -> {
+                List<Argument> args = f.getArguments();
+                OptionalInt firstDefault = IntStream.range(0, args.size())
+                        .filter(i -> args.get(i).getDefaultExpression() != null)
+                        .findFirst();
+                return firstDefault.isPresent() ? args.subList(0, firstDefault.getAsInt()) : args;
+            };
+
+            List<Argument> oldArgs = argsBeforeDefaults.apply(oldFunc);
+
+            return newSchema.getFunctions().stream()
+                    .filter(f -> oldFunc.getBareName().equals(f.getBareName()))
+                    .map(argsBeforeDefaults)
+                    .anyMatch(oldArgs::equals);
+        }
+    }
+
+    private class RefreshTableDeps extends TraversalListenerAdapter<PgStatement, DefaultEdge> {
+
+        @Override
+        public void vertexFinished(VertexTraversalEvent<PgStatement> e) {
+            PgStatement st = e.getVertex();
+            if (st instanceof MsView && st.getTwin(newDb) != null) {
+                toRefresh.add(st);
+            }
         }
     }
 }
