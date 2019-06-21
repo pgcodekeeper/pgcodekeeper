@@ -155,7 +155,7 @@ public class PgPassDialog extends Dialog {
 
                 editor.addNewObject(new DbInfo(info.getDbName(), info.getDbName(),
                         info.getUser(), "", info.getHost(), dbport, false, true,  //$NON-NLS-1$
-                        new ArrayList<>(), new HashMap<>(), false, false,
+                        new ArrayList<>(), new HashMap<>(), false, false, "",
                         DbInfo.DEFAULT_EXECUTE_PATH, DbInfo.DEFAULT_CUSTOM_PARAMS, false));
             }
         });
