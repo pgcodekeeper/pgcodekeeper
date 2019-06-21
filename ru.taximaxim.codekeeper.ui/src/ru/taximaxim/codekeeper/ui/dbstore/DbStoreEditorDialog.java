@@ -358,16 +358,11 @@ public class DbStoreEditorDialog extends TrayDialog {
 
         new Label(tabAreaProperties, SWT.NONE).setText(Messages.DbPropertyListEditor_properties_hint);
 
-        Link linkHint = new Link(tabAreaProperties, SWT.NONE);
-        String link = "https://jdbc.postgresql.org/documentation/head/connect.html"; //$NON-NLS-1$
-        linkHint.setText("<a>" + link + "</a>"); //$NON-NLS-1$ //$NON-NLS-2$
-        linkHint.addSelectionListener(new SelectionAdapter()  {
+        addLink(tabAreaProperties, Messages.DbPropertyListEditor_pg_link_hint,
+                "https://jdbc.postgresql.org/documentation/head/connect.html"); //$NON-NLS-1$
 
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                Program.launch(link);
-            }
-        });
+        addLink(tabAreaProperties, Messages.DbPropertyListEditor_ms_link_hint,
+                "https://docs.microsoft.com/sql/connect/jdbc/setting-the-connection-properties"); //$NON-NLS-1$
 
         propertyListEditor = new DbPropertyListEditor(tabAreaProperties);
 
@@ -433,6 +428,18 @@ public class DbStoreEditorDialog extends TrayDialog {
         tabItem.setText(tabText);
         tabItem.setControl(tabComposite);
         return tabComposite;
+    }
+
+    private void addLink(Composite parent, String hint, String link) {
+        Link linkHint = new Link(parent, SWT.NONE);
+        linkHint.setText("<a>" + link + "</a> " + hint); //$NON-NLS-1$ //$NON-NLS-2$
+        linkHint.addSelectionListener(new SelectionAdapter()  {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                Program.launch(link);
+            }
+        });
     }
 
     @Override

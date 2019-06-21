@@ -234,6 +234,8 @@ public final class Messages extends NLS {
     public static String dbUpdatePrefPage_ignore_privileges;
 
     public static String DbPropertyListEditor_properties_hint;
+    public static String DbPropertyListEditor_pg_link_hint;
+    public static String DbPropertyListEditor_ms_link_hint;
     public static String DbPropertyListEditor_new_property;
     public static String DbPropertyListEditor_field_name;
     public static String DbPropertyListEditor_field_value;
