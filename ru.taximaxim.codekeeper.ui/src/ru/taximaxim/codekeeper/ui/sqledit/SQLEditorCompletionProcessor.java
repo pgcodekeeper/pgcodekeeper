@@ -8,14 +8,16 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.DocumentEvent;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
-import org.eclipse.jface.text.contentassist.CompletionProposal;
 import org.eclipse.jface.text.contentassist.ContentAssistEvent;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.ContextInformation;
 import org.eclipse.jface.text.contentassist.ICompletionListener;
 import org.eclipse.jface.text.contentassist.ICompletionListenerExtension;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension2;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
@@ -27,6 +29,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.sql.Keyword;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.copiedclasses.CompletionProposal;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
@@ -117,24 +120,24 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
             IContextInformation info = new ContextInformation(
                     obj.getObjName(), obj.getComment());
             if (!text.isEmpty()) {
-                result.add(new CompletionProposal(obj.getObjName(), offset - text.length(),
+                result.add(new SqlEditorKeywordProposal(obj.getObjName(), offset - text.length(),
                         text.length(), obj.getObjLength(), img, displayText, info,
                         obj.getObjName()));
             } else {
-                result.add(new CompletionProposal(obj.getObjName(), offset, 0,
+                result.add(new SqlEditorKeywordProposal(obj.getObjName(), offset, 0,
                         obj.getObjLength(), img, displayText, info, obj.getObjName()));
             }
         });
 
         // Keywords
         if (text.isEmpty()) {
-            keywords.forEach(k -> result.add(new CompletionProposal(k, offset, 0, k.length())));
+            keywords.forEach(k -> result.add(new SqlEditorKeywordProposal(k, offset, 0, k.length())));
         } else {
             for (String keyword : keywords) {
                 int location = keyword.indexOf(text);
                 if (location != -1) {
-                    CompletionProposal proposal = new CompletionProposal(keyword + ' ',
-                            offset - text.length(), text.length(), keyword.length() + 1);
+                    CompletionProposal proposal = new SqlEditorKeywordProposal(keyword,
+                            offset - text.length(), text.length(), keyword.length());
                     if (location  == 0) {
                         result.add(proposal);
                     } else {
@@ -200,6 +203,72 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
         @Override
         public void assistSessionRestarted(ContentAssistEvent event) {
             repetition = 0;
+        }
+    }
+
+    private static final class SqlEditorKeywordProposal extends CompletionProposal
+    implements ICompletionProposalExtension2 {
+
+        public SqlEditorKeywordProposal(String replacementString, int replacementOffset,
+                int replacementLength, int cursorPosition) {
+            super(replacementString, replacementOffset, replacementLength, cursorPosition);
+        }
+
+        public SqlEditorKeywordProposal(String replacementString, int replacementOffset,
+                int replacementLength, int cursorPosition, Image image, String displayString,
+                IContextInformation contextInformation, String additionalProposalInfo) {
+            super(replacementString, replacementOffset, replacementLength, cursorPosition,
+                    image, displayString, contextInformation, additionalProposalInfo);
+        }
+
+        // This override is necessary for correct filtering the proposed keywords
+        // while typing text (here used 'contains' method instead of 'startsWith').
+        // Also this override is necessary to prevent calling
+        // 'computeCompletionProposals'-method on each keyboard button pressing.
+        @Override
+        public boolean validate(IDocument document, int offset, DocumentEvent event) {
+            try {
+                int replaceOffset = getReplacementOffset();
+                if (offset >= replaceOffset) {
+                    String typedText = document.get(replaceOffset, offset - replaceOffset);
+                    return getReplacementString().toLowerCase().contains(typedText.toLowerCase());
+                }
+            } catch (BadLocationException e) {
+                // concurrent modification - ignore
+            }
+            return false;
+        }
+
+        @Override
+        public void apply(ITextViewer viewer, char trigger, int stateMask, int offset) {
+            try {
+                viewer.getDocument().replace(getReplacementOffset(),
+                        offset - getReplacementOffset(), getReplacementString());
+            } catch (BadLocationException x) {
+                // ignore
+            }
+        }
+
+        @Override
+        public void selected(ITextViewer viewer, boolean smartToggle) {
+            // no impl
+        }
+
+        @Override
+        public void unselected(ITextViewer viewer) {
+            // no impl
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @deprecated This method is no longer called by the framework and clients should overwrite
+         *             {@link #apply(ITextViewer, char, int, int)} instead
+         */
+        @Deprecated
+        @Override
+        public final void apply(IDocument document) {
+            // not called anymore
         }
     }
 }
