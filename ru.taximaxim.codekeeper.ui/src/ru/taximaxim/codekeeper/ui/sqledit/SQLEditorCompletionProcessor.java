@@ -258,5 +258,17 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
         public void unselected(ITextViewer viewer) {
             // no impl
         }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @deprecated This method is no longer called by the framework and clients should overwrite
+         *             {@link #apply(ITextViewer, char, int, int)} instead
+         */
+        @Deprecated
+        @Override
+        public final void apply(IDocument document) {
+            // not called anymore
+        }
     }
 }
