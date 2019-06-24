@@ -87,9 +87,6 @@ public class DbStoreEditorDialog extends TrayDialog {
             txtDbUser.setEnabled(!win);
             txtDbPass.setEnabled(!win);
             txtDomain.setEnabled(ms);
-            if (!ms) {
-                txtDomain.setText(""); //$NON-NLS-1$
-            }
         }
     };
 
