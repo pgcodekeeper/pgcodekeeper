@@ -105,10 +105,7 @@ public class JdbcMsConnector extends JdbcConnector {
     @Override
     protected String generateBasicConnectionString() {
         return "jdbc:sqlserver://" + host + ':' + port
-                + (isDbNameEscapable() ? ";databaseName={" + dbName + '}' : "")
-                + (domain == null || "".equals(domain) ? "" :
-                    ";integratedSecurity=true;authenticationScheme=NTLM;domain="
-                    + domain);
+                + (isDbNameEscapable() ? ";databaseName={" + dbName + '}' : "");
     }
 
     @Override
@@ -119,6 +116,10 @@ public class JdbcMsConnector extends JdbcConnector {
         }
         if (winAuth) {
             props.setProperty("integratedSecurity", "true");
+        }
+        if (domain != null && !"".equals(domain)) {
+            props.setProperty("authenticationScheme", "NTLM");
+            props.setProperty("domain", domain);
         }
         return props;
     }
