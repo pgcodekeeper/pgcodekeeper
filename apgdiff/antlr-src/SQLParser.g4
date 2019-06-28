@@ -2699,7 +2699,7 @@ assign_stmt
     ;
 
 execute_stmt
-    : EXECUTE vex (INTO (STRICT)? schema_qualified_name)? using_vex?
+    : EXECUTE vex into_statement? using_vex?
     ;
 
 control_statement
