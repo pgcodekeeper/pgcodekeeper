@@ -126,8 +126,20 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
     @Override
     public String getDropSQL() {
         if (getType() != null) {
-            return getAlterTable(false, true) + "\n\tDROP COLUMN "
-                    + PgDiffUtils.getQuotedName(getName()) + ';';
+            boolean addOnly = true;
+
+            //// Condition for partitioned tables.
+            // If there are sections, then it is impossible to delete a column
+            // only from a partitioned table.
+            // Because of impossible inherit from partitioned tables, this
+            // condition will also be true for cases when a partitioned table
+            // does not have sections.
+            if (getParent() instanceof AbstractRegularTable) {
+                addOnly = ((AbstractRegularTable) getParent()).getPartitionBy() == null;
+            }
+
+            return getAlterTable(false, addOnly) + "\n\tDROP COLUMN "
+            + PgDiffUtils.getQuotedName(getName()) + ';';
         }
 
         StringBuilder sb = new StringBuilder();
