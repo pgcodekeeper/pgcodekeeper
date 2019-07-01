@@ -13,6 +13,7 @@ public final class Messages extends NLS {
     public static String dB_password;
     public static String dB_user;
     public static String entry_name;
+    public static String domain;
     public static String warning_providing_password_here_is_insecure_use_pgpass_instead;
     public static String calculating_diff;
     public static String runnable_has_not_finished;
@@ -233,6 +234,8 @@ public final class Messages extends NLS {
     public static String dbUpdatePrefPage_ignore_privileges;
 
     public static String DbPropertyListEditor_properties_hint;
+    public static String DbPropertyListEditor_pg_link_hint;
+    public static String DbPropertyListEditor_ms_link_hint;
     public static String DbPropertyListEditor_new_property;
     public static String DbPropertyListEditor_field_name;
     public static String DbPropertyListEditor_field_value;

@@ -364,7 +364,7 @@ class DbSourceJdbc extends DbSource {
         this.isMsSql =  dbinfo.isMsSql();
         if (isMsSql) {
             jdbcConnector = new JdbcMsConnector(host, port, user, pass, dbName, properties,
-                    readOnly, winAuth);
+                    readOnly, winAuth, dbinfo.getDomain());
         } else {
             jdbcConnector = new JdbcConnector(host, port, user, pass, dbName, properties,
                     readOnly, timezone);
