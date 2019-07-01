@@ -20,6 +20,7 @@ import cz.startnet.utils.pgdiff.schema.PartitionPgTable;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class DepcyGraph {
@@ -126,13 +127,25 @@ public class DepcyGraph {
     private void createChildColToPartTblCol(PartitionPgTable pTbl, PgColumn pCol) {
         String colName = pCol.getName();
         for (Inherits in : pTbl.getInherits()) {
-            AbstractTable parentTbl = db.getSchema(in.getKey()).getTable(in.getValue());
+            PgStatement parentTbl = new GenericColumn(in.getKey(), in.getValue(),
+                    DbObjType.TABLE).getStatement(db);
+            if (parentTbl == null) {
+                Log.log(Log.LOG_ERROR, "There is no such object of inheritance"
+                        + " as table: " + in.getQualifiedName());
+                continue;
+            }
+
             if (parentTbl instanceof PartitionPgTable) {
                 createChildColToPartTblCol((PartitionPgTable) parentTbl, pCol);
             } else {
-                AbstractColumn parentCol = parentTbl.getColumn(colName);
+                AbstractColumn parentCol = ((AbstractTable) parentTbl).getColumn(colName);
                 if (parentCol != null) {
                     graph.addEdge(pCol, parentCol);
+                } else {
+                    Log.log(Log.LOG_ERROR, "The parent '" + in.getQualifiedName()
+                    + '.' + colName + "' column for '" + pCol.getSchemaName()
+                    + '.' + pCol.getParent().getName()
+                    + '.' + pCol.getName() + "' column is missed.");
                 }
             }
         }
