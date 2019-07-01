@@ -114,7 +114,9 @@ public class JdbcMsConnector extends JdbcConnector {
         if (!isDbNameEscapable()) {
             props.setProperty("databaseName", dbName);
         }
-        if (domain != null && !"".equals(domain)) {
+        if (winAuth) {
+            props.setProperty("integratedSecurity", "true");
+        } else if (domain != null && !"".equals(domain)) {
             props.setProperty("authenticationScheme", "NTLM");
             props.setProperty("integratedSecurity", "true");
             props.setProperty("domain", domain);
