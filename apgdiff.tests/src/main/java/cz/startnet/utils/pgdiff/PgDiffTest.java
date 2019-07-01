@@ -100,6 +100,8 @@ public class PgDiffTest {
                     {"add_column_null"},
                     // Tests scenario where COLUMN with index dependency is dropped from TABLE.
                     {"drop_column"},
+                    // Tests scenario where COLUMNs are dropped from partitioned TABLE.
+                    {"drop_col_from_partitioned_tbl"},
                     // Tests scenario where new TABLE is added.
                     {"add_table"},
                     // Tests scenario where new FOREIGN TABLE is added.
@@ -438,6 +440,8 @@ public class PgDiffTest {
                     {"modify_column_type_and_default"},
                     // Tests scenario where COLUMN type is modified and default is deleted.
                     {"modify_column_type_and_drop_default"},
+                    // Tests scenario where type in COLUMN of partitioned TABLE is changed.
+                    {"modify_col_type_in_partitioned_tbl"},
                     // Tests scenario where new OPERATOR is added.
                     {"add_operator"},
                     // Tests scenario where new overloaded OPERATOR is added.
