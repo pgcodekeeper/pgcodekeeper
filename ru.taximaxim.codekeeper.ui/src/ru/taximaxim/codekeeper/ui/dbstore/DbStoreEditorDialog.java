@@ -86,7 +86,7 @@ public class DbStoreEditorDialog extends TrayDialog {
             }
             txtDbUser.setEnabled(!win);
             txtDbPass.setEnabled(!win);
-            txtDomain.setEnabled(ms);
+            txtDomain.setEnabled(ms && !isWinAuth());
         }
     };
 
