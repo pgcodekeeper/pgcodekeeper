@@ -29,6 +29,7 @@ public class DbInfo {
     private final boolean readOnly;
     private final boolean winAuth;
     private final boolean msSql;
+    private final String domain;
     private final boolean generateName;
     private final List<String> ignoreFiles;
     private final Map<String, String> properties;
@@ -69,6 +70,10 @@ public class DbInfo {
         return msSql;
     }
 
+    public String getDomain() {
+        return domain;
+    }
+
     public boolean isGeneratedName() {
         return generateName;
     }
@@ -96,7 +101,7 @@ public class DbInfo {
     public DbInfo(String name, String dbname, String dbuser, String dbpass,
             String dbhost, int dbport, boolean readOnly, boolean generateName,
             List<String> ignoreFiles, Map<String, String> properties, boolean msSql, boolean winAuth,
-            String pgdumpExePath, String pgdumpCustomParams, boolean pgDumpSwitch) {
+            String domain, String pgdumpExePath, String pgdumpCustomParams, boolean pgDumpSwitch) {
         this.name = name;
         this.dbname = dbname;
         this.dbuser = dbuser;
@@ -109,6 +114,7 @@ public class DbInfo {
         this.properties = properties;
         this.msSql = msSql;
         this.winAuth = winAuth;
+        this.domain = domain;
         this.pgdumpExePath = pgdumpExePath == null ? DEFAULT_EXECUTE_PATH : pgdumpExePath;
         this.pgdumpCustomParams = pgdumpCustomParams == null ? DEFAULT_CUSTOM_PARAMS : pgdumpCustomParams;
         this.pgDumpSwitch = pgDumpSwitch;
