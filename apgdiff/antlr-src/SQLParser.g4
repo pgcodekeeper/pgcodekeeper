@@ -106,7 +106,7 @@ script_additional
     | LOAD Character_String_Literal
     | DISCARD (ALL | PLANS | SEQUENCES | TEMPORARY | TEMP)
     | DEALLOCATE PREPARE? (identifier | ALL)
-    | (FETCH | MOVE) fetch_move_derection? (FROM | IN)? identifier
+    | (FETCH | MOVE) fetch_move_direction? (FROM | IN)? identifier
     | CLOSE (identifier | ALL)
     | CALL function_call
     | REINDEX (LEFT_PAREN VERBOSE RIGHT_PAREN)? (INDEX | TABLE | SCHEMA | DATABASE | SYSTEM) identifier
@@ -145,7 +145,7 @@ vacuum_mode
     | DISABLE_PAGE_SKIPPING
     ;
 
-fetch_move_derection
+fetch_move_direction
     : NEXT
     | PRIOR
     | FIRST
@@ -2296,7 +2296,7 @@ cast_specification
 function_call
     : function_name LEFT_PAREN (set_qualifier? vex_or_named_notation (COMMA vex_or_named_notation)* orderby_clause?)? RIGHT_PAREN
         (WITHIN GROUP LEFT_PAREN orderby_clause RIGHT_PAREN)?
-        filter_clause? (OVER window_definition)?
+        filter_clause? (OVER (identifier | window_definition))?
     | extract_function
     | system_function
     | date_time_function
@@ -2369,8 +2369,7 @@ filter_clause
   ;
 
 window_definition
-  : w_name=identifier
-  | LEFT_PAREN (w_name=identifier? partition_by_columns? orderby_clause? frame_clause?) RIGHT_PAREN
+  : LEFT_PAREN w_name=identifier? partition_by_columns? orderby_clause? frame_clause? RIGHT_PAREN
   ;
 
 frame_clause
@@ -2685,11 +2684,15 @@ diagnostic_option
     : var (COLON_EQUAL | EQUAL) identifier
     ;
 
+// keep this in sync with select_primary (except intended differences)
 perform_stmt
     : (set_qualifier (ON LEFT_PAREN vex (COMMA vex)* RIGHT_PAREN)?)?
-    select_list (FROM from_item (COMMA from_item)*)?
-    (WHERE vex)? groupby_clause? (HAVING vex)?
-    (WINDOW w_name=identifier AS LEFT_PAREN window_definition RIGHT_PAREN (COMMA w_name=identifier AS LEFT_PAREN window_definition RIGHT_PAREN)*)?
+    select_list
+    (FROM from_item (COMMA from_item)*)?
+    (WHERE vex)?
+    groupby_clause?
+    (HAVING vex)?
+    (WINDOW w_name=identifier AS window_definition (COMMA w_name=identifier AS window_definition)*)?
     ((INTERSECT | UNION | EXCEPT) set_qualifier? select_ops)?
     after_ops*
     ;
@@ -2713,8 +2716,8 @@ control_statement
 cursor_statement
     : OPEN var ((NO)? SCROLL)? FOR (select_stmt | execute_stmt)
     | OPEN var (option (COMMA option)*)?
-    | FETCH fetch_move_derection? (FROM | IN)? var INTO identifier_list
-    | MOVE fetch_move_derection? (FROM | IN)? var
+    | FETCH fetch_move_direction? (FROM | IN)? var INTO identifier_list
+    | MOVE fetch_move_direction? (FROM | IN)? var
     | CLOSE var
     ;
 

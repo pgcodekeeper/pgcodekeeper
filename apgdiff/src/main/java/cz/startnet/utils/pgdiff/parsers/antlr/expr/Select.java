@@ -113,8 +113,6 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
     }
 
     private List<Pair<String, String>> perform(Perform_stmtContext perform) {
-        List<Pair<String, String>> ret = new ArrayList<>();
-
         // from defines the namespace so it goes before everything else
         if (perform.FROM() != null) {
             boolean oldFrom = inFrom;
@@ -129,7 +127,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
         }
 
         ValueExpr vex = new ValueExpr(this);
-        sublist(perform.select_list().select_sublist(), vex, ret);
+        List<Pair<String, String>> ret = sublist(perform.select_list().select_sublist(), vex);
 
         if ((perform.set_qualifier() != null && perform.ON() != null)
                 || perform.WHERE() != null || perform.HAVING() != null) {
@@ -250,7 +248,9 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
 
             Select_listContext list = primary.select_list();
             if (list != null) {
-                sublist(list.select_sublist(), vex, ret);
+                ret = sublist(list.select_sublist(), vex);
+            } else {
+                ret = Collections.emptyList();
             }
 
 
@@ -290,8 +290,8 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
         return ret;
     }
 
-    private void sublist(List<Select_sublistContext> sublist, ValueExpr vex,
-            List<Pair<String, String>> ret) {
+    private List<Pair<String, String>> sublist(List<Select_sublistContext> sublist, ValueExpr vex) {
+        List<Pair<String, String>> ret = new ArrayList<>();
         for (Select_sublistContext target : sublist) {
             Vex selectSublistVex = new Vex(target.vex());
 
@@ -313,6 +313,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
                 ret.add(columnPair);
             }
         }
+        return ret;
     }
 
     private void groupby(Grouping_element_listContext list, ValueExpr vex) {
