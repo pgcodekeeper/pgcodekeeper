@@ -12,9 +12,9 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.UIConsts.CMD_VARS;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 
 public class DbUpdatePrefPage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
@@ -78,10 +78,10 @@ public class DbUpdatePrefPage extends FieldEditorPreferencePage implements IWork
 
         StringFieldEditor cmdUpdate = new StringFieldEditor(DB_UPDATE_PREF.MIGRATION_COMMAND,
                 Messages.dbUpdatePrefPage_Enter_cmd_to_update_ddl_with_sql_script
-                + SQLEditor.SCRIPT_PLACEHOLDER + ' '
-                + SQLEditor.DB_NAME_PLACEHOLDER + ' '
-                + SQLEditor.DB_HOST_PLACEHOLDER + ' ' + SQLEditor.DB_PORT_PLACEHOLDER + ' '
-                + SQLEditor.DB_USER_PLACEHOLDER + ' ' + SQLEditor.DB_PASS_PLACEHOLDER + ')' + ':',
+                + CMD_VARS.SCRIPT_PLACEHOLDER + ' '
+                + CMD_VARS.DB_NAME_PLACEHOLDER + ' '
+                + CMD_VARS.DB_HOST_PLACEHOLDER + ' ' + CMD_VARS.DB_PORT_PLACEHOLDER + ' '
+                + CMD_VARS.DB_USER_PLACEHOLDER + ' ' + CMD_VARS.DB_PASS_PLACEHOLDER + ')' + ':',
                 30, getFieldEditorParent());
         addField(cmdUpdate);
     }

@@ -401,6 +401,9 @@ public abstract class AbstractModelExporter {
         StringBuilder sb = new StringBuilder();
         PgStatement.appendOwnerSQL(st, st.getOwner(), false, sb);
         PgPrivilege.appendPrivileges(st.getPrivileges(), st.isPostgres(), sb);
+        if (st.getPrivileges().isEmpty()) {
+            PgPrivilege.appendDefaultPrivileges(st, sb);
+        }
 
         if (DbObjType.TABLE == st.getStatementType()) {
             for (AbstractColumn col : ((AbstractTable)st).getColumns()) {

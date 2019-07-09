@@ -16,6 +16,9 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.postgresql.util.PSQLException;
 import org.postgresql.util.ServerErrorMessage;
 
+import com.microsoft.sqlserver.jdbc.SQLServerError;
+import com.microsoft.sqlserver.jdbc.SQLServerException;
+
 import cz.startnet.utils.pgdiff.IProgressReporter;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.jdbc.JdbcType;
@@ -51,11 +54,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
                     PgDiffUtils.checkCancelled(monitor);
                     currQuery = query;
 
-                    if (st.execute(query) && reporter != null) {
-                        writeResult(query);
-                    }
-                    writeWarnings();
-                    writeStatus(query);
+                    executeSingleStatement(query);
 
                     subMonitor.worked(1);
                 }
@@ -64,18 +63,24 @@ public class QueriesBatchCallable extends StatementCallable<String> {
                 connection.setAutoCommit(false);
                 for (List<String> queriesList : batches) {
                     PgDiffUtils.checkCancelled(monitor);
-                    for (String query : queriesList) {
-                        st.addBatch(query);
-                        writeStatus(query);
+                    // in case we're executing a real batch after a single-statement one
+                    currQuery = null;
+                    if (queriesList.size() == 1) {
+                        currQuery = queriesList.get(0);
+                        executeSingleStatement(currQuery);
+                    } else {
+                        for (String query : queriesList) {
+                            st.addBatch(query);
+                            writeStatus(query);
+                        }
+
+                        if (reporter != null) {
+                            reporter.writeMessage("Executing batch");
+                        }
+
+                        st.executeBatch();
+                        writeWarnings();
                     }
-
-                    if (reporter != null) {
-                        reporter.writeMessage("Executing batch");
-                    }
-
-                    st.executeBatch();
-                    writeWarnings();
-
                     subMonitor.worked(1);
                 }
                 connection.commit();
@@ -85,23 +90,56 @@ public class QueriesBatchCallable extends StatementCallable<String> {
                 reporter.writeMessage("Script finished");
             }
         } catch (PSQLException ex) {
-            if (reporter == null || ex.getServerErrorMessage() == null) {
+            ServerErrorMessage sem = ex.getServerErrorMessage();
+            if (reporter == null || sem == null) {
                 throw ex;
             }
-            ServerErrorMessage sem = ex.getServerErrorMessage();
             StringBuilder sb = new StringBuilder(sem.toString());
             int offset = sem.getPosition();
-            if (offset > 0 && currQuery != null) {
-                appendPosition(sb, currQuery, offset);
+            if (currQuery != null) {
+                if (offset > 0) {
+                    appendPosition(sb, currQuery, offset);
+                } else {
+                    sb.append('\n').append(currQuery);
+                }
+            }
+
+            reporter.writeError(sb.toString());
+        } catch (SQLServerException e) {
+            SQLServerError err = e.getSQLServerError();
+            if (reporter == null || err == null) {
+                throw e;
+            }
+            StringBuilder sb = new StringBuilder(err.getErrorMessage());
+            if (currQuery != null) {
+                if (err.getLineNumber() > 1) {
+                    sb.append("\n  Line: ").append(err.getLineNumber());
+                }
+                sb.append('\n').append(currQuery);
             }
 
             reporter.writeError(sb.toString());
         }
+        // BatchUpdateException
+        // MS SQL driver returns a useless batch update status array
+        // where even successful statements are marked as Statement.EXECUTE_FAILED
+        // so we cannot deduce which one failed to show more accurate error context
 
         return JDBC_CONSTS.JDBC_SUCCESS;
     }
 
+    private void executeSingleStatement(String query) throws SQLException {
+        if (st.execute(query)) {
+            writeResult(query);
+        }
+        writeWarnings();
+        writeStatus(query);
+    }
+
     private void writeResult(String query) throws SQLException {
+        if (reporter == null) {
+            return;
+        }
         List<List<Object>> results = new ArrayList<>();
         try (ResultSet res = st.getResultSet()) {
 

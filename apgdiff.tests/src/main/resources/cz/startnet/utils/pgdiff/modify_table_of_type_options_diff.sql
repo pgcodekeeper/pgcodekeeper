@@ -15,5 +15,5 @@ ALTER TABLE ONLY public.testtable
 ALTER TABLE ONLY public.testtable
 	ALTER COLUMN field4 DROP DEFAULT;
 
-ALTER TABLE ONLY public.testtable
+ALTER TABLE public.testtable
 	ALTER COLUMN field4 SET NOT NULL;

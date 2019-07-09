@@ -6,5 +6,5 @@ ALTER TABLE ONLY public.testtable
 ALTER TABLE public.testtable
 	ALTER COLUMN field3 TYPE integer USING field3::integer; /* TYPE change - table: public.testtable original: character varying(150) new: integer */
 
-ALTER TABLE ONLY public.testtable
+ALTER TABLE public.testtable
 	ALTER COLUMN field3 SET NOT NULL;

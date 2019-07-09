@@ -219,12 +219,17 @@ public class LibraryLoader {
         }
 
         Files.createDirectories(dir);
+        dir = dir.toRealPath();
 
         try (InputStream fis = Files.newInputStream(zip);
                 ZipInputStream zis = new ZipInputStream(fis)) {
             ZipEntry ze = zis.getNextEntry();
             while (ze != null) {
-                Path newFile = dir.resolve(ze.getName());
+                Path newFile = dir.resolve(ze.getName()).normalize();
+                if (!newFile.startsWith(dir)) {
+                    throw new SecurityException("Malicious zip-archive attempting to write outside target directory: "
+                            + newFile);
+                }
 
                 //create directories for sub directories in zip
                 if (!ze.isDirectory()) {

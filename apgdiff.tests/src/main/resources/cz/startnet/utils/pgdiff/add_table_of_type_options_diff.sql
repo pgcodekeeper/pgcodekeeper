@@ -1,6 +1,6 @@
 SET search_path = pg_catalog;
 
-ALTER TABLE ONLY public.testtable
+ALTER TABLE public.testtable
 	ALTER COLUMN field1 SET NOT NULL;
 
 ALTER TABLE ONLY public.testtable

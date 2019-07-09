@@ -59,6 +59,10 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
         super(schema);
     }
 
+    public MsSelect(String schema, DbObjType... disabledDepcies) {
+        super(schema, disabledDepcies);
+    }
+
     @Override
     protected Entry<String, GenericColumn> findReferenceInNmspc(String schema, String name) {
         return !inFrom || lateralAllowed ? super.findReferenceInNmspc(schema, name) : null;

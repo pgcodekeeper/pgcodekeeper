@@ -71,7 +71,7 @@ public class CreateMsTrigger extends BatchContextProcessor {
             addObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
         }
 
-        MsSqlClauses clauses = new MsSqlClauses(schemaName);
+        MsSqlClauses clauses = new MsSqlClauses(schemaName, DbObjType.FUNCTION, DbObjType.PROCEDURE);
         clauses.analyze(ctx.sql_clauses());
         trigger.addAllDeps(clauses.getDepcies());
 

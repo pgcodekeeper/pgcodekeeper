@@ -25,6 +25,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_initialy_immedCont
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_of_type_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_name_listContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_with_orderContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraintContext;
@@ -329,8 +330,9 @@ public abstract class TableAbstract extends ParserAbstract {
                 }
             }
         } else if (body.column_name_list_with_order() != null) {
-            for (IdContext column : body.column_name_list_with_order().id()) {
-                con.addColumn(column.getText());
+            for (Column_with_orderContext column : body.column_name_list_with_order()
+                    .column_with_order()) {
+                con.addColumn(column.id().getText());
             }
         }
 

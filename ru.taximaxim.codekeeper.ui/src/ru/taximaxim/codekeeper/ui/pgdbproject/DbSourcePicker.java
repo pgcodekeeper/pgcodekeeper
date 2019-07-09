@@ -30,7 +30,6 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 class DbSourcePicker extends Composite {
 
-    private final IPreferenceStore mainPrefs;
     private final PageDiff pageDiff;
     private final DbStorePicker storePicker;
     private final ComboViewer cmbEncoding;
@@ -39,7 +38,6 @@ class DbSourcePicker extends Composite {
             final PageDiff pageDiff) {
         super(parent, SWT.NONE);
 
-        this.mainPrefs = mainPrefs;
         this.pageDiff = pageDiff;
 
         FillLayout fl = new FillLayout();
@@ -97,7 +95,7 @@ class DbSourcePicker extends Composite {
         File file;
         File dir;
         if ((dbInfo = storePicker.getDbInfo()) != null) {
-            return DbSource.fromDbInfo(dbInfo, mainPrefs, forceUnixNewlines, getEncoding(), pageDiff.getTimezone());
+            return DbSource.fromDbInfo(dbInfo, forceUnixNewlines, getEncoding(), pageDiff.getTimezone());
         } else if ((file = storePicker.getPathOfFile()) != null) {
             return DbSource.fromFile(forceUnixNewlines, file, getEncoding(), isMsSql);
         } else if ((dir = storePicker.getPathOfDir()) != null) {

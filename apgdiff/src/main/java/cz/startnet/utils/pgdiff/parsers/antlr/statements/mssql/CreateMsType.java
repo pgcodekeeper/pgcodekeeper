@@ -2,6 +2,9 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ClusteredContext;
@@ -14,6 +17,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_optionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_restContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_whereContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraint_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Type_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
@@ -68,7 +72,37 @@ public class CreateMsType extends ParserAbstract {
 
     private void fillTableType(Column_def_table_constraintContext colCtx, MsType type) {
         if (colCtx.table_constraint() != null) {
-            type.addConstraint(getFullCtxText(colCtx.table_constraint().table_constraint_body()));
+            StringBuilder constrSb = new StringBuilder();
+            Table_constraint_bodyContext body = colCtx.table_constraint().table_constraint_body();
+            if (body.column_name_list_with_order() != null) {
+                constrSb.append(body.PRIMARY() != null ? "PRIMARY KEY " : "UNIQUE ");
+
+                if (body.clustered() != null) {
+                    constrSb.append(body.clustered().CLUSTERED() != null ? "" : "NON");
+                    constrSb.append("CLUSTERED ");
+                }
+
+                if (body.HASH() != null) {
+                    constrSb.append("HASH");
+                }
+
+                constrSb.append('\n');
+
+                appendCols(constrSb, body.column_name_list_with_order().column_with_order());
+
+                if (body.index_options() != null) {
+                    constrSb.append(' ');
+                    constrSb.append(getFullCtxText(body.index_options()));
+                }
+
+                if (body.ON() != null) {
+                    constrSb.append(' ');
+                    constrSb.append(getFullCtxText(body.id()));
+                }
+            } else {
+                constrSb.append(getFullCtxText(body));
+            }
+            type.addConstraint(constrSb.toString());
         } else if (colCtx.table_index() != null) {
             fillTableIndex(colCtx.table_index(), type);
         } else {
@@ -108,7 +142,8 @@ public class CreateMsType extends ParserAbstract {
 
         Index_restContext rest = indCtx.index_rest();
 
-        sb.append(getFullCtxText(rest.index_sort()));
+        appendCols(sb, rest.index_sort().column_name_list_with_order().column_with_order());
+
         Index_whereContext wherePart = rest.index_where();
         if (wherePart != null) {
             sb.append(" WHERE ").append(getFullCtxText(wherePart.where));
@@ -132,6 +167,13 @@ public class CreateMsType extends ParserAbstract {
         }
 
         type.addIndex(sb.toString());
+    }
+
+    private void appendCols(StringBuilder sb, List<? extends ParserRuleContext> colsCtx) {
+        sb.append("(\n\t");
+        sb.append(colsCtx.stream().map(ParserAbstract::getFullCtxText)
+                .collect(Collectors.joining(",\n\t")));
+        sb.append("\n)");
     }
 
     private void fillColumnOption(Column_optionContext option, MsColumn col) {
