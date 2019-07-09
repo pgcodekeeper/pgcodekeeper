@@ -27,7 +27,11 @@ public class DbPropertyListEditor extends PrefListEditor<Entry<String, String>, 
 
     public DbPropertyListEditor(Composite parent) {
         super(parent);
-        setPredicateAlreadyExists((oldObj, newObj) -> oldObj.getKey().equals(newObj.getKey()));
+    }
+
+    @Override
+    public boolean checkDuplicate(Entry<String, String> o1, Entry<String, String> o2) {
+        return o1.getKey().equals(o2.getKey());
     }
 
     @Override

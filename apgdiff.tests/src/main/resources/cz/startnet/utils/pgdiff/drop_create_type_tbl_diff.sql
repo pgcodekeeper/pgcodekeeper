@@ -2,7 +2,7 @@ SET search_path = pg_catalog;
 
 -- DEPCY: This COLUMN depends on the TYPE: public.typ_range
 
-ALTER TABLE public.distributors
+ALTER TABLE ONLY public.distributors
 	DROP COLUMN did;
 
 DROP TYPE public.typ_range;

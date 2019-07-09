@@ -177,8 +177,7 @@ class QuickUpdateJob extends SingletonEditorJob {
 
         checkFileModified();
 
-        DbSource dbRemote = DbSource.fromDbInfo(dbinfo, prefs,
-                projPrefs.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
+        DbSource dbRemote = DbSource.fromDbInfo(dbinfo, projPrefs.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
                 proj.getProjectCharset(), timezone);
         DbSource dbProject = DbSource.fromProject(proj);
 
@@ -205,7 +204,8 @@ class QuickUpdateJob extends SingletonEditorJob {
         if (isMsSql) {
             connector = new JdbcMsConnector(dbinfo.getDbHost(), dbinfo.getDbPort(),
                     dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),
-                    dbinfo.getProperties(), dbinfo.isReadOnly(), dbinfo.isWinAuth());
+                    dbinfo.getProperties(), dbinfo.isReadOnly(), dbinfo.isWinAuth(),
+                    dbinfo.getDomain());
         } else {
             connector = new JdbcConnector(dbinfo.getDbHost(), dbinfo.getDbPort(),
                     dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),

@@ -326,6 +326,66 @@ public abstract class PgStatement implements IStatement, IHashable {
                 PgPrivilege.appendDefaultPrivileges(newObj, sb);
             }
         }
+
+        switch (getStatementType()) {
+        case FUNCTION:
+        case PROCEDURE:
+        case AGGREGATE:
+        case TYPE:
+        case DOMAIN:
+            if (isPostgres() && !newPrivileges.isEmpty()) {
+                // restore owner grant only if owner is unchanged
+                if (newObj.getOwner() != null && newObj.getOwner().equals(getOwner())) {
+                    restoreDefaultPrivFPATD(newObj, sb, true);
+                }
+                restoreDefaultPrivFPATD(newObj, sb, false);
+            }
+            break;
+        default:
+            break;
+        }
+    }
+
+    /**
+     * Restores default grants on owner or public.
+     * @param owner restore for owner if true or for PUBLIC if false
+     */
+    private void restoreDefaultPrivFPATD(PgStatement newObj, StringBuilder sb, boolean owner) {
+        String role = owner ? getOwner() : "PUBLIC";
+        PgPrivilege revoke = getDefaultPrivFPATD(false, role);
+        if (privileges.contains(revoke) && !newObj.getPrivileges().contains(revoke)) {
+            sb.append('\n').append(getDefaultPrivFPATD(true, role).getCreationSQL())
+            .append(';');
+        }
+    }
+
+    /**
+     * Returns GRANT/REVOKE privilege object for given role.
+     * (only for PG : FUNCTION, PROCEDURE, AGGREGATE, TYPE and DOMAIN)
+     */
+    private PgPrivilege getDefaultPrivFPATD(boolean grant, String role) {
+        String stmtType = getStatementType().name();
+        String stmtName;
+        switch (getStatementType()) {
+        case TYPE:
+        case DOMAIN:
+            stmtName = PgDiffUtils.getQuotedName(getName());
+            break;
+        case AGGREGATE:
+            stmtType = DbObjType.FUNCTION.name();
+            //$FALL-THROUGH$
+        case PROCEDURE:
+        case FUNCTION:
+            stmtName = ((AbstractPgFunction) this).appendFunctionSignature(
+                    new StringBuilder(), false, true).toString();
+            break;
+        default:
+            throw new IllegalArgumentException("Unacceptable type: " + getStatementType());
+        }
+
+        return new PgPrivilege(grant ? "GRANT" : "REVOKE", "ALL", stmtType + ' '
+                + PgDiffUtils.getQuotedName(((PgStatementWithSearchPath) this).getSchemaName())
+                + '.' + stmtName, role, false);
     }
 
     public String getOwner() {

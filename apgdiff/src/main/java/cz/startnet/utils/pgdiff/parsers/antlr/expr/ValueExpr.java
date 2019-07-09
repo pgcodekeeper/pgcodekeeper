@@ -81,7 +81,7 @@ public class ValueExpr extends AbstractExpr {
         @SuppressWarnings("unused")
         // TODO OpCtx user-operator reference
         Collate_identifierContext collate;
-        TerminalNode operator;
+        String operator;
         OpContext op = null;
         Datetime_overlapsContext overlaps;
         Value_expression_primaryContext primary;
@@ -151,8 +151,10 @@ public class ValueExpr extends AbstractExpr {
         } else if ((operator = getOperatorToken(vex)) != null || (op = vex.op()) != null) {
             if (op != null) {
                 IdentifierContext opSchemaCtx = op.identifier();
-                if (opSchemaCtx == null || opSchemaCtx.getText().equals(ApgdiffConsts.PG_CATALOG)) {
-                    operator = op.OP_CHARS();
+                if (opSchemaCtx == null) {
+                    operator = op.op_chars().getText();
+                } else if (opSchemaCtx.getText().equals(ApgdiffConsts.PG_CATALOG)) {
+                    operator = op.all_simple_op().getText();
                 }
             }
             if (operator != null) {
@@ -166,7 +168,7 @@ public class ValueExpr extends AbstractExpr {
                 } else {
                     larg = operandsList.get(0).getSecond();
                 }
-                ret = operator(operator.getText(), larg, rarg);
+                ret = operator(operator, larg, rarg);
             } else {
                 // if we got to this point, operator didn't get filled by the OP_CHARS token
                 // meaning user-schema operator
@@ -550,7 +552,7 @@ public class ValueExpr extends AbstractExpr {
                 .filter(arg -> "IN".equals(arg.getMode()) || "INOUT".equals(arg.getMode()));
     }
 
-    private TerminalNode getOperatorToken(Vex vex) {
+    private String getOperatorToken(Vex vex) {
         TerminalNode token = vex.getVexCtx().getChild(TerminalNode.class, 0);
         if (token == null) {
             return null;
@@ -562,7 +564,7 @@ public class ValueExpr extends AbstractExpr {
         case SQLParser.MULTIPLY:
         case SQLParser.DIVIDE:
         case SQLParser.MODULAR:
-            return token;
+            return token.getText();
         default:
             return null;
         }

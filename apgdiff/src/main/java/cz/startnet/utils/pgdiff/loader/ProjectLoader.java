@@ -22,6 +22,8 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
+import cz.startnet.utils.pgdiff.schema.AbstractColumn;
+import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
@@ -30,6 +32,7 @@ import cz.startnet.utils.pgdiff.schema.StatementOverride;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.MS_WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class ProjectLoader {
     /**
@@ -226,6 +229,11 @@ public class ProjectLoader {
 
             if (!override.getPrivileges().isEmpty()) {
                 st.clearPrivileges();
+                if (st.getStatementType() == DbObjType.TABLE) {
+                    for (AbstractColumn col : ((AbstractTable) st).getColumns()) {
+                        col.clearPrivileges();
+                    }
+                }
                 for (PgPrivilege privilege : override.getPrivileges()) {
                     st.addPrivilege(privilege);
                 }

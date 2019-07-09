@@ -1,16 +1,11 @@
 package cz.startnet.utils.pgdiff.schema;
 
-import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.Objects;
-import java.util.Set;
 
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 
 public abstract class AbstractMsFunction extends AbstractFunction
 implements SourceStatement {
-
-    protected final Set<GenericColumn> signatureDeps = new LinkedHashSet<>();
 
     private boolean ansiNulls;
     private boolean quotedIdentified;
@@ -61,14 +56,6 @@ implements SourceStatement {
         return quotedIdentified;
     }
 
-    public Set<GenericColumn> getSignatureDeps() {
-        return Collections.unmodifiableSet(signatureDeps);
-    }
-
-    public void addSignatureDep(final GenericColumn dep) {
-        signatureDeps.add(dep);
-    }
-
     @Override
     public void computeHash(Hasher hasher) {
         hasher.put(getFirstPart());
@@ -98,17 +85,10 @@ implements SourceStatement {
         functionDst.setQuotedIdentified(isQuotedIdentified());
         functionDst.setFirstPart(getFirstPart());
         functionDst.setSecondPart(getSecondPart());
-        functionDst.signatureDeps.addAll(signatureDeps);
         return functionDst;
     }
 
     protected abstract AbstractMsFunction getFunctionCopy();
-
-    @Override
-    public boolean usedInSignature(PgStatement st) {
-        return signatureDeps.stream().anyMatch(d -> st.getBareName().equals(d.getObjName())
-                && st.equals(d.getStatement(getDatabase())));
-    }
 
     @Override
     public boolean isPostgres() {

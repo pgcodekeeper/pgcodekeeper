@@ -11,6 +11,7 @@ import java.util.function.Function;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.After_opsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alias_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_bracketsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_elementsContext;
@@ -112,21 +113,15 @@ public class ViewSelect {
 
         selectOps(select.selectOps());
 
-        Orderby_clauseContext orderBy = select.orderBy();
-        List<VexContext> vexs = null;
-        if (select.limit() != null || select.offset() != null || select.fetch() != null) {
-            vexs = select.vex();
-        }
-
-        if (orderBy != null || vexs != null) {
-            if (orderBy != null) {
-                orderBy(orderBy);
+        for (After_opsContext after : select.afterOps()) {
+            VexContext vexCtx = after.vex();
+            if (vexCtx != null) {
+                analyze(new Vex(vexCtx));
             }
 
-            if (vexs != null) {
-                for (VexContext v : vexs) {
-                    analyze(new Vex(v));
-                }
+            Orderby_clauseContext orderBy = after.orderby_clause();
+            if (orderBy != null) {
+                orderBy(orderBy);
             }
         }
     }
@@ -194,6 +189,7 @@ public class ViewSelect {
             Log.log(Log.LOG_WARNING, "No alternative in SelectOps!");
         }
     }
+
 
     private void selectPrimary(Select_primaryContext primary) {
         Values_stmtContext values;

@@ -101,7 +101,7 @@ public class ShowConsoleParticipant implements IConsolePageParticipant {
     private class TerminateAction extends Action {
 
         public TerminateAction() {
-            super("Terminate");
+            super(Messages.ShowConsoleParticipant_terminate);
             setImageDescriptor(PlatformUI.getWorkbench().getSharedImages()
                     .getImageDescriptor(ISharedImages.IMG_ELCL_STOP));
 
@@ -125,7 +125,7 @@ public class ShowConsoleParticipant implements IConsolePageParticipant {
     private class RemoveAction extends Action {
 
         public RemoveAction() {
-            super("Remove Launch");
+            super(Messages.ShowConsoleParticipant_remove);
             setImageDescriptor(PlatformUI.getWorkbench().getSharedImages()
                     .getImageDescriptor(ISharedImages.IMG_ELCL_REMOVE));
 
@@ -150,7 +150,7 @@ public class ShowConsoleParticipant implements IConsolePageParticipant {
     private class RemoveAllAction extends Action {
 
         public RemoveAllAction() {
-            super("Remove All Terminated Launches");
+            super(Messages.ShowConsoleParticipant_remove_all);
             setImageDescriptor(PlatformUI.getWorkbench().getSharedImages()
                     .getImageDescriptor(ISharedImages.IMG_ELCL_REMOVEALL));
 

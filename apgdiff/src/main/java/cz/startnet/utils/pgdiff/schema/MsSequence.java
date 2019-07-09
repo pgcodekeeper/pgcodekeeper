@@ -1,9 +1,9 @@
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 
 public class MsSequence extends AbstractSequence {
@@ -12,7 +12,7 @@ public class MsSequence extends AbstractSequence {
 
     public MsSequence(String name) {
         super(name);
-        setDataType(MsDiffUtils.quoteName(BIGINT));
+        setDataType(BIGINT);
     }
 
     @Override
@@ -161,6 +161,25 @@ public class MsSequence extends AbstractSequence {
     @Override
     public String getDropSQL() {
         return "DROP SEQUENCE " + getQualifiedName() + GO;
+    }
+
+    @Override
+    public void setDataType(String dataType) {
+        String type = dataType.toLowerCase(Locale.ROOT);
+        switch (type) {
+        case "tinyint":
+        case "smallint":
+        case "int":
+        case BIGINT:
+        case "numeric":
+        case "decimal":
+            // set lowercased version for simple system types
+            break;
+        default:
+            // set exactly as given
+            type = dataType;
+        }
+        super.setDataType(type);
     }
 
     @Override

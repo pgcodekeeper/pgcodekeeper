@@ -9,13 +9,18 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.EdgeReversedGraph;
 import org.jgrapht.graph.SimpleDirectedGraph;
 
+import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
+import cz.startnet.utils.pgdiff.schema.AbstractPgTable.Inherits;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IStatementContainer;
+import cz.startnet.utils.pgdiff.schema.PartitionPgTable;
+import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class DepcyGraph {
@@ -71,6 +76,11 @@ public class DepcyGraph {
             if (st.getStatementType() == DbObjType.CONSTRAINT) {
                 createFkeyToUnique((AbstractConstraint)st);
             }
+            if (st.getStatementType() == DbObjType.COLUMN
+                    && st.getParent() instanceof PartitionPgTable) {
+                createChildColToPartTblCol((PartitionPgTable) st.getParent(),
+                        (PgColumn) st);
+            }
         });
     }
 
@@ -105,6 +115,37 @@ public class DepcyGraph {
                     if (refInd.isUnique() && refs.equals(refInd.getColumns())) {
                         graph.addEdge(con, refInd);
                     }
+                }
+            }
+        }
+    }
+
+    /**
+     * Creates the connection between the column of a partitioned table and the
+     * columns of its sections (child tables).
+     */
+    private void createChildColToPartTblCol(PartitionPgTable pTbl, PgColumn pCol) {
+        String colName = pCol.getName();
+        for (Inherits in : pTbl.getInherits()) {
+            PgStatement parentTbl = new GenericColumn(in.getKey(), in.getValue(),
+                    DbObjType.TABLE).getStatement(db);
+            if (parentTbl == null) {
+                Log.log(Log.LOG_ERROR, "There is no such object of inheritance"
+                        + " as table: " + in.getQualifiedName());
+                continue;
+            }
+
+            if (parentTbl instanceof PartitionPgTable) {
+                createChildColToPartTblCol((PartitionPgTable) parentTbl, pCol);
+            } else {
+                AbstractColumn parentCol = ((AbstractTable) parentTbl).getColumn(colName);
+                if (parentCol != null) {
+                    graph.addEdge(pCol, parentCol);
+                } else {
+                    Log.log(Log.LOG_ERROR, "The parent '" + in.getQualifiedName()
+                    + '.' + colName + "' column for '" + pCol.getSchemaName()
+                    + '.' + pCol.getParent().getName()
+                    + '.' + pCol.getName() + "' column is missed.");
                 }
             }
         }

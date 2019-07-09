@@ -13,8 +13,11 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 
 public class SQLEditorTemplateManager {
+
+    public static final String TEMPLATE_ID_PROTECTION_MARKER = ".protected"; //$NON-NLS-1$
     private static final String CUSTOM_TEMPLATES_KEY = UIConsts.PLUGIN_ID.THIS
             + ".customtemplates"; //$NON-NLS-1$
+
     private static SQLEditorTemplateManager instance;
     private TemplateStore fStore;
     private ContributionContextTypeRegistry fRegistry;
@@ -48,7 +51,9 @@ public class SQLEditorTemplateManager {
         if (fRegistry == null) {
             fRegistry = new ContributionContextTypeRegistry();
         }
-        fRegistry.addContextType(SQLEditorTemplateContextType.CONTEXT_TYPE);
+        fRegistry.addContextType(SQLEditorTemplateContextType.CONTEXT_TYPE_PG);
+        fRegistry.addContextType(SQLEditorTemplateContextType.CONTEXT_TYPE_MS);
+        fRegistry.addContextType(SQLEditorTemplateContextType.CONTEXT_TYPE_COMMON);
         return fRegistry;
     }
 

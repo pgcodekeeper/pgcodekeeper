@@ -1,6 +1,6 @@
 SET search_path = pg_catalog;
 
-ALTER TABLE public.parenttable
+ALTER TABLE ONLY public.parenttable
 	DROP COLUMN id;
 
 CREATE TABLE public.parenttable2 (
