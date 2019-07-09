@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -36,6 +37,7 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.FontDescriptor;
@@ -143,6 +145,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private Link linkRefresh;
     private Button btnGetChanges;
 
+    private Button btnToProj;
+    private Button btnToDb;
+
     private DiffTableViewer diffTable;
     private DiffPaneViewer diffPane;
 
@@ -154,6 +159,22 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
     public IProject getProject() {
         return proj.getProject();
+    }
+
+    public void changeMigrationDireciton(boolean isApplyToProj, boolean showWarning) {
+        if (showWarning && isApplyToProj != diffTable.isApplyToProj()) {
+            MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_WARNING);
+            mb.setText(Messages.ProjectEditorDiffer_changed_direction_of_roll_on_title);
+            mb.setMessage(MessageFormat.format(Messages.ProjectEditorDiffer_changed_direction_of_roll_on,
+                    isApplyToProj ? Messages.ProjectEditorDiffer_project
+                            : Messages.ProjectEditorDiffer_database));
+            mb.open();
+
+            btnToProj.setSelection(isApplyToProj);
+            btnToDb.setSelection(!isApplyToProj);
+        }
+        diffTable.setApplyToProj(isApplyToProj);
+        diffTable.getViewer().refresh();
     }
 
     @Override
@@ -204,35 +225,49 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 layout.marginWidth = 0;
                 container.setLayout(layout);
 
-                Label l = new Label(container, SWT.NONE);
-                l.setForeground(l.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
-                l.setText(Messages.DiffTableViewer_apply_to);
-                l.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
+                Button btnApply = new Button(container, SWT.PUSH);
+                btnApply.setText(Messages.DiffTableViewer_apply_to);
+                btnApply.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
 
-                Button btnCommit = new Button(container, SWT.PUSH);
-                btnCommit.setText(Messages.DiffTableViewer_to_project);
-                btnCommit.setImage(Activator.getRegisteredImage(FILE.ICONAPPSMALL));
-                btnCommit.addSelectionListener(new SelectionAdapter() {
+                btnToProj = new Button(container, SWT.RADIO);
+                btnToProj.setText(Messages.DiffTableViewer_to_project);
+                btnToProj.setImage(Activator.getRegisteredImage(FILE.ICONAPPSMALL));
+                btnToProj.setSelection(true);
+                btnToProj.addSelectionListener(new SelectionAdapter()  {
 
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        try {
-                            commit();
-                        } catch (PgCodekeeperException ex) {
-                            ExceptionNotifier.notifyDefault(Messages.error_creating_dependency_graph, ex);
-                        }
+                        changeMigrationDireciton(true, false);
                     }
                 });
 
-                Button btnDiff = new Button(container, SWT.PUSH);
-                btnDiff.setText(Messages.DiffTableViewer_to_database);
-                btnDiff.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
+                btnToDb = new Button(container, SWT.RADIO);
+                btnToDb.setText(Messages.DiffTableViewer_to_database);
+                btnToDb.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
                         .getBundle().getResource(FILE.ICONDATABASE))));
-                btnDiff.addSelectionListener(new SelectionAdapter() {
+                btnToDb.addSelectionListener(new SelectionAdapter()  {
 
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        diff();
+                        changeMigrationDireciton(false, false);
+                    }
+                });
+
+                btnApply.addSelectionListener(new SelectionAdapter() {
+
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        if (btnToDb.getSelection()) {
+                            diff();
+                            return;
+                        }
+
+                        try {
+                            commit();
+                        } catch (PgCodekeeperException ex) {
+                            ExceptionNotifier
+                            .notifyDefault(Messages.error_creating_dependency_graph, ex);
+                        }
                     }
                 });
 
@@ -240,6 +275,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 btnGetChanges.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
                         .getBundle().getResource(FILE.ICONREFRESH))));
                 btnGetChanges.setText(Messages.DiffTableViewer_get_changes);
+                GridData gd = new GridData();
+                gd.horizontalIndent = 8;
+                btnGetChanges.setLayoutData(gd);
                 btnGetChanges.addSelectionListener(new SelectionAdapter() {
 
                     @Override
@@ -482,7 +520,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         if (isDbInfo) {
             DbInfo dbInfo = (DbInfo) currentRemote;
-            DbSource dbRemote = DbSource.fromDbInfo(dbInfo, mainPrefs, forceUnixNewlines,
+            DbSource dbRemote = DbSource.fromDbInfo(dbInfo, forceUnixNewlines,
                     charset, projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
             newDiffer = new TreeDiffer(dbProject, dbRemote);
             name = dbInfo.getName();
@@ -633,11 +671,17 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     }
 
     public Object getCurrentDb() {
+        IEclipsePreferences prefs = proj.getPrefs();
+        DbInfo boundDb = DbInfo.getLastDb(prefs.get(PROJ_PREF.NAME_OF_BOUND_DB, "")); //$NON-NLS-1$
+        if (boundDb != null) {
+            return boundDb;
+        }
+
         if (currentRemote != null) {
             return currentRemote;
         }
 
-        return DbInfo.getLastDb(proj.getPrefs().get(PROJ_PREF.LAST_DB_STORE, "")); //$NON-NLS-1$
+        return DbInfo.getLastDb(prefs.get(PROJ_PREF.LAST_DB_STORE, "")); //$NON-NLS-1$
     }
 
     public void saveLastDb(DbInfo lastDb) {
@@ -842,6 +886,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
 
         boolean forceSave = false;
+        boolean saveOverrides = false;
 
         if (diffTable.checkLibChange()) {
             if (proj.getPrefs().getBoolean(PROJ_PREF.LIB_SAFE_MODE, true)) {
@@ -850,14 +895,25 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 mb.setText(Messages.ProjectEditorDiffer_lib_change_warning_title);
                 if (mb.open() == SWT.YES) {
                     forceSave = true;
+                    saveOverrides = true;
                 } else {
                     return;
                 }
             } else {
-                MessageBox mb = new MessageBox(getEditorSite().getShell(), SWT.ICON_WARNING | SWT.YES | SWT.NO);
-                mb.setMessage(Messages.ProjectEditorDiffer_lib_change_warning_message);
-                mb.setText(Messages.ProjectEditorDiffer_lib_change_warning_title);
-                if (SWT.YES != mb.open()) {
+                MessageDialog mb = new MessageDialog(parent.getShell(),
+                        Messages.ProjectEditorDiffer_lib_change_warning_title, null,
+                        Messages.ProjectEditorDiffer_lib_change_warning_message, MessageDialog.WARNING,
+                        new String[] { Messages.ProjectEditorDiffer_override_privileges,
+                                Messages.ProjectEditorDiffer_override_objects,
+                                Messages.ProjectEditorDiffer_override_cancel }, 0);
+                int override = mb.open();
+                switch (override) {
+                case 0:
+                case 1:
+                    saveOverrides = override == 0;
+                    break;
+                default:
+                    // cancelled
                     return;
                 }
             }
@@ -876,7 +932,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         // display commit dialog
         CommitDialog cd = new CommitDialog(parent.getShell(), sumNewAndDelete,
                 dbProject, dbRemote, treeCopy, mainPrefs, isCommitCommandAvailable,
-                forceSave, proj);
+                forceSave, saveOverrides, proj);
         if (cd.open() != CommitDialog.OK) {
             return;
         }

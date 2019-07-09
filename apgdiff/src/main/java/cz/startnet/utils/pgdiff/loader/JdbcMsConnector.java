@@ -18,6 +18,7 @@ public class JdbcMsConnector extends JdbcConnector {
             Pattern.compile(";(?:(\\w+)=(\\w+|\\{[^}]*\\})?)?");
 
     private final boolean winAuth;
+    private String domain;
 
     private static String unescapeValue(String val) {
         if (val != null && val.length() > 1 && val.charAt(0) == '{') {
@@ -28,7 +29,7 @@ public class JdbcMsConnector extends JdbcConnector {
     }
 
     public JdbcMsConnector(String host, int port, String user, String pass, String dbName,
-            Map<String, String> properties, boolean readOnly, boolean winAuth) {
+            Map<String, String> properties, boolean readOnly, boolean winAuth, String domain) {
         this.host = host;
         this.port = port < 1 ? DEFAULT_PORT : port;
         this.dbName = dbName;
@@ -39,6 +40,8 @@ public class JdbcMsConnector extends JdbcConnector {
         this.properties = properties;
         this.readOnly = readOnly;
         this.winAuth = winAuth;
+
+        this.domain = domain;
     }
 
     protected JdbcMsConnector(String url) throws URISyntaxException {
@@ -72,6 +75,9 @@ public class JdbcMsConnector extends JdbcConnector {
                 case "databasename":
                     this.dbName = unescapeValue(m.group(2));
                     break;
+                case "domain":
+                    this.domain = unescapeValue(m.group(2));
+                    break;
                 default:
                     break;
                 }
@@ -99,7 +105,7 @@ public class JdbcMsConnector extends JdbcConnector {
     @Override
     protected String generateBasicConnectionString() {
         return "jdbc:sqlserver://" + host + ':' + port
-                + (isDbNameEscapable() ? ";databaseName={" + dbName + '}' : "") ;
+                + (isDbNameEscapable() ? ";databaseName={" + dbName + '}' : "");
     }
 
     @Override
@@ -110,6 +116,10 @@ public class JdbcMsConnector extends JdbcConnector {
         }
         if (winAuth) {
             props.setProperty("integratedSecurity", "true");
+        } else if (domain != null && !"".equals(domain)) {
+            props.setProperty("authenticationScheme", "NTLM");
+            props.setProperty("integratedSecurity", "true");
+            props.setProperty("domain", domain);
         }
         return props;
     }

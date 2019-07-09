@@ -47,6 +47,10 @@ public abstract class MsAbstractExprWithNmspc<T> extends MsAbstractExpr {
         super(schema);
     }
 
+    public MsAbstractExprWithNmspc(String schema, DbObjType... disabledDepcies) {
+        super(schema, disabledDepcies);
+    }
+
     protected MsAbstractExprWithNmspc(MsAbstractExpr parent) {
         super(parent);
     }

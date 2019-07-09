@@ -1,6 +1,6 @@
 SET search_path = pg_catalog;
 
-ALTER TABLE public.testtable
+ALTER TABLE ONLY public.testtable
 	DROP COLUMN field4;
 
 DROP TABLE public.testtable2;

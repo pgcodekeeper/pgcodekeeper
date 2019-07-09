@@ -39,6 +39,10 @@ public class MsValueExpr extends MsAbstractExpr {
         super(schema);
     }
 
+    public MsValueExpr(String schema, DbObjType... disabledDepcies) {
+        super(schema, disabledDepcies);
+    }
+
     public void analyze(ExpressionContext exp) {
         for (ExpressionContext v : exp.expression()) {
             analyze(v);

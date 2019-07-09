@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ClusteredContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_with_orderContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_includeContext;
@@ -55,8 +56,9 @@ public class CreateMsIndex extends ParserAbstract {
 
     static void parseIndex(Index_restContext rest, AbstractIndex ind) {
         Index_sortContext sort = rest.index_sort();
-        for (IdContext col : sort.column_name_list_with_order().id()) {
-            ind.addColumn(col.getText());
+        for (Column_with_orderContext col : sort.column_name_list_with_order()
+                .column_with_order()) {
+            ind.addColumn(col.id().getText());
         }
 
         ind.setDefinition(getFullCtxText(sort));

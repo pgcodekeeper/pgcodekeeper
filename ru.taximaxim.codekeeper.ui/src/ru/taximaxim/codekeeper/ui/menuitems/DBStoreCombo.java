@@ -2,9 +2,14 @@ package ru.taximaxim.codekeeper.ui.menuitems;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
@@ -17,8 +22,11 @@ import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.IPartAdapter2;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
+import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 
 public class DBStoreCombo extends WorkbenchWindowControlContribution {
@@ -51,7 +59,20 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
             }
         });
 
-        setSelectionFromPart(getWorkbenchWindow().getActivePage().getActiveEditor());
+        storePicker.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseDown(MouseEvent e) {
+                if (!storePicker.isComboEnabled()) {
+                    MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_INFORMATION);
+                    mb.setText(Messages.DbStoreCombo_db_binding_property_title);
+                    mb.setMessage(Messages.DbStoreCombo_db_binding_property);
+                    mb.open();
+                }
+            }
+        });
+
+        setSelectionFromPart(editorPart);
 
         return storePicker;
     }
@@ -79,11 +100,13 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
             if (input instanceof FileEditorInput) {
                 proj = ((FileEditorInput) input).getFile().getProject();
             }
+            setDbComboEnableState(editor.getProjPrefs());
         } else if (part instanceof ProjectEditorDiffer) {
             ProjectEditorDiffer differ = (ProjectEditorDiffer) part;
             lastDb = differ.getCurrentDb();
             storePicker.loadStore(true);
             proj = differ.getProject();
+            setDbComboEnableState(PgDbProject.getPrefs(differ.getProject()));
         } else {
             return;
         }
@@ -102,6 +125,11 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
             StructuredSelection selection = new StructuredSelection(lastDb);
             storePicker.setSelection(selection);
         }
+    }
+
+    private void setDbComboEnableState(IEclipsePreferences prefs) {
+        storePicker.setComboEnabled(prefs == null ? true :
+            prefs.get(PROJ_PREF.NAME_OF_BOUND_DB, "").isEmpty()); //$NON-NLS-1$
     }
 
     private class EditorPartListener extends IPartAdapter2 {

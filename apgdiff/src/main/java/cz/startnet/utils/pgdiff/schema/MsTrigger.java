@@ -176,9 +176,4 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
         this.secondPart = secondPart;
         resetHash();
     }
-
-    @Override
-    public boolean usedInSignature(PgStatement st) {
-        return false;
-    }
 }

@@ -379,7 +379,7 @@ public abstract class AbstractPgFunction extends AbstractFunction {
                     && isSecurityDefiner == func.isSecurityDefiner()
                     && isLeakproof == func.isLeakproof()
                     && rows == func.getRows()
-                    && cost == func.cost
+                    && Objects.equals(cost, func.getCost())
                     && Objects.equals(returns, func.getReturns())
                     && arguments.equals(func.arguments)
                     && transforms.equals(func.transforms)

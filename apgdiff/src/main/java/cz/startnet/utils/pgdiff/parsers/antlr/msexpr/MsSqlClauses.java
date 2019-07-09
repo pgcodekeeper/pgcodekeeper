@@ -57,6 +57,10 @@ public class MsSqlClauses extends MsAbstractExpr {
         super(schema);
     }
 
+    public MsSqlClauses(String schema, DbObjType... disabledDepcies) {
+        super(schema, disabledDepcies);
+    }
+
     public List<String> analyze(Sql_clausesContext sql) {
         for (St_clauseContext st : sql.st_clause()) {
             clause(st);

@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
@@ -30,7 +31,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
-import cz.startnet.utils.pgdiff.schema.AbstractMsFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
@@ -156,7 +156,7 @@ public abstract class ParserAbstract {
         }
 
         String newType = convertAlias(type);
-        if (newType != null) {
+        if (!Objects.equals(type, newType)) {
             return full.replace(type, newType);
         }
 
@@ -201,7 +201,7 @@ public abstract class ParserAbstract {
             return "timestamp" + type.substring("timestamptz".length()) + " with time zone";
         }
 
-        return null;
+        return type;
     }
 
     public static String parseSignature(String name, Function_argsContext argsContext) {
@@ -383,9 +383,6 @@ public abstract class ParserAbstract {
             loc.setFilePath(fileName);
             if (!refMode) {
                 st.addDep(loc);
-                if (st instanceof AbstractMsFunction) {
-                    ((AbstractMsFunction) st).addSignatureDep(loc);
-                }
             }
             db.getObjReferences().computeIfAbsent(fileName, k -> new HashSet<>()).add(loc);
         }

@@ -60,9 +60,6 @@ public interface UIConsts {
     }
 
     interface PREF {
-        String PGDUMP_EXE_PATH = "prefPgdumpExePath"; //$NON-NLS-1$
-        String PGDUMP_CUSTOM_PARAMS = "prefPgdumpCustomParams"; //$NON-NLS-1$
-        String PGDUMP_SWITCH = "prefPgDumpSwitch"; //$NON-NLS-1$
         String FORCE_SHOW_CONSOLE = "prefForceShowConsole"; //$NON-NLS-1$
         String DB_STORE_FILES = "prefDbStoreHistory"; //$NON-NLS-1$
         //String IGNORE_OBJECTS = "prefIgnoreObjects"; //$NON-NLS-1$
@@ -161,6 +158,7 @@ public interface UIConsts {
         String DISABLE_PARSER_IN_EXTERNAL_FILES = "disableParserInExternalFiles"; //$NON-NLS-1$
         String LIB_SAFE_MODE = "libSafeMode"; //$NON-NLS-1$
         String STORAGE_LIST = "storageList"; //$NON-NLS-1$
+        String NAME_OF_BOUND_DB = "nameOfBoundDatabase"; //$NON-NLS-1$
     }
 
     interface PROJ_PATH {
@@ -192,8 +190,6 @@ public interface UIConsts {
         String ICONAPPBIG = "/icons/app_icon128.png"; //$NON-NLS-1$
         String ICONBALLBLUE = "/icons/ball_blue.png"; //$NON-NLS-1$
         String ICONBALLGREEN = "/icons/ball_green.png"; //$NON-NLS-1$
-        String ICONFROMPROJECT = "/icons/arrow_left_blue.png"; //$NON-NLS-1$
-        String ICONFROMREMOTE = "/icons/arrow_right_green.png"; //$NON-NLS-1$
         String ICONADDDEP = "/icons/add_dep.png"; //$NON-NLS-1$
         String PGPASS = "/icons/pg_pass.png"; //$NON-NLS-1$
 
@@ -231,6 +227,15 @@ public interface UIConsts {
 
         String IGNORED_OBJS_ROOT = "ignored_objects"; //$NON-NLS-1$
         String IGNORED_OBJS_ELEMENT = "obj"; //$NON-NLS-1$
+    }
+
+    interface CMD_VARS {
+        String SCRIPT_PLACEHOLDER = "%script"; //$NON-NLS-1$
+        String DB_HOST_PLACEHOLDER = "%host"; //$NON-NLS-1$
+        String DB_PORT_PLACEHOLDER = "%port"; //$NON-NLS-1$
+        String DB_NAME_PLACEHOLDER = "%db"; //$NON-NLS-1$
+        String DB_USER_PLACEHOLDER = "%user"; //$NON-NLS-1$
+        String DB_PASS_PLACEHOLDER = "%pass"; //$NON-NLS-1$
     }
 
     String DDL_DEFAULT_CMD = "psql -e -1 -w --set ON_ERROR_STOP=1 -X -h %host -p %port -U %user -f %script %db"; //$NON-NLS-1$
@@ -273,4 +278,3 @@ public interface UIConsts {
             "windows-1252" //$NON-NLS-1$
             ));
 }
-

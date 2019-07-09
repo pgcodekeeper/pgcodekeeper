@@ -82,6 +82,9 @@ public class PgOverridesModelExporter extends AbstractModelExporter {
                 // new state
                 PgStatement.appendOwnerSQL(st, st.getOwner(), false, sb);
                 PgPrivilege.appendPrivileges(st.getPrivileges(), st.isPostgres(), sb);
+                if (st.getPrivileges().isEmpty()) {
+                    PgPrivilege.appendDefaultPrivileges(st, sb);
+                }
             } else {
                 // we can't change oldSt
                 // old state
@@ -96,6 +99,9 @@ public class PgOverridesModelExporter extends AbstractModelExporter {
             // add new privileges to end if not found
             PgStatement.appendOwnerSQL(st, st.getOwner(), false, sb);
             PgPrivilege.appendPrivileges(st.getPrivileges(), st.isPostgres(), sb);
+            if (st.getPrivileges().isEmpty()) {
+                PgPrivilege.appendDefaultPrivileges(st, sb);
+            }
         } else if (sb.length() > 0) {
             // remove trailing delimiter from loop above
             sb.setLength(sb.length() - GROUP_DELIMITER.length());

@@ -2,13 +2,9 @@ package cz.startnet.utils.pgdiff.parsers.antlr.rulectx;
 
 import java.util.List;
 
-import org.antlr.v4.runtime.tree.TerminalNode;
-
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Orderby_clauseContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.After_opsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
 
 /**
@@ -44,31 +40,7 @@ public class SelectStmt {
                 : new SelectOps(select.select_ops());
     }
 
-    public Orderby_clauseContext orderBy() {
-        return isNp ? selectNp.orderby_clause() : select.orderby_clause();
-    }
-
-    public TerminalNode limit() {
-        return isNp ? selectNp.LIMIT() : select.LIMIT();
-    }
-
-    public TerminalNode offset() {
-        return isNp ? selectNp.OFFSET() : select.OFFSET();
-    }
-
-    public TerminalNode fetch() {
-        return isNp ? selectNp.FETCH() : select.FETCH();
-    }
-
-    public TerminalNode of(int i) {
-        return isNp ? selectNp.OF(i) : select.OF(i);
-    }
-
-    public List<VexContext> vex() {
-        return isNp ? selectNp.vex() : select.vex();
-    }
-
-    public List<Schema_qualified_nameContext> schemaQualifiedName() {
-        return isNp ? selectNp.schema_qualified_name() : select.schema_qualified_name();
+    public List<After_opsContext> afterOps() {
+        return isNp ? selectNp.after_ops() : select.after_ops();
     }
 }

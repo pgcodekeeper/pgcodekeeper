@@ -7,8 +7,11 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -16,7 +19,10 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.osgi.service.prefs.BackingStoreException;
 
@@ -24,6 +30,8 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
+import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
+import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -31,13 +39,19 @@ public class ProjectProperties extends PropertyPage {
 
     private Button btnForceUnixNewlines;
     private Button btnDisableParser;
+    private Button btnBindProjToDb;
+    private DbStorePicker storePicker;
     private Combo cmbTimezone;
     private CLabel lblWarn;
     private CLabel lblWarnPosix;
 
+    private DbInfo dbForBind;
+
     private IEclipsePreferences prefs;
 
     private boolean isMsSql;
+
+    private boolean inApply;
 
     @Override
     public void setElement(IAdaptable element) {
@@ -65,6 +79,29 @@ public class ProjectProperties extends PropertyPage {
         btnForceUnixNewlines.setToolTipText(Messages.ProjectProperties_force_unix_newlines_desc);
         btnForceUnixNewlines.setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, false, false, 2, 1));
         btnForceUnixNewlines.setSelection(prefs.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true));
+
+        String nameOfBoundDb = prefs.get(PROJ_PREF.NAME_OF_BOUND_DB, ""); //$NON-NLS-1$
+        btnBindProjToDb = new Button(panel, SWT.CHECK);
+        btnBindProjToDb.setText(Messages.ProjectProperties_binding_to_db_connection + ':');
+        btnBindProjToDb.setSelection(!nameOfBoundDb.isEmpty());
+        btnBindProjToDb.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                storePicker.setEnabled(btnBindProjToDb.getSelection());
+                if (!btnBindProjToDb.getSelection()) {
+                    storePicker.setSelection(StructuredSelection.EMPTY);
+                }
+            }
+        });
+
+        dbForBind = DbInfo.getLastDb(nameOfBoundDb);
+        storePicker = new DbStorePicker(panel, Activator.getDefault().getPreferenceStore(),
+                false, false, true);
+        storePicker.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        storePicker.setSelection(dbForBind != null ? new StructuredSelection(dbForBind) : StructuredSelection.EMPTY);
+        storePicker.setEnabled(btnBindProjToDb.getSelection());
+        storePicker.addListenerToCombo(e -> dbForBind = storePicker.getDbInfo());
 
         if (!isMsSql) {
             new Label(panel, SWT.NONE).setText(Messages.projectProperties_timezone_for_all_db_connections);
@@ -121,6 +158,8 @@ public class ProjectProperties extends PropertyPage {
     protected void performDefaults() {
         btnDisableParser.setSelection(false);
         btnForceUnixNewlines.setSelection(true);
+        btnBindProjToDb.setSelection(false);
+        storePicker.setSelection(StructuredSelection.EMPTY);
         if (!isMsSql) {
             cmbTimezone.setText(ApgdiffConsts.UTC);
         }
@@ -135,9 +174,25 @@ public class ProjectProperties extends PropertyPage {
     }
 
     @Override
+    public boolean performCancel() {
+        activateEditor();
+        return super.performCancel();
+    }
+
+    @Override
+    protected void performApply() {
+        inApply = true;
+        super.performApply();
+        inApply = false;
+    }
+
+    @Override
     public boolean performOk() {
         try {
             fillPrefs();
+            if (!inApply) {
+                activateEditor();
+            }
         } catch (BackingStoreException e) {
             setErrorMessage(MessageFormat.format(
                     Messages.projectProperties_error_occurs_while_saving_properties,
@@ -151,11 +206,22 @@ public class ProjectProperties extends PropertyPage {
     private void fillPrefs() throws BackingStoreException {
         prefs.putBoolean(PROJ_PREF.DISABLE_PARSER_IN_EXTERNAL_FILES, btnDisableParser.getSelection());
         prefs.putBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, btnForceUnixNewlines.getSelection());
+        prefs.put(PROJ_PREF.NAME_OF_BOUND_DB, dbForBind != null ? dbForBind.getName() : ""); //$NON-NLS-1$
         if (!isMsSql) {
             prefs.put(PROJ_PREF.TIMEZONE, cmbTimezone.getText());
         }
         prefs.flush();
         setValid(true);
         setErrorMessage(null);
+    }
+
+    private void activateEditor() {
+        IWorkbenchPage activePage = PlatformUI.getWorkbench()
+                .getActiveWorkbenchWindow().getActivePage();
+        IEditorPart activeEditor = activePage.getActiveEditor();
+        // it's need to do for refresh state and content DbCombo
+        // of opened and active sql/project editor, after setting of the binding
+        // in the project properties.
+        activePage.activate(activeEditor);
     }
 }
