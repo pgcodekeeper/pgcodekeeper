@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
@@ -155,7 +156,7 @@ public abstract class ParserAbstract {
         }
 
         String newType = convertAlias(type);
-        if (newType != null) {
+        if (!Objects.equals(type, newType)) {
             return full.replace(type, newType);
         }
 
@@ -200,7 +201,7 @@ public abstract class ParserAbstract {
             return "timestamp" + type.substring("timestamptz".length()) + " with time zone";
         }
 
-        return null;
+        return type;
     }
 
     public static String parseSignature(String name, Function_argsContext argsContext) {

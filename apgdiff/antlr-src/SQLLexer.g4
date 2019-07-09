@@ -693,6 +693,58 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     
     YAML: [yY] [aA] [mM] [lL]; 
 
+    // plpgsql tokens
+
+    ALIAS: [aA] [lL] [iI] [aA] [sS];
+    ASSERT: [aA] [sS] [sS] [eE] [rR] [tT];
+
+    CONSTANT: [cC] [oO] [nN] [sS] [tT] [aA] [nN] [tT];
+    
+    DATATYPE: [dD] [aA] [tT] [aA] [tT] [yY] [pP] [eE];
+    DEBUG: [dD] [eE] [bB] [uU] [gG];
+    DETAIL: [dD] [eE] [tT] [aA] [iI] [lL];
+    DIAGNOSTICS: [dD] [iI] [aA] [gG] [nN] [oO] [sS] [tT] [iI] [cC] [sS];
+
+    ELSEIF: [eE] [lL] [sS] [eE] [iI] [fF];
+    ELSIF: [eE] [lL] [sS] [iI] [fF];
+    ERRCODE: [eE] [rR] [rR] [cC] [oO] [dD] [eE];
+    EXIT: [eE] [xX] [iI] [tT];
+    EXCEPTION: [eE] [xX] [cC] [eE] [pP] [tT] [iI] [oO] [nN];
+    
+    FOREACH: [fF] [oO] [rR] [eE] [aA] [cC] [hH];
+
+    GET: [gG] [eE] [tT];
+
+    HINT: [hH] [iI] [nN] [tT];
+
+    INFO: [iI] [nN] [fF] [oO];
+    
+    LOG: [lL] [oO] [gG];
+    LOOP: [lL] [oO] [oO] [pP];
+
+    MESSAGE: [mM] [eE] [sS] [sS] [aA] [gG] [eE];
+
+    NOTICE: [nN] [oO] [tT] [iI] [cC] [eE];
+
+    OPEN: [oO] [pP] [eE] [nN];
+
+    PERFORM: [pP] [eE] [rR] [fF] [oO] [rR] [mM];
+    
+    QUERY: [qQ] [uU] [eE] [rR] [yY];
+    
+    RAISE: [rR] [aA] [iI] [sS] [eE];
+    RECORD: [rR] [eE] [cC] [oO] [rR] [dD];
+    RETURN: [rR] [eE] [tT] [uU] [rR] [nN];
+    REVERSE: [rR] [eE] [vV] [eE] [rR] [sS] [eE];
+    ROWTYPE: [rR] [oO] [wW] [tT] [yY] [pP] [eE];
+
+    SLICE: [sS] [lL] [iI] [cC] [eE];
+    SQLSTATE: [sS] [qQ] [lL] [sS] [tT] [aA] [tT] [eE];
+    STACKED: [sS] [tT] [aA] [cC] [kK] [eE] [dD];
+
+    WARNING: [wW] [aA] [rR] [nN] [iI] [nN] [gG];
+    WHILE: [wW] [hH] [iI] [lL] [eE];
+
 fragment UNDERLINE : '_';
 
 // Operators
@@ -730,6 +782,11 @@ RIGHT_BRACKET : ']';
 EQUAL_GTH : '=>';
 COLON_EQUAL : ':=';
 
+LESS_LESS : '<<';
+GREATER_GREATER : '>>';
+DOUBLE_DOT: '..';
+HASH_SIGN: '#';
+
 BlockComment
     :   '/*' .*? '*/' -> channel(HIDDEN)
     ;
@@ -764,7 +821,11 @@ fragment
 Digit : '0'..'9';
 
 REAL_NUMBER
-    :   Digit+ '.' Digit* EXPONENT?
+    // fail double dots into a separate token
+    // otherwise 1..10 would lex into 2 numbers
+    :   Digit+ '.' {_input.LA(1) != '.'}?
+    |   Digit+ '.' Digit+ EXPONENT?
+    |   Digit+ '.' EXPONENT
     |   '.' Digit+ EXPONENT?
     |   Digit+ EXPONENT
     ;
@@ -839,7 +900,7 @@ fragment
 Extended_Control_Characters         :   '\u0080' .. '\u009F';
 
 Character_String_Literal
-  : QUOTE_CHAR ( ESC_SEQ | ~('\'') )* QUOTE_CHAR
+  : [eEnN]? QUOTE_CHAR ( ESC_SEQ | ~('\'') )* QUOTE_CHAR
   ;
 
 ESC_SEQUENCES

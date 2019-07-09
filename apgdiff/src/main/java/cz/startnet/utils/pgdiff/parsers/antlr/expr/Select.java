@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.After_opsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alias_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_itemContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_primaryContext;
@@ -20,8 +21,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_elementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_element_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Orderby_clauseContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Perform_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Qualified_asteriskContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_listContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_opsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensContext;
@@ -92,36 +96,77 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
 
         List<Pair<String, String>> ret = selectOps(select.selectOps(), recursiveCteCtx);
 
-        selectAfterOps(select);
+        selectAfterOps(select.afterOps());
 
         return ret;
     }
 
-    private void selectAfterOps(SelectStmt select) {
-        Orderby_clauseContext orderBy = select.orderBy();
+    public List<Pair<String, String>> analyze(Perform_stmtContext perform) {
+        List<Pair<String, String>> ret = perform(perform);
 
-        List<VexContext> vexs = null;
-        if (select.limit() != null || select.offset() != null || select.fetch() != null) {
-            vexs = select.vex();
+        Select_opsContext ops = perform.select_ops();
+        if (ops != null) {
+            new Select(this).selectOps(new SelectOps(ops));
+        }
+        selectAfterOps(perform.after_ops());
+        return ret;
+    }
+
+    private List<Pair<String, String>> perform(Perform_stmtContext perform) {
+        // from defines the namespace so it goes before everything else
+        if (perform.FROM() != null) {
+            boolean oldFrom = inFrom;
+            try {
+                inFrom = true;
+                for (From_itemContext fromItem : perform.from_item()) {
+                    from(fromItem);
+                }
+            } finally {
+                inFrom = oldFrom;
+            }
         }
 
-        if (orderBy != null || vexs != null) {
-            ValueExpr vex = new ValueExpr(this);
+        ValueExpr vex = new ValueExpr(this);
+        List<Pair<String, String>> ret = sublist(perform.select_list().select_sublist(), vex);
+
+        if ((perform.set_qualifier() != null && perform.ON() != null)
+                || perform.WHERE() != null || perform.HAVING() != null) {
+            for (VexContext v : perform.vex()) {
+                vex.analyze(new Vex(v));
+            }
+        }
+
+        Groupby_clauseContext groupBy = perform.groupby_clause();
+        if (groupBy != null) {
+            groupby(groupBy.grouping_element_list(), vex);
+        }
+
+        if (perform.WINDOW() != null) {
+            for (Window_definitionContext window : perform.window_definition()) {
+                vex.window(window);
+            }
+        }
+
+        return ret;
+    }
+
+    private void selectAfterOps(List<After_opsContext> ops) {
+        ValueExpr vex = new ValueExpr(this);
+
+        for (After_opsContext after : ops) {
+            VexContext vexCtx = after.vex();
+            if (vexCtx != null) {
+                vex.analyze(new Vex(vexCtx));
+            }
+
+            Orderby_clauseContext orderBy = after.orderby_clause();
             if (orderBy != null) {
                 vex.orderBy(orderBy);
             }
-            if(vexs != null) {
-                for (VexContext vexCtx : vexs) {
-                    vex.analyze(new Vex(vexCtx));
-                }
-            }
-        }
 
-        if (select.of(0) != null) {
-            for (Schema_qualified_nameContext tableLock : select.schemaQualifiedName()) {
+            for (Schema_qualified_nameContext tableLock : after.schema_qualified_name()) {
                 addRelationDepcy(tableLock.identifier());
             }
-
         }
     }
 
@@ -200,26 +245,12 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
 
             ret = new ArrayList<>();
             ValueExpr vex = new ValueExpr(this);
-            for (Select_sublistContext target : primary.select_list().select_sublist()) {
-                Vex selectSublistVex = new Vex(target.vex());
 
-                Qualified_asteriskContext ast;
-                Value_expression_primaryContext valExprPrimary = selectSublistVex.primary();
-                if (valExprPrimary != null
-                        && (ast = valExprPrimary.qualified_asterisk()) != null) {
-                    Schema_qualified_nameContext qNameAst = ast.tb_name;
-                    ret.addAll(qNameAst == null ? unqualAster() : qualAster(qNameAst));
-                } else {
-                    Pair<String, String> columnPair = vex.analyze(selectSublistVex);
-
-                    IdentifierContext id = target.identifier();
-                    ParserRuleContext aliasCtx = id != null ? id : target.id_token();
-                    if (aliasCtx != null) {
-                        columnPair.setFirst(aliasCtx.getText());
-                    }
-
-                    ret.add(columnPair);
-                }
+            Select_listContext list = primary.select_list();
+            if (list != null) {
+                ret = sublist(list.select_sublist(), vex);
+            } else {
+                ret = Collections.emptyList();
             }
 
 
@@ -255,6 +286,32 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
         } else {
             Log.log(Log.LOG_WARNING, "No alternative in select_primary!");
             ret = Collections.emptyList();
+        }
+        return ret;
+    }
+
+    private List<Pair<String, String>> sublist(List<Select_sublistContext> sublist, ValueExpr vex) {
+        List<Pair<String, String>> ret = new ArrayList<>();
+        for (Select_sublistContext target : sublist) {
+            Vex selectSublistVex = new Vex(target.vex());
+
+            Qualified_asteriskContext ast;
+            Value_expression_primaryContext valExprPrimary = selectSublistVex.primary();
+            if (valExprPrimary != null
+                    && (ast = valExprPrimary.qualified_asterisk()) != null) {
+                Schema_qualified_nameContext qNameAst = ast.tb_name;
+                ret.addAll(qNameAst == null ? unqualAster() : qualAster(qNameAst));
+            } else {
+                Pair<String, String> columnPair = vex.analyze(selectSublistVex);
+
+                IdentifierContext id = target.identifier();
+                ParserRuleContext aliasCtx = id != null ? id : target.id_token();
+                if (aliasCtx != null) {
+                    columnPair.setFirst(aliasCtx.getText());
+                }
+
+                ret.add(columnPair);
+            }
         }
         return ret;
     }
