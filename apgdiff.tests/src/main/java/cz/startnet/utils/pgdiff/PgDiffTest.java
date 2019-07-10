@@ -290,8 +290,6 @@ public class PgDiffTest {
                     {"alter_comments"},
                     // Tests changing view default value
                     {"alter_view_change_default"},
-                    // Tests creation of sequence with bug in MINVALUE value
-                    {"add_sequence_bug2100013"},
                     // Tests view with default value
                     {"view_bug3080388"},
                     // Tests function arguments beginning with in_
@@ -492,6 +490,8 @@ public class PgDiffTest {
                     {"add_specific_function"},
                     // Tests scenario where TABLE tablespace is modified.
                     {"modify_tablespace"},
+                    //Tests scenario where generated SEQUENCE is compared.
+                    {"compare_generated_sequence"},
                 });
     }
 
