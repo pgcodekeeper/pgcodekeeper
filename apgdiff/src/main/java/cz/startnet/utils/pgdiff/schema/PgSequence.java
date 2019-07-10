@@ -227,6 +227,18 @@ public class PgSequence extends AbstractSequence {
         } else {
             this.minValue = "" + min;
         }
+
+        if (getCache() == null) {
+            setCache("1");
+        }
+
+        if (getStartWith() == null) {
+            if (this.minValue != null) {
+                setStartWith(this.minValue);
+            } else {
+                setStartWith(inc < 0 ? "-1" : "1");
+            }
+        }
         resetHash();
     }
 
