@@ -174,9 +174,7 @@ public class DepcyGraph {
 
             AbstractPgTable parentPgTbl = (AbstractPgTable) parentTbl;
             PgColumn parentTblCol = (PgColumn) parentPgTbl.getColumn(col.getName());
-            if (parentTblCol == null) {
-                createChildColToInheritedTblCol(parentPgTbl, col);
-            } else {
+            if (parentTblCol != null) {
                 graph.addEdge(col, parentTblCol);
             }
         }
