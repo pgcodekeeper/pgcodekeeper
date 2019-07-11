@@ -82,7 +82,7 @@ public class DepcyGraph {
                 PgStatement tbl = col.getParent();
                 if (st.getParent() instanceof PartitionPgTable) {
                     createChildColToPartTblCol((PartitionPgTable) tbl, col);
-                } else if (!((AbstractPgTable) tbl).getInherits().isEmpty()) {
+                } else {
                     createChildColToInheritedTblCol((AbstractPgTable) tbl, col);
                 }
             }
@@ -174,7 +174,9 @@ public class DepcyGraph {
 
             AbstractPgTable parentPgTbl = (AbstractPgTable) parentTbl;
             PgColumn parentTblCol = (PgColumn) parentPgTbl.getColumn(col.getName());
-            if (parentTblCol != null) {
+            if (parentTblCol == null) {
+                createChildColToInheritedTblCol(parentPgTbl, col);
+            } else {
                 graph.addEdge(col, parentTblCol);
             }
         }

@@ -79,7 +79,7 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
         StringBuilder sb = new StringBuilder();
 
         boolean mergeDefaultNotNull = false;
-        if (getType() != null && isRealColumn()) {
+        if (getType() != null && isRealColumn((AbstractPgTable) getParent(), this)) {
             sb.append(getAlterTable(false, false));
             sb.append("\n\tADD COLUMN ")
             .append(PgDiffUtils.getQuotedName(name))
@@ -128,7 +128,7 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
 
     @Override
     public String getDropSQL() {
-        if (getType() != null && isRealColumn()) {
+        if (getType() != null && isRealColumn((AbstractPgTable) getParent(), this)) {
             boolean addOnly = true;
 
             //// Condition for partitioned tables.
@@ -444,8 +444,7 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
         }
     }
 
-    private boolean isRealColumn() {
-        AbstractPgTable parent = (AbstractPgTable) getParent();
+    private boolean isRealColumn(AbstractPgTable parent, PgColumn col) {
         for (Inherits in : parent.getInherits()) {
             PgStatement parentTbl = new GenericColumn(in.getKey(), in.getValue(),
                     DbObjType.TABLE).getStatement(getDatabase());
@@ -455,10 +454,12 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
                 continue;
             }
 
-            if (((AbstractPgTable) parentTbl).getColumn(getName()) != null) {
+            AbstractPgTable parentPgTbl = (AbstractPgTable) parentTbl;
+            if (parentPgTbl.getColumn(getName()) != null || !isRealColumn(parentPgTbl, col)) {
                 return false;
             }
         }
+
         return true;
     }
 
