@@ -18,10 +18,6 @@ public class MsUpdate extends MsAbstractExprWithNmspc<Update_statementContext> {
         super(parent);
     }
 
-    public MsUpdate(String schema) {
-        super(schema);
-    }
-
     @Override
     public List<String> analyze(Update_statementContext update) {
         With_expressionContext with = update.with_expression();
