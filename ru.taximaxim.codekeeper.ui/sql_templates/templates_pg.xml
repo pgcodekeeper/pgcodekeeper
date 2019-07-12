@@ -184,14 +184,14 @@ $$$$;</template>
     description="%alter.rule.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.alterrule"
-    >ALTER RULE ${ruleName} ON ${tableName} RENAME TO ${newRuleName};</template>
+    >ALTER RULE ${ruleName} ON ${schemaName}.${tableName} RENAME TO ${newRuleName};</template>
 
 <template 
     name="alter_trigger"
     description="%alter.trigger.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.altertrigger"
-    >ALTER TRIGGER ${triggerName} ON ${tableName} ${operation};</template>
+    >ALTER TRIGGER ${triggerName} ON ${schemaName}.${tableName} ${operation};</template>
 
 
 
@@ -202,14 +202,14 @@ $$$$;</template>
     description="%drop.trigger.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.droptrigger"
-    >DROP TRIGGER ${triggerName} ON ${tableName};</template>
+    >DROP TRIGGER ${triggerName} ON ${schemaName}.${tableName};</template>
 
 <template 
     name="drop_rule"
     description="%drop.rule.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.droprule"
-    >DROP RULE ${ruleName} ON ${tableName};</template>
+    >DROP RULE ${ruleName} ON ${schemaName}.${tableName};</template>
 
 
 
@@ -227,7 +227,7 @@ $$$$;</template>
     description="%comment2.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.comment2"
-    >COMMENT ON ${statementType} ${statementName} ON ${tableName} IS '${text}';</template>
+    >COMMENT ON ${statementType} ${statementName} ON ${schemaName}.${tableName} IS '${text}';</template>
 
 
 
