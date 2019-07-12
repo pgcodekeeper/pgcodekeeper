@@ -2,6 +2,9 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 import java.util.Queue;
+import java.util.stream.Collectors;
+
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
@@ -28,20 +31,17 @@ import cz.startnet.utils.pgdiff.schema.PgProcedure;
 
 public class CreateFunction extends ParserAbstract {
 
-    private List<AntlrError> errors;
+    private final List<AntlrError> errors;
     private final Queue<AntlrTask<?>> antlrTasks;
     private final Create_function_statementContext ctx;
 
 
     public CreateFunction(Create_function_statementContext ctx, PgDatabase db,
-            Queue<AntlrTask<?>> antlrTasks) {
+            List<AntlrError> errors, Queue<AntlrTask<?>> antlrTasks) {
         super(db);
         this.ctx = ctx;
-        this.antlrTasks = antlrTasks;
-    }
-
-    public void setErrors(List<AntlrError> errors) {
         this.errors = errors;
+        this.antlrTasks = antlrTasks;
     }
 
     @Override
@@ -124,11 +124,22 @@ public class CreateFunction extends ParserAbstract {
         // Parsing the function definition and adding its result context for analysis.
         List<Character_stringContext> funcContent = funcDef.character_string();
         if ("SQL".equalsIgnoreCase(language) && funcContent.size() == 1) {
-            StringBuilder sb = new StringBuilder();
-            funcContent.get(0).Text_between_Dollar().forEach(sb::append);
-            String def = sb.toString();
+            String def;
+            TerminalNode codeStart = funcContent.get(0).Character_String_Literal();
+            if (codeStart != null) {
+                // TODO support special escaping schemes (maybe in the util itself)
+                def = PgDiffUtils.unquoteQuotedString(codeStart.getText());
+            } else {
+                List<TerminalNode> dollarText = funcContent.get(0).Text_between_Dollar();
+                codeStart = dollarText.get(0);
+                def = dollarText.stream()
+                        .map(TerminalNode::getText)
+                        .collect(Collectors.joining());
+            }
+
             AntlrParser.submitSqlCtxToAnalyze(def, errors,
-                    getFullCtxText(ctx.getParent()).indexOf(def),
+                    codeStart.getSymbol().getStartIndex() - ctx.getParent().getStart().getStartIndex(),
+                    codeStart.getSymbol().getLine() - ctx.getParent().getStart().getLine(),
                     "function definition of " + function.getBareName(),
                     ctx -> db.addContextForAnalyze(function, ctx), antlrTasks);
         }

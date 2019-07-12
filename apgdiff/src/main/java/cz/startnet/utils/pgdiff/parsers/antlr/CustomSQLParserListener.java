@@ -107,8 +107,7 @@ implements SqlContextProcessor {
         } else if (ctx.create_rewrite_statement() != null) {
             p = new CreateRewrite(ctx.create_rewrite_statement(), db);
         } else if (ctx.create_function_statement() != null) {
-            p = new CreateFunction(ctx.create_function_statement(), db, antlrTasks);
-            ((CreateFunction) p).setErrors(errors);
+            p = new CreateFunction(ctx.create_function_statement(), db, errors, antlrTasks);
         } else if (ctx.create_aggregate_statement() != null) {
             p = new CreateAggregate(ctx.create_aggregate_statement(), db);
         } else if (ctx.create_operator_statement() != null) {
