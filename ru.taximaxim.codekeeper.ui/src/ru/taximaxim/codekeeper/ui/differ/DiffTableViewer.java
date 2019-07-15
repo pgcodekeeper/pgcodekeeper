@@ -1,6 +1,8 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -866,9 +868,16 @@ public class DiffTableViewer extends Composite {
                     name = JdbcConnector.dbNameFromUrl(loc);
                     break;
                 case URL:
-                    type = Messages.DiffTableViewer_uri;
+                    type = Messages.DiffTableViewer_uri ;
                     name = loc;
-                    loc = null;
+                    try {
+                        String urlPath = new URI(loc).getPath();
+                        if (urlPath != null) {
+                            name = urlPath.substring(urlPath.lastIndexOf('/') + 1);
+                        }
+                    } catch (URISyntaxException e) {
+                        // Nothing to do, use default path
+                    }
                     break;
                 case LOCAL:
                     Path lib = libs.stream().map(PgLibrary::getPath)
@@ -881,7 +890,6 @@ public class DiffTableViewer extends Composite {
                         loc = lib.relativize(location).toString();
                     } else {
                         type = Messages.DiffTableViewer_file;
-                        loc = null;
                     }
                     break;
                 }
