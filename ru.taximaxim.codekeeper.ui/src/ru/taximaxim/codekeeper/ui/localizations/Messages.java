@@ -466,6 +466,8 @@ public final class Messages extends NLS {
 
     public static String IgnoreListProperties_create_new_file;
 
+    public static String IgnoreListProperties_default_ignore_tooltip;
+
     public static String IgnoreListProperties_edit_pgcodekeeperignore;
 
     public static String IgnoreListEditorDialog_excluded_objects_list_editor;
