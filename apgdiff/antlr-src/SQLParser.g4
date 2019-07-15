@@ -224,6 +224,7 @@ schema_alter
     | alter_foreign_data_wrapper
     | alter_operator_statement
     | alter_aggregate_statement
+    | alter_extension_statement
     | alter_owner)
     ;
 
@@ -255,6 +256,46 @@ alter_function_statement
 
 alter_aggregate_statement
     : AGGREGATE function_parameters (rename_to | set_schema)
+    ;
+
+alter_extension_statement
+    : EXTENSION identifier alter_extension_action
+    ;
+
+alter_extension_action
+    : set_schema
+    | UPDATE (TO (identifier | character_string))?
+    | (ADD | DROP) extension_member_object
+    ;
+
+extension_member_object
+    : ACCESS METHOD schema_qualified_name
+    | AGGREGATE function_parameters
+    | CAST LEFT_PAREN schema_qualified_name AS schema_qualified_name RIGHT_PAREN
+    | COLLATION identifier
+    | CONVERSION identifier
+    | DOMAIN schema_qualified_name
+    | EVENT TRIGGER identifier
+    | FOREIGN DATA WRAPPER identifier
+    | FOREIGN TABLE schema_qualified_name
+    | FUNCTION function_parameters
+    | MATERIALIZED? VIEW schema_qualified_name
+    | OPERATOR operator_name
+    | OPERATOR CLASS schema_qualified_name USING identifier
+    | OPERATOR FAMILY schema_qualified_name USING identifier
+    | PROCEDURAL? LANGUAGE identifier
+    | PROCEDURE function_parameters
+    | ROUTINE function_parameters
+    | SCHEMA identifier
+    | SEQUENCE schema_qualified_name
+    | SERVER identifier
+    | TABLE schema_qualified_name
+    | TEXT SEARCH CONFIGURATION schema_qualified_name
+    | TEXT SEARCH DICTIONARY schema_qualified_name
+    | TEXT SEARCH PARSER schema_qualified_name
+    | TEXT SEARCH TEMPLATE schema_qualified_name
+    | TRANSFORM FOR identifier LANGUAGE identifier
+    | TYPE schema_qualified_name
     ;
 
 alter_schema_statement
