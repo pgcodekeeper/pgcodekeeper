@@ -534,7 +534,7 @@ public final class NewObjectPage extends WizardPage {
             .append(objectName).append(" AS\n\tSELECT 'select_text'::text AS text;"); //$NON-NLS-1$
             break;
         default:
-            return "";
+            return ""; //$NON-NLS-1$
         }
         return sb.toString();
     }
