@@ -107,8 +107,13 @@ public final class FullAnalyze {
                 case FUNCTION:
                 case PROCEDURE:
                     if (ctx instanceof VexContext) {
-                        analyze((VexContext) ctx, new ValueExpr(db),
-                                statement);
+                        ValueExpr exp;
+                        if (db.getArguments().isEnableFunctionBodiesDependencies()) {
+                            exp = new ValueExpr(db);
+                        } else {
+                            exp = new ValueExpr(db, DbObjType.FUNCTION, DbObjType.PROCEDURE);
+                        }
+                        analyze((VexContext) ctx, exp, statement);
                     } else {
                         funcDefinAnalyze((SqlContext) ctx, statement);
                     }
@@ -233,13 +238,37 @@ public final class FullAnalyze {
                 Update_stmt_for_psqlContext updCtx;
                 Delete_stmt_for_psqlContext delCtx;
                 if (selCtx != null) {
-                    analyze(selCtx, new Select(db), rootFunc);
+                    Select select;
+                    if (db.getArguments().isEnableFunctionBodiesDependencies()) {
+                        select = new Select(db);
+                    } else {
+                        select = new Select(db, DbObjType.FUNCTION, DbObjType.PROCEDURE);
+                    }
+                    analyze(selCtx, select, rootFunc);
                 } else if ((insCtx = ds.insert_stmt_for_psql()) != null) {
-                    analyze(insCtx, new Insert(db), rootFunc);
+                    Insert insert;
+                    if (db.getArguments().isEnableFunctionBodiesDependencies()) {
+                        insert = new Insert(db);
+                    } else {
+                        insert = new Insert(db, DbObjType.FUNCTION, DbObjType.PROCEDURE);
+                    }
+                    analyze(insCtx, insert, rootFunc);
                 } else if ((updCtx = ds.update_stmt_for_psql()) != null) {
-                    analyze(updCtx, new Update(db), rootFunc);
+                    Update update;
+                    if (db.getArguments().isEnableFunctionBodiesDependencies()) {
+                        update = new Update(db);
+                    } else {
+                        update = new Update(db, DbObjType.FUNCTION, DbObjType.PROCEDURE);
+                    }
+                    analyze(updCtx, update, rootFunc);
                 } else if ((delCtx = ds.delete_stmt_for_psql()) != null) {
-                    analyze(delCtx, new Delete(db), rootFunc);
+                    Delete delete;
+                    if (db.getArguments().isEnableFunctionBodiesDependencies()) {
+                        delete = new Delete(db);
+                    } else {
+                        delete = new Delete(db, DbObjType.FUNCTION, DbObjType.PROCEDURE);
+                    }
+                    analyze(delCtx, delete, rootFunc);
                 }
             }
             // TODO add processing for elements of 's.schema_statement()'

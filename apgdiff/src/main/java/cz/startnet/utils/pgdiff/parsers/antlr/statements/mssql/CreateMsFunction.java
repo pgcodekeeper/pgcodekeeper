@@ -104,30 +104,32 @@ public class CreateMsFunction extends BatchContextProcessor {
             setSourceParts(func);
 
             Select_statementContext select = bodyRet.select_statement();
+            DbObjType [] disabledDepcies = new DbObjType[] {DbObjType.FUNCTION, DbObjType.PROCEDURE};
             String schemaName;
             if (schema != null) {
                 schemaName = schema.getName();
+                if (schema.getDatabase().getArguments().isEnableFunctionBodiesDependencies()) {
+                    disabledDepcies = new DbObjType[0];
+                }
             } else {
                 schemaName = getSchemaNameSafe(ids);
             }
 
             if (select != null) {
-                MsSelect sel = new MsSelect(schemaName, DbObjType.FUNCTION, DbObjType.PROCEDURE);
+                MsSelect sel = new MsSelect(schemaName, disabledDepcies);
                 sel.analyze(select);
                 func.addAllDeps(sel.getDepcies());
             } else {
                 ExpressionContext exp = bodyRet.expression();
                 if (exp != null) {
-                    MsValueExpr vex = new MsValueExpr(schemaName,
-                            DbObjType.FUNCTION, DbObjType.PROCEDURE);
+                    MsValueExpr vex = new MsValueExpr(schemaName, disabledDepcies);
                     vex.analyze(exp);
                     func.addAllDeps(vex.getDepcies());
                 }
 
                 Sql_clausesContext clausesCtx = bodyRet.sql_clauses();
                 if (clausesCtx != null) {
-                    MsSqlClauses clauses = new MsSqlClauses(schemaName,
-                            DbObjType.FUNCTION, DbObjType.PROCEDURE);
+                    MsSqlClauses clauses = new MsSqlClauses(schemaName, disabledDepcies);
                     clauses.analyze(clausesCtx);
                     func.addAllDeps(clauses.getDepcies());
                 }

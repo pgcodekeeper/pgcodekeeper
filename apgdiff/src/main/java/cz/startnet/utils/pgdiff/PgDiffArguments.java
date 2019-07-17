@@ -27,6 +27,7 @@ public class PgDiffArguments implements Cloneable {
     private boolean keepNewlines;
     private boolean addTransaction;
     private boolean disableCheckFunctionBodies;
+    private boolean enableFunctionBodiesDependencies;
     private String timeZone;
     private boolean usingTypeCastOff;
     private boolean concurrentlyMode;
@@ -195,6 +196,14 @@ public class PgDiffArguments implements Cloneable {
 
     public boolean isDisableCheckFunctionBodies() {
         return disableCheckFunctionBodies;
+    }
+
+    public boolean isEnableFunctionBodiesDependencies() {
+        return enableFunctionBodiesDependencies;
+    }
+
+    public void setEnableFunctionBodiesDependencies(boolean enableFunctionBodiesDependencies) {
+        this.enableFunctionBodiesDependencies = enableFunctionBodiesDependencies;
     }
 
     public void setTimeZone(String timeZone) {

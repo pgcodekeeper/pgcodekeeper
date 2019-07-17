@@ -62,16 +62,16 @@ public class CreateMsTrigger extends BatchContextProcessor {
         trigger.setQuotedIdentified(quotedIdentifier);
         setSourceParts(trigger);
 
-        String schemaName;
-        if (schema != null) {
-            schemaName = schema.getName();
-        } else {
+        MsSqlClauses clauses;
+        if (schema == null) {
             List<IdContext> ids = Arrays.asList(schemaCtx, tableNameCtx);
-            schemaName = getSchemaNameSafe(ids);
             addObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
+            clauses = new MsSqlClauses(getSchemaNameSafe(ids), DbObjType.FUNCTION, DbObjType.PROCEDURE);
+        } else if (schema.getDatabase().getArguments().isEnableFunctionBodiesDependencies()) {
+            clauses = new MsSqlClauses(schema.getName());
+        } else {
+            clauses = new MsSqlClauses(schema.getName(), DbObjType.FUNCTION, DbObjType.PROCEDURE);
         }
-
-        MsSqlClauses clauses = new MsSqlClauses(schemaName, DbObjType.FUNCTION, DbObjType.PROCEDURE);
         clauses.analyze(ctx.sql_clauses());
         trigger.addAllDeps(clauses.getDepcies());
 
