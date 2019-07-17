@@ -16,7 +16,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
+import cz.startnet.utils.pgdiff.schema.AbstractPgTable.Inherits;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
  * Stores column information.
@@ -76,7 +79,7 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
         StringBuilder sb = new StringBuilder();
 
         boolean mergeDefaultNotNull = false;
-        if (getType() != null) {
+        if (getType() != null && getParentCol((AbstractPgTable) getParent()) == null) {
             sb.append(getAlterTable(false, false));
             sb.append("\n\tADD COLUMN ")
             .append(PgDiffUtils.getQuotedName(name))
@@ -125,7 +128,7 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
 
     @Override
     public String getDropSQL() {
-        if (getType() != null) {
+        if (getType() != null && getParentCol((AbstractPgTable) getParent()) == null) {
             boolean addOnly = true;
 
             //// Condition for partitioned tables.
@@ -439,6 +442,34 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
             .append(newStorage)
             .append(';');
         }
+    }
+
+    /**
+     * Returns the parent column for given column or null if given column hasn't
+     * parent column.
+     */
+    public AbstractColumn getParentCol(AbstractPgTable tbl) {
+        for (Inherits in : tbl.getInherits()) {
+            PgStatement parent = new GenericColumn(in.getKey(), in.getValue(),
+                    DbObjType.TABLE).getStatement(getDatabase());
+            if (parent == null) {
+                Log.log(Log.LOG_ERROR, "There is no such object of inheritance as table: "
+                        + in.getQualifiedName());
+                continue;
+            }
+
+            AbstractPgTable parentTbl = (AbstractPgTable) parent;
+            AbstractColumn parentCol = parentTbl.getColumn(getName());
+            if (parentCol == null) {
+                parentCol = getParentCol(parentTbl);
+            }
+            if (parentCol != null) {
+                // if not found continue searching through other inherit entries
+                return parentCol;
+            }
+        }
+
+        return null;
     }
 
     @Override

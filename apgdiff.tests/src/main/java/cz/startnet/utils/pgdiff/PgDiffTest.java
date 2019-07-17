@@ -440,6 +440,8 @@ public class PgDiffTest {
                     {"modify_column_type_and_drop_default"},
                     // Tests scenario where type in COLUMN of partitioned TABLE is changed.
                     {"modify_col_type_in_partitioned_tbl"},
+                    // Tests scenario where type in COLUMN of inherited TABLE is changed.
+                    {"modify_col_type_in_inherited_tbl"},
                     // Tests scenario where new OPERATOR is added.
                     {"add_operator"},
                     // Tests scenario where new overloaded OPERATOR is added.
