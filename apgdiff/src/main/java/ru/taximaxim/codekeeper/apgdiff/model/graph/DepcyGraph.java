@@ -83,7 +83,14 @@ public class DepcyGraph {
                 if (st.getParent() instanceof PartitionPgTable) {
                     createChildColToPartTblCol((PartitionPgTable) tbl, col);
                 } else {
-                    createChildColToInheritedTblCol((AbstractPgTable) tbl, col);
+                    // Creating the connection between the column of a inherit
+                    // table and the columns of its child tables.
+
+                    AbstractColumn parentTblCol = PgColumn
+                            .getParentCol((AbstractPgTable) tbl, col, db);
+                    if (parentTblCol != null) {
+                        graph.addEdge(col, parentTblCol);
+                    }
                 }
             }
         });
@@ -154,30 +161,6 @@ public class DepcyGraph {
                     + '.' + col.getParent().getName()
                     + '.' + colName + "' column is missed.");
                 }
-            }
-        }
-    }
-
-    /**
-     * Creates the connection between the column of a inherited table and the
-     * columns of its child tables.
-     */
-    private void createChildColToInheritedTblCol(AbstractPgTable tbl, PgColumn col) {
-        for (Inherits in : tbl.getInherits()) {
-            PgStatement parentTbl = new GenericColumn(in.getKey(), in.getValue(),
-                    DbObjType.TABLE).getStatement(db);
-            if (parentTbl == null) {
-                Log.log(Log.LOG_ERROR, "There is no such object of inheritance"
-                        + " as table: " + in.getQualifiedName());
-                continue;
-            }
-
-            AbstractPgTable parentPgTbl = (AbstractPgTable) parentTbl;
-            PgColumn parentTblCol = (PgColumn) parentPgTbl.getColumn(col.getName());
-            if (parentTblCol == null) {
-                createChildColToInheritedTblCol(parentPgTbl, col);
-            } else {
-                graph.addEdge(col, parentTblCol);
             }
         }
     }
