@@ -57,7 +57,6 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
@@ -95,7 +94,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PATH;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.SQL_EDITOR_PREF;
-import ru.taximaxim.codekeeper.ui.UIConsts.TEMP_DIR_PATH;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.consoles.UiProgressReporter;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
@@ -365,15 +363,13 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         }
 
         IEditorInput in = getEditorInput();
-        if (in instanceof IURIEditorInput) {
-            IURIEditorInput uri = (IURIEditorInput) in;
+        if (in instanceof SQLEditorInput) {
+            SQLEditorInput uri = (SQLEditorInput) in;
             Path externalTmpFile = Paths.get(uri.getURI());
-            boolean isMsSqlExternalFile = externalTmpFile.getParent()
-                    .equals(Paths.get(System.getProperty("java.io.tmpdir"), TEMP_DIR_PATH.MS)); //$NON-NLS-1$
             IDocument document = getDocumentProvider().getDocument(getEditorInput());
             InputStream stream = new ByteArrayInputStream(document.get().getBytes(StandardCharsets.UTF_8));
             parser.fillRefsFromInputStream(stream, externalTmpFile.toString(),
-                    isMsSqlExternalFile, monitor);
+                    uri.isMsSql(), monitor);
             return true;
         }
         return false;

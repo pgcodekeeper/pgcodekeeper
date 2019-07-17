@@ -75,15 +75,17 @@ public class PgExtension extends PgStatement {
         } else {
             return false;
         }
-        PgExtension oldExt = this;
 
-        if(!Objects.equals(newExt.getSchema(), oldExt.getSchema())) {
-            sb.append("\n\nALTER EXTENSION "
-                    + PgDiffUtils.getQuotedName(oldExt.getName())
-                    + " SET SCHEMA " + newExt.getSchema() + ';');
+        if (!Objects.equals(newExt.getSchema(), getSchema())) {
+            sb.append("\n\nALTER EXTENSION ")
+            .append(PgDiffUtils.getQuotedName(getName()))
+            .append(" SET SCHEMA ")
+            .append(newExt.getSchema())
+            .append(';');
+            isNeedDepcies.set(true);
         }
         // TODO ALTER EXTENSION UPDATE TO ?
-        if (!Objects.equals(oldExt.getComment(), newExt.getComment())) {
+        if (!Objects.equals(getComment(), newExt.getComment())) {
             sb.append("\n\n");
             newExt.appendCommentSql(sb);
         }

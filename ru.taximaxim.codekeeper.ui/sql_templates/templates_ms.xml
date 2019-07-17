@@ -8,7 +8,7 @@
     description="%create.function.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.createfunction"
-    >CREATE FUNCTION [${functionName}]() RETURNS ${typeName}
+    >CREATE FUNCTION [${schemaName}].[${functionName}]() RETURNS ${typeName}
 AS
 BEGIN
   --function body
@@ -21,7 +21,7 @@ GO</template>
     description="%create.function2.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.createfunction2"
-    >CREATE FUNCTION [${functionName}]() 
+    >CREATE FUNCTION [${schemaName}].[${functionName}]() 
 RETURNS TABLE
 AS  
 RETURN   
@@ -35,7 +35,7 @@ GO</template>
     description="%create.sequence.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.createsequence"
-    >CREATE SEQUENCE [${sequenceName}]
+    >CREATE SEQUENCE [${schemaName}].[${sequenceName}]
     AS bigint
     START WITH 1
     INCREMENT BY 1
@@ -48,7 +48,7 @@ GO</template>
     description="%create.procedure.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.createprocedure"
-    >CREATE PROCEDURE [${procedureName}]
+    >CREATE PROCEDURE [${schemaName}].[${procedureName}]
 AS
 BEGIN
   --procedure body
@@ -60,7 +60,7 @@ GO</template>
     description="%create.table.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.createtable"
-    >CREATE TABLE [${tableName}](
+    >CREATE TABLE [${schemaName}].[${tableName}](
     [${columnName}] [${typeName}] NOT NULL
 ) ON [PRIMARY]
 GO</template>
@@ -70,7 +70,7 @@ GO</template>
     description="%create.type.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.createtype"
-    >CREATE TYPE [${typeName}] AS TABLE(
+    >CREATE TYPE [${schemaName}].[${typeName}] AS TABLE(
     [${columnName}] [${columnType}] NOT NULL,
     INDEX [IX_${typeName}_${columnName}] NONCLUSTERED
 (
@@ -85,7 +85,7 @@ GO</template>
     description="%create.view.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.createview"
-    >CREATE VIEW [${viewName}]
+    >CREATE VIEW [${schemaName}].[${viewName}]
 AS
 SELECT ${alias}.[${columnName}]
 FROM [${tableName}] ${alias}

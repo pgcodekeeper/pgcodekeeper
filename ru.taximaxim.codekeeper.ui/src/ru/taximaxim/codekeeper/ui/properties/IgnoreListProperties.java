@@ -1,6 +1,9 @@
 package ru.taximaxim.codekeeper.ui.properties;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -16,6 +19,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -23,6 +27,7 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.dialogs.PropertyPage;
 
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.dialogs.IgnoreListEditorDialog;
@@ -34,11 +39,12 @@ public class IgnoreListProperties extends PropertyPage {
 
     private IgnoreListEditor editor;
     private IgnoreListsXmlStore store;
+    private IProject proj;
 
     @Override
     public void setElement(IAdaptable element) {
         super.setElement(element);
-        IProject proj = element.getAdapter(IProject.class);
+        proj = element.getAdapter(IProject.class);
         store = new IgnoreListsXmlStore(proj);
     }
 
@@ -71,6 +77,29 @@ public class IgnoreListProperties extends PropertyPage {
             return false;
         }
         return true;
+    }
+
+    @Override
+    protected void contributeButtons(Composite parent) {
+        ((GridLayout) parent.getLayout()).numColumns++;
+        Button button = new Button(parent, SWT.PUSH);
+        button.setText(Messages.IgnoreListProperties_edit_pgcodekeeperignore);
+        button.setToolTipText(Messages.IgnoreListProperties_default_ignore_tooltip);
+        button.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                try {
+                    Path path = Paths.get(proj.getLocationURI()).resolve(FILE.IGNORED_OBJECTS);
+                    if (Files.notExists(path)) {
+                        Files.write(path, "SHOW ALL".getBytes(StandardCharsets.UTF_8)); //$NON-NLS-1$
+                    }
+                    new IgnoreListEditorDialog(getShell(), path, editor).open();
+                } catch (IOException ex) {
+                    Log.log(Log.LOG_ERROR, "Error while create file", ex); //$NON-NLS-1$
+                }
+            }
+        });
     }
 
     public static class IgnoreListEditor extends PrefListEditor<String, ListViewer> {
