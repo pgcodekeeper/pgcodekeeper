@@ -79,8 +79,7 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
         StringBuilder sb = new StringBuilder();
 
         boolean mergeDefaultNotNull = false;
-        if (getType() != null
-                && getParentCol((AbstractPgTable) getParent(), this, getDatabase()) == null) {
+        if (getType() != null && getParentCol((AbstractPgTable) getParent()) == null) {
             sb.append(getAlterTable(false, false));
             sb.append("\n\tADD COLUMN ")
             .append(PgDiffUtils.getQuotedName(name))
@@ -129,8 +128,7 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
 
     @Override
     public String getDropSQL() {
-        if (getType() != null
-                && getParentCol((AbstractPgTable) getParent(), this, getDatabase()) == null) {
+        if (getType() != null && getParentCol((AbstractPgTable) getParent()) == null) {
             boolean addOnly = true;
 
             //// Condition for partitioned tables.
@@ -450,20 +448,21 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
      * Returns the parent column for given column or null if given column hasn't
      * parent column.
      */
-    public static AbstractColumn getParentCol(AbstractPgTable tbl, PgColumn col,
-            PgDatabase db) {
+    public AbstractColumn getParentCol(AbstractPgTable tbl) {
         for (Inherits in : tbl.getInherits()) {
-            PgStatement parentTbl = new GenericColumn(in.getKey(), in.getValue(),
-                    DbObjType.TABLE).getStatement(db);
-            if (parentTbl == null) {
+            PgStatement parent = new GenericColumn(in.getKey(), in.getValue(),
+                    DbObjType.TABLE).getStatement(getDatabase());
+            if (parent == null) {
                 Log.log(Log.LOG_ERROR, "There is no such object of inheritance as table: "
                         + in.getQualifiedName());
                 continue;
             }
 
-            AbstractPgTable parentPgTbl = (AbstractPgTable) parentTbl;
-            AbstractColumn parentPgCol = parentPgTbl.getColumn(col.getName());
-            return parentPgCol != null ? parentPgCol : getParentCol(parentPgTbl, col, db);
+            AbstractPgTable parentTbl = (AbstractPgTable) parent;
+            AbstractColumn parentCol = parentTbl.getColumn(getName());
+            if (parentCol != null || (parentCol = getParentCol(parentTbl)) != null) {
+                return parentCol;
+            }
         }
 
         return null;

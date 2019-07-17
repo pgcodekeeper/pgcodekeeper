@@ -86,8 +86,7 @@ public class DepcyGraph {
                     // Creating the connection between the column of a inherit
                     // table and the columns of its child tables.
 
-                    AbstractColumn parentTblCol = PgColumn
-                            .getParentCol((AbstractPgTable) tbl, col, db);
+                    AbstractColumn parentTblCol = col.getParentCol((AbstractPgTable) tbl);
                     if (parentTblCol != null) {
                         graph.addEdge(col, parentTblCol);
                     }
