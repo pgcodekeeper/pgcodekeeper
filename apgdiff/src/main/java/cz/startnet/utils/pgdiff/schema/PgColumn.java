@@ -460,7 +460,11 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
 
             AbstractPgTable parentTbl = (AbstractPgTable) parent;
             AbstractColumn parentCol = parentTbl.getColumn(getName());
-            if (parentCol != null || (parentCol = getParentCol(parentTbl)) != null) {
+            if (parentCol == null) {
+                parentCol = getParentCol(parentTbl);
+            }
+            if (parentCol != null) {
+                // if not found continue searching through other inherit entries
                 return parentCol;
             }
         }
