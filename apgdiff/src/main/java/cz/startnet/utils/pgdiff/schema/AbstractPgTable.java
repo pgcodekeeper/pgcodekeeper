@@ -156,7 +156,7 @@ public abstract class AbstractPgTable extends AbstractTable {
             .append(" ADD GENERATED ")
             .append(column.getIdentityType())
             .append(" AS IDENTITY (");
-            sbOption.append("\n\tSEQUENCE NAME ").append(sequence.getName());
+            sbOption.append("\n\tSEQUENCE NAME ").append(sequence.getQualifiedName());
             sequence.fillSequenceBody(sbOption);
             sbOption.append("\n);");
         }

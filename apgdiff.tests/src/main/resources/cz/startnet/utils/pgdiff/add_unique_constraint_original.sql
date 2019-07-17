@@ -10,9 +10,3 @@ CREATE TABLE public.inventoryitemsupplier (
     deletedbyuserid smallint,
     lastmodifiedbyuserid smallint
 );
-
-CREATE SEQUENCE public.inventoryitemsupplier_seq
-    INCREMENT BY 1
-    NO MAXVALUE
-    NO MINVALUE
-    CACHE 1;
