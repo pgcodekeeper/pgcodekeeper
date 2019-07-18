@@ -26,6 +26,7 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 /**
@@ -76,8 +77,8 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
      */
     protected final Map<String, List<Pair<String, String>>> complexNamespace = new LinkedHashMap<>();
 
-    public AbstractExprWithNmspc(PgDatabase db) {
-        super(db);
+    public AbstractExprWithNmspc(PgDatabase db, DbObjType... disabledDepcies) {
+        super(db, disabledDepcies);
     }
 
     protected AbstractExprWithNmspc(AbstractExpr parent) {

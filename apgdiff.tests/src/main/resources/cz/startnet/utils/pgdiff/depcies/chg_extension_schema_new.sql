@@ -1,0 +1,3 @@
+CREATE SCHEMA test;
+
+CREATE EXTENSION postgis SCHEMA test;

@@ -4,7 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,8 +29,8 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 public class PgDiffDepciesTest {
 
     @Parameters
-    public static Collection<?> parameters() {
-        return Arrays.asList(new Object[][] {
+    public static Iterable<Object[]> parameters() {
+        List<Object[]> p = Arrays.asList(new Object[][] {
             { "empty", "empty_usr" },
             // изменяется тип колонок у обоих таблиц, пользователь выбирает
             // view v1
@@ -148,21 +148,31 @@ public class PgDiffDepciesTest {
             // пользователь выбирает 'f1'
             // (опеределение обеих функций написано на языке SQL)
             // ('f2' зависит от 'f1')
-            { "change_func_arg_name", "change_func_arg_name_usr_f1" },
+            { "change_func_arg_name", "change_func_arg_name_usr_f1", true},
             // в функции 'f1' изменяется имя аргумента функции,
             // в функции 'f2' изменяется определение функции,
             // пользователь выбирает 'f1'
             // (опеределение обеих функций написано на языке SQL)
             // ('f2' зависит от 'f1')
             // (обе функции находятся в разных схемах)
-            { "change_func_arg_name_sch", "change_func_arg_name_sch_usr_f1" },
+            { "change_func_arg_name_sch", "change_func_arg_name_sch_usr_f1", true},
             // добавление вьюхи с зависимыми от нее объектами,
             // пользователь выбрал только вьюху
             {"add_view", "add_view_usr_view"},
+            // изменение схемы расширения и создание этой схемы
+            // пользователь выбрал расширение
+            {"chg_extension_schema", "chg_extension_schema_usr_extension"},
             // изменение типа колонки таблицы, зависящей от функции, удаление функции
             // пользователь выбрал таблицу tbl
-            {"chg_col_type_dep_from_func", "chg_col_type_dep_from_func_usr_tbl"},
+            {"chg_col_type_dep_from_func", "chg_col_type_dep_from_func_usr_tbl"}
         });
+
+        int maxLength = p.stream()
+                .mapToInt(oo -> oo.length)
+                .max().getAsInt();
+        return p.stream()
+                .map(oo -> oo.length < maxLength ? Arrays.copyOf(oo, maxLength) : oo)
+                ::iterator;
     }
 
     /**
@@ -177,10 +187,15 @@ public class PgDiffDepciesTest {
      */
     private final String userSelTemplate;
 
+    final PgDiffArguments args = new PgDiffArguments();
+
     public PgDiffDepciesTest(final String fileNameTemplate,
-            final String userSelTemplate) {
+            final String userSelTemplate, Boolean isEnableDepcies) {
         this.dbTemplate = fileNameTemplate;
         this.userSelTemplate = userSelTemplate;
+        if (isEnableDepcies != null && isEnableDepcies) {
+            args.setEnableFunctionBodiesDependencies(true);
+        }
         Log.log(Log.LOG_DEBUG, dbTemplate + ' ' + userSelTemplate);
     }
 
@@ -191,8 +206,6 @@ public class PgDiffDepciesTest {
 
     @Test(timeout = 120000)
     public void runDiff() throws IOException, InterruptedException {
-
-        final PgDiffArguments args = new PgDiffArguments();
         PgDatabase oldDatabase = ApgdiffTestUtils.loadTestDump(
                 getUsrSelName(FILES_POSTFIX.ORIGINAL_SQL), PgDiffDepciesTest.class, args);
         PgDatabase newDatabase = ApgdiffTestUtils.loadTestDump(

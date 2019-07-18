@@ -1,6 +1,8 @@
 package ru.taximaxim.codekeeper.ui.views.navigator;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -46,6 +48,14 @@ public class LibraryContainer {
                 new LibraryContainer(root, null, JdbcConnector.dbNameFromUrl(path));
                 break;
             case URL:
+                try {
+                    String urlPath = new URI(path).getPath();
+                    if (urlPath != null) {
+                        path = urlPath.substring(urlPath.lastIndexOf('/') + 1) + " - " +  path;
+                    }
+                } catch (URISyntaxException e) {
+                    // Nothing to do, use default path
+                }
                 new LibraryContainer(root, null, path);
                 break;
             case LOCAL:

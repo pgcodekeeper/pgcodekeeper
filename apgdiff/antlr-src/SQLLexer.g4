@@ -903,9 +903,6 @@ Character_String_Literal
   : [eEnN]? QUOTE_CHAR ( ESC_SEQ | ~('\'') )* QUOTE_CHAR
   ;
 
-ESC_SEQUENCES
-    : (ESC_SEQ)
-    ;
 fragment
 EXPONENT : ('e'|'E') ('+'|'-')? Digit+ ;
 

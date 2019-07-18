@@ -19,7 +19,6 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
-import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
@@ -27,8 +26,8 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
-import ru.taximaxim.codekeeper.ui.UIConsts.TEMP_DIR_PATH;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
+import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorInput;
 
 public final class FileUtilsUi {
 
@@ -38,14 +37,11 @@ public final class FileUtilsUi {
      */
     public static void saveOpenTmpSqlEditor(String content, String filenamePrefix, boolean isMsSql)
             throws IOException, CoreException {
-        Path tempDir = Paths.get(System.getProperty("java.io.tmpdir")) //$NON-NLS-1$
-                .resolve(isMsSql ? TEMP_DIR_PATH.MS : TEMP_DIR_PATH.PG);
-        Files.createDirectories(tempDir);
         Log.log(Log.LOG_INFO, "Creating file " + filenamePrefix); //$NON-NLS-1$
-        Path path = Files.createTempFile(tempDir, filenamePrefix + '_', ".sql"); //$NON-NLS-1$
+        Path path = Files.createTempFile(filenamePrefix + '_', ".sql"); //$NON-NLS-1$
         Files.write(path, content.getBytes(StandardCharsets.UTF_8));
         IFileStore externalFile = EFS.getLocalFileSystem().fromLocalFile(path.toFile());
-        IEditorInput input = new FileStoreEditorInput(externalFile);
+        IEditorInput input = new SQLEditorInput(externalFile, isMsSql);
 
         IEditorPart part = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
                 .openEditor(input, EDITOR.SQL);

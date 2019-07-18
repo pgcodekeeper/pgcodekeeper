@@ -21,10 +21,6 @@ public class MsInsert extends MsAbstractExprWithNmspc<Insert_statementContext> {
         super(parent);
     }
 
-    protected MsInsert(String schema) {
-        super(schema);
-    }
-
     @Override
     public List<String> analyze(Insert_statementContext insert) {
         With_expressionContext with = insert.with_expression();

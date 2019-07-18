@@ -52,8 +52,13 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
         if (ctx instanceof VexContext) {
             analyze((VexContext) ctx, new ValueExpr(db), stmt);
         } else {
-            analyzeDefinition((SqlContext) ctx, new Sql(db),
-                    (AbstractFunction) stmt);
+            Sql sql;
+            if (db.getArguments().isEnableFunctionBodiesDependencies()) {
+                sql = new Sql(db);
+            } else {
+                sql = new Sql(db, DbObjType.FUNCTION, DbObjType.PROCEDURE);
+            }
+            analyzeDefinition((SqlContext) ctx, sql, (AbstractFunction) stmt);
         }
     }
 

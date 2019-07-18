@@ -28,10 +28,6 @@ public abstract class MsAbstractExpr {
         return Collections.unmodifiableSet(depcies);
     }
 
-    public MsAbstractExpr(String schema) {
-        this(schema, null, new LinkedHashSet<>(), EnumSet.noneOf(DbObjType.class));
-    }
-
     public MsAbstractExpr(String schema, DbObjType... disabledDepcies) {
         this(schema, null, new LinkedHashSet<>(),
                 Arrays.stream(disabledDepcies)
@@ -42,11 +38,11 @@ public abstract class MsAbstractExpr {
         this(parent.schema, parent, parent.depcies, parent.disabledDepcies);
     }
 
-    private MsAbstractExpr(String schema, MsAbstractExpr parent, Set<GenericColumn> depcies, Set<DbObjType> allowedDepcies) {
+    private MsAbstractExpr(String schema, MsAbstractExpr parent, Set<GenericColumn> depcies, Set<DbObjType> disabledDepcies) {
         this.schema = schema;
         this.parent = parent;
         this.depcies = depcies;
-        this.disabledDepcies = allowedDepcies;
+        this.disabledDepcies = disabledDepcies;
     }
 
     protected MsAbstractExprWithNmspc<?> findCte(String cteName) {

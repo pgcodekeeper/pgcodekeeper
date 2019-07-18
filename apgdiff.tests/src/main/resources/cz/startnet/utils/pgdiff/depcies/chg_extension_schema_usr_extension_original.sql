@@ -1,0 +1,1 @@
+CREATE EXTENSION postgis SCHEMA public;

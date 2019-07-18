@@ -35,10 +35,6 @@ public class MsValueExpr extends MsAbstractExpr {
         super(parent);
     }
 
-    public MsValueExpr(String schema) {
-        super(schema);
-    }
-
     public MsValueExpr(String schema, DbObjType... disabledDepcies) {
         super(schema, disabledDepcies);
     }

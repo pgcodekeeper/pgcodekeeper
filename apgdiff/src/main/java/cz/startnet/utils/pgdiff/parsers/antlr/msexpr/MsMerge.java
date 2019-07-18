@@ -22,10 +22,6 @@ public class MsMerge extends MsAbstractExprWithNmspc<Merge_statementContext> {
         super(parent);
     }
 
-    public MsMerge(String schema) {
-        super(schema);
-    }
-
     @Override
     public List<String> analyze(Merge_statementContext merge) {
         With_expressionContext with = merge.with_expression();

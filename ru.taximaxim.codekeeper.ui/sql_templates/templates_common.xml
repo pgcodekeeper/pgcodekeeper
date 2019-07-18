@@ -25,7 +25,7 @@
     description="%alter.add.column.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.addcolumn"
-    >ALTER TABLE ${tableName}
+    >ALTER TABLE ${schemaName}.${tableName}
     ADD COLUMN ${columnName} ${dataType}</template>
     
 <template 
@@ -33,7 +33,7 @@
     description="%alter.alter.column.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.altercolumn"
-    >ALTER TABLE ${tableName}
+    >ALTER TABLE ${schemaName}.${tableName}
     ALTER COLUMN ${columnName} ${operation}</template>
 
 <template 
@@ -41,7 +41,7 @@
     description="%alter.drop.column.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.dropcolumn"
-    >ALTER TABLE ${tableName}
+    >ALTER TABLE ${schemaName}.${tableName}
     DROP COLUMN ${columnName}</template>
 
 <template 
@@ -82,7 +82,7 @@
     >SELECT
   ${columnName} 
 FROM
-  ${tableName}</template>
+  ${schemaName}.${tableName}</template>
 
 <template 
     name="select"
@@ -92,14 +92,14 @@ FROM
     >SELECT
   *
 FROM
-  ${tableName}</template>
+  ${schemaName}.${tableName}</template>
 
 <template 
     name="insert"
     description="%insert.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.insert"
-    >INSERT INTO ${tableName}
+    >INSERT INTO ${schemaName}.${tableName}
   ( ${columnName} )
 VALUES
   ( ${value} )</template>
@@ -109,7 +109,7 @@ VALUES
     description="%insert2.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.insert2"
-    >INSERT INTO ${tableName}
+    >INSERT INTO ${schemaName}.${tableName}
 VALUES
   ( ${value} )</template>
 
@@ -118,7 +118,7 @@ VALUES
     description="%update.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.update"
-    >UPDATE ${tableName}
+    >UPDATE ${schemaName}.${tableName}
   SET ${columnName} = ${value}</template>
 
 <template 
@@ -126,14 +126,14 @@ VALUES
     description="%delete.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.delete"
-    >DELETE FROM ${tableName}</template>
+    >DELETE FROM ${schemaName}.${tableName}</template>
 
 <template 
     name="truncate"
     description="%truncate.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCommon.truncate"
-    >TRUNCATE TABLE ${tableName}</template>
+    >TRUNCATE TABLE ${schemaName}.${tableName}</template>
 
 <template 
     name="case"
