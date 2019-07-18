@@ -109,10 +109,10 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
         Stream<PgObjLocation> loc = parser.getAllObjDefinitions();
         loc
         .filter(o -> text.isEmpty() || o.getObjName().toUpperCase(Locale.ROOT).contains(text))
-        .filter(o -> o.type != DbObjType.SEQUENCE && o.type != DbObjType.INDEX)
+        .filter(o -> o.getType() != DbObjType.SEQUENCE && o.getType() != DbObjType.INDEX)
         .sorted((o1, o2) -> o1.getFilePath().compareTo(o2.getFilePath()))
         .forEach(obj -> {
-            Image img = Activator.getDbObjImage(obj.type);
+            Image img = Activator.getDbObjImage(obj.getType());
             String displayText = obj.getObjName();
             if (!obj.getComment().isEmpty()) {
                 displayText += " - " + obj.getComment(); //$NON-NLS-1$

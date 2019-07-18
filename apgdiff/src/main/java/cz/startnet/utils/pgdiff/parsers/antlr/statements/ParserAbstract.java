@@ -376,13 +376,13 @@ public abstract class ParserAbstract {
     protected void addDepSafe(PgStatement st, List<? extends ParserRuleContext> ids,
             DbObjType type, boolean isPostgres, String signature) {
         PgObjLocation loc = getLocation(ids, type, StatementActions.NONE, true, signature);
-        if (loc != null && !ApgdiffUtils.isSystemSchema(loc.schema, isPostgres)) {
+        if (loc != null && !ApgdiffUtils.isSystemSchema(loc.getSchema(), isPostgres)) {
             ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
             loc.setOffset(getStart(nameCtx));
             loc.setLine(nameCtx.start.getLine());
             loc.setFilePath(fileName);
             if (!refMode) {
-                st.addDep(loc);
+                st.addDep(loc.getGenericColumn());
             }
             db.getObjReferences().computeIfAbsent(fileName, k -> new HashSet<>()).add(loc);
         }

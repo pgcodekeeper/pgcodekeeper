@@ -6,7 +6,7 @@ import java.util.Objects;
 import cz.startnet.utils.pgdiff.DangerStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public final class PgObjLocation extends GenericColumn implements Serializable {
+public final class PgObjLocation implements Serializable {
 
     private static final long serialVersionUID = -2207831039348997758L;
 
@@ -18,15 +18,22 @@ public final class PgObjLocation extends GenericColumn implements Serializable {
     private String comment = "";
     private final StatementActions action;
 
+    private final String schema;
+    private final String table;
+    private final String column;
+    private final DbObjType type;
+
     public PgObjLocation(String filePath) {
-        super(null, null);
+        this(null, null, StatementActions.NONE);
         this.filePath = filePath;
-        this.action = StatementActions.NONE;
     }
 
     public PgObjLocation(String schema, String table, String column,
             DbObjType type, StatementActions action) {
-        super(schema, table, column, type);
+        this.schema = schema;
+        this.table = table;
+        this.column = column;
+        this.type = type;
         this.action = action;
     }
 
@@ -75,9 +82,13 @@ public final class PgObjLocation extends GenericColumn implements Serializable {
         if (this == obj) {
             return true;
         }
-        if (obj instanceof PgObjLocation && super.equals(obj)) {
+        if (obj instanceof PgObjLocation) {
             PgObjLocation loc = (PgObjLocation) obj;
-            return loc.getOffset() == getOffset()
+            return  Objects.equals(schema, loc.schema)
+                    && Objects.equals(table, loc.table)
+                    && Objects.equals(column, loc.column)
+                    && Objects.equals(type, loc.type)
+                    && loc.getOffset() == getOffset()
                     && Objects.equals(loc.getFilePath(), getFilePath());
         }
         return false;
@@ -86,7 +97,11 @@ public final class PgObjLocation extends GenericColumn implements Serializable {
     @Override
     public int hashCode() {
         final int prime = 31;
-        int result = super.hashCode();
+        int result = 1;
+        result = prime * result + ((column == null) ? 0 : column.hashCode());
+        result = prime * result + ((schema == null) ? 0 : schema.hashCode());
+        result = prime * result + ((table == null) ? 0 : table.hashCode());
+        result = prime * result + ((type == null) ? 0 : type.hashCode());
         result = prime * result + offset;
         result = prime * result + ((filePath == null) ? 0 : filePath.hashCode());
         return result;
@@ -123,5 +138,57 @@ public final class PgObjLocation extends GenericColumn implements Serializable {
 
     public boolean isDanger() {
         return danger != null;
+    }
+
+    public GenericColumn getGenericColumn() {
+        return new GenericColumn(schema, table, column, type);
+    }
+
+    public String getObjName() {
+        if (column != null) {
+            return column;
+        } else if (table != null) {
+            return table;
+        } else if (schema != null) {
+            return schema;
+        }
+
+        return "";
+    }
+
+    public String getSchema() {
+        return schema;
+    }
+
+    public DbObjType getType() {
+        return type;
+    }
+
+    public final boolean compare(PgObjLocation col) {
+        return Objects.equals(schema, col.schema)
+                && Objects.equals(table, col.table)
+                && Objects.equals(column, col.column)
+                && compareTypes(col.type);
+    }
+
+    private boolean compareTypes(DbObjType objType) {
+        if (type == objType) {
+            return true;
+        }
+
+        switch (objType) {
+        case TABLE:
+        case VIEW:
+        case SEQUENCE:
+            return type == DbObjType.TABLE || type == DbObjType.VIEW || type == DbObjType.SEQUENCE;
+        case FUNCTION:
+        case AGGREGATE:
+            return type == DbObjType.FUNCTION || type == DbObjType.AGGREGATE;
+        case TYPE:
+        case DOMAIN:
+            return type == DbObjType.TYPE || type == DbObjType.DOMAIN;
+        default:
+            return false;
+        }
     }
 }
