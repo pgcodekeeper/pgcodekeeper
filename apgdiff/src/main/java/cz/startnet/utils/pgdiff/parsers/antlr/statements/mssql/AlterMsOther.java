@@ -39,7 +39,7 @@ public class AlterMsOther extends ParserAbstract {
         PgObjLocation ref = addObjReference(Arrays.asList(qname.schema, qname.name),
                 DbObjType.SEQUENCE, StatementActions.ALTER);
         if (!alter.RESTART().isEmpty()) {
-            ref.setWarningText(DangerStatement.RESTART_WITH);
+            ref.setWarning(DangerStatement.RESTART_WITH);
         }
     }
 }

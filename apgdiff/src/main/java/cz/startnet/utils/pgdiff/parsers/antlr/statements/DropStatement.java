@@ -116,7 +116,7 @@ public class DropStatement extends ParserAbstract {
             PgObjLocation loc = addObjReference(ids, type, StatementActions.DROP);
 
             if (type == DbObjType.TABLE) {
-                loc.setWarningText(DangerStatement.DROP_TABLE);
+                loc.setWarning(DangerStatement.DROP_TABLE);
             }
         }
     }

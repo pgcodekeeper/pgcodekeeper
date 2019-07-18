@@ -52,9 +52,9 @@ public class AlterTable extends TableAbstract {
 
         for (Table_actionContext tablAction : ctx.table_action()) {
             if (tablAction.column != null && tablAction.DROP() != null && tablAction.ALTER() == null) {
-                loc.setWarningText(DangerStatement.DROP_COLUMN);
+                loc.setWarning(DangerStatement.DROP_COLUMN);
             } else if (tablAction.datatype != null) {
-                loc.setWarningText(DangerStatement.ALTER_COLUMN);
+                loc.setWarning(DangerStatement.ALTER_COLUMN);
             }
 
             if (tablAction.owner_to() != null) {

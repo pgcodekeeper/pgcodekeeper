@@ -67,12 +67,12 @@ public class AlterMsTable extends TableAbstract {
         } else if (ctx.DROP() != null) {
             for (Table_action_dropContext drop : ctx.table_action_drop()) {
                 if (drop.COLUMN() != null) {
-                    ref.setWarningText(DangerStatement.DROP_COLUMN);
+                    ref.setWarning(DangerStatement.DROP_COLUMN);
                     break;
                 }
             }
         } else if (ctx.ALTER() != null && ctx.COLUMN() != null) {
-            ref.setWarningText(DangerStatement.ALTER_COLUMN);
+            ref.setWarning(DangerStatement.ALTER_COLUMN);
         } else if (ctx.TRIGGER() != null) {
             for (IdContext trigger : ctx.id()) {
                 MsTrigger tr = (MsTrigger) getSafe(AbstractTable::getTrigger, table, trigger);

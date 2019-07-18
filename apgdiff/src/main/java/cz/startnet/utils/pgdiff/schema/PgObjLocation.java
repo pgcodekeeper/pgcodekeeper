@@ -14,7 +14,7 @@ public final class PgObjLocation extends GenericColumn implements Serializable {
     private String filePath;
     private int lineNumber;
 
-    private String text;
+    private DangerStatement danger;
     private String comment = "";
     private final StatementActions action;
 
@@ -107,32 +107,21 @@ public final class PgObjLocation extends GenericColumn implements Serializable {
     }
 
     public String getWarningText() {
-        return text;
-    }
-
-    public void setWarningText(DangerStatement danger) {
         switch(danger) {
-        case ALTER_COLUMN:
-            text = "ALTER COLUMN ... TYPE statement";
-            break;
-        case DROP_COLUMN:
-            text = "DROP COLUMN statement";
-            break;
-        case DROP_TABLE:
-            text = "DROP TABLE statement";
-            break;
-        case RESTART_WITH:
-            text =  "ALTER SEQUENCE ... RESTART WITH statement";
-            break;
-        case UPDATE:
-            text = "UPDATE statement";
-            break;
-        default:
-            return;
+        case ALTER_COLUMN: return "ALTER COLUMN ... TYPE statement";
+        case DROP_COLUMN: return "DROP COLUMN statement";
+        case DROP_TABLE: return "DROP TABLE statement";
+        case RESTART_WITH: return "ALTER SEQUENCE ... RESTART WITH statement";
+        case UPDATE: return "UPDATE statement";
+        default: return null;
         }
     }
 
+    public void setWarning(DangerStatement danger) {
+        this.danger = danger;
+    }
+
     public boolean isDanger() {
-        return text != null;
+        return danger != null;
     }
 }

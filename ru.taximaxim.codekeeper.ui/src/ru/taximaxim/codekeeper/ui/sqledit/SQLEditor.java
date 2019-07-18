@@ -213,7 +213,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         Set<PgObjLocation> refs = getParser().getObjsForEditor(getEditorInput());
         IAnnotationModel model = getSourceViewer().getAnnotationModel();
         for (PgObjLocation loc : refs) {
-            if (loc.getWarningText() != null) {
+            if (loc.isDanger()) {
                 model.addAnnotation(new Annotation(MARKER.DANGER_ANNOTATION, false, loc.getWarningText()),
                         new Position(loc.getOffset(), loc.getObjLength()));
             }

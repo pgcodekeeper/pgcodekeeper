@@ -26,7 +26,7 @@ public class UpdateMsStatement extends ParserAbstract {
         if (qname != null) {
             PgObjLocation loc = addObjReference(Arrays.asList(qname.schema, qname.name),
                     DbObjType.TABLE, StatementActions.UPDATE);
-            loc.setWarningText(DangerStatement.UPDATE);
+            loc.setWarning(DangerStatement.UPDATE);
         }
     }
 }

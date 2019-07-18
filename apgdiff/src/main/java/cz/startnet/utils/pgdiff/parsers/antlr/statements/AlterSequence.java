@@ -44,7 +44,7 @@ public class AlterSequence extends ParserAbstract {
         }
 
         if (!ctx.RESTART().isEmpty()) {
-            loc.setWarningText(DangerStatement.RESTART_WITH);
+            loc.setWarning(DangerStatement.RESTART_WITH);
         }
     }
 }

@@ -23,6 +23,6 @@ public class UpdateStatement extends ParserAbstract {
     public void parseObject() {
         List<IdentifierContext> ids = ctx.update_table_name.identifier();
         PgObjLocation loc = addObjReference(ids, DbObjType.TABLE, StatementActions.UPDATE);
-        loc.setWarningText(DangerStatement.UPDATE);
+        loc.setWarning(DangerStatement.UPDATE);
     }
 }
