@@ -105,12 +105,12 @@ public class CreateMsFunction extends BatchContextProcessor {
 
             Select_statementContext select = bodyRet.select_statement();
             DbObjType [] disabledDepcies = new DbObjType[] {DbObjType.FUNCTION, DbObjType.PROCEDURE};
+            if (db.getArguments().isEnableFunctionBodiesDependencies()) {
+                disabledDepcies = new DbObjType[0];
+            }
             String schemaName;
             if (schema != null) {
                 schemaName = schema.getName();
-                if (schema.getDatabase().getArguments().isEnableFunctionBodiesDependencies()) {
-                    disabledDepcies = new DbObjType[0];
-                }
             } else {
                 schemaName = getSchemaNameSafe(ids);
             }

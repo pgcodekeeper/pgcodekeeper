@@ -107,13 +107,8 @@ public final class FullAnalyze {
                 case FUNCTION:
                 case PROCEDURE:
                     if (ctx instanceof VexContext) {
-                        ValueExpr exp;
-                        if (db.getArguments().isEnableFunctionBodiesDependencies()) {
-                            exp = new ValueExpr(db);
-                        } else {
-                            exp = new ValueExpr(db, DbObjType.FUNCTION, DbObjType.PROCEDURE);
-                        }
-                        analyze((VexContext) ctx, exp, statement);
+                        analyze((VexContext) ctx, new ValueExpr(db),
+                                statement);
                     } else {
                         funcDefinAnalyze((SqlContext) ctx, statement);
                     }
@@ -233,42 +228,23 @@ public final class FullAnalyze {
         for (StatementContext s : funcDefSqlCtx.statement()) {
             Data_statementContext ds = s.data_statement();
             if (ds != null) {
+                DbObjType[] disabledDepcies = new DbObjType[] { DbObjType.FUNCTION, DbObjType.PROCEDURE };
+                if (db.getArguments().isEnableFunctionBodiesDependencies()) {
+                    disabledDepcies = new DbObjType[0];
+                }
+
                 Select_stmtContext selCtx = ds.select_stmt();
                 Insert_stmt_for_psqlContext insCtx;
                 Update_stmt_for_psqlContext updCtx;
                 Delete_stmt_for_psqlContext delCtx;
                 if (selCtx != null) {
-                    Select select;
-                    if (db.getArguments().isEnableFunctionBodiesDependencies()) {
-                        select = new Select(db);
-                    } else {
-                        select = new Select(db, DbObjType.FUNCTION, DbObjType.PROCEDURE);
-                    }
-                    analyze(selCtx, select, rootFunc);
+                    analyze(selCtx, new Select(db, disabledDepcies), rootFunc);
                 } else if ((insCtx = ds.insert_stmt_for_psql()) != null) {
-                    Insert insert;
-                    if (db.getArguments().isEnableFunctionBodiesDependencies()) {
-                        insert = new Insert(db);
-                    } else {
-                        insert = new Insert(db, DbObjType.FUNCTION, DbObjType.PROCEDURE);
-                    }
-                    analyze(insCtx, insert, rootFunc);
+                    analyze(insCtx, new Insert(db, disabledDepcies), rootFunc);
                 } else if ((updCtx = ds.update_stmt_for_psql()) != null) {
-                    Update update;
-                    if (db.getArguments().isEnableFunctionBodiesDependencies()) {
-                        update = new Update(db);
-                    } else {
-                        update = new Update(db, DbObjType.FUNCTION, DbObjType.PROCEDURE);
-                    }
-                    analyze(updCtx, update, rootFunc);
+                    analyze(updCtx, new Update(db, disabledDepcies), rootFunc);
                 } else if ((delCtx = ds.delete_stmt_for_psql()) != null) {
-                    Delete delete;
-                    if (db.getArguments().isEnableFunctionBodiesDependencies()) {
-                        delete = new Delete(db);
-                    } else {
-                        delete = new Delete(db, DbObjType.FUNCTION, DbObjType.PROCEDURE);
-                    }
-                    analyze(delCtx, delete, rootFunc);
+                    analyze(delCtx, new Delete(db, disabledDepcies), rootFunc);
                 }
             }
             // TODO add processing for elements of 's.schema_statement()'
