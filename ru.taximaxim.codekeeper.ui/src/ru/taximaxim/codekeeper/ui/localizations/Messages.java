@@ -746,6 +746,8 @@ public final class Messages extends NLS {
 
     public static String dbUpdatePrefPage_status_never_delete;
 
+    public static String ProjectProperties_enable_proj_prefs;
+
     public static String ProjectProperties_change_projprefs_warn;
 
     public static String ProjectProperties_posix_is_used_warn;

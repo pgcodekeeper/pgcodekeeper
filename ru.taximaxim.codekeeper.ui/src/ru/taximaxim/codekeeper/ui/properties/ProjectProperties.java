@@ -29,6 +29,7 @@ import org.osgi.service.prefs.BackingStoreException;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
@@ -36,6 +37,9 @@ import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class ProjectProperties extends PropertyPage {
+
+    private Button btnEnableProjPref;
+    private Button btnNoPrivileges;
 
     private Button btnForceUnixNewlines;
     private Button btnDisableParser;
@@ -53,12 +57,15 @@ public class ProjectProperties extends PropertyPage {
 
     private boolean inApply;
 
+    private OverridablePrefs overridablePrefs;
+
     @Override
     public void setElement(IAdaptable element) {
         super.setElement(element);
         IProject project = element.getAdapter(IProject.class);
         prefs = new ProjectScope(project).getNode(UIConsts.PLUGIN_ID.THIS);
         isMsSql = OpenProjectUtils.checkMsSql(project);
+        overridablePrefs = new OverridablePrefs(project);
     }
 
     @Override
@@ -130,6 +137,30 @@ public class ProjectProperties extends PropertyPage {
             timeZoneWarn(tz);
         }
 
+        Label lblSeparator = new Label(panel, SWT.SEPARATOR | SWT.HORIZONTAL);
+        lblSeparator.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, false, false, 2, 1));
+
+        boolean overridePref = prefs.getBoolean(PROJ_PREF.ENABLE_PROJ_PREF_ROOT, false);
+        btnEnableProjPref = new Button(panel, SWT.CHECK);
+        btnEnableProjPref.setText(Messages.ProjectProperties_enable_proj_prefs);
+        btnEnableProjPref.setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, false, false, 2, 1));
+        btnEnableProjPref.setSelection(overridePref);
+        btnEnableProjPref.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                btnNoPrivileges.setEnabled(btnEnableProjPref.getSelection());
+            }
+        });
+
+        btnNoPrivileges = new Button(panel, SWT.CHECK);
+        btnNoPrivileges.setText(Messages.dbUpdatePrefPage_ignore_privileges);
+        GridData gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
+        gd.horizontalIndent = 10;
+        btnNoPrivileges.setLayoutData(gd);
+        btnNoPrivileges.setSelection(prefs.getBoolean(PREF.NO_PRIVILEGES, false));
+        btnNoPrivileges.setEnabled(overridePref);
+
         return panel;
     }
 
@@ -156,6 +187,9 @@ public class ProjectProperties extends PropertyPage {
 
     @Override
     protected void performDefaults() {
+        btnEnableProjPref.setSelection(false);
+        btnNoPrivileges.setEnabled(btnEnableProjPref.getSelection());
+
         btnDisableParser.setSelection(false);
         btnForceUnixNewlines.setSelection(true);
         btnBindProjToDb.setSelection(false);
@@ -204,6 +238,8 @@ public class ProjectProperties extends PropertyPage {
     }
 
     private void fillPrefs() throws BackingStoreException {
+        overridablePrefs.setEnableProjPrefRoot(btnEnableProjPref.getSelection());
+        prefs.putBoolean(PREF.NO_PRIVILEGES, btnNoPrivileges.getSelection());
         prefs.putBoolean(PROJ_PREF.DISABLE_PARSER_IN_EXTERNAL_FILES, btnDisableParser.getSelection());
         prefs.putBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, btnForceUnixNewlines.getSelection());
         prefs.put(PROJ_PREF.NAME_OF_BOUND_DB, dbForBind != null ? dbForBind.getName() : ""); //$NON-NLS-1$

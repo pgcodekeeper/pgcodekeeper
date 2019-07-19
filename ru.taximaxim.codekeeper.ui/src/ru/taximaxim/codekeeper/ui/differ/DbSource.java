@@ -16,6 +16,9 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.PlatformUI;
 
 import cz.startnet.utils.pgdiff.IProgressReporter;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
@@ -36,11 +39,13 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.consoles.UiProgressReporter;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
+import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
+import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
 
 public abstract class DbSource {
 
@@ -96,6 +101,19 @@ public abstract class DbSource {
 
     static PgDiffArguments getPgDiffArgs(String charset, String timeZone,
             boolean forceUnixNewlines, boolean msSql) {
+        IProject proj = null;
+        IWorkbench wb = PlatformUI.getWorkbench();
+        if (wb.getWorkbenchWindowCount() == 1) {
+            IEditorPart editor = wb.getWorkbenchWindows()[0].getActivePage().getActiveEditor();
+            if (editor instanceof ProjectEditorDiffer) {
+                proj = ((ProjectEditorDiffer) editor).getProject();
+            } else {
+                Log.log(Log.LOG_INFO, "Can't get project."); //$NON-NLS-1$
+            }
+        } else {
+            Log.log(Log.LOG_INFO, "Can't find project."); //$NON-NLS-1$
+        }
+
         PgDiffArguments args = new PgDiffArguments();
         IPreferenceStore mainPS = Activator.getDefault().getPreferenceStore();
         args.setInCharsetName(charset);
@@ -103,7 +121,7 @@ public abstract class DbSource {
         args.setDisableCheckFunctionBodies(!mainPS.getBoolean(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES));
         args.setIgnoreConcurrentModification(mainPS.getBoolean(PREF.IGNORE_CONCURRENT_MODIFICATION));
         args.setUsingTypeCastOff(!mainPS.getBoolean(DB_UPDATE_PREF.USING_ON_OFF));
-        args.setIgnorePrivileges(mainPS.getBoolean(PREF.NO_PRIVILEGES));
+        args.setIgnorePrivileges(new OverridablePrefs(proj).isIgnorePrivileges());
         args.setTimeZone(timeZone);
         args.setKeepNewlines(!forceUnixNewlines);
         args.setMsSql(msSql);
