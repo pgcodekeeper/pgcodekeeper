@@ -234,10 +234,6 @@ public abstract class ParserAbstract {
             DbObjType type, StatementActions action) {
         PgObjLocation loc = getLocation(ids, type, action, false, null);
         if (loc != null) {
-            ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
-            loc.setOffset(getStart(nameCtx));
-            loc.setLine(nameCtx.start.getLine());
-            loc.setFilePath(fileName);
             db.getObjReferences().computeIfAbsent(fileName, k -> new HashSet<>()).add(loc);
         }
 
@@ -291,10 +287,6 @@ public abstract class ParserAbstract {
         PgObjLocation loc = getLocation(ids, child.getStatementType(),
                 StatementActions.CREATE, false, null);
         if (loc != null) {
-            ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
-            loc.setOffset(getStart(nameCtx));
-            loc.setLine(nameCtx.start.getLine());
-            loc.setFilePath(fileName);
             child.setLocation(loc);
             db.getObjDefinitions().computeIfAbsent(fileName, k -> new HashSet<>()).add(loc);
             db.getObjReferences().computeIfAbsent(fileName, k -> new HashSet<>()).add(loc);
@@ -311,7 +303,8 @@ public abstract class ParserAbstract {
         case ROLE:
         case USER:
         case DATABASE:
-            return new PgObjLocation(nameCtx.getText(), type, action);
+            return new PgObjLocation(nameCtx.getText(), type, action,
+                    getStart(nameCtx), nameCtx.start.getLine(), fileName);
         default:
             break;
         }
@@ -348,14 +341,16 @@ public abstract class ParserAbstract {
         case TABLE:
         case TYPE:
         case VIEW:
-            return new PgObjLocation(schemaName, name, type, action);
+            return new PgObjLocation(schemaName, name, type, action,
+                    getStart(nameCtx), nameCtx.start.getLine(), fileName);
         case CONSTRAINT:
         case INDEX:
         case TRIGGER:
         case RULE:
         case COLUMN:
             return new PgObjLocation(schemaName, QNameParser.getSecondName(ids),
-                    name, type, action);
+                    name, type, action,
+                    getStart(nameCtx), nameCtx.start.getLine(), fileName);
         default:
             return null;
         }
@@ -377,10 +372,6 @@ public abstract class ParserAbstract {
             DbObjType type, boolean isPostgres, String signature) {
         PgObjLocation loc = getLocation(ids, type, StatementActions.NONE, true, signature);
         if (loc != null && !ApgdiffUtils.isSystemSchema(loc.getSchema(), isPostgres)) {
-            ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
-            loc.setOffset(getStart(nameCtx));
-            loc.setLine(nameCtx.start.getLine());
-            loc.setFilePath(fileName);
             if (!refMode) {
                 st.addDep(loc.getGenericColumn());
             }

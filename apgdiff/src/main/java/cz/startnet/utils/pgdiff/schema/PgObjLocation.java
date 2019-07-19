@@ -8,14 +8,15 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public final class PgObjLocation implements Serializable {
 
-    private static final long serialVersionUID = -2207831039348997758L;
-
-    private int offset;
-    private String filePath;
-    private int lineNumber;
+    private static final long serialVersionUID = 1284715027798712221L;
 
     private DangerStatement danger;
     private String comment = "";
+
+    private final int offset;
+    private final int lineNumber;
+    private final String filePath;
+
     private final StatementActions action;
 
     private final String schema;
@@ -23,42 +24,35 @@ public final class PgObjLocation implements Serializable {
     private final String column;
     private final DbObjType type;
 
-    public PgObjLocation(String filePath) {
-        this(null, null, StatementActions.NONE);
-        this.filePath = filePath;
-    }
-
     public PgObjLocation(String schema, String table, String column,
-            DbObjType type, StatementActions action) {
+            DbObjType type, StatementActions action,
+            int offset, int lineNumber, String filePath) {
         this.schema = schema;
         this.table = table;
         this.column = column;
         this.type = type;
         this.action = action;
+        this.offset = offset;
+        this.lineNumber = lineNumber;
+        this.filePath = filePath;
     }
 
-    public PgObjLocation(String schema, String object, DbObjType type, StatementActions action) {
-        this(schema, object, null, type, action);
+    public PgObjLocation(String schema, String object, DbObjType type, StatementActions action,
+            int offset, int lineNumber, String filePath) {
+        this(schema, object, null, type, action, offset, lineNumber, filePath);
     }
 
-    public PgObjLocation(String schema, DbObjType type, StatementActions action) {
-        this(schema, null, type, action);
+    public PgObjLocation(String schema, DbObjType type, StatementActions action,
+            int offset, int lineNumber, String filePath) {
+        this(schema, null, type, action, offset, lineNumber, filePath);
+    }
+
+    public PgObjLocation(String filePath) {
+        this(null, null, StatementActions.NONE, 0, 0, filePath);
     }
 
     public StatementActions getAction() {
         return action;
-    }
-
-    public void setOffset(int offset) {
-        this.offset = offset;
-    }
-
-    public void setLine(int lineNumber) {
-        this.lineNumber = lineNumber;
-    }
-
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
     }
 
     public int getOffset() {
@@ -84,11 +78,12 @@ public final class PgObjLocation implements Serializable {
         }
         if (obj instanceof PgObjLocation) {
             PgObjLocation loc = (PgObjLocation) obj;
-            return  Objects.equals(schema, loc.schema)
+            return Objects.equals(schema, loc.schema)
                     && Objects.equals(table, loc.table)
                     && Objects.equals(column, loc.column)
                     && Objects.equals(type, loc.type)
-                    && loc.getOffset() == getOffset()
+                    && offset == loc.offset
+                    && lineNumber == loc.lineNumber
                     && Objects.equals(loc.getFilePath(), getFilePath());
         }
         return false;
@@ -103,14 +98,9 @@ public final class PgObjLocation implements Serializable {
         result = prime * result + ((table == null) ? 0 : table.hashCode());
         result = prime * result + ((type == null) ? 0 : type.hashCode());
         result = prime * result + offset;
+        result = prime * result + lineNumber;
         result = prime * result + ((filePath == null) ? 0 : filePath.hashCode());
         return result;
-    }
-
-    @Override
-    public String toString() {
-        return getObjName() + ' ' + filePath + ' ' + offset + ' '
-                + getObjLength() + ' ' + type;
     }
 
     public String getComment() {
@@ -122,7 +112,7 @@ public final class PgObjLocation implements Serializable {
     }
 
     public String getWarningText() {
-        switch(danger) {
+        switch (danger) {
         case ALTER_COLUMN: return "ALTER COLUMN ... TYPE statement";
         case DROP_COLUMN: return "DROP COLUMN statement";
         case DROP_TABLE: return "DROP TABLE statement";
