@@ -748,6 +748,8 @@ public final class Messages extends NLS {
 
     public static String ProjectProperties_enable_proj_prefs;
 
+    public static String ProjectProperties_use_global_ignore_list;
+
     public static String ProjectProperties_change_projprefs_warn;
 
     public static String ProjectProperties_posix_is_used_warn;

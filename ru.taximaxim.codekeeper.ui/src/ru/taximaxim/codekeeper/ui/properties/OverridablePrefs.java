@@ -37,4 +37,9 @@ public class OverridablePrefs {
         return isEnableProjPrefRoot ? projPS.getBoolean(PREF.NO_PRIVILEGES, false)
                 : mainPS.getBoolean(PREF.NO_PRIVILEGES);
     }
+
+    public boolean isUseGlobalIgnoreList() {
+        return isEnableProjPrefRoot ? projPS.getBoolean(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, true)
+                : true;
+    }
 }

@@ -103,7 +103,7 @@ public abstract class DbSource {
             boolean forceUnixNewlines, boolean msSql) {
         IProject proj = null;
         IWorkbench wb = PlatformUI.getWorkbench();
-        if (wb.getWorkbenchWindowCount() == 1) {
+        if (wb != null && wb.getWorkbenchWindowCount() == 1) {
             IEditorPart editor = wb.getWorkbenchWindows()[0].getActivePage().getActiveEditor();
             if (editor instanceof ProjectEditorDiffer) {
                 proj = ((ProjectEditorDiffer) editor).getProject();

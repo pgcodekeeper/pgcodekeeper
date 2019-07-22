@@ -160,6 +160,7 @@ public interface UIConsts {
         String STORAGE_LIST = "storageList"; //$NON-NLS-1$
         String NAME_OF_BOUND_DB = "nameOfBoundDatabase"; //$NON-NLS-1$
         String ENABLE_PROJ_PREF_ROOT = "prefEnableProjPrefRoot"; //$NON-NLS-1$
+        String USE_GLOBAL_IGNORE_LIST = "prefUseGlobalIgnoreList"; //$NON-NLS-1$
     }
 
     interface PROJ_PATH {

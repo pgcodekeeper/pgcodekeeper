@@ -121,6 +121,8 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
+import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
+import ru.taximaxim.codekeeper.ui.properties.ProjectProperties;
 import ru.taximaxim.codekeeper.ui.propertytests.ChangesJobTester;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 import ru.taximaxim.codekeeper.ui.views.DBPair;
@@ -759,7 +761,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         IgnoreList ignoreList = null;
         if (diffTree != null) {
-            ignoreList = InternalIgnoreList.readInternalList();
+            ignoreList = new OverridablePrefs(proj.getProject()).isUseGlobalIgnoreList() 
+                    ? InternalIgnoreList.readInternalList() : new IgnoreList();
+
             InternalIgnoreList.readAppendList(
                     proj.getPathToProject().resolve(FILE.IGNORED_OBJECTS), ignoreList);
 

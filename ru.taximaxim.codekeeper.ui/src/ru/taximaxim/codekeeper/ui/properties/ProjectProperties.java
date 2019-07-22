@@ -7,6 +7,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
@@ -40,6 +41,7 @@ public class ProjectProperties extends PropertyPage {
 
     private Button btnEnableProjPref;
     private Button btnNoPrivileges;
+    private Button btnUseGlobalIgnoreList;
 
     private Button btnForceUnixNewlines;
     private Button btnDisableParser;
@@ -150,6 +152,7 @@ public class ProjectProperties extends PropertyPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 btnNoPrivileges.setEnabled(btnEnableProjPref.getSelection());
+                btnUseGlobalIgnoreList.setEnabled(btnEnableProjPref.getSelection());
             }
         });
 
@@ -160,6 +163,14 @@ public class ProjectProperties extends PropertyPage {
         btnNoPrivileges.setLayoutData(gd);
         btnNoPrivileges.setSelection(prefs.getBoolean(PREF.NO_PRIVILEGES, false));
         btnNoPrivileges.setEnabled(overridePref);
+
+        btnUseGlobalIgnoreList = new Button(panel, SWT.CHECK);
+        btnUseGlobalIgnoreList.setText(Messages.ProjectProperties_use_global_ignore_list);
+        gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
+        gd.horizontalIndent = 10;
+        btnUseGlobalIgnoreList.setLayoutData(gd);
+        btnUseGlobalIgnoreList.setSelection(prefs.getBoolean(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, true));
+        btnUseGlobalIgnoreList.setEnabled(overridePref);
 
         return panel;
     }
@@ -187,9 +198,15 @@ public class ProjectProperties extends PropertyPage {
 
     @Override
     protected void performDefaults() {
+        // overridable preferences
+        IPreferenceStore mainPS = Activator.getDefault().getPreferenceStore();
         btnEnableProjPref.setSelection(false);
         btnNoPrivileges.setEnabled(btnEnableProjPref.getSelection());
+        btnNoPrivileges.setSelection(mainPS.getBoolean(PREF.NO_PRIVILEGES));
+        btnUseGlobalIgnoreList.setEnabled(btnEnableProjPref.getSelection());
+        btnUseGlobalIgnoreList.setSelection(true);
 
+        // project preferences
         btnDisableParser.setSelection(false);
         btnForceUnixNewlines.setSelection(true);
         btnBindProjToDb.setSelection(false);
@@ -240,6 +257,7 @@ public class ProjectProperties extends PropertyPage {
     private void fillPrefs() throws BackingStoreException {
         overridablePrefs.setEnableProjPrefRoot(btnEnableProjPref.getSelection());
         prefs.putBoolean(PREF.NO_PRIVILEGES, btnNoPrivileges.getSelection());
+        prefs.putBoolean(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, btnUseGlobalIgnoreList.getSelection());
         prefs.putBoolean(PROJ_PREF.DISABLE_PARSER_IN_EXTERNAL_FILES, btnDisableParser.getSelection());
         prefs.putBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, btnForceUnixNewlines.getSelection());
         prefs.put(PROJ_PREF.NAME_OF_BOUND_DB, dbForBind != null ? dbForBind.getName() : ""); //$NON-NLS-1$
