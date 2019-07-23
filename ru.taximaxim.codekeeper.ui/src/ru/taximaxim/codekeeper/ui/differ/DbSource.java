@@ -34,7 +34,6 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.InputStreamProvider;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.consoles.UiProgressReporter;
@@ -101,31 +100,31 @@ public abstract class DbSource {
 
     static PgDiffArguments getPgDiffArgs(String charset, String timeZone,
             boolean forceUnixNewlines, boolean msSql) {
-        IProject proj = null;
-        IWorkbench wb = PlatformUI.getWorkbench();
-        if (wb != null && wb.getWorkbenchWindowCount() == 1) {
-            IEditorPart editor = wb.getWorkbenchWindows()[0].getActivePage().getActiveEditor();
-            if (editor instanceof ProjectEditorDiffer) {
-                proj = ((ProjectEditorDiffer) editor).getProject();
-            } else {
-                Log.log(Log.LOG_INFO, "Can't get project."); //$NON-NLS-1$
-            }
-        } else {
-            Log.log(Log.LOG_INFO, "Can't find project."); //$NON-NLS-1$
-        }
-
         PgDiffArguments args = new PgDiffArguments();
         IPreferenceStore mainPS = Activator.getDefault().getPreferenceStore();
+        OverridablePrefs overridable = new OverridablePrefs(getCurrentProj());
         args.setInCharsetName(charset);
-        args.setAddTransaction(mainPS.getBoolean(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION));
-        args.setDisableCheckFunctionBodies(!mainPS.getBoolean(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES));
+        args.setAddTransaction(overridable.isScriptInTransaction());
+        args.setDisableCheckFunctionBodies(!overridable.isCheckFuncBodies());
         args.setIgnoreConcurrentModification(mainPS.getBoolean(PREF.IGNORE_CONCURRENT_MODIFICATION));
-        args.setUsingTypeCastOff(!mainPS.getBoolean(DB_UPDATE_PREF.USING_ON_OFF));
-        args.setIgnorePrivileges(new OverridablePrefs(proj).isIgnorePrivileges());
+        args.setUsingTypeCastOff(!overridable.isAlterColUsingExpr());
+        args.setIgnorePrivileges(overridable.isIgnorePrivileges());
         args.setTimeZone(timeZone);
         args.setKeepNewlines(!forceUnixNewlines);
         args.setMsSql(msSql);
         return args;
+    }
+
+    public static IProject getCurrentProj() {
+        IWorkbench wb = PlatformUI.getWorkbench();
+        if (wb.getWorkbenchWindowCount() == 1) {
+            IEditorPart editor = wb.getWorkbenchWindows()[0].getActivePage().getActiveEditor();
+            if (editor instanceof ProjectEditorDiffer) {
+                return ((ProjectEditorDiffer) editor).getProject();
+            }
+        }
+        Log.log(Log.LOG_INFO, "Can't find project."); //$NON-NLS-1$
+        return null;
     }
 
     public static DbSource fromDirTree(boolean forceUnixNewlines,String dirTreePath,

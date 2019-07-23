@@ -7,6 +7,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 
@@ -19,12 +20,14 @@ public class OverridablePrefs {
     private IEclipsePreferences projPS;
 
     private boolean isEnableProjPrefRoot;
+    private boolean isEnableProjPrefDbUpdate;
 
     public OverridablePrefs(IProject project) {
         mainPS = Activator.getDefault().getPreferenceStore();
         if (project != null) {
             projPS = new ProjectScope(project).getNode(UIConsts.PLUGIN_ID.THIS);
             this.isEnableProjPrefRoot = projPS.getBoolean(PROJ_PREF.ENABLE_PROJ_PREF_ROOT, false);
+            this.isEnableProjPrefDbUpdate = projPS.getBoolean(PROJ_PREF.ENABLE_PROJ_PREF_DB_UPDATE, false);
         }
     }
 
@@ -41,5 +44,30 @@ public class OverridablePrefs {
     public boolean isUseGlobalIgnoreList() {
         return isEnableProjPrefRoot ? projPS.getBoolean(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, true)
                 : true;
+    }
+
+    public void setEnableProjPrefDbUpdate(boolean isEnableProjPrefDbUpdate) {
+        this.isEnableProjPrefDbUpdate = isEnableProjPrefDbUpdate;
+        projPS.putBoolean(PROJ_PREF.ENABLE_PROJ_PREF_DB_UPDATE, isEnableProjPrefDbUpdate);
+    }
+
+    public boolean isScriptInTransaction() {
+        return isEnableProjPrefDbUpdate ? projPS.getBoolean(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION, false)
+                : mainPS.getBoolean(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION);
+    }
+
+    public boolean isCheckFuncBodies() {
+        return isEnableProjPrefDbUpdate ? projPS.getBoolean(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES, false)
+                : mainPS.getBoolean(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES);
+    }
+
+    public boolean isAlterColUsingExpr() {
+        return isEnableProjPrefDbUpdate ? projPS.getBoolean(DB_UPDATE_PREF.USING_ON_OFF, false)
+                : mainPS.getBoolean(DB_UPDATE_PREF.USING_ON_OFF);
+    }
+
+    public boolean isCreateIdxConcurrent() {
+        return isEnableProjPrefDbUpdate ? projPS.getBoolean(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY, false)
+                : mainPS.getBoolean(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY);
     }
 }

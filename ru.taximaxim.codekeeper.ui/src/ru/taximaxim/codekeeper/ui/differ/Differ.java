@@ -11,7 +11,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.jface.preference.IPreferenceStore;
 
 import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
@@ -21,11 +20,10 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
 
 public class Differ implements IRunnableWithProgress {
 
@@ -164,8 +162,8 @@ public class Differ implements IRunnableWithProgress {
             oldArgs = db.getArguments();
             consumer = (db::setArguments);
             PgDiffArguments newArgs = oldArgs.clone();
-            IPreferenceStore prefs = Activator.getDefault().getPreferenceStore();
-            newArgs.setConcurrentlyMode(prefs.getBoolean(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
+            newArgs.setConcurrentlyMode(new OverridablePrefs(DbSource.getCurrentProj())
+                    .isCreateIdxConcurrent());
             db.setArguments(newArgs);
         }
 
