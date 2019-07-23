@@ -122,7 +122,6 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
-import ru.taximaxim.codekeeper.ui.properties.ProjectProperties;
 import ru.taximaxim.codekeeper.ui.propertytests.ChangesJobTester;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 import ru.taximaxim.codekeeper.ui.views.DBPair;
@@ -523,14 +522,16 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         if (isDbInfo) {
             DbInfo dbInfo = (DbInfo) currentRemote;
             DbSource dbRemote = DbSource.fromDbInfo(dbInfo, forceUnixNewlines,
-                    charset, projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
+                    charset, projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC),
+                    proj.getProject());
             newDiffer = new TreeDiffer(dbProject, dbRemote);
             name = dbInfo.getName();
             saveLastDb(dbInfo);
         } else {
             File file = (File) currentRemote;
             name = file.getName();
-            DbSource dbRemote = DbSource.fromFile(forceUnixNewlines, file, charset, isMsProj);
+            DbSource dbRemote = DbSource.fromFile(forceUnixNewlines, file, charset,
+                    isMsProj, proj.getProject());
             newDiffer = new TreeDiffer(dbProject, dbRemote);
         }
 
@@ -713,7 +714,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         final Differ differ = new Differ(dbRemote.getDbObject(),
                 dbProject.getDbObject(), diffTree.getRevertedCopy(), false,
                 pref.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC),
-                OpenProjectUtils.checkMsSql(proj.getProject()));
+                OpenProjectUtils.checkMsSql(proj.getProject()), proj.getProject());
         differ.setAdditionalDepciesSource(manualDepciesSource);
         differ.setAdditionalDepciesTarget(manualDepciesTarget);
 
