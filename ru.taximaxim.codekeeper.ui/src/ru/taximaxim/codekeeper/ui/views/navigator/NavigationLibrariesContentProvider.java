@@ -5,11 +5,13 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 
 import cz.startnet.utils.pgdiff.libraries.PgLibrary;
 import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 
 public class NavigationLibrariesContentProvider implements ITreeContentProvider {
 
@@ -25,8 +27,8 @@ public class NavigationLibrariesContentProvider implements ITreeContentProvider 
                 IProject proj = ((IProject)parent);
                 List<PgLibrary> libs = new DependenciesXmlStore(Paths.get(proj.getLocation()
                         .append(DependenciesXmlStore.FILE_NAME).toString())).readObjects();
-                return new Object[] {LibraryContainer.create(libs)};
-            } catch (IOException e) {
+                return new Object[] {LibraryContainer.create(libs, proj.hasNature(NATURE.MS))};
+            } catch (IOException | CoreException e) {
                 Log.log(e);
             }
         } else if (parent instanceof LibraryContainer) {

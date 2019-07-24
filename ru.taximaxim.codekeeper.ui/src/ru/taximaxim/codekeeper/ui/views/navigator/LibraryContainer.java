@@ -23,29 +23,31 @@ public class LibraryContainer {
     private final LibraryContainer parent;
     private final Path path;
     private final String name;
+    private final boolean isMsSql;
     private final List<LibraryContainer> children = new ArrayList<>();
 
     private LibraryContainer(LibraryContainer parent, Path path) {
-        this(parent, path, path.getFileName().toString());
+        this(parent, path, path.getFileName().toString(), parent.isMsSql);
     }
 
-    private LibraryContainer(LibraryContainer parent, Path path, String name) {
+    private LibraryContainer(LibraryContainer parent, Path path, String name, boolean isMsSql) {
         this.parent = parent;
         this.path = path;
         this.name = name;
+        this.isMsSql = isMsSql;
         if (parent != null) {
             parent.addChild(this);
         }
     }
 
-    public static LibraryContainer create(List<PgLibrary> libs) throws IOException {
-        LibraryContainer root = new LibraryContainer(null, null, ROOT);
+    public static LibraryContainer create(List<PgLibrary> libs, boolean isMsSql) throws IOException {
+        LibraryContainer root = new LibraryContainer(null, null, ROOT, isMsSql);
 
         for (PgLibrary lib : libs) {
             String path = lib.getPath();
             switch (lib.getSource()) {
             case JDBC:
-                new LibraryContainer(root, null, JdbcConnector.dbNameFromUrl(path));
+                new LibraryContainer(root, null, JdbcConnector.dbNameFromUrl(path), isMsSql);
                 break;
             case URL:
                 try {
@@ -56,7 +58,7 @@ public class LibraryContainer {
                 } catch (URISyntaxException e) {
                     // Nothing to do, use default path
                 }
-                new LibraryContainer(root, null, path);
+                new LibraryContainer(root, null, path, isMsSql);
                 break;
             case LOCAL:
                 Path p = Paths.get(path);
@@ -85,7 +87,7 @@ public class LibraryContainer {
         }
     }
 
-    private static void readFile(LibraryContainer parent, final Path path) throws IOException {
+    private static void readFile(LibraryContainer parent, Path path) throws IOException {
         if (Files.isDirectory(path)) {
             LibraryContainer dir = new LibraryContainer(parent, path);
             Comparator<Path> comparator = (p1, p2) -> {
@@ -113,6 +115,10 @@ public class LibraryContainer {
 
     public LibraryContainer getParent() {
         return parent;
+    }
+
+    public boolean isMsSql() {
+        return isMsSql;
     }
 
     private void addChild(LibraryContainer child) {
