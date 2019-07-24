@@ -704,6 +704,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     }
 
     public void diff() {
+        updatePrefUsingTypeCast();
+
         Log.log(Log.LOG_INFO, "Started DB update"); //$NON-NLS-1$
         if (warnCheckedElements() < 1 ||
                 !OpenProjectUtils.checkVersionAndWarn(proj.getProject(), parent.getShell(), true)) {
@@ -741,6 +743,15 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         });
         job.setUser(true);
         job.schedule();
+    }
+
+    // crutch for update the value of the type cast preference
+    // ('Print ALTER COLUMN ... TYPE with USING expression'),
+    // before running the 'diff()'-method
+    private void updatePrefUsingTypeCast() {
+        boolean isUsingExpr = new OverridablePrefs(proj.getProject()).isAlterColUsingExpr();
+        dbRemote.getDbObject().getArguments().setUsingTypeCastOff(!isUsingExpr);
+        dbProject.getDbObject().getArguments().setUsingTypeCastOff(!isUsingExpr);
     }
 
     private void setInput(DbSource dbProject, DbSource dbRemote, TreeElement diffTree) {
