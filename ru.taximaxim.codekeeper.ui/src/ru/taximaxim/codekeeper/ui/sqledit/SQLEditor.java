@@ -77,6 +77,7 @@ import cz.startnet.utils.pgdiff.IProgressReporter;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcMsConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
+import cz.startnet.utils.pgdiff.loader.callables.CurrentQuery;
 import cz.startnet.utils.pgdiff.parsers.antlr.ScriptParser;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -516,7 +517,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
             IProgressReporter reporter = new UiProgressReporter(monitor);
             try (IProgressReporter toClose = reporter) {
-                List<List<String>> batches = parser.batch();
+                List<List<CurrentQuery>> batches = parser.batch();
                 new JdbcRunner(monitor).runBatches(connector, batches, reporter);
                 ProjectEditorDiffer.notifyDbChanged(dbInfo);
                 return Status.OK_STATUS;

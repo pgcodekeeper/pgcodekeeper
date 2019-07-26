@@ -6,6 +6,7 @@ Bundle-Version: 5.8.0.qualifier
 Export-Package: cz.startnet.utils.pgdiff,
  cz.startnet.utils.pgdiff.libraries,
  cz.startnet.utils.pgdiff.loader,
+ cz.startnet.utils.pgdiff.loader.callables,
  cz.startnet.utils.pgdiff.parsers.antlr,
  cz.startnet.utils.pgdiff.schema,
  cz.startnet.utils.pgdiff.schema.system,

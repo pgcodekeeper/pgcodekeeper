@@ -28,12 +28,12 @@ public class QueriesBatchCallable extends StatementCallable<String> {
 
     private static final Pattern PATTERN_WS = Pattern.compile("\\s+");
 
-    private final List<List<String>> batches;
+    private final List<List<CurrentQuery>> batches;
     private final IProgressMonitor monitor;
     private final Connection connection;
     private final IProgressReporter reporter;
 
-    public QueriesBatchCallable(Statement st, List<List<String>> batches,
+    public QueriesBatchCallable(Statement st, List<List<CurrentQuery>> batches,
             IProgressMonitor monitor, IProgressReporter reporter, Connection connection) {
         super(st, null);
         this.batches = batches;
@@ -46,32 +46,37 @@ public class QueriesBatchCallable extends StatementCallable<String> {
     public String call() throws Exception {
         SubMonitor subMonitor = SubMonitor.convert(monitor);
         String currQuery = null;
+        int currQueryLine = 1;
         try {
             if (batches.size() == 1) {
-                List<String> queries = batches.get(0);
+                List<CurrentQuery> queries = batches.get(0);
                 subMonitor.setWorkRemaining(queries.size());
-                for (String query : queries) {
+                for (CurrentQuery query : queries) {
                     PgDiffUtils.checkCancelled(monitor);
-                    currQuery = query;
-
-                    executeSingleStatement(query);
+                    currQuery = query.getSql();
+                    currQueryLine = query.getLine();
+                    executeSingleStatement(currQuery);
 
                     subMonitor.worked(1);
                 }
             } else {
                 subMonitor.setWorkRemaining(batches.size());
                 connection.setAutoCommit(false);
-                for (List<String> queriesList : batches) {
+                for (List<CurrentQuery> queriesList : batches) {
                     PgDiffUtils.checkCancelled(monitor);
                     // in case we're executing a real batch after a single-statement one
                     currQuery = null;
                     if (queriesList.size() == 1) {
-                        currQuery = queriesList.get(0);
+                        CurrentQuery query = queriesList.get(0);
+                        currQuery = query.getSql();
+                        currQueryLine = query.getLine();
                         executeSingleStatement(currQuery);
                     } else {
-                        for (String query : queriesList) {
-                            st.addBatch(query);
-                            writeStatus(query);
+                        for (CurrentQuery query : queriesList) {
+                            currQuery = query.getSql();
+                            currQueryLine = query.getLine();
+                            st.addBatch(currQuery);
+                            writeStatus(currQuery);
                         }
 
                         if (reporter != null) {
@@ -100,6 +105,9 @@ public class QueriesBatchCallable extends StatementCallable<String> {
                 if (offset > 0) {
                     appendPosition(sb, currQuery, offset);
                 } else {
+                    if (currQueryLine > 1) {
+                        sb.append("\n  Line: ").append(currQueryLine);
+                    }
                     sb.append('\n').append(currQuery);
                 }
             }
@@ -114,6 +122,8 @@ public class QueriesBatchCallable extends StatementCallable<String> {
             if (currQuery != null) {
                 if (err.getLineNumber() > 1) {
                     sb.append("\n  Line: ").append(err.getLineNumber());
+                } else if (currQueryLine > 1) {
+                    sb.append("\n  Line: ").append(currQueryLine);
                 }
                 sb.append('\n').append(currQuery);
             }
@@ -182,6 +192,9 @@ public class QueriesBatchCallable extends StatementCallable<String> {
     }
 
     private void writeStatus(String query) {
+        // TODO for message use here 'CurrentQuery.getStmtAction' when the stmtAction
+        // in CurrentQuery will be filled with new logic (as in ReferenceListener)
+
         if (reporter == null) {
             return;
         }

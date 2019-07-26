@@ -7,8 +7,10 @@ import java.util.List;
 import java.util.Set;
 
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
+import cz.startnet.utils.pgdiff.loader.callables.CurrentQuery;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_sequence_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_statementContext;
@@ -21,6 +23,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.StatementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.BatchContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Ddl_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Dml_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Sql_clausesContext;
@@ -31,7 +34,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 public class ScriptParser {
 
     private final String script;
-    private final List<List<String>> batches = new ArrayList<>();
+    private final List<List<CurrentQuery>> batches = new ArrayList<>();
     private final List<AntlrError> errors = new ArrayList<>();
     private final Set<DangerStatement> dangerStatements = EnumSet.noneOf(DangerStatement.class);
 
@@ -60,19 +63,25 @@ public class ScriptParser {
         }
     }
 
-    public List<List<String>> batch() {
+    public List<List<CurrentQuery>> batch() {
         return batches;
     }
 
     private void batchMs(Tsql_fileContext rootCtx, CommonTokenStream stream) {
         for (BatchContext batch : rootCtx.batch()) {
-            List<String> l = new ArrayList<>();
+            List<CurrentQuery> l = new ArrayList<>();
             if (batch.batch_statement() != null) {
-                l.add(ParserAbstract.getFullCtxTextWithHidden(batch.batch_statement(), stream));
+                Batch_statementContext st = batch.batch_statement();
+                String query = ParserAbstract
+                        .getFullCtxTextWithHidden(batch.batch_statement(), stream);
+                l.add(new CurrentQuery(getStmtAction(st), getOffsetInFullTxt(query),
+                        st.getStart().getLine(), query));
             } else {
                 List<St_clauseContext> clauses = batch.sql_clauses().st_clause();
                 for (St_clauseContext clause : clauses) {
-                    l.add(ParserAbstract.getFullCtxText(clause));
+                    String query = ParserAbstract.getFullCtxText(clause);
+                    l.add(new CurrentQuery(getStmtAction(clause), getOffsetInFullTxt(query),
+                            clause.getStart().getLine(), query));
                 }
             }
             batches.add(l);
@@ -80,12 +89,23 @@ public class ScriptParser {
     }
 
     private void batchPg(SqlContext rootCtx) {
-        List<String> l = new ArrayList<>();
+        List<CurrentQuery> l = new ArrayList<>();
         batches.add(l);
 
         for (StatementContext st : rootCtx.statement()) {
-            l.add(ParserAbstract.getFullCtxText(st));
+            String query = ParserAbstract.getFullCtxText(st);
+            l.add(new CurrentQuery(getStmtAction(st), getOffsetInFullTxt(query),
+                    st.getStart().getLine(), query));
         }
+    }
+
+    private String getStmtAction(ParserRuleContext ctx) {
+        // TODO replace it by logic like in ReferenceListener
+        return ctx.getStart().getText() + " --- ";
+    }
+
+    private int getOffsetInFullTxt(String query) {
+        return script.indexOf(query);
     }
 
     private void checkPgDanger(SqlContext rootCtx) {
