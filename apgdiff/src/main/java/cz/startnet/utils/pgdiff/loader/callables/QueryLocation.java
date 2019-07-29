@@ -1,36 +1,26 @@
 package cz.startnet.utils.pgdiff.loader.callables;
 
+import cz.startnet.utils.pgdiff.AbstractErrorLocation;
+
 /**
  * The class of the query to execute. It contains the query, information about
  * the position of the query in the parsed script and information about the
  * type of command.
  */
-// TODO add a common parent for this class and the classes 'PgObjLocation'
-// and 'AntlrError'
-public class QueryLocation {
+public class QueryLocation extends AbstractErrorLocation {
 
     private final String stmtAction;
-    private final int offsetInFullTxt;
-    private final int line;
     private final String sql;
 
-    public QueryLocation(String stmtAction, int offsetInFullTxt, int line, String sql) {
+    public QueryLocation(String stmtAction, int offsetInFullTxt, int lineNumber,
+            String sql) {
+        super(offsetInFullTxt, lineNumber);
         this.stmtAction = stmtAction;
-        this.offsetInFullTxt = offsetInFullTxt;
-        this.line = line;
         this.sql = sql;
     }
 
     public String getStmtAction() {
         return stmtAction;
-    }
-
-    public int getOffsetInFullTxt() {
-        return offsetInFullTxt;
-    }
-
-    public int getLine() {
-        return line;
     }
 
     public String getSql() {

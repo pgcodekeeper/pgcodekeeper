@@ -3,18 +3,17 @@ package cz.startnet.utils.pgdiff.schema;
 import java.io.Serializable;
 import java.util.Objects;
 
+import cz.startnet.utils.pgdiff.AbstractErrorLocation;
 import cz.startnet.utils.pgdiff.DangerStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public final class PgObjLocation implements Serializable {
+public final class PgObjLocation extends AbstractErrorLocation implements Serializable {
 
     private static final long serialVersionUID = 1284715027798712221L;
 
     private DangerStatement danger;
     private String comment = "";
 
-    private final int offset;
-    private final int lineNumber;
     private final String filePath;
 
     private final StatementActions action;
@@ -27,13 +26,12 @@ public final class PgObjLocation implements Serializable {
     public PgObjLocation(String schema, String table, String column,
             DbObjType type, StatementActions action,
             int offset, int lineNumber, String filePath) {
+        super(offset, lineNumber);
         this.schema = schema;
         this.table = table;
         this.column = column;
         this.type = type;
         this.action = action;
-        this.offset = offset;
-        this.lineNumber = lineNumber;
         this.filePath = filePath;
     }
 
@@ -55,16 +53,8 @@ public final class PgObjLocation implements Serializable {
         return action;
     }
 
-    public int getOffset() {
-        return offset;
-    }
-
     public int getObjLength() {
         return getObjName().length();
-    }
-
-    public int getLineNumber() {
-        return lineNumber;
     }
 
     public String getFilePath() {

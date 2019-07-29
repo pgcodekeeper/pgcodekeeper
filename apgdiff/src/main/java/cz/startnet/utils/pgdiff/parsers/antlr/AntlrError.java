@@ -2,10 +2,10 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 
 import org.antlr.v4.runtime.Token;
 
-public class AntlrError {
+import cz.startnet.utils.pgdiff.AbstractErrorLocation;
 
-    private final int line;
-    private final int charPositionInLine;
+public class AntlrError extends AbstractErrorLocation {
+
     private final String msg;
     private final String text;
     private final int start;
@@ -13,21 +13,16 @@ public class AntlrError {
     private final String location;
 
     public AntlrError(Token tokenError, String location, int line, int charPositionInLine, String msg) {
+        super(charPositionInLine, line);
         this.location = location;
-        this.line = line;
-        this.charPositionInLine = charPositionInLine;
         this.msg = msg;
         this.start = tokenError == null ? -1 : tokenError.getStartIndex();
         this.stop = tokenError == null ? -1 : tokenError.getStopIndex();
         this.text = tokenError == null ? null : tokenError.getText();
     }
 
-    public int getLine() {
-        return line;
-    }
-
     public int getCharPositionInLine() {
-        return charPositionInLine;
+        return getOffset();
     }
 
     public String getMsg() {
@@ -52,6 +47,6 @@ public class AntlrError {
 
     @Override
     public String toString() {
-        return location + " line " + getLine() + ':' + getCharPositionInLine() + ' ' + getMsg();
+        return location + " line " + getLineNumber() + ':' + getCharPositionInLine() + ' ' + getMsg();
     }
 }

@@ -50,7 +50,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
                 for (QueryLocation query : queries) {
                     PgDiffUtils.checkCancelled(monitor);
                     currQuery = query.getSql();
-                    currQueryLine = query.getLine();
+                    currQueryLine = query.getLineNumber();
                     executeSingleStatement(query);
 
                     subMonitor.worked(1);
@@ -65,12 +65,12 @@ public class QueriesBatchCallable extends StatementCallable<String> {
                     if (queriesList.size() == 1) {
                         QueryLocation query = queriesList.get(0);
                         currQuery = query.getSql();
-                        currQueryLine = query.getLine();
+                        currQueryLine = query.getLineNumber();
                         executeSingleStatement(query);
                     } else {
                         for (QueryLocation query : queriesList) {
                             currQuery = query.getSql();
-                            currQueryLine = query.getLine();
+                            currQueryLine = query.getLineNumber();
                             st.addBatch(currQuery);
                             writeStatus(currQuery);
                         }

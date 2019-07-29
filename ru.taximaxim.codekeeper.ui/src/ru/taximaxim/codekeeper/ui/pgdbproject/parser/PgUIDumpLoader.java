@@ -81,7 +81,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
         for (AntlrError antlrError : getErrors()) {
             try {
                 IMarker marker = file.createMarker(MARKER.ERROR);
-                int line = antlrError.getLine();
+                int line = antlrError.getLineNumber();
                 marker.setAttribute(IMarker.LINE_NUMBER, line);
                 marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
                 marker.setAttribute(IMarker.MESSAGE, antlrError.getMsg());
