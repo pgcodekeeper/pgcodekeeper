@@ -37,7 +37,7 @@ import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcMsConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
-import cz.startnet.utils.pgdiff.loader.callables.CurrentQuery;
+import cz.startnet.utils.pgdiff.loader.callables.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.ScriptParser;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -224,7 +224,7 @@ class QuickUpdateJob extends SingletonEditorJob {
                 throw new PgCodekeeperUIException(Messages.QuickUpdate_danger);
             }
 
-            List<List<CurrentQuery>> batches = parser.batch();
+            List<List<QueryLocation>> batches = parser.batch();
 
 
             new JdbcRunner(monitor).runBatches(connector, batches, null);

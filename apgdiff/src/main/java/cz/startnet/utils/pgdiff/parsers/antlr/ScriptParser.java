@@ -4,13 +4,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
-import cz.startnet.utils.pgdiff.loader.callables.CurrentQuery;
+import cz.startnet.utils.pgdiff.loader.callables.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_sequence_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_statementContext;
@@ -33,8 +34,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 
 public class ScriptParser {
 
+    private static final Pattern PATTERN_WS = Pattern.compile("\\s+");
+
     private final String script;
-    private final List<List<CurrentQuery>> batches = new ArrayList<>();
+    private final List<List<QueryLocation>> batches = new ArrayList<>();
     private final List<AntlrError> errors = new ArrayList<>();
     private final Set<DangerStatement> dangerStatements = EnumSet.noneOf(DangerStatement.class);
 
@@ -63,24 +66,24 @@ public class ScriptParser {
         }
     }
 
-    public List<List<CurrentQuery>> batch() {
+    public List<List<QueryLocation>> batch() {
         return batches;
     }
 
     private void batchMs(Tsql_fileContext rootCtx, CommonTokenStream stream) {
         for (BatchContext batch : rootCtx.batch()) {
-            List<CurrentQuery> l = new ArrayList<>();
+            List<QueryLocation> l = new ArrayList<>();
             if (batch.batch_statement() != null) {
                 Batch_statementContext st = batch.batch_statement();
                 String query = ParserAbstract
                         .getFullCtxTextWithHidden(batch.batch_statement(), stream);
-                l.add(new CurrentQuery(getStmtAction(st), getOffsetInFullTxt(query),
+                l.add(new QueryLocation(getStmtAction(query), getOffsetInFullTxt(query),
                         st.getStart().getLine(), query));
             } else {
                 List<St_clauseContext> clauses = batch.sql_clauses().st_clause();
                 for (St_clauseContext clause : clauses) {
                     String query = ParserAbstract.getFullCtxText(clause);
-                    l.add(new CurrentQuery(getStmtAction(clause), getOffsetInFullTxt(query),
+                    l.add(new QueryLocation(getStmtAction(query), getOffsetInFullTxt(query),
                             clause.getStart().getLine(), query));
                 }
             }
@@ -89,19 +92,36 @@ public class ScriptParser {
     }
 
     private void batchPg(SqlContext rootCtx) {
-        List<CurrentQuery> l = new ArrayList<>();
+        List<QueryLocation> l = new ArrayList<>();
         batches.add(l);
 
         for (StatementContext st : rootCtx.statement()) {
             String query = ParserAbstract.getFullCtxText(st);
-            l.add(new CurrentQuery(getStmtAction(st), getOffsetInFullTxt(query),
+            l.add(new QueryLocation(getStmtAction(query), getOffsetInFullTxt(query),
                     st.getStart().getLine(), query));
         }
     }
 
-    private String getStmtAction(ParserRuleContext ctx) {
-        // TODO replace it by logic like in ReferenceListener
-        return ctx.getStart().getText() + " --- ";
+    private String getStmtAction(String query) {
+        // trim to avoid empty strings at the edges of the array
+        String[] arr = PATTERN_WS.split(query.trim(), 3);
+        if (arr[0].isEmpty()) {
+            // empty or whitespace query, wtf was that
+            return null;
+        }
+
+        String message = arr[0].toUpperCase(Locale.ROOT);
+        if (arr.length > 1) {
+            switch (message) {
+            case "CREATE":
+            case "ALTER":
+            case "DROP":
+            case "START":
+            case "BEGIN":
+                message += ' ' + arr[1].toUpperCase(Locale.ROOT);
+            }
+        }
+        return message;
     }
 
     private int getOffsetInFullTxt(String query) {

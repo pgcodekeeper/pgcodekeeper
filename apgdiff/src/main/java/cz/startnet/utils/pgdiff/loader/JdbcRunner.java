@@ -19,7 +19,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
 import cz.startnet.utils.pgdiff.IProgressReporter;
-import cz.startnet.utils.pgdiff.loader.callables.CurrentQuery;
+import cz.startnet.utils.pgdiff.loader.callables.QueryLocation;
 import cz.startnet.utils.pgdiff.loader.callables.QueriesBatchCallable;
 import cz.startnet.utils.pgdiff.loader.callables.QueryCallable;
 import cz.startnet.utils.pgdiff.loader.callables.ResultSetCallable;
@@ -79,7 +79,7 @@ public class JdbcRunner {
      * @throws IOException
      * @throws InterruptedException
      */
-    public void runBatches(JdbcConnector connector, List<List<CurrentQuery>> batches,
+    public void runBatches(JdbcConnector connector, List<List<QueryLocation>> batches,
             IProgressReporter reporter) throws SQLException, IOException, InterruptedException {
         try (Connection connection = connector.getConnection();
                 Statement st = connection.createStatement()) {

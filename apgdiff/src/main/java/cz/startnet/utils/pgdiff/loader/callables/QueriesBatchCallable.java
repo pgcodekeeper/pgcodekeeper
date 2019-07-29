@@ -8,8 +8,6 @@ import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
@@ -26,14 +24,12 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
 
 public class QueriesBatchCallable extends StatementCallable<String> {
 
-    private static final Pattern PATTERN_WS = Pattern.compile("\\s+");
-
-    private final List<List<CurrentQuery>> batches;
+    private final List<List<QueryLocation>> batches;
     private final IProgressMonitor monitor;
     private final Connection connection;
     private final IProgressReporter reporter;
 
-    public QueriesBatchCallable(Statement st, List<List<CurrentQuery>> batches,
+    public QueriesBatchCallable(Statement st, List<List<QueryLocation>> batches,
             IProgressMonitor monitor, IProgressReporter reporter, Connection connection) {
         super(st, null);
         this.batches = batches;
@@ -49,30 +45,30 @@ public class QueriesBatchCallable extends StatementCallable<String> {
         int currQueryLine = 1;
         try {
             if (batches.size() == 1) {
-                List<CurrentQuery> queries = batches.get(0);
+                List<QueryLocation> queries = batches.get(0);
                 subMonitor.setWorkRemaining(queries.size());
-                for (CurrentQuery query : queries) {
+                for (QueryLocation query : queries) {
                     PgDiffUtils.checkCancelled(monitor);
                     currQuery = query.getSql();
                     currQueryLine = query.getLine();
-                    executeSingleStatement(currQuery);
+                    executeSingleStatement(query);
 
                     subMonitor.worked(1);
                 }
             } else {
                 subMonitor.setWorkRemaining(batches.size());
                 connection.setAutoCommit(false);
-                for (List<CurrentQuery> queriesList : batches) {
+                for (List<QueryLocation> queriesList : batches) {
                     PgDiffUtils.checkCancelled(monitor);
                     // in case we're executing a real batch after a single-statement one
                     currQuery = null;
                     if (queriesList.size() == 1) {
-                        CurrentQuery query = queriesList.get(0);
+                        QueryLocation query = queriesList.get(0);
                         currQuery = query.getSql();
                         currQueryLine = query.getLine();
-                        executeSingleStatement(currQuery);
+                        executeSingleStatement(query);
                     } else {
-                        for (CurrentQuery query : queriesList) {
+                        for (QueryLocation query : queriesList) {
                             currQuery = query.getSql();
                             currQueryLine = query.getLine();
                             st.addBatch(currQuery);
@@ -138,12 +134,12 @@ public class QueriesBatchCallable extends StatementCallable<String> {
         return JDBC_CONSTS.JDBC_SUCCESS;
     }
 
-    private void executeSingleStatement(String query) throws SQLException {
-        if (st.execute(query)) {
-            writeResult(query);
+    private void executeSingleStatement(QueryLocation query) throws SQLException {
+        if (st.execute(query.getSql())) {
+            writeResult(query.getSql());
         }
         writeWarnings();
-        writeStatus(query);
+        writeStatus(query.getStmtAction());
     }
 
     private void writeResult(String query) throws SQLException {
@@ -191,34 +187,11 @@ public class QueriesBatchCallable extends StatementCallable<String> {
         }
     }
 
-    private void writeStatus(String query) {
-        // TODO for message use here 'CurrentQuery.getStmtAction' when the stmtAction
-        // in CurrentQuery will be filled with new logic (as in ReferenceListener)
-
-        if (reporter == null) {
+    private void writeStatus(String msgAction) {
+        if (reporter == null || msgAction == null) {
             return;
         }
-
-        // trim to avoid empty strings at the edges of the array
-        String[] arr = PATTERN_WS.split(query.trim(), 3);
-        if (arr[0].isEmpty()) {
-            // empty or whitespace query, wtf was that
-            return;
-        }
-
-        String message = arr[0].toUpperCase(Locale.ROOT);
-        if (arr.length > 1) {
-            switch (message) {
-            case "CREATE":
-            case "ALTER":
-            case "DROP":
-            case "START":
-            case "BEGIN":
-                message += ' ' + arr[1].toUpperCase(Locale.ROOT);
-            }
-        }
-
-        reporter.writeMessage(message);
+        reporter.writeMessage(msgAction);
     }
 
     private void appendPosition(StringBuilder sb, String query, int offset) {

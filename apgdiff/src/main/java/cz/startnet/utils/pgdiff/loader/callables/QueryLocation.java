@@ -7,14 +7,14 @@ package cz.startnet.utils.pgdiff.loader.callables;
  */
 // TODO add a common parent for this class and the classes 'PgObjLocation'
 // and 'AntlrError'
-public class CurrentQuery {
+public class QueryLocation {
 
     private final String stmtAction;
     private final int offsetInFullTxt;
     private final int line;
     private final String sql;
 
-    public CurrentQuery(String stmtAction, int offsetInFullTxt, int line, String sql) {
+    public QueryLocation(String stmtAction, int offsetInFullTxt, int line, String sql) {
         this.stmtAction = stmtAction;
         this.offsetInFullTxt = offsetInFullTxt;
         this.line = line;
