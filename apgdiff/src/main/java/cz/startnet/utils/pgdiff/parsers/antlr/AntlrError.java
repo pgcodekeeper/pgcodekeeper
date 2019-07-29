@@ -2,9 +2,11 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 
 import org.antlr.v4.runtime.Token;
 
-import cz.startnet.utils.pgdiff.AbstractErrorLocation;
+import cz.startnet.utils.pgdiff.ContextLocation;
 
-public class AntlrError extends AbstractErrorLocation {
+public class AntlrError extends ContextLocation {
+
+    private static final long serialVersionUID = -1845442501326683694L;
 
     private final String msg;
     private final String text;

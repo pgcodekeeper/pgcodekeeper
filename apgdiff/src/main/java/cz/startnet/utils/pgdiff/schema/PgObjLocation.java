@@ -1,13 +1,12 @@
 package cz.startnet.utils.pgdiff.schema;
 
-import java.io.Serializable;
 import java.util.Objects;
 
-import cz.startnet.utils.pgdiff.AbstractErrorLocation;
+import cz.startnet.utils.pgdiff.ContextLocation;
 import cz.startnet.utils.pgdiff.DangerStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public final class PgObjLocation extends AbstractErrorLocation implements Serializable {
+public final class PgObjLocation extends ContextLocation {
 
     private static final long serialVersionUID = 1284715027798712221L;
 
