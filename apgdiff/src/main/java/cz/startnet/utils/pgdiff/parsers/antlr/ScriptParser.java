@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 import org.antlr.v4.runtime.CommonTokenStream;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
-import cz.startnet.utils.pgdiff.loader.callables.QueryLocation;
+import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_sequence_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_statementContext;

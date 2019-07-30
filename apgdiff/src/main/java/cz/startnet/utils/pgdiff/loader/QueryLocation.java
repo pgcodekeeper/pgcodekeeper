@@ -1,4 +1,4 @@
-package cz.startnet.utils.pgdiff.loader.callables;
+package cz.startnet.utils.pgdiff.loader;
 
 import cz.startnet.utils.pgdiff.ContextLocation;
 
