@@ -6,12 +6,14 @@ public abstract class ContextLocation implements Serializable {
 
     private static final long serialVersionUID = 7334100073425496383L;
 
-    protected int offset;
-    protected int lineNumber;
+    private final int offset;
+    private final int lineNumber;
+    private final int charPositionInLine;
 
-    public ContextLocation(int offset, int lineNumber) {
+    public ContextLocation(int offset, int lineNumber, int charPositionInLine) {
         this.offset = offset;
         this.lineNumber = lineNumber;
+        this.charPositionInLine = charPositionInLine;
     }
 
     public int getOffset() {
@@ -20,5 +22,9 @@ public abstract class ContextLocation implements Serializable {
 
     public int getLineNumber() {
         return lineNumber;
+    }
+
+    public int getCharPositionInLine() {
+        return charPositionInLine;
     }
 }

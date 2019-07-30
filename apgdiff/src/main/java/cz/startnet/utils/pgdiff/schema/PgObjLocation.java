@@ -25,7 +25,7 @@ public final class PgObjLocation extends ContextLocation {
     public PgObjLocation(String schema, String table, String column,
             DbObjType type, String action,
             int offset, int lineNumber, String filePath) {
-        super(offset, lineNumber);
+        super(offset, lineNumber, 1);
         this.schema = schema;
         this.table = table;
         this.column = column;
@@ -71,8 +71,8 @@ public final class PgObjLocation extends ContextLocation {
                     && Objects.equals(table, loc.table)
                     && Objects.equals(column, loc.column)
                     && Objects.equals(type, loc.type)
-                    && offset == loc.offset
-                    && lineNumber == loc.lineNumber
+                    && getOffset() == loc.getOffset()
+                    && getLineNumber() == loc.getLineNumber()
                     && Objects.equals(loc.getFilePath(), getFilePath());
         }
         return false;
@@ -86,8 +86,8 @@ public final class PgObjLocation extends ContextLocation {
         result = prime * result + ((schema == null) ? 0 : schema.hashCode());
         result = prime * result + ((table == null) ? 0 : table.hashCode());
         result = prime * result + ((type == null) ? 0 : type.hashCode());
-        result = prime * result + offset;
-        result = prime * result + lineNumber;
+        result = prime * result + getOffset();
+        result = prime * result + getLineNumber();
         result = prime * result + ((filePath == null) ? 0 : filePath.hashCode());
         return result;
     }

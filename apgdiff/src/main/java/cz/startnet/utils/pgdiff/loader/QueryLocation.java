@@ -16,7 +16,7 @@ public class QueryLocation extends ContextLocation {
 
     public QueryLocation(String stmtAction, int offsetInFullTxt, int lineNumber,
             String sql) {
-        super(offsetInFullTxt, lineNumber);
+        super(offsetInFullTxt, lineNumber, 1);
         this.stmtAction = stmtAction;
         this.sql = sql;
     }
