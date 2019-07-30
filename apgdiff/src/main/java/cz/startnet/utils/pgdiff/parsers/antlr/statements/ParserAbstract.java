@@ -303,7 +303,7 @@ public abstract class ParserAbstract {
         case ROLE:
         case USER:
         case DATABASE:
-            return new PgObjLocation(nameCtx.getText(), type, action,
+            return new PgObjLocation(nameCtx.getText(), type, action.name(),
                     getStart(nameCtx), nameCtx.start.getLine(), fileName);
         default:
             break;
@@ -341,7 +341,7 @@ public abstract class ParserAbstract {
         case TABLE:
         case TYPE:
         case VIEW:
-            return new PgObjLocation(schemaName, name, type, action,
+            return new PgObjLocation(schemaName, name, type, action.name(),
                     getStart(nameCtx), nameCtx.start.getLine(), fileName);
         case CONSTRAINT:
         case INDEX:
@@ -349,7 +349,7 @@ public abstract class ParserAbstract {
         case RULE:
         case COLUMN:
             return new PgObjLocation(schemaName, QNameParser.getSecondName(ids),
-                    name, type, action,
+                    name, type, action.name(),
                     getStart(nameCtx), nameCtx.start.getLine(), fileName);
         default:
             return null;

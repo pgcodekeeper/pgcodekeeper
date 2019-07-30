@@ -15,7 +15,7 @@ public final class PgObjLocation extends ContextLocation {
 
     private final String filePath;
 
-    private final StatementActions action;
+    private final String action;
 
     private final String schema;
     private final String table;
@@ -23,7 +23,7 @@ public final class PgObjLocation extends ContextLocation {
     private final DbObjType type;
 
     public PgObjLocation(String schema, String table, String column,
-            DbObjType type, StatementActions action,
+            DbObjType type, String action,
             int offset, int lineNumber, String filePath) {
         super(offset, lineNumber);
         this.schema = schema;
@@ -34,21 +34,21 @@ public final class PgObjLocation extends ContextLocation {
         this.filePath = filePath;
     }
 
-    public PgObjLocation(String schema, String object, DbObjType type, StatementActions action,
+    public PgObjLocation(String schema, String object, DbObjType type, String action,
             int offset, int lineNumber, String filePath) {
         this(schema, object, null, type, action, offset, lineNumber, filePath);
     }
 
-    public PgObjLocation(String schema, DbObjType type, StatementActions action,
+    public PgObjLocation(String schema, DbObjType type, String action,
             int offset, int lineNumber, String filePath) {
         this(schema, null, type, action, offset, lineNumber, filePath);
     }
 
     public PgObjLocation(String filePath) {
-        this(null, null, StatementActions.NONE, 0, 0, filePath);
+        this(null, null, StatementActions.NONE.name(), 0, 0, filePath);
     }
 
-    public StatementActions getAction() {
+    public String getAction() {
         return action;
     }
 
