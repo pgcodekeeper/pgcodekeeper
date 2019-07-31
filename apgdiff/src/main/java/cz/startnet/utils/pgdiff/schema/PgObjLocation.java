@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import java.util.Objects;
+import java.util.function.BiPredicate;
 
 import cz.startnet.utils.pgdiff.ContextLocation;
 import cz.startnet.utils.pgdiff.DangerStatement;
@@ -17,35 +18,18 @@ public final class PgObjLocation extends ContextLocation {
 
     private final String action;
 
-    private final String schema;
-    private final String table;
-    private final String column;
-    private final DbObjType type;
+    private final GenericColumn gObj;
 
-    public PgObjLocation(String schema, String table, String column,
-            DbObjType type, String action,
+    public PgObjLocation(GenericColumn gObj, String action,
             int offset, int lineNumber, String filePath) {
         super(offset, lineNumber, 1);
-        this.schema = schema;
-        this.table = table;
-        this.column = column;
-        this.type = type;
+        this.gObj = gObj;
         this.action = action;
         this.filePath = filePath;
     }
 
-    public PgObjLocation(String schema, String object, DbObjType type, String action,
-            int offset, int lineNumber, String filePath) {
-        this(schema, object, null, type, action, offset, lineNumber, filePath);
-    }
-
-    public PgObjLocation(String schema, DbObjType type, String action,
-            int offset, int lineNumber, String filePath) {
-        this(schema, null, type, action, offset, lineNumber, filePath);
-    }
-
     public PgObjLocation(String filePath) {
-        this(null, null, StatementActions.NONE.name(), 0, 0, filePath);
+        this(null, StatementActions.NONE.name(), 0, 0, filePath);
     }
 
     public String getAction() {
@@ -67,10 +51,7 @@ public final class PgObjLocation extends ContextLocation {
         }
         if (obj instanceof PgObjLocation) {
             PgObjLocation loc = (PgObjLocation) obj;
-            return Objects.equals(schema, loc.schema)
-                    && Objects.equals(table, loc.table)
-                    && Objects.equals(column, loc.column)
-                    && Objects.equals(type, loc.type)
+            return genericObjCompare(loc, Objects::equals)
                     && getOffset() == loc.getOffset()
                     && getLineNumber() == loc.getLineNumber()
                     && Objects.equals(loc.getFilePath(), getFilePath());
@@ -78,14 +59,30 @@ public final class PgObjLocation extends ContextLocation {
         return false;
     }
 
+    private boolean genericObjCompare(PgObjLocation loc,
+            BiPredicate<DbObjType, DbObjType> dbObjTypeCompare) {
+        if (gObj == null && loc.gObj == null) {
+            return true;
+        } else if ((gObj != null && loc.gObj == null)
+                || (gObj == null && loc.gObj != null)) {
+            return false;
+        }
+        return Objects.equals(gObj.schema, loc.gObj.schema)
+                && Objects.equals(gObj.table, loc.gObj.table)
+                && Objects.equals(gObj.column, loc.gObj.column)
+                && dbObjTypeCompare.test(gObj.type, loc.gObj.type);
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((column == null) ? 0 : column.hashCode());
-        result = prime * result + ((schema == null) ? 0 : schema.hashCode());
-        result = prime * result + ((table == null) ? 0 : table.hashCode());
-        result = prime * result + ((type == null) ? 0 : type.hashCode());
+        if (gObj != null) {
+            result = prime * result + ((gObj.column == null) ? 0 : gObj.column.hashCode());
+            result = prime * result + ((gObj.schema == null) ? 0 : gObj.schema.hashCode());
+            result = prime * result + ((gObj.table == null) ? 0 : gObj.table.hashCode());
+            result = prime * result + ((gObj.type == null) ? 0 : gObj.type.hashCode());
+        }
         result = prime * result + getOffset();
         result = prime * result + getLineNumber();
         result = prime * result + ((filePath == null) ? 0 : filePath.hashCode());
@@ -120,54 +117,52 @@ public final class PgObjLocation extends ContextLocation {
     }
 
     public GenericColumn getGenericColumn() {
-        return new GenericColumn(schema, table, column, type);
+        return gObj;
     }
 
     public String getObjName() {
-        if (column != null) {
-            return column;
-        } else if (table != null) {
-            return table;
-        } else if (schema != null) {
-            return schema;
+        if (gObj != null) {
+            if (gObj.column != null) {
+                return gObj.column;
+            } else if (gObj.table != null) {
+                return gObj.table;
+            } else if (gObj.schema != null) {
+                return gObj.schema;
+            }
         }
 
         return "";
     }
 
     public String getSchema() {
-        return schema;
+        return gObj == null ? null : gObj.schema;
     }
 
     public DbObjType getType() {
-        return type;
+        return gObj == null ? null : gObj.type;
     }
 
     public final boolean compare(PgObjLocation col) {
-        return Objects.equals(schema, col.schema)
-                && Objects.equals(table, col.table)
-                && Objects.equals(column, col.column)
-                && compareTypes(col.type);
-    }
+        return genericObjCompare(col, (localType, otherType) -> {
+            if (localType == otherType) {
+                return true;
+            }
 
-    private boolean compareTypes(DbObjType objType) {
-        if (type == objType) {
-            return true;
-        }
-
-        switch (objType) {
-        case TABLE:
-        case VIEW:
-        case SEQUENCE:
-            return type == DbObjType.TABLE || type == DbObjType.VIEW || type == DbObjType.SEQUENCE;
-        case FUNCTION:
-        case AGGREGATE:
-            return type == DbObjType.FUNCTION || type == DbObjType.AGGREGATE;
-        case TYPE:
-        case DOMAIN:
-            return type == DbObjType.TYPE || type == DbObjType.DOMAIN;
-        default:
-            return false;
-        }
+            switch (otherType) {
+            case TABLE:
+            case VIEW:
+            case SEQUENCE:
+                return localType == DbObjType.TABLE || localType == DbObjType.VIEW
+                || localType == DbObjType.SEQUENCE;
+            case FUNCTION:
+            case AGGREGATE:
+                return localType == DbObjType.FUNCTION || localType == DbObjType.AGGREGATE;
+            case TYPE:
+            case DOMAIN:
+                return localType == DbObjType.TYPE || localType == DbObjType.DOMAIN;
+            default:
+                return false;
+            }
+        });
     }
 }

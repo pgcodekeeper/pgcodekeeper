@@ -46,7 +46,6 @@ import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
@@ -195,9 +194,8 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
                     // check word boundaries, whole words only
                     if ((index == 0 || !PgDiffUtils.isValidIdChar(body.charAt(index - 1))) &&
                             (next >= body.length() || !PgDiffUtils.isValidIdChar(body.charAt(next)))) {
-                        GenericColumn col = def.getGenericColumn();
-                        PgObjLocation loc = new PgObjLocation(col.schema,
-                                col.table, col.column, col.type, StatementActions.NONE.name(),
+                        PgObjLocation loc = new PgObjLocation(def.getGenericColumn(),
+                                StatementActions.NONE.name(),
                                 statementBody.getOffset() + index,
                                 statementBody.getLineNumber(),
                                 statementBody.getPath());
