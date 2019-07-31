@@ -140,7 +140,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
             writeResult(query.getSql());
         }
         writeWarnings();
-        writeStatus(query.getStmtAction());
+        writeStatus(query.getAction());
     }
 
     private void writeResult(String query) throws SQLException {

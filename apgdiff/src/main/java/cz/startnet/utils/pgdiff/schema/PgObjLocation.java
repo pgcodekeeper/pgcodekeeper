@@ -7,7 +7,7 @@ import cz.startnet.utils.pgdiff.ContextLocation;
 import cz.startnet.utils.pgdiff.DangerStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public final class PgObjLocation extends ContextLocation {
+public class PgObjLocation extends ContextLocation {
 
     private static final long serialVersionUID = 1284715027798712221L;
 
