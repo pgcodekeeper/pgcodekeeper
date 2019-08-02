@@ -417,14 +417,14 @@ public class PgDatabase extends PgStatement {
         return dbDst;
     }
 
-    public void addLib(PgDatabase database) {
-        database.getDescendants().forEach(st -> {
+    public void addLib(PgDatabase lib) {
+        lib.getDescendants().forEach(st -> {
             st.markAsLib();
             concat(st);
         });
-        database.analysisLaunchers
-        .forEach(l -> l.updateStmt(database));
-        analysisLaunchers.addAll(database.analysisLaunchers);
+        lib.analysisLaunchers
+        .forEach(l -> l.updateStmt(this));
+        analysisLaunchers.addAll(lib.analysisLaunchers);
     }
 
     public void concat(PgStatement st) {
