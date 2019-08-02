@@ -97,12 +97,10 @@ public class JdbcType{
     public GenericColumn getQualifiedName() {
         if (ApgdiffConsts.PG_CATALOG.equals(parentSchema)) {
             String dealias = DATA_TYPE_ALIASES.get(typeName);
-            return new GenericColumn(parentSchema,
-                    dealias == null ? PgDiffUtils.getQuotedName(typeName) : dealias,
-                            DbObjType.TYPE);
+            return new GenericColumn(parentSchema, dealias == null ? typeName : dealias,
+                    DbObjType.TYPE);
         }
-        return new GenericColumn(parentSchema, PgDiffUtils.getQuotedName(typeName),
-                DbObjType.TYPE);
+        return new GenericColumn(parentSchema, typeName, DbObjType.TYPE);
     }
 
     public void addTypeDepcy(PgStatement st) {
