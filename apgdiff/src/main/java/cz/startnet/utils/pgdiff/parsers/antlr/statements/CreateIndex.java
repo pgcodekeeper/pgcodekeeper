@@ -16,7 +16,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_option
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expression_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_storage_parameterContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.launcher.IndexAnalysisLauncher;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.IndexAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.IStatementContainer;

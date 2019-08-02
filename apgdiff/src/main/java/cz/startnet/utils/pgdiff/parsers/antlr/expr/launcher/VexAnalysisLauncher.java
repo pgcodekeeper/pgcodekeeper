@@ -1,4 +1,4 @@
-package cz.startnet.utils.pgdiff.parsers.antlr.launcher;
+package cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
