@@ -26,12 +26,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  */
 public abstract class AbstractAnalysisLauncher {
 
-    private PgDatabase finalDb;
-    protected PgDatabase db;
     protected PgStatementWithSearchPath stmt;
-    protected List<AntlrError> errors;
-
-    // Contains PgStatement's contexts for analysis (for getting dependencies).
     protected final List<ParserRuleContext> contextsForAnalyze = new ArrayList<>();
 
     public AbstractAnalysisLauncher(PgStatementWithSearchPath stmt) {
@@ -39,6 +34,8 @@ public abstract class AbstractAnalysisLauncher {
     }
 
     public AbstractAnalysisLauncher(PgStatementWithSearchPath stmt, ParserRuleContext ctx) {
+        // TODO get rid of the list if it only holds a single context (i.e. separate launcher for each context)
+        // or make it useful but that's probably unneeded complexity
         this(stmt);
         addContextForAnalyze(ctx);
     }
@@ -47,42 +44,34 @@ public abstract class AbstractAnalysisLauncher {
         return stmt;
     }
 
-    public void setDb(PgDatabase db) {
-        this.db = db;
-    }
-
-    public void setFinalDb(PgDatabase finalDb) {
-        this.finalDb = finalDb;
-    }
-
-    public void setErrors(List<AntlrError> errors) {
-        this.errors = errors;
-    }
-
     /**
-     * Add context for analyze.
-     *
-     * @param ctx context which belongs to stmt
+     * Updates the saved statement to the twin found in the given db
      */
+    public void updateStmt(PgDatabase db) {
+        if (stmt.getDatabase() != db) {
+            // statement came from another DB object, probably a library
+            // for proper depcy processing, find its twin in the final DB object
+
+            // twin implies the exact same object type, hence this is safe
+            @SuppressWarnings("unchecked")
+            PgStatementWithSearchPath twin = (PgStatementWithSearchPath) stmt.getTwin(db);
+            stmt = twin;
+        }
+    }
+
     public void addContextForAnalyze(ParserRuleContext ctx) {
         contextsForAnalyze.add(ctx);
     }
 
-    public void launchAnalyze() {
-        // Duplicated objects doesn't have parent, skip them
+    public void launchAnalyze(PgDatabase db, List<AntlrError> errors) {
+        // Duplicated objects don't have parent, skip them
         if (stmt.getParent() == null) {
             return;
         }
 
-        if (stmt.getDatabase() != finalDb) {
-            // statement came from another DB object, probably a library
-            // for proper depcy processing, find its twin in the final DB object
-            stmt = (PgStatementWithSearchPath) stmt.getTwin(finalDb);
-        }
-
         for (ParserRuleContext ctx : contextsForAnalyze) {
             try {
-                analyzeOneCtx(ctx, stmt.getContainingSchema().getName());
+                analyze(ctx);
             } catch (UnresolvedReferenceException ex) {
                 unresolvRefExHandler(ex, errors, ctx, stmt.getLocation().getFilePath());
             } catch (Exception ex) {
@@ -92,25 +81,45 @@ public abstract class AbstractAnalysisLauncher {
         }
     }
 
-    protected abstract void analyzeOneCtx(ParserRuleContext ctx, String schemaName);
+    protected abstract void analyze(ParserRuleContext ctx);
 
     protected <T extends ParserRuleContext> void analyze(
-            T ctx, AbstractExprWithNmspc<T> analyzer, PgStatement pg) {
+            T ctx, AbstractExprWithNmspc<T> analyzer) {
         analyzer.analyze(ctx);
-        pg.addAllDeps(analyzer.getDepcies());
+        stmt.addAllDeps(analyzer.getDepcies());
     }
 
-    protected void analyze(VexContext ctx, ValueExpr analyzer, PgStatement pg) {
+    protected void analyze(VexContext ctx, ValueExpr analyzer) {
         analyzer.analyze(new Vex(ctx));
-        pg.addAllDeps(analyzer.getDepcies());
+        stmt.addAllDeps(analyzer.getDepcies());
     }
 
-    protected void analyzeWithNmspc(VexContext ctx, PgStatement statement,
-            String schemaName, String rawTableReference, PgDatabase db) {
-        ValueExprWithNmspc valExptWithNmspc = new ValueExprWithNmspc(db);
-        valExptWithNmspc.addRawTableReference(new GenericColumn(schemaName,
-                rawTableReference, DbObjType.TABLE));
-        analyze(ctx, valExptWithNmspc, statement);
+    /**
+     * Sets up namespace for Constraint/Index expr analysis
+     */
+    protected void analyzeTableChildVex(VexContext ctx) {
+        PgStatement table = stmt.getParent();
+        String schemaName = table.getParent().getName();
+        String rawTableReference = table.getName();
+
+        ValueExprWithNmspc valExptWithNmspc = new ValueExprWithNmspc(stmt.getDatabase());
+        valExptWithNmspc.addRawTableReference(
+                new GenericColumn(schemaName, rawTableReference, DbObjType.TABLE));
+        analyze(ctx, valExptWithNmspc);
+    }
+
+    /**
+     * Sets up namespace for Trigger/Rule expr/command analysis
+     */
+    protected <T extends ParserRuleContext> void analyzeTableChild(
+            T ctx, AbstractExprWithNmspc<T> analyzer) {
+        PgStatement table = stmt.getParent();
+        String schemaName = table.getParent().getName();
+        String tableName = table.getName();
+        GenericColumn implicitTable = new GenericColumn(schemaName, tableName, DbObjType.TABLE);
+        analyzer.addReference("new", implicitTable);
+        analyzer.addReference("old", implicitTable);
+        analyze(ctx, analyzer);
     }
 
     private void unresolvRefExHandler(UnresolvedReferenceException ex,

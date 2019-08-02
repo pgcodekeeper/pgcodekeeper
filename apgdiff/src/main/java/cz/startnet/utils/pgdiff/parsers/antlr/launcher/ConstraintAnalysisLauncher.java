@@ -3,20 +3,16 @@ package cz.startnet.utils.pgdiff.parsers.antlr.launcher;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
-import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
+import cz.startnet.utils.pgdiff.schema.PgConstraint;
 
-/**
- * {@link AbstractAnalysisLauncher}
- */
 public class ConstraintAnalysisLauncher extends AbstractAnalysisLauncher {
 
-    public ConstraintAnalysisLauncher(PgStatementWithSearchPath stmt, ParserRuleContext ctx) {
+    public ConstraintAnalysisLauncher(PgConstraint stmt, VexContext ctx) {
         super(stmt, ctx);
     }
 
     @Override
-    public void analyzeOneCtx(ParserRuleContext ctx, String schemaName) {
-        analyzeWithNmspc((VexContext) ctx, stmt, schemaName,
-                stmt.getParent().getName(), db);
+    public void analyze(ParserRuleContext ctx) {
+        analyzeTableChildVex((VexContext) ctx);
     }
 }

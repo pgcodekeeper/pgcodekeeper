@@ -5,9 +5,8 @@ import java.util.List;
 import java.util.Queue;
 import java.util.stream.Collectors;
 
-import org.antlr.v4.runtime.tree.TerminalNode;
-
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
@@ -156,12 +155,9 @@ public class CreateFunction extends ParserAbstract {
                     codeStart.getSymbol().getStartIndex() - ctx.getParent().getStart().getStartIndex(),
                     codeStart.getSymbol().getLine() - ctx.getParent().getStart().getLine(),
                     "function definition of " + function.getBareName(),
-                    ctx -> {
-                        FuncProcAnalysisLauncher launcher = new FuncProcAnalysisLauncher(function, ctx);
-                        launcher.setFuncArgs(getArgsFromArgCtxs(funcArgsCtx));
-                        launcher.setErrors(errors);
-                        db.addAnalysisLauncher(launcher);
-                    }, antlrTasks);
+                    ctx -> db.addAnalysisLauncher(new FuncProcAnalysisLauncher(
+                            function, ctx, getArgsFromArgCtxs(funcArgsCtx))),
+                    antlrTasks);
         }
 
         With_storage_parameterContext storage = params.with_storage_parameter();
@@ -223,10 +219,8 @@ public class CreateFunction extends ParserAbstract {
             if (argument.function_def_value() != null) {
                 arg.setDefaultExpression(getFullCtxText(argument.function_def_value().def_value));
 
-                FuncProcAnalysisLauncher analysisLauncher = new FuncProcAnalysisLauncher(function,
-                        argument.function_def_value().def_value);
-                analysisLauncher.setErrors(errors);
-                db.addAnalysisLauncher(analysisLauncher);
+                db.addAnalysisLauncher(new FuncProcAnalysisLauncher(
+                        function, argument.function_def_value().def_value));
             }
 
             function.addArgument(arg);

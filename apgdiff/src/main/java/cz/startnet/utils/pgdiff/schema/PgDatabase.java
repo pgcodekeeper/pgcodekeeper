@@ -96,7 +96,6 @@ public class PgDatabase extends PgStatement {
      * analyze an statement contained in it
      */
     public void addAnalysisLauncher(AbstractAnalysisLauncher launcher) {
-        launcher.setDb(this);
         analysisLaunchers.add(launcher);
     }
 
@@ -423,6 +422,8 @@ public class PgDatabase extends PgStatement {
             st.markAsLib();
             concat(st);
         });
+        database.analysisLaunchers
+        .forEach(l -> l.updateStmt(database));
         analysisLaunchers.addAll(database.analysisLaunchers);
     }
 

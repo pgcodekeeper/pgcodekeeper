@@ -211,12 +211,8 @@ public class FunctionsReader extends JdbcReader {
         // Parsing the function definition and adding its result context for analysis.
         if (!"-".equals(definition) && "SQL".equalsIgnoreCase(function.getLanguage())) {
             loader.submitAntlrTask(definition.endsWith(";") ? definition : definition + "\n;",
-                    SQLParser::sql, ctx -> {
-                        FuncProcAnalysisLauncher analysisLauncher = new FuncProcAnalysisLauncher(
-                                function, ctx);
-                        analysisLauncher.setFuncArgs(argsQualTypes);
-                        db.addAnalysisLauncher(analysisLauncher);
-                    });
+                    SQLParser::sql, ctx -> db.addAnalysisLauncher(
+                            new FuncProcAnalysisLauncher(function, ctx, argsQualTypes)));
         }
     }
 

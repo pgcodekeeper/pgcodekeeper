@@ -31,8 +31,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraint_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
-import cz.startnet.utils.pgdiff.parsers.antlr.launcher.ColDomAnalysisLauncher;
 import cz.startnet.utils.pgdiff.parsers.antlr.launcher.ConstraintAnalysisLauncher;
+import cz.startnet.utils.pgdiff.parsers.antlr.launcher.VexAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractForeignTable;
@@ -67,7 +67,7 @@ public abstract class TableAbstract extends ParserAbstract {
 
     protected void addTableConstraint(Constraint_commonContext tblConstrCtx,
             AbstractTable table, String schemaName, String tablespace) {
-        AbstractConstraint constrBlank = createTableConstraintBlank(tblConstrCtx);
+        PgConstraint constrBlank = createTableConstraintBlank(tblConstrCtx);
         processTableConstraintBlank(tblConstrCtx, constrBlank, db, schemaName,
                 table.getName(), tablespace, isRefMode());
         doSafe(AbstractTable::addConstraint, table, constrBlank);
@@ -76,13 +76,13 @@ public abstract class TableAbstract extends ParserAbstract {
     private void addTableConstraint(Constraint_commonContext ctx,
             AbstractColumn col, AbstractTable table) {
         Constr_bodyContext body = ctx.constr_body();
-        AbstractConstraint constr = null;
+        PgConstraint constr = null;
         String colName = col.getName();
 
         VexContext def = body.default_expr;
         if (def != null) {
             col.setDefaultValue(getFullCtxText(def));
-            db.addAnalysisLauncher(new ColDomAnalysisLauncher(col, def));
+            db.addAnalysisLauncher(new VexAnalysisLauncher(col, def));
         } else if (body.NULL() != null) {
             col.setNullValue(body.NOT() == null);
         } else if (body.REFERENCES() != null) {
@@ -213,13 +213,13 @@ public abstract class TableAbstract extends ParserAbstract {
         table.addDep(new GenericColumn(inhSchemaName, inhTableName, DbObjType.TABLE));
     }
 
-    protected static AbstractConstraint createTableConstraintBlank(Constraint_commonContext ctx) {
+    protected static PgConstraint createTableConstraintBlank(Constraint_commonContext ctx) {
         String constrName = ctx.constraint_name == null ? "" : ctx.constraint_name.getText();
         return new PgConstraint(constrName);
     }
 
     protected static void processTableConstraintBlank(Constraint_commonContext ctx,
-            AbstractConstraint constrBlank, PgDatabase db, String schemaName,
+            PgConstraint constrBlank, PgDatabase db, String schemaName,
             String tableName, String tablespace, boolean isRefMode) {
         Constr_bodyContext constrBody = ctx.constr_body();
 

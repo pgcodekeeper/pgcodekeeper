@@ -6,17 +6,14 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 
-/**
- * {@link AbstractAnalysisLauncher}
- */
-public class ColDomAnalysisLauncher extends AbstractAnalysisLauncher {
+public class VexAnalysisLauncher extends AbstractAnalysisLauncher {
 
-    public ColDomAnalysisLauncher(PgStatementWithSearchPath stmt, ParserRuleContext ctx) {
+    public VexAnalysisLauncher(PgStatementWithSearchPath stmt, VexContext ctx) {
         super(stmt, ctx);
     }
 
     @Override
-    public void analyzeOneCtx(ParserRuleContext ctx, String schemaName) {
-        analyze((VexContext) ctx, new ValueExpr(db), stmt);
+    public void analyze(ParserRuleContext ctx) {
+        analyze((VexContext) ctx, new ValueExpr(stmt.getDatabase()));
     }
 }

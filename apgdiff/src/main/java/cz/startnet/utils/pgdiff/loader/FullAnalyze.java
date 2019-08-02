@@ -8,7 +8,6 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
-import cz.startnet.utils.pgdiff.parsers.antlr.launcher.AbstractAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -32,7 +31,7 @@ public final class FullAnalyze {
         TopologicalOrderIterator<PgStatement, DefaultEdge> orderIterator =
                 new TopologicalOrderIterator<>(new DepcyGraph(db).getReversedGraph());
 
-        orderIterator.addTraversalListener(new AnalyzeTraversalListenerAdapter(db, errors));
+        orderIterator.addTraversalListener(new ViewsAnalyzeTraversal());
 
         // 'VIEW' statements analysis.
         while (orderIterator.hasNext()) {
@@ -40,27 +39,13 @@ public final class FullAnalyze {
         }
 
         // Analysis of all statements except 'VIEW'.
-        for (AbstractAnalysisLauncher launcher : db.getAnalysisLaunchers()) {
-            if (DbObjType.VIEW == launcher.getStmt().getStatementType()) {
-                continue;
-            }
-            launcher.setErrors(errors);
-            launcher.setFinalDb(db);
-            launcher.launchAnalyze();
-        }
-
+        db.getAnalysisLaunchers().stream()
+        .filter(l -> DbObjType.VIEW != l.getStmt().getStatementType())
+        .forEach(l -> l.launchAnalyze(db, errors));
         db.getAnalysisLaunchers().clear();
     }
 
-    private class AnalyzeTraversalListenerAdapter extends TraversalListenerAdapter<PgStatement, DefaultEdge> {
-
-        private final PgDatabase db;
-        private final List<AntlrError> errors;
-
-        AnalyzeTraversalListenerAdapter(PgDatabase db, List<AntlrError> errors) {
-            this.db = db;
-            this.errors = errors;
-        }
+    private class ViewsAnalyzeTraversal extends TraversalListenerAdapter<PgStatement, DefaultEdge> {
 
         @Override
         public void vertexTraversed(VertexTraversalEvent<PgStatement> event) {
@@ -69,19 +54,9 @@ public final class FullAnalyze {
                 return;
             }
 
-            if (st.getDatabase() != db) {
-                // statement came from another DB object, probably a library
-                // for proper depcy processing, find its twin in the final DB object
-                st = st.getTwin(db);
-            }
-
-            PgStatement stmt = st;
-            db.getAnalysisLaunchers()
-            .stream().filter(l -> stmt.equals(l.getStmt())).forEach(l -> {
-                l.setErrors(errors);
-                l.setFinalDb(db);
-                l.launchAnalyze();
-            });
+            db.getAnalysisLaunchers().stream()
+            .filter(l -> st.equals(l.getStmt()))
+            .forEach(l -> l.launchAnalyze(db, errors));
         }
     }
 }

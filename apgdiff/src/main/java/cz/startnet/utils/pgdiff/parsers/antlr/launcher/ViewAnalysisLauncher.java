@@ -6,32 +6,22 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
-import cz.startnet.utils.pgdiff.schema.AbstractView;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
+import cz.startnet.utils.pgdiff.schema.PgView;
 
-/**
- * {@link AbstractAnalysisLauncher}
- */
 public class ViewAnalysisLauncher extends AbstractAnalysisLauncher {
 
-    public ViewAnalysisLauncher(PgStatementWithSearchPath stmt, ParserRuleContext ctx) {
+    public ViewAnalysisLauncher(PgView stmt, ParserRuleContext ctx) {
         super(stmt, ctx);
     }
 
     @Override
-    public void analyzeOneCtx(ParserRuleContext ctx, String schemaName) {
-        analyzeViewCtx(ctx, (AbstractView) stmt, db);
-    }
-
-    private void analyzeViewCtx(ParserRuleContext ctx, AbstractView view,
-            PgDatabase db) {
+    public void analyze(ParserRuleContext ctx) {
         if (ctx instanceof Select_stmtContext) {
-            Select select = new Select(db);
-            view.addRelationColumns(select.analyze((Select_stmtContext) ctx));
-            view.addAllDeps(select.getDepcies());
+            Select select = new Select(stmt.getDatabase());
+            ((PgView) stmt).addRelationColumns(select.analyze((Select_stmtContext) ctx));
+            stmt.addAllDeps(select.getDepcies());
         } else {
-            analyze((VexContext) ctx, new ValueExpr(db), view);
+            analyze((VexContext) ctx, new ValueExpr(stmt.getDatabase()));
         }
     }
 }

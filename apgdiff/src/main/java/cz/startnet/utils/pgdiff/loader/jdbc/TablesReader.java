@@ -6,7 +6,7 @@ import java.sql.SQLException;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.parsers.antlr.launcher.ColDomAnalysisLauncher;
+import cz.startnet.utils.pgdiff.parsers.antlr.launcher.VexAnalysisLauncher;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.AbstractRegularTable;
@@ -214,7 +214,7 @@ public class TablesReader extends JdbcReader {
                     column.setDefaultValue(columnDefault);
                     loader.submitAntlrTask(columnDefault, p -> p.vex_eof().vex().get(0),
                             ctx -> schema.getDatabase().addAnalysisLauncher(
-                                    new ColDomAnalysisLauncher(column, ctx)));
+                                    new VexAnalysisLauncher(column, ctx)));
                 }
             }
 

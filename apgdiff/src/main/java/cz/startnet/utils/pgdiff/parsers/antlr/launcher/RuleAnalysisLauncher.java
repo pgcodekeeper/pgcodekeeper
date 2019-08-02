@@ -8,76 +8,48 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Insert_stmt_for_psqlCont
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_stmt_for_psqlContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.AbstractExprWithNmspc;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Delete;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Insert;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Update;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
-import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-/**
- * {@link AbstractAnalysisLauncher}
- */
 public class RuleAnalysisLauncher extends AbstractAnalysisLauncher {
 
-    public RuleAnalysisLauncher(PgStatementWithSearchPath stmt, ParserRuleContext ctx) {
+    public RuleAnalysisLauncher(PgRule stmt, Create_rewrite_statementContext ctx) {
         super(stmt, ctx);
     }
 
     @Override
-    public void analyzeOneCtx(ParserRuleContext ctx, String schemaName) {
-        analyzeRulesCreate((Create_rewrite_statementContext) ctx, (PgRule) stmt,
-                schemaName, db);
-    }
+    public void analyze(ParserRuleContext ctx) {
+        Create_rewrite_statementContext createRewriteCtx = (Create_rewrite_statementContext) ctx;
 
-    private void analyzeRulesCreate(Create_rewrite_statementContext createRewriteCtx,
-            PgRule rule, String schemaName, PgDatabase db) {
-        analyzeRulesWhere(createRewriteCtx, rule, schemaName, db);
+        if (createRewriteCtx.WHERE() != null) {
+            ValueExprWithNmspc vex = new ValueExprWithNmspc(stmt.getDatabase());
+            analyzeTableChild(createRewriteCtx.vex(), vex);
+        }
+
         for (Rewrite_commandContext cmd : createRewriteCtx.commands) {
-            analyzeRulesCommand(cmd, rule, schemaName, db);
+            analyzeRulesCommand(cmd);
         }
     }
 
-    private void analyzeRulesWhere(Create_rewrite_statementContext ctx, PgRule rule,
-            String schemaName, PgDatabase db) {
-        if (ctx.WHERE() != null) {
-            ValueExprWithNmspc vex = new ValueExprWithNmspc(db);
-            GenericColumn implicitTable = new GenericColumn(schemaName,
-                    rule.getParent().getName(), DbObjType.TABLE);
-            vex.addReference("new", implicitTable);
-            vex.addReference("old", implicitTable);
-            analyze(ctx.vex(), vex, rule);
-        }
-    }
-
-    private void analyzeRulesCommand(Rewrite_commandContext cmd, PgRule rule,
-            String schemaName, PgDatabase db) {
+    private void analyzeRulesCommand(Rewrite_commandContext cmd) {
+        PgDatabase db = stmt.getDatabase();
         Select_stmtContext select;
         Insert_stmt_for_psqlContext insert;
         Delete_stmt_for_psqlContext delete;
         Update_stmt_for_psqlContext update;
         if ((select = cmd.select_stmt()) != null) {
-            analyzeRule(select, new Select(db), rule, schemaName);
+            analyzeTableChild(select, new Select(db));
         } else if ((insert = cmd.insert_stmt_for_psql()) != null) {
-            analyzeRule(insert, new Insert(db), rule, schemaName);
+            analyzeTableChild(insert, new Insert(db));
         } else if ((delete = cmd.delete_stmt_for_psql()) != null) {
-            analyzeRule(delete, new Delete(db), rule, schemaName);
+            analyzeTableChild(delete, new Delete(db));
         } else if ((update = cmd.update_stmt_for_psql()) != null) {
-            analyzeRule(update, new Update(db), rule, schemaName);
+            analyzeTableChild(update, new Update(db));
         }
-    }
-
-    private <T extends ParserRuleContext> void analyzeRule(
-            T ctx, AbstractExprWithNmspc<T> analyzer, PgRule rule, String schemaName) {
-        GenericColumn implicitTable = new GenericColumn(schemaName,
-                rule.getParent().getName(), DbObjType.TABLE);
-        analyzer.addReference("new", implicitTable);
-        analyzer.addReference("old", implicitTable);
-        analyze(ctx, analyzer, rule);
     }
 }

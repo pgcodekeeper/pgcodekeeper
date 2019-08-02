@@ -41,7 +41,7 @@ public class ConstraintsReader extends JdbcReader {
 
         String constraintName = res.getString("conname");
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, constraintName, DbObjType.CONSTRAINT));
-        AbstractConstraint c = new PgConstraint(constraintName);
+        PgConstraint c = new PgConstraint(constraintName);
 
         switch (contype) {
         case "f":
