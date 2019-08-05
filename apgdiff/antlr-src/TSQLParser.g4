@@ -1637,7 +1637,7 @@ assembly_specifier
     ;
 
 procedure_param
-    : name=LOCAL_ID AS? data_type VARYING? (EQUAL default_val=default_value)? arg_mode=(OUT | OUTPUT | READONLY)?
+    : name=LOCAL_ID AS? data_type (EQUAL default_val=default_value)? arg_mode=(OUT | OUTPUT | READONLY)?
     ;
 
 procedure_option
@@ -3135,10 +3135,13 @@ send_conversation
 data_type
     : qualified_name size=data_type_size?
     | DOUBLE PRECISION
+    | (CHAR | CHARACTER | NCHAR) VARYING size=data_type_size?
+    | NATIONAL (CHAR | CHARACTER) VARYING? size=data_type_size?
+    | CURSOR VARYING
     ;
     
 data_type_size
-    : (LR_BRACKET (presicion=DECIMAL | MAX) (COMMA scale=DECIMAL)? RR_BRACKET)
+    : LR_BRACKET (presicion=DECIMAL | MAX) (COMMA scale=DECIMAL)? RR_BRACKET
     ;
 
 default_value
@@ -3252,6 +3255,8 @@ simple_id
     | CHANGE_TRACKING
     | CHANGES
     | CHANGETABLE
+    | CHAR
+    | CHARACTER
     | CHECK_EXPIRATION
     | CHECK_POLICY
     | CHECKSUM_AGG
@@ -3508,6 +3513,7 @@ simple_id
     | MULTI_USER
     | MUST_CHANGE
     | NAME
+    | NCHAR
     | NEGOTIATE
     | NESTED_TRIGGERS
     | NEW_ACCOUNT
