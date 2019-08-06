@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
+import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_operator_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_rule_statementContext;
@@ -119,5 +120,12 @@ public class DropStatement extends ParserAbstract {
                 loc.setWarning(DangerStatement.DROP_TABLE);
             }
         }
+    }
+
+    @Override
+    protected void fillQueryLocation(String fullScript) {
+        String query = ParserAbstract.getFullCtxText(ctx);
+        queryLocation = new QueryLocation(getStmtAction(query),
+                fullScript.indexOf(query), ctx.getStart().getLine(), query);
     }
 }

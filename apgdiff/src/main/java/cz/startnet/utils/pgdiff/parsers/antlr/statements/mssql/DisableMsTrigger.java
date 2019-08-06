@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import java.util.Arrays;
 
+import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Enable_disable_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Names_referencesContext;
@@ -46,5 +47,12 @@ public class DisableMsTrigger extends ParserAbstract {
                 doSafe(MsTrigger::setDisable, trig, true);
             }
         }
+    }
+
+    @Override
+    protected void fillQueryLocation(String fullScript) {
+        String query = ParserAbstract.getFullCtxText(ctx);
+        queryLocation = new QueryLocation(getStmtAction(query),
+                fullScript.indexOf(query), ctx.getStart().getLine(), query);
     }
 }

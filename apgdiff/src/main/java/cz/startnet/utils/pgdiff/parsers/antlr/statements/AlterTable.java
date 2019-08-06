@@ -3,7 +3,10 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.util.Arrays;
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.DangerStatement;
+import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Foreign_optionContext;
@@ -223,5 +226,13 @@ public class AlterTable extends TableAbstract {
         processTableConstraintBlank(tableAction.tabl_constraint, constrBlank, db,
                 schemaName, tableName, tablespace, isRefMode);
         return constrBlank;
+    }
+
+    @Override
+    protected void fillQueryLocation(String fullScript) {
+        ParserRuleContext ctxWithActionName = ctx.getParent();
+        String query = ParserAbstract.getFullCtxText(ctxWithActionName);
+        queryLocation = new QueryLocation(getStmtAction(query),
+                fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query);
     }
 }

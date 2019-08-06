@@ -2,6 +2,9 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.Arrays;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
+import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_extension_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -28,5 +31,13 @@ public class CreateExtension extends ParserAbstract {
         }
 
         addSafe(db, ext, Arrays.asList(nameCtx));
+    }
+
+    @Override
+    protected void fillQueryLocation(String fullScript) {
+        ParserRuleContext ctxWithActionName = ctx.getParent();
+        String query = ParserAbstract.getFullCtxText(ctxWithActionName);
+        queryLocation = new QueryLocation(getStmtAction(query),
+                fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query);
     }
 }

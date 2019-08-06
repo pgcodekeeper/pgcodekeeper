@@ -33,14 +33,18 @@ implements SqlContextProcessor {
 
     private final Map<PgStatement, StatementOverride> overrides;
 
-    public SQLOverridesListener(PgDatabase db, String filename, boolean refMode, List<AntlrError> errors,
-            IProgressMonitor mon, Map<PgStatement, StatementOverride> overrides) {
-        super(db, filename, refMode, errors, mon);
+    public SQLOverridesListener(PgDatabase db, String filename, boolean refMode,
+            boolean scriptMode, List<AntlrError> errors, IProgressMonitor mon,
+            Map<PgStatement, StatementOverride> overrides) {
+        super(db, filename, refMode, scriptMode, errors, mon);
         this.overrides = overrides;
     }
 
     @Override
     public void process(SqlContext rootCtx, CommonTokenStream stream) {
+        if (scriptMode) {
+            fullScript = ParserAbstract.getFullCtxText(rootCtx);
+        }
         for (StatementContext s : rootCtx.statement()) {
             Schema_statementContext st = s.schema_statement();
             if (st != null) {

@@ -3,7 +3,10 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 import java.util.Arrays;
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.MsDiffUtils;
+import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ClusteredContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_optionContext;
@@ -14,6 +17,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Identity_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Index_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_optionsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.TableAbstract;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.MsIndex;
@@ -135,5 +139,13 @@ public class CreateMsTable extends TableAbstract {
             String value = option.index_option_value().getText();
             table.addOption(key, value);
         }
+    }
+
+    @Override
+    protected void fillQueryLocation(String fullScript) {
+        ParserRuleContext ctxWithActionName = ctx.getParent();
+        String query = ParserAbstract.getFullCtxText(ctxWithActionName);
+        queryLocation = new QueryLocation(getStmtAction(query),
+                fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query);
     }
 }

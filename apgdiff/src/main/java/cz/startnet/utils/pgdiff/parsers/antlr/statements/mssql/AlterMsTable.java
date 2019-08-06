@@ -3,13 +3,17 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 import java.util.Arrays;
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.DangerStatement;
+import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_action_dropContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraintContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.TableAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
@@ -83,5 +87,13 @@ public class AlterMsTable extends TableAbstract {
         } else if (ctx.CHANGE_TRACKING() != null && ctx.ENABLE() != null) {
             doSafe(MsTable::setTracked, ((MsTable) table), ctx.ON() != null);
         }
+    }
+
+    @Override
+    protected void fillQueryLocation(String fullScript) {
+        ParserRuleContext ctxWithActionName = ctx.getParent();
+        String query = ParserAbstract.getFullCtxText(ctxWithActionName);
+        queryLocation = new QueryLocation(getStmtAction(query),
+                fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query);
     }
 }

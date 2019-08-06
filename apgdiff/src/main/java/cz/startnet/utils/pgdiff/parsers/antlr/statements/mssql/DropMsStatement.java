@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
+import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Drop_relational_or_xml_or_spatial_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Drop_statementsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
@@ -92,5 +93,12 @@ public class DropMsStatement extends ParserAbstract {
                 }
             }
         }
+    }
+
+    @Override
+    protected void fillQueryLocation(String fullScript) {
+        String query = ParserAbstract.getFullCtxText(ctx);
+        queryLocation = new QueryLocation(getStmtAction(query),
+                fullScript.indexOf(query), ctx.getStart().getLine(), query);
     }
 }

@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
+import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ClusteredContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_optionContext;
@@ -204,5 +205,13 @@ public class CreateMsType extends ParserAbstract {
             }
             col.setDefaultValue(getFullCtxText(option.expression()));
         }
+    }
+
+    @Override
+    protected void fillQueryLocation(String fullScript) {
+        ParserRuleContext ctxWithActionName = ctx.getParent();
+        String query = ParserAbstract.getFullCtxText(ctxWithActionName);
+        queryLocation = new QueryLocation(getStmtAction(query),
+                fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query);
     }
 }

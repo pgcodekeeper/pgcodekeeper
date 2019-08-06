@@ -2,6 +2,9 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
+import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
@@ -147,5 +150,13 @@ public class CreateTable extends TableAbstract {
                 fillOptionParams(value, optionText, false, table::addOption);
             }
         }
+    }
+
+    @Override
+    protected void fillQueryLocation(String fullScript) {
+        ParserRuleContext ctxWithActionName = ctx.getParent();
+        String query = ParserAbstract.getFullCtxText(ctxWithActionName);
+        queryLocation = new QueryLocation(getStmtAction(query),
+                fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query);
     }
 }

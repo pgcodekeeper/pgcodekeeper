@@ -6,6 +6,7 @@ import java.util.Locale;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.eclipse.core.runtime.IProgressMonitor;
 
+import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_alterContext;
@@ -58,16 +59,22 @@ implements SqlContextProcessor {
     private String oids;
 
     public CustomSQLParserListener(PgDatabase database, String filename,
-            boolean refMode, List<AntlrError> errors, IProgressMonitor monitor) {
-        super(database, filename, refMode, errors, monitor);
+            boolean refMode, boolean scriptMode, List<AntlrError> errors,
+            IProgressMonitor monitor) {
+        super(database, filename, refMode, scriptMode, errors, monitor);
     }
 
     @Override
     public void process(SqlContext rootCtx, CommonTokenStream stream) {
+        if (scriptMode) {
+            fullScript = ParserAbstract.getFullCtxText(rootCtx);
+        }
         for (StatementContext s : rootCtx.statement()) {
             statement(s);
         }
-        db.sortColumns();
+        if (!scriptMode) {
+            db.sortColumns();
+        }
     }
 
     public void statement(StatementContext statement) {
@@ -171,10 +178,16 @@ implements SqlContextProcessor {
         safeParseStatement(p, ctx);
     }
 
-    private void set(Set_statementContext ctx) {
+    private QueryLocation set(Set_statementContext ctx) {
+        if (scriptMode) {
+            String query = ParserAbstract.getFullCtxText(ctx);
+            return new QueryLocation(ParserAbstract.getStmtAction(query),
+                    fullScript.indexOf(query), ctx.getStart().getLine(), query);
+        }
+
         Session_local_optionContext sesLocOpt = ctx.set_action().session_local_option();
         if (sesLocOpt == null || sesLocOpt.config_param == null) {
-            return;
+            return null;
         }
         String confParam = sesLocOpt.config_param.getText();
         // TODO set param values can be identifiers, quoted identifiers, string
@@ -206,5 +219,6 @@ implements SqlContextProcessor {
         default:
             break;
         }
+        return null;
     }
 }

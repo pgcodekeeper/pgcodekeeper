@@ -19,26 +19,32 @@ public class CustomParserListener {
 
     protected final PgDatabase db;
     protected final boolean refMode;
+    protected final boolean scriptMode;
     protected final String filename;
     private final List<AntlrError> errors;
     private final IProgressMonitor monitor;
 
+    protected String fullScript = "";
+
     private final List<StatementBodyContainer> statementBodies = new ArrayList<>();
 
     public CustomParserListener(PgDatabase database, String filename,
-            boolean refMode, List<AntlrError> errors, IProgressMonitor monitor) {
+            boolean refMode, boolean scriptMode, List<AntlrError> errors,
+            IProgressMonitor monitor) {
         this.db = database;
         this.errors = errors;
         this.monitor = monitor;
         this.filename = filename;
         this.refMode = refMode;
+        this.scriptMode = scriptMode;
     }
 
     /**
      * @param ctx statememnt's first token rule
      */
     protected void safeParseStatement(ParserAbstract p, ParserRuleContext ctx) {
-        safeParseStatement(() -> p.parseObject(filename, refMode, statementBodies), ctx);
+        safeParseStatement(() -> p.parseObject(filename, refMode, scriptMode,
+                statementBodies, fullScript), ctx);
     }
 
     protected void safeParseStatement(Runnable r, ParserRuleContext ctx) {

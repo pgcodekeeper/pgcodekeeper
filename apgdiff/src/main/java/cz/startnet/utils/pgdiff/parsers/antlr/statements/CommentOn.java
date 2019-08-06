@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -213,5 +214,12 @@ public class CommentOn extends ParserAbstract {
             db.getObjDefinitions().values().stream().flatMap(Set::stream)
             .filter(ref::compare).forEach(def -> def.setComment(comment));
         }
+    }
+
+    @Override
+    protected void fillQueryLocation(String fullScript) {
+        String query = ParserAbstract.getFullCtxText(ctx);
+        queryLocation = new QueryLocation(getStmtAction(query),
+                fullScript.indexOf(query), ctx.getStart().getLine(), query);
     }
 }

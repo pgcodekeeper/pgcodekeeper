@@ -6,10 +6,12 @@ import java.util.List;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSqlClauses;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
@@ -85,5 +87,13 @@ public class CreateMsTrigger extends BatchContextProcessor {
                     Arrays.asList(schemaCtx, tableNameCtx, nameCtx));
         }
         return trigger;
+    }
+
+    @Override
+    protected void fillQueryLocation(String fullScript) {
+        ParserRuleContext ctxWithActionName = ctx.getParent().getParent();
+        String query = ParserAbstract.getFullCtxTextWithHidden(ctxWithActionName, stream);
+        queryLocation = new QueryLocation(getStmtAction(query),
+                fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query);
     }
 }

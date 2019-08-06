@@ -6,6 +6,7 @@ import java.util.List;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Assembly_specifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_procedureContext;
@@ -14,6 +15,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Procedure_optionContext
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Procedure_paramContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSqlClauses;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
@@ -109,5 +111,13 @@ public class CreateMsProcedure extends BatchContextProcessor {
 
             function.addArgument(arg);
         }
+    }
+
+    @Override
+    protected void fillQueryLocation(String fullScript) {
+        ParserRuleContext ctxWithActionName = ctx.getParent().getParent();
+        String query = ParserAbstract.getFullCtxTextWithHidden(ctxWithActionName, stream);
+        queryLocation = new QueryLocation(getStmtAction(query),
+                fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query);
     }
 }

@@ -57,12 +57,16 @@ implements TSqlContextProcessor {
     private boolean quotedIdentifier = true;
 
     public CustomTSQLParserListener(PgDatabase database, String filename,
-            boolean refMode, List<AntlrError> errors, IProgressMonitor monitor) {
-        super(database, filename, refMode, errors, monitor);
+            boolean refMode, boolean scriptMode, List<AntlrError> errors,
+            IProgressMonitor monitor) {
+        super(database, filename, refMode, scriptMode, errors, monitor);
     }
 
     @Override
     public void process(Tsql_fileContext rootCtx, CommonTokenStream stream) {
+        if (scriptMode) {
+            fullScript = ParserAbstract.getFullCtxTextWithHidden(rootCtx, stream);
+        }
         for (BatchContext b : rootCtx.batch()) {
             Sql_clausesContext clauses = b.sql_clauses();
             Batch_statementContext batchSt;

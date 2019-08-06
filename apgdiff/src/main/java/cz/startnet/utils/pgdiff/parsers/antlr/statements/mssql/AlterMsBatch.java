@@ -2,6 +2,9 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import java.util.Arrays;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
+import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statement_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
@@ -54,5 +57,13 @@ public class AlterMsBatch extends ParserAbstract {
                 DbObjType.TABLE, StatementActions.NONE);
         addObjReference(Arrays.asList(schemaCtx, ctx.table_name.name, qname.name),
                 DbObjType.TRIGGER, StatementActions.ALTER);
+    }
+
+    @Override
+    protected void fillQueryLocation(String fullScript) {
+        ParserRuleContext ctxWithActionName = ctx.getParent();
+        String query = ParserAbstract.getFullCtxText(ctxWithActionName);
+        queryLocation = new QueryLocation(getStmtAction(query),
+                fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query);
     }
 }

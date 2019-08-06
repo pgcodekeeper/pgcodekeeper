@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 import java.util.Arrays;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
+import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Update_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
@@ -28,5 +29,12 @@ public class UpdateMsStatement extends ParserAbstract {
                     DbObjType.TABLE, StatementActions.UPDATE);
             loc.setWarning(DangerStatement.UPDATE);
         }
+    }
+
+    @Override
+    protected void fillQueryLocation(String fullScript) {
+        String query = ParserAbstract.getFullCtxText(ctx);
+        queryLocation = new QueryLocation(getStmtAction(query),
+                fullScript.indexOf(query), ctx.getStart().getLine(), query);
     }
 }

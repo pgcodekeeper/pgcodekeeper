@@ -30,14 +30,18 @@ implements TSqlContextProcessor {
 
     private final Map<PgStatement, StatementOverride> overrides;
 
-    public TSQLOverridesListener(PgDatabase db, String filename, boolean refMode, List<AntlrError> errors,
-            IProgressMonitor mon, Map<PgStatement, StatementOverride> overrides) {
-        super(db, filename, refMode, errors, mon);
+    public TSQLOverridesListener(PgDatabase db, String filename, boolean refMode,
+            boolean scriptMode, List<AntlrError> errors, IProgressMonitor mon,
+            Map<PgStatement, StatementOverride> overrides) {
+        super(db, filename, refMode, scriptMode, errors, mon);
         this.overrides = overrides;
     }
 
     @Override
     public void process(Tsql_fileContext rootCtx, CommonTokenStream stream) {
+        if (scriptMode) {
+            fullScript = ParserAbstract.getFullCtxTextWithHidden(rootCtx, stream);
+        }
         for (BatchContext b : rootCtx.batch()) {
             Sql_clausesContext clauses = b.sql_clauses();
             Batch_statementContext batch;

@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
+import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Class_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Columns_permissionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
@@ -188,5 +189,12 @@ public class CreateMsRule extends ParserAbstract {
             overrides.computeIfAbsent(st,
                     k -> new StatementOverride()).addPrivilege(privilege);
         }
+    }
+
+    @Override
+    protected void fillQueryLocation(String fullScript) {
+        String query = ParserAbstract.getFullCtxText(ctx);
+        queryLocation = new QueryLocation(getStmtAction(query),
+                fullScript.indexOf(query), ctx.getStart().getLine(), query);
     }
 }

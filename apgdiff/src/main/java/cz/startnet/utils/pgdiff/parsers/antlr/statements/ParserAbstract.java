@@ -7,6 +7,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.regex.Pattern;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -14,6 +15,7 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
@@ -58,17 +60,22 @@ public abstract class ParserAbstract {
     private List<StatementBodyContainer> statementBodies;
     private boolean refMode;
     private String fileName;
+    protected QueryLocation queryLocation;
 
     public ParserAbstract(PgDatabase db) {
         this.db = db;
     }
 
-    public void parseObject(String fileName, boolean refMode,
-            List<StatementBodyContainer> statementBodies) {
+    public void parseObject(String fileName, boolean refMode, boolean scriptMode,
+            List<StatementBodyContainer> statementBodies, String fullScript) {
         this.fileName = fileName;
         this.refMode = refMode;
         this.statementBodies = statementBodies;
-        parseObject();
+        if (scriptMode) {
+            fillQueryLocation(fullScript);
+        } else {
+            parseObject();
+        }
     }
 
     protected boolean isRefMode() {
@@ -85,6 +92,44 @@ public abstract class ParserAbstract {
      * Parse object from context
      */
     public abstract void parseObject();
+
+    /**
+     * Fill the object with query of statement and it's position in the script
+     * from statement context.
+     */
+    protected abstract void fillQueryLocation(String fullScript);
+
+    /**
+     * Get statement action for QueryLocation object.
+     */
+    public static String getStmtAction(String query) {
+        // trim to avoid empty strings at the edges of the array
+        String[] arr = Pattern.compile("\\s+").split(query.trim(), 3);
+        if (arr[0].isEmpty()) {
+            // empty or whitespace query, wtf was that
+            return null;
+        }
+
+        String message = arr[0].toUpperCase(Locale.ROOT);
+        if (arr.length > 1) {
+            switch (message) {
+            case "CREATE":
+            case "ALTER":
+            case "DROP":
+            case "START":
+            case "BEGIN":
+                message += ' ' + arr[1].toUpperCase(Locale.ROOT);
+            }
+        }
+        return message;
+    }
+
+    /**
+     * Returns the object with query of statement and it's position in the script.
+     */
+    public QueryLocation getQueryLocation() {
+        return queryLocation;
+    }
 
     /**
      * Extracts raw text from context

@@ -3,6 +3,9 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 import java.util.Arrays;
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
+import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_assemblyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Assembly_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
@@ -33,5 +36,13 @@ public class AlterMsAssembly extends ParserAbstract {
                 }
             }
         }
+    }
+
+    @Override
+    protected void fillQueryLocation(String fullScript) {
+        ParserRuleContext ctxWithActionName = ctx.getParent();
+        String query = ParserAbstract.getFullCtxText(ctxWithActionName);
+        queryLocation = new QueryLocation(getStmtAction(query),
+                fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query);
     }
 }
