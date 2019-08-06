@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public abstract class ContextLocation implements Serializable {
 
-    private static final long serialVersionUID = 7334100073425496383L;
+    private static final long serialVersionUID = -7400598722671864553L;
 
     private final int offset;
     private final int lineNumber;

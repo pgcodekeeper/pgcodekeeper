@@ -11,7 +11,7 @@ import cz.startnet.utils.pgdiff.schema.PgObjLocation;
  */
 public class QueryLocation extends PgObjLocation {
 
-    private static final long serialVersionUID = 3201118737165241386L;
+    private static final long serialVersionUID = 200750788835679614L;
 
     private final String sql;
 

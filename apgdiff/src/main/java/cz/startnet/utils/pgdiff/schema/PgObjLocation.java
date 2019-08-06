@@ -1,7 +1,6 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import java.util.Objects;
-import java.util.function.BiPredicate;
 
 import cz.startnet.utils.pgdiff.ContextLocation;
 import cz.startnet.utils.pgdiff.DangerStatement;
@@ -9,7 +8,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgObjLocation extends ContextLocation {
 
-    private static final long serialVersionUID = 1284715027798712221L;
+    private static final long serialVersionUID = 625312118296271085L;
 
     private DangerStatement danger;
     private String comment = "";
@@ -51,26 +50,12 @@ public class PgObjLocation extends ContextLocation {
         }
         if (obj instanceof PgObjLocation) {
             PgObjLocation loc = (PgObjLocation) obj;
-            return genericObjCompare(loc, Objects::equals)
+            return Objects.equals(loc.getGenericColumn(), getGenericColumn())
                     && getOffset() == loc.getOffset()
                     && getLineNumber() == loc.getLineNumber()
                     && Objects.equals(loc.getFilePath(), getFilePath());
         }
         return false;
-    }
-
-    private boolean genericObjCompare(PgObjLocation loc,
-            BiPredicate<DbObjType, DbObjType> dbObjTypeCompare) {
-        if (gObj == null && loc.gObj == null) {
-            return true;
-        } else if ((gObj != null && loc.gObj == null)
-                || (gObj == null && loc.gObj != null)) {
-            return false;
-        }
-        return Objects.equals(gObj.schema, loc.gObj.schema)
-                && Objects.equals(gObj.table, loc.gObj.table)
-                && Objects.equals(gObj.column, loc.gObj.column)
-                && dbObjTypeCompare.test(gObj.type, loc.gObj.type);
     }
 
     @Override
@@ -121,17 +106,7 @@ public class PgObjLocation extends ContextLocation {
     }
 
     public String getObjName() {
-        if (gObj != null) {
-            if (gObj.column != null) {
-                return gObj.column;
-            } else if (gObj.table != null) {
-                return gObj.table;
-            } else if (gObj.schema != null) {
-                return gObj.schema;
-            }
-        }
-
-        return "";
+        return gObj != null ? gObj.getObjName() : "";
     }
 
     public String getSchema() {
@@ -142,27 +117,36 @@ public class PgObjLocation extends ContextLocation {
         return gObj == null ? null : gObj.type;
     }
 
-    public final boolean compare(PgObjLocation col) {
-        return genericObjCompare(col, (localType, otherType) -> {
-            if (localType == otherType) {
-                return true;
-            }
+    public final boolean compare(PgObjLocation loc) {
+        GenericColumn col = loc.getGenericColumn();
+        if (gObj == null || col == null) {
+            return false;
+        }
+        return Objects.equals(gObj.schema, col.schema)
+                && Objects.equals(gObj.table, col.table)
+                && Objects.equals(gObj.column, col.column)
+                && compareTypes(col.type);
+    }
 
-            switch (otherType) {
-            case TABLE:
-            case VIEW:
-            case SEQUENCE:
-                return localType == DbObjType.TABLE || localType == DbObjType.VIEW
-                || localType == DbObjType.SEQUENCE;
-            case FUNCTION:
-            case AGGREGATE:
-                return localType == DbObjType.FUNCTION || localType == DbObjType.AGGREGATE;
-            case TYPE:
-            case DOMAIN:
-                return localType == DbObjType.TYPE || localType == DbObjType.DOMAIN;
-            default:
-                return false;
-            }
-        });
+    private boolean compareTypes(DbObjType objType) {
+        DbObjType type = gObj.type;
+        if (type == objType) {
+            return true;
+        }
+
+        switch (objType) {
+        case TABLE:
+        case VIEW:
+        case SEQUENCE:
+            return type == DbObjType.TABLE || type == DbObjType.VIEW || type == DbObjType.SEQUENCE;
+        case FUNCTION:
+        case AGGREGATE:
+            return type == DbObjType.FUNCTION || type == DbObjType.AGGREGATE;
+        case TYPE:
+        case DOMAIN:
+            return type == DbObjType.TYPE || type == DbObjType.DOMAIN;
+        default:
+            return false;
+        }
     }
 }
