@@ -15,6 +15,7 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
 import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
@@ -66,12 +67,12 @@ public abstract class ParserAbstract {
         this.db = db;
     }
 
-    public void parseObject(String fileName, boolean refMode, boolean scriptMode,
+    public void parseObject(String fileName, ParserListenerMode mode,
             List<StatementBodyContainer> statementBodies, String fullScript) {
         this.fileName = fileName;
-        this.refMode = refMode;
+        this.refMode = ParserListenerMode.REF == mode;
         this.statementBodies = statementBodies;
-        if (scriptMode) {
+        if (ParserListenerMode.SCRIPT == mode) {
             fillQueryLocation(fullScript);
         } else {
             parseObject();

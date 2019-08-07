@@ -8,6 +8,7 @@ import org.antlr.v4.runtime.Token;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.ObjectCreationException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
@@ -18,8 +19,7 @@ import ru.taximaxim.codekeeper.apgdiff.Log;
 public class CustomParserListener {
 
     protected final PgDatabase db;
-    protected final boolean refMode;
-    protected final boolean scriptMode;
+    protected final ParserListenerMode mode;
     protected final String filename;
     private final List<AntlrError> errors;
     private final IProgressMonitor monitor;
@@ -29,22 +29,21 @@ public class CustomParserListener {
     private final List<StatementBodyContainer> statementBodies = new ArrayList<>();
 
     public CustomParserListener(PgDatabase database, String filename,
-            boolean refMode, boolean scriptMode, List<AntlrError> errors,
+            ParserListenerMode mode, List<AntlrError> errors,
             IProgressMonitor monitor) {
         this.db = database;
         this.errors = errors;
         this.monitor = monitor;
         this.filename = filename;
-        this.refMode = refMode;
-        this.scriptMode = scriptMode;
+        this.mode = mode;
     }
 
     /**
      * @param ctx statememnt's first token rule
      */
     protected void safeParseStatement(ParserAbstract p, ParserRuleContext ctx) {
-        safeParseStatement(() -> p.parseObject(filename, refMode, scriptMode,
-                statementBodies, fullScript), ctx);
+        safeParseStatement(() -> p.parseObject(filename, mode, statementBodies,
+                fullScript), ctx);
     }
 
     protected void safeParseStatement(Runnable r, ParserRuleContext ctx) {

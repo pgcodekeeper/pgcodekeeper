@@ -57,8 +57,7 @@ public class PgDumpLoader {
 
     private final List<AntlrError> errors = new ArrayList<>();
 
-    private boolean refMode;
-    private boolean scriptMode;
+    private ParserListenerMode mode = ParserListenerMode.NORMAL;
     private List<StatementBodyContainer> statementBodyReferences;
     private Map<PgStatement, StatementOverride> overrides;
 
@@ -66,12 +65,8 @@ public class PgDumpLoader {
         return errors;
     }
 
-    public void setRefMode(boolean refMode) {
-        this.refMode = refMode;
-    }
-
-    public void setScriptMode(boolean scriptMode) {
-        this.scriptMode = scriptMode;
+    public void setMode(ParserListenerMode mode) {
+        this.mode = mode;
     }
 
     public void setOverridesMap(Map<PgStatement, StatementOverride> overrides) {
@@ -161,10 +156,10 @@ public class PgDumpLoader {
             TSqlContextProcessor listener;
             if (overrides != null) {
                 listener = new TSQLOverridesListener(
-                        intoDb, inputObjectName, refMode, scriptMode, errors, monitor, overrides);
+                        intoDb, inputObjectName, mode, errors, monitor, overrides);
             } else {
                 listener = new CustomTSQLParserListener(
-                        intoDb, inputObjectName, refMode, scriptMode, errors, monitor);
+                        intoDb, inputObjectName, mode, errors, monitor);
                 statementBodyReferences = Collections.emptyList();
             }
             AntlrParser.parseTSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
@@ -173,11 +168,10 @@ public class PgDumpLoader {
             SqlContextProcessor listener;
             if (overrides != null) {
                 listener = new SQLOverridesListener(
-                        intoDb, inputObjectName, refMode, scriptMode, errors, monitor, overrides);
+                        intoDb, inputObjectName, mode, errors, monitor, overrides);
             } else {
                 CustomSQLParserListener cust =
-                        new CustomSQLParserListener(intoDb, inputObjectName, refMode,
-                                scriptMode, errors, monitor);
+                        new CustomSQLParserListener(intoDb, inputObjectName, mode, errors, monitor);
                 statementBodyReferences = cust.getStatementBodies();
                 listener = cust;
             }

@@ -44,6 +44,7 @@ import org.eclipse.ui.ide.ResourceUtil;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -162,7 +163,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         args.setMsSql(isMsSql);
         args.setInCharsetName(file.getCharset());
         PgUIDumpLoader loader = new PgUIDumpLoader(file, args, monitor);
-        loader.setRefMode(true);
+        loader.setMode(ParserListenerMode.REF);
         PgDatabase intoDb = new PgDatabase();
         intoDb.setArguments(args);
         PgDatabase db = loader.loadFile(intoDb);
@@ -242,7 +243,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         PgDiffArguments args = new PgDiffArguments();
         args.setMsSql(isMsSql);
         PgDumpLoader loader = new PgDumpLoader(() -> input, fileName, args, monitor);
-        loader.setRefMode(true);
+        loader.setMode(ParserListenerMode.REF);
         PgDatabase db = loader.load();
         objDefinitions.putAll(db.getObjDefinitions());
         objReferences.putAll(db.getObjReferences());

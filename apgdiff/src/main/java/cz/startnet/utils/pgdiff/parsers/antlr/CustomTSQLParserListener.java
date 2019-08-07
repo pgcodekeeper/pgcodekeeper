@@ -6,6 +6,7 @@ import java.util.Locale;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.eclipse.core.runtime.IProgressMonitor;
 
+import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Another_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.BatchContext;
@@ -57,14 +58,13 @@ implements TSqlContextProcessor {
     private boolean quotedIdentifier = true;
 
     public CustomTSQLParserListener(PgDatabase database, String filename,
-            boolean refMode, boolean scriptMode, List<AntlrError> errors,
-            IProgressMonitor monitor) {
-        super(database, filename, refMode, scriptMode, errors, monitor);
+            ParserListenerMode mode, List<AntlrError> errors, IProgressMonitor monitor) {
+        super(database, filename, mode, errors, monitor);
     }
 
     @Override
     public void process(Tsql_fileContext rootCtx, CommonTokenStream stream) {
-        if (scriptMode) {
+        if (ParserListenerMode.SCRIPT == mode) {
             fullScript = ParserAbstract.getFullCtxTextWithHidden(rootCtx, stream);
         }
         for (BatchContext b : rootCtx.batch()) {

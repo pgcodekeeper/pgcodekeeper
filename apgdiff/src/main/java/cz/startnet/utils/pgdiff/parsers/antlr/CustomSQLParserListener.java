@@ -6,6 +6,7 @@ import java.util.Locale;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.eclipse.core.runtime.IProgressMonitor;
 
+import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
 import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_statementContext;
@@ -59,20 +60,19 @@ implements SqlContextProcessor {
     private String oids;
 
     public CustomSQLParserListener(PgDatabase database, String filename,
-            boolean refMode, boolean scriptMode, List<AntlrError> errors,
-            IProgressMonitor monitor) {
-        super(database, filename, refMode, scriptMode, errors, monitor);
+            ParserListenerMode mode, List<AntlrError> errors, IProgressMonitor monitor) {
+        super(database, filename, mode, errors, monitor);
     }
 
     @Override
     public void process(SqlContext rootCtx, CommonTokenStream stream) {
-        if (scriptMode) {
+        if (ParserListenerMode.SCRIPT == mode) {
             fullScript = ParserAbstract.getFullCtxText(rootCtx);
         }
         for (StatementContext s : rootCtx.statement()) {
             statement(s);
         }
-        if (!scriptMode) {
+        if (ParserListenerMode.SCRIPT != mode) {
             db.sortColumns();
         }
     }
@@ -179,7 +179,7 @@ implements SqlContextProcessor {
     }
 
     private QueryLocation set(Set_statementContext ctx) {
-        if (scriptMode) {
+        if (ParserListenerMode.SCRIPT == mode) {
             String query = ParserAbstract.getFullCtxText(ctx);
             return new QueryLocation(ParserAbstract.getStmtAction(query),
                     fullScript.indexOf(query), ctx.getStart().getLine(), query);
@@ -197,7 +197,8 @@ implements SqlContextProcessor {
 
         switch (confParam.toLowerCase(Locale.ROOT)) {
         case "search_path":
-            if (!refMode && (confValueCtx.size() != 1 || !ApgdiffConsts.PG_CATALOG.equals(confValue))) {
+            if (ParserListenerMode.NORMAL == mode
+            && (confValueCtx.size() != 1 || !ApgdiffConsts.PG_CATALOG.equals(confValue))) {
                 throw new UnresolvedReferenceException("Unsupported search_path", ctx.start);
             }
             break;
