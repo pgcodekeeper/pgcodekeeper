@@ -96,9 +96,9 @@ public class DropMsStatement extends ParserAbstract {
     }
 
     @Override
-    protected void fillQueryLocation(String fullScript) {
+    protected void fillQueryLocation(String fullScript, List<List<QueryLocation>> batches) {
         String query = ParserAbstract.getFullCtxText(ctx);
-        queryLocation = new QueryLocation(getStmtAction(query),
-                fullScript.indexOf(query), ctx.getStart().getLine(), query);
+        batches.get(batches.size() - 1).add(new QueryLocation(getStmtAction(query),
+                fullScript.indexOf(query), ctx.getStart().getLine(), query));
     }
 }

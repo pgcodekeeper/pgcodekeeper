@@ -256,9 +256,9 @@ public class CreateRule extends ParserAbstract {
     }
 
     @Override
-    protected void fillQueryLocation(String fullScript) {
+    protected void fillQueryLocation(String fullScript, List<List<QueryLocation>> batches) {
         String query = ParserAbstract.getFullCtxText(ctx);
-        queryLocation = new QueryLocation(getStmtAction(query),
-                fullScript.indexOf(query), ctx.getStart().getLine(), query);
+        batches.get(0).add(new QueryLocation(getStmtAction(query),
+                fullScript.indexOf(query), ctx.getStart().getLine(), query));
     }
 }

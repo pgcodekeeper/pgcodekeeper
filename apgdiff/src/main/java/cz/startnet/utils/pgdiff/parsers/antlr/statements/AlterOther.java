@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -68,10 +69,10 @@ public class AlterOther extends ParserAbstract {
     }
 
     @Override
-    protected void fillQueryLocation(String fullScript) {
+    protected void fillQueryLocation(String fullScript, List<List<QueryLocation>> batches) {
         ParserRuleContext ctxWithActionName = ctx.getParent();
         String query = ParserAbstract.getFullCtxText(ctxWithActionName);
-        queryLocation = new QueryLocation(getStmtAction(query),
-                fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query);
+        batches.get(0).add(new QueryLocation(getStmtAction(query),
+                fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query));
     }
 }

@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -7,6 +8,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
+import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Another_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.BatchContext;
@@ -48,6 +50,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsUser;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.DisableMsTrigger;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.DropMsStatement;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.OtherMsOperation;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.UpdateMsStatement;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
@@ -56,27 +59,38 @@ implements TSqlContextProcessor {
 
     private boolean ansiNulls = true;
     private boolean quotedIdentifier = true;
+    private final boolean isScriptMode;
 
     public CustomTSQLParserListener(PgDatabase database, String filename,
-            ParserListenerMode mode, List<AntlrError> errors, IProgressMonitor monitor) {
-        super(database, filename, mode, errors, monitor);
+            ParserListenerMode mode, List<AntlrError> errors,
+            IProgressMonitor monitor, List<List<QueryLocation>> batches) {
+        super(database, filename, mode, errors, monitor, batches);
+        this.isScriptMode = ParserListenerMode.SCRIPT == mode;
     }
 
     @Override
     public void process(Tsql_fileContext rootCtx, CommonTokenStream stream) {
-        if (ParserListenerMode.SCRIPT == mode) {
+        if (isScriptMode) {
             fullScript = ParserAbstract.getFullCtxTextWithHidden(rootCtx, stream);
         }
         for (BatchContext b : rootCtx.batch()) {
             Sql_clausesContext clauses = b.sql_clauses();
             Batch_statementContext batchSt;
             if (clauses != null) {
+                startBatch();
                 for (St_clauseContext st : clauses.st_clause()) {
                     clause(st);
                 }
             } else if ((batchSt = b.batch_statement()) != null) {
+                startBatch();
                 batchStatement(batchSt, stream);
             }
+        }
+    }
+
+    private void startBatch() {
+        if (isScriptMode) {
+            batches.add(new ArrayList<>());
         }
     }
 
@@ -97,21 +111,33 @@ implements TSqlContextProcessor {
                 safeParseStatement(new DisableMsTrigger(disable, db), disable);
             } else if ((drop = ddl.schema_drop()) != null) {
                 safeParseStatement(new DropMsStatement(drop, db), drop);
+            } else if (isScriptMode) {
+                safeParseStatement(new OtherMsOperation(ddl), ddl);
             }
         } else if ((dml = st.dml_clause()) != null) {
             Update_statementContext update = dml.update_statement();
             if (update != null) {
                 safeParseStatement(new UpdateMsStatement(update, db), update);
+            } else if (isScriptMode) {
+                safeParseStatement(new OtherMsOperation(dml), dml);
             }
         } else if ((ast = st.another_statement()) != null) {
             Set_statementContext set = ast.set_statement();
             Security_statementContext security;
             if (set != null) {
-                set(set);
+                if (isScriptMode) {
+                    safeParseStatement(new OtherMsOperation(set), set);
+                } else {
+                    set(set);
+                }
             } else if ((security = ast.security_statement()) != null
                     && security.rule_common() != null) {
                 safeParseStatement(new CreateMsRule(security.rule_common(), db), security);
+            } else if (isScriptMode) {
+                safeParseStatement(new OtherMsOperation(dml), dml);
             }
+        } else if (isScriptMode) {
+            safeParseStatement(new OtherMsOperation(st), st);
         }
     }
 
@@ -135,6 +161,8 @@ implements TSqlContextProcessor {
             p = new CreateMsView(ctx, db, ansiNulls, quotedIdentifier, stream);
         } else if (body.create_or_alter_trigger() != null) {
             p = new CreateMsTrigger(ctx, db, ansiNulls, quotedIdentifier, stream);
+        } else if (isScriptMode) {
+            p = new OtherMsOperation(ctx);
         } else {
             return;
         }

@@ -61,19 +61,19 @@ public abstract class ParserAbstract {
     private List<StatementBodyContainer> statementBodies;
     private boolean refMode;
     private String fileName;
-    protected QueryLocation queryLocation;
 
     public ParserAbstract(PgDatabase db) {
         this.db = db;
     }
 
     public void parseObject(String fileName, ParserListenerMode mode,
-            List<StatementBodyContainer> statementBodies, String fullScript) {
+            List<StatementBodyContainer> statementBodies, String fullScript,
+            List<List<QueryLocation>> batches) {
         this.fileName = fileName;
         this.refMode = ParserListenerMode.REF == mode;
         this.statementBodies = statementBodies;
         if (ParserListenerMode.SCRIPT == mode) {
-            fillQueryLocation(fullScript);
+            fillQueryLocation(fullScript, batches);
         } else {
             parseObject();
         }
@@ -95,10 +95,11 @@ public abstract class ParserAbstract {
     public abstract void parseObject();
 
     /**
-     * Fill the object with query of statement and it's position in the script
-     * from statement context.
+     * Fills the 'QueryLocation'-object with query of statement and it's position
+     * in the script from statement context, and then puts filled 'QueryLocation'-object
+     * to the batch.
      */
-    protected abstract void fillQueryLocation(String fullScript);
+    protected abstract void fillQueryLocation(String fullScript, List<List<QueryLocation>> batches);
 
     /**
      * Get statement action for QueryLocation object.
@@ -123,13 +124,6 @@ public abstract class ParserAbstract {
             }
         }
         return message;
-    }
-
-    /**
-     * Returns the object with query of statement and it's position in the script.
-     */
-    public QueryLocation getQueryLocation() {
-        return queryLocation;
     }
 
     /**

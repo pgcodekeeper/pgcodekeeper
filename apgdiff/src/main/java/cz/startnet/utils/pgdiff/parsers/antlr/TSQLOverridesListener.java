@@ -7,6 +7,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
+import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Another_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.BatchContext;
@@ -33,8 +34,9 @@ implements TSqlContextProcessor {
 
     public TSQLOverridesListener(PgDatabase db, String filename, ParserListenerMode mode,
             List<AntlrError> errors, IProgressMonitor mon,
-            Map<PgStatement, StatementOverride> overrides) {
-        super(db, filename, mode, errors, mon);
+            Map<PgStatement, StatementOverride> overrides,
+            List<List<QueryLocation>> batches) {
+        super(db, filename, mode, errors, mon, batches);
         this.overrides = overrides;
     }
 

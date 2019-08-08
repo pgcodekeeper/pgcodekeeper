@@ -48,6 +48,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateType;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.DropStatement;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.OtherOperation;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.UpdateStatement;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -58,21 +59,24 @@ implements SqlContextProcessor {
 
     private String tablespace;
     private String oids;
+    private final boolean isScriptMode;
 
     public CustomSQLParserListener(PgDatabase database, String filename,
-            ParserListenerMode mode, List<AntlrError> errors, IProgressMonitor monitor) {
-        super(database, filename, mode, errors, monitor);
+            ParserListenerMode mode, List<AntlrError> errors,
+            IProgressMonitor monitor, List<List<QueryLocation>> batches) {
+        super(database, filename, mode, errors, monitor, batches);
+        this.isScriptMode = ParserListenerMode.SCRIPT == mode;
     }
 
     @Override
     public void process(SqlContext rootCtx, CommonTokenStream stream) {
-        if (ParserListenerMode.SCRIPT == mode) {
+        if (isScriptMode) {
             fullScript = ParserAbstract.getFullCtxText(rootCtx);
         }
         for (StatementContext s : rootCtx.statement()) {
             statement(s);
         }
-        if (ParserListenerMode.SCRIPT != mode) {
+        if (!isScriptMode) {
             db.sortColumns();
         }
     }
@@ -93,6 +97,8 @@ implements SqlContextProcessor {
             }
         } else if ((ds = statement.data_statement()) != null) {
             data(ds);
+        } else if(isScriptMode) {
+            safeParseStatement(new OtherOperation(statement), statement);
         }
     }
 
@@ -139,8 +145,13 @@ implements SqlContextProcessor {
         } else if (ctx.rule_common() != null) {
             p = new CreateRule(ctx.rule_common(), db);
         } else if (ctx.set_statement() != null) {
-            set(ctx.set_statement());
-            return;
+            if (!isScriptMode) {
+                set(ctx.set_statement());
+                return;
+            }
+            p = new OtherOperation(ctx.set_statement());
+        } else if (isScriptMode) {
+            p = new OtherOperation(ctx);
         } else {
             return;
         }
@@ -171,6 +182,8 @@ implements SqlContextProcessor {
         ParserAbstract p;
         if (ctx.update_stmt_for_psql() != null) {
             p =  new UpdateStatement(ctx.update_stmt_for_psql(), db);
+        } else if (isScriptMode) {
+            p = new OtherOperation(ctx);
         } else {
             return;
         }
@@ -178,16 +191,10 @@ implements SqlContextProcessor {
         safeParseStatement(p, ctx);
     }
 
-    private QueryLocation set(Set_statementContext ctx) {
-        if (ParserListenerMode.SCRIPT == mode) {
-            String query = ParserAbstract.getFullCtxText(ctx);
-            return new QueryLocation(ParserAbstract.getStmtAction(query),
-                    fullScript.indexOf(query), ctx.getStart().getLine(), query);
-        }
-
+    private void set(Set_statementContext ctx) {
         Session_local_optionContext sesLocOpt = ctx.set_action().session_local_option();
         if (sesLocOpt == null || sesLocOpt.config_param == null) {
-            return null;
+            return;
         }
         String confParam = sesLocOpt.config_param.getText();
         // TODO set param values can be identifiers, quoted identifiers, string
@@ -197,7 +204,7 @@ implements SqlContextProcessor {
 
         switch (confParam.toLowerCase(Locale.ROOT)) {
         case "search_path":
-            if (ParserListenerMode.NORMAL == mode
+            if (ParserListenerMode.REF != mode
             && (confValueCtx.size() != 1 || !ApgdiffConsts.PG_CATALOG.equals(confValue))) {
                 throw new UnresolvedReferenceException("Unsupported search_path", ctx.start);
             }
@@ -220,6 +227,5 @@ implements SqlContextProcessor {
         default:
             break;
         }
-        return null;
     }
 }

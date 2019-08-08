@@ -77,10 +77,10 @@ public class CreateMsSequence extends ParserAbstract {
     }
 
     @Override
-    protected void fillQueryLocation(String fullScript) {
+    protected void fillQueryLocation(String fullScript, List<List<QueryLocation>> batches) {
         ParserRuleContext ctxWithActionName = ctx.getParent();
         String query = ParserAbstract.getFullCtxText(ctxWithActionName);
-        queryLocation = new QueryLocation(getStmtAction(query),
-                fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query);
+        batches.get(batches.size() - 1).add(new QueryLocation(getStmtAction(query),
+                fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query));
     }
 }

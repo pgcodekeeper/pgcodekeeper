@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
@@ -74,10 +75,10 @@ public class CreateMsAssembly extends ParserAbstract {
     }
 
     @Override
-    protected void fillQueryLocation(String fullScript) {
+    protected void fillQueryLocation(String fullScript, List<List<QueryLocation>> batches) {
         ParserRuleContext ctxWithActionName = ctx.getParent();
         String query = ParserAbstract.getFullCtxText(ctxWithActionName);
-        queryLocation = new QueryLocation(getStmtAction(query),
-                fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query);
+        batches.get(batches.size() - 1).add(new QueryLocation(getStmtAction(query),
+                fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query));
     }
 }
