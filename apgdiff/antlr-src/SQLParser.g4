@@ -2541,10 +2541,12 @@ from_item
 from_primary
     : ONLY? schema_qualified_name MULTIPLY? alias_clause?
     | LATERAL? table_subquery alias_clause
-    | LATERAL? function_call
+    | LATERAL? function_call (WITH ORDINALITY)?
         (AS from_function_column_def
         | AS? alias=identifier (LEFT_PAREN column_alias+=identifier (COMMA column_alias+=identifier)* RIGHT_PAREN | from_function_column_def)?
         )?
+    | LATERAL? ROWS FROM LEFT_PAREN function_call (AS from_function_column_def)? (COMMA function_call (AS from_function_column_def)?)* RIGHT_PAREN
+    (WITH ORDINALITY)? (AS? alias=identifier (LEFT_PAREN column_alias+=identifier (COMMA column_alias+=identifier)* RIGHT_PAREN)?)?
     ;
 
 alias_clause
