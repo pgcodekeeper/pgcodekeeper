@@ -18,6 +18,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.PgAggregate;
 import cz.startnet.utils.pgdiff.schema.PgAggregate.AggKinds;
+import cz.startnet.utils.pgdiff.schema.PgAggregate.AggFuncs;
 import cz.startnet.utils.pgdiff.schema.PgAggregate.ModifyType;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -48,7 +49,7 @@ public class CreateAggregate extends ParserAbstract {
 
         Schema_qualified_nameContext sFuncCtx = ctx.sfunc_name;
         aggregate.setSFunc(getFullCtxText(sFuncCtx));
-        addFuncAsDepcy(PgAggregate.SFUNC, sFuncCtx, aggregate);
+        addFuncAsDepcy(AggFuncs.SFUNC, sFuncCtx, aggregate);
 
         fillAggregate(ctx.aggregate_param(), aggregate);
 
@@ -106,7 +107,7 @@ public class CreateAggregate extends ParserAbstract {
                 } else if (paramOpt.FINALFUNC() != null) {
                     Schema_qualified_nameContext finalFuncCtx = paramOpt.final_func;
                     aggregate.setFinalFunc(getFullCtxText(finalFuncCtx));
-                    addFuncAsDepcy(PgAggregate.FINALFUNC, finalFuncCtx, aggregate);
+                    addFuncAsDepcy(AggFuncs.FINALFUNC, finalFuncCtx, aggregate);
                 } else if (paramOpt.FINALFUNC_EXTRA() != null) {
                     aggregate.setFinalFuncExtra(true);
                 } else if (paramOpt.FINALFUNC_MODIFY() != null) {
@@ -114,31 +115,31 @@ public class CreateAggregate extends ParserAbstract {
                 } else if (paramOpt.COMBINEFUNC() != null) {
                     Schema_qualified_nameContext combineFuncCtx = paramOpt.combine_func;
                     aggregate.setCombineFunc(getFullCtxText(combineFuncCtx));
-                    addFuncAsDepcy(PgAggregate.COMBINEFUNC, combineFuncCtx, aggregate);
+                    addFuncAsDepcy(AggFuncs.COMBINEFUNC, combineFuncCtx, aggregate);
                 } else if (paramOpt.SERIALFUNC() != null) {
                     Schema_qualified_nameContext serialFuncCtx = paramOpt.serial_func;
                     aggregate.setSerialFunc(getFullCtxText(serialFuncCtx));
-                    addFuncAsDepcy(PgAggregate.SERIALFUNC, serialFuncCtx, aggregate);
+                    addFuncAsDepcy(AggFuncs.SERIALFUNC, serialFuncCtx, aggregate);
                 } else if (paramOpt.DESERIALFUNC() != null) {
                     Schema_qualified_nameContext deserialFuncCtx = paramOpt.deserial_func;
                     aggregate.setDeserialFunc(getFullCtxText(deserialFuncCtx));
-                    addFuncAsDepcy(PgAggregate.DESERIALFUNC, deserialFuncCtx, aggregate);
+                    addFuncAsDepcy(AggFuncs.DESERIALFUNC, deserialFuncCtx, aggregate);
                 } else if (paramOpt.INITCOND() != null) {
                     aggregate.setInitCond(paramOpt.init_cond.getText());
                 } else if (paramOpt.MSFUNC() != null) {
                     Schema_qualified_nameContext mSFuncCtx = paramOpt.ms_func;
                     aggregate.setMSFunc(getFullCtxText(mSFuncCtx));
-                    addFuncAsDepcy(PgAggregate.MSFUNC, mSFuncCtx, aggregate);
+                    addFuncAsDepcy(AggFuncs.MSFUNC, mSFuncCtx, aggregate);
                 } else if (paramOpt.MINVFUNC() != null) {
                     Schema_qualified_nameContext mInvFuncCtx = paramOpt.minv_func;
                     aggregate.setMInvFunc(getFullCtxText(mInvFuncCtx));
-                    addFuncAsDepcy(PgAggregate.MINVFUNC, mInvFuncCtx, aggregate);
+                    addFuncAsDepcy(AggFuncs.MINVFUNC, mInvFuncCtx, aggregate);
                 } else if (paramOpt.MSSPACE() != null) {
                     aggregate.setMSSpace(Integer.parseInt(paramOpt.ms_space.getText()));
                 } else if (paramOpt.MFINALFUNC() != null) {
                     Schema_qualified_nameContext mFinalFuncCtx = paramOpt.mfinal_func;
                     aggregate.setMFinalFunc(getFullCtxText(mFinalFuncCtx));
-                    addFuncAsDepcy(PgAggregate.MFINALFUNC, mFinalFuncCtx, aggregate);
+                    addFuncAsDepcy(AggFuncs.MFINALFUNC, mFinalFuncCtx, aggregate);
                 } else if (paramOpt.MFINALFUNC_EXTRA() != null) {
                     aggregate.setMFinalFuncExtra(true);
                 } else if (paramOpt.MFINALFUNC_MODIFY() != null) {
@@ -202,7 +203,7 @@ public class CreateAggregate extends ParserAbstract {
         }
     }
 
-    private void addFuncAsDepcy(String paramName,
+    private void addFuncAsDepcy(AggFuncs paramName,
             Schema_qualified_nameContext paramFuncCtx, PgAggregate aggr) {
         List<IdentifierContext> ids = paramFuncCtx.identifier();
         IdentifierContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
@@ -219,7 +220,7 @@ public class CreateAggregate extends ParserAbstract {
      * @param paramName name of parameter
      * @return
      */
-    public static String getParamFuncSignature(PgAggregate aggregate, String paramName) {
+    public static String getParamFuncSignature(PgAggregate aggregate, AggFuncs paramName) {
         StringBuilder sb = new StringBuilder();
         sb.append('(');
 
@@ -230,29 +231,29 @@ public class CreateAggregate extends ParserAbstract {
         List<Argument> orderByArgs = args.subList(directCount, args.size());
 
         switch(paramName) {
-        case PgAggregate.SFUNC:
-        case PgAggregate.MSFUNC:
-        case PgAggregate.MINVFUNC:
-            sb.append(paramName == PgAggregate.SFUNC ? sType : mSType).append(", ");
+        case SFUNC:
+        case MSFUNC:
+        case MINVFUNC:
+            sb.append(paramName == AggFuncs.SFUNC ? sType : mSType).append(", ");
             fillStringByArgs(sb, orderByArgs.isEmpty() ? args : orderByArgs);
             break;
-        case PgAggregate.FINALFUNC:
-        case PgAggregate.MFINALFUNC:
-            sb.append(paramName == PgAggregate.FINALFUNC ? sType : mSType).append(", ");
+        case FINALFUNC:
+        case MFINALFUNC:
+            sb.append(paramName == AggFuncs.FINALFUNC ? sType : mSType).append(", ");
             if (directCount > 0 && !orderByArgs.isEmpty()) {
                 // for signature: aggregateName(mode name type, ... ORDER BY modeN nameN typeN, ....)
                 fillStringByArgs(sb, args.subList(0, directCount));
             }
             break;
 
-        case PgAggregate.COMBINEFUNC:
+        case COMBINEFUNC:
             sb.append(sType).append(", ").append(sType).append(", ");
             break;
 
-        case PgAggregate.DESERIALFUNC:
+        case DESERIALFUNC:
             sb.append("bytea").append(", ");
             // $FALL-THROUGH$
-        case PgAggregate.SERIALFUNC:
+        case SERIALFUNC:
             // Signature 'aggregateName(*)' with 'SERIALFUNC'-parameter could not be created.
             fillStringByArgs(sb, args);
             break;

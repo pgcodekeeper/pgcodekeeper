@@ -52,12 +52,12 @@ import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
  *
  * @author Alexander Levsha
  */
-abstract class PgDatabaseObjectCreator {
+interface PgDatabaseObjectCreator {
 
     /**
      * The method makes up a PgDatabase object specific to the test needs.
      */
-    public abstract PgDatabase getDatabase();
+    PgDatabase getDatabase();
 }
 
 /**
@@ -68,7 +68,7 @@ abstract class PgDatabaseObjectCreator {
 @RunWith(value = Parameterized.class)
 public class PgAntlrLoaderTest {
 
-    private final String encoding = ApgdiffConsts.UTF_8;
+    private static final String ENCODING = ApgdiffConsts.UTF_8;
     /**
      * Provides parameters for running the tests.
      *
@@ -143,7 +143,7 @@ public class PgAntlrLoaderTest {
         // first test the dump loader itself
         String filename = "schema_" + fileIndex + ".sql";
         PgDiffArguments args = new PgDiffArguments();
-        args.setInCharsetName(encoding);
+        args.setInCharsetName(ENCODING);
         args.setKeepNewlines(true);
         PgDatabase d = ApgdiffTestUtils.loadTestDump(
                 filename, PgAntlrLoaderTest.class, args);
@@ -171,7 +171,7 @@ public class PgAntlrLoaderTest {
         // prepare db object from sql file
         String filename = "schema_" + fileIndex + ".sql";
         PgDiffArguments args = new PgDiffArguments();
-        args.setInCharsetName(encoding);
+        args.setInCharsetName(ENCODING);
         args.setKeepNewlines(true);
         PgDatabase dbFromFile = ApgdiffTestUtils.loadTestDump(
                 filename, PgAntlrLoaderTest.class, args);
@@ -180,10 +180,10 @@ public class PgAntlrLoaderTest {
         Path exportDir = null;
         try (TempDir dir = new TempDir("pgCodekeeper-test-files")) {
             exportDir = dir.get();
-            new ModelExporter(exportDir, dbPredefined, encoding).exportFull();
+            new ModelExporter(exportDir, dbPredefined, ENCODING).exportFull();
 
             args = new PgDiffArguments();
-            args.setInCharsetName(encoding);
+            args.setInCharsetName(ENCODING);
             args.setKeepNewlines(true);
             PgDatabase dbAfterExport = new ProjectLoader(exportDir.toString(), args).loadDatabaseSchemaFromDirTree();
 
@@ -199,7 +199,7 @@ public class PgAntlrLoaderTest {
 
 // SONAR-OFF
 
-class PgDB1 extends PgDatabaseObjectCreator {
+class PgDB1 implements PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpDB();
@@ -293,7 +293,7 @@ class PgDB1 extends PgDatabaseObjectCreator {
     }
 }
 
-class PgDB2 extends PgDatabaseObjectCreator {
+class PgDB2 implements PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpDB();
@@ -331,7 +331,7 @@ class PgDB2 extends PgDatabaseObjectCreator {
     }
 }
 
-class PgDB3 extends PgDatabaseObjectCreator {
+class PgDB3 implements PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpDB();
@@ -426,7 +426,7 @@ class PgDB3 extends PgDatabaseObjectCreator {
     }
 }
 
-class PgDB4 extends PgDatabaseObjectCreator {
+class PgDB4 implements PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpDB();
@@ -445,7 +445,7 @@ class PgDB4 extends PgDatabaseObjectCreator {
     }
 }
 
-class PgDB5 extends PgDatabaseObjectCreator {
+class PgDB5 implements PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpDB();
@@ -519,7 +519,7 @@ class PgDB5 extends PgDatabaseObjectCreator {
     }
 }
 
-class PgDB6 extends PgDatabaseObjectCreator {
+class PgDB6 implements PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpDB();
@@ -554,7 +554,7 @@ class PgDB6 extends PgDatabaseObjectCreator {
     }
 }
 
-class PgDB7 extends PgDatabaseObjectCreator {
+class PgDB7 implements PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpDB();
@@ -615,7 +615,7 @@ class PgDB7 extends PgDatabaseObjectCreator {
     }
 }
 
-class PgDB8 extends PgDatabaseObjectCreator {
+class PgDB8 implements PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpDB();
@@ -650,7 +650,7 @@ class PgDB8 extends PgDatabaseObjectCreator {
     }
 }
 
-class PgDB9 extends PgDatabaseObjectCreator {
+class PgDB9 implements PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpDB();
@@ -729,7 +729,7 @@ class PgDB9 extends PgDatabaseObjectCreator {
     }
 }
 
-class PgDB10 extends PgDatabaseObjectCreator {
+class PgDB10 implements PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpDB();
@@ -820,7 +820,7 @@ class PgDB10 extends PgDatabaseObjectCreator {
     }
 }
 
-class PgDB11 extends PgDatabaseObjectCreator {
+class PgDB11 implements PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpDB();
@@ -836,7 +836,7 @@ class PgDB11 extends PgDatabaseObjectCreator {
     }
 }
 
-class PgDB12 extends PgDatabaseObjectCreator {
+class PgDB12 implements PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpDB();
@@ -847,7 +847,7 @@ class PgDB12 extends PgDatabaseObjectCreator {
     }
 }
 
-class PgDB13 extends PgDatabaseObjectCreator {
+class PgDB13 implements PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpDB();
@@ -867,7 +867,7 @@ class PgDB13 extends PgDatabaseObjectCreator {
     }
 }
 
-class PgDB14 extends PgDatabaseObjectCreator {
+class PgDB14 implements PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpDB();
@@ -968,7 +968,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
     }
 }
 
-class PgDB15 extends PgDatabaseObjectCreator {
+class PgDB15 implements PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpDB();
@@ -993,7 +993,7 @@ class PgDB15 extends PgDatabaseObjectCreator {
  * @author ryabinin_av
  *
  */
-class PgDB16 extends PgDatabaseObjectCreator {
+class PgDB16 implements PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpDB();
@@ -1030,7 +1030,7 @@ class PgDB16 extends PgDatabaseObjectCreator {
  * @author ryabinin_av
  *
  */
-class PgDB17 extends PgDatabaseObjectCreator {
+class PgDB17 implements PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpDB();
