@@ -56,7 +56,7 @@ public final class FileUtilsUi {
     }
 
     public static void openFileInSqlEditor(PgObjLocation loc, boolean isMsSql) throws PartInitException {
-        if (loc.getFilePath() != null) {
+        if (loc != null && loc.getFilePath() != null) {
             IEditorPart part = openFileInSqlEditor(Paths.get(loc.getFilePath()), isMsSql);
             if (part instanceof ITextEditor) {
                 ((ITextEditor) part).selectAndReveal(loc.getOffset(), loc.getObjLength());
