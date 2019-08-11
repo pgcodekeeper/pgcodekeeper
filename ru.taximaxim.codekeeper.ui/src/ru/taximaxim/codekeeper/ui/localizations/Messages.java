@@ -893,8 +893,6 @@ public final class Messages extends NLS {
     public static String UsageReportPreferencePage_EventAction;
     public static String UsageReportPreferencePage_EventValue;
 
-    // SONAR-ON
-
     public static String QuickUpdate_danger;
 
     public static String QuickUpdate_different_types;
@@ -916,6 +914,8 @@ public final class Messages extends NLS {
     public static String QuickUpdate_updating_db;
 
     public static String QuickUpdate_updating_project;
+
+    // SONAR-ON
 
     static {
         // initialize resource bundle

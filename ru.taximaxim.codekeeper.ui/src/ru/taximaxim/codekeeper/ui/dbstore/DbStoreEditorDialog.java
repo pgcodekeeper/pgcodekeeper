@@ -65,7 +65,6 @@ public class DbStoreEditorDialog extends TrayDialog {
     private Text txtDumpParameters;
     private Text txtDomain;
     private CLabel lblWarnDbPass;
-    private Button btnDumpChoose;
     private Button btnReadOnly;
     private Button btnGenerateName;
     private Button btnMsSql;
@@ -376,7 +375,7 @@ public class DbStoreEditorDialog extends TrayDialog {
         txtDumpFile.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         txtDumpFile.addModifyListener(modifyListener);
 
-        btnDumpChoose = new Button(tabPGDupmConfigProperties, SWT.PUSH);
+        Button btnDumpChoose = new Button(tabPGDupmConfigProperties, SWT.PUSH);
         btnDumpChoose.setText(Messages.DbStoreEditorDialog_dump_browse);
         btnDumpChoose.addSelectionListener(new SelectionAdapter() {
 
