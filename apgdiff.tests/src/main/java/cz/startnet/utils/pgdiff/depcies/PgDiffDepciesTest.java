@@ -31,133 +31,148 @@ public class PgDiffDepciesTest {
     @Parameters
     public static Collection<?> parameters() {
         return Arrays.asList(new Object[][] {
-            { "empty", "empty_usr" },
+            {"empty_usr"},
             // изменяется тип колонок у обоих таблиц, пользователь выбирает
             // view v1
-            { "add_change_col_type", "add_change_col_type_usr_v1" },
+            {"add_change_col_type_usr_v1"},
             // --\\-- , пользователь выбирает t1.c1
-            { "add_change_col_type", "add_change_col_type_usr_t1_c1" },
+            {"add_change_col_type_usr_t1_c1"},
             // --\\--, у вью меняется только комментарий
-            { "add_change_only_col_type", "add_change_only_col_type_usr_t1_c1" },
+            {"add_change_only_col_type_usr_t1_c1"},
             // изменяется тип колонок у обоих таблиц, изменяется v1, пользователь выбирает
             // view v2
-            {"add_v2_change_col_type", "add_v2_change_col_type_usr_v2"},
+            {"add_v2_change_col_type_usr_v2"},
             // изменяется тип колонки, пользователь выбирает таблицу
-            {"trig_upd_col","trig_upd_col__usr_tbl"},
+            {"trig_upd_col_usr_tbl"},
             // удаляется исходная таблица, пользователь выбрал на удаление t1
-            {"table_inherits_del_t1", "table_inherits_del_t1_usr_t1"},
+            {"table_inherits_del_t1_usr_t1"},
             // удаляется исходная таблица, пользователь выбрал t2
             // TODO здесь не нужно создавать колонку, она создастся путем удаления
             // наследования
-            {"table_inherits_del_t1", "table_inherits_del_t1_usr_t2"},
+            {"table_inherits_del_t1_usr_t2"},
             // Таблица перестает наследовать,
             // TODO здесь ошибка не должно
             // быть добавления колонки исправится правильной реализацией
             // inherits
-            {"table_inherits", "table_inherits_usr_t2"},
+            {"table_inherits_usr_t2"},
             // меняеются колонки в наследующей таблице и добавляется
             // сиквенс, пользователь выбра таблицу
             // TODO если в этом тесте удалить из исходной базы seq1,
             // то он не появится в скрипте, потому, что нет связи от
             // сиквенса к таблице по кр мере со стороны парсера
-            {"inherit_table", "inherit_table_usr"},
+            {"inherit_table_usr"},
             // колонка меняет тип на новый, пользователь выбрал только тип
-            {"chg_col_type", "chg_col_type_usr_dom2"},
+            {"chg_col_type_usr_dom2"},
             // колонка меняет тип на новый, пользователь выбрал только таблицу
-            {"chg_col_type", "chg_col_type_usr_t1"},
+            {"chg_col_type_usr_t1"},
             // колонка меняет тип на новый, пользователь выбрал таблицу и тип
-            {"chg_col_type", "chg_col_type_usr_all"},
+            {"chg_col_type_usr_all"},
             // Удаляется индекс и внешний ключ, пользователь выбрал индекс
-            {"drop_index", "drop_index_usr_ind"},
+            {"drop_index_usr_ind"},
             // тип изменяется как альтер, пользователь выбрал его
-            {"alter_type", "alter_type_usr"},
+            {"alter_type_usr"},
             // тип изменяется через drop create, пользователь выбирает его
-            {"drop_type", "drop_type_usr"},
+            {"drop_type_usr"},
             // удаляется таблица с содержимым индексом и триггером,
             // пользователь выбрал только таблицу
-            {"drop_tbl", "drop_tbl_usr_tbl"},
+            {"drop_tbl_usr_tbl"},
             // к таблице добавляется триггер и функция,
             // пользователь выбрал только функцию
-            {"add_table_and_trigger", "add_table_and_trigger_usr_function"},
+            {"add_table_and_trigger_usr_function"},
             // к таблице добавляется триггер и функция,
             // пользователь выбрал только триггер
-            {"add_table_and_trigger", "add_table_and_trigger_usr_trigger"},
+            {"add_table_and_trigger_usr_trigger"},
             // к таблице добавляется триггер и функция,
             // пользователь выбрал все
-            {"add_table_and_trigger", "add_table_and_trigger"},
+            {"add_table_and_trigger"},
             // перенос объектов из одной схемы в другую,
             // пользователь выбрал все объекты
             // TODO ошибки при частичном выборе, к примеру при выборе таблицы не подтягивается
             // тип и последовательность, исправляется переработкой алгоритма работой с колонками
-            {"move_obj_to_schema", "move_obj_to_schema"},
+            {"move_obj_to_schema"},
+            // зависимости от вьюхи, пользователь выбрал вьюху с FROM ROW FROM
+            // https://github.com/pgcodekeeper/pgcodekeeper/issues/54
+            {"add_view_with_dep_usr_v1"},
+            // зависимости от вьюхи,
+            // пользователь выбрал вьюху с regproc, regprocedure, regnamespace
+            {"add_view_with_dep_usr_v2"},
+            // зависимости от вьюхи,
+            // пользователь выбрал вьюху с синтаксическим сахаром
+            {"add_view_with_dep_usr_v3"},
+            // зависимости от вьюхи,
+            // пользователь выбрал вьюху с оконной функцией
+            {"add_view_with_dep_usr_v4"},
+            // зависимости от вьюхи,
+            // пользователь выбрал вьюху с группировкой
+            {"add_view_with_dep_usr_v5"},
             // изменение таблиц и вьюх, зависящих от них
             // пользователь выбрал таблицу t1
-            {"change_view","change_view_usr_t1"},
+            {"change_view_usr_t1"},
             // изменение таблиц и вьюх, зависящих от них
             // пользователь выбрал таблицу t2
-            {"change_view","change_view_usr_t2"},
+            {"change_view_usr_t2"},
             // изменение таблиц и вьюх, зависящих от них
             // пользователь выбрал таблицу t3
-            {"change_view","change_view_usr_t3"},
+            {"change_view_usr_t3"},
             // изменение таблиц и вьюх, зависящих от них
             // пользователь выбрал вьюху v2
-            {"change_view","change_view_usr_v2"},
+            {"change_view_usr_v2"},
             // изменение таблиц и вьюх, зависящих от них
             // пользователь выбрал вьюху v3
-            {"change_view","change_view_usr_v3"},
+            {"change_view_usr_v3"},
             // изменение таблиц и вьюх, зависящих от них
             // пользователь выбрал вьюху v4
-            {"change_view","change_view_usr_v4"},
+            {"change_view_usr_v4"},
             // изменение таблиц и вьюх, зависящих от них
             // пользователь выбрал вьюху v5
-            {"change_view","change_view_usr_v5"},
+            {"change_view_usr_v5"},
             // изменение таблиц и вьюх, зависящих от них
             // пользователь выбрал вьюху v6
-            {"change_view","change_view_usr_v6"},
+            {"change_view_usr_v6"},
             // изменение таблиц и вьюх, зависящих от них
             // пользователь выбрал вьюху v8
-            {"change_view","change_view_usr_v8"},
+            {"change_view_usr_v8"},
             // изменение таблиц и вьюх, зависящих от них
             // пользователь выбрал вьюху v8 и таблицу t1
             // задача 6049
-            {"change_view","change_view_usr_v8_t1"},
+            {"change_view_usr_v8_t1"},
             // изменение таблиц и вьюх, зависящих от них
             // пользователь выбрал все объекты
-            {"change_view","change_view"},
+            {"change_view"},
             // пересоздание вьюхи с комментарием
             // пользователь выбрал таблицу
             // задача 7095
-            {"chg_view_with_comment", "chg_view_with_comment_usr_table"},
+            {"chg_view_with_comment_usr_table"},
             // изменение зависимых объектов полнотекстового поиска
             // пользователь выбрал парсер
-            {"chg_fts_statements", "chg_fts_statements_usr_parser"},
+            {"chg_fts_statements_usr_parser"},
             // изменение зависимых объектов полнотекстового поиска
             // пользователь выбрал словарь
-            {"chg_fts_statements", "chg_fts_statements_usr_dictionary"},
+            {"chg_fts_statements_usr_dictionary"},
             // изменение зависимых объектов полнотекстового поиска
             // пользователь выбрал шаблон
-            {"chg_fts_statements", "chg_fts_statements_usr_template"},
+            {"chg_fts_statements_usr_template"},
             // изменение зависимых объектов полнотекстового поиска
             // пользователь выбрал конфигурацию
-            {"chg_fts_statements", "chg_fts_statements_usr_configuration"},
+            {"chg_fts_statements_usr_configuration"},
             // добавление агрегатов с зависимыми от них функциями,
             // пользователь выбрал только агрегаты
-            {"add_aggr_func", "add_aggr_func_usr_aggr"},
+            {"add_aggr_func_usr_aggr"},
             // добавление вьюхи с зависимыми от нее объектами,
             // пользователь выбрал только вьюху
-            {"add_view", "add_view_usr_view"},
+            {"add_view_usr_view"},
             // изменение схемы расширения и создание этой схемы
             // пользователь выбрал расширение
-            {"chg_extension_schema", "chg_extension_schema_usr_extension"},
+            {"chg_extension_schema_usr_extension"},
             // изменение типа колонки таблицы, зависящей от функции, удаление функции
             // пользователь выбрал таблицу tbl
-            {"chg_col_type_dep_from_func", "chg_col_type_dep_from_func_usr_tbl"},
+            {"chg_col_type_dep_from_func_usr_tbl"},
             // изменение типа и дефолтного значения колонки родительской и дочерней таблицы
             // пользователь выбрал таблицу дочернюю таблицу
-            {"chg_inherit_col", "chg_inherit_col_usr_child"},
+            {"chg_inherit_col_usr_child"},
             // изменение типа и дефолтного значения колонки родительской и дочерней таблицы
             // пользователь выбрал таблицу родительскую таблицу
-            {"chg_inherit_col", "chg_inherit_col_usr_parent"},
+            {"chg_inherit_col_usr_parent"},
         });
     }
 
@@ -173,9 +188,8 @@ public class PgDiffDepciesTest {
      */
     private final String userSelTemplate;
 
-    public PgDiffDepciesTest(final String fileNameTemplate,
-            final String userSelTemplate) {
-        this.dbTemplate = fileNameTemplate;
+    public PgDiffDepciesTest(final String userSelTemplate) {
+        this.dbTemplate = userSelTemplate.replaceAll("_usr.*", "");
         this.userSelTemplate = userSelTemplate;
         Log.log(Log.LOG_DEBUG, dbTemplate + ' ' + userSelTemplate);
     }

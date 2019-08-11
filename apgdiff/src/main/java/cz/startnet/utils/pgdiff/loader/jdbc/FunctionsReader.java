@@ -19,6 +19,7 @@ import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgAggregate;
 import cz.startnet.utils.pgdiff.schema.PgAggregate.AggKinds;
+import cz.startnet.utils.pgdiff.schema.PgAggregate.AggFuncs;
 import cz.startnet.utils.pgdiff.schema.PgAggregate.ModifyType;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgProcedure;
@@ -267,11 +268,11 @@ public class FunctionsReader extends JdbcReader {
             }
 
             aggregate.setCombineFunc(getProcessedName(aggregate, res.getString("combinefunc_nsp"),
-                    res.getString("combinefunc"), PgAggregate.COMBINEFUNC));
+                    res.getString("combinefunc"), AggFuncs.COMBINEFUNC));
             aggregate.setSerialFunc(getProcessedName(aggregate, res.getString("serialfunc_nsp"),
-                    res.getString("serialfunc"), PgAggregate.SERIALFUNC));
+                    res.getString("serialfunc"), AggFuncs.SERIALFUNC));
             aggregate.setDeserialFunc(getProcessedName(aggregate, res.getString("deserialfunc_nsp"),
-                    res.getString("deserialfunc"), PgAggregate.DESERIALFUNC));
+                    res.getString("deserialfunc"), AggFuncs.DESERIALFUNC));
         }
 
         // since 11 PostgreSQL
@@ -289,9 +290,9 @@ public class FunctionsReader extends JdbcReader {
         aggregate.setSSpace(res.getInt("sspace"));
 
         aggregate.setSFunc(getProcessedName(aggregate, res.getString("sfunc_nsp"),
-                res.getString("sfunc"), PgAggregate.SFUNC));
+                res.getString("sfunc"), AggFuncs.SFUNC));
         aggregate.setFinalFunc(getProcessedName(aggregate, res.getString("finalfunc_nsp"),
-                res.getString("finalfunc"), PgAggregate.FINALFUNC));
+                res.getString("finalfunc"), AggFuncs.FINALFUNC));
 
         aggregate.setFinalFuncExtra(res.getBoolean("is_finalfunc_extra"));
 
@@ -312,14 +313,14 @@ public class FunctionsReader extends JdbcReader {
 
 
         aggregate.setMSFunc(getProcessedName(aggregate, res.getString("msfunc_nsp"),
-                res.getString("msfunc"), PgAggregate.MSFUNC));
+                res.getString("msfunc"), AggFuncs.MSFUNC));
         aggregate.setMInvFunc(getProcessedName(aggregate, res.getString("minvfunc_nsp"),
-                res.getString("minvfunc"), PgAggregate.MINVFUNC));
+                res.getString("minvfunc"), AggFuncs.MINVFUNC));
 
         aggregate.setMSSpace(res.getInt("msspace"));
 
         aggregate.setMFinalFunc(getProcessedName(aggregate, res.getString("mfinalfunc_nsp"),
-                res.getString("mfinalfunc"), PgAggregate.MFINALFUNC));
+                res.getString("mfinalfunc"), AggFuncs.MFINALFUNC));
 
         aggregate.setMFinalFuncExtra(res.getBoolean("is_mfinalfunc_extra"));
 
@@ -342,7 +343,7 @@ public class FunctionsReader extends JdbcReader {
         }
     }
 
-    private String getProcessedName(PgAggregate agg, String schemaName, String funcName, String funcType) {
+    private String getProcessedName(PgAggregate agg, String schemaName, String funcName, AggFuncs funcType) {
         if (funcName == null) {
             return null;
         }

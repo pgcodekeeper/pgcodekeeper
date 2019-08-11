@@ -44,12 +44,12 @@ import ru.taximaxim.codekeeper.apgdiff.model.exporter.MsModelExporter;
  *
  * @author Alexander Levsha
  */
-abstract class MsDatabaseObjectCreator {
+interface MsDatabaseObjectCreator {
 
     /**
      * The method makes up a PgDatabase object specific to the test needs.
      */
-    public abstract PgDatabase getDatabase();
+    PgDatabase getDatabase();
 }
 
 /**
@@ -60,7 +60,7 @@ abstract class MsDatabaseObjectCreator {
 @RunWith(value = Parameterized.class)
 public class MsAntlrLoaderTest {
 
-    private final String encoding = ApgdiffConsts.UTF_8;
+    private static final String ENCODING = ApgdiffConsts.UTF_8;
     /**
      * Provides parameters for running the tests.
      *
@@ -135,7 +135,7 @@ public class MsAntlrLoaderTest {
         // first test the dump loader itself
         String filename = "ms_schema_" + fileIndex + ".sql";
         PgDiffArguments args = new PgDiffArguments();
-        args.setInCharsetName(encoding);
+        args.setInCharsetName(ENCODING);
         args.setKeepNewlines(true);
         args.setMsSql(true);
         PgDatabase d = ApgdiffTestUtils.loadTestDump(
@@ -165,7 +165,7 @@ public class MsAntlrLoaderTest {
         // prepare db object from sql file
         String filename = "ms_schema_" + fileIndex + ".sql";
         PgDiffArguments args = new PgDiffArguments();
-        args.setInCharsetName(encoding);
+        args.setInCharsetName(ENCODING);
         args.setKeepNewlines(true);
         args.setMsSql(true);
         PgDatabase dbFromFile = ApgdiffTestUtils.loadTestDump(
@@ -175,10 +175,10 @@ public class MsAntlrLoaderTest {
         Path exportDir = null;
         try (TempDir dir = new TempDir("pgCodekeeper-test-files")) {
             exportDir = dir.get();
-            new MsModelExporter(exportDir, dbPredefined, encoding).exportFull();
+            new MsModelExporter(exportDir, dbPredefined, ENCODING).exportFull();
 
             args = new PgDiffArguments();
-            args.setInCharsetName(encoding);
+            args.setInCharsetName(ENCODING);
             args.setKeepNewlines(true);
             args.setMsSql(true);
             PgDatabase dbAfterExport = new ProjectLoader(exportDir.toString(), args).loadDatabaseSchemaFromDirTree();
@@ -195,7 +195,7 @@ public class MsAntlrLoaderTest {
 
 // SONAR-OFF
 
-class MsDB0 extends MsDatabaseObjectCreator {
+class MsDB0 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
@@ -314,7 +314,7 @@ class MsDB0 extends MsDatabaseObjectCreator {
     }
 }
 
-class MsDB1 extends MsDatabaseObjectCreator {
+class MsDB1 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
@@ -348,7 +348,7 @@ class MsDB1 extends MsDatabaseObjectCreator {
     }
 }
 
-class MsDB2 extends MsDatabaseObjectCreator {
+class MsDB2 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
@@ -486,7 +486,7 @@ class MsDB2 extends MsDatabaseObjectCreator {
 
 }
 
-class MsDB3 extends MsDatabaseObjectCreator {
+class MsDB3 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
@@ -523,7 +523,7 @@ class MsDB3 extends MsDatabaseObjectCreator {
     }
 }
 
-class MsDB4 extends MsDatabaseObjectCreator {
+class MsDB4 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
@@ -597,7 +597,7 @@ class MsDB4 extends MsDatabaseObjectCreator {
     }
 }
 
-class MsDB5 extends MsDatabaseObjectCreator {
+class MsDB5 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
@@ -636,7 +636,7 @@ class MsDB5 extends MsDatabaseObjectCreator {
     }
 }
 
-class MsDB6 extends MsDatabaseObjectCreator {
+class MsDB6 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
@@ -664,7 +664,7 @@ class MsDB6 extends MsDatabaseObjectCreator {
     }
 }
 
-class MsDB7 extends MsDatabaseObjectCreator {
+class MsDB7 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
@@ -708,7 +708,7 @@ class MsDB7 extends MsDatabaseObjectCreator {
     }
 }
 
-class MsDB8 extends MsDatabaseObjectCreator {
+class MsDB8 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
@@ -828,7 +828,7 @@ class MsDB8 extends MsDatabaseObjectCreator {
     }
 }
 
-class MsDB9 extends MsDatabaseObjectCreator {
+class MsDB9 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
@@ -941,7 +941,7 @@ class MsDB9 extends MsDatabaseObjectCreator {
     }
 }
 
-class MsDB10 extends MsDatabaseObjectCreator {
+class MsDB10 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
@@ -966,7 +966,7 @@ class MsDB10 extends MsDatabaseObjectCreator {
     }
 }
 
-class MsDB11 extends MsDatabaseObjectCreator {
+class MsDB11 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
@@ -1011,7 +1011,7 @@ class MsDB11 extends MsDatabaseObjectCreator {
     }
 }
 
-class MsDB12 extends MsDatabaseObjectCreator {
+class MsDB12 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
@@ -1062,7 +1062,7 @@ class MsDB12 extends MsDatabaseObjectCreator {
     }
 }
 
-class MsDB13 extends MsDatabaseObjectCreator {
+class MsDB13 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
@@ -1227,7 +1227,7 @@ class MsDB13 extends MsDatabaseObjectCreator {
     }
 }
 
-class MsDB14 extends MsDatabaseObjectCreator {
+class MsDB14 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
@@ -1254,7 +1254,7 @@ class MsDB14 extends MsDatabaseObjectCreator {
  * @author ryabinin_av
  *
  */
-class MsDB15 extends MsDatabaseObjectCreator {
+class MsDB15 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpMsDB();
@@ -1302,7 +1302,7 @@ class MsDB15 extends MsDatabaseObjectCreator {
  * @author ryabinin_av
  *
  */
-class MsDB16 extends MsDatabaseObjectCreator {
+class MsDB16 implements MsDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
         PgDatabase d = ApgdiffTestUtils.createDumpMsDB();

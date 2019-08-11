@@ -92,20 +92,21 @@ public class CreateMsRule extends ParserAbstract {
         for (String role : roles) {
             // 1 privilege for each permission
             for (String per : permissions) {
-                if (columns != null) {
-                    // column privileges
-                    for (IdContext column : columns.column) {
-                        name.append('(').append(MsDiffUtils.quoteName(column.getText())).append(')');
-                        PgPrivilege priv = new PgPrivilege(state, per, name.toString(), role, isGO);
-                        // table column privileges to columns, other columns to statement
-                        if (st instanceof AbstractTable) {
-                            addPrivilege(getSafe(AbstractTable::getColumn, (AbstractTable) st, column), priv);
-                        } else {
-                            addPrivilege(st, priv);
-                        }
-                    }
-                } else {
+                if (columns == null) {
                     addPrivilege(st, new PgPrivilege(state, per, name.toString(), role, isGO));
+                    continue;
+                }
+
+                // column privileges
+                for (IdContext column : columns.column) {
+                    name.append('(').append(MsDiffUtils.quoteName(column.getText())).append(')');
+                    PgPrivilege priv = new PgPrivilege(state, per, name.toString(), role, isGO);
+                    // table column privileges to columns, other columns to statement
+                    if (st instanceof AbstractTable) {
+                        addPrivilege(getSafe(AbstractTable::getColumn, (AbstractTable) st, column), priv);
+                    } else {
+                        addPrivilege(st, priv);
+                    }
                 }
             }
         }
