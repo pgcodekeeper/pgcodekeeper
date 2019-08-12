@@ -16,9 +16,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.osgi.service.prefs.BackingStoreException;
 
@@ -37,8 +34,6 @@ public class DbUpdateProperties extends PropertyPage {
     private Button btnCreateIdxConcurrent;
 
     private IEclipsePreferences prefs;
-
-    private boolean inApply;
 
     @Override
     public void setElement(IAdaptable element) {
@@ -134,25 +129,9 @@ public class DbUpdateProperties extends PropertyPage {
     }
 
     @Override
-    public boolean performCancel() {
-        activateEditor();
-        return super.performCancel();
-    }
-
-    @Override
-    protected void performApply() {
-        inApply = true;
-        super.performApply();
-        inApply = false;
-    }
-
-    @Override
     public boolean performOk() {
         try {
             fillPrefs();
-            if (!inApply) {
-                activateEditor();
-            }
         } catch (BackingStoreException e) {
             setErrorMessage(MessageFormat.format(
                     Messages.projectProperties_error_occurs_while_saving_properties,
@@ -172,15 +151,5 @@ public class DbUpdateProperties extends PropertyPage {
         prefs.flush();
         setValid(true);
         setErrorMessage(null);
-    }
-
-    private void activateEditor() {
-        IWorkbenchPage activePage = PlatformUI.getWorkbench()
-                .getActiveWorkbenchWindow().getActivePage();
-        IEditorPart activeEditor = activePage.getActiveEditor();
-        // it's need to do for refresh state and content DbCombo
-        // of opened and active sql/project editor, after setting of the binding
-        // in the project properties.
-        activePage.activate(activeEditor);
     }
 }
