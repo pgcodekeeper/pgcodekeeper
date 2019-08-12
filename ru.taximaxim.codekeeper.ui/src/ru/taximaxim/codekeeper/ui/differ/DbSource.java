@@ -15,7 +15,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.jface.preference.IPreferenceStore;
 
 import cz.startnet.utils.pgdiff.IProgressReporter;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
@@ -29,9 +28,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.InputStreamProvider;
-import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.consoles.UiProgressReporter;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
@@ -99,14 +97,13 @@ public abstract class DbSource {
     static PgDiffArguments getPgDiffArgs(String charset, String timeZone,
             boolean forceUnixNewlines, boolean msSql, IProject proj) {
         PgDiffArguments args = new PgDiffArguments();
-        IPreferenceStore mainPS = Activator.getDefault().getPreferenceStore();
-        OverridablePrefs overridable = new OverridablePrefs(proj);
+        OverridablePrefs prefs = new OverridablePrefs(proj);
         args.setInCharsetName(charset);
-        args.setAddTransaction(overridable.isScriptInTransaction());
-        args.setDisableCheckFunctionBodies(!overridable.isCheckFuncBodies());
-        args.setIgnoreConcurrentModification(mainPS.getBoolean(PREF.IGNORE_CONCURRENT_MODIFICATION));
-        args.setUsingTypeCastOff(!overridable.isAlterColUsingExpr());
-        args.setIgnorePrivileges(overridable.isIgnorePrivileges());
+        args.setAddTransaction(prefs.getBoolean(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION));
+        args.setDisableCheckFunctionBodies(!prefs.getBoolean(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES));
+        args.setIgnoreConcurrentModification(prefs.getBoolean(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
+        args.setUsingTypeCastOff(!prefs.getBoolean(DB_UPDATE_PREF.USING_ON_OFF));
+        args.setIgnorePrivileges(prefs.isIgnorePrivileges());
         args.setTimeZone(timeZone);
         args.setKeepNewlines(!forceUnixNewlines);
         args.setMsSql(msSql);

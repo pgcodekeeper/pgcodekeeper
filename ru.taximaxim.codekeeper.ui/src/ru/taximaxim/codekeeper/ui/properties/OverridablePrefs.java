@@ -7,7 +7,6 @@ import org.eclipse.jface.preference.IPreferenceStore;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
-import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 
@@ -51,23 +50,7 @@ public class OverridablePrefs {
         projPS.putBoolean(PROJ_PREF.ENABLE_PROJ_PREF_DB_UPDATE, isEnableProjPrefDbUpdate);
     }
 
-    public boolean isScriptInTransaction() {
-        return isEnableProjPrefDbUpdate ? projPS.getBoolean(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION, false)
-                : mainPS.getBoolean(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION);
-    }
-
-    public boolean isCheckFuncBodies() {
-        return isEnableProjPrefDbUpdate ? projPS.getBoolean(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES, false)
-                : mainPS.getBoolean(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES);
-    }
-
-    public boolean isAlterColUsingExpr() {
-        return isEnableProjPrefDbUpdate ? projPS.getBoolean(DB_UPDATE_PREF.USING_ON_OFF, false)
-                : mainPS.getBoolean(DB_UPDATE_PREF.USING_ON_OFF);
-    }
-
-    public boolean isCreateIdxConcurrent() {
-        return isEnableProjPrefDbUpdate ? projPS.getBoolean(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY, false)
-                : mainPS.getBoolean(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY);
+    public boolean getBoolean(String key) {
+        return isEnableProjPrefDbUpdate ? projPS.getBoolean(key, false) : mainPS.getBoolean(key);
     }
 }

@@ -22,6 +22,7 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
@@ -166,8 +167,12 @@ public class Differ implements IRunnableWithProgress {
             oldArgs = db.getArguments();
             consumer = (db::setArguments);
             PgDiffArguments newArgs = oldArgs.clone();
-            newArgs.setConcurrentlyMode(new OverridablePrefs(proj)
-                    .isCreateIdxConcurrent());
+            // применить параметры для генерации кода ко всем БД
+            OverridablePrefs prefs = new OverridablePrefs(proj);
+            newArgs.setConcurrentlyMode(
+                    prefs.getBoolean(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
+            newArgs.setUsingTypeCastOff(
+                    !prefs.getBoolean(DB_UPDATE_PREF.USING_ON_OFF));
             db.setArguments(newArgs);
         }
 

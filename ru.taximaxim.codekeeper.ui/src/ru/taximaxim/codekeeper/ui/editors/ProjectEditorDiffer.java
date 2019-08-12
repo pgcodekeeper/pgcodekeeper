@@ -704,8 +704,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     }
 
     public void diff() {
-        updatePrefUsingTypeCast();
-
         Log.log(Log.LOG_INFO, "Started DB update"); //$NON-NLS-1$
         if (warnCheckedElements() < 1 ||
                 !OpenProjectUtils.checkVersionAndWarn(getProject(), parent.getShell(), true)) {
@@ -745,15 +743,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         job.schedule();
     }
 
-    // crutch for update the value of the type cast preference
-    // ('Print ALTER COLUMN ... TYPE with USING expression'),
-    // before running the 'diff()'-method
-    private void updatePrefUsingTypeCast() {
-        boolean isUsingExpr = new OverridablePrefs(getProject()).isAlterColUsingExpr();
-        dbRemote.getDbObject().getArguments().setUsingTypeCastOff(!isUsingExpr);
-        dbProject.getDbObject().getArguments().setUsingTypeCastOff(!isUsingExpr);
-    }
-
     private void setInput(DbSource dbProject, DbSource dbRemote, TreeElement diffTree) {
         this.dbProject = dbProject;
         this.dbRemote = dbRemote;
@@ -773,8 +762,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         IgnoreList ignoreList = null;
         if (diffTree != null) {
-            ignoreList = new OverridablePrefs(getProject()).isUseGlobalIgnoreList()
-                    ? InternalIgnoreList.readInternalList() : new IgnoreList();
+            boolean isGlobal = new OverridablePrefs(getProject()).isUseGlobalIgnoreList();
+            ignoreList = isGlobal ? InternalIgnoreList.readInternalList() : new IgnoreList();
 
             InternalIgnoreList.readAppendList(
                     proj.getPathToProject().resolve(FILE.IGNORED_OBJECTS), ignoreList);
