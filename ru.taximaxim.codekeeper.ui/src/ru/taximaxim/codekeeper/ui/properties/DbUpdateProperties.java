@@ -40,14 +40,11 @@ public class DbUpdateProperties extends PropertyPage {
 
     private boolean inApply;
 
-    private OverridablePrefs overridablePrefs;
-
     @Override
     public void setElement(IAdaptable element) {
         super.setElement(element);
         IProject project = element.getAdapter(IProject.class);
         prefs = new ProjectScope(project).getNode(UIConsts.PLUGIN_ID.THIS);
-        overridablePrefs = new OverridablePrefs(project);
     }
 
     @Override
@@ -167,7 +164,7 @@ public class DbUpdateProperties extends PropertyPage {
     }
 
     private void fillPrefs() throws BackingStoreException {
-        overridablePrefs.setEnableProjPrefDbUpdate(btnEnableProjPref.getSelection());
+        prefs.putBoolean(PROJ_PREF.ENABLE_PROJ_PREF_DB_UPDATE, btnEnableProjPref.getSelection());
         prefs.putBoolean(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION, btnScriptAddTransact.getSelection());
         prefs.putBoolean(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES, btnCheckFuncBodies.getSelection());
         prefs.putBoolean(DB_UPDATE_PREF.USING_ON_OFF, btnAlterColUsingExpr.getSelection());

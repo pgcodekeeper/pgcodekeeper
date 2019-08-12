@@ -59,15 +59,12 @@ public class ProjectProperties extends PropertyPage {
 
     private boolean inApply;
 
-    private OverridablePrefs overridablePrefs;
-
     @Override
     public void setElement(IAdaptable element) {
         super.setElement(element);
         IProject project = element.getAdapter(IProject.class);
         prefs = new ProjectScope(project).getNode(UIConsts.PLUGIN_ID.THIS);
         isMsSql = OpenProjectUtils.checkMsSql(project);
-        overridablePrefs = new OverridablePrefs(project);
     }
 
     @Override
@@ -255,7 +252,7 @@ public class ProjectProperties extends PropertyPage {
     }
 
     private void fillPrefs() throws BackingStoreException {
-        overridablePrefs.setEnableProjPrefRoot(btnEnableProjPref.getSelection());
+        prefs.putBoolean(PROJ_PREF.ENABLE_PROJ_PREF_ROOT, btnEnableProjPref.getSelection());
         prefs.putBoolean(PREF.NO_PRIVILEGES, btnNoPrivileges.getSelection());
         prefs.putBoolean(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, btnUseGlobalIgnoreList.getSelection());
         prefs.putBoolean(PROJ_PREF.DISABLE_PARSER_IN_EXTERNAL_FILES, btnDisableParser.getSelection());

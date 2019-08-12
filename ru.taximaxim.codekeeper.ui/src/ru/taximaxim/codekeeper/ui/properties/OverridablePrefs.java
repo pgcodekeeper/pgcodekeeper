@@ -30,11 +30,6 @@ public class OverridablePrefs {
         }
     }
 
-    public void setEnableProjPrefRoot(boolean isEnableProjPrefRoot) {
-        this.isEnableProjPrefRoot = isEnableProjPrefRoot;
-        projPS.putBoolean(PROJ_PREF.ENABLE_PROJ_PREF_ROOT, isEnableProjPrefRoot);
-    }
-
     public boolean isIgnorePrivileges() {
         return isEnableProjPrefRoot ? projPS.getBoolean(PREF.NO_PRIVILEGES, false)
                 : mainPS.getBoolean(PREF.NO_PRIVILEGES);
@@ -43,11 +38,6 @@ public class OverridablePrefs {
     public boolean isUseGlobalIgnoreList() {
         return isEnableProjPrefRoot ? projPS.getBoolean(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, true)
                 : true;
-    }
-
-    public void setEnableProjPrefDbUpdate(boolean isEnableProjPrefDbUpdate) {
-        this.isEnableProjPrefDbUpdate = isEnableProjPrefDbUpdate;
-        projPS.putBoolean(PROJ_PREF.ENABLE_PROJ_PREF_DB_UPDATE, isEnableProjPrefDbUpdate);
     }
 
     public boolean getBoolean(String key) {
