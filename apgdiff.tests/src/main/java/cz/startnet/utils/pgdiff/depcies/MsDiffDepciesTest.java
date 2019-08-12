@@ -31,17 +31,17 @@ public class MsDiffDepciesTest {
     @Parameters
     public static Collection<?> parameters() {
         return Arrays.asList(new Object[][] {
-            { "empty", "empty_usr" },
+            {"empty_usr"},
             // создаются две функции f1 и f2, в f2 через 'EXECUTE' вызвается f1,
             // пользователь выбирает функцию f2
-            { "add_ms_func_exec", "add_ms_func_exec_usr_f2" },
+            {"add_ms_func_exec_usr_f2"},
             // создаются процедура p1 и функция f2, в f2 через 'EXECUTE' вызвается p1,
             // пользователь выбирает функцию f2
-            { "add_ms_proc_exec", "add_ms_proc_exec_usr_f2" },
+            {"add_ms_proc_exec_usr_f2"},
             // t1 <- v1 <- v2 <- v3 <- v4
             // изменяются t1, v1, v2, v4
             // пользователь выбирает t1
-            { "change_ms_table", "change_ms_table_usr_t1" }
+            {"change_ms_table_usr_t1" }
         });
     }
 
@@ -57,9 +57,8 @@ public class MsDiffDepciesTest {
      */
     private final String userSelTemplate;
 
-    public MsDiffDepciesTest(final String fileNameTemplate,
-            final String userSelTemplate) {
-        this.dbTemplate = fileNameTemplate;
+    public MsDiffDepciesTest(final String userSelTemplate) {
+        this.dbTemplate = userSelTemplate.replaceAll("_usr.*", "");
         this.userSelTemplate = userSelTemplate;
         Log.log(Log.LOG_DEBUG, dbTemplate + ' ' + userSelTemplate);
     }

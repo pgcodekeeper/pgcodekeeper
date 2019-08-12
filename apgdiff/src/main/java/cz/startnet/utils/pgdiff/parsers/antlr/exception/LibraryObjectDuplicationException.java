@@ -35,7 +35,7 @@ public class LibraryObjectDuplicationException extends RuntimeException {
 
     public LibraryObjectDuplicationException(Collection<PgOverride> overrides) {
         super("Library conflicts:\n" + overrides.stream() //$NON-NLS-1$
-        .map(o -> MessageFormat.format(ENTRY, o.getType(), o.getName(), o.getOldLocation(), o.getNewLocation()))
+        .map(o -> MessageFormat.format(ENTRY, o.getType(), o.getName(), o.getOldPath(), o.getNewPath()))
         .collect(Collectors.joining("\n"))); //$NON-NLS-1$
     }
 }

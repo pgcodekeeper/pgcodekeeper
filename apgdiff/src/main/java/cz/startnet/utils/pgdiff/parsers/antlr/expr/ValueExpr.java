@@ -515,7 +515,7 @@ public class ValueExpr extends AbstractExpr {
                     }
                     break;
                 }
-                String sourceType = sourceTypes.get(argN);
+                String sourceType = stripParens(sourceTypes.get(argN));
                 if (sourceType.equals(arg.getDataType())) {
                     ++exactMatches;
                 } else if (!systemStorage.containsCastImplicit(sourceType, arg.getDataType())) {
@@ -680,6 +680,14 @@ public class ValueExpr extends AbstractExpr {
     private String stripBrackets(String type) {
         if (type.endsWith("[]")) {
             return type.substring(0, type.length() - 2);
+        } else {
+            return type;
+        }
+    }
+
+    private String stripParens(String type) {
+        if (type.endsWith(")")) {
+            return type.substring(0, type.lastIndexOf('('));
         } else {
             return type;
         }

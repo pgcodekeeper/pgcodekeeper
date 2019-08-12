@@ -14,10 +14,12 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_columnsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_foreign_optionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Foreign_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identity_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Including_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_parametersContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.List_of_type_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_deferrableContext;
@@ -31,7 +33,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraint_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
-import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractForeignTable;
 import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
@@ -41,6 +42,7 @@ import cz.startnet.utils.pgdiff.schema.MsConstraint;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgSequence;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class TableAbstract extends ParserAbstract {
@@ -72,7 +74,7 @@ public abstract class TableAbstract extends ParserAbstract {
     }
 
     private void addTableConstraint(Constraint_commonContext ctx,
-            AbstractColumn col, AbstractTable table) {
+            PgColumn col, AbstractTable table) {
         Constr_bodyContext body = ctx.constr_body();
         AbstractConstraint constr = null;
         String colName = col.getName();
@@ -144,6 +146,21 @@ public abstract class TableAbstract extends ParserAbstract {
             VexContext expCtx = body.expression;
             constr.setDefinition("CHECK ((" + getFullCtxText(expCtx) + "))");
             db.addContextForAnalyze(constr, expCtx);
+        } else if (body.identity_body() != null) {
+            Identity_bodyContext identity = body.identity_body();
+
+            String name = table.getName() + '_' + col.getName() + "_seq";
+            for (Sequence_bodyContext bodyCtx : identity.sequence_body()) {
+                if (bodyCtx.NAME() != null) {
+                    name = QNameParser.getFirstName(bodyCtx.name.identifier());
+                }
+            }
+            PgSequence sequence = new PgSequence(name);
+            sequence.setDataType(col.getType());
+            CreateSequence.fillSequence(sequence, identity.sequence_body());
+
+            col.setSequence(sequence);
+            col.setIdentityType(identity.ALWAYS() != null ? "ALWAYS" : "BY DEFAULT");
         }
 
         if (constr != null) {
@@ -208,7 +225,7 @@ public abstract class TableAbstract extends ParserAbstract {
         String inhSchemaName = getSchemaNameSafe(idsInh);
         String inhTableName = QNameParser.getFirstName(idsInh);
         table.addInherits(inhSchemaName, inhTableName);
-        table.addDep(new GenericColumn(inhSchemaName, inhTableName, DbObjType.TABLE));
+        addDepSafe(table, idsInh, DbObjType.TABLE, table.isPostgres());
     }
 
     protected static AbstractConstraint createTableConstraintBlank(Constraint_commonContext ctx) {

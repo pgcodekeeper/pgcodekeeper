@@ -174,6 +174,7 @@ schema_drop
     | drop_asymmetric_key
     | drop_database_encryption_key
     | drop_event_notifications_or_session
+    | drop_external_library
     | drop_index
     | drop_master_key
     | drop_signature
@@ -486,13 +487,18 @@ alter_availability_group_options
     | FAILOVER
     | FORCE_FAILOVER_ALLOW_DATA_LOSS
     | ADD LISTENER listener_name=STRING LR_BRACKET (WITH DHCP (ON LR_BRACKET IPV4_ADDR IPV4_ADDR RR_BRACKET)
-        | WITH IP LR_BRACKET ((COMMA? LR_BRACKET (IPV4_ADDR COMMA IPV4_ADDR | IPV6_ADDR) RR_BRACKET)+ RR_BRACKET (COMMA PORT EQUAL DECIMAL)?)) 
+        | WITH IP LR_BRACKET ((COMMA? LR_BRACKET ip_address_option RR_BRACKET)+ RR_BRACKET (COMMA PORT EQUAL DECIMAL)?))
         RR_BRACKET
-    | MODIFY LISTENER (ADD IP LR_BRACKET (IPV4_ADDR IPV4_ADDR | IPV6_ADDR) RR_BRACKET | PORT EQUAL DECIMAL)
+    | MODIFY LISTENER (ADD IP LR_BRACKET ip_address_option RR_BRACKET | PORT EQUAL DECIMAL)
     | RESTART LISTENER STRING
     | REMOVE LISTENER STRING
     | OFFLINE
     | WITH LR_BRACKET DTC_SUPPORT EQUAL PER_DB RR_BRACKET
+    ;
+
+ip_address_option
+    : IPV4_ADDR COMMA IPV4_ADDR
+    | IPV6_ADDR
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-broker-priority-transact-sql
@@ -536,7 +542,7 @@ drop_statements
     : (AGGREGATE | APPLICATION ROLE | AVAILABILITY GROUP | BROKER PRIORITY | CERTIFICATE
         | COLUMN (ENCRYPTION | MASTER) KEY | CONTRACT | CREDENTIAL | CRYPTOGRAPHIC PROVIDER
         | DATABASE (AUDIT SPECIFICATION | SCOPED CREDENTIAL)? | DEFAULT | ENDPOINT
-        | EXTERNAL (DATA SOURCE | FILE FORMAT | LIBRARY | RESOURCE POOL | EXTERNAL TABLE) ( AUTHORIZATION id )?
+        | EXTERNAL (DATA SOURCE | FILE FORMAT | RESOURCE POOL | TABLE)
         | FULLTEXT (CATALOG | INDEX ON | STOPLIST) | LOGIN | MESSAGE TYPE | PARTITION? FUNCTION | PARTITION SCHEME
         | PROC | PROCEDURE | QUEUE | REMOTE SERVICE BINDING | RESOURCE POOL | ROLE | ROUTE | RULE | SCHEMA | SEARCH PROPERTY LIST
         | SECURITY POLICY | SEQUENCE | SERVER AUDIT SPECIFICATION? | SERVER ROLE | SERVICE | STATISTICS | SYNONYM | TABLE
@@ -548,6 +554,11 @@ drop_statements
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/drop-event-session-transact-sql
 drop_event_notifications_or_session
     : EVENT (NOTIFICATION | SESSION) (COMMA? notification_name=id)+ ON (SERVER|DATABASE|QUEUE queue_name=id)
+    ;
+
+// https://docs.microsoft.com/en-us/sql/t-sql/statements/drop-external-library-transact-sql
+drop_external_library
+    : EXTERNAL LIBRARY id (AUTHORIZATION id)?
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/drop-master-key-transact-sql
@@ -630,8 +641,7 @@ create_event_notification
 // todo: not implemented
 create_or_alter_event_session
     : EVENT SESSION event_session_name=id ON SERVER
-    add_drop_event
-    add_drop_event_target (COMMA add_drop_event_target)*
+    (COMMA? (add_drop_event | add_drop_event_target))*
     create_or_alter_event_session_with?
     (STATE EQUAL (START|STOP))?
     ;
@@ -1217,9 +1227,10 @@ user_login
 
 user_option
     : DEFAULT_SCHEMA EQUAL schema_name=id
-    | FAULT_LANGUAGE EQUAL (NONE | DECIMAL | language_name_or_alias=id)
+    | DEFAULT_LANGUAGE EQUAL (NONE | DECIMAL | language_name_or_alias=id)
     | SID EQUAL BINARY
     | ALLOW_ENCRYPTED_VALUE_MODIFICATIONS EQUAL (ON|OFF)
+    | PASSWORD EQUAL STRING
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-workload-group-transact-sql
@@ -1637,7 +1648,7 @@ assembly_specifier
     ;
 
 procedure_param
-    : name=LOCAL_ID AS? data_type VARYING? (EQUAL default_val=default_value)? arg_mode=(OUT | OUTPUT | READONLY)?
+    : name=LOCAL_ID AS? data_type (EQUAL default_val=default_value)? arg_mode=(OUT | OUTPUT | READONLY)?
     ;
 
 procedure_option
@@ -2243,6 +2254,7 @@ permission
     | EXECUTE
     | VIEW id // DEFINITION
     | TAKE id // OWNERSHIP
+    | CONTROL
     | CONTROL SERVER
     | CREATE (TABLE | VIEW)
     | SHOWPLAN
@@ -2523,6 +2535,7 @@ set_special
     | SET LANGUAGE (id | constant_LOCAL_ID)
     | SET STATISTICS (IO | XML | PROFILE | TIME) on_off
     | SET modify_method
+    | SET ROWCOUNT decimal_or_local_id
     ;
 
 constant_LOCAL_ID
@@ -3135,10 +3148,13 @@ send_conversation
 data_type
     : qualified_name size=data_type_size?
     | DOUBLE PRECISION
+    | (CHAR | CHARACTER | NCHAR) VARYING size=data_type_size?
+    | NATIONAL (CHAR | CHARACTER) VARYING? size=data_type_size?
+    | CURSOR VARYING?
     ;
     
 data_type_size
-    : (LR_BRACKET (presicion=DECIMAL | MAX) (COMMA scale=DECIMAL)? RR_BRACKET)
+    : LR_BRACKET (presicion=DECIMAL | MAX) (COMMA scale=DECIMAL)? RR_BRACKET
     ;
 
 default_value
@@ -3252,6 +3268,8 @@ simple_id
     | CHANGE_TRACKING
     | CHANGES
     | CHANGETABLE
+    | CHAR
+    | CHARACTER
     | CHECK_EXPIRATION
     | CHECK_POLICY
     | CHECKSUM_AGG
@@ -3363,7 +3381,6 @@ simple_id
     | FAN_IN
     | FAST_FORWARD
     | FAST
-    | FAULT_LANGUAGE
     | FILE_SNAPSHOT
     | FILEGROUP
     | FILEGROWTH
@@ -3508,6 +3525,7 @@ simple_id
     | MULTI_USER
     | MUST_CHANGE
     | NAME
+    | NCHAR
     | NEGOTIATE
     | NESTED_TRIGGERS
     | NEW_ACCOUNT

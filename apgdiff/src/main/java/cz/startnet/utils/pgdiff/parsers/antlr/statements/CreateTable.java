@@ -16,10 +16,14 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_oidCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_storage_parameterContext;
+import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.AbstractRegularTable;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractSequence;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PartitionPgTable;
+import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.SimplePgTable;
 import cz.startnet.utils.pgdiff.schema.TypedPgTable;
@@ -41,8 +45,16 @@ public class CreateTable extends TableAbstract {
         List<IdentifierContext> ids = ctx.name.identifier();
         String tableName = QNameParser.getFirstName(ids);
         String schemaName = getSchemaNameSafe(ids);
+        AbstractSchema schema = getSchemaSafe(ids);
         AbstractTable table = defineTable(tableName, schemaName);
-        addSafe(getSchemaSafe(ids), table, ids);
+        addSafe(schema, table, ids);
+
+        for (AbstractColumn col : table.getColumns()) {
+            AbstractSequence seq = ((PgColumn) col).getSequence();
+            if (seq != null) {
+                seq.setParent(schema);
+            }
+        }
     }
 
     private AbstractTable defineTable(String tableName, String schemaName) {

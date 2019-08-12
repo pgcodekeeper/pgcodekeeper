@@ -125,10 +125,10 @@ public class SQLEditorTemplateAssistProcessor extends TemplateCompletionProcesso
             } catch (TemplateException e) {
                 continue;
             }
-            if (!prefix.equals("") && prefix.charAt(0) == '<') { //$NON-NLS-1$
+            if (!"".equals(prefix) && prefix.charAt(0) == '<') { //$NON-NLS-1$
                 prefix = prefix.substring(1);
             }
-            if (!prefix.equals("") //$NON-NLS-1$
+            if (!"".equals(prefix) //$NON-NLS-1$
                     && (isPrefixContainedInTmpl(prefix, template, context.getContextType().getId())
                             || isPrefixContainedInTmpl(prefix, template,
                                     SQLEditorTemplateContextType.CONTEXT_TYPE_COMMON))) {

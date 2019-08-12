@@ -11,13 +11,6 @@ CREATE TABLE public.inventoryitemsupplier (
     lastmodifiedbyuserid smallint
 );
 
-CREATE SEQUENCE public.inventoryitemsupplier_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MAXVALUE
-    NO MINVALUE
-    CACHE 1;
-
 ALTER TABLE ONLY public.inventoryitemsupplier
     ADD CONSTRAINT inventoryitemsupplier_5a808b9c_key UNIQUE (inventoryitemid, partneridentificationid);
 

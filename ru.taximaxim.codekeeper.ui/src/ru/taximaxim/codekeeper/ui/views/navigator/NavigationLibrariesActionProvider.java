@@ -71,7 +71,9 @@ public class NavigationLibrariesActionProvider extends CommonActionProvider {
             if (isEnabled()) {
                 Path path = segment.getPath();
                 try {
-                    FileUtilsUi.openFileInSqlEditor(path);
+                    if (path != null) {
+                        FileUtilsUi.openFileInSqlEditor(path, segment.isMsSql());
+                    }
                 } catch (PartInitException e) {
                     Log.log(e);
                     ExceptionNotifier.notifyDefault(
