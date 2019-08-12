@@ -2,11 +2,13 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.eclipse.core.runtime.IProgressMonitor;
 
+import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
 import cz.startnet.utils.pgdiff.loader.QueryLocation;
@@ -26,6 +28,7 @@ public class CustomParserListener {
     private final IProgressMonitor monitor;
 
     protected final List<List<QueryLocation>> batches;
+    protected final Set<DangerStatement> dangerStatements;
 
     protected String fullScript;
 
@@ -33,13 +36,15 @@ public class CustomParserListener {
 
     public CustomParserListener(PgDatabase database, String filename,
             ParserListenerMode mode, List<AntlrError> errors,
-            IProgressMonitor monitor, List<List<QueryLocation>> batches) {
+            IProgressMonitor monitor, List<List<QueryLocation>> batches,
+            Set<DangerStatement> dangerStatements) {
         this.db = database;
         this.errors = errors;
         this.monitor = monitor;
         this.filename = filename;
         this.mode = mode;
         this.batches = batches;
+        this.dangerStatements = dangerStatements;
     }
 
     /**
