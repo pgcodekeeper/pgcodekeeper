@@ -25,7 +25,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IEditorPart;
@@ -44,7 +43,6 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -116,7 +114,6 @@ class QuickUpdateJob extends SingletonEditorJob {
 
     private static final int STEPS = 7;
 
-    private final IPreferenceStore prefs = Activator.getDefault().getPreferenceStore();
     private final IFile file;
     private final PgDbProject proj;
     private final DbInfo dbinfo;
@@ -178,7 +175,7 @@ class QuickUpdateJob extends SingletonEditorJob {
         checkFileModified();
 
         DbSource dbRemote = DbSource.fromDbInfo(dbinfo, projPrefs.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
-                proj.getProjectCharset(), timezone);
+                proj.getProjectCharset(), timezone, proj.getProject());
         DbSource dbProject = DbSource.fromProject(proj);
 
         TreeDiffer treediffer = new TreeDiffer(dbRemote, dbProject);
@@ -193,7 +190,7 @@ class QuickUpdateJob extends SingletonEditorJob {
         }
 
         Differ differ = new Differ(dbRemote.getDbObject(), dbProject.getDbObject(),
-                treeFull, false, timezone, isMsSql);
+                treeFull, false, timezone, isMsSql, proj.getProject());
         differ.run(monitor.newChild(1));
 
         checkFileModified();
