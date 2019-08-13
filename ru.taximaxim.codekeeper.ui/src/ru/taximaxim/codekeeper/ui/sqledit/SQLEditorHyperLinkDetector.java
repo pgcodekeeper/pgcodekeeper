@@ -32,7 +32,8 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
                         .map(def -> new SQLEditorHyperLink(
                                 new Region(def.getOffset(), def.getObjLength()),
                                 new Region(obj.getOffset(), obj.getObjLength()),
-                                obj.getObjName(), def.getFilePath(), def.getLineNumber()));
+                                obj.getObjName(), def.getFilePath(), def.getLineNumber(),
+                                editor.isMsSql()));
                 links = Stream.concat(links, stream);
             }
         }

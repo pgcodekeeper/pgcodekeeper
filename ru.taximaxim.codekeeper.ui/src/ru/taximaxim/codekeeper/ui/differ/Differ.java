@@ -5,13 +5,13 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.jface.preference.IPreferenceStore;
 
 import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
@@ -21,11 +21,11 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
 
 public class Differ implements IRunnableWithProgress {
 
@@ -35,6 +35,7 @@ public class Differ implements IRunnableWithProgress {
     private final boolean needTwoWay;
     private final String timezone;
     private final boolean msSql;
+    private final IProject proj;
 
     private String diffDirect;
     private String diffReverse;
@@ -67,14 +68,15 @@ public class Differ implements IRunnableWithProgress {
         return additionalDepciesSource;
     }
 
-    public Differ(PgDatabase sourceDbFull, PgDatabase targetDbFull,
-            TreeElement root, boolean needTwoWay, String timezone, boolean msSql) {
+    public Differ(PgDatabase sourceDbFull, PgDatabase targetDbFull, TreeElement root,
+            boolean needTwoWay, String timezone, boolean msSql, IProject proj) {
         this.sourceDbFull = sourceDbFull;
         this.targetDbFull = targetDbFull;
         this.root = root;
         this.needTwoWay = needTwoWay;
         this.timezone = timezone;
         this.msSql = msSql;
+        this.proj = proj;
     }
 
     public Job getDifferJob() {
@@ -129,10 +131,11 @@ public class Differ implements IRunnableWithProgress {
         + " to: " + targetDbFull.getName()); //$NON-NLS-1$
 
         pm.newChild(25).subTask(Messages.differ_direct_diff); // 75
-        try (Getter source = new Getter(sourceDbFull); Getter target = new Getter(targetDbFull)) {
+        try (Getter source = new Getter(sourceDbFull, proj);
+                Getter target = new Getter(targetDbFull, proj)) {
             script = PgDiff.diffDatabaseSchemasAdditionalDepcies(
                     // forceUnixNewLines has no effect on diff operaiton, just pass true
-                    DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone, true, msSql),
+                    DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone, true, msSql, proj),
                     root,
                     sourceDbFull, targetDbFull,
                     additionalDepciesSource, additionalDepciesTarget);
@@ -144,7 +147,7 @@ public class Differ implements IRunnableWithProgress {
 
                 pm.newChild(25).subTask(Messages.differ_reverse_diff); // 100
                 diffReverse = PgDiff.diffDatabaseSchemasAdditionalDepcies(
-                        DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone, true, msSql),
+                        DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone, true, msSql, proj),
                         root.getRevertedCopy(),
                         targetDbFull, sourceDbFull,
                         additionalDepciesTarget, additionalDepciesSource).getText();
@@ -160,12 +163,16 @@ public class Differ implements IRunnableWithProgress {
         private final Consumer<PgDiffArguments> consumer;
         private final PgDiffArguments oldArgs;
 
-        public Getter(PgDatabase db) {
+        public Getter(PgDatabase db, IProject proj) {
             oldArgs = db.getArguments();
             consumer = (db::setArguments);
             PgDiffArguments newArgs = oldArgs.clone();
-            IPreferenceStore prefs = Activator.getDefault().getPreferenceStore();
-            newArgs.setConcurrentlyMode(prefs.getBoolean(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
+            // применить параметры для генерации кода ко всем БД
+            OverridablePrefs prefs = new OverridablePrefs(proj);
+            newArgs.setConcurrentlyMode(
+                    prefs.getBoolean(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
+            newArgs.setUsingTypeCastOff(
+                    !prefs.getBoolean(DB_UPDATE_PREF.USING_ON_OFF));
             db.setArguments(newArgs);
         }
 

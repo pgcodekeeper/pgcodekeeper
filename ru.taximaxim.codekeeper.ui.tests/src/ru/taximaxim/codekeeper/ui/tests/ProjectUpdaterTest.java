@@ -35,8 +35,10 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 public class ProjectUpdaterTest {
 
     private static final String ENCODING = ApgdiffConsts.UTF_8;
-    private PgDatabase dbOld, dbNew;
-    private TempDir workingDir, referenceDir;
+    private PgDatabase dbOld;
+    private PgDatabase  dbNew;
+    private TempDir workingDir;
+    private TempDir referenceDir;
 
     @Before
     public void before() throws IOException, InterruptedException {

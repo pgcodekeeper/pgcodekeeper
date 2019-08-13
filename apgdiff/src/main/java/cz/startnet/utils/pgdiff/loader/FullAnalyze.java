@@ -36,6 +36,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
@@ -79,6 +80,8 @@ public final class FullAnalyze {
             }
 
             ParserRuleContext ctx = entry.getValue();
+            // TODO location may be not set yet
+            PgObjLocation loc = statement.getLocation();
             if (statement.getDatabase() != db) {
                 // statement came from another DB object, probably a library
                 // for proper depcy processing, find its twin in the final DB object
@@ -124,10 +127,10 @@ public final class FullAnalyze {
                 }
 
             } catch (UnresolvedReferenceException ex) {
-                unresolvRefExHandler(ex, errors, ctx, statement.getLocation().getFilePath());
+                unresolvRefExHandler(ex, errors, ctx, loc == null ? null : loc.getFilePath());
             } catch (Exception ex) {
                 addError(errors, CustomParserListener.handleParserContextException(
-                        ex, statement.getLocation().getFilePath(), ctx));
+                        ex, loc == null ? null : loc.getFilePath(), ctx));
             }
         }
 
@@ -267,6 +270,8 @@ public final class FullAnalyze {
             if (DbObjType.VIEW != st.getStatementType()) {
                 return;
             }
+            // TODO location may be not set yet
+            PgObjLocation loc = st.getLocation();
             if (st.getDatabase() != db) {
                 // same as above, get the object from the final DB
                 st = st.getTwin(db);
@@ -278,10 +283,10 @@ public final class FullAnalyze {
                 try {
                     analyzeViewCtx(ctx, (AbstractView) e.getKey(), db);
                 } catch (UnresolvedReferenceException ex) {
-                    unresolvRefExHandler(ex, errors, ctx, stmt.getLocation().getFilePath());
+                    unresolvRefExHandler(ex, errors, ctx, loc == null ? null : loc.getFilePath());
                 } catch (Exception ex) {
                     addError(errors, CustomParserListener.handleParserContextException(
-                            ex, stmt.getLocation().getFilePath(), ctx));
+                            ex, loc == null ? null : loc.getFilePath(), ctx));
                 }
             });
         }

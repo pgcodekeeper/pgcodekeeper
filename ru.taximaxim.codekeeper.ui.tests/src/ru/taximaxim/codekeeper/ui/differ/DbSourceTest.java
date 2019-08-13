@@ -57,7 +57,8 @@ public class DbSourceTest {
             Path dir = exportDir.get();
             new ModelExporter(dir, dbPredefined, ApgdiffConsts.UTF_8).exportFull();
 
-            performTest(DbSource.fromDirTree(true, dir.toAbsolutePath().toString(), ApgdiffConsts.UTF_8, false));
+            performTest(DbSource.fromDirTree(true, dir.toAbsolutePath().toString(),
+                    ApgdiffConsts.UTF_8, false, null));
         }
     }
 
@@ -66,7 +67,8 @@ public class DbSourceTest {
     CoreException {
         URL urla = DbSourceTest.class.getResource(DUMP);
 
-        performTest(DbSource.fromFile(true, ApgdiffUtils.getFileFromOsgiRes(urla), ApgdiffConsts.UTF_8, false));
+        performTest(DbSource.fromFile(true, ApgdiffUtils.getFileFromOsgiRes(urla),
+                ApgdiffConsts.UTF_8, false, null));
     }
 
     @Test

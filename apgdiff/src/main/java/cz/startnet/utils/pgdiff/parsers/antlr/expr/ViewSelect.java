@@ -58,6 +58,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectOps;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -99,7 +100,7 @@ public class ViewSelect {
 
         boolean isCte = ids.size() == 1 && findCte(firstName) != null;
         String schemaName = QNameParser.getSchemaName(ids);
-        if (!isCte && schemaName != null) {
+        if (!isCte && schemaName != null && !ApgdiffUtils.isPgSystemSchema(schemaName)) {
             depcies.add(new GenericColumn(schemaName,
                     QNameParser.getFirstName(ids), DbObjType.TABLE));
         }
@@ -226,7 +227,7 @@ public class ViewSelect {
         } else if (primary.TABLE() != null) {
             List<IdentifierContext> ids = primary.schema_qualified_name().identifier();
             String schemaName = QNameParser.getSchemaName(ids);
-            if (schemaName == null) {
+            if (schemaName != null && !ApgdiffUtils.isPgSystemSchema(schemaName)) {
                 depcies.add(new GenericColumn(schemaName, QNameParser.getFirstName(ids),
                         DbObjType.TABLE));
             }
@@ -279,16 +280,16 @@ public class ViewSelect {
                 analyze(new Vex(joinOn));
             }
         } else if ((primary = fromItem.from_primary()) != null) {
-            Schema_qualified_nameContext table = primary.schema_qualified_name();
+            List<Function_callContext> functions = primary.function_call();
+            Schema_qualified_nameContext table;
             Table_subqueryContext subquery;
-            Function_callContext function;
 
-            if (table != null) {
+            if (!functions.isEmpty()) {
+                functions.forEach(this::function);
+            } else if ((table = primary.schema_qualified_name()) != null) {
                 addNameReference(table);
             } else if ((subquery = primary.table_subquery()) != null) {
                 new ViewSelect(this).analyze(subquery.select_stmt());
-            } else if ((function = primary.function_call()) != null) {
-                function(function);
             } else {
                 Log.log(Log.LOG_WARNING, "No alternative in from_primary!");
             }
