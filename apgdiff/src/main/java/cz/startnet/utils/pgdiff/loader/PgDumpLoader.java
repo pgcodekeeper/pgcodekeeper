@@ -134,19 +134,6 @@ public class PgDumpLoader {
         this(inputFile, args, new NullProgressMonitor(), 0);
     }
 
-    public String getErrorMessage() {
-        if (!errors.isEmpty()) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("Errors while parse script:\n");
-            for (AntlrError er : errors) {
-                sb.append(er).append('\n');
-            }
-            return sb.toString();
-        }
-
-        return null;
-    }
-
     public List<List<QueryLocation>> batch() {
         return batches;
     }

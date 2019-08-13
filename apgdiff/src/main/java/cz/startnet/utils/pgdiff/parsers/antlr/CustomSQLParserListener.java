@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -72,7 +73,10 @@ implements SqlContextProcessor {
             IProgressMonitor monitor, List<List<QueryLocation>> batches,
             Set<DangerStatement> dangerStatements) {
         super(database, filename, mode, errors, monitor, batches, dangerStatements);
-        this.isScriptMode = ParserListenerMode.SCRIPT == mode;
+        isScriptMode = ParserListenerMode.SCRIPT == mode;
+        if (isScriptMode) {
+            batches.add(new ArrayList<>());
+        }
     }
 
     @Override
