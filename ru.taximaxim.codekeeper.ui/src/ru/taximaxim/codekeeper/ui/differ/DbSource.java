@@ -15,7 +15,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.jface.preference.IPreferenceStore;
 
 import cz.startnet.utils.pgdiff.IProgressReporter;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
@@ -29,10 +28,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.InputStreamProvider;
-import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
-import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.consoles.UiProgressReporter;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
@@ -41,6 +38,7 @@ import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
+import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
 
 public abstract class DbSource {
 
@@ -90,20 +88,22 @@ public abstract class DbSource {
     protected abstract PgDatabase loadInternal(SubMonitor monitor)
             throws IOException, InterruptedException, CoreException;
 
-    static PgDiffArguments getPgDiffArgs(String charset, boolean forceUnixNewlines, boolean msSql) {
-        return getPgDiffArgs(charset, ApgdiffConsts.UTC, forceUnixNewlines, msSql);
+    static PgDiffArguments getPgDiffArgs(String charset, boolean forceUnixNewlines,
+            boolean msSql, IProject proj) {
+        return getPgDiffArgs(charset, ApgdiffConsts.UTC, forceUnixNewlines, msSql,
+                proj);
     }
 
     static PgDiffArguments getPgDiffArgs(String charset, String timeZone,
-            boolean forceUnixNewlines, boolean msSql) {
+            boolean forceUnixNewlines, boolean msSql, IProject proj) {
         PgDiffArguments args = new PgDiffArguments();
-        IPreferenceStore mainPS = Activator.getDefault().getPreferenceStore();
+        OverridablePrefs prefs = new OverridablePrefs(proj);
         args.setInCharsetName(charset);
-        args.setAddTransaction(mainPS.getBoolean(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION));
-        args.setDisableCheckFunctionBodies(!mainPS.getBoolean(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES));
-        args.setIgnoreConcurrentModification(mainPS.getBoolean(PREF.IGNORE_CONCURRENT_MODIFICATION));
-        args.setUsingTypeCastOff(!mainPS.getBoolean(DB_UPDATE_PREF.USING_ON_OFF));
-        args.setIgnorePrivileges(mainPS.getBoolean(PREF.NO_PRIVILEGES));
+        args.setAddTransaction(prefs.getBoolean(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION));
+        args.setDisableCheckFunctionBodies(!prefs.getBoolean(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES));
+        args.setIgnoreConcurrentModification(prefs.getBoolean(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
+        args.setUsingTypeCastOff(!prefs.getBoolean(DB_UPDATE_PREF.USING_ON_OFF));
+        args.setIgnorePrivileges(prefs.isIgnorePrivileges());
         args.setTimeZone(timeZone);
         args.setKeepNewlines(!forceUnixNewlines);
         args.setMsSql(msSql);
@@ -111,8 +111,8 @@ public abstract class DbSource {
     }
 
     public static DbSource fromDirTree(boolean forceUnixNewlines,String dirTreePath,
-            String encoding, boolean isMsSql) {
-        return new DbSourceDirTree(forceUnixNewlines, dirTreePath, encoding, isMsSql);
+            String encoding, boolean isMsSql, IProject proj) {
+        return new DbSourceDirTree(forceUnixNewlines, dirTreePath, encoding, isMsSql, proj);
     }
 
     public static DbSource fromProject(PgDbProject proj) {
@@ -120,16 +120,16 @@ public abstract class DbSource {
     }
 
     public static DbSource fromFile(boolean forceUnixNewlines, File filename,
-            String encoding, boolean isMsSql) {
-        return new DbSourceFile(forceUnixNewlines, filename, encoding, isMsSql);
+            String encoding, boolean isMsSql, IProject proj) {
+        return new DbSourceFile(forceUnixNewlines, filename, encoding, isMsSql, proj);
     }
 
-    public static DbSource fromDbInfo(DbInfo dbinfo,
-            boolean forceUnixNewlines, String charset, String timezone) {
+    public static DbSource fromDbInfo(DbInfo dbinfo, boolean forceUnixNewlines,
+            String charset, String timezone, IProject proj) {
         if (dbinfo.isPgDumpSwitch()) {
-            return new DbSourceDb(forceUnixNewlines, dbinfo, charset, timezone);
+            return new DbSourceDb(forceUnixNewlines, dbinfo, charset, timezone, proj);
         } else {
-            return new DbSourceJdbc(dbinfo, timezone, forceUnixNewlines);
+            return new DbSourceJdbc(dbinfo, timezone, forceUnixNewlines, proj);
         }
     }
 
@@ -151,14 +151,17 @@ class DbSourceDirTree extends DbSource {
     private final String dirTreePath;
     private final String encoding;
     private final boolean isMsSql;
+    private final IProject proj;
 
-    DbSourceDirTree(boolean forceUnixNewlines, String dirTreePath, String encoding, boolean isMsSql) {
+    DbSourceDirTree(boolean forceUnixNewlines, String dirTreePath, String encoding,
+            boolean isMsSql, IProject proj) {
         super(dirTreePath);
 
         this.forceUnixNewlines = forceUnixNewlines;
         this.dirTreePath = dirTreePath;
         this.encoding = encoding;
         this.isMsSql = isMsSql;
+        this.proj = proj;
     }
 
     @Override
@@ -168,7 +171,7 @@ class DbSourceDirTree extends DbSource {
 
         List<AntlrError> er = new ArrayList<>();
         PgDatabase db = new ProjectLoader(dirTreePath, getPgDiffArgs(encoding,
-                forceUnixNewlines, isMsSql), monitor, er).loadDatabaseSchemaFromDirTree();
+                forceUnixNewlines, isMsSql, proj), monitor, er).loadDatabaseSchemaFromDirTree();
         errors = er;
         return db;
     }
@@ -197,7 +200,7 @@ class DbSourceProject extends DbSource {
 
         PgDiffArguments arguments = getPgDiffArgs(charset,
                 pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
-                OpenProjectUtils.checkMsSql(project));
+                OpenProjectUtils.checkMsSql(project), project);
 
         PgDatabase db = new UIProjectLoader(project, arguments, monitor, null, er)
                 .loadDatabaseWithLibraries();
@@ -219,14 +222,17 @@ class DbSourceFile extends DbSource {
     private final File filename;
     private final String encoding;
     private final boolean isMsSql;
+    private final IProject proj;
 
-    DbSourceFile(boolean forceUnixNewlines, File filename, String encoding, boolean isMsSql) {
+    DbSourceFile(boolean forceUnixNewlines, File filename, String encoding,
+            boolean isMsSql, IProject proj) {
         super(filename.getAbsolutePath());
 
         this.forceUnixNewlines = forceUnixNewlines;
         this.filename = filename;
         this.encoding = encoding;
         this.isMsSql = isMsSql;
+        this.proj = proj;
     }
 
     @Override
@@ -244,7 +250,7 @@ class DbSourceFile extends DbSource {
         }
 
         PgDumpLoader loader = new PgDumpLoader(filename,
-                getPgDiffArgs(encoding, forceUnixNewlines, isMsSql),
+                getPgDiffArgs(encoding, forceUnixNewlines, isMsSql, proj),
                 monitor, 2);
         try {
             return loader.load();
@@ -286,6 +292,7 @@ class DbSourceDb extends DbSource {
     private final String encoding;
     private final String timezone;
     private final int port;
+    private final IProject proj;
 
     @Override
     public String getDbName() {
@@ -293,7 +300,7 @@ class DbSourceDb extends DbSource {
     }
 
     DbSourceDb(boolean forceUnixNewlines,
-            DbInfo dbinfo, String encoding, String timezone) {
+            DbInfo dbinfo, String encoding, String timezone, IProject proj) {
         super(dbinfo.getDbName());
 
         this.forceUnixNewlines = forceUnixNewlines;
@@ -306,6 +313,7 @@ class DbSourceDb extends DbSource {
         this.dbname = dbinfo.getDbName();
         this.encoding = encoding;
         this.timezone = timezone;
+        this.proj = proj;
     }
 
     @Override
@@ -326,7 +334,7 @@ class DbSourceDb extends DbSource {
         pm.newChild(1).subTask(Messages.dbSource_loading_dump);
 
         PgDumpLoader loader = new PgDumpLoader(streamProvider,
-                "pg_dump", getPgDiffArgs(encoding, forceUnixNewlines, false), monitor); //$NON-NLS-1$
+                "pg_dump", getPgDiffArgs(encoding, forceUnixNewlines, false, proj), monitor); //$NON-NLS-1$
         try {
             return loader.load();
         } finally {
@@ -341,6 +349,7 @@ class DbSourceJdbc extends DbSource {
     private final String dbName;
     private final boolean forceUnixNewlines;
     private final boolean isMsSql;
+    private final IProject proj;
 
     @Override
     public String getDbName() {
@@ -348,7 +357,7 @@ class DbSourceJdbc extends DbSource {
     }
 
     DbSourceJdbc(DbInfo dbinfo, String timezone,
-            boolean forceUnixNewlines) {
+            boolean forceUnixNewlines, IProject proj) {
         super(dbinfo.getDbName());
 
         String host = dbinfo.getDbHost();
@@ -369,13 +378,15 @@ class DbSourceJdbc extends DbSource {
             jdbcConnector = new JdbcConnector(host, port, user, pass, dbName, properties,
                     readOnly, timezone);
         }
+        this.proj = proj;
     }
 
     @Override
     protected PgDatabase loadInternal(SubMonitor monitor)
             throws IOException, InterruptedException {
         monitor.subTask(Messages.reading_db_from_jdbc);
-        PgDiffArguments args = getPgDiffArgs(ApgdiffConsts.UTF_8, forceUnixNewlines, isMsSql);
+        PgDiffArguments args = getPgDiffArgs(ApgdiffConsts.UTF_8, forceUnixNewlines,
+                isMsSql, proj);
         if (isMsSql) {
             return new JdbcMsLoader(jdbcConnector, args, monitor).readDb();
         }

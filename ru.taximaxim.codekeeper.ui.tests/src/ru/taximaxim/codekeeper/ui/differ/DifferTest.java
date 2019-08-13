@@ -60,7 +60,7 @@ public class DifferTest {
     }
 
     private static final DifferData[] DB_OBJS = {
-            new DifferData_1(), new DifferData_2(), new DifferData_3(), new DifferData_4(), new DifferData_5()
+            new DifferData1(), new DifferData2(), new DifferData3(), new DifferData4(), new DifferData5()
     };
 
     @BeforeClass
@@ -90,8 +90,8 @@ public class DifferTest {
         File sourceFile = ApgdiffUtils.getFileFromOsgiRes(PartialExporterTest.class.getResource(sourceFilename));
         File targetFile = ApgdiffUtils.getFileFromOsgiRes(PartialExporterTest.class.getResource(targetFilename));
 
-        DbSource dbSource = DbSource.fromFile(true, sourceFile, ApgdiffConsts.UTF_8, false);
-        DbSource dbTarget = DbSource.fromFile(true, targetFile, ApgdiffConsts.UTF_8, false);
+        DbSource dbSource = DbSource.fromFile(true, sourceFile, ApgdiffConsts.UTF_8, false, null);
+        DbSource dbTarget = DbSource.fromFile(true, targetFile, ApgdiffConsts.UTF_8, false, null);
 
         final TreeDiffer newDiffer = new TreeDiffer(dbSource, dbTarget);
 
@@ -103,14 +103,14 @@ public class DifferTest {
         differData.setUserSelection(root);
 
         Differ differ = new Differ(dbSource.getDbObject(), dbTarget.getDbObject(),
-                root, true, ApgdiffConsts.UTC, false);
+                root, true, ApgdiffConsts.UTC, false, null);
         differ.setAdditionalDepciesSource(differData.getAdditionalDepciesSource(dbSource.getDbObject()));
         differ.setAdditionalDepciesTarget(differData.getAdditionalDepciesTarget(dbTarget.getDbObject()));
 
         try{
             differ.getScript();
             Assert.fail("Expected to throw an exception");
-        }catch(IllegalStateException e){
+        } catch(IllegalStateException e) {
             // expected behavior
         }
         Job job = differ.getDifferJob();
@@ -126,16 +126,16 @@ public class DifferTest {
     }
 }
 
-abstract class DifferData{
+abstract class DifferData {
     int caseNumber = -1;
 
     abstract void setUserSelection(TreeElement root);
 
-    List<Entry<PgStatement, PgStatement>> getAdditionalDepciesSource(PgDatabase source){
+    List<Entry<PgStatement, PgStatement>> getAdditionalDepciesSource(PgDatabase source) {
         return new ArrayList<>();
     }
 
-    List<Entry<PgStatement, PgStatement>> getAdditionalDepciesTarget(PgDatabase target){
+    List<Entry<PgStatement, PgStatement>> getAdditionalDepciesTarget(PgDatabase target) {
         return new ArrayList<>();
     }
 
@@ -172,7 +172,7 @@ abstract class DifferData{
  * DifferData implementation with 1 EDIT constraint selected (parent table is expected to
  * be "auto-selected" as yet)
  */
-class DifferData_1 extends DifferData{
+class DifferData1 extends DifferData {
 
     @Override
     void setUserSelection(TreeElement root) {
@@ -184,7 +184,7 @@ class DifferData_1 extends DifferData{
  * DifferData implementation with 1 EDIT constraint selected (parent table is expected to
  * be "auto-selected" as yet). Adds to source and target depcy: view>table (with no impact)
  */
-class DifferData_2 extends DifferData{
+class DifferData2 extends DifferData {
 
     @Override
     void setUserSelection(TreeElement root) {
@@ -211,7 +211,7 @@ class DifferData_2 extends DifferData{
  * DifferData implementation with 1 EDIT constraint selected (parent table is expected to
  * be "auto-selected" as yet). Adds to source and target depcy: view>column
  */
-class DifferData_3 extends DifferData{
+class DifferData3 extends DifferData {
 
     @Override
     void setUserSelection(TreeElement root) {
@@ -237,7 +237,7 @@ class DifferData_3 extends DifferData{
 /**
  * DifferData implementation with 1 NEW table selected.
  */
-class DifferData_4 extends DifferData{
+class DifferData4 extends DifferData {
 
     @Override
     void setUserSelection(TreeElement root) {
@@ -249,7 +249,7 @@ class DifferData_4 extends DifferData{
  * DifferData implementation with 1 DELETE view selected.
  * Adds to target depcy: view>new schema
  */
-class DifferData_5 extends DifferData{
+class DifferData5 extends DifferData {
 
     @Override
     void setUserSelection(TreeElement root) {

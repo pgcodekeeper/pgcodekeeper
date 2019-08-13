@@ -280,7 +280,8 @@ public class DiffTableViewer extends Composite {
                             viewerFilter.schemaFilter, viewerFilter.codeFilter,
                             viewerFilter.gitUserFilter, viewerFilter.dbUserFilter,
                             viewerFilter.types, viewerFilter.sides,
-                            viewerFilter.isLocalChange, viewerFilter.isHideLibs);
+                            viewerFilter.isLocalChange, viewerFilter.isHideLibs,
+                            isApplyToProj);
                     if (dialog.open() == Dialog.OK) {
                         btnTypeFilter.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                                 bundle.getResource(

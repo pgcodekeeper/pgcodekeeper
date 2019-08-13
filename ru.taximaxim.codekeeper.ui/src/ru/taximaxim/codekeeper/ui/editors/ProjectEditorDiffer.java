@@ -121,6 +121,7 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
+import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
 import ru.taximaxim.codekeeper.ui.propertytests.ChangesJobTester;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 import ru.taximaxim.codekeeper.ui.views.DBPair;
@@ -194,7 +195,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         setPartName(in.getName());
 
         proj = new PgDbProject(in.getProject());
-        sp = new ProjectEditorSelectionProvider(proj.getProject());
+        sp = new ProjectEditorSelectionProvider(getProject());
 
         // message box
         if(!site.getPage().getPerspective().getId().equals(PERSPECTIVE.MAIN)){
@@ -216,7 +217,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         IStatusLineManager manager = getEditorSite().getActionBars().getStatusLineManager();
 
         diffTable = new DiffTableViewer(sashOuter, false, manager,
-                Paths.get(proj.getProject().getLocationURI())) {
+                Paths.get(getProject().getLocationURI())) {
 
             @Override
             public void createRightSide(Composite container) {
@@ -445,7 +446,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     }
 
     private void handlerCloseProject(IResourceChangeEvent event) {
-        if (event.getResource().getProject().equals(proj.getProject())) {
+        if (event.getResource().getProject().equals(getProject())) {
             UiSync.exec(parent, () -> {
                 if (!parent.isDisposed()) {
                     getSite().getPage().closeEditor(ProjectEditorDiffer.this, true);
@@ -464,10 +465,10 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 // something other than just markers has changed
                 // check that it's our resource
                 if (delta.getFlags() != IResourceDelta.MARKERS &&
-                        (UIProjectLoader.isInProject(delta, OpenProjectUtils.checkMsSql(proj.getProject()))
+                        (UIProjectLoader.isInProject(delta, OpenProjectUtils.checkMsSql(getProject()))
                                 || UIProjectLoader.isPrivilegeFolder(delta)) &&
                         delta.getResource().getType() == IResource.FILE &&
-                        delta.getResource().getProject().equals(proj.getProject())) {
+                        delta.getResource().getProject().equals(getProject())) {
                     schemaChanged[0] = true;
                     return false;
                 }
@@ -493,7 +494,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
 
         boolean isDbInfo = currentRemote instanceof DbInfo;
-        boolean isMsProj = OpenProjectUtils.checkMsSql(proj.getProject());
+        boolean isMsProj = OpenProjectUtils.checkMsSql(getProject());
         if (isDbInfo && ((DbInfo)currentRemote).isMsSql() != isMsProj) {
             MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_INFORMATION);
             mb.setText(Messages.ProjectEditorDiffer_different_types);
@@ -521,14 +522,16 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         if (isDbInfo) {
             DbInfo dbInfo = (DbInfo) currentRemote;
             DbSource dbRemote = DbSource.fromDbInfo(dbInfo, forceUnixNewlines,
-                    charset, projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
+                    charset, projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC),
+                    getProject());
             newDiffer = new TreeDiffer(dbProject, dbRemote);
             name = dbInfo.getName();
             saveLastDb(dbInfo);
         } else {
             File file = (File) currentRemote;
             name = file.getName();
-            DbSource dbRemote = DbSource.fromFile(forceUnixNewlines, file, charset, isMsProj);
+            DbSource dbRemote = DbSource.fromFile(forceUnixNewlines, file, charset,
+                    isMsProj, getProject());
             newDiffer = new TreeDiffer(dbProject, dbRemote);
         }
 
@@ -536,10 +539,10 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         ((ProjectEditorInput)getEditorInput()).setToolTipText(title);
         setPartName(title);
 
-        if (!OpenProjectUtils.checkVersionAndWarn(proj.getProject(), parent.getShell(), true)) {
+        if (!OpenProjectUtils.checkVersionAndWarn(getProject(), parent.getShell(), true)) {
             return;
         }
-        OpenProjectUtils.checkLegacySchemas(proj.getProject(), parent.getShell());
+        OpenProjectUtils.checkLegacySchemas(getProject(), parent.getShell());
 
         Log.log(Log.LOG_INFO, "Getting changes for diff"); //$NON-NLS-1$
 
@@ -553,7 +556,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 try {
                     SubMonitor sub = SubMonitor.convert(monitor,
                             Messages.diffPresentationPane_getting_changes_for_diff, 100);
-                    proj.getProject().refreshLocal(IResource.DEPTH_INFINITE, sub.newChild(10));
+                    getProject().refreshLocal(IResource.DEPTH_INFINITE, sub.newChild(10));
 
                     PgDiffUtils.checkCancelled(monitor);
                     sub.subTask(Messages.diffPresentationPane_getting_changes_for_diff);
@@ -652,9 +655,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         if (el != null && el.getSide() != DiffSide.RIGHT) {
             try {
                 FileUtilsUi.openFileInSqlEditor(el.getPgStatement(
-                        dbProject.getDbObject()).getLocation().getFilePath());
-            } catch (PartInitException e) {
-                ExceptionNotifier.notifyDefault(e.getLocalizedMessage(), e);
+                        dbProject.getDbObject()).getLocation(), getProject().hasNature(NATURE.MS));
+            } catch (CoreException e) {
+                ExceptionNotifier.notifyCoreException(e);
             }
         }
     }
@@ -703,7 +706,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     public void diff() {
         Log.log(Log.LOG_INFO, "Started DB update"); //$NON-NLS-1$
         if (warnCheckedElements() < 1 ||
-                !OpenProjectUtils.checkVersionAndWarn(proj.getProject(), parent.getShell(), true)) {
+                !OpenProjectUtils.checkVersionAndWarn(getProject(), parent.getShell(), true)) {
             return;
         }
 
@@ -711,7 +714,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         final Differ differ = new Differ(dbRemote.getDbObject(),
                 dbProject.getDbObject(), diffTree.getRevertedCopy(), false,
                 pref.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC),
-                OpenProjectUtils.checkMsSql(proj.getProject()));
+                OpenProjectUtils.checkMsSql(getProject()), getProject());
         differ.setAdditionalDepciesSource(manualDepciesSource);
         differ.setAdditionalDepciesTarget(manualDepciesTarget);
 
@@ -759,7 +762,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         IgnoreList ignoreList = null;
         if (diffTree != null) {
-            ignoreList = InternalIgnoreList.readInternalList();
+            boolean isGlobal = new OverridablePrefs(getProject()).isUseGlobalIgnoreList();
+            ignoreList = isGlobal ? InternalIgnoreList.readInternalList() : new IgnoreList();
+
             InternalIgnoreList.readAppendList(
                     proj.getPathToProject().resolve(FILE.IGNORED_OBJECTS), ignoreList);
 
@@ -768,7 +773,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             }
 
             try {
-                for (String path : new IgnoreListsXmlStore(proj.getProject()).readObjects()) {
+                for (String path : new IgnoreListsXmlStore(getProject()).readObjects()) {
                     InternalIgnoreList.readAppendList(Paths.get(path), ignoreList);
                 }
             } catch (IOException e) {
@@ -838,15 +843,14 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
     private IEditorInput createProjectScriptFile(String content, String filename) throws CoreException, IOException {
         Log.log(Log.LOG_INFO, "Creating file " + filename); //$NON-NLS-1$
-        IProject iProject = proj.getProject();
-        IFolder folder = iProject.getFolder(PROJ_PATH.MIGRATION_DIR);
+        IFolder folder = getProject().getFolder(PROJ_PATH.MIGRATION_DIR);
         if (!folder.exists()){
             folder.create(IResource.NONE, true, null);
         }
         IFile file = folder.getFile(filename + ".sql"); //$NON-NLS-1$
         InputStream source = new ByteArrayInputStream(content.getBytes(proj.getProjectCharset()));
         file.create(source, IResource.NONE, null);
-        return new FileEditorInput(iProject.getFile(file.getProjectRelativePath()));
+        return new FileEditorInput(getProject().getFile(file.getProjectRelativePath()));
     }
 
     private void showNotificationArea(boolean visible, String message) {
@@ -881,7 +885,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     public void commit() throws PgCodekeeperException {
         Log.log(Log.LOG_INFO, "Started project update"); //$NON-NLS-1$
         if (warnCheckedElements() < 1
-                || !OpenProjectUtils.checkVersionAndWarn(proj.getProject(), parent.getShell(), true)) {
+                || !OpenProjectUtils.checkVersionAndWarn(getProject(), parent.getShell(), true)) {
             return;
         }
 
@@ -944,7 +948,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             return;
         }
         try {
-            getSite().getSelectionProvider().setSelection(new StructuredSelection(proj.getProject()));
+            getSite().getSelectionProvider().setSelection(new StructuredSelection(getProject()));
             getSite().getService(IHandlerService.class).executeCommand(COMMAND.COMMIT_COMMAND_ID, null);
         } catch (ExecutionException | NotDefinedException | NotEnabledException | NotHandledException e) {
             Log.log(Log.LOG_WARNING, "Could not execute command " + COMMAND.COMMIT_COMMAND_ID, e); //$NON-NLS-1$

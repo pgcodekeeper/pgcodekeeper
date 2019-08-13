@@ -12,6 +12,7 @@ import org.jgrapht.graph.SimpleDirectedGraph;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
+import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.AbstractPgTable.Inherits;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -75,11 +76,21 @@ public class DepcyGraph {
             processDeps(st);
             if (st.getStatementType() == DbObjType.CONSTRAINT) {
                 createFkeyToUnique((AbstractConstraint)st);
-            }
-            if (st.getStatementType() == DbObjType.COLUMN
-                    && st.getParent() instanceof PartitionPgTable) {
-                createChildColToPartTblCol((PartitionPgTable) st.getParent(),
-                        (PgColumn) st);
+            } else if (st.getStatementType() == DbObjType.COLUMN
+                    && st.isPostgres()) {
+                PgColumn col = (PgColumn) st;
+                PgStatement tbl = col.getParent();
+                if (st.getParent() instanceof PartitionPgTable) {
+                    createChildColToPartTblCol((PartitionPgTable) tbl, col);
+                } else {
+                    // Creating the connection between the column of a inherit
+                    // table and the columns of its child tables.
+
+                    AbstractColumn parentTblCol = col.getParentCol((AbstractPgTable) tbl);
+                    if (parentTblCol != null) {
+                        graph.addEdge(col, parentTblCol);
+                    }
+                }
             }
         });
     }
@@ -123,29 +134,31 @@ public class DepcyGraph {
     /**
      * Creates the connection between the column of a partitioned table and the
      * columns of its sections (child tables).
+     * <br />
+     * Partitioned tables cannot use the inheritance mechanism, as in simple tables.
      */
-    private void createChildColToPartTblCol(PartitionPgTable pTbl, PgColumn pCol) {
-        String colName = pCol.getName();
-        for (Inherits in : pTbl.getInherits()) {
+    private void createChildColToPartTblCol(PartitionPgTable tbl, PgColumn col) {
+        for (Inherits in : tbl.getInherits()) {
             PgStatement parentTbl = new GenericColumn(in.getKey(), in.getValue(),
                     DbObjType.TABLE).getStatement(db);
             if (parentTbl == null) {
-                Log.log(Log.LOG_ERROR, "There is no such object of inheritance"
-                        + " as table: " + in.getQualifiedName());
+                Log.log(Log.LOG_ERROR, "There is no such partitioned table as: "
+                        + in.getQualifiedName());
                 continue;
             }
 
             if (parentTbl instanceof PartitionPgTable) {
-                createChildColToPartTblCol((PartitionPgTable) parentTbl, pCol);
+                createChildColToPartTblCol((PartitionPgTable) parentTbl, col);
             } else {
+                String colName = col.getName();
                 AbstractColumn parentCol = ((AbstractTable) parentTbl).getColumn(colName);
                 if (parentCol != null) {
-                    graph.addEdge(pCol, parentCol);
+                    graph.addEdge(col, parentCol);
                 } else {
                     Log.log(Log.LOG_ERROR, "The parent '" + in.getQualifiedName()
-                    + '.' + colName + "' column for '" + pCol.getSchemaName()
-                    + '.' + pCol.getParent().getName()
-                    + '.' + pCol.getName() + "' column is missed.");
+                    + '.' + colName + "' column for '" + col.getSchemaName()
+                    + '.' + col.getParent().getName()
+                    + '.' + colName + "' column is missed.");
                 }
             }
         }

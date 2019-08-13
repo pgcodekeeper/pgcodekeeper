@@ -16,6 +16,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -69,6 +70,8 @@ public abstract class AbstractAnalysisLauncher {
             return;
         }
 
+        PgObjLocation loc = stmt.getLocation();
+
         for (ParserRuleContext ctx : contextsForAnalyze) {
             try {
                 analyze(ctx);
@@ -76,7 +79,7 @@ public abstract class AbstractAnalysisLauncher {
                 unresolvRefExHandler(ex, errors, ctx, stmt.getLocation().getFilePath());
             } catch (Exception ex) {
                 addError(errors, CustomParserListener.handleParserContextException(
-                        ex, stmt.getLocation().getFilePath(), ctx));
+                        ex, loc == null ? null : loc.getFilePath(), ctx));
             }
         }
     }

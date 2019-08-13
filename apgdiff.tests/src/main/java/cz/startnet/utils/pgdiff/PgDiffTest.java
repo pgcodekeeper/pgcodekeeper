@@ -292,8 +292,6 @@ public class PgDiffTest {
                     {"alter_comments"},
                     // Tests changing view default value
                     {"alter_view_change_default"},
-                    // Tests creation of sequence with bug in MINVALUE value
-                    {"add_sequence_bug2100013"},
                     // Tests view with default value
                     {"view_bug3080388"},
                     // Tests function arguments beginning with in_
@@ -444,6 +442,8 @@ public class PgDiffTest {
                     {"modify_column_type_and_drop_default"},
                     // Tests scenario where type in COLUMN of partitioned TABLE is changed.
                     {"modify_col_type_in_partitioned_tbl"},
+                    // Tests scenario where type in COLUMN of inherited TABLE is changed.
+                    {"modify_col_type_in_inherited_tbl"},
                     // Tests scenario where new OPERATOR is added.
                     {"add_operator"},
                     // Tests scenario where new overloaded OPERATOR is added.
@@ -494,6 +494,10 @@ public class PgDiffTest {
                     {"add_specific_function"},
                     // Tests scenario where TABLE tablespace is modified.
                     {"modify_tablespace"},
+                    //Tests scenario where generated SEQUENCE is compared.
+                    {"compare_generated_sequence"},
+                    //Tests scenario where PRIVILEGE added to object with quoted name.
+                    {"add_privilege_quoted_name"},
                 });
     }
 

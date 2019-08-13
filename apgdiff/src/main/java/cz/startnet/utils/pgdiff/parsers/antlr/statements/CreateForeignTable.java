@@ -10,10 +10,14 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_partitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_serverContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Foreign_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractForeignTable;
 import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
+import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.AbstractSequence;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PartitionForeignPgTable;
+import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.SimpleForeignPgTable;
 
@@ -30,8 +34,16 @@ public class CreateForeignTable extends TableAbstract {
     public void parseObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
         String tableName = QNameParser.getFirstName(ids);
+        AbstractSchema schema = getSchemaSafe(ids);
         AbstractTable table = defineTable(tableName, getSchemaNameSafe(ids));
-        addSafe(getSchemaSafe(ids), table, ids);
+        addSafe(schema, table, ids);
+
+        for (AbstractColumn col : table.getColumns()) {
+            AbstractSequence seq = ((PgColumn) col).getSequence();
+            if (seq != null) {
+                seq.setParent(schema);
+            }
+        }
     }
 
     private AbstractTable defineTable(String tableName, String schemaName) {
