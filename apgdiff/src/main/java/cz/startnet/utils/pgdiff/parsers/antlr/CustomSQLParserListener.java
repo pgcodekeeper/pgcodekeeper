@@ -12,10 +12,7 @@ import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
 import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_sequence_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_statementsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_alterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_createContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_dropContext;
@@ -25,7 +22,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statement_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.StatementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterDomain;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterFtsStatement;
@@ -82,7 +78,6 @@ implements SqlContextProcessor {
     @Override
     public void process(SqlContext rootCtx, CommonTokenStream stream) {
         if (isScriptMode) {
-            checkPgDanger(rootCtx);
             fullScript = ParserAbstract.getFullCtxText(rootCtx);
         }
         for (StatementContext s : rootCtx.statement()) {
@@ -238,44 +233,6 @@ implements SqlContextProcessor {
             break;
         default:
             break;
-        }
-    }
-
-    private void checkPgDanger(SqlContext rootCtx) {
-        for (StatementContext st : rootCtx.statement()) {
-            Schema_statementContext schema = st.schema_statement();
-            Data_statementContext ds;
-            if (schema != null) {
-                Schema_alterContext alter = schema.schema_alter();
-                Schema_dropContext drop;
-                if (alter != null) {
-                    alterCheck(alter);
-                } else if ((drop = schema.schema_drop()) != null) {
-                    Drop_statementsContext dropSt = drop.drop_statements();
-                    if (dropSt != null && dropSt.TABLE() != null) {
-                        dangerStatements.add(DangerStatement.DROP_TABLE);
-                    }
-                }
-            } else if ((ds = st.data_statement()) != null
-                    && ds.update_stmt_for_psql() != null) {
-                dangerStatements.add(DangerStatement.UPDATE);
-            }
-        }
-    }
-
-    private void alterCheck(Schema_alterContext alter) {
-        Alter_sequence_statementContext seq = alter.alter_sequence_statement();
-        Alter_table_statementContext at;
-        if (seq != null && !seq.RESTART().isEmpty()) {
-            dangerStatements.add(DangerStatement.RESTART_WITH);
-        } else if ((at = alter.alter_table_statement()) != null) {
-            for (Table_actionContext tablAction : at.table_action()) {
-                if (tablAction.column != null && tablAction.DROP() != null) {
-                    dangerStatements.add(DangerStatement.DROP_COLUMN);
-                } else if (tablAction.datatype != null) {
-                    dangerStatements.add(DangerStatement.ALTER_COLUMN);
-                }
-            }
         }
     }
 }

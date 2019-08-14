@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
+import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -52,10 +53,16 @@ public class AlterSequence extends ParserAbstract {
     }
 
     @Override
-    protected void fillQueryLocation(String fullScript, List<List<QueryLocation>> batches) {
+    protected void fillQueryLocation(String fullScript, List<List<QueryLocation>> batches,
+            Set<DangerStatement> dangerStatements) {
         ParserRuleContext ctxWithActionName = ctx.getParent();
         String query = ParserAbstract.getFullCtxText(ctxWithActionName);
-        batches.get(0).add(new QueryLocation(getStmtAction(query),
-                fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query));
+        QueryLocation loc = new QueryLocation(getStmtAction(query),
+                fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query);
+        if (!ctx.RESTART().isEmpty()) {
+            loc.setWarning(DangerStatement.RESTART_WITH);
+            dangerStatements.add(DangerStatement.RESTART_WITH);
+        }
+        batches.get(0).add(loc);
     }
 }

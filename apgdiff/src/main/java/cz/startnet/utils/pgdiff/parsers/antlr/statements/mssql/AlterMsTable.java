@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -90,10 +91,19 @@ public class AlterMsTable extends TableAbstract {
     }
 
     @Override
-    protected void fillQueryLocation(String fullScript, List<List<QueryLocation>> batches) {
+    protected void fillQueryLocation(String fullScript, List<List<QueryLocation>> batches,
+            Set<DangerStatement> dangerStatements) {
         ParserRuleContext ctxWithActionName = ctx.getParent();
         String query = ParserAbstract.getFullCtxText(ctxWithActionName);
-        batches.get(batches.size() - 1).add(new QueryLocation(getStmtAction(query),
-                fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query));
+        QueryLocation loc = new QueryLocation(getStmtAction(query),
+                fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query);
+        if (ctx.DROP() != null && ctx.COLUMN() != null) {
+            loc.setWarning(DangerStatement.DROP_COLUMN);
+            dangerStatements.add(DangerStatement.DROP_COLUMN);
+        } else if (ctx.ALTER() != null && ctx.COLUMN() != null) {
+            loc.setWarning(DangerStatement.ALTER_COLUMN);
+            dangerStatements.add(DangerStatement.ALTER_COLUMN);
+        }
+        batches.get(batches.size() - 1).add(loc);
     }
 }

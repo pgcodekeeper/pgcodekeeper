@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -229,10 +230,31 @@ public class AlterTable extends TableAbstract {
     }
 
     @Override
-    protected void fillQueryLocation(String fullScript, List<List<QueryLocation>> batches) {
+    protected void fillQueryLocation(String fullScript, List<List<QueryLocation>> batches,
+            Set<DangerStatement> dangerStatements) {
         ParserRuleContext ctxWithActionName = ctx.getParent();
         String query = ParserAbstract.getFullCtxText(ctxWithActionName);
-        batches.get(0).add(new QueryLocation(getStmtAction(query),
-                fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query));
+        QueryLocation loc = new QueryLocation(getStmtAction(query),
+                fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query);
+
+        DangerStatement firstDangerStmt = null;
+        for (Table_actionContext tablAction : ctx.table_action()) {
+            if (tablAction.column != null && tablAction.DROP() != null) {
+                addDanger(dangerStatements, DangerStatement.DROP_COLUMN, firstDangerStmt);
+            } else if (tablAction.datatype != null) {
+                addDanger(dangerStatements, DangerStatement.ALTER_COLUMN, firstDangerStmt);
+            }
+        }
+        loc.setWarning(firstDangerStmt);
+
+        batches.get(0).add(loc);
+    }
+
+    private void addDanger(Set<DangerStatement> dangers,
+            DangerStatement newDanger, DangerStatement firstDanger) {
+        dangers.add(newDanger);
+        if (firstDanger == null) {
+            firstDanger = newDanger;
+        }
     }
 }

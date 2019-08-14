@@ -1,9 +1,11 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
+import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
@@ -140,7 +142,8 @@ public class CreateFunction extends ParserAbstract {
     }
 
     @Override
-    protected void fillQueryLocation(String fullScript, List<List<QueryLocation>> batches) {
+    protected void fillQueryLocation(String fullScript, List<List<QueryLocation>> batches,
+            Set<DangerStatement> dangerStatements) {
         ParserRuleContext ctxWithActionName = ctx.getParent();
         String query = ParserAbstract.getFullCtxText(ctxWithActionName);
         batches.get(0).add(new QueryLocation(getStmtAction(query),

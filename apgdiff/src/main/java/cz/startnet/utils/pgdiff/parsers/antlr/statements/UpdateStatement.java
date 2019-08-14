@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
+import java.util.Set;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.loader.QueryLocation;
@@ -28,9 +29,13 @@ public class UpdateStatement extends ParserAbstract {
     }
 
     @Override
-    protected void fillQueryLocation(String fullScript, List<List<QueryLocation>> batches) {
+    protected void fillQueryLocation(String fullScript, List<List<QueryLocation>> batches,
+            Set<DangerStatement> dangerStatements) {
         String query = ParserAbstract.getFullCtxText(ctx);
-        batches.get(0).add(new QueryLocation(getStmtAction(query),
-                fullScript.indexOf(query), ctx.getStart().getLine(), query));
+        QueryLocation loc = new QueryLocation(getStmtAction(query),
+                fullScript.indexOf(query), ctx.getStart().getLine(), query);
+        loc.setWarning(DangerStatement.UPDATE);
+        dangerStatements.add(DangerStatement.UPDATE);
+        batches.get(0).add(loc);
     }
 }

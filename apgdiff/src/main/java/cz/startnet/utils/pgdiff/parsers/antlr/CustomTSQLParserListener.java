@@ -12,7 +12,6 @@ import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
 import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Another_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.BatchContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
@@ -75,7 +74,6 @@ implements TSqlContextProcessor {
     @Override
     public void process(Tsql_fileContext rootCtx, CommonTokenStream stream) {
         if (isScriptMode) {
-            checkMsDanger(rootCtx);
             fullScript = ParserAbstract.getFullCtxTextWithHidden(rootCtx, stream);
         }
         for (BatchContext b : rootCtx.batch()) {
@@ -242,50 +240,6 @@ implements TSqlContextProcessor {
             break;
         default:
             break;
-        }
-    }
-
-    private void checkMsDanger(Tsql_fileContext rootCtx) {
-        for (BatchContext b : rootCtx.batch()) {
-            Sql_clausesContext clauses = b.sql_clauses();
-            if (clauses != null) {
-                for (St_clauseContext st : clauses.st_clause()) {
-                    clauseCheck(st);
-                }
-            }
-        }
-    }
-
-    private void clauseCheck(St_clauseContext st) {
-        Ddl_clauseContext ddl = st.ddl_clause();
-        Dml_clauseContext dml;
-        if (ddl != null) {
-            ddl(ddl);
-        } else if ((dml = st.dml_clause()) != null && dml.update_statement() != null) {
-            dangerStatements.add(DangerStatement.UPDATE);
-        }
-    }
-
-    private void ddl(Ddl_clauseContext ddl) {
-        Schema_alterContext alter = ddl.schema_alter();
-        TSQLParser.Schema_dropContext drop;
-        if (alter != null) {
-            Alter_tableContext at = alter.alter_table();
-            if (at != null) {
-                if (at.DROP() != null && at.COLUMN() != null) {
-                    dangerStatements.add(DangerStatement.DROP_COLUMN);
-                } else if (at.ALTER() != null && at.COLUMN() != null) {
-                    dangerStatements.add(DangerStatement.ALTER_COLUMN);
-                }
-            } else if (alter.alter_sequence() != null
-                    && !alter.alter_sequence().RESTART().isEmpty()) {
-                dangerStatements.add(DangerStatement.RESTART_WITH);
-            }
-        } else if ((drop = ddl.schema_drop()) != null) {
-            cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Drop_statementsContext dropSt = drop.drop_statements();
-            if (dropSt != null && dropSt.TABLE() != null) {
-                dangerStatements.add(DangerStatement.DROP_TABLE);
-            }
         }
     }
 }

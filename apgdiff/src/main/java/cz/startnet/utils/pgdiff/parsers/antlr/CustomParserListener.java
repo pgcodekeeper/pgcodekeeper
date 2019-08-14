@@ -52,7 +52,7 @@ public class CustomParserListener {
      */
     protected void safeParseStatement(ParserAbstract p, ParserRuleContext ctx) {
         safeParseStatement(() -> p.parseObject(filename, mode, statementBodies,
-                fullScript, batches), ctx);
+                fullScript, batches, dangerStatements), ctx);
     }
 
     protected void safeParseStatement(Runnable r, ParserRuleContext ctx) {

@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.loader.QueryLocation;
@@ -123,9 +124,16 @@ public class DropStatement extends ParserAbstract {
     }
 
     @Override
-    protected void fillQueryLocation(String fullScript, List<List<QueryLocation>> batches) {
+    protected void fillQueryLocation(String fullScript, List<List<QueryLocation>> batches,
+            Set<DangerStatement> dangerStatements) {
         String query = ParserAbstract.getFullCtxText(ctx);
-        batches.get(0).add(new QueryLocation(getStmtAction(query),
-                fullScript.indexOf(query), ctx.getStart().getLine(), query));
+        QueryLocation loc = new QueryLocation(getStmtAction(query),
+                fullScript.indexOf(query), ctx.getStart().getLine(), query);
+        Drop_statementsContext dropSt = ctx.drop_statements();
+        if (dropSt != null && dropSt.TABLE() != null) {
+            loc.setWarning(DangerStatement.DROP_TABLE);
+            dangerStatements.add(DangerStatement.DROP_TABLE);
+        }
+        batches.get(0).add(loc);
     }
 }
