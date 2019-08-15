@@ -3,12 +3,10 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.eclipse.core.runtime.IProgressMonitor;
 
-import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
 import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
@@ -66,9 +64,8 @@ implements SqlContextProcessor {
 
     public CustomSQLParserListener(PgDatabase database, String filename,
             ParserListenerMode mode, List<AntlrError> errors,
-            IProgressMonitor monitor, List<List<QueryLocation>> batches,
-            Set<DangerStatement> dangerStatements) {
-        super(database, filename, mode, errors, monitor, batches, dangerStatements);
+            IProgressMonitor monitor, List<List<QueryLocation>> batches) {
+        super(database, filename, mode, errors, monitor, batches);
         isScriptMode = ParserListenerMode.SCRIPT == mode;
         if (isScriptMode) {
             batches.add(new ArrayList<>());

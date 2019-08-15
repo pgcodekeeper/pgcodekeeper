@@ -11,18 +11,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
-import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
@@ -62,7 +58,6 @@ public class PgDumpLoader {
     private final List<AntlrError> errors = new ArrayList<>();
 
     private final List<List<QueryLocation>> batches = new ArrayList<>();
-    private final Set<DangerStatement> dangerStatements = EnumSet.noneOf(DangerStatement.class);
 
     private ParserListenerMode mode = ParserListenerMode.NORMAL;
     private List<StatementBodyContainer> statementBodyReferences;
@@ -138,22 +133,6 @@ public class PgDumpLoader {
         return batches;
     }
 
-    public boolean isDangerDdl(Collection<DangerStatement> allowedDangers) {
-        return !allowedDangers.containsAll(dangerStatements);
-    }
-
-    public Set<DangerStatement> getDangerDdl(Collection<DangerStatement> allowedDangers) {
-        Set<DangerStatement> danger = EnumSet.noneOf(DangerStatement.class);
-
-        for (DangerStatement d : dangerStatements) {
-            if (!allowedDangers.contains(d)) {
-                danger.add(d);
-            }
-        }
-
-        return danger;
-    }
-
     public PgDatabase load() throws IOException, InterruptedException {
         PgDatabase d = new PgDatabase();
         d.setArguments(args);
@@ -183,12 +162,10 @@ public class PgDumpLoader {
             TSqlContextProcessor listener;
             if (overrides != null) {
                 listener = new TSQLOverridesListener(
-                        intoDb, inputObjectName, mode, errors, monitor, overrides,
-                        batches, dangerStatements);
+                        intoDb, inputObjectName, mode, errors, monitor, overrides, batches);
             } else {
                 listener = new CustomTSQLParserListener(
-                        intoDb, inputObjectName, mode, errors, monitor, batches,
-                        dangerStatements);
+                        intoDb, inputObjectName, mode, errors, monitor, batches);
                 statementBodyReferences = Collections.emptyList();
             }
             AntlrParser.parseTSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
@@ -197,12 +174,11 @@ public class PgDumpLoader {
             SqlContextProcessor listener;
             if (overrides != null) {
                 listener = new SQLOverridesListener(
-                        intoDb, inputObjectName, mode, errors, monitor, overrides,
-                        batches, dangerStatements);
+                        intoDb, inputObjectName, mode, errors, monitor, overrides, batches);
             } else {
                 CustomSQLParserListener cust =
                         new CustomSQLParserListener(intoDb, inputObjectName, mode,
-                                errors, monitor, batches, dangerStatements);
+                                errors, monitor, batches);
                 statementBodyReferences = cust.getStatementBodies();
                 listener = cust;
             }

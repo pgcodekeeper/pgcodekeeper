@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.regex.Pattern;
@@ -15,7 +14,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 
-import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
 import cz.startnet.utils.pgdiff.loader.QueryLocation;
@@ -70,12 +68,12 @@ public abstract class ParserAbstract {
 
     public void parseObject(String fileName, ParserListenerMode mode,
             List<StatementBodyContainer> statementBodies, String fullScript,
-            List<List<QueryLocation>> batches, Set<DangerStatement> dangerStatements) {
+            List<List<QueryLocation>> batches) {
         this.fileName = fileName;
         this.refMode = ParserListenerMode.REF == mode;
         this.statementBodies = statementBodies;
         if (ParserListenerMode.SCRIPT == mode) {
-            fillQueryLocation(fullScript, batches, dangerStatements);
+            fillQueryLocation(fullScript, batches);
         } else {
             parseObject();
         }
@@ -102,7 +100,7 @@ public abstract class ParserAbstract {
      * to the batch.
      */
     protected abstract void fillQueryLocation(String fullScript,
-            List<List<QueryLocation>> batches, Set<DangerStatement> dangerStatements);
+            List<List<QueryLocation>> batches);
 
     /**
      * Get statement action for QueryLocation object.

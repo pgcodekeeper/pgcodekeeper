@@ -8,7 +8,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgObjLocation extends ContextLocation {
 
-    private static final long serialVersionUID = 625312118296271085L;
+    private static final long serialVersionUID = 3221456227150738661L;
 
     private DangerStatement danger;
     private String comment = "";
@@ -99,6 +99,10 @@ public class PgObjLocation extends ContextLocation {
 
     public boolean isDanger() {
         return danger != null;
+    }
+
+    public DangerStatement getDanger() {
+        return danger;
     }
 
     public GenericColumn getGenericColumn() {

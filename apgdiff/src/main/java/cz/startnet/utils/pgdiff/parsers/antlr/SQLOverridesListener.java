@@ -2,12 +2,10 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.eclipse.core.runtime.IProgressMonitor;
 
-import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
 import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
@@ -40,8 +38,8 @@ implements SqlContextProcessor {
     public SQLOverridesListener(PgDatabase db, String filename, ParserListenerMode mode,
             List<AntlrError> errors, IProgressMonitor mon,
             Map<PgStatement, StatementOverride> overrides,
-            List<List<QueryLocation>> batches, Set<DangerStatement> dangerStatements) {
-        super(db, filename, mode, errors, mon, batches, dangerStatements);
+            List<List<QueryLocation>> batches) {
+        super(db, filename, mode, errors, mon, batches);
         this.overrides = overrides;
     }
 

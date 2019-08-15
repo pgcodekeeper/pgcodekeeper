@@ -7,12 +7,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Class_typeContext;
@@ -195,8 +193,7 @@ public class CreateMsRule extends ParserAbstract {
     }
 
     @Override
-    protected void fillQueryLocation(String fullScript, List<List<QueryLocation>> batches,
-            Set<DangerStatement> dangerStatements) {
+    protected void fillQueryLocation(String fullScript, List<List<QueryLocation>> batches) {
         String query = ParserAbstract.getFullCtxText(ctx);
         batches.get(batches.size() - 1).add(new QueryLocation(getStmtAction(query),
                 fullScript.indexOf(query), ctx.getStart().getLine(), query));

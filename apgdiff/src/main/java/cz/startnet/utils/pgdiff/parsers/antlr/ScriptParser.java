@@ -4,8 +4,10 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 
@@ -18,35 +20,51 @@ import cz.startnet.utils.pgdiff.loader.QueryLocation;
 public class ScriptParser {
 
     private final String script;
-    private final PgDumpLoader loader;
+
+    private final List<List<QueryLocation>> batches;
+    private final List<AntlrError> errors;
+    private final Set<DangerStatement> dangerStatements;
 
     public ScriptParser(String name, String script, boolean isMsSql)
             throws IOException, InterruptedException {
         this.script = script;
         PgDiffArguments args = new PgDiffArguments();
         args.setMsSql(isMsSql);
-        loader = new PgDumpLoader(
+        PgDumpLoader loader = new PgDumpLoader(
                 () -> new ByteArrayInputStream(script.getBytes(StandardCharsets.UTF_8)),
                 name, args, new NullProgressMonitor(), 0);
         loader.setMode(ParserListenerMode.SCRIPT);
         loader.load();
+        batches = loader.batch();
+        dangerStatements = batches.stream()
+                .flatMap(List<QueryLocation>::stream)
+                .filter(QueryLocation::isDanger)
+                .map(QueryLocation::getDanger)
+                .collect(Collectors.toSet());
+        errors = loader.getErrors();
     }
 
     public List<List<QueryLocation>> batch() {
-        return loader.batch();
+        return batches;
     }
 
     public boolean isDangerDdl(Collection<DangerStatement> allowedDangers) {
-        return loader.isDangerDdl(allowedDangers);
+        return !allowedDangers.containsAll(dangerStatements);
     }
 
     public Set<DangerStatement> getDangerDdl(Collection<DangerStatement> allowedDangers) {
-        return loader.getDangerDdl(allowedDangers);
+        Set<DangerStatement> danger = EnumSet.noneOf(DangerStatement.class);
+
+        for (DangerStatement d : dangerStatements) {
+            if (!allowedDangers.contains(d)) {
+                danger.add(d);
+            }
+        }
+
+        return danger;
     }
 
-
     public String getErrorMessage() {
-        List<AntlrError> errors = loader.getErrors();
         if (!errors.isEmpty()) {
             StringBuilder sb = new StringBuilder();
             sb.append("Errors while parse script:\n");

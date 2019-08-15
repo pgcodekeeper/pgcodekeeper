@@ -1,11 +1,9 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
-import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_sequence_statementContext;
@@ -58,11 +56,10 @@ public class CreateSequence extends ParserAbstract {
     }
 
     @Override
-    protected void fillQueryLocation(String fullScript, List<List<QueryLocation>> batches,
-            Set<DangerStatement> dangerStatements) {
+    protected void fillQueryLocation(String fullScript, List<List<QueryLocation>> batches) {
         ParserRuleContext ctxWithActionName = ctx.getParent();
         String query = ParserAbstract.getFullCtxText(ctxWithActionName);
-        batches.get(0).add(new QueryLocation(getStmtAction(query),
+        batches.get(batches.size() - 1).add(new QueryLocation(getStmtAction(query),
                 fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query));
     }
 }
