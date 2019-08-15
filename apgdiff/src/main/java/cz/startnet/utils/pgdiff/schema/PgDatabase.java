@@ -21,6 +21,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
+import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -52,6 +53,8 @@ public class PgDatabase extends PgStatement {
     private PgDiffArguments arguments;
 
     private final List<PgOverride> overrides = new ArrayList<>();
+    private final List<List<QueryLocation>> batches = new ArrayList<>();
+
     private SupportedVersion postgresVersion;
 
     @Override
@@ -85,6 +88,18 @@ public class PgDatabase extends PgStatement {
 
     public Map<String, Set<PgObjLocation>> getObjReferences() {
         return objReferences;
+    }
+
+    public List<List<QueryLocation>> getBatches() {
+        return batches;
+    }
+
+    public void startBatch() {
+        batches.add(new ArrayList<>());
+    }
+
+    public void addToBatch(QueryLocation loc) {
+        batches.get(batches.size() - 1).add(loc);
     }
 
     public List<Entry<PgStatementWithSearchPath, ParserRuleContext>> getContextsForAnalyze() {

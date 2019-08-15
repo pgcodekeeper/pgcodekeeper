@@ -1,7 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import java.util.Arrays;
-import java.util.List;
 
 import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Enable_disable_triggerContext;
@@ -51,9 +50,9 @@ public class DisableMsTrigger extends ParserAbstract {
     }
 
     @Override
-    protected void fillQueryLocation(String fullScript, List<List<QueryLocation>> batches) {
+    protected void fillQueryLocation(String fullScript) {
         String query = ParserAbstract.getFullCtxText(ctx);
-        batches.get(batches.size() - 1).add(new QueryLocation(getStmtAction(query),
+        db.addToBatch(new QueryLocation(getStmtAction(query),
                 fullScript.indexOf(query), ctx.getStart().getLine(), query));
     }
 }

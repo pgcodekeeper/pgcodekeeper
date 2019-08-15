@@ -28,11 +28,11 @@ public class UpdateStatement extends ParserAbstract {
     }
 
     @Override
-    protected void fillQueryLocation(String fullScript, List<List<QueryLocation>> batches) {
+    protected void fillQueryLocation(String fullScript) {
         String query = ParserAbstract.getFullCtxText(ctx);
         QueryLocation loc = new QueryLocation(getStmtAction(query),
                 fullScript.indexOf(query), ctx.getStart().getLine(), query);
         loc.setWarning(DangerStatement.UPDATE);
-        batches.get(batches.size() - 1).add(loc);
+        db.addToBatch(loc);
     }
 }

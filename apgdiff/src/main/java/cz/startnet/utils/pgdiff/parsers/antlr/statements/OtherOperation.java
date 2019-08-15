@@ -1,7 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.List;
-
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.loader.QueryLocation;
@@ -22,7 +20,7 @@ public class OtherOperation extends ParserAbstract  {
     }
 
     @Override
-    protected void fillQueryLocation(String fullScript, List<List<QueryLocation>> batches) {
+    protected void fillQueryLocation(String fullScript) {
         String query = ParserAbstract.getFullCtxText(ctx);
 
         String action;
@@ -33,7 +31,7 @@ public class OtherOperation extends ParserAbstract  {
             action = ParserAbstract.getStmtAction(query);
         }
 
-        batches.get(batches.size() - 1).add(new QueryLocation(action, fullScript.indexOf(query),
+        db.addToBatch(new QueryLocation(action, fullScript.indexOf(query),
                 ctx.getStart().getLine(), query));
     }
 }

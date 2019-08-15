@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -8,7 +7,6 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
-import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Another_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.BatchContext;
@@ -60,11 +58,12 @@ implements TSqlContextProcessor {
     private boolean ansiNulls = true;
     private boolean quotedIdentifier = true;
     private final boolean isScriptMode;
+    private final PgDatabase database;
 
     public CustomTSQLParserListener(PgDatabase database, String filename,
-            ParserListenerMode mode, List<AntlrError> errors,
-            IProgressMonitor monitor, List<List<QueryLocation>> batches) {
-        super(database, filename, mode, errors, monitor, batches);
+            ParserListenerMode mode, List<AntlrError> errors, IProgressMonitor monitor) {
+        super(database, filename, mode, errors, monitor);
+        this.database = database;
         this.isScriptMode = ParserListenerMode.SCRIPT == mode;
     }
 
@@ -90,7 +89,7 @@ implements TSqlContextProcessor {
 
     private void startBatch() {
         if (isScriptMode) {
-            batches.add(new ArrayList<>());
+            database.startBatch();
         }
     }
 

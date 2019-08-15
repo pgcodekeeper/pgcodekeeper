@@ -34,8 +34,7 @@ public class ScriptParser {
                 () -> new ByteArrayInputStream(script.getBytes(StandardCharsets.UTF_8)),
                 name, args, new NullProgressMonitor(), 0);
         loader.setMode(ParserListenerMode.SCRIPT);
-        loader.load();
-        batches = loader.batch();
+        batches = loader.load().getBatches();
         dangerStatements = batches.stream()
                 .flatMap(List<QueryLocation>::stream)
                 .filter(QueryLocation::isDanger)

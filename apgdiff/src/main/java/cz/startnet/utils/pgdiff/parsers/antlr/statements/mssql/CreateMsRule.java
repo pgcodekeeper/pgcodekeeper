@@ -193,9 +193,9 @@ public class CreateMsRule extends ParserAbstract {
     }
 
     @Override
-    protected void fillQueryLocation(String fullScript, List<List<QueryLocation>> batches) {
+    protected void fillQueryLocation(String fullScript) {
         String query = ParserAbstract.getFullCtxText(ctx);
-        batches.get(batches.size() - 1).add(new QueryLocation(getStmtAction(query),
+        db.addToBatch(new QueryLocation(getStmtAction(query),
                 fullScript.indexOf(query), ctx.getStart().getLine(), query));
     }
 }

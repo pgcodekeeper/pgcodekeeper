@@ -162,10 +162,10 @@ public class PgDumpLoader {
             TSqlContextProcessor listener;
             if (overrides != null) {
                 listener = new TSQLOverridesListener(
-                        intoDb, inputObjectName, mode, errors, monitor, overrides, batches);
+                        intoDb, inputObjectName, mode, errors, monitor, overrides);
             } else {
                 listener = new CustomTSQLParserListener(
-                        intoDb, inputObjectName, mode, errors, monitor, batches);
+                        intoDb, inputObjectName, mode, errors, monitor);
                 statementBodyReferences = Collections.emptyList();
             }
             AntlrParser.parseTSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
@@ -174,11 +174,11 @@ public class PgDumpLoader {
             SqlContextProcessor listener;
             if (overrides != null) {
                 listener = new SQLOverridesListener(
-                        intoDb, inputObjectName, mode, errors, monitor, overrides, batches);
+                        intoDb, inputObjectName, mode, errors, monitor, overrides);
             } else {
                 CustomSQLParserListener cust =
                         new CustomSQLParserListener(intoDb, inputObjectName, mode,
-                                errors, monitor, batches);
+                                errors, monitor);
                 statementBodyReferences = cust.getStatementBodies();
                 listener = cust;
             }

@@ -52,7 +52,7 @@ public class AlterSequence extends ParserAbstract {
     }
 
     @Override
-    protected void fillQueryLocation(String fullScript, List<List<QueryLocation>> batches) {
+    protected void fillQueryLocation(String fullScript) {
         ParserRuleContext ctxWithActionName = ctx.getParent();
         String query = ParserAbstract.getFullCtxText(ctxWithActionName);
         QueryLocation loc = new QueryLocation(getStmtAction(query),
@@ -60,6 +60,6 @@ public class AlterSequence extends ParserAbstract {
         if (!ctx.RESTART().isEmpty()) {
             loc.setWarning(DangerStatement.RESTART_WITH);
         }
-        batches.get(batches.size() - 1).add(loc);
+        db.addToBatch(loc);
     }
 }

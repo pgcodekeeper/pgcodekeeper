@@ -94,10 +94,10 @@ public class CreateView extends ParserAbstract {
     }
 
     @Override
-    protected void fillQueryLocation(String fullScript, List<List<QueryLocation>> batches) {
+    protected void fillQueryLocation(String fullScript) {
         ParserRuleContext ctxWithActionName = context.getParent();
         String query = ParserAbstract.getFullCtxText(ctxWithActionName);
-        batches.get(batches.size() - 1).add(new QueryLocation(getStmtAction(query),
+        db.addToBatch(new QueryLocation(getStmtAction(query),
                 fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query));
     }
 }

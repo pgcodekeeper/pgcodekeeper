@@ -229,7 +229,7 @@ public class AlterTable extends TableAbstract {
     }
 
     @Override
-    protected void fillQueryLocation(String fullScript, List<List<QueryLocation>> batches) {
+    protected void fillQueryLocation(String fullScript) {
         ParserRuleContext ctxWithActionName = ctx.getParent();
         String query = ParserAbstract.getFullCtxText(ctxWithActionName);
         QueryLocation loc = new QueryLocation(getStmtAction(query),
@@ -241,6 +241,6 @@ public class AlterTable extends TableAbstract {
                 loc.setWarning(DangerStatement.ALTER_COLUMN);
             }
         }
-        batches.get(batches.size() - 1).add(loc);
+        db.addToBatch(loc);
     }
 }

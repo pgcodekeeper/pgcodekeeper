@@ -1,7 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import java.util.Arrays;
-import java.util.List;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.loader.QueryLocation;
@@ -33,11 +32,11 @@ public class UpdateMsStatement extends ParserAbstract {
     }
 
     @Override
-    protected void fillQueryLocation(String fullScript, List<List<QueryLocation>> batches) {
+    protected void fillQueryLocation(String fullScript) {
         String query = ParserAbstract.getFullCtxText(ctx);
         QueryLocation loc = new QueryLocation(getStmtAction(query),
                 fullScript.indexOf(query), ctx.getStart().getLine(), query);
         loc.setWarning(DangerStatement.UPDATE);
-        batches.get(batches.size() - 1).add(loc);
+        db.addToBatch(loc);
     }
 }

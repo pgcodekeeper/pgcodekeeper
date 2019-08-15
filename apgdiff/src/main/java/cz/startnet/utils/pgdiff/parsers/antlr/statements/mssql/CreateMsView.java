@@ -85,10 +85,10 @@ public class CreateMsView extends BatchContextProcessor {
     }
 
     @Override
-    protected void fillQueryLocation(String fullScript, List<List<QueryLocation>> batches) {
+    protected void fillQueryLocation(String fullScript) {
         ParserRuleContext ctxWithActionName = ctx.getParent().getParent();
         String query = ParserAbstract.getFullCtxTextWithHidden(ctxWithActionName, stream);
-        batches.get(batches.size() - 1).add(new QueryLocation(getStmtAction(query),
+        db.addToBatch(new QueryLocation(getStmtAction(query),
                 fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query));
     }
 }

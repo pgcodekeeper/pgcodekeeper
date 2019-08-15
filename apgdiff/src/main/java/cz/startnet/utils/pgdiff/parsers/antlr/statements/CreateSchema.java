@@ -1,7 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.Arrays;
-import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -40,10 +39,10 @@ public class CreateSchema extends ParserAbstract {
     }
 
     @Override
-    protected void fillQueryLocation(String fullScript, List<List<QueryLocation>> batches) {
+    protected void fillQueryLocation(String fullScript) {
         ParserRuleContext ctxWithActionName = ctx.getParent();
         String query = ParserAbstract.getFullCtxText(ctxWithActionName);
-        batches.get(batches.size() - 1).add(new QueryLocation(getStmtAction(query),
+        db.addToBatch(new QueryLocation(getStmtAction(query),
                 fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query));
     }
 }
