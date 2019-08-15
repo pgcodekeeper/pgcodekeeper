@@ -415,12 +415,14 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
                 }
             }
         } else if ((primary = fromItem.from_primary()) != null) {
-            Schema_qualified_nameContext table = primary.schema_qualified_name();
             Alias_clauseContext alias = primary.alias_clause();
+            List<Function_callContext> functions = primary.function_call();
+            Schema_qualified_nameContext table;
             Table_subqueryContext subquery;
-            Function_callContext function;
 
-            if (table != null) {
+            if (!functions.isEmpty()) {
+                functions.forEach(e -> function(e, primary.alias));
+            } else if ((table = primary.schema_qualified_name()) != null) {
                 addNameReference(table, alias);
             } else if ((subquery = primary.table_subquery()) != null) {
                 boolean oldLateral = lateralAllowed;
@@ -434,27 +436,28 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
                 } finally {
                     lateralAllowed = oldLateral;
                 }
-            } else if ((function = primary.function_call()) != null) {
-                boolean oldLateral = lateralAllowed;
-                try {
-                    lateralAllowed = true;
-                    ValueExpr vexFunc = new ValueExpr(this);
-                    Pair<String, String> func = vexFunc.function(function);
-                    if (func.getKey() != null) {
-                        String funcAlias = primary.alias == null ? func.getKey():
-                            primary.alias.getText();
-                        addReference(funcAlias, null);
-                        complexNamespace.put(funcAlias,
-                                Arrays.asList(new Pair<>(funcAlias, func.getValue())));
-                    }
-                } finally {
-                    lateralAllowed = oldLateral;
-                }
             } else {
                 Log.log(Log.LOG_WARNING, "No alternative in from_primary!");
             }
         } else {
             Log.log(Log.LOG_WARNING, "No alternative in from_item!");
+        }
+    }
+
+    private void function(Function_callContext function, IdentifierContext alias) {
+        boolean oldLateral = lateralAllowed;
+        try {
+            lateralAllowed = true;
+            ValueExpr vexFunc = new ValueExpr(this);
+            Pair<String, String> func = vexFunc.function(function);
+            if (func.getKey() != null) {
+                String funcAlias = alias == null ? func.getKey(): alias.getText();
+                addReference(funcAlias, null);
+                complexNamespace.put(funcAlias,
+                        Arrays.asList(new Pair<>(funcAlias, func.getValue())));
+            }
+        } finally {
+            lateralAllowed = oldLateral;
         }
     }
 }

@@ -55,31 +55,28 @@ public final class FileUtilsUi {
         }
     }
 
-    public static void openFileInSqlEditor(PgObjLocation loc) throws PartInitException {
-        if (loc != null) {
-            IEditorPart part = openFileInSqlEditor(Paths.get(loc.getFilePath()));
+    public static void openFileInSqlEditor(PgObjLocation loc, boolean isMsSql) throws PartInitException {
+        if (loc != null && loc.getFilePath() != null) {
+            IEditorPart part = openFileInSqlEditor(Paths.get(loc.getFilePath()), isMsSql);
             if (part instanceof ITextEditor) {
                 ((ITextEditor) part).selectAndReveal(loc.getOffset(), loc.getObjLength());
             }
         }
     }
 
-    public static IEditorPart openFileInSqlEditor(Path path) throws PartInitException {
-        if (path != null && Files.exists(path)) {
-            IWorkspace workspace = ResourcesPlugin.getWorkspace();
-            IFile[] files = workspace.getRoot().findFilesForLocationURI(path.toUri());
-            IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-            for (IFile f : files) {
-                IProject proj = f.getProject();
-                if (proj.isOpen() && UIProjectLoader.isInProject(f)) {
-                    return IDE.openEditor(page, f);
-                }
+    public static IEditorPart openFileInSqlEditor(Path path, boolean isMsSql) throws PartInitException {
+        IWorkspace workspace = ResourcesPlugin.getWorkspace();
+        IFile[] files = workspace.getRoot().findFilesForLocationURI(path.toUri());
+        IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+        for (IFile f : files) {
+            IProject proj = f.getProject();
+            if (proj.isOpen() && UIProjectLoader.isInProject(f)) {
+                return IDE.openEditor(page, f);
             }
-            IFileStore externalFile = EFS.getLocalFileSystem().fromLocalFile(path.toFile());
-            return IDE.openEditorOnFileStore(page, externalFile);
         }
-
-        return null;
+        IFileStore externalFile = EFS.getLocalFileSystem().fromLocalFile(path.toFile());
+        IEditorInput input = new SQLEditorInput(externalFile, isMsSql);
+        return IDE.openEditor(page, input, EDITOR.SQL);
     }
 
     private FileUtilsUi() {

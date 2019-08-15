@@ -173,13 +173,6 @@ public abstract class PgStatement implements IStatement, IHashable {
         DbObjType type = getStatementType();
         sb.append(type).append(' ');
         switch (type) {
-        case COLUMN:
-            sb.append(PgDiffUtils.getQuotedName(getParent().getParent().getName()))
-            .append('.')
-            .append(PgDiffUtils.getQuotedName(getParent().getName()))
-            .append('.')
-            .append(PgDiffUtils.getQuotedName(getName()));
-            break;
         case FUNCTION:
         case PROCEDURE:
             sb.append(PgDiffUtils.getQuotedName(getParent().getName()))
@@ -202,9 +195,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         case RULE:
             sb.append(PgDiffUtils.getQuotedName(getName()))
             .append(" ON ")
-            .append(PgDiffUtils.getQuotedName(getParent().getParent().getName()))
-            .append('.')
-            .append(PgDiffUtils.getQuotedName(getParent().getName()));
+            .append(getParent().getQualifiedName());
             break;
 
         case INDEX:
@@ -217,24 +208,13 @@ public abstract class PgStatement implements IStatement, IHashable {
             sb.append("current_database()");
             break;
 
-        case SCHEMA:
-        case EXTENSION:
-            sb.append(PgDiffUtils.getQuotedName(getName()));
-            break;
-
         default:
-            sb.append(PgDiffUtils.getQuotedName(getParent().getName()))
-            .append('.')
-            .append(PgDiffUtils.getQuotedName(getName()));
+            sb.append(getQualifiedName());
         }
 
         return sb.append(" IS ")
                 .append(comment == null || comment.isEmpty() ? "NULL" : comment)
                 .append(';');
-    }
-
-    public String getCommentSql() {
-        return appendCommentSql(new StringBuilder()).toString();
     }
 
     public Set<PgPrivilege> getPrivileges() {

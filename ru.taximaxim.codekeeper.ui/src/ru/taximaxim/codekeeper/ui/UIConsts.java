@@ -159,6 +159,9 @@ public interface UIConsts {
         String LIB_SAFE_MODE = "libSafeMode"; //$NON-NLS-1$
         String STORAGE_LIST = "storageList"; //$NON-NLS-1$
         String NAME_OF_BOUND_DB = "nameOfBoundDatabase"; //$NON-NLS-1$
+        String ENABLE_PROJ_PREF_ROOT = "prefEnableProjPrefRoot"; //$NON-NLS-1$
+        String ENABLE_PROJ_PREF_DB_UPDATE = "prefEnableProjPrefDbUpdate"; //$NON-NLS-1$
+        String USE_GLOBAL_IGNORE_LIST = "prefUseGlobalIgnoreList"; //$NON-NLS-1$
     }
 
     interface PROJ_PATH {

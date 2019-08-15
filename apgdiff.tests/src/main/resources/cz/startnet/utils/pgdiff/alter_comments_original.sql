@@ -34,6 +34,8 @@ CREATE TABLE public.test (
     CONSTRAINT text_check CHECK ((length((text)::text) > 0))
 );
 
+CREATE INDEX test_index ON public.test (id, text);
+
 COMMENT ON TABLE public.test IS 'test table';
 
 COMMENT ON COLUMN public.test.id IS 'id column';
@@ -41,6 +43,8 @@ COMMENT ON COLUMN public.test.id IS 'id column';
 COMMENT ON COLUMN public.test.text IS 'text column';
 
 COMMENT ON CONSTRAINT text_check ON public.test IS 'text check';
+
+COMMENT ON INDEX public.test_index ON IS 'test table index';
 
 CREATE SEQUENCE public.test_id_seq
     START WITH 1

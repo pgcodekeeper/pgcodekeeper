@@ -138,10 +138,7 @@ public class CreateRule extends ParserAbstract {
                     continue;
                 }
 
-                for (String role : roles) {
-                    addToDB(name, type, new PgPrivilege(state, permissions,
-                            type + " " + name.getText(), role, isGO));
-                }
+                addToDB(name, type, state, permissions, roles, isGO);
             }
         }
     }
@@ -170,7 +167,6 @@ public class CreateRule extends ParserAbstract {
 
     private void setColumnPrivilege(Schema_qualified_nameContext tbl,
             Map<String, Entry<IdentifierContext, List<String>>> colPrivs, List<String> roles) {
-        String tableName = getFullCtxText(tbl);
         List<IdentifierContext> ids = tbl.identifier();
 
         addObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
@@ -200,7 +196,7 @@ public class CreateRule extends ParserAbstract {
 
             for (String role : roles) {
                 PgPrivilege priv = new PgPrivilege(state, permission.toString(),
-                        "TABLE " + tableName, role, isGO);
+                        "TABLE " + st.getQualifiedName(), role, isGO);
                 if (DbObjType.TABLE != st.getStatementType()) {
                     addPrivilege(st, priv);
                 } else {
@@ -213,7 +209,8 @@ public class CreateRule extends ParserAbstract {
         }
     }
 
-    private void addToDB(Schema_qualified_nameContext name, DbObjType type, PgPrivilege pgPrivilege) {
+    private void addToDB(Schema_qualified_nameContext name, DbObjType type,
+            String state, String permissions, List<String> roles, boolean isGO) {
         List<IdentifierContext> ids = name.identifier();
         IdentifierContext idCtx = QNameParser.getFirstNameCtx(ids);
         AbstractSchema schema = (DbObjType.SCHEMA == type ?
@@ -244,7 +241,10 @@ public class CreateRule extends ParserAbstract {
             break;
         }
         if (statement != null) {
-            addPrivilege(statement, pgPrivilege);
+            for (String role : roles) {
+                addPrivilege(statement, new PgPrivilege(state, permissions,
+                        type + " " + statement.getQualifiedName(), role, isGO));
+            }
         }
     }
 

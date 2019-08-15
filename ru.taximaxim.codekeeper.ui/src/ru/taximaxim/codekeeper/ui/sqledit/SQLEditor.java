@@ -57,6 +57,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
@@ -122,6 +123,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     private SQLEditorContentOutlinePage fOutlinePage;
     private Image errorTitleImage;
     private PgDbParser parser;
+    private boolean isMsSql;
 
     private ScriptThreadJobWrapper scriptThreadJobWrapper;
 
@@ -142,6 +144,10 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             }
         });
     };
+
+    public boolean isMsSql() {
+        return isMsSql;
+    }
 
     public void saveLastDb(DbInfo lastDb) {
         saveLastDb(lastDb, getEditorInput());
@@ -328,8 +334,16 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
     private PgDbParser initParser() throws InterruptedException, IOException, CoreException {
         IEditorInput in = getEditorInput();
-
         IResource res = ResourceUtil.getResource(in);
+
+        if (res != null) {
+            if (res.getProject().hasNature(NATURE.MS)) {
+                isMsSql = true;
+            }
+        } else if (in instanceof SQLEditorInput) {
+            isMsSql = ((SQLEditorInput) in).isMsSql();
+        }
+
         if (res != null && UIProjectLoader.isInProject(res)) {
             return PgDbParser.getParser(res.getProject());
         }
@@ -364,13 +378,12 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         }
 
         IEditorInput in = getEditorInput();
-        if (in instanceof SQLEditorInput) {
-            SQLEditorInput uri = (SQLEditorInput) in;
+        if (in instanceof IURIEditorInput) {
+            IURIEditorInput uri = (IURIEditorInput) in;
             Path externalTmpFile = Paths.get(uri.getURI());
             IDocument document = getDocumentProvider().getDocument(getEditorInput());
             InputStream stream = new ByteArrayInputStream(document.get().getBytes(StandardCharsets.UTF_8));
-            parser.fillRefsFromInputStream(stream, externalTmpFile.toString(),
-                    uri.isMsSql(), monitor);
+            parser.fillRefsFromInputStream(stream, externalTmpFile.toString(), isMsSql, monitor);
             return true;
         }
         return false;

@@ -16,14 +16,9 @@ public class PgAggregate extends AbstractPgFunction {
         READ_ONLY, SHAREABLE, READ_WRITE
     }
 
-    public static final String SFUNC = "SFUNC";
-    public static final String FINALFUNC = "FINALFUNC";
-    public static final String COMBINEFUNC = "COMBINEFUNC";
-    public static final String SERIALFUNC = "SERIALFUNC";
-    public static final String DESERIALFUNC = "DESERIALFUNC";
-    public static final String MSFUNC = "MSFUNC";
-    public static final String MINVFUNC = "MINVFUNC";
-    public static final String MFINALFUNC = "MFINALFUNC";
+    public enum AggFuncs {
+        SFUNC, FINALFUNC, COMBINEFUNC, SERIALFUNC, DESERIALFUNC, MSFUNC, MINVFUNC, MFINALFUNC
+    }
 
     private int directCount;
 
@@ -67,7 +62,7 @@ public class PgAggregate extends AbstractPgFunction {
 
         appendAggSignature(sbSQL);
 
-        sbSQL.append(" (\n\t").append(SFUNC).append(" = ");
+        sbSQL.append(" (\n\tSFUNC").append(" = ");
         sbSQL.append(sFunc);
         sbSQL.append(",\n\tSTYPE = ");
         sbSQL.append(sType);
@@ -78,7 +73,7 @@ public class PgAggregate extends AbstractPgFunction {
         }
 
         if (finalFunc != null) {
-            sbSQL.append(",\n\t").append(FINALFUNC).append(" = ");
+            sbSQL.append(",\n\tFINALFUNC").append(" = ");
             sbSQL.append(finalFunc);
         }
 
@@ -92,17 +87,17 @@ public class PgAggregate extends AbstractPgFunction {
         }
 
         if (combineFunc != null) {
-            sbSQL.append(",\n\t").append(COMBINEFUNC).append(" = ");
+            sbSQL.append(",\n\tCOMBINEFUNC").append(" = ");
             sbSQL.append(combineFunc);
         }
 
         if (serialFunc != null) {
-            sbSQL.append(",\n\t").append(SERIALFUNC).append(" = ");
+            sbSQL.append(",\n\tSERIALFUNC").append(" = ");
             sbSQL.append(serialFunc);
         }
 
         if (deserialFunc != null) {
-            sbSQL.append(",\n\t").append(DESERIALFUNC).append(" = ");
+            sbSQL.append(",\n\tDESERIALFUNC").append(" = ");
             sbSQL.append(deserialFunc);
         }
 
@@ -112,12 +107,12 @@ public class PgAggregate extends AbstractPgFunction {
         }
 
         if (mSFunc != null) {
-            sbSQL.append(",\n\t").append(MSFUNC).append(" = ");
+            sbSQL.append(",\n\tMSFUNC").append(" = ");
             sbSQL.append(mSFunc);
         }
 
         if (mInvFunc != null) {
-            sbSQL.append(",\n\t").append(MINVFUNC).append(" = ");
+            sbSQL.append(",\n\tMINVFUNC").append(" = ");
             sbSQL.append(mInvFunc);
         }
 
@@ -132,7 +127,7 @@ public class PgAggregate extends AbstractPgFunction {
         }
 
         if (mFinalFunc != null) {
-            sbSQL.append(",\n\t").append(MFINALFUNC).append(" = ");
+            sbSQL.append(",\n\tMFINALFUNC").append(" = ");
             sbSQL.append(mFinalFunc);
         }
 

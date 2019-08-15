@@ -746,6 +746,10 @@ public final class Messages extends NLS {
 
     public static String dbUpdatePrefPage_status_never_delete;
 
+    public static String ProjectProperties_enable_proj_prefs;
+
+    public static String ProjectProperties_use_global_ignore_list;
+
     public static String ProjectProperties_change_projprefs_warn;
 
     public static String ProjectProperties_posix_is_used_warn;
@@ -893,8 +897,6 @@ public final class Messages extends NLS {
     public static String UsageReportPreferencePage_EventAction;
     public static String UsageReportPreferencePage_EventValue;
 
-    // SONAR-ON
-
     public static String QuickUpdate_danger;
 
     public static String QuickUpdate_different_types;
@@ -916,6 +918,8 @@ public final class Messages extends NLS {
     public static String QuickUpdate_updating_db;
 
     public static String QuickUpdate_updating_project;
+
+    // SONAR-ON
 
     static {
         // initialize resource bundle

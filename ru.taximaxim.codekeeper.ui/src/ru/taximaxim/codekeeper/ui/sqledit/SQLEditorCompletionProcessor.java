@@ -88,7 +88,7 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
         repetition++;
 
         return res;
-    };
+    }
 
     private ICompletionProposal[] getTmpls(ITextViewer viewer, int offset, String text) {
         if (text.isEmpty()) {

@@ -119,7 +119,8 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
                     Object obj = ((IStructuredSelection) selection).getFirstElement();
                     if (obj instanceof PgStatement) {
                         try {
-                            FileUtilsUi.openFileInSqlEditor(((PgStatement) obj).getLocation());
+                            PgStatement st = (PgStatement) obj;
+                            FileUtilsUi.openFileInSqlEditor(st.getLocation(), !st.isPostgres());
                         } catch (PartInitException ex) {
                             ExceptionNotifier.notifyDefault(ex.getLocalizedMessage(), ex);
                         }

@@ -166,8 +166,9 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
             Object obj = ((IStructuredSelection) selection).getFirstElement();
             if (obj instanceof PgOverride) {
                 try {
-                    PgOverride ov = (PgOverride) obj;
-                    FileUtilsUi.openFileInSqlEditor(openOldFile ? ov.getOldLocation() : ov.getNewLocation());
+                    PgOverride ov = (PgOverride)obj;
+                    FileUtilsUi.openFileInSqlEditor(openOldFile ? ov.getOldLocation() : ov.getNewLocation(),
+                            !ov.getNewStatement().isPostgres());
                 } catch (PartInitException ex) {
                     ExceptionNotifier.notifyDefault(ex.getLocalizedMessage(), ex);
                 }
