@@ -118,7 +118,7 @@ public class CliArgs extends PgDiffArguments {
             usage="set check_function_bodies to false at the beginning of the script")
     private boolean disableCheckFunctionBodies;
 
-    @Option(name="-B", aliases="--enable-function-bodies-dependencies", forbids="--parse",
+    @Option(name="--enable-function-bodies-dependencies", forbids="--parse",
             usage="enable dependencies from bodies of functions and procedures")
     private boolean enableFunctionBodiesDependencies;
 
