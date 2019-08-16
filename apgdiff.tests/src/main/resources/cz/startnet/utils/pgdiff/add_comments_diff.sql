@@ -36,6 +36,8 @@ COMMENT ON VIEW public.test_view IS 'test view';
 
 COMMENT ON COLUMN public.test_view.id IS 'view id col';
 
+COMMENT ON INDEX public.test_index IS 'test table index';
+
 COMMENT ON TRIGGER test_trigger ON public.test IS 'test trigger';
 
 COMMENT ON RULE test_rule ON public.test IS 'test rule';

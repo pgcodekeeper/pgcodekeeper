@@ -847,6 +847,8 @@ public final class Messages extends NLS {
 
     public static String generalPrefPage_perspective_changing_status;
 
+    public static String GeneralPrefPage_enable_body_dependencies;
+
     public static String GeneralPrefPage_ignore_concurrent_modification;
 
     public static String GeneralPrefPage_reuse_open_compare_editor;
