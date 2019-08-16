@@ -118,7 +118,11 @@ public class CliArgs extends PgDiffArguments {
             usage="set check_function_bodies to false at the beginning of the script")
     private boolean disableCheckFunctionBodies;
 
-    @Option(name="-Z", aliases="--time-zone", metaVar="<timezone>",forbids={"--parse", "--ms-sql"},
+    @Option(name="-B", aliases="--enable-function-bodies-dependencies", forbids="--parse",
+            usage="enable dependencies from bodies of functions and procedures")
+    private boolean enableFunctionBodiesDependencies;
+
+    @Option(name="-Z", aliases="--time-zone", metaVar="<timezone>", forbids={"--parse", "--ms-sql"},
             usage="use this timezone when working with database, also add SET TIMEZONE statement to the script")
     private String timeZone;
 
@@ -373,6 +377,16 @@ public class CliArgs extends PgDiffArguments {
     @Override
     public void setDisableCheckFunctionBodies(boolean disableCheckFunctionBodies) {
         this.disableCheckFunctionBodies = disableCheckFunctionBodies;
+    }
+
+    @Override
+    public boolean isEnableFunctionBodiesDependencies() {
+        return enableFunctionBodiesDependencies;
+    }
+
+    @Override
+    public void setEnableFunctionBodiesDependencies(boolean enableFunctionBodiesDependencies) {
+        this.enableFunctionBodiesDependencies = enableFunctionBodiesDependencies;
     }
 
     @Override
