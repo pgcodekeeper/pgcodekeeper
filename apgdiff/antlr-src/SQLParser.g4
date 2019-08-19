@@ -2674,7 +2674,11 @@ start_label
     ;
 
 declarations
-    : DECLARE (identifier type_declaration SEMI_COLON)*
+    : DECLARE declaration*
+    ;
+
+declaration
+    : identifier type_declaration SEMI_COLON
     ;
 
 type_declaration
@@ -2688,7 +2692,9 @@ arguments_list
     ;
 
 data_type_dec
-    : data_type (MODULAR (TYPE | ROWTYPE))?
+    : data_type
+    | vex MODULAR TYPE
+    | schema_qualified_name MODULAR ROWTYPE
     ;
 
 exception_statement
@@ -2816,9 +2822,9 @@ loop_statement
 
 loop_start
     : WHILE vex
-    | FOR identifier IN REVERSE? vex DOUBLE_DOT vex (BY vex)?
+    | FOR alias=identifier IN REVERSE? vex DOUBLE_DOT vex (BY vex)?
     | FOR identifier_list IN (select_stmt | execute_stmt)
-    | FOR identifier IN identifier (LEFT_PAREN option (COMMA option)* RIGHT_PAREN)? // cursor loop
+    | FOR cursor=identifier IN identifier (LEFT_PAREN option (COMMA option)* RIGHT_PAREN)? // cursor loop
     | FOREACH identifier_list (SLICE NUMBER_LITERAL)? IN ARRAY vex
     ;
 
