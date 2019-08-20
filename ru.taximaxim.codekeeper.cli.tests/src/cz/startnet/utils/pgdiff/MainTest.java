@@ -434,7 +434,7 @@ class FailParseArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String output() {
-        return "option \"-t (--target)\" cannot be used with the option(s) [--parse]\n";
+        return "option \"-t (--target)\" cannot be used with the option(s) [--graph, --parse]\n";
     }
 }
 
@@ -868,7 +868,7 @@ class FailMsParseArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String output() {
-        return "Cannot parse PostgerSQL database as MS SQL project.\n";
+        return "Cannot work with PostgerSQL database as MS SQL project.\n";
     }
 }
 
@@ -884,7 +884,7 @@ class FailPgParseArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String output() {
-        return "Cannot parse MS SQL database as PostgerSQL project.\n";
+        return "Cannot work with MS SQL database as PostgerSQL project.\n";
     }
 }
 
