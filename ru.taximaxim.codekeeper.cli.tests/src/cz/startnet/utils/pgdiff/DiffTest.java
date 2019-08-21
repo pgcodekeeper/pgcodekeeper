@@ -40,6 +40,7 @@ public class DiffTest {
             {new FlagsArgumentsProvider()},
             {new IgnoreListsArgumentsProvider()},
             {new AllowedObjectsArgumentsProvider()},
+            {new LibrariesArgumentsProvider()},
         });
 
         return p.stream()::iterator;
