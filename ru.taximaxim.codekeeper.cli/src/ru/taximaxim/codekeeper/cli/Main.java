@@ -140,9 +140,11 @@ public final class Main {
         try (PrintWriter encodedWriter = getDiffWriter(arguments)) {
             DepcyWriter dw;
             if (encodedWriter != null) {
-                dw = new DepcyWriter(d, arguments.getGraphDepth(), encodedWriter);
+                dw = new DepcyWriter(d, arguments.getGraphDepth(), encodedWriter,
+                        arguments.isGraphReverse());
             } else {
-                dw = new DepcyWriter(d, arguments.getGraphDepth(), writer);
+                dw = new DepcyWriter(d, arguments.getGraphDepth(), writer,
+                        arguments.isGraphReverse());
             }
 
             dw.write(arguments.getGraphNames());

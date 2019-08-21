@@ -46,6 +46,7 @@ public class PgDiffArguments implements Cloneable {
     private boolean msSql;
     private boolean ignoreConcurrentModification;
     private int graphDepth;
+    private boolean graphReverse;
     private final List<String> graphNames = new ArrayList<>();
 
     public void setModeParse(final boolean modeParse) {
@@ -258,6 +259,14 @@ public class PgDiffArguments implements Cloneable {
 
     public void setGraphDepth(int graphDepth) {
         this.graphDepth = graphDepth;
+    }
+
+    public boolean isGraphReverse() {
+        return graphReverse;
+    }
+
+    public void setGraphReverse(boolean graphReverse) {
+        this.graphReverse = graphReverse;
     }
 
     public Collection<String> getGraphNames() {

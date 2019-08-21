@@ -85,6 +85,9 @@ Usage
  --ms-sql                               : work with MS SQL
  --graph-depth <n>                      : depth of displayed dependencies in
                                           graph mode (default: 10)
+ --graph-reverse                        : reverse the direction of the graph to
+                                          show objects on which the starting
+                                          object depends
  --graph-name <name>                    : name of start object in graph mode
                                           specify multiple times to use several
                                           names

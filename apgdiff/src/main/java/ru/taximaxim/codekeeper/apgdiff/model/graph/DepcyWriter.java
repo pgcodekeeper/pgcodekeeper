@@ -21,9 +21,10 @@ public class DepcyWriter {
     private final int depth;
     private final PrintWriter writer;
 
-    public DepcyWriter(PgDatabase db, int depth, PrintWriter writer) {
+    public DepcyWriter(PgDatabase db, int depth, PrintWriter writer, boolean isReverse) {
         this.db = db;
-        this.graph = new DepcyGraph(db).getReversedGraph();
+        DepcyGraph dg = new DepcyGraph(db);
+        this.graph = isReverse ? dg.getGraph() : dg.getReversedGraph();
         this.writer = writer;
         this.depth = depth;
     }

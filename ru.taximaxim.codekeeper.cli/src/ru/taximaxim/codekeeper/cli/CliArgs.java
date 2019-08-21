@@ -37,6 +37,8 @@ import ru.taximaxim.codekeeper.cli.opthandlers.DbObjTypeOptionHandler;
  */
 public class CliArgs extends PgDiffArguments {
 
+    private static final int DEFAULT_DEPTH = 10;
+
     // SONAR-OFF
     {
         // this was moved to initializer to avoid the IDE making the field "final" on-save
@@ -53,7 +55,7 @@ public class CliArgs extends PgDiffArguments {
         this.graphNames = new ArrayList<>();
         this.inCharsetName = ApgdiffConsts.UTF_8;
         this.outCharsetName = ApgdiffConsts.UTF_8;
-        this.graphDepth = 10;
+        this.graphDepth = DEFAULT_DEPTH;
     }
     // SONAR-ON
 
@@ -202,6 +204,10 @@ public class CliArgs extends PgDiffArguments {
     @Option(name="--graph-depth", metaVar="<n>", forbids={"--parse"},
             usage="depth of displayed dependencies in graph mode")
     private int graphDepth;
+
+    @Option(name="--graph-reverse",  depends="--graph-name", forbids={"--parse"},
+            usage="reverse the direction of the graph to show objects on which the starting object depends")
+    private boolean graphReverse;
 
     @Option(name="--graph-name", metaVar="<name>", forbids={"--parse"},
             usage="name of start object in graph mode"
@@ -457,6 +463,16 @@ public class CliArgs extends PgDiffArguments {
     }
 
     @Override
+    public boolean isGraphReverse() {
+        return graphReverse;
+    }
+
+    @Override
+    public void setGraphReverse(boolean graphReverse) {
+        this.graphReverse = graphReverse;
+    }
+
+    @Override
     public void setGraphDepth(int graphDepth) {
         this.graphDepth = graphDepth;
     }
@@ -535,6 +551,18 @@ public class CliArgs extends PgDiffArguments {
                 badArgs("Cannot work with PostgreSQL database with --ms-sql parameter.");
             }
             // TODO Do we need to check DB types for dump and directories?
+
+            if (getGraphDepth() != DEFAULT_DEPTH) {
+                badArgs("option --graph-depth cannot be used without the option(s) [--graph]");
+            }
+
+            if (!getGraphNames().isEmpty()) {
+                badArgs("option --graph-name cannot be used without the option(s) [--graph]");
+            }
+
+            if (isGraphReverse()) {
+                badArgs("option --graph-reverse cannot be used without the option(s) [--graph]");
+            }
 
             setOldSrcFormat(parsePath(getOldSrc()));
         }
