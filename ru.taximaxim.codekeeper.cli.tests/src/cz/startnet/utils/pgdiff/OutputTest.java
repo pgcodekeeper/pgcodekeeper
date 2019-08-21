@@ -54,6 +54,10 @@ public class OutputTest {
             {new FailMsParseArgumentsProvider()},
             {new FailPgParseArgumentsProvider()},
             {new OverrideArgumentsProvider()},
+            {new FailGraphReverseArgumentsProvider()},
+            {new FailGraphDepthArgumentsProvider()},
+            {new FailGraphNameArgumentsProvider()},
+            {new FailGraphArgumentsProvider()},
         });
 
         return p.stream()::iterator;
@@ -539,5 +543,69 @@ class OverrideArgumentsProvider extends ArgumentsProvider {
         return new String[] {"-o", getDiffResultFile().getAbsolutePath(),
                 "-t", fOriginal.getAbsolutePath(), "-s", fNew.getAbsolutePath(),
                 "--src-lib", lib.getAbsolutePath()};
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing graph reverse ERROR
+ */
+class FailGraphReverseArgumentsProvider extends ArgumentsProvider {
+
+    @Override
+    public String[] args() throws URISyntaxException, IOException {
+        return new String[]{"--graph-reverse", "--graph-name", "t1", "fisrt", "second"};
+    }
+
+    @Override
+    public String output() {
+        return "option --graph-name cannot be used without the option(s) [--graph]\n";
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing graph depth ERROR
+ */
+class FailGraphDepthArgumentsProvider extends ArgumentsProvider {
+
+    @Override
+    public String[] args() throws URISyntaxException, IOException {
+        return new String[]{"--graph-depth", "5", "tgt", "src"};
+    }
+
+    @Override
+    public String output() {
+        return "option --graph-depth cannot be used without the option(s) [--graph]\n";
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing graph name ERROR
+ */
+class FailGraphNameArgumentsProvider extends ArgumentsProvider {
+
+    @Override
+    public String[] args() throws URISyntaxException, IOException {
+        return new String[]{"--graph-name", "t1", "tgt", "src"};
+    }
+
+    @Override
+    public String output() {
+        return "option --graph-name cannot be used without the option(s) [--graph]\n";
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing graph ERROR
+ */
+class FailGraphArgumentsProvider extends ArgumentsProvider {
+
+    @Override
+    public String[] args() throws URISyntaxException, IOException {
+        return new String[]{"--graph", "--graph-reverse", "db"};
+    }
+
+    @Override
+    public String output() {
+        return "option \"--graph-reverse\" requires the option(s) [--graph-name]\n";
     }
 }
