@@ -1,10 +1,3 @@
---
--- CREATE_TABLE
---
-
---
--- CLASS DEFINITIONS
---
 CREATE TABLE hobbies_r (
     name        text,
     person      text
@@ -240,10 +233,6 @@ CREATE TABLE unknowntab (
     u unknown    -- fail
 );
 
-CREATE TYPE unknown_comptype AS (
-    u unknown    -- fail
-);
-
 CREATE TABLE IF NOT EXISTS test_tsvector(
     t text,
     a tsvector
@@ -258,10 +247,6 @@ CREATE TABLE tas_case WITH ("Fillfactor" = 10) AS SELECT 1 a;
 
 CREATE UNLOGGED TABLE unlogged1 (a int primary key);            -- OK
 CREATE TEMPORARY TABLE unlogged2 (a int primary key);           -- OK
-SELECT relname, relkind, relpersistence FROM pg_class WHERE relname ~ '^unlogged\d' ORDER BY relname;
-REINDEX INDEX unlogged1_pkey;
-REINDEX INDEX unlogged2_pkey;
-SELECT relname, relkind, relpersistence FROM pg_class WHERE relname ~ '^unlogged\d' ORDER BY relname;
 DROP TABLE unlogged2;
 INSERT INTO unlogged1 VALUES (42);
 CREATE UNLOGGED TABLE public.unlogged2 (a int primary key);     -- also OK
@@ -276,16 +261,6 @@ CREATE TABLE as_select1 AS SELECT * FROM pg_class WHERE relkind = 'r';
 CREATE TABLE as_select1 AS SELECT * FROM pg_class WHERE relkind = 'r';
 CREATE TABLE IF NOT EXISTS as_select1 AS SELECT * FROM pg_class WHERE relkind = 'r';
 DROP TABLE as_select1;
-
--- create an extra wide table to test for issues related to that
--- (temporarily hide query, to avoid the long CREATE TABLE stmt)
-
-SELECT 'CREATE TABLE extra_wide_table(firstc text, '|| array_to_string(array_agg('c'||i||' bool'),',')||', lastc text);'
-FROM generate_series(1, 1100) g(i);
-
-
-INSERT INTO extra_wide_table(firstc, lastc) VALUES('first col', 'last col');
-SELECT firstc, lastc FROM extra_wide_table;
 
 -- check that tables with oids cannot be created anymore
 CREATE TABLE withoid() WITH OIDS;
@@ -318,11 +293,9 @@ CREATE TABLE partitioned (
 ) PARTITION BY RANGE (a);
 
 -- prevent using prohibited expressions in the key
-CREATE FUNCTION retset (a int) RETURNS SETOF int AS $$ SELECT 1; $$ LANGUAGE SQL IMMUTABLE;
 CREATE TABLE partitioned (
     a int
 ) PARTITION BY RANGE (retset(a));
-DROP FUNCTION retset(int);
 
 CREATE TABLE partitioned (
     a int
@@ -389,21 +362,12 @@ CREATE TABLE partitioned (
     CONSTRAINT check_a CHECK (a > 0) NO INHERIT
 ) PARTITION BY RANGE (a);
 
--- some checks after successful creation of a partitioned table
-CREATE FUNCTION plusone(a int) RETURNS INT AS $$ SELECT a+1; $$ LANGUAGE SQL;
-
 CREATE TABLE partitioned (
     a int,
     b int,
     c text,
     d text
 ) PARTITION BY RANGE (a oid_ops, plusone(b), c collate "default", d collate "C");
-
--- check relkind
-SELECT relkind FROM pg_class WHERE relname = 'partitioned';
-
--- prevent a function referenced in partition key from being dropped
-DROP FUNCTION plusone(int);
 
 -- partitioned table cannot participate in regular inheritance
 CREATE TABLE partitioned2 (
@@ -412,14 +376,7 @@ CREATE TABLE partitioned2 (
 ) PARTITION BY RANGE ((a+1), substr(b, 1, 5));
 CREATE TABLE fail () INHERITS (partitioned2);
 
--- Partition key in describe output
-
-
-
-INSERT INTO partitioned2 VALUES (1, 'hello');
 CREATE TABLE part2_1 PARTITION OF partitioned2 FOR VALUES FROM (-1, 'aaaaa') TO (100, 'ccccc');
-
-
 DROP TABLE partitioned, partitioned2;
 
 --
@@ -573,7 +530,6 @@ CREATE TABLE range2_default PARTITION OF range_parted2 DEFAULT;
 CREATE TABLE fail_default_part PARTITION OF range_parted2 DEFAULT;
 
 -- Check if the range for default partitions overlap
-INSERT INTO range_parted2 VALUES (85);
 CREATE TABLE fail_part PARTITION OF range_parted2 FOR VALUES FROM (80) TO (90);
 CREATE TABLE part4 PARTITION OF range_parted2 FOR VALUES FROM (90) TO (100);
 
@@ -622,11 +578,6 @@ CREATE TABLE parted (
 
 CREATE TABLE part_a PARTITION OF parted FOR VALUES IN ('a');
 
--- only inherited attributes (never local ones)
-SELECT attname, attislocal, attinhcount FROM pg_attribute
-  WHERE attrelid = 'part_a'::regclass and attnum > 0
-  ORDER BY attnum;
-
 -- able to specify column default, column constraint, and table constraint
 
 -- first check the "column specified more than once" error
@@ -642,12 +593,9 @@ CREATE TABLE part_b PARTITION OF parted (
     CONSTRAINT check_a CHECK (length(a) > 0),
     CONSTRAINT check_b CHECK (b >= 0)
 ) FOR VALUES IN ('b');
--- conislocal should be false for any merged constraints, true otherwise
-SELECT conislocal, coninhcount FROM pg_constraint WHERE conrelid = 'part_b'::regclass ORDER BY conislocal, coninhcount;
 
 -- Once check_b is added to the parent, it should be made non-local for part_b
 ALTER TABLE parted ADD CONSTRAINT check_b CHECK (b >= 0);
-SELECT conislocal, coninhcount FROM pg_constraint WHERE conrelid = 'part_b'::regclass;
 
 -- Neither check_a nor check_b are droppable from part_b
 ALTER TABLE part_b DROP CONSTRAINT check_a;
@@ -657,7 +605,6 @@ ALTER TABLE part_b DROP CONSTRAINT check_b;
 -- traditional inheritance where they will be left behind, because they would
 -- be local constraints.
 ALTER TABLE parted DROP CONSTRAINT check_a, DROP CONSTRAINT check_b;
-SELECT conislocal, coninhcount FROM pg_constraint WHERE conrelid = 'part_b'::regclass;
 
 -- specify PARTITION BY for a partition
 CREATE TABLE fail_part_col_not_found PARTITION OF parted FOR VALUES IN ('c') PARTITION BY RANGE (c);
@@ -669,7 +616,6 @@ CREATE TABLE part_c_1_10 PARTITION OF part_c FOR VALUES FROM (1) TO (10);
 -- check that NOT NULL and default value are inherited correctly
 create table parted_notnull_inh_test (a int default 1, b int not null default 0) partition by list (a);
 create table parted_notnull_inh_test1 partition of parted_notnull_inh_test (a not null, b default 1) for values in (1);
-insert into parted_notnull_inh_test (b) values (null);
 -- note that while b's default is overriden, a's default is preserved
 
 drop table parted_notnull_inh_test;
@@ -736,9 +682,6 @@ CREATE TABLE range_parted4_3 PARTITION OF range_parted4 FOR VALUES FROM (6, 8, M
 
 DROP TABLE range_parted4;
 
--- user-defined operator class in partition key
-CREATE FUNCTION my_int4_sort(int4,int4) RETURNS int LANGUAGE sql
-  AS $$ SELECT CASE WHEN $1 = $2 THEN 0 WHEN $1 > $2 THEN 1 ELSE -1 END; $$;
 CREATE TABLE partkey_t (a int4) PARTITION BY RANGE (a test_int4_ops);
 CREATE TABLE partkey_t_1 PARTITION OF partkey_t FOR VALUES FROM (0) TO (1000);
 INSERT INTO partkey_t VALUES (100);
@@ -747,7 +690,6 @@ INSERT INTO partkey_t VALUES (200);
 -- cleanup
 DROP TABLE parted, list_parted, range_parted, list_parted2, range_parted2, range_parted3;
 DROP TABLE partkey_t, hash_parted, hash_parted2;
-DROP FUNCTION my_int4_sort(int4,int4);
 
 -- comments on partitioned tables columns
 CREATE TABLE parted_col_comment (a int, b text) PARTITION BY LIST (a);
@@ -781,17 +723,7 @@ drop table temp_parted cascade;
 
 -- check that adding partitions to a table while it is being used is prevented
 create table tab_part_create (a int) partition by list (a);
-create or replace function func_part_create() returns trigger
-  language plpgsql as $$
-  begin
-    execute 'create table tab_part_create_1 partition of tab_part_create for values in (1)';
-    return null;
-  end $$;
-create trigger trig_part_create before insert on tab_part_create
-  for each statement execute procedure func_part_create();
-insert into tab_part_create values (1);
 drop table tab_part_create;
-drop function func_part_create();
 
 -- test using a volatile expression as partition bound
 create table volatile_partbound_test (partkey timestamp) partition by range (partkey);
@@ -801,3 +733,59 @@ create table volatile_partbound_test2 partition of volatile_partbound_test for v
 insert into volatile_partbound_test values (current_timestamp);
 select tableoid::regclass from volatile_partbound_test;
 drop table volatile_partbound_test;
+
+CREATE TABLE BIT_TABLE(b BIT(11));
+CREATE TABLE VARBIT_TABLE(v BIT VARYING(11));
+CREATE TABLE bit_defaults(
+  b1 bit(4) DEFAULT '1001',
+  b2 bit(4) DEFAULT B'0101',
+  b3 bit varying(5) DEFAULT '1001',
+  b4 bit varying(5) DEFAULT B'0101'
+);
+
+CREATE TEMP TABLE foo (f1 int);
+CREATE TABLE t1 (f1 path);
+CREATE TEMP TABLE rows AS SELECT x, 'txt' || x as y FROM generate_series(1,3) AS x;
+create temp table t1 (a int, b int, c int, d int, primary key (a, b));
+create temp table t2 (x int, y int, z int, primary key (x, y));
+create temp table t3 (a int, b int, c int, primary key(a, b) deferrable);
+CREATE TABLE r2 (a int REFERENCES r1 ON UPDATE CASCADE);
+CREATE TABLE macaddr_data (a int, b macaddr);
+CREATE TABLE macaddr8_data (a int, b macaddr8);
+CREATE TABLE brintest (byteacol bytea,
+    charcol "char",
+    namecol name,
+    int8col bigint,
+    int2col smallint,
+    int4col integer,
+    textcol text,
+    oidcol oid,
+    tidcol tid,
+    float4col real,
+    float8col double precision,
+    macaddrcol macaddr,
+    inetcol inet,
+    cidrcol cidr,
+    bpcharcol character,
+    datecol date,
+    timecol time without time zone,
+    timestampcol timestamp without time zone,
+    timestamptzcol timestamp with time zone,
+    intervalcol interval,
+    timetzcol time with time zone,
+    bitcol bit(10),
+    varbitcol bit varying(16),
+    numericcol numeric,
+    uuidcol uuid,
+    int4rangecol int4range,
+    lsncol pg_lsn,
+    boxcol box
+) WITH (fillfactor=10);
+CREATE TABLE CIRCLE_TBL (f1 circle);
+CREATE TABLE guid1(guid_field UUID, text_field TEXT DEFAULT(now()));
+CREATE FOREIGN TABLE tststats.f (a int, b int, c text) SERVER extstats_dummy_srv;
+CREATE TABLE tststats.pt (a int, b int, c text) PARTITION BY RANGE (a, b);
+CREATE TABLE tststats.pt1 PARTITION OF tststats.pt FOR VALUES FROM (-10, -10) TO (10, 10);
+create table part_pa_test(a int, b int) partition by range(a);
+create table part_pa_test_p1 partition of part_pa_test for values from (minvalue) to (0);
+create table part_pa_test_p2 partition of part_pa_test for values from (0) to (maxvalue);

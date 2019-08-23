@@ -24,12 +24,12 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Insert_stmt_for_psqlCont
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Loop_startContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Loop_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Message_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Only_table_multiplyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.OptionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Perform_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Plpgsql_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Raise_usingContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Return_stmtContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Truncate_stmtContext;
@@ -283,8 +283,8 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
         } else if ((delete = data.delete_stmt_for_psql()) != null) {
             new Delete(this).analyze(delete);
         } else if ((truncate = data.truncate_stmt()) != null) {
-            for (Schema_qualified_nameContext name : truncate.schema_qualified_name()) {
-                addRelationDepcy(name.identifier());
+            for (Only_table_multiplyContext name : truncate.only_table_multiply()) {
+                addRelationDepcy(name.schema_qualified_name().identifier());
             }
         }
     }
