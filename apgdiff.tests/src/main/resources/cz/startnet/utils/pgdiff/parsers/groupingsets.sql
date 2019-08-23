@@ -1,49 +1,8 @@
---
--- grouping sets
---
-
--- test data sources
-
 create temp view gstest1(a,b,v)
   as values (1,1,10),(1,1,11),(1,2,12),(1,2,13),(1,3,14),
-            (2,3,15),
-            (3,3,16),(3,4,17),
-            (4,1,18),(4,1,19);
-
-create temp table gstest2 (a integer, b integer, c integer, d integer,
-                           e integer, f integer, g integer, h integer);
-
-
-create temp table gstest3 (a integer, b integer, c integer, d integer);
-
-
+            (2,3,15),(3,3,16),(3,4,17),(4,1,18),(4,1,19);
 alter table gstest3 add primary key (a);
-
-create temp table gstest4(id integer, v integer,
-                          unhashable_col bit(4), unsortable_col xid);
-insert into gstest4
-values (1,1,b'0000','1'), (2,2,b'0001','1'),
-       (3,4,b'0010','2'), (4,8,b'0011','2'),
-       (5,16,b'0000','2'), (6,32,b'0001','2'),
-       (7,64,b'0010','1'), (8,128,b'0011','1');
-
 create temp table gstest_empty (a integer, b integer, v integer);
-
-create function gstest_data(v integer, out a integer, out b integer)
-  returns setof record
-  as $f$
-    begin
-      return query select v, i from generate_series(1,3) i;
-    end;
-  $f$ language plpgsql;
-
--- basic functionality
-
-set enable_hashagg = false;  -- test hashing explicitly later
-
--- simple rollup with multiple plain aggregates, with and without ordering
--- (and with ordering differing from grouping)
-
 select a, b, grouping(a,b), sum(v), count(*), max(v)
   from gstest1 group by rollup (a,b);
 select a, b, grouping(a,b), sum(v), count(*), max(v)
@@ -256,8 +215,6 @@ select sum(ten) from onek group by rollup(four::text), two order by 1;
 
 -- hashing support
 
-set enable_hashagg = true;
-
 -- failure cases
 
 select count(*) from gstest4 group by rollup(unhashable_col,unsortable_col);
@@ -380,8 +337,6 @@ select array(select row(v.a,s1.*) from (select two,four, count(*) from onek grou
 
 -- test the knapsack
 
-set enable_indexscan = false;
-set work_mem = '64kB';
 explain (costs off)
   select unique1,
          count(two), count(four), count(ten),
@@ -394,14 +349,6 @@ explain (costs off)
          count(hundred), count(thousand), count(twothousand),
          count(*)
     from tenk1 group by grouping sets (unique1,hundred,ten,four,two);
-
-set work_mem = '384kB';
-explain (costs off)
-  select unique1,
-         count(two), count(four), count(ten),
-         count(hundred), count(thousand), count(twothousand),
-         count(*)
-    from tenk1 group by grouping sets (unique1,twothousand,thousand,hundred,ten,four,two);
 
 -- check collation-sensitive matching between grouping expressions
 -- (similar to a check for aggregates, but there are additional code

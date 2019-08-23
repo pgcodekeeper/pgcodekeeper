@@ -36,6 +36,8 @@ COMMENT ON VIEW public.test_view IS NULL;
 
 COMMENT ON COLUMN public.test_view.id IS NULL;
 
+COMMENT ON INDEX public.test_index IS NULL;
+
 COMMENT ON TRIGGER test_trigger ON public.test IS NULL;
 
 COMMENT ON RULE test_rule ON public.test IS NULL;

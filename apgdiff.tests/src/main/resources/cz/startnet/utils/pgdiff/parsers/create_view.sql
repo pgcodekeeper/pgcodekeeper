@@ -579,3 +579,40 @@ select pg_get_ruledef(oid, true) from pg_rewrite
 
 DROP SCHEMA temp_view_test CASCADE;
 DROP SCHEMA testviewschm2 CASCADE;
+
+-- WITH ORDINALITY syntax 
+
+create or replace view public.test122 as
+select * from pg_index i cross join rows from ( unnest(i.indkey)) with ordinality c (colnum, ordinality);
+
+create or replace view public.test123 as
+select * from pg_index i cross join unnest(i.indkey) with ordinality c (colnum, ordinality);
+
+CREATE OR REPLACE VIEW public.test124 as
+with ind as (
+    select * from pg_index i cross join unnest(i.indkey) with ordinality c (colnum, ordinality)
+)
+select * from ind;
+
+create or replace view public.test127 as
+select * from rows from ( unnest(array[1,2]), coalesce(1, 0.00)) with ordinality;
+
+create or replace view public.test129 as
+select * from rows from ( 
+    foo() as (c1 int, c2 int, c3 text), 
+    boo() as (c4 int, c5 int, c6 text)) 
+with ordinality as q;
+
+create view agg_view1 as
+  select aggfns(a,b,c)
+    from (values (1,3,'foo'),(0,null,null),(2,2,'bar'),(3,1,'baz')) v(a,b,c);
+    
+
+create or replace view agg_view1 as
+  select aggfns(distinct a,b,c)
+    from (values (1,3,'foo'),(0,null,null),(2,2,'bar'),(3,1,'baz')) v(a,b,c),
+         generate_series(1,3) i;
+CREATE MATERIALIZED VIEW tststats.mv AS SELECT * FROM tststats.t;
+CREATE VIEW my_property_secure WITH (security_barrier) AS SELECT * FROM customer WHERE name = current_user;
+ALTER VIEW my_property_normal SET (security_barrier=true);
+create function sp_parallel_restricted(int) returns int as $$begin return $1; end$$ language plpgsql parallel restricted;

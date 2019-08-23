@@ -23,6 +23,8 @@ CREATE TABLE public.test (
     CONSTRAINT text_check CHECK ((length((text)::text) > 0))
 );
 
+CREATE INDEX test_index ON public.test (id, text);
+
 CREATE SEQUENCE public.test_id_seq
     START WITH 1
     INCREMENT BY 1

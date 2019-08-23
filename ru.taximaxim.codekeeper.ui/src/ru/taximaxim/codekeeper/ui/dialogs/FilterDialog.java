@@ -48,6 +48,7 @@ public class FilterDialog extends Dialog {
     private final AbstractFilter dbUserFilter;
     private final AtomicBoolean isLocalChange;
     private final AtomicBoolean isHideLibs;
+    private final boolean isApplyToProj;
 
     private Text txtCode;
     private Text txtSchema;
@@ -84,6 +85,8 @@ public class FilterDialog extends Dialog {
      *            is search just local changes
      * @param isHideLibs
      *            is search just non -library objects
+     * @param isApplyToProj
+     *            is change types labels for project
      *
      * @since 4.1.2
      * @see CodeFilter
@@ -94,7 +97,8 @@ public class FilterDialog extends Dialog {
             AbstractFilter schemaFilter, AbstractFilter codeFilter,
             AbstractFilter gitUserFilter, AbstractFilter dbUserFilter,
             Collection<DbObjType> types, Collection<DiffSide> sides,
-            AtomicBoolean isLocalChange, AtomicBoolean isHideLibs) {
+            AtomicBoolean isLocalChange, AtomicBoolean isHideLibs,
+            boolean isApplyToProj) {
         super(parentShell);
         this.codeFilter = codeFilter;
         this.schemaFilter = schemaFilter;
@@ -104,6 +108,7 @@ public class FilterDialog extends Dialog {
         this.sides = sides;
         this.isLocalChange = isLocalChange;
         this.isHideLibs = isHideLibs;
+        this.isApplyToProj = isApplyToProj;
     }
 
     @Override
@@ -213,9 +218,9 @@ public class FilterDialog extends Dialog {
             @Override
             public String getText(Object element) {
                 switch (((DiffSide) element)) {
-                case BOTH: return "edit"; //$NON-NLS-1$
-                case LEFT: return "project"; //$NON-NLS-1$
-                case RIGHT: return "remote"; //$NON-NLS-1$
+                case BOTH: return isApplyToProj ? "edit" : "ALTER"; //$NON-NLS-1$ //$NON-NLS-2$
+                case LEFT: return isApplyToProj ? "delete" : "CREATE"; //$NON-NLS-1$ //$NON-NLS-2$
+                case RIGHT: return isApplyToProj ? "add" : "DROP"; //$NON-NLS-1$ //$NON-NLS-2$
                 default: return null;
                 }
             }

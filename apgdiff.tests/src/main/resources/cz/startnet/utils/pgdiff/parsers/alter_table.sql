@@ -2548,3 +2548,8 @@ create table at_test_sql_partop (a int) partition by range (a at_test_sql_partop
 create table at_test_sql_partop_1 (a int);
 alter table at_test_sql_partop attach partition at_test_sql_partop_1 for values from (0) to (10);
 drop table at_test_sql_partop;
+
+-- force use of parallelism
+ALTER TABLE tenk1 set (parallel_workers = 4);
+ALTER TABLE category ENABLE ROW LEVEL SECURITY;
+alter table a_star reset (parallel_workers);

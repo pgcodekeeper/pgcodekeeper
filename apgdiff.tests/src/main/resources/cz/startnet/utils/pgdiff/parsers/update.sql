@@ -565,3 +565,14 @@ update hash_parted set b = b + 8 where b = 1;
 drop table hash_parted;
 --drop operator class custom_opclass using hash;
 drop function dummy_hashint4(a int4, seed int8);
+
+UPDATE rows SET x = NULL WHERE x = 1;
+UPDATE r2 SET a = 2 RETURNING *; -- Updates nothing
+UPDATE r1 SET a = r2.a + 2 FROM r2 WHERE r1.a = r2.a RETURNING *; -- OK
+UPDATE current_check SET payload = payload || '_new' WHERE CURRENT OF current_check_cursor RETURNING *;
+UPDATE t2 t2_1 SET b = t2_2.b FROM t2 t2_2
+WHERE t2_1.a = 3 AND t2_2.a = t2_1.a AND t2_2.b = t2_1.b
+AND f_leak(t2_1.b) AND f_leak(t2_2.b) RETURNING *, t2_1, t2_2;
+WITH cte1 AS (UPDATE t1 SET a = a + 1 RETURNING *) SELECT * FROM cte1;
+WITH cte1 AS (UPDATE t1 SET a = a RETURNING *) SELECT * FROM cte1;
+UPDATE combocidtest SET foobar = foobar + 10;

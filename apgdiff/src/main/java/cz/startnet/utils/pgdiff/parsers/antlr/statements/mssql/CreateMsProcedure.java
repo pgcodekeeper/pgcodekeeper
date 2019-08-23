@@ -77,6 +77,9 @@ public class CreateMsProcedure extends BatchContextProcessor {
         MsProcedure procedure = new MsProcedure(nameCtx.getText());
         procedure.setAnsiNulls(ansiNulls);
         procedure.setQuotedIdentified(quotedIdentifier);
+
+        ctx.procedure_param().forEach(arg -> addMsTypeDepcy(arg.data_type(), procedure));
+
         setSourceParts(procedure);
 
         String schemaName;

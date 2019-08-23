@@ -40,9 +40,16 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class AntlrParser {
 
-    private static final ExecutorService ANTLR_POOL = Executors.newFixedThreadPool(
-            Integer.max(1, Runtime.getRuntime().availableProcessors() - 1),
-            new DaemonThreadFactory());
+    private static final String POOL_SIZE = "ru.taximaxim.codekeeper.parser.poolsize";
+
+    private static final ExecutorService ANTLR_POOL;
+
+    static {
+        int count = Integer.getInteger(
+                POOL_SIZE, Runtime.getRuntime().availableProcessors() - 1);
+        ANTLR_POOL = Executors.newFixedThreadPool(
+                Integer.max(1, count), new DaemonThreadFactory());
+    }
 
     /**
      * Constructs a <code>parserClass</code> {@link Parser} object with the stream as the token source

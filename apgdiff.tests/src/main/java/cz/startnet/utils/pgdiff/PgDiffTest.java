@@ -494,6 +494,8 @@ public class PgDiffTest {
                     {"modify_tablespace"},
                     //Tests scenario where generated SEQUENCE is compared.
                     {"compare_generated_sequence"},
+                    //Tests scenario where PRIVILEGE added to object with quoted name.
+                    {"add_privilege_quoted_name"},
                 });
     }
 
