@@ -2062,3 +2062,6 @@ drop table self_ref;
 drop function dump_insert();
 drop function dump_update();
 drop function dump_delete();
+
+create trigger trig_part_create before insert on tab_part_create
+  for each statement execute procedure func_part_create();

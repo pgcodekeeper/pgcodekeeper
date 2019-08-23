@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_member_objectContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
@@ -39,13 +40,17 @@ public class CommentOn extends ParserAbstract {
     @Override
     public void parseObject() {
         String comment = ctx.comment_text == null ? null : ctx.comment_text.getText();
+        Comment_member_objectContext obj = ctx.comment_member_object();
+
 
         List<? extends ParserRuleContext> ids = null;
-        if (ctx.target_operator() == null) {
-            ids = ctx.name.identifier();
-        } else {
-            Operator_nameContext operCtx = ctx.target_operator().name;
+        if (obj.target_operator() != null) {
+            Operator_nameContext operCtx = obj.target_operator().name;
             ids = Arrays.asList(operCtx.schema_name, operCtx.operator);
+        } else if (obj.name != null) {
+            ids = obj.name.identifier();
+        } else {
+            ids = Arrays.asList(obj.identifier());
         }
 
         ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
@@ -55,7 +60,7 @@ public class CommentOn extends ParserAbstract {
 
         // column (separately because of schema qualification)
         // otherwise schema reference is considered unresolved
-        if (ctx.COLUMN() != null) {
+        if (obj.COLUMN() != null) {
             if (isRefMode()) {
                 return;
             }
@@ -102,34 +107,33 @@ public class CommentOn extends ParserAbstract {
 
         PgStatement st = null;
         AbstractSchema schema = null;
-        if (ctx.RULE() != null || ctx.CONSTRAINT() != null
-                || (ctx.TRIGGER() != null && ctx.EVENT() == null)) {
-            schema = getSchemaSafe(ctx.table_name.identifier());
-        } else if (ctx.EXTENSION() == null && ctx.SCHEMA() == null && ctx.DATABASE() == null) {
+        if (obj.table_name != null) {
+            schema = getSchemaSafe(obj.table_name.identifier());
+        } else if (obj.EXTENSION() == null && obj.SCHEMA() == null && obj.DATABASE() == null) {
             schema = getSchemaSafe(ids);
         }
 
-        if (ctx.FUNCTION() != null || ctx.PROCEDURE() != null || ctx.AGGREGATE() != null) {
-            if (ctx.PROCEDURE() != null) {
+        if (obj.function_args() != null && obj.ROUTINE() == null) {
+            if (obj.PROCEDURE() != null) {
                 type = DbObjType.PROCEDURE;
-            } else if (ctx.FUNCTION() != null) {
+            } else if (obj.FUNCTION() != null) {
                 type = DbObjType.FUNCTION;
             } else {
                 type = DbObjType.AGGREGATE;
             }
             st = getSafe(AbstractSchema::getFunction, schema,
-                    parseSignature(name, ctx.function_args()), nameCtx.getStart());
-        } else if (ctx.OPERATOR() != null) {
+                    parseSignature(name, obj.function_args()), nameCtx.getStart());
+        } else if (obj.OPERATOR() != null) {
             type = DbObjType.OPERATOR;
-            Target_operatorContext targetOperCtx = ctx.target_operator();
+            Target_operatorContext targetOperCtx = obj.target_operator();
             st = getSafe(AbstractSchema::getOperator, schema,
                     parseSignature(targetOperCtx.name.operator.getText(),
                             targetOperCtx), targetOperCtx.getStart());
-        } else if (ctx.EXTENSION() != null) {
+        } else if (obj.EXTENSION() != null) {
             type = DbObjType.EXTENSION;
             st = getSafe(PgDatabase::getExtension, db, nameCtx);
-        } else if (ctx.CONSTRAINT() != null) {
-            List<IdentifierContext> parentIds = ctx.table_name.identifier();
+        } else if (obj.CONSTRAINT() != null) {
+            List<IdentifierContext> parentIds = obj.table_name.identifier();
             IStatementContainer table = getSafe(AbstractSchema::getStatementContainer,
                     schema, QNameParser.getFirstNameCtx(parentIds));
             addObjReference(parentIds, DbObjType.TABLE, StatementActions.NONE);
@@ -142,19 +146,19 @@ public class CommentOn extends ParserAbstract {
             } else {
                 st = getSafe(IStatementContainer::getConstraint, table, nameCtx);
             }
-        } else if (ctx.TRIGGER() != null && ctx.EVENT() == null) {
+        } else if (obj.TRIGGER() != null && obj.EVENT() == null) {
             type = DbObjType.TRIGGER;
-            List<IdentifierContext> parentIds = ctx.table_name.identifier();
+            List<IdentifierContext> parentIds = obj.table_name.identifier();
             addObjReference(parentIds, DbObjType.TABLE, StatementActions.NONE);
             ids = Arrays.asList(QNameParser.getSchemaNameCtx(parentIds),
                     QNameParser.getFirstNameCtx(parentIds), nameCtx);
             IStatementContainer c = getSafe(AbstractSchema::getStatementContainer, schema,
-                    QNameParser.getFirstNameCtx(ctx.table_name.identifier()));
+                    QNameParser.getFirstNameCtx(parentIds));
             st = getSafe(IStatementContainer::getTrigger, c, nameCtx);
-        } else if (ctx.DATABASE() != null) {
+        } else if (obj.DATABASE() != null) {
             st = db;
             type = DbObjType.DATABASE;
-        } else if (ctx.INDEX() != null) {
+        } else if (obj.INDEX() != null) {
 
             PgStatement commentOn = getSafe((sc,n) -> sc.getStatementContainers()
                     .flatMap(c -> Stream.concat(c.getIndexes().stream(), c.getConstraints().stream()))
@@ -165,43 +169,43 @@ public class CommentOn extends ParserAbstract {
 
             doSafe((s,c) -> s.setComment(db.getArguments(), c), commentOn, comment);
 
-        } else if (ctx.SCHEMA() != null && !ApgdiffConsts.PUBLIC.equals(name)) {
+        } else if (obj.SCHEMA() != null && !ApgdiffConsts.PUBLIC.equals(name)) {
             type = DbObjType.SCHEMA;
             st = getSafe(PgDatabase::getSchema, db, nameCtx);
-        } else if (ctx.SEQUENCE() != null) {
+        } else if (obj.SEQUENCE() != null) {
             type = DbObjType.SEQUENCE;
             st = getSafe(AbstractSchema::getSequence, schema, nameCtx);
-        } else if (ctx.TABLE() != null) {
+        } else if (obj.TABLE() != null) {
             type = DbObjType.TABLE;
             st = getSafe(AbstractSchema::getTable, schema, nameCtx);
-        } else if (ctx.VIEW() != null) {
+        } else if (obj.VIEW() != null) {
             type = DbObjType.VIEW;
             st = getSafe(AbstractSchema::getView, schema, nameCtx);
-        } else if (ctx.TYPE() != null) {
+        } else if (obj.TYPE() != null) {
             type = DbObjType.TYPE;
             st = getSafe(AbstractSchema::getType, schema, nameCtx);
-        } else if (ctx.DOMAIN() != null) {
+        } else if (obj.DOMAIN() != null) {
             type = DbObjType.DOMAIN;
             st = getSafe(AbstractSchema::getDomain, schema, nameCtx);
-        } else if (ctx.RULE() != null) {
+        } else if (obj.RULE() != null) {
             type = DbObjType.RULE;
-            List<IdentifierContext> parentIds = ctx.table_name.identifier();
+            List<IdentifierContext> parentIds = obj.table_name.identifier();
             addObjReference(parentIds, DbObjType.TABLE, StatementActions.NONE);
             ids = Arrays.asList(QNameParser.getSchemaNameCtx(parentIds),
                     QNameParser.getFirstNameCtx(parentIds), nameCtx);
             IStatementContainer c = getSafe(AbstractSchema::getStatementContainer, schema,
-                    QNameParser.getFirstNameCtx(ctx.table_name.identifier()));
+                    QNameParser.getFirstNameCtx(obj.table_name.identifier()));
             st = getSafe(IStatementContainer::getRule, c, nameCtx);
-        } else if (ctx.CONFIGURATION() != null) {
+        } else if (obj.CONFIGURATION() != null) {
             type = DbObjType.FTS_CONFIGURATION;
             st = getSafe(AbstractSchema::getFtsConfiguration, schema, nameCtx);
-        } else if (ctx.DICTIONARY() != null) {
+        } else if (obj.DICTIONARY() != null) {
             type = DbObjType.FTS_DICTIONARY;
             st = getSafe(AbstractSchema::getFtsDictionary, schema, nameCtx);
-        } else if (ctx.PARSER() != null) {
+        } else if (obj.PARSER() != null) {
             type = DbObjType.FTS_PARSER;
             st = getSafe(AbstractSchema::getFtsParser, schema, nameCtx);
-        } else if (ctx.TEMPLATE() != null) {
+        } else if (obj.TEMPLATE() != null) {
             type = DbObjType.FTS_TEMPLATE;
             st = getSafe(AbstractSchema::getFtsTemplate, schema, nameCtx);
         }

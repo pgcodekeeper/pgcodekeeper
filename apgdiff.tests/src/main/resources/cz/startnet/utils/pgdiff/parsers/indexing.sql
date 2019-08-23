@@ -771,3 +771,11 @@ alter table parted_uniq_detach_test1 drop constraint parted_uniq_detach_test1_a_
 alter table parted_uniq_detach_test detach partition parted_uniq_detach_test1;
 alter table parted_uniq_detach_test1 drop constraint parted_uniq_detach_test1_a_key;
 drop table parted_uniq_detach_test, parted_uniq_detach_test1;
+create index btree_tall_idx on btree_tall_tbl (id, t) with (fillfactor = 10);
+create index btree_idx1 on btree_test(a) with (vacuum_cleanup_index_scale_factor = 40.0);
+create index btree_idx_err on btree_test(a) with (vacuum_cleanup_index_scale_factor = -10.0);
+create index btree_idx_err on btree_test(a) with (vacuum_cleanup_index_scale_factor = 100.0);
+create index btree_idx_err on btree_test(a) with (vacuum_cleanup_index_scale_factor = 'string');
+create index btree_idx_err on btree_test(a) with (vacuum_cleanup_index_scale_factor = true);
+alter index btree_idx1 set (vacuum_cleanup_index_scale_factor = 70.0);
+CREATE INDEX brinidx ON brintest USING brin (byteacol) with (pages_per_range = 1);

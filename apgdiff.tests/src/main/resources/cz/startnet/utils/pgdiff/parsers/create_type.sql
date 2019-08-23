@@ -154,3 +154,44 @@ select format_type('varchar'::regtype, 42);
 select format_type('bpchar'::regtype, null);
 -- this behavior difference is intentional
 select format_type('bpchar'::regtype, -1);
+
+
+CREATE TYPE unknown_comptype AS (
+    u unknown    -- fail
+);
+
+CREATE TYPE casttesttype;
+
+CREATE TYPE casttesttype (
+   internallength = variable,
+   input = casttesttype_in,
+   output = casttesttype_out,
+   alignment = int4
+);
+-- populate_record
+create type jpop as (a text, b int, c timestamp);
+create type j_unordered_pair as (x int, y int);
+
+CREATE TYPE jsrec AS (
+    i   int,
+    ia  _int4,
+    ia1 int[],
+    ia2 int[][],
+    ia3 int[][][],
+    ia1d    js_int_array_1d,
+    ia2d    js_int_array_2d,
+    t   text,
+    ta  text[],
+    c   char(10),
+    ca  char(10)[],
+    ts  timestamp,
+    js  json,
+    jsb jsonb,
+    jsa json[],
+    rec jpop,
+    reca    jpop[]
+);
+
+CREATE TYPE jsrec_i_not_null AS (i   js_int_not_null);
+create type jpop2 as (a int, b json, c int, d int);
+CREATE TYPE type_op3 AS ENUM ('new', 'open', 'closed');
