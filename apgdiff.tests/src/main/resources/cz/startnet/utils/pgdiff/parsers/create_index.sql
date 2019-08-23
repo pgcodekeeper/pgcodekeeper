@@ -1206,3 +1206,7 @@ RESET ROLE;
 DROP ROLE regress_reindexuser;
 
 DROP SCHEMA schema_to_reindex CASCADE;
+
+
+REINDEX INDEX unlogged1_pkey;
+REINDEX INDEX unlogged2_pkey;

@@ -108,3 +108,11 @@ create table parted_sample_2 partition of parted_sample for values in (2);
 explain (costs off)
   select * from parted_sample tablesample bernoulli (100);
 drop table parted_sample, parted_sample_1, parted_sample_2;
+
+-- try a sampled version
+SELECT * FROM document TABLESAMPLE BERNOULLI(50) REPEATABLE(0)
+  WHERE f_leak(dtitle) ORDER BY did;
+
+-- try a sampled version
+SELECT * FROM document TABLESAMPLE BERNOULLI(50) REPEATABLE(0)
+  WHERE f_leak(dtitle) ORDER BY did;

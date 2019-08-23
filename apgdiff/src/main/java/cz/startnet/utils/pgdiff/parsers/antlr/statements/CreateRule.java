@@ -13,9 +13,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Columns_permissionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_parametersContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Object_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Role_name_with_groupContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rule_commonContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rule_member_objectContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_privilegesContext;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
@@ -49,20 +49,16 @@ public class CreateRule extends ParserAbstract {
 
     @Override
     public void parseObject() {
+        Rule_member_objectContext obj = ctx.rule_member_object();
         // unsupported roles rules, ALL TABLES/SEQUENCES/FUNCTIONS IN SCHENA
         if (db.getArguments().isIgnorePrivileges() || ctx.other_rules() != null
-                || ctx.all_objects() != null) {
+                || obj.ALL() != null) {
             return;
         }
 
-        List<String> roles = new ArrayList<>();
-        for (Role_name_with_groupContext roleCtx : ctx.roles_names().role_name_with_group()) {
-            String role = ParserAbstract.getFullCtxText(roleCtx.role_name);
-            if (roleCtx.GROUP() != null) {
-                role = "GROUP " + role;
-            }
-
-            roles.add(role);
+        List<String> roles = parseRoles();
+        if (roles.isEmpty()) {
+            return;
         }
 
         Columns_permissionsContext columnsCtx = ctx.columns_permissions();
@@ -75,57 +71,27 @@ public class CreateRule extends ParserAbstract {
         String permissions = ctx.permissions().permission().stream().map(ParserAbstract::getFullCtxText)
                 .collect(Collectors.joining(","));
 
-        if (ctx.FUNCTION() != null || ctx.PROCEDURE() != null) {
-            for (Function_parametersContext funct : ctx.func_name) {
-                List<IdentifierContext> funcIds = funct.name.identifier();
-                IdentifierContext functNameCtx = QNameParser.getFirstNameCtx(funcIds);
-                AbstractSchema schema = getSchemaSafe(funcIds);
-                AbstractPgFunction func = (AbstractPgFunction)  getSafe(AbstractSchema::getFunction, schema,
-                        parseSignature(functNameCtx.getText(), funct.function_args()),
-                        functNameCtx.getStart());
-
-                StringBuilder sb = new StringBuilder();
-                DbObjType type = ctx.PROCEDURE() == null ?
-                        DbObjType.FUNCTION : DbObjType.PROCEDURE;
-                addObjReference(funcIds, type, StatementActions.NONE);
-
-                if (isRefMode()) {
-                    continue;
-                }
-
-                sb.append(type).append(' ');
-                sb.append(PgDiffUtils.getQuotedName(schema.getName())).append('.');
-
-                // For AGGREGATEs in GRANT/REVOKE the signature will be the same as in FUNCTIONs;
-                // important: asterisk (*) and 'ORDER BY' are not displayed.
-                func.appendFunctionSignature(sb, false, true);
-
-                for (String role : roles) {
-                    addPrivilege(func, new PgPrivilege(state, permissions,
-                            sb.toString(), role, isGO));
-                }
-            }
-
+        if (obj.FUNCTION() != null || obj.PROCEDURE() != null) {
+            parseFunction(obj, permissions, roles);
             return;
         }
 
         DbObjType type = null;
-        Object_typeContext typeCtx = ctx.object_type();
-        if (typeCtx == null || typeCtx.TABLE() != null) {
+        if (obj.table_names != null) {
             type = DbObjType.TABLE;
-        } else if (typeCtx.SEQUENCE() != null) {
+        } else if (obj.SEQUENCE() != null) {
             type = DbObjType.SEQUENCE;
-        } else if (typeCtx.DOMAIN() != null) {
+        } else if (obj.DOMAIN() != null) {
             type = DbObjType.DOMAIN;
-        } else if (typeCtx.SCHEMA() != null) {
+        } else if (obj.SCHEMA() != null) {
             type = DbObjType.SCHEMA;
-        } else if (typeCtx.TYPE() != null) {
+        } else if (obj.TYPE() != null) {
             type = DbObjType.TYPE;
         } else {
             return;
         }
 
-        List<Schema_qualified_nameContext> objName = ctx.names_references().name;
+        List<Schema_qualified_nameContext> objName = obj.names_references().name;
 
         if (type != null) {
             for (Schema_qualified_nameContext name : objName) {
@@ -136,6 +102,56 @@ public class CreateRule extends ParserAbstract {
                 }
 
                 addToDB(name, type, state, permissions, roles, isGO);
+            }
+        }
+    }
+
+    private List<String> parseRoles() {
+        List<String> roles = new ArrayList<>();
+        for (Role_name_with_groupContext roleCtx : ctx.roles_names().role_name_with_group()) {
+            // skip CURRENT_USER and SESSION_USER
+            if (roleCtx.role_name == null) {
+                continue;
+            }
+            String role = ParserAbstract.getFullCtxText(roleCtx.role_name);
+            if (roleCtx.GROUP() != null) {
+                role = "GROUP " + role;
+            }
+
+            roles.add(role);
+        }
+
+        return roles;
+    }
+
+    private void parseFunction(Rule_member_objectContext obj, String permissions, List<String> roles) {
+        for (Function_parametersContext funct : obj.func_name) {
+            List<IdentifierContext> funcIds = funct.name.identifier();
+            IdentifierContext functNameCtx = QNameParser.getFirstNameCtx(funcIds);
+            AbstractSchema schema = getSchemaSafe(funcIds);
+            AbstractPgFunction func = (AbstractPgFunction) getSafe(AbstractSchema::getFunction, schema,
+                    parseSignature(functNameCtx.getText(), funct.function_args()),
+                    functNameCtx.getStart());
+
+            StringBuilder sb = new StringBuilder();
+            DbObjType type = obj.PROCEDURE() == null ?
+                    DbObjType.FUNCTION : DbObjType.PROCEDURE;
+            addObjReference(funcIds, type, StatementActions.NONE);
+
+            if (isRefMode()) {
+                continue;
+            }
+
+            sb.append(type).append(' ');
+            sb.append(PgDiffUtils.getQuotedName(schema.getName())).append('.');
+
+            // For AGGREGATEs in GRANT/REVOKE the signature will be the same as in FUNCTIONs;
+            // important: asterisk (*) and 'ORDER BY' are not displayed.
+            func.appendFunctionSignature(sb, false, true);
+
+            for (String role : roles) {
+                addPrivilege(func, new PgPrivilege(state, permissions,
+                        sb.toString(), role, isGO));
             }
         }
     }
@@ -157,7 +173,7 @@ public class CreateRule extends ParserAbstract {
         }
 
         // Разобрать объекты
-        for (Schema_qualified_nameContext tbl : ctx.names_references().name) {
+        for (Schema_qualified_nameContext tbl : ctx.rule_member_object().names_references().name) {
             setColumnPrivilege(tbl, colPriv, roles);
         }
     }

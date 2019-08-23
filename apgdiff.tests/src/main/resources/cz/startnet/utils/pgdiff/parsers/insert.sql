@@ -545,3 +545,67 @@ alter table returningwrtest2 drop c;
 alter table returningwrtest attach partition returningwrtest2 for values in (2);
 insert into returningwrtest values (2, 'foo') returning returningwrtest;
 drop table returningwrtest;
+
+INSERT INTO collate_test1 VALUES (1, 'abc'), (2, 'äbc'), (3, 'bbc'), (4, 'ABC');
+INSERT INTO collate_test3 SELECT * FROM collate_test1;
+INSERT INTO BIT_TABLE VALUES (B'');
+INSERT INTO BIT_TABLE VALUES (B'0');
+INSERT INTO BIT_TABLE VALUES (B'10'); -- too short
+INSERT INTO BIT_TABLE VALUES (B'11011');
+INSERT INTO BIT_TABLE VALUES (B'010101');
+INSERT INTO BIT_TABLE VALUES (B'00000000000');
+INSERT INTO BIT_TABLE VALUES (B'01010101010');
+INSERT INTO BIT_TABLE VALUES (B'11011000000');
+INSERT INTO BIT_TABLE VALUES (B'101011111010'); -- too long
+INSERT INTO BIT_TABLE VALUES (B'1101100000000000');
+--INSERT INTO BIT_TABLE VALUES ('X554');
+--INSERT INTO BIT_TABLE VALUES ('X555');
+INSERT INTO BIT_TABLE SELECT b>>1 FROM BIT_TABLE;
+INSERT INTO BIT_TABLE SELECT b>>2 FROM BIT_TABLE;
+INSERT INTO BIT_TABLE SELECT b>>4 FROM BIT_TABLE;
+INSERT INTO BIT_TABLE SELECT b>>8 FROM BIT_TABLE;
+INSERT INTO BIT_TABLE SELECT CAST(v || B'0' AS BIT VARYING(6)) >>1 FROM BIT_TABLE;
+INSERT INTO BIT_TABLE SELECT CAST(v || B'00' AS BIT VARYING(8)) >>2 FROM BIT_TABLE;
+INSERT INTO BIT_TABLE SELECT CAST(v || B'0000' AS BIT VARYING(12)) >>4 FROM BIT_TABLE;
+INSERT INTO BIT_TABLE SELECT CAST(v || B'00000000' AS BIT VARYING(20)) >>8 FROM BIT_TABLE;
+INSERT INTO extra_wide_table(firstc, lastc) VALUES('first col', 'last col');
+INSERT INTO partitioned2 VALUES (1, 'hello');
+INSERT INTO range_parted2 VALUES (85);
+insert into parted_notnull_inh_test (b) values (null);
+INSERT INTO t1 VALUES ('[(1,2),(3,4)]');
+INSERT INTO t1 VALUES (' ( ( 1 , 2 ) , ( 3 , 4 ) ) ');
+INSERT INTO t1 VALUES ('[ (0,0),(3,0),(4,5),(1,6) ]');
+INSERT INTO t1 VALUES ('((1,2) ,(3,4 ))');
+INSERT INTO t1 VALUES ('1,2 ,3,4 ');
+INSERT INTO t1 VALUES (' [1,2,3, 4] ');
+INSERT INTO t1 VALUES ('((10,20))');
+INSERT INTO t1 VALUES ('[ 11,12,13,14 ]');
+INSERT INTO t1 VALUES ('( 11,12,13,14) ');
+INSERT INTO t1 VALUES ('[]');
+INSERT INTO t1 VALUES ('[(,2),(3,4)]');
+INSERT INTO t1 VALUES ('[(1,2),(3,4)');
+INSERT INTO t1 VALUES ('(1,2,3,4');
+INSERT INTO t1 VALUES ('(1,2),(3,4)]');
+INSERT INTO bit_defaults DEFAULT VALUES;
+INSERT INTO test_json VALUES
+('scalar','"a scalar"'),
+('array','["zero", "one","two",null,"four","five", [1,2,3],{"f1":9}]'),
+('object','{"field1":"val1","field2":"val2","field3":null, "field4": 4, "field5": [1,2,3], "field6": {"f1":9}}');
+INSERT INTO jspoptest
+SELECT '{
+    "jsa": [1, "2", null, 4],
+    "rec": {"a": "abc", "c": "01.02.2003", "x": 43.2},
+    "reca": [{"a": "abc", "b": 456}, null, {"c": "01.02.2003", "x": 43.2}]
+}'::json
+FROM generate_series(1, 3);
+INSERT INTO foo VALUES (999999, NULL, 'bar');
+INSERT INTO foo VALUES (847003,'sub-alpha','GESS90');
+INSERT INTO r1 VALUES (10) ON CONFLICT (a) DO UPDATE SET a = 30 RETURNING *;
+INSERT INTO r1 VALUES (10) ON CONFLICT ON CONSTRAINT r1_pkey DO UPDATE SET a = 30;
+INSERT INTO r1 SELECT a + 1 FROM r2 RETURNING *; -- OK
+INSERT INTO document VALUES (2, (SELECT cid from category WHERE cname = 'novel'), 1, 'carol', 'ovel')
+    ON CONFLICT (did) DO UPDATE SET dtitle = EXCLUDED.dtitle, dauthor = EXCLUDED.dauthor;
+WITH cte1 AS (INSERT INTO t1 VALUES (21, 'Fail') RETURNING *) SELECT * FROM cte1;
+WITH cte1 AS (INSERT INTO t1 VALUES (20, 'Success') RETURNING *) SELECT * FROM cte1;
+INSERT INTO combocidtest SELECT 1 LIMIT 0;
+INSERT INTO trunc_stats_test DEFAULT VALUES;
