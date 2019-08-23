@@ -82,7 +82,7 @@ transaction_mode
     ;
 
 lock_table
-    : LOCK TABLE? ONLY? schema_qualified_name MULTIPLY? (COMMA schema_qualified_name MULTIPLY?)*
+    : LOCK TABLE? only_table_multiply (COMMA only_table_multiply)*
      (IN lock_mode MODE)? NOWAIT?
     ;
 
@@ -118,6 +118,7 @@ script_additional
     | EXECUTE identifier (LEFT_PAREN vex (COMMA vex)* RIGHT_PAREN)?
     | REASSIGN OWNED BY user_identifer_current_session (COMMA user_identifer_current_session)*
       TO user_identifer_current_session
+    | copy_statement
     ;
 
 explain_option
@@ -193,12 +194,20 @@ schema_create
     | create_foreign_data_wrapper
     | create_operator_statement
     | create_aggregate_statement
-    | create_table_as_statement)
+    | create_table_as_statement
+    | create_policy_statement
+    | create_subscription_statement
+    | create_cast_statement
+    | create_operator_family_statement
+    | create_operator_class_statement
+    | create_conversion_statement
+    | create_publication_statement)
 
     | comment_on_statement
     | rule_common
     | set_statement
     | schema_import
+    | security_label
     ;
 
 schema_alter
@@ -225,6 +234,14 @@ schema_alter
     | alter_operator_statement
     | alter_aggregate_statement
     | alter_extension_statement
+    | alter_policy_statement
+    | alter_subscription_statement
+    | alter_trigger_statement
+    | alter_rule_statement
+    | alter_operator_family_statement
+    | alter_operator_class_statement
+    | alter_conversion_statement
+    | alter_publication_statement
     | alter_owner)
     ;
 
@@ -232,6 +249,10 @@ schema_drop
     : DROP (drop_function_statement
     | drop_trigger_statement
     | drop_rule_statement
+    | drop_policy_statement
+    | drop_cast_statement
+    | drop_operator_family_statement
+    | drop_operator_class_statement
     | drop_statements
     | drop_user_mapping
     | drop_owned
@@ -357,6 +378,7 @@ table_action
     | SET table_space
     | RENAME CONSTRAINT identifier TO identifier
     | REPLICA IDENTITY (DEFAULT | FULL | NOTHING | USING INDEX identifier)
+    | ALTER CONSTRAINT identifier table_deferrable? table_initialy_immed?
     ;
 
 identity_body
@@ -397,7 +419,7 @@ table_deferrable
     ;
 
 table_initialy_immed
-    :INITIALLY (DEFERRED | IMMEDIATE)
+    : INITIALLY (DEFERRED | IMMEDIATE)
     ;
 
 function_actions_common
@@ -610,7 +632,7 @@ create_event_trigger
     ;
 
 create_type_statement
-    :TYPE name=schema_qualified_name (AS(
+    : TYPE name=schema_qualified_name (AS(
         LEFT_PAREN (attrs+=table_column_definition (COMMA attrs+=table_column_definition)*)? RIGHT_PAREN
         | ENUM LEFT_PAREN ( enums+=character_string (COMMA enums+=character_string)* )? RIGHT_PAREN
         | RANGE LEFT_PAREN
@@ -716,20 +738,20 @@ collation_option
     ;
 
 create_user_mapping
-    : USER MAPPING if_not_exists? FOR (identifier | USER | CURRENT_USER)
+    : USER MAPPING if_not_exists? FOR (identifier | USER | CURRENT_USER | SESSION_USER)
     SERVER identifier
     define_foreign_options?
     ;
 
 alter_user_mapping
-    : USER MAPPING FOR (identifier | USER | CURRENT_USER) SERVER identifier
+    : USER MAPPING FOR (identifier | USER | CURRENT_USER | SESSION_USER) SERVER identifier
     define_foreign_options?
     ;
 
 alter_user_or_role
     : (USER | ROLE) (alter_user_or_role_set_reset
-        | (old_name=identifier rename_to)
-        | (name=identifier WITH? user_or_role_option_for_alter user_or_role_option_for_alter*))
+        | old_name=identifier rename_to
+        | user_identifer_current_session WITH? user_or_role_option_for_alter+)
     ;
 
 alter_user_or_role_set_reset
@@ -809,7 +831,7 @@ operator_set_restrict_join
     ;
 
 drop_user_mapping
-    : USER MAPPING (IF EXISTS)? FOR (identifier | USER | CURRENT_USER) SERVER identifier
+    : USER MAPPING (IF EXISTS)? FOR (identifier | USER | CURRENT_USER | SESSION_USER) SERVER identifier
     ;
 
 drop_owned
@@ -911,7 +933,7 @@ option_without_equal
     ;
 
 create_operator_statement
-    :   OPERATOR name=operator_name LEFT_PAREN operator_option (COMMA operator_option)* RIGHT_PAREN
+    : OPERATOR name=operator_name LEFT_PAREN operator_option (COMMA operator_option)* RIGHT_PAREN
     ;
 
 operator_name
@@ -945,7 +967,7 @@ aggregate_param
     | COMBINEFUNC EQUAL combine_func=schema_qualified_name
     | SERIALFUNC EQUAL serial_func=schema_qualified_name
     | DESERIALFUNC EQUAL deserial_func=schema_qualified_name
-    | INITCOND EQUAL init_cond=Character_String_Literal
+    | INITCOND EQUAL init_cond=vex
     | MSFUNC EQUAL ms_func=schema_qualified_name
     | MINVFUNC EQUAL minv_func=schema_qualified_name
     | MSTYPE EQUAL ms_type=data_type
@@ -953,7 +975,7 @@ aggregate_param
     | MFINALFUNC EQUAL mfinal_func=schema_qualified_name
     | MFINALFUNC_EXTRA
     | MFINALFUNC_MODIFY EQUAL (READ_ONLY | SHAREABLE | READ_WRITE)
-    | MINITCOND EQUAL minit_cond=Character_String_Literal
+    | MINITCOND EQUAL minit_cond=vex
     | SORTOP EQUAL all_op_ref
     | PARALLEL EQUAL (SAFE | RESTRICTED | UNSAFE)
     | HYPOTHETICAL
@@ -1027,10 +1049,25 @@ when_trigger
 rule_common
     : (GRANT | REVOKE grant_opt_for=grant_option_for?)
     (permissions | columns_permissions)
-    ON ((object_type | all_objects)? obj_name=names_references
-    | (FUNCTION | PROCEDURE) func_name+=function_parameters (COMMA func_name+=function_parameters)*)
+    ON rule_member_object
     (TO | FROM) roles_names (WITH GRANT OPTION | cascade_restrict)?
     | other_rules
+    ;
+
+rule_member_object
+    : TABLE? table_names=names_references
+    | SEQUENCE names_references
+    | DATABASE names_references
+    | DOMAIN names_references
+    | FOREIGN DATA WRAPPER names_references
+    | FOREIGN SERVER names_references
+    | (FUNCTION | PROCEDURE | ROUTINE) func_name+=function_parameters (COMMA func_name+=function_parameters)*
+    | LARGE OBJECT unsigned_numeric_literal (COMMA unsigned_numeric_literal)*
+    | LANGUAGE names_references
+    | SCHEMA schema_names=names_references
+    | TABLESPACE names_references
+    | TYPE names_references
+    | ALL (TABLES | SEQUENCES | FUNCTIONS | PROCEDURES | ROUTINES) IN SCHEMA names_references
     ;
 
 columns_permissions
@@ -1061,24 +1098,6 @@ permission
     | USAGE
     ;
 
-object_type
-    : TABLE
-    | SEQUENCE
-    | DATABASE
-    | DOMAIN
-    | FOREIGN DATA WRAPPER
-    | FOREIGN SERVER
-    | LANGUAGE
-    | LARGE OBJECT
-    | SCHEMA
-    | TABLESPACE
-    | TYPE
-    ;
-
-all_objects
-    : ALL (TABLES | SEQUENCES | FUNCTIONS | PROCEDURES | ROUTINES) IN SCHEMA
-    ;
-
 other_rules
     : GRANT obj_name=names_references TO role_name=names_references (WITH ADMIN OPTION)?
     | REVOKE (ADMIN OPTION FOR)? obj_name=names_references FROM role_name=names_references cascade_restrict?
@@ -1097,27 +1116,73 @@ roles_names
     ;
 
 role_name_with_group
-    : GROUP? role_name=identifier
+    : GROUP? role_name=identifier | CURRENT_USER | SESSION_USER
     ;
 
 comment_on_statement
-    : COMMENT ON(
-        (AGGREGATE | FUNCTION | PROCEDURE) name=schema_qualified_name function_args
-        | CAST LEFT_PAREN source_type=data_type AS target_type=data_type RIGHT_PAREN
-        | (CONSTRAINT | RULE | TRIGGER) name=schema_qualified_name ON DOMAIN? table_name=schema_qualified_name
-        | OPERATOR target_operator
-        | OPERATOR (FAMILY| CLASS) name=schema_qualified_name USING index_method=identifier
-        | (TEXT SEARCH (CONFIGURATION | DICTIONARY | PARSER | TEMPLATE )
-        | PROCEDURAL? LANGUAGE
-        | LARGE OBJECT
-        | FOREIGN (DATA WRAPPER | TABLE)
-        | TEXT SEARCH (CONFIGURATION | DICTIONARY | PARSER | TEMPLATE)
-        | EVENT TRIGGER
-        | (COLUMN | CONVERSION | DATABASE| DOMAIN| EXTENSION| INDEX | ROLE
-            | COLLATION| SCHEMA| SEQUENCE| SERVER| STATISTICS| TABLE | TABLESPACE
-            | TYPE | MATERIALIZED? VIEW)
-          ) name=schema_qualified_name
-        ) IS (comment_text=character_string | NULL)
+    : COMMENT ON comment_member_object IS (comment_text=character_string | NULL)
+    ;
+
+security_label
+    : SECURITY LABEL (FOR (identifier | character_string))? ON label_member_object IS (label=character_string | NULL)
+    ;
+
+comment_member_object
+    : ACCESS METHOD identifier 
+    | (AGGREGATE | PROCEDURE | FUNCTION | ROUTINE) name=schema_qualified_name function_args
+    | CAST LEFT_PAREN source_type=data_type AS target_type=data_type RIGHT_PAREN
+    | COLLATION identifier
+    | COLUMN name=schema_qualified_name
+    | CONSTRAINT identifier ON DOMAIN? table_name=schema_qualified_name
+    | CONVERSION name=schema_qualified_name
+    | DATABASE identifier
+    | DOMAIN name=schema_qualified_name
+    | EXTENSION identifier
+    | EVENT TRIGGER identifier
+    | FOREIGN DATA WRAPPER identifier
+    | FOREIGN? TABLE name=schema_qualified_name
+    | INDEX name=schema_qualified_name
+    | LARGE OBJECT unsigned_numeric_literal
+    | MATERIALIZED? VIEW name=schema_qualified_name
+    | OPERATOR target_operator
+    | OPERATOR (FAMILY| CLASS) name=schema_qualified_name USING index_method=identifier
+    | POLICY identifier ON name=schema_qualified_name
+    | PROCEDURAL? LANGUAGE name=schema_qualified_name
+    | PUBLICATION identifier
+    | ROLE identifier
+    | RULE identifier ON table_name=schema_qualified_name
+    | SCHEMA identifier
+    | SEQUENCE name=schema_qualified_name
+    | SERVER identifier
+    | STATISTICS name=schema_qualified_name
+    | SUBSCRIPTION identifier
+    | TABLESPACE identifier
+    | TEXT SEARCH CONFIGURATION name=schema_qualified_name
+    | TEXT SEARCH DICTIONARY name=schema_qualified_name
+    | TEXT SEARCH PARSER name=schema_qualified_name
+    | TEXT SEARCH TEMPLATE name=schema_qualified_name
+    | TRANSFORM FOR name=schema_qualified_name LANGUAGE identifier
+    | TRIGGER identifier ON table_name=schema_qualified_name
+    | TYPE name=schema_qualified_name
+    ;
+
+label_member_object
+    : (AGGREGATE | PROCEDURE | FUNCTION | ROUTINE) name=schema_qualified_name function_args
+    | COLUMN name=schema_qualified_name
+    | DATABASE identifier
+    | DOMAIN name=schema_qualified_name
+    | EVENT TRIGGER identifier
+    | FOREIGN? TABLE name=schema_qualified_name
+    | LARGE OBJECT unsigned_numeric_literal
+    | MATERIALIZED? VIEW name=schema_qualified_name
+    | PROCEDURAL? LANGUAGE name=schema_qualified_name
+    | PUBLICATION identifier
+    | ROLE identifier
+    | SCHEMA identifier
+    | SEQUENCE name=schema_qualified_name
+    | SUBSCRIPTION identifier
+    | TABLESPACE identifier
+    | TYPE name=schema_qualified_name
     ;
 
 /*
@@ -1183,15 +1248,15 @@ create_sequence_statement
     ;
 
 sequence_body
-    :   AS type=(SMALLINT | INTEGER | BIGINT)
-        | SEQUENCE NAME name=schema_qualified_name
-        | INCREMENT BY? incr=signed_numerical_literal
-        | (MINVALUE minval=signed_numerical_literal | NO MINVALUE)
-        | (MAXVALUE maxval=signed_numerical_literal | NO MAXVALUE)
-        | START WITH? start_val=signed_numerical_literal
-        | CACHE cache_val=signed_numerical_literal
-        | cycle_true=NO? cycle_val=CYCLE
-        | OWNED BY col_name=schema_qualified_name
+    : AS type=(SMALLINT | INTEGER | BIGINT)
+    | SEQUENCE NAME name=schema_qualified_name
+    | INCREMENT BY? incr=signed_numerical_literal
+    | (MINVALUE minval=signed_numerical_literal | NO MINVALUE)
+    | (MAXVALUE maxval=signed_numerical_literal | NO MAXVALUE)
+    | START WITH? start_val=signed_numerical_literal
+    | CACHE cache_val=signed_numerical_literal
+    | cycle_true=NO? cycle_val=CYCLE
+    | OWNED BY col_name=schema_qualified_name
     ;
 
 signed_number_literal
@@ -1207,7 +1272,187 @@ sign
   ;
 
 create_schema_statement
-    : SCHEMA if_not_exists? name=identifier? (AUTHORIZATION user_name=identifier)?
+    : SCHEMA if_not_exists? name=identifier? (AUTHORIZATION (user_name = identifier | CURRENT_USER | SESSION_USER))?
+    ;
+
+create_policy_statement
+    : POLICY identifier ON schema_qualified_name 
+    (AS (PERMISSIVE | RESTRICTIVE))?
+    (FOR (ALL | SELECT | INSERT | UPDATE | DELETE))?
+    (TO user_identifer_current_session (COMMA user_identifer_current_session)*)?
+    (USING vex)? (WITH CHECK vex)?
+    ;
+
+alter_policy_statement
+    : POLICY identifier ON schema_qualified_name rename_to
+    | POLICY identifier ON schema_qualified_name
+        (TO user_identifer_current_session (COMMA user_identifer_current_session)*)?
+        (USING vex)? (WITH CHECK vex)?
+    ;
+
+drop_policy_statement
+    : POLICY (IF EXISTS)? identifier ON schema_qualified_name cascade_restrict?
+    ;
+
+create_subscription_statement
+    : SUBSCRIPTION identifier
+    CONNECTION Character_String_Literal
+    PUBLICATION identifier_list
+    with_storage_parameter?
+    ;
+
+alter_subscription_statement
+    : SUBSCRIPTION identifier alter_subscription_action
+    ;
+
+alter_subscription_action
+    : CONNECTION character_string
+    | SET PUBLICATION identifier_list with_storage_parameter?
+    | REFRESH PUBLICATION with_storage_parameter?
+    | ENABLE
+    | DISABLE
+    | SET storage_parameter
+    | owner_to
+    | rename_to
+    ;
+
+create_cast_statement
+    : CAST LEFT_PAREN schema_qualified_name AS schema_qualified_name RIGHT_PAREN
+    (WITH FUNCTION function_call | WITHOUT FUNCTION | WITH INOUT)
+    (AS ASSIGNMENT | AS IMPLICIT)?
+    ;
+
+drop_cast_statement
+    : CAST (IF EXISTS)? LEFT_PAREN schema_qualified_name AS schema_qualified_name RIGHT_PAREN cascade_restrict?
+    ;
+
+create_operator_family_statement
+    : OPERATOR FAMILY schema_qualified_name USING identifier
+    ;
+
+alter_operator_family_statement
+    : OPERATOR FAMILY schema_qualified_name USING identifier operator_family_action
+    ;
+
+operator_family_action
+    : rename_to
+    | owner_to
+    | set_schema
+    | ADD add_operator_to_family (COMMA add_operator_to_family)*
+    | DROP drop_operator_from_family (COMMA drop_operator_from_family)*
+    ;
+
+add_operator_to_family
+    : OPERATOR unsigned_numeric_literal target_operator (FOR SEARCH | FOR ORDER BY schema_qualified_name)?
+    | FUNCTION unsigned_numeric_literal (LEFT_PAREN (left_type=data_type | NONE) (COMMA (right_type=data_type | NONE))? RIGHT_PAREN)? 
+    function_name (LEFT_PAREN vex_or_named_notation (COMMA vex_or_named_notation)* RIGHT_PAREN)?
+    ;
+
+drop_operator_from_family
+    : (OPERATOR | FUNCTION) unsigned_numeric_literal LEFT_PAREN (left_type=data_type | NONE) (COMMA (right_type=data_type | NONE))? RIGHT_PAREN
+    ;
+
+drop_operator_family_statement
+    : OPERATOR FAMILY (IF EXISTS)? schema_qualified_name USING identifier cascade_restrict?
+    ;
+
+create_operator_class_statement
+    :  OPERATOR CLASS schema_qualified_name DEFAULT? FOR TYPE data_type 
+    USING identifier (FAMILY schema_qualified_name)? AS
+    create_operator_class_option (COMMA create_operator_class_option)*
+    ;
+
+create_operator_class_option
+    : OPERATOR unsigned_numeric_literal name=operator_name 
+        (LEFT_PAREN (data_type | NONE) COMMA (data_type | NONE) RIGHT_PAREN)?
+        (FOR SEARCH | FOR ORDER BY schema_qualified_name)?
+    | FUNCTION unsigned_numeric_literal 
+        (LEFT_PAREN (data_type | NONE) (COMMA (data_type | NONE))? RIGHT_PAREN)? 
+        function_call
+    | STORAGE data_type
+    ;
+
+alter_operator_class_statement
+    : OPERATOR CLASS schema_qualified_name USING identifier (rename_to | owner_to | set_schema)
+    ;
+
+drop_operator_class_statement
+    : OPERATOR CLASS (IF EXISTS)? schema_qualified_name USING identifier cascade_restrict?
+    ;
+
+create_conversion_statement
+    : DEFAULT? CONVERSION schema_qualified_name FOR Character_String_Literal TO Character_String_Literal FROM schema_qualified_name
+    ;
+
+alter_conversion_statement
+    : CONVERSION schema_qualified_name (rename_to | owner_to | set_schema)
+    ;
+
+create_publication_statement
+    : PUBLICATION identifier 
+    (FOR TABLE only_table_multiply (COMMA only_table_multiply)* | FOR ALL TABLES)?
+    with_storage_parameter?
+    ;
+
+alter_publication_statement
+    : PUBLICATION identifier alter_publication_action
+    ;
+
+alter_publication_action
+    : rename_to
+    | owner_to
+    | SET storage_parameter
+    | (ADD | DROP | SET) TABLE only_table_multiply (COMMA only_table_multiply)*
+    ;
+
+only_table_multiply
+    : ONLY? schema_qualified_name MULTIPLY?
+    ;
+
+alter_trigger_statement
+    : TRIGGER identifier ON schema_qualified_name (rename_to | DEPENDS ON EXTENSION identifier)
+    ;
+
+alter_rule_statement
+    : RULE identifier ON schema_qualified_name rename_to
+    ;
+
+copy_statement
+    : copy_to_statement 
+    | copy_from_statement
+    ;
+
+copy_from_statement
+    : COPY table_cols
+    FROM (PROGRAM? Character_String_Literal | STDIN) 
+    (WITH? (LEFT_PAREN copy_option_list RIGHT_PAREN | copy_option_list))?
+    ;
+
+copy_to_statement
+    : COPY (table_cols | LEFT_PAREN (select_stmt | insert_stmt_for_psql | update_stmt_for_psql | delete_stmt_for_psql) RIGHT_PAREN )
+    TO (PROGRAM? Character_String_Literal | STDOUT)
+    (WITH? (LEFT_PAREN copy_option_list RIGHT_PAREN | copy_option_list))?
+    ;
+
+copy_option_list
+    : copy_option (COMMA? copy_option)*
+    ;
+
+copy_option
+    : FORMAT? (TEXT | CSV | BINARY)
+    | OIDS truth_value?
+    | FREEZE truth_value?
+    | DELIMITER AS? Character_String_Literal
+    | NULL AS? Character_String_Literal
+    | HEADER truth_value?
+    | QUOTE Character_String_Literal
+    | ESCAPE Character_String_Literal
+    | FORCE QUOTE (MULTIPLY | columns_list)
+    | FORCE_QUOTE (MULTIPLY | LEFT_PAREN columns_list RIGHT_PAREN)
+    | FORCE NOT NULL columns_list
+    | FORCE_NOT_NULL LEFT_PAREN columns_list RIGHT_PAREN
+    | FORCE_NULL LEFT_PAREN columns_list RIGHT_PAREN
+    | ENCODING Character_String_Literal
     ;
 
 create_view_statement
@@ -1437,7 +1682,7 @@ action
     ;
 
 owner_to
-    : OWNER TO name=identifier | CURRENT_USER | SESSION_USER
+    : OWNER TO (name=identifier | CURRENT_USER | SESSION_USER)
     ;
 
 rename_to
@@ -1497,23 +1742,28 @@ drop_rule_statement
 drop_statements
     : (ACCESS METHOD
     | COLLATION
+    | CONVERSION
     | DATABASE
     | DOMAIN
     | EVENT TRIGGER
     | EXTENSION
+    | GROUP
     | FOREIGN? TABLE
     | FOREIGN DATA WRAPPER
     | INDEX CONCURRENTLY?
     | MATERIALIZED? VIEW
     | PROCEDURAL? LANGUAGE
-    | (ROLE | USER | GROUP)
+    | PUBLICATION
+    | ROLE
     | SCHEMA
     | SEQUENCE
     | SERVER
     | STATISTICS
+    | SUBSCRIPTION
     | TABLESPACE
     | TYPE
-    | TEXT SEARCH (CONFIGURATION | DICTIONARY | PARSER | TEMPLATE)) if_exist_names_restrict_cascade
+    | TEXT SEARCH (CONFIGURATION | DICTIONARY | PARSER | TEMPLATE)
+    | USER) if_exist_names_restrict_cascade
     ;
 
 if_exist_names_restrict_cascade
@@ -2033,6 +2283,9 @@ tokens_nonkeyword
     | FINALFUNC
     | FINALFUNC_EXTRA
     | FINALFUNC_MODIFY
+    | FORCE_NOT_NULL
+    | FORCE_NULL
+    | FORCE_QUOTE
     | FORMAT
     | GETTOKEN
     | HASH
@@ -2071,6 +2324,7 @@ tokens_nonkeyword
     | NOSUPERUSER
     | OUTPUT
     | PASSEDBYVALUE
+    | PERMISSIVE
     | PLAIN
     | PREFERRED
     | PROVIDER
@@ -2080,6 +2334,7 @@ tokens_nonkeyword
     | REPLICATION
     | REMAINDER
     | RESTRICTED
+    | RESTRICTIVE
     | RIGHTARG
     | SAFE
     | SEND
@@ -2655,7 +2910,7 @@ notify_stmt
   ;
 
 truncate_stmt
-  : TRUNCATE TABLE? ONLY? name=schema_qualified_name MULTIPLY? (COMMA ONLY? name=schema_qualified_name MULTIPLY?)*
+  : TRUNCATE TABLE? only_table_multiply (COMMA only_table_multiply)*
   ((RESTART | CONTINUE) IDENTITY)? (CASCADE | RESTRICT)?
   ;
 
