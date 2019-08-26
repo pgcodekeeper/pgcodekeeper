@@ -359,7 +359,7 @@ public class DbStorePicker extends Composite {
         return sb.toString();
     }
 
-    public void filter(boolean isMsSql) {
+    public void filter(Boolean isMsSql) {
         this.isMsSql = isMsSql;
         cmbDbNames.refresh();
     }
