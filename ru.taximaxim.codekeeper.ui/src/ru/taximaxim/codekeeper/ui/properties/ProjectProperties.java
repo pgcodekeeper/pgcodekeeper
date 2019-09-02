@@ -41,6 +41,7 @@ public class ProjectProperties extends PropertyPage {
 
     private Button btnEnableProjPref;
     private Button btnNoPrivileges;
+    private Button btnSimplifyView;
     private Button btnUseGlobalIgnoreList;
 
     private Button btnForceUnixNewlines;
@@ -149,6 +150,7 @@ public class ProjectProperties extends PropertyPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 btnNoPrivileges.setEnabled(btnEnableProjPref.getSelection());
+                btnSimplifyView.setEnabled(btnEnableProjPref.getSelection());
                 btnUseGlobalIgnoreList.setEnabled(btnEnableProjPref.getSelection());
             }
         });
@@ -160,6 +162,14 @@ public class ProjectProperties extends PropertyPage {
         btnNoPrivileges.setLayoutData(gd);
         btnNoPrivileges.setSelection(prefs.getBoolean(PREF.NO_PRIVILEGES, false));
         btnNoPrivileges.setEnabled(overridePref);
+
+        btnSimplifyView = new Button(panel, SWT.CHECK);
+        btnSimplifyView.setText(Messages.GeneralPrefPage_simplify_view);
+        gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
+        gd.horizontalIndent = 10;
+        btnSimplifyView.setLayoutData(gd);
+        btnSimplifyView.setSelection(prefs.getBoolean(PREF.SIMPLIFY_VIEW, false));
+        btnSimplifyView.setEnabled(overridePref);
 
         btnUseGlobalIgnoreList = new Button(panel, SWT.CHECK);
         btnUseGlobalIgnoreList.setText(Messages.ProjectProperties_use_global_ignore_list);
@@ -200,6 +210,8 @@ public class ProjectProperties extends PropertyPage {
         btnEnableProjPref.setSelection(false);
         btnNoPrivileges.setEnabled(btnEnableProjPref.getSelection());
         btnNoPrivileges.setSelection(mainPS.getBoolean(PREF.NO_PRIVILEGES));
+        btnSimplifyView.setEnabled(btnEnableProjPref.getSelection());
+        btnSimplifyView.setSelection(mainPS.getBoolean(PREF.SIMPLIFY_VIEW));
         btnUseGlobalIgnoreList.setEnabled(btnEnableProjPref.getSelection());
         btnUseGlobalIgnoreList.setSelection(true);
 
@@ -254,6 +266,7 @@ public class ProjectProperties extends PropertyPage {
     private void fillPrefs() throws BackingStoreException {
         prefs.putBoolean(PROJ_PREF.ENABLE_PROJ_PREF_ROOT, btnEnableProjPref.getSelection());
         prefs.putBoolean(PREF.NO_PRIVILEGES, btnNoPrivileges.getSelection());
+        prefs.putBoolean(PREF.SIMPLIFY_VIEW, btnSimplifyView.getSelection());
         prefs.putBoolean(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, btnUseGlobalIgnoreList.getSelection());
         prefs.putBoolean(PROJ_PREF.DISABLE_PARSER_IN_EXTERNAL_FILES, btnDisableParser.getSelection());
         prefs.putBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, btnForceUnixNewlines.getSelection());

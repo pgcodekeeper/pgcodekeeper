@@ -44,19 +44,13 @@ public class ViewsReader extends JdbcReader {
             }
         }
 
-        PgDatabase dataBase = schema.getDatabase();
-
-        String definition;
-        if (dataBase.getArguments().isSimplifyView()) {
-            definition = res.getString("simplified_definition");
-        } else {
-            definition = res.getString("definition");
-        }
-
+        String definition = res.getString("definition");
         checkObjectValidity(definition, DbObjType.VIEW, viewName);
         String viewDef = definition.trim();
         int semicolonPos = viewDef.length() - 1;
         v.setQuery(viewDef.charAt(semicolonPos) == ';' ? viewDef.substring(0, semicolonPos) : viewDef);
+
+        PgDatabase dataBase = schema.getDatabase();
 
         loader.submitAntlrTask(viewDef, p -> p.sql().statement(0).data_statement()
                 .select_stmt(),
@@ -117,5 +111,10 @@ public class ViewsReader extends JdbcReader {
         }
 
         return v;
+    }
+
+    @Override
+    protected String replaceParams(String query) {
+        return query.replace("{0}", String.valueOf(loader.args.isSimplifyView()));
     }
 }

@@ -24,6 +24,8 @@ public abstract class JdbcReader implements PgCatalogStrings {
         String query = loader.appendTimestamps(queries.makeQuery(loader.version));
 
         loader.setCurrentOperation(getClass().getSimpleName() + " query");
+        query = replaceParams(query);
+
         try (ResultSet result = loader.runner.runScript(loader.statement, query)) {
             while (result.next()) {
                 long schemaId = result.getLong("schema_oid");
@@ -43,6 +45,13 @@ public abstract class JdbcReader implements PgCatalogStrings {
                 }
             }
         }
+    }
+
+    /**
+     * Changed parameters in query. By default returns given query.
+     */
+    protected String replaceParams(String query) {
+        return query;
     }
 
     /**
