@@ -3,7 +3,9 @@ package ru.taximaxim.codekeeper.apgdiff.model.graph;
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
@@ -31,18 +33,30 @@ public class DepcyWriter {
 
     public void write(Collection<String> names) {
         if (!names.isEmpty()) {
-            // problem with function signature? regex?
-            db.getDescendants()
-            .flatMap(AbstractTable::columnAdder)
-            .filter(st -> names.contains(st.getName()))
-            .forEach(st ->  printTree(st, START_LEVEL, new HashSet<>()));
+            List<PgStatement> list = db.getDescendants().flatMap(AbstractTable::columnAdder)
+                    .filter(st -> names.contains(st.getName())).collect(Collectors.toList());
+            if (list.isEmpty()) {
+                list = db.getDescendants().flatMap(AbstractTable::columnAdder)
+                        .filter(st -> find(names, st.getName())).collect(Collectors.toList());
+            }
+
+            list.forEach(st ->  printTree(st, START_LEVEL, new HashSet<>()));
         } else {
             printTree(db, START_LEVEL, new HashSet<>());
         }
     }
 
+    private boolean find(Collection<String> names, String statement) {
+        for (String name : names) {
+            if (statement.contains(name)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private void printTree(PgStatement st, int level, Set<PgStatement> added) {
-        // recording format as cli argument?
         for (int i = 0; i < level; i++) {
             writer.print("\t");
         }
