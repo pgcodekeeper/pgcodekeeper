@@ -111,21 +111,21 @@ implements TSqlContextProcessor {
             } else if ((drop = ddl.schema_drop()) != null) {
                 safeParseStatement(new DropMsStatement(drop, db), drop);
             } else if (isScriptMode) {
-                safeParseStatement(new OtherMsOperation(ddl), ddl);
+                safeParseStatement(new OtherMsOperation(ddl, db), ddl);
             }
         } else if ((dml = st.dml_clause()) != null) {
             Update_statementContext update = dml.update_statement();
             if (update != null) {
                 safeParseStatement(new UpdateMsStatement(update, db), update);
             } else if (isScriptMode) {
-                safeParseStatement(new OtherMsOperation(dml), dml);
+                safeParseStatement(new OtherMsOperation(dml, db), dml);
             }
         } else if ((ast = st.another_statement()) != null) {
             Set_statementContext set = ast.set_statement();
             Security_statementContext security;
             if (set != null) {
                 if (isScriptMode) {
-                    safeParseStatement(new OtherMsOperation(set), set);
+                    safeParseStatement(new OtherMsOperation(set, db), set);
                 } else {
                     set(set);
                 }
@@ -133,10 +133,10 @@ implements TSqlContextProcessor {
                     && security.rule_common() != null) {
                 safeParseStatement(new CreateMsRule(security.rule_common(), db), security);
             } else if (isScriptMode) {
-                safeParseStatement(new OtherMsOperation(dml), dml);
+                safeParseStatement(new OtherMsOperation(dml, db), dml);
             }
         } else if (isScriptMode) {
-            safeParseStatement(new OtherMsOperation(st), st);
+            safeParseStatement(new OtherMsOperation(st, db), st);
         }
     }
 
@@ -161,7 +161,7 @@ implements TSqlContextProcessor {
         } else if (body.create_or_alter_trigger() != null) {
             p = new CreateMsTrigger(ctx, db, ansiNulls, quotedIdentifier, stream);
         } else if (isScriptMode) {
-            p = new OtherMsOperation(ctx);
+            p = new OtherMsOperation(ctx, db);
         } else {
             return;
         }

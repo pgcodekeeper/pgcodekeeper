@@ -3,10 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.util.Arrays;
 import java.util.List;
 
-import org.antlr.v4.runtime.ParserRuleContext;
-
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Aggregate_paramContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.All_op_refContext;
@@ -281,13 +278,5 @@ public class CreateAggregate extends ParserAbstract {
     public static String getSortOperSign(PgAggregate aggr) {
         String argType = aggr.getArguments().get(0).getDataType();
         return '(' + argType + ", " + argType + ')';
-    }
-
-    @Override
-    protected void fillQueryLocation(String fullScript) {
-        ParserRuleContext ctxWithActionName = ctx.getParent();
-        String query = ParserAbstract.getFullCtxText(ctxWithActionName);
-        db.addToBatch(new QueryLocation(getStmtAction(query),
-                fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query));
     }
 }

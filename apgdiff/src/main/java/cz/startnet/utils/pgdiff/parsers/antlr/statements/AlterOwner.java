@@ -6,7 +6,6 @@ import java.util.Map;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_ownerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -120,13 +119,5 @@ public class AlterOwner extends ParserAbstract {
             overrides.computeIfAbsent(st,
                     k -> new StatementOverride()).setOwner(owner.name.getText());
         }
-    }
-
-    @Override
-    protected void fillQueryLocation(String fullScript) {
-        ParserRuleContext ctxWithActionName = ctx.getParent();
-        String query = ParserAbstract.getFullCtxText(ctxWithActionName);
-        db.addToBatch(new QueryLocation(getStmtAction(query),
-                fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query));
     }
 }

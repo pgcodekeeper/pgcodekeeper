@@ -6,7 +6,6 @@ import java.util.List;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.All_op_refContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.All_simple_opContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_operator_statementContext;
@@ -77,13 +76,5 @@ public class CreateOperator extends ParserAbstract {
         }
 
         addSafe(getSchemaSafe(ids), oper, ids);
-    }
-
-    @Override
-    protected void fillQueryLocation(String fullScript) {
-        ParserRuleContext ctxWithActionName = ctx.getParent();
-        String query = ParserAbstract.getFullCtxText(ctxWithActionName);
-        db.addToBatch(new QueryLocation(getStmtAction(query),
-                fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query));
     }
 }

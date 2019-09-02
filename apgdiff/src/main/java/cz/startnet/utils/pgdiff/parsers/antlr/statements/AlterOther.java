@@ -2,9 +2,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.Arrays;
 
-import org.antlr.v4.runtime.ParserRuleContext;
-
-import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_operator_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
@@ -65,13 +62,5 @@ public class AlterOther extends ParserAbstract {
         Operator_nameContext nameCtx = ctx.target_operator().operator_name();
         addObjReference(Arrays.asList(nameCtx.schema_name, nameCtx.operator),
                 DbObjType.OPERATOR, StatementActions.ALTER);
-    }
-
-    @Override
-    protected void fillQueryLocation(String fullScript) {
-        ParserRuleContext ctxWithActionName = ctx.getParent();
-        String query = ParserAbstract.getFullCtxText(ctxWithActionName);
-        db.addToBatch(new QueryLocation(getStmtAction(query),
-                fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query));
     }
 }

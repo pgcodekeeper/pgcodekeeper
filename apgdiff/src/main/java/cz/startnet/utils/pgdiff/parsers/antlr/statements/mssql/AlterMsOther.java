@@ -2,6 +2,8 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import java.util.Arrays;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_sequenceContext;
@@ -45,14 +47,12 @@ public class AlterMsOther extends ParserAbstract {
     }
 
     @Override
-    protected void fillQueryLocation(String fullScript) {
-        String query = ParserAbstract.getFullCtxText(ctx);
-        QueryLocation loc = new QueryLocation(getStmtAction(query),
-                fullScript.indexOf(query), ctx.getStart().getLine(), query);
-        Alter_sequenceContext alterSeqCtx = ctx.alter_sequence();
+    protected QueryLocation fillQueryLocation(ParserRuleContext ctx) {
+        QueryLocation loc = super.fillQueryLocation(ctx);
+        Alter_sequenceContext alterSeqCtx = ((Schema_alterContext) ctx).alter_sequence();
         if (alterSeqCtx != null && !alterSeqCtx.RESTART().isEmpty()) {
             loc.setWarning(DangerStatement.RESTART_WITH);
         }
-        db.addToBatch(loc);
+        return loc;
     }
 }

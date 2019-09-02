@@ -3,6 +3,8 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 import java.util.Arrays;
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Drop_relational_or_xml_or_spatial_indexContext;
@@ -96,14 +98,12 @@ public class DropMsStatement extends ParserAbstract {
     }
 
     @Override
-    protected void fillQueryLocation(String fullScript) {
-        String query = ParserAbstract.getFullCtxText(ctx);
-        QueryLocation loc = new QueryLocation(getStmtAction(query),
-                fullScript.indexOf(query), ctx.getStart().getLine(), query);
-        Drop_statementsContext dropSt = ctx.drop_statements();
+    protected QueryLocation fillQueryLocation(ParserRuleContext ctx) {
+        QueryLocation loc = super.fillQueryLocation(ctx);
+        Drop_statementsContext dropSt = ((Schema_dropContext) ctx).drop_statements();
         if (dropSt != null && dropSt.TABLE() != null) {
             loc.setWarning(DangerStatement.DROP_TABLE);
         }
-        db.addToBatch(loc);
+        return loc;
     }
 }

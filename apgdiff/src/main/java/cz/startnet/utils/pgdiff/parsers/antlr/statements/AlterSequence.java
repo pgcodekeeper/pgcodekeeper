@@ -9,6 +9,7 @@ import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_sequence_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_alterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Tokens_nonreserved_except_function_typeContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
@@ -52,14 +53,11 @@ public class AlterSequence extends ParserAbstract {
     }
 
     @Override
-    protected void fillQueryLocation(String fullScript) {
-        ParserRuleContext ctxWithActionName = ctx.getParent();
-        String query = ParserAbstract.getFullCtxText(ctxWithActionName);
-        QueryLocation loc = new QueryLocation(getStmtAction(query),
-                fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query);
-        if (!ctx.RESTART().isEmpty()) {
+    protected QueryLocation fillQueryLocation(ParserRuleContext ctx) {
+        QueryLocation loc = super.fillQueryLocation(ctx);
+        if (!((Schema_alterContext) ctx).alter_sequence_statement().RESTART().isEmpty()) {
             loc.setWarning(DangerStatement.RESTART_WITH);
         }
-        db.addToBatch(loc);
+        return loc;
     }
 }

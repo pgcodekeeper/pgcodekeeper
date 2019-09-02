@@ -60,10 +60,7 @@ public class AlterMsBatch extends ParserAbstract {
     }
 
     @Override
-    protected void fillQueryLocation(String fullScript) {
-        ParserRuleContext ctxWithActionName = ctx.getParent();
-        String query = ParserAbstract.getFullCtxText(ctxWithActionName);
-        db.addToBatch(new QueryLocation(getStmtAction(query),
-                fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query));
+    protected QueryLocation fillQueryLocation(ParserRuleContext ctx) {
+        return super.fillQueryLocation(ctx.getParent());
     }
 }

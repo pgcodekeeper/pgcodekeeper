@@ -12,6 +12,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Foreign_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identity_bodyContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_alterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
@@ -229,18 +230,16 @@ public class AlterTable extends TableAbstract {
     }
 
     @Override
-    protected void fillQueryLocation(String fullScript) {
-        ParserRuleContext ctxWithActionName = ctx.getParent();
-        String query = ParserAbstract.getFullCtxText(ctxWithActionName);
-        QueryLocation loc = new QueryLocation(getStmtAction(query),
-                fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query);
-        for (Table_actionContext tablAction : ctx.table_action()) {
+    protected QueryLocation fillQueryLocation(ParserRuleContext ctx) {
+        QueryLocation loc = super.fillQueryLocation(ctx);
+        for (Table_actionContext tablAction : ((Schema_alterContext) ctx)
+                .alter_table_statement().table_action()) {
             if (tablAction.column != null && tablAction.DROP() != null) {
                 loc.setWarning(DangerStatement.DROP_COLUMN);
             } else if (tablAction.datatype != null) {
                 loc.setWarning(DangerStatement.ALTER_COLUMN);
             }
         }
-        db.addToBatch(loc);
+        return loc;
     }
 }

@@ -11,9 +11,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_alterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_action_dropContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraintContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.TableAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
@@ -90,16 +90,14 @@ public class AlterMsTable extends TableAbstract {
     }
 
     @Override
-    protected void fillQueryLocation(String fullScript) {
-        ParserRuleContext ctxWithActionName = ctx.getParent();
-        String query = ParserAbstract.getFullCtxText(ctxWithActionName);
-        QueryLocation loc = new QueryLocation(getStmtAction(query),
-                fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query);
-        if (ctx.DROP() != null && ctx.COLUMN() != null) {
+    protected QueryLocation fillQueryLocation(ParserRuleContext ctx) {
+        QueryLocation loc = super.fillQueryLocation(ctx);
+        Alter_tableContext alterTblCtx  = ((Schema_alterContext) ctx).alter_table();
+        if (alterTblCtx.DROP() != null && alterTblCtx.COLUMN() != null) {
             loc.setWarning(DangerStatement.DROP_COLUMN);
-        } else if (ctx.ALTER() != null && ctx.COLUMN() != null) {
+        } else if (alterTblCtx.ALTER() != null && alterTblCtx.COLUMN() != null) {
             loc.setWarning(DangerStatement.ALTER_COLUMN);
         }
-        db.addToBatch(loc);
+        return loc;
     }
 }

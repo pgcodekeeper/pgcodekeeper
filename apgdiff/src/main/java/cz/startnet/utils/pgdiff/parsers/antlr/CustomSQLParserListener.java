@@ -99,7 +99,7 @@ implements SqlContextProcessor {
         } else if ((ds = statement.data_statement()) != null) {
             data(ds);
         } else if(isScriptMode) {
-            safeParseStatement(new OtherOperation(statement), statement);
+            safeParseStatement(new OtherOperation(statement, db), statement);
         }
     }
 
@@ -150,9 +150,9 @@ implements SqlContextProcessor {
                 set(ctx.set_statement());
                 return;
             }
-            p = new OtherOperation(ctx.set_statement());
+            p = new OtherOperation(ctx.set_statement(), db);
         } else if (isScriptMode) {
-            p = new OtherOperation(ctx);
+            p = new OtherOperation(ctx, db);
         } else {
             return;
         }
@@ -184,7 +184,7 @@ implements SqlContextProcessor {
         if (ctx.update_stmt_for_psql() != null) {
             p =  new UpdateStatement(ctx.update_stmt_for_psql(), db);
         } else if (isScriptMode) {
-            p = new OtherOperation(ctx);
+            p = new OtherOperation(ctx, db);
         } else {
             return;
         }

@@ -42,8 +42,7 @@ public class CustomParserListener {
      * @param ctx statememnt's first token rule
      */
     protected void safeParseStatement(ParserAbstract p, ParserRuleContext ctx) {
-        safeParseStatement(() -> p.parseObject(filename, mode, statementBodies,
-                fullScript), ctx);
+        safeParseStatement(() -> p.parseObject(filename, mode, statementBodies, ctx), ctx);
     }
 
     protected void safeParseStatement(Runnable r, ParserRuleContext ctx) {

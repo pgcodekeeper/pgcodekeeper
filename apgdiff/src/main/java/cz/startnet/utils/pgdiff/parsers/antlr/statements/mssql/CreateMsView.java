@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
 
 import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
@@ -85,10 +86,12 @@ public class CreateMsView extends BatchContextProcessor {
     }
 
     @Override
-    protected void fillQueryLocation(String fullScript) {
-        ParserRuleContext ctxWithActionName = ctx.getParent().getParent();
-        String query = ParserAbstract.getFullCtxTextWithHidden(ctxWithActionName, stream);
-        db.addToBatch(new QueryLocation(getStmtAction(query),
-                fullScript.indexOf(query), ctxWithActionName.getStart().getLine(), query));
+    protected QueryLocation fillQueryLocation(ParserRuleContext ctx) {
+        String query = ParserAbstract.getFullCtxTextWithHidden(ctx, stream);
+        Token startToken = ctx.getStart();
+        QueryLocation loc = new QueryLocation(getStmtAction(query),
+                startToken.getStartIndex(), startToken.getLine(), query);
+        db.addToBatch(loc);
+        return loc;
     }
 }

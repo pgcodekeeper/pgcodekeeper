@@ -16,6 +16,7 @@ import org.antlr.v4.runtime.misc.Interval;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
+import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
@@ -66,12 +67,12 @@ public abstract class ParserAbstract {
     }
 
     public void parseObject(String fileName, ParserListenerMode mode,
-            List<StatementBodyContainer> statementBodies, String fullScript) {
+            List<StatementBodyContainer> statementBodies, ParserRuleContext ctx) {
         this.fileName = fileName;
         this.refMode = ParserListenerMode.REF == mode;
         this.statementBodies = statementBodies;
         if (ParserListenerMode.SCRIPT == mode) {
-            fillQueryLocation(fullScript);
+            fillQueryLocation(ctx);
         } else {
             parseObject();
         }
@@ -97,7 +98,14 @@ public abstract class ParserAbstract {
      * in the script from statement context, and then puts filled 'QueryLocation'-object
      * to the batch.
      */
-    protected abstract void fillQueryLocation(String fullScript);
+    protected QueryLocation fillQueryLocation(ParserRuleContext ctx) {
+        String query = ParserAbstract.getFullCtxText(ctx);
+        Token startToken = ctx.getStart();
+        QueryLocation loc = new QueryLocation(getStmtAction(query),
+                startToken.getStartIndex(), startToken.getLine(), query);
+        db.addToBatch(loc);
+        return loc;
+    }
 
     /**
      * Get statement action for QueryLocation object.

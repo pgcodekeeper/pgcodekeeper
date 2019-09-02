@@ -4,13 +4,14 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Script_transactionContext;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class OtherOperation extends ParserAbstract  {
 
     protected final ParserRuleContext ctx;
 
-    public OtherOperation(ParserRuleContext ctx) {
-        super(null);
+    public OtherOperation(ParserRuleContext ctx, PgDatabase db) {
+        super(db);
         this.ctx = ctx;
     }
 
@@ -20,7 +21,7 @@ public class OtherOperation extends ParserAbstract  {
     }
 
     @Override
-    protected void fillQueryLocation(String fullScript) {
+    protected QueryLocation fillQueryLocation(ParserRuleContext ctx) {
         String query = ParserAbstract.getFullCtxText(ctx);
 
         String action;
@@ -28,10 +29,12 @@ public class OtherOperation extends ParserAbstract  {
                 && ((Script_transactionContext) ctx).START() != null) {
             action = "START TRANSACTION";
         } else {
-            action = ParserAbstract.getStmtAction(query);
+            action = getStmtAction(query);
         }
 
-        db.addToBatch(new QueryLocation(action, fullScript.indexOf(query),
-                ctx.getStart().getLine(), query));
+        QueryLocation loc = new QueryLocation(action, ctx.getStart().getStartIndex(),
+                ctx.getStart().getLine(), query);
+        db.addToBatch(loc);
+        return loc;
     }
 }
