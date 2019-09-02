@@ -836,7 +836,7 @@ alter_partition_function
     ;
 
 create_partition_scheme
-    : CREATE PARTITION SCHEME partition_scheme_name=id AS PARTITION partition_function_name=id
+    : PARTITION SCHEME partition_scheme_name=id AS PARTITION partition_function_name=id
     ALL? TO LR_BRACKET id_or_primary (COMMA id_or_primary)* RR_BRACKET 
     ;
 
