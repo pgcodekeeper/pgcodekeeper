@@ -6,9 +6,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.Parser;
@@ -37,195 +36,155 @@ import ru.taximaxim.codekeeper.apgdiff.Log;
 public class PgParserTest {
 
     @Parameters
-    public static Collection<?> parameters() {
-        return Arrays.asList(
-                new Object[][] {
-                    {"advisory_lock", 0},
-                    // func args in refs
-                    {"aggregates", 0},
-                    // {"alter_generic", 0},
-                    {"alter_operator", 0},
-                    {"alter_table", 0},
-                    //{"amutils", 0},
-                    //{"arrays", 0},
-                    {"async", 0},
-                    {"bit", 0},
-                    {"bitmapops", 0},
-                    {"boolean", 0},
-                    {"box", 1},
-                    {"brin", 0},
-                    {"btree_index", 0},
-                    {"case", 0},
-                    {"char", 0},
-                    {"circle", 0},
-                    {"cluster", 0},
-                    {"collate", 12},
-                    {"combocid", 0},
-                    //{"conversion", 0},
-                    //{"copy", 0},
-                    //{"copyselect", 0},
-                    // basetype = 'ANY'
-                    {"create_aggregate", 0},
-                    //{"create_am", 0},
-                    //{"create_cast", 0},
-                    {"create_function", 1},
-                    {"create_index", 10},
-                    {"create_misc", 0},
+    public static Iterable<Object[]> parameters() {
+        List<Object[]> p = Arrays.asList(new Object[][] {
+            // basetype = 'ANY'
+            // func args in refs
+            {"aggregates"},
+            {"alter_operator"},
+            {"alter_table"},
+            //{"arrays"},
+            {"case"},
+            {"char"},
+            {"cluster"},
+            {"collate", 7},
+            {"conversion"},
+            {"copy"},
+            {"create_cast"},
+            {"create_function"},
+            {"create_index", 10},
+            {"create_misc"},
+            {"create_procedure"},
+            {"create_table_like"},
+            {"create_table"},
+            {"create_type"},
+            {"create_view"},
+            {"date"},
+            {"dbsize"},
+            {"delete"},
+            {"dependency"},
+            {"domain"},
+            {"drop_if_exists"},
+            {"drop_operator"},
+            {"enum"},
+            {"event_trigger"},
+            {"expressions"},
+            {"fast_default"},
+            {"float4"},
+            {"float8"},
+            {"foreign_data"},
+            {"foreign_key"},
+            {"functional_deps"},
+            {"geometry"},
+            {"gin"},
+            {"gist", 3},
+            {"groupingsets", 47},
+            {"guc"},
+            {"hash_func"},
+            {"hash_index"},
+            {"hash_part"},
+            {"hs_primary_setup"},
+            {"hs_standby_allowed"},
+            {"hs_standby_check"},
+            {"hs_standby_disallowed"},
+            {"hs_standby_functions"},
+            {"identity"},
+            {"index_including"},
+            {"indexing", 1},
+            {"indirect_toast"},
+            {"inet"},
+            {"inherit"},
+            {"insert_conflict"},
+            {"insert"},
+            {"interval"},
+            {"join"},
+            {"json_encoding"},
+            {"jsonb", 3},
+            {"lseg"},
+            {"matview"},
+            {"misc_functions"},
+            {"misc_sanity"},
+            {"name"},
+            {"namespace"},
+            {"numeric_big", 6},
+            {"numeric"},
+            {"numerology"},
+            {"object_address"},
+            {"oid"},
+            {"oidjoins"},
+            {"operator"},
+            {"opr_sanity"},
+            {"other"},
+            {"partition_aggregate", 1},
+            {"partition_info"},
+            {"partition_join"},
+            {"partition_prune", 6},
+            {"pg_lsn"},
+            {"plancache"},
+            //{"plpgsql"},
+            {"point", 5},
+            {"policy"},
+            {"polygon"},
+            // IDEA can't find ambiguity
+            {"polymorphism", 1},
+            {"portals_p2"},
+            {"portals"},
+            {"prepare"},
+            {"prepared_xacts"},
+            {"privileges", 2},
+            {"publication"},
+            {"random"},
+            {"rangefuncs"},
+            {"rangetypes"},
+            {"regproc"},
+            {"reloptions"},
+            {"replica_identity"},
+            {"returning"},
+            {"role"},
+            {"rowtypes"},
+            {"rules", 1},
+            // IDEA can't find 7 ambiguity
+            {"select", 11},
+            {"set"},
+            {"sequence"},
+            {"spgist", 2},
+            // some string are unsupported
+            {"strings"},
+            {"subscription"},
+            {"subselect"},
+            {"sysviews"},
+            //{"tablesample"},
+            {"temp"},
+            {"tidscan"},
+            {"time"},
+            {"timestamp"},
+            {"timestamptz"},
+            {"timetz"},
+            {"transactions"},
+            {"triggers"},
+            {"truncate"},
+            {"tsdicts"},
+            {"tsearch", 1},
+            {"tsrf", 6},
+            {"tstypes", 1},
+            {"type_sanity"},
+            {"typed_table"},
+            {"updatable_views", 6},
+            {"update"},
+            {"varchar"},
+            {"window"},
+            {"with"},
+            // xmltable
+            {"xml"},
+            {"xmlmap"},
+        });
 
-                    // IDEA can't find ambiguity
-                    {"create_operator", 7},
-                    {"create_procedure", 0},
-                    {"create_table_like", 0},
-                    {"create_table", 0},
-                    {"create_type", 0},
-                    {"create_view", 0},
-                    {"date", 0},
-                    {"dbsize", 0},
-                    {"delete", 0},
-                    {"dependency", 0},
-                    //{"domain", 0},
-                    {"drop_if_exists", 0},
-                    {"drop_operator", 0},
-                    {"enum", 0},
-                    {"event_trigger", 0},
-                    {"expressions", 0},
-                    {"fast_default", 0},
-                    {"float4", 0},
-                    {"float8", 0},
-                    {"foreign_data", 0},
-                    {"foreign_key", 0},
-                    {"functional_deps", 0},
-                    {"geometry", 0},
-                    {"gin", 0},
-                    {"gist", 3},
-                    //{"groupingsets", 0},
-                    {"guc", 0},
-                    {"hash_func", 0},
-                    {"hash_index", 0},
-                    {"hash_part", 0},
-                    {"horology", 0},
-                    {"hs_primary_extremes", 0},
-                    {"hs_primary_setup", 0},
-                    {"hs_standby_allowed", 0},
-                    {"hs_standby_check", 0},
-                    {"hs_standby_disallowed", 0},
-                    {"hs_standby_functions", 0},
-                    {"identity", 0},
-                    {"index_including", 0},
-                    {"indexing", 1},
-                    {"indirect_toast", 0},
-                    {"inet", 0},
-                    {"inherit", 0},
-                    {"insert_conflict", 0},
-                    {"insert", 0},
-                    {"int2", 0},
-                    {"int4", 0},
-                    {"int8", 0},
-                    {"interval", 0},
-                    {"join", 0},
-                    {"json_encoding", 0},
-                    {"json", 2},
-                    {"jsonb", 3},
-                    {"limit", 0},
-                    {"line", 0},
-                    {"lock", 0},
-                    {"lseg", 0},
-                    {"macaddr", 0},
-                    {"macaddr8", 0},
-                    {"matview", 0},
-                    {"misc_functions", 0},
-                    {"misc_sanity", 0},
-                    {"money", 0},
-                    {"name", 0},
-                    {"namespace", 0},
-                    {"numeric_big", 6},
-                    {"numeric", 0},
-                    {"numerology", 0},
-                    {"object_address", 0},
-                    {"oid", 0},
-                    {"oidjoins", 0},
-                    {"opr_sanity", 0},
-                    {"partition_aggregate", 1},
-                    {"partition_info", 0},
-                    {"partition_join", 0},
-                    {"partition_prune", 6},
-                    {"password", 0},
-                    {"path", 0},
-                    {"pg_lsn", 0},
-                    {"plancache", 0},
-                    //{"plpgsql", 0},
-                    {"point", 5},
-                    {"polygon", 0},
-                    // IDEA can't find ambiguity
-                    {"polymorphism", 1},
-                    {"portals_p2", 0},
-                    {"portals", 0},
-                    {"prepare", 0},
-                    {"prepared_xacts", 0},
-                    {"privileges", 2},
-                    //{"publication", 0},
-                    {"random", 0},
-                    //{"rangefuncs", 0},
-                    {"rangetypes", 0},
-                    {"regex.linux.utf8", 0},
-                    {"regex", 0},
-                    {"regproc", 0},
-                    {"reloptions", 0},
-                    {"replica_identity", 0},
-                    {"returning", 0},
-                    {"roleattributes", 0},
-                    //{"rolenames", 0},
-                    //{"rowsecurity", 0},
-                    {"rowtypes", 0},
-                    {"rules", 1},
-                    {"sanity_check", 0},
-                    //{"security_label", 0},
-                    {"select_distinct_on", 0},
-                    {"select_distinct", 0},
-                    {"select_having", 0},
-                    {"select_implicit", 0},
-                    //{"select_into", 0},
-                    {"select_parallel", 0},
-                    {"select_views", 0},
-                    {"select", 0},
-                    {"sequence", 0},
-                    {"spgist", 2},
-                    {"stats_ext", 0},
-                    {"stats", 0},
-                    // some string are unsupported
-                    {"strings", 0},
-                    //{"subscription", 0},
-                    {"subselect", 0},
-                    {"sysviews", 0},
-                    //{"tablesample", 0},
-                    {"temp", 0},
-                    {"text", 0},
-                    {"tidscan", 0},
-                    {"time", 0},
-                    {"timestamp", 0},
-                    {"timestamptz", 0},
-                    {"timetz", 0},
-                    {"transactions", 0},
-                    {"triggers", 0},
-                    {"truncate", 0},
-                    {"tsdicts", 0},
-                    {"tsearch", 1},
-                    {"tsrf", 6},
-                    {"tstypes", 1},
-                    {"type_sanity", 0},
-                    {"typed_table", 0},
-                    {"union", 0},
-                    {"updatable_views", 6},
-                    {"update", 0},
-                    {"uuid", 0},
-                    {"vacuum", 0},
-                    {"varchar", 0},
-                    {"window", 0},
-                    {"with", 0},
-                    // xmltable
-                    {"xml", 0},
-                    {"xmlmap", 0},
-                });
+        int maxLength = p.stream()
+                .mapToInt(oo -> oo.length)
+                .max().getAsInt();
+        return p.stream()
+                .map(oo -> oo.length < maxLength ? Arrays.copyOf(oo, maxLength) : oo)
+                ::iterator;
     }
 
     /**
@@ -234,9 +193,9 @@ public class PgParserTest {
     private final String fileNameTemplate;
     private final int allowedAmbiguity;
 
-    public PgParserTest(final String fileNameTemplate, int allowedAmbiguity) {
+    public PgParserTest(final String fileNameTemplate, Integer allowedAmbiguity) {
         this.fileNameTemplate = fileNameTemplate;
-        this.allowedAmbiguity = allowedAmbiguity;
+        this.allowedAmbiguity = allowedAmbiguity != null ? allowedAmbiguity : 0;
         Log.log(Log.LOG_DEBUG, fileNameTemplate);
     }
 
@@ -253,7 +212,7 @@ public class PgParserTest {
     @Test
     public void runDiff() throws IOException, InterruptedException {
         List<AntlrError> errors = new ArrayList<>();
-        AtomicBoolean hasAmbiguity = new AtomicBoolean(false);
+        AtomicInteger ambiguity = new AtomicInteger();
 
         String sql = getStringFromInpunStream(PgParserTest.class
                 .getResourceAsStream(fileNameTemplate + ".sql"));
@@ -264,20 +223,17 @@ public class PgParserTest {
         parser.getInterpreter().setPredictionMode(PredictionMode.LL_EXACT_AMBIG_DETECTION);
         parser.addErrorListener(new BaseErrorListener() {
 
-            private int ambiguityCount;
-
             @Override
             public void reportAmbiguity(Parser p, DFA dfa, int start,
                     int stop, boolean exact, BitSet set, ATNConfigSet conf) {
-                if (++ambiguityCount > allowedAmbiguity ) {
-                    hasAmbiguity.set(true);
-                }
+                ambiguity.incrementAndGet();
             }
         });
 
         parser.sql();
 
-        Assert.assertFalse("File: " + fileNameTemplate + " - ANTLR Ambiguity", hasAmbiguity.get());
+        int count = ambiguity.intValue();
         Assert.assertTrue("File: " + fileNameTemplate + " - ANTLR Error", errors.isEmpty());
+        Assert.assertFalse("File: " + fileNameTemplate + " - ANTLR Ambiguity " + count, count != allowedAmbiguity);
     }
 }

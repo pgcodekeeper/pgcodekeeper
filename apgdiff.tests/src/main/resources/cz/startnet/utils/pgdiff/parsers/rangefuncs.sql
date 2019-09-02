@@ -368,8 +368,8 @@ DROP FUNCTION rngfuncb(in f1 int, inout f2 int);
 -- For my next trick, polymorphic OUT parameters
 --
 
-CREATE FUNCTION dup (f1 anyelement, f2 out anyelement, f3 out anyarray)
-AS 'select $1, array[$1,$1]' LANGUAGE sql;
+--CREATE FUNCTION dup (f1 anyelement, f2 out anyelement, f3 out anyarray)
+--AS 'select $1, array[$1,$1]' LANGUAGE sql;
 SELECT dup(22);
 SELECT dup('xyz');	-- fails
 SELECT dup('xyz'::text);

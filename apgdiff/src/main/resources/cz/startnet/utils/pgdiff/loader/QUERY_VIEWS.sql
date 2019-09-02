@@ -29,7 +29,7 @@ LEFT JOIN
     (SELECT attrelid,
             pg_catalog.array_agg(attr.attname ORDER BY attr.attnum) AS column_names,
             pg_catalog.array_agg(des.description ORDER BY attr.attnum) AS column_comments,
-            pg_catalog.array_agg(def.adsrc ORDER BY attr.attnum) AS column_defaults,
+            pg_catalog.array_agg(pg_catalog.pg_get_expr(def.adbin, def.adrelid) ORDER BY attr.attnum) AS column_defaults,
             pg_catalog.array_agg(attr.attacl::text ORDER BY attr.attnum) AS column_acl
      FROM pg_catalog.pg_attribute attr
      LEFT JOIN pg_catalog.pg_attrdef def ON def.adnum = attr.attnum

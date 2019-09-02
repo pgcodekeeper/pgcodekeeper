@@ -113,7 +113,7 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
 
         if (proj != null) {
             try {
-                storePicker.filter(proj.hasNature(NATURE.MS));
+                storePicker.filter(proj.hasNature(NATURE.ID) ? proj.hasNature(NATURE.MS) : null);
             } catch (CoreException ex) {
                 Log.log(ex);
             }

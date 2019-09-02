@@ -797,17 +797,19 @@ SELECT lo_create(1002);
 SELECT lo_create(1003);
 SELECT lo_create(1004);
 SELECT lo_create(1005);
-/*
+
 GRANT ALL ON LARGE OBJECT 1001 TO PUBLIC;
 GRANT SELECT ON LARGE OBJECT 1003 TO regress_priv_user2;
 GRANT SELECT,UPDATE ON LARGE OBJECT 1004 TO regress_priv_user2;
 GRANT ALL ON LARGE OBJECT 1005 TO regress_priv_user2;
 GRANT SELECT ON LARGE OBJECT 1005 TO regress_priv_user2 WITH GRANT OPTION;
-
 GRANT SELECT, INSERT ON LARGE OBJECT 1001 TO PUBLIC;    -- to be failed
 GRANT SELECT, UPDATE ON LARGE OBJECT 1001 TO nosuchuser;    -- to be failed
 GRANT SELECT, UPDATE ON LARGE OBJECT  999 TO PUBLIC;    -- to be failed
-*/
+GRANT SELECT ON LARGE OBJECT 1005 TO regress_priv_user3;
+GRANT UPDATE ON LARGE OBJECT 1006 TO regress_priv_user3;    -- to be denied
+REVOKE ALL ON LARGE OBJECT 2001, 2002 FROM PUBLIC;
+GRANT ALL ON LARGE OBJECT 2001 TO regress_priv_user3;
 
 SET SESSION AUTHORIZATION regress_priv_user2;
 
@@ -826,12 +828,6 @@ SELECT lowrite(lo_open(1001, x'20000'::int), 'abcd');
 SELECT lowrite(lo_open(1002, x'20000'::int), 'abcd');   -- to be denied
 SELECT lowrite(lo_open(1003, x'20000'::int), 'abcd');   -- to be denied
 SELECT lowrite(lo_open(1004, x'20000'::int), 'abcd');
-/*
-GRANT SELECT ON LARGE OBJECT 1005 TO regress_priv_user3;
-GRANT UPDATE ON LARGE OBJECT 1006 TO regress_priv_user3;    -- to be denied
-REVOKE ALL ON LARGE OBJECT 2001, 2002 FROM PUBLIC;
-GRANT ALL ON LARGE OBJECT 2001 TO regress_priv_user3;
-*/
 SELECT lo_unlink(1001);     -- to be denied
 SELECT lo_unlink(2002);
 
