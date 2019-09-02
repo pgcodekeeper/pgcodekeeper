@@ -71,9 +71,6 @@ implements SqlContextProcessor {
 
     @Override
     public void process(SqlContext rootCtx, CommonTokenStream stream) {
-        if (isScriptMode) {
-            fullScript = ParserAbstract.getFullCtxText(rootCtx);
-        }
         for (StatementContext s : rootCtx.statement()) {
             statement(s);
         }

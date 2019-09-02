@@ -43,9 +43,6 @@ implements SqlContextProcessor {
 
     @Override
     public void process(SqlContext rootCtx, CommonTokenStream stream) {
-        if (ParserListenerMode.SCRIPT == mode) {
-            fullScript = ParserAbstract.getFullCtxText(rootCtx);
-        }
         for (StatementContext s : rootCtx.statement()) {
             Schema_statementContext st = s.schema_statement();
             if (st != null) {

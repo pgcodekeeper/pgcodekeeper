@@ -24,8 +24,6 @@ public class CustomParserListener {
     private final List<AntlrError> errors;
     private final IProgressMonitor monitor;
 
-    protected String fullScript;
-
     private final List<StatementBodyContainer> statementBodies = new ArrayList<>();
 
     public CustomParserListener(PgDatabase database, String filename,

@@ -40,9 +40,6 @@ implements TSqlContextProcessor {
 
     @Override
     public void process(Tsql_fileContext rootCtx, CommonTokenStream stream) {
-        if (ParserListenerMode.SCRIPT == mode) {
-            fullScript = ParserAbstract.getFullCtxTextWithHidden(rootCtx, stream);
-        }
         for (BatchContext b : rootCtx.batch()) {
             Sql_clausesContext clauses = b.sql_clauses();
             Batch_statementContext batch;
