@@ -197,6 +197,10 @@ public class CliArgs extends PgDiffArguments {
             usage="work with MS SQL")
     private boolean msSql;
 
+    @Option(name="--simplify-views",
+            usage="simplify view definitions from JDBC")
+    private boolean simplifyView;
+
     @Override
     public boolean isModeParse() {
         return modeParse;
@@ -428,6 +432,16 @@ public class CliArgs extends PgDiffArguments {
     @Override
     public void setConcurrentlyMode(boolean concurrentlyMode) {
         this.concurrentlyMode = concurrentlyMode;
+    }
+
+    @Override
+    public boolean isSimplifyView() {
+        return simplifyView;
+    }
+
+    @Override
+    public void setSimplifyView(boolean simplifyView) {
+        this.simplifyView = simplifyView;
     }
 
     private static void badArgs(String message) throws CmdLineException{

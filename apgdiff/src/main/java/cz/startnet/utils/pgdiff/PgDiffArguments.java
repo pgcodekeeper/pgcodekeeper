@@ -44,6 +44,7 @@ public class PgDiffArguments implements Cloneable {
     private boolean libSafeMode;
     private boolean msSql;
     private boolean ignoreConcurrentModification;
+    private boolean simplifyView;
 
     public void setModeParse(final boolean modeParse) {
         this.modeParse = modeParse;
@@ -239,6 +240,14 @@ public class PgDiffArguments implements Cloneable {
 
     public void setConcurrentlyMode(boolean concurrentlyMode) {
         this.concurrentlyMode = concurrentlyMode;
+    }
+
+    public boolean isSimplifyView() {
+        return simplifyView;
+    }
+
+    public void setSimplifyView(boolean simplifyView) {
+        this.simplifyView = simplifyView;
     }
 
     @Override
