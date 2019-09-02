@@ -3,6 +3,7 @@ package ru.taximaxim.codekeeper.ui.differ;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
+import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -32,6 +33,18 @@ public class TreeDiffer implements IRunnableWithProgress {
 
     private TreeElement diffTree;
     private TreeElement diffTreeRevert;
+
+    private Stream<Object> errors = Stream.empty();
+
+    public Stream<Object> getErrors() {
+        if (dbSource != null) {
+            errors = Stream.concat(errors, dbSource.getErrors().stream());
+        }
+        if (dbTarget != null) {
+            errors = Stream.concat(errors, dbTarget.getErrors().stream());
+        }
+        return errors;
+    }
 
     public DbSource getDbSource() {
         return dbSource;
