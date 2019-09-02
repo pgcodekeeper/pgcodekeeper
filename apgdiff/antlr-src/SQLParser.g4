@@ -1606,7 +1606,7 @@ constraint_common
 
 constr_body
     : EXCLUDE (USING index_method=identifier)?
-            LEFT_PAREN identifier WITH all_op (COMMA identifier WITH all_op)* RIGHT_PAREN
+            LEFT_PAREN sort_specifier WITH all_op (COMMA sort_specifier WITH all_op)* RIGHT_PAREN
             index_parameters (where=WHERE exp=vex)?
     | (FOREIGN KEY column_references)? REFERENCES schema_qualified_name ref=column_references?
         (MATCH (FULL | PARTIAL | SIMPLE) | ON (DELETE | UPDATE) action)*
