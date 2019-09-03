@@ -150,3 +150,15 @@ CREATE EVENT SESSION RingBufferExampleSession ON SERVER
         (SET max_memory = 4096)
 WITH (max_dispatch_latency = 1 seconds)
 
+CREATE EVENT NOTIFICATION log_ddl1   
+ON SERVER   
+FOR Object_Created   
+TO SERVICE 'NotifyService',  
+    '8140a771-3c4b-4479-8ac0-81008ab17984' ;
+CREATE EVENT NOTIFICATION Notify_ALTER_T1  
+ON DATABASE  
+FOR ALTER_TABLE  
+TO SERVICE 'NotifyService',  
+    '8140a771-3c4b-4479-8ac0-81008ab17984';  
+
+

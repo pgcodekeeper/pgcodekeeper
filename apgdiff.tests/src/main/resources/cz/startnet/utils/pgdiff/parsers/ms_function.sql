@@ -1,4 +1,20 @@
+ALTER PARTITION FUNCTION myRangePF1 ()  
+MERGE RANGE (100);  
+ALTER PARTITION FUNCTION myRangePF1 ()  
+SPLIT RANGE (500); 
+GO
 
+CREATE FUNCTION [main].[TestParentheses]
+  (
+    @WHY INTEGER
+  )
+  RETURNS TABLE
+  AS
+  RETURN
+  (
+  SELECT @WHY + 1 AS UltimateAnswer
+  )
+GO
 --create function return table , no BEGIN and END in this case
 create function Test (@TZ int)
 returns table
