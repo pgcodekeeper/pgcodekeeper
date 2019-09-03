@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -114,7 +115,7 @@ public class ViewsReader extends JdbcReader {
     }
 
     @Override
-    protected String replaceParams(String query) {
-        return query.replace("{0}", String.valueOf(loader.args.isSimplifyView()));
+    protected void setParams(PreparedStatement statement) throws SQLException {
+        statement.setBoolean(1, loader.args.isSimplifyView());
     }
 }
