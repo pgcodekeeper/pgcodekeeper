@@ -197,7 +197,7 @@ public class CliArgs extends PgDiffArguments {
             usage="work with MS SQL")
     private boolean msSql;
 
-    @Option(name="--simplify-views",
+    @Option(name="--simplify-views", forbids="--ms-sql",
             usage="use pretty-printed format of view when reading via JDBC (not recomended by PostgreSQL)")
     private boolean simplifyView;
 
