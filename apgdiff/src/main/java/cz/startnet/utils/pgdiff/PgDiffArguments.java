@@ -16,6 +16,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public class PgDiffArguments implements Cloneable {
 
     private boolean modeParse;
+    private boolean modeGraph;
     private String newSrc;
     private String oldSrc;
     private String newSrcFormat;
@@ -44,6 +45,9 @@ public class PgDiffArguments implements Cloneable {
     private boolean libSafeMode;
     private boolean msSql;
     private boolean ignoreConcurrentModification;
+    private int graphDepth;
+    private boolean graphReverse;
+    private final List<String> graphNames = new ArrayList<>();
 
     public void setModeParse(final boolean modeParse) {
         this.modeParse = modeParse;
@@ -51,6 +55,14 @@ public class PgDiffArguments implements Cloneable {
 
     public boolean isModeParse() {
         return modeParse;
+    }
+
+    public void setModeGraph(boolean modeGraph) {
+        this.modeGraph = modeGraph;
+    }
+
+    public boolean isModeGraph() {
+        return modeGraph;
     }
 
     public void setNewSrc(final String newSrc) {
@@ -239,6 +251,26 @@ public class PgDiffArguments implements Cloneable {
 
     public void setConcurrentlyMode(boolean concurrentlyMode) {
         this.concurrentlyMode = concurrentlyMode;
+    }
+
+    public int getGraphDepth() {
+        return graphDepth;
+    }
+
+    public void setGraphDepth(int graphDepth) {
+        this.graphDepth = graphDepth;
+    }
+
+    public boolean isGraphReverse() {
+        return graphReverse;
+    }
+
+    public void setGraphReverse(boolean graphReverse) {
+        this.graphReverse = graphReverse;
+    }
+
+    public Collection<String> getGraphNames() {
+        return Collections.unmodifiableCollection(graphNames);
     }
 
     @Override
