@@ -214,6 +214,10 @@ public class CliArgs extends PgDiffArguments {
                     + "\nspecify multiple times to use several names")
     private List<String> graphNames;
 
+    @Option(name="--simplify-views", forbids="--ms-sql",
+            usage="use pretty-printed format of view when reading via JDBC (not recomended by PostgreSQL)")
+    private boolean simplifyView;
+
     @Override
     public boolean isModeParse() {
         return modeParse;
@@ -458,6 +462,16 @@ public class CliArgs extends PgDiffArguments {
     }
 
     @Override
+    public boolean isSimplifyView() {
+        return simplifyView;
+    }
+
+    @Override
+    public void setSimplifyView(boolean simplifyView) {
+        this.simplifyView = simplifyView;
+    }
+
+    @Override
     public int getGraphDepth() {
         return graphDepth;
     }
@@ -503,7 +517,6 @@ public class CliArgs extends PgDiffArguments {
             // show help instead of failing for 0 args
             zhelp = true;
         }
-
         if (zhelp) {
             printUsage(writer);
             return false;

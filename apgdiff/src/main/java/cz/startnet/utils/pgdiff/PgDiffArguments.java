@@ -45,6 +45,7 @@ public class PgDiffArguments implements Cloneable {
     private boolean libSafeMode;
     private boolean msSql;
     private boolean ignoreConcurrentModification;
+    private boolean simplifyView;
     private int graphDepth;
     private boolean graphReverse;
     private final List<String> graphNames = new ArrayList<>();
@@ -271,6 +272,14 @@ public class PgDiffArguments implements Cloneable {
 
     public Collection<String> getGraphNames() {
         return Collections.unmodifiableCollection(graphNames);
+    }
+
+    public boolean isSimplifyView() {
+        return simplifyView;
+    }
+
+    public void setSimplifyView(boolean simplifyView) {
+        this.simplifyView = simplifyView;
     }
 
     @Override

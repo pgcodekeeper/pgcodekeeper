@@ -40,6 +40,11 @@ public class OverridablePrefs {
                 : true;
     }
 
+    public boolean isSimplifyView() {
+        return isEnableProjPrefRoot ? projPS.getBoolean(PREF.SIMPLIFY_VIEW, false)
+                : mainPS.getBoolean(PREF.SIMPLIFY_VIEW);
+    }
+
     public boolean getBoolean(String key) {
         return isEnableProjPrefDbUpdate ? projPS.getBoolean(key, false) : mainPS.getBoolean(key);
     }
