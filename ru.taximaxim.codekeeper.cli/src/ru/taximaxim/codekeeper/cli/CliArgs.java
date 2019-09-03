@@ -534,6 +534,15 @@ public class CliArgs extends PgDiffArguments {
                 badArgs("Cannot work with MS SQL database as PostgerSQL project.");
             }
         } else {
+            if (getGraphDepth() != DEFAULT_DEPTH) {
+                badArgs("option --graph-depth cannot be used without the option(s) [--graph]");
+            }
+            if (!getGraphNames().isEmpty()) {
+                badArgs("option --graph-name cannot be used without the option(s) [--graph]");
+            }
+            if (isGraphReverse()) {
+                badArgs("option --graph-reverse cannot be used without the option(s) [--graph]");
+            }
             if (getOldSrc() == null || getNewSrc() == null) {
                 badArgs("Please specify both SOURCE and DEST.");
             }
@@ -551,18 +560,6 @@ public class CliArgs extends PgDiffArguments {
                 badArgs("Cannot work with PostgreSQL database with --ms-sql parameter.");
             }
             // TODO Do we need to check DB types for dump and directories?
-
-            if (getGraphDepth() != DEFAULT_DEPTH) {
-                badArgs("option --graph-depth cannot be used without the option(s) [--graph]");
-            }
-
-            if (!getGraphNames().isEmpty()) {
-                badArgs("option --graph-name cannot be used without the option(s) [--graph]");
-            }
-
-            if (isGraphReverse()) {
-                badArgs("option --graph-reverse cannot be used without the option(s) [--graph]");
-            }
 
             setOldSrcFormat(parsePath(getOldSrc()));
         }
