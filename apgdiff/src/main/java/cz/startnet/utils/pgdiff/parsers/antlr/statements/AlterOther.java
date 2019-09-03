@@ -2,7 +2,9 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.Arrays;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_extension_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_index_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_operator_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_type_statementContext;
@@ -32,6 +34,10 @@ public class AlterOther extends ParserAbstract {
             alterType(ctx.alter_type_statement());
         } else if (ctx.alter_operator_statement() != null) {
             alterOperator(ctx.alter_operator_statement());
+        } else if (ctx.alter_index_statement() != null) {
+            alterIndex(ctx.alter_index_statement());
+        } else if (ctx.alter_extension_statement() != null) {
+            alterExtension(ctx.alter_extension_statement());
         }
     }
 
@@ -62,5 +68,16 @@ public class AlterOther extends ParserAbstract {
         Operator_nameContext nameCtx = ctx.target_operator().operator_name();
         addObjReference(Arrays.asList(nameCtx.schema_name, nameCtx.operator),
                 DbObjType.OPERATOR, StatementActions.ALTER);
+    }
+
+    private void alterIndex(Alter_index_statementContext ctx) {
+        addObjReference(ctx.index_all_def() != null ? Arrays.asList(ctx.index_all_def().tbl_spc)
+                : ctx.index_def().index_if_exists_name().schema_qualified_name().identifier(),
+                DbObjType.INDEX, StatementActions.ALTER);
+    }
+
+    private void alterExtension(Alter_extension_statementContext ctx) {
+        addObjReference(Arrays.asList(ctx.identifier()), DbObjType.EXTENSION,
+                StatementActions.ALTER);
     }
 }
