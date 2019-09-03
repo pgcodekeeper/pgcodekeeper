@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.sql.Array;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ConcurrentModificationException;
@@ -24,7 +25,9 @@ public abstract class JdbcReader implements PgCatalogStrings {
         String query = loader.appendTimestamps(queries.makeQuery(loader.version));
 
         loader.setCurrentOperation(getClass().getSimpleName() + " query");
-        try (ResultSet result = loader.runner.runScript(loader.statement, query)) {
+        try (PreparedStatement statement = loader.connection.prepareStatement(query)) {
+            setParams(statement);
+            ResultSet result = loader.runner.runScript(statement);
             while (result.next()) {
                 long schemaId = result.getLong("schema_oid");
                 AbstractSchema schema = loader.schemaIds.get(schemaId);
@@ -43,6 +46,10 @@ public abstract class JdbcReader implements PgCatalogStrings {
                 }
             }
         }
+    }
+
+    protected void setParams(PreparedStatement statement) throws SQLException {
+        // subclasses will override if needed
     }
 
     /**

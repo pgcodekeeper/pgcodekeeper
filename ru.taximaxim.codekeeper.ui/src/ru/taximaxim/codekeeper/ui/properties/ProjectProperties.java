@@ -41,6 +41,7 @@ public class ProjectProperties extends PropertyPage {
 
     private Button btnEnableProjPref;
     private Button btnNoPrivileges;
+    private Button btnSimplifyView;
     private Button btnUseGlobalIgnoreList;
 
     private Button btnForceUnixNewlines;
@@ -150,6 +151,9 @@ public class ProjectProperties extends PropertyPage {
             public void widgetSelected(SelectionEvent e) {
                 btnNoPrivileges.setEnabled(btnEnableProjPref.getSelection());
                 btnUseGlobalIgnoreList.setEnabled(btnEnableProjPref.getSelection());
+                if (!isMsSql) {
+                    btnSimplifyView.setEnabled(btnEnableProjPref.getSelection());
+                }
             }
         });
 
@@ -160,6 +164,16 @@ public class ProjectProperties extends PropertyPage {
         btnNoPrivileges.setLayoutData(gd);
         btnNoPrivileges.setSelection(prefs.getBoolean(PREF.NO_PRIVILEGES, false));
         btnNoPrivileges.setEnabled(overridePref);
+
+        if (!isMsSql) {
+            btnSimplifyView = new Button(panel, SWT.CHECK);
+            btnSimplifyView.setText(Messages.GeneralPrefPage_simplify_view);
+            gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
+            gd.horizontalIndent = 10;
+            btnSimplifyView.setLayoutData(gd);
+            btnSimplifyView.setSelection(prefs.getBoolean(PREF.SIMPLIFY_VIEW, false));
+            btnSimplifyView.setEnabled(overridePref);
+        }
 
         btnUseGlobalIgnoreList = new Button(panel, SWT.CHECK);
         btnUseGlobalIgnoreList.setText(Messages.ProjectProperties_use_global_ignore_list);
@@ -210,6 +224,8 @@ public class ProjectProperties extends PropertyPage {
         storePicker.setSelection(StructuredSelection.EMPTY);
         if (!isMsSql) {
             cmbTimezone.setText(ApgdiffConsts.UTC);
+            btnSimplifyView.setEnabled(btnEnableProjPref.getSelection());
+            btnSimplifyView.setSelection(mainPS.getBoolean(PREF.SIMPLIFY_VIEW));
         }
         try {
             fillPrefs();
@@ -260,6 +276,7 @@ public class ProjectProperties extends PropertyPage {
         prefs.put(PROJ_PREF.NAME_OF_BOUND_DB, dbForBind != null ? dbForBind.getName() : ""); //$NON-NLS-1$
         if (!isMsSql) {
             prefs.put(PROJ_PREF.TIMEZONE, cmbTimezone.getText());
+            prefs.putBoolean(PREF.SIMPLIFY_VIEW, btnSimplifyView.getSelection());
         }
         prefs.flush();
         setValid(true);

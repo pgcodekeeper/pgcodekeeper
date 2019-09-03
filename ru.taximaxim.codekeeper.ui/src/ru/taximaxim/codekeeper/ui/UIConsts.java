@@ -64,6 +64,7 @@ public interface UIConsts {
         String DB_STORE_FILES = "prefDbStoreHistory"; //$NON-NLS-1$
         //String IGNORE_OBJECTS = "prefIgnoreObjects"; //$NON-NLS-1$
         String NO_PRIVILEGES = "prefNoPrivileges"; //$NON-NLS-1$
+        String SIMPLIFY_VIEW = "prefSimplifyView"; //$NON-NLS-1$
 
         String LAST_OPENED_LOCATION = "prefLastOpenedLocation"; //$NON-NLS-1$
         //String IS_FLIPPED_DB_SOURCE = "isFlippedDbSource"; //$NON-NLS-1$
