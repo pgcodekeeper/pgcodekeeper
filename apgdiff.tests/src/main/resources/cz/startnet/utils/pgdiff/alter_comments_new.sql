@@ -44,7 +44,7 @@ COMMENT ON COLUMN public.test.text IS 'text column 2';
 
 COMMENT ON CONSTRAINT text_check ON public.test IS 'text check 2';
 
-COMMENT ON INDEX public.test_index ON IS 'test table index 2';
+COMMENT ON INDEX public.test_index IS 'test table index 2';
 
 CREATE SEQUENCE public.test_id_seq
     START WITH 1

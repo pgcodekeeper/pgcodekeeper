@@ -74,6 +74,7 @@ import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.statushandlers.StatusManager;
 import org.osgi.service.prefs.BackingStoreException;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
@@ -603,6 +604,10 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                         }
                     });
                 }
+
+                newDiffer.getErrors().forEach(e -> StatusManager.getManager().handle(
+                        new Status(IStatus.WARNING, PLUGIN_ID.THIS, e.toString()),
+                        StatusManager.SHOW));
             }
         });
         job.setUser(true);
