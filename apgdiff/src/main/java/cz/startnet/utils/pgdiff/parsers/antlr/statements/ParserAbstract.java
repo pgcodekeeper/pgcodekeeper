@@ -100,9 +100,7 @@ public abstract class ParserAbstract {
      */
     protected QueryLocation fillQueryLocation(ParserRuleContext ctx) {
         String query = ParserAbstract.getFullCtxText(ctx);
-        Token startToken = ctx.getStart();
-        QueryLocation loc = new QueryLocation(getStmtAction(query),
-                startToken.getStartIndex(), startToken.getLine(), query);
+        QueryLocation loc = new QueryLocation(getStmtAction(query), ctx, query);
         db.addToBatch(loc);
         return loc;
     }

@@ -2,6 +2,8 @@ package cz.startnet.utils.pgdiff.loader;
 
 import java.util.Objects;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 
 /**
@@ -11,12 +13,13 @@ import cz.startnet.utils.pgdiff.schema.PgObjLocation;
  */
 public class QueryLocation extends PgObjLocation {
 
-    private static final long serialVersionUID = 200750788835679614L;
+    private static final long serialVersionUID = 7310018993032523902L;
 
     private final String sql;
 
-    public QueryLocation(String action, int offset, int lineNumber, String sql) {
-        super(null, action, offset, lineNumber, null);
+    public QueryLocation(String action, ParserRuleContext ctx, String sql) {
+        super(null, action, ctx.getStart().getStartIndex(), ctx.getStart().getLine(),
+                ctx.getStart().getCharPositionInLine(), null);
         this.sql = sql;
     }
 

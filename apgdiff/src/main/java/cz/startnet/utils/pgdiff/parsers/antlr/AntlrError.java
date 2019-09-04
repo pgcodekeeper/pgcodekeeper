@@ -6,16 +6,14 @@ import cz.startnet.utils.pgdiff.ContextLocation;
 
 public class AntlrError extends ContextLocation {
 
-    private static final long serialVersionUID = 5191191026391277266L;
+    private static final long serialVersionUID = 1073046057633815985L;
 
     private final String msg;
     private final String text;
     private final int stop;
-    private final String location;
 
     public AntlrError(Token tokenError, String location, int line, int charPositionInLine, String msg) {
-        super(tokenError == null ? -1 : tokenError.getStartIndex(), line, charPositionInLine);
-        this.location = location;
+        super(location, tokenError == null ? -1 : tokenError.getStartIndex(), line, charPositionInLine);
         this.msg = msg;
         this.stop = tokenError == null ? -1 : tokenError.getStopIndex();
         this.text = tokenError == null ? null : tokenError.getText();
@@ -37,12 +35,8 @@ public class AntlrError extends ContextLocation {
         return stop;
     }
 
-    public String getLocation() {
-        return location;
-    }
-
     @Override
     public String toString() {
-        return location + " line " + getLineNumber() + ':' + getCharPositionInLine() + ' ' + getMsg();
+        return getFilePath() + " line " + getLineNumber() + ':' + getCharPositionInLine() + ' ' + getMsg();
     }
 }

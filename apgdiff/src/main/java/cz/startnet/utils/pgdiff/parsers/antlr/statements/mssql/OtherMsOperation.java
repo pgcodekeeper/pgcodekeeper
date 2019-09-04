@@ -1,7 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.Token;
 
 import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Transaction_statementContext;
@@ -27,9 +26,7 @@ public class OtherMsOperation extends OtherOperation {
             action = ParserAbstract.getStmtAction(query);
         }
 
-        Token startToken = ctx.getStart();
-        QueryLocation loc = new QueryLocation(action, startToken.getStartIndex(),
-                startToken.getLine(), query);
+        QueryLocation loc = new QueryLocation(action, ctx, query);
         db.addToBatch(loc);
 
         return loc;

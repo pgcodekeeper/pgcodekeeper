@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.Token;
 
 import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Assembly_specifierContext;
@@ -120,9 +119,7 @@ public class CreateMsProcedure extends BatchContextProcessor {
     @Override
     protected QueryLocation fillQueryLocation(ParserRuleContext ctx) {
         String query = ParserAbstract.getFullCtxTextWithHidden(ctx, stream);
-        Token startToken = ctx.getStart();
-        QueryLocation loc = new QueryLocation(getStmtAction(query),
-                startToken.getStartIndex(), startToken.getLine(), query);
+        QueryLocation loc = new QueryLocation(getStmtAction(query), ctx, query);
         db.addToBatch(loc);
         return loc;
     }

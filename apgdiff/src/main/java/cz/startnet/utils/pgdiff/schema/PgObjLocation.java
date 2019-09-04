@@ -8,27 +8,29 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgObjLocation extends ContextLocation {
 
-    private static final long serialVersionUID = 3221456227150738661L;
+    private static final long serialVersionUID = -3965569366493640712L;
 
     private DangerStatement danger;
     private String comment = "";
-
-    private final String filePath;
 
     private final String action;
 
     private final GenericColumn gObj;
 
     public PgObjLocation(GenericColumn gObj, String action,
-            int offset, int lineNumber, String filePath) {
-        super(offset, lineNumber, 1);
+            int offset, int lineNumber, int charPositionInLine, String filePath) {
+        super(filePath, offset, lineNumber, charPositionInLine);
         this.gObj = gObj;
         this.action = action;
-        this.filePath = filePath;
+    }
+
+    public PgObjLocation(GenericColumn gObj, String action,
+            int offset, int lineNumber, String filePath) {
+        this(gObj, action, offset, lineNumber, 1, filePath);
     }
 
     public PgObjLocation(String filePath) {
-        this(null, StatementActions.NONE.name(), 0, 0, filePath);
+        this(null, StatementActions.NONE.name(), 0, 0, 0, filePath);
     }
 
     public String getAction() {
@@ -37,10 +39,6 @@ public class PgObjLocation extends ContextLocation {
 
     public int getObjLength() {
         return getObjName().length();
-    }
-
-    public String getFilePath() {
-        return filePath;
     }
 
     @Override
@@ -70,7 +68,7 @@ public class PgObjLocation extends ContextLocation {
         }
         result = prime * result + getOffset();
         result = prime * result + getLineNumber();
-        result = prime * result + ((filePath == null) ? 0 : filePath.hashCode());
+        result = prime * result + ((getFilePath() == null) ? 0 : getFilePath().hashCode());
         return result;
     }
 

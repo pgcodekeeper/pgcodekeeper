@@ -32,9 +32,9 @@ public class OtherOperation extends ParserAbstract  {
             action = getStmtAction(query);
         }
 
-        QueryLocation loc = new QueryLocation(action, ctx.getStart().getStartIndex(),
-                ctx.getStart().getLine(), query);
+        QueryLocation loc = new QueryLocation(action, ctx, query);
         db.addToBatch(loc);
+
         return loc;
     }
 }
