@@ -30,7 +30,7 @@ import ru.taximaxim.codekeeper.apgdiff.Log;
  * Tests for MS SQL parser rules.
  *
  * @author galiev_mr
- * @since 5.5.3
+ * @since 5.7.0
  */
 @RunWith(value = Parameterized.class)
 public class MsParserTest {
@@ -109,7 +109,7 @@ public class MsParserTest {
     }
 
     @Test
-    public void runDiff() throws IOException, InterruptedException {
+    public void runDiff() throws IOException {
         List<AntlrError> errors = new ArrayList<>();
         AtomicInteger ambiguity = new AtomicInteger();
 
