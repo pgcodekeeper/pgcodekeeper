@@ -69,6 +69,7 @@ implements TSqlContextProcessor {
 
     @Override
     public void process(Tsql_fileContext rootCtx, CommonTokenStream stream) {
+        this.stream = stream;
         for (BatchContext b : rootCtx.batch()) {
             Sql_clausesContext clauses = b.sql_clauses();
             Batch_statementContext batchSt;
