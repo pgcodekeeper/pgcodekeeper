@@ -43,16 +43,13 @@ public class MsFunction extends AbstractMsFunction {
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
-        MsFunction newFunction;
-        if (newCondition instanceof MsFunction) {
-            newFunction = (MsFunction) newCondition;
-        } else if (newCondition instanceof MsClrFunction) {
+        if (newCondition instanceof MsClrFunction) {
             isNeedDepcies.set(true);
             return true;
-        } else {
-            return false;
         }
+
+        final int startLength = sb.length();
+        MsFunction newFunction = (MsFunction) newCondition;
 
         if (!Objects.equals(getFirstPart(), newFunction.getFirstPart())
                 || !Objects.equals(getSecondPart(), newFunction.getSecondPart())) {

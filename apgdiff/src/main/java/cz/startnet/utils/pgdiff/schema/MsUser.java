@@ -56,12 +56,7 @@ public class MsUser extends PgStatement {
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
-        MsUser newUser;
-        if (newCondition instanceof MsUser) {
-            newUser = (MsUser) newCondition;
-        } else {
-            return false;
-        }
+        MsUser newUser = (MsUser) newCondition;
 
         StringBuilder sbSql = new StringBuilder();
 

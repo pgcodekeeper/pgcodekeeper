@@ -82,12 +82,7 @@ public class MsType extends AbstractType {
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
-        MsType newType;
-        if (newCondition instanceof MsType) {
-            newType = (MsType) newCondition;
-        } else {
-            return false;
-        }
+        MsType newType = (MsType) newCondition;
 
         if (!compareUnalterable(newType)) {
             isNeedDepcies.set(true);

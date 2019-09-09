@@ -148,12 +148,7 @@ public class PgView extends AbstractView implements PgOptionContainer  {
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
-        PgView newView;
-        if (newCondition instanceof PgView) {
-            newView = (PgView) newCondition;
-        } else {
-            return false;
-        }
+        PgView newView = (PgView) newCondition;
 
         // TODO add alter for materialized view
         // after merge view columns dependencies branch

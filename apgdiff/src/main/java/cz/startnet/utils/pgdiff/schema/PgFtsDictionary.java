@@ -66,15 +66,11 @@ implements PgOptionContainer {
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
-        PgFtsDictionary newDictionary;
-        if (newCondition instanceof PgFtsDictionary) {
-            newDictionary = (PgFtsDictionary) newCondition;
-            if (!newDictionary.getTemplate().equals(template)) {
-                isNeedDepcies.set(true);
-                return true;
-            }
-        } else {
-            return false;
+        PgFtsDictionary newDictionary = (PgFtsDictionary) newCondition;
+
+        if (!newDictionary.getTemplate().equals(template)) {
+            isNeedDepcies.set(true);
+            return true;
         }
 
         compareOptions(newDictionary, sb);
