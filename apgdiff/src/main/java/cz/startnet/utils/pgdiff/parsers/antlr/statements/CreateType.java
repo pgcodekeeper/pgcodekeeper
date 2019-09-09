@@ -10,9 +10,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_type_statementCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgType.PgTypeForm;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateType extends ParserAbstract {
@@ -144,5 +146,13 @@ public class CreateType extends ParserAbstract {
             // add only newly created type, not a filled SHELL that was added before
             addSafe(schema, type, ids);
         }
+    }
+
+    @Override
+    protected void fillDescrObj() {
+        action = StatementActions.CREATE;
+        List<IdentifierContext> ids = ctx.name.identifier();
+        descrObj = new GenericColumn(QNameParser.getSchemaName(ids),
+                QNameParser.getFirstNameCtx(ids).getText(), DbObjType.TYPE);
     }
 }

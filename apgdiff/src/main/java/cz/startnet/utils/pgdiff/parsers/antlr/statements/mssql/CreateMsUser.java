@@ -7,8 +7,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.User_loginContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.User_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsUser;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsUser extends ParserAbstract {
 
@@ -36,5 +39,11 @@ public class CreateMsUser extends ParserAbstract {
         }
 
         addSafe(db, user, Arrays.asList(nameCtx));
+    }
+
+    @Override
+    protected void fillDescrObj() {
+        action = StatementActions.CREATE;
+        descrObj = new GenericColumn(ctx.user_name.getText(), DbObjType.USER);
     }
 }

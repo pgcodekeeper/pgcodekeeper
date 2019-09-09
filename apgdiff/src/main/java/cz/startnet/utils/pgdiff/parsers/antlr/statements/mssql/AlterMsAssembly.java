@@ -6,6 +6,7 @@ import java.util.List;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_assemblyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Assembly_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsAssembly;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
@@ -33,5 +34,11 @@ public class AlterMsAssembly extends ParserAbstract {
                 }
             }
         }
+    }
+
+    @Override
+    protected void fillDescrObj() {
+        action = StatementActions.ALTER;
+        descrObj = new GenericColumn(ctx.name.getText(), DbObjType.ASSEMBLY);
     }
 }

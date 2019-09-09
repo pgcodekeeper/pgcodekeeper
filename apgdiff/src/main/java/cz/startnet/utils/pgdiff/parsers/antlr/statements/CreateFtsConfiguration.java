@@ -5,8 +5,10 @@ import java.util.List;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_configurationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFtsConfiguration;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateFtsConfiguration extends ParserAbstract {
@@ -29,5 +31,13 @@ public class CreateFtsConfiguration extends ParserAbstract {
             addDepSafe(config, parserIds, DbObjType.FTS_PARSER, true);
         }
         addSafe(getSchemaSafe(ids), config, ids);
+    }
+
+    @Override
+    protected void fillDescrObj() {
+        action = StatementActions.CREATE;
+        List<IdentifierContext> ids = ctx.name.identifier();
+        descrObj = new GenericColumn(QNameParser.getSchemaName(ids),
+                QNameParser.getFirstNameCtx(ids).getText(), DbObjType.FTS_CONFIGURATION);
     }
 }

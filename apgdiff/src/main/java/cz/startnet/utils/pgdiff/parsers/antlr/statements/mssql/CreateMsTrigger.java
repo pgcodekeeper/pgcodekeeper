@@ -13,6 +13,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSqlClauses;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -90,10 +91,21 @@ public class CreateMsTrigger extends BatchContextProcessor {
     }
 
     @Override
-    protected QueryLocation fillQueryLocation(ParserRuleContext ctx) {
-        String query = ParserAbstract.getFullCtxTextWithHidden(ctx, stream);
-        QueryLocation loc = new QueryLocation(getStmtAction(query), ctx, query);
+    protected QueryLocation fillQueryLocation(ParserRuleContext ctx, CommonTokenStream tokenStream) {
+        QueryLocation loc = new QueryLocation(getStmtAction(ctx, tokenStream), ctx,
+                ParserAbstract.getFullCtxTextWithHidden(ctx, tokenStream));
         db.addToBatch(loc);
         return loc;
+    }
+
+    @Override
+    protected void fillDescrObj() {
+        action = StatementActions.CREATE;
+        IdContext schemaCtx = ctx.trigger_name.schema;
+        if (schemaCtx == null) {
+            schemaCtx = ctx.table_name.schema;
+        }
+        descrObj = new GenericColumn(schemaCtx.getText(), ctx.table_name.name.getText(),
+                ctx.trigger_name.name.getText(), DbObjType.TRIGGER);
     }
 }

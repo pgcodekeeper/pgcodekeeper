@@ -8,11 +8,15 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_sequenceContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Data_type_sizeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Sequence_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsSequence;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsSequence extends ParserAbstract {
 
@@ -71,5 +75,13 @@ public class CreateMsSequence extends ParserAbstract {
 
         sequence.setMinMaxInc(inc, maxValue, minValue, dataType,
                 precision == null ? 0L : Long.parseLong(precision));
+    }
+
+    @Override
+    protected void fillDescrObj() {
+        action = StatementActions.CREATE;
+        Qualified_nameContext qualNameCtx = ctx.qualified_name();
+        descrObj = new GenericColumn(qualNameCtx.schema.getText(),
+                qualNameCtx.name.getText(), DbObjType.SEQUENCE);
     }
 }

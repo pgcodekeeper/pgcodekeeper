@@ -8,6 +8,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Domain_constraintContext
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
@@ -41,5 +42,13 @@ public class AlterDomain extends ParserAbstract {
         }
 
         addObjReference(ids, DbObjType.DOMAIN, StatementActions.ALTER);
+    }
+
+    @Override
+    protected void fillDescrObj() {
+        action = StatementActions.ALTER;
+        List<IdentifierContext> ids = ctx.name.identifier();
+        descrObj = new GenericColumn(QNameParser.getSchemaName(ids),
+                QNameParser.getFirstNameCtx(ids).getText(), DbObjType.DOMAIN);
     }
 }

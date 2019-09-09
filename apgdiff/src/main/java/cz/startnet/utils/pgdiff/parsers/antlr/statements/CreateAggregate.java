@@ -16,11 +16,13 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.Argument;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgAggregate;
 import cz.startnet.utils.pgdiff.schema.PgAggregate.AggFuncs;
 import cz.startnet.utils.pgdiff.schema.PgAggregate.AggKinds;
 import cz.startnet.utils.pgdiff.schema.PgAggregate.ModifyType;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateAggregate extends ParserAbstract {
@@ -278,5 +280,13 @@ public class CreateAggregate extends ParserAbstract {
     public static String getSortOperSign(PgAggregate aggr) {
         String argType = aggr.getArguments().get(0).getDataType();
         return '(' + argType + ", " + argType + ')';
+    }
+
+    @Override
+    protected void fillDescrObj() {
+        action = StatementActions.CREATE;
+        List<IdentifierContext> ids = ctx.name.identifier();
+        descrObj = new GenericColumn(QNameParser.getSchemaName(ids),
+                QNameParser.getFirstNameCtx(ids).getText(), DbObjType.AGGREGATE);
     }
 }

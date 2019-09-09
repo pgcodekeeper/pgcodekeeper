@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import java.util.Arrays;
 
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
@@ -9,6 +10,7 @@ import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Update_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
@@ -34,9 +36,17 @@ public class UpdateMsStatement extends ParserAbstract {
     }
 
     @Override
-    protected QueryLocation fillQueryLocation(ParserRuleContext ctx) {
-        QueryLocation loc = super.fillQueryLocation(ctx);
+    protected QueryLocation fillQueryLocation(ParserRuleContext ctx, CommonTokenStream tokenStream) {
+        QueryLocation loc = super.fillQueryLocation(ctx, tokenStream);
         loc.setWarning(DangerStatement.UPDATE);
         return loc;
+    }
+
+    @Override
+    protected void fillDescrObj() {
+        action = StatementActions.UPDATE;
+        Qualified_nameContext qname = ctx.qualified_name();
+        descrObj = new GenericColumn(qname.schema.getText(),
+                qname.name.getText(), DbObjType.TABLE);
     }
 }

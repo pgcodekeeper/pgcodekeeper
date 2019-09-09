@@ -9,6 +9,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_fts_statementConte
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFtsConfiguration;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
@@ -61,5 +62,23 @@ public class AlterFtsStatement extends ParserAbstract {
                         config, null);
             }
         }
+    }
+
+    @Override
+    protected void fillDescrObj() {
+        action = StatementActions.ALTER;
+        DbObjType tt;
+        if (ctx.DICTIONARY() != null) {
+            tt = DbObjType.FTS_DICTIONARY;
+        } else if (ctx.TEMPLATE() != null) {
+            tt = DbObjType.FTS_TEMPLATE;
+        } else if (ctx.PARSER() != null) {
+            tt = DbObjType.FTS_PARSER;
+        } else {
+            tt = DbObjType.FTS_CONFIGURATION;
+        }
+        List<IdentifierContext> ids = ctx.name.identifier();
+        descrObj = new GenericColumn(QNameParser.getSchemaName(ids),
+                QNameParser.getFirstNameCtx(ids).getText(), tt);
     }
 }

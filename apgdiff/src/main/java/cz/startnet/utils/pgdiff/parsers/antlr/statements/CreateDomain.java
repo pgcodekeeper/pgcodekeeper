@@ -9,9 +9,12 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Domain_constraintContext
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateDomain extends ParserAbstract {
 
@@ -57,5 +60,13 @@ public class CreateDomain extends ParserAbstract {
         VexContext vexCtx = ctx.vex();
         constr.setDefinition("CHECK (" + getFullCtxText(vexCtx) + ")");
         db.addContextForAnalyze(domain, vexCtx);
+    }
+
+    @Override
+    protected void fillDescrObj() {
+        action = StatementActions.CREATE;
+        List<IdentifierContext> ids = ctx.name.identifier();
+        descrObj = new GenericColumn(QNameParser.getSchemaName(ids),
+                QNameParser.getFirstNameCtx(ids).getText(), DbObjType.DOMAIN);
     }
 }

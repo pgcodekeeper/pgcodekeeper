@@ -25,7 +25,7 @@ public class GenericColumn implements Serializable {
             "oid", "tableoid", "xmin", "cmin", "xmax", "cmax", "ctid"
             )));
 
-    private static final long serialVersionUID = -5032985077177033449L;
+    private static final long serialVersionUID = 3736336596667543402L;
     // SONAR-OFF
     public final String schema;
     public final String table;
@@ -284,8 +284,7 @@ public class GenericColumn implements Serializable {
         return eq;
     }
 
-    @Override
-    public String toString() {
+    public StringBuilder getQualifiedName() {
         StringBuilder sb = new StringBuilder();
         if (schema != null) {
             sb.append(PgDiffUtils.getQuotedName(schema));
@@ -302,7 +301,11 @@ public class GenericColumn implements Serializable {
             }
             sb.append(PgDiffUtils.getQuotedName(column));
         }
-        sb.append(" (").append(type).append(')');
-        return sb.toString();
+        return sb;
+    }
+
+    @Override
+    public String toString() {
+        return getQualifiedName().append(" (").append(type).append(')').toString();
     }
 }

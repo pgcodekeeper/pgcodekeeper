@@ -16,8 +16,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSelect;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.MsSelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsView extends BatchContextProcessor {
 
@@ -85,10 +88,18 @@ public class CreateMsView extends BatchContextProcessor {
     }
 
     @Override
-    protected QueryLocation fillQueryLocation(ParserRuleContext ctx) {
-        String query = ParserAbstract.getFullCtxTextWithHidden(ctx, stream);
-        QueryLocation loc = new QueryLocation(getStmtAction(query), ctx, query);
+    protected QueryLocation fillQueryLocation(ParserRuleContext ctx, CommonTokenStream tokenStream) {
+        QueryLocation loc = new QueryLocation(getStmtAction(ctx, tokenStream), ctx,
+                ParserAbstract.getFullCtxTextWithHidden(ctx, tokenStream));
         db.addToBatch(loc);
         return loc;
+    }
+
+    @Override
+    protected void fillDescrObj() {
+        action = StatementActions.CREATE;
+        Qualified_nameContext qualNameCtx = ctx.qualified_name();
+        descrObj = new GenericColumn(qualNameCtx.schema.getText(),
+                qualNameCtx.name.getText(), DbObjType.VIEW);
     }
 }

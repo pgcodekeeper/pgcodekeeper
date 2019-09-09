@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import java.util.Arrays;
 
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.loader.QueryLocation;
@@ -10,6 +11,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_trigger
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -60,7 +62,35 @@ public class AlterMsBatch extends ParserAbstract {
     }
 
     @Override
-    protected QueryLocation fillQueryLocation(ParserRuleContext ctx) {
-        return super.fillQueryLocation(ctx.getParent());
+    protected QueryLocation fillQueryLocation(ParserRuleContext ctx, CommonTokenStream tokenStream) {
+        return super.fillQueryLocation(ctx.getParent(), tokenStream);
+    }
+
+    @Override
+    protected void fillDescrObj() {
+        action = StatementActions.ALTER;
+        if (ctx.create_or_alter_procedure() != null) {
+            Qualified_nameContext qname = ctx.create_or_alter_procedure().qualified_name();
+            descrObj = new GenericColumn(qname.schema.getText(),
+                    qname.name.getText(), DbObjType.PROCEDURE);
+        } else if (ctx.create_or_alter_function() != null) {
+            Qualified_nameContext qname = ctx.create_or_alter_function().qualified_name();
+            descrObj = new GenericColumn(qname.schema.getText(),
+                    qname.name.getText(), DbObjType.FUNCTION);
+        } else if (ctx.create_or_alter_view() != null) {
+            Qualified_nameContext qname = ctx.create_or_alter_view().qualified_name();
+            descrObj = new GenericColumn(qname.schema.getText(),
+                    qname.name.getText(), DbObjType.VIEW);
+        } else if (ctx.create_or_alter_trigger() != null) {
+            Create_or_alter_triggerContext trigCtx = ctx.create_or_alter_trigger();
+            Qualified_nameContext qname = trigCtx.trigger_name;
+            IdContext schemaCtx = qname.schema;
+            IdContext secondCtx = trigCtx.table_name.schema;
+            if (schemaCtx == null) {
+                schemaCtx = secondCtx;
+            }
+            descrObj = new GenericColumn(schemaCtx.getText(),
+                    trigCtx.table_name.name.getText(), qname.name.getText(), DbObjType.TRIGGER);
+        }
     }
 }

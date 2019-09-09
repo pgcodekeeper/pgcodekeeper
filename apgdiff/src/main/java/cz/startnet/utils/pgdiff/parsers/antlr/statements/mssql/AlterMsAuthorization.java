@@ -4,6 +4,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ParserRuleContext;
+
+import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_authorizationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Class_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
@@ -76,5 +80,12 @@ public class AlterMsAuthorization extends ParserAbstract {
         } else {
             overrides.computeIfAbsent(st, k -> new StatementOverride()).setOwner(owner);
         }
+    }
+
+    @Override
+    protected QueryLocation fillQueryLocation(ParserRuleContext ctx, CommonTokenStream tokenStream) {
+        QueryLocation loc = new QueryLocation("ALTER AUTHORIZATION", ctx, getFullCtxText(ctx));
+        db.addToBatch(loc);
+        return loc;
     }
 }

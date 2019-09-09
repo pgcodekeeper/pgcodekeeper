@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 import java.util.Arrays;
 import java.util.List;
 
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
@@ -13,6 +14,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_dropContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
@@ -98,12 +100,93 @@ public class DropMsStatement extends ParserAbstract {
     }
 
     @Override
-    protected QueryLocation fillQueryLocation(ParserRuleContext ctx) {
-        QueryLocation loc = super.fillQueryLocation(ctx);
+    protected QueryLocation fillQueryLocation(ParserRuleContext ctx, CommonTokenStream tokenStream) {
+        QueryLocation loc = super.fillQueryLocation(ctx, tokenStream);
         Drop_statementsContext dropSt = ((Schema_dropContext) ctx).drop_statements();
         if (dropSt != null && dropSt.TABLE() != null) {
             loc.setWarning(DangerStatement.DROP_TABLE);
         }
         return loc;
+    }
+
+    @Override
+    protected void fillDescrObj() {
+        action = StatementActions.DROP;
+        if (ctx.drop_assembly() != null) {
+            StringBuilder sb = new StringBuilder();
+            for (IdContext id : ctx.drop_assembly().id()) {
+                sb.append(id.getText()).append(", ");
+            }
+            sb.setLength(sb.length() - 2);
+            descrObj = new GenericColumn(sb.toString(), DbObjType.ASSEMBLY);
+        } else if (ctx.drop_index() != null) {
+            StringBuilder sb = new StringBuilder();
+            for (Drop_relational_or_xml_or_spatial_indexContext ind :
+                ctx.drop_index().drop_relational_or_xml_or_spatial_index()) {
+                Qualified_nameContext tableIds = ind.qualified_name();
+                sb.append(tableIds.schema.getText())
+                .append('.').append(tableIds.name)
+                .append('.').append(ind.index_name)
+                .append(", ");
+            }
+            sb.setLength(sb.length() - 2);
+            descrObj = new GenericColumn(sb.toString(), DbObjType.INDEX);
+        } else if (ctx.drop_statements() != null) {
+            dropOtherStmt(ctx.drop_statements());
+        }
+    }
+
+    private void dropOtherStmt(Drop_statementsContext dropStmtCtx) {
+        DbObjType type = null;
+        if (dropStmtCtx.SCHEMA() != null) {
+            type = DbObjType.SCHEMA;
+        } else if (dropStmtCtx.ROLE() != null) {
+            type = DbObjType.ROLE;
+        } else if (dropStmtCtx.USER() != null) {
+            type = DbObjType.USER;
+        }
+
+        if (type != null) {
+            StringBuilder sb = new StringBuilder();
+            for (Qualified_nameContext qname : dropStmtCtx.qualified_name()) {
+                sb.append(qname.name.getText()).append(", ");
+            }
+            sb.setLength(sb.length() - 2);
+            descrObj = new GenericColumn(sb.toString(), type);
+            return;
+        } else if (dropStmtCtx.TRIGGER() != null) {
+            StringBuilder sb = new StringBuilder();
+            for (Qualified_nameContext qname : dropStmtCtx.qualified_name()) {
+                sb.append(qname.schema.getText()).append('.')
+                .append(qname.name.getText()).append(", ");
+            }
+            sb.setLength(sb.length() - 2);
+            descrObj = new GenericColumn(sb.toString(), DbObjType.TRIGGER);
+            return;
+        }
+
+        if (dropStmtCtx.FUNCTION() != null) {
+            type = DbObjType.FUNCTION;
+        } else if (dropStmtCtx.PROCEDURE() != null || dropStmtCtx.PROC() != null) {
+            type = DbObjType.PROCEDURE;
+        } else if (dropStmtCtx.SEQUENCE() != null) {
+            type = DbObjType.SEQUENCE;
+        } else if (dropStmtCtx.TABLE() != null) {
+            type = DbObjType.TABLE;
+        } else if (dropStmtCtx.TYPE() != null) {
+            type = DbObjType.TYPE;
+        } else if (dropStmtCtx.VIEW() != null) {
+            type = DbObjType.VIEW;
+        }
+
+        if (type != null) {
+            StringBuilder sb = new StringBuilder();
+            for (Qualified_nameContext qname : dropStmtCtx.qualified_name()) {
+                sb.append(qname.schema.getText()).append('.')
+                .append(qname.name.getText()).append(", ");
+            }
+            sb.setLength(sb.length() - 2);
+            descrObj = new GenericColumn(sb.toString(), type);
+        }
     }
 }

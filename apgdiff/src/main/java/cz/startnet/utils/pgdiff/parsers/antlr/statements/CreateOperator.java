@@ -13,8 +13,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_optionContext;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgOperator;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateOperator extends ParserAbstract {
@@ -76,5 +78,14 @@ public class CreateOperator extends ParserAbstract {
         }
 
         addSafe(getSchemaSafe(ids), oper, ids);
+    }
+
+    @Override
+    protected void fillDescrObj() {
+        action = StatementActions.CREATE;
+        Operator_nameContext operNameCtx = ctx.name;
+        IdentifierContext schemaCtx = operNameCtx.schema_name;
+        descrObj = new GenericColumn(schemaCtx.getText(),
+                operNameCtx.operator.getText(), DbObjType.OPERATOR);
     }
 }

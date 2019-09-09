@@ -7,6 +7,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_view_statementCont
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgView;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
@@ -36,5 +37,13 @@ public class AlterView extends ParserAbstract {
         }
 
         addObjReference(ids, DbObjType.VIEW, StatementActions.ALTER);
+    }
+
+    @Override
+    protected void fillDescrObj() {
+        action = StatementActions.ALTER;
+        List<IdentifierContext> ids = ctx.name.identifier();
+        descrObj = new GenericColumn(QNameParser.getSchemaName(ids),
+                QNameParser.getFirstNameCtx(ids).getText(), DbObjType.VIEW);
     }
 }

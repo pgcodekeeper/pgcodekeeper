@@ -7,6 +7,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
+import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Another_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.BatchContext;
@@ -48,7 +49,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsUser;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.DisableMsTrigger;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.DropMsStatement;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.OtherMsOperation;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.UpdateMsStatement;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
@@ -108,21 +108,24 @@ implements TSqlContextProcessor {
             } else if ((drop = ddl.schema_drop()) != null) {
                 safeParseStatement(new DropMsStatement(drop, db), drop);
             } else if (isScriptMode) {
-                safeParseStatement(new OtherMsOperation(ddl, db), ddl);
+                db.addToBatch(new QueryLocation(ParserAbstract.getMsStmtAction(ddl, stream),
+                        ddl, ParserAbstract.getFullCtxText(ddl)));
             }
         } else if ((dml = st.dml_clause()) != null) {
             Update_statementContext update = dml.update_statement();
             if (update != null) {
                 safeParseStatement(new UpdateMsStatement(update, db), update);
             } else if (isScriptMode) {
-                safeParseStatement(new OtherMsOperation(dml, db), dml);
+                db.addToBatch(new QueryLocation(ParserAbstract.getMsStmtAction(dml, stream),
+                        dml, ParserAbstract.getFullCtxText(dml)));
             }
         } else if ((ast = st.another_statement()) != null) {
             Set_statementContext set = ast.set_statement();
             Security_statementContext security;
             if (set != null) {
                 if (isScriptMode) {
-                    safeParseStatement(new OtherMsOperation(set, db), set);
+                    db.addToBatch(new QueryLocation(ParserAbstract.getMsStmtAction(set, stream),
+                            set, ParserAbstract.getFullCtxText(set)));
                 } else {
                     set(set);
                 }
@@ -130,10 +133,12 @@ implements TSqlContextProcessor {
                     && security.rule_common() != null) {
                 safeParseStatement(new CreateMsRule(security.rule_common(), db), security);
             } else if (isScriptMode) {
-                safeParseStatement(new OtherMsOperation(dml, db), dml);
+                db.addToBatch(new QueryLocation(ParserAbstract.getMsStmtAction(ast, stream),
+                        ast, ParserAbstract.getFullCtxText(ast)));
             }
         } else if (isScriptMode) {
-            safeParseStatement(new OtherMsOperation(st, db), st);
+            db.addToBatch(new QueryLocation(ParserAbstract.getMsStmtAction(st, stream),
+                    st, ParserAbstract.getFullCtxText(st)));
         }
     }
 
@@ -158,7 +163,9 @@ implements TSqlContextProcessor {
         } else if (body.create_or_alter_trigger() != null) {
             p = new CreateMsTrigger(ctx, db, ansiNulls, quotedIdentifier, stream);
         } else if (isScriptMode) {
-            p = new OtherMsOperation(ctx, db);
+            db.addToBatch(new QueryLocation(ParserAbstract.getMsStmtAction(ctx, stream),
+                    ctx, ParserAbstract.getFullCtxText(ctx)));
+            return;
         } else {
             return;
         }

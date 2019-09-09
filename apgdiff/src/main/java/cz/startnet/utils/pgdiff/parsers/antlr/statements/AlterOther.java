@@ -1,7 +1,10 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_extension_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_index_statementContext;
@@ -11,6 +14,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_type_statementCont
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_alterContext;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -79,5 +83,55 @@ public class AlterOther extends ParserAbstract {
     private void alterExtension(Alter_extension_statementContext ctx) {
         addObjReference(Arrays.asList(ctx.identifier()), DbObjType.EXTENSION,
                 StatementActions.ALTER);
+    }
+
+    @Override
+    protected void fillDescrObj() {
+        action = StatementActions.ALTER;
+        Alter_operator_statementContext alterOperCtx = ctx.alter_operator_statement();
+        if (alterOperCtx != null) {
+            Operator_nameContext nameCtx = alterOperCtx.target_operator().operator_name();
+            descrObj = new GenericColumn(nameCtx.schema_name.getText(),
+                    nameCtx.operator.getText(), DbObjType.OPERATOR);
+        } else {
+            DbObjType type = getType();
+            List<IdentifierContext> ids = getIds();
+            if (type != null && !ids.isEmpty()) {
+                descrObj = new GenericColumn(QNameParser.getSchemaName(ids),
+                        QNameParser.getFirstNameCtx(ids).getText(), type);
+            }
+        }
+    }
+
+    private DbObjType getType() {
+        if (ctx.alter_function_statement() != null) {
+            return DbObjType.FUNCTION;
+        } else if (ctx.alter_schema_statement() != null) {
+            return DbObjType.SCHEMA;
+        } else if (ctx.alter_type_statement() != null) {
+            return DbObjType.TYPE;
+        } else if (ctx.alter_index_statement() != null) {
+            return DbObjType.INDEX;
+        } else if (ctx.alter_extension_statement() != null) {
+            return DbObjType.EXTENSION;
+        }
+        return null;
+    }
+
+    private List<IdentifierContext> getIds() {
+        if (ctx.alter_function_statement() != null) {
+            return ctx.alter_function_statement().function_parameters().name.identifier();
+        } else if (ctx.alter_schema_statement() != null) {
+            return Arrays.asList(ctx.alter_schema_statement().schema_with_name().name);
+        } else if (ctx.alter_type_statement() != null) {
+            return ctx.alter_type_statement().name.identifier();
+        } else if (ctx.alter_index_statement() != null) {
+            Alter_index_statementContext alterIdxCtx = ctx.alter_index_statement();
+            return alterIdxCtx.index_all_def() != null ? Arrays.asList(alterIdxCtx.index_all_def().tbl_spc)
+                    : alterIdxCtx.index_def().index_if_exists_name().schema_qualified_name().identifier();
+        } else if (ctx.alter_extension_statement() != null) {
+            return Arrays.asList(ctx.alter_extension_statement().identifier());
+        }
+        return Collections.emptyList();
     }
 }

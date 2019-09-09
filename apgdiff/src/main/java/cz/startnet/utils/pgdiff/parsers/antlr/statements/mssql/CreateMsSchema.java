@@ -6,8 +6,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_schemaContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsSchema extends ParserAbstract {
 
@@ -28,5 +31,11 @@ public class CreateMsSchema extends ParserAbstract {
         }
 
         addSafe(db, schema, Arrays.asList(nameCtx));
+    }
+
+    @Override
+    protected void fillDescrObj() {
+        action = StatementActions.CREATE;
+        descrObj = new GenericColumn(ctx.schema_name.getText(), DbObjType.SCHEMA);
     }
 }

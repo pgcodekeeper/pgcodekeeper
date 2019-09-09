@@ -15,6 +15,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Trigger_referencingConte
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.When_triggerContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -126,5 +127,14 @@ public class CreateTrigger extends ParserAbstract {
             trigger.setWhen(getFullCtxText(vex));
             db.addContextForAnalyze(trigger, vex);
         }
+    }
+
+    @Override
+    protected void fillDescrObj() {
+        action = StatementActions.CREATE;
+        List<IdentifierContext> ids = ctx.table_name.identifier();
+        descrObj = new GenericColumn(QNameParser.getSchemaName(ids),
+                QNameParser.getFirstNameCtx(ids).getText(),
+                ctx.name.getText(), DbObjType.TRIGGER);
     }
 }

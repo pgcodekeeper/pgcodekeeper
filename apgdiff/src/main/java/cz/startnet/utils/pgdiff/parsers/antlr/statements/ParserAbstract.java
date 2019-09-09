@@ -7,7 +7,6 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
-import java.util.regex.Pattern;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -19,19 +18,31 @@ import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
 import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Delete_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Id_tokenContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Including_indexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Insert_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Predefined_typeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_alterContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_createContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Script_transactionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_xml_indexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Delete_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Insert_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Merge_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Select_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Transaction_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
@@ -62,17 +73,22 @@ public abstract class ParserAbstract {
     private boolean refMode;
     private String fileName;
 
+    protected StatementActions action;
+    protected GenericColumn descrObj;
+
     public ParserAbstract(PgDatabase db) {
         this.db = db;
     }
 
     public void parseObject(String fileName, ParserListenerMode mode,
-            List<StatementBodyContainer> statementBodies, ParserRuleContext ctx) {
+            List<StatementBodyContainer> statementBodies, ParserRuleContext ctx,
+            CommonTokenStream tokenStream) {
         this.fileName = fileName;
         this.refMode = ParserListenerMode.REF == mode;
         this.statementBodies = statementBodies;
         if (ParserListenerMode.SCRIPT == mode) {
-            fillQueryLocation(ctx);
+            fillDescrObj();
+            fillQueryLocation(ctx, tokenStream);
         } else {
             parseObject();
         }
@@ -92,43 +108,6 @@ public abstract class ParserAbstract {
      * Parse object from context
      */
     public abstract void parseObject();
-
-    /**
-     * Fills the 'QueryLocation'-object with query of statement and it's position
-     * in the script from statement context, and then puts filled 'QueryLocation'-object
-     * to the batch.
-     */
-    protected QueryLocation fillQueryLocation(ParserRuleContext ctx) {
-        String query = ParserAbstract.getFullCtxText(ctx);
-        QueryLocation loc = new QueryLocation(getStmtAction(query), ctx, query);
-        db.addToBatch(loc);
-        return loc;
-    }
-
-    /**
-     * Get statement action for QueryLocation object.
-     */
-    public static String getStmtAction(String query) {
-        // trim to avoid empty strings at the edges of the array
-        String[] arr = Pattern.compile("\\s+").split(query.trim(), 3);
-        if (arr[0].isEmpty()) {
-            // empty or whitespace query, wtf was that
-            return null;
-        }
-
-        String message = arr[0].toUpperCase(Locale.ROOT);
-        if (arr.length > 1) {
-            switch (message) {
-            case "CREATE":
-            case "ALTER":
-            case "DROP":
-            case "START":
-            case "BEGIN":
-                message += ' ' + arr[1].toUpperCase(Locale.ROOT);
-            }
-        }
-        return message;
-    }
 
     /**
      * Extracts raw text from context
@@ -523,5 +502,203 @@ public abstract class ParserAbstract {
         for (IdentifierContext inclCol : incl.identifier()) {
             st.addDep(new GenericColumn(schema, table, inclCol.getText(), DbObjType.COLUMN));
         }
+    }
+
+    /**
+     * Fills the GenericColumn object which will be used for getting the action
+     * string of described statement.
+     */
+    protected void fillDescrObj() {
+        // implemented where its necessary
+    }
+
+    /**
+     * Fills the 'QueryLocation'-object with query of statement and it's position
+     * in the script from statement context, and then puts filled 'QueryLocation'-object
+     * to the batch.
+     */
+    protected QueryLocation fillQueryLocation(ParserRuleContext ctx, CommonTokenStream tokenStream) {
+        QueryLocation loc = new QueryLocation(getStmtAction(ctx, tokenStream), ctx, getFullCtxText(ctx));
+        db.addToBatch(loc);
+        return loc;
+    }
+
+    protected String getStmtAction(ParserRuleContext ctx, CommonTokenStream tokenStream) {
+        return descrObj == null ? ctx.getStart().getText().toUpperCase(Locale.ROOT)
+                : new StringBuilder().append(action.name())
+                .append(' ').append(descrObj.type)
+                .append(' ').append(descrObj.getQualifiedName()).toString();
+    }
+
+    public static String getPgStmtAction(ParserRuleContext ctx, CommonTokenStream tokenStream) {
+        if (ctx instanceof Script_transactionContext
+                && ((Script_transactionContext) ctx).START() != null) {
+            return "START TRANSACTION";
+        } else if (ctx instanceof Select_stmtContext) {
+            return "SELECT";
+        } else if (ctx instanceof Insert_stmt_for_psqlContext) {
+            return "INSERT";
+        } else if (ctx instanceof Delete_stmt_for_psqlContext) {
+            return "DELETE";
+        } else if (ctx instanceof Schema_createContext) {
+            int descrWordsCount = 0;
+            Schema_createContext createCtx = (Schema_createContext) ctx;
+            if (createCtx.create_language_statement() != null) {
+                return "CREATE LANGUAGE";
+            } else if (createCtx.create_transform_statement() != null) {
+                return "CREATE TRANSFORM";
+            } else if (createCtx.create_table_as_statement() != null) {
+                return "CREATE TABLE";
+            } else if (createCtx.create_conversion_statement() != null) {
+                return "CREATE CONVERSION";
+            } else if (createCtx.create_event_trigger() != null
+                    || createCtx.create_user_mapping() != null
+                    || createCtx.create_access_method() != null
+                    || createCtx.create_operator_family_statement() != null
+                    || createCtx.create_operator_class_statement() != null
+                    || createCtx.security_label() != null) {
+                descrWordsCount = 3;
+            } else if (createCtx.schema_import() != null
+                    || createCtx.create_foreign_data_wrapper() != null) {
+                descrWordsCount = 4;
+            } else {
+                descrWordsCount = 2;
+            }
+            return getActionDescription(tokenStream, ctx, descrWordsCount);
+        } else if (ctx instanceof Schema_alterContext) {
+            Schema_alterContext alterCtx = (Schema_alterContext) ctx;
+            int descrWordsCount = 0;
+            if (alterCtx.alter_language_statement() != null) {
+                return "ALTER LANGUAGE";
+            } else if (alterCtx.alter_foreign_data_wrapper() != null) {
+                descrWordsCount = 4;
+            } else if (alterCtx.alter_default_privileges() != null
+                    || alterCtx.alter_event_trigger() != null
+                    || alterCtx.alter_user_mapping() != null
+                    || alterCtx.alter_operator_family_statement() != null
+                    || alterCtx.alter_operator_class_statement() != null) {
+                descrWordsCount = 3;
+            } else {
+                descrWordsCount = 2;
+            }
+            return getActionDescription(tokenStream, ctx, descrWordsCount);
+        }
+        return ctx.getStart().getText().toUpperCase(Locale.ROOT);
+    }
+
+    public static String getMsStmtAction(ParserRuleContext ctx, CommonTokenStream tokenStream) {
+        if (ctx instanceof Transaction_statementContext
+                && ((Transaction_statementContext) ctx).BEGIN() != null) {
+            return "BEGIN TRANSACTION";
+        } else if (ctx instanceof Merge_statementContext) {
+            return "MERGE";
+        } else if (ctx instanceof Delete_statementContext) {
+            return "DELETE";
+        } else if (ctx instanceof Insert_statementContext) {
+            return "INSERT";
+        } else if (ctx instanceof Select_statementContext) {
+            return "SELECT";
+        } else if (ctx instanceof cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_createContext) {
+            cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_createContext createCtx
+            = (cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_createContext) ctx;
+            Create_xml_indexContext xmlIdxCtx;
+            int descrWordsCount = 2;
+            if (createCtx.create_application_role() != null
+                    || createCtx.create_asymmetric_key() != null
+                    || createCtx.create_cryptographic_provider() != null
+                    || createCtx.create_event_notification() != null
+                    || createCtx.create_external_library() != null
+                    || createCtx.create_external_table() != null
+                    || createCtx.create_fulltext_catalog() != null
+                    || createCtx.create_fulltext_index() != null
+                    || createCtx.create_fulltext_stoplist() != null
+                    || createCtx.create_key() != null
+                    || createCtx.create_message_type() != null
+                    || createCtx.create_or_alter_broker_priority() != null
+                    || createCtx.create_or_alter_event_session() != null
+                    || createCtx.create_or_alter_resource_pool() != null
+                    || createCtx.create_partition_function() != null
+                    || createCtx.create_partition_scheme() != null
+                    || createCtx.create_security_policy() != null
+                    || createCtx.create_server_audit() != null
+                    || createCtx.create_server_role() != null
+                    || createCtx.create_workload_group() != null
+                    || ((xmlIdxCtx = createCtx.create_xml_index()) != null
+                    && xmlIdxCtx.PRIMARY() == null)) {
+                descrWordsCount = 3;
+            } else if (createCtx.create_column_encryption_key() != null
+                    || createCtx.create_column_master_key() != null
+                    || createCtx.create_database_encryption_key() != null
+                    || createCtx.create_database_scoped_credential() != null
+                    || createCtx.create_external_resource_pool() != null
+                    || createCtx.create_master_key_sql_server() != null
+                    || createCtx.create_remote_service_binding() != null
+                    || createCtx.create_search_property_list() != null
+                    || createCtx.create_selective_index() != null
+                    || createCtx.create_server_audit_specification() != null
+                    || createCtx.create_xml_schema_collection() != null
+                    || ((xmlIdxCtx = createCtx.create_xml_index()) != null
+                    && xmlIdxCtx.PRIMARY() != null)) {
+                descrWordsCount = 4;
+            }
+            return getActionDescription(tokenStream, ctx, descrWordsCount);
+        } else if (ctx instanceof cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_alterContext) {
+            cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_alterContext alterCtx
+            = (cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_alterContext) ctx;
+            int descrWordsCount = 0;
+            if (alterCtx.alter_asymmetric_key() != null
+                    || alterCtx.alter_application_role() != null
+                    || alterCtx.alter_availability_group() != null
+                    || alterCtx.alter_cryptographic_provider() != null
+                    || alterCtx.alter_external_library() != null
+                    || alterCtx.alter_fulltext_catalog() != null
+                    || alterCtx.alter_fulltext_index() != null
+                    || alterCtx.alter_fulltext_stoplist() != null
+                    || alterCtx.alter_master_key_sql_server() != null
+                    || alterCtx.alter_message_type() != null
+                    || alterCtx.alter_partition_function() != null
+                    || alterCtx.alter_partition_scheme() != null
+                    || alterCtx.alter_resource_governor() != null
+                    || alterCtx.alter_security_policy() != null
+                    || alterCtx.alter_server_audit() != null
+                    || alterCtx.alter_server_configuration() != null
+                    || alterCtx.alter_server_role() != null
+                    || alterCtx.alter_server_role_pdw() != null
+                    || alterCtx.alter_symmetric_key() != null
+                    || alterCtx.alter_workload_group() != null
+                    || alterCtx.create_or_alter_broker_priority() != null
+                    || alterCtx.create_or_alter_event_session() != null
+                    || alterCtx.create_or_alter_resource_pool() != null
+                    || alterCtx.create_symmetric_key() != null) {
+                descrWordsCount = 3;
+            } else if (alterCtx.alter_column_encryption_key() != null
+                    || alterCtx.alter_database_encryption_key() != null
+                    || alterCtx.alter_database_scoped_credential() != null
+                    || alterCtx.alter_external_data_source() != null
+                    || alterCtx.alter_external_resource_pool() != null
+                    || alterCtx.alter_remote_service_binding() != null
+                    || alterCtx.alter_search_property_list() != null
+                    || alterCtx.alter_server_audit_specification() != null
+                    || alterCtx.alter_service_master_key() != null
+                    || alterCtx.alter_xml_schema_collection() != null) {
+                descrWordsCount = 4;
+            } else {
+                descrWordsCount = 2;
+            }
+            return getActionDescription(tokenStream, ctx, descrWordsCount);
+        }
+        return ctx.getStart().getText().toUpperCase(Locale.ROOT);
+    }
+
+    private static String getActionDescription(CommonTokenStream tokenStream, ParserRuleContext ctx,
+            int descrWordsCount) {
+        List<Token> tokens = tokenStream.getTokens(ctx.getStart().getTokenIndex(),
+                ctx.getStop().getTokenIndex());
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < descrWordsCount; i++) {
+            sb.append(tokens.get(i).getText()).append(' ');
+        }
+        sb.setLength(sb.length() - 1);
+        return sb.toString();
     }
 }

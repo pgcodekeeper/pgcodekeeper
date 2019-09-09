@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 import java.util.Arrays;
 import java.util.List;
 
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
@@ -11,6 +12,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_alterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_action_dropContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Table_constraintContext;
@@ -18,6 +20,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.TableAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsConstraint;
 import cz.startnet.utils.pgdiff.schema.MsTable;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
@@ -90,8 +93,8 @@ public class AlterMsTable extends TableAbstract {
     }
 
     @Override
-    protected QueryLocation fillQueryLocation(ParserRuleContext ctx) {
-        QueryLocation loc = super.fillQueryLocation(ctx);
+    protected QueryLocation fillQueryLocation(ParserRuleContext ctx, CommonTokenStream tokenStream) {
+        QueryLocation loc = super.fillQueryLocation(ctx, tokenStream);
         Alter_tableContext alterTblCtx  = ((Schema_alterContext) ctx).alter_table();
         if (alterTblCtx.DROP() != null && alterTblCtx.COLUMN() != null) {
             loc.setWarning(DangerStatement.DROP_COLUMN);
@@ -99,5 +102,13 @@ public class AlterMsTable extends TableAbstract {
             loc.setWarning(DangerStatement.ALTER_COLUMN);
         }
         return loc;
+    }
+
+    @Override
+    protected void fillDescrObj() {
+        action = StatementActions.ALTER;
+        Qualified_nameContext qualNameCtx = ctx.name;
+        descrObj = new GenericColumn(qualNameCtx.schema.getText(),
+                qualNameCtx.name.getText(), DbObjType.TABLE);
     }
 }

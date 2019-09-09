@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import java.util.Arrays;
 
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
@@ -10,6 +11,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_sequenceContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_alterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
@@ -47,12 +49,28 @@ public class AlterMsOther extends ParserAbstract {
     }
 
     @Override
-    protected QueryLocation fillQueryLocation(ParserRuleContext ctx) {
-        QueryLocation loc = super.fillQueryLocation(ctx);
+    protected QueryLocation fillQueryLocation(ParserRuleContext ctx, CommonTokenStream tokenStream) {
+        QueryLocation loc = super.fillQueryLocation(ctx, tokenStream);
         Alter_sequenceContext alterSeqCtx = ((Schema_alterContext) ctx).alter_sequence();
         if (alterSeqCtx != null && !alterSeqCtx.RESTART().isEmpty()) {
             loc.setWarning(DangerStatement.RESTART_WITH);
         }
         return loc;
+    }
+
+    @Override
+    protected void fillDescrObj() {
+        action = StatementActions.ALTER;
+        if (ctx.alter_schema_sql() != null) {
+            descrObj = new GenericColumn(ctx.alter_schema_sql().schema_name.getText(),
+                    DbObjType.SCHEMA);
+        } else if (ctx.alter_user() != null) {
+            descrObj = new GenericColumn(ctx.alter_user().username.getText(),
+                    DbObjType.USER);
+        } else if (ctx.alter_sequence() != null) {
+            Qualified_nameContext qname = ctx.alter_sequence().qualified_name();
+            descrObj = new GenericColumn(qname.schema.getText(), qname.name.getText(),
+                    DbObjType.SEQUENCE);
+        }
     }
 }

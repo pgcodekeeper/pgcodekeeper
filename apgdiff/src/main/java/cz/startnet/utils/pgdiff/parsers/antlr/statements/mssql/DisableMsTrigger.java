@@ -2,6 +2,10 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import java.util.Arrays;
 
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ParserRuleContext;
+
+import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Enable_disable_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Names_referencesContext;
@@ -46,5 +50,37 @@ public class DisableMsTrigger extends ParserAbstract {
                 doSafe(MsTrigger::setDisable, trig, true);
             }
         }
+    }
+
+    @Override
+    protected QueryLocation fillQueryLocation(ParserRuleContext ctx, CommonTokenStream tokenStream) {
+        StringBuilder sb = new StringBuilder();
+        Enable_disable_triggerContext ctxEnableDisableTr = (Enable_disable_triggerContext) ctx;
+        sb.append(ctxEnableDisableTr.DISABLE() != null ? "DISABLE " : "ENABLE ")
+        .append("TRIGGER ");
+
+
+        Names_referencesContext triggers = ctxEnableDisableTr.names_references();
+        Qualified_nameContext parent = ctxEnableDisableTr.qualified_name();
+        if (triggers == null || parent == null) {
+            QueryLocation loc = new QueryLocation(sb.toString(), ctx, getFullCtxText(ctx));
+            db.addToBatch(loc);
+            return loc;
+        }
+
+        IdContext schemaCtx = parent.schema;
+
+        for (Qualified_nameContext qname : triggers.qualified_name()) {
+            sb.append(schemaCtx.getText())
+            .append('.').append(parent.name.getText())
+            .append('.').append(qname.name.getText())
+            .append(", ");
+
+        }
+        sb.setLength(sb.length() - 2);
+
+        QueryLocation loc = new QueryLocation(sb.toString(), ctx, getFullCtxText(ctx));
+        db.addToBatch(loc);
+        return loc;
     }
 }

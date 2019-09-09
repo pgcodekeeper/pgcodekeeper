@@ -7,6 +7,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
+import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_alterContext;
@@ -47,7 +48,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateType;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.DropStatement;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.OtherOperation;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.UpdateStatement;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -71,6 +71,7 @@ implements SqlContextProcessor {
 
     @Override
     public void process(SqlContext rootCtx, CommonTokenStream stream) {
+        this.stream = stream;
         for (StatementContext s : rootCtx.statement()) {
             statement(s);
         }
@@ -96,7 +97,8 @@ implements SqlContextProcessor {
         } else if ((ds = statement.data_statement()) != null) {
             data(ds);
         } else if(isScriptMode) {
-            safeParseStatement(new OtherOperation(statement, db), statement);
+            db.addToBatch(new QueryLocation(ParserAbstract.getPgStmtAction(statement, stream),
+                    statement, ParserAbstract.getFullCtxText(statement)));
         }
     }
 
@@ -143,13 +145,18 @@ implements SqlContextProcessor {
         } else if (ctx.rule_common() != null) {
             p = new CreateRule(ctx.rule_common(), db);
         } else if (ctx.set_statement() != null) {
-            if (!isScriptMode) {
-                set(ctx.set_statement());
-                return;
+            Set_statementContext setCtx = ctx.set_statement();
+            if (isScriptMode) {
+                db.addToBatch(new QueryLocation(ParserAbstract.getPgStmtAction(setCtx, stream),
+                        setCtx, ParserAbstract.getFullCtxText(setCtx)));
+            } else {
+                set(setCtx);
             }
-            p = new OtherOperation(ctx.set_statement(), db);
+            return;
         } else if (isScriptMode) {
-            p = new OtherOperation(ctx, db);
+            db.addToBatch(new QueryLocation(ParserAbstract.getPgStmtAction(ctx, stream),
+                    ctx, ParserAbstract.getFullCtxText(ctx)));
+            return;
         } else {
             return;
         }
@@ -181,7 +188,9 @@ implements SqlContextProcessor {
         if (ctx.update_stmt_for_psql() != null) {
             p =  new UpdateStatement(ctx.update_stmt_for_psql(), db);
         } else if (isScriptMode) {
-            p = new OtherOperation(ctx, db);
+            db.addToBatch(new QueryLocation(ParserAbstract.getPgStmtAction(ctx, stream),
+                    ctx, ParserAbstract.getFullCtxText(ctx)));
+            return;
         } else {
             return;
         }

@@ -16,9 +16,12 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Transform_for_typeContex
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_storage_parameterContext;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.Argument;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgProcedure;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateFunction extends ParserAbstract {
     private final Create_function_statementContext ctx;
@@ -134,5 +137,14 @@ public class CreateFunction extends ParserAbstract {
 
             function.addArgument(arg);
         }
+    }
+
+    @Override
+    protected void fillDescrObj() {
+        action = StatementActions.CREATE;
+        List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
+        descrObj = new GenericColumn(QNameParser.getSchemaName(ids),
+                QNameParser.getFirstNameCtx(ids).getText(),
+                ctx.PROCEDURE() != null ? DbObjType.PROCEDURE : DbObjType.FUNCTION);
     }
 }

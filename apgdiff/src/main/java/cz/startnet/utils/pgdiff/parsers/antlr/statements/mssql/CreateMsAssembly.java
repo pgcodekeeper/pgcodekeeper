@@ -9,8 +9,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_assemblyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.ExpressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsAssembly;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateMsAssembly extends ParserAbstract {
 
@@ -68,5 +71,12 @@ public class CreateMsAssembly extends ParserAbstract {
         // remove trailing newline
         sb.setLength(sb.length() - 2);
         return sb.toString();
+    }
+
+    @Override
+    protected void fillDescrObj() {
+        action = StatementActions.CREATE;
+        descrObj = new GenericColumn(ctx.assembly_name.getText(),
+                DbObjType.ASSEMBLY);
     }
 }
