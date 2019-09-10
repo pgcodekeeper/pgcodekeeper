@@ -73,7 +73,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
                             currQuery = query.getSql();
                             currQueryLine = query.getLineNumber();
                             st.addBatch(currQuery);
-                            writeStatus(currQuery);
+                            writeStatus(query.getAction());
                         }
 
                         if (reporter != null) {

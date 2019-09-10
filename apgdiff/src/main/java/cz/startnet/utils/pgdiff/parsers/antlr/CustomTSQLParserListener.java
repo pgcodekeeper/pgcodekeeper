@@ -195,6 +195,10 @@ implements TSqlContextProcessor {
             p = new CreateMsUser(ctx.create_user(), db);
         } else if (ctx.create_type() != null) {
             p = new CreateMsType(ctx.create_type(), db);
+        } else if (isScriptMode) {
+            db.addToBatch(new QueryLocation(ParserAbstract.getMsStmtAction(ctx, stream),
+                    ctx, ParserAbstract.getFullCtxText(ctx)));
+            return;
         } else {
             return;
         }
@@ -211,8 +215,16 @@ implements TSqlContextProcessor {
             p = new AlterMsAssembly(ctx.alter_assembly(), db);
         } else if (ctx.alter_db_role() != null) {
             p = new AlterMsRole(ctx.alter_db_role(), db);
-        } else {
+        } else if (ctx.alter_schema_sql() != null
+                || ctx.alter_user() != null
+                || ctx.alter_sequence() != null) {
             p = new AlterMsOther(ctx, db);
+        } else if (isScriptMode) {
+            db.addToBatch(new QueryLocation(ParserAbstract.getMsStmtAction(ctx, stream),
+                    ctx, ParserAbstract.getFullCtxText(ctx)));
+            return;
+        } else {
+            return;
         }
         safeParseStatement(p, ctx);
     }

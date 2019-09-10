@@ -17,31 +17,29 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
 import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Delete_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Id_tokenContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Including_indexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Insert_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Predefined_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_alterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_createContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Script_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Script_transactionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.StatementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Another_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_xml_indexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Delete_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Dml_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Insert_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Merge_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Select_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Transaction_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
@@ -531,18 +529,28 @@ public abstract class ParserAbstract {
     }
 
     public static String getPgStmtAction(ParserRuleContext ctx, CommonTokenStream tokenStream) {
-        if (ctx instanceof Script_transactionContext
-                && ((Script_transactionContext) ctx).START() != null) {
-            return "START TRANSACTION";
-        } else if (ctx instanceof Select_stmtContext) {
-            return "SELECT";
-        } else if (ctx instanceof Insert_stmt_for_psqlContext) {
-            return "INSERT";
-        } else if (ctx instanceof Delete_stmt_for_psqlContext) {
-            return "DELETE";
+        if (ctx instanceof StatementContext) {
+            StatementContext stmtCtx = (StatementContext) ctx;
+            Script_statementContext scriptCtx;
+            Script_transactionContext transactionCtx;
+            if ((scriptCtx = stmtCtx.script_statement()) != null
+                    && (transactionCtx = scriptCtx.script_transaction()) != null
+                    && transactionCtx.START() != null) {
+                return "START TRANSACTION";
+            }
+        } else if (ctx instanceof Data_statementContext) {
+            Data_statementContext data = (Data_statementContext) ctx;
+            if (data.select_stmt() != null) {
+                return "SELECT";
+            } else if (data.insert_stmt_for_psql() != null) {
+                return "INSERT";
+            } else if (data.delete_stmt_for_psql() != null) {
+                return "DELETE";
+            }
+            return ctx.getStart().getText().toUpperCase(Locale.ROOT);
         } else if (ctx instanceof Schema_createContext) {
-            int descrWordsCount = 0;
             Schema_createContext createCtx = (Schema_createContext) ctx;
+            int descrWordsCount = 0;
             if (createCtx.create_language_statement() != null) {
                 return "CREATE LANGUAGE";
             } else if (createCtx.create_transform_statement() != null) {
@@ -587,17 +595,26 @@ public abstract class ParserAbstract {
     }
 
     public static String getMsStmtAction(ParserRuleContext ctx, CommonTokenStream tokenStream) {
-        if (ctx instanceof Transaction_statementContext
-                && ((Transaction_statementContext) ctx).BEGIN() != null) {
-            return "BEGIN TRANSACTION";
-        } else if (ctx instanceof Merge_statementContext) {
-            return "MERGE";
-        } else if (ctx instanceof Delete_statementContext) {
-            return "DELETE";
-        } else if (ctx instanceof Insert_statementContext) {
-            return "INSERT";
-        } else if (ctx instanceof Select_statementContext) {
-            return "SELECT";
+        if (ctx instanceof Another_statementContext) {
+            Another_statementContext ast = (Another_statementContext) ctx;
+            Transaction_statementContext transactionCtx;
+            if ((transactionCtx = ast.transaction_statement()) != null
+                    && transactionCtx.BEGIN() != null) {
+                return "BEGIN TRANSACTION";
+            }
+            return ctx.getStart().getText().toUpperCase(Locale.ROOT);
+        } else if (ctx instanceof Dml_clauseContext) {
+            Dml_clauseContext dml = (Dml_clauseContext) ctx;
+            if (dml.merge_statement() != null) {
+                return "MERGE";
+            } else if (dml.delete_statement() != null) {
+                return "DELETE";
+            } else if (dml.insert_statement() != null) {
+                return "INSERT";
+            } else if (dml.select_statement() != null) {
+                return "SELECT";
+            }
+            return ctx.getStart().getText().toUpperCase(Locale.ROOT);
         } else if (ctx instanceof cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_createContext) {
             cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_createContext createCtx
             = (cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_createContext) ctx;

@@ -177,8 +177,19 @@ implements SqlContextProcessor {
             p = new AlterFtsStatement(ctx.alter_fts_statement(), db);
         } else if (ctx.alter_owner() != null) {
             p = new AlterOwner(ctx.alter_owner(), db);
-        } else {
+        } else if (ctx.alter_function_statement() != null
+                || ctx.alter_schema_statement() != null
+                || ctx.alter_type_statement() != null
+                || ctx.alter_operator_statement() != null
+                || ctx.alter_index_statement() != null
+                || ctx.alter_extension_statement() != null) {
             p = new AlterOther(ctx, db);
+        } else if (isScriptMode) {
+            db.addToBatch(new QueryLocation(ParserAbstract.getPgStmtAction(ctx, stream),
+                    ctx, ParserAbstract.getFullCtxText(ctx)));
+            return;
+        } else {
+            return;
         }
         safeParseStatement(p, ctx);
     }
