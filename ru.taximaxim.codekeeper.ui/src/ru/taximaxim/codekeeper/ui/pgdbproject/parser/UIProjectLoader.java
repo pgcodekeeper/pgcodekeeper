@@ -315,6 +315,7 @@ public class UIProjectLoader extends ProjectLoader {
 
     @Override
     protected void finishLoader(PgDumpLoader l) {
+        super.finishLoader(l);
         if (statementBodies != null) {
             statementBodies.addAll(l.getStatementBodyReferences());
         }

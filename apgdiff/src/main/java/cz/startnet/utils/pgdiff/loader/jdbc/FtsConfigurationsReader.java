@@ -13,6 +13,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgFtsConfiguration;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class FtsConfigurationsReader extends JdbcReader {
@@ -29,7 +30,9 @@ public class FtsConfigurationsReader extends JdbcReader {
         String parserSchema = res.getString("prsnspname");
         String parserName = res.getString("prsname");
         config.setParser(PgDiffUtils.getQuotedName(parserSchema) + '.' + PgDiffUtils.getQuotedName(parserName));
-        config.addDep(new GenericColumn(parserSchema, parserName, DbObjType.FTS_PARSER));
+        if (!ApgdiffUtils.isPgSystemSchema(parserSchema)) {
+            config.addDep(new GenericColumn(parserSchema, parserName, DbObjType.FTS_PARSER));
+        }
 
         String[] fragments = getColArray(res, "tokennames");
         String[] dictSchemas = getColArray(res, "dictschemas");
@@ -43,14 +46,15 @@ public class FtsConfigurationsReader extends JdbcReader {
                 String dictSchema = dictSchemas[i];
                 String dictName = dictionaries[i];
 
+                StringBuilder sb = new StringBuilder();
                 if (!ApgdiffConsts.PG_CATALOG.equals(dictSchema)) {
                     config.addDep(new GenericColumn(dictSchema, dictName, DbObjType.FTS_DICTIONARY));
+                    sb.append(PgDiffUtils.getQuotedName(dictSchema) + '.');
                 }
 
-                String dName = PgDiffUtils.getQuotedName(dictSchema) + '.'
-                        + PgDiffUtils.getQuotedName(dictName);
+                sb.append(PgDiffUtils.getQuotedName(dictName));
 
-                dictMap.computeIfAbsent(fragment, k -> new ArrayList<>()).add(dName);
+                dictMap.computeIfAbsent(fragment, k -> new ArrayList<>()).add(sb.toString());
             }
 
             dictMap.forEach(config::addDictionary);
