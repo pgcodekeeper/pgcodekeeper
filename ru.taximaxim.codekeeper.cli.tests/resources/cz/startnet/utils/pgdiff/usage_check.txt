@@ -28,7 +28,8 @@ Usage
  -F (--no-check-function-bodies)        : set check_function_bodies to false at
                                           the beginning of the script
  --enable-function-bodies-dependencies  : enable dependencies from bodies of
-                                          functions and procedures
+                                          functions and procedures to other
+                                          functions or procedures
  -Z (--time-zone) <timezone>            : use this timezone when working with
                                           database, also add SET TIMEZONE
                                           statement to the script

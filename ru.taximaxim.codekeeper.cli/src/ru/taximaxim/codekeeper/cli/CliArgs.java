@@ -119,7 +119,7 @@ public class CliArgs extends PgDiffArguments {
     private boolean disableCheckFunctionBodies;
 
     @Option(name="--enable-function-bodies-dependencies", forbids="--parse",
-            usage="enable dependencies from bodies of functions and procedures")
+            usage="enable dependencies from bodies of functions and procedures to other functions or procedures")
     private boolean enableFunctionBodiesDependencies;
 
     @Option(name="-Z", aliases="--time-zone", metaVar="<timezone>", forbids={"--parse", "--ms-sql"},
