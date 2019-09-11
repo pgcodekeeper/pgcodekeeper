@@ -16,6 +16,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_option
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expression_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_storage_parameterContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.IndexAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.IStatementContainer;
@@ -59,7 +60,7 @@ public class CreateIndex extends ParserAbstract {
 
     public static void parseIndex(Index_restContext rest, String tablespace,
             String schemaName, String tableName, PgIndex ind, PgDatabase db) {
-        db.addContextForAnalyze(ind, rest);
+        db.addAnalysisLauncher(new IndexAnalysisLauncher(ind, rest));
 
         Index_sortContext sort = rest.index_sort();
         parseColumns(sort, ind);

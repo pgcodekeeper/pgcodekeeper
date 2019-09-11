@@ -14,6 +14,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_initialy_immedCont
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Trigger_referencingContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.When_triggerContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.TriggerAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -124,7 +125,7 @@ public class CreateTrigger extends ParserAbstract {
         if (whenCtx != null) {
             VexContext vex = whenCtx.when_expr;
             trigger.setWhen(getFullCtxText(vex));
-            db.addContextForAnalyze(trigger, vex);
+            db.addAnalysisLauncher(new TriggerAnalysisLauncher(trigger, vex));
         }
     }
 }
