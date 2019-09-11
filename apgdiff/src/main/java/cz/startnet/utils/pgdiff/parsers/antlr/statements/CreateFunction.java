@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Queue;
 import java.util.stream.Collectors;
 
-import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -16,13 +15,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_funct_paramsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_actions_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_column_name_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statement_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
@@ -64,9 +61,7 @@ public class CreateFunction extends ParserAbstract {
         List<Function_argumentsContext> funcArgsCtx = ctx.function_parameters()
                 .function_args().function_arguments();
 
-        fillArguments(function, funcArgsCtx);
-        function.setBody(db.getArguments(), getFullCtxText(ctx.funct_body));
-        fillFunction(ctx.funct_body, function, funcArgsCtx);
+        fillFunction(ctx.funct_body, function, fillArguments(function, funcArgsCtx));
 
         if (ctx.ret_table != null) {
             function.setReturns(getFullCtxText(ctx.ret_table));
@@ -82,7 +77,7 @@ public class CreateFunction extends ParserAbstract {
     }
 
     private void fillFunction(Create_funct_paramsContext params,
-            AbstractPgFunction function, List<Function_argumentsContext> funcArgsCtx) {
+            AbstractPgFunction function, List<Pair<String, GenericColumn>> funcArgs) {
         Function_defContext funcDef = null;
         Float cost = null;
         String language = null;
@@ -156,7 +151,7 @@ public class CreateFunction extends ParserAbstract {
                     codeStart.getSymbol().getLine() - ctx.getParent().getStart().getLine(),
                     "function definition of " + function.getBareName(),
                     ctx -> db.addAnalysisLauncher(new FuncProcAnalysisLauncher(
-                            function, ctx, getArgsFromArgCtxs(funcArgsCtx))),
+                            function, ctx, funcArgs)),
                     antlrTasks);
         }
 
@@ -178,43 +173,28 @@ public class CreateFunction extends ParserAbstract {
      * Returns a list of pairs, each of which contains the name of the argument
      * and its full type name in GenericColumn object (typeSchema, typeName, DbObjType.TYPE).
      */
-    private List<Pair<String, GenericColumn>> getArgsFromArgCtxs(List<Function_argumentsContext> funcArgsCtxs) {
+    private List<Pair<String, GenericColumn>> fillArguments(
+            AbstractPgFunction function, List<Function_argumentsContext> funcArgsCtx) {
         List<Pair<String, GenericColumn>> funcArgs = new ArrayList<>();
-
-        for (Function_argumentsContext funcCtx : funcArgsCtxs) {
-            Identifier_nontypeContext argNameCtx = funcCtx.argname;
-            String argName = argNameCtx == null ? null :
-                ParserAbstract.getFullCtxText(argNameCtx);
-
-            Data_typeContext dataTypeCtx = funcCtx.data_type();
-
+        for (Function_argumentsContext argument : funcArgsCtx) {
+            String argName = argument.argname != null ? argument.argname.getText() : null;
             String typeSchema = ApgdiffConsts.PG_CATALOG;
-            ParserRuleContext typeNameCtx = dataTypeCtx;
+            String typeName;
 
-            Schema_qualified_name_nontypeContext typeQname = dataTypeCtx.predefined_type()
+            Schema_qualified_name_nontypeContext typeQname = argument.argtype_data.predefined_type()
                     .schema_qualified_name_nontype();
             if (typeQname != null) {
-                IdentifierContext schemaCtx = typeQname.schema;
-                if (schemaCtx != null) {
-                    typeSchema = ParserAbstract.getFullCtxText(schemaCtx);
+                if (typeQname.schema != null) {
+                    typeSchema = typeQname.schema.getText();
                 }
-                typeNameCtx = typeQname.identifier_nontype();
+                typeName = typeQname.identifier_nontype().getText();
+            } else {
+                typeName = getFullCtxText(argument.argtype_data);
             }
 
-            funcArgs.add(new Pair<>(argName, new GenericColumn(typeSchema,
-                    ParserAbstract.getFullCtxText(typeNameCtx), DbObjType.TYPE)));
-        }
-
-        return funcArgs;
-    }
-
-    private void fillArguments(AbstractPgFunction function,
-            List<Function_argumentsContext> funcArgsCtx) {
-        for (Function_argumentsContext argument : funcArgsCtx) {
             Argument arg = new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
-                    argument.argname != null ? argument.argname.getText() : null,
-                            getTypeName(argument.argtype_data));
-            addPgTypeDepcy(argument.data_type(), function);
+                    argName, getTypeName(argument.argtype_data));
+            addPgTypeDepcy(argument.argtype_data, function);
 
             if (argument.function_def_value() != null) {
                 arg.setDefaultExpression(getFullCtxText(argument.function_def_value().def_value));
@@ -224,6 +204,8 @@ public class CreateFunction extends ParserAbstract {
             }
 
             function.addArgument(arg);
+            funcArgs.add(new Pair<>(argName, new GenericColumn(typeSchema, typeName, DbObjType.TYPE)));
         }
+        return funcArgs;
     }
 }

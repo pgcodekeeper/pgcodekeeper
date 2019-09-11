@@ -62,7 +62,7 @@ public abstract class AbstractAnalysisLauncher {
         contextsForAnalyze.add(ctx);
     }
 
-    public void launchAnalyze(PgDatabase db, List<AntlrError> errors) {
+    public void launchAnalyze(List<AntlrError> errors) {
         // Duplicated objects don't have parent, skip them
         if (stmt.getParent() == null) {
             return;

@@ -41,7 +41,7 @@ public final class FullAnalyze {
         // Analysis of all statements except 'VIEW'.
         db.getAnalysisLaunchers().stream()
         .filter(l -> DbObjType.VIEW != l.getStmt().getStatementType())
-        .forEach(l -> l.launchAnalyze(db, errors));
+        .forEach(l -> l.launchAnalyze(errors));
         db.getAnalysisLaunchers().clear();
     }
 
@@ -56,7 +56,7 @@ public final class FullAnalyze {
 
             db.getAnalysisLaunchers().stream()
             .filter(l -> st.equals(l.getStmt()))
-            .forEach(l -> l.launchAnalyze(db, errors));
+            .forEach(l -> l.launchAnalyze(errors));
         }
     }
 }
