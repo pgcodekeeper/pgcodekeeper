@@ -151,7 +151,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
             for (int i = 1; i <= count; i++) {
                 String type = meta.getColumnTypeName(i);
                 String dealias = JdbcType.DATA_TYPE_ALIASES.get(type);
-                names.add(meta.getColumnLabel(i) + '\n' +
+                names.add(meta.getColumnLabel(i) + ' ' +
                         (dealias == null ? type : dealias));
             }
             results.add(names);
