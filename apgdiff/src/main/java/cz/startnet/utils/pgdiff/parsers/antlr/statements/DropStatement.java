@@ -176,26 +176,27 @@ public class DropStatement extends ParserAbstract {
             if (type == null) {
                 return;
             }
-            StringBuilder sb = new StringBuilder();
-            for (Schema_qualified_nameContext objName :
-                dropStmtCtx.if_exist_names_restrict_cascade().names_references().name) {
-                ids = objName.identifier();
-                sb.append(QNameParser.getSchemaName(ids)).append('.')
-                .append(QNameParser.getFirstNameCtx(ids).getText()).append(", ");
+            List<Schema_qualified_nameContext> objNames = dropStmtCtx
+                    .if_exist_names_restrict_cascade().names_references().name;
+            ids = objNames.get(0).identifier();
+            String schemaName = "";
+            String objName = "";
+            if (objNames.size() == 1) {
+                schemaName = QNameParser.getSchemaName(ids);
+                objName = QNameParser.getFirstNameCtx(ids).getText();
             }
-            sb.setLength(sb.length() - 2);
-            descrObj = new GenericColumn(sb.toString(), type);
-
+            descrObj = new GenericColumn(schemaName, objName, type);
         } else if (ctx.drop_operator_statement() != null) {
             Drop_operator_statementContext dropRuleCtx = ctx.drop_operator_statement();
-            StringBuilder sb = new StringBuilder();
-            for (Target_operatorContext targetOperCtx : dropRuleCtx.target_operator()) {
-                Operator_nameContext nameCtx = targetOperCtx.operator_name();
-                sb.append(nameCtx.schema_name.getText()).append('.')
-                .append(nameCtx.operator.getText()).append(", ");
+            List<Target_operatorContext> targetOpers = dropRuleCtx.target_operator();
+            Operator_nameContext nameCtx = targetOpers.get(0).operator_name();
+            String schemaName = "";
+            String objName = "";
+            if (targetOpers.size() == 1) {
+                schemaName = nameCtx.schema_name.getText();
+                objName = nameCtx.operator.getText();
             }
-            sb.setLength(sb.length() - 2);
-            descrObj = new GenericColumn(sb.toString(), DbObjType.OPERATOR);
+            descrObj = new GenericColumn(schemaName, objName, DbObjType.OPERATOR);
         }
     }
 }

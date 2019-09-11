@@ -113,24 +113,23 @@ public class DropMsStatement extends ParserAbstract {
     protected void fillDescrObj() {
         action = StatementActions.DROP;
         if (ctx.drop_assembly() != null) {
-            StringBuilder sb = new StringBuilder();
-            for (IdContext id : ctx.drop_assembly().id()) {
-                sb.append(id.getText()).append(", ");
-            }
-            sb.setLength(sb.length() - 2);
-            descrObj = new GenericColumn(sb.toString(), DbObjType.ASSEMBLY);
+            List<IdContext> ids = ctx.drop_assembly().id();
+            descrObj = new GenericColumn(ids.size() != 1 ? "" : ids.get(0).getText(),
+                    DbObjType.ASSEMBLY);
         } else if (ctx.drop_index() != null) {
-            StringBuilder sb = new StringBuilder();
-            for (Drop_relational_or_xml_or_spatial_indexContext ind :
-                ctx.drop_index().drop_relational_or_xml_or_spatial_index()) {
+            List<Drop_relational_or_xml_or_spatial_indexContext> indices = ctx
+                    .drop_index().drop_relational_or_xml_or_spatial_index();
+            String schemaName = "";
+            String tblName = "";
+            String objName = "";
+            if (indices.size() == 1) {
+                Drop_relational_or_xml_or_spatial_indexContext ind = indices.get(0);
                 Qualified_nameContext tableIds = ind.qualified_name();
-                sb.append(tableIds.schema.getText())
-                .append('.').append(tableIds.name)
-                .append('.').append(ind.index_name)
-                .append(", ");
+                schemaName = tableIds.schema.getText();
+                tblName = tableIds.name.getText();
+                objName = ind.index_name.getText();
             }
-            sb.setLength(sb.length() - 2);
-            descrObj = new GenericColumn(sb.toString(), DbObjType.INDEX);
+            descrObj = new GenericColumn(schemaName, tblName, objName, DbObjType.INDEX);
         } else if (ctx.drop_statements() != null) {
             dropOtherStmt(ctx.drop_statements());
         }
@@ -138,6 +137,7 @@ public class DropMsStatement extends ParserAbstract {
 
     private void dropOtherStmt(Drop_statementsContext dropStmtCtx) {
         DbObjType type = null;
+
         if (dropStmtCtx.SCHEMA() != null) {
             type = DbObjType.SCHEMA;
         } else if (dropStmtCtx.ROLE() != null) {
@@ -147,21 +147,8 @@ public class DropMsStatement extends ParserAbstract {
         }
 
         if (type != null) {
-            StringBuilder sb = new StringBuilder();
-            for (Qualified_nameContext qname : dropStmtCtx.qualified_name()) {
-                sb.append(qname.name.getText()).append(", ");
-            }
-            sb.setLength(sb.length() - 2);
-            descrObj = new GenericColumn(sb.toString(), type);
-            return;
-        } else if (dropStmtCtx.TRIGGER() != null) {
-            StringBuilder sb = new StringBuilder();
-            for (Qualified_nameContext qname : dropStmtCtx.qualified_name()) {
-                sb.append(qname.schema.getText()).append('.')
-                .append(qname.name.getText()).append(", ");
-            }
-            sb.setLength(sb.length() - 2);
-            descrObj = new GenericColumn(sb.toString(), DbObjType.TRIGGER);
+            List<Qualified_nameContext> qnames = dropStmtCtx.qualified_name();
+            descrObj = new GenericColumn(qnames.size() != 1 ? "" : qnames.get(0).name.getText(), type);
             return;
         }
 
@@ -177,16 +164,19 @@ public class DropMsStatement extends ParserAbstract {
             type = DbObjType.TYPE;
         } else if (dropStmtCtx.VIEW() != null) {
             type = DbObjType.VIEW;
+        } else if (dropStmtCtx.TRIGGER() != null) {
+            type = DbObjType.TRIGGER;
         }
 
         if (type != null) {
-            StringBuilder sb = new StringBuilder();
-            for (Qualified_nameContext qname : dropStmtCtx.qualified_name()) {
-                sb.append(qname.schema.getText()).append('.')
-                .append(qname.name.getText()).append(", ");
+            List<Qualified_nameContext> qnames = dropStmtCtx.qualified_name();
+            String schemaName = "";
+            String objName = "";
+            if (qnames.size() == 1) {
+                schemaName = qnames.get(0).schema.getText();
+                objName = qnames.get(0).name.getText();
             }
-            sb.setLength(sb.length() - 2);
-            descrObj = new GenericColumn(sb.toString(), type);
+            descrObj = new GenericColumn(schemaName, objName, type);
         }
     }
 }

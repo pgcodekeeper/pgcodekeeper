@@ -522,10 +522,18 @@ public abstract class ParserAbstract {
     }
 
     protected String getStmtAction(ParserRuleContext ctx, CommonTokenStream tokenStream) {
-        return descrObj == null ? ctx.getStart().getText().toUpperCase(Locale.ROOT)
-                : new StringBuilder().append(action.name())
-                .append(' ').append(descrObj.type)
-                .append(' ').append(descrObj.getQualifiedName()).toString();
+        String result;
+        if (descrObj == null) {
+            result = ctx.getStart().getText().toUpperCase(Locale.ROOT);
+        } else {
+            StringBuilder sb = new StringBuilder();
+            sb.append(action.name());
+            if (StatementActions.UPDATE != action) {
+                sb.append(' ').append(descrObj.type);
+            }
+            result = sb.append(' ').append(descrObj.getQualifiedName()).toString();
+        }
+        return result;
     }
 
     public static String getPgStmtAction(ParserRuleContext ctx, CommonTokenStream tokenStream) {
@@ -543,9 +551,11 @@ public abstract class ParserAbstract {
             if (data.select_stmt() != null) {
                 return "SELECT";
             } else if (data.insert_stmt_for_psql() != null) {
-                return "INSERT";
+                return "INSERT INTO " + getFullCtxText(data.insert_stmt_for_psql()
+                        .insert_table_name);
             } else if (data.delete_stmt_for_psql() != null) {
-                return "DELETE";
+                return "DELETE FROM " + getFullCtxText(data.delete_stmt_for_psql()
+                        .delete_table_name);
             }
             return ctx.getStart().getText().toUpperCase(Locale.ROOT);
         } else if (ctx instanceof Schema_createContext) {
@@ -608,9 +618,9 @@ public abstract class ParserAbstract {
             if (dml.merge_statement() != null) {
                 return "MERGE";
             } else if (dml.delete_statement() != null) {
-                return "DELETE";
+                return getInserOrDelActionMs(dml.delete_statement().qualified_name(), true);
             } else if (dml.insert_statement() != null) {
-                return "INSERT";
+                return getInserOrDelActionMs(dml.insert_statement().qualified_name(), false);
             } else if (dml.select_statement() != null) {
                 return "SELECT";
             }
@@ -705,6 +715,19 @@ public abstract class ParserAbstract {
             return getActionDescription(tokenStream, ctx, descrWordsCount);
         }
         return ctx.getStart().getText().toUpperCase(Locale.ROOT);
+    }
+
+    private static String getInserOrDelActionMs(Qualified_nameContext qname, boolean isDel) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(isDel ? "DELETE" : "INSERT");
+        if (qname != null) {
+            sb.append(isDel ? " FROM " : " INTO ");
+            if (qname.schema != null) {
+                sb.append(qname.schema.getText()).append('.');
+            }
+            sb.append(qname.name.getText());
+        }
+        return sb.toString();
     }
 
     private static String getActionDescription(CommonTokenStream tokenStream, ParserRuleContext ctx,
