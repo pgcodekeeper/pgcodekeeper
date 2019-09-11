@@ -191,7 +191,7 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
     }
 
     /**
-     * Adds a "free-standing" variable (e.g. a function parameter)
+     * Adds a "free-standing" variable (e.g. a non-table function parameter)
      * into a special complexNamespace container.
      */
     public void addNamespaceVariable(Pair<String, String> var) {

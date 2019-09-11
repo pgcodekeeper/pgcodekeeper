@@ -58,10 +58,7 @@ public class CreateFunction extends ParserAbstract {
         AbstractPgFunction function = ctx.PROCEDURE() != null ? new PgProcedure(name)
                 : new PgFunction(name);
 
-        List<Function_argumentsContext> funcArgsCtx = ctx.function_parameters()
-                .function_args().function_arguments();
-
-        fillFunction(ctx.funct_body, function, fillArguments(function, funcArgsCtx));
+        fillFunction(ctx.funct_body, function, fillArguments(function));
 
         if (ctx.ret_table != null) {
             function.setReturns(getFullCtxText(ctx.ret_table));
@@ -173,10 +170,10 @@ public class CreateFunction extends ParserAbstract {
      * Returns a list of pairs, each of which contains the name of the argument
      * and its full type name in GenericColumn object (typeSchema, typeName, DbObjType.TYPE).
      */
-    private List<Pair<String, GenericColumn>> fillArguments(
-            AbstractPgFunction function, List<Function_argumentsContext> funcArgsCtx) {
+    private List<Pair<String, GenericColumn>> fillArguments(AbstractPgFunction function) {
         List<Pair<String, GenericColumn>> funcArgs = new ArrayList<>();
-        for (Function_argumentsContext argument : funcArgsCtx) {
+        for (Function_argumentsContext argument : ctx.function_parameters()
+                .function_args().function_arguments()) {
             String argName = argument.argname != null ? argument.argname.getText() : null;
             String typeSchema = ApgdiffConsts.PG_CATALOG;
             String typeName;
