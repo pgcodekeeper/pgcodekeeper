@@ -530,7 +530,9 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             IProgressReporter reporter = new UiProgressReporter(monitor);
             try (IProgressReporter toClose = reporter) {
                 List<List<String>> batches = parser.batch();
-                new JdbcRunner(monitor).runBatches(connector, batches, reporter);
+                int batchCount = batches.size() == 1 ? batches.get(0).size() : batches.size();
+                TaskBarProgressMonitor mon = new TaskBarProgressMonitor(monitor, batchCount, parentComposite);
+                new JdbcRunner(mon).runBatches(connector, batches, reporter);
                 ProjectEditorDiffer.notifyDbChanged(dbInfo);
                 return Status.OK_STATUS;
             } catch (InterruptedException ex) {

@@ -26,6 +26,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
@@ -59,6 +60,7 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 import ru.taximaxim.codekeeper.ui.propertytests.QuickUpdateJobTester;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
+import ru.taximaxim.codekeeper.ui.sqledit.TaskBarProgressMonitor;
 
 public class QuickUpdate extends AbstractHandler {
 
@@ -221,9 +223,11 @@ class QuickUpdateJob extends SingletonEditorJob {
             }
 
             List<List<String>> batches = parser.batch();
+            int batchCount = batches.size() == 1 ? batches.get(0).size() : batches.size();
+            TaskBarProgressMonitor mon = new TaskBarProgressMonitor(monitor,
+                    batchCount, Display.getDefault());
 
-
-            new JdbcRunner(monitor).runBatches(connector, batches, null);
+            new JdbcRunner(mon).runBatches(connector, batches, null);
         } catch (SQLException e) {
             throw new PgCodekeeperUIException(Messages.QuickUpdate_migration_failed + e.getLocalizedMessage());
         }
