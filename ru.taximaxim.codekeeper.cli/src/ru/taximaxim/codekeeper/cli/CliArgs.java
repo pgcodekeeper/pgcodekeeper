@@ -219,7 +219,7 @@ public class CliArgs extends PgDiffArguments {
     private List<String> graphNames;
 
     @Option(name="--simplify-views", forbids="--ms-sql",
-            usage="use pretty-printed format of view when reading via JDBC (not recomended by PostgreSQL)")
+            usage="simple formatting for VIEWs when reading via JDBC (not recomended by PostgreSQL)")
     private boolean simplifyView;
 
     @Override
