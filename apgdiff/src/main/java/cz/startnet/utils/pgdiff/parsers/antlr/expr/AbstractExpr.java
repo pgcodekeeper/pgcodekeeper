@@ -1,11 +1,14 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -45,6 +48,7 @@ public abstract class AbstractExpr {
     protected final PgSystemStorage systemStorage;
     private final AbstractExpr parent;
     private final Set<GenericColumn> depcies;
+    private final Set<DbObjType> disabledDepcies;
 
     protected final PgDatabase db;
 
@@ -52,11 +56,13 @@ public abstract class AbstractExpr {
         return Collections.unmodifiableSet(depcies);
     }
 
-    public AbstractExpr(PgDatabase db) {
+    public AbstractExpr(PgDatabase db, DbObjType... disabledDepcies) {
         parent = null;
         depcies = new LinkedHashSet<>();
         this.db = db;
         systemStorage = PgSystemStorage.getObjectsFromResources(db.getPostgresVersion());
+        this.disabledDepcies = Arrays.stream(disabledDepcies)
+                .collect(Collectors.toCollection(() -> EnumSet.noneOf(DbObjType.class)));
     }
 
     protected AbstractExpr(AbstractExpr parent) {
@@ -64,6 +70,7 @@ public abstract class AbstractExpr {
         this.depcies = parent.depcies;
         this.db = parent.db;
         this.systemStorage = parent.systemStorage;
+        this.disabledDepcies = parent.disabledDepcies;
     }
 
     protected List<Pair<String, String>> findCte(String cteName) {
@@ -119,7 +126,7 @@ public abstract class AbstractExpr {
 
         GenericColumn depcy = new GenericColumn(schemaName, relationName, DbObjType.TABLE);
         if (!ApgdiffUtils.isPgSystemSchema(schemaName)) {
-            depcies.add(depcy);
+            addDepcy(depcy);
         }
         return depcy;
     }
@@ -132,9 +139,15 @@ public abstract class AbstractExpr {
             String schemaName = qual == null ? null : qual.getText();
 
             if (schemaName != null && !ApgdiffUtils.isPgSystemSchema(schemaName)) {
-                depcies.add(new GenericColumn(schemaName,
+                addDepcy(new GenericColumn(schemaName,
                         typeName.identifier_nontype().getText(), DbObjType.TYPE));
             }
+        }
+    }
+
+    private void addDepcy(GenericColumn depcy) {
+        if (!disabledDepcies.contains(depcy.type)) {
+            depcies.add(depcy);
         }
     }
 
@@ -255,7 +268,7 @@ public abstract class AbstractExpr {
                 .filter(col -> colNamePredicate.test(col.getFirst()));
         if (DbObjNature.USER == relation.getStatementNature()) {
             // hack
-            cols = cols.peek(col -> depcies.add(
+            cols = cols.peek(col -> addDepcy(
                     new GenericColumn(relation.getSchemaName(),
                             relation.getName(), col.getFirst(), DbObjType.COLUMN)));
         }
@@ -273,7 +286,7 @@ public abstract class AbstractExpr {
             IRelation rel = relCol.getFirst();
             col = relCol.getSecond();
             if (rel.getStatementNature() == DbObjNature.USER) {
-                depcies.add(new GenericColumn(rel.getSchemaName(), rel.getName(),
+                addDepcy(new GenericColumn(rel.getSchemaName(), rel.getName(),
                         col.getFirst(), DbObjType.COLUMN));
             }
         }
@@ -291,7 +304,7 @@ public abstract class AbstractExpr {
 
     protected void addFunctionDepcy(IFunction function) {
         if (DbObjNature.USER == function.getStatementNature()) {
-            depcies.add(new GenericColumn(function.getSchemaName(),
+            addDepcy(new GenericColumn(function.getSchemaName(),
                     function.getName(), DbObjType.FUNCTION));
         }
     }
@@ -316,7 +329,7 @@ public abstract class AbstractExpr {
                 .filter(f -> functionName.equals(f.getBareName()))
                 .findAny().orElse(null);
         if (function != null) {
-            depcies.add(new GenericColumn(schemaName, function.getName(), function.getStatementType()));
+            addDepcy(new GenericColumn(schemaName, function.getName(), function.getStatementType()));
         }
     }
 
@@ -332,7 +345,7 @@ public abstract class AbstractExpr {
         }
 
         if (schemaName != null && !ApgdiffUtils.isPgSystemSchema(schemaName)) {
-            depcies.add(new GenericColumn(schemaName,
+            addDepcy(new GenericColumn(schemaName,
                     PgDiffUtils.getQuotedName(QNameParser.getFirstName(ids)) +
                     ParserAbstract.getFullCtxText(sig.function_args()), DbObjType.FUNCTION));
         }
@@ -341,11 +354,11 @@ public abstract class AbstractExpr {
     protected void addSchemaDepcy(List<IdentifierContext> ids) {
         String schemaName = QNameParser.getFirstName(ids);
         if (!ApgdiffUtils.isPgSystemSchema(schemaName)) {
-            depcies.add(new GenericColumn(schemaName, DbObjType.SCHEMA));
+            addDepcy(new GenericColumn(schemaName, DbObjType.SCHEMA));
         }
     }
 
-    protected Stream<IRelation> findRelations(String schemaName, String relationName) {
+    public Stream<IRelation> findRelations(String schemaName, String relationName) {
         Stream<IRelation> foundRelations;
         if (schemaName != null) {
             if (ApgdiffUtils.isPgSystemSchema(schemaName)) {

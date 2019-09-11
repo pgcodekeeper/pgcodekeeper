@@ -14,6 +14,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_option
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.VexAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
@@ -22,6 +23,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
+import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgRule;
@@ -129,7 +131,7 @@ public class AlterTable extends TableAbstract {
                 if (tablAction.set_def_column() != null) {
                     VexContext exp = tablAction.set_def_column().expression;
                     col.setDefaultValue(getFullCtxText(exp));
-                    db.addContextForAnalyze(col, exp);
+                    db.addAnalysisLauncher(new VexAnalysisLauncher(col, exp));
                 }
 
                 // column options
@@ -217,7 +219,7 @@ public class AlterTable extends TableAbstract {
     }
 
     public static AbstractConstraint parseAlterTableConstraint(Table_actionContext tableAction,
-            AbstractConstraint constrBlank, PgDatabase db, String schemaName,
+            PgConstraint constrBlank, PgDatabase db, String schemaName,
             String tableName, String tablespace, boolean isRefMode) {
         constrBlank.setNotValid(tableAction.not_valid != null);
         processTableConstraintBlank(tableAction.tabl_constraint, constrBlank, db,

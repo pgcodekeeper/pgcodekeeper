@@ -8,6 +8,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.VexAnalysisLauncher;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateDomain;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
@@ -89,7 +90,7 @@ public class TypesReader extends JdbcReader {
             }
         } else {
             loader.submitAntlrTask(def, p -> p.vex_eof().vex().get(0),
-                    ctx -> dataBase.addContextForAnalyze(d, ctx));
+                    ctx -> dataBase.addAnalysisLauncher(new VexAnalysisLauncher(d, ctx)));
         }
 
         d.setDefaultValue(def);

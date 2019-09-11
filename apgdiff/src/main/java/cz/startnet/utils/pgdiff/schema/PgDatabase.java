@@ -5,23 +5,20 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.AbstractAnalysisLauncher;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -46,8 +43,9 @@ public class PgDatabase extends PgStatement {
     private final Map<String, Set<PgObjLocation>> objDefinitions = new HashMap<>();
     // Содержит ссылки на объекты
     private final Map<String, Set<PgObjLocation>> objReferences = new HashMap<>();
-    // Contains PgStatement's contexts for analysis (for getting dependencies).
-    private final List<Entry<PgStatementWithSearchPath, ParserRuleContext>> contextsForAnalyze = new ArrayList<>();
+    // Contains analysis launchers for all statements
+    // (used for launch analyze and getting dependencies).
+    private final List<AbstractAnalysisLauncher> analysisLaunchers = new ArrayList<>();
 
     private PgDiffArguments arguments;
 
@@ -87,18 +85,18 @@ public class PgDatabase extends PgStatement {
         return objReferences;
     }
 
-    public List<Entry<PgStatementWithSearchPath, ParserRuleContext>> getContextsForAnalyze() {
-        return contextsForAnalyze;
+    public List<AbstractAnalysisLauncher> getAnalysisLaunchers() {
+        return analysisLaunchers;
     }
 
     /**
-     * Add context to the map for analyze.
+     * Add 'analysis launcher' for deferred analyze.
      *
-     * @param stmt statement to which the context belongs
-     * @param ctx context for analyze
+     * @param launcher launcher that contains almost everything needed to
+     * analyze an statement contained in it
      */
-    public void addContextForAnalyze(PgStatementWithSearchPath stmt, ParserRuleContext ctx) {
-        contextsForAnalyze.add(new SimpleEntry<>(stmt, ctx));
+    public void addAnalysisLauncher(AbstractAnalysisLauncher launcher) {
+        analysisLaunchers.add(launcher);
     }
 
     public SupportedVersion getPostgresVersion() {
@@ -419,12 +417,14 @@ public class PgDatabase extends PgStatement {
         return dbDst;
     }
 
-    public void addLib(PgDatabase database) {
-        database.getDescendants().forEach(st -> {
+    public void addLib(PgDatabase lib) {
+        lib.getDescendants().forEach(st -> {
             st.markAsLib();
             concat(st);
         });
-        contextsForAnalyze.addAll(database.contextsForAnalyze);
+        lib.analysisLaunchers
+        .forEach(l -> l.updateStmt(this));
+        analysisLaunchers.addAll(lib.analysisLaunchers);
     }
 
     public void concat(PgStatement st) {

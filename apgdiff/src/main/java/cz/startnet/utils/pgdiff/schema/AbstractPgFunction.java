@@ -204,7 +204,6 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         resetHash();
     }
 
-
     public String getVolatileType() {
         return volatileType;
     }

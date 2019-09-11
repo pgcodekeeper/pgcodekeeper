@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
 import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,6 +27,7 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 /**
@@ -34,6 +36,9 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
  * @param <T> analyzed expression, should be extension of ParserRuleContext or a rulectx wrapper class
  */
 public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends AbstractExpr {
+
+
+    private static final String FUNC_ARGS_KEY = "\\_SPECIAL_CONTAINER_FOR_PRIMITIVE_VARS\\";
 
     /**
      * The local namespace of this Select.<br>
@@ -73,8 +78,8 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
      */
     protected final Map<String, List<Pair<String, String>>> complexNamespace = new LinkedHashMap<>();
 
-    public AbstractExprWithNmspc(PgDatabase db) {
-        super(db);
+    public AbstractExprWithNmspc(PgDatabase db, DbObjType... disabledDepcies) {
+        super(db, disabledDepcies);
     }
 
     protected AbstractExprWithNmspc(AbstractExpr parent) {
@@ -183,6 +188,16 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
             }
         }
         return super.findColumnInComplex(name);
+    }
+
+    /**
+     * Adds a "free-standing" variable (e.g. a non-table function parameter)
+     * into a special complexNamespace container.
+     */
+    public void addNamespaceVariable(Pair<String, String> var) {
+        List<Pair<String, String>> vars = complexNamespace.computeIfAbsent(
+                FUNC_ARGS_KEY, k -> new ArrayList<>());
+        vars.add(var);
     }
 
     /**

@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ViewSelect;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.ViewAnalysisLauncher;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
@@ -56,7 +57,7 @@ public class ViewsReader extends JdbcReader {
         loader.submitAntlrTask(viewDef, p -> p.sql().statement(0).data_statement()
                 .select_stmt(),
                 ctx -> {
-                    dataBase.addContextForAnalyze(v, ctx);
+                    dataBase.addAnalysisLauncher(new ViewAnalysisLauncher(v, ctx));
 
                     // collect basic FROM dependencies between VIEW objects themselves
                     // to ensure correct order during the main analysis phase
@@ -81,7 +82,8 @@ public class ViewsReader extends JdbcReader {
                 if (colDefault != null) {
                     v.addColumnDefaultValue(colName, colDefault);
                     loader.submitAntlrTask(colDefault, p -> p.vex_eof().vex().get(0),
-                            ctx -> dataBase.addContextForAnalyze(v, ctx));
+                            ctx -> dataBase.addAnalysisLauncher(
+                                    new ViewAnalysisLauncher(v, ctx)));
                 }
                 String colComment = colComments[i];
                 if (colComment != null) {

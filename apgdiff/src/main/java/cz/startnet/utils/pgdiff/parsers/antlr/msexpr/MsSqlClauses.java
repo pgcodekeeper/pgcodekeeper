@@ -53,10 +53,6 @@ public class MsSqlClauses extends MsAbstractExpr {
         super(parent);
     }
 
-    public MsSqlClauses(String schema) {
-        super(schema);
-    }
-
     public MsSqlClauses(String schema, DbObjType... disabledDepcies) {
         super(schema, disabledDepcies);
     }

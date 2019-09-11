@@ -8,6 +8,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_domain_statementC
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Domain_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.VexAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -32,7 +33,7 @@ public class CreateDomain extends ParserAbstract {
         }
         VexContext exp = ctx.def_value;
         if (exp != null) {
-            db.addContextForAnalyze(domain, exp);
+            db.addAnalysisLauncher(new VexAnalysisLauncher(domain, exp));
             domain.setDefaultValue(getFullCtxText(exp));
         }
         for (Domain_constraintContext constrCtx : ctx.dom_constraint) {
@@ -56,6 +57,6 @@ public class CreateDomain extends ParserAbstract {
             Domain_constraintContext ctx, PgDatabase db) {
         VexContext vexCtx = ctx.vex();
         constr.setDefinition("CHECK (" + getFullCtxText(vexCtx) + ")");
-        db.addContextForAnalyze(domain, vexCtx);
+        db.addAnalysisLauncher(new VexAnalysisLauncher(domain, vexCtx));
     }
 }

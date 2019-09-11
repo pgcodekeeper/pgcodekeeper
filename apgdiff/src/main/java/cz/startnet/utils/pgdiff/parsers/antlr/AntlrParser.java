@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.Callable;
@@ -31,6 +32,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import ru.taximaxim.codekeeper.apgdiff.DaemonThreadFactory;
@@ -160,10 +162,18 @@ public class AntlrParser {
         });
     }
 
-    public static <T extends ParserRuleContext, P extends Parser>
-    T parseSqlString(Class<P> parserClass, Function<P, T> parserEntry, String sql,
-            String parsedObjectName) {
-        return parseSqlString(parserClass, parserEntry, sql, parsedObjectName, null);
+    public static void submitSqlCtxToAnalyze(String sql, List<AntlrError> errors,
+            int offset, int lineOffset, String name, Consumer<SqlContext> finalizer,
+            Queue<AntlrTask<?>> antlrTasks) {
+        List<AntlrError> err = new ArrayList<>();
+        submitAntlrTask(antlrTasks, () -> makeBasicParser(
+                SQLParser.class, sql, name, err).sql(),
+                ctx -> {
+                    err.stream()
+                    .map(e -> e.copyWithOffset(offset, lineOffset))
+                    .forEach(errors::add);
+                    finalizer.accept(ctx);
+                });
     }
 
     public static <T extends ParserRuleContext, P extends Parser>

@@ -9,6 +9,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class Delete extends AbstractExprWithNmspc<Delete_stmt_for_psqlContext> {
@@ -17,8 +18,8 @@ public class Delete extends AbstractExprWithNmspc<Delete_stmt_for_psqlContext> {
         super(parent);
     }
 
-    public Delete(PgDatabase db) {
-        super(db);
+    public Delete(PgDatabase db, DbObjType... disabledDepcies) {
+        super(db, disabledDepcies);
     }
 
     @Override

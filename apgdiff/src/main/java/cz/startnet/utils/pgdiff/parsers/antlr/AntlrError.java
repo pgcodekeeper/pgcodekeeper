@@ -13,13 +13,27 @@ public class AntlrError {
     private final String location;
 
     public AntlrError(Token tokenError, String location, int line, int charPositionInLine, String msg) {
+        this(location, line, charPositionInLine, msg,
+                (tokenError == null ? -1 : tokenError.getStartIndex()),
+                (tokenError == null ? -1 : tokenError.getStopIndex()),
+                (tokenError == null ? null : tokenError.getText()));
+    }
+
+    private AntlrError(String location, int line, int charPositionInLine, String msg, int start, int stop, String text) {
         this.location = location;
         this.line = line;
         this.charPositionInLine = charPositionInLine;
         this.msg = msg;
-        this.start = tokenError == null ? -1 : tokenError.getStartIndex();
-        this.stop = tokenError == null ? -1 : tokenError.getStopIndex();
-        this.text = tokenError == null ? null : tokenError.getText();
+        this.start = start;
+        this.stop = stop;
+        this.text = text;
+    }
+
+    public AntlrError copyWithOffset(int offset, int lineOffset) {
+        return new AntlrError(location, line + lineOffset, charPositionInLine, msg,
+                (start == -1 ? -1 : start + offset),
+                (stop == -1 ? -1: stop + offset),
+                text);
     }
 
     public int getLine() {

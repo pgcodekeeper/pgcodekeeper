@@ -88,7 +88,12 @@ public class CreateMsProcedure extends BatchContextProcessor {
         } else {
             schemaName = getSchemaNameSafe(ids);
         }
-        MsSqlClauses clauses = new MsSqlClauses(schemaName, DbObjType.FUNCTION, DbObjType.PROCEDURE);
+        MsSqlClauses clauses;
+        if (db.getArguments().isEnableFunctionBodiesDependencies()) {
+            clauses = new MsSqlClauses(schemaName);
+        } else {
+            clauses = new MsSqlClauses(schemaName, DbObjType.FUNCTION, DbObjType.PROCEDURE);
+        }
         clauses.analyze(ctx.proc_body().sql_clauses());
         procedure.addAllDeps(clauses.getDepcies());
 

@@ -15,6 +15,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_option
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_spaceContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ViewSelect;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.ViewAnalysisLauncher;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgView;
@@ -56,14 +57,14 @@ public class CreateView extends ParserAbstract {
                     ParserAbstract.getFullCtxText(ctx.column_names.column_name),
                     ParserAbstract.getFullCtxText(ctx.v_query));
 
-            ctx = AntlrParser.parseSqlString(SQLParser.class, SQLParser::sql, sql, "recursive view")
+            ctx = AntlrParser.parseSqlString(SQLParser.class, SQLParser::sql, sql, "recursive view", null)
                     .statement(0).schema_statement().schema_create().create_view_statement();
         }
         Select_stmtContext vQuery = ctx.v_query;
         if (vQuery != null) {
             addStatementBody(vQuery);
             view.setQuery(getFullCtxText(vQuery));
-            db.addContextForAnalyze(view, vQuery);
+            db.addAnalysisLauncher(new ViewAnalysisLauncher(view, vQuery));
             ViewSelect select = new ViewSelect();
             select.analyze(new SelectStmt(vQuery));
             view.addAllDeps(select.getDepcies());

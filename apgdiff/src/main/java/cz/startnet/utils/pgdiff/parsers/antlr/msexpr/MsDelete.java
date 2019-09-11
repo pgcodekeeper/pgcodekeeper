@@ -17,10 +17,6 @@ public class MsDelete extends MsAbstractExprWithNmspc<Delete_statementContext> {
         super(parent);
     }
 
-    public MsDelete(String schema) {
-        super(schema);
-    }
-
     @Override
     public List<String> analyze(Delete_statementContext delete) {
         With_expressionContext with = delete.with_expression();

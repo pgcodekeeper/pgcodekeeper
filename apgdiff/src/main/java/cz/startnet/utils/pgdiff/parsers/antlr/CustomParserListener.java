@@ -20,7 +20,7 @@ public class CustomParserListener {
     protected final PgDatabase db;
     protected final boolean refMode;
     protected final String filename;
-    private final List<AntlrError> errors;
+    protected final List<AntlrError> errors;
     private final IProgressMonitor monitor;
 
     private final List<StatementBodyContainer> statementBodies = new ArrayList<>();
