@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -28,17 +27,11 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public abstract class AbstractAnalysisLauncher {
 
     protected PgStatementWithSearchPath stmt;
-    protected final List<ParserRuleContext> contextsForAnalyze = new ArrayList<>();
-
-    public AbstractAnalysisLauncher(PgStatementWithSearchPath stmt) {
-        this.stmt = stmt;
-    }
+    protected final ParserRuleContext ctx;
 
     public AbstractAnalysisLauncher(PgStatementWithSearchPath stmt, ParserRuleContext ctx) {
-        // TODO get rid of the list if it only holds a single context (i.e. separate launcher for each context)
-        // or make it useful but that's probably unneeded complexity
-        this(stmt);
-        addContextForAnalyze(ctx);
+        this.stmt = stmt;
+        this.ctx = ctx;
     }
 
     public PgStatementWithSearchPath getStmt() {
@@ -58,10 +51,6 @@ public abstract class AbstractAnalysisLauncher {
         }
     }
 
-    public void addContextForAnalyze(ParserRuleContext ctx) {
-        contextsForAnalyze.add(ctx);
-    }
-
     public void launchAnalyze(List<AntlrError> errors) {
         // Duplicated objects don't have parent, skip them
         if (stmt.getParent() == null) {
@@ -70,15 +59,13 @@ public abstract class AbstractAnalysisLauncher {
 
         PgObjLocation loc = stmt.getLocation();
 
-        for (ParserRuleContext ctx : contextsForAnalyze) {
-            try {
-                analyze(ctx);
-            } catch (UnresolvedReferenceException ex) {
-                unresolvRefExHandler(ex, errors, ctx, stmt.getLocation().getFilePath());
-            } catch (Exception ex) {
-                addError(errors, CustomParserListener.handleParserContextException(
-                        ex, loc == null ? null : loc.getFilePath(), ctx));
-            }
+        try {
+            analyze(ctx);
+        } catch (UnresolvedReferenceException ex) {
+            unresolvRefExHandler(ex, errors, ctx, stmt.getLocation().getFilePath());
+        } catch (Exception ex) {
+            addError(errors, CustomParserListener.handleParserContextException(
+                    ex, loc == null ? null : loc.getFilePath(), ctx));
         }
     }
 
