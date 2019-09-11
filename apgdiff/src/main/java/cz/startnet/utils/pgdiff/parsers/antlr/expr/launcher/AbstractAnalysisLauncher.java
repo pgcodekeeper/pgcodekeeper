@@ -54,7 +54,7 @@ public abstract class AbstractAnalysisLauncher {
             // for proper depcy processing, find its twin in the final DB object
 
             // twin implies the exact same object type, hence this is safe
-            stmt.getTwin(db);
+            stmt = (PgStatementWithSearchPath) stmt.getTwin(db);
         }
     }
 
