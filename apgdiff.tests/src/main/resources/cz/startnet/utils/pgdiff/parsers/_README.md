@@ -1,4 +1,4 @@
-These test files come from PostgreSQL parser tests.
-https://github.com/postgres/postgres/tree/master/src/test/regress/sql
+These tests are based on:
 
-Some test cases are commented out to suit out parser needs.
+https://github.com/postgres/postgres/tree/master/src/test/regress/sql
+https://github.com/antlr/grammars-v4/tree/master/tsql/examples
