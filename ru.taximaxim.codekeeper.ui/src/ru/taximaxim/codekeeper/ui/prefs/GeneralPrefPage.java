@@ -31,6 +31,14 @@ implements IWorkbenchPreferencePage  {
                 Messages.dbUpdatePrefPage_ignore_privileges,
                 getFieldEditorParent()));
 
+        addField(new BooleanFieldEditor(PREF.ENABLE_BODY_DEPENDENCIES,
+                Messages.GeneralPrefPage_enable_body_dependencies,
+                getFieldEditorParent()));
+
+        addField(new BooleanFieldEditor(PREF.SIMPLIFY_VIEW,
+                Messages.GeneralPrefPage_simplify_view,
+                getFieldEditorParent()));
+
         addField(new BooleanFieldEditor(PREF.REUSE_OPEN_COMPARE_EDITOR,
                 Messages.GeneralPrefPage_reuse_open_compare_editor,
                 getFieldEditorParent()));

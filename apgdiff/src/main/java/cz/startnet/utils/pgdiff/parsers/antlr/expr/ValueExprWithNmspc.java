@@ -7,6 +7,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Vex_bContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 /**
@@ -17,8 +18,8 @@ public class ValueExprWithNmspc extends AbstractExprWithNmspc<VexContext> {
 
     private final ValueExpr vex;
 
-    public ValueExprWithNmspc(PgDatabase db) {
-        super(db);
+    public ValueExprWithNmspc(PgDatabase db, DbObjType... disabledDepcies) {
+        super(db, disabledDepcies);
         vex = new ValueExpr(this);
     }
 

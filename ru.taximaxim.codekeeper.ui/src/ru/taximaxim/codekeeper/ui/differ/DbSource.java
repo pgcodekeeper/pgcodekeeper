@@ -101,9 +101,11 @@ public abstract class DbSource {
         args.setInCharsetName(charset);
         args.setAddTransaction(prefs.getBoolean(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION));
         args.setDisableCheckFunctionBodies(!prefs.getBoolean(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES));
+        args.setEnableFunctionBodiesDependencies(prefs.isEnableBodyDependencies());
         args.setIgnoreConcurrentModification(prefs.getBoolean(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
         args.setUsingTypeCastOff(!prefs.getBoolean(DB_UPDATE_PREF.USING_ON_OFF));
         args.setIgnorePrivileges(prefs.isIgnorePrivileges());
+        args.setSimplifyView(prefs.isSimplifyView());
         args.setTimeZone(timeZone);
         args.setKeepNewlines(!forceUnixNewlines);
         args.setMsSql(msSql);

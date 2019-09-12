@@ -25,7 +25,7 @@ public class GenericColumn implements Serializable {
             "oid", "tableoid", "xmin", "cmin", "xmax", "cmax", "ctid"
             )));
 
-    private static final long serialVersionUID = 3736336596667543402L;
+    private static final long serialVersionUID = 4705823005023672984L;
     // SONAR-OFF
     public final String schema;
     public final String table;
@@ -284,8 +284,39 @@ public class GenericColumn implements Serializable {
         return eq;
     }
 
-    public StringBuilder getQualifiedName() {
-        StringBuilder sb = new StringBuilder();
+    public final boolean compare(GenericColumn col) {
+        return Objects.equals(schema, col.schema)
+                && Objects.equals(table, col.table)
+                && Objects.equals(column, col.column)
+                && compareTypes(col.type);
+    }
+
+    private boolean compareTypes(DbObjType objType) {
+        if (type == objType) {
+            return true;
+        }
+
+        switch (objType) {
+        case TABLE:
+        case VIEW:
+        case SEQUENCE:
+            return type == DbObjType.TABLE || type == DbObjType.VIEW || type == DbObjType.SEQUENCE;
+        case FUNCTION:
+        case AGGREGATE:
+            return type == DbObjType.FUNCTION || type == DbObjType.AGGREGATE;
+        case TYPE:
+        case DOMAIN:
+            return type == DbObjType.TYPE || type == DbObjType.DOMAIN;
+        default:
+            return false;
+        }
+    }
+
+    public String getQualifiedName() {
+        return appendQualifiedName(new StringBuilder()).toString();
+    }
+
+    protected StringBuilder appendQualifiedName(StringBuilder sb) {
         if (schema != null) {
             sb.append(PgDiffUtils.getQuotedName(schema));
         }
@@ -306,6 +337,8 @@ public class GenericColumn implements Serializable {
 
     @Override
     public String toString() {
-        return getQualifiedName().append(" (").append(type).append(')').toString();
+        return appendQualifiedName(new StringBuilder())
+                .append(" (").append(type).append(')')
+                .toString();
     }
 }

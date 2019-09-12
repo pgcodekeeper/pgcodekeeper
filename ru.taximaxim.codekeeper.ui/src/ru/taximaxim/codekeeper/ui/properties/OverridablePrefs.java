@@ -35,9 +35,19 @@ public class OverridablePrefs {
                 : mainPS.getBoolean(PREF.NO_PRIVILEGES);
     }
 
+    public boolean isEnableBodyDependencies() {
+        return isEnableProjPrefRoot ? projPS.getBoolean(PREF.ENABLE_BODY_DEPENDENCIES, false)
+                : mainPS.getBoolean(PREF.ENABLE_BODY_DEPENDENCIES);
+    }
+
     public boolean isUseGlobalIgnoreList() {
         return isEnableProjPrefRoot ? projPS.getBoolean(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, true)
                 : true;
+    }
+
+    public boolean isSimplifyView() {
+        return isEnableProjPrefRoot ? projPS.getBoolean(PREF.SIMPLIFY_VIEW, false)
+                : mainPS.getBoolean(PREF.SIMPLIFY_VIEW);
     }
 
     public boolean getBoolean(String key) {

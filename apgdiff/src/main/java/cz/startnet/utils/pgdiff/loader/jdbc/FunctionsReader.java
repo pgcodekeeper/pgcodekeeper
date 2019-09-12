@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -10,6 +11,7 @@ import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.FuncProcAnalysisLauncher;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateAggregate;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
@@ -21,10 +23,12 @@ import cz.startnet.utils.pgdiff.schema.PgAggregate;
 import cz.startnet.utils.pgdiff.schema.PgAggregate.AggKinds;
 import cz.startnet.utils.pgdiff.schema.PgAggregate.AggFuncs;
 import cz.startnet.utils.pgdiff.schema.PgAggregate.ModifyType;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgProcedure;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 /**
  * Reads FUNCTIONs, PROCEDUREs and AGGREGATEs from JDBC.
@@ -68,8 +72,9 @@ public class FunctionsReader extends JdbcReader {
 
         AbstractPgFunction f = isProc ? new PgProcedure(funcName) : new PgFunction(funcName);
 
-        fillFunction(f, res);
-        fillArguments(f, res);
+        PgDatabase db = schema.getDatabase();
+
+        fillFunction(f, res, db, fillArguments(f, res));
 
         String defaultValuesAsString = res.getString("default_values_as_string");
         if (defaultValuesAsString != null) {
@@ -86,7 +91,7 @@ public class FunctionsReader extends JdbcReader {
                             if ("IN".equals(a.getMode()) || "INOUT".equals(a.getMode())) {
                                 VexContext vx = vexCtxListIterator.previous();
                                 a.setDefaultExpression(ParserAbstract.getFullCtxText(vx));
-                                schema.getDatabase().addContextForAnalyze(f, vx);
+                                db.addAnalysisLauncher(new FuncProcAnalysisLauncher(f, vx));
                             }
                         }
                     });
@@ -95,7 +100,9 @@ public class FunctionsReader extends JdbcReader {
         return f;
     }
 
-    private void fillFunction(AbstractPgFunction function, ResultSet res) throws SQLException {
+    private void fillFunction(AbstractPgFunction function, ResultSet res,
+            PgDatabase db, List<Pair<String, GenericColumn>> argsQualTypes)
+                    throws SQLException {
         StringBuilder body = new StringBuilder();
 
         function.setLanguageCost(res.getString("lang_name"), res.getFloat("procost"));
@@ -202,7 +209,12 @@ public class FunctionsReader extends JdbcReader {
 
         function.setBody(loader.args, body.toString());
 
-        // TODO add function definition parsing and analyze
+        // Parsing the function definition and adding its result context for analysis.
+        if (!"-".equals(definition) && "SQL".equalsIgnoreCase(function.getLanguage())) {
+            loader.submitAntlrTask(definition.endsWith(";") ? definition : definition + "\n;",
+                    SQLParser::sql, ctx -> db.addAnalysisLauncher(
+                            new FuncProcAnalysisLauncher(function, ctx, argsQualTypes)));
+        }
     }
 
     /**
@@ -372,12 +384,21 @@ public class FunctionsReader extends JdbcReader {
         }
     }
 
-    private void fillArguments(AbstractPgFunction f, ResultSet res) throws SQLException {
+    /**
+     * Returns a list of pairs, each of which contains the name of the argument
+     * and its full type name in GenericColumn object (typeSchema, typeName, DbObjType.TYPE).
+     */
+    private List<Pair<String, GenericColumn>> fillArguments(AbstractPgFunction f,
+            ResultSet res) throws SQLException {
         StringBuilder sb = new StringBuilder();
         String[] argModes = getColArray(res, "proargmodes");
         String[] argNames = getColArray(res, "proargnames");
         Long[] argTypeOids = getColArray(res, "proallargtypes");
         Long[] argTypes = argTypeOids != null ? argTypeOids : getColArray(res, "argtypes");
+
+        // It will be used for sending the arguments of function to the namespaces
+        // in launcher for correct analysis.
+        List<Pair<String, GenericColumn>> argsQualifiedTypes = new ArrayList<>();
 
         for (int i = 0; argTypes.length > i; i++) {
             String aMode = argModes != null ? argModes[i] : "i";
@@ -394,12 +415,14 @@ public class FunctionsReader extends JdbcReader {
                 continue;
             }
 
+            boolean isOutModeArg = false;
             switch(aMode) {
             case "i":
                 aMode = "IN";
                 break;
             case "o":
                 aMode = "OUT";
+                isOutModeArg = true;
                 break;
             case "b":
                 aMode = "INOUT";
@@ -409,9 +432,15 @@ public class FunctionsReader extends JdbcReader {
                 break;
             }
 
+            JdbcType argJdbcType = loader.cachedTypesByOid.get(argTypes[i]);
+            String argName = argNames != null ? argNames[i] : null;
+
             // these require resetHash functionality for defaults
-            Argument a = f.new PgArgument(aMode, argNames != null ? argNames[i] : null,
-                    loader.cachedTypesByOid.get(argTypes[i]).getFullName());
+            Argument a = f.new PgArgument(aMode, argName, argJdbcType.getFullName());
+
+            if (!isOutModeArg) {
+                argsQualifiedTypes.add(new Pair<>(argName, argJdbcType.getQualifiedName()));
+            }
 
             f.addArgument(a);
         }
@@ -428,5 +457,7 @@ public class FunctionsReader extends JdbcReader {
                 returnType.addTypeDepcy(f);
             }
         }
+
+        return argsQualifiedTypes;
     }
 }

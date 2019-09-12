@@ -8,6 +8,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class JdbcType{
@@ -41,7 +42,6 @@ public class JdbcType{
     private final String typeName;
     private final String parentSchema;
     private final boolean isArrayType;
-    private final boolean isPgCatalog;
     private final long lastSysOid;
 
     /**
@@ -57,12 +57,11 @@ public class JdbcType{
         this.parentSchema = parentSchema;
         this.isArrayType = typarray == 0L && typelem != 0L;
         this.typeName = isArrayType ? elemname : typeName;
-        this.isPgCatalog = ApgdiffConsts.PG_CATALOG.equals(parentSchema);
         this.lastSysOid = lastSysOid;
     }
 
     public String getSchemaQualifiedName(String targetSchemaName) {
-        if (isPgCatalog) {
+        if (ApgdiffConsts.PG_CATALOG.equals(parentSchema)) {
             String dealias = DATA_TYPE_ALIASES.get(typeName);
             return dealias == null ? PgDiffUtils.getQuotedName(typeName) : dealias;
         }
@@ -92,9 +91,20 @@ public class JdbcType{
         return getFullName("");
     }
 
+    /**
+     *  Returns the GenericColumn which contains type's schema name and type's name.
+     */
+    public GenericColumn getQualifiedName() {
+        if (ApgdiffConsts.PG_CATALOG.equals(parentSchema)) {
+            String dealias = DATA_TYPE_ALIASES.get(typeName);
+            return new GenericColumn(parentSchema, dealias == null ? typeName : dealias,
+                    DbObjType.TYPE);
+        }
+        return new GenericColumn(parentSchema, typeName, DbObjType.TYPE);
+    }
+
     public void addTypeDepcy(PgStatement st) {
-        if (oid > lastSysOid && !isPgCatalog
-                && !"information_schema".equals(parentSchema)) {
+        if (oid > lastSysOid && !ApgdiffUtils.isPgSystemSchema(parentSchema)) {
             st.addDep(new GenericColumn(parentSchema, typeName, DbObjType.TYPE));
         }
     }

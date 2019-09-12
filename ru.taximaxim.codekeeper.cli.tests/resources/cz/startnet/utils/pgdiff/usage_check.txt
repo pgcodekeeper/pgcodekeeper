@@ -2,6 +2,7 @@ Usage
 	pgcodekeeper-cli [option]... SOURCE DEST
 	pgcodekeeper-cli -s SOURCE -t DEST [option]...
 	pgcodekeeper-cli --parse -o OUTDIR [option]... SCHEMA
+	pgcodekeeper-cli --graph [option]... SCHEMA
 
  SOURCE                                 : source of schema changes
  DEST                                   : destination for schema changes (diff
@@ -11,6 +12,8 @@ Usage
  --list-charsets                        : show list of Java-supported charsets
  --parse                                : run in parser mode to save database
                                           schema as a directory hierarchy
+ --graph                                : run in graph mode to show objects
+                                          dependencies
  -s (--source) <path or JDBC>           : source of schema changes
  -t (--target) <path or JDBC>           : destination for schema changes (diff
                                           mode only)
@@ -27,6 +30,9 @@ Usage
                                           transaction statements
  -F (--no-check-function-bodies)        : set check_function_bodies to false at
                                           the beginning of the script
+ --enable-function-bodies-dependencies  : enable dependencies from bodies of
+                                          functions and procedures to other
+                                          functions or procedures
  -Z (--time-zone) <timezone>            : use this timezone when working with
                                           database, also add SET TIMEZONE
                                           statement to the script
@@ -80,6 +86,17 @@ Usage
  --ignore-concurrent-modification       : ignore concurrent modification errors
                                           of database objects
  --ms-sql                               : work with MS SQL
+ --graph-depth <n>                      : depth of displayed dependencies in
+                                          graph mode (default: 10)
+ --graph-reverse                        : reverse the direction of the graph to
+                                          show objects on which the starting
+                                          object depends
+ --graph-name <name>                    : name of start object in graph mode
+                                          specify multiple times to use several
+                                          names
+ --simplify-views                       : simple formatting for VIEWs when
+                                          reading via JDBC (not recomended by
+                                          PostgreSQL)
 
 DANGER_STATEMENT : [DROP_TABLE | ALTER_COLUMN | DROP_COLUMN | RESTART_WITH | UPDATE]
 OBJECT_TYPE : [USER | ROLE | ASSEMBLY | SCHEMA | EXTENSION | TYPE | DOMAIN | SEQUENCE | FUNCTION | PROCEDURE | AGGREGATE | OPERATOR | FTS_PARSER | FTS_TEMPLATE | FTS_DICTIONARY | FTS_CONFIGURATION | TABLE | CONSTRAINT | VIEW | INDEX | TRIGGER | RULE]

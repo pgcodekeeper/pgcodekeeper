@@ -62,21 +62,14 @@ public interface UIConsts {
     interface PREF {
         String FORCE_SHOW_CONSOLE = "prefForceShowConsole"; //$NON-NLS-1$
         String DB_STORE_FILES = "prefDbStoreHistory"; //$NON-NLS-1$
-        //String IGNORE_OBJECTS = "prefIgnoreObjects"; //$NON-NLS-1$
         String NO_PRIVILEGES = "prefNoPrivileges"; //$NON-NLS-1$
-
+        String SIMPLIFY_VIEW = "prefSimplifyView"; //$NON-NLS-1$
+        String ENABLE_BODY_DEPENDENCIES = "prefEnableBodyDependencies"; //$NON-NLS-1$
         String LAST_OPENED_LOCATION = "prefLastOpenedLocation"; //$NON-NLS-1$
-        //String IS_FLIPPED_DB_SOURCE = "isFlippedDbSource"; //$NON-NLS-1$
-        //String IS_DDL_UPDATE_OVER_JDBC_INFO = "isDDLUpdateOverJDBCInfo"; //$NON-NLS-1$
-
         String CALL_COMMIT_COMMAND_AFTER_UPDATE = "callCommitCommandAfterUpdate"; //$NON-NLS-1$
-
         String LAST_CREATED_OBJECT_TYPE = "prefLastCreatedObjectType"; //$NON-NLS-1$
-
         String EXPLICIT_TYPE_CAST = "explicitTypeCast"; //$NON-NLS-1$
-
         String REUSE_OPEN_COMPARE_EDITOR = "reuseOpenCompareEditors"; //$NON-NLS-1$
-
         String IGNORE_CONCURRENT_MODIFICATION = "ignoreConcurrentModification"; //$NON-NLS-1$
     }
 

@@ -250,6 +250,8 @@ public class ProjectLoader {
     }
 
     protected void finishLoader(PgDumpLoader l) {
-        errors.addAll(l.getErrors());
+        if (errors != null) {
+            errors.addAll(l.getErrors());
+        }
     }
 }

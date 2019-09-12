@@ -37,6 +37,8 @@ import ru.taximaxim.codekeeper.cli.opthandlers.DbObjTypeOptionHandler;
  */
 public class CliArgs extends PgDiffArguments {
 
+    private static final int DEFAULT_DEPTH = 10;
+
     // SONAR-OFF
     {
         // this was moved to initializer to avoid the IDE making the field "final" on-save
@@ -50,8 +52,10 @@ public class CliArgs extends PgDiffArguments {
         this.targetLibXmls = new ArrayList<>();
         this.targetLibs = new ArrayList<>();
         this.targetLibsWithoutPriv = new ArrayList<>();
+        this.graphNames = new ArrayList<>();
         this.inCharsetName = ApgdiffConsts.UTF_8;
         this.outCharsetName = ApgdiffConsts.UTF_8;
+        this.graphDepth = DEFAULT_DEPTH;
     }
     // SONAR-ON
 
@@ -74,9 +78,9 @@ public class CliArgs extends PgDiffArguments {
             usage="run in parser mode to save database schema as a directory hierarchy")
     private boolean modeParse;
 
-    @Option(name="-l", aliases="--license", hidden=true)
-    @Deprecated
-    private String licensePath;
+    @Option(name="--graph",
+            usage="run in graph mode to show objects dependencies")
+    private boolean modeGraph;
 
     @Option(name="-s", depends="-t", aliases="--source", metaVar="<path or JDBC>",
             usage="source of schema changes")
@@ -84,7 +88,7 @@ public class CliArgs extends PgDiffArguments {
     private String newSrc;
 
     @Option(name="-t", depends="-s", aliases="--target", metaVar="<path or JDBC>",
-            forbids="--parse", usage="destination for schema changes (diff mode only)")
+            forbids={"--graph", "--parse"}, usage="destination for schema changes (diff mode only)")
     @Argument(index=1, metaVar="DEST", usage="destination for schema changes (diff mode only)")
     private String oldSrc;
 
@@ -110,81 +114,85 @@ public class CliArgs extends PgDiffArguments {
             usage="keep newline characters as is (don't convert to Unix newlines)")
     private boolean keepNewlines;
 
-    @Option(name="-X", aliases="--add-transaction", forbids="--parse",
+    @Option(name="-X", aliases="--add-transaction", forbids={"--graph", "--parse"},
             usage="wrap generated script with transaction statements")
     private boolean addTransaction;
 
-    @Option(name="-F", aliases="--no-check-function-bodies", forbids="--parse",
+    @Option(name="-F", aliases="--no-check-function-bodies", forbids={"--graph", "--parse"},
             usage="set check_function_bodies to false at the beginning of the script")
     private boolean disableCheckFunctionBodies;
 
-    @Option(name="-Z", aliases="--time-zone", metaVar="<timezone>",forbids={"--parse", "--ms-sql"},
+    @Option(name="--enable-function-bodies-dependencies", forbids={"--graph", "--parse"},
+            usage="enable dependencies from bodies of functions and procedures to other functions or procedures")
+    private boolean enableFunctionBodiesDependencies;
+
+    @Option(name="-Z", aliases="--time-zone", metaVar="<timezone>",forbids={"--graph", "--parse", "--ms-sql"},
             usage="use this timezone when working with database, also add SET TIMEZONE statement to the script")
     private String timeZone;
 
-    @Option(name="--using-off", forbids="--parse",
+    @Option(name="--using-off", forbids={"--graph", "--parse"},
             usage="do not print USING expression for ALTER COLUMN TYPE")
     private boolean usingTypeCastOff;
 
-    @Option(name="-C", aliases="--concurrently-mode", forbids="--parse",
+    @Option(name="-C", aliases="--concurrently-mode", forbids={"--graph", "--parse"},
             usage="print CREATE INDEX with CONCURRENTLY option for PostgreSQL and WITH ONLINE = ON for MS SQL")
     private boolean concurrentlyMode;
 
-    @Option(name="-S", aliases="--safe-mode", forbids="--parse",
+    @Option(name="-S", aliases="--safe-mode", forbids={"--graph", "--parse"},
             usage="do not generate scripts containing dangerous statements\nsee: --allow-danger-ddl")
     private boolean safeMode;
 
-    @Option(name="-D", aliases="--allow-danger-ddl", forbids="--parse",
+    @Option(name="-D", aliases="--allow-danger-ddl", forbids={"--graph", "--parse"},
             handler=DangerStatementOptionHandler.class,
             usage="allows dangerous statements in safe-mode scripts")
     private List<DangerStatement> allowedDangers;
 
-    @Option(name="-O", aliases="--allowed-object", forbids="--parse",
+    @Option(name="-O", aliases="--allowed-object", forbids={"--graph", "--parse"},
             handler=DbObjTypeOptionHandler.class,
             usage="build the script using these object types only"
                     + "\nhide statements of other objects")
     private List<DbObjType> allowedTypes;
 
-    @Option(name="--stop-not-allowed", forbids="--parse",
+    @Option(name="--stop-not-allowed", forbids={"--graph", "--parse"},
             usage="exit with an error when --allowed-object hides a dependency statement from the script")
     private boolean stopNotAllowed;
 
-    @Option(name="-I", aliases="--ignore-list", metaVar="<path>", forbids="--parse",
+    @Option(name="-I", aliases="--ignore-list", metaVar="<path>", forbids={"--graph", "--parse"},
             usage="use an ignore list to include/exclude objects from diff"
                     + "\nspecify multiple times to use several lists")
     private List<String> ignoreLists;
 
-    @Option(name="--src-lib-xml", metaVar="<path>", forbids="--parse",
+    @Option(name="--src-lib-xml", metaVar="<path>", forbids={"--graph", "--parse"},
             usage="add xml with library dependencies to source"
                     + "\nspecify multiple times to use several library xml's")
     private List<String> targetLibXmls;
 
-    @Option(name="--src-lib", metaVar="<path or JDBC>", forbids="--parse",
+    @Option(name="--src-lib", metaVar="<path or JDBC>", forbids={"--graph", "--parse"},
             usage="add library dependency to source"
                     + "\nspecify multiple times to use several libraries")
     private List<String> targetLibs;
 
-    @Option(name="--src-lib-no-priv", metaVar="<path or JDBC>", forbids="--parse",
+    @Option(name="--src-lib-no-priv", metaVar="<path or JDBC>", forbids={"--graph", "--parse"},
             usage="add library dependency to source without privileges"
                     + "\nspecify multiple times to use several libraries")
     private List<String> targetLibsWithoutPriv;
 
-    @Option(name="--tgt-lib-xml", metaVar="<path>", forbids="--parse",
+    @Option(name="--tgt-lib-xml", metaVar="<path>", forbids={"--graph", "--parse"},
             usage="add xml with library dependencies to target"
                     + "\nspecify multiple times to use several library xml's")
     private List<String> sourceLibXmls;
 
-    @Option(name="--tgt-lib", metaVar="<path or JDBC>", forbids="--parse",
+    @Option(name="--tgt-lib", metaVar="<path or JDBC>", forbids={"--graph", "--parse"},
             usage="add library dependency to destination"
                     + "\nspecify multiple times to use several libraries")
     private List<String> sourceLibs;
 
-    @Option(name="--tgt-lib-no-priv", metaVar="<path or JDBC>", forbids="--parse",
+    @Option(name="--tgt-lib-no-priv", metaVar="<path or JDBC>", forbids={"--graph", "--parse"},
             usage="add library dependency to destination without privileges"
                     + "\nspecify multiple times to use several libraries")
     private List<String> sourceLibsWithoutPriv;
 
-    @Option(name="--lib-safe-mode", forbids="--parse",
+    @Option(name="--lib-safe-mode", forbids={"--graph", "--parse"},
             usage="exit with an error if a library object conflicts with other schema or library objects"
                     + " otherwise, in case of conflicts objects loaded first have priority")
     private boolean libSafeMode;
@@ -197,6 +205,23 @@ public class CliArgs extends PgDiffArguments {
             usage="work with MS SQL")
     private boolean msSql;
 
+    @Option(name="--graph-depth", metaVar="<n>", forbids={"--parse"},
+            usage="depth of displayed dependencies in graph mode")
+    private int graphDepth;
+
+    @Option(name="--graph-reverse",  depends="--graph-name", forbids={"--parse"},
+            usage="reverse the direction of the graph to show objects on which the starting object depends")
+    private boolean graphReverse;
+
+    @Option(name="--graph-name", metaVar="<name>", forbids={"--parse"},
+            usage="name of start object in graph mode"
+                    + "\nspecify multiple times to use several names")
+    private List<String> graphNames;
+
+    @Option(name="--simplify-views", forbids="--ms-sql",
+            usage="simple formatting for VIEWs when reading via JDBC (not recomended by PostgreSQL)")
+    private boolean simplifyView;
+
     @Override
     public boolean isModeParse() {
         return modeParse;
@@ -205,6 +230,16 @@ public class CliArgs extends PgDiffArguments {
     @Override
     public void setModeParse(boolean modeParse) {
         this.modeParse = modeParse;
+    }
+
+    @Override
+    public boolean isModeGraph() {
+        return modeGraph;
+    }
+
+    @Override
+    public void setModeGraph(boolean modeGraph) {
+        this.modeGraph = modeGraph;
     }
 
     @Override
@@ -376,6 +411,16 @@ public class CliArgs extends PgDiffArguments {
     }
 
     @Override
+    public boolean isEnableFunctionBodiesDependencies() {
+        return enableFunctionBodiesDependencies;
+    }
+
+    @Override
+    public void setEnableFunctionBodiesDependencies(boolean enableFunctionBodiesDependencies) {
+        this.enableFunctionBodiesDependencies = enableFunctionBodiesDependencies;
+    }
+
+    @Override
     public String getTimeZone() {
         return timeZone;
     }
@@ -430,6 +475,41 @@ public class CliArgs extends PgDiffArguments {
         this.concurrentlyMode = concurrentlyMode;
     }
 
+    @Override
+    public boolean isSimplifyView() {
+        return simplifyView;
+    }
+
+    @Override
+    public void setSimplifyView(boolean simplifyView) {
+        this.simplifyView = simplifyView;
+    }
+
+    @Override
+    public int getGraphDepth() {
+        return graphDepth;
+    }
+
+    @Override
+    public boolean isGraphReverse() {
+        return graphReverse;
+    }
+
+    @Override
+    public void setGraphReverse(boolean graphReverse) {
+        this.graphReverse = graphReverse;
+    }
+
+    @Override
+    public void setGraphDepth(int graphDepth) {
+        this.graphDepth = graphDepth;
+    }
+
+    @Override
+    public Collection<String> getGraphNames() {
+        return Collections.unmodifiableCollection(graphNames);
+    }
+
     private static void badArgs(String message) throws CmdLineException{
         throw new CmdLineException(null, message, null);
     }
@@ -451,13 +531,6 @@ public class CliArgs extends PgDiffArguments {
             // show help instead of failing for 0 args
             zhelp = true;
         }
-
-        if (licensePath != null) {
-            // TODO move to Log when it will properly use syserr
-            System.err.println("-- [WARNING] -l or --license parameters are deprecated!");
-            System.err.println("-- pgCodeKeeper no longer requires license files");
-        }
-
         if (zhelp) {
             printUsage(writer);
             return false;
@@ -474,20 +547,29 @@ public class CliArgs extends PgDiffArguments {
         String msJdbcStart = "jdbc:sqlserver:";
         String pgJdbcStart = "jdbc:postgresql:";
 
-        if (isModeParse()) {
+        if (isModeParse() || isModeGraph()) {
             if (getNewSrc() == null) {
-                badArgs("Please specify SCHEMA to parse.");
+                badArgs("Please specify SCHEMA.");
             }
             if (getOldSrc() != null) {
-                badArgs("Parser mode doesn't require DEST argument.");
+                badArgs("DEST argument doesn't require.");
             }
             if (isMsSql() && getNewSrc().startsWith(pgJdbcStart)) {
-                badArgs("Cannot parse PostgerSQL database as MS SQL project.");
+                badArgs("Cannot work with PostgerSQL database as MS SQL project.");
             }
             if (!isMsSql() && getNewSrc().startsWith(msJdbcStart)) {
-                badArgs("Cannot parse MS SQL database as PostgerSQL project.");
+                badArgs("Cannot work with MS SQL database as PostgerSQL project.");
             }
         } else {
+            if (getGraphDepth() != DEFAULT_DEPTH) {
+                badArgs("option --graph-depth cannot be used without the option(s) [--graph]");
+            }
+            if (!getGraphNames().isEmpty()) {
+                badArgs("option --graph-name cannot be used without the option(s) [--graph]");
+            }
+            if (isGraphReverse()) {
+                badArgs("option --graph-reverse cannot be used without the option(s) [--graph]");
+            }
             if (getOldSrc() == null || getNewSrc() == null) {
                 badArgs("Please specify both SOURCE and DEST.");
             }

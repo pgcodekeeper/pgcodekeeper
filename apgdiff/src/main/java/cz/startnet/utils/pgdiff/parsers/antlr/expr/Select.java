@@ -44,6 +44,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
@@ -62,8 +63,8 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
      */
     private boolean lateralAllowed;
 
-    public Select(PgDatabase db) {
-        super(db);
+    public Select(PgDatabase db, DbObjType... disabledDepcies) {
+        super(db, disabledDepcies);
     }
 
     protected Select(AbstractExpr parent) {

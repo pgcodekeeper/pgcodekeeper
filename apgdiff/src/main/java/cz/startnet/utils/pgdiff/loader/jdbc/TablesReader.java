@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.VexAnalysisLauncher;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.AbstractRegularTable;
@@ -212,7 +213,8 @@ public class TablesReader extends JdbcReader {
                 if (!columnDefault.isEmpty()) {
                     column.setDefaultValue(columnDefault);
                     loader.submitAntlrTask(columnDefault, p -> p.vex_eof().vex().get(0),
-                            ctx -> schema.getDatabase().addContextForAnalyze(column, ctx));
+                            ctx -> schema.getDatabase().addAnalysisLauncher(
+                                    new VexAnalysisLauncher(column, ctx)));
                 }
             }
 

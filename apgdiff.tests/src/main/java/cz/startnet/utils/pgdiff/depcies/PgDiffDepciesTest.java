@@ -4,7 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,8 +29,8 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 public class PgDiffDepciesTest {
 
     @Parameters
-    public static Collection<?> parameters() {
-        return Arrays.asList(new Object[][] {
+    public static Iterable<Object[]> parameters() {
+        List<Object[]> p = Arrays.asList(new Object[][] {
             {"empty_usr"},
             // изменяется тип колонок у обоих таблиц, пользователь выбирает
             // view v1
@@ -158,6 +158,19 @@ public class PgDiffDepciesTest {
             // добавление агрегатов с зависимыми от них функциями,
             // пользователь выбрал только агрегаты
             {"add_aggr_func_usr_aggr"},
+            // в функции 'f1' изменяется имя аргумента функции,
+            // в функции 'f2' изменяется определение функции,
+            // пользователь выбирает 'f1'
+            // (опеределение обеих функций написано на языке SQL)
+            // ('f2' зависит от 'f1')
+            {"change_func_arg_name_usr_f1", true},
+            // в функции 'f1' изменяется имя аргумента функции,
+            // в функции 'f2' изменяется определение функции,
+            // пользователь выбирает 'f1'
+            // (опеределение обеих функций написано на языке SQL)
+            // ('f2' зависит от 'f1')
+            // (обе функции находятся в разных схемах)
+            {"change_func_arg_name_sch_usr_f1", true},
             // добавление вьюхи с зависимыми от нее объектами,
             // пользователь выбрал только вьюху
             {"add_view_usr_view"},
@@ -173,7 +186,17 @@ public class PgDiffDepciesTest {
             // изменение типа и дефолтного значения колонки родительской и дочерней таблицы
             // пользователь выбрал таблицу родительскую таблицу
             {"chg_inherit_col_usr_parent"},
+            // добавление exclude ограничения с зависимой функцией
+            // пользователь выбрал ограничение
+            {"add_exclude_usr_constraint"},
         });
+
+        int maxLength = p.stream()
+                .mapToInt(oo -> oo.length)
+                .max().getAsInt();
+        return p.stream()
+                .map(oo -> oo.length < maxLength ? Arrays.copyOf(oo, maxLength) : oo)
+                ::iterator;
     }
 
     /**
@@ -188,9 +211,14 @@ public class PgDiffDepciesTest {
      */
     private final String userSelTemplate;
 
-    public PgDiffDepciesTest(final String userSelTemplate) {
+    final PgDiffArguments args = new PgDiffArguments();
+
+    public PgDiffDepciesTest(final String userSelTemplate, Boolean isEnableDepcies) {
         this.dbTemplate = userSelTemplate.replaceAll("_usr.*", "");
         this.userSelTemplate = userSelTemplate;
+        if (isEnableDepcies != null && isEnableDepcies) {
+            args.setEnableFunctionBodiesDependencies(true);
+        }
         Log.log(Log.LOG_DEBUG, dbTemplate + ' ' + userSelTemplate);
     }
 
@@ -201,8 +229,6 @@ public class PgDiffDepciesTest {
 
     @Test(timeout = 120000)
     public void runDiff() throws IOException, InterruptedException {
-
-        final PgDiffArguments args = new PgDiffArguments();
         PgDatabase oldDatabase = ApgdiffTestUtils.loadTestDump(
                 getUsrSelName(FILES_POSTFIX.ORIGINAL_SQL), PgDiffDepciesTest.class, args);
         PgDatabase newDatabase = ApgdiffTestUtils.loadTestDump(

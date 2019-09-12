@@ -2553,3 +2553,16 @@ drop table at_test_sql_partop;
 ALTER TABLE tenk1 set (parallel_workers = 4);
 ALTER TABLE category ENABLE ROW LEVEL SECURITY;
 alter table a_star reset (parallel_workers);
+
+ALTER TABLE public.some_table
+    ADD CONSTRAINT xck EXCLUDE USING gist (
+        column1 WITH =, 
+        daterange(d_date_begin, d_date_end, '[)'::text) WITH &&
+    )
+    USING INDEX TABLESPACE test_tablespace WHERE ((column2 <> 0)) DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE public.some_table
+    ADD CONSTRAINT xck EXCLUDE USING btree (c1 NULLS FIRST WITH =)
+    USING INDEX TABLESPACE test_tablespace WHERE ((c1 <> 0)) NOT DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE public.some_table
+    ADD CONSTRAINT xck EXCLUDE USING gist (public.f7() WITH &&)
+    USING INDEX TABLESPACE test_tablespace WHERE ((c1 <> 0)) DEFERRABLE INITIALLY IMMEDIATE;

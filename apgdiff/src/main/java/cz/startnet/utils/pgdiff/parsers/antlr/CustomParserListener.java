@@ -22,7 +22,7 @@ public class CustomParserListener {
     protected final PgDatabase db;
     protected final ParserListenerMode mode;
     protected final String filename;
-    private final List<AntlrError> errors;
+    protected final List<AntlrError> errors;
     private final IProgressMonitor monitor;
     protected CommonTokenStream stream;
 
