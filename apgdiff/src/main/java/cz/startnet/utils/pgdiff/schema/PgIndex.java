@@ -106,12 +106,8 @@ public class PgIndex extends AbstractIndex {
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
-        PgIndex newIndex;
-        if (newCondition instanceof PgIndex) {
-            newIndex = (PgIndex)newCondition;
-        } else {
-            return false;
-        }
+        PgIndex newIndex = (PgIndex) newCondition;
+
         if (!compareUnalterable(newIndex)) {
             isNeedDepcies.set(true);
 

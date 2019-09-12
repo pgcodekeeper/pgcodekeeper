@@ -58,12 +58,7 @@ public class PgConstraint extends AbstractConstraint {
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
-        PgConstraint newConstr;
-        if (newCondition instanceof PgConstraint) {
-            newConstr = (PgConstraint)newCondition;
-        } else {
-            return false;
-        }
+        PgConstraint newConstr = (PgConstraint) newCondition;
 
         if (!Objects.equals(getDefinition(), newConstr.getDefinition())) {
             isNeedDepcies.set(true);

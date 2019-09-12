@@ -360,17 +360,11 @@ public class PgDatabase extends PgStatement {
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
-        PgDatabase newDb;
         final int startLength = sb.length();
-        if (newCondition instanceof PgDatabase) {
-            newDb = (PgDatabase) newCondition;
-        } else {
-            return false;
-        }
-        PgDatabase oldDb = this;
-        if (!Objects.equals(oldDb.getComment(), newDb.getComment())) {
+
+        if (!Objects.equals(getComment(), newCondition.getComment())) {
             sb.append("\n\n");
-            newDb.appendCommentSql(sb);
+            newCondition.appendCommentSql(sb);
         }
         return sb.length() > startLength;
     }

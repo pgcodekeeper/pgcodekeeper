@@ -139,12 +139,7 @@ public class PgDomain extends PgStatementWithSearchPath {
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
-        PgDomain newDomain;
-        if (newCondition instanceof PgDomain) {
-            newDomain = (PgDomain) newCondition;
-        } else {
-            return false;
-        }
+        PgDomain newDomain = (PgDomain) newCondition;
 
         if (!Objects.equals(newDomain.getDataType(), getDataType()) ||
                 !Objects.equals(newDomain.getCollation(), getCollation())) {

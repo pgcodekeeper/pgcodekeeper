@@ -58,16 +58,13 @@ public class MsClrProcedure extends AbstractMsClrFunction {
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
-        MsClrProcedure newProcedure;
-        if (newCondition instanceof MsClrProcedure) {
-            newProcedure = (MsClrProcedure) newCondition;
-        } else if (newCondition instanceof MsProcedure) {
+        if (newCondition instanceof MsProcedure) {
             isNeedDepcies.set(true);
             return true;
-        } else {
-            return false;
         }
+
+        final int startLength = sb.length();
+        MsClrProcedure newProcedure = (MsClrProcedure) newCondition;
 
         if (!compareUnalterable(newProcedure)) {
             sb.append(newProcedure.getProcedureFullSQL(false));

@@ -210,7 +210,7 @@ public class PgParserTest {
     }
 
     @Test
-    public void runDiff() throws IOException, InterruptedException {
+    public void runDiff() throws IOException {
         List<AntlrError> errors = new ArrayList<>();
         AtomicInteger ambiguity = new AtomicInteger();
 

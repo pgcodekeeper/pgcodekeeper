@@ -59,28 +59,24 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
-        if (newCondition instanceof MsTrigger) {
-            MsTrigger newTrigger = (MsTrigger) newCondition;
-            final int startLength = sb.length();
+        MsTrigger newTrigger = (MsTrigger) newCondition;
+        final int startLength = sb.length();
 
-            if (!Objects.equals(getFirstPart(), newTrigger.getFirstPart())
-                    || !Objects.equals(getSecondPart(), newTrigger.getSecondPart())) {
-                sb.append(newTrigger.getTriggerFullSQL(false));
-                isNeedDepcies.set(true);
-            }
-
-            if (isDisable() != newTrigger.isDisable()) {
-                sb.append('\n');
-                sb.append(newTrigger.isDisable() ? "DISABLE" : "ENABLE");
-                sb.append(" TRIGGER ");
-                appendName(sb);
-                sb.append(GO);
-            }
-
-            return sb.length() > startLength;
+        if (!Objects.equals(getFirstPart(), newTrigger.getFirstPart())
+                || !Objects.equals(getSecondPart(), newTrigger.getSecondPart())) {
+            sb.append(newTrigger.getTriggerFullSQL(false));
+            isNeedDepcies.set(true);
         }
 
-        return false;
+        if (isDisable() != newTrigger.isDisable()) {
+            sb.append('\n');
+            sb.append(newTrigger.isDisable() ? "DISABLE" : "ENABLE");
+            sb.append(" TRIGGER ");
+            appendName(sb);
+            sb.append(GO);
+        }
+
+        return sb.length() > startLength;
     }
 
     @Override

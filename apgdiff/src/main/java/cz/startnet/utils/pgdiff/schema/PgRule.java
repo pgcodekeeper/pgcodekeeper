@@ -152,12 +152,7 @@ public class PgRule extends PgStatementWithSearchPath{
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
-        PgRule newRule;
-        if (newCondition instanceof PgRule) {
-            newRule = (PgRule)newCondition;
-        } else {
-            return false;
-        }
+        PgRule newRule = (PgRule) newCondition;
 
         if (!compareUnalterable(newRule)) {
             isNeedDepcies.set(true);

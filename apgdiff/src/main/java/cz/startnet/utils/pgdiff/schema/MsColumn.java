@@ -144,12 +144,7 @@ public class MsColumn extends AbstractColumn {
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
-        MsColumn newColumn;
-        if (newCondition instanceof MsColumn) {
-            newColumn = (MsColumn) newCondition;
-        } else {
-            return false;
-        }
+        MsColumn newColumn = (MsColumn) newCondition;
 
         // recreate column to change identity or computed value
         if (!Objects.equals(newColumn.getSeed(), getSeed())

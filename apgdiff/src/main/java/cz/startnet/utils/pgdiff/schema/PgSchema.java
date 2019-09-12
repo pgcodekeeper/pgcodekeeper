@@ -47,22 +47,15 @@ public class PgSchema extends AbstractSchema {
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
-        PgSchema newSchema;
-        if (newCondition instanceof PgSchema) {
-            newSchema = (PgSchema) newCondition;
-        } else {
-            return false;
+        if (!Objects.equals(getOwner(), newCondition.getOwner())) {
+            newCondition.alterOwnerSQL(sb);
         }
 
-        if (!Objects.equals(getOwner(), newSchema.getOwner())) {
-            newSchema.alterOwnerSQL(sb);
-        }
+        alterPrivileges(newCondition, sb);
 
-        alterPrivileges(newSchema, sb);
-
-        if (!Objects.equals(getComment(), newSchema.getComment())) {
+        if (!Objects.equals(getComment(), newCondition.getComment())) {
             sb.append("\n\n");
-            newSchema.appendCommentSql(sb);
+            newCondition.appendCommentSql(sb);
         }
 
         return sb.length() > startLength;
