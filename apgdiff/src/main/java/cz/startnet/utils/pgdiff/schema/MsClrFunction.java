@@ -45,6 +45,10 @@ public class MsClrFunction extends AbstractMsClrFunction {
         MsClrFunction newFunction = (MsClrFunction) newCondition;
 
         if (!compareUnalterable(newFunction)) {
+            if (!getFuncType().equals(newFunction.getFuncType())) {
+                isNeedDepcies.set(true);
+                return true;
+            }
             sb.append(newFunction.getFunctionFullSQL(false));
         }
 
