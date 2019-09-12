@@ -33,7 +33,6 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.ide.ResourceUtil;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
-import cz.startnet.utils.pgdiff.IErrorPositionSetter;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcMsConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
@@ -225,8 +224,7 @@ class QuickUpdateJob extends SingletonEditorJob {
             List<List<QueryLocation>> batches = parser.batch();
 
 
-            new JdbcRunner(monitor).runBatches(connector, batches, null,
-                    (IErrorPositionSetter) getEditorPart());
+            new JdbcRunner(monitor).runBatches(connector, batches, null);
         } catch (SQLException e) {
             throw new PgCodekeeperUIException(Messages.QuickUpdate_migration_failed + e.getLocalizedMessage());
         }

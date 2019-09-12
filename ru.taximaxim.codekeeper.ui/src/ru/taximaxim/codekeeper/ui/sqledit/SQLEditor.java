@@ -539,10 +539,10 @@ implements IResourceChangeListener, IErrorPositionSetter {
                         dbInfo.isReadOnly(), ApgdiffConsts.UTC);
             }
 
-            IProgressReporter reporter = new UiProgressReporter(monitor);
+            IProgressReporter reporter = new UiProgressReporter(monitor, SQLEditor.this);
             try (IProgressReporter toClose = reporter) {
                 List<List<QueryLocation>> batches = parser.batch();
-                new JdbcRunner(monitor).runBatches(connector, batches, reporter, SQLEditor.this);
+                new JdbcRunner(monitor).runBatches(connector, batches, reporter);
                 ProjectEditorDiffer.notifyDbChanged(dbInfo);
                 return Status.OK_STATUS;
             } catch (InterruptedException ex) {
@@ -561,7 +561,7 @@ implements IResourceChangeListener, IErrorPositionSetter {
             Log.log(Log.LOG_INFO, "Running DDL update using external command"); //$NON-NLS-1$
 
             Thread scriptThread = null;
-            try (UiProgressReporter reporter = new UiProgressReporter(monitor)) {
+            try (UiProgressReporter reporter = new UiProgressReporter(monitor, SQLEditor.this)) {
                 scriptThread = new Thread(new RunScriptExternal(parser.getScript(),
                         reporter, new ArrayList<>(Arrays.asList(
                                 getReplacedCmd(mainPrefs.getString(DB_UPDATE_PREF.MIGRATION_COMMAND), dbInfo).split(" "))))); //$NON-NLS-1$

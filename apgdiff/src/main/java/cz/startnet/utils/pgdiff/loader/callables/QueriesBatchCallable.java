@@ -17,7 +17,6 @@ import org.postgresql.util.ServerErrorMessage;
 import com.microsoft.sqlserver.jdbc.SQLServerError;
 import com.microsoft.sqlserver.jdbc.SQLServerException;
 
-import cz.startnet.utils.pgdiff.IErrorPositionSetter;
 import cz.startnet.utils.pgdiff.IProgressReporter;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.QueryLocation;
@@ -30,17 +29,14 @@ public class QueriesBatchCallable extends StatementCallable<String> {
     private final IProgressMonitor monitor;
     private final Connection connection;
     private final IProgressReporter reporter;
-    private final IErrorPositionSetter errorPosSet;
 
     public QueriesBatchCallable(Statement st, List<List<QueryLocation>> batches,
-            IProgressMonitor monitor, IProgressReporter reporter, Connection connection,
-            IErrorPositionSetter errorPosSet) {
+            IProgressMonitor monitor, IProgressReporter reporter, Connection connection) {
         super(st, null);
         this.batches = batches;
         this.monitor = monitor;
         this.connection = connection;
         this.reporter = reporter;
-        this.errorPosSet = errorPosSet;
     }
 
     @Override
@@ -115,10 +111,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
                     }
                     sb.append('\n').append(currQuery);
                 }
-
-                if (errorPosSet != null) {
-                    errorPosSet.setErrorPosition(currQueryOffset, currQuery.length());
-                }
+                reporter.setErrorPosition(currQueryOffset, currQuery.length());
             }
 
             reporter.writeError(sb.toString());

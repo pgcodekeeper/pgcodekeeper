@@ -11,6 +11,7 @@ import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
 
+import cz.startnet.utils.pgdiff.IErrorPositionSetter;
 import cz.startnet.utils.pgdiff.IProgressReporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.VIEW;
@@ -21,18 +22,20 @@ import ru.taximaxim.codekeeper.ui.views.ResultSetView;
 public class UiProgressReporter implements IProgressReporter {
 
     private final CodekeeperConsole console;
+    private final IErrorPositionSetter errorPosSet;
 
-    public UiProgressReporter(IProgressMonitor monitor) {
+    public UiProgressReporter(IProgressMonitor monitor, IErrorPositionSetter errorPosSet) {
         IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
         console = CodekeeperConsole.createInstance(monitor);
         manager.addConsoles(new IConsole[] { console });
+        this.errorPosSet = errorPosSet;
     }
 
     /**
      * Initial, write one error message and terminate console
      */
     public static void writeSingleError(String error) {
-        try (UiProgressReporter reporter = new UiProgressReporter(new NullProgressMonitor())) {
+        try (UiProgressReporter reporter = new UiProgressReporter(new NullProgressMonitor(), null)) {
             reporter.writeError(error);
         }
     }
@@ -69,5 +72,12 @@ public class UiProgressReporter implements IProgressReporter {
             }
         });
 
+    }
+
+    @Override
+    public void setErrorPosition(int start, int length) {
+        if (errorPosSet != null) {
+            errorPosSet.setErrorPosition(start, length);
+        }
     }
 }
