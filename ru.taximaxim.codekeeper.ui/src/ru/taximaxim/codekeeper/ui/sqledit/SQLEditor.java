@@ -74,6 +74,7 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.osgi.service.prefs.BackingStoreException;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
+import cz.startnet.utils.pgdiff.IErrorPositionSetter;
 import cz.startnet.utils.pgdiff.IProgressReporter;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcMsConnector;
@@ -110,7 +111,8 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 import ru.taximaxim.codekeeper.ui.propertytests.UpdateDdlJobTester;
 
-public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceChangeListener {
+public class SQLEditor extends AbstractDecoratedTextEditor
+implements IResourceChangeListener, IErrorPositionSetter {
 
     static final String CONTENT_ASSIST = "ContentAssist"; //$NON-NLS-1$
 
@@ -497,6 +499,11 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         parentComposite.setCursor(parentComposite.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
     }
 
+    @Override
+    public void setErrorPosition(int start, int length) {
+        UiSync.exec(PlatformUI.getWorkbench().getDisplay(), () -> selectAndReveal(start, length));
+    }
+
     private class ScriptThreadJobWrapper extends SingletonEditorJob {
 
         private final DbInfo dbInfo;
@@ -535,7 +542,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             IProgressReporter reporter = new UiProgressReporter(monitor);
             try (IProgressReporter toClose = reporter) {
                 List<List<QueryLocation>> batches = parser.batch();
-                new JdbcRunner(monitor).runBatches(connector, batches, reporter);
+                new JdbcRunner(monitor).runBatches(connector, batches, reporter, SQLEditor.this);
                 ProjectEditorDiffer.notifyDbChanged(dbInfo);
                 return Status.OK_STATUS;
             } catch (InterruptedException ex) {

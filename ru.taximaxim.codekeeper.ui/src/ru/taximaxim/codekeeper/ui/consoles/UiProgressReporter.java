@@ -14,8 +14,8 @@ import org.eclipse.ui.console.IConsoleManager;
 import cz.startnet.utils.pgdiff.IProgressReporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.VIEW;
-import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.UiSync;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.views.ResultSetView;
 
 public class UiProgressReporter implements IProgressReporter {

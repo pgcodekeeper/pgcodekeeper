@@ -17,6 +17,7 @@ import org.postgresql.util.ServerErrorMessage;
 import com.microsoft.sqlserver.jdbc.SQLServerError;
 import com.microsoft.sqlserver.jdbc.SQLServerException;
 
+import cz.startnet.utils.pgdiff.IErrorPositionSetter;
 import cz.startnet.utils.pgdiff.IProgressReporter;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.QueryLocation;
@@ -29,14 +30,17 @@ public class QueriesBatchCallable extends StatementCallable<String> {
     private final IProgressMonitor monitor;
     private final Connection connection;
     private final IProgressReporter reporter;
+    private final IErrorPositionSetter errorPosSet;
 
     public QueriesBatchCallable(Statement st, List<List<QueryLocation>> batches,
-            IProgressMonitor monitor, IProgressReporter reporter, Connection connection) {
+            IProgressMonitor monitor, IProgressReporter reporter, Connection connection,
+            IErrorPositionSetter errorPosSet) {
         super(st, null);
         this.batches = batches;
         this.monitor = monitor;
         this.connection = connection;
         this.reporter = reporter;
+        this.errorPosSet = errorPosSet;
     }
 
     @Override
@@ -44,6 +48,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
         SubMonitor subMonitor = SubMonitor.convert(monitor);
         String currQuery = null;
         int currQueryLine = 1;
+        int currQueryOffset = 0;
         try {
             if (batches.size() == 1) {
                 List<QueryLocation> queries = batches.get(0);
@@ -52,6 +57,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
                     PgDiffUtils.checkCancelled(monitor);
                     currQuery = query.getSql();
                     currQueryLine = query.getLineNumber();
+                    currQueryOffset = query.getOffset();
                     executeSingleStatement(query);
 
                     subMonitor.worked(1);
@@ -67,11 +73,13 @@ public class QueriesBatchCallable extends StatementCallable<String> {
                         QueryLocation query = queriesList.get(0);
                         currQuery = query.getSql();
                         currQueryLine = query.getLineNumber();
+                        currQueryOffset = query.getOffset();
                         executeSingleStatement(query);
                     } else {
                         for (QueryLocation query : queriesList) {
                             currQuery = query.getSql();
                             currQueryLine = query.getLineNumber();
+                            currQueryOffset = query.getOffset();
                             st.addBatch(currQuery);
                             writeStatus(query.getAction());
                         }
@@ -106,6 +114,10 @@ public class QueriesBatchCallable extends StatementCallable<String> {
                         sb.append("\n  Line: ").append(currQueryLine);
                     }
                     sb.append('\n').append(currQuery);
+                }
+
+                if (errorPosSet != null) {
+                    errorPosSet.setErrorPosition(currQueryOffset, currQuery.length());
                 }
             }
 
