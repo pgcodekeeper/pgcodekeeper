@@ -89,6 +89,11 @@
         </command>
         <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            id="ru.taximaxim.codekeeper.ui.command.OpenSQLEditor"
+            name="%command.commandname.OpenSQLEditor">
+        </command>
+        <command
+            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
             defaultHandler="ru.taximaxim.codekeeper.ui.handlers.GetSystemObjects"
             id="ru.taximaxim.codekeeper.ui.command.GetSystemObjects"
             name="%command.commandname.GetSystemObjects">
@@ -180,6 +185,20 @@
                         </not>
                     </with>
                 </and>
+            </enabledWhen>
+        </handler>
+        <handler
+            class="ru.taximaxim.codekeeper.ui.handlers.OpenSQLEditor"
+            commandId="ru.taximaxim.codekeeper.ui.command.OpenSQLEditor">
+            <enabledWhen>
+                <with variable="activeEditorId">
+                    <or>
+                        <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
+                        </equals>
+                        <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
+                        </equals>
+                    </or>
+                </with>
             </enabledWhen>
         </handler>
         <handler
@@ -394,13 +413,23 @@
                     visible="true">
                 </separator>
                 <command
+                    commandId="ru.taximaxim.codekeeper.ui.command.OpenSQLEditor"
+                    icon="icons/file_obj.png"
+                    label="%command.commandname.OpenSQLEditor"
+                    style="push">
+                </command>
+                <separator
+                    name="ru.taximaxim.codekeeper.ui.separator4"
+                    visible="true">
+                </separator>
+                <command
                     commandId="ru.taximaxim.codekeeper.ui.command.Diff"
                     label="%command.label.diffWizard"
                     mnemonic="%command.mnemonic.diffWizard"
                     style="push">
                 </command>
                 <separator
-                    name="ru.taximaxim.codekeeper.ui.separator4"
+                    name="ru.taximaxim.codekeeper.ui.separator5"
                     visible="true">
                 </separator>
                 <command
@@ -409,7 +438,7 @@
                     style="push">
                 </command>
                 <separator
-                    name="ru.taximaxim.codekeeper.ui.separator5"
+                    name="ru.taximaxim.codekeeper.ui.separator6"
                     visible="true">
                 </separator>
                 <command
@@ -537,6 +566,22 @@
                     <visibleWhen>
                         <with variable="activeEditorId">
                             <or>
+                                <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
+                                </equals>
+                            </or>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <command
+                    commandId="ru.taximaxim.codekeeper.ui.command.OpenSQLEditor"
+                    icon="icons/file_obj.png"
+                    label="%command.commandname.OpenSQLEditor"
+                    style="push">
+                    <visibleWhen>
+                        <with variable="activeEditorId">
+                            <or>
+                                <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
+                                </equals>
                                 <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
                                 </equals>
                             </or>
@@ -1375,6 +1420,12 @@
             contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeperEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+M3+E">
+        </key>
+        <key
+            commandId="ru.taximaxim.codekeeper.ui.command.OpenSQLEditor"
+            contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeperEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M3+Y">
         </key>
         <key
             commandId="ru.taximaxim.codekeeper.ui.command.OpenObjectWizard"

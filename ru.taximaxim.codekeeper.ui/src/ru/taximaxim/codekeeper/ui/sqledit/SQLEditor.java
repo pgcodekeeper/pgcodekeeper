@@ -7,8 +7,6 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -57,7 +55,6 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
@@ -243,6 +240,11 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     }
 
     @Override
+    public boolean isSaveAsAllowed() {
+        return true;
+    }
+
+    @Override
     protected void createActions() {
         super.createActions();
         ResourceBundle bundle = ResourceBundle.getBundle(Messages.getBundleName());
@@ -366,11 +368,8 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         }
 
         PgDbParser parser = new PgDbParser();
-        if (refreshParser(parser, res, null)) {
-            return parser;
-        }
-
-        throw new PartInitException("Unknown editor input: " + in); //$NON-NLS-1$
+        refreshParser(parser, res, null);
+        return parser;
     }
 
     /**
@@ -378,7 +377,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
      * @param {@link IFileEditorInput} {@link IResource} or null
      * @return true if refresh was triggered successfully
      */
-    private boolean refreshParser(PgDbParser parser, IResource res, IProgressMonitor monitor)
+    private void refreshParser(PgDbParser parser, IResource res, IProgressMonitor monitor)
             throws InterruptedException, IOException, CoreException {
         if (res instanceof IFile) {
             IFile file = (IFile) res;
@@ -387,23 +386,19 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
             if (prefs != null
                     && prefs.getBoolean(PROJ_PREF.DISABLE_PARSER_IN_EXTERNAL_FILES, false)) {
-                return true;
-            } else if (proj.hasNature(NATURE.ID)) {
+                return;
+            }
+
+            if (proj.hasNature(NATURE.ID)) {
                 parser.getObjFromProjFile(file, monitor, proj.hasNature(NATURE.MS));
-                return true;
+                return;
             }
         }
 
         IEditorInput in = getEditorInput();
-        if (in instanceof IURIEditorInput) {
-            IURIEditorInput uri = (IURIEditorInput) in;
-            Path externalTmpFile = Paths.get(uri.getURI());
-            IDocument document = getDocumentProvider().getDocument(getEditorInput());
-            InputStream stream = new ByteArrayInputStream(document.get().getBytes(StandardCharsets.UTF_8));
-            parser.fillRefsFromInputStream(stream, externalTmpFile.toString(), isMsSql, monitor);
-            return true;
-        }
-        return false;
+        IDocument document = getDocumentProvider().getDocument(in);
+        InputStream stream = new ByteArrayInputStream(document.get().getBytes(StandardCharsets.UTF_8));
+        parser.fillRefsFromInputStream(stream, in.getName(), isMsSql, monitor);
     }
 
     PgDbParser getParser() {
