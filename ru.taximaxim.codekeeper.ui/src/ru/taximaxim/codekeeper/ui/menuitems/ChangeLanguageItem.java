@@ -5,11 +5,11 @@ import org.eclipse.jface.action.ContributionItem;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.StatusLineLayoutData;
+import org.eclipse.jface.layout.PixelConverter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
@@ -88,10 +88,8 @@ public class ChangeLanguageItem extends ContributionItem {
      */
     private int getWidthHint(Composite control) {
         if (width < 0) {
-            GC gc= new GC(control);
-            gc.setFont(control.getFont());
-            width = (int) gc.getFontMetrics().getAverageCharacterWidth() * WIDTH_IN_CHARS + INDENT;
-            gc.dispose();
+            PixelConverter pc = new PixelConverter(control);
+            width = pc.convertWidthInCharsToPixels(WIDTH_IN_CHARS) + INDENT;
         }
         return width;
     }
@@ -101,10 +99,8 @@ public class ChangeLanguageItem extends ContributionItem {
      */
     private int getHeightHint(Composite control) {
         if (height < 0) {
-            GC gc= new GC(control);
-            gc.setFont(control.getFont());
-            height = gc.getFontMetrics().getHeight();
-            gc.dispose();
+            PixelConverter pc = new PixelConverter(control);
+            height = pc.convertHeightInCharsToPixels(8);
         }
         return height;
     }
