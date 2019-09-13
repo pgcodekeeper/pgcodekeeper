@@ -5,8 +5,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -20,14 +18,10 @@ import org.eclipse.jface.text.templates.TemplateContext;
 import org.eclipse.jface.text.templates.TemplateContextType;
 import org.eclipse.jface.text.templates.TemplateException;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.ResourceUtil;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 
 public class SQLEditorTemplateAssistProcessor extends TemplateCompletionProcessor {
 
@@ -44,29 +38,13 @@ public class SQLEditorTemplateAssistProcessor extends TemplateCompletionProcesso
     }
 
     private String getCtxTypeId() {
-        boolean isMsEditor = false;
         IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
                 .getActivePage().getActiveEditor();
-        if (editor instanceof SQLEditor) {
-            IResource res = ResourceUtil.getResource(editor.getEditorInput());
-            if (res != null) {
-                // if in SQLEdotor opened project file
-                try {
-                    isMsEditor = res.getProject().hasNature(NATURE.MS);
-                } catch (CoreException e) {
-                    Log.log(Log.LOG_WARNING, "Nature error", e); //$NON-NLS-1$
-                }
-            } else {
-                // if in SQLEditor opened temp file
-                IEditorInput in = editor.getEditorInput();
-                if (in instanceof SQLEditorInput) {
-                    isMsEditor = ((SQLEditorInput) in).isMsSql();
-                }
-            }
+        if (editor instanceof SQLEditor && ((SQLEditor) editor).isMsSql()) {
+            return SQLEditorTemplateContextType.CONTEXT_TYPE_MS;
         }
 
-        return isMsEditor ? SQLEditorTemplateContextType.CONTEXT_TYPE_MS
-                : SQLEditorTemplateContextType.CONTEXT_TYPE_PG;
+        return SQLEditorTemplateContextType.CONTEXT_TYPE_PG;
     }
 
     @Override

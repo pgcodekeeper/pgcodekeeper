@@ -118,6 +118,11 @@ public interface UIConsts {
         String VISIT_COUNT = "visit_count"; //$NON-NLS-1$
     }
 
+    interface LANGUAGE {
+        String POSTGRESQL = "PostgreSQL";
+        String MS_SQL = "MS SQL";
+    }
+
     public enum DBSources {
         SOURCE_TYPE_JDBC("jdbc"), //$NON-NLS-1$
         SOURCE_TYPE_DB("db"), //$NON-NLS-1$

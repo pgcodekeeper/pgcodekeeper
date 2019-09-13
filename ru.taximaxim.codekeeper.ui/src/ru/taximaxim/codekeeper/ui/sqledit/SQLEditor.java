@@ -89,6 +89,7 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.CMD_VARS;
 import ru.taximaxim.codekeeper.ui.UIConsts.CONTEXT;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.LANGUAGE;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -248,6 +249,23 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         ContentAssistAction action = new ContentAssistAction(bundle, "contentAssist.", this); //$NON-NLS-1$
         action.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
         setAction(CONTENT_ASSIST, action);
+    }
+
+    public void changeLanguage(String language) {
+        IResource res = ResourceUtil.getResource(getEditorInput());
+        try {
+            if (res == null || !UIProjectLoader.isInProject(res)) {
+                isMsSql = LANGUAGE.MS_SQL.equals(language);
+                refreshParser(getParser(), res, null);
+            }
+        } catch (Exception ex) {
+            Log.log(ex);
+        }
+    }
+
+    public boolean isInProject() {
+        IResource res = ResourceUtil.getResource(getEditorInput());
+        return res == null || !UIProjectLoader.isInProject(res);
     }
 
     @Override
