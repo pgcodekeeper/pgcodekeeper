@@ -234,7 +234,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             if (res == null || !UIProjectLoader.isInProject(res)) {
                 refreshParser(getParser(), res, new NullProgressMonitor());
             }
-        } catch (Exception ex) {
+        } catch (InterruptedException | IOException | CoreException ex) {
             Log.log(ex);
         }
     }
@@ -256,18 +256,13 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     public void changeLanguage(String language) {
         IResource res = ResourceUtil.getResource(getEditorInput());
         try {
-            if (res == null || !UIProjectLoader.isInProject(res)) {
+            if (res == null || !UIProjectLoader.isInProject(getEditorInput())) {
                 isMsSql = LANGUAGE.MS_SQL.equals(language);
                 refreshParser(getParser(), res, null);
             }
-        } catch (Exception ex) {
+        } catch (InterruptedException | IOException | CoreException ex) {
             Log.log(ex);
         }
-    }
-
-    public boolean isInProject() {
-        IResource res = ResourceUtil.getResource(getEditorInput());
-        return res == null || !UIProjectLoader.isInProject(res);
     }
 
     @Override

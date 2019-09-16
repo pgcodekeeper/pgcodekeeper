@@ -15,6 +15,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 
 import ru.taximaxim.codekeeper.ui.UIConsts.LANGUAGE;
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 
 public class ChangeLanguageItem extends ContributionItem {
@@ -52,7 +53,7 @@ public class ChangeLanguageItem extends ContributionItem {
         Label sep = new Label(parent, SWT.SEPARATOR);
         fLabel = new CLabel(parent, SWT.SHADOW_NONE);
 
-        if (editor != null && editor.isInProject()) {
+        if (editor != null && UIProjectLoader.isInProject(editor.getEditorInput())) {
             createContextMenu(fLabel);
             fLabel.addMouseListener(new MouseAdapter() {
 
