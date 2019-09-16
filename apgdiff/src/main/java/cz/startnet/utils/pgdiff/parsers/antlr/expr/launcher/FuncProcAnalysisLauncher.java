@@ -5,9 +5,11 @@ import java.util.Locale;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Plpgsql_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.AbstractExprWithNmspc;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.Function;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Sql;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
@@ -38,12 +40,18 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
         this.funcArgs = funcArgs;
     }
 
+    public FuncProcAnalysisLauncher(AbstractPgFunction stmt, Plpgsql_functionContext ctx,
+            List<Pair<String, GenericColumn>> funcArgs) {
+        super(stmt, ctx);
+        this.funcArgs = funcArgs;
+    }
+
     @Override
     public void analyze(ParserRuleContext ctx) {
         PgDatabase db = stmt.getDatabase();
         if (ctx instanceof VexContext) {
             analyze((VexContext) ctx, new ValueExpr(db));
-        } else {
+        } else if (ctx instanceof SqlContext) {
             Sql sql;
             if (db.getArguments().isEnableFunctionBodiesDependencies()) {
                 sql = new Sql(db);
@@ -55,6 +63,18 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
                 addArgToNmspc("$" + (i + 1), arg.getFirst(), arg.getSecond(), sql);
             }
             analyze((SqlContext) ctx, sql);
+        } else if (ctx instanceof Plpgsql_functionContext) {
+            Function function;
+            if (db.getArguments().isEnableFunctionBodiesDependencies()) {
+                function = new Function(db);
+            } else {
+                function = new Function(db, DbObjType.FUNCTION, DbObjType.PROCEDURE);
+            }
+            for (int i = 0; i < funcArgs.size(); i++) {
+                Pair<String, GenericColumn> arg = funcArgs.get(i);
+                addArgToNmspc("$" + (i + 1), arg.getFirst(), arg.getSecond(), function);
+            }
+            analyze((Plpgsql_functionContext) ctx, function);
         }
     }
 
