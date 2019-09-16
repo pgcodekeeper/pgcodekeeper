@@ -190,16 +190,6 @@
         <handler
             class="ru.taximaxim.codekeeper.ui.handlers.OpenSQLEditor"
             commandId="ru.taximaxim.codekeeper.ui.command.OpenSQLEditor">
-            <enabledWhen>
-                <with variable="activeEditorId">
-                    <or>
-                        <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
-                        </equals>
-                        <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
-                        </equals>
-                    </or>
-                </with>
-            </enabledWhen>
         </handler>
         <handler
             class="ru.taximaxim.codekeeper.ui.handlers.CancelDdl"
@@ -578,14 +568,20 @@
                     label="%command.commandname.OpenSQLEditor"
                     style="push">
                     <visibleWhen>
-                        <with variable="activeEditorId">
-                            <or>
-                                <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
+                         <or>
+                            <with variable="activeWorkbenchWindow.activePerspective">
+                                <equals value="ru.taximaxim.codekeeper.ui.mainperspective">
                                 </equals>
-                                <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
-                                </equals>
-                            </or>
-                        </with>
+                            </with>
+                            <with variable="activeEditorId">
+                                <or>
+                                    <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
+                                    </equals>
+                                    <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
+                                    </equals>
+                                </or>
+                            </with>
+                        </or>
                     </visibleWhen>
                 </command>
             </toolbar>
