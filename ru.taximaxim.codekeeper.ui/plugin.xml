@@ -786,6 +786,17 @@
             project="false">
             <selection class="org.eclipse.core.resources.IFile" />
         </wizard>
+        <wizard
+              canFinishEarly="true"
+              category="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
+              class="ru.taximaxim.codekeeper.ui.pgdbproject.NewSQLEditorWizard"
+              hasPages="false"
+              icon="IMG_OBJ_FILE"
+              id="ru.taximaxim.codekeeper.ui.newsqleditorwizard"
+              name="%wizard.name.newSQLEditorWizard"
+              project="false">
+            <selection class="org.eclipse.core.resources.IFile" />
+        </wizard>
     </extension>
     <extension
         id="ru.taximaxim.codekeeper.ui.nature"
@@ -1416,12 +1427,6 @@
             contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeperEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+M3+E">
-        </key>
-        <key
-            commandId="ru.taximaxim.codekeeper.ui.command.OpenSQLEditor"
-            contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeperEditorScope"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+M3+Y">
         </key>
         <key
             commandId="ru.taximaxim.codekeeper.ui.command.OpenObjectWizard"

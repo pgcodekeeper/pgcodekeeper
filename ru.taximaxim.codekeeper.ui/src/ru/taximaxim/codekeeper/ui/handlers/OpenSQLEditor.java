@@ -22,14 +22,20 @@ public class OpenSQLEditor extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) {
         IWorkbenchPage page = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage();
+        openEditor(page);
+        return null;
+    }
+
+    public static boolean openEditor(IWorkbenchPage page) {
         IFileStore externalFile = EFS.getNullFileSystem()
-                .getStore(new Path("new query " + number++).makeAbsolute());
+                .getStore(new Path("/pgCodeKeeper/new query " + number++));
         IEditorInput input = new SQLEditorInput(externalFile, false);
         try {
             IDE.openEditor(page, input, EDITOR.SQL);
+            return true;
         } catch (PartInitException e) {
             ExceptionNotifier.notifyDefault(e.getLocalizedMessage(), e);
+            return false;
         }
-        return null;
     }
 }
