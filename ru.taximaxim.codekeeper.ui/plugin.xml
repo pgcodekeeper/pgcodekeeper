@@ -564,7 +564,7 @@
                 </command>
                 <command
                     commandId="ru.taximaxim.codekeeper.ui.command.OpenSQLEditor"
-                    icon="icons/file_obj.png"
+                    icon="IMG_OBJ_FILE"
                     label="%command.commandname.OpenSQLEditor"
                     style="push">
                     <visibleWhen>
