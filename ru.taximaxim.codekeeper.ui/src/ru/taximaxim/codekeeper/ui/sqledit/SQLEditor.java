@@ -256,7 +256,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     public void changeLanguage(String language) {
         IResource res = ResourceUtil.getResource(getEditorInput());
         try {
-            if (res == null || !UIProjectLoader.isInProject(getEditorInput())) {
+            if (res == null || !UIProjectLoader.isInProject(res)) {
                 isMsSql = LANGUAGE.MS_SQL.equals(language);
                 refreshParser(getParser(), res, null);
             }

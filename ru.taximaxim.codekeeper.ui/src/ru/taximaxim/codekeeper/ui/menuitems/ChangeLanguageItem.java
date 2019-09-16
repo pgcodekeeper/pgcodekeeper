@@ -53,7 +53,7 @@ public class ChangeLanguageItem extends ContributionItem {
         Label sep = new Label(parent, SWT.SEPARATOR);
         fLabel = new CLabel(parent, SWT.SHADOW_NONE);
 
-        if (editor != null && UIProjectLoader.isInProject(editor.getEditorInput())) {
+        if (editor != null && !UIProjectLoader.isInProject(editor.getEditorInput())) {
             createContextMenu(fLabel);
             fLabel.addMouseListener(new MouseAdapter() {
 
