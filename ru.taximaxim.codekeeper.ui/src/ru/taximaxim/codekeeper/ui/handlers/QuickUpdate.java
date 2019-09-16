@@ -26,12 +26,12 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.ide.ResourceUtil;
+import org.eclipse.ui.progress.IProgressConstants2;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
@@ -60,7 +60,6 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 import ru.taximaxim.codekeeper.ui.propertytests.QuickUpdateJobTester;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
-import ru.taximaxim.codekeeper.ui.sqledit.TaskBarProgressMonitor;
 
 public class QuickUpdate extends AbstractHandler {
 
@@ -98,6 +97,7 @@ public class QuickUpdate extends AbstractHandler {
         }
 
         QuickUpdateJob quickUpdateJob = new QuickUpdateJob(file, dbInfo, textSnapshot, editor);
+        quickUpdateJob.setProperty(IProgressConstants2.SHOW_IN_TASKBAR_ICON_PROPERTY, Boolean.TRUE);
         quickUpdateJob.setUser(true);
         quickUpdateJob.schedule();
         editor.saveLastDb(dbInfo);
@@ -223,11 +223,7 @@ class QuickUpdateJob extends SingletonEditorJob {
             }
 
             List<List<String>> batches = parser.batch();
-            int batchCount = batches.size() == 1 ? batches.get(0).size() : batches.size();
-            TaskBarProgressMonitor mon = new TaskBarProgressMonitor(monitor,
-                    batchCount, Display.getDefault());
-
-            new JdbcRunner(mon).runBatches(connector, batches, null);
+            new JdbcRunner(monitor).runBatches(connector, batches, null);
         } catch (SQLException e) {
             throw new PgCodekeeperUIException(Messages.QuickUpdate_migration_failed + e.getLocalizedMessage());
         }

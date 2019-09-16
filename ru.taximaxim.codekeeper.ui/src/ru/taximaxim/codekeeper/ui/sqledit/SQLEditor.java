@@ -65,6 +65,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.ide.ResourceUtil;
+import org.eclipse.ui.progress.IProgressConstants2;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.ChainedPreferenceStore;
 import org.eclipse.ui.texteditor.ContentAssistAction;
@@ -485,6 +486,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         }
 
         scriptThreadJobWrapper = new ScriptThreadJobWrapper(dbInfo, parsers[0]);
+        scriptThreadJobWrapper.setProperty(IProgressConstants2.SHOW_IN_TASKBAR_ICON_PROPERTY, Boolean.TRUE);
         scriptThreadJobWrapper.setUser(true);
         scriptThreadJobWrapper.schedule();
 
@@ -530,9 +532,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             IProgressReporter reporter = new UiProgressReporter(monitor);
             try (IProgressReporter toClose = reporter) {
                 List<List<String>> batches = parser.batch();
-                int batchCount = batches.size() == 1 ? batches.get(0).size() : batches.size();
-                TaskBarProgressMonitor mon = new TaskBarProgressMonitor(monitor, batchCount, parentComposite);
-                new JdbcRunner(mon).runBatches(connector, batches, reporter);
+                new JdbcRunner(monitor).runBatches(connector, batches, reporter);
                 ProjectEditorDiffer.notifyDbChanged(dbInfo);
                 return Status.OK_STATUS;
             } catch (InterruptedException ex) {
