@@ -189,6 +189,9 @@ public class PgDiffDepciesTest {
             // добавление exclude ограничения с зависимой функцией
             // пользователь выбрал ограничение
             {"add_exclude_usr_constraint"},
+            // зависимости от функции,
+            // пользователь выбрал функцию
+            {"add_func_with_dep_usr_f1"},
         });
 
         int maxLength = p.stream()
