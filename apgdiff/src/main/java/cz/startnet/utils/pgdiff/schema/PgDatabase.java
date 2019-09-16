@@ -360,17 +360,11 @@ public class PgDatabase extends PgStatement {
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
-        PgDatabase newDb;
         final int startLength = sb.length();
-        if (newCondition instanceof PgDatabase) {
-            newDb = (PgDatabase) newCondition;
-        } else {
-            return false;
-        }
-        PgDatabase oldDb = this;
-        if (!Objects.equals(oldDb.getComment(), newDb.getComment())) {
+
+        if (!Objects.equals(getComment(), newCondition.getComment())) {
             sb.append("\n\n");
-            newDb.appendCommentSql(sb);
+            newCondition.appendCommentSql(sb);
         }
         return sb.length() > startLength;
     }
@@ -417,14 +411,14 @@ public class PgDatabase extends PgStatement {
         return dbDst;
     }
 
-    public void addLib(PgDatabase database) {
-        database.getDescendants().forEach(st -> {
+    public void addLib(PgDatabase lib) {
+        lib.getDescendants().forEach(st -> {
             st.markAsLib();
             concat(st);
         });
-        database.analysisLaunchers
-        .forEach(l -> l.updateStmt(database));
-        analysisLaunchers.addAll(database.analysisLaunchers);
+        lib.analysisLaunchers
+        .forEach(l -> l.updateStmt(this));
+        analysisLaunchers.addAll(lib.analysisLaunchers);
     }
 
     public void concat(PgStatement st) {

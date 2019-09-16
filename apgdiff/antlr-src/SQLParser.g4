@@ -333,8 +333,9 @@ alter_table_statement
         | RENAME COLUMN? column=schema_qualified_name TO new_column=schema_qualified_name)
     | set_schema
     | rename_to
-    | ATTACH PARTITION schema_qualified_name for_values_bound
-    | DETACH PARTITION schema_qualified_name)
+    | RENAME CONSTRAINT identifier TO identifier
+    | ATTACH PARTITION child=schema_qualified_name for_values_bound
+    | DETACH PARTITION child=schema_qualified_name)
     ;
 
 table_action
@@ -376,7 +377,6 @@ table_action
     | NOT OF
     | owner_to
     | SET table_space
-    | RENAME CONSTRAINT identifier TO identifier
     | REPLICA IDENTITY (DEFAULT | FULL | NOTHING | USING INDEX identifier)
     | ALTER CONSTRAINT identifier table_deferrable? table_initialy_immed?
     ;
@@ -1606,7 +1606,7 @@ constraint_common
 
 constr_body
     : EXCLUDE (USING index_method=identifier)?
-            LEFT_PAREN identifier WITH all_op (COMMA identifier WITH all_op)* RIGHT_PAREN
+            LEFT_PAREN sort_specifier WITH all_op (COMMA sort_specifier WITH all_op)* RIGHT_PAREN
             index_parameters (where=WHERE exp=vex)?
     | (FOREIGN KEY column_references)? REFERENCES schema_qualified_name ref=column_references?
         (MATCH (FULL | PARTIAL | SIMPLE) | ON (DELETE | UPDATE) action)*

@@ -85,7 +85,7 @@ public class MsIndex extends AbstractIndex {
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
-        if (newCondition instanceof MsIndex && !compare(newCondition)) {
+        if (!compare(newCondition)) {
             isNeedDepcies.set(true);
 
             MsIndex newIndex = (MsIndex) newCondition;

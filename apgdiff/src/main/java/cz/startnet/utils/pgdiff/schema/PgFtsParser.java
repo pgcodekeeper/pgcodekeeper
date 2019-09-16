@@ -67,13 +67,10 @@ public class PgFtsParser extends PgStatementWithSearchPath {
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
-        if (newCondition instanceof PgFtsParser) {
-            if (!compareUnalterable((PgFtsParser)newCondition)) {
-                isNeedDepcies.set(true);
-                return true;
-            }
-        } else {
-            return false;
+
+        if (!compareUnalterable((PgFtsParser) newCondition)) {
+            isNeedDepcies.set(true);
+            return true;
         }
 
         if (!Objects.equals(getComment(), newCondition.getComment())) {

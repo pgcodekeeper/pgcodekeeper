@@ -170,12 +170,7 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
-        PgColumn newColumn;
-        if (newCondition instanceof PgColumn) {
-            newColumn = (PgColumn) newCondition;
-        } else {
-            return false;
-        }
+        PgColumn newColumn = (PgColumn) newCondition;
 
         boolean isNeedDropDefault = !Objects.equals(getType(), newColumn.getType())
                 && !Objects.equals(getDefaultValue(), newColumn.getDefaultValue());
@@ -287,14 +282,20 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
 
         String oldCollation = oldColumn.getCollation();
         String newCollation = newColumn.getCollation();
+        String oldType = oldColumn.getType();
+        String newType = newColumn.getType();
 
-        if (!Objects.equals(oldColumn.getType(), newColumn.getType()) ||
+        if (newType == null) {
+            return;
+        }
+
+        if (!Objects.equals(oldType, newType) ||
                 (newCollation != null && !newCollation.equals(oldCollation))) {
             isNeedDepcies.set(true);
 
             sb.append(getAlterColumn(true, false, newColumn.getName()))
             .append(" TYPE ")
-            .append(newColumn.getType());
+            .append(newType);
 
             if (newCollation != null) {
                 sb.append(COLLATE)
@@ -305,11 +306,11 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
 
             if (arg == null || !arg.isUsingTypeCastOff()) {
                 sb.append(" USING ").append(PgDiffUtils.getQuotedName(newColumn.getName()))
-                .append("::").append(newColumn.getType());
+                .append("::").append(newType);
             }
             sb.append("; /* " + MessageFormat.format(Messages.Table_TypeParameterChange,
                     newColumn.getParent().getParent().getName() + '.' + newColumn.getParent().getName(),
-                    oldColumn.getType(), newColumn.getType()) + " */");
+                    oldType, newType) + " */");
         }
     }
 

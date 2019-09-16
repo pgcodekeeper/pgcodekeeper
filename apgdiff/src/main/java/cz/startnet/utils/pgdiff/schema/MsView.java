@@ -44,12 +44,7 @@ public class MsView extends AbstractView implements SourceStatement {
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
-        MsView newView;
-        if (newCondition instanceof MsView) {
-            newView = (MsView) newCondition;
-        } else {
-            return false;
-        }
+        MsView newView = (MsView) newCondition;
 
         if (!Objects.equals(getFirstPart(), newView.getFirstPart())
                 || !Objects.equals(getSecondPart(), newView.getSecondPart())) {

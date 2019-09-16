@@ -316,7 +316,7 @@ public class GenericColumn implements Serializable {
         return appendQualifiedName(new StringBuilder()).toString();
     }
 
-    protected String appendQualifiedName(StringBuilder sb) {
+    protected StringBuilder appendQualifiedName(StringBuilder sb) {
         if (schema != null) {
             sb.append(PgDiffUtils.getQuotedName(schema));
         }
@@ -332,14 +332,13 @@ public class GenericColumn implements Serializable {
             }
             sb.append(PgDiffUtils.getQuotedName(column));
         }
-        return sb.toString();
+        return sb;
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        appendQualifiedName(sb);
-        sb.append(" (").append(type).append(')');
-        return sb.toString();
+        return appendQualifiedName(new StringBuilder())
+                .append(" (").append(type).append(')')
+                .toString();
     }
 }

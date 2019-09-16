@@ -30,6 +30,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.MsModelExporter;
+import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyWriter;
 import ru.taximaxim.codekeeper.cli.localizations.Messages;
 
 /**
@@ -52,6 +53,9 @@ public final class Main {
             }
             if (arguments.isModeParse()) {
                 parse(arguments);
+                return true;
+            } else if (arguments.isModeGraph()) {
+                graph(writer, arguments);
                 return true;
             } else {
                 return diff(writer, arguments);
@@ -125,6 +129,25 @@ public final class Main {
         } else {
             new ModelExporter(Paths.get(arguments.getOutputTarget()),
                     d, arguments.getOutCharsetName()).exportFull();
+        }
+    }
+
+    private static void graph(PrintWriter writer, PgDiffArguments arguments)
+            throws IOException, InterruptedException {
+        PgDatabase d = PgDiff.loadDatabaseSchema(
+                arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments);
+
+        try (PrintWriter encodedWriter = getDiffWriter(arguments)) {
+            DepcyWriter dw;
+            if (encodedWriter != null) {
+                dw = new DepcyWriter(d, arguments.getGraphDepth(), encodedWriter,
+                        arguments.isGraphReverse());
+            } else {
+                dw = new DepcyWriter(d, arguments.getGraphDepth(), writer,
+                        arguments.isGraphReverse());
+            }
+
+            dw.write(arguments.getGraphNames());
         }
     }
 
