@@ -2,7 +2,7 @@ package ru.taximaxim.codekeeper.ui.menuitems;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ContributionItem;
-import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.StatusLineLayoutData;
 import org.eclipse.jface.layout.PixelConverter;
@@ -12,7 +12,6 @@ import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Menu;
 
 import ru.taximaxim.codekeeper.ui.UIConsts.LANGUAGE;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
@@ -36,6 +35,9 @@ public class ChangeLanguageItem extends ContributionItem {
     private CLabel fLabel;
     private int width = -1;
     private int height = -1;
+
+    private Action msAction;
+    private Action pgAction;
 
     private SQLEditor editor;
 
@@ -79,11 +81,6 @@ public class ChangeLanguageItem extends ContributionItem {
         }
     }
 
-    @Override
-    public void dispose() {
-        editor = null;
-    }
-
     /**
      * Returns the width hint for this label.
      */
@@ -108,15 +105,8 @@ public class ChangeLanguageItem extends ContributionItem {
 
     private void createContextMenu(Composite control) {
         MenuManager contextMenu = new MenuManager();
-        contextMenu.setRemoveAllWhenShown(true);
-        contextMenu.addMenuListener(this::fillContextMenu);
 
-        Menu menu = contextMenu.createContextMenu(control);
-        control.setMenu(menu);
-    }
-
-    private void fillContextMenu(IMenuManager menu) {
-        Action pgAction = new Action(LANGUAGE.POSTGRESQL) {
+        pgAction = new Action(LANGUAGE.POSTGRESQL, IAction.AS_RADIO_BUTTON) {
 
             @Override
             public void run() {
@@ -124,9 +114,8 @@ public class ChangeLanguageItem extends ContributionItem {
                 updateLabel(LANGUAGE.POSTGRESQL);
             }
         };
-        pgAction.setChecked(!editor.isMsSql());
 
-        Action msAction = new Action(LANGUAGE.MS_SQL) {
+        msAction = new Action(LANGUAGE.MS_SQL, IAction.AS_RADIO_BUTTON) {
 
             @Override
             public void run() {
@@ -134,16 +123,19 @@ public class ChangeLanguageItem extends ContributionItem {
                 updateLabel(LANGUAGE.MS_SQL);
             }
         };
-        msAction.setChecked(editor.isMsSql());
 
-        menu.add(pgAction);
-        menu.add(msAction);
+        contextMenu.add(pgAction);
+        contextMenu.add(msAction);
+
+        control.setMenu(contextMenu.createContextMenu(control));
     }
 
     private void updateLabel(String text) {
         if (fLabel != null && !fLabel.isDisposed()) {
             fLabel.setForeground(fLabel.getParent().getForeground());
             fLabel.setText(text);
+            pgAction.setChecked(!LANGUAGE.MS_SQL.equals(text));
+            msAction.setChecked(LANGUAGE.MS_SQL.equals(text));
         }
     }
 }
