@@ -319,7 +319,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
                 Log.log(Log.LOG_WARNING, "Nature error", ex); //$NON-NLS-1$
             }
         }
-        if (in instanceof IURIEditorInput) {
+        if (in.exists() && in instanceof IURIEditorInput) {
             return Paths.get(((IURIEditorInput) in).getURI()).toString();
         } else {
             return null;
