@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -55,6 +56,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
@@ -385,7 +387,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             }
 
             if (proj.hasNature(NATURE.ID)) {
-                parser.getObjFromProjFile(file, monitor, proj.hasNature(NATURE.MS));
+                parser.getObjFromProjFile(file, monitor, isMsSql);
                 return;
             }
         }
@@ -393,7 +395,12 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         IEditorInput in = getEditorInput();
         IDocument document = getDocumentProvider().getDocument(in);
         InputStream stream = new ByteArrayInputStream(document.get().getBytes(StandardCharsets.UTF_8));
-        parser.fillRefsFromInputStream(stream, in.getName(), isMsSql, monitor);
+
+        String name;
+        if (in.exists() && in instanceof IURIEditorInput) {
+            name = Paths.get(((IURIEditorInput) in).getURI()).toString();
+            parser.fillRefsFromInputStream(stream, name, isMsSql, monitor);
+        }
     }
 
     PgDbParser getParser() {
