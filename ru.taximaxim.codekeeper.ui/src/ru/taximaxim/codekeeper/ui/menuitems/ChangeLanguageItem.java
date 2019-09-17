@@ -116,23 +116,28 @@ public class ChangeLanguageItem extends ContributionItem {
     }
 
     private void fillContextMenu(IMenuManager menu) {
-        menu.add(new Action(LANGUAGE.POSTGRESQL) {
+        Action pgAction = new Action(LANGUAGE.POSTGRESQL) {
 
             @Override
             public void run() {
                 editor.changeLanguage(LANGUAGE.POSTGRESQL);
                 updateLabel(LANGUAGE.POSTGRESQL);
             }
-        });
+        };
+        pgAction.setChecked(!editor.isMsSql());
 
-        menu.add(new Action(LANGUAGE.MS_SQL) {
+        Action msAction = new Action(LANGUAGE.MS_SQL) {
 
             @Override
             public void run() {
                 editor.changeLanguage(LANGUAGE.MS_SQL);
                 updateLabel(LANGUAGE.MS_SQL);
             }
-        });
+        };
+        msAction.setChecked(editor.isMsSql());
+
+        menu.add(pgAction);
+        menu.add(msAction);
     }
 
     private void updateLabel(String text) {
