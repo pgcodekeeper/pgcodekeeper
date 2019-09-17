@@ -393,12 +393,10 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         }
 
         IEditorInput in = getEditorInput();
-        IDocument document = getDocumentProvider().getDocument(in);
-        InputStream stream = new ByteArrayInputStream(document.get().getBytes(StandardCharsets.UTF_8));
-
-        String name;
         if (in.exists() && in instanceof IURIEditorInput) {
-            name = Paths.get(((IURIEditorInput) in).getURI()).toString();
+            IDocument document = getDocumentProvider().getDocument(in);
+            InputStream stream = new ByteArrayInputStream(document.get().getBytes(StandardCharsets.UTF_8));
+            String name = Paths.get(((IURIEditorInput) in).getURI()).toString();
             parser.fillRefsFromInputStream(stream, name, isMsSql, monitor);
         }
     }

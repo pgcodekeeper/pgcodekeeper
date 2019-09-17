@@ -16,20 +16,20 @@ import ru.taximaxim.codekeeper.ui.menuitems.ChangeLanguageItem;
 public class SQLEditorActionContributor extends TextEditorActionContributor {
 
     private final RetargetTextEditorAction fContentAssist;
-    private final ChangeLanguageItem item;
+    private final ChangeLanguageItem languageItem;
 
     public SQLEditorActionContributor() {
         fContentAssist= new RetargetTextEditorAction(
                 ResourceBundle.getBundle(Messages.getBundleName()), "contentAssist."); //$NON-NLS-1$
         fContentAssist.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
 
-        item = new ChangeLanguageItem();
+        languageItem = new ChangeLanguageItem();
     }
 
     @Override
     public void contributeToStatusLine(IStatusLineManager statusLineManager) {
         super.contributeToStatusLine(statusLineManager);
-        statusLineManager.add(item);
+        statusLineManager.add(languageItem);
     }
 
     @Override
@@ -48,7 +48,7 @@ public class SQLEditorActionContributor extends TextEditorActionContributor {
         if (part instanceof SQLEditor) {
             SQLEditor editor = (SQLEditor) part;
             fContentAssist.setAction(getAction(editor, SQLEditor.CONTENT_ASSIST));
-            item.setActiveEditor(editor);
+            languageItem.setActiveEditor(editor);
         }
     }
 }
