@@ -29,8 +29,10 @@ public class AntlrError {
         this.text = text;
     }
 
-    public AntlrError copyWithOffset(int offset, int lineOffset) {
-        return new AntlrError(location, line + lineOffset, charPositionInLine, msg,
+    public AntlrError copyWithOffset(int offset, int lineOffset, int inLineOffset) {
+        return new AntlrError(location, line + lineOffset,
+                (line == 1 ? charPositionInLine + inLineOffset : charPositionInLine),
+                msg,
                 (start == -1 ? -1 : start + offset),
                 (stop == -1 ? -1: stop + offset),
                 text);
@@ -66,6 +68,7 @@ public class AntlrError {
 
     @Override
     public String toString() {
-        return location + " line " + getLine() + ':' + getCharPositionInLine() + ' ' + getMsg();
+        // ANTLR position in line is 0-based, GUI's is 1-based
+        return location + " line " + getLine() + ':' + (getCharPositionInLine() + 1) + ' ' + getMsg();
     }
 }

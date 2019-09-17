@@ -163,14 +163,14 @@ public class AntlrParser {
     }
 
     public static void submitSqlCtxToAnalyze(String sql, List<AntlrError> errors,
-            int offset, int lineOffset, String name, Consumer<SqlContext> finalizer,
-            Queue<AntlrTask<?>> antlrTasks) {
+            int offset, int lineOffset, int inLineOffset, String name,
+            Consumer<SqlContext> finalizer, Queue<AntlrTask<?>> antlrTasks) {
         List<AntlrError> err = new ArrayList<>();
         submitAntlrTask(antlrTasks, () -> makeBasicParser(
                 SQLParser.class, sql, name, err).sql(),
                 ctx -> {
                     err.stream()
-                    .map(e -> e.copyWithOffset(offset, lineOffset))
+                    .map(e -> e.copyWithOffset(offset, lineOffset, inLineOffset))
                     .forEach(errors::add);
                     finalizer.accept(ctx);
                 });

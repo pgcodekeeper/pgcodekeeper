@@ -144,8 +144,9 @@ public class CreateFunction extends ParserAbstract {
             }
 
             AntlrParser.submitSqlCtxToAnalyze(def, errors,
-                    codeStart.getSymbol().getStartIndex() - ctx.getParent().getStart().getStartIndex(),
-                    codeStart.getSymbol().getLine() - ctx.getParent().getStart().getLine(),
+                    codeStart.getSymbol().getStartIndex(),
+                    codeStart.getSymbol().getLine() - 1,
+                    codeStart.getSymbol().getCharPositionInLine(),
                     "function definition of " + function.getBareName(),
                     ctx -> db.addAnalysisLauncher(new FuncProcAnalysisLauncher(
                             function, ctx, funcArgs)),
