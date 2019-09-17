@@ -172,7 +172,8 @@ public class CreateFunction extends ParserAbstract {
         // Adding contexts of function arguments for analysis.
 
         int startOffset = codeStart.getSymbol().getStartIndex();
-        int startLine = codeStart.getSymbol().getLine();
+        int startLine = codeStart.getSymbol().getLine() - 1;
+        int inLineOffset = codeStart.getSymbol().getCharPositionInLine();
         String name = "function definition of " + function.getBareName();
         List<AntlrError> err = new ArrayList<>();
 
@@ -180,18 +181,16 @@ public class CreateFunction extends ParserAbstract {
             AntlrParser.submitAntlrTask(antlrTasks, () -> AntlrParser.makeBasicParser(
                     SQLParser.class, def, name, err).sql(),
                     ctx -> {
-                        err.stream().map(e -> e.copyWithOffset(
-                                startOffset - ctx.getParent().getStart().getStartIndex(),
-                                startLine - ctx.getParent().getStart().getLine())).forEach(errors::add);
+                        err.stream().map(e -> e.copyWithOffset(startOffset,
+                                startLine, inLineOffset)).forEach(errors::add);
                         db.addAnalysisLauncher(new FuncProcAnalysisLauncher(function, ctx, funcArgs));
                     });
         } else if ("PLPGSQL".equalsIgnoreCase(language)) {
             AntlrParser.submitAntlrTask(antlrTasks, () -> AntlrParser.makeBasicParser(
                     SQLParser.class, def, name, err).plpgsql_function(),
                     ctx -> {
-                        err.stream().map(e -> e.copyWithOffset(
-                                startOffset - ctx.getParent().getStart().getStartIndex(),
-                                startLine - ctx.getParent().getStart().getLine())).forEach(errors::add);
+                        err.stream().map(e -> e.copyWithOffset(startOffset,
+                                startLine, inLineOffset)).forEach(errors::add);
                         db.addAnalysisLauncher(new FuncProcAnalysisLauncher(function, ctx, funcArgs));
                     });
         }

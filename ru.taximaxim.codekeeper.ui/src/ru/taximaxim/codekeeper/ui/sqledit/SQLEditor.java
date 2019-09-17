@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.text.MessageFormat;
@@ -65,6 +64,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.ide.ResourceUtil;
+import org.eclipse.ui.progress.IProgressConstants2;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.ChainedPreferenceStore;
 import org.eclipse.ui.texteditor.ContentAssistAction;
@@ -89,6 +89,7 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.CMD_VARS;
 import ru.taximaxim.codekeeper.ui.UIConsts.CONTEXT;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.LANGUAGE;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -236,9 +237,14 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             if (res == null || !UIProjectLoader.isInProject(res)) {
                 refreshParser(getParser(), res, new NullProgressMonitor());
             }
-        } catch (Exception ex) {
+        } catch (InterruptedException | IOException | CoreException ex) {
             Log.log(ex);
         }
+    }
+
+    @Override
+    public boolean isSaveAsAllowed() {
+        return true;
     }
 
     @Override
@@ -248,6 +254,18 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         ContentAssistAction action = new ContentAssistAction(bundle, "contentAssist.", this); //$NON-NLS-1$
         action.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
         setAction(CONTENT_ASSIST, action);
+    }
+
+    public void changeLanguage(String language) {
+        IResource res = ResourceUtil.getResource(getEditorInput());
+        try {
+            if (res == null || !UIProjectLoader.isInProject(res)) {
+                isMsSql = LANGUAGE.MS_SQL.equals(language);
+                refreshParser(getParser(), res, null);
+            }
+        } catch (InterruptedException | IOException | CoreException ex) {
+            Log.log(ex);
+        }
     }
 
     @Override
@@ -348,11 +366,8 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         }
 
         PgDbParser parser = new PgDbParser();
-        if (refreshParser(parser, res, null)) {
-            return parser;
-        }
-
-        throw new PartInitException("Unknown editor input: " + in); //$NON-NLS-1$
+        refreshParser(parser, res, null);
+        return parser;
     }
 
     /**
@@ -360,7 +375,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
      * @param {@link IFileEditorInput} {@link IResource} or null
      * @return true if refresh was triggered successfully
      */
-    private boolean refreshParser(PgDbParser parser, IResource res, IProgressMonitor monitor)
+    private void refreshParser(PgDbParser parser, IResource res, IProgressMonitor monitor)
             throws InterruptedException, IOException, CoreException {
         if (res instanceof IFile) {
             IFile file = (IFile) res;
@@ -369,23 +384,22 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
             if (prefs != null
                     && prefs.getBoolean(PROJ_PREF.DISABLE_PARSER_IN_EXTERNAL_FILES, false)) {
-                return true;
-            } else if (proj.hasNature(NATURE.ID)) {
-                parser.getObjFromProjFile(file, monitor, proj.hasNature(NATURE.MS));
-                return true;
+                return;
+            }
+
+            if (proj.hasNature(NATURE.ID)) {
+                parser.getObjFromProjFile(file, monitor, isMsSql);
+                return;
             }
         }
 
         IEditorInput in = getEditorInput();
-        if (in instanceof IURIEditorInput) {
-            IURIEditorInput uri = (IURIEditorInput) in;
-            Path externalTmpFile = Paths.get(uri.getURI());
-            IDocument document = getDocumentProvider().getDocument(getEditorInput());
+        if (in.exists() && in instanceof IURIEditorInput) {
+            IDocument document = getDocumentProvider().getDocument(in);
             InputStream stream = new ByteArrayInputStream(document.get().getBytes(StandardCharsets.UTF_8));
-            parser.fillRefsFromInputStream(stream, externalTmpFile.toString(), isMsSql, monitor);
-            return true;
+            String name = Paths.get(((IURIEditorInput) in).getURI()).toString();
+            parser.fillRefsFromInputStream(stream, name, isMsSql, monitor);
         }
-        return false;
     }
 
     PgDbParser getParser() {
@@ -485,6 +499,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         }
 
         scriptThreadJobWrapper = new ScriptThreadJobWrapper(dbInfo, parsers[0]);
+        scriptThreadJobWrapper.setProperty(IProgressConstants2.SHOW_IN_TASKBAR_ICON_PROPERTY, Boolean.TRUE);
         scriptThreadJobWrapper.setUser(true);
         scriptThreadJobWrapper.schedule();
 

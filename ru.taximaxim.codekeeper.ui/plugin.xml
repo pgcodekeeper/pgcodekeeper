@@ -89,6 +89,11 @@
         </command>
         <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            id="ru.taximaxim.codekeeper.ui.command.OpenSQLEditor"
+            name="%command.commandname.OpenSQLEditor">
+        </command>
+        <command
+            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
             defaultHandler="ru.taximaxim.codekeeper.ui.handlers.GetSystemObjects"
             id="ru.taximaxim.codekeeper.ui.command.GetSystemObjects"
             name="%command.commandname.GetSystemObjects">
@@ -181,6 +186,10 @@
                     </with>
                 </and>
             </enabledWhen>
+        </handler>
+        <handler
+            class="ru.taximaxim.codekeeper.ui.handlers.OpenSQLEditor"
+            commandId="ru.taximaxim.codekeeper.ui.command.OpenSQLEditor">
         </handler>
         <handler
             class="ru.taximaxim.codekeeper.ui.handlers.CancelDdl"
@@ -394,13 +403,23 @@
                     visible="true">
                 </separator>
                 <command
+                    commandId="ru.taximaxim.codekeeper.ui.command.OpenSQLEditor"
+                    icon="IMG_OBJ_FILE"
+                    label="%command.commandname.OpenSQLEditor"
+                    style="push">
+                </command>
+                <separator
+                    name="ru.taximaxim.codekeeper.ui.separator4"
+                    visible="true">
+                </separator>
+                <command
                     commandId="ru.taximaxim.codekeeper.ui.command.Diff"
                     label="%command.label.diffWizard"
                     mnemonic="%command.mnemonic.diffWizard"
                     style="push">
                 </command>
                 <separator
-                    name="ru.taximaxim.codekeeper.ui.separator4"
+                    name="ru.taximaxim.codekeeper.ui.separator5"
                     visible="true">
                 </separator>
                 <command
@@ -409,7 +428,7 @@
                     style="push">
                 </command>
                 <separator
-                    name="ru.taximaxim.codekeeper.ui.separator5"
+                    name="ru.taximaxim.codekeeper.ui.separator6"
                     visible="true">
                 </separator>
                 <command
@@ -541,6 +560,28 @@
                                 </equals>
                             </or>
                         </with>
+                    </visibleWhen>
+                </command>
+                <command
+                    commandId="ru.taximaxim.codekeeper.ui.command.OpenSQLEditor"
+                    icon="IMG_OBJ_FILE"
+                    label="%command.commandname.OpenSQLEditor"
+                    style="push">
+                    <visibleWhen>
+                         <or>
+                            <with variable="activeWorkbenchWindow.activePerspective">
+                                <equals value="ru.taximaxim.codekeeper.ui.mainperspective">
+                                </equals>
+                            </with>
+                            <with variable="activeEditorId">
+                                <or>
+                                    <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
+                                    </equals>
+                                    <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
+                                    </equals>
+                                </or>
+                            </with>
+                        </or>
                     </visibleWhen>
                 </command>
             </toolbar>
@@ -743,6 +784,17 @@
             id="ru.taximaxim.codekeeper.ui.mockdatawizard"
             name="%wizard.name.mockDataWizard"
             project="false">
+            <selection class="org.eclipse.core.resources.IFile" />
+        </wizard>
+        <wizard
+              canFinishEarly="true"
+              category="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
+              class="ru.taximaxim.codekeeper.ui.pgdbproject.NewSQLEditorWizard"
+              hasPages="false"
+              icon="IMG_OBJ_FILE"
+              id="ru.taximaxim.codekeeper.ui.newsqleditorwizard"
+              name="%wizard.name.newSQLEditorWizard"
+              project="false">
             <selection class="org.eclipse.core.resources.IFile" />
         </wizard>
     </extension>
