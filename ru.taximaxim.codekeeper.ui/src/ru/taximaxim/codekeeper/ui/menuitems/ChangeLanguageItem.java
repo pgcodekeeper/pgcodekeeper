@@ -36,8 +36,22 @@ public class ChangeLanguageItem extends ContributionItem {
     private int width = -1;
     private int height = -1;
 
-    private Action msAction;
-    private Action pgAction;
+    private final Action msAction = new Action(LANGUAGE.MS_SQL, IAction.AS_RADIO_BUTTON) {
+
+        @Override
+        public void run() {
+            editor.changeLanguage(LANGUAGE.MS_SQL);
+            updateLabel(LANGUAGE.MS_SQL);
+        }
+    };
+    private final Action pgAction = new Action(LANGUAGE.POSTGRESQL, IAction.AS_RADIO_BUTTON) {
+
+        @Override
+        public void run() {
+            editor.changeLanguage(LANGUAGE.POSTGRESQL);
+            updateLabel(LANGUAGE.POSTGRESQL);
+        }
+    };
 
     private SQLEditor editor;
 
@@ -105,28 +119,8 @@ public class ChangeLanguageItem extends ContributionItem {
 
     private void createContextMenu(Composite control) {
         MenuManager contextMenu = new MenuManager();
-
-        pgAction = new Action(LANGUAGE.POSTGRESQL, IAction.AS_RADIO_BUTTON) {
-
-            @Override
-            public void run() {
-                editor.changeLanguage(LANGUAGE.POSTGRESQL);
-                updateLabel(LANGUAGE.POSTGRESQL);
-            }
-        };
-
-        msAction = new Action(LANGUAGE.MS_SQL, IAction.AS_RADIO_BUTTON) {
-
-            @Override
-            public void run() {
-                editor.changeLanguage(LANGUAGE.MS_SQL);
-                updateLabel(LANGUAGE.MS_SQL);
-            }
-        };
-
         contextMenu.add(pgAction);
         contextMenu.add(msAction);
-
         control.setMenu(contextMenu.createContextMenu(control));
     }
 
