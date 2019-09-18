@@ -12,9 +12,11 @@ import java.io.InputStream;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -57,7 +59,7 @@ public class PgDumpLoader {
 
     private final List<AntlrError> errors = new ArrayList<>();
 
-    private final List<List<QueryLocation>> batches = new ArrayList<>();
+    private final Map<String, Set<PgObjLocation>> batches = new HashMap<>();
 
     private ParserListenerMode mode = ParserListenerMode.NORMAL;
     private List<StatementBodyContainer> statementBodyReferences;
@@ -129,7 +131,7 @@ public class PgDumpLoader {
         this(inputFile, args, new NullProgressMonitor(), 0);
     }
 
-    public List<List<QueryLocation>> batch() {
+    public Map<String, Set<PgObjLocation>> batch() {
         return batches;
     }
 

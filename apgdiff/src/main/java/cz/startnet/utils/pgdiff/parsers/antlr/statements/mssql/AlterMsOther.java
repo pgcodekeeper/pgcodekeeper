@@ -6,7 +6,6 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
-import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_sequenceContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_alterContext;
@@ -49,8 +48,8 @@ public class AlterMsOther extends ParserAbstract {
     }
 
     @Override
-    protected QueryLocation fillQueryLocation(ParserRuleContext ctx, CommonTokenStream tokenStream) {
-        QueryLocation loc = super.fillQueryLocation(ctx, tokenStream);
+    protected PgObjLocation fillQueryLocation(ParserRuleContext ctx, CommonTokenStream tokenStream) {
+        PgObjLocation loc = super.fillQueryLocation(ctx, tokenStream);
         Alter_sequenceContext alterSeqCtx = ((Schema_alterContext) ctx).alter_sequence();
         if (alterSeqCtx != null && !alterSeqCtx.RESTART().isEmpty()) {
             loc.setWarning(DangerStatement.RESTART_WITH);

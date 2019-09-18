@@ -5,7 +5,6 @@ import java.util.Arrays;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Enable_disable_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Names_referencesContext;
@@ -15,6 +14,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -53,7 +53,7 @@ public class DisableMsTrigger extends ParserAbstract {
     }
 
     @Override
-    protected QueryLocation fillQueryLocation(ParserRuleContext ctx, CommonTokenStream tokenStream) {
+    protected PgObjLocation fillQueryLocation(ParserRuleContext ctx, CommonTokenStream tokenStream) {
         StringBuilder sb = new StringBuilder();
         Enable_disable_triggerContext ctxEnableDisableTr = (Enable_disable_triggerContext) ctx;
         sb.append(ctxEnableDisableTr.DISABLE() != null ? "DISABLE " : "ENABLE ")
@@ -63,8 +63,8 @@ public class DisableMsTrigger extends ParserAbstract {
         Names_referencesContext triggers = ctxEnableDisableTr.names_references();
         Qualified_nameContext parent = ctxEnableDisableTr.qualified_name();
         if (triggers == null || parent == null) {
-            QueryLocation loc = new QueryLocation(sb.toString(), ctx, getFullCtxText(ctx));
-            db.addToBatch(loc);
+            PgObjLocation loc = new PgObjLocation(sb.toString(), ctx, getFullCtxText(ctx));
+            db.addToQueries(loc);
             return loc;
         }
 
@@ -79,8 +79,8 @@ public class DisableMsTrigger extends ParserAbstract {
         }
         sb.setLength(sb.length() - 2);
 
-        QueryLocation loc = new QueryLocation(sb.toString(), ctx, getFullCtxText(ctx));
-        db.addToBatch(loc);
+        PgObjLocation loc = new PgObjLocation(sb.toString(), ctx, getFullCtxText(ctx));
+        db.addToQueries(loc);
         return loc;
     }
 }

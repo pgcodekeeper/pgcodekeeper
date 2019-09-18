@@ -6,7 +6,6 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
-import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_stmt_for_psqlContext;
@@ -33,8 +32,8 @@ public class UpdateStatement extends ParserAbstract {
     }
 
     @Override
-    protected QueryLocation fillQueryLocation(ParserRuleContext ctx, CommonTokenStream tokenStream) {
-        QueryLocation loc = super.fillQueryLocation(ctx, tokenStream);
+    protected PgObjLocation fillQueryLocation(ParserRuleContext ctx, CommonTokenStream tokenStream) {
+        PgObjLocation loc = super.fillQueryLocation(ctx, tokenStream);
         loc.setWarning(DangerStatement.UPDATE);
         return loc;
     }

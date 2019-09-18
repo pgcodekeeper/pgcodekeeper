@@ -2,13 +2,15 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.util.Objects;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.ContextLocation;
 import cz.startnet.utils.pgdiff.DangerStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgObjLocation extends ContextLocation {
 
-    private static final long serialVersionUID = -3965569366493640712L;
+    private static final long serialVersionUID = 1560794454982891339L;
 
     private DangerStatement danger;
     private String comment = "";
@@ -16,6 +18,7 @@ public class PgObjLocation extends ContextLocation {
     private final String action;
 
     private final GenericColumn gObj;
+    private String sql;
 
     public PgObjLocation(GenericColumn gObj, String action,
             int offset, int lineNumber, int charPositionInLine, String filePath) {
@@ -27,6 +30,18 @@ public class PgObjLocation extends ContextLocation {
     public PgObjLocation(GenericColumn gObj, String action,
             int offset, int lineNumber, String filePath) {
         this(gObj, action, offset, lineNumber, 1, filePath);
+    }
+
+    public PgObjLocation(String action, ParserRuleContext ctx, String sql) {
+        this(null, action, ctx.getStart().getStartIndex(), ctx.getStart().getLine(),
+                ctx.getStart().getCharPositionInLine(), null);
+        this.sql = sql;
+    }
+
+    public PgObjLocation(GenericColumn gObj, String action, int offset, int lineNumber,
+            int charPositionInLine, String filePath, String sql) {
+        this(gObj, action, offset, lineNumber, charPositionInLine, filePath);
+        this.sql = sql;
     }
 
     public PgObjLocation(String filePath) {
@@ -51,7 +66,8 @@ public class PgObjLocation extends ContextLocation {
             return Objects.equals(loc.getGenericColumn(), getGenericColumn())
                     && getOffset() == loc.getOffset()
                     && getLineNumber() == loc.getLineNumber()
-                    && Objects.equals(loc.getFilePath(), getFilePath());
+                    && Objects.equals(loc.getFilePath(), getFilePath())
+                    && Objects.equals(loc.getSql(), getSql());
         }
         return false;
     }
@@ -69,6 +85,7 @@ public class PgObjLocation extends ContextLocation {
         result = prime * result + getOffset();
         result = prime * result + getLineNumber();
         result = prime * result + ((getFilePath() == null) ? 0 : getFilePath().hashCode());
+        result = prime * result + ((getSql() == null) ? 0 : getSql().hashCode());
         return result;
     }
 
@@ -105,6 +122,10 @@ public class PgObjLocation extends ContextLocation {
 
     public GenericColumn getGenericColumn() {
         return gObj;
+    }
+
+    public String getSql() {
+        return sql;
     }
 
     public String getObjName() {

@@ -7,7 +7,6 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
-import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Column_def_table_constraintsContext;
@@ -93,8 +92,8 @@ public class AlterMsTable extends TableAbstract {
     }
 
     @Override
-    protected QueryLocation fillQueryLocation(ParserRuleContext ctx, CommonTokenStream tokenStream) {
-        QueryLocation loc = super.fillQueryLocation(ctx, tokenStream);
+    protected PgObjLocation fillQueryLocation(ParserRuleContext ctx, CommonTokenStream tokenStream) {
+        PgObjLocation loc = super.fillQueryLocation(ctx, tokenStream);
         Alter_tableContext alterTblCtx  = ((Schema_alterContext) ctx).alter_table();
         if (alterTblCtx.DROP() != null && alterTblCtx.COLUMN() != null) {
             loc.setWarning(DangerStatement.DROP_COLUMN);

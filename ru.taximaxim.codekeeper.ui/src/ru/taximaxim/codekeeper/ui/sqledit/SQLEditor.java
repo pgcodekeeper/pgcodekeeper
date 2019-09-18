@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 
@@ -79,7 +80,6 @@ import cz.startnet.utils.pgdiff.IProgressReporter;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcMsConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
-import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.ScriptParser;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -541,7 +541,7 @@ implements IResourceChangeListener, IErrorPositionSetter {
 
             IProgressReporter reporter = new UiProgressReporter(monitor, SQLEditor.this);
             try (IProgressReporter toClose = reporter) {
-                List<List<QueryLocation>> batches = parser.batch();
+                Map<String, Set<PgObjLocation>> batches = parser.batch();
                 new JdbcRunner(monitor).runBatches(connector, batches, reporter);
                 ProjectEditorDiffer.notifyDbChanged(dbInfo);
                 return Status.OK_STATUS;

@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -15,13 +16,15 @@ import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
-import cz.startnet.utils.pgdiff.loader.QueryLocation;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 
 public class ScriptParser {
 
+    public static final String SCRIPT_KEY = "script";
+
     private final String script;
 
-    private final List<List<QueryLocation>> batches;
+    private final Map<String, Set<PgObjLocation>> batches;
     private final List<AntlrError> errors;
     private final Set<DangerStatement> dangerStatements;
 
@@ -34,16 +37,15 @@ public class ScriptParser {
                 () -> new ByteArrayInputStream(script.getBytes(StandardCharsets.UTF_8)),
                 name, args, new NullProgressMonitor(), 0);
         loader.setMode(ParserListenerMode.SCRIPT);
-        batches = loader.load().getBatches();
-        dangerStatements = batches.stream()
-                .flatMap(List<QueryLocation>::stream)
-                .filter(QueryLocation::isDanger)
-                .map(QueryLocation::getDanger)
+        batches = loader.load().getObjDefinitions();
+        dangerStatements = batches.get(SCRIPT_KEY).stream()
+                .filter(PgObjLocation::isDanger)
+                .map(PgObjLocation::getDanger)
                 .collect(Collectors.toSet());
         errors = loader.getErrors();
     }
 
-    public List<List<QueryLocation>> batch() {
+    public Map<String, Set<PgObjLocation>> batch() {
         return batches;
     }
 

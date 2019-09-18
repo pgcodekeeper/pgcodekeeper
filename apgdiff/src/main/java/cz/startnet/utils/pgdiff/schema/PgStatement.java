@@ -32,7 +32,8 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  */
 public abstract class PgStatement implements IStatement, IHashable {
     //TODO move to MS SQL statement abstract class.
-    public static final String GO = "\nGO";
+    public static final String strGO = "GO";
+    public static final String GO = "\n" + strGO;
     protected final String name;
     protected String owner;
     protected String comment;

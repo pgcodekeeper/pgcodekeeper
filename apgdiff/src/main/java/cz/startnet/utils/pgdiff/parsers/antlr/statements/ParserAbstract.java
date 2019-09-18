@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -15,7 +16,6 @@ import org.antlr.v4.runtime.misc.Interval;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
-import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
@@ -309,8 +309,8 @@ public abstract class ParserAbstract {
                 StatementActions.CREATE, false, null);
         if (loc != null) {
             child.setLocation(loc);
-            db.getObjDefinitions().computeIfAbsent(fileName, k -> new HashSet<>()).add(loc);
-            db.getObjReferences().computeIfAbsent(fileName, k -> new HashSet<>()).add(loc);
+            db.getObjDefinitions().computeIfAbsent(fileName, k -> new LinkedHashSet<>()).add(loc);
+            db.getObjReferences().computeIfAbsent(fileName, k -> new LinkedHashSet<>()).add(loc);
         }
     }
 
@@ -511,13 +511,13 @@ public abstract class ParserAbstract {
     }
 
     /**
-     * Fills the 'QueryLocation'-object with query of statement and it's position
-     * in the script from statement context, and then puts filled 'QueryLocation'-object
+     * Fills the 'PgObjLocation'-object with query of statement and it's position
+     * in the script from statement context, and then puts filled 'PgObjLocation'-object
      * to the batch.
      */
-    protected QueryLocation fillQueryLocation(ParserRuleContext ctx, CommonTokenStream tokenStream) {
-        QueryLocation loc = new QueryLocation(getStmtAction(ctx, tokenStream), ctx, getFullCtxText(ctx));
-        db.addToBatch(loc);
+    protected PgObjLocation fillQueryLocation(ParserRuleContext ctx, CommonTokenStream tokenStream) {
+        PgObjLocation loc = new PgObjLocation(getStmtAction(ctx, tokenStream), ctx, getFullCtxText(ctx));
+        db.addToQueries(loc);
         return loc;
     }
 

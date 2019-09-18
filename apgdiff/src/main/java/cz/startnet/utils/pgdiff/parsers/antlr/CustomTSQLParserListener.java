@@ -4,10 +4,10 @@ import java.util.List;
 import java.util.Locale;
 
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
-import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Another_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.BatchContext;
@@ -51,6 +51,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.DisableMsTrigger;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.DropMsStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.UpdateMsStatement;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class CustomTSQLParserListener extends CustomParserListener
 implements TSqlContextProcessor {
@@ -74,20 +76,22 @@ implements TSqlContextProcessor {
             Sql_clausesContext clauses = b.sql_clauses();
             Batch_statementContext batchSt;
             if (clauses != null) {
-                startBatch();
                 for (St_clauseContext st : clauses.st_clause()) {
                     clause(st);
                 }
+                endBatch(clauses);
             } else if ((batchSt = b.batch_statement()) != null) {
-                startBatch();
                 batchStatement(batchSt, stream);
+                endBatch(batchSt);
             }
         }
     }
 
-    private void startBatch() {
+    private void endBatch(ParserRuleContext previousObjCtx) {
         if (isScriptMode) {
-            database.startBatch();
+            database.addToQueries(new PgObjLocation(null, PgStatement.strGO,
+                    previousObjCtx.getStop().getStopIndex() + 1,
+                    previousObjCtx.getStop().getLine() + 1, 0, null, PgStatement.strGO));
         }
     }
 
@@ -109,7 +113,7 @@ implements TSqlContextProcessor {
             } else if ((drop = ddl.schema_drop()) != null) {
                 safeParseStatement(new DropMsStatement(drop, db), drop);
             } else if (isScriptMode) {
-                db.addToBatch(new QueryLocation(ParserAbstract.getMsStmtAction(ddl, stream),
+                db.addToQueries(new PgObjLocation(ParserAbstract.getMsStmtAction(ddl, stream),
                         ddl, ParserAbstract.getFullCtxText(ddl)));
             }
         } else if ((dml = st.dml_clause()) != null) {
@@ -117,7 +121,7 @@ implements TSqlContextProcessor {
             if (update != null) {
                 safeParseStatement(new UpdateMsStatement(update, db), update);
             } else if (isScriptMode) {
-                db.addToBatch(new QueryLocation(ParserAbstract.getMsStmtAction(dml, stream),
+                db.addToQueries(new PgObjLocation(ParserAbstract.getMsStmtAction(dml, stream),
                         dml, ParserAbstract.getFullCtxText(dml)));
             }
         } else if ((ast = st.another_statement()) != null) {
@@ -125,7 +129,7 @@ implements TSqlContextProcessor {
             Security_statementContext security;
             if (set != null) {
                 if (isScriptMode) {
-                    db.addToBatch(new QueryLocation(ParserAbstract.getMsStmtAction(set, stream),
+                    db.addToQueries(new PgObjLocation(ParserAbstract.getMsStmtAction(set, stream),
                             set, ParserAbstract.getFullCtxText(set)));
                 } else {
                     set(set);
@@ -134,11 +138,11 @@ implements TSqlContextProcessor {
                     && security.rule_common() != null) {
                 safeParseStatement(new CreateMsRule(security.rule_common(), db), security);
             } else if (isScriptMode) {
-                db.addToBatch(new QueryLocation(ParserAbstract.getMsStmtAction(ast, stream),
+                db.addToQueries(new PgObjLocation(ParserAbstract.getMsStmtAction(ast, stream),
                         ast, ParserAbstract.getFullCtxText(ast)));
             }
         } else if (isScriptMode) {
-            db.addToBatch(new QueryLocation(ParserAbstract.getMsStmtAction(st, stream),
+            db.addToQueries(new PgObjLocation(ParserAbstract.getMsStmtAction(st, stream),
                     st, ParserAbstract.getFullCtxText(st)));
         }
     }
@@ -164,7 +168,7 @@ implements TSqlContextProcessor {
         } else if (body.create_or_alter_trigger() != null) {
             p = new CreateMsTrigger(ctx, db, ansiNulls, quotedIdentifier, stream);
         } else if (isScriptMode) {
-            db.addToBatch(new QueryLocation(ParserAbstract.getMsStmtAction(ctx, stream),
+            db.addToQueries(new PgObjLocation(ParserAbstract.getMsStmtAction(ctx, stream),
                     ctx, ParserAbstract.getFullCtxText(ctx)));
             return;
         } else {
@@ -196,7 +200,7 @@ implements TSqlContextProcessor {
         } else if (ctx.create_type() != null) {
             p = new CreateMsType(ctx.create_type(), db);
         } else if (isScriptMode) {
-            db.addToBatch(new QueryLocation(ParserAbstract.getMsStmtAction(ctx, stream),
+            db.addToQueries(new PgObjLocation(ParserAbstract.getMsStmtAction(ctx, stream),
                     ctx, ParserAbstract.getFullCtxText(ctx)));
             return;
         } else {
@@ -220,7 +224,7 @@ implements TSqlContextProcessor {
                 || ctx.alter_sequence() != null) {
             p = new AlterMsOther(ctx, db);
         } else if (isScriptMode) {
-            db.addToBatch(new QueryLocation(ParserAbstract.getMsStmtAction(ctx, stream),
+            db.addToQueries(new PgObjLocation(ParserAbstract.getMsStmtAction(ctx, stream),
                     ctx, ParserAbstract.getFullCtxText(ctx)));
             return;
         } else {

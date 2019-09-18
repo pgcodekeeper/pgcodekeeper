@@ -6,7 +6,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -23,6 +24,7 @@ import cz.startnet.utils.pgdiff.loader.callables.QueriesBatchCallable;
 import cz.startnet.utils.pgdiff.loader.callables.QueryCallable;
 import cz.startnet.utils.pgdiff.loader.callables.ResultSetCallable;
 import cz.startnet.utils.pgdiff.loader.callables.StatementCallable;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.DaemonThreadFactory;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
@@ -78,7 +80,7 @@ public class JdbcRunner {
      * @throws IOException
      * @throws InterruptedException
      */
-    public void runBatches(JdbcConnector connector, List<List<QueryLocation>> batches,
+    public void runBatches(JdbcConnector connector, Map<String, Set<PgObjLocation>> batches,
             IProgressReporter reporter) throws SQLException, IOException, InterruptedException {
         try (Connection connection = connector.getConnection();
                 Statement st = connection.createStatement()) {

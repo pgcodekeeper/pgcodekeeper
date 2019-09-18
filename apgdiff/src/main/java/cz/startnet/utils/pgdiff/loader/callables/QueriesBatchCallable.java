@@ -8,6 +8,8 @@ import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
@@ -19,18 +21,20 @@ import com.microsoft.sqlserver.jdbc.SQLServerException;
 
 import cz.startnet.utils.pgdiff.IProgressReporter;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.loader.jdbc.JdbcType;
+import cz.startnet.utils.pgdiff.parsers.antlr.ScriptParser;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
 
 public class QueriesBatchCallable extends StatementCallable<String> {
 
-    private final List<List<QueryLocation>> batches;
+    private final Map<String, Set<PgObjLocation>> batches;
     private final IProgressMonitor monitor;
     private final Connection connection;
     private final IProgressReporter reporter;
 
-    public QueriesBatchCallable(Statement st, List<List<QueryLocation>> batches,
+    public QueriesBatchCallable(Statement st, Map<String, Set<PgObjLocation>> batches,
             IProgressMonitor monitor, IProgressReporter reporter, Connection connection) {
         super(st, null);
         this.batches = batches;
@@ -45,11 +49,14 @@ public class QueriesBatchCallable extends StatementCallable<String> {
         String currQuery = null;
         int currQueryLine = 1;
         int currQueryOffset = 0;
+
+        List<List<PgObjLocation>> batchesList = getListBatchesFromSetBatches();
+
         try {
-            if (batches.size() == 1) {
-                List<QueryLocation> queries = batches.get(0);
+            if (batchesList.size() == 1) {
+                List<PgObjLocation> queries = batchesList.get(0);
                 subMonitor.setWorkRemaining(queries.size());
-                for (QueryLocation query : queries) {
+                for (PgObjLocation query : queries) {
                     PgDiffUtils.checkCancelled(monitor);
                     currQuery = query.getSql();
                     currQueryLine = query.getLineNumber();
@@ -59,20 +66,20 @@ public class QueriesBatchCallable extends StatementCallable<String> {
                     subMonitor.worked(1);
                 }
             } else {
-                subMonitor.setWorkRemaining(batches.size());
+                subMonitor.setWorkRemaining(batchesList.size());
                 connection.setAutoCommit(false);
-                for (List<QueryLocation> queriesList : batches) {
+                for (List<PgObjLocation> queriesList : batchesList) {
                     PgDiffUtils.checkCancelled(monitor);
                     // in case we're executing a real batch after a single-statement one
                     currQuery = null;
                     if (queriesList.size() == 1) {
-                        QueryLocation query = queriesList.get(0);
+                        PgObjLocation query = queriesList.get(0);
                         currQuery = query.getSql();
                         currQueryLine = query.getLineNumber();
                         currQueryOffset = query.getOffset();
                         executeSingleStatement(query);
                     } else {
-                        for (QueryLocation query : queriesList) {
+                        for (PgObjLocation query : queriesList) {
                             currQuery = query.getSql();
                             currQueryLine = query.getLineNumber();
                             currQueryOffset = query.getOffset();
@@ -131,6 +138,8 @@ public class QueriesBatchCallable extends StatementCallable<String> {
             }
 
             reporter.writeError(sb.toString());
+        } finally {
+            batchesList.clear();
         }
         // BatchUpdateException
         // MS SQL driver returns a useless batch update status array
@@ -140,7 +149,27 @@ public class QueriesBatchCallable extends StatementCallable<String> {
         return JDBC_CONSTS.JDBC_SUCCESS;
     }
 
-    private void executeSingleStatement(QueryLocation query) throws SQLException {
+    private List<List<PgObjLocation>> getListBatchesFromSetBatches() {
+        List<List<PgObjLocation>> batchesList = new ArrayList<>();
+        batchesList.add(new ArrayList<>());
+
+        batches.get(ScriptParser.SCRIPT_KEY).stream().forEach(loc -> {
+            if (PgStatement.strGO.equalsIgnoreCase(loc.getAction())) {
+                batchesList.add(new ArrayList<>());
+            } else {
+                batchesList.get(batchesList.size() - 1).add(loc);
+            }
+        });
+
+        List<PgObjLocation> lastBatch = batchesList.get(batchesList.size() - 1);
+        if (lastBatch.isEmpty()) {
+            batchesList.remove(lastBatch);
+        }
+
+        return batchesList;
+    }
+
+    private void executeSingleStatement(PgObjLocation query) throws SQLException {
         if (st.execute(query.getSql())) {
             writeResult(query.getSql());
         }

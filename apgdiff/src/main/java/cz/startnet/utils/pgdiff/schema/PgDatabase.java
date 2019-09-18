@@ -8,6 +8,7 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -17,8 +18,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
-import cz.startnet.utils.pgdiff.loader.QueryLocation;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.parsers.antlr.ScriptParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.AbstractAnalysisLauncher;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -51,7 +52,6 @@ public class PgDatabase extends PgStatement {
     private PgDiffArguments arguments;
 
     private final List<PgOverride> overrides = new ArrayList<>();
-    private final List<List<QueryLocation>> batches = new ArrayList<>();
 
     private SupportedVersion postgresVersion;
 
@@ -88,16 +88,8 @@ public class PgDatabase extends PgStatement {
         return objReferences;
     }
 
-    public List<List<QueryLocation>> getBatches() {
-        return batches;
-    }
-
-    public void startBatch() {
-        batches.add(new ArrayList<>());
-    }
-
-    public void addToBatch(QueryLocation loc) {
-        batches.get(batches.size() - 1).add(loc);
+    public void addToQueries(PgObjLocation loc) {
+        objDefinitions.computeIfAbsent(ScriptParser.SCRIPT_KEY, k -> new LinkedHashSet<>()).add(loc);
     }
 
     public List<AbstractAnalysisLauncher> getAnalysisLaunchers() {
