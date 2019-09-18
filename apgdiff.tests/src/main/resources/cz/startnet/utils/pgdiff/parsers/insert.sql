@@ -609,3 +609,14 @@ WITH cte1 AS (INSERT INTO t1 VALUES (21, 'Fail') RETURNING *) SELECT * FROM cte1
 WITH cte1 AS (INSERT INTO t1 VALUES (20, 'Success') RETURNING *) SELECT * FROM cte1;
 INSERT INTO combocidtest SELECT 1 LIMIT 0;
 INSERT INTO trunc_stats_test DEFAULT VALUES;
+INSERT INTO xmltest VALUES (5, '<menu><name>Molson</name><cost>free</cost></menu>'::xml);
+INSERT INTO query VALUES ('/menu/beers/cost[text() = ''lots'']');
+INSERT INTO xmltest2 VALUES('<d><r><ac>1</ac></r></d>', 'A');
+INSERT INTO xmltest VALUES (5, '<menu><name>Molson</name><cost>free</cost></menu>'::xml);
+INSERT INTO xmldata VALUES('<ROWS>
+<ROW id="1">
+  <COUNTRY_ID>SG</COUNTRY_ID>
+  <COUNTRY_NAME>Singapore</COUNTRY_NAME>
+  <REGION_ID>3</REGION_ID><SIZE unit="km">791</SIZE>
+</ROW>
+</ROWS>');

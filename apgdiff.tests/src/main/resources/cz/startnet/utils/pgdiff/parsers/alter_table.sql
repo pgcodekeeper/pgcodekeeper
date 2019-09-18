@@ -2566,3 +2566,8 @@ ALTER TABLE public.some_table
 ALTER TABLE public.some_table
     ADD CONSTRAINT xck EXCLUDE USING gist (public.f7() WITH &&)
     USING INDEX TABLESPACE test_tablespace WHERE ((c1 <> 0)) DEFERRABLE INITIALLY IMMEDIATE;
+ALTER TABLE persons ADD COLUMN comment text;
+ALTER TABLE persons DROP COLUMN name;
+ALTER TABLE persons RENAME COLUMN id TO num;
+ALTER TABLE persons ALTER COLUMN name TYPE varchar;
+ALTER TABLE persons INHERIT stuff;

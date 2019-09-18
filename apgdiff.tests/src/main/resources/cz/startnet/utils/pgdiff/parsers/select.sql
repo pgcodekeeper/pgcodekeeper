@@ -875,3 +875,245 @@ SELECT DISTINCT ON (string4, ten) string4, two, ten FROM tmp ORDER BY string4 us
 SELECT DISTINCT ON (string4, ten) string4, ten, two FROM tmp ORDER BY string4 using <, ten using >, two using <;
 select distinct on (1) floor(random()) as r, f1 from int4_tbl order by 1,2;
 SELECT c1, c2 FROM t1 WHERE c2 IN ('v', 'c', 'f', 'p', 'I') AND c3 <> 0;
+SELECT xmlcomment('hello');
+SELECT xmlcomment('test');
+SELECT xmlconcat(xmlcomment('hello'), xmlelement(NAME qux, 'foo'), xmlcomment('world'));
+SELECT xmlconcat('<foo/>', NULL, '<?xml version="1.1" standalone="no"?><bar/>');
+SELECT xmlconcat('<?xml version="1.1"?><foo/>', NULL, '<?xml version="1.1" standalone="no"?><bar/>');
+SELECT xmlelement(name element, xmlattributes (1 as one, 'deuce' as two), 'content');
+SELECT xmlelement(name element, xmlattributes ('unnamed and wrong'));
+SELECT xmlelement(name element, xmlelement(name nested, 'stuff'));
+SELECT xmlelement(name employee, xmlforest(name, age, salary as pay)) FROM emp;
+SELECT xmlelement(name duplicate, xmlattributes(1 as a, 2 as b, 3 as a));
+SELECT xmlelement(name num, 37);
+SELECT xmlelement(name foo, text 'bar');
+SELECT xmlelement(name foo, xml 'bar');
+SELECT xmlelement(name foo, text 'b<a/>r');
+SELECT xmlelement(name foo, xml 'b<a/>r');
+SELECT xmlelement(name foo, array[1, 2, 3]);
+SELECT xmlelement(name foo, bytea 'bar');
+SELECT xmlelement(name foo, xmlattributes(true as bar));
+SELECT xmlelement(name foo, xmlattributes('2009-04-09 00:24:37'::timestamp as bar));
+SELECT xmlelement(name foo, xmlattributes('infinity'::timestamp as bar));
+SELECT xmlelement(name foo, xmlattributes('<>&"''' as funny, xml 'b<a/>r' as funnier));
+SELECT xmlparse(content '<nosuchprefix:tag/>');
+SELECT xmlparse(document '   ');
+SELECT xmlparse(document '<abc>x</abc>');
+SELECT xmlpi(name foo);
+SELECT xmlpi(name xml);
+SELECT xmlpi(name xmlstuff);
+SELECT xmlpi(name foo, 'bar');
+SELECT xmlpi(name foo, 'in?>valid');
+SELECT xmlpi(name foo, null);
+SELECT xmlpi(name xml, null);
+SELECT xmlpi(name xmlstuff, null);
+SELECT xmlpi(name "xml-stylesheet", 'href="mystyle.css" type="text/css"');
+SELECT xmlpi(name foo, '   bar');
+SELECT xmlroot(xml '<foo/>', version no value, standalone no value);
+SELECT xmlroot(xml '<foo/>', version '2.0');
+SELECT xmlroot(xml '<foo/>', version no value, standalone yes);
+SELECT xmlroot(xml '<?xml version="1.1"?><foo/>', version no value, standalone yes);
+SELECT xmlroot(xmlroot(xml '<foo/>', version '1.0'), version '1.1', standalone no);
+SELECT xmlroot('<?xml version="1.1" standalone="yes"?><foo/>', version no value, standalone no);
+SELECT xmlroot('<?xml version="1.1" standalone="yes"?><foo/>', version no value, standalone no value);
+SELECT xmlroot('<?xml version="1.1" standalone="yes"?><foo/>', version no value);
+SELECT xmlroot (xmlelement (name gazonk, xmlattributes ('val' AS name, 1 + 1 AS num), 
+    xmlelement (NAME qux, 'foo')), version '1.0', standalone yes);
+SELECT xmlserialize(content data as character varying(20)) FROM xmltest;
+SELECT xmlserialize(content 'good' as char(10));
+SELECT xmlserialize(document 'bad' as text);
+SELECT xml '<foo>bar</foo>' IS DOCUMENT;
+SELECT xml '<foo>bar</foo><bar>foo</bar>' IS DOCUMENT;
+SELECT xml '<abc/>' IS NOT DOCUMENT;
+SELECT xml 'abc' IS NOT DOCUMENT;
+SELECT '<>' IS NOT DOCUMENT;
+SELECT xmlagg(data) FROM xmltest;
+SELECT xmlagg(data) FROM xmltest WHERE id > 10;
+SELECT xmlelement(name employees, xmlagg(xmlelement(name name, name))) FROM emp;
+SELECT xmlpi(name ":::_xml_abc135.%-&_");
+SELECT xmlpi(name "123");
+SELECT xpath('/value', data) FROM xmltest;
+SELECT xpath(NULL, NULL) IS NULL FROM xmltest;
+SELECT xpath('', '<!-- error -->');
+SELECT xpath('root', '<root/>');
+SELECT xmlexists('count(/nosuchtag)' PASSING BY REF '<root/>');
+SELECT xpath_exists('//town[text() = ''Cwmbran'']','<towns><town>Cwmbran</town></towns>'::xml);
+SELECT xpath_exists('count(/nosuchtag)', '<root/>'::xml);
+SELECT COUNT(id) FROM xmltest WHERE xmlexists('/menu/beer' PASSING data);
+SELECT COUNT(id) FROM xmltest WHERE xmlexists('/menu/beer' PASSING BY REF data BY REF);
+SELECT COUNT(id) FROM xmltest WHERE xmlexists('/menu/beers' PASSING BY REF data);
+SELECT COUNT(id) FROM xmltest WHERE xmlexists('/menu/beers/name[text() = ''Molson'']' PASSING BY REF data);
+SELECT COUNT(id) FROM xmltest WHERE xpath_exists('/menu/beer',data);
+SELECT COUNT(id) FROM xmltest WHERE xpath_exists('/menu/beers',data);
+SELECT COUNT(id) FROM xmltest WHERE xpath_exists('/menu/beers/name[text() = ''Molson'']',data);
+SELECT COUNT(id) FROM xmltest WHERE xpath_exists('/myns:menu/myns:beer',data,ARRAY[ARRAY['myns','http://myns.com']]);
+SELECT COUNT(id) FROM xmltest WHERE xpath_exists('/myns:menu/myns:beers',data,ARRAY[ARRAY['myns','http://myns.com']]);
+SELECT COUNT(id) FROM xmltest WHERE xpath_exists('/myns:menu/myns:beers/myns:name[text() = ''Molson'']',data,ARRAY[ARRAY['myns','http://myns.com']]);
+SELECT COUNT(id) FROM xmltest, query WHERE xmlexists(expr PASSING BY REF data);
+SELECT xml_is_well_formed_content('<foo>bar</foo>');
+SELECT xml_is_well_formed_content('abc');
+SELECT xml_is_well_formed('abc');
+SELECT xml_is_well_formed('<foo><bar>baz</foo>');
+SELECT xml_is_well_formed('<local:data xmlns:local="http://127.0.0.1"><local:piece id="1">number one</local:piece><local:piece id="2" /></local:data>');
+SELECT xml_is_well_formed('<pg:foo xmlns:pg="http://postgresql.org/stuff">bar</pg:foo>');
+SELECT xpath('/*', '<invalidns xmlns=''&lt;''/>');
+SELECT xpath('/*', '<nosuchprefix:tag/>');
+SELECT xpath('/*', '<relativens xmlns=''relative''/>');
+SELECT XMLPARSE(DOCUMENT '<!DOCTYPE foo [<!ENTITY c SYSTEM "/etc/passwd">]><foo>&c;</foo>');
+SELECT xmltable.* FROM xmltest2, LATERAL xmltable('/d/r' PASSING x COLUMNS a int PATH '' || lower(_path) || 'c');
+SELECT xmltable.* FROM xmltest2, LATERAL xmltable(('/d/r/' || lower(_path) || 'c') PASSING x COLUMNS a int PATH '.');
+SELECT xmltable.* FROM xmltest2, LATERAL xmltable(('/d/r/' || lower(_path) || 'c') PASSING x COLUMNS a int PATH 'x' DEFAULT ascii(_path) - 54);
+SELECT xmltable.* FROM xmldata, LATERAL xmltable('/ROWS/ROW[COUNTRY_NAME="Japan" or COUNTRY_NAME="India"]' PASSING data COLUMNS "COUNTRY_NAME" text, "REGION_ID" int) WHERE "COUNTRY_NAME" = 'Japan';
+SELECT xmltable.* FROM xmldata, LATERAL xmltable('/ROWS/ROW[COUNTRY_NAME="Japan" or COUNTRY_NAME="India"]' PASSING data COLUMNS "COUNTRY_NAME" text, "REGION_ID" int);
+SELECT xmltable.* FROM xmldata, LATERAL xmltable('/ROWS/ROW[COUNTRY_NAME="Japan" or COUNTRY_NAME="India"]' PASSING data COLUMNS id int PATH '@id', "COUNTRY_NAME" text, "REGION_ID" int);
+SELECT xmltable.* FROM xmldata, LATERAL xmltable('/ROWS/ROW[COUNTRY_NAME="Japan" or COUNTRY_NAME="India"]' PASSING data COLUMNS id int PATH '@id');
+SELECT xmltable.* FROM xmldata, LATERAL xmltable('/ROWS/ROW[COUNTRY_NAME="Japan" or COUNTRY_NAME="India"]' PASSING data COLUMNS id FOR ORDINALITY);
+SELECT xmltable.* FROM xmldata, LATERAL xmltable('/ROWS/ROW[COUNTRY_NAME="Japan" or COUNTRY_NAME="India"]' PASSING data COLUMNS id int PATH '@id', "COUNTRY_NAME" text, "REGION_ID" int, rawdata xml PATH './*');
+SELECT * FROM xmltable('/root' passing '<root><element>a1a<!-- aaaa -->a2a<?aaaaa?> <!--z-->  bbbb<x>xxx</x>cccc</element></root>' COLUMNS element text);
+SELECT * FROM xmltable('/root' passing '<root><element>a1a<!-- aaaa -->a2a<?aaaaa?> <!--z-->  bbbb<x>xxx</x>cccc</element></root>' COLUMNS element text PATH 'element/text()'); -- should fail
+select * from xmltable('d/r' passing '<d><r><c><![CDATA[<hello> &"<>!<a>foo</a>]]></c></r><r><c>2</c></r></d>' columns c text);
+SELECT * FROM xmltable('/x/a' PASSING '<x><a><ent>&apos;</ent></a><a><ent>&quot;</ent></a><a><ent>&amp;</ent></a><a><ent>&lt;</ent></a><a><ent>&gt;</ent></a></x>' COLUMNS ent text);
+SELECT * FROM xmltable('/x/a' PASSING '<x><a><ent>&apos;</ent></a><a><ent>&quot;</ent></a><a><ent>&amp;</ent></a><a><ent>&lt;</ent></a><a><ent>&gt;</ent></a></x>' COLUMNS ent xml);
+SELECT  xmltable.*
+   FROM (SELECT data FROM xmldata) x,
+        LATERAL XMLTABLE('/ROWS/ROW'
+                         PASSING data
+                         COLUMNS id int PATH '@id',
+                                  _id FOR ORDINALITY,
+                                  country_name text PATH 'COUNTRY_NAME/text()' NOT NULL,
+                                  country_id text PATH 'COUNTRY_ID',
+                                  region_id int PATH 'REGION_ID',
+                                  size float PATH 'SIZE',
+                                  unit text PATH 'SIZE/@unit',
+                                  premier_name text PATH 'PREMIER_NAME' DEFAULT 'not specified');
+SELECT * FROM XMLTABLE(XMLNAMESPACES('http://x.y' AS zz),
+                      '/zz:rows/zz:row'
+                      PASSING '<rows xmlns="http://x.y"><row><a>10</a></row></rows>'
+                      COLUMNS a int PATH 'zz:a');
+SELECT xmltable.*
+   FROM (SELECT data FROM xmldata) x,
+        LATERAL XMLTABLE('/ROWS/ROW'
+                         PASSING data
+                         COLUMNS id int PATH '@id',
+                                  _id FOR ORDINALITY,
+                                  country_name text PATH 'COUNTRY_NAME' NOT NULL,
+                                  country_id text PATH 'COUNTRY_ID',
+                                  region_id int PATH 'REGION_ID',
+                                  size float PATH 'SIZE',
+                                  unit text PATH 'SIZE/@unit',
+                                  premier_name text PATH 'PREMIER_NAME' DEFAULT 'not specified');
+SELECT  xmltable.*
+   FROM (SELECT data FROM xmldata) x,
+        LATERAL XMLTABLE('/ROWS/ROW'
+                         PASSING data
+                         COLUMNS id int PATH '@id',
+                                  _id FOR ORDINALITY,
+                                  country_name text PATH 'COUNTRY_NAME' NOT NULL,
+                                  country_id text PATH 'COUNTRY_ID',
+                                  region_id int PATH 'REGION_ID',
+                                  size float PATH 'SIZE',
+                                  unit text PATH 'SIZE/@unit',
+                                  premier_name text PATH 'PREMIER_NAME' DEFAULT 'not specified');
+SELECT  xmltable.*
+   FROM (SELECT data FROM xmldata) x,
+        LATERAL XMLTABLE('/ROWS/ROW'
+                         PASSING data
+                         COLUMNS id int PATH '@id',
+                                  _id FOR ORDINALITY,
+                                  country_name text PATH 'COUNTRY_NAME' NOT NULL,
+                                  country_id text PATH 'COUNTRY_ID',
+                                  region_id int PATH 'REGION_ID',
+                                  size float PATH 'SIZE',
+                                  unit text PATH 'SIZE/@unit',
+                                  premier_name text PATH 'PREMIER_NAME' DEFAULT 'not specified');
+SELECT  xmltable.*
+   FROM (SELECT data FROM xmldata) x,
+        LATERAL XMLTABLE('/ROWS/ROW'
+                         PASSING data
+                         COLUMNS id int PATH '@id',
+                                  _id FOR ORDINALITY,
+                                  country_name text PATH 'COUNTRY_NAME' NOT NULL,
+                                  country_id text PATH 'COUNTRY_ID',
+                                  region_id int PATH 'REGION_ID',
+                                  size float PATH 'SIZE',
+                                  unit text PATH 'SIZE/@unit',
+                                  premier_name text PATH 'PREMIER_NAME' DEFAULT 'not specified')
+  WHERE region_id = 2;
+SELECT  xmltable.*
+   FROM (SELECT data FROM xmldata) x,
+        LATERAL XMLTABLE('/ROWS/ROW'
+                         PASSING data
+                         COLUMNS id int PATH '@id',
+                                  _id FOR ORDINALITY,
+                                  country_name text PATH 'COUNTRY_NAME' NOT NULL,
+                                  country_id text PATH 'COUNTRY_ID',
+                                  region_id int PATH 'REGION_ID',
+                                  size float PATH 'SIZE',
+                                  unit text PATH 'SIZE/@unit',
+                                  premier_name text PATH 'PREMIER_NAME' DEFAULT 'not specified')
+  WHERE region_id = 2;
+SELECT  xmltable.*
+   FROM (SELECT data FROM xmldata) x,
+        LATERAL XMLTABLE('/ROWS/ROW'
+                         PASSING data
+                         COLUMNS id int PATH '@id',
+                                  _id FOR ORDINALITY,
+                                  country_name text PATH 'COUNTRY_NAME' NOT NULL,
+                                  country_id text PATH 'COUNTRY_ID',
+                                  region_id int PATH 'REGION_ID',
+                                  size float PATH 'SIZE' NOT NULL,
+                                  unit text PATH 'SIZE/@unit',
+                                  premier_name text PATH 'PREMIER_NAME' DEFAULT 'not specified');
+WITH
+   x AS (SELECT proname, proowner, procost::numeric, pronargs,
+                array_to_string(proargnames,',') as proargnames,
+                case when proargtypes <> '' then array_to_string(proargtypes::oid[],',') end as proargtypes
+           FROM pg_proc WHERE proname = 'f_leak'),
+   y AS (SELECT xmlelement(name proc,
+                           xmlforest(proname, proowner,
+                                     procost, pronargs,
+                                     proargnames, proargtypes)) as proc
+           FROM x),
+   z AS (SELECT xmltable.*
+           FROM y,
+                LATERAL xmltable('/proc' PASSING proc
+                                 COLUMNS proname name,
+                                         proowner oid,
+                                         procost float,
+                                         pronargs int,
+                                         proargnames text,
+                                         proargtypes text))
+   SELECT * FROM z
+   EXCEPT SELECT * FROM x;
+WITH
+   x AS (SELECT proname, proowner, procost::numeric, pronargs,
+                array_to_string(proargnames,',') as proargnames,
+                case when proargtypes <> '' then array_to_string(proargtypes::oid[],',') end as proargtypes
+           FROM pg_proc),
+   y AS (SELECT xmlelement(name data,
+                           xmlagg(xmlelement(name proc,
+                                             xmlforest(proname, proowner, procost,
+                                                       pronargs, proargnames, proargtypes)))) as doc
+           FROM x),
+   z AS (SELECT xmltable.*
+           FROM y,
+                LATERAL xmltable('/data/proc' PASSING doc
+                                 COLUMNS proname name,
+                                         proowner oid,
+                                         procost float,
+                                         pronargs int,
+                                         proargnames text,
+                                         proargtypes text))
+   SELECT * FROM z
+   EXCEPT SELECT * FROM x;
+SELECT table_to_xml('testxmlschema.test1', true, false, 'foo');
+SELECT table_to_xmlschema('testxmlschema.test1', false, true, 'foo');
+SELECT table_to_xml_and_xmlschema('testxmlschema.test1', true, true, 'foo');
+SELECT query_to_xml('SELECT * FROM testxmlschema.test1', false, false, '');
+SELECT query_to_xmlschema('SELECT * FROM testxmlschema.test1', false, false, '');
+SELECT query_to_xml_and_xmlschema('SELECT * FROM testxmlschema.test1', true, true, '');
+SELECT cursor_to_xml('xc'::refcursor, 5, false, true, '');
+SELECT cursor_to_xmlschema('xc'::refcursor, false, true, '');
+SELECT schema_to_xml_and_xmlschema('testxmlschema', true, true, 'foo');
+SELECT xmlforest(c1, c2, c3, c4) FROM testxmlschema.test3;
+SELECT table_to_xml('testxmlschema.test3', true, true, '');

@@ -2324,6 +2324,7 @@ tokens_nonkeyword
     | NOSUPERUSER
     | OUTPUT
     | PASSEDBYVALUE
+    | PATH
     | PERMISSIVE
     | PLAIN
     | PREFERRED
@@ -2654,6 +2655,15 @@ xml_function
     | XMLEXISTS LEFT_PAREN vex PASSING (BY REF)? vex (BY REF)? RIGHT_PAREN
     | XMLPARSE LEFT_PAREN (DOCUMENT | CONTENT) vex RIGHT_PAREN
     | XMLSERIALIZE LEFT_PAREN (DOCUMENT | CONTENT) vex AS data_type RIGHT_PAREN
+    | XMLTABLE LEFT_PAREN 
+        (XMLNAMESPACES LEFT_PAREN vex AS name=identifier (COMMA vex AS name=identifier)* RIGHT_PAREN COMMA)?
+        vex PASSING (BY REF)? vex (BY REF)?
+        COLUMNS xml_table_column (COMMA xml_table_column)*
+        RIGHT_PAREN
+    ;
+
+xml_table_column
+    : name=identifier (data_type (PATH vex)? (DEFAULT vex)? (NOT? NULL)? | FOR ORDINALITY)
     ;
 
 comparison_mod

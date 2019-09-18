@@ -789,3 +789,32 @@ CREATE TABLE tststats.pt1 PARTITION OF tststats.pt FOR VALUES FROM (-10, -10) TO
 create table part_pa_test(a int, b int) partition by range(a);
 create table part_pa_test_p1 partition of part_pa_test for values from (minvalue) to (0);
 create table part_pa_test_p2 partition of part_pa_test for values from (0) to (maxvalue);
+CREATE TABLE xmltest2(x xml, _path text);
+CREATE TABLE testxmlschema.test3
+    AS SELECT true c1, true::testboolxmldomain c2, '2013-02-21'::date c3, '2013-02-21'::testdatexmldomain c4;
+CREATE TABLE ttable1 OF nothing;
+CREATE TYPE person_type AS (id int, name text);
+CREATE TABLE persons OF person_type;
+CREATE TABLE IF NOT EXISTS persons OF person_type;
+CREATE TYPE person_type AS (id int, name text);
+CREATE TABLE personsx OF person_type (myname WITH OPTIONS NOT NULL);
+CREATE TABLE persons2 OF person_type (
+    id WITH OPTIONS PRIMARY KEY,
+    UNIQUE (name)
+);
+CREATE TABLE persons3 OF person_type (
+    PRIMARY KEY (id),
+    name WITH OPTIONS DEFAULT ''
+);
+CREATE TABLE persons4 OF person_type (
+    name WITH OPTIONS NOT NULL,
+    name WITH OPTIONS DEFAULT ''
+);
+CREATE TABLE persons2 OF person_type (
+    id WITH OPTIONS PRIMARY KEY,
+    UNIQUE (name)
+);
+CREATE TABLE persons3 OF person_type (
+    PRIMARY KEY (id),
+    name NOT NULL DEFAULT ''
+);

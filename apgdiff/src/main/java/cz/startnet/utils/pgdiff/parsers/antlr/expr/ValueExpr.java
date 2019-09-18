@@ -54,6 +54,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Vex_bContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Vex_or_named_notationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Window_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Xml_functionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Xml_table_columnContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.Argument;
@@ -466,6 +467,12 @@ public class ValueExpr extends AbstractExpr {
                 Data_typeContext type = xml.data_type();
                 coltype = ParserAbstract.getTypeName(type);
                 addTypeDepcy(type);
+            } else if (xml.XMLTABLE() != null) {
+                for (Xml_table_columnContext col : xml.xml_table_column()) {
+                    args.addAll(col.vex());
+                    addTypeDepcy(col.data_type());
+                }
+                coltype = TypesSetManually.FUNCTION_TABLE;
             } else {
                 // defaults work
             }

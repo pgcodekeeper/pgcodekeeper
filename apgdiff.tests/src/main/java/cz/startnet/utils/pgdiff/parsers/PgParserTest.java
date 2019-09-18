@@ -168,15 +168,11 @@ public class PgParserTest {
             {"tsrf", 6},
             {"tstypes", 1},
             {"type_sanity"},
-            {"typed_table"},
             {"updatable_views", 6},
             {"update"},
             {"varchar"},
             {"window"},
             {"with"},
-            // xmltable
-            {"xml"},
-            {"xmlmap"},
         });
 
         int maxLength = p.stream()

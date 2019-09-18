@@ -615,4 +615,28 @@ create or replace view agg_view1 as
 CREATE MATERIALIZED VIEW tststats.mv AS SELECT * FROM tststats.t;
 CREATE VIEW my_property_secure WITH (security_barrier) AS SELECT * FROM customer WHERE name = current_user;
 ALTER VIEW my_property_normal SET (security_barrier=true);
-create function sp_parallel_restricted(int) returns int as $$begin return $1; end$$ language plpgsql parallel restricted;
+CREATE VIEW xmlview1 AS SELECT xmlcomment('test');
+CREATE VIEW xmlview2 AS SELECT xmlconcat('hello', 'you');
+CREATE VIEW xmlview3 AS SELECT xmlelement(name element, xmlattributes (1 as ":one:", 'deuce' as two), 'content&');
+CREATE VIEW xmlview4 AS SELECT xmlelement(name employee, xmlforest(name, age, salary as pay)) FROM emp;
+CREATE VIEW xmlview5 AS SELECT xmlparse(content '<abc>x</abc>');
+CREATE VIEW xmlview6 AS SELECT xmlpi(name foo, 'bar');
+CREATE VIEW xmlview7 AS SELECT xmlroot(xml '<foo/>', version no value, standalone yes);
+CREATE VIEW xmlview8 AS SELECT xmlserialize(content 'good' as char(10));
+CREATE VIEW xmlview9 AS SELECT xmlserialize(content 'good' as text);
+CREATE VIEW xmltableview1 AS SELECT  xmltable.*
+   FROM (SELECT data FROM xmldata) x,
+        LATERAL XMLTABLE('/ROWS/ROW'
+                         PASSING data
+                         COLUMNS id int PATH '@id',
+                                  _id FOR ORDINALITY,
+                                  country_name text PATH 'COUNTRY_NAME/text()' NOT NULL,
+                                  country_id text PATH 'COUNTRY_ID',
+                                  region_id int PATH 'REGION_ID',
+                                  size float PATH 'SIZE',
+                                  unit text PATH 'SIZE/@unit',
+                                  premier_name text PATH 'PREMIER_NAME' DEFAULT 'not specified');
+CREATE VIEW xmltableview2 AS SELECT * FROM XMLTABLE(XMLNAMESPACES('http://x.y' AS zz),
+                      '/zz:rows/zz:row'
+                      PASSING '<rows xmlns="http://x.y"><row><a>10</a></row></rows>'
+                      COLUMNS a int PATH 'zz:a');

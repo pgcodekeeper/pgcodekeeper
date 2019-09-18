@@ -220,3 +220,6 @@ PREPARE p1 AS SELECT * FROM my_property_normal WHERE f_leak(passwd);
 EXECUTE p2;
 begin isolation level repeatable read;
 deallocate tenk1_count;
+EXECUTE pp;
+DECLARE xc CURSOR WITH HOLD FOR SELECT * FROM testxmlschema.test1 ORDER BY 1, 2;
+MOVE BACKWARD ALL IN xc;
