@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -23,8 +22,6 @@ public class CustomParserListener {
     protected final List<AntlrError> errors;
     private final IProgressMonitor monitor;
 
-    private final List<StatementBodyContainer> statementBodies = new ArrayList<>();
-
     public CustomParserListener(PgDatabase database, String filename,
             boolean refMode, List<AntlrError> errors, IProgressMonitor monitor) {
         this.db = database;
@@ -38,7 +35,7 @@ public class CustomParserListener {
      * @param ctx statememnt's first token rule
      */
     protected void safeParseStatement(ParserAbstract p, ParserRuleContext ctx) {
-        safeParseStatement(() -> p.parseObject(filename, refMode, statementBodies), ctx);
+        safeParseStatement(() -> p.parseObject(filename, refMode), ctx);
     }
 
     protected void safeParseStatement(Runnable r, ParserRuleContext ctx) {
@@ -52,10 +49,6 @@ public class CustomParserListener {
         } catch (Exception e) {
             errors.add(handleParserContextException(e, filename, ctx));
         }
-    }
-
-    public List<StatementBodyContainer> getStatementBodies() {
-        return statementBodies;
     }
 
     public static AntlrError handleUnresolvedReference(UnresolvedReferenceException ex, String filename) {

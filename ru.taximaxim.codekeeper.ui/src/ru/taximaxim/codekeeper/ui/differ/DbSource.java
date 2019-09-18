@@ -204,7 +204,7 @@ class DbSourceProject extends DbSource {
                 pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
                 OpenProjectUtils.checkMsSql(project), project);
 
-        PgDatabase db = new UIProjectLoader(project, arguments, monitor, null, er)
+        PgDatabase db = new UIProjectLoader(project, arguments, monitor, er)
                 .loadDatabaseWithLibraries();
         errors = er;
         return db;

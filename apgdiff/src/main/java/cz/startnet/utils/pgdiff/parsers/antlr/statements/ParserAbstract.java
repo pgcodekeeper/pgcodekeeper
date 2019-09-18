@@ -26,7 +26,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Predefined_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
@@ -55,7 +54,6 @@ public abstract class ParserAbstract {
 
     protected final PgDatabase db;
 
-    private List<StatementBodyContainer> statementBodies;
     private boolean refMode;
     private String fileName;
 
@@ -63,22 +61,14 @@ public abstract class ParserAbstract {
         this.db = db;
     }
 
-    public void parseObject(String fileName, boolean refMode,
-            List<StatementBodyContainer> statementBodies) {
+    public void parseObject(String fileName, boolean refMode) {
         this.fileName = fileName;
         this.refMode = refMode;
-        this.statementBodies = statementBodies;
         parseObject();
     }
 
     protected boolean isRefMode() {
         return refMode;
-    }
-
-    protected void addStatementBody(ParserRuleContext ctx) {
-        if (statementBodies != null) {
-            statementBodies.add(new StatementBodyContainer(fileName, ctx));
-        }
     }
 
     /**

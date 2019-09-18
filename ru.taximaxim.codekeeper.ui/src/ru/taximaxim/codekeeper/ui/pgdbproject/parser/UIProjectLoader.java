@@ -31,7 +31,6 @@ import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.loader.ProjectLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
@@ -47,17 +46,15 @@ import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 public class UIProjectLoader extends ProjectLoader {
 
     private final IProject iProject;
-    private final List<StatementBodyContainer> statementBodies;
 
-    public UIProjectLoader(IProgressMonitor monitor, List<StatementBodyContainer> statementBodies) {
-        this(null, null, monitor, statementBodies, null);
+    public UIProjectLoader(IProgressMonitor monitor) {
+        this(null, null, monitor, null);
     }
 
-    public UIProjectLoader(IProject iProject, PgDiffArguments arguments, IProgressMonitor monitor,
-            List<StatementBodyContainer> statementBodies, List<AntlrError> errors) {
+    public UIProjectLoader(IProject iProject, PgDiffArguments arguments,
+            IProgressMonitor monitor, List<AntlrError> errors) {
         super(null, arguments, monitor, errors);
         this.iProject = iProject;
-        this.statementBodies = statementBodies;
     }
 
     /**
@@ -316,15 +313,12 @@ public class UIProjectLoader extends ProjectLoader {
     @Override
     protected void finishLoader(PgDumpLoader l) {
         super.finishLoader(l);
-        if (statementBodies != null) {
-            statementBodies.addAll(l.getStatementBodyReferences());
-        }
         ((PgUIDumpLoader) l).updateMarkers();
     }
 
     public static PgStatement parseStatement(IFile file, Collection<DbObjType> types)
             throws InterruptedException, IOException, CoreException {
-        return new UIProjectLoader(new NullProgressMonitor(), null)
+        return new UIProjectLoader(new NullProgressMonitor())
                 .buildFiles(Arrays.asList(file), false).getDescendants()
                 .filter(e -> types.contains(e.getStatementType())).findAny().orElse(null);
     }

@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -29,7 +28,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomTSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLOverridesListener;
-import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLOverridesListener;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.MsSchema;
@@ -58,7 +56,6 @@ public class PgDumpLoader {
     private final List<AntlrError> errors = new ArrayList<>();
 
     private boolean refMode;
-    private List<StatementBodyContainer> statementBodyReferences;
     private Map<PgStatement, StatementOverride> overrides;
 
     public List<AntlrError> getErrors() {
@@ -71,10 +68,6 @@ public class PgDumpLoader {
 
     public void setOverridesMap(Map<PgStatement, StatementOverride> overrides) {
         this.overrides = overrides;
-    }
-
-    public List<StatementBodyContainer> getStatementBodyReferences() {
-        return statementBodyReferences;
     }
 
     public PgDumpLoader(InputStreamProvider input, String inputObjectName,
@@ -160,7 +153,6 @@ public class PgDumpLoader {
             } else {
                 listener = new CustomTSQLParserListener(
                         intoDb, inputObjectName, refMode, errors, monitor);
-                statementBodyReferences = Collections.emptyList();
             }
             AntlrParser.parseTSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
                     monitor, monitoringLevel, listener, antlrTasks);
@@ -170,10 +162,8 @@ public class PgDumpLoader {
                 listener = new SQLOverridesListener(
                         intoDb, inputObjectName, refMode, errors, monitor, overrides);
             } else {
-                CustomSQLParserListener cust = new CustomSQLParserListener(intoDb,
+                listener = new CustomSQLParserListener(intoDb,
                         inputObjectName, refMode, errors, antlrTasks, monitor);
-                statementBodyReferences = cust.getStatementBodies();
-                listener = cust;
             }
 
             AntlrParser.parseSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
