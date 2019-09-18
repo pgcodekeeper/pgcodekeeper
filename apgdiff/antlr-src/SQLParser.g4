@@ -2804,7 +2804,7 @@ from_item
     ;
 
 from_primary
-    : ONLY? schema_qualified_name MULTIPLY? alias_clause?
+    : ONLY? schema_qualified_name MULTIPLY? alias_clause? (TABLESAMPLE method=identifier LEFT_PAREN vex (COMMA vex)* RIGHT_PAREN (REPEATABLE vex)?)?
     | LATERAL? table_subquery alias_clause
     | LATERAL? function_call (WITH ORDINALITY)?
         (AS from_function_column_def

@@ -153,7 +153,6 @@ public class PgParserTest {
             {"subscription"},
             {"subselect"},
             {"sysviews"},
-            //{"tablesample"},
             {"temp"},
             {"tidscan"},
             {"time"},

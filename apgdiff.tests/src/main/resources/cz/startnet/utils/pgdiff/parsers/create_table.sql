@@ -818,3 +818,6 @@ CREATE TABLE persons3 OF person_type (
     PRIMARY KEY (id),
     name NOT NULL DEFAULT ''
 );
+create table parted_sample (a int) partition by list (a);
+create table parted_sample_1 partition of parted_sample for values in (1);
+create table parted_sample_2 partition of parted_sample for values in (2);
