@@ -258,52 +258,11 @@ CREATE VIEW aliased_view_3 AS
 CREATE VIEW aliased_view_4 AS
   select * from temp_view_test.tt1
     where exists (select 1 from tt1 where temp_view_test.tt1.y1 = tt1.f1);
-
-
-
-
-
-
-ALTER TABLE tx1 RENAME TO a1;
-
-
-
-
-
-
-ALTER TABLE tt1 RENAME TO a2;
-
-
-
-
-
-
-ALTER TABLE a1 RENAME TO tt1;
-
-
-
-
-
-
-ALTER TABLE a2 RENAME TO tx1;
 ALTER TABLE tx1 SET SCHEMA temp_view_test;
-
-
-
-
-
-
 ALTER TABLE temp_view_test.tt1 RENAME TO tmp1;
 ALTER TABLE temp_view_test.tmp1 SET SCHEMA testviewschm2;
 ALTER TABLE tmp1 RENAME TO tx1;
-
-
-
-
-
-
 -- Test view decompilation in the face of column addition/deletion/renaming
-
 create table tt2 (a int, b int, c int);
 create table tt3 (ax int8, b int2, c numeric);
 create table tt4 (ay int, b int, q int);
@@ -543,7 +502,6 @@ select 'foo'::text = any(array['abc','def','foo']::text[]) c1,
 select pg_get_viewdef('tt19v', true);
 
 -- check display of assorted RTE_FUNCTION expressions
-/*
 create view tt20v as
 select * from
   coalesce(1,2) as c,
@@ -553,7 +511,6 @@ select * from
   cast(1+2 as int4) as i4,
   cast(1+2 as int8) as i8;
 select pg_get_viewdef('tt20v', true);
-*/
 -- corner cases with empty join conditions
 
 create view tt21v as

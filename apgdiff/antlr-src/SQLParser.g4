@@ -2643,6 +2643,7 @@ string_value_function
   | SUBSTRING LEFT_PAREN vex (COMMA vex)* (FROM vex)? (FOR vex)? RIGHT_PAREN
   | POSITION LEFT_PAREN vex_b IN vex RIGHT_PAREN
   | OVERLAY LEFT_PAREN vex PLACING vex FROM vex (FOR vex)? RIGHT_PAREN
+  | COLLATION FOR LEFT_PAREN vex RIGHT_PAREN
   ;
 
 xml_function

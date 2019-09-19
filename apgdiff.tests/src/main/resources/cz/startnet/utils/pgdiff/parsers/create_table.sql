@@ -821,3 +821,16 @@ CREATE TABLE persons3 OF person_type (
 create table parted_sample (a int) partition by list (a);
 create table parted_sample_1 partition of parted_sample for values in (1);
 create table parted_sample_2 partition of parted_sample for values in (2);
+CREATE TABLE INET_TBL (c cidr, i inet);
+CREATE TABLE mchash (a int, b text, c jsonb) PARTITION BY HASH (a part_test_int4_ops, b part_test_text_ops);
+CREATE TABLE mchash1 PARTITION OF mchash FOR VALUES WITH (MODULUS 4, REMAINDER 0);
+CREATE TABLE mcinthash (a int, b int, c jsonb) PARTITION BY HASH (a part_test_int4_ops, b part_test_int4_ops);
+CREATE TABLE ptif_test (a int, b int) PARTITION BY range (a);
+CREATE TABLE ptif_test0 PARTITION OF ptif_test FOR VALUES FROM (minvalue) TO (0) PARTITION BY list (b);
+CREATE TABLE ptif_test01 PARTITION OF ptif_test0 FOR VALUES IN (1);
+CREATE TABLE ptif_test1 PARTITION OF ptif_test FOR VALUES FROM (0) TO (100) PARTITION BY list (b);
+CREATE TABLE ptif_test11 PARTITION OF ptif_test1 FOR VALUES IN (1);
+CREATE TABLE ptif_test2 PARTITION OF ptif_test FOR VALUES FROM (100) TO (maxvalue);
+CREATE TABLE PG_LSN_TBL (f1 pg_lsn);
+create table gin_test_tbl(i int4[]) with (autovacuum_enabled = off);
+create table gist_tbl (b box, p point, c circle);

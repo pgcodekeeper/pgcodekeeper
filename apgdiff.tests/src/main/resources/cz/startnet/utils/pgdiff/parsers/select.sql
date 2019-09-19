@@ -1141,4 +1141,104 @@ SELECT id FROM test_tablesample_v1 TABLESAMPLE BERNOULLI (1);
 select * from parted_sample tablesample bernoulli (100);
 WITH query_select AS (SELECT * FROM test_tablesample) SELECT * FROM query_select TABLESAMPLE BERNOULLI (5.5) REPEATABLE (1);
 SELECT * FROM document TABLESAMPLE BERNOULLI(50) REPEATABLE(0) WHERE f_leak(dtitle) ORDER BY did;
-SELECT * FROM document TABLESAMPLE BERNOULLI(50) REPEATABLE(0) WHERE f_leak(dtitle) ORDER BY did;
+select case pg_is_in_recovery() when false then 'First ' || 'case' else 'Second case' end;
+select length(txid_current_snapshot()::text) >= 4;
+SELECT nextval('hsseq');
+SELECT '' AS ten, c AS cidr, i AS inet FROM INET_TBL;
+SELECT '' AS ten, i AS inet, host(i), text(i), family(i) FROM INET_TBL;
+SELECT '' AS ten, c AS cidr, broadcast(c), i AS inet, broadcast(i) FROM INET_TBL;
+SELECT '' AS ten, c AS cidr, network(c) AS "network(cidr)", i AS inet, network(i) AS "network(inet)" FROM INET_TBL;
+SELECT '' AS ten, c AS cidr, masklen(c) AS "masklen(cidr)", i AS inet, masklen(i) AS "masklen(inet)" FROM INET_TBL;
+SELECT masklen(c) AS "masklen(cidr)",i AS inet, masklen(i) FROM INET_TBL WHERE masklen(c) <= 8;
+SELECT '' AS six, c AS cidr, i AS inet FROM INET_TBL WHERE c = i;
+SELECT '' AS ten, i, c,
+  i < c AS lt, i <= c AS le, i = c AS eq,
+  i >= c AS ge, i > c AS gt, i <> c AS ne,
+  i << c AS sb, i <<= c AS sbe,
+  i >> c AS sup, i >>= c AS spe,
+  i && c AS ovr
+  FROM INET_TBL;
+SELECT max(i) AS max, min(i) AS min FROM INET_TBL;
+SELECT max(c) AS max, min(c) AS min FROM INET_TBL;
+SELECT '' AS ten, set_masklen(inet(text(i)), 24) FROM INET_TBL;
+SELECT * FROM inet_tbl WHERE i<<'192.168.1.0/24'::cidr;
+SELECT * FROM inet_tbl WHERE i<<='192.168.1.0/24'::cidr;
+SELECT * FROM inet_tbl WHERE i << '192.168.1.0/24'::cidr ORDER BY i;
+SELECT * FROM inet_tbl WHERE i <<= '192.168.1.0/24'::cidr ORDER BY i;
+SELECT * FROM inet_tbl WHERE i && '192.168.1.0/24'::cidr ORDER BY i;
+SELECT * FROM inet_tbl WHERE i >>= '192.168.1.0/24'::cidr ORDER BY i;
+SELECT * FROM inet_tbl WHERE i >> '192.168.1.0/24'::cidr ORDER BY i;
+SELECT * FROM inet_tbl WHERE i < '192.168.1.0/24'::cidr ORDER BY i;
+SELECT * FROM inet_tbl WHERE i <= '192.168.1.0/24'::cidr ORDER BY i;
+SELECT * FROM inet_tbl WHERE i = '192.168.1.0/24'::cidr ORDER BY i;
+SELECT * FROM inet_tbl WHERE i >= '192.168.1.0/24'::cidr ORDER BY i;
+SELECT * FROM inet_tbl WHERE i > '192.168.1.0/24'::cidr ORDER BY i;
+SELECT * FROM inet_tbl WHERE i <> '192.168.1.0/24'::cidr ORDER BY i;
+SELECT i, ~i AS "~i" FROM inet_tbl;
+SELECT i, c, i & c AS "and" FROM inet_tbl;
+SELECT i, c, i | c AS "or" FROM inet_tbl;
+SELECT i, i + 500 AS "i+500" FROM inet_tbl;
+SELECT i, i - 500 AS "i-500" FROM inet_tbl;
+SELECT i, c, i - c AS "minus" FROM inet_tbl;
+SELECT '127.0.0.1'::inet + 257;
+SELECT ('127.0.0.1'::inet + 257) - 257;
+SELECT '127::1'::inet + 257;
+SELECT ('127::1'::inet + 257) - 257;
+SELECT '127.0.0.2'::inet  - ('127.0.0.2'::inet + 500);
+SELECT '127.0.0.2'::inet  - ('127.0.0.2'::inet - 500);
+SELECT '127::2'::inet  - ('127::2'::inet + 500);
+SELECT '127::2'::inet  - ('127::2'::inet - 500);
+SELECT '127.0.0.1'::inet + 10000000000;
+SELECT '127.0.0.1'::inet - 10000000000;
+SELECT '126::1'::inet - '127::2'::inet;
+SELECT '127::1'::inet - '126::2'::inet;
+SELECT '127::1'::inet + 10000000000;
+SELECT '127::1'::inet - '127::2'::inet;
+SELECT inet_merge(c, i) FROM INET_TBL;
+SELECT inet_merge(c, i) FROM INET_TBL WHERE inet_same_family(c, i);
+SELECT satisfies_hash_partition('mchash'::regclass, 2, 1, NULL::int, NULL::int);
+SELECT satisfies_hash_partition('mchash'::regclass, 4, 0, 2, ''::text);
+SELECT satisfies_hash_partition('mchash'::regclass, 2, 1, variadic array[1,2]::int[]);
+SELECT satisfies_hash_partition('mcinthash'::regclass, 4, 0, variadic array[0, 0]);
+SELECT satisfies_hash_partition('mcinthash'::regclass, 4, 0, variadic array[0, 1]);
+SELECT satisfies_hash_partition('mcinthash'::regclass, 4, 0, variadic array[now(), now()]);
+SELECT '2006-08-13 12:34:56'::timestamptz;
+SELECT char 'c' = char 'c' AS true;
+SELECT '' AS six, c.* FROM CHAR_TBL c WHERE c.f1 <> 'a';
+SELECT '0/16AE7F8' = '0/16AE7F8'::pg_lsn;
+SELECT '0/16AE7F8'::pg_lsn != '0/16AE7F7';
+SELECT '0/16AE7F7' < '0/16AE7F8'::pg_lsn;
+SELECT '0/16AE7F8' > pg_lsn '0/16AE7F7';
+SELECT '0/16AE7F7'::pg_lsn - '0/16AE7F8'::pg_lsn;
+SELECT '0/16AE7F8'::pg_lsn - '0/16AE7F7'::pg_lsn;
+SELECT DISTINCT (i || '/' || j)::pg_lsn f
+  FROM generate_series(1, 10) i, generate_series(1, 10) j, generate_series(1, 5) k
+  WHERE i <= 10 AND j > 0 AND j <= 10 ORDER BY f;
+select box(point(0.05*i, 0.05*i), point(0.05*i, 0.05*i)), point(0.05*i, 0.05*i), circle(point(0.05*i, 0.05*i), 1.0);
+select p from gist_tbl where p <@ box(point(0,0), point(0.5, 0.5));
+select p from gist_tbl where p <@ box(point(0,0), point(0.5, 0.5)) order by p <-> point(0.201, 0.201);
+select p from
+  (values (box(point(0,0), point(0.5,0.5))),
+          (box(point(0.5,0.5), point(0.75,0.75))),
+          (box(point(0.8,0.8), point(1.0,1.0)))) as v(bb)
+cross join lateral
+  (select p from gist_tbl where p <@ bb order by p <-> bb[0] limit 2) ss;
+select p from
+  (values (box(point(0,0), point(0.5,0.5))),
+          (box(point(0.5,0.5), point(0.75,0.75))),
+          (box(point(0.8,0.8), point(1.0,1.0)))) as v(bb)
+cross join lateral
+  (select p from gist_tbl where p <@ bb order by p <-> bb[0] limit 2) ss;
+(SELECT unique1 AS random FROM onek ORDER BY random() LIMIT 1)
+INTERSECT
+(SELECT unique1 AS random FROM onek ORDER BY random() LIMIT 1)
+INTERSECT
+(SELECT unique1 AS random FROM onek ORDER BY random() LIMIT 1);
+SELECT count(*) AS random FROM onek WHERE random() < 1.0/10;
+SELECT random, count(random) FROM RANDOM_TBL GROUP BY random HAVING count(random) > 3;
+SELECT AVG(random) FROM RANDOM_TBL HAVING AVG(random) NOT BETWEEN 80 AND 120;
+SELECT 'NaN'::float4;
+SELECT '' AS four, f.* FROM FLOAT4_TBL f WHERE f.f1 <> '1004.3';
+SELECT '' AS bad, f.f1 / '0.0' from FLOAT4_TBL f;
+SELECT '' AS five, f.f1, @f.f1 AS abs_f1 FROM FLOAT4_TBL f;
+SELECT '32767.4'::float4::int2;

@@ -620,3 +620,7 @@ INSERT INTO xmldata VALUES('<ROWS>
   <REGION_ID>3</REGION_ID><SIZE unit="km">791</SIZE>
 </ROW>
 </ROWS>');
+INSERT INTO INET_TBL (c, i) VALUES ('192.168.1', '192.168.1.226/24');
+INSERT INTO INET_TBL (c, i) VALUES ('1234::1234::1234', '::1.2.3.4');
+INSERT INTO INET_TBL (c, i) VALUES (cidr('ffff:ffff:ffff:ffff::/24'), '::192.168.1.226');
+INSERT INTO INET_TBL (c, i) VALUES ('10', '10::/8');

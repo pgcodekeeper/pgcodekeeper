@@ -104,3 +104,11 @@ select string_agg(name_for_agg, p_delimeter order by rn) as name_agg
   FROM XMLTABLE(p_node PASSING p_body COLUMNS rn FOR ORDINALITY, name_for_agg text PATH p_path_expr) ;
 $$;
 CREATE FUNCTION namelen(person_type) RETURNS int LANGUAGE SQL AS $$ SELECT length($1.name) $$;
+alter function report_guc(text) set work_mem = '2MB';
+alter function report_guc(text) reset all;
+create or replace function myfunc(int) returns text as $$
+begin
+  set local work_mem = '2MB';
+  return current_setting('work_mem');
+end $$
+language plpgsql
