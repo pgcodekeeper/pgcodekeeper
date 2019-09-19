@@ -498,6 +498,8 @@ public class PgDiffTest {
                     {"compare_generated_sequence"},
                     //Tests scenario where PRIVILEGE added to object with quoted name.
                     {"add_privilege_quoted_name"},
+                    //Tests scenario where MATERIALIZED VIEW is refreshed.
+                    {"refresh_materialized_view"},
                 });
     }
 
