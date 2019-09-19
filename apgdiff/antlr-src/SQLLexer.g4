@@ -659,6 +659,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     OUTPUT: [oO] [uU] [tT] [pP] [uU] [tT];
     
     PASSEDBYVALUE: [pP] [aA] [sS] [sS] [eE] [dD] [bB] [yY] [vV] [aA] [lL] [uU] [eE];
+    PATH: [pP] [aA] [tT] [hH];
     PERMISSIVE: [pP] [eE] [rR] [mM] [iI] [sS] [sS] [iI] [vV] [eE];
     PLAIN: [pP] [lL] [aA] [iI]  [nN];
     PREFERRED: [pP] [rR] [eE] [fF] [eE] [rR] [rR] [eE] [dD];

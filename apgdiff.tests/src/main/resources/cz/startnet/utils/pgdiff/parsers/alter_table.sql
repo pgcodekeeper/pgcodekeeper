@@ -2566,3 +2566,20 @@ ALTER TABLE public.some_table
 ALTER TABLE public.some_table
     ADD CONSTRAINT xck EXCLUDE USING gist (public.f7() WITH &&)
     USING INDEX TABLESPACE test_tablespace WHERE ((c1 <> 0)) DEFERRABLE INITIALLY IMMEDIATE;
+ALTER TABLE persons ADD COLUMN comment text;
+ALTER TABLE persons DROP COLUMN name;
+ALTER TABLE persons RENAME COLUMN id TO num;
+ALTER TABLE persons ALTER COLUMN name TYPE varchar;
+ALTER TABLE persons INHERIT stuff;
+alter table returningwrtest add b text;
+alter table returningwrtest2 drop c;
+alter table returningwrtest attach partition returningwrtest2 for values in (2);
+alter table donothingbrtrig_test2 drop column c;
+alter table donothingbrtrig_test attach partition donothingbrtrig_test1 for values in (1);
+alter table donothingbrtrig_test attach partition donothingbrtrig_test2 for values in (2);
+alter table mlparted1 attach partition mlparted11 for values from (2) to (5);
+alter table mlparted attach partition mlparted1 for values from (1, 2) to (1, 10);
+alter table mlparted add constraint check_b check (b = 3);
+alter table mlparted attach partition mlparted4 for values from (1, 30) to (1, 40);
+alter table mlparted add constraint check_b check (a = 1 and b < 45);
+alter table mlparted drop constraint check_b;

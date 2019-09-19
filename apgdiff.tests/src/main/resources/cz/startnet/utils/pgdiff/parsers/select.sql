@@ -41,16 +41,11 @@ select sillysrf(42);
 select sillysrf(-1) order by 1;
 select * from (values (2),(null),(1)) v(k) where k = k order by k;
 select * from (values (2),(null),(1)) v(k) where k = k;
-create table list_parted_tbl (a int,b int) partition by list (a);
-create table list_parted_tbl1 partition of list_parted_tbl for values in (1) partition by list(b);
---SELECT * INTO TABLE sitmp1 FROM onek WHERE onek.unique1 < 2;
---SELECT * INTO TABLE selinto_schema.tmp1 FROM pg_class WHERE relname like '%a%';
+SELECT * INTO TABLE sitmp1 FROM onek WHERE onek.unique1 < 2;
+SELECT * INTO TABLE selinto_schema.tmp1 FROM pg_class WHERE relname like '%a%';
 SELECT oid AS clsoid, relname, relnatts + 10 AS x INTO selinto_schema.tmp2 FROM pg_class WHERE relname like '%b%';
---SELECT * INTO TABLE selinto_schema.tmp1 FROM pg_class WHERE relname like '%a%';
+SELECT * INTO TABLE selinto_schema.tmp1 FROM pg_class WHERE relname like '%a%';
 SELECT * FROM (SELECT 1 INTO f) bar;
-CREATE VIEW foo AS SELECT 1 INTO b;
-INSERT INTO b SELECT 1 INTO f;
-
 SELECT b,
        b ~ '^[[:alpha:]]+$' AS is_alpha,
        b ~ '^[[:upper:]]+$' AS is_upper,
@@ -875,3 +870,374 @@ SELECT DISTINCT ON (string4, ten) string4, two, ten FROM tmp ORDER BY string4 us
 SELECT DISTINCT ON (string4, ten) string4, ten, two FROM tmp ORDER BY string4 using <, ten using >, two using <;
 select distinct on (1) floor(random()) as r, f1 from int4_tbl order by 1,2;
 SELECT c1, c2 FROM t1 WHERE c2 IN ('v', 'c', 'f', 'p', 'I') AND c3 <> 0;
+SELECT xmlcomment('hello');
+SELECT xmlcomment('test');
+SELECT xmlconcat(xmlcomment('hello'), xmlelement(NAME qux, 'foo'), xmlcomment('world'));
+SELECT xmlconcat('<foo/>', NULL, '<?xml version="1.1" standalone="no"?><bar/>');
+SELECT xmlconcat('<?xml version="1.1"?><foo/>', NULL, '<?xml version="1.1" standalone="no"?><bar/>');
+SELECT xmlelement(name element, xmlattributes (1 as one, 'deuce' as two), 'content');
+SELECT xmlelement(name element, xmlattributes ('unnamed and wrong'));
+SELECT xmlelement(name element, xmlelement(name nested, 'stuff'));
+SELECT xmlelement(name employee, xmlforest(name, age, salary as pay)) FROM emp;
+SELECT xmlelement(name duplicate, xmlattributes(1 as a, 2 as b, 3 as a));
+SELECT xmlelement(name num, 37);
+SELECT xmlelement(name foo, text 'bar');
+SELECT xmlelement(name foo, xml 'bar');
+SELECT xmlelement(name foo, text 'b<a/>r');
+SELECT xmlelement(name foo, xml 'b<a/>r');
+SELECT xmlelement(name foo, array[1, 2, 3]);
+SELECT xmlelement(name foo, bytea 'bar');
+SELECT xmlelement(name foo, xmlattributes(true as bar));
+SELECT xmlelement(name foo, xmlattributes('2009-04-09 00:24:37'::timestamp as bar));
+SELECT xmlelement(name foo, xmlattributes('infinity'::timestamp as bar));
+SELECT xmlelement(name foo, xmlattributes('<>&"''' as funny, xml 'b<a/>r' as funnier));
+SELECT xmlparse(content '<nosuchprefix:tag/>');
+SELECT xmlparse(document '   ');
+SELECT xmlparse(document '<abc>x</abc>');
+SELECT xmlpi(name foo);
+SELECT xmlpi(name xml);
+SELECT xmlpi(name xmlstuff);
+SELECT xmlpi(name foo, 'bar');
+SELECT xmlpi(name foo, 'in?>valid');
+SELECT xmlpi(name foo, null);
+SELECT xmlpi(name xml, null);
+SELECT xmlpi(name xmlstuff, null);
+SELECT xmlpi(name "xml-stylesheet", 'href="mystyle.css" type="text/css"');
+SELECT xmlpi(name foo, '   bar');
+SELECT xmlroot(xml '<foo/>', version no value, standalone no value);
+SELECT xmlroot(xml '<foo/>', version '2.0');
+SELECT xmlroot(xml '<foo/>', version no value, standalone yes);
+SELECT xmlroot(xml '<?xml version="1.1"?><foo/>', version no value, standalone yes);
+SELECT xmlroot(xmlroot(xml '<foo/>', version '1.0'), version '1.1', standalone no);
+SELECT xmlroot('<?xml version="1.1" standalone="yes"?><foo/>', version no value, standalone no);
+SELECT xmlroot('<?xml version="1.1" standalone="yes"?><foo/>', version no value, standalone no value);
+SELECT xmlroot('<?xml version="1.1" standalone="yes"?><foo/>', version no value);
+SELECT xmlroot (xmlelement (name gazonk, xmlattributes ('val' AS name, 1 + 1 AS num), 
+    xmlelement (NAME qux, 'foo')), version '1.0', standalone yes);
+SELECT xmlserialize(content data as character varying(20)) FROM xmltest;
+SELECT xmlserialize(content 'good' as char(10));
+SELECT xmlserialize(document 'bad' as text);
+SELECT xml '<foo>bar</foo>' IS DOCUMENT;
+SELECT xml '<foo>bar</foo><bar>foo</bar>' IS DOCUMENT;
+SELECT xml '<abc/>' IS NOT DOCUMENT;
+SELECT xml 'abc' IS NOT DOCUMENT;
+SELECT '<>' IS NOT DOCUMENT;
+SELECT xmlagg(data) FROM xmltest;
+SELECT xmlagg(data) FROM xmltest WHERE id > 10;
+SELECT xmlelement(name employees, xmlagg(xmlelement(name name, name))) FROM emp;
+SELECT xmlpi(name ":::_xml_abc135.%-&_");
+SELECT xmlpi(name "123");
+SELECT xpath('/value', data) FROM xmltest;
+SELECT xpath(NULL, NULL) IS NULL FROM xmltest;
+SELECT xpath('', '<!-- error -->');
+SELECT xpath('root', '<root/>');
+SELECT xmlexists('count(/nosuchtag)' PASSING BY REF '<root/>');
+SELECT xpath_exists('//town[text() = ''Cwmbran'']','<towns><town>Cwmbran</town></towns>'::xml);
+SELECT xpath_exists('count(/nosuchtag)', '<root/>'::xml);
+SELECT COUNT(id) FROM xmltest WHERE xmlexists('/menu/beer' PASSING data);
+SELECT COUNT(id) FROM xmltest WHERE xmlexists('/menu/beer' PASSING BY REF data BY REF);
+SELECT COUNT(id) FROM xmltest WHERE xmlexists('/menu/beers' PASSING BY REF data);
+SELECT COUNT(id) FROM xmltest WHERE xmlexists('/menu/beers/name[text() = ''Molson'']' PASSING BY REF data);
+SELECT COUNT(id) FROM xmltest WHERE xpath_exists('/menu/beer',data);
+SELECT COUNT(id) FROM xmltest WHERE xpath_exists('/menu/beers',data);
+SELECT COUNT(id) FROM xmltest WHERE xpath_exists('/menu/beers/name[text() = ''Molson'']',data);
+SELECT COUNT(id) FROM xmltest WHERE xpath_exists('/myns:menu/myns:beer',data,ARRAY[ARRAY['myns','http://myns.com']]);
+SELECT COUNT(id) FROM xmltest WHERE xpath_exists('/myns:menu/myns:beers',data,ARRAY[ARRAY['myns','http://myns.com']]);
+SELECT COUNT(id) FROM xmltest WHERE xpath_exists('/myns:menu/myns:beers/myns:name[text() = ''Molson'']',data,ARRAY[ARRAY['myns','http://myns.com']]);
+SELECT COUNT(id) FROM xmltest, query WHERE xmlexists(expr PASSING BY REF data);
+SELECT xml_is_well_formed_content('<foo>bar</foo>');
+SELECT xml_is_well_formed_content('abc');
+SELECT xml_is_well_formed('abc');
+SELECT xml_is_well_formed('<foo><bar>baz</foo>');
+SELECT xml_is_well_formed('<local:data xmlns:local="http://127.0.0.1"><local:piece id="1">number one</local:piece><local:piece id="2" /></local:data>');
+SELECT xml_is_well_formed('<pg:foo xmlns:pg="http://postgresql.org/stuff">bar</pg:foo>');
+SELECT xpath('/*', '<invalidns xmlns=''&lt;''/>');
+SELECT xpath('/*', '<nosuchprefix:tag/>');
+SELECT xpath('/*', '<relativens xmlns=''relative''/>');
+SELECT XMLPARSE(DOCUMENT '<!DOCTYPE foo [<!ENTITY c SYSTEM "/etc/passwd">]><foo>&c;</foo>');
+SELECT xmltable.* FROM xmltest2, LATERAL xmltable('/d/r' PASSING x COLUMNS a int PATH '' || lower(_path) || 'c');
+SELECT xmltable.* FROM xmltest2, LATERAL xmltable(('/d/r/' || lower(_path) || 'c') PASSING x COLUMNS a int PATH '.');
+SELECT xmltable.* FROM xmltest2, LATERAL xmltable(('/d/r/' || lower(_path) || 'c') PASSING x COLUMNS a int PATH 'x' DEFAULT ascii(_path) - 54);
+SELECT xmltable.* FROM xmldata, LATERAL xmltable('/ROWS/ROW[COUNTRY_NAME="Japan" or COUNTRY_NAME="India"]' PASSING data COLUMNS "COUNTRY_NAME" text, "REGION_ID" int) WHERE "COUNTRY_NAME" = 'Japan';
+SELECT xmltable.* FROM xmldata, LATERAL xmltable('/ROWS/ROW[COUNTRY_NAME="Japan" or COUNTRY_NAME="India"]' PASSING data COLUMNS "COUNTRY_NAME" text, "REGION_ID" int);
+SELECT xmltable.* FROM xmldata, LATERAL xmltable('/ROWS/ROW[COUNTRY_NAME="Japan" or COUNTRY_NAME="India"]' PASSING data COLUMNS id int PATH '@id', "COUNTRY_NAME" text, "REGION_ID" int);
+SELECT xmltable.* FROM xmldata, LATERAL xmltable('/ROWS/ROW[COUNTRY_NAME="Japan" or COUNTRY_NAME="India"]' PASSING data COLUMNS id int PATH '@id');
+SELECT xmltable.* FROM xmldata, LATERAL xmltable('/ROWS/ROW[COUNTRY_NAME="Japan" or COUNTRY_NAME="India"]' PASSING data COLUMNS id FOR ORDINALITY);
+SELECT xmltable.* FROM xmldata, LATERAL xmltable('/ROWS/ROW[COUNTRY_NAME="Japan" or COUNTRY_NAME="India"]' PASSING data COLUMNS id int PATH '@id', "COUNTRY_NAME" text, "REGION_ID" int, rawdata xml PATH './*');
+SELECT * FROM xmltable('/root' passing '<root><element>a1a<!-- aaaa -->a2a<?aaaaa?> <!--z-->  bbbb<x>xxx</x>cccc</element></root>' COLUMNS element text);
+SELECT * FROM xmltable('/root' passing '<root><element>a1a<!-- aaaa -->a2a<?aaaaa?> <!--z-->  bbbb<x>xxx</x>cccc</element></root>' COLUMNS element text PATH 'element/text()'); -- should fail
+select * from xmltable('d/r' passing '<d><r><c><![CDATA[<hello> &"<>!<a>foo</a>]]></c></r><r><c>2</c></r></d>' columns c text);
+SELECT * FROM xmltable('/x/a' PASSING '<x><a><ent>&apos;</ent></a><a><ent>&quot;</ent></a><a><ent>&amp;</ent></a><a><ent>&lt;</ent></a><a><ent>&gt;</ent></a></x>' COLUMNS ent text);
+SELECT * FROM xmltable('/x/a' PASSING '<x><a><ent>&apos;</ent></a><a><ent>&quot;</ent></a><a><ent>&amp;</ent></a><a><ent>&lt;</ent></a><a><ent>&gt;</ent></a></x>' COLUMNS ent xml);
+SELECT  xmltable.*
+   FROM (SELECT data FROM xmldata) x,
+        LATERAL XMLTABLE('/ROWS/ROW'
+                         PASSING data
+                         COLUMNS id int PATH '@id',
+                                  _id FOR ORDINALITY,
+                                  country_name text PATH 'COUNTRY_NAME/text()' NOT NULL,
+                                  country_id text PATH 'COUNTRY_ID',
+                                  region_id int PATH 'REGION_ID',
+                                  size float PATH 'SIZE',
+                                  unit text PATH 'SIZE/@unit',
+                                  premier_name text PATH 'PREMIER_NAME' DEFAULT 'not specified');
+SELECT * FROM XMLTABLE(XMLNAMESPACES('http://x.y' AS zz),
+                      '/zz:rows/zz:row'
+                      PASSING '<rows xmlns="http://x.y"><row><a>10</a></row></rows>'
+                      COLUMNS a int PATH 'zz:a');
+SELECT xmltable.*
+   FROM (SELECT data FROM xmldata) x,
+        LATERAL XMLTABLE('/ROWS/ROW'
+                         PASSING data
+                         COLUMNS id int PATH '@id',
+                                  _id FOR ORDINALITY,
+                                  country_name text PATH 'COUNTRY_NAME' NOT NULL,
+                                  country_id text PATH 'COUNTRY_ID',
+                                  region_id int PATH 'REGION_ID',
+                                  size float PATH 'SIZE',
+                                  unit text PATH 'SIZE/@unit',
+                                  premier_name text PATH 'PREMIER_NAME' DEFAULT 'not specified');
+SELECT  xmltable.*
+   FROM (SELECT data FROM xmldata) x,
+        LATERAL XMLTABLE('/ROWS/ROW'
+                         PASSING data
+                         COLUMNS id int PATH '@id',
+                                  _id FOR ORDINALITY,
+                                  country_name text PATH 'COUNTRY_NAME' NOT NULL,
+                                  country_id text PATH 'COUNTRY_ID',
+                                  region_id int PATH 'REGION_ID',
+                                  size float PATH 'SIZE',
+                                  unit text PATH 'SIZE/@unit',
+                                  premier_name text PATH 'PREMIER_NAME' DEFAULT 'not specified');
+SELECT  xmltable.*
+   FROM (SELECT data FROM xmldata) x,
+        LATERAL XMLTABLE('/ROWS/ROW'
+                         PASSING data
+                         COLUMNS id int PATH '@id',
+                                  _id FOR ORDINALITY,
+                                  country_name text PATH 'COUNTRY_NAME' NOT NULL,
+                                  country_id text PATH 'COUNTRY_ID',
+                                  region_id int PATH 'REGION_ID',
+                                  size float PATH 'SIZE',
+                                  unit text PATH 'SIZE/@unit',
+                                  premier_name text PATH 'PREMIER_NAME' DEFAULT 'not specified');
+SELECT  xmltable.*
+   FROM (SELECT data FROM xmldata) x,
+        LATERAL XMLTABLE('/ROWS/ROW'
+                         PASSING data
+                         COLUMNS id int PATH '@id',
+                                  _id FOR ORDINALITY,
+                                  country_name text PATH 'COUNTRY_NAME' NOT NULL,
+                                  country_id text PATH 'COUNTRY_ID',
+                                  region_id int PATH 'REGION_ID',
+                                  size float PATH 'SIZE',
+                                  unit text PATH 'SIZE/@unit',
+                                  premier_name text PATH 'PREMIER_NAME' DEFAULT 'not specified')
+  WHERE region_id = 2;
+SELECT  xmltable.*
+   FROM (SELECT data FROM xmldata) x,
+        LATERAL XMLTABLE('/ROWS/ROW'
+                         PASSING data
+                         COLUMNS id int PATH '@id',
+                                  _id FOR ORDINALITY,
+                                  country_name text PATH 'COUNTRY_NAME' NOT NULL,
+                                  country_id text PATH 'COUNTRY_ID',
+                                  region_id int PATH 'REGION_ID',
+                                  size float PATH 'SIZE',
+                                  unit text PATH 'SIZE/@unit',
+                                  premier_name text PATH 'PREMIER_NAME' DEFAULT 'not specified')
+  WHERE region_id = 2;
+SELECT  xmltable.*
+   FROM (SELECT data FROM xmldata) x,
+        LATERAL XMLTABLE('/ROWS/ROW'
+                         PASSING data
+                         COLUMNS id int PATH '@id',
+                                  _id FOR ORDINALITY,
+                                  country_name text PATH 'COUNTRY_NAME' NOT NULL,
+                                  country_id text PATH 'COUNTRY_ID',
+                                  region_id int PATH 'REGION_ID',
+                                  size float PATH 'SIZE' NOT NULL,
+                                  unit text PATH 'SIZE/@unit',
+                                  premier_name text PATH 'PREMIER_NAME' DEFAULT 'not specified');
+WITH
+   x AS (SELECT proname, proowner, procost::numeric, pronargs,
+                array_to_string(proargnames,',') as proargnames,
+                case when proargtypes <> '' then array_to_string(proargtypes::oid[],',') end as proargtypes
+           FROM pg_proc WHERE proname = 'f_leak'),
+   y AS (SELECT xmlelement(name proc,
+                           xmlforest(proname, proowner,
+                                     procost, pronargs,
+                                     proargnames, proargtypes)) as proc
+           FROM x),
+   z AS (SELECT xmltable.*
+           FROM y,
+                LATERAL xmltable('/proc' PASSING proc
+                                 COLUMNS proname name,
+                                         proowner oid,
+                                         procost float,
+                                         pronargs int,
+                                         proargnames text,
+                                         proargtypes text))
+   SELECT * FROM z
+   EXCEPT SELECT * FROM x;
+WITH
+   x AS (SELECT proname, proowner, procost::numeric, pronargs,
+                array_to_string(proargnames,',') as proargnames,
+                case when proargtypes <> '' then array_to_string(proargtypes::oid[],',') end as proargtypes
+           FROM pg_proc),
+   y AS (SELECT xmlelement(name data,
+                           xmlagg(xmlelement(name proc,
+                                             xmlforest(proname, proowner, procost,
+                                                       pronargs, proargnames, proargtypes)))) as doc
+           FROM x),
+   z AS (SELECT xmltable.*
+           FROM y,
+                LATERAL xmltable('/data/proc' PASSING doc
+                                 COLUMNS proname name,
+                                         proowner oid,
+                                         procost float,
+                                         pronargs int,
+                                         proargnames text,
+                                         proargtypes text))
+   SELECT * FROM z
+   EXCEPT SELECT * FROM x;
+SELECT table_to_xml('testxmlschema.test1', true, false, 'foo');
+SELECT table_to_xmlschema('testxmlschema.test1', false, true, 'foo');
+SELECT table_to_xml_and_xmlschema('testxmlschema.test1', true, true, 'foo');
+SELECT query_to_xml('SELECT * FROM testxmlschema.test1', false, false, '');
+SELECT query_to_xmlschema('SELECT * FROM testxmlschema.test1', false, false, '');
+SELECT query_to_xml_and_xmlschema('SELECT * FROM testxmlschema.test1', true, true, '');
+SELECT cursor_to_xml('xc'::refcursor, 5, false, true, '');
+SELECT cursor_to_xmlschema('xc'::refcursor, false, true, '');
+SELECT schema_to_xml_and_xmlschema('testxmlschema', true, true, 'foo');
+SELECT xmlforest(c1, c2, c3, c4) FROM testxmlschema.test3;
+SELECT table_to_xml('testxmlschema.test3', true, true, '');
+SELECT t.id FROM test_tablesample AS t TABLESAMPLE SYSTEM (50) REPEATABLE (0);
+SELECT id FROM test_tablesample TABLESAMPLE SYSTEM (100.0/11) REPEATABLE (0);
+SELECT id FROM test_tablesample TABLESAMPLE SYSTEM (50) REPEATABLE (0);
+SELECT id FROM test_tablesample TABLESAMPLE BERNOULLI (50) REPEATABLE (0);
+SELECT id FROM test_tablesample TABLESAMPLE BERNOULLI (5.5) REPEATABLE (0);
+SELECT count(*) FROM test_tablesample TABLESAMPLE SYSTEM (100);
+SELECT count(*) FROM test_tablesample TABLESAMPLE SYSTEM (100) REPEATABLE (1+2);
+SELECT count(*) FROM test_tablesample TABLESAMPLE SYSTEM (100) REPEATABLE (0.4);
+SELECT count(*) FROM test_tablesample TABLESAMPLE bernoulli (('1'::text < '0'::text)::int);
+select * from (values (0),(100)) v(pct), lateral (select count(*) from tenk1 tablesample bernoulli (pct)) ss;
+select * from (values (0),(100)) v(pct), lateral (select count(*) from tenk1 tablesample system (pct)) ss;
+select pct, count(unique1) from (values (0),(100)) v(pct), lateral (select * from tenk1 tablesample bernoulli (pct)) ss group by pct;
+select pct, count(unique1) from (values (0),(100)) v(pct), lateral (select * from tenk1 tablesample system (pct)) ss group by pct;
+SELECT id FROM test_tablesample TABLESAMPLE FOOBAR (1);
+SELECT id FROM test_tablesample TABLESAMPLE SYSTEM (NULL);
+SELECT id FROM test_tablesample TABLESAMPLE SYSTEM (50) REPEATABLE (NULL);
+SELECT id FROM test_tablesample TABLESAMPLE BERNOULLI (-1);
+SELECT id FROM test_tablesample TABLESAMPLE BERNOULLI (200);
+SELECT id FROM test_tablesample TABLESAMPLE SYSTEM (-1);
+SELECT id FROM test_tablesample TABLESAMPLE SYSTEM (200);
+SELECT id FROM test_tablesample_v1 TABLESAMPLE BERNOULLI (1);
+select * from parted_sample tablesample bernoulli (100);
+WITH query_select AS (SELECT * FROM test_tablesample) SELECT * FROM query_select TABLESAMPLE BERNOULLI (5.5) REPEATABLE (1);
+SELECT * FROM document TABLESAMPLE BERNOULLI(50) REPEATABLE(0) WHERE f_leak(dtitle) ORDER BY did;
+select case pg_is_in_recovery() when false then 'First ' || 'case' else 'Second case' end;
+select length(txid_current_snapshot()::text) >= 4;
+SELECT nextval('hsseq');
+SELECT '' AS ten, c AS cidr, i AS inet FROM INET_TBL;
+SELECT '' AS ten, i AS inet, host(i), text(i), family(i) FROM INET_TBL;
+SELECT '' AS ten, c AS cidr, broadcast(c), i AS inet, broadcast(i) FROM INET_TBL;
+SELECT '' AS ten, c AS cidr, network(c) AS "network(cidr)", i AS inet, network(i) AS "network(inet)" FROM INET_TBL;
+SELECT '' AS ten, c AS cidr, masklen(c) AS "masklen(cidr)", i AS inet, masklen(i) AS "masklen(inet)" FROM INET_TBL;
+SELECT masklen(c) AS "masklen(cidr)",i AS inet, masklen(i) FROM INET_TBL WHERE masklen(c) <= 8;
+SELECT '' AS six, c AS cidr, i AS inet FROM INET_TBL WHERE c = i;
+SELECT '' AS ten, i, c,
+  i < c AS lt, i <= c AS le, i = c AS eq,
+  i >= c AS ge, i > c AS gt, i <> c AS ne,
+  i << c AS sb, i <<= c AS sbe,
+  i >> c AS sup, i >>= c AS spe,
+  i && c AS ovr
+  FROM INET_TBL;
+SELECT max(i) AS max, min(i) AS min FROM INET_TBL;
+SELECT max(c) AS max, min(c) AS min FROM INET_TBL;
+SELECT '' AS ten, set_masklen(inet(text(i)), 24) FROM INET_TBL;
+SELECT * FROM inet_tbl WHERE i<<'192.168.1.0/24'::cidr;
+SELECT * FROM inet_tbl WHERE i<<='192.168.1.0/24'::cidr;
+SELECT * FROM inet_tbl WHERE i << '192.168.1.0/24'::cidr ORDER BY i;
+SELECT * FROM inet_tbl WHERE i <<= '192.168.1.0/24'::cidr ORDER BY i;
+SELECT * FROM inet_tbl WHERE i && '192.168.1.0/24'::cidr ORDER BY i;
+SELECT * FROM inet_tbl WHERE i >>= '192.168.1.0/24'::cidr ORDER BY i;
+SELECT * FROM inet_tbl WHERE i >> '192.168.1.0/24'::cidr ORDER BY i;
+SELECT * FROM inet_tbl WHERE i < '192.168.1.0/24'::cidr ORDER BY i;
+SELECT * FROM inet_tbl WHERE i <= '192.168.1.0/24'::cidr ORDER BY i;
+SELECT * FROM inet_tbl WHERE i = '192.168.1.0/24'::cidr ORDER BY i;
+SELECT * FROM inet_tbl WHERE i >= '192.168.1.0/24'::cidr ORDER BY i;
+SELECT * FROM inet_tbl WHERE i > '192.168.1.0/24'::cidr ORDER BY i;
+SELECT * FROM inet_tbl WHERE i <> '192.168.1.0/24'::cidr ORDER BY i;
+SELECT i, ~i AS "~i" FROM inet_tbl;
+SELECT i, c, i & c AS "and" FROM inet_tbl;
+SELECT i, c, i | c AS "or" FROM inet_tbl;
+SELECT i, i + 500 AS "i+500" FROM inet_tbl;
+SELECT i, i - 500 AS "i-500" FROM inet_tbl;
+SELECT i, c, i - c AS "minus" FROM inet_tbl;
+SELECT '127.0.0.1'::inet + 257;
+SELECT ('127.0.0.1'::inet + 257) - 257;
+SELECT '127::1'::inet + 257;
+SELECT ('127::1'::inet + 257) - 257;
+SELECT '127.0.0.2'::inet  - ('127.0.0.2'::inet + 500);
+SELECT '127.0.0.2'::inet  - ('127.0.0.2'::inet - 500);
+SELECT '127::2'::inet  - ('127::2'::inet + 500);
+SELECT '127::2'::inet  - ('127::2'::inet - 500);
+SELECT '127.0.0.1'::inet + 10000000000;
+SELECT '127.0.0.1'::inet - 10000000000;
+SELECT '126::1'::inet - '127::2'::inet;
+SELECT '127::1'::inet - '126::2'::inet;
+SELECT '127::1'::inet + 10000000000;
+SELECT '127::1'::inet - '127::2'::inet;
+SELECT inet_merge(c, i) FROM INET_TBL;
+SELECT inet_merge(c, i) FROM INET_TBL WHERE inet_same_family(c, i);
+SELECT satisfies_hash_partition('mchash'::regclass, 2, 1, NULL::int, NULL::int);
+SELECT satisfies_hash_partition('mchash'::regclass, 4, 0, 2, ''::text);
+SELECT satisfies_hash_partition('mchash'::regclass, 2, 1, variadic array[1,2]::int[]);
+SELECT satisfies_hash_partition('mcinthash'::regclass, 4, 0, variadic array[0, 0]);
+SELECT satisfies_hash_partition('mcinthash'::regclass, 4, 0, variadic array[0, 1]);
+SELECT satisfies_hash_partition('mcinthash'::regclass, 4, 0, variadic array[now(), now()]);
+SELECT '2006-08-13 12:34:56'::timestamptz;
+SELECT char 'c' = char 'c' AS true;
+SELECT '' AS six, c.* FROM CHAR_TBL c WHERE c.f1 <> 'a';
+SELECT '0/16AE7F8' = '0/16AE7F8'::pg_lsn;
+SELECT '0/16AE7F8'::pg_lsn != '0/16AE7F7';
+SELECT '0/16AE7F7' < '0/16AE7F8'::pg_lsn;
+SELECT '0/16AE7F8' > pg_lsn '0/16AE7F7';
+SELECT '0/16AE7F7'::pg_lsn - '0/16AE7F8'::pg_lsn;
+SELECT '0/16AE7F8'::pg_lsn - '0/16AE7F7'::pg_lsn;
+SELECT DISTINCT (i || '/' || j)::pg_lsn f
+  FROM generate_series(1, 10) i, generate_series(1, 10) j, generate_series(1, 5) k
+  WHERE i <= 10 AND j > 0 AND j <= 10 ORDER BY f;
+select box(point(0.05*i, 0.05*i), point(0.05*i, 0.05*i)), point(0.05*i, 0.05*i), circle(point(0.05*i, 0.05*i), 1.0);
+select p from gist_tbl where p <@ box(point(0,0), point(0.5, 0.5));
+select p from gist_tbl where p <@ box(point(0,0), point(0.5, 0.5)) order by p <-> point(0.201, 0.201);
+select p from
+  (values (box(point(0,0), point(0.5,0.5))),
+          (box(point(0.5,0.5), point(0.75,0.75))),
+          (box(point(0.8,0.8), point(1.0,1.0)))) as v(bb)
+cross join lateral
+  (select p from gist_tbl where p <@ bb order by p <-> bb[0] limit 2) ss;
+select p from
+  (values (box(point(0,0), point(0.5,0.5))),
+          (box(point(0.5,0.5), point(0.75,0.75))),
+          (box(point(0.8,0.8), point(1.0,1.0)))) as v(bb)
+cross join lateral
+  (select p from gist_tbl where p <@ bb order by p <-> bb[0] limit 2) ss;
+(SELECT unique1 AS random FROM onek ORDER BY random() LIMIT 1)
+INTERSECT
+(SELECT unique1 AS random FROM onek ORDER BY random() LIMIT 1)
+INTERSECT
+(SELECT unique1 AS random FROM onek ORDER BY random() LIMIT 1);
+SELECT count(*) AS random FROM onek WHERE random() < 1.0/10;
+SELECT random, count(random) FROM RANDOM_TBL GROUP BY random HAVING count(random) > 3;
+SELECT AVG(random) FROM RANDOM_TBL HAVING AVG(random) NOT BETWEEN 80 AND 120;
+SELECT 'NaN'::float4;
+SELECT '' AS four, f.* FROM FLOAT4_TBL f WHERE f.f1 <> '1004.3';
+SELECT '' AS bad, f.f1 / '0.0' from FLOAT4_TBL f;
+SELECT '' AS five, f.f1, @f.f1 AS abs_f1 FROM FLOAT4_TBL f;
+SELECT '32767.4'::float4::int2;
+SELECT * INTO films_recent FROM films WHERE date_prod >= '2002-01-01';
+SELECT * INTO TABLE films_recent FROM films WHERE date_prod >= '2002-01-01';
+SELECT * INTO TEMP TABLE public.films_recent FROM films WHERE date_prod >= '2002-01-01';
+select tableoid::regclass::text, a, min(b) as min_b, max(b) as max_b from list_parted group by 1, 2 order by 1;

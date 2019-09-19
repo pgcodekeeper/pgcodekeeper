@@ -2324,6 +2324,7 @@ tokens_nonkeyword
     | NOSUPERUSER
     | OUTPUT
     | PASSEDBYVALUE
+    | PATH
     | PERMISSIVE
     | PLAIN
     | PREFERRED
@@ -2642,6 +2643,7 @@ string_value_function
   | SUBSTRING LEFT_PAREN vex (COMMA vex)* (FROM vex)? (FOR vex)? RIGHT_PAREN
   | POSITION LEFT_PAREN vex_b IN vex RIGHT_PAREN
   | OVERLAY LEFT_PAREN vex PLACING vex FROM vex (FOR vex)? RIGHT_PAREN
+  | COLLATION FOR LEFT_PAREN vex RIGHT_PAREN
   ;
 
 xml_function
@@ -2654,6 +2656,15 @@ xml_function
     | XMLEXISTS LEFT_PAREN vex PASSING (BY REF)? vex (BY REF)? RIGHT_PAREN
     | XMLPARSE LEFT_PAREN (DOCUMENT | CONTENT) vex RIGHT_PAREN
     | XMLSERIALIZE LEFT_PAREN (DOCUMENT | CONTENT) vex AS data_type RIGHT_PAREN
+    | XMLTABLE LEFT_PAREN 
+        (XMLNAMESPACES LEFT_PAREN vex AS name=identifier (COMMA vex AS name=identifier)* RIGHT_PAREN COMMA)?
+        vex PASSING (BY REF)? vex (BY REF)?
+        COLUMNS xml_table_column (COMMA xml_table_column)*
+        RIGHT_PAREN
+    ;
+
+xml_table_column
+    : name=identifier (data_type (PATH vex)? (DEFAULT vex)? (NOT? NULL)? | FOR ORDINALITY)
     ;
 
 comparison_mod
@@ -2766,7 +2777,7 @@ select_primary
         into_statement?
         (set_qualifier (ON LEFT_PAREN vex (COMMA vex)* RIGHT_PAREN)?)?
         select_list?
-        into_statement?
+        (into_statement | into_table)?
         (FROM into_statement? from_item (COMMA from_item)*)?
         (WHERE vex into_statement?)?
         groupby_clause?
@@ -2784,6 +2795,11 @@ select_sublist
   : vex (AS identifier | AS tokens_reserved | id_token )?
   ;
 
+into_table
+    : INTO TABLE schema_qualified_name
+    | INTO (TEMPORARY | TEMP | UNLOGGED) TABLE? schema_qualified_name
+    ;
+
 from_item
     : LEFT_PAREN from_item RIGHT_PAREN alias_clause?
     | from_item CROSS JOIN from_item
@@ -2794,7 +2810,7 @@ from_item
     ;
 
 from_primary
-    : ONLY? schema_qualified_name MULTIPLY? alias_clause?
+    : ONLY? schema_qualified_name MULTIPLY? alias_clause? (TABLESAMPLE method=identifier LEFT_PAREN vex (COMMA vex)* RIGHT_PAREN (REPEATABLE vex)?)?
     | LATERAL? table_subquery alias_clause
     | LATERAL? function_call (WITH ORDINALITY)?
         (AS from_function_column_def
