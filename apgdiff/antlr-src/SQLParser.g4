@@ -2777,7 +2777,7 @@ select_primary
         into_statement?
         (set_qualifier (ON LEFT_PAREN vex (COMMA vex)* RIGHT_PAREN)?)?
         select_list?
-        into_statement?
+        (into_statement | into_table)?
         (FROM into_statement? from_item (COMMA from_item)*)?
         (WHERE vex into_statement?)?
         groupby_clause?
@@ -2794,6 +2794,11 @@ select_list
 select_sublist
   : vex (AS identifier | AS tokens_reserved | id_token )?
   ;
+
+into_table
+    : INTO TABLE schema_qualified_name
+    | INTO (TEMPORARY | TEMP | UNLOGGED) TABLE? schema_qualified_name
+    ;
 
 from_item
     : LEFT_PAREN from_item RIGHT_PAREN alias_clause?

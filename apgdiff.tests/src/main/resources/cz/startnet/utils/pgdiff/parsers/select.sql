@@ -41,16 +41,11 @@ select sillysrf(42);
 select sillysrf(-1) order by 1;
 select * from (values (2),(null),(1)) v(k) where k = k order by k;
 select * from (values (2),(null),(1)) v(k) where k = k;
-create table list_parted_tbl (a int,b int) partition by list (a);
-create table list_parted_tbl1 partition of list_parted_tbl for values in (1) partition by list(b);
---SELECT * INTO TABLE sitmp1 FROM onek WHERE onek.unique1 < 2;
---SELECT * INTO TABLE selinto_schema.tmp1 FROM pg_class WHERE relname like '%a%';
+SELECT * INTO TABLE sitmp1 FROM onek WHERE onek.unique1 < 2;
+SELECT * INTO TABLE selinto_schema.tmp1 FROM pg_class WHERE relname like '%a%';
 SELECT oid AS clsoid, relname, relnatts + 10 AS x INTO selinto_schema.tmp2 FROM pg_class WHERE relname like '%b%';
---SELECT * INTO TABLE selinto_schema.tmp1 FROM pg_class WHERE relname like '%a%';
+SELECT * INTO TABLE selinto_schema.tmp1 FROM pg_class WHERE relname like '%a%';
 SELECT * FROM (SELECT 1 INTO f) bar;
-CREATE VIEW foo AS SELECT 1 INTO b;
-INSERT INTO b SELECT 1 INTO f;
-
 SELECT b,
        b ~ '^[[:alpha:]]+$' AS is_alpha,
        b ~ '^[[:upper:]]+$' AS is_upper,
@@ -1242,3 +1237,7 @@ SELECT '' AS four, f.* FROM FLOAT4_TBL f WHERE f.f1 <> '1004.3';
 SELECT '' AS bad, f.f1 / '0.0' from FLOAT4_TBL f;
 SELECT '' AS five, f.f1, @f.f1 AS abs_f1 FROM FLOAT4_TBL f;
 SELECT '32767.4'::float4::int2;
+SELECT * INTO films_recent FROM films WHERE date_prod >= '2002-01-01';
+SELECT * INTO TABLE films_recent FROM films WHERE date_prod >= '2002-01-01';
+SELECT * INTO TEMP TABLE public.films_recent FROM films WHERE date_prod >= '2002-01-01';
+select tableoid::regclass::text, a, min(b) as min_b, max(b) as max_b from list_parted group by 1, 2 order by 1;

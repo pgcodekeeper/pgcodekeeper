@@ -597,3 +597,4 @@ CREATE VIEW xmltableview2 AS SELECT * FROM XMLTABLE(XMLNAMESPACES('http://x.y' A
                       '/zz:rows/zz:row'
                       PASSING '<rows xmlns="http://x.y"><row><a>10</a></row></rows>'
                       COLUMNS a int PATH 'zz:a');
+CREATE VIEW foo AS SELECT 1 INTO b;
