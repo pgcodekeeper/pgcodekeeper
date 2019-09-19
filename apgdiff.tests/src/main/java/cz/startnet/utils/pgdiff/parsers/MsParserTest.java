@@ -71,11 +71,11 @@ public class MsParserTest {
             {"ms_statements", 31},
             {"ms_table"},
             {"ms_transactions"},
-            {"ms_triggers", 1},
+            {"ms_triggers"},
             {"ms_type"},
             {"ms_update", 16},
             {"ms_users"},
-            {"ms_xml_data_type", 16},
+            {"ms_xml_data_type", 1},
         });
 
         int maxLength = p.stream()
