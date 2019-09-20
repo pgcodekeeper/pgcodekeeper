@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -39,7 +38,6 @@ import cz.startnet.utils.pgdiff.loader.JdbcRunner;
 import cz.startnet.utils.pgdiff.parsers.antlr.ScriptParser;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -57,6 +55,7 @@ import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.job.SingletonEditorJob;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 import ru.taximaxim.codekeeper.ui.propertytests.QuickUpdateJobTester;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
@@ -211,7 +210,9 @@ class QuickUpdateJob extends SingletonEditorJob {
         }
 
         try {
-            ScriptParser parser = new ScriptParser(file.getName(), differ.getDiffDirect(), isMsSql);
+            String filePath = PgDbParser.getPathFromInput(getEditorPart().getEditorInput());
+
+            ScriptParser parser = new ScriptParser(filePath, differ.getDiffDirect(), isMsSql);
             String error = parser.getErrorMessage();
             if (error != null) {
                 throw new PgCodekeeperUIException(error);
@@ -221,10 +222,7 @@ class QuickUpdateJob extends SingletonEditorJob {
                 throw new PgCodekeeperUIException(Messages.QuickUpdate_danger);
             }
 
-            Map<String, Set<PgObjLocation>> batches = parser.batch();
-
-
-            new JdbcRunner(monitor).runBatches(connector, batches, null);
+            new JdbcRunner(monitor).runBatches(connector, filePath, parser.batch(), null);
         } catch (SQLException e) {
             throw new PgCodekeeperUIException(Messages.QuickUpdate_migration_failed + e.getLocalizedMessage());
         }

@@ -188,10 +188,14 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
             String body = statementBody.getBody().toLowerCase(Locale.ROOT);
             Set<PgObjLocation> newRefs = new LinkedHashSet<>();
             getAllObjDefinitions().forEach(def -> {
+                int lenght = def.getObjLength();
+                if (lenght == 0) {
+                    return;
+                }
                 String name = def.getObjName().toLowerCase(Locale.ROOT);
                 int index = body.indexOf(name);
                 while (index >= 0) {
-                    int next = index + def.getObjLength();
+                    int next = index + lenght;
                     // check word boundaries, whole words only
                     if ((index == 0 || !PgDiffUtils.isValidIdChar(body.charAt(index - 1))) &&
                             (next >= body.length() || !PgDiffUtils.isValidIdChar(body.charAt(next)))) {

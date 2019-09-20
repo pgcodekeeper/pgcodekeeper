@@ -64,7 +64,7 @@ public class DisableMsTrigger extends ParserAbstract {
         Qualified_nameContext parent = ctxEnableDisableTr.qualified_name();
         if (triggers == null || parent == null) {
             PgObjLocation loc = new PgObjLocation(sb.toString(), ctx, getFullCtxText(ctx));
-            db.addToQueries(loc);
+            db.addToQueries(fileName, loc);
             return loc;
         }
 
@@ -80,7 +80,7 @@ public class DisableMsTrigger extends ParserAbstract {
         sb.setLength(sb.length() - 2);
 
         PgObjLocation loc = new PgObjLocation(sb.toString(), ctx, getFullCtxText(ctx));
-        db.addToQueries(loc);
+        db.addToQueries(fileName, loc);
         return loc;
     }
 }

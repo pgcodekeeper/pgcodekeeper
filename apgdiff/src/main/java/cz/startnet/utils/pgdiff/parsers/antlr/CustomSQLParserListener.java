@@ -5,6 +5,7 @@ import java.util.Locale;
 import java.util.Queue;
 
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
@@ -60,6 +61,7 @@ implements SqlContextProcessor {
     private String tablespace;
     private String oids;
     private final boolean isScriptMode;
+    private final boolean isRefMode;
     private final Queue<AntlrTask<?>> antlrTasks;
 
     public CustomSQLParserListener(PgDatabase database, String filename, ParserListenerMode mode,
@@ -67,6 +69,7 @@ implements SqlContextProcessor {
         super(database, filename, mode, errors, monitor);
         this.antlrTasks = antlrTasks;
         isScriptMode = ParserListenerMode.SCRIPT == mode;
+        isRefMode = ParserListenerMode.REF == mode;
     }
 
     @Override
@@ -96,9 +99,8 @@ implements SqlContextProcessor {
             }
         } else if ((ds = statement.data_statement()) != null) {
             data(ds);
-        } else if(isScriptMode) {
-            db.addToQueries(new PgObjLocation(ParserAbstract.getPgStmtAction(statement, stream),
-                    statement, ParserAbstract.getFullCtxText(statement)));
+        } else if (isScriptMode || isRefMode) {
+            addUndescribedPgObjToQueries(statement);
         }
     }
 
@@ -146,16 +148,14 @@ implements SqlContextProcessor {
             p = new CreateRule(ctx.rule_common(), db);
         } else if (ctx.set_statement() != null) {
             Set_statementContext setCtx = ctx.set_statement();
-            if (isScriptMode) {
-                db.addToQueries(new PgObjLocation(ParserAbstract.getPgStmtAction(setCtx, stream),
-                        setCtx, ParserAbstract.getFullCtxText(setCtx)));
+            if (isScriptMode || isRefMode) {
+                addUndescribedPgObjToQueries(setCtx);
             } else {
                 set(setCtx);
             }
             return;
-        } else if (isScriptMode) {
-            db.addToQueries(new PgObjLocation(ParserAbstract.getPgStmtAction(ctx, stream),
-                    ctx, ParserAbstract.getFullCtxText(ctx)));
+        } else if (isScriptMode || isRefMode) {
+            addUndescribedPgObjToQueries(ctx);
             return;
         } else {
             return;
@@ -184,9 +184,8 @@ implements SqlContextProcessor {
                 || ctx.alter_index_statement() != null
                 || ctx.alter_extension_statement() != null) {
             p = new AlterOther(ctx, db);
-        } else if (isScriptMode) {
-            db.addToQueries(new PgObjLocation(ParserAbstract.getPgStmtAction(ctx, stream),
-                    ctx, ParserAbstract.getFullCtxText(ctx)));
+        } else if (isScriptMode || isRefMode) {
+            addUndescribedPgObjToQueries(ctx);
             return;
         } else {
             return;
@@ -198,15 +197,19 @@ implements SqlContextProcessor {
         ParserAbstract p;
         if (ctx.update_stmt_for_psql() != null) {
             p =  new UpdateStatement(ctx.update_stmt_for_psql(), db);
-        } else if (isScriptMode) {
-            db.addToQueries(new PgObjLocation(ParserAbstract.getPgStmtAction(ctx, stream),
-                    ctx, ParserAbstract.getFullCtxText(ctx)));
+        } else if (isScriptMode || isRefMode) {
+            addUndescribedPgObjToQueries(ctx);
             return;
         } else {
             return;
         }
 
         safeParseStatement(p, ctx);
+    }
+
+    private void addUndescribedPgObjToQueries(ParserRuleContext ctx) {
+        db.addToQueries(fileName, new PgObjLocation(ParserAbstract.getPgStmtAction(ctx, stream),
+                ctx, isScriptMode ? ParserAbstract.getFullCtxText(ctx) : null));
     }
 
     private void set(Set_statementContext ctx) {

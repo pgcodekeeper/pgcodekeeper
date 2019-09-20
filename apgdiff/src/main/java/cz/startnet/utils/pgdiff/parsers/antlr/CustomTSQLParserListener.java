@@ -57,16 +57,18 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 public class CustomTSQLParserListener extends CustomParserListener
 implements TSqlContextProcessor {
 
+    private static int OFFSET_TO_GO_POSITION = 2;
+
     private boolean ansiNulls = true;
     private boolean quotedIdentifier = true;
     private final boolean isScriptMode;
-    private final PgDatabase database;
+    private final boolean isRefMode;
 
     public CustomTSQLParserListener(PgDatabase database, String filename,
             ParserListenerMode mode, List<AntlrError> errors, IProgressMonitor monitor) {
         super(database, filename, mode, errors, monitor);
-        this.database = database;
-        this.isScriptMode = ParserListenerMode.SCRIPT == mode;
+        isScriptMode = ParserListenerMode.SCRIPT == mode;
+        isRefMode = ParserListenerMode.REF == mode;
     }
 
     @Override
@@ -88,10 +90,11 @@ implements TSqlContextProcessor {
     }
 
     private void endBatch(ParserRuleContext previousObjCtx) {
-        if (isScriptMode) {
-            database.addToQueries(new PgObjLocation(null, PgStatement.strGO,
-                    previousObjCtx.getStop().getStopIndex() + 1,
-                    previousObjCtx.getStop().getLine() + 1, 0, null, PgStatement.strGO));
+        if (isScriptMode || isRefMode) {
+            db.addToQueries(fileName, new PgObjLocation(null, PgStatement.strGO,
+                    previousObjCtx.getStop().getStopIndex() + OFFSET_TO_GO_POSITION,
+                    previousObjCtx.getStop().getLine() + OFFSET_TO_GO_POSITION, 0, null,
+                    isScriptMode ? PgStatement.strGO : null));
         }
     }
 
@@ -112,38 +115,33 @@ implements TSqlContextProcessor {
                 safeParseStatement(new DisableMsTrigger(disable, db), disable);
             } else if ((drop = ddl.schema_drop()) != null) {
                 safeParseStatement(new DropMsStatement(drop, db), drop);
-            } else if (isScriptMode) {
-                db.addToQueries(new PgObjLocation(ParserAbstract.getMsStmtAction(ddl, stream),
-                        ddl, ParserAbstract.getFullCtxText(ddl)));
+            } else if (isScriptMode || isRefMode) {
+                addUndescribedMsObjToQueries(ddl);
             }
         } else if ((dml = st.dml_clause()) != null) {
             Update_statementContext update = dml.update_statement();
             if (update != null) {
                 safeParseStatement(new UpdateMsStatement(update, db), update);
-            } else if (isScriptMode) {
-                db.addToQueries(new PgObjLocation(ParserAbstract.getMsStmtAction(dml, stream),
-                        dml, ParserAbstract.getFullCtxText(dml)));
+            } else if (isScriptMode || isRefMode) {
+                addUndescribedMsObjToQueries(dml);
             }
         } else if ((ast = st.another_statement()) != null) {
             Set_statementContext set = ast.set_statement();
             Security_statementContext security;
             if (set != null) {
-                if (isScriptMode) {
-                    db.addToQueries(new PgObjLocation(ParserAbstract.getMsStmtAction(set, stream),
-                            set, ParserAbstract.getFullCtxText(set)));
+                if (isScriptMode || isRefMode) {
+                    addUndescribedMsObjToQueries(set);
                 } else {
                     set(set);
                 }
             } else if ((security = ast.security_statement()) != null
                     && security.rule_common() != null) {
                 safeParseStatement(new CreateMsRule(security.rule_common(), db), security);
-            } else if (isScriptMode) {
-                db.addToQueries(new PgObjLocation(ParserAbstract.getMsStmtAction(ast, stream),
-                        ast, ParserAbstract.getFullCtxText(ast)));
+            } else if (isScriptMode || isRefMode) {
+                addUndescribedMsObjToQueries(ast);
             }
-        } else if (isScriptMode) {
-            db.addToQueries(new PgObjLocation(ParserAbstract.getMsStmtAction(st, stream),
-                    st, ParserAbstract.getFullCtxText(st)));
+        } else if (isScriptMode || isRefMode) {
+            addUndescribedMsObjToQueries(st);
         }
     }
 
@@ -167,9 +165,8 @@ implements TSqlContextProcessor {
             p = new CreateMsView(ctx, db, ansiNulls, quotedIdentifier, stream);
         } else if (body.create_or_alter_trigger() != null) {
             p = new CreateMsTrigger(ctx, db, ansiNulls, quotedIdentifier, stream);
-        } else if (isScriptMode) {
-            db.addToQueries(new PgObjLocation(ParserAbstract.getMsStmtAction(ctx, stream),
-                    ctx, ParserAbstract.getFullCtxText(ctx)));
+        } else if (isScriptMode || isRefMode) {
+            addUndescribedMsObjToQueries(ctx);
             return;
         } else {
             return;
@@ -199,9 +196,8 @@ implements TSqlContextProcessor {
             p = new CreateMsUser(ctx.create_user(), db);
         } else if (ctx.create_type() != null) {
             p = new CreateMsType(ctx.create_type(), db);
-        } else if (isScriptMode) {
-            db.addToQueries(new PgObjLocation(ParserAbstract.getMsStmtAction(ctx, stream),
-                    ctx, ParserAbstract.getFullCtxText(ctx)));
+        } else if (isScriptMode || isRefMode) {
+            addUndescribedMsObjToQueries(ctx);
             return;
         } else {
             return;
@@ -223,14 +219,18 @@ implements TSqlContextProcessor {
                 || ctx.alter_user() != null
                 || ctx.alter_sequence() != null) {
             p = new AlterMsOther(ctx, db);
-        } else if (isScriptMode) {
-            db.addToQueries(new PgObjLocation(ParserAbstract.getMsStmtAction(ctx, stream),
-                    ctx, ParserAbstract.getFullCtxText(ctx)));
+        } else if (isScriptMode || isRefMode) {
+            addUndescribedMsObjToQueries(ctx);
             return;
         } else {
             return;
         }
         safeParseStatement(p, ctx);
+    }
+
+    private void addUndescribedMsObjToQueries(ParserRuleContext ctx) {
+        db.addToQueries(fileName, new PgObjLocation(ParserAbstract.getMsStmtAction(ctx, stream),
+                ctx, isScriptMode ? ParserAbstract.getFullCtxText(ctx) : null));
     }
 
     private void set(Set_statementContext setCtx) {

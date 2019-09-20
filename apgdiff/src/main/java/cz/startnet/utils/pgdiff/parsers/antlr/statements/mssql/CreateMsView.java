@@ -91,7 +91,7 @@ public class CreateMsView extends BatchContextProcessor {
     protected PgObjLocation fillQueryLocation(ParserRuleContext ctx, CommonTokenStream tokenStream) {
         PgObjLocation loc = new PgObjLocation(getStmtAction(ctx, tokenStream), ctx,
                 ParserAbstract.getFullCtxTextWithHidden(ctx, tokenStream));
-        db.addToQueries(loc);
+        db.addToQueries(fileName, loc);
         return loc;
     }
 

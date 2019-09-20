@@ -1,7 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -69,7 +68,7 @@ public abstract class ParserAbstract {
 
     private List<StatementBodyContainer> statementBodies;
     private boolean refMode;
-    private String fileName;
+    protected String fileName;
 
     protected StatementActions action;
     protected GenericColumn descrObj;
@@ -82,7 +81,7 @@ public abstract class ParserAbstract {
             List<StatementBodyContainer> statementBodies, ParserRuleContext ctx,
             CommonTokenStream tokenStream) {
         this.fileName = fileName;
-        this.refMode = ParserListenerMode.REF == mode;
+        refMode = ParserListenerMode.REF == mode;
         this.statementBodies = statementBodies;
         if (ParserListenerMode.SCRIPT == mode) {
             fillDescrObj();
@@ -255,7 +254,7 @@ public abstract class ParserAbstract {
             DbObjType type, StatementActions action) {
         PgObjLocation loc = getLocation(ids, type, action, false, null);
         if (loc != null) {
-            db.getObjReferences().computeIfAbsent(fileName, k -> new HashSet<>()).add(loc);
+            db.getObjReferences().computeIfAbsent(fileName, k -> new LinkedHashSet<>()).add(loc);
         }
 
         return loc;
@@ -396,7 +395,7 @@ public abstract class ParserAbstract {
             if (!refMode) {
                 st.addDep(loc.getGenericColumn());
             }
-            db.getObjReferences().computeIfAbsent(fileName, k -> new HashSet<>()).add(loc);
+            db.getObjReferences().computeIfAbsent(fileName, k -> new LinkedHashSet<>()).add(loc);
         }
     }
 
@@ -517,7 +516,7 @@ public abstract class ParserAbstract {
      */
     protected PgObjLocation fillQueryLocation(ParserRuleContext ctx, CommonTokenStream tokenStream) {
         PgObjLocation loc = new PgObjLocation(getStmtAction(ctx, tokenStream), ctx, getFullCtxText(ctx));
-        db.addToQueries(loc);
+        db.addToQueries(fileName, loc);
         return loc;
     }
 

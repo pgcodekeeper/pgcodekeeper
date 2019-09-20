@@ -22,7 +22,6 @@ import com.microsoft.sqlserver.jdbc.SQLServerException;
 import cz.startnet.utils.pgdiff.IProgressReporter;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.jdbc.JdbcType;
-import cz.startnet.utils.pgdiff.parsers.antlr.ScriptParser;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
@@ -33,14 +32,17 @@ public class QueriesBatchCallable extends StatementCallable<String> {
     private final IProgressMonitor monitor;
     private final Connection connection;
     private final IProgressReporter reporter;
+    private final String filePath;
 
-    public QueriesBatchCallable(Statement st, Map<String, Set<PgObjLocation>> batches,
-            IProgressMonitor monitor, IProgressReporter reporter, Connection connection) {
+    public QueriesBatchCallable(Statement st, String filePath,
+            Map<String, Set<PgObjLocation>> batches, IProgressMonitor monitor,
+            IProgressReporter reporter, Connection connection) {
         super(st, null);
         this.batches = batches;
         this.monitor = monitor;
         this.connection = connection;
         this.reporter = reporter;
+        this.filePath = filePath;
     }
 
     @Override
@@ -153,7 +155,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
         List<List<PgObjLocation>> batchesList = new ArrayList<>();
         batchesList.add(new ArrayList<>());
 
-        batches.get(ScriptParser.SCRIPT_KEY).stream().forEach(loc -> {
+        batches.get(filePath).stream().forEach(loc -> {
             if (PgStatement.strGO.equalsIgnoreCase(loc.getAction())) {
                 batchesList.add(new ArrayList<>());
             } else {

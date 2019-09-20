@@ -21,20 +21,20 @@ public class CustomParserListener {
 
     protected final PgDatabase db;
     protected final ParserListenerMode mode;
-    protected final String filename;
+    protected final String fileName;
     protected final List<AntlrError> errors;
     private final IProgressMonitor monitor;
     protected CommonTokenStream stream;
 
     private final List<StatementBodyContainer> statementBodies = new ArrayList<>();
 
-    public CustomParserListener(PgDatabase database, String filename,
+    public CustomParserListener(PgDatabase database, String fileName,
             ParserListenerMode mode, List<AntlrError> errors,
             IProgressMonitor monitor) {
         this.db = database;
         this.errors = errors;
         this.monitor = monitor;
-        this.filename = filename;
+        this.fileName = fileName;
         this.mode = mode;
     }
 
@@ -42,7 +42,7 @@ public class CustomParserListener {
      * @param ctx statememnt's first token rule
      */
     protected void safeParseStatement(ParserAbstract p, ParserRuleContext ctx) {
-        safeParseStatement(() -> p.parseObject(filename, mode, statementBodies,
+        safeParseStatement(() -> p.parseObject(fileName, mode, statementBodies,
                 ctx, stream), ctx);
     }
 
@@ -51,11 +51,11 @@ public class CustomParserListener {
             PgDiffUtils.checkCancelled(monitor);
             r.run();
         } catch (UnresolvedReferenceException ex) {
-            errors.add(handleUnresolvedReference(ex, filename));
+            errors.add(handleUnresolvedReference(ex, fileName));
         } catch (InterruptedException ex) {
             throw new MonitorCancelledRuntimeException();
         } catch (Exception e) {
-            errors.add(handleParserContextException(e, filename, ctx));
+            errors.add(handleParserContextException(e, fileName, ctx));
         }
     }
 

@@ -187,6 +187,7 @@ public interface UIConsts {
         // pgadmin icons
         String ICONPGADMIN = "/icons/pgadmin/"; //$NON-NLS-1$
         String ICONDATABASE = ICONPGADMIN + "database.png"; //$NON-NLS-1$
+        String ICONNAMEOTHER = "other"; //$NON-NLS-1$
 
         // copies of inaccessible Eclipse icons
         String ICONUP = "/icons/search_prev.gif"; //$NON-NLS-1$

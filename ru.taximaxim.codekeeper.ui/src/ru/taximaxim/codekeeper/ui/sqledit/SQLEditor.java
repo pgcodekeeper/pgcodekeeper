@@ -452,7 +452,8 @@ implements IResourceChangeListener, IErrorPositionSetter {
         IRunnableWithProgress runnable = monitor -> {
             try {
                 ScriptParser parser = new ScriptParser(
-                        getEditorInput().getName(), textRetrieved, dbInfo.isMsSql());
+                        PgDbParser.getPathFromInput(getEditorInput()),
+                        textRetrieved, dbInfo.isMsSql());
                 String error = parser.getErrorMessage();
                 if (error != null) {
                     UiProgressReporter.writeSingleError(error);
@@ -542,7 +543,9 @@ implements IResourceChangeListener, IErrorPositionSetter {
             IProgressReporter reporter = new UiProgressReporter(monitor, SQLEditor.this);
             try (IProgressReporter toClose = reporter) {
                 Map<String, Set<PgObjLocation>> batches = parser.batch();
-                new JdbcRunner(monitor).runBatches(connector, batches, reporter);
+                new JdbcRunner(monitor).runBatches(connector,
+                        PgDbParser.getPathFromInput(SQLEditor.this.getEditorInput()),
+                        batches, reporter);
                 ProjectEditorDiffer.notifyDbChanged(dbInfo);
                 return Status.OK_STATUS;
             } catch (InterruptedException ex) {

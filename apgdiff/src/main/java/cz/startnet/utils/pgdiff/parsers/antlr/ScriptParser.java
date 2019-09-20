@@ -20,25 +20,23 @@ import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 
 public class ScriptParser {
 
-    public static final String SCRIPT_KEY = "script";
-
     private final String script;
 
     private final Map<String, Set<PgObjLocation>> batches;
     private final List<AntlrError> errors;
     private final Set<DangerStatement> dangerStatements;
 
-    public ScriptParser(String name, String script, boolean isMsSql)
+    public ScriptParser(String filePath, String script, boolean isMsSql)
             throws IOException, InterruptedException {
         this.script = script;
         PgDiffArguments args = new PgDiffArguments();
         args.setMsSql(isMsSql);
         PgDumpLoader loader = new PgDumpLoader(
                 () -> new ByteArrayInputStream(script.getBytes(StandardCharsets.UTF_8)),
-                name, args, new NullProgressMonitor(), 0);
+                filePath, args, new NullProgressMonitor(), 0);
         loader.setMode(ParserListenerMode.SCRIPT);
         batches = loader.load().getObjDefinitions();
-        dangerStatements = batches.get(SCRIPT_KEY).stream()
+        dangerStatements = batches.get(filePath).stream()
                 .filter(PgObjLocation::isDanger)
                 .map(PgObjLocation::getDanger)
                 .collect(Collectors.toSet());

@@ -80,11 +80,11 @@ public class JdbcRunner {
      * @throws IOException
      * @throws InterruptedException
      */
-    public void runBatches(JdbcConnector connector, Map<String, Set<PgObjLocation>> batches,
+    public void runBatches(JdbcConnector connector, String filePath, Map<String, Set<PgObjLocation>> batches,
             IProgressReporter reporter) throws SQLException, IOException, InterruptedException {
         try (Connection connection = connector.getConnection();
                 Statement st = connection.createStatement()) {
-            runScript(new QueriesBatchCallable(st, batches, monitor, reporter, connection));
+            runScript(new QueriesBatchCallable(st, filePath, batches, monitor, reporter, connection));
         }
     }
 

@@ -85,7 +85,7 @@ public class AlterMsAuthorization extends ParserAbstract {
     @Override
     protected PgObjLocation fillQueryLocation(ParserRuleContext ctx, CommonTokenStream tokenStream) {
         PgObjLocation loc = new PgObjLocation("ALTER AUTHORIZATION", ctx, getFullCtxText(ctx));
-        db.addToQueries(loc);
+        db.addToQueries(fileName, loc);
         return loc;
     }
 }
