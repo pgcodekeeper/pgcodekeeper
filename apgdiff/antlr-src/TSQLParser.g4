@@ -319,41 +319,16 @@ create_app_role_option
 
 alter_assembly
     : ASSEMBLY name=id 
-    (FROM client_assembly_specifier)? 
+    (FROM expression (COMMA expression)*)? 
     (WITH assembly_option (COMMA assembly_option)*)? 
-    (DROP (ALL | multiple_local_files))? 
-    (ADD FILE FROM STRING (AS id)?)?
-    ;
-
-client_assembly_specifier
-    : network_file_share
-    | local_file
-    | STRING
-    | AS id
+    (DROP FILE (ALL | STRING (COMMA STRING)))? 
+    (ADD FILE FROM expression (AS id)? (COMMA expression (AS id))*)?
     ;
 
 assembly_option
     : PERMISSION_SET EQUAL assembly_permission
     | VISIBILITY EQUAL (ON | OFF)
     | UNCHECKED DATA
-    ;
-
-network_file_share
-    : DOUBLE_BACK_SLASH computer_name=id file_path
-    ;
-
-file_path
-    : '\\' file_path
-    | id
-    ;
-
-local_file
-    : DISK_DRIVE file_path
-    ;
-
-multiple_local_files
-    : SINGLE_QUOTE local_file SINGLE_QUOTE COMMA
-    | local_file
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-assembly-transact-sql
@@ -499,6 +474,7 @@ alter_availability_group_options
 ip_address_option
     : IPV4_ADDR COMMA IPV4_ADDR
     | IPV6_ADDR
+    | STRING (COMMA STRING)?
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-broker-priority-transact-sql
@@ -627,7 +603,7 @@ alter_cryptographic_provider
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-cryptographic-provider-transact-sql
 create_cryptographic_provider
     : CRYPTOGRAPHIC PROVIDER provider_name=id FROM FILE EQUAL path_of_DLL=STRING
-    ;
+    ; 
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-event-notification-transact-sql
 create_event_notification
@@ -701,9 +677,8 @@ event_session_predicate_leaf
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-external-data-source-transact-sql
 alter_external_data_source
-    : EXTERNAL DATA SOURCE data_source_name=id  SET
-    ( LOCATION EQUAL location=(QUOTED_URL|QUOTED_HOST_AND_PORT) COMMA? |  RESOURCE_MANAGER_LOCATION EQUAL resource_manager_location=(QUOTED_URL|QUOTED_HOST_AND_PORT) COMMA? |  CREDENTIAL EQUAL credential_name=id )+
-    | EXTERNAL DATA SOURCE data_source_name=id WITH LR_BRACKET TYPE EQUAL BLOB_STORAGE COMMA LOCATION EQUAL location=STRING (COMMA CREDENTIAL EQUAL credential_name=id )? RR_BRACKET
+    : EXTERNAL DATA SOURCE id SET (LOCATION EQUAL STRING COMMA? | RESOURCE_MANAGER_LOCATION EQUAL STRING COMMA? | CREDENTIAL EQUAL id)+
+    | EXTERNAL DATA SOURCE id WITH LR_BRACKET TYPE EQUAL BLOB_STORAGE COMMA LOCATION EQUAL STRING (COMMA CREDENTIAL EQUAL id )? RR_BRACKET
     ;
 
 
@@ -891,9 +866,9 @@ alter_route
     : ROUTE id WITH
     (SERVICE_NAME EQUAL route_service_name=STRING COMMA?)?
     (BROKER_INSTANCE EQUAL broker_instance_identifier=STRING COMMA?)?
-    (LIFETIME EQUAL DECIMAL COMMA? )?
-    (ADDRESS EQUAL (STRING|QUOTED_URL) COMMA?)?
-    (MIRROR_ADDRESS EQUAL (STRING|QUOTED_URL))? 
+    (LIFETIME EQUAL DECIMAL COMMA?)?
+    (ADDRESS EQUAL STRING COMMA?)?
+    (MIRROR_ADDRESS EQUAL STRING)? 
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-role-transact-sql
@@ -912,8 +887,8 @@ create_route
     (COMMA? SERVICE_NAME EQUAL route_service_name=STRING)?
     (COMMA? BROKER_INSTANCE EQUAL broker_instance_identifier=STRING)?
     (COMMA? LIFETIME EQUAL DECIMAL)?
-    COMMA? ADDRESS EQUAL (STRING|QUOTED_URL)
-    (COMMA MIRROR_ADDRESS EQUAL (STRING|QUOTED_URL))?
+    COMMA? ADDRESS EQUAL STRING
+    (COMMA MIRROR_ADDRESS EQUAL STRING)?
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-rule-transact-sql
@@ -1281,7 +1256,7 @@ queue_settings
         ((STATUS EQUAL (ON | OFF) COMMA? )?
         (PROCEDURE_NAME EQUAL qualified_name COMMA?)?
         (MAX_QUEUE_READERS EQUAL max_readers=DECIMAL COMMA?)?
-        (EXECUTE AS (SELF | user_name=STRING | OWNER) COMMA?)?
+        (execute_clause COMMA?)?
         | DROP)
     RR_BRACKET COMMA?)?
     (POISON_MESSAGE_HANDLING LR_BRACKET (STATUS EQUAL (ON | OFF)) RR_BRACKET)?
@@ -1443,7 +1418,7 @@ output_dml_list_elem
 
 output_column_name
     : (DELETED | INSERTED | qualified_name) DOT (STAR | id)
-    | DOLLAR_ACTION
+    | DOLLAR ACTION
     ;
 
 // DDL
@@ -1817,8 +1792,7 @@ alter_endpoint
         ( STATE EQUAL ( state=STARTED | state=STOPPED | state=DISABLED ) )?
                 AS TCP LR_BRACKET
                 LISTENER_PORT EQUAL port=DECIMAL
-                    ( COMMA LISTENER_IP EQUAL
-                    (ALL | IPV4_ADDR | IPV6_ADDR) )?
+                    ( COMMA LISTENER_IP EQUAL (ALL | IPV4_ADDR | IPV6_ADDR | STRING))?
                     RR_BRACKET
                 (TSQL
                 |
@@ -2589,7 +2563,8 @@ primitive_expression
     | STRING // string, datetime or uniqueidentifier
     | BINARY
     | DECIMAL
-    | (REAL | FLOAT)  // float or decimal
+    | REAL 
+    | FLOAT
     | dollar=DOLLAR (DECIMAL | FLOAT)       // money
     | TRUE // bit
     | FALSE // bit
@@ -3313,9 +3288,7 @@ simple_id
     | DISABLE_BROKER
     | DISABLE
     | DISABLED
-    | DISK_DRIVE
     | DOCUMENT
-    | DOLLAR_ACTION
     | DTC_SUPPORT
     | DYNAMIC
     | ELEMENTS

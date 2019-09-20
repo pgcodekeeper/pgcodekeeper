@@ -170,7 +170,6 @@ TRAN: T R A N;
 TRANSACTION: T R A N S A C T I O N;
 TRIGGER: T R I G G E R;
 TRUNCATE: T R U N C A T E;
-TRY_CONVERT: T R Y '_' C O N V E R T;
 TSEQUAL: T S E Q U A L;
 UNION: U N I O N;
 UNIQUE: U N I Q U E;
@@ -352,9 +351,7 @@ DIRECTORY_NAME: D I R E C T O R Y '_' N A M E;
 DISABLE_BROKER: D I S A B L E '_' B R O K E R;
 DISABLE: D I S A B L E;
 DISABLED: D I S A B L E D;
-DISK_DRIVE: [A-Z] ':';
 DOCUMENT: D O C U M E N T;
-DOLLAR_ACTION: '$' A C T I O N;
 DTC_SUPPORT: D T C '_' S U P P O R T;
 DYNAMIC: D Y N A M I C;
 ELEMENTS: E L E M E N T S;
@@ -862,19 +859,18 @@ SQUARE_BRACKET_ID:  UnterminatedSquareQuotedIdentifier ']'
 LOCAL_ID:           '@' ([a-zA-Z_$@#0-9] | FullWidthLetter)+;
 DECIMAL:             DEC_DIGIT+;
 ID:                  ( [a-zA-Z_#] | FullWidthLetter) ( [a-zA-Z_#$@0-9] | FullWidthLetter )*;
-QUOTED_URL:          '\''([a-zA-Z][a-zA-Z]+[:]) '//'(([a-zA-Z]+[.]|[a-zA-Z]+)|IPV4_ADDR) [:] DECIMAL '\'';
-QUOTED_HOST_AND_PORT:'\''(([a-zA-Z]+[.]|[a-zA-Z]+)|IPV4_ADDR) ([:] DECIMAL) '\'';
 STRING:              N? '\'' (~'\'' | '\'\'')* '\'';
 BINARY:              '0' X (HEX_DIGIT | BACKSLASH [\r]? [\n])*;
 FLOAT:               DEC_DOT_DEC;
 REAL:                (DECIMAL | DEC_DOT_DEC) (E [+-]? DEC_DIGIT+);
 
-IPV4_ADDR:           [']? IPV4_OCTECT DOT IPV4_OCTECT DOT IPV4_OCTECT DOT IPV4_OCTECT [']?;
-IPV6_ADDR:           [']?[0-9A-F]?[0-9A-F]?[0-9A-F]?[0-9A-F]?[:][0-9A-F]?[0-9A-F]?[0-9A-F]?[0-9A-F]?[:][0-9A-F]?[0-9A-F]?[0-9A-F]?[0-9A-F]?[:][0-9A-F]?[0-9A-F]?[0-9A-F]?[0-9A-F]?[:][0-9A-F]?[0-9A-F]?[0-9A-F]?[0-9A-F]?[:][0-9A-F]?[0-9A-F]?[0-9A-F]?[0-9A-F]?[:][0-9A-F]?[0-9A-F]?[0-9A-F]?[0-9A-F]?[:][0-9A-F]?[0-9A-F]?[0-9A-F]?[0-9A-F]?[']?;
-
-
+IPV4_ADDR:           IPV4_OCTECT DOT IPV4_OCTECT DOT IPV4_OCTECT DOT IPV4_OCTECT;
+IPV6_ADDR:           HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? [:] HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? [:] 
+                     HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? [:] HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? [:]
+                     HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? [:] HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? [:]
+                     HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? [:] HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? HEX_DIGIT?;
+                     
 BACKSLASH:           '\\';
-DOUBLE_BACK_SLASH:   '\\' '\\';
 DOUBLE_FORWARD_SLASH:'//';
 
 EQUAL:               '=';
@@ -930,8 +926,7 @@ fragment UnterminatedSquareQuotedIdentifier
     ;
 
 fragment LETTER:       [a-zA-Z_];
-fragment IPV6_OCTECT:  [0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f];
-IPV4_OCTECT:           [0-9]?[0-9]?[0-9];
+fragment IPV4_OCTECT:  [0-9]?[0-9]?[0-9];
 fragment DEC_DOT_DEC:  (DEC_DIGIT+ '.' DEC_DIGIT+ |  DEC_DIGIT+ '.' | '.' DEC_DIGIT+);
 fragment HEX_DIGIT:    [0-9A-Fa-f];
 fragment DEC_DIGIT:    [0-9];
