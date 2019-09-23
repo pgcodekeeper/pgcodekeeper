@@ -57,25 +57,25 @@ public class EclipseEnvironment {
     }
 
     public String getKeyword() {
-        if(keyWord == null) {
+        if (keyWord == null) {
             keyWord = getComponentIds();
         }
         return keyWord;
     }
 
     private String getComponentIds() {
+
         String featureId = "ru.taximaxim.codekeeper.feature"; //$NON-NLS-1$
-        String pluginId = "ru.taximaxim.codekeeper.ui"; //$NON-NLS-1$
         String pluginName = "codekeeperUI"; //$NON-NLS-1$
 
-        if (Platform.getBundle(pluginId) != null) {
+        if (Platform.getBundle(PLUGIN_ID.THIS) != null) {
             return pluginName;
-        } else {
-            for (IBundleGroupProvider bundleGroupProvider : Platform.getBundleGroupProviders()) {
-                for (IBundleGroup group : bundleGroupProvider.getBundleGroups()) {
-                    if (group.getIdentifier().equals(featureId)) {
-                        return pluginName;
-                    }
+        }
+
+        for (IBundleGroupProvider bundleGroupProvider : Platform.getBundleGroupProviders()) {
+            for (IBundleGroup group : bundleGroupProvider.getBundleGroups()) {
+                if (featureId.equals(group.getIdentifier())) {
+                    return pluginName;
                 }
             }
         }
@@ -208,7 +208,7 @@ public class EclipseEnvironment {
      */
     private boolean is64() {
         String architecture = System.getProperty(PROP_SUN_ARCH);
-        return architecture != null && architecture.equals(ARCHITECTURE_64);
+        return ARCHITECTURE_64.equals(architecture);
     }
 
     public String getApplicationName() {

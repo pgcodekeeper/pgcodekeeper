@@ -34,7 +34,7 @@ public class UsageReportDispatcher implements IStartup {
             for (IBundleGroupProvider provider : providers) {
                 IBundleGroup[] bundleGroups = provider.getBundleGroups();
                 for (IBundleGroup group : bundleGroups) {
-                    if (group.getIdentifier().equals("ru.taximaxim.codekeeper.feature")) { //$NON-NLS-1$
+                    if ("ru.taximaxim.codekeeper.feature".equals(group.getIdentifier())) { //$NON-NLS-1$
                         return group.getVersion();
                     }
                 }
