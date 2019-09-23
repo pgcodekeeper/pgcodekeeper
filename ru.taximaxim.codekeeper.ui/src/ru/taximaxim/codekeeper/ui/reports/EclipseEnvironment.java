@@ -39,6 +39,7 @@ public class EclipseEnvironment {
     private static final String NOT_INSTALLED = "N/A";  //$NON-NLS-1$
     private static final String TRUE = "true";  //$NON-NLS-1$
     private static final String FALSE = "false";  //$NON-NLS-1$
+    private static final String SYSPROP_JAVA_VERSION = "java.version"; //$NON-NLS-1$
     private static final String SYSPROP_JAVA_NAME = "java.vm.name"; //$NON-NLS-1$
     private static final String SHOW_BOX_ON_STARTUP = "showBoxOnStartup"; //$NON-NLS-1$
     private String keyWord;
@@ -134,6 +135,10 @@ public class EclipseEnvironment {
 
     public String getJavaVmName() {
         return System.getProperty(SYSPROP_JAVA_NAME);
+    }
+
+    public String getJavaVersion() {
+        return System.getProperty(SYSPROP_JAVA_VERSION);
     }
 
     private void initVisits() {

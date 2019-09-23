@@ -10,7 +10,7 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 
 /**
- * @see based on <a href="http://jgoogleAnalytics.googlecode.com">http://jgoogleAnalytics.googlecode.com</a>
+ * @see based on <a href="https://github.com/siddii/jgoogleanalytics">https://github.com/siddii/jgoogleanalytics</a>
  */
 public class UsageRequest {
 
@@ -39,6 +39,7 @@ public class UsageRequest {
     private static final String PARAM_UNIQUE_TRACKING_NUMBER = "utmn"; //$NON-NLS-1$
     private static final String PARAM_LANGUAGE_ENCODING = "utmcs"; //$NON-NLS-1$
     private static final String PARAM_PAGE_TITLE = "utmdt"; //$NON-NLS-1$
+    private static final String PARAM_JAVA_VERSION = "utmfl"; //$NON-NLS-1$
     private static final String PARAM_GAQ = "gaq"; //$NON-NLS-1$
 
     private static final String VALUE_TRACKING_CODE_VERSION = "4.7.2"; //$NON-NLS-1$
@@ -75,6 +76,7 @@ public class UsageRequest {
             String encoded = PgDiffUtils.checkedEncodeUtf8(title);
             appendParameter(PARAM_PAGE_TITLE, encoded, builder);
         }
+        appendParameter(PARAM_JAVA_VERSION, environment.getJavaVersion(), builder);
         if (event != null) {
             appendParameter(PARAM_EVENT_TRACKING, event, builder);
         }
