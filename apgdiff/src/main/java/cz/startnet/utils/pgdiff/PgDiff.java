@@ -63,15 +63,9 @@ public class PgDiff {
     /**
      * Creates diff on the two database schemas.
      */
-    public PgDiffScript createDiff() throws InterruptedException, IOException {
+    public PgDiffScript createDiff() throws InterruptedException, IOException, PgCodekeeperException {
         PgDatabase oldDatabase = loadOldDatabase();
-        if (!errors.isEmpty()) {
-            return null;
-        }
         PgDatabase newDatabase = loadNewDatabase();
-        if (!errors.isEmpty()) {
-            return null;
-        }
 
         Path metaPath = Paths.get(System.getProperty("user.home")).resolve(".pgcodekeeper-cli")
                 .resolve("dependencies");
@@ -120,12 +114,20 @@ public class PgDiff {
         return diffDatabaseSchemas(oldDatabase, newDatabase, ignoreParser.getIgnoreList());
     }
 
-    public PgDatabase loadNewDatabase() throws IOException, InterruptedException {
-        return loadDatabaseSchema(arguments.getNewSrcFormat(), arguments.getNewSrc());
+    public PgDatabase loadNewDatabase() throws IOException, InterruptedException, PgCodekeeperException {
+        PgDatabase db = loadDatabaseSchema(arguments.getNewSrcFormat(), arguments.getNewSrc());
+        if (!errors.isEmpty()) {
+            throw new PgCodekeeperException("Error while load database");
+        }
+        return db;
     }
 
-    public PgDatabase loadOldDatabase() throws IOException, InterruptedException {
-        return loadDatabaseSchema(arguments.getOldSrcFormat(), arguments.getOldSrc());
+    public PgDatabase loadOldDatabase() throws IOException, InterruptedException, PgCodekeeperException {
+        PgDatabase db = loadDatabaseSchema(arguments.getOldSrcFormat(), arguments.getOldSrc());
+        if (!errors.isEmpty()) {
+            throw new PgCodekeeperException("Error while load database");
+        }
+        return db;
     }
 
     /**
@@ -149,7 +151,9 @@ public class PgDiff {
             } finally {
                 errors.addAll(loader.getErrors());
             }
-        } else if ("parsed".equals(format)) {
+        }
+
+        if ("parsed".equals(format)) {
             List<AntlrError> err = new ArrayList<>();
             ProjectLoader loader = new ProjectLoader(srcPath, arguments, null, err);
             try {
@@ -157,7 +161,9 @@ public class PgDiff {
             } finally {
                 errors.addAll(err);
             }
-        } else if ("db".equals(format)) {
+        }
+
+        if ("db".equals(format)) {
             String timezone = arguments.getTimeZone() == null ? ApgdiffConsts.UTC : arguments.getTimeZone();
             if (arguments.isMsSql()) {
                 return new JdbcMsLoader(JdbcConnector.fromUrl(srcPath), arguments).readDb();

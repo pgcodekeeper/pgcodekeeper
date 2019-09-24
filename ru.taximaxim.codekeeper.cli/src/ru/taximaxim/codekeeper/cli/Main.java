@@ -11,7 +11,6 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -22,6 +21,7 @@ import org.kohsuke.args4j.CmdLineException;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.NotAllowedObjectException;
+import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffScript;
@@ -81,11 +81,11 @@ public final class Main {
             throws InterruptedException, IOException {
         try (PrintWriter encodedWriter = getDiffWriter(arguments)) {
             PgDiff diff = new PgDiff(arguments);
-            PgDiffScript script = diff.createDiff();
-
-            List<Object> errors = diff.getErrors();
-            if (!errors.isEmpty()) {
-                errors.forEach(System.err::println);
+            PgDiffScript script;
+            try {
+                script = diff.createDiff();
+            } catch (PgCodekeeperException ex) {
+                diff.getErrors().forEach(System.err::println);
                 return false;
             }
 
@@ -128,11 +128,11 @@ public final class Main {
     private static boolean parse(PgDiffArguments arguments)
             throws IOException, InterruptedException {
         PgDiff diff = new PgDiff(arguments);
-        PgDatabase d = diff.loadNewDatabase();
-
-        List<Object> errors = diff.getErrors();
-        if (!errors.isEmpty()) {
-            errors.forEach(System.err::println);
+        PgDatabase d;
+        try {
+            d = diff.loadNewDatabase();
+        } catch (PgCodekeeperException ex) {
+            diff.getErrors().forEach(System.err::println);
             return false;
         }
 
@@ -150,11 +150,11 @@ public final class Main {
     private static boolean graph(PrintWriter writer, PgDiffArguments arguments)
             throws IOException, InterruptedException {
         PgDiff diff = new PgDiff(arguments);
-        PgDatabase d = diff.loadNewDatabase();
-
-        List<Object> errors = diff.getErrors();
-        if (!errors.isEmpty()) {
-            errors.forEach(System.err::println);
+        PgDatabase d;
+        try {
+            d = diff.loadNewDatabase();
+        } catch (PgCodekeeperException ex) {
+            diff.getErrors().forEach(System.err::println);
             return false;
         }
 
