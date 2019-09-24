@@ -241,7 +241,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         args.setMsSql(isMsSql);
         PgDumpLoader loader = new PgDumpLoader(() -> input, fileName, args, monitor);
         loader.setRefMode(true);
-        PgDatabase db = loader.load();
+        PgDatabase db = loader.load(new PgDatabase(args));
         objDefinitions.putAll(db.getObjDefinitions());
         objReferences.putAll(db.getObjReferences());
         fillStatementBodies(loader.getStatementBodyReferences());
