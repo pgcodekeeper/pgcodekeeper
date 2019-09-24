@@ -164,6 +164,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         PgUIDumpLoader loader = new PgUIDumpLoader(file, args, monitor);
         loader.setRefMode(true);
         PgDatabase db = loader.loadFile(new PgDatabase(args));
+        removeResFromRefs(file);
         objDefinitions.putAll(db.getObjDefinitions());
         objReferences.putAll(db.getObjReferences());
         fillStatementBodies(loader.getStatementBodyReferences());
@@ -174,6 +175,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
             throws InterruptedException, IOException, CoreException {
         List<StatementBodyContainer> statementBodies = new ArrayList<>();
         PgDatabase db = new UIProjectLoader(monitor, statementBodies).buildFiles(files, isMsSql);
+        files.forEach(this::removeResFromRefs);
         objDefinitions.putAll(db.getObjDefinitions());
         objReferences.putAll(db.getObjReferences());
         fillStatementBodies(statementBodies);
@@ -230,7 +232,8 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         notifyListeners();
     }
 
-    public void removePathFromRefs(String path) {
+    public void removeResFromRefs(IResource res) {
+        String path = res.getLocation().toOSString();
         objReferences.remove(path);
         objDefinitions.remove(path);
     }
@@ -242,7 +245,9 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         PgDumpLoader loader = new PgDumpLoader(() -> input, fileName, args, monitor);
         loader.setRefMode(true);
         PgDatabase db = loader.load(new PgDatabase(args));
+        objDefinitions.clear();
         objDefinitions.putAll(db.getObjDefinitions());
+        objReferences.clear();
         objReferences.putAll(db.getObjReferences());
         fillStatementBodies(loader.getStatementBodyReferences());
         notifyListeners();
