@@ -91,8 +91,7 @@ public class ProjectLoader {
      * @throws InterruptedException
      */
     public PgDatabase loadSchemaOnly() throws InterruptedException, IOException {
-        PgDatabase db = new PgDatabase();
-        db.setArguments(arguments);
+        PgDatabase db = new PgDatabase(arguments);
 
         File dir = new File(dirPath);
         if (arguments.isMsSql()) {

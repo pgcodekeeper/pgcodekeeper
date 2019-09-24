@@ -122,8 +122,7 @@ public final class PgDiff {
     public static PgDatabase loadDatabaseSchema(String format, String srcPath, PgDiffArguments arguments)
             throws InterruptedException, IOException {
 
-        PgDatabase db = new PgDatabase();
-        db.setArguments(arguments);
+        PgDatabase db = new PgDatabase(arguments);
 
         if ("dump".equals(format)) {
             return new PgDumpLoader(new File(srcPath), arguments).load(db);
