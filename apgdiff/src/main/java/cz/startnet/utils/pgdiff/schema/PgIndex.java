@@ -134,6 +134,15 @@ public class PgIndex extends AbstractIndex {
             return true;
         }
 
+        if (!Objects.equals(getTableSpace(), newIndex.getTableSpace())) {
+            sb.append("\n\nALTER INDEX ").append(PgDiffUtils.getQuotedName(getSchemaName()))
+            .append('.').append(PgDiffUtils.getQuotedName(getName()))
+            .append(" SET TABLESPACE ");
+
+            String newSpace = newIndex.getTableSpace();
+            sb.append(newSpace == null ? "pg_default" : newIndex.getTableSpace()).append(';');
+        }
+
         if (isClusterIndex() && !newIndex.isClusterIndex() &&
                 !((AbstractPgTable)newIndex.getParent()).isClustered()) {
             sb.append("\n\nALTER TABLE ")

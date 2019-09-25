@@ -126,6 +126,7 @@ implements PgOptionContainer {
             AbstractIndex index = (AbstractIndex) obj;
             return compareUnalterable(index)
                     && clusterIndex == index.isClusterIndex()
+                    && Objects.equals(tableSpace, index.getTableSpace())
                     && Objects.equals(options, index.options);
         }
 
@@ -135,7 +136,6 @@ implements PgOptionContainer {
     protected boolean compareUnalterable(AbstractIndex index) {
         return Objects.equals(definition, index.getDefinition())
                 && Objects.equals(where, index.getWhere())
-                && Objects.equals(tableSpace, index.getTableSpace())
                 && Objects.equals(includes, index.includes)
                 && unique == index.isUnique();
     }
