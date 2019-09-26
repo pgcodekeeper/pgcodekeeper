@@ -5,6 +5,7 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -213,14 +214,7 @@ public class EventRegister {
             return;
         }
 
-        try {
-            Files.deleteIfExists(file);
-        } catch (IOException e) {
-            Log.log(Log.LOG_ERROR, e.getMessage());
-            return;
-        }
-
-        try (Writer writer = Files.newBufferedWriter(file)) {
+        try (Writer writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
             UsageEventType type = properties.type;
             Properties pr = new Properties();
             pr.put(EVENT_TYPE_COMPONENT_NAME, type.getComponentName());
@@ -261,7 +255,7 @@ public class EventRegister {
     }
 
     private void read(Path path, long removeTime) {
-        try (Reader reader = Files.newBufferedReader(path)) {
+        try (Reader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
             Properties pr = new Properties();
             pr.load(reader);
             long date = Long.parseLong(pr.getProperty(EVENT_TYPE_DATE, "0")); //$NON-NLS-1$
