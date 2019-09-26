@@ -78,7 +78,6 @@ import org.eclipse.ui.progress.IProgressConstants2;
 import org.eclipse.ui.statushandlers.StatusManager;
 import org.osgi.service.prefs.BackingStoreException;
 
-import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgOverride;
@@ -262,14 +261,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     public void widgetSelected(SelectionEvent e) {
                         if (btnToDb.getSelection()) {
                             diff();
-                            return;
-                        }
-
-                        try {
+                        } else {
                             commit();
-                        } catch (PgCodekeeperException ex) {
-                            ExceptionNotifier
-                            .notifyDefault(Messages.error_creating_dependency_graph, ex);
                         }
                     }
                 });
@@ -889,7 +882,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
     }
 
-    public void commit() throws PgCodekeeperException {
+    public void commit() {
         Log.log(Log.LOG_INFO, "Started project update"); //$NON-NLS-1$
         if (warnCheckedElements() < 1
                 || !OpenProjectUtils.checkVersionAndWarn(getProject(), parent.getShell(), true)) {

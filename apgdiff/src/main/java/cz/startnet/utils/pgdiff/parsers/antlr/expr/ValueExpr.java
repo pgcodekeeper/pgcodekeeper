@@ -470,7 +470,10 @@ public class ValueExpr extends AbstractExpr {
             } else if (xml.XMLTABLE() != null) {
                 for (Xml_table_columnContext col : xml.xml_table_column()) {
                     args.addAll(col.vex());
-                    addTypeDepcy(col.data_type());
+                    Data_typeContext type = col.data_type();
+                    if (type != null) {
+                        addTypeDepcy(col.data_type());
+                    }
                 }
                 coltype = TypesSetManually.FUNCTION_TABLE;
             } else {
