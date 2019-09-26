@@ -894,6 +894,8 @@ public final class Messages extends NLS {
     public static String UsageReportPreferencePage_ProductId;
     public static String UsageReportPreferencePage_ProductVersion;
 
+    public static String UsageReportPreferencePage_JavaVersion;
+
     public static String UsageReportPreferencePage_JvmName;
 
     public static String UsageReportPreferencePage_Events;

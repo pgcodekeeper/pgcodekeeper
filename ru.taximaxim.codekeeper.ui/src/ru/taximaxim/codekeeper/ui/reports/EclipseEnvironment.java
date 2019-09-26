@@ -39,6 +39,7 @@ public class EclipseEnvironment {
     private static final String NOT_INSTALLED = "N/A";  //$NON-NLS-1$
     private static final String TRUE = "true";  //$NON-NLS-1$
     private static final String FALSE = "false";  //$NON-NLS-1$
+    private static final String SYSPROP_JAVA_VERSION = "java.version"; //$NON-NLS-1$
     private static final String SYSPROP_JAVA_NAME = "java.vm.name"; //$NON-NLS-1$
     private static final String SHOW_BOX_ON_STARTUP = "showBoxOnStartup"; //$NON-NLS-1$
     private String keyWord;
@@ -56,25 +57,25 @@ public class EclipseEnvironment {
     }
 
     public String getKeyword() {
-        if(keyWord == null) {
+        if (keyWord == null) {
             keyWord = getComponentIds();
         }
         return keyWord;
     }
 
     private String getComponentIds() {
+
         String featureId = "ru.taximaxim.codekeeper.feature"; //$NON-NLS-1$
-        String pluginId = "ru.taximaxim.codekeeper.ui"; //$NON-NLS-1$
         String pluginName = "codekeeperUI"; //$NON-NLS-1$
 
-        if (Platform.getBundle(pluginId) != null) {
+        if (Platform.getBundle(PLUGIN_ID.THIS) != null) {
             return pluginName;
-        } else {
-            for (IBundleGroupProvider bundleGroupProvider : Platform.getBundleGroupProviders()) {
-                for (IBundleGroup group : bundleGroupProvider.getBundleGroups()) {
-                    if (group.getIdentifier().equals(featureId)) {
-                        return pluginName;
-                    }
+        }
+
+        for (IBundleGroupProvider bundleGroupProvider : Platform.getBundleGroupProviders()) {
+            for (IBundleGroup group : bundleGroupProvider.getBundleGroups()) {
+                if (featureId.equals(group.getIdentifier())) {
+                    return pluginName;
                 }
             }
         }
@@ -134,6 +135,10 @@ public class EclipseEnvironment {
 
     public String getJavaVmName() {
         return System.getProperty(SYSPROP_JAVA_NAME);
+    }
+
+    public String getJavaVersion() {
+        return System.getProperty(SYSPROP_JAVA_VERSION);
     }
 
     private void initVisits() {
@@ -203,7 +208,7 @@ public class EclipseEnvironment {
      */
     private boolean is64() {
         String architecture = System.getProperty(PROP_SUN_ARCH);
-        return architecture != null && architecture.equals(ARCHITECTURE_64);
+        return ARCHITECTURE_64.equals(architecture);
     }
 
     public String getApplicationName() {
