@@ -128,9 +128,7 @@ public class PgDumpLoader {
     }
 
     public PgDatabase load() throws IOException, InterruptedException {
-        PgDatabase d = new PgDatabase();
-        d.setArguments(args);
-        load(d);
+        PgDatabase d = load(new PgDatabase(args));
         FullAnalyze.fullAnalyze(d, errors);
         return d;
     }

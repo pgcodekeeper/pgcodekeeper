@@ -61,6 +61,11 @@ public class PgDatabase extends PgStatement {
         super("DB_name_placeholder");
     }
 
+    public PgDatabase(PgDiffArguments arguments) {
+        this();
+        this.arguments = arguments;
+    }
+
     public void setDefaultSchema(final String name) {
         defaultSchema = getSchema(name);
     }
@@ -404,9 +409,8 @@ public class PgDatabase extends PgStatement {
 
     @Override
     public PgDatabase shallowCopy() {
-        PgDatabase dbDst = new PgDatabase();
+        PgDatabase dbDst = new PgDatabase(getArguments());
         copyBaseFields(dbDst);
-        dbDst.setArguments(getArguments());
         dbDst.setPostgresVersion(getPostgresVersion());
         return dbDst;
     }
