@@ -54,7 +54,7 @@ public class CreateIndex extends ParserAbstract {
             IStatementContainer table = getSafe(AbstractSchema::getStatementContainer,
                     getSchemaSafe(ids), parent);
             addSafe((PgStatement) table, ind, Arrays.asList(
-                    QNameParser.getSchemaNameCtx(ids), parent, nameCtx));
+                    QNameParser.getSchemaNameCtx(ids), nameCtx));
         }
     }
 

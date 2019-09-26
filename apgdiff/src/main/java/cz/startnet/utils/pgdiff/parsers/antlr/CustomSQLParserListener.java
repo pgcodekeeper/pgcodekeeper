@@ -21,6 +21,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.StatementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterDomain;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterFtsStatement;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterIndex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterOther;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterOwner;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterSequence;
@@ -147,6 +148,8 @@ implements SqlContextProcessor {
         ParserAbstract p;
         if (ctx.alter_table_statement() != null) {
             p = new AlterTable(ctx.alter_table_statement(), db, tablespace);
+        } else if (ctx.alter_index_statement() != null) {
+            p = new AlterIndex(ctx.alter_index_statement(), db);
         } else if (ctx.alter_sequence_statement() != null) {
             p = new AlterSequence(ctx.alter_sequence_statement(), db);
         } else if (ctx.alter_view_statement() != null) {

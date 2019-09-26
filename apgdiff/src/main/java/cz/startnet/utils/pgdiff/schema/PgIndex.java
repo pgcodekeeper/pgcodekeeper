@@ -16,10 +16,16 @@ import cz.startnet.utils.pgdiff.hashers.Hasher;
 
 public class PgIndex extends AbstractIndex {
 
+    private Inherits inherit;
     private String method;
 
     public PgIndex(String name) {
         super(name);
+    }
+
+    @Override
+    public boolean canDrop() {
+        return inherit == null;
     }
 
     @Override
@@ -39,6 +45,9 @@ public class PgIndex extends AbstractIndex {
         PgDiffArguments args = getDatabase().getArguments();
         if (args != null && args.isConcurrentlyMode()) {
             sbSQL.append("CONCURRENTLY ");
+        }
+        if (inherit != null) {
+            sbSQL.append("IF NOT EXISTS ");
         }
         sbSQL.append(PgDiffUtils.getQuotedName(name));
         sbSQL.append(" ON ");
@@ -93,13 +102,22 @@ public class PgIndex extends AbstractIndex {
             appendCommentSql(sbSQL);
         }
 
+        if (inherit != null) {
+            sbSQL.append("\n\nALTER INDEX ").append(inherit.getQualifiedName())
+            .append(" ATTACH PARTITION ").append(getQualifiedName()).append(';');
+        }
+
         return sbSQL.toString();
     }
 
     @Override
+    public String getQualifiedName() {
+        return PgDiffUtils.getQuotedName(getSchemaName()) + '.' + PgDiffUtils.getQuotedName(getName());
+    }
+
+    @Override
     public String getDropSQL() {
-        return "DROP INDEX " + PgDiffUtils.getQuotedName(getSchemaName()) + '.'
-                + PgDiffUtils.getQuotedName(getName()) + ";";
+        return "DROP INDEX " + getQualifiedName() + ";";
     }
 
     @Override
@@ -135,8 +153,7 @@ public class PgIndex extends AbstractIndex {
         }
 
         if (!Objects.equals(getTableSpace(), newIndex.getTableSpace())) {
-            sb.append("\n\nALTER INDEX ").append(PgDiffUtils.getQuotedName(getSchemaName()))
-            .append('.').append(PgDiffUtils.getQuotedName(getName()))
+            sb.append("\n\nALTER INDEX ").append(newIndex.getQualifiedName())
             .append(" SET TABLESPACE ");
 
             String newSpace = newIndex.getTableSpace();
@@ -180,22 +197,34 @@ public class PgIndex extends AbstractIndex {
         resetHash();
     }
 
+    public Inherits getInherit() {
+        return inherit;
+    }
+
+    public void addInherit(final String schemaName, final String indexName) {
+        inherit = new Inherits(schemaName, indexName);
+        resetHash();
+    }
+
     @Override
     protected boolean compareUnalterable(AbstractIndex index) {
         return index instanceof PgIndex
                 && super.compareUnalterable(index)
+                && Objects.equals(inherit, ((PgIndex) index).inherit)
                 && Objects.equals(method, ((PgIndex) index).method);
     }
 
     @Override
     public void computeHash(Hasher hasher) {
         super.computeHash(hasher);
+        hasher.put(inherit);
         hasher.put(method);
     }
 
     @Override
     protected AbstractIndex getIndexCopy() {
         PgIndex index =  new PgIndex(getName());
+        index.inherit = inherit;
         index.setMethod(getMethod());
         return index;
     }
