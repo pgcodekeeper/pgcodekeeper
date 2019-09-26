@@ -2,11 +2,11 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import cz.startnet.utils.pgdiff.PgDiffTypes;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 
@@ -458,39 +458,33 @@ public class PgType extends AbstractType {
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
-        PgType newType;
-        PgType oldType = this;
-        if (newCondition instanceof PgType) {
-            newType = (PgType) newCondition;
-        } else {
-            return false;
-        }
+        PgType newType = (PgType) newCondition;
 
-        if (!oldType.equals(newType) && !PgDiffTypes.canAlter(oldType, newType)) {
+        if (!equals(newType) && !canAlter(newType)) {
             isNeedDepcies.set(true);
             return true;
         }
 
-        compareAttr(newType, oldType, sb, isNeedDepcies);
-        columnsComments(newType, oldType, sb);
-        compareEnums(newType.getEnums(), oldType.getEnums(), sb);
+        compareAttr(newType, sb, isNeedDepcies);
+        columnsComments(newType, sb);
+        compareEnums(newType.getEnums(), getEnums(), sb);
 
-        if (!Objects.equals(oldType.getOwner(), newType.getOwner())) {
+        if (!Objects.equals(getOwner(), newType.getOwner())) {
             newType.appendOwnerSQL(sb);
         }
         alterPrivileges(newType, sb);
-        if (!Objects.equals(oldType.getComment(), newType.getComment())) {
+        if (!Objects.equals(getComment(), newType.getComment())) {
             sb.append("\n\n");
             newType.appendCommentSql(sb);
         }
         return sb.length() > startLength;
     }
 
-    private void compareAttr(PgType newType, PgType oldType, StringBuilder sb,
+    private void compareAttr(PgType newType, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         StringBuilder attrSb = new StringBuilder();
         for (AbstractColumn attr : newType.getAttrs()) {
-            AbstractColumn oldAttr = oldType.getAttr(attr.getName());
+            AbstractColumn oldAttr = getAttr(attr.getName());
             if (oldAttr == null) {
                 isNeedDepcies.set(true);
                 attrSb.append("\n\tADD ATTRIBUTE ")
@@ -516,7 +510,7 @@ public class PgType extends AbstractType {
             }
         }
 
-        for (AbstractColumn attr : oldType.getAttrs()) {
+        for (AbstractColumn attr : getAttrs()) {
             if (newType.getAttr(attr.getName()) == null) {
                 isNeedDepcies.set(true);
                 attrSb.append("\n\tDROP ATTRIBUTE ")
@@ -554,9 +548,9 @@ public class PgType extends AbstractType {
         }
     }
 
-    private void columnsComments(PgType newType, PgType oldType, StringBuilder sb) {
+    private void columnsComments(PgType newType, StringBuilder sb) {
         for (AbstractColumn newAttr : newType.getAttrs()) {
-            AbstractColumn oldAttr = oldType.getAttr(newAttr.getName());
+            AbstractColumn oldAttr = getAttr(newAttr.getName());
             if (oldAttr != null) {
                 if (!Objects.equals(oldAttr.getComment(), newAttr.getComment())) {
                     sb.append("\n\n");
@@ -566,6 +560,51 @@ public class PgType extends AbstractType {
                 sb.append("\n\n");
                 newAttr.appendCommentSql(sb);
             }
+        }
+    }
+
+    /**
+     * This method assumes that its arguments are not equal.
+     */
+    private boolean canAlter(PgType newType) {
+        if (getForm() != newType.getForm()) {
+            return false;
+        }
+        switch (getForm()) {
+        case ENUM:
+            Iterator<String> oi = getEnums().iterator();
+            Iterator<String> ni = newType.getEnums().iterator();
+            while (oi.hasNext()) {
+                if (!ni.hasNext()) {
+                    // some old members were removed in new, can't alter
+                    return false;
+                }
+                String oldEnum = oi.next();
+                if (!oldEnum.equals(ni.next())) {
+                    // iterate over new enums until old enum is met or end is reached
+                    boolean found = false;
+                    while (ni.hasNext()) {
+                        if (oldEnum.equals(ni.next())) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        return false; // oldEnum is not in the new list
+                    }
+                    // order changes will fail this test as they should
+                    // consider old:(e1, e2), new:(e2, e1)
+                    // we will go over new.e2 while iterating for old.e1
+                    // thus we will fail to find new.e2 while iterating for old.e2
+                }
+            }
+            // old list is exhausted at this point and we always return true
+            // since we can create new enum members
+            return true;
+        case COMPOSITE:
+            return true;
+        default:
+            return false;
         }
     }
 

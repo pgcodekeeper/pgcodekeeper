@@ -27,7 +27,6 @@ import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
-import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorInput;
 
 public final class FileUtilsUi {
@@ -70,8 +69,8 @@ public final class FileUtilsUi {
         IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         for (IFile f : files) {
             IProject proj = f.getProject();
-            if (proj.isOpen() && UIProjectLoader.isInProject(f)) {
-                return IDE.openEditor(page, f);
+            if (proj.isOpen()) {
+                return IDE.openEditor(page, f, EDITOR.SQL);
             }
         }
         IFileStore externalFile = EFS.getLocalFileSystem().fromLocalFile(path.toFile());

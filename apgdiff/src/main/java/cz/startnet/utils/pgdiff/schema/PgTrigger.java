@@ -168,12 +168,7 @@ public class PgTrigger extends AbstractTrigger {
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
-        PgTrigger newTrg;
-        if (newCondition instanceof PgTrigger) {
-            newTrg = (PgTrigger)newCondition;
-        } else {
-            return false;
-        }
+        PgTrigger newTrg = (PgTrigger) newCondition;
         if (!compareUnalterable(newTrg)) {
             isNeedDepcies.set(true);
             return true;

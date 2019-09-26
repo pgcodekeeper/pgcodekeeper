@@ -13,7 +13,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -97,7 +96,7 @@ public class DepcyTreeExtenderTest {
      * @throws InterruptedException
      */
     @Test
-    public void testGetDependencies() throws PgCodekeeperException, InterruptedException {
+    public void testGetDependencies() {
         TreeElement tree = predefined.getFilteredTree();
         DepcyTreeExtender dte = new DepcyTreeExtender(dbSource, dbTarget, tree);
         Set<TreeElement> depcy = dte.getDepcies();

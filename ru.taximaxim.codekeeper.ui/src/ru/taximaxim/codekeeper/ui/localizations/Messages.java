@@ -30,7 +30,6 @@ public final class Messages extends NLS {
     public static String projectProperties_error_occurs_while_saving_properties;
     public static String add;
     public static String delete;
-    public static String error_creating_dependency_graph;
 
     // ui
     public static String sqlScriptDialog_exception_during_script_execution;
@@ -846,6 +845,8 @@ public final class Messages extends NLS {
     public static String diffwizard_pagepartial_description;
 
     public static String generalPrefPage_perspective_changing_status;
+
+    public static String GeneralPrefPage_body_depcy_tooltip;
 
     public static String GeneralPrefPage_enable_body_dependencies;
 

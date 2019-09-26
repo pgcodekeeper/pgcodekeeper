@@ -31,9 +31,12 @@ implements IWorkbenchPreferencePage  {
                 Messages.dbUpdatePrefPage_ignore_privileges,
                 getFieldEditorParent()));
 
-        addField(new BooleanFieldEditor(PREF.ENABLE_BODY_DEPENDENCIES,
+        BooleanFieldEditor bodyDeps = new BooleanFieldEditor(PREF.ENABLE_BODY_DEPENDENCIES,
                 Messages.GeneralPrefPage_enable_body_dependencies,
-                getFieldEditorParent()));
+                getFieldEditorParent());
+        addField(bodyDeps);
+        bodyDeps.getDescriptionControl(getFieldEditorParent()).setToolTipText(
+                Messages.GeneralPrefPage_body_depcy_tooltip);
 
         addField(new BooleanFieldEditor(PREF.SIMPLIFY_VIEW,
                 Messages.GeneralPrefPage_simplify_view,

@@ -171,10 +171,6 @@ public abstract class AbstractPgTable extends AbstractTable {
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
-        if (!(newCondition instanceof AbstractPgTable)) {
-            return false;
-        }
-
         AbstractPgTable newTable = (AbstractPgTable) newCondition;
 
         if (isRecreated(newTable)) {

@@ -2534,7 +2534,7 @@ set_special
     | SET TEXTSIZE DECIMAL
     | SET LANGUAGE (id | constant_LOCAL_ID)
     | SET STATISTICS (IO | XML | PROFILE | TIME) on_off
-    | SET modify_method
+    | SET object_expression
     | SET ROWCOUNT decimal_or_local_id
     ;
 
@@ -2575,6 +2575,7 @@ object_expression
     | over_clause
     | LR_BRACKET expression RR_BRACKET
     | LR_BRACKET select_stmt_no_parens RR_BRACKET
+    | LOCAL_ID
     ;
 
 date_expression
@@ -2648,6 +2649,7 @@ predicate
     | expression NOT? LIKE expression (ESCAPE expression)?
     | expression IS null_notnull
     | LR_BRACKET search_condition RR_BRACKET
+    | UPDATE LR_BRACKET expression_list? RR_BRACKET
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms176104.aspx
@@ -2819,8 +2821,6 @@ function_call
     : ranking_windowed_function
     | aggregate_windowed_function
     | analytic_windowed_function
-    // https://docs.microsoft.com/en-us/sql/t-sql/xml/xml-data-type-methods
-    | xml_data_type_methods
     | scalar_function_name LR_BRACKET expression_list? RR_BRACKET
     // https://msdn.microsoft.com/en-us/library/ms173784.aspx
     | BINARY_CHECKSUM LR_BRACKET STAR RR_BRACKET
@@ -2842,6 +2842,8 @@ function_call
     | IDENTITY LR_BRACKET data_type (COMMA seed=DECIMAL)? (COMMA increment=DECIMAL)? RR_BRACKET
     // https://msdn.microsoft.com/en-us/library/bb839514.aspx
     | MIN_ACTIVE_ROWVERSION
+    // https://docs.microsoft.com/en-us/sql/t-sql/xml/nodes-method-xml-data-type
+    | NODES LR_BRACKET xquery=STRING RR_BRACKET as_table_alias
     // https://msdn.microsoft.com/en-us/library/ms177562.aspx
     | NULLIF LR_BRACKET expression COMMA expression RR_BRACKET
     // https://msdn.microsoft.com/en-us/library/ms177587.aspx
@@ -2878,36 +2880,6 @@ function_call
     | TRIM LR_BRACKET (expression FROM)? expression RR_BRACKET
     // https://docs.microsoft.com/en-us/sql/t-sql/functions/partition-transact-sql
     | (id DOT)? DOLLAR PARTITION DOT function_call
-    ;
-
-xml_data_type_methods
-    : value_method
-    | query_method
-    | exist_method
-    | modify_method
-    | nodes_method
-    ;
-
-value_method
-    : (LOCAL_ID | ID | EVENTDATA | query_method) DOT VALUE LR_BRACKET xquery=STRING COMMA sqltype=STRING RR_BRACKET
-    | (LOCAL_ID | ID | EVENTDATA | query_method) DOT ROW DOT VALUE LR_BRACKET xquery=STRING COMMA sqltype=STRING RR_BRACKET
-    | (LOCAL_ID | ID | EVENTDATA | query_method) DOT PARAM_NODE DOT VALUE LR_BRACKET xquery=STRING COMMA sqltype=STRING RR_BRACKET
-    ;
-
-query_method
-    : (LOCAL_ID | ID | qualified_name) DOT (ROW DOT)? QUERY LR_BRACKET xquery=STRING RR_BRACKET
-    ;
-
-exist_method
-    : (LOCAL_ID | ID) DOT EXIST LR_BRACKET xquery=STRING RR_BRACKET
-    ;
-
-modify_method
-    : (LOCAL_ID | ID) DOT MODIFY LR_BRACKET xml_dml=STRING RR_BRACKET
-    ;
-
-nodes_method
-    : (LOCAL_ID | ID) DOT NODES LR_BRACKET xquery=STRING RR_BRACKET
     ;
 
 switch_section

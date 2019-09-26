@@ -118,35 +118,30 @@ public class PgSequence extends AbstractSequence {
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
-        PgSequence newSequence;
-        if (newCondition instanceof PgSequence) {
-            newSequence = (PgSequence) newCondition;
-        } else {
-            return false;
-        }
-        PgSequence oldSequence = this;
+        PgSequence newSequence = (PgSequence) newCondition;
         StringBuilder sbSQL = new StringBuilder();
 
-        if (compareSequenceBody(newSequence, oldSequence, sbSQL)) {
+        if (compareSequenceBody(newSequence, sbSQL)) {
             sb.append("\n\nALTER SEQUENCE ").append(newSequence.getQualifiedName()).
             append(sbSQL).append(';');
         }
 
-        if (!Objects.equals(oldSequence.getOwner(), newSequence.getOwner())) {
+        if (!Objects.equals(getOwner(), newSequence.getOwner())) {
             newSequence.alterOwnerSQL(sb);
         }
 
         alterPrivileges(newSequence, sb);
 
-        if (!Objects.equals(oldSequence.getComment(), newSequence.getComment())) {
+        if (!Objects.equals(getComment(), newSequence.getComment())) {
             sb.append("\n\n");
             newSequence.appendCommentSql(sb);
         }
+
         return sb.length() > startLength;
     }
 
-    private boolean compareSequenceBody(AbstractSequence newSequence, AbstractSequence oldSequence, StringBuilder sbSQL) {
-        final String oldType = oldSequence.getDataType();
+    private boolean compareSequenceBody(AbstractSequence newSequence, StringBuilder sbSQL) {
+        final String oldType = getDataType();
         final String newType = newSequence.getDataType();
 
         if (!oldType.equals(newType)) {
@@ -154,58 +149,47 @@ public class PgSequence extends AbstractSequence {
             sbSQL.append(newType);
         }
 
-        final String oldIncrement = oldSequence.getIncrement();
         final String newIncrement = newSequence.getIncrement();
-
         if (newIncrement != null
-                && !newIncrement.equals(oldIncrement)) {
+                && !newIncrement.equals(getIncrement())) {
             sbSQL.append("\n\tINCREMENT BY ");
             sbSQL.append(newIncrement);
         }
 
-        final String oldMinValue = oldSequence.getMinValue();
         final String newMinValue = newSequence.getMinValue();
-
-        if (newMinValue == null && oldMinValue != null) {
+        if (newMinValue == null && getMinValue() != null) {
             sbSQL.append("\n\tNO MINVALUE");
         } else if (newMinValue != null
-                && !newMinValue.equals(oldMinValue)) {
+                && !newMinValue.equals(getMinValue())) {
             sbSQL.append("\n\tMINVALUE ");
             sbSQL.append(newMinValue);
         }
 
-        final String oldMaxValue = oldSequence.getMaxValue();
         final String newMaxValue = newSequence.getMaxValue();
-
-        if (newMaxValue == null && oldMaxValue != null) {
+        if (newMaxValue == null && getMaxValue() != null) {
             sbSQL.append("\n\tNO MAXVALUE");
         } else if (newMaxValue != null
-                && !newMaxValue.equals(oldMaxValue)) {
+                && !newMaxValue.equals(getMaxValue())) {
             sbSQL.append("\n\tMAXVALUE ");
             sbSQL.append(newMaxValue);
         }
 
-        final String oldStart = oldSequence.getStartWith();
         final String newStart = newSequence.getStartWith();
-
-        if (newStart != null && !newStart.equals(oldStart)) {
+        if (newStart != null && !newStart.equals(getStartWith())) {
             sbSQL.append("\n\tRESTART WITH ");
             sbSQL.append(newStart);
         }
 
-        final String oldCache = oldSequence.getCache();
         final String newCache = newSequence.getCache();
-        if (newCache != null && !newCache.equals(oldCache)) {
+        if (newCache != null && !newCache.equals(getCache())) {
             sbSQL.append("\n\tCACHE ");
             sbSQL.append(newCache);
         }
 
-        final boolean oldCycle = oldSequence.isCycle();
         final boolean newCycle = newSequence.isCycle();
-
-        if (oldCycle && !newCycle) {
+        if (isCycle() && !newCycle) {
             sbSQL.append("\n\tNO CYCLE");
-        } else if (!oldCycle && newCycle) {
+        } else if (!isCycle() && newCycle) {
             sbSQL.append("\n\tCYCLE");
         }
 

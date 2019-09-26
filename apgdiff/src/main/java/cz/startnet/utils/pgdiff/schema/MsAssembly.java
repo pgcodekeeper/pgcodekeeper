@@ -83,12 +83,7 @@ public class MsAssembly extends PgStatement {
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
-        MsAssembly newAss;
-        if (newCondition instanceof MsAssembly) {
-            newAss = (MsAssembly)newCondition;
-        } else {
-            return false;
-        }
+        MsAssembly newAss = (MsAssembly) newCondition;
 
         // https://docs.microsoft.com/ru-ru/sql/t-sql/statements/alter-assembly-transact-sql?view=sql-server-2016
         // TODO add/drop binary as file name. What is filename?
@@ -96,7 +91,6 @@ public class MsAssembly extends PgStatement {
             isNeedDepcies.set(true);
             return true;
         }
-
 
         if (!Objects.equals(getOwner(), newAss.getOwner())) {
             newAss.alterOwnerSQL(sb);

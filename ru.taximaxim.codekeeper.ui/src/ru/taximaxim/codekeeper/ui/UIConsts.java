@@ -118,6 +118,11 @@ public interface UIConsts {
         String VISIT_COUNT = "visit_count"; //$NON-NLS-1$
     }
 
+    interface LANGUAGE {
+        String POSTGRESQL = "PostgreSQL"; //$NON-NLS-1$
+        String MS_SQL = "MS SQL"; //$NON-NLS-1$
+    }
+
     public enum DBSources {
         SOURCE_TYPE_JDBC("jdbc"), //$NON-NLS-1$
         SOURCE_TYPE_DB("db"), //$NON-NLS-1$
@@ -197,7 +202,6 @@ public interface UIConsts {
         String ICONINVERTSELECTION = "/icons/loop_obj.png"; //$NON-NLS-1$
         String ICONREFRESH = "/icons/refresh.png"; //$NON-NLS-1$
         String ICONWRITEOUTCONSOLE = "/icons/writeout_co.png"; //$NON-NLS-1$
-        String ICONFILE = "/icons/file_obj.png"; //$NON-NLS-1$
         String ICONCHECK = "/icons/header_complete.gif"; //$NON-NLS-1$
         String ICONEMPTYFILTER = "/icons/empty_filter.png"; //$NON-NLS-1$
         String ICONFILTER = "/icons/filter_tsk.png"; //$NON-NLS-1$

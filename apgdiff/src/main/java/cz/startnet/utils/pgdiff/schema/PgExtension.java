@@ -69,12 +69,7 @@ public class PgExtension extends PgStatement {
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
-        PgExtension newExt;
-        if (newCondition instanceof PgExtension) {
-            newExt = (PgExtension)newCondition;
-        } else {
-            return false;
-        }
+        PgExtension newExt = (PgExtension) newCondition;
 
         if (!Objects.equals(newExt.getSchema(), getSchema())) {
             sb.append("\n\nALTER EXTENSION ")

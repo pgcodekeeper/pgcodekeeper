@@ -116,12 +116,7 @@ public class PgOperator extends PgStatementWithSearchPath {
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
-        PgOperator newOperator;
-        if (newCondition instanceof PgOperator) {
-            newOperator = (PgOperator)newCondition;
-        } else {
-            return false;
-        }
+        PgOperator newOperator = (PgOperator) newCondition;
 
         if (!compareUnalterable(newOperator)) {
             isNeedDepcies.set(true);

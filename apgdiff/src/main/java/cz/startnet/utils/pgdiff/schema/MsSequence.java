@@ -67,12 +67,7 @@ public class MsSequence extends AbstractSequence {
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
-        MsSequence newSequence;
-        if (newCondition instanceof MsSequence) {
-            newSequence = (MsSequence) newCondition;
-        } else {
-            return false;
-        }
+        MsSequence newSequence = (MsSequence) newCondition;
 
         if (!newSequence.getDataType().equals(getDataType())) {
             isNeedDepcies.set(true);
@@ -80,8 +75,6 @@ public class MsSequence extends AbstractSequence {
         }
 
         StringBuilder sbSQL = new StringBuilder();
-        sbSQL.setLength(0);
-
         if (compareSequenceBody(newSequence, sbSQL)) {
             sb.append("\n\nALTER SEQUENCE " + getQualifiedName() + sbSQL.toString() + GO);
         }

@@ -6,7 +6,7 @@ import cz.startnet.utils.pgdiff.ContextLocation;
 
 public class AntlrError extends ContextLocation {
 
-    private static final long serialVersionUID = -3495727260746888947L;
+    private static final long serialVersionUID = 6659894120002053147L;
 
     private final String msg;
     private final String text;
@@ -15,9 +15,9 @@ public class AntlrError extends ContextLocation {
 
     public AntlrError(Token tokenError, String location, int line, int charPositionInLine, String msg) {
         this(location, line, charPositionInLine, msg,
-        tokenError == null ? -1 : tokenError.getStartIndex(),
-        tokenError == null ? -1 : tokenError.getStopIndex(),
-        tokenError == null ? null : tokenError.getText());
+                tokenError == null ? -1 : tokenError.getStartIndex(),
+                        tokenError == null ? -1 : tokenError.getStopIndex(),
+                                tokenError == null ? null : tokenError.getText());
     }
 
     private AntlrError(String location, int line, int charPositionInLine, String msg,
@@ -29,8 +29,9 @@ public class AntlrError extends ContextLocation {
         this.text = text;
     }
 
-    public AntlrError copyWithOffset(int offset, int lineOffset) {
-        return new AntlrError(getFilePath(), getLineNumber() + lineOffset, getCharPositionInLine(),
+    public AntlrError copyWithOffset(int offset, int lineOffset, int inLineOffset) {
+        return new AntlrError(getFilePath(), getLineNumber() + lineOffset,
+                (getLineNumber() == 1 ? getCharPositionInLine() + inLineOffset : getCharPositionInLine()),
                 msg, (start == -1 ? -1 : start + offset), (stop == -1 ? -1: stop + offset), text);
     }
 
@@ -52,6 +53,7 @@ public class AntlrError extends ContextLocation {
 
     @Override
     public String toString() {
-        return getFilePath() + " line " + getLineNumber() + ':' + getCharPositionInLine() + ' ' + getMsg();
+        //ANTLR position in line is 0-based, GUI's is 1-based
+        return getFilePath() + " line " + getLineNumber() + ':' + (getCharPositionInLine() + 1) + ' ' + getMsg();
     }
 }

@@ -32,19 +32,10 @@ public class MsSchema extends AbstractSchema {
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
-        MsSchema newSchema;
-        if (newCondition instanceof MsSchema) {
-            newSchema = (MsSchema) newCondition;
-        } else {
-            return false;
+        if (!Objects.equals(getOwner(), newCondition.getOwner())) {
+            newCondition.alterOwnerSQL(sb);
         }
-
-        if (!Objects.equals(getOwner(), newSchema.getOwner())) {
-            newSchema.alterOwnerSQL(sb);
-        }
-
-        alterPrivileges(newSchema, sb);
-
+        alterPrivileges(newCondition, sb);
         return sb.length() > startLength;
     }
 

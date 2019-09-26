@@ -72,15 +72,11 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
-        PgFtsConfiguration newConf;
-        if (newCondition instanceof PgFtsConfiguration) {
-            newConf = (PgFtsConfiguration) newCondition;
-            if (!newConf.getParser().equals(parser)) {
-                isNeedDepcies.set(true);
-                return true;
-            }
-        } else {
-            return false;
+        PgFtsConfiguration newConf = (PgFtsConfiguration) newCondition;
+
+        if (!newConf.getParser().equals(parser)) {
+            isNeedDepcies.set(true);
+            return true;
         }
 
         compareOptions(newConf, sb);

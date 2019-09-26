@@ -48,16 +48,13 @@ public class MsProcedure extends AbstractMsFunction {
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
-        MsProcedure newProcedure;
-        if (newCondition instanceof MsProcedure) {
-            newProcedure = (MsProcedure) newCondition;
-        } else if (newCondition instanceof MsClrProcedure) {
+        if (newCondition instanceof MsClrProcedure) {
             isNeedDepcies.set(true);
             return true;
-        } else {
-            return false;
         }
+
+        final int startLength = sb.length();
+        MsProcedure newProcedure = (MsProcedure) newCondition;
 
         if (!Objects.equals(getFirstPart(), newProcedure.getFirstPart())
                 || !Objects.equals(getSecondPart(), newProcedure.getSecondPart())) {

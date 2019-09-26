@@ -148,21 +148,25 @@ public class PgView extends AbstractView implements PgOptionContainer  {
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
-        PgView newView;
-        if (newCondition instanceof PgView) {
-            newView = (PgView) newCondition;
-        } else {
-            return false;
-        }
+        PgView newView = (PgView) newCondition;
 
         // TODO add alter for materialized view
-        // after merge view columns dependencies branch
         if (isViewModified(newView)
-                || isWithData() != newView.isWithData()
+                || isMatView() != newView.isMatView()
                 || getTablespace() != newView.getTablespace()) {
             isNeedDepcies.set(true);
             return true;
         }
+
+        if (!Objects.equals(isWithData(), newView.isWithData())) {
+            sb.append("\n\nREFRESH MATERIALIZED VIEW ").append(newView.getQualifiedName());
+            if (newView.isWithData() == Boolean.FALSE) {
+                sb.append(" WITH NO DATA");
+            }
+
+            sb.append(';');
+        }
+
         diffDefaultValues(sb, newView);
 
         if (!Objects.equals(getOwner(), newView.getOwner())) {
