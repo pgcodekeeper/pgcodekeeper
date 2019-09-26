@@ -116,8 +116,7 @@ public class LibraryLoader {
             if (Files.exists(p.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
                 db = new ProjectLoader(path, args).loadSchemaOnly();
             } else {
-                db = new PgDatabase();
-                db.setArguments(args);
+                db = new PgDatabase(args);
 
                 Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
                 readStatementsFromDirectory(p, db, antlrTasks);

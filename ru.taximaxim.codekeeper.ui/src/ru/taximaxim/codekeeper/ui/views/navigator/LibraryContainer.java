@@ -53,7 +53,7 @@ public class LibraryContainer {
                 try {
                     String urlPath = new URI(path).getPath();
                     if (urlPath != null) {
-                        path = urlPath.substring(urlPath.lastIndexOf('/') + 1) + " - " +  path;
+                        path = urlPath.substring(urlPath.lastIndexOf('/') + 1) + " - " +  path; //$NON-NLS-1$
                     }
                 } catch (URISyntaxException e) {
                     // Nothing to do, use default path

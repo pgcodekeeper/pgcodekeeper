@@ -96,3 +96,19 @@ $$;
 CREATE FUNCTION f_leak (text)
        RETURNS bool LANGUAGE plpgsql COST 0.0000001
        AS 'BEGIN RAISE NOTICE ''f_leak => %'', $1; RETURN true; END';
+create function sp_parallel_restricted(int) returns int as $$begin return $1; end$$ language plpgsql parallel restricted;
+CREATE OR REPLACE FUNCTION public.xpath_name_agg(p_body xml, p_node text, p_path_expr text, p_delimeter text = ', '::text) RETURNS text
+    LANGUAGE sql IMMUTABLE PARALLEL SAFE COST 10.0
+    AS $$
+select string_agg(name_for_agg, p_delimeter order by rn) as name_agg
+  FROM XMLTABLE(p_node PASSING p_body COLUMNS rn FOR ORDINALITY, name_for_agg text PATH p_path_expr) ;
+$$;
+CREATE FUNCTION namelen(person_type) RETURNS int LANGUAGE SQL AS $$ SELECT length($1.name) $$;
+alter function report_guc(text) set work_mem = '2MB';
+alter function report_guc(text) reset all;
+create or replace function myfunc(int) returns text as $$
+begin
+  set local work_mem = '2MB';
+  return current_setting('work_mem');
+end $$
+language plpgsql

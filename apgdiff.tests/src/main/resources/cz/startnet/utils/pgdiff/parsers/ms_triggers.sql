@@ -69,3 +69,56 @@ DISABLE TRIGGER safety ON DATABASE;
 GO
 DISABLE Trigger ALL ON ALL SERVER;
 GO
+CREATE TRIGGER reminder  
+ON Person.Address  
+AFTER UPDATE   
+AS   
+IF ( UPDATE (StateProvinceID) OR UPDATE (PostalCode) )  
+BEGIN  
+RAISERROR (50009, 16, 10)  
+END;  
+GO
+CREATE TRIGGER dbo.updEmployeeData   
+ON dbo.employeeData   
+AFTER UPDATE AS  
+   IF (COLUMNS_UPDATED() & 14) > 0 
+   BEGIN
+      INSERT INTO dbo.auditEmployeeData  
+         (audit_log_type, audit_emp_SSN)  
+         SELECT 'OLD',
+            del.emp_id,
+            del.emp_SSN
+         FROM deleted del;
+   END;  
+GO
+CREATE TRIGGER Person.uContact2 ON Person.Person  
+AFTER UPDATE AS  
+    IF ( (SUBSTRING(COLUMNS_UPDATED(), 1, 1) & 20 = 20)   
+        AND (SUBSTRING(COLUMNS_UPDATED(), 2, 1) & 1 = 1) )   
+    PRINT 'Columns 3, 5 and 9 updated';
+GO
+CREATE TRIGGER safety   
+ON DATABASE   
+FOR CREATE_TABLE   
+AS  
+    PRINT 'CREATE TABLE Issued.'  
+    SELECT EVENTDATA().value  
+        ('(/EVENT_INSTANCE/TSQLCommand/CommandText)[1]','nvarchar(max)')  
+   RAISERROR ('New tables cannot be created in this database.', 16, 1)   
+   ROLLBACK  
+;  
+GO
+CREATE TRIGGER log   
+ON DATABASE   
+FOR DDL_DATABASE_LEVEL_EVENTS   
+AS  
+DECLARE @data XML  
+SET @data = EVENTDATA()  
+INSERT ddl_log   
+   (PostTime, DB_User, Event, TSQL)   
+   VALUES   
+   (GETDATE(),   
+   CONVERT(nvarchar(100), CURRENT_USER),   
+   @data.value('(/EVENT_INSTANCE/EventType)[1]', 'nvarchar(100)'),   
+   @data.value('(/EVENT_INSTANCE/TSQLCommand)[1]', 'nvarchar(2000)') ) ;  
+GO  

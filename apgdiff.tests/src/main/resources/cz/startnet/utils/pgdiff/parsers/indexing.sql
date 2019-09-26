@@ -779,3 +779,18 @@ create index btree_idx_err on btree_test(a) with (vacuum_cleanup_index_scale_fac
 create index btree_idx_err on btree_test(a) with (vacuum_cleanup_index_scale_factor = true);
 alter index btree_idx1 set (vacuum_cleanup_index_scale_factor = 70.0);
 CREATE INDEX brinidx ON brintest USING brin (byteacol) with (pages_per_range = 1);
+CREATE INDEX ptif_test0_index ON ONLY ptif_test0 (a);
+ALTER INDEX ptif_test_index ATTACH PARTITION ptif_test0_index;
+create index gin_test_idx on gin_test_tbl using gin (i) with (fastupdate = on, gin_pending_list_limit = 4096);
+alter index gin_test_idx set (fastupdate = off);
+create index gist_pointidx on gist_point_tbl using gist(p);
+create index gist_pointidx2 on gist_point_tbl using gist(p) with (buffering = on, fillfactor=50);
+create index gist_pointidx3 on gist_point_tbl using gist(p) with (buffering = off);
+create index gist_pointidx4 on gist_point_tbl using gist(p) with (buffering = auto);
+drop index gist_pointidx2, gist_pointidx3, gist_pointidx4;
+create index gist_pointidx5 on gist_point_tbl using gist(p) with (buffering = invalid_value);
+create index gist_pointidx5 on gist_point_tbl using gist(p) with (fillfactor=9);
+create index gist_pointidx5 on gist_point_tbl using gist(p) with (fillfactor=101);
+alter index gist_pointidx SET (fillfactor = 40);
+reindex index gist_pointidx;
+drop index gist_tbl_point_index;

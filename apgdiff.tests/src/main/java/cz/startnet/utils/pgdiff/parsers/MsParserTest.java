@@ -40,7 +40,6 @@ public class MsParserTest {
         List<Object[]> p = Arrays.asList(new Object[][] {
             {"ms_assemblies"},
             {"ms_authorizations"},
-            // TODO из-за кавычек IPV6_ADDR и IPV4_ADDR считаются строками
             {"ms_availability_group"},
             {"ms_backup"},
             {"ms_broker_priority"},
@@ -58,8 +57,8 @@ public class MsParserTest {
             {"ms_insert", 28},
             {"ms_key", 1},
             {"ms_logins", 3},
-            {"ms_merge", 3},
-            {"ms_other", 10},
+            {"ms_merge", 2},
+            {"ms_other", 8},
             {"ms_predicates"},
             {"ms_procedures"},
             {"ms_roles"},
@@ -71,11 +70,11 @@ public class MsParserTest {
             {"ms_statements", 31},
             {"ms_table"},
             {"ms_transactions"},
-            {"ms_triggers", 1},
+            {"ms_triggers"},
             {"ms_type"},
             {"ms_update", 16},
             {"ms_users"},
-            {"ms_xml_data_type", 16},
+            {"ms_xml_data_type", 1},
         });
 
         int maxLength = p.stream()

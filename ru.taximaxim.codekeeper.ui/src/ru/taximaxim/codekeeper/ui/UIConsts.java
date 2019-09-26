@@ -119,8 +119,8 @@ public interface UIConsts {
     }
 
     interface LANGUAGE {
-        String POSTGRESQL = "PostgreSQL";
-        String MS_SQL = "MS SQL";
+        String POSTGRESQL = "PostgreSQL"; //$NON-NLS-1$
+        String MS_SQL = "MS SQL"; //$NON-NLS-1$
     }
 
     public enum DBSources {
