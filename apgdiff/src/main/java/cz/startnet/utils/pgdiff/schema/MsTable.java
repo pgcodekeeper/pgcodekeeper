@@ -46,10 +46,6 @@ public class MsTable extends AbstractTable {
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
-        if (!(newCondition instanceof MsTable)) {
-            return false;
-        }
-
         MsTable newTable = (MsTable) newCondition;
 
         if (isRecreated(newTable)) {

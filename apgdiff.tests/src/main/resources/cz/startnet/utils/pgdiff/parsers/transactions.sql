@@ -422,3 +422,23 @@ select 1/0;
 rollback to X;
 
 -- DO NOT ADD ANYTHING HERE.
+
+FETCH next from hsc;
+FETCH backward 1 in foo23;
+FETCH RELATIVE 0 FROM c1;
+FETCH all in foo25;
+fetch first from hsc;
+fetch last from hsc;
+fetch 1 from hsc;
+FETCH ABSOLUTE 1 FROM current_check_cursor;
+FETCH RELATIVE 1 FROM current_check_cursor;
+FETCH ALL FROM c;
+fetch all in c1;
+fetch 1 in c1;
+fetch backward 1 in c1;
+fetch backward all in c1;
+fetch backward 1 in c1;
+fetch all in c1;
+begin transaction read only;
+begin transaction isolation level repeatable read;
+start transaction;

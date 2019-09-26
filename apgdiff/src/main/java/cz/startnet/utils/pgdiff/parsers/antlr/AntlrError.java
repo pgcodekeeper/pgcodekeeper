@@ -15,9 +15,9 @@ public class AntlrError extends ContextLocation {
 
     public AntlrError(Token tokenError, String location, int line, int charPositionInLine, String msg) {
         this(location, line, charPositionInLine, msg,
-        tokenError == null ? -1 : tokenError.getStartIndex(),
-        tokenError == null ? -1 : tokenError.getStopIndex(),
-        tokenError == null ? null : tokenError.getText());
+                tokenError == null ? -1 : tokenError.getStartIndex(),
+                        tokenError == null ? -1 : tokenError.getStopIndex(),
+                                tokenError == null ? null : tokenError.getText());
     }
 
     private AntlrError(String location, int line, int charPositionInLine, String msg,
@@ -29,8 +29,9 @@ public class AntlrError extends ContextLocation {
         this.text = text;
     }
 
-    public AntlrError copyWithOffset(int offset, int lineOffset) {
-        return new AntlrError(getFilePath(), getLineNumber() + lineOffset, getCharPositionInLine(),
+    public AntlrError copyWithOffset(int offset, int lineOffset, int inLineOffset) {
+        return new AntlrError(getFilePath(), getLineNumber() + lineOffset,
+                (getLineNumber() == 1 ? getCharPositionInLine() + inLineOffset : getCharPositionInLine()),
                 msg, (start == -1 ? -1 : start + offset), (stop == -1 ? -1: stop + offset), text);
     }
 

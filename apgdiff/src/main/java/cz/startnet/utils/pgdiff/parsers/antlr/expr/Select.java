@@ -425,6 +425,12 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
                 functions.forEach(e -> function(e, primary.alias));
             } else if ((table = primary.schema_qualified_name()) != null) {
                 addNameReference(table, alias);
+                if (primary.TABLESAMPLE() != null) {
+                    ValueExpr vex = new ValueExpr(this);
+                    for (VexContext v : primary.vex()) {
+                        vex.analyze(new Vex(v));
+                    }
+                }
             } else if ((subquery = primary.table_subquery()) != null) {
                 boolean oldLateral = lateralAllowed;
                 try {

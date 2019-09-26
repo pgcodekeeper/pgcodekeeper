@@ -49,3 +49,6 @@ SET password_encryption = 'scram-sha-256';
 SET DateStyle = 'Postgres, MDY';
 RESET TIME ZONE;
 reset enable_parallel_append;
+SET xmlbinary TO base64;
+SET XML OPTION DOCUMENT;
+SET vacuum_cost_delay TO 40;

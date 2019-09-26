@@ -48,28 +48,27 @@ public class MsConstraint extends AbstractConstraint {
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
-        if (newCondition instanceof MsConstraint) {
-            MsConstraint newConstr = (MsConstraint)newCondition;
-            if (!Objects.equals(getDefinition(), newConstr.getDefinition())) {
-                isNeedDepcies.set(true);
-                return true;
-            }
+        MsConstraint newConstr = (MsConstraint) newCondition;
 
-            if (isNotValid() != newConstr.isNotValid() || isDisabled() != newConstr.isDisabled()) {
-                sb.append("\nALTER ").append(newConstr.getParent().getStatementType().name())
-                .append(' ').append(newConstr.getParent().getQualifiedName())
-                .append(" WITH ");
-                if (newConstr.isNotValid()) {
-                    sb.append("NO");
-                }
-                sb.append("CHECK ");
-                if (newConstr.isDisabled()) {
-                    sb.append("NO");
-                }
-                sb.append("CHECK CONSTRAINT ").append(MsDiffUtils.quoteName(newConstr.getName()))
-                .append(GO);
-                return true;
+        if (!Objects.equals(getDefinition(), newConstr.getDefinition())) {
+            isNeedDepcies.set(true);
+            return true;
+        }
+
+        if (isNotValid() != newConstr.isNotValid() || isDisabled() != newConstr.isDisabled()) {
+            sb.append("\nALTER ").append(newConstr.getParent().getStatementType().name())
+            .append(' ').append(newConstr.getParent().getQualifiedName())
+            .append(" WITH ");
+            if (newConstr.isNotValid()) {
+                sb.append("NO");
             }
+            sb.append("CHECK ");
+            if (newConstr.isDisabled()) {
+                sb.append("NO");
+            }
+            sb.append("CHECK CONSTRAINT ").append(MsDiffUtils.quoteName(newConstr.getName()))
+            .append(GO);
+            return true;
         }
 
         return false;

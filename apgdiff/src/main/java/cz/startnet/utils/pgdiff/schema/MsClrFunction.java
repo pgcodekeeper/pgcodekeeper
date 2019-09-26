@@ -37,23 +37,19 @@ public class MsClrFunction extends AbstractMsClrFunction {
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
-        MsClrFunction newFunction;
-        if (newCondition instanceof MsClrFunction) {
-            newFunction = (MsClrFunction) newCondition;
-        } else if (newCondition instanceof MsFunction) {
+        if (newCondition instanceof MsFunction) {
             isNeedDepcies.set(true);
             return true;
-        } else {
-            return false;
         }
+
+        MsClrFunction newFunction = (MsClrFunction) newCondition;
 
         if (!compareUnalterable(newFunction)) {
             if (!getFuncType().equals(newFunction.getFuncType())) {
                 isNeedDepcies.set(true);
                 return true;
-            } else {
-                sb.append(newFunction.getFunctionFullSQL(false));
             }
+            sb.append(newFunction.getFunctionFullSQL(false));
         }
 
         if (!Objects.equals(getOwner(), newFunction.getOwner())) {

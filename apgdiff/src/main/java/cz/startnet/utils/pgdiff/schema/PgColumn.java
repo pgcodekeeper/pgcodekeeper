@@ -170,12 +170,7 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
-        PgColumn newColumn;
-        if (newCondition instanceof PgColumn) {
-            newColumn = (PgColumn) newCondition;
-        } else {
-            return false;
-        }
+        PgColumn newColumn = (PgColumn) newCondition;
 
         boolean isNeedDropDefault = !Objects.equals(getType(), newColumn.getType())
                 && !Objects.equals(getDefaultValue(), newColumn.getDefaultValue());

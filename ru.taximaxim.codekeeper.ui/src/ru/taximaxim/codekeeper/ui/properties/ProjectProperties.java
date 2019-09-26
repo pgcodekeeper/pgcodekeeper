@@ -169,6 +169,7 @@ public class ProjectProperties extends PropertyPage {
 
         btnEnableFuncDep = new Button(panel, SWT.CHECK);
         btnEnableFuncDep.setText(Messages.GeneralPrefPage_enable_body_dependencies);
+        btnEnableFuncDep.setToolTipText(Messages.GeneralPrefPage_body_depcy_tooltip);
         gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
         gd.horizontalIndent = 10;
         btnEnableFuncDep.setLayoutData(gd);

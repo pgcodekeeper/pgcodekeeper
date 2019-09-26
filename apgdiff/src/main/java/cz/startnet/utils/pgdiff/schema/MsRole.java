@@ -68,12 +68,7 @@ public class MsRole extends PgStatement {
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
-        MsRole newRole;
-        if (newCondition instanceof MsRole) {
-            newRole = (MsRole) newCondition;
-        } else {
-            return false;
-        }
+        MsRole newRole = (MsRole) newCondition;
 
         if (!Objects.equals(getOwner(), newRole.getOwner())) {
             newRole.alterOwnerSQL(sb);

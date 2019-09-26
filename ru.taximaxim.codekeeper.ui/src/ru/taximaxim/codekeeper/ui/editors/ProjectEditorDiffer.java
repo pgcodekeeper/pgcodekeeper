@@ -74,6 +74,7 @@ import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.progress.IProgressConstants2;
 import org.eclipse.ui.statushandlers.StatusManager;
 import org.osgi.service.prefs.BackingStoreException;
 
@@ -610,6 +611,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                         StatusManager.SHOW));
             }
         });
+        job.setProperty(IProgressConstants2.SHOW_IN_TASKBAR_ICON_PROPERTY, Boolean.TRUE);
         job.setUser(true);
         job.schedule();
     }
