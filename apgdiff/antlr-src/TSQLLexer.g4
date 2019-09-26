@@ -331,7 +331,6 @@ DB_CHAINING: D B '_' C H A I N I N G;
 DB_FAILOVER: D B '_' F A I L O V E R;
 DECRYPTION: D E C R Y P T I O N;
 DEFAULT_DATABASE: D E F A U L T '_' D A T A B A S E;
-DEFAULT_DOUBLE_QUOTE: '"' D E F A U L T '"';
 DEFAULT_FULLTEXT_LANGUAGE: D E F A U L T '_' F U L L T E X T '_' L A N G U A G E;
 DEFAULT_LANGUAGE: D E F A U L T '_' L A N G U A G E;
 DEFAULT_SCHEMA: D E F A U L T '_' S C H E M A;
@@ -865,10 +864,11 @@ FLOAT:               DEC_DOT_DEC;
 REAL:                (DECIMAL | DEC_DOT_DEC) (E [+-]? DEC_DIGIT+);
 
 IPV4_ADDR:           IPV4_OCTECT DOT IPV4_OCTECT DOT IPV4_OCTECT DOT IPV4_OCTECT;
-IPV6_ADDR:           HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? [:] HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? [:] 
-                     HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? [:] HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? [:]
-                     HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? [:] HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? [:]
-                     HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? [:] HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? HEX_DIGIT?;
+// TODO doesn't support IPV6 zero compression
+IPV6_ADDR:           HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? HEX_DIGIT [:] HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? HEX_DIGIT [:] 
+                     HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? HEX_DIGIT [:] HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? HEX_DIGIT [:]
+                     HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? HEX_DIGIT [:] HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? HEX_DIGIT [:]
+                     HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? HEX_DIGIT [:] HEX_DIGIT? HEX_DIGIT? HEX_DIGIT? HEX_DIGIT;
                      
 BACKSLASH:           '\\';
 DOUBLE_FORWARD_SLASH:'//';
@@ -888,11 +888,8 @@ AND_ASSIGN:          '&=';
 XOR_ASSIGN:          '^=';
 OR_ASSIGN:           '|=';
 
-DOUBLE_BAR:          '||';
 DOT:                 '.';
-UNDERLINE:           '_';
 AT:                  '@';
-SHARP:               '#';
 DOLLAR:              '$';
 LR_BRACKET:          '(';
 RR_BRACKET:          ')';
@@ -925,7 +922,6 @@ fragment UnterminatedSquareQuotedIdentifier
     )*
     ;
 
-fragment LETTER:       [a-zA-Z_];
 fragment IPV4_OCTECT:  [0-9]?[0-9]?[0-9];
 fragment DEC_DOT_DEC:  (DEC_DIGIT+ '.' DEC_DIGIT+ |  DEC_DIGIT+ '.' | '.' DEC_DIGIT+);
 fragment HEX_DIGIT:    [0-9A-Fa-f];

@@ -63,9 +63,9 @@ public class MsMerge extends MsAbstractExprWithNmspc<Merge_statementContext> {
 
         for (Merge_matchedContext match : merge.merge_matched()) {
             for (Update_elemContext elem : match.update_elem()) {
-                ExpressionContext expr = elem.expression();
-                if (expr != null) {
-                    vex.analyze(exp);
+                ExpressionContext updateExpr = elem.expression();
+                if (updateExpr != null) {
+                    vex.analyze(updateExpr);
                     Full_column_nameContext fcn = elem.full_column_name();
                     if (fcn != null) {
                         select.addColumnDepcy(fcn);

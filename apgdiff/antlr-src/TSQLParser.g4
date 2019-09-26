@@ -472,9 +472,9 @@ alter_availability_group_options
     ;
 
 ip_address_option
-    : IPV4_ADDR COMMA IPV4_ADDR
+    : IPV4_ADDR COMMA (IPV4_ADDR | STRING)
     | IPV6_ADDR
-    | STRING (COMMA STRING)?
+    | STRING (COMMA (IPV4_ADDR | STRING))?
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-broker-priority-transact-sql
@@ -698,7 +698,7 @@ create_external_library
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-external-resource-pool-transact-sql
 alter_external_resource_pool
-    : EXTERNAL RESOURCE POOL (pool_name=id | DEFAULT_DOUBLE_QUOTE) 
+    : EXTERNAL RESOURCE POOL pool_name=id 
     WITH LR_BRACKET MAX_CPU_PERCENT EQUAL max_cpu_percent=DECIMAL 
         ( COMMA? AFFINITY CPU EQUAL (AUTO|(COMMA? DECIMAL TO DECIMAL |COMMA DECIMAL )+ ) 
         | NUMANODE EQUAL (COMMA? DECIMAL TO DECIMAL| COMMA? DECIMAL )+ ) 
@@ -1210,7 +1210,7 @@ user_option
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-workload-group-transact-sql
 alter_workload_group
-    : WORKLOAD GROUP (workload_group_group_name=id | DEFAULT_DOUBLE_QUOTE)
+    : WORKLOAD GROUP workload_group_group_name=id
          (WITH LR_BRACKET
            (IMPORTANCE EQUAL (LOW|MEDIUM|HIGH)
            | COMMA? REQUEST_MAX_MEMORY_GRANT_PERCENT EQUAL request_max_memory_grant=DECIMAL
@@ -1219,7 +1219,7 @@ alter_workload_group
            | MAX_DOP EQUAL max_dop=DECIMAL
            | GROUP_MAX_REQUESTS EQUAL group_max_requests=DECIMAL)+
           RR_BRACKET )?
-    (USING (workload_group_pool_name=id | DEFAULT_DOUBLE_QUOTE) )?
+    (USING workload_group_pool_name=id)?
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-workload-group-transact-sql
@@ -1233,8 +1233,7 @@ create_workload_group
            | MAX_DOP EQUAL max_dop=DECIMAL
            | GROUP_MAX_REQUESTS EQUAL group_max_requests=DECIMAL)+
           RR_BRACKET )?
-    (USING (workload_group_pool_name=id | DEFAULT_DOUBLE_QUOTE)?
-            (COMMA? EXTERNAL external_pool_name=id | DEFAULT_DOUBLE_QUOTE)?)?
+    (USING workload_group_pool_name=id? (COMMA? EXTERNAL external_pool_name=id)?)?
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-xml-schema-collection-transact-sql
@@ -1835,7 +1834,7 @@ database_mirroring_option
     ;
 
 partner_option
-    : EQUAL partner_server
+    : EQUAL STRING
     | FAILOVER
     | FORCE_SERVICE_ALLOW_DATA_LOSS
     | OFF
@@ -1846,21 +1845,8 @@ partner_option
     ;
 
 witness_option
-    : EQUAL partner_server
+    : EQUAL STRING
     | OFF
-    ;
-
-partner_server
-    : partner_server_tcp_prefix host COLON port=DECIMAL
-    ;
-
-partner_server_tcp_prefix
-    : TCP COLON DOUBLE_FORWARD_SLASH
-    ;
-
-host
-    : id DOT host
-    | (id DOT |id)
     ;
 
 date_correlation_optimization_option
@@ -2525,7 +2511,7 @@ expression
     : LR_BRACKET expression RR_BRACKET
     | op=(PLUS | MINUS | BIT_NOT) expression
     | expression op=(STAR | DIVIDE | MODULE) expression
-    | expression op=(PLUS | MINUS | BIT_AND | BIT_XOR | BIT_OR | DOUBLE_BAR) expression
+    | expression op=(PLUS | MINUS | BIT_AND | BIT_XOR | BIT_OR) expression
     | expression comparison_operator expression
     | expression assignment_operator expression
     | function_call
@@ -3268,7 +3254,6 @@ simple_id
     | DB_FAILOVER
     | DECRYPTION
     | DEFAULT_DATABASE
-    | DEFAULT_DOUBLE_QUOTE
     | DEFAULT_FULLTEXT_LANGUAGE
     | DEFAULT_LANGUAGE
     | DEFAULT_SCHEMA
