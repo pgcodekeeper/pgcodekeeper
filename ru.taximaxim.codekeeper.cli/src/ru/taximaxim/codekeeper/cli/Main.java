@@ -21,6 +21,7 @@ import org.kohsuke.args4j.CmdLineException;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.NotAllowedObjectException;
+import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffScript;
@@ -52,11 +53,9 @@ public final class Main {
                 return true;
             }
             if (arguments.isModeParse()) {
-                parse(arguments);
-                return true;
+                return parse(arguments);
             } else if (arguments.isModeGraph()) {
-                graph(writer, arguments);
-                return true;
+                return graph(writer, arguments);
             } else {
                 return diff(writer, arguments);
             }
@@ -81,7 +80,15 @@ public final class Main {
     private static boolean diff(PrintWriter writer, PgDiffArguments arguments)
             throws InterruptedException, IOException {
         try (PrintWriter encodedWriter = getDiffWriter(arguments)) {
-            PgDiffScript script = PgDiff.createDiff(arguments);
+            PgDiff diff = new PgDiff(arguments);
+            PgDiffScript script;
+            try {
+                script = diff.createDiff();
+            } catch (PgCodekeeperException ex) {
+                diff.getErrors().forEach(System.err::println);
+                return false;
+            }
+
             String text = script.getText();
 
             if (arguments.isSafeMode()) {
@@ -118,10 +125,16 @@ public final class Main {
                 arguments.getOutputTarget(), arguments.getOutCharsetName());
     }
 
-    private static void parse(PgDiffArguments arguments)
+    private static boolean parse(PgDiffArguments arguments)
             throws IOException, InterruptedException {
-        PgDatabase d = PgDiff.loadDatabaseSchema(
-                arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments);
+        PgDiff diff = new PgDiff(arguments);
+        PgDatabase d;
+        try {
+            d = diff.loadNewDatabase();
+        } catch (PgCodekeeperException ex) {
+            diff.getErrors().forEach(System.err::println);
+            return false;
+        }
 
         if (arguments.isMsSql()) {
             new MsModelExporter(Paths.get(arguments.getOutputTarget()),
@@ -130,25 +143,27 @@ public final class Main {
             new ModelExporter(Paths.get(arguments.getOutputTarget()),
                     d, arguments.getOutCharsetName()).exportFull();
         }
+
+        return true;
     }
 
-    private static void graph(PrintWriter writer, PgDiffArguments arguments)
+    private static boolean graph(PrintWriter writer, PgDiffArguments arguments)
             throws IOException, InterruptedException {
-        PgDatabase d = PgDiff.loadDatabaseSchema(
-                arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments);
-
-        try (PrintWriter encodedWriter = getDiffWriter(arguments)) {
-            DepcyWriter dw;
-            if (encodedWriter != null) {
-                dw = new DepcyWriter(d, arguments.getGraphDepth(), encodedWriter,
-                        arguments.isGraphReverse());
-            } else {
-                dw = new DepcyWriter(d, arguments.getGraphDepth(), writer,
-                        arguments.isGraphReverse());
-            }
-
-            dw.write(arguments.getGraphNames());
+        PgDiff diff = new PgDiff(arguments);
+        PgDatabase d;
+        try {
+            d = diff.loadNewDatabase();
+        } catch (PgCodekeeperException ex) {
+            diff.getErrors().forEach(System.err::println);
+            return false;
         }
+
+        try (PrintWriter pw = getDiffWriter(arguments)) {
+            new DepcyWriter(d, arguments.getGraphDepth(),
+                    pw != null ?  pw : writer, arguments.isGraphReverse())
+            .write(arguments.getGraphNames());
+        }
+        return true;
     }
 
     private Main() {

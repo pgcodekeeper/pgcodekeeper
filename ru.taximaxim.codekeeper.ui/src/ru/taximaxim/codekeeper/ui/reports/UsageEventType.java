@@ -17,7 +17,6 @@ public class UsageEventType {
      * @param componentVersion May not be null
      * @param categoryName If null, the component name is used as category name. All whitespaces will be replaced by "-".
      * @param actionName May not be null. All whitespaces will be replaced by "-".
-     * @param labelDescription Optinal. May be null.
      * @param valueDescription Optinal. May be null.
      */
     public UsageEventType(String componentName, String componentVersion,

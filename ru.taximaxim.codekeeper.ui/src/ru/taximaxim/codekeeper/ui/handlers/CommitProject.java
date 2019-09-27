@@ -7,10 +7,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import cz.startnet.utils.pgdiff.PgCodekeeperException;
-import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
-import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class CommitProject extends AbstractHandler {
 
@@ -20,11 +17,7 @@ public class CommitProject extends AbstractHandler {
         if (part instanceof ProjectEditorDiffer){
             ProjectEditorDiffer differ = (ProjectEditorDiffer) part;
             differ.changeMigrationDireciton(true, true);
-            try {
-                differ.commit();
-            } catch (PgCodekeeperException ex) {
-                ExceptionNotifier.notifyDefault(Messages.error_creating_dependency_graph, ex);
-            }
+            differ.commit();
         }
         return null;
     }

@@ -37,8 +37,7 @@ public class JdbcMsLoader extends JdbcLoaderBase {
     }
 
     public PgDatabase readDb() throws IOException, InterruptedException {
-        PgDatabase d = new PgDatabase();
-        d.setArguments(args);
+        PgDatabase d = new PgDatabase(args);
 
         Log.log(Log.LOG_INFO, "Reading db using JDBC.");
         setCurrentOperation("connection setup");
