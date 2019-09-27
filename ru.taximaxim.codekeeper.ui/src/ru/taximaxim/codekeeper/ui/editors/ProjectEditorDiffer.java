@@ -52,6 +52,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -59,7 +61,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
@@ -145,7 +151,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private Composite contNotifications;
     private Label lblNotificationText;
     private Link linkRefresh;
-    private Button btnGetChanges;
+    private ToolBar toolGetChanges;
+    private Menu menuGetChangesCustom;
 
     private Button btnToProj;
     private Button btnToDb;
@@ -267,18 +274,51 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     }
                 });
 
-                btnGetChanges = new Button(container, SWT.PUSH);
-                btnGetChanges.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
+                //// Adding [GetChanges] button with dropdown menu, which contains
+                //// main button [GetChanges] and additional button for getting
+                //// changes with custom settings.
+
+                menuGetChangesCustom = new Menu (container.getShell(), SWT.POP_UP);
+                MenuItem itemGetChangesCustom = new MenuItem (menuGetChangesCustom, SWT.PUSH);
+                itemGetChangesCustom.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
+                        .getBundle().getResource(FILE.ICONREFRESH2))));
+                itemGetChangesCustom.setText(Messages.DiffTableViewer_get_changes_custom);
+                itemGetChangesCustom.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        // TODO добавить диалоговое окно для разового изменения параметров
+
+                        // TODO этот метод запускать из диалогового окна разового изменения параметров
+                        getChanges();
+
+                        // TODO возвращать измененные параметры в исходное состояние сейчас ?
+                        //      или после наката скрипта ?
+                        //      а если передумают накатывать скрипт с временными параметрами,
+                        //      то когда возвращать исходные параметры?
+                        //      или создать отдельное хранилище для временных параметров?
+                    }
+                });
+
+                toolGetChanges = new ToolBar (container, SWT.RIGHT);
+                Rectangle clientArea = container.getClientArea();
+                toolGetChanges.setLocation(clientArea.x, clientArea.y);
+                final ToolItem itemGetChanges = new ToolItem (toolGetChanges, SWT.DROP_DOWN);
+                itemGetChanges.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
                         .getBundle().getResource(FILE.ICONREFRESH))));
-                btnGetChanges.setText(Messages.DiffTableViewer_get_changes);
-                GridData gd = new GridData();
-                gd.horizontalIndent = 8;
-                btnGetChanges.setLayoutData(gd);
-                btnGetChanges.addSelectionListener(new SelectionAdapter() {
+                itemGetChanges.setText(Messages.DiffTableViewer_get_changes);
+                itemGetChanges.addSelectionListener(new SelectionAdapter() {
 
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        getChanges();
+                        if (e.detail == SWT.ARROW) {
+                            Rectangle rect = itemGetChanges.getBounds();
+                            Point pt = new Point(rect.x, rect.y + rect.height);
+                            pt = toolGetChanges.toDisplay(pt);
+                            menuGetChangesCustom.setLocation(pt.x, pt.y);
+                            menuGetChangesCustom.setVisible(true);
+                        } else {
+                            getChanges();
+                        }
                     }
                 });
             }
@@ -572,7 +612,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             public void aboutToRun(IJobChangeEvent event) {
                 UiSync.exec(parent, () -> {
                     if (!parent.isDisposed()) {
-                        btnGetChanges.setEnabled(false);
+                        toolGetChanges.setEnabled(false);
+                        menuGetChangesCustom.setEnabled(false);
                     }
                 });
             }
@@ -582,7 +623,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             public void done(IJobChangeEvent event) {
                 UiSync.exec(parent, () -> {
                     if (!parent.isDisposed()) {
-                        btnGetChanges.setEnabled(true);
+                        toolGetChanges.setEnabled(true);
+                        menuGetChangesCustom.setEnabled(true);
                     }
                 });
 

@@ -398,6 +398,7 @@ public final class Messages extends NLS {
 
     public static String DiffTableViewer_filter_placeholder;
     public static String DiffTableViewer_get_changes;
+    public static String DiffTableViewer_get_changes_custom;
 
     public static String DiffTableViewer_library;
 
