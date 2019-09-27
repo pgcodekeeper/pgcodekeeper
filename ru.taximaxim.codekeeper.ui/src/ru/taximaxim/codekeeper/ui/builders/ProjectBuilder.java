@@ -79,7 +79,7 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
                     switch (d.getKind()) {
                     case IResourceDelta.REMOVED:
                     case IResourceDelta.REMOVED_PHANTOM:
-                        parser.removePathFromRefs(res.getLocation().toOSString());
+                        parser.removeResFromRefs(res);
                         break;
                     default:
                         files.add((IFile) res);

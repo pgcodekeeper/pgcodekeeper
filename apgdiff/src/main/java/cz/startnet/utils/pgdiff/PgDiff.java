@@ -141,8 +141,7 @@ public class PgDiff {
      */
     private PgDatabase loadDatabaseSchema(String format, String srcPath)
             throws InterruptedException, IOException {
-        PgDatabase db = new PgDatabase();
-        db.setArguments(arguments);
+        PgDatabase db = new PgDatabase(arguments);
 
         if ("dump".equals(format)) {
             PgDumpLoader loader = new PgDumpLoader(new File(srcPath), arguments);
