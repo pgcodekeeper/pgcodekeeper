@@ -9,7 +9,9 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -64,6 +66,7 @@ import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IEditorInput;
@@ -115,6 +118,7 @@ import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dialogs.CommitDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
+import ru.taximaxim.codekeeper.ui.dialogs.GetChangesCustomDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ManualDepciesDialog;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffPaneViewer;
@@ -166,6 +170,10 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private List<Entry<PgStatement, PgStatement>> manualDepciesSource = new ArrayList<>();
     private List<Entry<PgStatement, PgStatement>> manualDepciesTarget = new ArrayList<>();
 
+    private boolean isCustomGetChanges;
+    private IEclipsePreferences projPrefs;
+    private final Map<String, Boolean> permanentPrefs = new HashMap<>();
+
     public IProject getProject() {
         return proj.getProject();
     }
@@ -204,6 +212,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         proj = new PgDbProject(in.getProject());
         sp = new ProjectEditorSelectionProvider(getProject());
+        projPrefs = proj.getPrefs();
 
         // message box
         if(!site.getPage().getPerspective().getId().equals(PERSPECTIVE.MAIN)){
@@ -368,7 +377,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
      * changes with custom settings.
      */
     private void addBtnGetChangesWithMenu(Composite container) {
-        menuGetChangesCustom = new Menu (container.getShell(), SWT.POP_UP);
+        Shell shell = container.getShell();
+        menuGetChangesCustom = new Menu (shell, SWT.POP_UP);
         MenuItem itemGetChangesCustom = new MenuItem (menuGetChangesCustom, SWT.PUSH);
         itemGetChangesCustom.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
                 .getBundle().getResource(FILE.ICONREFRESH2))));
@@ -376,16 +386,28 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         itemGetChangesCustom.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                // TODO добавить диалоговое окно для разового изменения параметров
+                Map<String, Boolean> customPrefs = new HashMap<>();
+                GetChangesCustomDialog dialog = new GetChangesCustomDialog(shell, projPrefs,
+                        OpenProjectUtils.checkMsSql(getProject()), customPrefs);
+                if (dialog.open() == Dialog.OK && !customPrefs.isEmpty()) {
+                    isCustomGetChanges = true;
 
-                // TODO этот метод запускать из диалогового окна разового изменения параметров
-                getChanges();
+                    //// Saving permanent project preferences in a separate Map.
 
-                // TODO возвращать измененные параметры в исходное состояние сейчас ?
-                //      или после наката скрипта ?
-                //      а если передумают накатывать скрипт с временными параметрами,
-                //      то когда возвращать исходные параметры?
-                //      или создать отдельное хранилище для временных параметров?
+                    permanentPrefs.put(PROJ_PREF.ENABLE_PROJ_PREF_ROOT,
+                            projPrefs.getBoolean(PROJ_PREF.ENABLE_PROJ_PREF_ROOT, false));
+                    permanentPrefs.put(PREF.NO_PRIVILEGES, projPrefs.getBoolean(PREF.NO_PRIVILEGES, false));
+
+                    //// Setting custom preferences instead of permanent project preferences.
+
+                    projPrefs.putBoolean(PROJ_PREF.ENABLE_PROJ_PREF_ROOT,
+                            customPrefs.get(PROJ_PREF.ENABLE_PROJ_PREF_ROOT));
+                    projPrefs.putBoolean(PREF.NO_PRIVILEGES, customPrefs.get(PREF.NO_PRIVILEGES));
+                    customPrefs.clear();
+
+
+                    getChanges();
+                }
             }
         });
 
@@ -649,11 +671,23 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 newDiffer.getErrors().forEach(e -> StatusManager.getManager().handle(
                         new Status(IStatus.WARNING, PLUGIN_ID.THIS, e.toString()),
                         StatusManager.SHOW));
+
+                if (isCustomGetChanges) {
+                    returnPermanentProjPrefs();
+                    isCustomGetChanges = false;
+                }
             }
         });
         job.setProperty(IProgressConstants2.SHOW_IN_TASKBAR_ICON_PROPERTY, Boolean.TRUE);
         job.setUser(true);
         job.schedule();
+    }
+
+    private void returnPermanentProjPrefs() {
+        projPrefs.putBoolean(PROJ_PREF.ENABLE_PROJ_PREF_ROOT,
+                permanentPrefs.get(PROJ_PREF.ENABLE_PROJ_PREF_ROOT));
+        projPrefs.putBoolean(PREF.NO_PRIVILEGES, permanentPrefs.get(PREF.NO_PRIVILEGES));
+        permanentPrefs.clear();
     }
 
     private void showOverrideView(DbSource dbProject) throws PgCodekeeperUIException {

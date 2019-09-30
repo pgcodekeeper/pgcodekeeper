@@ -443,6 +443,9 @@ public final class Messages extends NLS {
 
     public static String generalPrefPage_use_depcy_on_commit_page;
 
+    public static String getChangesCustomDialog_custom_prefs_description;
+    public static String getChangesCustomDialog_run_with_specified_prefs;
+
     public static String IgnoredObjectPrefListEditor_already_present;
 
     public static String IgnoredObjectPrefListEditor_contents;
