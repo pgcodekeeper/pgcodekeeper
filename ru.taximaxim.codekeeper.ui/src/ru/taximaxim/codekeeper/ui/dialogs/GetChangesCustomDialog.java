@@ -59,29 +59,29 @@ public class GetChangesCustomDialog extends Dialog {
         btnNoPrivileges.setLayoutData(gd);
         btnNoPrivileges.setSelection(projPS.getBoolean(PREF.NO_PRIVILEGES, false));
 
-        //        btnEnableFuncDep = new Button(panel, SWT.CHECK);
-        //        btnEnableFuncDep.setText(Messages.GeneralPrefPage_enable_body_dependencies);
-        //        btnEnableFuncDep.setToolTipText(Messages.GeneralPrefPage_body_depcy_tooltip);
-        //        gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
-        //        gd.horizontalIndent = 10;
-        //        btnEnableFuncDep.setLayoutData(gd);
-        //        btnEnableFuncDep.setSelection(prefs.getBoolean(PREF.ENABLE_BODY_DEPENDENCIES, false));
-        //
-        //        if (!isMsSql) {
-        //            btnSimplifyView = new Button(panel, SWT.CHECK);
-        //            btnSimplifyView.setText(Messages.GeneralPrefPage_simplify_view);
-        //            gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
-        //            gd.horizontalIndent = 10;
-        //            btnSimplifyView.setLayoutData(gd);
-        //            btnSimplifyView.setSelection(prefs.getBoolean(PREF.SIMPLIFY_VIEW, false));
-        //        }
-        //
-        //        btnUseGlobalIgnoreList = new Button(panel, SWT.CHECK);
-        //        btnUseGlobalIgnoreList.setText(Messages.ProjectProperties_use_global_ignore_list);
-        //        gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
-        //        gd.horizontalIndent = 10;
-        //        btnUseGlobalIgnoreList.setLayoutData(gd);
-        //        btnUseGlobalIgnoreList.setSelection(prefs.getBoolean(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, true));
+        btnEnableFuncDep = new Button(panel, SWT.CHECK);
+        btnEnableFuncDep.setText(Messages.GeneralPrefPage_enable_body_dependencies);
+        btnEnableFuncDep.setToolTipText(Messages.GeneralPrefPage_body_depcy_tooltip);
+        gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
+        gd.horizontalIndent = 10;
+        btnEnableFuncDep.setLayoutData(gd);
+        btnEnableFuncDep.setSelection(projPS.getBoolean(PREF.ENABLE_BODY_DEPENDENCIES, false));
+
+        if (!isMsSql) {
+            btnSimplifyView = new Button(panel, SWT.CHECK);
+            btnSimplifyView.setText(Messages.GeneralPrefPage_simplify_view);
+            gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
+            gd.horizontalIndent = 10;
+            btnSimplifyView.setLayoutData(gd);
+            btnSimplifyView.setSelection(projPS.getBoolean(PREF.SIMPLIFY_VIEW, false));
+        }
+
+        btnUseGlobalIgnoreList = new Button(panel, SWT.CHECK);
+        btnUseGlobalIgnoreList.setText(Messages.ProjectProperties_use_global_ignore_list);
+        gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
+        gd.horizontalIndent = 10;
+        btnUseGlobalIgnoreList.setLayoutData(gd);
+        btnUseGlobalIgnoreList.setSelection(projPS.getBoolean(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, true));
 
         return panel;
     }
@@ -98,8 +98,12 @@ public class GetChangesCustomDialog extends Dialog {
     protected void okPressed() {
         customSettings.put(PROJ_PREF.ENABLE_PROJ_PREF_ROOT, true);
         customSettings.put(PREF.NO_PRIVILEGES, btnNoPrivileges.getSelection());
+        customSettings.put(PREF.ENABLE_BODY_DEPENDENCIES, btnEnableFuncDep.getSelection());
+        if (!isMsSql) {
+            customSettings.put(PREF.SIMPLIFY_VIEW, btnSimplifyView.getSelection());
+        }
+        customSettings.put(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, btnUseGlobalIgnoreList.getSelection());
         super.okPressed();
-
     }
 
     @Override

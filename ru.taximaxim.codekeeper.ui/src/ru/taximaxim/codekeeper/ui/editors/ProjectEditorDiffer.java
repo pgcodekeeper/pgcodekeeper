@@ -170,6 +170,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private List<Entry<PgStatement, PgStatement>> manualDepciesSource = new ArrayList<>();
     private List<Entry<PgStatement, PgStatement>> manualDepciesTarget = new ArrayList<>();
 
+    private boolean isMsSql;
     private boolean isCustomGetChanges;
     private IEclipsePreferences projPrefs;
     private final Map<String, Boolean> permanentPrefs = new HashMap<>();
@@ -213,6 +214,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         proj = new PgDbProject(in.getProject());
         sp = new ProjectEditorSelectionProvider(getProject());
         projPrefs = proj.getPrefs();
+        isMsSql = OpenProjectUtils.checkMsSql(getProject());
 
         // message box
         if(!site.getPage().getPerspective().getId().equals(PERSPECTIVE.MAIN)){
@@ -387,8 +389,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             @Override
             public void widgetSelected(SelectionEvent e) {
                 Map<String, Boolean> customPrefs = new HashMap<>();
-                GetChangesCustomDialog dialog = new GetChangesCustomDialog(shell, projPrefs,
-                        OpenProjectUtils.checkMsSql(getProject()), customPrefs);
+                GetChangesCustomDialog dialog = new GetChangesCustomDialog(shell,
+                        projPrefs, isMsSql, customPrefs);
                 if (dialog.open() == Dialog.OK && !customPrefs.isEmpty()) {
                     isCustomGetChanges = true;
 
@@ -397,14 +399,15 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     permanentPrefs.put(PROJ_PREF.ENABLE_PROJ_PREF_ROOT,
                             projPrefs.getBoolean(PROJ_PREF.ENABLE_PROJ_PREF_ROOT, false));
                     permanentPrefs.put(PREF.NO_PRIVILEGES, projPrefs.getBoolean(PREF.NO_PRIVILEGES, false));
+                    permanentPrefs.put(PREF.ENABLE_BODY_DEPENDENCIES,
+                            projPrefs.getBoolean(PREF.ENABLE_BODY_DEPENDENCIES, false));
+                    if (!isMsSql) {
+                        permanentPrefs.put(PREF.SIMPLIFY_VIEW, projPrefs.getBoolean(PREF.SIMPLIFY_VIEW, false));
+                    }
+                    permanentPrefs.put(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, projPrefs.getBoolean(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, true));
 
-                    //// Setting custom preferences instead of permanent project preferences.
-
-                    projPrefs.putBoolean(PROJ_PREF.ENABLE_PROJ_PREF_ROOT,
-                            customPrefs.get(PROJ_PREF.ENABLE_PROJ_PREF_ROOT));
-                    projPrefs.putBoolean(PREF.NO_PRIVILEGES, customPrefs.get(PREF.NO_PRIVILEGES));
-                    customPrefs.clear();
-
+                    // Setting custom preferences instead of permanent project preferences.
+                    setProjPrefsFromMap(customPrefs);
 
                     getChanges();
                 }
@@ -433,6 +436,32 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 }
             }
         });
+    }
+
+    private void setProjPrefsFromMap(Map<String, Boolean> map) {
+        try {
+            projPrefs.putBoolean(PROJ_PREF.ENABLE_PROJ_PREF_ROOT,
+                    map.get(PROJ_PREF.ENABLE_PROJ_PREF_ROOT));
+            projPrefs.putBoolean(PREF.NO_PRIVILEGES, map.get(PREF.NO_PRIVILEGES));
+
+            // TODO make it work (ENABLE_BODY_DEPENDENCIES)
+            projPrefs.putBoolean(PREF.ENABLE_BODY_DEPENDENCIES, map.get(PREF.ENABLE_BODY_DEPENDENCIES));
+
+            if (!isMsSql) {
+                projPrefs.putBoolean(PREF.SIMPLIFY_VIEW, map.get(PREF.SIMPLIFY_VIEW));
+            }
+
+            // TODO make it work (USE_GLOBAL_IGNORE_LIST)
+            projPrefs.putBoolean(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, map.get(PROJ_PREF.USE_GLOBAL_IGNORE_LIST));
+
+            projPrefs.flush();
+        } catch (BackingStoreException e) {
+            ExceptionNotifier.notifyDefault(MessageFormat.format(
+                    Messages.projectProperties_error_occurs_while_saving_properties,
+                    e.getLocalizedMessage()), e);
+        } finally {
+            map.clear();
+        }
     }
 
     public void addDependency() {
@@ -673,7 +702,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                         StatusManager.SHOW));
 
                 if (isCustomGetChanges) {
-                    returnPermanentProjPrefs();
+                    // Returning permanent preferences to project instead of custom preferences.
+                    setProjPrefsFromMap(permanentPrefs);
                     isCustomGetChanges = false;
                 }
             }
@@ -681,13 +711,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         job.setProperty(IProgressConstants2.SHOW_IN_TASKBAR_ICON_PROPERTY, Boolean.TRUE);
         job.setUser(true);
         job.schedule();
-    }
-
-    private void returnPermanentProjPrefs() {
-        projPrefs.putBoolean(PROJ_PREF.ENABLE_PROJ_PREF_ROOT,
-                permanentPrefs.get(PROJ_PREF.ENABLE_PROJ_PREF_ROOT));
-        projPrefs.putBoolean(PREF.NO_PRIVILEGES, permanentPrefs.get(PREF.NO_PRIVILEGES));
-        permanentPrefs.clear();
     }
 
     private void showOverrideView(DbSource dbProject) throws PgCodekeeperUIException {
