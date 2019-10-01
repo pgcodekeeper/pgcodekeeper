@@ -8,7 +8,6 @@ import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -23,26 +22,24 @@ import cz.startnet.utils.pgdiff.IProgressReporter;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.jdbc.JdbcType;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
 
 public class QueriesBatchCallable extends StatementCallable<String> {
 
-    private final Map<String, Set<PgObjLocation>> batches;
+    public static final String GO = "GO";
+
+    private final Set<PgObjLocation> batches;
     private final IProgressMonitor monitor;
     private final Connection connection;
     private final IProgressReporter reporter;
-    private final String filePath;
 
-    public QueriesBatchCallable(Statement st, String filePath,
-            Map<String, Set<PgObjLocation>> batches, IProgressMonitor monitor,
+    public QueriesBatchCallable(Statement st, Set<PgObjLocation> batches, IProgressMonitor monitor,
             IProgressReporter reporter, Connection connection) {
         super(st, null);
         this.batches = batches;
         this.monitor = monitor;
         this.connection = connection;
         this.reporter = reporter;
-        this.filePath = filePath;
     }
 
     @Override
@@ -110,8 +107,8 @@ public class QueriesBatchCallable extends StatementCallable<String> {
                 throw ex;
             }
             StringBuilder sb = new StringBuilder(sem.toString());
-            int offset = sem.getPosition();
             if (currQuery != null) {
+                int offset = sem.getPosition();
                 if (offset > 0) {
                     appendPosition(sb, currQuery, offset);
                 } else {
@@ -155,8 +152,8 @@ public class QueriesBatchCallable extends StatementCallable<String> {
         List<List<PgObjLocation>> batchesList = new ArrayList<>();
         batchesList.add(new ArrayList<>());
 
-        batches.get(filePath).stream().forEach(loc -> {
-            if (PgStatement.strGO.equalsIgnoreCase(loc.getAction())) {
+        batches.forEach(loc -> {
+            if (GO.equalsIgnoreCase(loc.getAction())) {
                 batchesList.add(new ArrayList<>());
             } else {
                 batchesList.get(batchesList.size() - 1).add(loc);

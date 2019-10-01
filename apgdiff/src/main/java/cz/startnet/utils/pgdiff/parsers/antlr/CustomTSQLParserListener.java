@@ -8,6 +8,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
+import cz.startnet.utils.pgdiff.loader.callables.QueriesBatchCallable;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Another_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.BatchContext;
@@ -52,12 +53,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.DropMsStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.UpdateMsStatement;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class CustomTSQLParserListener extends CustomParserListener
 implements TSqlContextProcessor {
 
-    private static int OFFSET_TO_GO_POSITION = 2;
+    private static final int OFFSET_TO_GO_POSITION = 2;
 
     private boolean ansiNulls = true;
     private boolean quotedIdentifier = true;
@@ -91,10 +91,10 @@ implements TSqlContextProcessor {
 
     private void endBatch(ParserRuleContext previousObjCtx) {
         if (isScriptMode || isRefMode) {
-            db.addToQueries(fileName, new PgObjLocation(null, PgStatement.strGO,
+            db.addToQueries(fileName, new PgObjLocation(null, QueriesBatchCallable.GO,
                     previousObjCtx.getStop().getStopIndex() + OFFSET_TO_GO_POSITION,
                     previousObjCtx.getStop().getLine() + OFFSET_TO_GO_POSITION, 0, null,
-                    isScriptMode ? PgStatement.strGO : null));
+                    isScriptMode ? QueriesBatchCallable.GO : null));
         }
     }
 

@@ -6,7 +6,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -80,11 +79,11 @@ public class JdbcRunner {
      * @throws IOException
      * @throws InterruptedException
      */
-    public void runBatches(JdbcConnector connector, String filePath, Map<String, Set<PgObjLocation>> batches,
+    public void runBatches(JdbcConnector connector, Set<PgObjLocation> batches,
             IProgressReporter reporter) throws SQLException, IOException, InterruptedException {
         try (Connection connection = connector.getConnection();
                 Statement st = connection.createStatement()) {
-            runScript(new QueriesBatchCallable(st, filePath, batches, monitor, reporter, connection));
+            runScript(new QueriesBatchCallable(st, batches, monitor, reporter, connection));
         }
     }
 

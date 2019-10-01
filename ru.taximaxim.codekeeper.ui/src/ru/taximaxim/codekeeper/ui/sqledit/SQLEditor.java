@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 
@@ -557,10 +556,7 @@ implements IResourceChangeListener, IErrorPositionSetter {
 
             IProgressReporter reporter = new UiProgressReporter(monitor, SQLEditor.this);
             try (IProgressReporter toClose = reporter) {
-                Map<String, Set<PgObjLocation>> batches = parser.batch();
-                new JdbcRunner(monitor).runBatches(connector,
-                        PgDbParser.getPathFromInput(SQLEditor.this.getEditorInput()),
-                        batches, reporter);
+                new JdbcRunner(monitor).runBatches(connector, parser.batch(), reporter);
                 ProjectEditorDiffer.notifyDbChanged(dbInfo);
                 return Status.OK_STATUS;
             } catch (InterruptedException ex) {

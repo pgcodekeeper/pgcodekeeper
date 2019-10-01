@@ -6,7 +6,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -22,7 +21,7 @@ public class ScriptParser {
 
     private final String script;
 
-    private final Map<String, Set<PgObjLocation>> batches;
+    private final Set<PgObjLocation> batches;
     private final List<AntlrError> errors;
     private final Set<DangerStatement> dangerStatements;
 
@@ -35,15 +34,15 @@ public class ScriptParser {
                 () -> new ByteArrayInputStream(script.getBytes(StandardCharsets.UTF_8)),
                 filePath, args, new NullProgressMonitor(), 0);
         loader.setMode(ParserListenerMode.SCRIPT);
-        batches = loader.load().getObjDefinitions();
-        dangerStatements = batches.get(filePath).stream()
+        batches = loader.load().getObjDefinitions().get(filePath);
+        dangerStatements = batches.stream()
                 .filter(PgObjLocation::isDanger)
                 .map(PgObjLocation::getDanger)
                 .collect(Collectors.toSet());
         errors = loader.getErrors();
     }
 
-    public Map<String, Set<PgObjLocation>> batch() {
+    public Set<PgObjLocation> batch() {
         return batches;
     }
 
