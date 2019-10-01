@@ -110,6 +110,7 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
         loc
         .filter(o -> text.isEmpty() || o.getObjName().toUpperCase(Locale.ROOT).contains(text))
         .filter(o -> o.getType() != DbObjType.SEQUENCE && o.getType() != DbObjType.INDEX)
+        .filter(o -> o.getType() != null)
         .sorted((o1, o2) -> o1.getFilePath().compareTo(o2.getFilePath()))
         .forEach(obj -> {
             Image img = Activator.getDbObjImage(obj.getType());
