@@ -43,14 +43,12 @@ public class JdbcLoader extends JdbcLoaderBase {
         super(connector, monitor, pgDiffArguments);
     }
 
-    public List<String> getErrors() {
+    public List<Object> getErrors() {
         return Collections.unmodifiableList(errors);
     }
 
     public PgDatabase getDbFromJdbc() throws IOException, InterruptedException {
-        PgDatabase d = new PgDatabase();
-        d.setArguments(args);
-        getDbFromJdbc(d);
+        PgDatabase d = getDbFromJdbc(new PgDatabase(args));
         FullAnalyze.fullAnalyze(d, null);
         return d;
     }

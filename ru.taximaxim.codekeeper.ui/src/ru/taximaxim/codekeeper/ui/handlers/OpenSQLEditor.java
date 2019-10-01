@@ -28,7 +28,7 @@ public class OpenSQLEditor extends AbstractHandler {
 
     public static boolean openEditor(IWorkbenchPage page) {
         IFileStore externalFile = EFS.getNullFileSystem()
-                .getStore(new Path("/pgCodeKeeper/new query " + number++));
+                .getStore(new Path("/pgCodeKeeper/new query " + number++)); //$NON-NLS-1$
         IEditorInput input = new SQLEditorInput(externalFile, false);
         try {
             IDE.openEditor(page, input, EDITOR.SQL);

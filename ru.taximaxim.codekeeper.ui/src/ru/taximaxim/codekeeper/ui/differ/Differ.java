@@ -133,9 +133,11 @@ public class Differ implements IRunnableWithProgress {
         pm.newChild(25).subTask(Messages.differ_direct_diff); // 75
         try (Getter source = new Getter(sourceDbFull, proj);
                 Getter target = new Getter(targetDbFull, proj)) {
-            script = PgDiff.diffDatabaseSchemasAdditionalDepcies(
-                    // forceUnixNewLines has no effect on diff operaiton, just pass true
-                    DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone, true, msSql, proj),
+            // forceUnixNewLines has no effect on diff operaiton, just pass true
+            PgDiffArguments args =
+                    DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone, true, msSql, proj);
+
+            script = new PgDiff(args).diffDatabaseSchemasAdditionalDepcies(
                     root,
                     sourceDbFull, targetDbFull,
                     additionalDepciesSource, additionalDepciesTarget);
@@ -146,8 +148,7 @@ public class Differ implements IRunnableWithProgress {
                 + " to: " + sourceDbFull.getName()); //$NON-NLS-1$
 
                 pm.newChild(25).subTask(Messages.differ_reverse_diff); // 100
-                diffReverse = PgDiff.diffDatabaseSchemasAdditionalDepcies(
-                        DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone, true, msSql, proj),
+                diffReverse = new PgDiff(args).diffDatabaseSchemasAdditionalDepcies(
                         root.getRevertedCopy(),
                         targetDbFull, sourceDbFull,
                         additionalDepciesTarget, additionalDepciesSource).getText();

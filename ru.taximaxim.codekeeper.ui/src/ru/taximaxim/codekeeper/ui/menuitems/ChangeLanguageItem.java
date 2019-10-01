@@ -56,7 +56,7 @@ public class ChangeLanguageItem extends ContributionItem {
     private SQLEditor editor;
 
     public ChangeLanguageItem() {
-        super("unknown ID");
+        super("unknown ID"); //$NON-NLS-1$
         setVisible(true);
     }
 

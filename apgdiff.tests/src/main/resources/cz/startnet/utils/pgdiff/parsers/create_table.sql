@@ -789,3 +789,107 @@ CREATE TABLE tststats.pt1 PARTITION OF tststats.pt FOR VALUES FROM (-10, -10) TO
 create table part_pa_test(a int, b int) partition by range(a);
 create table part_pa_test_p1 partition of part_pa_test for values from (minvalue) to (0);
 create table part_pa_test_p2 partition of part_pa_test for values from (0) to (maxvalue);
+CREATE TABLE xmltest2(x xml, _path text);
+CREATE TABLE testxmlschema.test3
+    AS SELECT true c1, true::testboolxmldomain c2, '2013-02-21'::date c3, '2013-02-21'::testdatexmldomain c4;
+CREATE TABLE ttable1 OF nothing;
+CREATE TYPE person_type AS (id int, name text);
+CREATE TABLE persons OF person_type;
+CREATE TABLE IF NOT EXISTS persons OF person_type;
+CREATE TYPE person_type AS (id int, name text);
+CREATE TABLE personsx OF person_type (myname WITH OPTIONS NOT NULL);
+CREATE TABLE persons2 OF person_type (
+    id WITH OPTIONS PRIMARY KEY,
+    UNIQUE (name)
+);
+CREATE TABLE persons3 OF person_type (
+    PRIMARY KEY (id),
+    name WITH OPTIONS DEFAULT ''
+);
+CREATE TABLE persons4 OF person_type (
+    name WITH OPTIONS NOT NULL,
+    name WITH OPTIONS DEFAULT ''
+);
+CREATE TABLE persons2 OF person_type (
+    id WITH OPTIONS PRIMARY KEY,
+    UNIQUE (name)
+);
+CREATE TABLE persons3 OF person_type (
+    PRIMARY KEY (id),
+    name NOT NULL DEFAULT ''
+);
+create table parted_sample (a int) partition by list (a);
+create table parted_sample_1 partition of parted_sample for values in (1);
+create table parted_sample_2 partition of parted_sample for values in (2);
+CREATE TABLE INET_TBL (c cidr, i inet);
+CREATE TABLE mchash (a int, b text, c jsonb) PARTITION BY HASH (a part_test_int4_ops, b part_test_text_ops);
+CREATE TABLE mchash1 PARTITION OF mchash FOR VALUES WITH (MODULUS 4, REMAINDER 0);
+CREATE TABLE mcinthash (a int, b int, c jsonb) PARTITION BY HASH (a part_test_int4_ops, b part_test_int4_ops);
+CREATE TABLE ptif_test (a int, b int) PARTITION BY range (a);
+CREATE TABLE ptif_test0 PARTITION OF ptif_test FOR VALUES FROM (minvalue) TO (0) PARTITION BY list (b);
+CREATE TABLE ptif_test01 PARTITION OF ptif_test0 FOR VALUES IN (1);
+CREATE TABLE ptif_test1 PARTITION OF ptif_test FOR VALUES FROM (0) TO (100) PARTITION BY list (b);
+CREATE TABLE ptif_test11 PARTITION OF ptif_test1 FOR VALUES IN (1);
+CREATE TABLE ptif_test2 PARTITION OF ptif_test FOR VALUES FROM (100) TO (maxvalue);
+CREATE TABLE PG_LSN_TBL (f1 pg_lsn);
+create table gin_test_tbl(i int4[]) with (autovacuum_enabled = off);
+create table gist_tbl (b box, p point, c circle);
+create table list_parted_tbl (a int,b int) partition by list (a);
+create table list_parted_tbl1 partition of list_parted_tbl for values in (1) partition by list(b);
+create table inserttest (f1 int, f2 int[], f3 insert_test_type, f4 insert_test_type[]);
+create table range_parted (a text, b int) partition by range (a, (b+0));
+create table part1 partition of range_parted for values from ('a', 1) to ('a', 10);
+create table part2 partition of range_parted for values from ('a', 10) to ('a', 20);
+create table part3 partition of range_parted for values from ('b', 1) to ('b', 10);
+create table part4 partition of range_parted for values from ('b', 10) to ('b', 20);
+create table list_parted (a text, b int) partition by list (lower(a));
+create table part_aa_bb partition of list_parted FOR VALUES IN ('aa', 'bb');
+create table part_cc_dd partition of list_parted FOR VALUES IN ('cc', 'dd');
+create table part_null partition of list_parted FOR VALUES IN (null);
+create table part_ee_ff partition of list_parted for values in ('ee', 'ff') partition by range (b);
+create table part_ee_ff1 partition of part_ee_ff for values from (1) to (10);
+create table part_ee_ff2 partition of part_ee_ff for values from (10) to (20);
+create table part_default partition of list_parted default;
+create table part_xx_yy partition of list_parted for values in ('xx', 'yy') partition by list (a);
+create table part_xx_yy_p1 partition of part_xx_yy for values in ('xx');
+create table part_xx_yy_defpart partition of part_xx_yy default;
+create table part_default partition of list_parted default partition by range(b);
+create table part_default_p2 partition of part_default for values from (30) to (40);
+create table part_def partition of range_parted default;
+create table part_gg partition of list_parted for values in ('gg') partition by range (b);
+create table part_gg1 partition of part_gg for values from (minvalue) to (1);
+create table part_gg2 partition of part_gg for values from (1) to (10) partition by range (b);
+create table part_gg2_2 partition of part_gg2 for values from (5) to (10);
+create table part_ee_ff3 partition of part_ee_ff for values from (20) to (30) partition by range (b);
+create table part_ee_ff3_2 partition of part_ee_ff3 for values from (25) to (30);
+create table hash_parted (a int) partition by hash (a part_test_int4_ops);
+create table hpart0 partition of hash_parted for values with (modulus 4, remainder 0);
+create table hpart1 partition of hash_parted for values with (modulus 4, remainder 1);
+create table hpart2 partition of hash_parted for values with (modulus 4, remainder 2);
+create table hpart3 partition of hash_parted for values with (modulus 4, remainder 3);
+create table list_parted (a int) partition by list (a);
+create table part_default partition of list_parted default;
+create table donothingbrtrig_test (a int, b text) partition by list (a);
+create table donothingbrtrig_test1 (b text, a int);
+create table donothingbrtrig_test2 (c text, b text, a int);
+create table mcrparted (a text, b int) partition by range(a, b);
+create table mcrparted1_lt_b partition of mcrparted for values from (minvalue, minvalue) to ('b', minvalue);
+create table mcrparted2_b partition of mcrparted for values from ('b', minvalue) to ('c', minvalue);
+create table mcrparted3_c_to_common partition of mcrparted for values from ('c', minvalue) to ('common', minvalue);
+create table mcrparted4_common_lt_0 partition of mcrparted for values from ('common', minvalue) to ('common', 0);
+create table mcrparted5_common_0_to_10 partition of mcrparted for values from ('common', 0) to ('common', 10);
+create table mcrparted6_common_ge_10 partition of mcrparted for values from ('common', 10) to ('common', maxvalue);
+create table mcrparted7_gt_common_lt_d partition of mcrparted for values from ('common', maxvalue) to ('d', minvalue);
+create table mcrparted8_ge_d partition of mcrparted for values from ('d', minvalue) to (maxvalue, maxvalue);
+create table key_desc (a int, b int) partition by list ((a+0));
+create table key_desc_1 partition of key_desc for values in (1) partition by range (b);
+create table mcrparted (a int, b int, c int) partition by range (a, abs(b), c);
+create table mcrparted0 partition of mcrparted for values from (minvalue, 0, 0) to (1, maxvalue, maxvalue);
+create table mcrparted2 partition of mcrparted for values from (10, 6, minvalue) to (10, maxvalue, minvalue);
+create table mcrparted4 partition of mcrparted for values from (21, minvalue, 0) to (30, 20, minvalue);
+create table mcrparted0 partition of mcrparted for values from (minvalue, minvalue, minvalue) to (1, maxvalue, maxvalue);
+create table mcrparted1 partition of mcrparted for values from (2, 1, minvalue) to (10, 5, 10);
+create table mcrparted2 partition of mcrparted for values from (10, 6, minvalue) to (10, maxvalue, maxvalue);
+create table mcrparted3 partition of mcrparted for values from (11, 1, 1) to (20, 10, 10);
+create table mcrparted4 partition of mcrparted for values from (21, minvalue, minvalue) to (30, 20, maxvalue);
+create table mcrparted5 partition of mcrparted for values from (30, 21, 20) to (maxvalue, maxvalue, maxvalue);

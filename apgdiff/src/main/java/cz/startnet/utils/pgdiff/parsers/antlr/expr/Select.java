@@ -13,6 +13,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.After_opsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alias_clauseContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Col_labelContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_itemContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
@@ -20,9 +21,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Groupby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_elementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_element_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IndirectionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_vexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Orderby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Perform_stmtContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Qualified_asteriskContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_opsContext;
@@ -275,7 +277,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
         } else if (primary.TABLE() != null) {
             Schema_qualified_nameContext table = primary.schema_qualified_name();
             addRelationDepcy(table.identifier());
-            ret = qualAster(table);
+            ret = qualAster(new ArrayList<>(table.identifier()));
         } else if ((values = primary.values_stmt()) != null) {
             ret = new ArrayList<>();
             ValueExpr vex = new ValueExpr(this);
@@ -295,26 +297,68 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
         List<Pair<String, String>> ret = new ArrayList<>();
         for (Select_sublistContext target : sublist) {
             Vex selectSublistVex = new Vex(target.vex());
+            // analyze all before parse asterisk
+            Pair<String, String> columnPair = vex.analyze(selectSublistVex);
 
-            Qualified_asteriskContext ast;
-            Value_expression_primaryContext valExprPrimary = selectSublistVex.primary();
-            if (valExprPrimary != null
-                    && (ast = valExprPrimary.qualified_asterisk()) != null) {
-                Schema_qualified_nameContext qNameAst = ast.tb_name;
-                ret.addAll(qNameAst == null ? unqualAster() : qualAster(qNameAst));
-            } else {
-                Pair<String, String> columnPair = vex.analyze(selectSublistVex);
-
-                IdentifierContext id = target.identifier();
-                ParserRuleContext aliasCtx = id != null ? id : target.id_token();
-                if (aliasCtx != null) {
-                    columnPair.setFirst(aliasCtx.getText());
+            if (TypesSetManually.QUALIFIED_ASTERISK.equals(columnPair.getValue())) {
+                List<Pair<String, String>> pairs = analyzeAster(selectSublistVex);
+                if (!pairs.isEmpty()) {
+                    ret.addAll(pairs);
+                    continue;
                 }
-
-                ret.add(columnPair);
             }
+
+            Col_labelContext label = target.col_label();
+            ParserRuleContext aliasCtx = label != null ? label : target.id_token();
+
+            if (aliasCtx != null) {
+                columnPair.setFirst(aliasCtx.getText());
+            }
+
+            ret.add(columnPair);
         }
         return ret;
+    }
+
+    private List<Pair<String, String>> analyzeAster(Vex vex) {
+        Value_expression_primaryContext primary = vex.primary();
+        if (primary != null && primary.MULTIPLY() != null) {
+            return unqualAster();
+        }
+
+        if (primary != null) {
+            Indirection_vexContext ind = primary.indirection_vex();
+            if (ind != null) {
+                return getQnameFromIndirection(ind);
+            }
+        }
+
+        return Collections.emptyList();
+    }
+
+    private List<Pair<String, String>> getQnameFromIndirection(Indirection_vexContext ctx) {
+        List<IndirectionContext> ind = ctx.indirection();
+        if (ind.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<ParserRuleContext> list = new ArrayList<>();
+        IdentifierContext id = ctx.identifier();
+        list.add(id == null ? ctx.dollar_number() : id);
+
+        for (IndirectionContext indir : ind) {
+            Col_labelContext label = indir.col_label();
+            if (label != null) {
+                list.add(label);
+            } else if (indir.LEFT_BRACKET() != null) {
+                return Collections.emptyList();
+            } else if (list.size() < 3) {
+                // qualified name have max 2 part before *
+                return qualAster(list);
+            }
+        }
+
+        return Collections.emptyList();
     }
 
     private void groupby(Grouping_element_listContext list, ValueExpr vex) {
@@ -349,14 +393,13 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
         return cols;
     }
 
-    private List<Pair<String, String>> qualAster(Schema_qualified_nameContext qNameAst) {
-        List<IdentifierContext> ids = qNameAst.identifier();
+    private List<Pair<String, String>> qualAster(List<ParserRuleContext> ids) {
         String schema = QNameParser.getSecondName(ids);
         String relation = QNameParser.getFirstName(ids);
 
         Entry<String, GenericColumn> ref = findReference(schema, relation, null);
         if (ref == null) {
-            Log.log(Log.LOG_WARNING, "Asterisk qualification not found: " + qNameAst.getText());
+            Log.log(Log.LOG_WARNING, "Asterisk qualification not found: " + schema + '.' + relation);
             return Collections.emptyList();
         }
         GenericColumn relationGc = ref.getValue();
@@ -425,6 +468,12 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
                 functions.forEach(e -> function(e, primary.alias));
             } else if ((table = primary.schema_qualified_name()) != null) {
                 addNameReference(table, alias);
+                if (primary.TABLESAMPLE() != null) {
+                    ValueExpr vex = new ValueExpr(this);
+                    for (VexContext v : primary.vex()) {
+                        vex.analyze(new Vex(v));
+                    }
+                }
             } else if ((subquery = primary.table_subquery()) != null) {
                 boolean oldLateral = lateralAllowed;
                 try {

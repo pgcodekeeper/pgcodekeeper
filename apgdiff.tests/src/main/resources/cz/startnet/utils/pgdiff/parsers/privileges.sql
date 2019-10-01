@@ -1238,3 +1238,11 @@ REVOKE TRUNCATE ON lock_table FROM regress_locktable_user;
 -- clean up
 DROP TABLE lock_table;
 DROP USER regress_locktable_user;
+
+grant select (a) on key_desc_1 to regress_insert_other_user;
+grant insert on key_desc to regress_insert_other_user;
+revoke all on key_desc from regress_insert_other_user;
+revoke all on key_desc_1 from regress_insert_other_user;
+grant insert on inserttest3 to regress_coldesc_role;
+grant insert on brtrigpartcon to regress_coldesc_role;
+revoke select on brtrigpartcon from regress_coldesc_role;

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Stream;
 
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -17,6 +18,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_elementsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Case_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Cast_specificationContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Col_labelContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Collate_identifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comparison_modContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
@@ -30,13 +32,12 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.General_literalContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_identifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IndirectionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_vexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.OpContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Orderby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Partition_by_columnsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Predefined_typeContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Qualified_asteriskContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sort_specifierContext;
@@ -54,6 +55,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Vex_bContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Vex_or_named_notationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Window_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Xml_functionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Xml_table_columnContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.Argument;
@@ -134,11 +136,6 @@ public class ValueExpr extends AbstractExpr {
                 // TODO add record type placeholder?
                 ret = new Pair<>("row", TypesSetManually.UNKNOWN);
             }
-        } else if (vex.leftBracket() != null && vex.rightBracket() != null) {
-            ret = operandsList.get(0);
-            if (vex.colon() == null) {
-                ret.setValue(stripBrackets(ret.getValue()));
-            }
         } else if ((collate = vex.collateIdentifier()) != null) {
             // TODO pending DbObjType.COLLATION
             ret = operandsList.get(0);
@@ -199,9 +196,7 @@ public class ValueExpr extends AbstractExpr {
             Comparison_modContext compMod;
             Table_subqueryContext subquery;
             Function_callContext function;
-            Schema_qualified_nameContext qname;
-            Indirection_identifierContext indirection;
-            Qualified_asteriskContext ast;
+            Indirection_vexContext indirection;
             Array_expressionContext array;
             Type_coercionContext typeCoercion;
             Unsigned_value_specificationContext unsignedValue;
@@ -210,9 +205,13 @@ public class ValueExpr extends AbstractExpr {
                 ret = new Pair<>(null, TypesSetManually.UNKNOWN);
             } else if ((unsignedValue = primary.unsigned_value_specification()) != null) {
                 ret = new Pair<>(null, literal(unsignedValue));
-            } else if (primary.LEFT_PAREN() != null && primary.RIGHT_PAREN() != null &&
-                    subSelectStmt != null) {
-                ret = new Select(this).analyze(subSelectStmt).get(0);
+            } else if (subSelectStmt != null) {
+                Select select = new Select(this);
+                ret = select.analyze(subSelectStmt).get(0);
+                List<IndirectionContext> indir = primary.indirection();
+                if (!indir.isEmpty()) {
+                    ret = new ValueExpr(select).indirection(indir, ret);
+                }
             } else if ((caseExpr = primary.case_expression()) != null) {
                 VexContext retVex = caseExpr.r.get(0);
                 ret = null;
@@ -240,12 +239,9 @@ public class ValueExpr extends AbstractExpr {
                 ret = new Pair<>("exists", TypesSetManually.BOOLEAN);
             } else if ((function = primary.function_call()) != null) {
                 ret = function(function);
-            } else if ((qname = primary.schema_qualified_name()) != null) {
-                ret = processColumn(qname);
-            } else if ((indirection = primary.indirection_identifier()) != null) {
-                analyze(new Vex(indirection.vex()));
-                ret = new Pair<>(null, TypesSetManually.UNKNOWN);
-            } else if ((ast = primary.qualified_asterisk()) != null) {
+            } else if ((indirection = primary.indirection_vex()) != null) {
+                ret = indirectionVex(indirection);
+            } else if (primary.MULTIPLY() != null) {
                 // TODO pending full analysis
                 ret = new Pair<>(null, TypesSetManually.QUALIFIED_ASTERISK);
             } else if ((array = primary.array_expression()) != null) {
@@ -279,6 +275,67 @@ public class ValueExpr extends AbstractExpr {
         } else {
             Log.log(Log.LOG_WARNING, "No alternative in Vex!");
             ret = new Pair<>(null, TypesSetManually.UNKNOWN);
+        }
+
+        return ret;
+    }
+
+    public Pair<String, String> indirectionVex(Indirection_vexContext indirection) {
+        IdentifierContext id = indirection.identifier();
+        ParserRuleContext ctx = id == null ? indirection.dollar_number() : id;
+
+        List<ParserRuleContext> current = new ArrayList<>();
+        current.add(ctx);
+
+        List<IndirectionContext> indir = indirection.indirection();
+
+        Pair<String, String> ret = null;
+
+        for (IndirectionContext ind : indir) {
+            Col_labelContext label = ind.col_label();
+            if (label != null) {
+                current.add(label);
+            } else {
+                if (ind.MULTIPLY() != null) {
+                    ret = new Pair<>(null, TypesSetManually.QUALIFIED_ASTERISK);
+                }
+                break;
+            }
+        }
+
+        if (current.size() > 3) {
+            Log.log(Log.LOG_WARNING, "Very long indirection!");
+            ret = new Pair<>(null, TypesSetManually.UNKNOWN);
+        } else if (ret == null) {
+            ret = processColumn(current);
+        }
+
+        List<IndirectionContext> sub = indir.subList(current.size() - 1, indir.size());
+
+        if (!sub.isEmpty()) {
+            ret = indirection(sub, ret);
+        }
+
+        return ret;
+    }
+
+    public Pair<String, String> indirection(List<IndirectionContext> indirection,
+            Pair<String, String> left) {
+        Pair<String, String> ret = left;
+        for (IndirectionContext ind : indirection) {
+            if (ind.MULTIPLY() != null) {
+                // * must be last symbol
+                return new Pair<>(null, TypesSetManually.QUALIFIED_ASTERISK);
+            }
+
+            if (ind.LEFT_BRACKET() != null) {
+                for (VexContext v : ind.vex()) {
+                    analyze(new Vex(v));
+                }
+                ret.setValue(stripBrackets(ret.getValue()));
+            } else if (ind.col_label() != null) {
+                ret = new Pair<>(null, TypesSetManually.UNKNOWN);
+            }
         }
 
         return ret;
@@ -349,9 +406,14 @@ public class ValueExpr extends AbstractExpr {
         // https://www.postgresql.org/docs/11/sql-syntax-calling-funcs.html
 
         List<Vex_or_named_notationContext> args = function.vex_or_named_notation();
-        Value_expression_primaryContext primary;
-        if (args.size() == 1 && (primary = args.get(0).vex().value_expression_primary()) != null
-                && primary.qualified_asterisk() != null) {
+
+        List<String> argsType = new ArrayList<>(args.size());
+        for (VexContext arg : PgDiffUtils.sIter(args.stream()
+                .map(Vex_or_named_notationContext::vex))) {
+            argsType.add(analyze(new Vex(arg)).getSecond());
+        }
+
+        if (args.size() == 1 && TypesSetManually.QUALIFIED_ASTERISK.equals(argsType.get(0))) {
             //// In this case function's argument is '*' or 'source.*'.
 
             int foundFuncsCount = 0;
@@ -366,12 +428,6 @@ public class ValueExpr extends AbstractExpr {
             return new Pair<>(functionName, foundFuncsCount == 1 ?
                     getFunctionReturns(func) : TypesSetManually.FUNCTION_COLUMN);
         } else {
-            List<String> argsType = new ArrayList<>(args.size());
-            for (VexContext arg : PgDiffUtils.sIter(args.stream()
-                    .map(Vex_or_named_notationContext::vex))) {
-                argsType.add(analyze(new Vex(arg)).getSecond());
-            }
-
             IFunction resultFunction = resolveCall(functionName, argsType, availableFunctions(schemaName));
 
             if (resultFunction != null) {
@@ -466,6 +522,15 @@ public class ValueExpr extends AbstractExpr {
                 Data_typeContext type = xml.data_type();
                 coltype = ParserAbstract.getTypeName(type);
                 addTypeDepcy(type);
+            } else if (xml.XMLTABLE() != null) {
+                for (Xml_table_columnContext col : xml.xml_table_column()) {
+                    args.addAll(col.vex());
+                    Data_typeContext type = col.data_type();
+                    if (type != null) {
+                        addTypeDepcy(col.data_type());
+                    }
+                }
+                coltype = TypesSetManually.FUNCTION_TABLE;
             } else {
                 // defaults work
             }

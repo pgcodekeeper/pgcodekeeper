@@ -95,6 +95,8 @@ public class UsageReportPreferencePage extends FieldEditorPreferencePage impleme
                 eclipseEnvironment.getOSVersion(), builder, styles);
         appendLabeledValue(Messages.UsageReportPreferencePage_JvmName, eclipseEnvironment.getJavaVmName(),
                 builder, styles);
+        appendLabeledValue(Messages.UsageReportPreferencePage_JavaVersion, eclipseEnvironment.getJavaVersion(),
+                builder, styles);
         builder.append(UIConsts._NL);
 
         appendLabeledValue(Messages.UsageReportPreferencePage_NumberOfUsageHits,

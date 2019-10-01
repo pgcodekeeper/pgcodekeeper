@@ -54,10 +54,12 @@ public class DiffTest {
 
     @Test
     public void mainTest() throws IOException, URISyntaxException, InterruptedException {
-        Main.main(args.args());
+        boolean result = Main.main(args.args());
         File resFile = args.getDiffResultFile();
         File predefined = args.getPredefinedResultFile();
         String name = args.getClass().getSimpleName();
+
+        assertTrue(name + " - Diff finished with error", result);
         assertTrue(name + " - Predefined file does not exist: "
                 + predefined.getAbsolutePath(), predefined.exists());
         assertTrue(name + " - Resulting file does not exist: "

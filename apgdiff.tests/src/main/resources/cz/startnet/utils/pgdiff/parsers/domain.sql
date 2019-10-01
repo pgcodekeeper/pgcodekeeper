@@ -64,9 +64,9 @@ create domain pos_int as int4 check (value > 0) not null;
 create domain posint as int4;
 alter domain posint add constraint c1 check(value >= 0);
 create domain ddtest1d as ddtest1;
-create domain ddtest1d as ddtest1[];
+create domain ddtest1d as ddtest1[]; 
 create domain posint2 as posint check (value % 2 = 0);
-alter domain posint add constraint c2 check(value >= 10); -- fail
+alter domain posint add constraint c2 check(value >= 10); -- fail 
 alter domain posint add constraint c2 check(value > 0); -- OK
 drop domain posint cascade;
 create domain mynums as numeric(4,2)[1];
@@ -81,3 +81,6 @@ CREATE DOMAIN js_int_not_null  AS int     NOT NULL;
 CREATE DOMAIN js_int_array_1d  AS int[]   CHECK(array_length(VALUE, 1) = 3);
 CREATE DOMAIN js_int_array_2d  AS int[][] CHECK(array_length(VALUE, 2) = 3);
 create domain j_ordered_pair as j_unordered_pair check((value).x <= (value).y);
+CREATE DOMAIN testboolxmldomain AS bool;
+CREATE DOMAIN testdatexmldomain AS date;
+CREATE DOMAIN testxmldomain AS varchar;

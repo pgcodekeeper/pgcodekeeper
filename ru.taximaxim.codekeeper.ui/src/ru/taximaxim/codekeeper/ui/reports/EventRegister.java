@@ -1,11 +1,14 @@
 package ru.taximaxim.codekeeper.ui.reports;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,8 +16,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
-
-import org.eclipse.core.runtime.IPath;
+import java.util.stream.Stream;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -24,6 +26,9 @@ import ru.taximaxim.codekeeper.ui.Log;
  * Each event type must be registered via this register before the corresponding event can be sent.
  */
 public class EventRegister {
+
+    // Remove unused events after this period (6 month)
+    private static final long PERIOD = 1000L*60*60*24*132;
 
     // Event type component name
     private static final String EVENT_TYPE_COMPONENT_NAME = "cmp"; //$NON-NLS-1$
@@ -120,7 +125,7 @@ public class EventRegister {
             saveProperties(preferenceProperties);
             // Check remote usage.properties
             result.countEventLabel = preferenceProperties.countEventLabel;
-            result.okToSend = !countEvent || result.previousSumOfValues>0;
+            result.okToSend = !countEvent || result.previousSumOfValues > 0;
         } else {
             Log.log(Log.LOG_ERROR, "Event type [" + event.toString() + "] is not registered and will be ignored."); //$NON-NLS-1$ //$NON-NLS-2$
         }
@@ -172,31 +177,30 @@ public class EventRegister {
                 && calendar1.get(Calendar.DAY_OF_YEAR) == calendar2.get(Calendar.DAY_OF_YEAR);
     }
 
-    private File getStorageDirectory() {
+    private Path getStorageDirectory() {
         Activator plugin = Activator.getDefault();
+        //The plug-in instance can be null at shutdown, when the plug-in is stopped.
         if (plugin != null) {
-            //The plug-in instance can be null at shutdown, when the plug-in is stopped.
-            IPath path = plugin.getStateLocation();
-            File file = new File(path.toFile(), "events"); //$NON-NLS-1$
-            if (!file.exists()) {
-                file.mkdirs();
+            Path dir = Paths.get(plugin.getStateLocation().toOSString(), "events");
+            try {
+                return Files.createDirectories(dir);
+            } catch (IOException e) {
+                Log.log(Log.LOG_ERROR, e.getMessage());
             }
-            return file;
-        } else {
-            return null;
         }
+        return null;
     }
 
-    private File getStorageFile(UsageEventProperties properties) {
-        File directory = getStorageDirectory();
+    private Path getStorageFile(UsageEventProperties properties) {
+        Path directory = getStorageDirectory();
         if (directory != null) {
-            String name = properties.type.getActionName() + "-" + properties.countEventLabel; //$NON-NLS-1$
+            String name = properties.type.getActionName() + '-' + properties.countEventLabel;
             try {
                 name = URLEncoder.encode(name, "UTF-8"); //$NON-NLS-1$
                 if (name.length() > 40) {
                     name = (UUID.nameUUIDFromBytes(name.getBytes())).toString();
                 }
-                return new File(directory, name);
+                return directory.resolve(name);
             } catch (UnsupportedEncodingException e) {
                 Log.log(Log.LOG_ERROR, e.getMessage());
             }
@@ -204,76 +208,84 @@ public class EventRegister {
         return null;
     }
 
-    private boolean saveProperties(UsageEventProperties properties) {
-        File file = getStorageFile(properties);
-        if (file != null) {
-            if (file.isFile()) {
-                file.delete();
-            }
-            try (FileWriter writer  = new FileWriter(file)) {
-                UsageEventType type = properties.type;
-                Properties pr = new Properties();
-                pr.put(EVENT_TYPE_COMPONENT_NAME, type.getComponentName());
-                pr.put(EVENT_TYPE_VERSION, type.getComponentVersion());
-                pr.put(EVENT_TYPE_ACTION_NAME, type.getActionName());
-                if (type.getValueDescription() != null) {
-                    pr.put(EVENT_TYPE_VALUE_DESCRIPTION, type.getValueDescription());
-                }
-                pr.put(EVENT_TYPE_DATE, Long.toString(properties.date));
-                pr.put(EVENT_TYPE_COUNT, Long.toString(properties.count));
-                pr.put(EVENT_TYPE_VALUE_SUM, Long.toString(properties.value));
-                pr.put(EVENT_TYPE_COUNT_EVENT_LABEL, properties.countEventLabel);
-                pr.store(writer, null);
-                return true;
-            } catch (IOException e) {
-                Log.log(Log.LOG_ERROR, e.getMessage());
-            }
+    private void saveProperties(UsageEventProperties properties) {
+        Path file = getStorageFile(properties);
+        if (file == null) {
+            return;
         }
-        return false;
+
+        try (Writer writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
+            UsageEventType type = properties.type;
+            Properties pr = new Properties();
+            pr.put(EVENT_TYPE_COMPONENT_NAME, type.getComponentName());
+            pr.put(EVENT_TYPE_VERSION, type.getComponentVersion());
+            pr.put(EVENT_TYPE_ACTION_NAME, type.getActionName());
+            if (type.getValueDescription() != null) {
+                pr.put(EVENT_TYPE_VALUE_DESCRIPTION, type.getValueDescription());
+            }
+            pr.put(EVENT_TYPE_DATE, Long.toString(properties.date));
+            pr.put(EVENT_TYPE_COUNT, Long.toString(properties.count));
+            pr.put(EVENT_TYPE_VALUE_SUM, Long.toString(properties.value));
+            pr.put(EVENT_TYPE_COUNT_EVENT_LABEL, properties.countEventLabel);
+            pr.store(writer, null);
+        } catch (IOException e) {
+            Log.log(Log.LOG_ERROR, e.getMessage());
+        }
     }
 
     private void init() {
-        if (eventPropertyStorage == null) {
-            eventPropertyStorage = new HashMap<>();
-            eventPropertyStorageByType = new HashMap<>();
-            File directory = getStorageDirectory();
-            if (directory != null) {
-                File[] files = directory.listFiles();
-                long sixMonthsAgo = System.currentTimeMillis() - 1000L*60*60*24*132;
-                for (File file : files) {
-                    if (file.isFile()) {
-                        try (FileReader reader = new FileReader(file)) {
-                            Properties pr = new Properties();
-                            pr.load(reader);
-                            long date = Long.parseLong(pr.getProperty(EVENT_TYPE_DATE, "0")); //$NON-NLS-1$
-                            if (date > sixMonthsAgo) {
-                                String component = pr.getProperty(EVENT_TYPE_COMPONENT_NAME);
-                                String version = pr.getProperty(EVENT_TYPE_VERSION);
-                                String action = pr.getProperty(EVENT_TYPE_ACTION_NAME);
-                                String value = pr.getProperty(EVENT_TYPE_VALUE_DESCRIPTION);
-                                int count = Integer.parseInt(pr.getProperty(EVENT_TYPE_COUNT, "0")); //$NON-NLS-1$
-                                int valueSum = Integer.parseInt(pr.getProperty(EVENT_TYPE_VALUE_SUM, "0")); //$NON-NLS-1$
-                                String countLabel = pr.getProperty(EVENT_TYPE_COUNT_EVENT_LABEL);
-                                if (component != null && version != null && action != null && countLabel != null) {
-                                    UsageEventType type = new UsageEventType(component, version, action, value);
-                                    UsageEventProperties properties = new UsageEventProperties();
-                                    properties.type = type;
-                                    properties.date = date;
-                                    properties.count = count;
-                                    properties.value = valueSum;
-                                    properties.countEventLabel = countLabel;
-                                    eventPropertyStorage.put(new EventTypeKey(type, countLabel), properties);
-                                    addTypePropetiesToStorage(properties, type);
-                                }
-                            } else {
-                                file.delete(); // This event type has not been used at least for the last six months, so let's remove it.
-                            }
-                        } catch (IOException e) {
-                            Log.log(Log.LOG_ERROR, e.getMessage());
-                        }
-                    }
-                }
+        if (eventPropertyStorage != null) {
+            return;
+        }
+
+        eventPropertyStorage = new HashMap<>();
+        eventPropertyStorageByType = new HashMap<>();
+        Path directory = getStorageDirectory();
+        if (directory == null) {
+            return;
+        }
+
+        long removeTime = System.currentTimeMillis() - PERIOD;
+
+        try (Stream<Path> stream = Files.list(directory)) {
+            stream.filter(Files::isRegularFile).forEach(p -> read(p, removeTime));
+        } catch (IOException e) {
+            Log.log(Log.LOG_ERROR, e.getMessage());
+        }
+    }
+
+    private void read(Path path, long removeTime) {
+        try (Reader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
+            Properties pr = new Properties();
+            pr.load(reader);
+            long date = Long.parseLong(pr.getProperty(EVENT_TYPE_DATE, "0")); //$NON-NLS-1$
+
+            if (date < removeTime) {
+                // This event type has not been used at least for the PERIOD constant, so let's remove it.
+                Files.delete(path);
+                return;
             }
+
+            String component = pr.getProperty(EVENT_TYPE_COMPONENT_NAME);
+            String version = pr.getProperty(EVENT_TYPE_VERSION);
+            String action = pr.getProperty(EVENT_TYPE_ACTION_NAME);
+            String value = pr.getProperty(EVENT_TYPE_VALUE_DESCRIPTION);
+            int count = Integer.parseInt(pr.getProperty(EVENT_TYPE_COUNT, "0")); //$NON-NLS-1$
+            int valueSum = Integer.parseInt(pr.getProperty(EVENT_TYPE_VALUE_SUM, "0")); //$NON-NLS-1$
+            String countLabel = pr.getProperty(EVENT_TYPE_COUNT_EVENT_LABEL);
+            if (component != null && version != null && action != null && countLabel != null) {
+                UsageEventType type = new UsageEventType(component, version, action, value);
+                UsageEventProperties properties = new UsageEventProperties();
+                properties.type = type;
+                properties.date = date;
+                properties.count = count;
+                properties.value = valueSum;
+                properties.countEventLabel = countLabel;
+                eventPropertyStorage.put(new EventTypeKey(type, countLabel), properties);
+                addTypePropetiesToStorage(properties, type);
+            }
+        } catch (IOException e) {
+            Log.log(Log.LOG_ERROR, e.getMessage());
         }
     }
 

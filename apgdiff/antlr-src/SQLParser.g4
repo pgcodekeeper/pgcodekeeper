@@ -1718,7 +1718,22 @@ collate_identifier
     ;
 
 indirection_identifier
-    : LEFT_PAREN vex RIGHT_PAREN (DOT identifier)+
+    : identifier indirection*
+    ;
+
+indirection_vex
+    : (identifier | dollar_number) indirection*
+    ;
+    
+dollar_number
+    : DOLLAR_NUMBER
+    ;
+
+indirection
+    : DOT col_label
+    | DOT MULTIPLY
+    | LEFT_BRACKET vex RIGHT_BRACKET
+    | LEFT_BRACKET vex? COLON vex? RIGHT_BRACKET
     ;
 
 /*
@@ -1785,7 +1800,7 @@ id_token
   includes types
 */
 identifier
-  : id_token | DOLLAR_NUMBER
+  : id_token
   | tokens_nonreserved
   | tokens_nonreserved_except_function_type
   ;
@@ -1795,6 +1810,13 @@ identifier_nontype
   | tokens_nonreserved
   | tokens_reserved_except_function_type
   ;
+
+col_label
+    : id_token
+    | tokens_reserved
+    | tokens_nonreserved
+    | tokens_nonreserved_except_function_type
+    ;
 
 /*
  * These rules should be generated using code in the Keyword class.
@@ -2324,6 +2346,7 @@ tokens_nonkeyword
     | NOSUPERUSER
     | OUTPUT
     | PASSEDBYVALUE
+    | PATH
     | PERMISSIVE
     | PLAIN
     | PREFERRED
@@ -2470,10 +2493,8 @@ precision_param
 
 vex
   : vex CAST_EXPRESSION data_type
-  | LEFT_PAREN vex RIGHT_PAREN
+  | LEFT_PAREN vex RIGHT_PAREN indirection*
   | LEFT_PAREN vex (COMMA vex)+ RIGHT_PAREN
-  | vex LEFT_BRACKET vex RIGHT_BRACKET
-  | vex LEFT_BRACKET vex? COLON vex? RIGHT_BRACKET
   | vex collate_identifier
   | <assoc=right> (PLUS | MINUS) vex
   | vex AT TIME ZONE vex
@@ -2509,10 +2530,8 @@ vex
 // see postgres' b_expr (src/backend/parser/gram.y)
 vex_b
   : vex_b CAST_EXPRESSION data_type
-  | LEFT_PAREN vex RIGHT_PAREN
+  | LEFT_PAREN vex RIGHT_PAREN indirection*
   | LEFT_PAREN vex (COMMA vex)+ RIGHT_PAREN
-  | vex_b LEFT_BRACKET vex RIGHT_BRACKET
-  | vex_b LEFT_BRACKET vex? COLON vex? RIGHT_BRACKET
   | <assoc=right> (PLUS | MINUS) vex_b
   | vex_b EXP vex_b
   | vex_b (MULTIPLY | DIVIDE | MODULAR) vex_b
@@ -2544,18 +2563,17 @@ datetime_overlaps
 
 value_expression_primary
   : unsigned_value_specification
-  | LEFT_PAREN select_stmt_no_parens RIGHT_PAREN
+  | LEFT_PAREN select_stmt_no_parens RIGHT_PAREN indirection*
   | case_expression
   | NULL
+  | MULTIPLY
   // technically incorrect since ANY cannot be value expression
   // but fixing this would require to write a vex rule duplicating all operators
   // like vex (op|op|op|...) comparison_mod
   | comparison_mod
   | EXISTS table_subquery
   | function_call
-  | schema_qualified_name
-  | indirection_identifier
-  | qualified_asterisk
+  | indirection_vex
   | array_expression
   | type_coercion
   ;
@@ -2642,6 +2660,7 @@ string_value_function
   | SUBSTRING LEFT_PAREN vex (COMMA vex)* (FROM vex)? (FOR vex)? RIGHT_PAREN
   | POSITION LEFT_PAREN vex_b IN vex RIGHT_PAREN
   | OVERLAY LEFT_PAREN vex PLACING vex FROM vex (FOR vex)? RIGHT_PAREN
+  | COLLATION FOR LEFT_PAREN vex RIGHT_PAREN
   ;
 
 xml_function
@@ -2654,6 +2673,15 @@ xml_function
     | XMLEXISTS LEFT_PAREN vex PASSING (BY REF)? vex (BY REF)? RIGHT_PAREN
     | XMLPARSE LEFT_PAREN (DOCUMENT | CONTENT) vex RIGHT_PAREN
     | XMLSERIALIZE LEFT_PAREN (DOCUMENT | CONTENT) vex AS data_type RIGHT_PAREN
+    | XMLTABLE LEFT_PAREN 
+        (XMLNAMESPACES LEFT_PAREN vex AS name=identifier (COMMA vex AS name=identifier)* RIGHT_PAREN COMMA)?
+        vex PASSING (BY REF)? vex (BY REF)?
+        COLUMNS xml_table_column (COMMA xml_table_column)*
+        RIGHT_PAREN
+    ;
+
+xml_table_column
+    : name=identifier (data_type (PATH vex)? (DEFAULT vex)? (NOT? NULL)? | FOR ORDINALITY)
     ;
 
 comparison_mod
@@ -2676,10 +2704,6 @@ frame_clause
 frame_bound
   : vex (PRECEDING | FOLLOWING)
   | CURRENT ROW
-  ;
-
-qualified_asterisk
-  : (tb_name=schema_qualified_name DOT)? MULTIPLY
   ;
 
 array_expression
@@ -2766,7 +2790,7 @@ select_primary
         into_statement?
         (set_qualifier (ON LEFT_PAREN vex (COMMA vex)* RIGHT_PAREN)?)?
         select_list?
-        into_statement?
+        (into_statement | into_table)?
         (FROM into_statement? from_item (COMMA from_item)*)?
         (WHERE vex into_statement?)?
         groupby_clause?
@@ -2781,8 +2805,13 @@ select_list
   ;
 
 select_sublist
-  : vex (AS identifier | AS tokens_reserved | id_token )?
+  : vex (AS col_label | id_token)?
   ;
+
+into_table
+    : INTO TABLE schema_qualified_name
+    | INTO (TEMPORARY | TEMP | UNLOGGED) TABLE? schema_qualified_name
+    ;
 
 from_item
     : LEFT_PAREN from_item RIGHT_PAREN alias_clause?
@@ -2794,7 +2823,7 @@ from_item
     ;
 
 from_primary
-    : ONLY? schema_qualified_name MULTIPLY? alias_clause?
+    : ONLY? schema_qualified_name MULTIPLY? alias_clause? (TABLESAMPLE method=identifier LEFT_PAREN vex (COMMA vex)* RIGHT_PAREN (REPEATABLE vex)?)?
     | LATERAL? table_subquery alias_clause
     | LATERAL? function_call (WITH ORDINALITY)?
         (AS from_function_column_def
@@ -2866,12 +2895,15 @@ null_ordering
 */
 insert_stmt_for_psql
   : with_clause? INSERT INTO insert_table_name=schema_qualified_name (AS alias=identifier)?
-  (OVERRIDING (SYSTEM | USER) VALUE)?
-  (LEFT_PAREN column+=identifier (COMMA column+=identifier)* RIGHT_PAREN)?
+  (OVERRIDING (SYSTEM | USER) VALUE)? insert_columns?
   (select_stmt | DEFAULT VALUES)
   (ON CONFLICT conflict_object? conflict_action)?
   (RETURNING select_list into_statement?)?
   ;
+
+insert_columns
+    : LEFT_PAREN column+=indirection_identifier (COMMA column+=indirection_identifier)* RIGHT_PAREN
+    ;
 
 conflict_object
     : index_sort index_where?
@@ -2899,8 +2931,8 @@ update_stmt_for_psql
   ;
 
 update_set
-  : column+=identifier EQUAL (value+=vex | DEFAULT)
-  | LEFT_PAREN column+=identifier (COMMA column+=identifier)* RIGHT_PAREN EQUAL ROW?
+  : column+=indirection_identifier EQUAL (value+=vex | DEFAULT)
+  | LEFT_PAREN column+=indirection_identifier (COMMA column+=indirection_identifier)* RIGHT_PAREN EQUAL ROW?
   (LEFT_PAREN (value+=vex | DEFAULT) (COMMA (value+=vex | DEFAULT))* RIGHT_PAREN
     | table_subquery)
   ;

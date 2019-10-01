@@ -195,3 +195,4 @@ CREATE TYPE jsrec AS (
 CREATE TYPE jsrec_i_not_null AS (i   js_int_not_null);
 create type jpop2 as (a int, b json, c int, d int);
 CREATE TYPE type_op3 AS ENUM ('new', 'open', 'closed');
+create type insert_test_type as (if1 int, if2 text[]);
