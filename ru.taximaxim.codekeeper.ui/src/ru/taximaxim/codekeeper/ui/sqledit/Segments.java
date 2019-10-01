@@ -30,6 +30,6 @@ public class Segments extends Position {
 
     @Override
     public String toString() {
-        return action.toString() + ' ' + name;
+        return action + ' ' + name;
     }
 }

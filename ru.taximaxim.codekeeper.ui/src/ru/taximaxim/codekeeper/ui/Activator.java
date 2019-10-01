@@ -41,7 +41,7 @@ public class Activator extends AbstractUIPlugin {
      * @return Shared pgadmin {@link Image}. Do not dispose!
      */
     public static Image getDbObjImage(DbObjType dbObjType) {
-        return getRegisteredImage(dbObjType != null ? dbObjType.name() : FILE.ICONNAMEOTHER);
+        return dbObjType != null ? getRegisteredImage(dbObjType.name()) : getEclipseImage(ISharedImages.IMG_OBJ_FILE);
     }
     /**
      * @return Shared {@link Image}, registered with this plugin with the <code>name</code> key.
@@ -90,9 +90,6 @@ public class Activator extends AbstractUIPlugin {
 
         reg.put(FILE.ICONDATABASE, ImageDescriptor.createFromURL(
                 context.getBundle().getResource(FILE.ICONDATABASE)));
-
-        reg.put(FILE.ICONNAMEOTHER, ImageDescriptor.createFromURL(context.getBundle()
-                .getResource(FILE.ICONPGADMIN + FILE.ICONNAMEOTHER.toLowerCase(Locale.ROOT) + ".png"))); //$NON-NLS-1$
 
         for (DbObjType dbObjType : DbObjType.values()) {
             reg.put(dbObjType.name(), ImageDescriptor.createFromURL(context.getBundle()
