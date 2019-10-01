@@ -3,7 +3,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 import java.util.Arrays;
 import java.util.List;
 
-import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
@@ -99,8 +98,8 @@ public class DropMsStatement extends ParserAbstract {
     }
 
     @Override
-    protected PgObjLocation fillQueryLocation(ParserRuleContext ctx, CommonTokenStream tokenStream) {
-        PgObjLocation loc = super.fillQueryLocation(ctx, tokenStream);
+    protected PgObjLocation fillQueryLocation(ParserRuleContext ctx) {
+        PgObjLocation loc = super.fillQueryLocation(ctx);
         Drop_statementsContext dropSt = ((Schema_dropContext) ctx).drop_statements();
         if (dropSt != null && dropSt.TABLE() != null) {
             loc.setWarning(DangerStatement.DROP_TABLE);

@@ -63,6 +63,7 @@ implements TSqlContextProcessor {
     private boolean quotedIdentifier = true;
     private final boolean isScriptMode;
     private final boolean isRefMode;
+    private CommonTokenStream stream;
 
     public CustomTSQLParserListener(PgDatabase database, String filename,
             ParserListenerMode mode, List<AntlrError> errors, IProgressMonitor monitor) {

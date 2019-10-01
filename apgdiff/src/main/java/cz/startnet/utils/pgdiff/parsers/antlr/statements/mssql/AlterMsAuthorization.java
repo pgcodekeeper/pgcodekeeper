@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Alter_authorizationContext;
@@ -83,7 +82,7 @@ public class AlterMsAuthorization extends ParserAbstract {
     }
 
     @Override
-    protected PgObjLocation fillQueryLocation(ParserRuleContext ctx, CommonTokenStream tokenStream) {
+    protected PgObjLocation fillQueryLocation(ParserRuleContext ctx) {
         PgObjLocation loc = new PgObjLocation("ALTER AUTHORIZATION", ctx, getFullCtxText(ctx));
         db.addToQueries(fileName, loc);
         return loc;

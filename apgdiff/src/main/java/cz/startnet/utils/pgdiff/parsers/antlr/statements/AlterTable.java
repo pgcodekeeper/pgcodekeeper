@@ -3,7 +3,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.util.Arrays;
 import java.util.List;
 
-import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
@@ -233,8 +232,8 @@ public class AlterTable extends TableAbstract {
     }
 
     @Override
-    protected PgObjLocation fillQueryLocation(ParserRuleContext ctx, CommonTokenStream tokenStream) {
-        PgObjLocation loc = super.fillQueryLocation(ctx, tokenStream);
+    protected PgObjLocation fillQueryLocation(ParserRuleContext ctx) {
+        PgObjLocation loc = super.fillQueryLocation(ctx);
         for (Table_actionContext tablAction : ((Schema_alterContext) ctx)
                 .alter_table_statement().table_action()) {
             if (tablAction.column != null && tablAction.DROP() != null) {

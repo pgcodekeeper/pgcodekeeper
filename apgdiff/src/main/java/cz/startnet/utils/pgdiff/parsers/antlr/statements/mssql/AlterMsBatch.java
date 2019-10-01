@@ -2,7 +2,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import java.util.Arrays;
 
-import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statement_bodyContext;
@@ -62,8 +61,8 @@ public class AlterMsBatch extends ParserAbstract {
     }
 
     @Override
-    protected PgObjLocation fillQueryLocation(ParserRuleContext ctx, CommonTokenStream tokenStream) {
-        return super.fillQueryLocation(ctx.getParent(), tokenStream);
+    protected PgObjLocation fillQueryLocation(ParserRuleContext ctx) {
+        return super.fillQueryLocation(ctx.getParent());
     }
 
     @Override

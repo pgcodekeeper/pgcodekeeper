@@ -2,7 +2,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import java.util.Arrays;
 
-import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Enable_disable_triggerContext;
@@ -53,7 +52,7 @@ public class DisableMsTrigger extends ParserAbstract {
     }
 
     @Override
-    protected PgObjLocation fillQueryLocation(ParserRuleContext ctx, CommonTokenStream tokenStream) {
+    protected PgObjLocation fillQueryLocation(ParserRuleContext ctx) {
         StringBuilder sb = new StringBuilder();
         Enable_disable_triggerContext ctxEnableDisableTr = (Enable_disable_triggerContext) ctx;
         sb.append(ctxEnableDisableTr.DISABLE() != null ? "DISABLE " : "ENABLE ")

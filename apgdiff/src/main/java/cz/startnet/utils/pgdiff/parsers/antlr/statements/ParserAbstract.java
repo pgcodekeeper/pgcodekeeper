@@ -78,14 +78,13 @@ public abstract class ParserAbstract {
     }
 
     public void parseObject(String fileName, ParserListenerMode mode,
-            List<StatementBodyContainer> statementBodies, ParserRuleContext ctx,
-            CommonTokenStream tokenStream) {
+            List<StatementBodyContainer> statementBodies, ParserRuleContext ctx) {
         this.fileName = fileName;
         refMode = ParserListenerMode.REF == mode;
         this.statementBodies = statementBodies;
         if (ParserListenerMode.SCRIPT == mode) {
             fillDescrObj();
-            fillQueryLocation(ctx, tokenStream);
+            fillQueryLocation(ctx);
         } else {
             parseObject();
         }
@@ -514,13 +513,13 @@ public abstract class ParserAbstract {
      * in the script from statement context, and then puts filled 'PgObjLocation'-object
      * to the batch.
      */
-    protected PgObjLocation fillQueryLocation(ParserRuleContext ctx, CommonTokenStream tokenStream) {
-        PgObjLocation loc = new PgObjLocation(getStmtAction(ctx, tokenStream), ctx, getFullCtxText(ctx));
+    protected PgObjLocation fillQueryLocation(ParserRuleContext ctx) {
+        PgObjLocation loc = new PgObjLocation(getStmtAction(ctx), ctx, getFullCtxText(ctx));
         db.addToQueries(fileName, loc);
         return loc;
     }
 
-    protected String getStmtAction(ParserRuleContext ctx, CommonTokenStream tokenStream) {
+    protected String getStmtAction(ParserRuleContext ctx) {
         String result;
         if (descrObj == null) {
             result = ctx.getStart().getText().toUpperCase(Locale.ROOT);

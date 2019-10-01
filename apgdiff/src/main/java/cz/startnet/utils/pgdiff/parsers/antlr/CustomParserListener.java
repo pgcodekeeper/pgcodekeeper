@@ -3,7 +3,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -24,7 +23,6 @@ public class CustomParserListener {
     protected final String fileName;
     protected final List<AntlrError> errors;
     private final IProgressMonitor monitor;
-    protected CommonTokenStream stream;
 
     private final List<StatementBodyContainer> statementBodies = new ArrayList<>();
 
@@ -42,8 +40,7 @@ public class CustomParserListener {
      * @param ctx statememnt's first token rule
      */
     protected void safeParseStatement(ParserAbstract p, ParserRuleContext ctx) {
-        safeParseStatement(() -> p.parseObject(fileName, mode, statementBodies,
-                ctx, stream), ctx);
+        safeParseStatement(() -> p.parseObject(fileName, mode, statementBodies, ctx), ctx);
     }
 
     protected void safeParseStatement(Runnable r, ParserRuleContext ctx) {

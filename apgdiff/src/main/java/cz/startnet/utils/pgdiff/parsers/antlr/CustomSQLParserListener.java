@@ -63,6 +63,7 @@ implements SqlContextProcessor {
     private final boolean isScriptMode;
     private final boolean isRefMode;
     private final Queue<AntlrTask<?>> antlrTasks;
+    private CommonTokenStream stream;
 
     public CustomSQLParserListener(PgDatabase database, String filename, ParserListenerMode mode,
             List<AntlrError> errors, Queue<AntlrTask<?>> antlrTasks, IProgressMonitor monitor) {

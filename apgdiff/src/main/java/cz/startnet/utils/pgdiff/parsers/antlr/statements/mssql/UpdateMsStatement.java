@@ -2,7 +2,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql;
 
 import java.util.Arrays;
 
-import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
@@ -35,8 +34,8 @@ public class UpdateMsStatement extends ParserAbstract {
     }
 
     @Override
-    protected PgObjLocation fillQueryLocation(ParserRuleContext ctx, CommonTokenStream tokenStream) {
-        PgObjLocation loc = super.fillQueryLocation(ctx, tokenStream);
+    protected PgObjLocation fillQueryLocation(ParserRuleContext ctx) {
+        PgObjLocation loc = super.fillQueryLocation(ctx);
         loc.setWarning(DangerStatement.UPDATE);
         return loc;
     }
