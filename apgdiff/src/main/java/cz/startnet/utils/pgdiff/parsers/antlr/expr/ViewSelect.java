@@ -32,7 +32,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Groupby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_elementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_element_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_identifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IndirectionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_vexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Orderby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Partition_by_columnsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
@@ -333,13 +334,14 @@ public class ViewSelect {
         Comparison_modContext compMod;
         Table_subqueryContext subquery;
         Function_callContext function;
-        Indirection_identifierContext indirection;
+        Indirection_vexContext indirection;
         Array_expressionContext array;
         ArrayList<Vex> subOperands = null;
 
-        if (primary.LEFT_PAREN() != null && primary.RIGHT_PAREN() != null &&
-                subSelectStmt != null) {
-            new ViewSelect(this).analyze(subSelectStmt);
+        if (subSelectStmt != null) {
+            ViewSelect select = new ViewSelect(this);
+            select.analyze(subSelectStmt);
+            select.indirection(primary.indirection());
         } else if ((caseExpr = primary.case_expression()) != null) {
             subOperands = addVexCtxtoList(subOperands, caseExpr.vex());
         } else if ((compMod = primary.comparison_mod()) != null) {
@@ -354,8 +356,8 @@ public class ViewSelect {
             new ViewSelect(this).analyze(subquery.select_stmt());
         } else if ((function = primary.function_call()) != null) {
             function(function);
-        } else if ((indirection = primary.indirection_identifier()) != null) {
-            analyze(new Vex(indirection.vex()));
+        } else if ((indirection = primary.indirection_vex()) != null) {
+            indirection(indirection.indirection());
         } else if ((array = primary.array_expression()) != null) {
             Array_bracketsContext arrayb = array.array_brackets();
             if (arrayb != null) {
@@ -368,6 +370,14 @@ public class ViewSelect {
         if (subOperands != null) {
             for (Vex v : subOperands) {
                 analyze(v);
+            }
+        }
+    }
+
+    private void indirection(List<IndirectionContext> indirections) {
+        for (IndirectionContext ind : indirections) {
+            for (VexContext vex : ind.vex()) {
+                analyze(new Vex(vex));
             }
         }
     }

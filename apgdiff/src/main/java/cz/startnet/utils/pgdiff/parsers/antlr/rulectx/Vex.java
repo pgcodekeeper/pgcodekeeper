@@ -10,6 +10,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Collate_identifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Datetime_overlapsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IndirectionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.OpContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Truth_valueContext;
@@ -90,12 +91,8 @@ public class Vex {
         return isB ? vexB.RIGHT_PAREN() : vex.RIGHT_PAREN();
     }
 
-    public TerminalNode leftBracket() {
-        return isB ? vexB.LEFT_BRACKET() : vex.LEFT_BRACKET();
-    }
-
-    public TerminalNode rightBracket() {
-        return isB ? vexB.RIGHT_BRACKET() : vex.RIGHT_BRACKET();
+    public List<IndirectionContext> indirection() {
+        return isB ? vexB.indirection() : vex.indirection();
     }
 
     public TerminalNode in() {
@@ -124,10 +121,6 @@ public class Vex {
 
     public TerminalNode timeZone() {
         return isB ? null : vex.ZONE();
-    }
-
-    public TerminalNode colon() {
-        return isB ? vexB.COLON() : vex.COLON();
     }
 
     public TerminalNode exp() {

@@ -9,7 +9,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -40,20 +39,23 @@ public class ExprTypeTest {
     private static final String COMPARE = "compare_";
 
     @Parameters
-    public static Collection<?> parameters() {
-        return Arrays.asList(
-                new Object[][]{
-                    // Compare the types between an asterisk and an ordinary in view.
-                    {COMPARE+"types_aster_ord_view"},
-                    // Check types in columns of asterisk in view.
-                    {CHECK + "types_aster_cols_view"},
-                    // Check types in columns of view.
-                    {CHECK + "types_cols_view"},
-                    // Check types in columns of view (extended).
-                    {CHECK + "types_cols_view_extended"},
-                    // Check types in table-less columns.
-                    {CHECK + "tableless_cols_types"}
-                });
+    public static Iterable<Object[]> parameters() {
+        List<Object[]> p = Arrays.asList(new Object[][] {
+            // Compare the types between an asterisk and an ordinary in view.
+            {COMPARE + "types_aster_ord_view"},
+            // Check types in columns of asterisk in view.
+            {CHECK + "types_aster_cols_view"},
+            // Check types in columns of view.
+            {CHECK + "types_cols_view"},
+            // Check types in columns of view (extended).
+            {CHECK + "types_cols_view_extended"},
+            // Check types in table-less columns.
+            {CHECK + "tableless_cols_types"},
+            // Check array types.
+            {CHECK + "array_types"},
+        });
+
+        return p.stream()::iterator;
     }
 
     /**
@@ -71,7 +73,7 @@ public class ExprTypeTest {
         StringBuilder cols = new StringBuilder();
         for (AbstractSchema schema : db.getSchemas()) {
             List<AbstractView> views = schema.getViews();
-            if(views.isEmpty()) {
+            if (views.isEmpty()) {
                 continue;
             }
             cols.append("\n\nSchema: " + schema.getName());

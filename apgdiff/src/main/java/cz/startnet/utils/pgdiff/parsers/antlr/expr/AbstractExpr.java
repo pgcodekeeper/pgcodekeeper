@@ -20,6 +20,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_args_parserContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_identifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
@@ -154,8 +155,7 @@ public abstract class AbstractExpr {
     /**
      * @return column with its type
      */
-    protected Pair<String, String> processColumn(Schema_qualified_nameContext qname) {
-        List<IdentifierContext> ids = qname.identifier();
+    protected Pair<String, String> processColumn(List<ParserRuleContext> ids) {
         String columnName = QNameParser.getFirstName(ids);
         String columnType = TypesSetManually.COLUMN;
         Pair<String, String> pair = new Pair<>(columnName, null);
@@ -293,12 +293,14 @@ public abstract class AbstractExpr {
         return col.getSecond();
     }
 
-    protected void addColumnsDepcies(Schema_qualified_nameContext table, List<IdentifierContext> cols) {
+    protected void addColumnsDepcies(Schema_qualified_nameContext table,
+            List<Indirection_identifierContext> columns) {
         List<IdentifierContext> ids = table.identifier();
         String schemaName = QNameParser.getSchemaName(ids);
         String tableName = QNameParser.getFirstName(ids);
-        for (IdentifierContext col : cols) {
-            addFilteredColumnDepcy(schemaName, tableName, col.getText());
+        for (Indirection_identifierContext col : columns) {
+            // only column name
+            addFilteredColumnDepcy(schemaName, tableName, col.identifier().getText());
         }
     }
 
