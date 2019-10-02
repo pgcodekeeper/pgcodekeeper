@@ -317,17 +317,31 @@ class CustomAntlrErrorStrategy extends DefaultErrorStrategy {
     protected void reportInputMismatch(Parser recognizer, InputMismatchException e) {
         StringBuilder sb = new StringBuilder();
         sb.append("mismatched input ").append(getTokenErrorDisplay(e.getOffendingToken()));
+        fillExpextedTokens(sb, recognizer.getVocabulary(), e.getExpectedTokens());
+        recognizer.notifyErrorListeners(e.getOffendingToken(), sb.toString(), e);
+    }
+
+    @Override
+    protected void reportUnwantedToken(Parser recognizer) {
+        if (inErrorRecoveryMode(recognizer)) {
+            return;
+        }
+        beginErrorCondition(recognizer);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("extraneous input ").append(getTokenErrorDisplay(recognizer.getCurrentToken()));
+        fillExpextedTokens(sb, recognizer.getVocabulary(), getExpectedTokens(recognizer));
+        recognizer.notifyErrorListeners(recognizer.getCurrentToken(), sb.toString(), null);
+    }
+
+    private void fillExpextedTokens(StringBuilder sb, Vocabulary vocabulary, IntervalSet tokens) {
         sb.append(" expecting ");
-        IntervalSet set = e.getExpectedTokens();
-        Vocabulary vocabulary = recognizer.getVocabulary();
-        String rules = set.toList().stream().limit(MAX_RULE_COUNT)
+        String rules = tokens.toList().stream().limit(MAX_RULE_COUNT)
                 .map(vocabulary::getDisplayName).collect(Collectors.joining(", "));
         sb.append(rules);
-        int size = set.size();
+        int size = tokens.size();
         if (size > MAX_RULE_COUNT) {
             sb.append(", ... and ").append(size - MAX_RULE_COUNT).append(" more");
         }
-
-        recognizer.notifyErrorListeners(e.getOffendingToken(), sb.toString(), e);
     }
 }
