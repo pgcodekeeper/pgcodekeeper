@@ -743,7 +743,7 @@ FROM   OPENXML (@idoc, '/ROOT/Customer/Order/OrderDetail',2)
                ProdID      int         '@ProductID',   
                Qty         int         '@Quantity');  
 
-select '1' || '2';
+select '1' + '2';
 
 
 SELECT FIRST_VALUE(SalesOrderNumber) OVER(PARTITION BY CustomerID ORDER BY OrderDate) 

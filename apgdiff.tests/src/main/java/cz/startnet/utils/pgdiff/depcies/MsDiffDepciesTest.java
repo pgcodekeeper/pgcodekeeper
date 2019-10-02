@@ -95,8 +95,8 @@ public class MsDiffDepciesTest {
 
         TreeElement tree = DiffTree.create(oldDatabase, newDatabase, null);
         tree.setAllChecked();
-        String script = PgDiff.diffDatabaseSchemasAdditionalDepcies(
-                args, tree, oldDbFull, newDbFull, null, null).getText();
+        String script = new PgDiff(args).diffDatabaseSchemasAdditionalDepcies(
+                tree, oldDbFull, newDbFull, null, null).getText();
 
         StringBuilder sbExpDiff;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(

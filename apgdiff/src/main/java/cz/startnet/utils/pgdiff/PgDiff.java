@@ -22,6 +22,7 @@ import cz.startnet.utils.pgdiff.loader.JdbcMsLoader;
 import cz.startnet.utils.pgdiff.loader.LibraryLoader;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.loader.ProjectLoader;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.LibraryObjectDuplicationException;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -46,21 +47,25 @@ import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
  *
  * @author fordfrog
  */
-public final class PgDiff {
+public class PgDiff {
+
+    private final PgDiffArguments arguments;
+    private final List<Object> errors = new ArrayList<>();
+
+    public PgDiff(PgDiffArguments arguments) {
+        this.arguments = arguments;
+    }
+
+    public List<Object> getErrors() {
+        return Collections.unmodifiableList(errors);
+    }
 
     /**
      * Creates diff on the two database schemas.
-     *
-     * @param writer    writer the output should be written to
-     * @param arguments object containing arguments settings
      */
-    public static PgDiffScript createDiff(PgDiffArguments arguments)
-            throws InterruptedException, IOException {
-        PgDatabase oldDatabase = loadDatabaseSchema(
-                arguments.getOldSrcFormat(), arguments.getOldSrc(), arguments);
-
-        PgDatabase newDatabase = loadDatabaseSchema(
-                arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments);
+    public PgDiffScript createDiff() throws InterruptedException, IOException, PgCodekeeperException {
+        PgDatabase oldDatabase = loadOldDatabase();
+        PgDatabase newDatabase = loadNewDatabase();
 
         Path metaPath = Paths.get(System.getProperty("user.home")).resolve(".pgcodekeeper-cli")
                 .resolve("dependencies");
@@ -106,7 +111,23 @@ public final class PgDiff {
             ignoreParser.parse(Paths.get(listFilename));
         }
 
-        return diffDatabaseSchemas(arguments, oldDatabase, newDatabase, ignoreParser.getIgnoreList());
+        return diffDatabaseSchemas(oldDatabase, newDatabase, ignoreParser.getIgnoreList());
+    }
+
+    public PgDatabase loadNewDatabase() throws IOException, InterruptedException, PgCodekeeperException {
+        PgDatabase db = loadDatabaseSchema(arguments.getNewSrcFormat(), arguments.getNewSrc());
+        if (!errors.isEmpty()) {
+            throw new PgCodekeeperException("Error while load database");
+        }
+        return db;
+    }
+
+    public PgDatabase loadOldDatabase() throws IOException, InterruptedException, PgCodekeeperException {
+        PgDatabase db = loadDatabaseSchema(arguments.getOldSrcFormat(), arguments.getOldSrc());
+        if (!errors.isEmpty()) {
+            throw new PgCodekeeperException("Error while load database");
+        }
+        return db;
     }
 
     /**
@@ -115,81 +136,76 @@ public final class PgDiff {
      * @param format        format of the database source, must be "dump", "parsed" or "db"
      *                         otherwise exception is thrown
      * @param srcPath        path to the database source to load
-     * @param arguments        object containing arguments settings
      *
      * @return the loaded database
      */
-    public static PgDatabase loadDatabaseSchema(String format, String srcPath, PgDiffArguments arguments)
+    private PgDatabase loadDatabaseSchema(String format, String srcPath)
             throws InterruptedException, IOException {
-
-        PgDatabase db = new PgDatabase();
-        db.setArguments(arguments);
+        PgDatabase db = new PgDatabase(arguments);
 
         if ("dump".equals(format)) {
-            return new PgDumpLoader(new File(srcPath), arguments).load(db);
-        } else if ("parsed".equals(format)) {
-            ProjectLoader loader = new ProjectLoader(srcPath, arguments);
-            return loader.loadSchemaOnly();
-        } else if ("db".equals(format)) {
+            PgDumpLoader loader = new PgDumpLoader(new File(srcPath), arguments);
+            try {
+                return loader.load(db);
+            } finally {
+                errors.addAll(loader.getErrors());
+            }
+        }
+
+        if ("parsed".equals(format)) {
+            List<AntlrError> err = new ArrayList<>();
+            ProjectLoader loader = new ProjectLoader(srcPath, arguments, null, err);
+            try {
+                return loader.loadSchemaOnly();
+            } finally {
+                errors.addAll(err);
+            }
+        }
+
+        if ("db".equals(format)) {
             String timezone = arguments.getTimeZone() == null ? ApgdiffConsts.UTC : arguments.getTimeZone();
             if (arguments.isMsSql()) {
                 return new JdbcMsLoader(JdbcConnector.fromUrl(srcPath), arguments).readDb();
+            } else {
+                JdbcLoader loader = new JdbcLoader(JdbcConnector.fromUrl(srcPath, timezone), arguments);
+                try {
+                    return loader.getDbFromJdbc();
+                } finally {
+                    errors.addAll(loader.getErrors());
+                }
             }
-
-            return new JdbcLoader(JdbcConnector.fromUrl(srcPath, timezone), arguments)
-                    .getDbFromJdbc();
         }
 
         throw new UnsupportedOperationException(
                 MessageFormat.format(Messages.UnknownDBFormat, format));
     }
 
-    /**
-     * Creates diff from comparison of two database schemas.<br><br>
-     * Following PgDiffArguments methods are called from this method:<br>
-     * isAddTransaction()<br>
-     * isOutputIgnoredStatements()<br>
-     * isIgnoreStartWith()<br>
-     * isAddDefaults()<br>
-     * isIgnoreFunctionWhitespace()<br>
-     *
-     * @param writer      writer the output should be written to
-     * @param arguments   object containing arguments settings
-     * @param oldDatabase original database schema
-     * @param newDatabase new database schema
-     * @throws InterruptedException
-     */
-    public static PgDiffScript diffDatabaseSchemas(PgDiffArguments arguments,
-            PgDatabase oldDbFull, PgDatabase newDbFull, IgnoreList ignoreList)
-                    throws InterruptedException {
+    private PgDiffScript diffDatabaseSchemas(PgDatabase oldDbFull, PgDatabase newDbFull,
+            IgnoreList ignoreList) throws InterruptedException {
         TreeElement root = DiffTree.create(oldDbFull, newDbFull, null);
         root.setAllChecked();
-        return arguments.isMsSql() ? diffMsDatabaseSchemas(arguments,
-                root, oldDbFull, newDbFull, null, null, ignoreList) :
-                    diffDatabaseSchemasAdditionalDepcies(arguments,
-                            root, oldDbFull, newDbFull, null, null, ignoreList);
+        return arguments.isMsSql() ? diffMsDatabaseSchemas(root, oldDbFull, newDbFull, null, null, ignoreList) :
+            diffDatabaseSchemasAdditionalDepcies(root, oldDbFull, newDbFull, null, null, ignoreList);
     }
 
     /**
      * Делает то же, что и метод выше, однако принимает TreeElement - как
      * элементы нужные для наката
      */
-    public static PgDiffScript diffDatabaseSchemasAdditionalDepcies(
-            PgDiffArguments arguments, TreeElement root,
+    public PgDiffScript diffDatabaseSchemasAdditionalDepcies(TreeElement root,
             PgDatabase oldDbFull, PgDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget) {
         if (arguments.isMsSql()) {
-            return diffMsDatabaseSchemas(arguments, root,
-                    oldDbFull, newDbFull, additionalDepciesSource, additionalDepciesTarget, null);
+            return diffMsDatabaseSchemas(root, oldDbFull, newDbFull,
+                    additionalDepciesSource, additionalDepciesTarget, null);
         }
-        return diffDatabaseSchemasAdditionalDepcies(arguments, root,
-                oldDbFull, newDbFull, additionalDepciesSource, additionalDepciesTarget, null);
+        return diffDatabaseSchemasAdditionalDepcies(root, oldDbFull, newDbFull,
+                additionalDepciesSource, additionalDepciesTarget, null);
     }
 
-    private static PgDiffScript diffDatabaseSchemasAdditionalDepcies(
-            PgDiffArguments arguments, TreeElement root,
-            PgDatabase oldDbFull, PgDatabase newDbFull,
+    private PgDiffScript diffDatabaseSchemasAdditionalDepcies(
+            TreeElement root, PgDatabase oldDbFull, PgDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
             IgnoreList ignoreList) {
@@ -209,7 +225,7 @@ public final class PgDiff {
         }
 
         DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull);
-        createScript(depRes, arguments, root, oldDbFull, newDbFull,
+        createScript(depRes, root, oldDbFull, newDbFull,
                 additionalDepciesSource, additionalDepciesTarget, ignoreList);
 
         if (!depRes.getActions().isEmpty()) {
@@ -223,7 +239,7 @@ public final class PgDiff {
         return script;
     }
 
-    private static PgDiffScript diffMsDatabaseSchemas(PgDiffArguments arguments,
+    private PgDiffScript diffMsDatabaseSchemas(
             TreeElement root, PgDatabase oldDbFull, PgDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
@@ -235,7 +251,7 @@ public final class PgDiff {
         }
 
         DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull);
-        createScript(depRes, arguments, root, oldDbFull, newDbFull,
+        createScript(depRes, root, oldDbFull, newDbFull,
                 additionalDepciesSource, additionalDepciesTarget, ignoreList);
 
         new ActionsToScriptConverter(depRes.getActions(),
@@ -248,8 +264,7 @@ public final class PgDiff {
         return script;
     }
 
-    private static void createScript(DepcyResolver depRes,
-            PgDiffArguments arguments, TreeElement root,
+    private void createScript(DepcyResolver depRes, TreeElement root,
             PgDatabase oldDbFull, PgDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
@@ -301,7 +316,7 @@ public final class PgDiff {
      * После реализации колонок как подэлементов таблицы выпилить метод!
      */
     @Deprecated
-    private static void addColumnsAsElements(PgDatabase oldDbFull, PgDatabase newDbFull,
+    private void addColumnsAsElements(PgDatabase oldDbFull, PgDatabase newDbFull,
             List<TreeElement> selected) {
         List<TreeElement> tempColumns = new ArrayList<>();
         for (TreeElement el : selected) {
@@ -318,6 +333,10 @@ public final class PgDiff {
         selected.addAll(tempColumns);
     }
 
-    private PgDiff() {
+    // used in tests
+    public static PgDiffScript diffDatabaseSchemas(PgDiffArguments arguments,
+            PgDatabase oldDbFull, PgDatabase newDbFull, IgnoreList ignoreList)
+                    throws InterruptedException {
+        return new PgDiff(arguments).diffDatabaseSchemas(oldDbFull, newDbFull, ignoreList);
     }
 }

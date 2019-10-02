@@ -67,8 +67,7 @@ public class UIProjectLoader extends ProjectLoader {
      */
     public PgDatabase loadDatabaseSchemaFromProject()
             throws InterruptedException, IOException, CoreException {
-        PgDatabase db = new PgDatabase();
-        db.setArguments(arguments);
+        PgDatabase db = new PgDatabase(arguments);
         if (arguments.isMsSql()) {
             loadMsStructure(iProject, db);
         } else {
@@ -217,8 +216,7 @@ public class UIProjectLoader extends ProjectLoader {
             throws InterruptedException, IOException, CoreException {
         Set<String> schemaDirnamesLoaded = new HashSet<>();
         IPath schemasPath = new Path(WORK_DIR_NAMES.SCHEMA.name());
-        PgDatabase db = new PgDatabase();
-        db.setArguments(new PgDiffArguments());
+        PgDatabase db = new PgDatabase(new PgDiffArguments());
 
         for (IFile file : files) {
             IPath filePath = file.getProjectRelativePath();
@@ -273,8 +271,7 @@ public class UIProjectLoader extends ProjectLoader {
 
     public PgDatabase loadDatabaseWithLibraries()
             throws InterruptedException, IOException, CoreException {
-        PgDatabase db = new PgDatabase();
-        db.setArguments(arguments);
+        PgDatabase db = new PgDatabase(arguments);
         if (arguments.isMsSql()) {
             loadMsStructure(iProject, db);
         } else {
