@@ -15,9 +15,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.BatchContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statement_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_viewContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_xml_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Ddl_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Dml_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Enable_disable_triggerContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_alterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_createContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_dropContext;
@@ -26,6 +28,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Set_specialContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Set_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Sql_clausesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.St_clauseContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Transaction_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Tsql_fileContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Update_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
@@ -229,11 +232,6 @@ implements TSqlContextProcessor {
         safeParseStatement(p, ctx);
     }
 
-    private void addUndescribedMsObjToQueries(ParserRuleContext ctx) {
-        db.addToQueries(fileName, new PgObjLocation(ParserAbstract.getMsStmtAction(ctx, stream),
-                ctx, isScriptMode ? ParserAbstract.getFullCtxText(ctx) : null));
-    }
-
     private void set(Set_statementContext setCtx) {
         Set_specialContext ctx = setCtx.set_special();
         if(ctx == null || ctx.name == null) {
@@ -259,5 +257,133 @@ implements TSqlContextProcessor {
         default:
             break;
         }
+    }
+
+    private void addUndescribedMsObjToQueries(ParserRuleContext ctx) {
+        db.addToQueries(fileName, new PgObjLocation(getActionForUndescribedMsObj(ctx, stream),
+                ctx, isScriptMode ? ParserAbstract.getFullCtxText(ctx) : null));
+    }
+
+    private String getActionForUndescribedMsObj(ParserRuleContext ctx,
+            CommonTokenStream tokenStream) {
+        if (ctx instanceof Another_statementContext) {
+            Another_statementContext ast = (Another_statementContext) ctx;
+            Transaction_statementContext transactionCtx;
+            if ((transactionCtx = ast.transaction_statement()) != null
+                    && transactionCtx.BEGIN() != null) {
+                return "BEGIN TRANSACTION";
+            }
+            return ctx.getStart().getText().toUpperCase(Locale.ROOT);
+        } else if (ctx instanceof Dml_clauseContext) {
+            Dml_clauseContext dml = (Dml_clauseContext) ctx;
+            if (dml.merge_statement() != null) {
+                return "MERGE";
+            } else if (dml.delete_statement() != null) {
+                return getInserOrDelActionMs(dml.delete_statement().qualified_name(), true);
+            } else if (dml.insert_statement() != null) {
+                return getInserOrDelActionMs(dml.insert_statement().qualified_name(), false);
+            } else if (dml.select_statement() != null) {
+                return "SELECT";
+            }
+            return ctx.getStart().getText().toUpperCase(Locale.ROOT);
+        } else if (ctx instanceof Schema_createContext) {
+            Schema_createContext createCtx = (Schema_createContext) ctx;
+            Create_xml_indexContext xmlIdxCtx;
+            int descrWordsCount = 2;
+            if (createCtx.create_application_role() != null
+                    || createCtx.create_asymmetric_key() != null
+                    || createCtx.create_cryptographic_provider() != null
+                    || createCtx.create_event_notification() != null
+                    || createCtx.create_external_library() != null
+                    || createCtx.create_external_table() != null
+                    || createCtx.create_fulltext_catalog() != null
+                    || createCtx.create_fulltext_index() != null
+                    || createCtx.create_fulltext_stoplist() != null
+                    || createCtx.create_key() != null
+                    || createCtx.create_message_type() != null
+                    || createCtx.create_or_alter_broker_priority() != null
+                    || createCtx.create_or_alter_event_session() != null
+                    || createCtx.create_or_alter_resource_pool() != null
+                    || createCtx.create_partition_function() != null
+                    || createCtx.create_partition_scheme() != null
+                    || createCtx.create_security_policy() != null
+                    || createCtx.create_server_audit() != null
+                    || createCtx.create_server_role() != null
+                    || createCtx.create_workload_group() != null
+                    || ((xmlIdxCtx = createCtx.create_xml_index()) != null
+                    && xmlIdxCtx.PRIMARY() == null)) {
+                descrWordsCount = 3;
+            } else if (createCtx.create_column_encryption_key() != null
+                    || createCtx.create_column_master_key() != null
+                    || createCtx.create_database_encryption_key() != null
+                    || createCtx.create_database_scoped_credential() != null
+                    || createCtx.create_external_resource_pool() != null
+                    || createCtx.create_master_key_sql_server() != null
+                    || createCtx.create_remote_service_binding() != null
+                    || createCtx.create_search_property_list() != null
+                    || createCtx.create_selective_index() != null
+                    || createCtx.create_server_audit_specification() != null
+                    || createCtx.create_xml_schema_collection() != null
+                    || ((xmlIdxCtx = createCtx.create_xml_index()) != null
+                    && xmlIdxCtx.PRIMARY() != null)) {
+                descrWordsCount = 4;
+            }
+            return CustomSQLParserListener.getActionDescription(tokenStream, ctx,
+                    descrWordsCount);
+        } else if (ctx instanceof Schema_alterContext) {
+            Schema_alterContext alterCtx = (Schema_alterContext) ctx;
+            int descrWordsCount = 0;
+            if (alterCtx.alter_asymmetric_key() != null
+                    || alterCtx.alter_application_role() != null
+                    || alterCtx.alter_availability_group() != null
+                    || alterCtx.alter_cryptographic_provider() != null
+                    || alterCtx.alter_external_library() != null
+                    || alterCtx.alter_fulltext_catalog() != null
+                    || alterCtx.alter_fulltext_index() != null
+                    || alterCtx.alter_fulltext_stoplist() != null
+                    || alterCtx.alter_master_key_sql_server() != null
+                    || alterCtx.alter_message_type() != null
+                    || alterCtx.alter_partition_function() != null
+                    || alterCtx.alter_partition_scheme() != null
+                    || alterCtx.alter_resource_governor() != null
+                    || alterCtx.alter_security_policy() != null
+                    || alterCtx.alter_server_audit() != null
+                    || alterCtx.alter_server_configuration() != null
+                    || alterCtx.alter_server_role() != null
+                    || alterCtx.alter_server_role_pdw() != null
+                    || alterCtx.alter_symmetric_key() != null
+                    || alterCtx.alter_workload_group() != null
+                    || alterCtx.create_or_alter_broker_priority() != null
+                    || alterCtx.create_or_alter_event_session() != null
+                    || alterCtx.create_or_alter_resource_pool() != null
+                    || alterCtx.create_symmetric_key() != null) {
+                descrWordsCount = 3;
+            } else if (alterCtx.alter_column_encryption_key() != null
+                    || alterCtx.alter_database_encryption_key() != null
+                    || alterCtx.alter_database_scoped_credential() != null
+                    || alterCtx.alter_external_data_source() != null
+                    || alterCtx.alter_external_resource_pool() != null
+                    || alterCtx.alter_remote_service_binding() != null
+                    || alterCtx.alter_search_property_list() != null
+                    || alterCtx.alter_server_audit_specification() != null
+                    || alterCtx.alter_service_master_key() != null
+                    || alterCtx.alter_xml_schema_collection() != null) {
+                descrWordsCount = 4;
+            } else {
+                descrWordsCount = 2;
+            }
+            return CustomSQLParserListener.getActionDescription(tokenStream, ctx,
+                    descrWordsCount);
+        }
+        return ctx.getStart().getText().toUpperCase(Locale.ROOT);
+    }
+
+    private String getInserOrDelActionMs(Qualified_nameContext qname, boolean isDel) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(isDel ? "DELETE" : "INSERT");
+        if (qname != null) {
+            sb.append(isDel ? " FROM " : " INTO ").append(qname.name.getText());
+        }
+        return sb.toString();
     }
 }

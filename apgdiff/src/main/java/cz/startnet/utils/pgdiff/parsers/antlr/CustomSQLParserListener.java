@@ -6,6 +6,7 @@ import java.util.Queue;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
@@ -15,6 +16,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_alterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_createContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_dropContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Script_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Script_transactionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Session_local_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statement_valueContext;
@@ -208,11 +211,6 @@ implements SqlContextProcessor {
         safeParseStatement(p, ctx);
     }
 
-    private void addUndescribedPgObjToQueries(ParserRuleContext ctx) {
-        db.addToQueries(fileName, new PgObjLocation(ParserAbstract.getPgStmtAction(ctx, stream),
-                ctx, isScriptMode ? ParserAbstract.getFullCtxText(ctx) : null));
-    }
-
     private void set(Set_statementContext ctx) {
         Session_local_optionContext sesLocOpt = ctx.set_action().session_local_option();
         if (sesLocOpt == null || sesLocOpt.config_param == null) {
@@ -249,5 +247,94 @@ implements SqlContextProcessor {
         default:
             break;
         }
+    }
+
+    private void addUndescribedPgObjToQueries(ParserRuleContext ctx) {
+        db.addToQueries(fileName, new PgObjLocation(getActionForUndescribedPgObj(ctx, stream),
+                ctx, isScriptMode ? ParserAbstract.getFullCtxText(ctx) : null));
+    }
+
+    private String getActionForUndescribedPgObj(ParserRuleContext ctx,
+            CommonTokenStream tokenStream) {
+        if (ctx instanceof StatementContext) {
+            StatementContext stmtCtx = (StatementContext) ctx;
+            Script_statementContext scriptCtx;
+            Script_transactionContext transactionCtx;
+            if ((scriptCtx = stmtCtx.script_statement()) != null
+                    && (transactionCtx = scriptCtx.script_transaction()) != null
+                    && transactionCtx.START() != null) {
+                return "START TRANSACTION";
+            }
+        } else if (ctx instanceof Data_statementContext) {
+            Data_statementContext data = (Data_statementContext) ctx;
+            if (data.select_stmt() != null) {
+                return "SELECT";
+            } else if (data.insert_stmt_for_psql() != null) {
+                return "INSERT INTO " + QNameParser.getFirstNameCtx(data.insert_stmt_for_psql()
+                        .insert_table_name.identifier()).getText();
+            } else if (data.delete_stmt_for_psql() != null) {
+                return "DELETE FROM " + QNameParser.getFirstNameCtx(data.delete_stmt_for_psql()
+                        .delete_table_name.identifier()).getText();
+            }
+            return ctx.getStart().getText().toUpperCase(Locale.ROOT);
+        } else if (ctx instanceof Schema_createContext) {
+            Schema_createContext createCtx = (Schema_createContext) ctx;
+            int descrWordsCount = 0;
+            if (createCtx.create_language_statement() != null) {
+                return "CREATE LANGUAGE";
+            } else if (createCtx.create_transform_statement() != null) {
+                return "CREATE TRANSFORM";
+            } else if (createCtx.create_table_as_statement() != null) {
+                return "CREATE TABLE";
+            } else if (createCtx.create_conversion_statement() != null) {
+                return "CREATE CONVERSION";
+            } else if (createCtx.create_event_trigger() != null
+                    || createCtx.create_user_mapping() != null
+                    || createCtx.create_access_method() != null
+                    || createCtx.create_operator_family_statement() != null
+                    || createCtx.create_operator_class_statement() != null
+                    || createCtx.security_label() != null) {
+                descrWordsCount = 3;
+            } else if (createCtx.schema_import() != null
+                    || createCtx.create_foreign_data_wrapper() != null) {
+                descrWordsCount = 4;
+            } else {
+                descrWordsCount = 2;
+            }
+            return getActionDescription(tokenStream, ctx, descrWordsCount);
+        } else if (ctx instanceof Schema_alterContext) {
+            Schema_alterContext alterCtx = (Schema_alterContext) ctx;
+            int descrWordsCount = 0;
+            if (alterCtx.alter_language_statement() != null) {
+                return "ALTER LANGUAGE";
+            } else if (alterCtx.alter_foreign_data_wrapper() != null) {
+                descrWordsCount = 4;
+            } else if (alterCtx.alter_default_privileges() != null
+                    || alterCtx.alter_event_trigger() != null
+                    || alterCtx.alter_user_mapping() != null
+                    || alterCtx.alter_operator_family_statement() != null
+                    || alterCtx.alter_operator_class_statement() != null) {
+                descrWordsCount = 3;
+            } else {
+                descrWordsCount = 2;
+            }
+            return getActionDescription(tokenStream, ctx, descrWordsCount);
+        }
+        return ctx.getStart().getText().toUpperCase(Locale.ROOT);
+    }
+
+    /**
+     *  Returns only the first 'descrWordsCount' words from a query in 'ctx'.
+     */
+    protected static String getActionDescription(CommonTokenStream tokenStream,
+            ParserRuleContext ctx, int descrWordsCount) {
+        List<Token> tokens = tokenStream.getTokens(ctx.getStart().getTokenIndex(),
+                ctx.getStop().getTokenIndex());
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < descrWordsCount; i++) {
+            sb.append(tokens.get(i).getText()).append(' ');
+        }
+        sb.setLength(sb.length() - 1);
+        return sb.toString();
     }
 }
