@@ -549,11 +549,11 @@ public abstract class ParserAbstract {
             if (data.select_stmt() != null) {
                 return "SELECT";
             } else if (data.insert_stmt_for_psql() != null) {
-                return "INSERT INTO " + getFullCtxText(data.insert_stmt_for_psql()
-                        .insert_table_name);
+                return "INSERT INTO " + QNameParser.getFirstNameCtx(data.insert_stmt_for_psql()
+                        .insert_table_name.identifier()).getText();
             } else if (data.delete_stmt_for_psql() != null) {
-                return "DELETE FROM " + getFullCtxText(data.delete_stmt_for_psql()
-                        .delete_table_name);
+                return "DELETE FROM " + QNameParser.getFirstNameCtx(data.delete_stmt_for_psql()
+                        .delete_table_name.identifier()).getText();
             }
             return ctx.getStart().getText().toUpperCase(Locale.ROOT);
         } else if (ctx instanceof Schema_createContext) {
@@ -719,11 +719,7 @@ public abstract class ParserAbstract {
         StringBuilder sb = new StringBuilder();
         sb.append(isDel ? "DELETE" : "INSERT");
         if (qname != null) {
-            sb.append(isDel ? " FROM " : " INTO ");
-            if (qname.schema != null) {
-                sb.append(qname.schema.getText()).append('.');
-            }
-            sb.append(qname.name.getText());
+            sb.append(isDel ? " FROM " : " INTO ").append(qname.name.getText());
         }
         return sb.toString();
     }
