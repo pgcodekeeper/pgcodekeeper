@@ -42,7 +42,7 @@ public class UpdateMsStatement extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
+    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
         Qualified_nameContext qname = ctx.qualified_name();
         return new Pair<>(StatementActions.UPDATE, new GenericColumn(
                 qname.schema.getText(), qname.name.getText(), DbObjType.TABLE));

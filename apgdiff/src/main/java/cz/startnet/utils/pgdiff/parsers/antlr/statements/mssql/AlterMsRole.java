@@ -32,7 +32,7 @@ public class AlterMsRole extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
+    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
         return new Pair<>(StatementActions.ALTER,
                 new GenericColumn(ctx.role_name.getText(), DbObjType.ROLE));
     }

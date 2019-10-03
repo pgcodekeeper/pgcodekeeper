@@ -141,7 +141,7 @@ public class DropStatement extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
+    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
         DbObjType type;
         List<IdentifierContext> ids;
         GenericColumn descrObj = null;

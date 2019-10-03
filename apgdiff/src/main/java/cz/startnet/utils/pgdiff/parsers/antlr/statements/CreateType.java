@@ -150,7 +150,7 @@ public class CreateType extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
+    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
         List<IdentifierContext> ids = ctx.name.identifier();
         return new Pair<>(StatementActions.CREATE, new GenericColumn(QNameParser.getSchemaName(ids),
                 QNameParser.getFirstNameCtx(ids).getText(), DbObjType.TYPE));

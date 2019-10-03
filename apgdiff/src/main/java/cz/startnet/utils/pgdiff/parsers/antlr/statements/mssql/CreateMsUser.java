@@ -43,7 +43,7 @@ public class CreateMsUser extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
+    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
         return new Pair<>(StatementActions.CREATE,
                 new GenericColumn(ctx.user_name.getText(), DbObjType.USER));
     }

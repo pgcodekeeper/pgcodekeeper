@@ -39,7 +39,7 @@ public class UpdateStatement extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
+    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
         List<IdentifierContext> ids = ctx.update_table_name.identifier();
         return new Pair<>(StatementActions.UPDATE, new GenericColumn(QNameParser.getSchemaName(ids),
                 QNameParser.getFirstNameCtx(ids).getText(), DbObjType.TABLE));

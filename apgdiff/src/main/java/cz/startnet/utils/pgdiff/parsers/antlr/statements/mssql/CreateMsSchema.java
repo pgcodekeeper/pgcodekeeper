@@ -35,7 +35,7 @@ public class CreateMsSchema extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
+    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
         return new Pair<>(StatementActions.CREATE,
                 new GenericColumn(ctx.schema_name.getText(), DbObjType.SCHEMA));
     }

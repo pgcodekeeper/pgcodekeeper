@@ -79,7 +79,7 @@ public class CreateMsSequence extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
+    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
         Qualified_nameContext qualNameCtx = ctx.qualified_name();
         return new Pair<>(StatementActions.CREATE, new GenericColumn(
                 qualNameCtx.schema.getText(), qualNameCtx.name.getText(), DbObjType.SEQUENCE));

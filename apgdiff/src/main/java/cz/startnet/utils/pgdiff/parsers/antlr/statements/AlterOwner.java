@@ -125,7 +125,7 @@ public class AlterOwner extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
+    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
         DbObjType type = null;
         if (ctx.SCHEMA() != null) {
             type = DbObjType.SCHEMA;

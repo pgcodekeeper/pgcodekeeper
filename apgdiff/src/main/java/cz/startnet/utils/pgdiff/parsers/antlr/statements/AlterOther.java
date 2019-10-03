@@ -87,7 +87,7 @@ public class AlterOther extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
+    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
         GenericColumn descrObj = null;
         Alter_operator_statementContext alterOperCtx = ctx.alter_operator_statement();
         if (alterOperCtx != null) {

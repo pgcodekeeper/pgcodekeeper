@@ -109,7 +109,7 @@ public class DropMsStatement extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
+    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
         GenericColumn descrObj = null;
         if (ctx.drop_assembly() != null) {
             List<IdContext> ids = ctx.drop_assembly().id();

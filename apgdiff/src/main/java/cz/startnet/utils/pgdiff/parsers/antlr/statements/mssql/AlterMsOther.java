@@ -58,7 +58,7 @@ public class AlterMsOther extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
+    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
         GenericColumn descrObj = null;
         if (ctx.alter_schema_sql() != null) {
             descrObj = new GenericColumn(ctx.alter_schema_sql().schema_name.getText(),

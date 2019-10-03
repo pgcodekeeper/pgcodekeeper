@@ -34,7 +34,7 @@ public class CreateMsRole extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
+    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
         return new Pair<>(StatementActions.CREATE,
                 new GenericColumn(ctx.role_name.getText(), DbObjType.ROLE));
     }

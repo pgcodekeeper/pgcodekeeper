@@ -82,7 +82,7 @@ public class CreateOperator extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
+    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
         Operator_nameContext operNameCtx = ctx.name;
         return new Pair<>(StatementActions.CREATE, new GenericColumn(
                 operNameCtx.schema_name.getText(), operNameCtx.operator.getText(),

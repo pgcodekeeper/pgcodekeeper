@@ -104,7 +104,7 @@ public class AlterMsTable extends TableAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
+    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
         Qualified_nameContext qualNameCtx = ctx.name;
         return new Pair<>(StatementActions.ALTER, new GenericColumn(
                 qualNameCtx.schema.getText(), qualNameCtx.name.getText(), DbObjType.TABLE));

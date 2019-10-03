@@ -38,7 +38,7 @@ public class AlterMsAssembly extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
+    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
         return new Pair<>(StatementActions.ALTER,
                 new GenericColumn(ctx.name.getText(), DbObjType.ASSEMBLY));
     }

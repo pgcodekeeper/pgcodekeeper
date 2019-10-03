@@ -105,7 +105,7 @@ public class CreateMsTrigger extends BatchContextProcessor {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
+    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
         IdContext schemaCtx = ctx.trigger_name.schema;
         if (schemaCtx == null) {
             schemaCtx = ctx.table_name.schema;

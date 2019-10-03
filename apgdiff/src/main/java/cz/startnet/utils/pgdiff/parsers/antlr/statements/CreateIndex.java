@@ -117,7 +117,7 @@ public class CreateIndex extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
+    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
         List<IdentifierContext> ids = ctx.table_name.identifier();
         return new Pair<>(StatementActions.CREATE, new GenericColumn(
                 QNameParser.getSchemaName(ids), QNameParser.getFirstNameCtx(ids).getText(),

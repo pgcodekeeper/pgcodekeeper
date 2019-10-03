@@ -71,7 +71,6 @@ public abstract class ParserAbstract {
         refMode = ParserListenerMode.REF == mode;
         this.statementBodies = statementBodies;
         if (ParserListenerMode.SCRIPT == mode) {
-            fillDescrObj();
             fillQueryLocation(ctx);
         } else {
             parseObject();
@@ -489,15 +488,17 @@ public abstract class ParserAbstract {
     }
 
     /**
-     * Returns the Pair with StatementActions and GenericColumn objects which will be used
-     * for getting the action string of described statement.
+     * Returns the Pair with StatementActions and GenericColumn objects which
+     * will be used for getting the action information of described statement.
+     * <br />
+     * (The action information will later be used for showing in console and in 'Outline')
      */
-    protected abstract Pair<StatementActions, GenericColumn> fillDescrObj();
+    protected abstract Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction();
 
     /**
-     * Fills the 'PgObjLocation'-object with query of statement and it's position
-     * in the script from statement context, and then puts filled 'PgObjLocation'-object
-     * to the batch.
+     * Fills the 'PgObjLocation'-object with action information, query of statement
+     * and it's position in the script from statement context, and then puts
+     * filled 'PgObjLocation'-object to the storage of queries.
      */
     protected PgObjLocation fillQueryLocation(ParserRuleContext ctx) {
         PgObjLocation loc = new PgObjLocation(getStmtAction(ctx), ctx, getFullCtxText(ctx));
@@ -507,7 +508,7 @@ public abstract class ParserAbstract {
 
     protected String getStmtAction(ParserRuleContext ctx) {
         String result;
-        Pair<StatementActions, GenericColumn> actionAndObj = fillDescrObj();
+        Pair<StatementActions, GenericColumn> actionAndObj = getActionAndObjForStmtAction();
         if (actionAndObj == null) {
             result = ctx.getStart().getText().toUpperCase(Locale.ROOT);
         } else {

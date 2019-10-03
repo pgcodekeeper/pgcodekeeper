@@ -67,7 +67,7 @@ public class AlterMsBatch extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
+    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
         GenericColumn descrObj = null;
         if (ctx.create_or_alter_procedure() != null) {
             Qualified_nameContext qname = ctx.create_or_alter_procedure().qualified_name();

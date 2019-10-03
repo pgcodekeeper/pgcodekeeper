@@ -96,7 +96,7 @@ public class CreateView extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
+    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
         List<IdentifierContext> ids = context.name.identifier();
         return new Pair<>(StatementActions.CREATE, new GenericColumn(QNameParser.getSchemaName(ids),
                 QNameParser.getFirstNameCtx(ids).getText(), DbObjType.VIEW));

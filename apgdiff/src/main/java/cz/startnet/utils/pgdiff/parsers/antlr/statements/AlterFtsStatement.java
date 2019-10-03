@@ -66,7 +66,7 @@ public class AlterFtsStatement extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
+    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
         DbObjType tt;
         if (ctx.DICTIONARY() != null) {
             tt = DbObjType.FTS_DICTIONARY;

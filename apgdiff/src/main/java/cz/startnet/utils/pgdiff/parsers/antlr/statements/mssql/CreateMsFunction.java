@@ -202,7 +202,7 @@ public class CreateMsFunction extends BatchContextProcessor {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
+    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
         Qualified_nameContext qualName = ctx.qualified_name();
         return new Pair<>(StatementActions.CREATE, new GenericColumn(
                 qualName.schema.getText(), qualName.name.getText(), DbObjType.FUNCTION));
