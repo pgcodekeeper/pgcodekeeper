@@ -260,8 +260,9 @@ implements TSqlContextProcessor {
     }
 
     private void addUndescribedMsObjToQueries(ParserRuleContext ctx) {
-        db.addToQueries(fileName, new PgObjLocation(getActionForUndescribedMsObj(ctx, stream),
-                ctx, isScriptMode ? ParserAbstract.getFullCtxText(ctx) : null));
+        safeParseStatement(() -> db.addToQueries(fileName, new PgObjLocation(
+                getActionForUndescribedMsObj(ctx, stream), ctx,
+                isScriptMode ? ParserAbstract.getFullCtxText(ctx) : null)), ctx);
     }
 
     private String getActionForUndescribedMsObj(ParserRuleContext ctx,

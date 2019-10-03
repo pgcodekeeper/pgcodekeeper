@@ -250,8 +250,9 @@ implements SqlContextProcessor {
     }
 
     private void addUndescribedPgObjToQueries(ParserRuleContext ctx) {
-        db.addToQueries(fileName, new PgObjLocation(getActionForUndescribedPgObj(ctx, stream),
-                ctx, isScriptMode ? ParserAbstract.getFullCtxText(ctx) : null));
+        safeParseStatement(() -> db.addToQueries(fileName, new PgObjLocation(
+                getActionForUndescribedPgObj(ctx, stream), ctx,
+                isScriptMode ? ParserAbstract.getFullCtxText(ctx) : null)), ctx);
     }
 
     private String getActionForUndescribedPgObj(ParserRuleContext ctx,
