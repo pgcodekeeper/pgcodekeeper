@@ -58,14 +58,15 @@ public abstract class AbstractAnalysisLauncher {
         }
 
         PgObjLocation loc = stmt.getLocation();
+        String filePath = loc == null ? null : loc.getFilePath();
 
         try {
             analyze(ctx);
         } catch (UnresolvedReferenceException ex) {
-            unresolvRefExHandler(ex, errors, ctx, stmt.getLocation().getFilePath());
+            unresolvRefExHandler(ex, errors, ctx, filePath);
         } catch (Exception ex) {
             addError(errors, CustomParserListener.handleParserContextException(
-                    ex, loc == null ? null : loc.getFilePath(), ctx));
+                    ex, filePath, ctx));
         }
     }
 
