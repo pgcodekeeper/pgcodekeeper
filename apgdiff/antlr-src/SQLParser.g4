@@ -2301,6 +2301,7 @@ tokens_nonkeyword
     | LEFTARG
     | LEXIZE
     | LEXTYPES
+    | LIST
     | LOCALE 
     | LOGIN
     | MAIN
