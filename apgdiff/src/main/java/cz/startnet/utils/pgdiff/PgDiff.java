@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
@@ -70,23 +71,10 @@ public class PgDiff {
         Path metaPath = Paths.get(System.getProperty("user.home")).resolve(".pgcodekeeper-cli")
                 .resolve("dependencies");
 
-        LibraryLoader oldLib = new LibraryLoader(oldDatabase, metaPath);
-
-        for (String xml : arguments.getSourceLibXmls()) {
-            oldLib.loadXml(new DependenciesXmlStore(Paths.get(xml)), arguments);
-        }
-
-        oldLib.loadLibraries(arguments, false, arguments.getSourceLibs());
-        oldLib.loadLibraries(arguments, true, arguments.getSourceLibsWithoutPriv());
-
-        LibraryLoader newLib = new LibraryLoader(newDatabase, metaPath);
-
-        for (String xml : arguments.getTargetLibXmls()) {
-            newLib.loadXml(new DependenciesXmlStore(Paths.get(xml)), arguments);
-        }
-
-        newLib.loadLibraries(arguments, false, arguments.getTargetLibs());
-        newLib.loadLibraries(arguments, true, arguments.getTargetLibsWithoutPriv());
+        loadLibraries(oldDatabase, metaPath, arguments.getSourceLibXmls(),
+                arguments.getSourceLibs(), arguments.getSourceLibsWithoutPriv());
+        loadLibraries(newDatabase, metaPath, arguments.getTargetLibXmls(),
+                arguments.getTargetLibs(), arguments.getTargetLibsWithoutPriv());
 
         if (arguments.isLibSafeMode() &&
                 (!oldDatabase.getOverrides().isEmpty() || !newDatabase.getOverrides().isEmpty())) {
@@ -96,12 +84,8 @@ public class PgDiff {
         }
 
         // read additional privileges from special folder
-        if ("parsed".equals(arguments.getOldSrcFormat())) {
-            new ProjectLoader(arguments.getOldSrc(), arguments).loadOverrides(oldDatabase);
-        }
-        if ("parsed".equals(arguments.getNewSrcFormat())) {
-            new ProjectLoader(arguments.getNewSrc(), arguments).loadOverrides(newDatabase);
-        }
+        loadOverrides(oldDatabase, arguments.getOldSrcFormat(), arguments.getOldSrc());
+        loadOverrides(newDatabase, arguments.getNewSrcFormat(), arguments.getNewSrc());
 
         FullAnalyze.fullAnalyze(oldDatabase, null);
         FullAnalyze.fullAnalyze(newDatabase, null);
@@ -114,20 +98,56 @@ public class PgDiff {
         return diffDatabaseSchemas(oldDatabase, newDatabase, ignoreParser.getIgnoreList());
     }
 
+    private void loadOverrides(PgDatabase db, String format, String source)
+            throws InterruptedException, IOException, PgCodekeeperException {
+        if (!"parsed".equals(format)) {
+            return;
+        }
+
+        List<AntlrError> err = new ArrayList<>();
+        try {
+            new ProjectLoader(source, arguments, null, err).loadOverrides(db);
+        } finally {
+            errors.addAll(err);
+        }
+        assertErrors();
+    }
+
+    private void loadLibraries(PgDatabase db, Path metaPath, Collection<String> libXmls,
+            Collection<String> libs, Collection<String> libsWithoutPriv)
+                    throws InterruptedException, IOException, PgCodekeeperException {
+        List<AntlrError> err = new ArrayList<>();
+        try {
+            LibraryLoader ll = new LibraryLoader(db, metaPath, err);
+
+            for (String xml : libXmls) {
+                ll.loadXml(new DependenciesXmlStore(Paths.get(xml)), arguments);
+            }
+
+            ll.loadLibraries(arguments, false, libs);
+            ll.loadLibraries(arguments, true, libsWithoutPriv);
+        } finally {
+            errors.addAll(err);
+        }
+        assertErrors();
+    }
+
     public PgDatabase loadNewDatabase() throws IOException, InterruptedException, PgCodekeeperException {
         PgDatabase db = loadDatabaseSchema(arguments.getNewSrcFormat(), arguments.getNewSrc());
-        if (!errors.isEmpty()) {
-            throw new PgCodekeeperException("Error while load database");
-        }
+        assertErrors();
         return db;
     }
 
     public PgDatabase loadOldDatabase() throws IOException, InterruptedException, PgCodekeeperException {
         PgDatabase db = loadDatabaseSchema(arguments.getOldSrcFormat(), arguments.getOldSrc());
+        assertErrors();
+        return db;
+    }
+
+    private void assertErrors() throws PgCodekeeperException {
         if (!errors.isEmpty()) {
             throw new PgCodekeeperException("Error while load database");
         }
-        return db;
     }
 
     /**
