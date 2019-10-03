@@ -66,8 +66,10 @@ public class PgObjLocation extends ContextLocation {
             return Objects.equals(loc.getGenericColumn(), getGenericColumn())
                     && getOffset() == loc.getOffset()
                     && getLineNumber() == loc.getLineNumber()
+                    && getCharPositionInLine() == loc.getCharPositionInLine()
                     && Objects.equals(loc.getFilePath(), getFilePath())
-                    && Objects.equals(loc.getSql(), getSql());
+                    && Objects.equals(loc.getSql(), getSql())
+                    && Objects.equals(loc.getAction(), getAction());
         }
         return false;
     }
@@ -84,8 +86,10 @@ public class PgObjLocation extends ContextLocation {
         }
         result = prime * result + getOffset();
         result = prime * result + getLineNumber();
+        result = prime * result + getCharPositionInLine();
         result = prime * result + ((getFilePath() == null) ? 0 : getFilePath().hashCode());
         result = prime * result + ((getSql() == null) ? 0 : getSql().hashCode());
+        result = prime * result + ((getAction() == null) ? 0 : getAction().hashCode());
         return result;
     }
 

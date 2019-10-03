@@ -18,6 +18,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceExcep
 import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -29,6 +30,7 @@ import cz.startnet.utils.pgdiff.schema.PgView;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class CommentOn extends ParserAbstract {
     private final Comment_on_statementContext ctx;
@@ -217,5 +219,10 @@ public class CommentOn extends ParserAbstract {
             db.getObjDefinitions().values().stream().flatMap(Set::stream)
             .filter(ref::compare).forEach(def -> def.setComment(comment));
         }
+    }
+
+    @Override
+    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
+        return null;
     }
 }

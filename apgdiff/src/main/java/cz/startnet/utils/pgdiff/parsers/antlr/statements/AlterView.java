@@ -13,6 +13,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgView;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class AlterView extends ParserAbstract {
     private final Alter_view_statementContext ctx;
@@ -41,10 +42,9 @@ public class AlterView extends ParserAbstract {
     }
 
     @Override
-    protected void fillDescrObj() {
-        action = StatementActions.ALTER;
+    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        descrObj = new GenericColumn(QNameParser.getSchemaName(ids),
-                QNameParser.getFirstNameCtx(ids).getText(), DbObjType.VIEW);
+        return new Pair<>(StatementActions.ALTER, new GenericColumn(QNameParser.getSchemaName(ids),
+                QNameParser.getFirstNameCtx(ids).getText(), DbObjType.VIEW));
     }
 }

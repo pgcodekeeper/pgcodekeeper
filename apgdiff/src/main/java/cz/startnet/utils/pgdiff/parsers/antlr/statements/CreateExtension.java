@@ -9,6 +9,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class CreateExtension extends ParserAbstract {
 
@@ -33,8 +34,8 @@ public class CreateExtension extends ParserAbstract {
     }
 
     @Override
-    protected void fillDescrObj() {
-        action = StatementActions.CREATE;
-        descrObj = new GenericColumn(ctx.name.getText(), DbObjType.EXTENSION);
+    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
+        return new Pair<>(StatementActions.CREATE,
+                new GenericColumn(ctx.name.getText(), DbObjType.EXTENSION));
     }
 }

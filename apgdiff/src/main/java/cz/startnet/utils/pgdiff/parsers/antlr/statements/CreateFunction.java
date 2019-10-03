@@ -209,11 +209,10 @@ public class CreateFunction extends ParserAbstract {
     }
 
     @Override
-    protected void fillDescrObj() {
-        action = StatementActions.CREATE;
+    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
         List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
-        descrObj = new GenericColumn(QNameParser.getSchemaName(ids),
-                QNameParser.getFirstNameCtx(ids).getText(),
-                ctx.PROCEDURE() != null ? DbObjType.PROCEDURE : DbObjType.FUNCTION);
+        return new Pair<>(StatementActions.CREATE, new GenericColumn(
+                QNameParser.getSchemaName(ids), QNameParser.getFirstNameCtx(ids).getText(),
+                ctx.PROCEDURE() != null ? DbObjType.PROCEDURE : DbObjType.FUNCTION));
     }
 }

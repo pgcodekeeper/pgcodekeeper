@@ -18,6 +18,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgOperator;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class CreateOperator extends ParserAbstract {
     private final Create_operator_statementContext ctx;
@@ -81,11 +82,10 @@ public class CreateOperator extends ParserAbstract {
     }
 
     @Override
-    protected void fillDescrObj() {
-        action = StatementActions.CREATE;
+    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
         Operator_nameContext operNameCtx = ctx.name;
-        IdentifierContext schemaCtx = operNameCtx.schema_name;
-        descrObj = new GenericColumn(schemaCtx.getText(),
-                operNameCtx.operator.getText(), DbObjType.OPERATOR);
+        return new Pair<>(StatementActions.CREATE, new GenericColumn(
+                operNameCtx.schema_name.getText(), operNameCtx.operator.getText(),
+                DbObjType.OPERATOR));
     }
 }

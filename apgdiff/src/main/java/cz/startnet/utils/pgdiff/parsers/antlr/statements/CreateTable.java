@@ -30,6 +30,7 @@ import cz.startnet.utils.pgdiff.schema.SimplePgTable;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import cz.startnet.utils.pgdiff.schema.TypedPgTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class CreateTable extends TableAbstract {
     private final Create_table_statementContext ctx;
@@ -153,10 +154,9 @@ public class CreateTable extends TableAbstract {
     }
 
     @Override
-    protected void fillDescrObj() {
-        action = StatementActions.CREATE;
+    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        descrObj = new GenericColumn(QNameParser.getSchemaName(ids),
-                QNameParser.getFirstNameCtx(ids).getText(), DbObjType.TABLE);
+        return new Pair<>(StatementActions.CREATE, new GenericColumn(QNameParser.getSchemaName(ids),
+                QNameParser.getFirstNameCtx(ids).getText(), DbObjType.TABLE));
     }
 }

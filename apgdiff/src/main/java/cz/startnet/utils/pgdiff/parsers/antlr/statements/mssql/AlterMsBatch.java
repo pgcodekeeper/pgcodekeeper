@@ -14,6 +14,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class AlterMsBatch extends ParserAbstract {
 
@@ -66,8 +67,8 @@ public class AlterMsBatch extends ParserAbstract {
     }
 
     @Override
-    protected void fillDescrObj() {
-        action = StatementActions.ALTER;
+    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
+        GenericColumn descrObj = null;
         if (ctx.create_or_alter_procedure() != null) {
             Qualified_nameContext qname = ctx.create_or_alter_procedure().qualified_name();
             descrObj = new GenericColumn(qname.schema.getText(),
@@ -91,5 +92,6 @@ public class AlterMsBatch extends ParserAbstract {
             descrObj = new GenericColumn(schemaCtx.getText(),
                     trigCtx.table_name.name.getText(), qname.name.getText(), DbObjType.TRIGGER);
         }
+        return descrObj != null ? new Pair<>(StatementActions.ALTER, descrObj) : null;
     }
 }

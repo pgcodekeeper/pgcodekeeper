@@ -14,6 +14,7 @@ import cz.startnet.utils.pgdiff.schema.MsAssembly;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class CreateMsAssembly extends ParserAbstract {
 
@@ -74,9 +75,8 @@ public class CreateMsAssembly extends ParserAbstract {
     }
 
     @Override
-    protected void fillDescrObj() {
-        action = StatementActions.CREATE;
-        descrObj = new GenericColumn(ctx.assembly_name.getText(),
-                DbObjType.ASSEMBLY);
+    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
+        return new Pair<>(StatementActions.CREATE, new GenericColumn(
+                ctx.assembly_name.getText(), DbObjType.ASSEMBLY));
     }
 }

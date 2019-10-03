@@ -11,12 +11,14 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Class_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import cz.startnet.utils.pgdiff.schema.StatementOverride;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class AlterMsAuthorization extends ParserAbstract {
 
@@ -86,5 +88,10 @@ public class AlterMsAuthorization extends ParserAbstract {
         PgObjLocation loc = new PgObjLocation("ALTER AUTHORIZATION", ctx, getFullCtxText(ctx));
         db.addToQueries(fileName, loc);
         return loc;
+    }
+
+    @Override
+    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
+        return null;
     }
 }

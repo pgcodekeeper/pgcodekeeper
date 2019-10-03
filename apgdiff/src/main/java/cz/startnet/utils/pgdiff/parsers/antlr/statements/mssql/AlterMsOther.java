@@ -14,6 +14,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class AlterMsOther extends ParserAbstract {
 
@@ -57,8 +58,8 @@ public class AlterMsOther extends ParserAbstract {
     }
 
     @Override
-    protected void fillDescrObj() {
-        action = StatementActions.ALTER;
+    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
+        GenericColumn descrObj = null;
         if (ctx.alter_schema_sql() != null) {
             descrObj = new GenericColumn(ctx.alter_schema_sql().schema_name.getText(),
                     DbObjType.SCHEMA);
@@ -70,5 +71,6 @@ public class AlterMsOther extends ParserAbstract {
             descrObj = new GenericColumn(qname.schema.getText(), qname.name.getText(),
                     DbObjType.SEQUENCE);
         }
+        return descrObj != null ? new Pair<>(StatementActions.ALTER, descrObj) : null;
     }
 }

@@ -20,6 +20,7 @@ import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class CreateMsTrigger extends BatchContextProcessor {
 
@@ -104,13 +105,12 @@ public class CreateMsTrigger extends BatchContextProcessor {
     }
 
     @Override
-    protected void fillDescrObj() {
-        action = StatementActions.CREATE;
+    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
         IdContext schemaCtx = ctx.trigger_name.schema;
         if (schemaCtx == null) {
             schemaCtx = ctx.table_name.schema;
         }
-        descrObj = new GenericColumn(schemaCtx.getText(), ctx.table_name.name.getText(),
-                ctx.trigger_name.name.getText(), DbObjType.TRIGGER);
+        return new Pair<>(StatementActions.CREATE, new GenericColumn(schemaCtx.getText(),
+                ctx.table_name.name.getText(), ctx.trigger_name.name.getText(), DbObjType.TRIGGER));
     }
 }

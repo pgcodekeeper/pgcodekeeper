@@ -13,6 +13,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class UpdateMsStatement extends ParserAbstract {
 
@@ -41,10 +42,9 @@ public class UpdateMsStatement extends ParserAbstract {
     }
 
     @Override
-    protected void fillDescrObj() {
-        action = StatementActions.UPDATE;
+    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
         Qualified_nameContext qname = ctx.qualified_name();
-        descrObj = new GenericColumn(qname.schema.getText(),
-                qname.name.getText(), DbObjType.TABLE);
+        return new Pair<>(StatementActions.UPDATE, new GenericColumn(
+                qname.schema.getText(), qname.name.getText(), DbObjType.TABLE));
     }
 }

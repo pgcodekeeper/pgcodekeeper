@@ -23,6 +23,7 @@ import cz.startnet.utils.pgdiff.schema.MsTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class CreateMsTable extends TableAbstract {
 
@@ -142,10 +143,9 @@ public class CreateMsTable extends TableAbstract {
     }
 
     @Override
-    protected void fillDescrObj() {
-        action = StatementActions.CREATE;
+    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
         Qualified_nameContext qualNameCtx = ctx.qualified_name();
-        descrObj = new GenericColumn(qualNameCtx.schema.getText(),
-                qualNameCtx.name.getText(), DbObjType.TABLE);
+        return new Pair<>(StatementActions.CREATE, new GenericColumn(
+                qualNameCtx.schema.getText(), qualNameCtx.name.getText(), DbObjType.TABLE));
     }
 }

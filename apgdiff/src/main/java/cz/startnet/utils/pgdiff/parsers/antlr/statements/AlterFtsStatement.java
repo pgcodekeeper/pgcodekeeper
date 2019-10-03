@@ -14,6 +14,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFtsConfiguration;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class AlterFtsStatement extends ParserAbstract {
 
@@ -65,8 +66,7 @@ public class AlterFtsStatement extends ParserAbstract {
     }
 
     @Override
-    protected void fillDescrObj() {
-        action = StatementActions.ALTER;
+    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
         DbObjType tt;
         if (ctx.DICTIONARY() != null) {
             tt = DbObjType.FTS_DICTIONARY;
@@ -78,7 +78,7 @@ public class AlterFtsStatement extends ParserAbstract {
             tt = DbObjType.FTS_CONFIGURATION;
         }
         List<IdentifierContext> ids = ctx.name.identifier();
-        descrObj = new GenericColumn(QNameParser.getSchemaName(ids),
-                QNameParser.getFirstNameCtx(ids).getText(), tt);
+        return new Pair<>(StatementActions.ALTER, new GenericColumn(QNameParser.getSchemaName(ids),
+                QNameParser.getFirstNameCtx(ids).getText(), tt));
     }
 }

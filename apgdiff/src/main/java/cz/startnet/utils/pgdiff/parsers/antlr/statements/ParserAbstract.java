@@ -56,6 +56,7 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 /**
  * Abstract Class contents common operations for parsing
@@ -69,9 +70,6 @@ public abstract class ParserAbstract {
     private List<StatementBodyContainer> statementBodies;
     private boolean refMode;
     protected String fileName;
-
-    protected StatementActions action;
-    protected GenericColumn descrObj;
 
     public ParserAbstract(PgDatabase db) {
         this.db = db;
@@ -501,12 +499,10 @@ public abstract class ParserAbstract {
     }
 
     /**
-     * Fills the GenericColumn object which will be used for getting the action
-     * string of described statement.
+     * Returns the Pair with StatementActions and GenericColumn objects which will be used
+     * for getting the action string of described statement.
      */
-    protected void fillDescrObj() {
-        // implemented where its necessary
-    }
+    protected abstract Pair<StatementActions, GenericColumn> fillDescrObj();
 
     /**
      * Fills the 'PgObjLocation'-object with query of statement and it's position
@@ -521,9 +517,13 @@ public abstract class ParserAbstract {
 
     protected String getStmtAction(ParserRuleContext ctx) {
         String result;
-        if (descrObj == null) {
+        Pair<StatementActions, GenericColumn> actionAndObj = fillDescrObj();
+        if (actionAndObj == null) {
             result = ctx.getStart().getText().toUpperCase(Locale.ROOT);
         } else {
+            StatementActions action = actionAndObj.getFirst();
+            GenericColumn descrObj = actionAndObj.getSecond();
+
             StringBuilder sb = new StringBuilder();
             sb.append(action.name());
             if (StatementActions.UPDATE != action) {

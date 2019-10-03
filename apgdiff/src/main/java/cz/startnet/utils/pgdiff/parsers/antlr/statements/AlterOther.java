@@ -18,6 +18,7 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class AlterOther extends ParserAbstract {
 
@@ -86,8 +87,8 @@ public class AlterOther extends ParserAbstract {
     }
 
     @Override
-    protected void fillDescrObj() {
-        action = StatementActions.ALTER;
+    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
+        GenericColumn descrObj = null;
         Alter_operator_statementContext alterOperCtx = ctx.alter_operator_statement();
         if (alterOperCtx != null) {
             Operator_nameContext nameCtx = alterOperCtx.target_operator().operator_name();
@@ -101,6 +102,7 @@ public class AlterOther extends ParserAbstract {
                         QNameParser.getFirstNameCtx(ids).getText(), type);
             }
         }
+        return descrObj != null ? new Pair<>(StatementActions.ALTER, descrObj) : null;
     }
 
     private DbObjType getType() {

@@ -11,6 +11,7 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class CreateSchema extends ParserAbstract {
 
@@ -39,8 +40,8 @@ public class CreateSchema extends ParserAbstract {
     }
 
     @Override
-    protected void fillDescrObj() {
-        action = StatementActions.CREATE;
-        descrObj = new GenericColumn(ctx.name.getText(), DbObjType.SCHEMA);
+    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
+        return new Pair<>(StatementActions.CREATE,
+                new GenericColumn(ctx.name.getText(), DbObjType.SCHEMA));
     }
 }

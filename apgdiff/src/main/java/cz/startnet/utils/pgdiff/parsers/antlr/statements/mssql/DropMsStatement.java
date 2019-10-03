@@ -17,6 +17,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class DropMsStatement extends ParserAbstract {
 
@@ -108,8 +109,8 @@ public class DropMsStatement extends ParserAbstract {
     }
 
     @Override
-    protected void fillDescrObj() {
-        action = StatementActions.DROP;
+    protected Pair<StatementActions, GenericColumn> fillDescrObj() {
+        GenericColumn descrObj = null;
         if (ctx.drop_assembly() != null) {
             List<IdContext> ids = ctx.drop_assembly().id();
             descrObj = new GenericColumn(ids.size() != 1 ? "" : ids.get(0).getText(),
@@ -129,11 +130,13 @@ public class DropMsStatement extends ParserAbstract {
             }
             descrObj = new GenericColumn(schemaName, tblName, objName, DbObjType.INDEX);
         } else if (ctx.drop_statements() != null) {
-            dropOtherStmt(ctx.drop_statements());
+            descrObj = dropOtherStmt(ctx.drop_statements());
         }
+
+        return descrObj != null ? new Pair<>(StatementActions.DROP, descrObj) : null;
     }
 
-    private void dropOtherStmt(Drop_statementsContext dropStmtCtx) {
+    private GenericColumn dropOtherStmt(Drop_statementsContext dropStmtCtx) {
         DbObjType type = null;
 
         if (dropStmtCtx.SCHEMA() != null) {
@@ -146,8 +149,7 @@ public class DropMsStatement extends ParserAbstract {
 
         if (type != null) {
             List<Qualified_nameContext> qnames = dropStmtCtx.qualified_name();
-            descrObj = new GenericColumn(qnames.size() != 1 ? "" : qnames.get(0).name.getText(), type);
-            return;
+            return new GenericColumn(qnames.size() != 1 ? "" : qnames.get(0).name.getText(), type);
         }
 
         if (dropStmtCtx.FUNCTION() != null) {
@@ -174,7 +176,9 @@ public class DropMsStatement extends ParserAbstract {
                 schemaName = qnames.get(0).schema.getText();
                 objName = qnames.get(0).name.getText();
             }
-            descrObj = new GenericColumn(schemaName, objName, type);
+            return new GenericColumn(schemaName, objName, type);
         }
+
+        return null;
     }
 }
