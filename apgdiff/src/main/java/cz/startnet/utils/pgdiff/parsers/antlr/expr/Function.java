@@ -2,8 +2,9 @@ package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map.Entry;
 
-import org.antlr.v4.runtime.tree.TerminalNode;
+import org.antlr.v4.runtime.tree.ParseTree;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Arguments_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Assign_stmtContext;
@@ -34,7 +35,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Perform_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Plpgsql_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Raise_usingContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Return_stmtContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Truncate_stmtContext;
@@ -45,6 +45,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -81,53 +82,51 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
 
         for (DeclarationContext declaration : declare.declaration()) {
             String alias = declaration.identifier().getText();
-
             Type_declarationContext dec = declaration.type_declaration();
-
-            addArgAlias(alias, dec);
-
-            VexContext vexCtx = dec.vex();
-            if (vexCtx != null) {
-                vex.analyze(new Vex(vexCtx));
-            }
 
             Data_type_decContext datatype = dec.data_type_dec();
             if (datatype != null) {
-                addConstAlias(alias, datatype);
-            }
+                declareVar(alias, datatype);
 
-            Arguments_listContext list = dec.arguments_list();
-            if (list != null) {
-                for (Data_typeContext type : list.data_type()) {
-                    addTypeDepcy(type);
+                VexContext vexCtx = dec.vex();
+                if (vexCtx != null) {
+                    vex.analyze(new Vex(vexCtx));
                 }
-            }
+            } else if (dec.ALIAS() != null) {
+                ParseTree idVar = dec.identifier();
+                if (idVar == null) {
+                    idVar = dec.DOLLAR_NUMBER();
+                }
+                String var = idVar.getText();
 
-            Select_stmtContext select = dec.select_stmt();
-            if (select != null) {
-                new Select(this).analyze(new SelectStmt(select));
-                // cursor
-                addNamespaceVariable(new Pair<>(alias, TypesSetManually.UNKNOWN));
+                declareAlias(alias, var);
+            } else if (dec.CURSOR() != null) {
+                Arguments_listContext list = dec.arguments_list();
+                if (list != null) {
+                    for (Data_typeContext type : list.data_type()) {
+                        addTypeDepcy(type);
+                    }
+                }
+
+                new Select(this).analyze(new SelectStmt(dec.select_stmt()));
+                addNamespaceVariable(new Pair<>(alias, TypesSetManually.CURSOR));
             }
         }
     }
 
-    private void addConstAlias(String alias, Data_type_decContext ctx) {
+    private void declareVar(String alias, Data_type_decContext ctx) {
         Data_typeContext datatype = ctx.data_type();
         VexContext vexCtx;
-        Schema_qualified_nameContext table;
-        String second = null;
+        String second;
         if (datatype != null) {
+            // TODO this needs to run the same code as FuncProcAnalysisLaucher
+            // to add to the correct namespace
             addTypeDepcy(datatype);
             second = ParserAbstract.getFullCtxText(datatype);
         } else if ((vexCtx = ctx.vex()) != null) {
-            ValueExpr vex = new ValueExpr(this);
-            Pair<String, String> pair = vex.analyze(new Vex(vexCtx));
-            if (pair != null) {
-                second = pair.getSecond();
-            }
-        } else if ((table = ctx.schema_qualified_name()) != null) {
-            addRelationDepcy(table.identifier());
+            second = new ValueExpr(this).analyze(new Vex(vexCtx)).getSecond();
+        } else {
+            addRelationDepcy(ctx.schema_qualified_name().identifier());
             // row
             second = TypesSetManually.UNKNOWN;
         }
@@ -135,27 +134,22 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
         addNamespaceVariable(new Pair<>(alias, second));
     }
 
-    private void addArgAlias(String alias, Type_declarationContext dec) {
-        String param;
-        TerminalNode dollar = dec.DOLLAR_NUMBER();
-        IdentifierContext id;
-        if (dollar != null) {
-            param = dollar.getText();
-        } else if ((id = dec.identifier()) != null) {
-            param = id.getText();
+    private void declareAlias(String alias, String var) {
+        Entry<String, GenericColumn> ref = findReference(null, var, null);
+        if (ref != null) {
+            addReference(alias, ref.getValue());
         } else {
-            return;
-        }
+            Pair<String, String> pair = findColumnInComplex(var);
+            String type;
+            if (pair != null) {
+                type = pair.getSecond();
+            } else {
+                type = TypesSetManually.UNKNOWN;
+                Log.log(Log.LOG_WARNING, "Variable not found: " + var);
+            }
 
-        String type;
-        Pair<String, String> pair = findColumnInComplex(param);
-        if (pair != null) {
-            type = pair.getSecond();
-        } else {
-            Log.log(Log.LOG_WARNING, "Variable not found: " + param);
-            type = TypesSetManually.UNKNOWN;
+            addNamespaceVariable(new Pair<>(alias, type));
         }
-        addNamespaceVariable(new Pair<>(alias, type));
     }
 
     private void statements(Function_statementsContext statements) {

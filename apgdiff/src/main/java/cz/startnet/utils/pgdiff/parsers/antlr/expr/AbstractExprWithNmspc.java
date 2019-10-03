@@ -195,9 +195,8 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
      * into a special complexNamespace container.
      */
     public void addNamespaceVariable(Pair<String, String> var) {
-        List<Pair<String, String>> vars = complexNamespace.computeIfAbsent(
-                FUNC_ARGS_KEY, k -> new ArrayList<>());
-        vars.add(var);
+        complexNamespace.computeIfAbsent(FUNC_ARGS_KEY, k -> new ArrayList<>())
+        .add(var);
     }
 
     /**
