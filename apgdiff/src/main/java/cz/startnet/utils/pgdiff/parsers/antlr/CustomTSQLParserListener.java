@@ -116,7 +116,11 @@ implements TSqlContextProcessor {
             } else if ((alter = ddl.schema_alter()) != null) {
                 alter(alter);
             } else if ((disable = ddl.enable_disable_trigger()) != null) {
-                safeParseStatement(new DisableMsTrigger(disable, db), disable);
+                if (isScriptMode || isRefMode) {
+                    addUndescribedMsObjToQueries(disable);
+                } else {
+                    safeParseStatement(new DisableMsTrigger(disable, db), disable);
+                }
             } else if ((drop = ddl.schema_drop()) != null) {
                 safeParseStatement(new DropMsStatement(drop, db), drop);
             } else if (isScriptMode || isRefMode) {
@@ -140,7 +144,11 @@ implements TSqlContextProcessor {
                 }
             } else if ((security = ast.security_statement()) != null
                     && security.rule_common() != null) {
-                safeParseStatement(new CreateMsRule(security.rule_common(), db), security);
+                if (isScriptMode || isRefMode) {
+                    addUndescribedMsObjToQueries(security);
+                } else {
+                    safeParseStatement(new CreateMsRule(security.rule_common(), db), security);
+                }
             } else if (isScriptMode || isRefMode) {
                 addUndescribedMsObjToQueries(ast);
             }

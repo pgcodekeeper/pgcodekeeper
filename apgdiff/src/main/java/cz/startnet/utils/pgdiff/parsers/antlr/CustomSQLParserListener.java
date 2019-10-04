@@ -147,8 +147,16 @@ implements SqlContextProcessor {
         } else if (ctx.create_fts_dictionary() != null) {
             p = new CreateFtsDictionary(ctx.create_fts_dictionary(), db);
         } else if (ctx.comment_on_statement() != null) {
+            if (isScriptMode || isRefMode) {
+                addUndescribedPgObjToQueries(ctx);
+                return;
+            }
             p = new CommentOn(ctx.comment_on_statement(), db);
         } else if (ctx.rule_common() != null) {
+            if (isScriptMode || isRefMode) {
+                addUndescribedPgObjToQueries(ctx);
+                return;
+            }
             p = new CreateRule(ctx.rule_common(), db);
         } else if (ctx.set_statement() != null) {
             Set_statementContext setCtx = ctx.set_statement();
