@@ -157,6 +157,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private Link linkRefresh;
     private ToolBar toolGetChanges;
     private Menu menuGetChangesCustom;
+    private ToolBar toolApply;
+    private Menu menuApplyCustom;
 
     private Button btnToProj;
     private Button btnToDb;
@@ -172,6 +174,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
     private boolean isMsSql;
     private boolean isCustomGetChanges;
+    private boolean isCustomApply;
     private IEclipsePreferences projPrefs;
     private final Map<String, Boolean> permanentPrefs = new HashMap<>();
 
@@ -245,9 +248,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 layout.marginWidth = 0;
                 container.setLayout(layout);
 
-                Button btnApply = new Button(container, SWT.PUSH);
-                btnApply.setText(Messages.DiffTableViewer_apply_to);
-                btnApply.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
+                addBtnApplyWithMenu(container);
 
                 btnToProj = new Button(container, SWT.RADIO);
                 btnToProj.setText(Messages.DiffTableViewer_to_project);
@@ -270,18 +271,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         changeMigrationDireciton(false, false);
-                    }
-                });
-
-                btnApply.addSelectionListener(new SelectionAdapter() {
-
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        if (btnToDb.getSelection()) {
-                            diff();
-                        } else {
-                            commit();
-                        }
                     }
                 });
 
@@ -371,6 +360,71 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         isCommitCommandAvailable = commandIds.contains(COMMAND.COMMIT_COMMAND_ID);
 
         getSite().getService(IContextService.class).activateContext(CONTEXT.MAIN);
+    }
+
+    /**
+     * Adds [Apply] button with drop-down menu, which contains
+     * main button [Apply] and additional button for applying
+     * with custom settings.
+     */
+    private void addBtnApplyWithMenu(Composite container) {
+        Shell shell = container.getShell();
+        menuApplyCustom = new Menu (shell, SWT.POP_UP);
+        MenuItem itemApplyCustom = new MenuItem (menuApplyCustom, SWT.PUSH);
+        itemApplyCustom.setText(Messages.DiffTableViewer_apply_to_custom);
+        itemApplyCustom.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+
+                // TODO add processing
+                //
+                //                Map<String, Boolean> customPrefs = new HashMap<>();
+                //                GetChangesCustomDialog dialog = new ApllyCustomDialog(shell,
+                //                        projPrefs, isMsSql, customPrefs);
+                //                if (dialog.open() == Dialog.OK && !customPrefs.isEmpty()) {
+                //                    isCustomApply = true;
+                //
+                //                    //// Saving permanent project preferences in a separate Map.
+                //                    // ... code ...
+                //
+                //                    // Setting custom preferences instead of permanent project preferences.
+                //                    // ... code ...
+                //
+                //                    // if (btnToDb.getSelection()) {
+                //                    //     diff();
+                //                    // } else {
+                //                    //     commit();
+                //                    // }
+                //                }
+
+            }
+        });
+
+        toolApply = new ToolBar (container, SWT.RIGHT);
+        toolApply.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
+        Rectangle clientArea = container.getClientArea();
+        toolApply.setLocation(clientArea.x, clientArea.y);
+        final ToolItem itemApply = new ToolItem (toolApply, SWT.DROP_DOWN);
+        itemApply.setText(Messages.DiffTableViewer_apply_to);
+        itemApply.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (e.detail == SWT.ARROW) {
+                    Rectangle rect = itemApply.getBounds();
+                    Point pt = new Point(rect.x, rect.y + rect.height);
+                    pt = toolApply.toDisplay(pt);
+                    menuApplyCustom.setLocation(pt.x, pt.y);
+                    menuApplyCustom.setVisible(true);
+                } else {
+                    if (btnToDb.getSelection()) {
+                        diff();
+                    } else {
+                        commit();
+                    }
+                }
+            }
+        });
     }
 
     /**

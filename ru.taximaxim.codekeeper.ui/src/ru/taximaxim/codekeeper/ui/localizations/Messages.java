@@ -383,6 +383,7 @@ public final class Messages extends NLS {
 
     public static String DiffTableViewer_collapse_all;
     public static String DiffTableViewer_apply_to;
+    public static String DiffTableViewer_apply_to_custom;
 
     public static String DiffTableViewer_copy_as_regex;
 
