@@ -67,6 +67,9 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
     }
 
     private void block(Function_blockContext block) {
+        // block label may be used to qualify references to vars in nested blocks
+        // there's no mechanism to track this ATM, implement later if requested
+        // same for loop-declared vars (at least with the FOR var IN ... syntax)
         declare(block.declarations());
         statements(block.function_statements());
         exception(block.exception_statement());

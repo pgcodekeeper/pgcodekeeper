@@ -2886,13 +2886,6 @@ null_ordering
   : NULLS (FIRST | LAST)
   ;
 
-/*
-    TODO column_name
-    The name of a column in the table named by table_name. The column name can be qualified with a subfield name or array subscript, if needed.
-    (Inserting into only some fields of a composite column leaves the other fields null.)
-    NOTE: name qualification is not allowed (e.g. t1.c1)
-    this applies to UPDATE as well
-*/
 insert_stmt_for_psql
   : with_clause? INSERT INTO insert_table_name=schema_qualified_name (AS alias=identifier)?
   (OVERRIDING (SYSTEM | USER) VALUE)? insert_columns?
