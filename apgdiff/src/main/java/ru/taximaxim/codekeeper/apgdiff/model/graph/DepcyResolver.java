@@ -25,6 +25,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.Argument;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsTable;
 import cz.startnet.utils.pgdiff.schema.MsView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -249,6 +250,15 @@ public class DepcyResolver {
      * @return
      */
     private boolean inDropsList(PgStatement statement) {
+        if (statement instanceof PgSequence) {
+            PgSequence seq = (PgSequence) statement;
+            GenericColumn ownedBy = seq.getOwnedBy();
+            if (ownedBy != null) {
+                PgStatement column = ownedBy.getStatement(oldDb);
+                return column != null && (inDropsList(column) || inDropsList(column.getParent()));
+            }
+        }
+
         for (ActionContainer action : actions) {
             if (action.getAction() != StatementActions.DROP) {
                 continue;
@@ -400,6 +410,9 @@ public class DepcyResolver {
                 PgStatement newTable = oldObj.getParent().getTwin(newDb);
 
                 if (newTable == null) {
+                    if (!inDropsList(oldTable)) {
+                        addDropStatements(oldTable);
+                    }
                     return true;
                 }
 
@@ -426,9 +439,15 @@ public class DepcyResolver {
             // колонки, и если хотя бы одна из них удаляется то не дропать
             // сиквенс
             if (oldObj instanceof PgSequence) {
-                PgSequence seq = (PgSequence)oldObj;
-                if (seq.getOwnedBy() != null) {
-                    return true;
+                PgSequence seq = (PgSequence) oldObj;
+                GenericColumn ownedBy = seq.getOwnedBy();
+                if (ownedBy != null) {
+                    PgStatement newSt = ownedBy.getStatement(newDb);
+                    if (newSt == null) {
+                        return true;
+                    } else {
+                        addToListWithoutDepcies(StatementActions.DROP, oldObj, starter);
+                    }
                 }
             }
             return false;
@@ -454,6 +473,7 @@ public class DepcyResolver {
             action = StatementActions.CREATE;
             if (inDropsList(newObj)) {
                 // always create if droppped before
+                createColumnDependencies(newObj);
                 return false;
             }
 
@@ -474,6 +494,9 @@ public class DepcyResolver {
                     }
                 }
             }
+
+            createColumnDependencies(newObj);
+
             if (newObj.getStatementType() == DbObjType.COLUMN) {
                 PgStatement oldTable = newObj.getParent().getTwin(oldDb);
                 AbstractTable newTable = (AbstractTable) newObj.getParent();
@@ -497,7 +520,26 @@ public class DepcyResolver {
                     return true;
                 }
             }
+
+            // создать колонку при создании сиквенса с owned by
+            if (newObj instanceof PgSequence) {
+                PgSequence seq = (PgSequence) newObj;
+                GenericColumn ownedBy = seq.getOwnedBy();
+                if (ownedBy != null && ownedBy.getStatement(oldDb) == null) {
+                    addCreateStatements(ownedBy.getStatement(newDb));
+                }
+            }
+
             return false;
+        }
+
+        private void createColumnDependencies(PgStatement newObj) {
+            if (newObj.getStatementType() == DbObjType.TABLE) {
+                // create column dependencies before table
+                for (AbstractColumn col : ((AbstractTable) newObj).getColumns()) {
+                    addCreateStatements(col);
+                }
+            }
         }
     }
     /**

@@ -2,8 +2,6 @@ SET search_path = pg_catalog;
 
 DROP VIEW public.v8;
 
--- DEPCY: This TABLE is a dependency of VIEW: public.v8
-
 CREATE TABLE public.t3 (
 	c1 integer,
 	c2 text,

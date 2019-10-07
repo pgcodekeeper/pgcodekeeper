@@ -6,8 +6,6 @@ GO
 DROP TABLE [dbo].[t1]
 GO
 
--- DEPCY: This TABLE is a dependency of VIEW: [dbo].[v3]
-
 SET QUOTED_IDENTIFIER ON
 GO
 SET ANSI_NULLS ON
