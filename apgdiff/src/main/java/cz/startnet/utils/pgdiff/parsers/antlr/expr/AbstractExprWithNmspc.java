@@ -192,7 +192,15 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
         return super.findColumnInComplex(name);
     }
 
-    public void addVarToNmspc(String alias, String name, GenericColumn argType) {
+    /**
+     * Declares a variable in the current namespace.
+     * Variables of relation types are declared as references, rest are treated as primitives.
+     *
+     * @param alias var alias (required)
+     * @param name var name (optional, may be null)
+     * @param argType var type
+     */
+    public void declareNamespaceVar(String alias, String name, GenericColumn argType) {
         if (ApgdiffConsts.PG_CATALOG.equals(argType.schema)
                 && ApgdiffConsts.SYS_TYPES.contains(argType.table.toLowerCase(Locale.ROOT))) {
             addVarToPrims(alias, name, argType.table);
@@ -221,7 +229,6 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
             addNamespaceVariable(new Pair<>(name, argType));
         }
     }
-
 
     /**
      * Adds a "free-standing" variable (e.g. a non-table function parameter)

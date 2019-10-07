@@ -56,7 +56,7 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
             }
             for (int i = 0; i < funcArgs.size(); i++) {
                 Pair<String, GenericColumn> arg = funcArgs.get(i);
-                sql.addVarToNmspc("$" + (i + 1), arg.getFirst(), arg.getSecond());
+                sql.declareNamespaceVar("$" + (i + 1), arg.getFirst(), arg.getSecond());
             }
             analyze((SqlContext) ctx, sql);
         } else if (ctx instanceof Plpgsql_functionContext) {
@@ -68,7 +68,7 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
             }
             for (int i = 0; i < funcArgs.size(); i++) {
                 Pair<String, GenericColumn> arg = funcArgs.get(i);
-                function.addVarToNmspc("$" + (i + 1), arg.getFirst(), arg.getSecond());
+                function.declareNamespaceVar("$" + (i + 1), arg.getFirst(), arg.getSecond());
             }
             analyze((Plpgsql_functionContext) ctx, function);
         }
