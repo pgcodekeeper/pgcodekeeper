@@ -132,18 +132,29 @@ public abstract class AbstractExpr {
         return depcy;
     }
 
-    protected void addTypeDepcy(Data_typeContext type) {
+    protected GenericColumn addTypeDepcy(Data_typeContext type) {
         Schema_qualified_name_nontypeContext typeName = type.predefined_type().schema_qualified_name_nontype();
+        String schemaName = ApgdiffConsts.PG_CATALOG;
+        String name = ParserAbstract.getTypeName(type);
 
-        if (typeName != null) {
-            IdentifierContext qual = typeName.identifier();
-            String schemaName = qual == null ? null : qual.getText();
-
-            if (schemaName != null && !ApgdiffUtils.isPgSystemSchema(schemaName)) {
-                addDepcy(new GenericColumn(schemaName,
-                        typeName.identifier_nontype().getText(), DbObjType.TYPE));
-            }
+        if (typeName == null) {
+            return new GenericColumn(schemaName, name, DbObjType.TYPE);
         }
+
+        IdentifierContext qual = typeName.identifier();
+        name = typeName.identifier_nontype().getText();
+
+        if (qual != null) {
+            schemaName = qual.getText();
+        }
+
+        GenericColumn gc = new GenericColumn(schemaName, name, DbObjType.TYPE);
+
+        if (!ApgdiffUtils.isPgSystemSchema(schemaName)) {
+            addDepcy(gc);
+        }
+
+        return gc;
     }
 
     private void addDepcy(GenericColumn depcy) {
@@ -155,7 +166,7 @@ public abstract class AbstractExpr {
     /**
      * @return column with its type
      */
-    protected Pair<String, String> processColumn(List<ParserRuleContext> ids) {
+    protected Pair<String, String> processColumn(List<? extends ParserRuleContext> ids) {
         String columnName = QNameParser.getFirstName(ids);
         String columnType = TypesSetManually.COLUMN;
         Pair<String, String> pair = new Pair<>(columnName, null);

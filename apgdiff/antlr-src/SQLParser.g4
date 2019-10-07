@@ -2980,8 +2980,7 @@ arguments_list
 
 data_type_dec
     : data_type
-    | vex MODULAR TYPE
-    | schema_qualified_name MODULAR ROWTYPE
+    | schema_qualified_name MODULAR (TYPE | ROWTYPE)
     ;
 
 exception_statement

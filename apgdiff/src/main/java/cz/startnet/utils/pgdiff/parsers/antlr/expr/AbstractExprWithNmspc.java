@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -26,6 +27,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
@@ -189,6 +191,37 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
         }
         return super.findColumnInComplex(name);
     }
+
+    public void addVarToNmspc(String alias, String name, GenericColumn argType) {
+        if (ApgdiffConsts.PG_CATALOG.equals(argType.schema)
+                && ApgdiffConsts.SYS_TYPES.contains(argType.table.toLowerCase(Locale.ROOT))) {
+            addVarToPrims(alias, name, argType.table);
+            return;
+        }
+
+        IRelation rel = findRelations(argType.schema, argType.table)
+                .findAny().orElse(null);
+        if (rel != null) {
+            GenericColumn ref = new GenericColumn(rel.getSchemaName(), rel.getName(), rel.getStatementType());
+            addReference(alias, ref);
+            if (name != null) {
+                addReference(name, ref);
+            }
+        } else {
+            // treat all non-relations (custom types etc) as primitives for now
+            // this is in line with current behavior when, e.g., selecting from tables
+            // (the composite type's qualified name will be taken as is)
+            addVarToPrims(alias, name, argType.getQualifiedName());
+        }
+    }
+
+    private void addVarToPrims(String alias, String name, String argType) {
+        addNamespaceVariable(new Pair<>(alias, argType));
+        if (name != null) {
+            addNamespaceVariable(new Pair<>(name, argType));
+        }
+    }
+
 
     /**
      * Adds a "free-standing" variable (e.g. a non-table function parameter)

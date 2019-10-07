@@ -44,7 +44,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Using_vexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
@@ -115,23 +114,17 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
     }
 
     private void declareVar(String alias, Data_type_decContext ctx) {
-        Data_typeContext datatype = ctx.data_type();
-        VexContext vexCtx;
-        String second;
-        if (datatype != null) {
-            // TODO this needs to run the same code as FuncProcAnalysisLaucher
-            // to add to the correct namespace
-            addTypeDepcy(datatype);
-            second = ParserAbstract.getFullCtxText(datatype);
-        } else if ((vexCtx = ctx.vex()) != null) {
-            second = new ValueExpr(this).analyze(new Vex(vexCtx)).getSecond();
+        Data_typeContext type = ctx.data_type();
+        if (type != null) {
+            addVarToNmspc(alias, null, addTypeDepcy(type));
         } else {
-            addRelationDepcy(ctx.schema_qualified_name().identifier());
-            // row
-            second = TypesSetManually.UNKNOWN;
+            List<IdentifierContext> ids = ctx.schema_qualified_name().identifier();
+            if (ctx.ROWTYPE() != null) {
+                addReference(alias, addRelationDepcy(ids));
+            } else {
+                addNamespaceVariable(new Pair<>(alias, processColumn(ids).getValue()));
+            }
         }
-
-        addNamespaceVariable(new Pair<>(alias, second));
     }
 
     private void declareAlias(String alias, String var) {
