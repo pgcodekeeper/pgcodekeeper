@@ -42,7 +42,7 @@ public class ApplyCustomDialog extends Dialog {
     @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
-        newShell.setText(Messages.DiffTableViewer_get_changes_custom);
+        newShell.setText(Messages.DiffTableViewer_apply_to_custom);
     }
 
     @Override
