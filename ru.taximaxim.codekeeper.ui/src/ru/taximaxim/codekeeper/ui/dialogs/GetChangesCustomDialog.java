@@ -1,5 +1,6 @@
 package ru.taximaxim.codekeeper.ui.dialogs;
 
+import java.text.MessageFormat;
 import java.util.Map;
 
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
@@ -50,7 +51,9 @@ public class GetChangesCustomDialog extends Dialog {
         panel.setLayout(new GridLayout(2, false));
         panel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        new Label(panel, SWT.NONE).setText(Messages.getChangesCustomDialog_custom_prefs_description);
+        new Label(panel, SWT.NONE).setText(MessageFormat
+                .format(Messages.getChangesCustomDialog_custom_prefs_description,
+                        Messages.DiffTableViewer_get_changes));
 
         btnNoPrivileges = new Button(panel, SWT.CHECK);
         btnNoPrivileges.setText(Messages.dbUpdatePrefPage_ignore_privileges);
