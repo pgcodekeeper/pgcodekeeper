@@ -174,9 +174,10 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private List<Entry<PgStatement, PgStatement>> manualDepciesTarget = new ArrayList<>();
 
     private boolean isMsSql;
-    private boolean isCustomOneTimePrefs;
+    private boolean isCustomOneTimePrefsMode;
     private IEclipsePreferences projPrefs;
-    private final Map<String, Boolean> permanentPrefs = new HashMap<>();
+    private Map<String, Boolean> permanentPrefs;
+    private Map<String, Boolean> customPrefs;
 
     public IProject getProject() {
         return proj.getProject();
@@ -375,7 +376,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         itemApplyCustom.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                Map<String, Boolean> customPrefs = new HashMap<>();
+                permanentPrefs = new HashMap<>();
+                customPrefs = new HashMap<>();
                 ApplyCustomDialog dialog = new ApplyCustomDialog(shell,
                         projPrefs, isMsSql, customPrefs);
 
@@ -386,7 +388,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     mb.open();
                 } else if (btnToDb.getSelection() && dialog.open() == Dialog.OK
                         && !customPrefs.isEmpty()) {
-                    isCustomOneTimePrefs = true;
+                    isCustomOneTimePrefsMode = true;
 
                     //// Saving of permanent project preferences to the special
                     //// Map for temporary storing.
@@ -399,7 +401,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     }
 
                     // Setting custom preferences instead of permanent project preferences.
-                    setProjUpdateDbPrefsFromMap(customPrefs);
+                    setProjUpdateDbPrefsFromMap();
 
                     diff();
                 }
@@ -448,11 +450,12 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         itemGetChangesCustom.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                Map<String, Boolean> customPrefs = new HashMap<>();
+                permanentPrefs = new HashMap<>();
+                customPrefs = new HashMap<>();
                 GetChangesCustomDialog dialog = new GetChangesCustomDialog(shell,
                         projPrefs, isMsSql, customPrefs);
                 if (dialog.open() == Dialog.OK && !customPrefs.isEmpty()) {
-                    isCustomOneTimePrefs = true;
+                    isCustomOneTimePrefsMode = true;
 
                     //// Saving of permanent project preferences to the special
                     //// Map for temporary storing.
@@ -465,7 +468,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     savePermanentProjPref(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, true);
 
                     // Setting custom preferences instead of permanent project preferences.
-                    setProjPrefsFromMap(customPrefs);
+                    setProjPrefsFromMap();
 
                     getChanges();
                 }
@@ -505,8 +508,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         permanentPrefs.put(prefName, projPrefs.getBoolean(prefName, defVal));
     }
 
-    private void setProjPrefsFromMap(Map<String, Boolean> map) {
+    private void setProjPrefsFromMap() {
         try {
+            Map<String, Boolean> map = isCustomOneTimePrefsMode ? customPrefs : permanentPrefs;
             projPrefs.putBoolean(PROJ_PREF.ENABLE_PROJ_PREF_ROOT,
                     map.get(PROJ_PREF.ENABLE_PROJ_PREF_ROOT));
             projPrefs.putBoolean(PREF.NO_PRIVILEGES, map.get(PREF.NO_PRIVILEGES));
@@ -517,8 +521,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             if (!isMsSql) {
                 projPrefs.putBoolean(PREF.SIMPLIFY_VIEW, map.get(PREF.SIMPLIFY_VIEW));
             }
-
-            // TODO make it work (USE_GLOBAL_IGNORE_LIST)
             projPrefs.putBoolean(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, map.get(PROJ_PREF.USE_GLOBAL_IGNORE_LIST));
 
             projPrefs.flush();
@@ -526,13 +528,12 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             ExceptionNotifier.notifyDefault(MessageFormat.format(
                     Messages.projectProperties_error_occurs_while_saving_properties,
                     e.getLocalizedMessage()), e);
-        } finally {
-            map.clear();
         }
     }
 
-    private void setProjUpdateDbPrefsFromMap(Map<String, Boolean> map) {
+    private void setProjUpdateDbPrefsFromMap() {
         try {
+            Map<String, Boolean> map = isCustomOneTimePrefsMode ? customPrefs : permanentPrefs;
             projPrefs.putBoolean(PROJ_PREF.ENABLE_PROJ_PREF_DB_UPDATE,
                     map.get(PROJ_PREF.ENABLE_PROJ_PREF_DB_UPDATE));
             projPrefs.putBoolean(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION,
@@ -551,8 +552,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             ExceptionNotifier.notifyDefault(MessageFormat.format(
                     Messages.projectProperties_error_occurs_while_saving_properties,
                     e.getLocalizedMessage()), e);
-        } finally {
-            map.clear();
         }
     }
 
@@ -785,6 +784,17 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                             if (diffTable.getElements().isEmpty()) {
                                 showNotificationArea(true, Messages.ProjectEditorDiffer_no_differences);
                             }
+
+                            // Check the [GetChanges] operation to see if it works
+                            // in the custom one-time preference mode. If so then
+                            // it return permanent preferences to project
+                            // instead of custom preferences.
+                            if (isCustomOneTimePrefsMode) {
+                                isCustomOneTimePrefsMode = false;
+                                setProjPrefsFromMap();
+                                customPrefs.clear();
+                                permanentPrefs.clear();
+                            }
                         }
                     });
                 }
@@ -792,12 +802,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 newDiffer.getErrors().forEach(e -> StatusManager.getManager().handle(
                         new Status(IStatus.WARNING, PLUGIN_ID.THIS, e.toString()),
                         StatusManager.SHOW));
-
-                if (isCustomOneTimePrefs) {
-                    // Returning permanent preferences to project instead of custom preferences.
-                    setProjPrefsFromMap(permanentPrefs);
-                    isCustomOneTimePrefs = false;
-                }
             }
         });
         job.setProperty(IProgressConstants2.SHOW_IN_TASKBAR_ICON_PROPERTY, Boolean.TRUE);
@@ -934,10 +938,15 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     });
                 }
 
-                if (isCustomOneTimePrefs) {
-                    // Returning permanent preferences to project instead of custom preferences.
-                    setProjUpdateDbPrefsFromMap(permanentPrefs);
-                    isCustomOneTimePrefs = false;
+                // Check the [Apply]-to-DB operation to see if it works
+                // in the custom one-time preference mode. If so then
+                // it return permanent preferences to project
+                // instead of custom preferences.
+                if (isCustomOneTimePrefsMode) {
+                    isCustomOneTimePrefsMode = false;
+                    setProjUpdateDbPrefsFromMap();
+                    customPrefs.clear();
+                    permanentPrefs.clear();
                 }
             }
         });
@@ -964,7 +973,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         IgnoreList ignoreList = null;
         if (diffTree != null) {
-            boolean isGlobal = new OverridablePrefs(getProject()).isUseGlobalIgnoreList();
+            boolean isGlobal = isCustomOneTimePrefsMode ? customPrefs.get(PROJ_PREF.USE_GLOBAL_IGNORE_LIST) :
+                new OverridablePrefs(getProject()).isUseGlobalIgnoreList();
             ignoreList = isGlobal ? InternalIgnoreList.readInternalList() : new IgnoreList();
 
             InternalIgnoreList.readAppendList(
