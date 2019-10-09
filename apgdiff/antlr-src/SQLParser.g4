@@ -2044,9 +2044,11 @@ tokens_nonreserved
     | STDIN
     | STDOUT
     | STORAGE
+    | STORED
     | STRICT
     | STRIP
     | SUBSCRIPTION
+    | SUPPORT
     | SYSID
     | SYSTEM
     | TABLES
