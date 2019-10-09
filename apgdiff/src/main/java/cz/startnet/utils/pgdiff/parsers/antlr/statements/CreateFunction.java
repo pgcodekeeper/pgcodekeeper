@@ -128,9 +128,9 @@ public class CreateFunction extends ParserAbstract {
 
         List<Pair<String, GenericColumn>> funcArgs = fillArguments(function);
 
-        if (funcDef != null &&
-                ("SQL".equalsIgnoreCase(language) || "PLPGSQL".equalsIgnoreCase(language))) {
-            analyzeFunctionDefinition(function, language, funcDef, funcArgs);
+        if (("SQL".equalsIgnoreCase(language) || "PLPGSQL".equalsIgnoreCase(language))
+                && funcDef != null && funcDef.symbol == null) {
+            analyzeFunctionDefinition(function, language, funcDef.definition, funcArgs);
         }
 
         With_storage_parameterContext storage = params.with_storage_parameter();
@@ -148,20 +148,15 @@ public class CreateFunction extends ParserAbstract {
     }
 
     private void analyzeFunctionDefinition(AbstractPgFunction function, String language,
-            Function_defContext funcDef, List<Pair<String, GenericColumn>> funcArgs) {
-
-        List<Character_stringContext> funcContent = funcDef.character_string();
-        if (funcContent.size() != 1) {
-            return;
-        }
+            Character_stringContext definition, List<Pair<String, GenericColumn>> funcArgs) {
 
         String def;
-        TerminalNode codeStart = funcContent.get(0).Character_String_Literal();
+        TerminalNode codeStart = definition.Character_String_Literal();
         if (codeStart != null) {
             // TODO support special escaping schemes (maybe in the util itself)
             def = PgDiffUtils.unquoteQuotedString(codeStart.getText());
         } else {
-            List<TerminalNode> dollarText = funcContent.get(0).Text_between_Dollar();
+            List<TerminalNode> dollarText = definition.Text_between_Dollar();
             codeStart = dollarText.get(0);
             def = dollarText.stream()
                     .map(TerminalNode::getText)

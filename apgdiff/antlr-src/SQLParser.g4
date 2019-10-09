@@ -441,7 +441,7 @@ function_actions_common
     ;
 
 function_def
-    : character_string (COMMA character_string)*
+    : definition=character_string (COMMA symbol=character_string)?
     ;
 
 alter_index_statement
