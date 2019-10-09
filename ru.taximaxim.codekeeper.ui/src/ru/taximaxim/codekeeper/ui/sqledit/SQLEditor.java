@@ -43,6 +43,8 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ICharacterPairMatcher;
+import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.DecorationOverlayIcon;
 import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.swt.SWT;
@@ -240,6 +242,10 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         } catch (InterruptedException | IOException | CoreException ex) {
             Log.log(ex);
         }
+    }
+
+    public void doUpdate() {
+        ((SourceViewer) getSourceViewer()).doOperation(ISourceViewer.FORMAT);
     }
 
     @Override
