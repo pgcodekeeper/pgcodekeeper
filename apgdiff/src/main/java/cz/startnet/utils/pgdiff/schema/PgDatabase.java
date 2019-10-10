@@ -420,9 +420,13 @@ public class PgDatabase extends PgStatement {
             st.markAsLib();
             concat(st);
         });
-        lib.analysisLaunchers
-        .forEach(l -> l.updateStmt(this));
-        analysisLaunchers.addAll(lib.analysisLaunchers);
+
+        lib.analysisLaunchers.stream()
+        .filter(st -> st.getStmt().getParent() != null)
+        .forEach(l -> {
+            l.updateStmt(this);
+            analysisLaunchers.add(l);
+        });
     }
 
     public void concat(PgStatement st) {
