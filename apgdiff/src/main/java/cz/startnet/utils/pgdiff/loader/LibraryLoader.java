@@ -34,7 +34,7 @@ public class LibraryLoader extends DatabaseLoader {
     private final PgDatabase database;
     private final Path metaPath;
 
-    public LibraryLoader(PgDatabase database, Path metaPath, List<AntlrError> errors) {
+    public LibraryLoader(PgDatabase database, Path metaPath, List<? super AntlrError> errors) {
         super(errors);
         this.database = database;
         this.metaPath = metaPath;
@@ -105,34 +105,25 @@ public class LibraryLoader extends DatabaseLoader {
 
         if (Files.isDirectory(p)) {
             if (Files.exists(p.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
-                List<AntlrError> err = new ArrayList<>();
-                try {
-                    return new ProjectLoader(path, args, null, err).loadSchemaOnly();
-                } finally {
-                    if (errors != null) {
-                        errors.addAll(err);
-                    }
-                }
+                return new ProjectLoader(path, args, null, errors).loadSchemaOnly();
+            } else {
+                PgDatabase db = new PgDatabase(args);
+                readStatementsFromDirectory(p, db);
+                finishLoaders();
+                return db;
             }
-
-            PgDatabase db = new PgDatabase(args);
-            readStatementsFromDirectory(p, db);
-            finishLoaders();
-            return db;
         }
 
         if (isZipFile(path)) {
             return loadZip(p, args, isIgnorePriv);
         }
 
+        PgDatabase db = new PgDatabase(args);
         PgDumpLoader loader = new PgDumpLoader(new File(path), args);
-        try {
-            return loader.load();
-        } finally {
-            if (errors != null) {
-                errors.addAll(loader.getErrors());
-            }
-        }
+        loader.loadDatabase(db, antlrTasks);
+        launchedLoaders.add(loader);
+        finishLoaders();
+        return db;
     }
 
     private boolean isZipFile(String path) throws IOException {

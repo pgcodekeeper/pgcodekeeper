@@ -54,7 +54,7 @@ public class ProjectLoader extends DatabaseLoader {
     }
 
     public ProjectLoader(String dirPath, PgDiffArguments arguments,
-            IProgressMonitor monitor, List<AntlrError> errors) {
+            IProgressMonitor monitor, List<? super AntlrError> errors) {
         super(errors);
         this.dirPath = dirPath;
         this.arguments = arguments;

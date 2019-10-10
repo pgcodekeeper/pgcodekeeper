@@ -11,12 +11,12 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 
 public class DatabaseLoader {
 
-    protected final List<AntlrError> errors;
+    protected final List<? super AntlrError> errors;
 
     protected final Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
     protected final Queue<PgDumpLoader> launchedLoaders = new ArrayDeque<>();
 
-    public DatabaseLoader(List<AntlrError> errors) {
+    public DatabaseLoader(List<? super AntlrError> errors) {
         this.errors = errors;
     }
 

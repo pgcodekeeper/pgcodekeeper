@@ -23,7 +23,6 @@ import cz.startnet.utils.pgdiff.loader.JdbcMsLoader;
 import cz.startnet.utils.pgdiff.loader.LibraryLoader;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.loader.ProjectLoader;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.LibraryObjectDuplicationException;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -104,31 +103,21 @@ public class PgDiff {
             return;
         }
 
-        List<AntlrError> err = new ArrayList<>();
-        try {
-            new ProjectLoader(source, arguments, null, err).loadOverrides(db);
-        } finally {
-            errors.addAll(err);
-        }
+        new ProjectLoader(source, arguments, null, errors).loadOverrides(db);
         assertErrors();
     }
 
     private void loadLibraries(PgDatabase db, Path metaPath, Collection<String> libXmls,
             Collection<String> libs, Collection<String> libsWithoutPriv)
                     throws InterruptedException, IOException, PgCodekeeperException {
-        List<AntlrError> err = new ArrayList<>();
-        try {
-            LibraryLoader ll = new LibraryLoader(db, metaPath, err);
+        LibraryLoader ll = new LibraryLoader(db, metaPath, errors);
 
-            for (String xml : libXmls) {
-                ll.loadXml(new DependenciesXmlStore(Paths.get(xml)), arguments);
-            }
-
-            ll.loadLibraries(arguments, false, libs);
-            ll.loadLibraries(arguments, true, libsWithoutPriv);
-        } finally {
-            errors.addAll(err);
+        for (String xml : libXmls) {
+            ll.loadXml(new DependenciesXmlStore(Paths.get(xml)), arguments);
         }
+
+        ll.loadLibraries(arguments, false, libs);
+        ll.loadLibraries(arguments, true, libsWithoutPriv);
         assertErrors();
     }
 
@@ -173,13 +162,7 @@ public class PgDiff {
         }
 
         if ("parsed".equals(format)) {
-            List<AntlrError> err = new ArrayList<>();
-            ProjectLoader loader = new ProjectLoader(srcPath, arguments, null, err);
-            try {
-                return loader.loadSchemaOnly();
-            } finally {
-                errors.addAll(err);
-            }
+            return new ProjectLoader(srcPath, arguments, null, errors).loadSchemaOnly();
         }
 
         if ("db".equals(format)) {

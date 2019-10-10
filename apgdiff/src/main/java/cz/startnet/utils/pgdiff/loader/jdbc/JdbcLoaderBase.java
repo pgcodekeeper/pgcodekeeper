@@ -70,7 +70,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected final Map<Long, AbstractSchema> schemaIds = new HashMap<>();
     protected int version;
     private long lastSysOid;
-    protected List<String> errors = new ArrayList<>();
+    protected final List<String> errors = new ArrayList<>();
     protected JdbcRunner runner;
 
     private String extensionSchema;
