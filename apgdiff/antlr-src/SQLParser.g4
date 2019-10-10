@@ -1717,21 +1717,21 @@ collate_identifier
     : COLLATE collation=schema_qualified_name
     ;
 
-indirection_identifier
-    : identifier indirection*
+indirection_var
+    : (identifier | dollar_number) indirection_list?
     ;
 
-indirection_vex
-    : (identifier | dollar_number) indirection*
-    ;
-    
 dollar_number
     : DOLLAR_NUMBER
     ;
 
+indirection_list
+    : indirection+ 
+    | indirection* DOT MULTIPLY
+    ;
+
 indirection
     : DOT col_label
-    | DOT MULTIPLY
     | LEFT_BRACKET vex RIGHT_BRACKET
     | LEFT_BRACKET vex? COLON vex? RIGHT_BRACKET
     ;
@@ -2493,7 +2493,7 @@ precision_param
 
 vex
   : vex CAST_EXPRESSION data_type
-  | LEFT_PAREN vex RIGHT_PAREN indirection*
+  | LEFT_PAREN vex RIGHT_PAREN indirection_list?
   | LEFT_PAREN vex (COMMA vex)+ RIGHT_PAREN
   | vex collate_identifier
   | <assoc=right> (PLUS | MINUS) vex
@@ -2530,7 +2530,7 @@ vex
 // see postgres' b_expr (src/backend/parser/gram.y)
 vex_b
   : vex_b CAST_EXPRESSION data_type
-  | LEFT_PAREN vex RIGHT_PAREN indirection*
+  | LEFT_PAREN vex RIGHT_PAREN indirection_list?
   | LEFT_PAREN vex (COMMA vex)+ RIGHT_PAREN
   | <assoc=right> (PLUS | MINUS) vex_b
   | vex_b EXP vex_b
@@ -2563,7 +2563,7 @@ datetime_overlaps
 
 value_expression_primary
   : unsigned_value_specification
-  | LEFT_PAREN select_stmt_no_parens RIGHT_PAREN indirection*
+  | LEFT_PAREN select_stmt_no_parens RIGHT_PAREN indirection_list?
   | case_expression
   | NULL
   | MULTIPLY
@@ -2573,7 +2573,7 @@ value_expression_primary
   | comparison_mod
   | EXISTS table_subquery
   | function_call
-  | indirection_vex
+  | indirection_var
   | array_expression
   | type_coercion
   ;
@@ -2896,6 +2896,10 @@ insert_stmt_for_psql
 
 insert_columns
     : LEFT_PAREN column+=indirection_identifier (COMMA column+=indirection_identifier)* RIGHT_PAREN
+    ;
+
+indirection_identifier
+    : identifier indirection_list?
     ;
 
 conflict_object

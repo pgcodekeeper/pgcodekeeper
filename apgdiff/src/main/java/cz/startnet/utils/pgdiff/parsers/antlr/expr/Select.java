@@ -13,7 +13,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.After_opsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alias_clauseContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Col_labelContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_itemContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
@@ -22,7 +21,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_elementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_element_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IndirectionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_vexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_listContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_varContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Orderby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Perform_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
@@ -294,7 +294,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
     }
 
     private List<Pair<String, String>> sublist(List<Select_sublistContext> sublist, ValueExpr vex) {
-        List<Pair<String, String>> ret = new ArrayList<>();
+        List<Pair<String, String>> ret = new ArrayList<>(sublist.size());
         for (Select_sublistContext target : sublist) {
             Vex selectSublistVex = new Vex(target.vex());
             // analyze all before parse asterisk
@@ -308,8 +308,10 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
                 }
             }
 
-            Col_labelContext label = target.col_label();
-            ParserRuleContext aliasCtx = label != null ? label : target.id_token();
+            ParserRuleContext aliasCtx = target.col_label();
+            if (aliasCtx == null) {
+                aliasCtx = target.id_token();
+            }
 
             if (aliasCtx != null) {
                 columnPair.setFirst(aliasCtx.getText());
@@ -327,38 +329,42 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
         }
 
         if (primary != null) {
-            Indirection_vexContext ind = primary.indirection_vex();
+            Indirection_varContext ind = primary.indirection_var();
             if (ind != null) {
-                return getQnameFromIndirection(ind);
+                return indirectionAsQualAster(ind);
             }
         }
 
         return Collections.emptyList();
     }
 
-    private List<Pair<String, String>> getQnameFromIndirection(Indirection_vexContext ctx) {
-        List<IndirectionContext> ind = ctx.indirection();
-        if (ind.isEmpty()) {
+    private List<Pair<String, String>> indirectionAsQualAster(Indirection_varContext ctx) {
+        Indirection_listContext indList = ctx.indirection_list();
+        if (indList == null || indList.MULTIPLY() == null) {
+            // this shouldn't happen, crash hard
+            throw new IllegalStateException("Qualified asterisk without the asterisk!");
+        }
+
+        ParserRuleContext id = ctx.identifier();
+        if (id == null) {
+            id = ctx.dollar_number();
+        }
+
+        List<IndirectionContext> ind = indList.indirection();
+        switch (ind.size()) {
+        case 0:
+            return qualAster(Arrays.asList(id));
+        case 1:
+            IndirectionContext second = ind.get(0);
+            if (second.LEFT_BRACKET() == null) {
+                return qualAster(Arrays.asList(id, second.col_label()));
+            }
+            // cannot handle asterisk indirection from an array element
+            //$FALL-THROUGH$
+        default:
+            // long indirections are unsupported
             return Collections.emptyList();
         }
-
-        List<ParserRuleContext> list = new ArrayList<>();
-        IdentifierContext id = ctx.identifier();
-        list.add(id == null ? ctx.dollar_number() : id);
-
-        for (IndirectionContext indir : ind) {
-            Col_labelContext label = indir.col_label();
-            if (label != null) {
-                list.add(label);
-            } else if (indir.LEFT_BRACKET() != null) {
-                return Collections.emptyList();
-            } else if (list.size() < 3) {
-                // qualified name have max 2 part before *
-                return qualAster(list);
-            }
-        }
-
-        return Collections.emptyList();
     }
 
     private void groupby(Grouping_element_listContext list, ValueExpr vex) {

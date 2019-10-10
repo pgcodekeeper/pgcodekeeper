@@ -33,7 +33,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.General_literalContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IndirectionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_vexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_listContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_varContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.OpContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Orderby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Partition_by_columnsContext;
@@ -191,27 +192,32 @@ public class ValueExpr extends AbstractExpr {
                 || vex.or() != null ) {
             ret = new Pair<>(null, TypesSetManually.BOOLEAN);
         } else if ((primary = vex.primary()) != null) {
-            Select_stmt_no_parensContext subSelectStmt = primary.select_stmt_no_parens();
+            Unsigned_value_specificationContext unsignedValue = primary.unsigned_value_specification();
+            Select_stmt_no_parensContext subSelectStmt;
             Case_expressionContext caseExpr;
             Comparison_modContext compMod;
             Table_subqueryContext subquery;
             Function_callContext function;
-            Indirection_vexContext indirection;
+            Indirection_varContext indirection;
             Array_expressionContext array;
             Type_coercionContext typeCoercion;
-            Unsigned_value_specificationContext unsignedValue;
 
-            if (primary.NULL() != null) {
-                ret = new Pair<>(null, TypesSetManually.UNKNOWN);
-            } else if ((unsignedValue = primary.unsigned_value_specification()) != null) {
+            if (unsignedValue != null) {
                 ret = new Pair<>(null, literal(unsignedValue));
-            } else if (subSelectStmt != null) {
+            } else if ((indirection = primary.indirection_var()) != null) {
+                ret = indirectionVar(indirection);
+            } else if ((subSelectStmt = primary.select_stmt_no_parens()) != null) {
                 Select select = new Select(this);
                 ret = select.analyze(subSelectStmt).get(0);
-                List<IndirectionContext> indir = primary.indirection();
-                if (!indir.isEmpty()) {
-                    ret = new ValueExpr(select).indirection(indir, ret);
+                Indirection_listContext indir = primary.indirection_list();
+                if (indir != null) {
+                    indirection(indir.indirection(), ret);
+                    if (indir.MULTIPLY() != null) {
+                        ret = new Pair<>(null, TypesSetManually.QUALIFIED_ASTERISK);
+                    }
                 }
+            } else if (primary.NULL() != null) {
+                ret = new Pair<>(null, TypesSetManually.UNKNOWN);
             } else if ((caseExpr = primary.case_expression()) != null) {
                 VexContext retVex = caseExpr.r.get(0);
                 ret = null;
@@ -239,10 +245,8 @@ public class ValueExpr extends AbstractExpr {
                 ret = new Pair<>("exists", TypesSetManually.BOOLEAN);
             } else if ((function = primary.function_call()) != null) {
                 ret = function(function);
-            } else if ((indirection = primary.indirection_vex()) != null) {
-                ret = indirectionVex(indirection);
             } else if (primary.MULTIPLY() != null) {
-                // TODO pending full analysis
+                // handled in Select analyzer
                 ret = new Pair<>(null, TypesSetManually.QUALIFIED_ASTERISK);
             } else if ((array = primary.array_expression()) != null) {
                 Array_bracketsContext arrayb = array.array_brackets();
@@ -280,65 +284,73 @@ public class ValueExpr extends AbstractExpr {
         return ret;
     }
 
-    public Pair<String, String> indirectionVex(Indirection_vexContext indirection) {
-        IdentifierContext id = indirection.identifier();
-        ParserRuleContext ctx = id == null ? indirection.dollar_number() : id;
+    private Pair<String, String> indirectionVar(Indirection_varContext indirection) {
+        ParserRuleContext id = indirection.identifier();
+        if (id == null) {
+            id = indirection.dollar_number();
+        }
 
-        List<ParserRuleContext> current = new ArrayList<>();
-        current.add(ctx);
+        Indirection_listContext indirList = indirection.indirection_list();
+        if (indirList == null) {
+            return processTablelessColumn(id);
+        }
 
-        List<IndirectionContext> indir = indirection.indirection();
+        List<IndirectionContext> indir = indirList.indirection();
+        if (indirList.MULTIPLY() != null) {
+            indirection(indir, null);
+            return new Pair<>(null, TypesSetManually.QUALIFIED_ASTERISK);
+        }
 
-        Pair<String, String> ret = null;
+        // reserve space for longest-yet-still-common case
+        // this list has minimal size of 1, may as well reserve 3
+        List<ParserRuleContext> ids = new ArrayList<>(3);
+        ids.add(id);
 
         for (IndirectionContext ind : indir) {
             Col_labelContext label = ind.col_label();
             if (label != null) {
-                current.add(label);
+                ids.add(label);
             } else {
-                if (ind.MULTIPLY() != null) {
-                    ret = new Pair<>(null, TypesSetManually.QUALIFIED_ASTERISK);
-                }
                 break;
             }
         }
 
-        if (current.size() > 3) {
+        Pair<String, String> ret;
+        if (ids.size() > 3) {
             Log.log(Log.LOG_WARNING, "Very long indirection!");
             ret = new Pair<>(null, TypesSetManually.UNKNOWN);
-        } else if (ret == null) {
-            ret = processColumn(current);
+        } else {
+            ret = processColumn(ids);
         }
 
-        List<IndirectionContext> sub = indir.subList(current.size() - 1, indir.size());
-
-        if (!sub.isEmpty()) {
-            ret = indirection(sub, ret);
+        int consumedIndirs = ids.size() - 1;
+        if (consumedIndirs != indir.size()) {
+            indirection(indir.subList(consumedIndirs, indir.size()), ret);
         }
 
         return ret;
     }
 
-    public Pair<String, String> indirection(List<IndirectionContext> indirection,
-            Pair<String, String> left) {
-        Pair<String, String> ret = left;
+    /**
+     * @param left signature of the expression on which the indirection is executed <br>
+     *              modified by each step in indirection analysis <br>
+     *              may be null if indirection result is not interesting (e.g. predetermined)
+     */
+    private void indirection(List<IndirectionContext> indirection, Pair<String, String> left) {
         for (IndirectionContext ind : indirection) {
-            if (ind.MULTIPLY() != null) {
-                // * must be last symbol
-                return new Pair<>(null, TypesSetManually.QUALIFIED_ASTERISK);
-            }
-
             if (ind.LEFT_BRACKET() != null) {
                 for (VexContext v : ind.vex()) {
                     analyze(new Vex(v));
                 }
-                ret.setValue(stripBrackets(ret.getValue()));
-            } else if (ind.col_label() != null) {
-                ret = new Pair<>(null, TypesSetManually.UNKNOWN);
+                if (left != null) {
+                    left.setValue(stripBrackets(left.getValue()));
+                }
+            } else if (left != null) {
+                // indirection by id, unsupported
+                left.setFirst(null);
+                left.setSecond(TypesSetManually.UNKNOWN);
             }
         }
-
-        return ret;
     }
 
     private Pair<String, String> arrayElements(Array_elementsContext elements) {
