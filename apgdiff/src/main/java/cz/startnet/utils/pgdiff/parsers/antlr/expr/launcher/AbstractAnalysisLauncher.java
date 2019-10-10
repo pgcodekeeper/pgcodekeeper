@@ -51,7 +51,7 @@ public abstract class AbstractAnalysisLauncher {
         }
     }
 
-    public void launchAnalyze(List<AntlrError> errors) {
+    public void launchAnalyze(List<? super AntlrError> errors) {
         // Duplicated objects don't have parent, skip them
         if (stmt.getParent() == null) {
             return;
@@ -112,14 +112,14 @@ public abstract class AbstractAnalysisLauncher {
     }
 
     private void unresolvRefExHandler(UnresolvedReferenceException ex,
-            List<AntlrError> errors, ParserRuleContext ctx, String location) {
+            List<? super AntlrError> errors, ParserRuleContext ctx, String location) {
         if (ex.getErrorToken() == null) {
             ex.setErrorToken(ctx.getStart());
         }
         addError(errors, CustomSQLParserListener.handleUnresolvedReference(ex, location));
     }
 
-    private void addError(List<AntlrError> errors, AntlrError err) {
+    private void addError(List<? super AntlrError> errors, AntlrError err) {
         if (errors != null) {
             errors.add(err);
         }

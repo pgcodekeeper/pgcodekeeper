@@ -15,15 +15,15 @@ import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 
 public final class FullAnalyze {
 
-    private final List<AntlrError> errors;
+    private final List<? super AntlrError> errors;
     private final PgDatabase db;
 
-    public FullAnalyze(PgDatabase db, List<AntlrError> errors) {
+    public FullAnalyze(PgDatabase db, List<? super AntlrError> errors) {
         this.db = db;
         this.errors = errors;
     }
 
-    public static void fullAnalyze(PgDatabase db, List<AntlrError> errors) {
+    public static void fullAnalyze(PgDatabase db, List<? super AntlrError> errors) {
         new FullAnalyze(db, errors).fullAnalyze();
     }
 
