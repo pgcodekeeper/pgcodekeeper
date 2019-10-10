@@ -201,10 +201,23 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
      * @param argType var type
      */
     public void declareNamespaceVar(String alias, String name, GenericColumn argType) {
-        if (ApgdiffConsts.PG_CATALOG.equals(argType.schema)
-                && ApgdiffConsts.SYS_TYPES.contains(argType.table.toLowerCase(Locale.ROOT))) {
-            addVarToPrims(alias, name, argType.table);
-            return;
+        if (ApgdiffConsts.PG_CATALOG.equals(argType.schema)) {
+            String type = argType.table.toLowerCase(Locale.ROOT);
+
+            int firstParen = type.indexOf('(');
+            if (firstParen != -1) {
+                type = type.substring(0, firstParen);
+            }
+
+            int firstBracket = type.indexOf('[');
+            if (firstBracket != -1) {
+                type = type.substring(0, firstBracket);
+            }
+
+            if (ApgdiffConsts.SYS_TYPES.contains(type.trim())) {
+                addVarToPrims(alias, name, argType.table);
+                return;
+            }
         }
 
         IRelation rel = findRelations(argType.schema, argType.table)
