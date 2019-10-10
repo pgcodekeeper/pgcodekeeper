@@ -315,10 +315,12 @@ class CustomAntlrErrorStrategy extends DefaultErrorStrategy {
 
     @Override
     protected void reportInputMismatch(Parser recognizer, InputMismatchException e) {
+        Token t = e.getOffendingToken();
         StringBuilder sb = new StringBuilder();
-        sb.append("mismatched input ").append(getTokenErrorDisplay(e.getOffendingToken()));
-        fillExpextedTokens(sb, recognizer.getVocabulary(), e.getExpectedTokens());
-        recognizer.notifyErrorListeners(e.getOffendingToken(), sb.toString(), e);
+        sb.append("mismatched input ").append(getTokenErrorDisplay(t));
+        sb.append(" expecting ");
+        fillTokens(sb, recognizer.getVocabulary(), e.getExpectedTokens());
+        recognizer.notifyErrorListeners(t, sb.toString(), e);
     }
 
     @Override
@@ -328,14 +330,30 @@ class CustomAntlrErrorStrategy extends DefaultErrorStrategy {
         }
         beginErrorCondition(recognizer);
 
+        Token t = recognizer.getCurrentToken();
         StringBuilder sb = new StringBuilder();
-        sb.append("extraneous input ").append(getTokenErrorDisplay(recognizer.getCurrentToken()));
-        fillExpextedTokens(sb, recognizer.getVocabulary(), getExpectedTokens(recognizer));
-        recognizer.notifyErrorListeners(recognizer.getCurrentToken(), sb.toString(), null);
+        sb.append("extraneous input ").append(getTokenErrorDisplay(t));
+        sb.append(" expecting ");
+        fillTokens(sb, recognizer.getVocabulary(), getExpectedTokens(recognizer));
+        recognizer.notifyErrorListeners(t, sb.toString(), null);
     }
 
-    private void fillExpextedTokens(StringBuilder sb, Vocabulary vocabulary, IntervalSet tokens) {
-        sb.append(" expecting ");
+    @Override
+    protected void reportMissingToken(Parser recognizer) {
+        if (inErrorRecoveryMode(recognizer)) {
+            return;
+        }
+        beginErrorCondition(recognizer);
+
+        Token t = recognizer.getCurrentToken();
+        StringBuilder sb = new StringBuilder();
+        sb.append("missing ");
+        fillTokens(sb, recognizer.getVocabulary(), getExpectedTokens(recognizer));
+        sb.append(" at ").append(getTokenErrorDisplay(t));
+        recognizer.notifyErrorListeners(t, sb.toString(), null);
+    }
+
+    private void fillTokens(StringBuilder sb, Vocabulary vocabulary, IntervalSet tokens) {
         String rules = tokens.toList().stream().limit(MAX_RULE_COUNT)
                 .map(vocabulary::getDisplayName).collect(Collectors.joining(", "));
         sb.append(rules);
