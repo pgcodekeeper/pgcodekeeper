@@ -133,6 +133,13 @@ public class ValueExpr extends AbstractExpr {
         } else if (vex.leftParen() != null && vex.rightParen() != null) {
             if (operandsList.size() == 1) {
                 ret = operandsList.get(0);
+                Indirection_listContext indir = vex.indirectionList();
+                if (indir != null) {
+                    indirection(indir.indirection(), ret);
+                    if (indir.MULTIPLY() != null) {
+                        ret = new Pair<>(null, TypesSetManually.QUALIFIED_ASTERISK);
+                    }
+                }
             } else {
                 // TODO add record type placeholder?
                 ret = new Pair<>("row", TypesSetManually.UNKNOWN);
@@ -220,7 +227,7 @@ public class ValueExpr extends AbstractExpr {
                 ret = new Pair<>(null, TypesSetManually.UNKNOWN);
             } else if ((caseExpr = primary.case_expression()) != null) {
                 VexContext retVex = caseExpr.r.get(0);
-                ret = null;
+                ret = new Pair<>(null, TypesSetManually.UNKNOWN);
                 for (VexContext v : caseExpr.vex()) {
                     Pair<String, String> caseRet = analyze(new Vex(v));
                     if (v == retVex) {
