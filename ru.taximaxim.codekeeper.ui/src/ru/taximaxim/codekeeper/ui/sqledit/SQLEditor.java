@@ -236,9 +236,7 @@ implements IResourceChangeListener, IErrorPositionSetter {
         super.doSave(progressMonitor);
         IResource res = ResourceUtil.getResource(getEditorInput());
         try {
-            if (res == null || !UIProjectLoader.isInProject(res)) {
-                refreshParser(getParser(), res, new NullProgressMonitor());
-            }
+            refreshParser(getParser(), res, new NullProgressMonitor());
         } catch (InterruptedException | IOException | CoreException ex) {
             Log.log(ex);
         }
@@ -361,10 +359,6 @@ implements IResourceChangeListener, IErrorPositionSetter {
             }
         } else if (in instanceof SQLEditorInput) {
             isMsSql = ((SQLEditorInput) in).isMsSql();
-        }
-
-        if (res != null && UIProjectLoader.isInProject(res)) {
-            return PgDbParser.getParser(res.getProject());
         }
 
         PgDbParser parser = new PgDbParser();
