@@ -1,5 +1,5 @@
 SELECT 
     oid,
-    c.relhasoids AS has_oids
+    relhasoids AS has_oids
 FROM 
     pg_catalog.pg_class
