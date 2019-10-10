@@ -120,7 +120,7 @@ public class LibraryLoader extends DatabaseLoader {
 
         PgDatabase db = new PgDatabase(args);
         PgDumpLoader loader = new PgDumpLoader(new File(path), args);
-        loader.loadDatabase(db, antlrTasks);
+        loader.loadAsync(db, antlrTasks);
         launchedLoaders.add(loader);
         finishLoaders();
         return db;
