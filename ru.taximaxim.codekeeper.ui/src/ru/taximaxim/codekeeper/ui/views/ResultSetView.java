@@ -19,10 +19,15 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.part.ViewPart;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -32,6 +37,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 public class ResultSetView extends ViewPart {
 
     private CTabFolder tabFolder;
+    private CTabItem clickedQueryTab;
 
     @Override
     public void createPartControl(Composite parent) {
@@ -39,6 +45,45 @@ public class ResultSetView extends ViewPart {
         GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         gd.widthHint = 700;
         tabFolder.setLayoutData(gd);
+        tabFolder.addListener(SWT.MenuDetect, event -> {
+            clickedQueryTab = tabFolder.getItem(tabFolder.getDisplay()
+                    .map(null, tabFolder, new Point(event.x,event.y)));
+        });
+
+        Menu popupMenu = new Menu(tabFolder);
+
+        MenuItem closeItem = new MenuItem(popupMenu, SWT.NONE);
+        closeItem.setText("Close");
+        closeItem.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                Object obj = e.getSource();
+                if (obj instanceof MenuItem) {
+                    MenuItem selectedItem = (MenuItem) obj;
+                    System.err.println(" >>> operation : '"
+                            + selectedItem.getText() + "' for "
+                            + clickedQueryTab.getText());
+                    clickedQueryTab = null;
+                }
+            }
+        });
+
+        MenuItem closeOthersItem = new MenuItem(popupMenu, SWT.NONE);
+        closeOthersItem.setText("Close Others");
+
+        MenuItem closeRightItem = new MenuItem(popupMenu, SWT.NONE);
+        closeRightItem.setText("Close Tabs to the Right");
+
+        MenuItem closeLeftItem = new MenuItem(popupMenu, SWT.NONE);
+        closeLeftItem.setText("Close Tabs to the Left");
+
+        new MenuItem(popupMenu, SWT.SEPARATOR);
+
+        MenuItem closeAllItem = new MenuItem(popupMenu, SWT.NONE);
+        closeAllItem.setText("Close All");
+
+        tabFolder.setMenu(popupMenu);
     }
 
     public void addData(String query, List<List<Object>> results) {
