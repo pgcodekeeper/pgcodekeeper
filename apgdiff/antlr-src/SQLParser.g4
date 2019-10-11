@@ -101,7 +101,7 @@ script_additional
     | ANALYZE VERBOSE? table_cols_list?
     | CLUSTER VERBOSE? (identifier (ON schema_qualified_name | USING identifier)?)?
     | VACUUM (LEFT_PAREN vacuum_mode (COMMA vacuum_mode)* RIGHT_PAREN | vacuum_mode+)? table_cols_list?
-    | SHOW (identifier | ALL)
+    | show_statement
     | CHECKPOINT
     | LOAD Character_String_Literal
     | DISCARD (ALL | PLANS | SEQUENCES | TEMPORARY | TEMP)
@@ -119,6 +119,10 @@ script_additional
     | REASSIGN OWNED BY user_identifer_current_session (COMMA user_identifer_current_session)*
       TO user_identifer_current_session
     | copy_statement
+    ;
+
+show_statement
+    : SHOW (identifier | ALL | TIME ZONE | TRANSACTION ISOLATION LEVEL | SESSION AUTHORIZATION)
     ;
 
 explain_option
@@ -3001,6 +3005,7 @@ function_statement
     | anonymous_block
     | schema_statement
     | data_statement
+    | show_into_statement
     ;
 
 base_statement
@@ -3051,7 +3056,7 @@ control_statement
 cursor_statement
     : OPEN var ((NO)? SCROLL)? FOR (select_stmt | execute_stmt)
     | OPEN var (option (COMMA option)*)?
-    | FETCH fetch_move_direction? (FROM | IN)? var INTO identifier_list
+    | FETCH fetch_move_direction? (FROM | IN)? var into_statement
     | MOVE fetch_move_direction? (FROM | IN)? var
     | CLOSE var
     ;
@@ -3129,6 +3134,10 @@ if_statement
 // plpgsql case
 case_statement
     : CASE vex? (WHEN vex (COMMA vex)* THEN function_statements)+ (ELSE function_statements)? END CASE
+    ;
+
+show_into_statement
+    : show_statement into_statement
     ;
 
 into_statement
