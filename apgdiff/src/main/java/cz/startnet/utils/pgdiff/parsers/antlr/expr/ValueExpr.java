@@ -242,7 +242,7 @@ public class ValueExpr extends AbstractExpr {
                 VexContext compModVex = compMod.vex();
                 if (compModVex != null) {
                     ret = analyze(new Vex(compModVex));
-                    ret.setValue(stripBrackets(ret.getValue()));
+                    ret.setSecond(stripBrackets(ret.getSecond()));
                 } else {
                     ret = new Select(this).analyze(compMod.select_stmt_no_parens()).get(0);
                 }
@@ -350,7 +350,7 @@ public class ValueExpr extends AbstractExpr {
                     analyze(new Vex(v));
                 }
                 if (left != null) {
-                    left.setValue(stripBrackets(left.getValue()));
+                    left.setSecond(stripBrackets(left.getSecond()));
                 }
             } else if (left != null) {
                 // indirection by id, unsupported
@@ -476,7 +476,7 @@ public class ValueExpr extends AbstractExpr {
             if (cast != null) {
                 ret = analyze(new Vex(cast.vex()));
                 Data_typeContext dataTypeCtx = cast.data_type();
-                ret.setValue(ParserAbstract.getTypeName(dataTypeCtx));
+                ret.setSecond(ParserAbstract.getTypeName(dataTypeCtx));
                 addTypeDepcy(dataTypeCtx);
             } else {
                 ret = new Pair<>(system.USER() != null ? "current_user"

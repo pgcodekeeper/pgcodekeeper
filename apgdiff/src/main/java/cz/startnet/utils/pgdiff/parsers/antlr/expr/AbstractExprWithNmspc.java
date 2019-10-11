@@ -12,6 +12,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -90,8 +91,11 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
 
     @Override
     protected List<Pair<String, String>> findCte(String cteName) {
-        List<Pair<String, String>> pair = cte.get(cteName);
-        return pair != null ? pair : super.findCte(cteName);
+        List<Pair<String, String>> pairs = cte.get(cteName);
+        if (pairs != null) {
+            return pairs.stream().map(Pair::copy).collect(Collectors.toList());
+        }
+        return super.findCte(cteName);
     }
 
     @Override
@@ -104,12 +108,13 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
     protected List<Pair<String, String>> findReferenceComplex(String name) {
         return complexNamespace.entrySet().stream()
                 .filter(p -> name.equals(p.getKey()))
-                .map(Entry::getValue)
-                .findAny().orElse(super.findReferenceComplex(name));
+                .map(Entry::getValue).findAny()
+                .map(e -> e.stream().map(Pair::copy).collect(Collectors.toList()))
+                .orElse(super.findReferenceComplex(name));
     }
 
     protected Entry<String, GenericColumn> findReferenceInNmspc(String schema, String name, String column) {
-        boolean found;
+        boolean found = false;
         GenericColumn dereferenced = null;
         if (schema == null && namespace.containsKey(name)) {
             found = true;
@@ -132,27 +137,26 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
                 }
             }
             found = dereferenced != null;
-        } else {
-            found = false;
         }
 
-        if (found) {
-            // column aliases imply there must be a corresponding table alias
-            // so we may defer their lookup until here
-
-            // also, if we cannot dereference an existing name it's safe to assume
-            // all its columns are aliases
-            // this saves a lookup and extra space in columnAliases
-            if (column != null && dereferenced != null) {
-                Set<String> columns = columnAliases.get(name);
-                if (columns != null && columns.contains(column)) {
-                    dereferenced = null;
-                }
-            }
-            return new SimpleEntry<>(name, dereferenced);
-        } else {
+        if (!found) {
             return null;
         }
+
+        // column aliases imply there must be a corresponding table alias
+        // so we may defer their lookup until here
+
+        // also, if we cannot dereference an existing name it's safe to assume
+        // all its columns are aliases
+        // this saves a lookup and extra space in columnAliases
+        if (column != null && dereferenced != null) {
+            Set<String> columns = columnAliases.get(name);
+            if (columns != null && columns.contains(column)) {
+                dereferenced = null;
+            }
+        }
+
+        return new SimpleEntry<>(name, dereferenced);
     }
 
     @Override
@@ -185,7 +189,7 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
         for (List<Pair<String, String>> compl : complexNamespace.values()) {
             for (Pair<String, String> col : compl) {
                 if (col.getFirst().equals(name)) {
-                    return col;
+                    return new Pair<>(col.getFirst(), col.getSecond());
                 }
             }
         }
@@ -249,7 +253,7 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
      */
     public void addNamespaceVariable(Pair<String, String> var) {
         complexNamespace.computeIfAbsent(FUNC_ARGS_KEY, k -> new ArrayList<>())
-        .add(var);
+        .add(var.copy());
     }
 
     /**

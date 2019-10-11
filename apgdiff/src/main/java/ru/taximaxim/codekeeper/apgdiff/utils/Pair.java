@@ -17,7 +17,7 @@ implements Map.Entry<K, V>, Serializable {
     }
 
     public K getFirst() {
-        return getKey();
+        return first;
     }
 
     public void setFirst(K first) {
@@ -25,28 +25,40 @@ implements Map.Entry<K, V>, Serializable {
     }
 
     public V getSecond(){
-        return getValue();
-    }
-
-    public V setSecond(V second) {
-        return setValue(second);
-    }
-
-    @Override
-    public K getKey() {
-        return first;
-    }
-
-    @Override
-    public V getValue() {
         return second;
     }
 
+    public V setSecond(V second) {
+        V old = this.second;
+        this.second = second;
+        return old;
+    }
+
+    /**
+     * @deprecated Replaced by {@link Pair#getFirst()}.
+     */
+    @Deprecated
+    @Override
+    public K getKey() {
+        return getFirst();
+    }
+
+    /**
+     * @deprecated Replaced by {@link Pair#getSecond()}.
+     */
+    @Deprecated
+    @Override
+    public V getValue() {
+        return getSecond();
+    }
+
+    /**
+     * @deprecated Replaced by {@link Pair#setSecond()}.
+     */
+    @Deprecated
     @Override
     public V setValue(V value) {
-        V old = this.second;
-        this.second = value;
-        return old;
+        return setSecond(value);
     }
 
     @Override
@@ -90,5 +102,9 @@ implements Map.Entry<K, V>, Serializable {
     @Override
     public String toString() {
         return "(" + first + " - " + second + ")";
+    }
+
+    public Pair<K, V> copy() {
+        return new Pair<>(first, second);
     }
 }

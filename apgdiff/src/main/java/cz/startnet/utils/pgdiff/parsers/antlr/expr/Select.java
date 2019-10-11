@@ -300,7 +300,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
             // analyze all before parse asterisk
             Pair<String, String> columnPair = vex.analyze(selectSublistVex);
 
-            if (TypesSetManually.QUALIFIED_ASTERISK.equals(columnPair.getValue())) {
+            if (TypesSetManually.QUALIFIED_ASTERISK.equals(columnPair.getSecond())) {
                 List<Pair<String, String>> pairs = analyzeAster(selectSublistVex);
                 if (!pairs.isEmpty()) {
                     ret.addAll(pairs);
@@ -506,11 +506,11 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
             lateralAllowed = true;
             ValueExpr vexFunc = new ValueExpr(this);
             Pair<String, String> func = vexFunc.function(function);
-            if (func.getKey() != null) {
-                String funcAlias = alias == null ? func.getKey(): alias.getText();
+            if (func.getFirst() != null) {
+                String funcAlias = alias == null ? func.getFirst(): alias.getText();
                 addReference(funcAlias, null);
                 complexNamespace.put(funcAlias,
-                        Arrays.asList(new Pair<>(funcAlias, func.getValue())));
+                        Arrays.asList(new Pair<>(funcAlias, func.getSecond())));
             }
         } finally {
             lateralAllowed = oldLateral;

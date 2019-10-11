@@ -125,7 +125,7 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
             if (ctx.ROWTYPE() != null) {
                 addReference(alias, addRelationDepcy(ids));
             } else {
-                addNamespaceVariable(new Pair<>(alias, processColumn(ids).getValue()));
+                addNamespaceVariable(new Pair<>(alias, processColumn(ids).getSecond()));
             }
         }
     }

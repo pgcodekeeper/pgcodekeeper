@@ -185,7 +185,7 @@ public abstract class AbstractExpr {
                         referencedTable.schema, referencedTable.table, columnName);
             } else if ((refComplex = findReferenceComplex(columnParent)) != null) {
                 columnType = refComplex.stream()
-                        .filter(entry -> columnName.equals(entry.getKey()))
+                        .filter(entry -> columnName.equals(entry.getFirst()))
                         .map(Entry::getValue)
                         .findAny()
                         .orElseGet(() -> {
