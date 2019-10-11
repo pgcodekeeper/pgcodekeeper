@@ -33,6 +33,7 @@ import org.eclipse.ui.part.ViewPart;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class ResultSetView extends ViewPart {
 
@@ -53,35 +54,31 @@ public class ResultSetView extends ViewPart {
         Menu popupMenu = new Menu(tabFolder);
 
         MenuItem closeItem = new MenuItem(popupMenu, SWT.NONE);
-        closeItem.setText("Close");
+        closeItem.setText(Messages.resultSetView_close);
         closeItem.addSelectionListener(new SelectionAdapter() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
                 Object obj = e.getSource();
                 if (obj instanceof MenuItem) {
-                    MenuItem selectedItem = (MenuItem) obj;
-                    System.err.println(" >>> operation : '"
-                            + selectedItem.getText() + "' for "
-                            + clickedQueryTab.getText());
-                    clickedQueryTab = null;
+                    clickedQueryTab.dispose();
                 }
             }
         });
 
         MenuItem closeOthersItem = new MenuItem(popupMenu, SWT.NONE);
-        closeOthersItem.setText("Close Others");
+        closeOthersItem.setText(Messages.resultSetView_close_others);
 
         MenuItem closeRightItem = new MenuItem(popupMenu, SWT.NONE);
-        closeRightItem.setText("Close Tabs to the Right");
+        closeRightItem.setText(Messages.resultSetView_close_tabs_to_the_right);
 
         MenuItem closeLeftItem = new MenuItem(popupMenu, SWT.NONE);
-        closeLeftItem.setText("Close Tabs to the Left");
+        closeLeftItem.setText(Messages.resultSetView_close_tabs_to_the_left);
 
         new MenuItem(popupMenu, SWT.SEPARATOR);
 
         MenuItem closeAllItem = new MenuItem(popupMenu, SWT.NONE);
-        closeAllItem.setText("Close All");
+        closeAllItem.setText(Messages.resultSetView_close_all);
 
         tabFolder.setMenu(popupMenu);
     }
