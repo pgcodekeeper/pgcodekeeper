@@ -68,6 +68,18 @@ public class ResultSetView extends ViewPart {
 
         MenuItem closeOthersItem = new MenuItem(popupMenu, SWT.NONE);
         closeOthersItem.setText(Messages.resultSetView_close_others);
+        closeOthersItem.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                Object obj = e.getSource();
+                if (obj instanceof MenuItem) {
+                    Arrays.stream(tabFolder.getItems())
+                    .filter(item -> !clickedQueryTab.equals(item))
+                    .forEach(CTabItem::dispose);
+                }
+            }
+        });
 
         MenuItem closeRightItem = new MenuItem(popupMenu, SWT.NONE);
         closeRightItem.setText(Messages.resultSetView_close_tabs_to_the_right);
@@ -79,6 +91,16 @@ public class ResultSetView extends ViewPart {
 
         MenuItem closeAllItem = new MenuItem(popupMenu, SWT.NONE);
         closeAllItem.setText(Messages.resultSetView_close_all);
+        closeAllItem.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                Object obj = e.getSource();
+                if (obj instanceof MenuItem) {
+                    Arrays.stream(tabFolder.getItems()).forEach(CTabItem::dispose);
+                }
+            }
+        });
 
         tabFolder.setMenu(popupMenu);
     }
