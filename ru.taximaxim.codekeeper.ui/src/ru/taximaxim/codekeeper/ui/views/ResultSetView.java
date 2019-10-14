@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.stream.IntStream;
 
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
@@ -56,21 +57,18 @@ public class ResultSetView extends ViewPart {
 
     private void createPopupMenuForTab(CTabItem clickedQueryTab) {
         // getting index for clicked query tab
-        int idx = 0;
-        CTabItem[] t = tabFolder.getItems();
-        for (int i = 0; i < t.length; i++) {
-            if (clickedQueryTab.equals(t[i])) {
-                idx = i;
-                break;
-            }
-        }
+        CTabItem[] tabs = tabFolder.getItems();
+        int tabsCount = tabs.length;
+        int idx = IntStream.range(0, tabsCount)
+                .filter(i -> clickedQueryTab.equals(tabs[i]))
+                .findAny().orElse(0);
 
-        // determination for displaying menu items
+        // determination of displaying menu items
         boolean createCloseRightItem = false;
         boolean createCloseLeftItem = false;
         boolean createCloseOthersItem = true;
         boolean createCloseAllItem = true;
-        int maxArrIdx = (t.length - 1);
+        int maxArrIdx = (tabsCount - 1);
         if (idx > 0 && idx < maxArrIdx) {
             createCloseRightItem = true;
             createCloseLeftItem = true;
