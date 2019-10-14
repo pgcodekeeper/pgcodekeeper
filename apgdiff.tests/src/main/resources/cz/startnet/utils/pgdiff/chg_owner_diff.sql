@@ -8,10 +8,10 @@ ALTER DOMAIN public.dom OWNER TO fordfrog;
 
 ALTER SEQUENCE public.test_id_seq OWNER TO fordfrog;
 
+ALTER TABLE public.test OWNER TO fordfrog;
+
 ALTER FUNCTION public.test_fnc(arg character varying) OWNER TO fordfrog;
 
 ALTER FUNCTION public.trigger_fnc() OWNER TO fordfrog;
-
-ALTER TABLE public.test OWNER TO fordfrog;
 
 ALTER VIEW public.test_view OWNER TO fordfrog;

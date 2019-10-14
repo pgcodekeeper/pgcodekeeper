@@ -16,14 +16,6 @@ REVOKE ALL ON SEQUENCE public.test_id_seq FROM maindb;
 
 GRANT ALL ON SEQUENCE public.test_id_seq TO fordfrog;
 
-REVOKE ALL ON FUNCTION public.test_fnc(arg character varying) FROM maindb;
-
-GRANT ALL ON FUNCTION public.test_fnc(arg character varying) TO fordfrog;
-
-REVOKE ALL ON FUNCTION public.trigger_fnc() FROM maindb CASCADE;
-
-GRANT ALL ON FUNCTION public.trigger_fnc() TO fordfrog;
-
 REVOKE ALL ON TABLE public.test FROM maindb;
 
 GRANT ALL ON TABLE public.test TO fordfrog;
@@ -31,6 +23,14 @@ GRANT ALL ON TABLE public.test TO fordfrog;
 REVOKE ALL(id) ON TABLE public.test FROM maindb;
 
 GRANT ALL(id) ON TABLE public.test TO fordfrog;
+
+REVOKE ALL ON FUNCTION public.test_fnc(arg character varying) FROM maindb;
+
+GRANT ALL ON FUNCTION public.test_fnc(arg character varying) TO fordfrog;
+
+REVOKE ALL ON FUNCTION public.trigger_fnc() FROM maindb CASCADE;
+
+GRANT ALL ON FUNCTION public.trigger_fnc() TO fordfrog;
 
 REVOKE ALL ON TABLE public.test_view FROM maindb;
 

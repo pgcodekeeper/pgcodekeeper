@@ -10,13 +10,13 @@ COMMENT ON DOMAIN public.dom IS 'Domain comment 2';
 
 COMMENT ON SEQUENCE public.test_id_seq IS 'test table sequence 2';
 
-COMMENT ON FUNCTION public.test_fnc(arg character varying) IS 'test function 2';
-
 COMMENT ON TABLE public.test IS 'test table 2';
 
 COMMENT ON COLUMN public.test.id IS 'id column 2';
 
 COMMENT ON COLUMN public.test.text IS 'text column 2';
+
+COMMENT ON FUNCTION public.test_fnc(arg character varying) IS 'test function 2';
 
 COMMENT ON CONSTRAINT text_check ON public.test IS 'text check 2';
 

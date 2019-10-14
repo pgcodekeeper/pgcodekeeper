@@ -12,8 +12,6 @@ COMMENT ON DOMAIN public.dom IS NULL;
 
 COMMENT ON SEQUENCE public.test_id_seq IS NULL;
 
-COMMENT ON FUNCTION public.test_fnc(arg character varying) IS NULL;
-
 COMMENT ON TEXT SEARCH PARSER public.test_parser IS null;
 
 COMMENT ON TEXT SEARCH TEMPLATE public.test_template IS null;
@@ -27,6 +25,8 @@ COMMENT ON TABLE public.test IS NULL;
 COMMENT ON COLUMN public.test.id IS NULL;
 
 COMMENT ON COLUMN public.test.text IS NULL;
+
+COMMENT ON FUNCTION public.test_fnc(arg character varying) IS NULL;
 
 COMMENT ON CONSTRAINT text_check ON public.test IS NULL;
 
