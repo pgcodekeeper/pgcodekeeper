@@ -135,13 +135,15 @@ public abstract class AbstractExpr {
 
     protected GenericColumn addTypeDepcy(Data_typeContext type) {
         Schema_qualified_name_nontypeContext typeName = type.predefined_type().schema_qualified_name_nontype();
-        String schemaName = ApgdiffConsts.PG_CATALOG;
-
         if (typeName == null) {
-            return new GenericColumn(schemaName, ParserAbstract.getTypeName(type),
+            return new GenericColumn(ApgdiffConsts.PG_CATALOG, ParserAbstract.getTypeName(type),
                     DbObjType.TYPE);
         }
+        return addTypeDepcy(typeName);
+    }
 
+    protected GenericColumn addTypeDepcy(Schema_qualified_name_nontypeContext typeName) {
+        String schemaName = ApgdiffConsts.PG_CATALOG;
         IdentifierContext schemaCtx = typeName.identifier();
         String name = typeName.identifier_nontype().getText();
 

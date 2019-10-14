@@ -276,7 +276,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
             }
         } else if (primary.TABLE() != null) {
             Schema_qualified_nameContext table = primary.schema_qualified_name();
-            addRelationDepcy(table.identifier());
+            addNameReference(table, null);
             ret = new ArrayList<>();
             qualAster(table.identifier(), ret);
         } else if ((values = primary.values_stmt()) != null) {

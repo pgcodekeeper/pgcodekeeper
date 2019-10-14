@@ -121,13 +121,11 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
         Data_typeContext type = ctx.data_type();
         if (type != null) {
             declareNamespaceVar(alias, null, addTypeDepcy(type));
+        } else if (ctx.ROWTYPE() != null) {
+            declareNamespaceVar(alias, null, addTypeDepcy(ctx.schema_qualified_name_nontype()));
         } else {
-            List<IdentifierContext> ids = ctx.schema_qualified_name().identifier();
-            if (ctx.ROWTYPE() != null) {
-                addReference(alias, addRelationDepcy(ids));
-            } else {
-                addNamespaceVariable(new Pair<>(alias, processColumn(ids).getSecond()));
-            }
+            String varType = processColumn(ctx.schema_qualified_name().identifier()).getSecond();
+            addNamespaceVariable(new Pair<>(alias, varType));
         }
     }
 

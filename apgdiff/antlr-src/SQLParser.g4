@@ -2984,7 +2984,8 @@ arguments_list
 
 data_type_dec
     : data_type
-    | schema_qualified_name MODULAR (TYPE | ROWTYPE)
+    | schema_qualified_name MODULAR TYPE
+    | schema_qualified_name_nontype MODULAR ROWTYPE
     ;
 
 exception_statement

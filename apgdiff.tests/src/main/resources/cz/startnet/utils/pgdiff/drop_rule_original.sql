@@ -1,4 +1,4 @@
-CREATE TABLE public.t1(c1 int);
+CREATE TABLE public.t1(c1 int, id int, email text, created timestamp);
 CREATE TABLE public.user_data(id int, email text, created timestamp);
 
 CREATE RULE on_delete AS ON DELETE TO public.t1 DO ALSO DELETE FROM public.user_data WHERE (user_data.id = old.id);

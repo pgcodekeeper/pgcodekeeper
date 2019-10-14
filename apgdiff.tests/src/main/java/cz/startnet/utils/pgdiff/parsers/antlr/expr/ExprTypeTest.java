@@ -25,6 +25,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 /**
@@ -67,6 +68,7 @@ public class ExprTypeTest {
 
     public ExprTypeTest(final String fileNameTemplate) {
         this.fileNameTemplate = fileNameTemplate;
+        Log.log(Log.LOG_DEBUG, fileNameTemplate);
     }
 
     private String getRelationColumnsTypes(PgDatabase db) throws IOException, InterruptedException {
