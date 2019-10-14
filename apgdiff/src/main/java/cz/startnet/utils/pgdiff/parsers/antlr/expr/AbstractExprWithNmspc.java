@@ -31,13 +31,9 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.ModPair;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
-/**
- * @author levsha_aa
- *
- * @param <T> analyzed expression, should be extension of ParserRuleContext or a rulectx wrapper class
- */
 public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends AbstractExpr {
 
 
@@ -92,25 +88,23 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
     @Override
     protected List<Pair<String, String>> findCte(String cteName) {
         List<Pair<String, String>> pairs = cte.get(cteName);
-        if (pairs != null) {
-            return pairs.stream().map(Pair::copy).collect(Collectors.toList());
-        }
-        return super.findCte(cteName);
+        return pairs != null ? pairs : super.findCte(cteName);
+
     }
 
     @Override
     protected Entry<String, GenericColumn> findReference(String schema, String name, String column) {
         Entry<String, GenericColumn> ref = findReferenceInNmspc(schema, name, column);
-        return ref == null ? super.findReference(schema, name, column) : ref;
+        return ref != null ?  ref : super.findReference(schema, name, column);
     }
 
     @Override
     protected List<Pair<String, String>> findReferenceComplex(String name) {
         return complexNamespace.entrySet().stream()
                 .filter(p -> name.equals(p.getKey()))
-                .map(Entry::getValue).findAny()
-                .map(e -> e.stream().map(Pair::copy).collect(Collectors.toList()))
-                .orElse(super.findReferenceComplex(name));
+                .map(Entry::getValue)
+                .findAny().orElse(super.findReferenceComplex(name));
+
     }
 
     protected Entry<String, GenericColumn> findReferenceInNmspc(String schema, String name, String column) {
@@ -189,7 +183,7 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
         for (List<Pair<String, String>> compl : complexNamespace.values()) {
             for (Pair<String, String> col : compl) {
                 if (col.getFirst().equals(name)) {
-                    return new Pair<>(col.getFirst(), col.getSecond());
+                    return col;
                 }
             }
         }
@@ -253,7 +247,7 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
      */
     public void addNamespaceVariable(Pair<String, String> var) {
         complexNamespace.computeIfAbsent(FUNC_ARGS_KEY, k -> new ArrayList<>())
-        .add(var.copy());
+        .add(var);
     }
 
     /**
@@ -344,14 +338,20 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
         }
     }
 
-    protected boolean addCteSignature(With_queryContext withQuery, List<Pair<String, String>> resultTypes) {
+    /**
+     * Renames entries in the signature list according to the CTE signature.
+     */
+    protected boolean addCteSignature(With_queryContext withQuery, List<ModPair<String, String>> resultTypes) {
         String withName = withQuery.query_name.getText();
         List<IdentifierContext> paramNamesIdentifers = withQuery.column_name;
-        for (int i = 0;  i < paramNamesIdentifers.size(); ++i) {
+        for (int i = 0; i < paramNamesIdentifers.size(); ++i) {
             resultTypes.get(i).setFirst(paramNamesIdentifers.get(i).getText());
         }
-        return cte.put(withName, resultTypes) != null;
+        List<Pair<String, String>> unmodifiable = resultTypes.stream()
+                .map(Pair::copy)
+                .collect(Collectors.toList());
+        return cte.put(withName, unmodifiable) != null;
     }
 
-    public abstract List<Pair<String, String>> analyze(T ruleCtx);
+    public abstract List<ModPair<String, String>> analyze(T ruleCtx);
 }

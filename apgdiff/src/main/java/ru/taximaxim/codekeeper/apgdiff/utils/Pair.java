@@ -1,15 +1,17 @@
 package ru.taximaxim.codekeeper.apgdiff.utils;
 
 import java.io.Serializable;
-import java.util.Map;
 
-public class Pair<K, V>
-implements Map.Entry<K, V>, Serializable {
+/**
+ * Objects of this class are unmodifiable.
+ * Use {@link ModPair} and {@link #copyMod()} to get modifiable Pairs.
+ */
+public class Pair<K, V> implements Serializable {
 
     private static final long serialVersionUID = 3151284706296455602L;
 
-    private K first;
-    private V second;
+    protected K first;
+    protected V second;
 
     public Pair(K first, V second) {
         this.first = first;
@@ -20,45 +22,8 @@ implements Map.Entry<K, V>, Serializable {
         return first;
     }
 
-    public void setFirst(K first) {
-        this.first = first;
-    }
-
     public V getSecond(){
         return second;
-    }
-
-    public V setSecond(V second) {
-        V old = this.second;
-        this.second = second;
-        return old;
-    }
-
-    /**
-     * @deprecated Replaced by {@link Pair#getFirst()}.
-     */
-    @Deprecated
-    @Override
-    public K getKey() {
-        return getFirst();
-    }
-
-    /**
-     * @deprecated Replaced by {@link Pair#getSecond()}.
-     */
-    @Deprecated
-    @Override
-    public V getValue() {
-        return getSecond();
-    }
-
-    /**
-     * @deprecated Replaced by {@link Pair#setSecond()}.
-     */
-    @Deprecated
-    @Override
-    public V setValue(V value) {
-        return setSecond(value);
     }
 
     @Override
@@ -106,5 +71,9 @@ implements Map.Entry<K, V>, Serializable {
 
     public Pair<K, V> copy() {
         return new Pair<>(first, second);
+    }
+
+    public ModPair<K, V> copyMod() {
+        return new ModPair<>(first, second);
     }
 }

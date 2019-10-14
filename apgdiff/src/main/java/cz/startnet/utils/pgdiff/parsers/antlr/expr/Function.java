@@ -48,6 +48,7 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.ModPair;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
@@ -61,7 +62,7 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
     }
 
     @Override
-    public List<Pair<String, String>> analyze(Plpgsql_functionContext root) {
+    public List<ModPair<String, String>> analyze(Plpgsql_functionContext root) {
         block(root.function_block());
         return Collections.emptyList();
     }

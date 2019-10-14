@@ -37,6 +37,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.ModPair;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public abstract class AbstractExpr {
@@ -166,7 +167,7 @@ public abstract class AbstractExpr {
     /**
      * @return column with its type
      */
-    protected Pair<String, String> processColumn(List<? extends ParserRuleContext> ids) {
+    protected ModPair<String, String> processColumn(List<? extends ParserRuleContext> ids) {
         if (ids.size() == 1) {
             return processTablelessColumn(ids.get(0));
         }
@@ -186,7 +187,7 @@ public abstract class AbstractExpr {
             } else if ((refComplex = findReferenceComplex(columnParent)) != null) {
                 columnType = refComplex.stream()
                         .filter(entry -> columnName.equals(entry.getFirst()))
-                        .map(Entry::getValue)
+                        .map(Pair::getSecond)
                         .findAny()
                         .orElseGet(() -> {
                             Log.log(Log.LOG_WARNING, "Column " + columnName +
@@ -201,7 +202,7 @@ public abstract class AbstractExpr {
                     + schemaName + ' ' + columnParent + ' ' + columnName);
         }
 
-        return new Pair<>(columnName, columnType);
+        return new ModPair<>(columnName, columnType);
     }
 
     /**
@@ -281,14 +282,14 @@ public abstract class AbstractExpr {
         return cols;
     }
 
-    public Pair<String, String> processTablelessColumn(ParserRuleContext id) {
+    protected ModPair<String, String> processTablelessColumn(ParserRuleContext id) {
         String name = id.getText();
         Pair<String, String> col = findColumnInComplex(name);
         if (col == null) {
             Pair<IRelation, Pair<String, String>> relCol = findColumn(name);
             if (relCol == null) {
                 Log.log(Log.LOG_WARNING, "Tableless column not resolved: " + name);
-                return new Pair<>(name, TypesSetManually.COLUMN);
+                return new ModPair<>(name, TypesSetManually.COLUMN);
             }
             IRelation rel = relCol.getFirst();
             col = relCol.getSecond();
@@ -297,7 +298,7 @@ public abstract class AbstractExpr {
                         col.getFirst(), DbObjType.COLUMN));
             }
         }
-        return col;
+        return col.copyMod();
     }
 
     protected void addColumnsDepcies(Schema_qualified_nameContext table,

@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map.Entry;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -26,6 +25,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 /**
  * Tests for checking column types.
@@ -81,8 +81,8 @@ public class ExprTypeTest {
                 cols.append("\n\n  View: " + view.getName());
                 cols.append("\n    RelationColumns : ");
 
-                for (Entry<String, String> col : PgDiffUtils.sIter(view.getRelationColumns())) {
-                    cols.append("\n     " + col.getKey() + " - " + col.getValue());
+                for (Pair<String, String> col : PgDiffUtils.sIter(view.getRelationColumns())) {
+                    cols.append("\n     " + col.getFirst() + " - " + col.getSecond());
                 }
             }
         }
