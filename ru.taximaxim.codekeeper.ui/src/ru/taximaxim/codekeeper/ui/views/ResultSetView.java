@@ -41,7 +41,6 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 public class ResultSetView extends ViewPart {
 
     private CTabFolder tabFolder;
-    private CTabItem clickedQueryTab;
 
     @Override
     public void createPartControl(Composite parent) {
@@ -50,9 +49,41 @@ public class ResultSetView extends ViewPart {
         gd.widthHint = 700;
         tabFolder.setLayoutData(gd);
         tabFolder.addListener(SWT.MenuDetect, event -> {
-            clickedQueryTab = tabFolder.getItem(tabFolder.getDisplay()
-                    .map(null, tabFolder, new Point(event.x,event.y)));
+            createPopupMenuForTab(tabFolder.getItem(tabFolder.getDisplay()
+                    .map(null, tabFolder, new Point(event.x,event.y))));
         });
+    }
+
+    private void createPopupMenuForTab(CTabItem clickedQueryTab) {
+        // getting index for clicked query tab
+        int idx = 0;
+        CTabItem[] t = tabFolder.getItems();
+        for (int i = 0; i < t.length; i++) {
+            if (clickedQueryTab.equals(t[i])) {
+                idx = i;
+                break;
+            }
+        }
+
+        // determination for displaying menu items
+        boolean createCloseRightItem = false;
+        boolean createCloseLeftItem = false;
+        boolean createCloseOthersItem = true;
+        boolean createCloseAllItem = true;
+        int maxArrIdx = (t.length - 1);
+        if (idx > 0 && idx < maxArrIdx) {
+            createCloseRightItem = true;
+            createCloseLeftItem = true;
+        } else if (idx == 0 && maxArrIdx > 0) {
+            createCloseRightItem = true;
+            createCloseLeftItem = false;
+        } else if (maxArrIdx == idx && maxArrIdx > 0) {
+            createCloseRightItem = false;
+            createCloseLeftItem = true;
+        } else if (maxArrIdx == 0) {
+            createCloseOthersItem = false;
+            createCloseAllItem = false;
+        }
 
         Menu popupMenu = new Menu(tabFolder);
 
@@ -69,86 +100,94 @@ public class ResultSetView extends ViewPart {
             }
         });
 
-        MenuItem closeOthersItem = new MenuItem(popupMenu, SWT.NONE);
-        closeOthersItem.setText(Messages.resultSetView_close_others);
-        closeOthersItem.addSelectionListener(new SelectionAdapter() {
+        if (createCloseOthersItem) {
+            MenuItem closeOthersItem = new MenuItem(popupMenu, SWT.NONE);
+            closeOthersItem.setText(Messages.resultSetView_close_others);
+            closeOthersItem.addSelectionListener(new SelectionAdapter() {
 
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                Object obj = e.getSource();
-                if (obj instanceof MenuItem) {
-                    Arrays.stream(tabFolder.getItems())
-                    .filter(item -> !clickedQueryTab.equals(item))
-                    .forEach(CTabItem::dispose);
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    Object obj = e.getSource();
+                    if (obj instanceof MenuItem) {
+                        Arrays.stream(tabFolder.getItems())
+                        .filter(item -> !clickedQueryTab.equals(item))
+                        .forEach(CTabItem::dispose);
+                    }
                 }
-            }
-        });
+            });
+        }
 
-        MenuItem closeRightItem = new MenuItem(popupMenu, SWT.NONE);
-        closeRightItem.setText(Messages.resultSetView_close_tabs_to_the_right);
-        closeRightItem.addSelectionListener(new SelectionAdapter() {
+        if (createCloseLeftItem) {
+            MenuItem closeLeftItem = new MenuItem(popupMenu, SWT.NONE);
+            closeLeftItem.setText(Messages.resultSetView_close_tabs_to_the_left);
+            closeLeftItem.addSelectionListener(new SelectionAdapter() {
 
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                Object obj = e.getSource();
-                if (obj instanceof MenuItem) {
-                    boolean isReachedClickedQueryTab = false;
-                    Iterator<CTabItem> iter = new ArrayList<>(
-                            Arrays.asList(tabFolder.getItems())).iterator();
-                    while (iter.hasNext()) {
-                        CTabItem nextTab = iter.next();
-                        if (isReachedClickedQueryTab) {
-                            nextTab.dispose();
-                            continue;
-                        }
-                        if (clickedQueryTab.equals(nextTab)) {
-                            isReachedClickedQueryTab = true;
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    Object obj = e.getSource();
+                    if (obj instanceof MenuItem) {
+                        boolean isReachedClickedQueryTab = false;
+                        ArrayList<CTabItem> tabs = new ArrayList<>(
+                                Arrays.asList(tabFolder.getItems()));
+                        ListIterator<CTabItem> listIter = tabs.listIterator(tabs.size());
+                        while (listIter.hasPrevious()) {
+                            CTabItem previousTab = listIter.previous();
+                            if (isReachedClickedQueryTab) {
+                                previousTab.dispose();
+                                continue;
+                            }
+                            if (clickedQueryTab.equals(previousTab)) {
+                                isReachedClickedQueryTab = true;
+                            }
                         }
                     }
                 }
-            }
-        });
+            });
+        }
 
-        MenuItem closeLeftItem = new MenuItem(popupMenu, SWT.NONE);
-        closeLeftItem.setText(Messages.resultSetView_close_tabs_to_the_left);
-        closeLeftItem.addSelectionListener(new SelectionAdapter() {
+        if (createCloseRightItem) {
+            MenuItem closeRightItem = new MenuItem(popupMenu, SWT.NONE);
+            closeRightItem.setText(Messages.resultSetView_close_tabs_to_the_right);
+            closeRightItem.addSelectionListener(new SelectionAdapter() {
 
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                Object obj = e.getSource();
-                if (obj instanceof MenuItem) {
-                    boolean isReachedClickedQueryTab = false;
-                    ArrayList<CTabItem> tabs = new ArrayList<>(
-                            Arrays.asList(tabFolder.getItems()));
-                    ListIterator<CTabItem> listIter = tabs.listIterator(tabs.size());
-                    while (listIter.hasPrevious()) {
-                        CTabItem previousTab = listIter.previous();
-                        if (isReachedClickedQueryTab) {
-                            previousTab.dispose();
-                            continue;
-                        }
-                        if (clickedQueryTab.equals(previousTab)) {
-                            isReachedClickedQueryTab = true;
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    Object obj = e.getSource();
+                    if (obj instanceof MenuItem) {
+                        boolean isReachedClickedQueryTab = false;
+                        Iterator<CTabItem> iter = new ArrayList<>(
+                                Arrays.asList(tabFolder.getItems())).iterator();
+                        while (iter.hasNext()) {
+                            CTabItem nextTab = iter.next();
+                            if (isReachedClickedQueryTab) {
+                                nextTab.dispose();
+                                continue;
+                            }
+                            if (clickedQueryTab.equals(nextTab)) {
+                                isReachedClickedQueryTab = true;
+                            }
                         }
                     }
                 }
-            }
-        });
+            });
+        }
 
-        new MenuItem(popupMenu, SWT.SEPARATOR);
+        if (createCloseAllItem) {
+            new MenuItem(popupMenu, SWT.SEPARATOR);
 
-        MenuItem closeAllItem = new MenuItem(popupMenu, SWT.NONE);
-        closeAllItem.setText(Messages.resultSetView_close_all);
-        closeAllItem.addSelectionListener(new SelectionAdapter() {
+            MenuItem closeAllItem = new MenuItem(popupMenu, SWT.NONE);
+            closeAllItem.setText(Messages.resultSetView_close_all);
+            closeAllItem.addSelectionListener(new SelectionAdapter() {
 
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                Object obj = e.getSource();
-                if (obj instanceof MenuItem) {
-                    Arrays.stream(tabFolder.getItems()).forEach(CTabItem::dispose);
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    Object obj = e.getSource();
+                    if (obj instanceof MenuItem) {
+                        Arrays.stream(tabFolder.getItems()).forEach(CTabItem::dispose);
+                    }
                 }
-            }
-        });
+            });
+        }
 
         tabFolder.setMenu(popupMenu);
     }
