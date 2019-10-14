@@ -1,7 +1,10 @@
 package ru.taximaxim.codekeeper.ui.views;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
@@ -83,9 +86,54 @@ public class ResultSetView extends ViewPart {
 
         MenuItem closeRightItem = new MenuItem(popupMenu, SWT.NONE);
         closeRightItem.setText(Messages.resultSetView_close_tabs_to_the_right);
+        closeRightItem.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                Object obj = e.getSource();
+                if (obj instanceof MenuItem) {
+                    boolean isReachedClickedQueryTab = false;
+                    Iterator<CTabItem> iter = new ArrayList<>(
+                            Arrays.asList(tabFolder.getItems())).iterator();
+                    while (iter.hasNext()) {
+                        CTabItem nextTab = iter.next();
+                        if (isReachedClickedQueryTab) {
+                            nextTab.dispose();
+                            continue;
+                        }
+                        if (clickedQueryTab.equals(nextTab)) {
+                            isReachedClickedQueryTab = true;
+                        }
+                    }
+                }
+            }
+        });
 
         MenuItem closeLeftItem = new MenuItem(popupMenu, SWT.NONE);
         closeLeftItem.setText(Messages.resultSetView_close_tabs_to_the_left);
+        closeLeftItem.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                Object obj = e.getSource();
+                if (obj instanceof MenuItem) {
+                    boolean isReachedClickedQueryTab = false;
+                    ArrayList<CTabItem> tabs = new ArrayList<>(
+                            Arrays.asList(tabFolder.getItems()));
+                    ListIterator<CTabItem> listIter = tabs.listIterator(tabs.size());
+                    while (listIter.hasPrevious()) {
+                        CTabItem previousTab = listIter.previous();
+                        if (isReachedClickedQueryTab) {
+                            previousTab.dispose();
+                            continue;
+                        }
+                        if (clickedQueryTab.equals(previousTab)) {
+                            isReachedClickedQueryTab = true;
+                        }
+                    }
+                }
+            }
+        });
 
         new MenuItem(popupMenu, SWT.SEPARATOR);
 
