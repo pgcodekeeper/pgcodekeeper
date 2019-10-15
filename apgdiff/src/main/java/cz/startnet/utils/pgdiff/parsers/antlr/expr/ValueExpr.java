@@ -129,7 +129,7 @@ public class ValueExpr extends AbstractExpr {
             if (selectStmt != null) {
                 new Select(this).analyze(selectStmt);
             }
-            ret = new ModPair<>(null, TypesSetManually.BOOLEAN);
+            ret = new ModPair<>(NONAME, TypesSetManually.BOOLEAN);
         } else if (vex.leftParen() != null && vex.rightParen() != null) {
             if (operandsList.size() == 1) {
                 ret = operandsList.get(0);
@@ -137,7 +137,7 @@ public class ValueExpr extends AbstractExpr {
                 if (indir != null) {
                     indirection(indir.indirection(), ret);
                     if (indir.MULTIPLY() != null) {
-                        ret = new ModPair<>(null, TypesSetManually.QUALIFIED_ASTERISK);
+                        ret = new ModPair<>(NONAME, TypesSetManually.QUALIFIED_ASTERISK);
                     }
                 }
             } else {
@@ -179,7 +179,7 @@ public class ValueExpr extends AbstractExpr {
                 // if we got to this point, operator didn't get filled by the OP_CHARS token
                 // meaning user-schema operator
                 Log.log(Log.LOG_WARNING, "Unsupported user operator!");
-                ret = new ModPair<>(null, TypesSetManually.UNKNOWN);
+                ret = new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
             }
         } else if (vex.between() != null
                 || vex.like() != null
@@ -197,7 +197,7 @@ public class ValueExpr extends AbstractExpr {
                 || (vex.not() != null && vex.in() == null)
                 || vex.and() != null
                 || vex.or() != null ) {
-            ret = new ModPair<>(null, TypesSetManually.BOOLEAN);
+            ret = new ModPair<>(NONAME, TypesSetManually.BOOLEAN);
         } else if ((primary = vex.primary()) != null) {
             Unsigned_value_specificationContext unsignedValue = primary.unsigned_value_specification();
             Select_stmt_no_parensContext subSelectStmt;
@@ -210,7 +210,7 @@ public class ValueExpr extends AbstractExpr {
             Type_coercionContext typeCoercion;
 
             if (unsignedValue != null) {
-                ret = new ModPair<>(null, literal(unsignedValue));
+                ret = new ModPair<>(NONAME, literal(unsignedValue));
             } else if ((indirection = primary.indirection_var()) != null) {
                 ret = indirectionVar(indirection);
             } else if ((subSelectStmt = primary.select_stmt_no_parens()) != null) {
@@ -220,13 +220,13 @@ public class ValueExpr extends AbstractExpr {
                 if (indir != null) {
                     indirection(indir.indirection(), ret);
                     if (indir.MULTIPLY() != null) {
-                        ret = new ModPair<>(null, TypesSetManually.QUALIFIED_ASTERISK);
+                        ret = new ModPair<>(NONAME, TypesSetManually.QUALIFIED_ASTERISK);
                     }
                 }
             } else if (primary.NULL() != null) {
-                ret = new ModPair<>(null, TypesSetManually.UNKNOWN);
+                ret = new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
             } else if ((caseExpr = primary.case_expression()) != null) {
-                ret = new ModPair<>(null, TypesSetManually.UNKNOWN);
+                ret = new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
                 for (VexContext v : caseExpr.vex()) {
                     // we need the Pair of the last expression (ELSE)
                     ret = analyze(new Vex(v));
@@ -239,7 +239,7 @@ public class ValueExpr extends AbstractExpr {
             } else if ((compMod = primary.comparison_mod()) != null) {
                 // type doesn't matter since this is not a real expression
                 // this is always an operand of comparison operator, which will reset the type
-                ret = new ModPair<>(null, TypesSetManually.UNKNOWN);
+                ret = new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
                 VexContext compModVex = compMod.vex();
                 if (compModVex != null) {
                     analyze(new Vex(compModVex));
@@ -254,7 +254,7 @@ public class ValueExpr extends AbstractExpr {
                 ret = function(function);
             } else if (primary.MULTIPLY() != null) {
                 // handled in Select analyzer
-                ret = new ModPair<>(null, TypesSetManually.QUALIFIED_ASTERISK);
+                ret = new ModPair<>(NONAME, TypesSetManually.QUALIFIED_ASTERISK);
             } else if ((array = primary.array_expression()) != null) {
                 Array_bracketsContext arrayb = array.array_brackets();
                 if (arrayb != null) {
@@ -281,11 +281,11 @@ public class ValueExpr extends AbstractExpr {
                 ret = new ModPair<>(type, type);
             } else {
                 Log.log(Log.LOG_WARNING, "No alternative in Vex Primary!");
-                ret = new ModPair<>(null, TypesSetManually.UNKNOWN);
+                ret = new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
             }
         } else {
             Log.log(Log.LOG_WARNING, "No alternative in Vex!");
-            ret = new ModPair<>(null, TypesSetManually.UNKNOWN);
+            ret = new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
         }
 
         return ret;
@@ -305,7 +305,7 @@ public class ValueExpr extends AbstractExpr {
         List<IndirectionContext> indir = indirList.indirection();
         if (indirList.MULTIPLY() != null) {
             indirection(indir, null);
-            return new ModPair<>(null, TypesSetManually.QUALIFIED_ASTERISK);
+            return new ModPair<>(NONAME, TypesSetManually.QUALIFIED_ASTERISK);
         }
 
         // reserve space for longest-yet-still-common case
@@ -325,7 +325,7 @@ public class ValueExpr extends AbstractExpr {
         ModPair<String, String> ret;
         if (ids.size() > 3) {
             Log.log(Log.LOG_WARNING, "Very long indirection!");
-            ret = new ModPair<>(null, TypesSetManually.UNKNOWN);
+            ret = new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
         } else {
             ret = processColumn(ids);
         }
@@ -370,7 +370,7 @@ public class ValueExpr extends AbstractExpr {
             ret = analyze(new Vex(vex));
         }
 
-        return ret != null ? ret : new ModPair<>(null, TypesSetManually.UNKNOWN);
+        return ret != null ? ret : new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
     }
 
     /**
@@ -502,7 +502,7 @@ public class ValueExpr extends AbstractExpr {
                 coltype = TypesSetManually.TIMESTAMP;
             } else {
                 Log.log(Log.LOG_WARNING, "No alternative in date_time_function!");
-                colname = null;
+                colname = NONAME;
                 coltype = TypesSetManually.UNKNOWN;
             }
             ret = new ModPair<>(colname, coltype);
@@ -555,7 +555,7 @@ public class ValueExpr extends AbstractExpr {
             ret = new ModPair<>(colname, coltype);
         } else {
             Log.log(Log.LOG_WARNING, "No alternative in functionSpecial!");
-            ret = new ModPair<>(null, TypesSetManually.UNKNOWN);
+            ret = new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
         }
 
         if (args != null) {
@@ -627,7 +627,7 @@ public class ValueExpr extends AbstractExpr {
         // put in 'findFunctions' operator's schema name instead of 'PgSystemStorage.SCHEMA_PG_CATALOG'.
         IFunction resultOperFunction = resolveCall(operator, Arrays.asList(sourceArgsTypes),
                 availableFunctions(ApgdiffConsts.PG_CATALOG));
-        return new ModPair<>(null, resultOperFunction != null ? resultOperFunction.getReturns()
+        return new ModPair<>(NONAME, resultOperFunction != null ? resultOperFunction.getReturns()
                 : TypesSetManually.FUNCTION_COLUMN);
     }
 

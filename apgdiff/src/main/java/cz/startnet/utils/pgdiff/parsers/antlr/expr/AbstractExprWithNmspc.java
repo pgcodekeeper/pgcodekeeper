@@ -36,7 +36,6 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends AbstractExpr {
 
-
     private static final String FUNC_ARGS_KEY = "\\_SPECIAL_CONTAINER_FOR_PRIMITIVE_VARS\\";
 
     /**

@@ -42,6 +42,8 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public abstract class AbstractExpr {
 
+    protected static final String NONAME = "?column?";
+
     // TODO get current postgresql version.
     // Need to get version. I already got it from JdbcLoader(READER)
     // and put it to the 'PgDatabase' as currentPostgreSqlVersion,
