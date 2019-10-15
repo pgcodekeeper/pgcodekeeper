@@ -5,6 +5,7 @@ Bundle-SymbolicName: apgdiff;singleton:=true
 Bundle-Version: 5.11.1.qualifier
 Export-Package: cz.startnet.utils.pgdiff,
  cz.startnet.utils.pgdiff.libraries,
+ cz.startnet.utils.pgdiff.formatter,
  cz.startnet.utils.pgdiff.loader,
  cz.startnet.utils.pgdiff.parsers.antlr,
  cz.startnet.utils.pgdiff.schema,

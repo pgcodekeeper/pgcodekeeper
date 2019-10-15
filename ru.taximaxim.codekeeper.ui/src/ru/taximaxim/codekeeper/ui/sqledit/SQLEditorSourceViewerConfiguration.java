@@ -10,6 +10,8 @@ import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
+import org.eclipse.jface.text.formatter.IContentFormatter;
+import org.eclipse.jface.text.formatter.MultiPassContentFormatter;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
@@ -131,6 +133,15 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
             targets.put("ru.taximaxim.codekeeper.ui.SQLEditorTarget", editor); //$NON-NLS-1$
         }
         return targets;
+    }
+
+    @Override
+    public IContentFormatter getContentFormatter(ISourceViewer sourceViewer) {
+        final MultiPassContentFormatter formatter =
+                new MultiPassContentFormatter(getConfiguredDocumentPartitioning(sourceViewer),
+                        SQLEditorCommonDocumentProvider.SQL_CODE);
+        formatter.setMasterStrategy(new SQLFormattingStrategy(editor));
+        return formatter;
     }
 
     private void addDamagerRepairer(PresentationReconciler reconciler, RuleBasedScanner commentScanner, String contentType) {

@@ -109,6 +109,14 @@ public interface UIConsts {
         String ENCLOSING_BRACKETS = "enclosingBrackets"; //$NON-NLS-1$
     }
 
+    interface FORMATTER_PREF {
+        String REMOVE_TRAILING_WHITESPACE = "removeTrailingWhitespace"; //$NON-NLS-1$
+        String ADD_WHITESPACE_BEFORE_OP = "addWhitespaceBeforeOperator"; //$NON-NLS-1$
+        String ADD_WHITESPACE_AFTER_OP = "addWhitespaceAfterOperator"; //$NON-NLS-1$
+        String REPLACE_TAB = "replaceTab"; //$NON-NLS-1$
+        String WHITESPACE_COUNT = "whitespaceCount"; //$NON-NLS-1$
+    }
+
     interface USAGE_REPORT_PREF {
         String USAGEREPORT_ENABLED_ID = "allow_usage_report_preference"; //$NON-NLS-1$
         String ASK_USER_USAGEREPORT_ID = "ask_user_for_usage_report_preference"; //$NON-NLS-1$

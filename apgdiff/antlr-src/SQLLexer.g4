@@ -901,7 +901,7 @@ fragment UnterminatedQuotedIdentifier
 
 // Some Unicode Character Ranges
 fragment
-Control_Characters                  :   '\u0001' .. '\u001F';
+Control_Characters                  :   '\u0001' .. '\u0008' | '\u000B' | '\u000C' | '\u000E' .. '\u001F';
 fragment
 Extended_Control_Characters         :   '\u0080' .. '\u009F';
 
@@ -953,22 +953,30 @@ Tag
 */
 
 Space
-  : ' ' -> channel(HIDDEN)
-  ;
+    : ' ' -> channel(HIDDEN)
+    ;
 
 White_Space
-  : ( Control_Characters  | Extended_Control_Characters )+ -> channel(HIDDEN)
-  ;
+    : ( Control_Characters  | Extended_Control_Characters )+ -> channel(HIDDEN)
+    ;
+
+New_Line
+    : ('\u000D' | '\u000D'? '\u000A') -> channel(HIDDEN)
+    ;
+
+Tab
+    : '\u0009' -> channel(HIDDEN)
+    ;
 
 BOM: '\ufeff';
 
 BAD
-  : .
-  ;
+    : .
+    ;
 
 mode DollarQuotedStringMode;
 Text_between_Dollar
-   : ~'$'+
+    : ~'$'+
     | // this alternative improves the efficiency of handling $ characters within a dollar-quoted string which are
     // not part of the ending tag.
     '$' ~'$'*

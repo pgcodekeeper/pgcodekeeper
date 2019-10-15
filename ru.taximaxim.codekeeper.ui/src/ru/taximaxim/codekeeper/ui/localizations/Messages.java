@@ -88,6 +88,16 @@ public final class Messages extends NLS {
     public static String SQLEditorCompletionProcessor_show_templates;
     public static String SQLEditorCompletionProcessor_show_keywords;
 
+    public static String SQLEditorFormatterPrefPage_add_whitespace_after_operators;
+
+    public static String SQLEditorFormatterPrefPage_add_whitespace_before_operators;
+
+    public static String SQLEditorFormatterPrefPage_remove_trailing_whitespace;
+
+    public static String SQLEditorFormatterPrefPage_replace_tab_with_whitespaces;
+
+    public static String SQLEditorFormatterPrefPage_whitespace_count;
+
     public static String SqlEditor_update_ddl;
 
     public static String UiProgressReporter_warning;

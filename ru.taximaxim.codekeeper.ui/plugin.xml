@@ -609,6 +609,8 @@
                     </with>
                 </visibleWhen>
             </command>
+            <command commandId="ru.taximaxim.codekeeper.ui.command.Format">
+            </command>
         </menuContribution>
         <menuContribution locationURI="popup:org.eclipse.ui.projectConfigure?after=additions">
             <command
@@ -727,6 +729,12 @@
             class="ru.taximaxim.codekeeper.ui.prefs.SQLEditorTemplatePrefPage"
             id="ru.taximaxim.codekeeper.ui.sqleditortemplates"
             name="%page.name.sqlEditorTemplates">
+        </page>
+        <page
+            category="ru.taximaxim.codekeeper.ui.sqleditor"
+            class="ru.taximaxim.codekeeper.ui.prefs.SQLEditorFormatterPrefPage"
+            id="ru.taximaxim.codekeeper.ui.sqleditorformatter"
+            name="%page.name.sqlEditorFormatter">
         </page>
         <page
             category="ru.taximaxim.codekeeper.ui.general"
