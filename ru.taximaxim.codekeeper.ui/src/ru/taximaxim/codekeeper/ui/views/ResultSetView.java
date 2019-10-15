@@ -23,6 +23,8 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
@@ -52,6 +54,21 @@ public class ResultSetView extends ViewPart {
         tabFolder.addListener(SWT.MenuDetect, event -> {
             createPopupMenuForTab(tabFolder.getItem(tabFolder.getDisplay()
                     .map(null, tabFolder, new Point(event.x,event.y))));
+        });
+
+        tabFolder.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseDown(MouseEvent event) {
+                // checking which button was pressed (1 - left; 2 - middle; 3 - right)
+                if (2 == event.button) {
+                    CTabItem clickedQueryTab = tabFolder.getItem(tabFolder.getDisplay()
+                            .map(null, tabFolder, tabFolder.toDisplay(event.x, event.y)));
+                    if (clickedQueryTab != null) {
+                        clickedQueryTab.dispose();
+                    }
+                }
+            }
         });
     }
 
