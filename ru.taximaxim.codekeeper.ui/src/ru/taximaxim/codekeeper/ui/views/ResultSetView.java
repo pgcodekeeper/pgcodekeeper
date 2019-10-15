@@ -56,10 +56,15 @@ public class ResultSetView extends ViewPart {
     }
 
     private void createPopupMenuForTab(CTabItem clickedQueryTab) {
+        if (clickedQueryTab == null) {
+            tabFolder.setMenu(new Menu(tabFolder));
+            return;
+        }
+
         // getting index for clicked query tab
         CTabItem[] tabs = tabFolder.getItems();
         int tabsCount = tabs.length;
-        int idx = IntStream.range(0, tabsCount)
+        int idxClickedQueryTab = IntStream.range(0, tabsCount)
                 .filter(i -> clickedQueryTab.equals(tabs[i]))
                 .findAny().orElse(0);
 
@@ -68,17 +73,17 @@ public class ResultSetView extends ViewPart {
         boolean createCloseLeftItem = false;
         boolean createCloseOthersItem = true;
         boolean createCloseAllItem = true;
-        int maxArrIdx = (tabsCount - 1);
-        if (idx > 0 && idx < maxArrIdx) {
+        int idxMaxArr = (tabsCount - 1);
+        if (idxClickedQueryTab > 0 && idxClickedQueryTab < idxMaxArr) {
             createCloseRightItem = true;
             createCloseLeftItem = true;
-        } else if (idx == 0 && maxArrIdx > 0) {
+        } else if (idxClickedQueryTab == 0 && idxMaxArr > 0) {
             createCloseRightItem = true;
             createCloseLeftItem = false;
-        } else if (maxArrIdx == idx && maxArrIdx > 0) {
+        } else if (idxMaxArr == idxClickedQueryTab && idxMaxArr > 0) {
             createCloseRightItem = false;
             createCloseLeftItem = true;
-        } else if (maxArrIdx == 0) {
+        } else if (idxMaxArr == 0) {
             createCloseOthersItem = false;
             createCloseAllItem = false;
         }
