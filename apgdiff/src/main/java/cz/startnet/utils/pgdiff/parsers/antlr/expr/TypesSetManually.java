@@ -23,4 +23,5 @@ public interface TypesSetManually {
     String TIMESTAMPTZ = "timestamp with time zone";
     String TIME = "time without time zone";
     String TIMESTAMP = "timestamp without time zone";
+    String CURSOR = "refcursor";
 }

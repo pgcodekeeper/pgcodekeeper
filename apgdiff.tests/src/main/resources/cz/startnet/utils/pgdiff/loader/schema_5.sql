@@ -13,12 +13,12 @@ $$
     LANGUAGE plpgsql STRICT;
 
 CREATE FUNCTION public.select_something(number1 integer, number2 integer) RETURNS integer
-    AS $_$SELECT number1 * number2$_$ LANGUAGE plpgsql;
+    AS $_$SELECT number1 * number2$_$ LANGUAGE sql;
 
 CREATE FUNCTION public.select_something2(number1 integer, number2 integer) RETURNS integer
-    AS 'SELECT number1 * number2 || ''text''' LANGUAGE plpgsql;
+    AS 'SELECT number1 * number2 || ''text''' LANGUAGE sql;
 
 CREATE FUNCTION public.select_something3(number1 integer, number2 integer) RETURNS integer
     AS '
 SELECT number1 * number2 || ''text''
-' LANGUAGE plpgsql;
+' LANGUAGE sql;

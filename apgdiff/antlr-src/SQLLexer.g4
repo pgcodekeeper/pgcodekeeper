@@ -307,9 +307,11 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     STDIN: [sS] [tT] [dD] [iI] [nN];
     STDOUT: [sS] [tT] [dD] [oO] [uU] [tT];
     STORAGE: [sS] [tT] [oO] [rR] [aA] [gG] [eE];
+    STORED: [sS] [tT] [oO] [rR] [eE] [dD];
     STRICT: [sS] [tT] [rR] [iI] [cC] [tT];
     STRIP: [sS] [tT] [rR] [iI] [pP];
     SUBSCRIPTION: [sS] [uU] [bB] [sS] [cC] [rR] [iI] [pP] [tT] [iI] [oO] [nN];
+    SUPPORT: [sS] [uU] [pP] [pP] [oO] [rR] [tT];
     SYSID: [sS] [yY] [sS] [iI] [dD];
     SYSTEM: [sS] [yY] [sS] [tT] [eE] [mM];
     
