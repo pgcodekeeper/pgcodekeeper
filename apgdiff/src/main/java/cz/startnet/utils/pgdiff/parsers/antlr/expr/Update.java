@@ -12,7 +12,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
+import ru.taximaxim.codekeeper.apgdiff.utils.ModPair;
 
 public class Update extends AbstractExprWithNmspc<Update_stmt_for_psqlContext> {
 
@@ -25,7 +25,7 @@ public class Update extends AbstractExprWithNmspc<Update_stmt_for_psqlContext> {
     }
 
     @Override
-    public List<Pair<String, String>> analyze(Update_stmt_for_psqlContext update) {
+    public List<ModPair<String, String>> analyze(Update_stmt_for_psqlContext update) {
         With_clauseContext with = update.with_clause();
         if (with != null) {
             analyzeCte(with);

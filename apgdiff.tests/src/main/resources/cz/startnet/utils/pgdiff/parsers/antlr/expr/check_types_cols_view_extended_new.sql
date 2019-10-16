@@ -5,6 +5,12 @@ CREATE TYPE public.custom_type AS (
     maximum integer
 );
 
+CREATE TABLE public.minmaxtest (
+    a integer,
+    b integer,
+    id bigint
+);
+
 CREATE FUNCTION public.f(p integer) RETURNS integer
     LANGUAGE plpgsql
     AS $_$begin return $1; end;$_$;
@@ -25,10 +31,10 @@ CREATE FUNCTION public.maxmin(pid integer) RETURNS public.custom_type
     LANGUAGE plpgsql
     AS $$ 
 declare  
-  oResult custom_type%rowtype; 
+  oResult public.custom_type%rowtype; 
 begin 
   select into oResult min(a) as minimum, max(b) as maximum 
-  from test where id = pid; 
+  from public.minmaxtest where id = pid; 
 
   return oResult; 
 end; 

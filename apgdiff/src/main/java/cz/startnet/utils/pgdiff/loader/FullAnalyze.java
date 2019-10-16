@@ -8,6 +8,7 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.AbstractAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -39,13 +40,21 @@ public final class FullAnalyze {
         }
 
         // Analysis of all statements except 'VIEW'.
-        db.getAnalysisLaunchers().stream()
-        .filter(l -> DbObjType.VIEW != l.getStmt().getStatementType())
-        .forEach(l -> l.launchAnalyze(errors));
-        db.getAnalysisLaunchers().clear();
+        List<AbstractAnalysisLauncher> launchers = db.getAnalysisLaunchers();
+        for (int i = 0; i < launchers.size(); ++i) {
+            AbstractAnalysisLauncher l = launchers.get(i);
+            if (l != null && DbObjType.VIEW != l.getStmt().getStatementType()) {
+                l.launchAnalyze(errors);
+                // allow GC to reclaim context memory immediately
+                launchers.set(i, null);
+            }
+        }
+        db.clearAnalysisLaunchers();
     }
 
     private class ViewsAnalyzeTraversal extends TraversalListenerAdapter<PgStatement, DefaultEdge> {
+
+        private final List<AbstractAnalysisLauncher> launchers = db.getAnalysisLaunchers();
 
         @Override
         public void vertexTraversed(VertexTraversalEvent<PgStatement> event) {
@@ -54,9 +63,14 @@ public final class FullAnalyze {
                 return;
             }
 
-            db.getAnalysisLaunchers().stream()
-            .filter(l -> st.equals(l.getStmt()))
-            .forEach(l -> l.launchAnalyze(errors));
+            for (int i = 0; i < launchers.size(); ++i) {
+                AbstractAnalysisLauncher l = launchers.get(i);
+                if (l != null && st.equals(l.getStmt())) {
+                    l.launchAnalyze(errors);
+                    // allow GC to reclaim context memory immediately
+                    launchers.set(i, null);
+                }
+            }
         }
     }
 }

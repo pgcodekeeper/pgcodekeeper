@@ -10,7 +10,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
+import ru.taximaxim.codekeeper.apgdiff.utils.ModPair;
 
 public class Delete extends AbstractExprWithNmspc<Delete_stmt_for_psqlContext> {
 
@@ -23,7 +23,7 @@ public class Delete extends AbstractExprWithNmspc<Delete_stmt_for_psqlContext> {
     }
 
     @Override
-    public List<Pair<String, String>> analyze(Delete_stmt_for_psqlContext delete) {
+    public List<ModPair<String, String>> analyze(Delete_stmt_for_psqlContext delete) {
         With_clauseContext with = delete.with_clause();
         if (with != null) {
             analyzeCte(with);
