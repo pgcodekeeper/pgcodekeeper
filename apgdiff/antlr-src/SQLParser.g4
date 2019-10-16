@@ -3104,7 +3104,7 @@ raise_param
 return_stmt
     : RETURN vex?
     | RETURN NEXT vex
-    | RETURN QUERY (select_stmt | execute_stmt)
+    | RETURN QUERY (select_stmt | execute_stmt | show_statement)
     ;
 
 loop_statement
