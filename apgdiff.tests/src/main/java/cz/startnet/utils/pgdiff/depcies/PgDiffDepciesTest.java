@@ -232,16 +232,22 @@ public class PgDiffDepciesTest {
 
     @Test(timeout = 120000)
     public void runDiff() throws IOException, InterruptedException {
-        PgDatabase oldDatabase = ApgdiffTestUtils.loadTestDump(
-                getUsrSelName(FILES_POSTFIX.ORIGINAL_SQL), PgDiffDepciesTest.class, args);
-        PgDatabase newDatabase = ApgdiffTestUtils.loadTestDump(
-                getUsrSelName(FILES_POSTFIX.NEW_SQL), PgDiffDepciesTest.class, args);
+        PgDatabase oldDatabase;
+        PgDatabase newDatabase;
         PgDatabase oldDbFull;
         PgDatabase newDbFull;
         if (userSelTemplate.equals(dbTemplate)) {
+            oldDatabase = ApgdiffTestUtils.loadTestDump(
+                    getUsrSelName(FILES_POSTFIX.ORIGINAL_SQL), PgDiffDepciesTest.class, args);
+            newDatabase = ApgdiffTestUtils.loadTestDump(
+                    getUsrSelName(FILES_POSTFIX.NEW_SQL), PgDiffDepciesTest.class, args);
             oldDbFull = oldDatabase;
             newDbFull = newDatabase;
         } else {
+            oldDatabase = ApgdiffTestUtils.loadTestDump(
+                    getUsrSelName(FILES_POSTFIX.ORIGINAL_SQL), PgDiffDepciesTest.class, args, false);
+            newDatabase = ApgdiffTestUtils.loadTestDump(
+                    getUsrSelName(FILES_POSTFIX.NEW_SQL), PgDiffDepciesTest.class, args, false);
             oldDbFull = ApgdiffTestUtils.loadTestDump(
                     getDbName(FILES_POSTFIX.ORIGINAL_SQL), PgDiffDepciesTest.class, args);
             newDbFull = ApgdiffTestUtils.loadTestDump(

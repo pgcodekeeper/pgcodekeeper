@@ -6,14 +6,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.After_opsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alias_clauseContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Col_labelContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_itemContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
@@ -22,7 +20,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_elementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_element_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IndirectionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_vexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_listContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_varContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Orderby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Perform_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
@@ -47,6 +46,7 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.ModPair;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
@@ -79,33 +79,33 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
     }
 
     @Override
-    public List<Pair<String, String>> analyze(Select_stmtContext ruleCtx) {
+    public List<ModPair<String, String>> analyze(Select_stmtContext ruleCtx) {
         return analyze(new SelectStmt(ruleCtx));
     }
 
-    public List<Pair<String, String>> analyze(Select_stmt_no_parensContext ruleCtx) {
+    public List<ModPair<String, String>> analyze(Select_stmt_no_parensContext ruleCtx) {
         return analyze(new SelectStmt(ruleCtx));
     }
 
-    public List<Pair<String, String>> analyze(SelectStmt select) {
+    public List<ModPair<String, String>> analyze(SelectStmt select) {
         return analyze(select, null);
     }
 
-    public List<Pair<String, String>> analyze(SelectStmt select, With_queryContext recursiveCteCtx) {
+    public List<ModPair<String, String>> analyze(SelectStmt select, With_queryContext recursiveCteCtx) {
         With_clauseContext with = select.withClause();
         if (with != null) {
             analyzeCte(with);
         }
 
-        List<Pair<String, String>> ret = selectOps(select.selectOps(), recursiveCteCtx);
+        List<ModPair<String, String>> ret = selectOps(select.selectOps(), recursiveCteCtx);
 
         selectAfterOps(select.afterOps());
 
         return ret;
     }
 
-    public List<Pair<String, String>> analyze(Perform_stmtContext perform) {
-        List<Pair<String, String>> ret = perform(perform);
+    public List<ModPair<String, String>> analyze(Perform_stmtContext perform) {
+        List<ModPair<String, String>> ret = perform(perform);
 
         Select_opsContext ops = perform.select_ops();
         if (ops != null) {
@@ -115,7 +115,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
         return ret;
     }
 
-    private List<Pair<String, String>> perform(Perform_stmtContext perform) {
+    private List<ModPair<String, String>> perform(Perform_stmtContext perform) {
         // from defines the namespace so it goes before everything else
         if (perform.FROM() != null) {
             boolean oldFrom = inFrom;
@@ -130,7 +130,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
         }
 
         ValueExpr vex = new ValueExpr(this);
-        List<Pair<String, String>> ret = sublist(perform.select_list().select_sublist(), vex);
+        List<ModPair<String, String>> ret = sublist(perform.select_list().select_sublist(), vex);
 
         if ((perform.set_qualifier() != null && perform.ON() != null)
                 || perform.WHERE() != null || perform.HAVING() != null) {
@@ -173,12 +173,12 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
         }
     }
 
-    private List<Pair<String, String>> selectOps(SelectOps selectOps) {
+    private List<ModPair<String, String>> selectOps(SelectOps selectOps) {
         return selectOps(selectOps, null);
     }
 
-    private List<Pair<String, String>> selectOps(SelectOps selectOps, With_queryContext recursiveCteCtx) {
-        List<Pair<String, String>> ret;
+    private List<ModPair<String, String>> selectOps(SelectOps selectOps, With_queryContext recursiveCteCtx) {
+        List<ModPair<String, String>> ret;
         Select_stmtContext selectStmt = selectOps.selectStmt();
         Select_primaryContext primary = selectOps.selectPrimary();
 
@@ -195,7 +195,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
             // CTE analysis creates a new child namespace to recurse through SelectOps
             // and this is where we are now.
             // Since current namespace is independent of its parent and SelectOps operands
-            // well be analyzed on further separate child namespaces
+            // will be analyzed on further separate child namespaces
             // we can safely store "select1"s signature as a CTE on the current pseudo-namespace
             // so that it's visible to the recursive "select2" and doesn't pollute any other namespaces.
             //
@@ -229,8 +229,8 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
         return ret;
     }
 
-    private List<Pair<String, String>> primary(Select_primaryContext primary) {
-        List<Pair<String, String>> ret;
+    private List<ModPair<String, String>> primary(Select_primaryContext primary) {
+        List<ModPair<String, String>> ret;
         Values_stmtContext values;
         if (primary.SELECT() != null) {
             // from defines the namespace so it goes before everything else
@@ -276,8 +276,9 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
             }
         } else if (primary.TABLE() != null) {
             Schema_qualified_nameContext table = primary.schema_qualified_name();
-            addRelationDepcy(table.identifier());
-            ret = qualAster(new ArrayList<>(table.identifier()));
+            addNameReference(table, null);
+            ret = new ArrayList<>();
+            qualAster(table.identifier(), ret);
         } else if ((values = primary.values_stmt()) != null) {
             ret = new ArrayList<>();
             ValueExpr vex = new ValueExpr(this);
@@ -293,23 +294,22 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
         return ret;
     }
 
-    private List<Pair<String, String>> sublist(List<Select_sublistContext> sublist, ValueExpr vex) {
-        List<Pair<String, String>> ret = new ArrayList<>();
+    private List<ModPair<String, String>> sublist(List<Select_sublistContext> sublist, ValueExpr vex) {
+        List<ModPair<String, String>> ret = new ArrayList<>(sublist.size());
         for (Select_sublistContext target : sublist) {
             Vex selectSublistVex = new Vex(target.vex());
             // analyze all before parse asterisk
-            Pair<String, String> columnPair = vex.analyze(selectSublistVex);
+            ModPair<String, String> columnPair = vex.analyze(selectSublistVex);
 
-            if (TypesSetManually.QUALIFIED_ASTERISK.equals(columnPair.getValue())) {
-                List<Pair<String, String>> pairs = analyzeAster(selectSublistVex);
-                if (!pairs.isEmpty()) {
-                    ret.addAll(pairs);
-                    continue;
-                }
+            if (TypesSetManually.QUALIFIED_ASTERISK.equals(columnPair.getSecond())
+                    && analyzeAster(selectSublistVex, ret)) {
+                continue;
             }
 
-            Col_labelContext label = target.col_label();
-            ParserRuleContext aliasCtx = label != null ? label : target.id_token();
+            ParserRuleContext aliasCtx = target.col_label();
+            if (aliasCtx == null) {
+                aliasCtx = target.id_token();
+            }
 
             if (aliasCtx != null) {
                 columnPair.setFirst(aliasCtx.getText());
@@ -320,45 +320,50 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
         return ret;
     }
 
-    private List<Pair<String, String>> analyzeAster(Vex vex) {
+    private boolean analyzeAster(Vex vex, List<ModPair<String, String>> columns) {
         Value_expression_primaryContext primary = vex.primary();
         if (primary != null && primary.MULTIPLY() != null) {
-            return unqualAster();
+            unqualAster(columns);
+            return true;
         }
 
         if (primary != null) {
-            Indirection_vexContext ind = primary.indirection_vex();
+            Indirection_varContext ind = primary.indirection_var();
             if (ind != null) {
-                return getQnameFromIndirection(ind);
+                return indirectionAsQualAster(ind, columns);
             }
         }
 
-        return Collections.emptyList();
+        return false;
     }
 
-    private List<Pair<String, String>> getQnameFromIndirection(Indirection_vexContext ctx) {
-        List<IndirectionContext> ind = ctx.indirection();
-        if (ind.isEmpty()) {
-            return Collections.emptyList();
+    private boolean indirectionAsQualAster(Indirection_varContext ctx, List<ModPair<String, String>> cols) {
+        Indirection_listContext indList = ctx.indirection_list();
+        if (indList == null || indList.MULTIPLY() == null) {
+            // this shouldn't happen, crash hard
+            throw new IllegalStateException("Qualified asterisk without the asterisk!");
         }
 
-        List<ParserRuleContext> list = new ArrayList<>();
-        IdentifierContext id = ctx.identifier();
-        list.add(id == null ? ctx.dollar_number() : id);
+        ParserRuleContext id = ctx.identifier();
+        if (id == null) {
+            id = ctx.dollar_number();
+        }
 
-        for (IndirectionContext indir : ind) {
-            Col_labelContext label = indir.col_label();
-            if (label != null) {
-                list.add(label);
-            } else if (indir.LEFT_BRACKET() != null) {
-                return Collections.emptyList();
-            } else if (list.size() < 3) {
-                // qualified name have max 2 part before *
-                return qualAster(list);
+        List<IndirectionContext> ind = indList.indirection();
+        switch (ind.size()) {
+        case 0:
+            return qualAster(Arrays.asList(id), cols);
+        case 1:
+            IndirectionContext second = ind.get(0);
+            if (second.LEFT_BRACKET() == null) {
+                return qualAster(Arrays.asList(id, second.col_label()), cols);
             }
+            // cannot handle asterisk indirection from an array element
+            //$FALL-THROUGH$
+        default:
+            // long indirections are unsupported
+            return false;
         }
-
-        return Collections.emptyList();
     }
 
     private void groupby(Grouping_element_listContext list, ValueExpr vex) {
@@ -375,44 +380,52 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
 
     private static final Predicate<String> ANY = s -> true;
 
-    private List<Pair<String, String>> unqualAster() {
-        List<Pair<String, String>> cols = new ArrayList<>();
-
+    private void unqualAster(List<ModPair<String, String>> cols) {
         for (GenericColumn gc : unaliasedNamespace) {
-            addFilteredRelationColumnsDepcies(gc.schema, gc.table, ANY).forEach(cols::add);
+            addFilteredRelationColumnsDepcies(gc.schema, gc.table, ANY)
+            .map(Pair::copyMod)
+            .forEach(cols::add);
         }
 
         for (GenericColumn gc : namespace.values()) {
             if (gc != null) {
-                addFilteredRelationColumnsDepcies(gc.schema, gc.table, ANY).forEach(cols::add);
+                addFilteredRelationColumnsDepcies(gc.schema, gc.table, ANY)
+                .map(Pair::copyMod)
+                .forEach(cols::add);
             }
         }
 
-        complexNamespace.values().forEach(cols::addAll);
-
-        return cols;
+        complexNamespace.values().stream()
+        .flatMap(List::stream)
+        .map(Pair::copyMod)
+        .forEach(cols::add);
     }
 
-    private List<Pair<String, String>> qualAster(List<ParserRuleContext> ids) {
+    private boolean qualAster(List<? extends ParserRuleContext> ids, List<ModPair<String, String>> cols) {
         String schema = QNameParser.getSecondName(ids);
         String relation = QNameParser.getFirstName(ids);
 
         Entry<String, GenericColumn> ref = findReference(schema, relation, null);
         if (ref == null) {
             Log.log(Log.LOG_WARNING, "Asterisk qualification not found: " + schema + '.' + relation);
-            return Collections.emptyList();
+            return false;
         }
         GenericColumn relationGc = ref.getValue();
         if (relationGc != null) {
-            return addFilteredRelationColumnsDepcies(relationGc.schema, relationGc.table, ANY)
-                    .collect(Collectors.toList());
+            addFilteredRelationColumnsDepcies(relationGc.schema, relationGc.table, ANY)
+            .map(Pair::copyMod)
+            .forEach(cols::add);
+            return true;
         } else {
             List<Pair<String, String>> complexNsp = findReferenceComplex(relation);
             if (complexNsp != null) {
-                return complexNsp;
+                complexNsp.stream()
+                .map(Pair::copyMod)
+                .forEach(cols::add);
+                return true;
             } else {
                 Log.log(Log.LOG_WARNING, "Complex not found: " + relation);
-                return Collections.emptyList();
+                return false;
             }
         }
     }
@@ -478,11 +491,11 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
                 boolean oldLateral = lateralAllowed;
                 try {
                     lateralAllowed = primary.LATERAL() != null;
-                    List<Pair<String, String>> columnList = new Select(this).analyze(subquery.select_stmt());
+                    List<ModPair<String, String>> columnList = new Select(this).analyze(subquery.select_stmt());
 
                     String tableSubQueryAlias = alias.alias.getText();
                     addReference(tableSubQueryAlias, null);
-                    complexNamespace.put(tableSubQueryAlias, columnList);
+                    complexNamespace.put(tableSubQueryAlias, new ArrayList<>(columnList));
                 } finally {
                     lateralAllowed = oldLateral;
                 }
@@ -500,11 +513,11 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
             lateralAllowed = true;
             ValueExpr vexFunc = new ValueExpr(this);
             Pair<String, String> func = vexFunc.function(function);
-            if (func.getKey() != null) {
-                String funcAlias = alias == null ? func.getKey(): alias.getText();
+            if (func.getFirst() != null) {
+                String funcAlias = alias == null ? func.getFirst(): alias.getText();
                 addReference(funcAlias, null);
                 complexNamespace.put(funcAlias,
-                        Arrays.asList(new Pair<>(funcAlias, func.getValue())));
+                        Arrays.asList(new Pair<>(funcAlias, func.getSecond())));
             }
         } finally {
             lateralAllowed = oldLateral;

@@ -9,7 +9,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
+import ru.taximaxim.codekeeper.apgdiff.utils.ModPair;
 
 public class Insert extends AbstractExprWithNmspc<Insert_stmt_for_psqlContext> {
 
@@ -22,7 +22,7 @@ public class Insert extends AbstractExprWithNmspc<Insert_stmt_for_psqlContext> {
     }
 
     @Override
-    public List<Pair<String, String>> analyze(Insert_stmt_for_psqlContext insert) {
+    public List<ModPair<String, String>> analyze(Insert_stmt_for_psqlContext insert) {
         With_clauseContext with = insert.with_clause();
         if (with != null) {
             analyzeCte(with);

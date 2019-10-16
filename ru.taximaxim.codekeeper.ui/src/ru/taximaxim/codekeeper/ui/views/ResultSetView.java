@@ -121,15 +121,9 @@ public class ResultSetView extends ViewPart {
 
     private String valueForCsv(Object val) {
         if (val == null) {
-            return ""; //$NON-NLS-1$
+            return "NULL"; //$NON-NLS-1$
         }
-        String s = val.toString();
-        if (s.isEmpty() || s.indexOf(',') != -1 || s.indexOf(';') != -1
-                || s.indexOf('\n') != -1 || s.indexOf('"') != -1) {
-            return PgDiffUtils.quoteName(s);
-        } else {
-            return s;
-        }
+        return PgDiffUtils.quoteString(val.toString());
     }
 
     private static class IndexedColumnLabelProvider extends ColumnLabelProvider {

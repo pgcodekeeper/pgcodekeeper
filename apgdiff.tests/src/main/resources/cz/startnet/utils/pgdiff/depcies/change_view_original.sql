@@ -39,8 +39,8 @@ ALTER TABLE public.v2 OWNER TO galiev_mr;
 CREATE VIEW public.v3 AS
  SELECT t1.c1,
     t2.c2
-   FROM t1,
-    t2;
+   FROM public.t1,
+    public.t2;
 
 ALTER TABLE public.v3 OWNER TO galiev_mr;
 

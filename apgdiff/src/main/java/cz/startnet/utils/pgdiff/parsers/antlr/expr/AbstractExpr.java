@@ -37,9 +37,12 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.ModPair;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public abstract class AbstractExpr {
+
+    protected static final String NONAME = "?column?";
 
     // TODO get current postgresql version.
     // Need to get version. I already got it from JdbcLoader(READER)
@@ -132,18 +135,31 @@ public abstract class AbstractExpr {
         return depcy;
     }
 
-    protected void addTypeDepcy(Data_typeContext type) {
+    protected GenericColumn addTypeDepcy(Data_typeContext type) {
         Schema_qualified_name_nontypeContext typeName = type.predefined_type().schema_qualified_name_nontype();
-
-        if (typeName != null) {
-            IdentifierContext qual = typeName.identifier();
-            String schemaName = qual == null ? null : qual.getText();
-
-            if (schemaName != null && !ApgdiffUtils.isPgSystemSchema(schemaName)) {
-                addDepcy(new GenericColumn(schemaName,
-                        typeName.identifier_nontype().getText(), DbObjType.TYPE));
-            }
+        if (typeName == null) {
+            return new GenericColumn(ApgdiffConsts.PG_CATALOG, ParserAbstract.getTypeName(type),
+                    DbObjType.TYPE);
         }
+        return addTypeDepcy(typeName);
+    }
+
+    protected GenericColumn addTypeDepcy(Schema_qualified_name_nontypeContext typeName) {
+        String schemaName = ApgdiffConsts.PG_CATALOG;
+        IdentifierContext schemaCtx = typeName.identifier();
+        String name = typeName.identifier_nontype().getText();
+
+        if (schemaCtx != null) {
+            schemaName = schemaCtx.getText();
+        }
+
+        GenericColumn gc = new GenericColumn(schemaName, name, DbObjType.TYPE);
+
+        if (!ApgdiffUtils.isPgSystemSchema(schemaName)) {
+            addDepcy(gc);
+        }
+
+        return gc;
     }
 
     private void addDepcy(GenericColumn depcy) {
@@ -155,47 +171,42 @@ public abstract class AbstractExpr {
     /**
      * @return column with its type
      */
-    protected Pair<String, String> processColumn(List<ParserRuleContext> ids) {
-        String columnName = QNameParser.getFirstName(ids);
-        String columnType = TypesSetManually.COLUMN;
-        Pair<String, String> pair = new Pair<>(columnName, null);
-
-        if (ids.size() > 1) {
-            String schemaName = QNameParser.getThirdName(ids);
-            String columnParent = QNameParser.getSecondName(ids);
-
-            Entry<String, GenericColumn> ref = findReference(schemaName, columnParent, columnName);
-            List<Pair<String, String>> refComplex;
-            if (ref != null) {
-                GenericColumn referencedTable = ref.getValue();
-                if (referencedTable != null) {
-                    columnType = addFilteredColumnDepcy(
-                            referencedTable.schema, referencedTable.table, columnName);
-                } else if ((refComplex = findReferenceComplex(columnParent)) != null) {
-                    columnType = refComplex.stream()
-                            .filter(entry -> columnName.equals(entry.getKey()))
-                            .map(Entry::getValue)
-                            .findAny()
-                            .orElseGet(() -> {
-                                Log.log(Log.LOG_WARNING, "Column " + columnName +
-                                        " not found in complex " + columnParent);
-                                return TypesSetManually.COLUMN;
-                            });
-                } else {
-                    Log.log(Log.LOG_WARNING, "Complex not found: " + columnParent);
-                }
-            } else {
-                Log.log(Log.LOG_WARNING, "Unknown column reference: "
-                        + schemaName + ' ' + columnParent + ' ' + columnName);
-            }
-        } else {
-            // table-less columns analysis
-            columnType = processTablelessColumn(columnName);
+    protected ModPair<String, String> processColumn(List<? extends ParserRuleContext> ids) {
+        if (ids.size() == 1) {
+            return processTablelessColumn(ids.get(0));
         }
 
-        pair.setValue(columnType);
+        String columnType = TypesSetManually.COLUMN;
+        String columnName = QNameParser.getFirstName(ids);
+        String columnParent = QNameParser.getSecondName(ids);
+        String schemaName = QNameParser.getThirdName(ids);
 
-        return pair;
+        Entry<String, GenericColumn> ref = findReference(schemaName, columnParent, columnName);
+        List<Pair<String, String>> refComplex;
+        if (ref != null) {
+            GenericColumn referencedTable = ref.getValue();
+            if (referencedTable != null) {
+                columnType = addFilteredColumnDepcy(
+                        referencedTable.schema, referencedTable.table, columnName);
+            } else if ((refComplex = findReferenceComplex(columnParent)) != null) {
+                columnType = refComplex.stream()
+                        .filter(entry -> columnName.equals(entry.getFirst()))
+                        .map(Pair::getSecond)
+                        .findAny()
+                        .orElseGet(() -> {
+                            Log.log(Log.LOG_WARNING, "Column " + columnName +
+                                    " not found in complex " + columnParent);
+                            return TypesSetManually.COLUMN;
+                        });
+            } else {
+                Log.log(Log.LOG_WARNING, "Complex not found: " + columnParent);
+            }
+        } else {
+            Log.log(Log.LOG_WARNING, "Unknown column reference: "
+                    + schemaName + ' ' + columnParent + ' ' + columnName);
+        }
+
+        return new ModPair<>(columnName, columnType);
     }
 
     /**
@@ -275,13 +286,14 @@ public abstract class AbstractExpr {
         return cols;
     }
 
-    private String processTablelessColumn(String name) {
+    protected ModPair<String, String> processTablelessColumn(ParserRuleContext id) {
+        String name = id.getText();
         Pair<String, String> col = findColumnInComplex(name);
         if (col == null) {
             Pair<IRelation, Pair<String, String>> relCol = findColumn(name);
             if (relCol == null) {
                 Log.log(Log.LOG_WARNING, "Tableless column not resolved: " + name);
-                return TypesSetManually.COLUMN;
+                return new ModPair<>(name, TypesSetManually.COLUMN);
             }
             IRelation rel = relCol.getFirst();
             col = relCol.getSecond();
@@ -290,7 +302,7 @@ public abstract class AbstractExpr {
                         col.getFirst(), DbObjType.COLUMN));
             }
         }
-        return col.getSecond();
+        return col.copyMod();
     }
 
     protected void addColumnsDepcies(Schema_qualified_nameContext table,

@@ -101,7 +101,7 @@ script_additional
     | ANALYZE VERBOSE? table_cols_list?
     | CLUSTER VERBOSE? (identifier (ON schema_qualified_name | USING identifier)?)?
     | VACUUM (LEFT_PAREN vacuum_mode (COMMA vacuum_mode)* RIGHT_PAREN | vacuum_mode+)? table_cols_list?
-    | SHOW (identifier | ALL)
+    | show_statement
     | CHECKPOINT
     | LOAD Character_String_Literal
     | DISCARD (ALL | PLANS | SEQUENCES | TEMPORARY | TEMP)
@@ -119,6 +119,10 @@ script_additional
     | REASSIGN OWNED BY user_identifer_current_session (COMMA user_identifer_current_session)*
       TO user_identifer_current_session
     | copy_statement
+    ;
+
+show_statement
+    : SHOW (identifier | ALL | TIME ZONE | TRANSACTION ISOLATION LEVEL | SESSION AUTHORIZATION)
     ;
 
 explain_option
@@ -441,7 +445,7 @@ function_actions_common
     ;
 
 function_def
-    : character_string (COMMA character_string)*
+    : definition=character_string (COMMA symbol=character_string)?
     ;
 
 alter_index_statement
@@ -1717,21 +1721,21 @@ collate_identifier
     : COLLATE collation=schema_qualified_name
     ;
 
-indirection_identifier
-    : identifier indirection*
+indirection_var
+    : (identifier | dollar_number) indirection_list?
     ;
 
-indirection_vex
-    : (identifier | dollar_number) indirection*
-    ;
-    
 dollar_number
     : DOLLAR_NUMBER
     ;
 
+indirection_list
+    : indirection+ 
+    | indirection* DOT MULTIPLY
+    ;
+
 indirection
     : DOT col_label
-    | DOT MULTIPLY
     | LEFT_BRACKET vex RIGHT_BRACKET
     | LEFT_BRACKET vex? COLON vex? RIGHT_BRACKET
     ;
@@ -2066,9 +2070,11 @@ tokens_nonreserved
     | STDIN
     | STDOUT
     | STORAGE
+    | STORED
     | STRICT
     | STRIP
     | SUBSCRIPTION
+    | SUPPORT
     | SYSID
     | SYSTEM
     | TABLES
@@ -2323,6 +2329,7 @@ tokens_nonkeyword
     | LEFTARG
     | LEXIZE
     | LEXTYPES
+    | LIST
     | LOCALE 
     | LOGIN
     | MAIN
@@ -2493,7 +2500,7 @@ precision_param
 
 vex
   : vex CAST_EXPRESSION data_type
-  | LEFT_PAREN vex RIGHT_PAREN indirection*
+  | LEFT_PAREN vex RIGHT_PAREN indirection_list?
   | LEFT_PAREN vex (COMMA vex)+ RIGHT_PAREN
   | vex collate_identifier
   | <assoc=right> (PLUS | MINUS) vex
@@ -2530,7 +2537,7 @@ vex
 // see postgres' b_expr (src/backend/parser/gram.y)
 vex_b
   : vex_b CAST_EXPRESSION data_type
-  | LEFT_PAREN vex RIGHT_PAREN indirection*
+  | LEFT_PAREN vex RIGHT_PAREN indirection_list?
   | LEFT_PAREN vex (COMMA vex)+ RIGHT_PAREN
   | <assoc=right> (PLUS | MINUS) vex_b
   | vex_b EXP vex_b
@@ -2563,7 +2570,7 @@ datetime_overlaps
 
 value_expression_primary
   : unsigned_value_specification
-  | LEFT_PAREN select_stmt_no_parens RIGHT_PAREN indirection*
+  | LEFT_PAREN select_stmt_no_parens RIGHT_PAREN indirection_list?
   | case_expression
   | NULL
   | MULTIPLY
@@ -2573,7 +2580,7 @@ value_expression_primary
   | comparison_mod
   | EXISTS table_subquery
   | function_call
-  | indirection_vex
+  | indirection_var
   | array_expression
   | type_coercion
   ;
@@ -2886,13 +2893,6 @@ null_ordering
   : NULLS (FIRST | LAST)
   ;
 
-/*
-    TODO column_name
-    The name of a column in the table named by table_name. The column name can be qualified with a subfield name or array subscript, if needed.
-    (Inserting into only some fields of a composite column leaves the other fields null.)
-    NOTE: name qualification is not allowed (e.g. t1.c1)
-    this applies to UPDATE as well
-*/
 insert_stmt_for_psql
   : with_clause? INSERT INTO insert_table_name=schema_qualified_name (AS alias=identifier)?
   (OVERRIDING (SYSTEM | USER) VALUE)? insert_columns?
@@ -2903,6 +2903,10 @@ insert_stmt_for_psql
 
 insert_columns
     : LEFT_PAREN column+=indirection_identifier (COMMA column+=indirection_identifier)* RIGHT_PAREN
+    ;
+
+indirection_identifier
+    : identifier indirection_list?
     ;
 
 conflict_object
@@ -2980,8 +2984,8 @@ arguments_list
 
 data_type_dec
     : data_type
-    | vex MODULAR TYPE
-    | schema_qualified_name MODULAR ROWTYPE
+    | schema_qualified_name MODULAR TYPE
+    | schema_qualified_name_nontype MODULAR ROWTYPE
     ;
 
 exception_statement
@@ -3002,6 +3006,7 @@ function_statement
     | anonymous_block
     | schema_statement
     | data_statement
+    | show_into_statement
     ;
 
 base_statement
@@ -3052,7 +3057,7 @@ control_statement
 cursor_statement
     : OPEN var ((NO)? SCROLL)? FOR (select_stmt | execute_stmt)
     | OPEN var (option (COMMA option)*)?
-    | FETCH fetch_move_direction? (FROM | IN)? var INTO identifier_list
+    | FETCH fetch_move_direction? (FROM | IN)? var into_statement
     | MOVE fetch_move_direction? (FROM | IN)? var
     | CLOSE var
     ;
@@ -3130,6 +3135,10 @@ if_statement
 // plpgsql case
 case_statement
     : CASE vex? (WHEN vex (COMMA vex)* THEN function_statements)+ (ELSE function_statements)? END CASE
+    ;
+
+show_into_statement
+    : show_statement into_statement
     ;
 
 into_statement

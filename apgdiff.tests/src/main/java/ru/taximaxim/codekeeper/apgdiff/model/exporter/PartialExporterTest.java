@@ -139,11 +139,11 @@ public class PartialExporterTest {
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(UTF_8);
         dbSource = ApgdiffTestUtils.loadTestDump(
-                sourceFilename, PartialExporterTest.class, args);
+                sourceFilename, PartialExporterTest.class, args, false);
         args = new PgDiffArguments();
         args.setInCharsetName(UTF_8);
         dbTarget = ApgdiffTestUtils.loadTestDump(
-                targetFilename, PartialExporterTest.class, args);
+                targetFilename, PartialExporterTest.class, args, false);
 
         Assert.assertNotNull(dbSource);
         Assert.assertNotNull(dbTarget);
