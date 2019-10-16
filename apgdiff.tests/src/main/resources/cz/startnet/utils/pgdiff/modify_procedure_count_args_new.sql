@@ -10,7 +10,6 @@ CREATE PROCEDURE public.insert_data(a integer)
     LANGUAGE sql
     AS $$
 INSERT INTO tbl VALUES (a);
-INSERT INTO tbl VALUES (b);
 $$;
 
 

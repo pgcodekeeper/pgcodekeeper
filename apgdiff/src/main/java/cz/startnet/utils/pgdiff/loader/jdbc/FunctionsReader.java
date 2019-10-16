@@ -20,8 +20,8 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgAggregate;
-import cz.startnet.utils.pgdiff.schema.PgAggregate.AggKinds;
 import cz.startnet.utils.pgdiff.schema.PgAggregate.AggFuncs;
+import cz.startnet.utils.pgdiff.schema.PgAggregate.AggKinds;
 import cz.startnet.utils.pgdiff.schema.PgAggregate.ModifyType;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
@@ -211,9 +211,11 @@ public class FunctionsReader extends JdbcReader {
 
         // Parsing the function definition and adding its result context for analysis.
         if (!"-".equals(definition) && "SQL".equalsIgnoreCase(function.getLanguage())) {
-            loader.submitAntlrTask(definition.endsWith(";") ? definition : definition + "\n;",
-                    SQLParser::sql, ctx -> db.addAnalysisLauncher(
-                            new FuncProcAnalysisLauncher(function, ctx, argsQualTypes)));
+            loader.submitAntlrTask(definition, SQLParser::sql, ctx -> db.addAnalysisLauncher(
+                    new FuncProcAnalysisLauncher(function, ctx, argsQualTypes)));
+        } else if (!"-".equals(definition) && "PLPGSQL".equalsIgnoreCase(function.getLanguage())) {
+            loader.submitAntlrTask(definition, SQLParser::plpgsql_function, ctx -> db.addAnalysisLauncher(
+                    new FuncProcAnalysisLauncher(function, ctx, argsQualTypes)));
         }
     }
 

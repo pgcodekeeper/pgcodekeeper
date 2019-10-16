@@ -42,7 +42,7 @@ public class PgParserTest {
             // func args in refs
             {"aggregates"},
             {"alter_table"},
-            //{"arrays"},
+            {"arrays"},
             {"case"},
             {"cluster"},
             {"collate", 7},
