@@ -10,7 +10,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Including_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_restContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_sortContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_whereContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_varContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sort_specifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expression_primaryContext;
@@ -106,7 +106,7 @@ public class CreateIndex extends ParserAbstract {
         for (Sort_specifierContext sort_ctx : sort.sort_specifier_list().sort_specifier()) {
             Value_expression_primaryContext vexPrimary = sort_ctx.key.value_expression_primary();
             if (vexPrimary != null) {
-                Schema_qualified_nameContext colName = vexPrimary.schema_qualified_name();
+                Indirection_varContext colName = vexPrimary.indirection_var();
                 if (colName != null) {
                     ind.addColumn(colName.getText());
                 }

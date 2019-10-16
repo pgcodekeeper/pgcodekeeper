@@ -479,7 +479,7 @@ class PgDB5 implements PgDatabaseObjectCreator {
         schema.addFunction(func);
 
         func = new PgFunction("select_something");
-        func.setLanguageCost("plpgsql", null);
+        func.setLanguageCost("sql", null);
         func.setBody("$_$SELECT number1 * number2$_$");
         func.setReturns("integer");
 
@@ -492,7 +492,7 @@ class PgDB5 implements PgDatabaseObjectCreator {
         schema.addFunction(func);
 
         func = new PgFunction("select_something2");
-        func.setLanguageCost("plpgsql", null);
+        func.setLanguageCost("sql", null);
         func.setBody("'SELECT number1 * number2 || ''text'''");
         func.setReturns("integer");
 
@@ -505,7 +505,7 @@ class PgDB5 implements PgDatabaseObjectCreator {
         schema.addFunction(func);
 
         func = new PgFunction("select_something3");
-        func.setLanguageCost("plpgsql", null);
+        func.setLanguageCost("sql", null);
         func.setBody("'\nSELECT number1 * number2 || ''text''\n'");
         func.setReturns("integer");
 

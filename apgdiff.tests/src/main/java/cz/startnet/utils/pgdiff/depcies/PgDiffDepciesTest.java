@@ -86,7 +86,7 @@ public class PgDiffDepciesTest {
             // пользователь выбрал все
             {"add_table_and_trigger"},
             // перенос объектов из одной схемы в другую,
-            // пользователь таблицу
+            // пользователь выбрал таблицу
             {"move_obj_to_schema_usr_table"},
             // зависимости от вьюхи, пользователь выбрал вьюху с FROM ROW FROM
             // https://github.com/pgcodekeeper/pgcodekeeper/issues/54
@@ -187,6 +187,9 @@ public class PgDiffDepciesTest {
             // добавление exclude ограничения с зависимой функцией
             // пользователь выбрал ограничение
             {"add_exclude_usr_constraint"},
+            // зависимости от функции,
+            // пользователь выбрал функцию
+            {"add_func_with_dep_usr_f1"},
             // изменение сиквенсов с зависимостями
             // пользователь выбрал сиквенс s1
             {"change_sequence_usr_s1"},
@@ -248,16 +251,22 @@ public class PgDiffDepciesTest {
 
     @Test(timeout = 120000)
     public void runDiff() throws IOException, InterruptedException {
-        PgDatabase oldDatabase = ApgdiffTestUtils.loadTestDump(
-                getUsrSelName(FILES_POSTFIX.ORIGINAL_SQL), PgDiffDepciesTest.class, args);
-        PgDatabase newDatabase = ApgdiffTestUtils.loadTestDump(
-                getUsrSelName(FILES_POSTFIX.NEW_SQL), PgDiffDepciesTest.class, args);
+        PgDatabase oldDatabase;
+        PgDatabase newDatabase;
         PgDatabase oldDbFull;
         PgDatabase newDbFull;
         if (userSelTemplate.equals(dbTemplate)) {
+            oldDatabase = ApgdiffTestUtils.loadTestDump(
+                    getUsrSelName(FILES_POSTFIX.ORIGINAL_SQL), PgDiffDepciesTest.class, args);
+            newDatabase = ApgdiffTestUtils.loadTestDump(
+                    getUsrSelName(FILES_POSTFIX.NEW_SQL), PgDiffDepciesTest.class, args);
             oldDbFull = oldDatabase;
             newDbFull = newDatabase;
         } else {
+            oldDatabase = ApgdiffTestUtils.loadTestDump(
+                    getUsrSelName(FILES_POSTFIX.ORIGINAL_SQL), PgDiffDepciesTest.class, args, false);
+            newDatabase = ApgdiffTestUtils.loadTestDump(
+                    getUsrSelName(FILES_POSTFIX.NEW_SQL), PgDiffDepciesTest.class, args, false);
             oldDbFull = ApgdiffTestUtils.loadTestDump(
                     getDbName(FILES_POSTFIX.ORIGINAL_SQL), PgDiffDepciesTest.class, args);
             newDbFull = ApgdiffTestUtils.loadTestDump(
