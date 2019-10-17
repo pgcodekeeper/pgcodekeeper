@@ -117,43 +117,43 @@ implements TSqlContextProcessor {
                 alter(alter);
             } else if ((disable = ddl.enable_disable_trigger()) != null) {
                 if (isScriptMode || isRefMode) {
-                    addUndescribedMsObjToQueries(disable);
+                    addUndescribedObjToQueries(disable, stream);
                 } else {
                     safeParseStatement(new DisableMsTrigger(disable, db), disable);
                 }
             } else if ((drop = ddl.schema_drop()) != null) {
                 safeParseStatement(new DropMsStatement(drop, db), drop);
             } else if (isScriptMode || isRefMode) {
-                addUndescribedMsObjToQueries(ddl);
+                addUndescribedObjToQueries(ddl, stream);
             }
         } else if ((dml = st.dml_clause()) != null) {
             Update_statementContext update = dml.update_statement();
             if (update != null) {
                 safeParseStatement(new UpdateMsStatement(update, db), update);
             } else if (isScriptMode || isRefMode) {
-                addUndescribedMsObjToQueries(dml);
+                addUndescribedObjToQueries(dml, stream);
             }
         } else if ((ast = st.another_statement()) != null) {
             Set_statementContext set = ast.set_statement();
             Security_statementContext security;
             if (set != null) {
                 if (isScriptMode || isRefMode) {
-                    addUndescribedMsObjToQueries(set);
+                    addUndescribedObjToQueries(set, stream);
                 } else {
                     set(set);
                 }
             } else if ((security = ast.security_statement()) != null
                     && security.rule_common() != null) {
                 if (isScriptMode || isRefMode) {
-                    addUndescribedMsObjToQueries(security);
+                    addUndescribedObjToQueries(security, stream);
                 } else {
                     safeParseStatement(new CreateMsRule(security.rule_common(), db), security);
                 }
             } else if (isScriptMode || isRefMode) {
-                addUndescribedMsObjToQueries(ast);
+                addUndescribedObjToQueries(ast, stream);
             }
         } else if (isScriptMode || isRefMode) {
-            addUndescribedMsObjToQueries(st);
+            addUndescribedObjToQueries(st, stream);
         }
     }
 
@@ -178,7 +178,7 @@ implements TSqlContextProcessor {
         } else if (body.create_or_alter_trigger() != null) {
             p = new CreateMsTrigger(ctx, db, ansiNulls, quotedIdentifier, stream);
         } else if (isScriptMode || isRefMode) {
-            addUndescribedMsObjToQueries(ctx);
+            addUndescribedObjToQueries(ctx, stream);
             return;
         } else {
             return;
@@ -209,7 +209,7 @@ implements TSqlContextProcessor {
         } else if (ctx.create_type() != null) {
             p = new CreateMsType(ctx.create_type(), db);
         } else if (isScriptMode || isRefMode) {
-            addUndescribedMsObjToQueries(ctx);
+            addUndescribedObjToQueries(ctx, stream);
             return;
         } else {
             return;
@@ -232,7 +232,7 @@ implements TSqlContextProcessor {
                 || ctx.alter_sequence() != null) {
             p = new AlterMsOther(ctx, db);
         } else if (isScriptMode || isRefMode) {
-            addUndescribedMsObjToQueries(ctx);
+            addUndescribedObjToQueries(ctx, stream);
             return;
         } else {
             return;
@@ -267,13 +267,8 @@ implements TSqlContextProcessor {
         }
     }
 
-    private void addUndescribedMsObjToQueries(ParserRuleContext ctx) {
-        safeParseStatement(() -> db.addToQueries(fileName, new PgObjLocation(
-                getActionForUndescribedMsObj(ctx, stream), ctx,
-                isScriptMode ? ParserAbstract.getFullCtxText(ctx) : null)), ctx);
-    }
-
-    private String getActionForUndescribedMsObj(ParserRuleContext ctx,
+    @Override
+    protected String getActionForUndescribedObj(ParserRuleContext ctx,
             CommonTokenStream tokenStream) {
         if (ctx instanceof Another_statementContext) {
             Another_statementContext ast = (Another_statementContext) ctx;
@@ -337,8 +332,7 @@ implements TSqlContextProcessor {
                     && xmlIdxCtx.PRIMARY() != null)) {
                 descrWordsCount = 4;
             }
-            return CustomSQLParserListener.getActionDescription(tokenStream, ctx,
-                    descrWordsCount);
+            return getActionDescription(tokenStream, ctx, descrWordsCount);
         } else if (ctx instanceof Schema_alterContext) {
             Schema_alterContext alterCtx = (Schema_alterContext) ctx;
             int descrWordsCount = 0;
@@ -381,10 +375,9 @@ implements TSqlContextProcessor {
             } else {
                 descrWordsCount = 2;
             }
-            return CustomSQLParserListener.getActionDescription(tokenStream, ctx,
-                    descrWordsCount);
+            return getActionDescription(tokenStream, ctx, descrWordsCount);
         }
-        return ctx.getStart().getText().toUpperCase(Locale.ROOT);
+        return super.getActionForUndescribedObj(ctx, tokenStream);
     }
 
     private String getInserOrDelActionMs(Qualified_nameContext qname, boolean isDel) {

@@ -6,7 +6,6 @@ import java.util.Queue;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.Token;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
@@ -55,7 +54,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.DropStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.UpdateStatement;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
 public class CustomSQLParserListener extends CustomParserListener
@@ -104,7 +102,7 @@ implements SqlContextProcessor {
         } else if ((ds = statement.data_statement()) != null) {
             data(ds);
         } else if (isScriptMode || isRefMode) {
-            addUndescribedPgObjToQueries(statement);
+            addUndescribedObjToQueries(statement, stream);
         }
     }
 
@@ -148,26 +146,26 @@ implements SqlContextProcessor {
             p = new CreateFtsDictionary(ctx.create_fts_dictionary(), db);
         } else if (ctx.comment_on_statement() != null) {
             if (isScriptMode || isRefMode) {
-                addUndescribedPgObjToQueries(ctx);
+                addUndescribedObjToQueries(ctx, stream);
                 return;
             }
             p = new CommentOn(ctx.comment_on_statement(), db);
         } else if (ctx.rule_common() != null) {
             if (isScriptMode || isRefMode) {
-                addUndescribedPgObjToQueries(ctx);
+                addUndescribedObjToQueries(ctx, stream);
                 return;
             }
             p = new CreateRule(ctx.rule_common(), db);
         } else if (ctx.set_statement() != null) {
             Set_statementContext setCtx = ctx.set_statement();
             if (isScriptMode || isRefMode) {
-                addUndescribedPgObjToQueries(setCtx);
+                addUndescribedObjToQueries(setCtx, stream);
             } else {
                 set(setCtx);
             }
             return;
         } else if (isScriptMode || isRefMode) {
-            addUndescribedPgObjToQueries(ctx);
+            addUndescribedObjToQueries(ctx, stream);
             return;
         } else {
             return;
@@ -197,7 +195,7 @@ implements SqlContextProcessor {
                 || ctx.alter_extension_statement() != null) {
             p = new AlterOther(ctx, db);
         } else if (isScriptMode || isRefMode) {
-            addUndescribedPgObjToQueries(ctx);
+            addUndescribedObjToQueries(ctx, stream);
             return;
         } else {
             return;
@@ -210,7 +208,7 @@ implements SqlContextProcessor {
         if (ctx.update_stmt_for_psql() != null) {
             p =  new UpdateStatement(ctx.update_stmt_for_psql(), db);
         } else if (isScriptMode || isRefMode) {
-            addUndescribedPgObjToQueries(ctx);
+            addUndescribedObjToQueries(ctx, stream);
             return;
         } else {
             return;
@@ -257,13 +255,8 @@ implements SqlContextProcessor {
         }
     }
 
-    private void addUndescribedPgObjToQueries(ParserRuleContext ctx) {
-        safeParseStatement(() -> db.addToQueries(fileName, new PgObjLocation(
-                getActionForUndescribedPgObj(ctx, stream), ctx,
-                isScriptMode ? ParserAbstract.getFullCtxText(ctx) : null)), ctx);
-    }
-
-    private String getActionForUndescribedPgObj(ParserRuleContext ctx,
+    @Override
+    protected String getActionForUndescribedObj(ParserRuleContext ctx,
             CommonTokenStream tokenStream) {
         if (ctx instanceof StatementContext) {
             StatementContext stmtCtx = (StatementContext) ctx;
@@ -329,21 +322,6 @@ implements SqlContextProcessor {
             }
             return getActionDescription(tokenStream, ctx, descrWordsCount);
         }
-        return ctx.getStart().getText().toUpperCase(Locale.ROOT);
-    }
-
-    /**
-     *  Returns only the first 'descrWordsCount' words from a query in 'ctx'.
-     */
-    protected static String getActionDescription(CommonTokenStream tokenStream,
-            ParserRuleContext ctx, int descrWordsCount) {
-        List<Token> tokens = tokenStream.getTokens(ctx.getStart().getTokenIndex(),
-                ctx.getStop().getTokenIndex());
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < descrWordsCount; i++) {
-            sb.append(tokens.get(i).getText()).append(' ');
-        }
-        sb.setLength(sb.length() - 1);
-        return sb.toString();
+        return super.getActionForUndescribedObj(ctx, tokenStream);
     }
 }
