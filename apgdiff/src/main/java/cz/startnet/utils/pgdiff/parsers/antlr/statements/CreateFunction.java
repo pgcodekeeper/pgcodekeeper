@@ -12,6 +12,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_funct_paramsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statementContext;
@@ -58,7 +59,7 @@ public class CreateFunction extends ParserAbstract {
         AbstractPgFunction function = ctx.PROCEDURE() != null ? new PgProcedure(name)
                 : new PgFunction(name);
 
-        fillFunction(ctx.funct_body, function, fillArguments(function));
+        fillFunction(ctx.funct_body, function);
 
         if (ctx.ret_table != null) {
             function.setReturns(getFullCtxText(ctx.ret_table));
@@ -73,8 +74,7 @@ public class CreateFunction extends ParserAbstract {
         addSafe(getSchemaSafe(ids), function, ids);
     }
 
-    private void fillFunction(Create_funct_paramsContext params,
-            AbstractPgFunction function, List<Pair<String, GenericColumn>> funcArgs) {
+    private void fillFunction(Create_funct_paramsContext params, AbstractPgFunction function) {
         Function_defContext funcDef = null;
         Float cost = null;
         String language = null;
@@ -126,31 +126,11 @@ public class CreateFunction extends ParserAbstract {
             }
         }
 
-        // Parsing the function definition and adding its result context for analysis.
-        // Adding contexts of function arguments for analysis.
-        List<Character_stringContext> funcContent = funcDef.character_string();
-        if ("SQL".equalsIgnoreCase(language) && funcContent.size() == 1) {
-            String def;
-            TerminalNode codeStart = funcContent.get(0).Character_String_Literal();
-            if (codeStart != null) {
-                // TODO support special escaping schemes (maybe in the util itself)
-                def = PgDiffUtils.unquoteQuotedString(codeStart.getText());
-            } else {
-                List<TerminalNode> dollarText = funcContent.get(0).Text_between_Dollar();
-                codeStart = dollarText.get(0);
-                def = dollarText.stream()
-                        .map(TerminalNode::getText)
-                        .collect(Collectors.joining());
-            }
+        List<Pair<String, GenericColumn>> funcArgs = fillArguments(function);
 
-            AntlrParser.submitSqlCtxToAnalyze(def, errors,
-                    codeStart.getSymbol().getStartIndex(),
-                    codeStart.getSymbol().getLine() - 1,
-                    codeStart.getSymbol().getCharPositionInLine(),
-                    "function definition of " + function.getBareName(),
-                    ctx -> db.addAnalysisLauncher(new FuncProcAnalysisLauncher(
-                            function, ctx, funcArgs)),
-                    antlrTasks);
+        if (("SQL".equalsIgnoreCase(language) || "PLPGSQL".equalsIgnoreCase(language))
+                && funcDef != null && funcDef.symbol == null) {
+            analyzeFunctionDefinition(function, language, funcDef.definition, funcArgs);
         }
 
         With_storage_parameterContext storage = params.with_storage_parameter();
@@ -165,6 +145,50 @@ public class CreateFunction extends ParserAbstract {
         }
 
         function.setLanguageCost(language, cost);
+    }
+
+    private void analyzeFunctionDefinition(AbstractPgFunction function, String language,
+            Character_stringContext definition, List<Pair<String, GenericColumn>> funcArgs) {
+
+        String def;
+        TerminalNode codeStart = definition.Character_String_Literal();
+        if (codeStart != null) {
+            // TODO support special escaping schemes (maybe in the util itself)
+            def = PgDiffUtils.unquoteQuotedString(codeStart.getText());
+        } else {
+            List<TerminalNode> dollarText = definition.Text_between_Dollar();
+            codeStart = dollarText.get(0);
+            def = dollarText.stream()
+                    .map(TerminalNode::getText)
+                    .collect(Collectors.joining());
+        }
+
+        // Parsing the function definition and adding its result context for analysis.
+        // Adding contexts of function arguments for analysis.
+
+        int startOffset = codeStart.getSymbol().getStartIndex();
+        int startLine = codeStart.getSymbol().getLine() - 1;
+        int inLineOffset = codeStart.getSymbol().getCharPositionInLine();
+        String name = "function definition of " + function.getBareName();
+        List<AntlrError> err = new ArrayList<>();
+
+        if ("SQL".equalsIgnoreCase(language)) {
+            AntlrParser.submitAntlrTask(antlrTasks, () -> AntlrParser.makeBasicParser(
+                    SQLParser.class, def, name, err).sql(),
+                    ctx -> {
+                        err.stream().map(e -> e.copyWithOffset(startOffset,
+                                startLine, inLineOffset)).forEach(errors::add);
+                        db.addAnalysisLauncher(new FuncProcAnalysisLauncher(function, ctx, funcArgs));
+                    });
+        } else if ("PLPGSQL".equalsIgnoreCase(language)) {
+            AntlrParser.submitAntlrTask(antlrTasks, () -> AntlrParser.makeBasicParser(
+                    SQLParser.class, def, name, err).plpgsql_function(),
+                    ctx -> {
+                        err.stream().map(e -> e.copyWithOffset(startOffset,
+                                startLine, inLineOffset)).forEach(errors::add);
+                        db.addAnalysisLauncher(new FuncProcAnalysisLauncher(function, ctx, funcArgs));
+                    });
+        }
     }
 
     /**

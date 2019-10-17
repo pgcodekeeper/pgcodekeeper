@@ -2,6 +2,9 @@ package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map.Entry;
+
+import org.antlr.v4.runtime.tree.ParseTree;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Arguments_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Assign_stmtContext;
@@ -12,6 +15,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Cursor_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_type_decContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.DeclarationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.DeclarationsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Delete_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Exception_statementContext;
@@ -19,6 +23,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Execute_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_blockContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_statementsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.If_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Insert_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Loop_startContext;
@@ -39,8 +44,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Using_vexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.ModPair;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
@@ -54,12 +62,15 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
     }
 
     @Override
-    public List<Pair<String, String>> analyze(Plpgsql_functionContext root) {
+    public List<ModPair<String, String>> analyze(Plpgsql_functionContext root) {
         block(root.function_block());
         return Collections.emptyList();
     }
 
     private void block(Function_blockContext block) {
+        // block label may be used to qualify references to vars in nested blocks
+        // there's no mechanism to track this ATM, implement later if requested
+        // same for loop-declared vars (at least with the FOR var IN ... syntax)
         declare(block.declarations());
         statements(block.function_statements());
         exception(block.exception_statement());
@@ -72,28 +83,67 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
 
         ValueExpr vex = new ValueExpr(this);
 
-        for (Type_declarationContext dec : declare.type_declaration()) {
-            VexContext vexCtx = dec.vex();
-            if (vexCtx != null) {
-                vex.analyze(new Vex(vexCtx));
-            }
+        for (DeclarationContext declaration : declare.declaration()) {
+            String alias = declaration.identifier().getText();
+            Type_declarationContext dec = declaration.type_declaration();
 
             Data_type_decContext datatype = dec.data_type_dec();
             if (datatype != null) {
-                addTypeDepcy(datatype.data_type());
-            }
+                declareVar(alias, datatype);
 
-            Arguments_listContext list = dec.arguments_list();
-            if (list != null) {
-                for (Data_typeContext type : list.data_type()) {
-                    addTypeDepcy(type);
+                VexContext vexCtx = dec.vex();
+                if (vexCtx != null) {
+                    vex.analyze(new Vex(vexCtx));
                 }
+            } else if (dec.ALIAS() != null) {
+                ParseTree idVar = dec.identifier();
+                if (idVar == null) {
+                    idVar = dec.DOLLAR_NUMBER();
+                }
+                String var = idVar.getText();
+
+                declareAlias(alias, var);
+            } else if (dec.CURSOR() != null) {
+                Arguments_listContext list = dec.arguments_list();
+                if (list != null) {
+                    for (Data_typeContext type : list.data_type()) {
+                        addTypeDepcy(type);
+                    }
+                }
+
+                new Select(this).analyze(new SelectStmt(dec.select_stmt()));
+                addNamespaceVariable(new Pair<>(alias, TypesSetManually.CURSOR));
+            }
+        }
+    }
+
+    private void declareVar(String alias, Data_type_decContext ctx) {
+        Data_typeContext type = ctx.data_type();
+        if (type != null) {
+            declareNamespaceVar(alias, null, addTypeDepcy(type));
+        } else if (ctx.ROWTYPE() != null) {
+            declareNamespaceVar(alias, null, addTypeDepcy(ctx.schema_qualified_name_nontype()));
+        } else {
+            String varType = processColumn(ctx.schema_qualified_name().identifier()).getSecond();
+            addNamespaceVariable(new Pair<>(alias, varType));
+        }
+    }
+
+    private void declareAlias(String alias, String var) {
+        Entry<String, GenericColumn> ref = findReference(null, var, null);
+        if (ref != null) {
+            addReference(alias, ref.getValue());
+        } else {
+            Pair<String, String> pair = findColumnInComplex(var);
+            String type;
+            if (pair != null) {
+                type = pair.getSecond();
+            } else {
+                type = TypesSetManually.UNKNOWN;
+                Log.log(Log.LOG_WARNING, "Variable not found: " + var);
             }
 
-            Select_stmtContext select = dec.select_stmt();
-            if (select != null) {
-                new Select(this).analyze(new SelectStmt(select));
-            }
+            addNamespaceVariable(new Pair<>(alias, type));
         }
     }
 
@@ -106,7 +156,7 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
             Message_statementContext message;
             Data_statementContext data;
             if (block != null) {
-                block(block);
+                new Function(this).block(block);
             } else if ((base = statement.base_statement()) != null) {
                 base(base);
             } else if ((control = statement.control_statement()) != null) {
@@ -187,11 +237,12 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
         VexContext vexCtx;
 
         if (statements != null) {
-            statements(statements);
+            Function function = new Function(this);
             Loop_startContext start = loop.loop_start();
             if (start != null) {
-                loopStart(start);
+                function.loopStart(start);
             }
+            function.statements(statements);
         } else if ((vexCtx = loop.vex()) != null) {
             ValueExpr vex = new ValueExpr(this);
             vex.analyze(new Vex(vexCtx));
@@ -199,6 +250,14 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
     }
 
     private void loopStart(Loop_startContext start) {
+        IdentifierContext cur = start.cursor;
+        if (cur != null) {
+            // record
+            addNamespaceVariable(new Pair<>(cur.getText(), TypesSetManually.UNKNOWN));
+        } else if (start.DOUBLE_DOT() != null) {
+            addNamespaceVariable(new Pair<>(start.alias.getText(), TypesSetManually.INTEGER));
+        }
+
         List<VexContext> vexs = start.vex();
         List<OptionContext> options = start.option();
         if (!vexs.isEmpty() || !options.isEmpty()) {
