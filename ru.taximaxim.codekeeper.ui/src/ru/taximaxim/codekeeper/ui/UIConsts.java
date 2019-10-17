@@ -110,6 +110,7 @@ public interface UIConsts {
     }
 
     interface FORMATTER_PREF {
+        String INDENT_SIZE = "indentSize"; //$NON-NLS-1$
         String REMOVE_TRAILING_WHITESPACE = "removeTrailingWhitespace"; //$NON-NLS-1$
         String ADD_WHITESPACE_BEFORE_OP = "addWhitespaceBeforeOperator"; //$NON-NLS-1$
         String ADD_WHITESPACE_AFTER_OP = "addWhitespaceAfterOperator"; //$NON-NLS-1$

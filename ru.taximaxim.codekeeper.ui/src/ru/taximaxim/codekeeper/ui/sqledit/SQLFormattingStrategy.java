@@ -76,6 +76,7 @@ public class SQLFormattingStrategy extends ContextBasedFormattingStrategy {
     private TextEdit formatDoc(int offset, int lenght, String source) {
         Formatter formatter = new Formatter(offset, lenght);
 
+        formatter.setIndentSize(mainPrefs.getInt(FORMATTER_PREF.INDENT_SIZE));
         formatter.setRemoveTrailingWhitespace(
                 mainPrefs.getBoolean(FORMATTER_PREF.REMOVE_TRAILING_WHITESPACE));
         formatter.setAddWhitespaceBeforeOp(

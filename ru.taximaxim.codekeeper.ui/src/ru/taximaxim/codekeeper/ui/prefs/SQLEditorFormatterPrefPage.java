@@ -28,6 +28,10 @@ implements IWorkbenchPreferencePage {
 
     @Override
     protected void createFieldEditors() {
+        addField(new IntegerFieldEditor(FORMATTER_PREF.INDENT_SIZE,
+                Messages.SQLEditorFormatterPrefPage_indent_size,
+                getFieldEditorParent(), 2));
+
         addField(new BooleanFieldEditor(FORMATTER_PREF.REMOVE_TRAILING_WHITESPACE,
                 Messages.SQLEditorFormatterPrefPage_remove_trailing_whitespace,
                 getFieldEditorParent()));
