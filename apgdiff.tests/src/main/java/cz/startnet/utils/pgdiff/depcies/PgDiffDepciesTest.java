@@ -192,6 +192,9 @@ public class PgDiffDepciesTest {
             // добавление объекта fts_template с зависимыми от него объектами,
             // пользователь выбрал fts_template
             {"add_fts_tmpl_usr_fts_tmpl"},
+            // добавление объекта fts_parser с зависимыми от него объектами,
+            // пользователь выбрал fts_parser
+            {"add_fts_parser_usr_fts_parser"},
         });
 
         int maxLength = p.stream()
