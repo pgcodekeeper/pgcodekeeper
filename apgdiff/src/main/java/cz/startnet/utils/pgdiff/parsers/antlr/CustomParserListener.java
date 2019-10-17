@@ -23,6 +23,8 @@ public class CustomParserListener {
 
     protected final PgDatabase db;
     protected final ParserListenerMode mode;
+    protected final boolean isScriptMode;
+    protected final boolean isNormMode;
     protected final String fileName;
     protected final List<AntlrError> errors;
     private final IProgressMonitor monitor;
@@ -37,6 +39,8 @@ public class CustomParserListener {
         this.monitor = monitor;
         this.fileName = fileName;
         this.mode = mode;
+        isScriptMode = ParserListenerMode.SCRIPT == mode;
+        isNormMode = ParserListenerMode.NORMAL == mode;
     }
 
     /**
@@ -88,7 +92,7 @@ public class CustomParserListener {
     protected void addUndescribedObjToQueries(ParserRuleContext ctx, CommonTokenStream tokenStream) {
         safeParseStatement(() -> db.addToQueries(fileName, new PgObjLocation(
                 getActionForUndescribedObj(ctx, tokenStream), ctx,
-                ParserListenerMode.SCRIPT == mode ? ParserAbstract.getFullCtxText(ctx) : null)), ctx);
+                isScriptMode ? ParserAbstract.getFullCtxText(ctx) : null)), ctx);
     }
 
     /**

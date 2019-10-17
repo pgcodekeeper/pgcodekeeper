@@ -64,15 +64,11 @@ implements TSqlContextProcessor {
 
     private boolean ansiNulls = true;
     private boolean quotedIdentifier = true;
-    private final boolean isScriptMode;
-    private final boolean isRefMode;
     private CommonTokenStream stream;
 
     public CustomTSQLParserListener(PgDatabase database, String filename,
             ParserListenerMode mode, List<AntlrError> errors, IProgressMonitor monitor) {
         super(database, filename, mode, errors, monitor);
-        isScriptMode = ParserListenerMode.SCRIPT == mode;
-        isRefMode = ParserListenerMode.REF == mode;
     }
 
     @Override
@@ -94,7 +90,7 @@ implements TSqlContextProcessor {
     }
 
     private void endBatch(ParserRuleContext previousObjCtx) {
-        if (isScriptMode || isRefMode) {
+        if (!isNormMode) {
             db.addToQueries(fileName, new PgObjLocation(null, QueriesBatchCallable.GO,
                     previousObjCtx.getStop().getStopIndex() + OFFSET_TO_GO_POSITION,
                     previousObjCtx.getStop().getLine() + OFFSET_TO_GO_POSITION, 0, null,
@@ -116,43 +112,43 @@ implements TSqlContextProcessor {
             } else if ((alter = ddl.schema_alter()) != null) {
                 alter(alter);
             } else if ((disable = ddl.enable_disable_trigger()) != null) {
-                if (isScriptMode || isRefMode) {
+                if (!isNormMode) {
                     addUndescribedObjToQueries(disable, stream);
                 } else {
                     safeParseStatement(new DisableMsTrigger(disable, db), disable);
                 }
             } else if ((drop = ddl.schema_drop()) != null) {
                 safeParseStatement(new DropMsStatement(drop, db), drop);
-            } else if (isScriptMode || isRefMode) {
+            } else if (!isNormMode) {
                 addUndescribedObjToQueries(ddl, stream);
             }
         } else if ((dml = st.dml_clause()) != null) {
             Update_statementContext update = dml.update_statement();
             if (update != null) {
                 safeParseStatement(new UpdateMsStatement(update, db), update);
-            } else if (isScriptMode || isRefMode) {
+            } else if (!isNormMode) {
                 addUndescribedObjToQueries(dml, stream);
             }
         } else if ((ast = st.another_statement()) != null) {
             Set_statementContext set = ast.set_statement();
             Security_statementContext security;
             if (set != null) {
-                if (isScriptMode || isRefMode) {
+                if (!isNormMode) {
                     addUndescribedObjToQueries(set, stream);
                 } else {
                     set(set);
                 }
             } else if ((security = ast.security_statement()) != null
                     && security.rule_common() != null) {
-                if (isScriptMode || isRefMode) {
+                if (!isNormMode) {
                     addUndescribedObjToQueries(security, stream);
                 } else {
                     safeParseStatement(new CreateMsRule(security.rule_common(), db), security);
                 }
-            } else if (isScriptMode || isRefMode) {
+            } else if (!isNormMode) {
                 addUndescribedObjToQueries(ast, stream);
             }
-        } else if (isScriptMode || isRefMode) {
+        } else if (!isNormMode) {
             addUndescribedObjToQueries(st, stream);
         }
     }
@@ -177,7 +173,7 @@ implements TSqlContextProcessor {
             p = new CreateMsView(ctx, db, ansiNulls, quotedIdentifier, stream);
         } else if (body.create_or_alter_trigger() != null) {
             p = new CreateMsTrigger(ctx, db, ansiNulls, quotedIdentifier, stream);
-        } else if (isScriptMode || isRefMode) {
+        } else if (!isNormMode) {
             addUndescribedObjToQueries(ctx, stream);
             return;
         } else {
@@ -208,7 +204,7 @@ implements TSqlContextProcessor {
             p = new CreateMsUser(ctx.create_user(), db);
         } else if (ctx.create_type() != null) {
             p = new CreateMsType(ctx.create_type(), db);
-        } else if (isScriptMode || isRefMode) {
+        } else if (!isNormMode) {
             addUndescribedObjToQueries(ctx, stream);
             return;
         } else {
@@ -231,7 +227,7 @@ implements TSqlContextProcessor {
                 || ctx.alter_user() != null
                 || ctx.alter_sequence() != null) {
             p = new AlterMsOther(ctx, db);
-        } else if (isScriptMode || isRefMode) {
+        } else if (!isNormMode) {
             addUndescribedObjToQueries(ctx, stream);
             return;
         } else {
