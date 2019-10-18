@@ -20,7 +20,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -57,14 +56,14 @@ public class DropStatement extends ParserAbstract {
         } else {
             type = DbObjType.AGGREGATE;
         }
-        addObjReference(ctx.name.identifier(), type, StatementActions.DROP);
+        addObjReference(ctx.name.identifier(), type, ACTION_DROP);
     }
 
     public void dropOperator(Drop_operator_statementContext ctx) {
         for (Target_operatorContext targetOperCtx : ctx.target_operator()) {
             Operator_nameContext nameCtx = targetOperCtx.operator_name();
             addObjReference(Arrays.asList(nameCtx.schema_name, nameCtx.operator),
-                    DbObjType.OPERATOR, StatementActions.DROP);
+                    DbObjType.OPERATOR, ACTION_DROP);
         }
     }
 
@@ -78,7 +77,7 @@ public class DropStatement extends ParserAbstract {
 
     public void dropChild(List<IdentifierContext> tableIds, IdentifierContext nameCtx, DbObjType type) {
         tableIds.add(nameCtx);
-        addObjReference(tableIds, type, StatementActions.DROP);
+        addObjReference(tableIds, type, ACTION_DROP);
     }
 
     public void drop(Drop_statementsContext ctx) {
@@ -91,7 +90,7 @@ public class DropStatement extends ParserAbstract {
         for (Schema_qualified_nameContext objName :
             ctx.if_exist_names_restrict_cascade().names_references().name) {
             List<IdentifierContext> ids = objName.identifier();
-            PgObjLocation loc = addObjReference(ids, type, StatementActions.DROP);
+            PgObjLocation loc = addObjReference(ids, type, ACTION_DROP);
 
             if (type == DbObjType.TABLE) {
                 loc.setWarning(DangerStatement.DROP_TABLE);
@@ -141,7 +140,7 @@ public class DropStatement extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
+    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
         DbObjType type;
         List<IdentifierContext> ids;
         GenericColumn descrObj = null;
@@ -197,6 +196,6 @@ public class DropStatement extends ParserAbstract {
             descrObj = new GenericColumn(schemaName, objName, DbObjType.OPERATOR);
         }
 
-        return descrObj != null ? new Pair<>(StatementActions.DROP, descrObj) : null;
+        return descrObj != null ? new Pair<>(ACTION_DROP, descrObj) : null;
     }
 }

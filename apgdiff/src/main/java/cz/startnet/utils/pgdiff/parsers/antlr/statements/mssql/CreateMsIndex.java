@@ -22,7 +22,6 @@ import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.MsIndex;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -42,8 +41,7 @@ public class CreateMsIndex extends ParserAbstract {
         IdContext nameCtx = ctx.name;
         List<IdContext> ids = Arrays.asList(schemaCtx, nameCtx);
         AbstractSchema schema = getSchemaSafe(ids);
-        addObjReference(Arrays.asList(schemaCtx, tableCtx),
-                DbObjType.TABLE, StatementActions.NONE);
+        addObjReference(Arrays.asList(schemaCtx, tableCtx), DbObjType.TABLE, ACTION_NONE);
 
         AbstractIndex ind = new MsIndex(nameCtx.getText());
         ind.setUnique(ctx.UNIQUE() != null);
@@ -94,9 +92,9 @@ public class CreateMsIndex extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
+    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
         Qualified_nameContext qualNameCtx = ctx.qualified_name();
-        return new Pair<>(StatementActions.CREATE, new GenericColumn(qualNameCtx.schema.getText(),
+        return new Pair<>(ACTION_CREATE, new GenericColumn(qualNameCtx.schema.getText(),
                 qualNameCtx.name.getText(), ctx.name.getText(), DbObjType.INDEX));
     }
 }

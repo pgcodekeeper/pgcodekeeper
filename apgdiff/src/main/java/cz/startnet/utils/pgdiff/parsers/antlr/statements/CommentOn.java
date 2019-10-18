@@ -27,7 +27,6 @@ import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgView;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
@@ -138,7 +137,7 @@ public class CommentOn extends ParserAbstract {
             List<IdentifierContext> parentIds = obj.table_name.identifier();
             IStatementContainer table = getSafe(AbstractSchema::getStatementContainer,
                     schema, QNameParser.getFirstNameCtx(parentIds));
-            addObjReference(parentIds, DbObjType.TABLE, StatementActions.NONE);
+            addObjReference(parentIds, DbObjType.TABLE, ACTION_NONE);
             type = DbObjType.CONSTRAINT;
             ids = Arrays.asList(QNameParser.getSchemaNameCtx(parentIds),
                     QNameParser.getFirstNameCtx(parentIds), nameCtx);
@@ -151,7 +150,7 @@ public class CommentOn extends ParserAbstract {
         } else if (obj.TRIGGER() != null && obj.EVENT() == null) {
             type = DbObjType.TRIGGER;
             List<IdentifierContext> parentIds = obj.table_name.identifier();
-            addObjReference(parentIds, DbObjType.TABLE, StatementActions.NONE);
+            addObjReference(parentIds, DbObjType.TABLE, ACTION_NONE);
             ids = Arrays.asList(QNameParser.getSchemaNameCtx(parentIds),
                     QNameParser.getFirstNameCtx(parentIds), nameCtx);
             IStatementContainer c = getSafe(AbstractSchema::getStatementContainer, schema,
@@ -192,7 +191,7 @@ public class CommentOn extends ParserAbstract {
         } else if (obj.RULE() != null) {
             type = DbObjType.RULE;
             List<IdentifierContext> parentIds = obj.table_name.identifier();
-            addObjReference(parentIds, DbObjType.TABLE, StatementActions.NONE);
+            addObjReference(parentIds, DbObjType.TABLE, ACTION_NONE);
             ids = Arrays.asList(QNameParser.getSchemaNameCtx(parentIds),
                     QNameParser.getFirstNameCtx(parentIds), nameCtx);
             IStatementContainer c = getSafe(AbstractSchema::getStatementContainer, schema,
@@ -214,7 +213,7 @@ public class CommentOn extends ParserAbstract {
 
         if (type != null) {
             doSafe((s,c) -> s.setComment(db.getArguments(), c), st, comment);
-            PgObjLocation ref = addObjReference(ids, type, StatementActions.COMMENT);
+            PgObjLocation ref = addObjReference(ids, type, ACTION_COMMENT);
 
             db.getObjDefinitions().values().stream().flatMap(Set::stream)
             .filter(ref::compare).forEach(def -> def.setComment(comment));
@@ -222,7 +221,7 @@ public class CommentOn extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
+    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
         return null;
     }
 }

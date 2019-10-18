@@ -24,7 +24,6 @@ import cz.startnet.utils.pgdiff.schema.MsTable;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -45,7 +44,7 @@ public class AlterMsTable extends TableAbstract {
         AbstractSchema schema = getSchemaSafe(ids);
         AbstractTable table = getSafe(AbstractSchema::getTable, schema, nameCtx);
         PgObjLocation ref = addObjReference(Arrays.asList(schemaCtx, nameCtx),
-                DbObjType.TABLE, StatementActions.ALTER);
+                DbObjType.TABLE, ACTION_ALTER);
 
         Column_def_table_constraintsContext constrs = ctx.column_def_table_constraints();
         if (constrs != null ) {
@@ -84,7 +83,7 @@ public class AlterMsTable extends TableAbstract {
                 MsTrigger tr = (MsTrigger) getSafe(AbstractTable::getTrigger, table, trigger);
                 doSafe(MsTrigger::setDisable, tr, ctx.ENABLE() == null);
                 addObjReference(Arrays.asList(schemaCtx, nameCtx, trigger),
-                        DbObjType.TRIGGER, StatementActions.ALTER);
+                        DbObjType.TRIGGER, ACTION_ALTER);
             }
         } else if (ctx.CHANGE_TRACKING() != null && ctx.ENABLE() != null) {
             doSafe(MsTable::setTracked, ((MsTable) table), ctx.ON() != null);
@@ -104,9 +103,9 @@ public class AlterMsTable extends TableAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
+    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
         Qualified_nameContext qualNameCtx = ctx.name;
-        return new Pair<>(StatementActions.ALTER, new GenericColumn(
+        return new Pair<>(ACTION_ALTER, new GenericColumn(
                 qualNameCtx.schema.getText(), qualNameCtx.name.getText(), DbObjType.TABLE));
     }
 }

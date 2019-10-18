@@ -8,7 +8,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsRole;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -34,8 +33,8 @@ public class CreateMsRole extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
-        return new Pair<>(StatementActions.CREATE,
+    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
+        return new Pair<>(ACTION_CREATE,
                 new GenericColumn(ctx.role_name.getText(), DbObjType.ROLE));
     }
 }

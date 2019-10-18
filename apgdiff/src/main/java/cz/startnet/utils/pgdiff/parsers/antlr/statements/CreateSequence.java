@@ -9,7 +9,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -57,9 +56,9 @@ public class CreateSequence extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
+    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        return new Pair<>(StatementActions.CREATE, new GenericColumn(QNameParser.getSchemaName(ids),
+        return new Pair<>(ACTION_CREATE, new GenericColumn(QNameParser.getSchemaName(ids),
                 QNameParser.getFirstNameCtx(ids).getText(), DbObjType.SEQUENCE));
     }
 }

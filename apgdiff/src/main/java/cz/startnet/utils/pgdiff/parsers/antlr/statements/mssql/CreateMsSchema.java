@@ -9,7 +9,6 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -35,8 +34,8 @@ public class CreateMsSchema extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
-        return new Pair<>(StatementActions.CREATE,
+    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
+        return new Pair<>(ACTION_CREATE,
                 new GenericColumn(ctx.schema_name.getText(), DbObjType.SCHEMA));
     }
 }

@@ -35,7 +35,6 @@ import cz.startnet.utils.pgdiff.schema.MsClrFunction;
 import cz.startnet.utils.pgdiff.schema.MsFunction;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -202,9 +201,9 @@ public class CreateMsFunction extends BatchContextProcessor {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
+    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
         Qualified_nameContext qualName = ctx.qualified_name();
-        return new Pair<>(StatementActions.CREATE, new GenericColumn(
+        return new Pair<>(ACTION_CREATE, new GenericColumn(
                 qualName.schema.getText(), qualName.name.getText(), DbObjType.FUNCTION));
     }
 }

@@ -43,7 +43,6 @@ import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgOperator;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
@@ -54,6 +53,13 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 public abstract class ParserAbstract {
 
     protected static final String SCHEMA_ERROR = "Object must be schema qualified: ";
+
+    protected static final String ACTION_CREATE = "CREATE";
+    protected static final String ACTION_ALTER = "ALTER";
+    protected static final String ACTION_DROP = "DROP";
+    protected static final String ACTION_UPDATE = "UPDATE";
+    protected static final String ACTION_COMMENT = "COMMENT";
+    protected static final String ACTION_NONE = "NONE";
 
     protected final PgDatabase db;
 
@@ -237,7 +243,7 @@ public abstract class ParserAbstract {
     }
 
     protected PgObjLocation addObjReference(List<? extends ParserRuleContext> ids,
-            DbObjType type, StatementActions action) {
+            DbObjType type, String action) {
         PgObjLocation loc = getLocation(ids, type, action, false, null);
         if (loc != null) {
             db.getObjReferences().computeIfAbsent(fileName, k -> new LinkedHashSet<>()).add(loc);
@@ -291,7 +297,7 @@ public abstract class ParserAbstract {
             List<? extends ParserRuleContext> ids) {
         doSafe(PgStatement::addChild, parent, child);
         PgObjLocation loc = getLocation(ids, child.getStatementType(),
-                StatementActions.CREATE, false, null);
+                ACTION_CREATE, false, null);
         if (loc != null) {
             child.setLocation(loc);
             db.getObjDefinitions().computeIfAbsent(fileName, k -> new LinkedHashSet<>()).add(loc);
@@ -300,7 +306,7 @@ public abstract class ParserAbstract {
     }
 
     private PgObjLocation getLocation(List<? extends ParserRuleContext> ids,
-            DbObjType type, StatementActions action, boolean isDep, String signature) {
+            DbObjType type, String action, boolean isDep, String signature) {
         ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
         switch (type) {
         case ASSEMBLY:
@@ -310,7 +316,7 @@ public abstract class ParserAbstract {
         case USER:
         case DATABASE:
             return new PgObjLocation(new GenericColumn(nameCtx.getText(), type),
-                    action.name(), getStart(nameCtx), nameCtx.start.getLine(), fileName);
+                    action, getStart(nameCtx), nameCtx.start.getLine(), fileName);
         default:
             break;
         }
@@ -318,7 +324,7 @@ public abstract class ParserAbstract {
         ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
         String schemaName;
         if (schemaCtx != null) {
-            addObjReference(Arrays.asList(schemaCtx), DbObjType.SCHEMA, StatementActions.NONE);
+            addObjReference(Arrays.asList(schemaCtx), DbObjType.SCHEMA, ACTION_NONE);
             schemaName = schemaCtx.getText();
         } else if (refMode && !isDep) {
             schemaName = null;
@@ -348,14 +354,14 @@ public abstract class ParserAbstract {
         case TYPE:
         case VIEW:
             return new PgObjLocation(new GenericColumn(schemaName, name, type),
-                    action.name(), getStart(nameCtx), nameCtx.start.getLine(), fileName);
+                    action, getStart(nameCtx), nameCtx.start.getLine(), fileName);
         case CONSTRAINT:
         case INDEX:
         case TRIGGER:
         case RULE:
         case COLUMN:
             return new PgObjLocation(new GenericColumn(schemaName,
-                    QNameParser.getSecondName(ids), name, type), action.name(),
+                    QNameParser.getSecondName(ids), name, type), action,
                     getStart(nameCtx), nameCtx.start.getLine(), fileName);
         default:
             return null;
@@ -376,7 +382,7 @@ public abstract class ParserAbstract {
 
     protected void addDepSafe(PgStatement st, List<? extends ParserRuleContext> ids,
             DbObjType type, boolean isPostgres, String signature) {
-        PgObjLocation loc = getLocation(ids, type, StatementActions.NONE, true, signature);
+        PgObjLocation loc = getLocation(ids, type, ACTION_NONE, true, signature);
         if (loc != null && !ApgdiffUtils.isSystemSchema(loc.getSchema(), isPostgres)) {
             if (!refMode) {
                 st.addDep(loc.getGenericColumn());
@@ -493,7 +499,7 @@ public abstract class ParserAbstract {
      * <br />
      * (The action information will later be used for showing in console and in 'Outline')
      */
-    protected abstract Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction();
+    protected abstract Pair<String, GenericColumn> getActionAndObjForStmtAction();
 
     /**
      * Fills the 'PgObjLocation'-object with action information, query of statement
@@ -508,16 +514,16 @@ public abstract class ParserAbstract {
 
     protected String getStmtAction(ParserRuleContext ctx) {
         String result;
-        Pair<StatementActions, GenericColumn> actionAndObj = getActionAndObjForStmtAction();
+        Pair<String, GenericColumn> actionAndObj = getActionAndObjForStmtAction();
         if (actionAndObj == null) {
             result = ctx.getStart().getText().toUpperCase(Locale.ROOT);
         } else {
-            StatementActions action = actionAndObj.getFirst();
+            String action = actionAndObj.getFirst();
             GenericColumn descrObj = actionAndObj.getSecond();
 
             StringBuilder sb = new StringBuilder();
-            sb.append(action.name());
-            if (StatementActions.UPDATE != action) {
+            sb.append(action);
+            if (!ACTION_UPDATE.equalsIgnoreCase(action)) {
                 sb.append(' ').append(descrObj.type);
             }
             result = sb.append(' ').append(descrObj.getQualifiedName()).toString();

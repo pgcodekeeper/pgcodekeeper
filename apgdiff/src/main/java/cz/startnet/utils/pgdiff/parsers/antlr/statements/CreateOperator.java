@@ -16,7 +16,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_optionContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgOperator;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -82,9 +81,9 @@ public class CreateOperator extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
+    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
         Operator_nameContext operNameCtx = ctx.name;
-        return new Pair<>(StatementActions.CREATE, new GenericColumn(
+        return new Pair<>(ACTION_CREATE, new GenericColumn(
                 operNameCtx.schema_name.getText(), operNameCtx.operator.getText(),
                 DbObjType.OPERATOR));
     }

@@ -12,7 +12,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -29,10 +28,10 @@ public class AlterMsOther extends ParserAbstract {
     public void parseObject() {
         if (ctx.alter_schema_sql() != null) {
             addObjReference(Arrays.asList(ctx.alter_schema_sql().schema_name),
-                    DbObjType.SCHEMA, StatementActions.ALTER);
+                    DbObjType.SCHEMA, ACTION_ALTER);
         } else if (ctx.alter_user() != null) {
             addObjReference(Arrays.asList(ctx.alter_user().username),
-                    DbObjType.USER, StatementActions.ALTER);
+                    DbObjType.USER, ACTION_ALTER);
         } else if (ctx.alter_sequence() != null) {
             alterSequence(ctx.alter_sequence());
         }
@@ -41,7 +40,7 @@ public class AlterMsOther extends ParserAbstract {
     private void alterSequence(Alter_sequenceContext alter) {
         Qualified_nameContext qname = alter.qualified_name();
         PgObjLocation ref = addObjReference(Arrays.asList(qname.schema, qname.name),
-                DbObjType.SEQUENCE, StatementActions.ALTER);
+                DbObjType.SEQUENCE, ACTION_ALTER);
         if (!alter.RESTART().isEmpty()) {
             ref.setWarning(DangerStatement.RESTART_WITH);
         }
@@ -58,7 +57,7 @@ public class AlterMsOther extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
+    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
         GenericColumn descrObj = null;
         if (ctx.alter_schema_sql() != null) {
             descrObj = new GenericColumn(ctx.alter_schema_sql().schema_name.getText(),
@@ -71,6 +70,6 @@ public class AlterMsOther extends ParserAbstract {
             descrObj = new GenericColumn(qname.schema.getText(), qname.name.getText(),
                     DbObjType.SEQUENCE);
         }
-        return descrObj != null ? new Pair<>(StatementActions.ALTER, descrObj) : null;
+        return descrObj != null ? new Pair<>(ACTION_ALTER, descrObj) : null;
     }
 }

@@ -12,7 +12,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -39,7 +38,7 @@ public class AlterMsBatch extends ParserAbstract {
     }
 
     private void alter(Qualified_nameContext qname, DbObjType type) {
-        addObjReference(Arrays.asList(qname.schema, qname.name), type, StatementActions.ALTER);
+        addObjReference(Arrays.asList(qname.schema, qname.name), type, ACTION_ALTER);
     }
 
     private void alterTrigger(Create_or_alter_triggerContext ctx) {
@@ -53,12 +52,12 @@ public class AlterMsBatch extends ParserAbstract {
         // second schema ref
         // CREATE TRIGGER schema.trigger ON schema.table ...
         if (secondCtx != null) {
-            addObjReference(Arrays.asList(secondCtx), DbObjType.SCHEMA, StatementActions.NONE);
+            addObjReference(Arrays.asList(secondCtx), DbObjType.SCHEMA, ACTION_NONE);
         }
         addObjReference(Arrays.asList(schemaCtx, ctx.table_name.name),
-                DbObjType.TABLE, StatementActions.NONE);
+                DbObjType.TABLE, ACTION_NONE);
         addObjReference(Arrays.asList(schemaCtx, ctx.table_name.name, qname.name),
-                DbObjType.TRIGGER, StatementActions.ALTER);
+                DbObjType.TRIGGER, ACTION_ALTER);
     }
 
     @Override
@@ -67,7 +66,7 @@ public class AlterMsBatch extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
+    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
         GenericColumn descrObj = null;
         if (ctx.create_or_alter_procedure() != null) {
             Qualified_nameContext qname = ctx.create_or_alter_procedure().qualified_name();
@@ -92,6 +91,6 @@ public class AlterMsBatch extends ParserAbstract {
             descrObj = new GenericColumn(schemaCtx.getText(),
                     trigCtx.table_name.name.getText(), qname.name.getText(), DbObjType.TRIGGER);
         }
-        return descrObj != null ? new Pair<>(StatementActions.ALTER, descrObj) : null;
+        return descrObj != null ? new Pair<>(ACTION_ALTER, descrObj) : null;
     }
 }

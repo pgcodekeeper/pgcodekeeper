@@ -16,7 +16,6 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgRule.PgRuleEventType;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -31,7 +30,7 @@ public class CreateRewrite extends ParserAbstract {
     @Override
     public void parseObject() {
         List<IdentifierContext> ids = ctx.table_name.identifier();
-        addObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
+        addObjReference(ids, DbObjType.TABLE, ACTION_NONE);
 
         PgRule rule = new PgRule(ctx.name.getText());
         rule.setEvent(PgRuleEventType.valueOf(ctx.event.getText().toUpperCase(Locale.ROOT)));
@@ -61,9 +60,9 @@ public class CreateRewrite extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
+    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
         List<IdentifierContext> ids = ctx.table_name.identifier();
-        return new Pair<>(StatementActions.CREATE, new GenericColumn(
+        return new Pair<>(ACTION_CREATE, new GenericColumn(
                 QNameParser.getSchemaName(ids), QNameParser.getFirstNameCtx(ids).getText(),
                 ctx.name.getText(), DbObjType.RULE));
     }

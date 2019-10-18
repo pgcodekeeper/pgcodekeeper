@@ -45,7 +45,7 @@ public class PgObjLocation extends ContextLocation {
     }
 
     public PgObjLocation(String filePath) {
-        this(null, StatementActions.NONE.name(), 0, 0, 0, filePath);
+        this(null, "NONE", 0, 0, 0, filePath);
     }
 
     public String getAction() {

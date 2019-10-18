@@ -7,7 +7,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsRole;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -28,12 +27,12 @@ public class AlterMsRole extends ParserAbstract {
             doSafe(MsRole::addMember, role, ctx.database_principal.getText());
         }
 
-        addObjReference(Arrays.asList(ctx.role_name), DbObjType.ROLE, StatementActions.ALTER);
+        addObjReference(Arrays.asList(ctx.role_name), DbObjType.ROLE, ACTION_ALTER);
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
-        return new Pair<>(StatementActions.ALTER,
+    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
+        return new Pair<>(ACTION_ALTER,
                 new GenericColumn(ctx.role_name.getText(), DbObjType.ROLE));
     }
 }

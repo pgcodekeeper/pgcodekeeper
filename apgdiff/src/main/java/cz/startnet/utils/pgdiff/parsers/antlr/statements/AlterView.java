@@ -11,7 +11,6 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgView;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -38,13 +37,13 @@ public class AlterView extends ParserAbstract {
             doSafe(PgView::removeColumnDefaultValue, dbView, getFullCtxText(ctx.column_name));
         }
 
-        addObjReference(ids, DbObjType.VIEW, StatementActions.ALTER);
+        addObjReference(ids, DbObjType.VIEW, ACTION_ALTER);
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
+    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        return new Pair<>(StatementActions.ALTER, new GenericColumn(QNameParser.getSchemaName(ids),
+        return new Pair<>(ACTION_ALTER, new GenericColumn(QNameParser.getSchemaName(ids),
                 QNameParser.getFirstNameCtx(ids).getText(), DbObjType.VIEW));
     }
 }

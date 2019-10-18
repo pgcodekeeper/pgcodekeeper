@@ -12,7 +12,6 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFtsConfiguration;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -40,7 +39,7 @@ public class AlterFtsStatement extends ParserAbstract {
             tt = DbObjType.FTS_CONFIGURATION;
         }
 
-        addObjReference(ids, tt, StatementActions.ALTER);
+        addObjReference(ids, tt, ACTION_ALTER);
 
         if (tt != DbObjType.FTS_CONFIGURATION) {
             return;
@@ -66,7 +65,7 @@ public class AlterFtsStatement extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
+    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
         DbObjType tt;
         if (ctx.DICTIONARY() != null) {
             tt = DbObjType.FTS_DICTIONARY;
@@ -78,7 +77,7 @@ public class AlterFtsStatement extends ParserAbstract {
             tt = DbObjType.FTS_CONFIGURATION;
         }
         List<IdentifierContext> ids = ctx.name.identifier();
-        return new Pair<>(StatementActions.ALTER, new GenericColumn(QNameParser.getSchemaName(ids),
+        return new Pair<>(ACTION_ALTER, new GenericColumn(QNameParser.getSchemaName(ids),
                 QNameParser.getFirstNameCtx(ids).getText(), tt));
     }
 }

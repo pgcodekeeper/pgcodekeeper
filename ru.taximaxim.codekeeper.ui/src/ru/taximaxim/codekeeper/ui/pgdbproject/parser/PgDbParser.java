@@ -49,7 +49,6 @@ import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -200,7 +199,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
                     if ((index == 0 || !PgDiffUtils.isValidIdChar(body.charAt(index - 1))) &&
                             (next >= body.length() || !PgDiffUtils.isValidIdChar(body.charAt(next)))) {
                         PgObjLocation loc = new PgObjLocation(def.getGenericColumn(),
-                                StatementActions.NONE.name(),
+                                "NONE",
                                 statementBody.getOffset() + index,
                                 statementBody.getLineNumber(),
                                 statementBody.getPath());

@@ -18,7 +18,6 @@ import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -49,7 +48,7 @@ public class CreateMsTrigger extends BatchContextProcessor {
             schemaCtx = ctx.table_name.schema;
         }
         List<IdContext> ids = Arrays.asList(schemaCtx, ctx.table_name.name);
-        addObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
+        addObjReference(ids, DbObjType.TABLE, ACTION_NONE);
         getObject(getSchemaSafe(ids), false);
     }
 
@@ -72,7 +71,7 @@ public class CreateMsTrigger extends BatchContextProcessor {
         } else {
             List<IdContext> ids = Arrays.asList(schemaCtx, tableNameCtx);
             schemaName = getSchemaNameSafe(ids);
-            addObjReference(ids, DbObjType.TABLE, StatementActions.NONE);
+            addObjReference(ids, DbObjType.TABLE, ACTION_NONE);
         }
 
         MsSqlClauses clauses;
@@ -105,12 +104,12 @@ public class CreateMsTrigger extends BatchContextProcessor {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
+    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
         IdContext schemaCtx = ctx.trigger_name.schema;
         if (schemaCtx == null) {
             schemaCtx = ctx.table_name.schema;
         }
-        return new Pair<>(StatementActions.CREATE, new GenericColumn(schemaCtx.getText(),
+        return new Pair<>(ACTION_CREATE, new GenericColumn(schemaCtx.getText(),
                 ctx.table_name.name.getText(), ctx.trigger_name.name.getText(), DbObjType.TRIGGER));
     }
 }

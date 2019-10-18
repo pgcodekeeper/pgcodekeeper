@@ -15,7 +15,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -32,7 +31,7 @@ public class DropMsStatement extends ParserAbstract {
     public void parseObject() {
         if (ctx.drop_assembly() != null) {
             for (IdContext id : ctx.drop_assembly().id()) {
-                addObjReference(Arrays.asList(id), DbObjType.ASSEMBLY, StatementActions.DROP);
+                addObjReference(Arrays.asList(id), DbObjType.ASSEMBLY, ACTION_DROP);
             }
         } else if (ctx.drop_index() != null) {
             for (Drop_relational_or_xml_or_spatial_indexContext ind :
@@ -42,7 +41,7 @@ public class DropMsStatement extends ParserAbstract {
                 IdContext parentCtx = tableIds.name;
                 IdContext nameCtx = ind.index_name;
                 addObjReference(Arrays.asList(schemaCtx, parentCtx, nameCtx),
-                        DbObjType.INDEX, StatementActions.DROP);
+                        DbObjType.INDEX, ACTION_DROP);
             }
         } else if (ctx.drop_statements() != null) {
             drop(ctx.drop_statements());
@@ -61,14 +60,14 @@ public class DropMsStatement extends ParserAbstract {
 
         if (type != null) {
             for (Qualified_nameContext qname : ctx.qualified_name()) {
-                addObjReference(Arrays.asList(qname.name), type, StatementActions.DROP);
+                addObjReference(Arrays.asList(qname.name), type, ACTION_DROP);
             }
             return;
         } else if (ctx.TRIGGER() != null) {
             for (Qualified_nameContext qname : ctx.qualified_name()) {
                 // TODO ref to table, need ctx
                 addObjReference(Arrays.asList(qname.schema, null, qname.name),
-                        DbObjType.TRIGGER, StatementActions.DROP);
+                        DbObjType.TRIGGER, ACTION_DROP);
             }
             return;
         }
@@ -90,7 +89,7 @@ public class DropMsStatement extends ParserAbstract {
         if (type != null) {
             for (Qualified_nameContext qname : ctx.qualified_name()) {
                 List<IdContext> ids = Arrays.asList(qname.schema, qname.name);
-                PgObjLocation ref = addObjReference(ids, type, StatementActions.DROP);
+                PgObjLocation ref = addObjReference(ids, type, ACTION_DROP);
                 if (type == DbObjType.TABLE) {
                     ref.setWarning(DangerStatement.DROP_TABLE);
                 }
@@ -109,7 +108,7 @@ public class DropMsStatement extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
+    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
         GenericColumn descrObj = null;
         if (ctx.drop_assembly() != null) {
             List<IdContext> ids = ctx.drop_assembly().id();
@@ -133,7 +132,7 @@ public class DropMsStatement extends ParserAbstract {
             descrObj = dropOtherStmt(ctx.drop_statements());
         }
 
-        return descrObj != null ? new Pair<>(StatementActions.DROP, descrObj) : null;
+        return descrObj != null ? new Pair<>(ACTION_DROP, descrObj) : null;
     }
 
     private GenericColumn dropOtherStmt(Drop_statementsContext dropStmtCtx) {

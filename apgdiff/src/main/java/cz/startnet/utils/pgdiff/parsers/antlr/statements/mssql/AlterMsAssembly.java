@@ -9,7 +9,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsAssembly;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -25,7 +24,7 @@ public class AlterMsAssembly extends ParserAbstract {
     @Override
     public void parseObject() {
         MsAssembly assembly = getSafe(PgDatabase::getAssembly, db, ctx.name);
-        addObjReference(Arrays.asList(ctx.name), DbObjType.ASSEMBLY, StatementActions.ALTER);
+        addObjReference(Arrays.asList(ctx.name), DbObjType.ASSEMBLY, ACTION_ALTER);
 
         List<Assembly_optionContext> options = ctx.assembly_option();
         if (options != null) {
@@ -38,8 +37,8 @@ public class AlterMsAssembly extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
-        return new Pair<>(StatementActions.ALTER,
+    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
+        return new Pair<>(ACTION_ALTER,
                 new GenericColumn(ctx.name.getText(), DbObjType.ASSEMBLY));
     }
 }

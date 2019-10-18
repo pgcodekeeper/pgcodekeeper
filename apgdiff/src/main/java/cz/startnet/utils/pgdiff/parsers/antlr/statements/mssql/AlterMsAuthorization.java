@@ -15,7 +15,6 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import cz.startnet.utils.pgdiff.schema.StatementOverride;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
@@ -58,16 +57,16 @@ public class AlterMsAuthorization extends ParserAbstract {
 
             // when type is not defined (sometimes in ref mode), suppose it is a table
             addObjReference(Arrays.asList(schemaCtx, nameCtx),
-                    st != null ? st.getStatementType() : DbObjType.TABLE, StatementActions.ALTER);
+                    st != null ? st.getStatementType() : DbObjType.TABLE, ACTION_ALTER);
         } else if (type.ASSEMBLY() != null) {
             st = getSafe(PgDatabase::getAssembly, db, nameCtx);
-            addObjReference(Arrays.asList(nameCtx), DbObjType.ASSEMBLY, StatementActions.ALTER);
+            addObjReference(Arrays.asList(nameCtx), DbObjType.ASSEMBLY, ACTION_ALTER);
         } else if (type.ROLE() != null) {
             st = getSafe(PgDatabase::getRole, db, nameCtx);
-            addObjReference(Arrays.asList(nameCtx), DbObjType.ROLE, StatementActions.ALTER);
+            addObjReference(Arrays.asList(nameCtx), DbObjType.ROLE, ACTION_ALTER);
         } else if (type.SCHEMA() != null) {
             st = getSafe(PgDatabase::getSchema, db, nameCtx);
-            addObjReference(Arrays.asList(nameCtx), DbObjType.SCHEMA, StatementActions.ALTER);
+            addObjReference(Arrays.asList(nameCtx), DbObjType.SCHEMA, ACTION_ALTER);
         }
 
         if (st != null) {
@@ -91,7 +90,7 @@ public class AlterMsAuthorization extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
+    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
         return null;
     }
 }

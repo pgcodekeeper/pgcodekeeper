@@ -11,7 +11,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -29,7 +28,7 @@ public class UpdateMsStatement extends ParserAbstract {
         Qualified_nameContext qname = ctx.qualified_name();
         if (qname != null) {
             PgObjLocation loc = addObjReference(Arrays.asList(qname.schema, qname.name),
-                    DbObjType.TABLE, StatementActions.UPDATE);
+                    DbObjType.TABLE, ACTION_UPDATE);
             loc.setWarning(DangerStatement.UPDATE);
         }
     }
@@ -42,9 +41,9 @@ public class UpdateMsStatement extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
+    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
         Qualified_nameContext qname = ctx.qualified_name();
-        return new Pair<>(StatementActions.UPDATE, new GenericColumn(
+        return new Pair<>(ACTION_UPDATE, new GenericColumn(
                 qname.schema.getText(), qname.name.getText(), DbObjType.TABLE));
     }
 }

@@ -33,7 +33,6 @@ import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -55,7 +54,7 @@ public class AlterTable extends TableAbstract {
         IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
         AbstractPgTable tabl = null;
 
-        PgObjLocation loc = addObjReference(ids, DbObjType.TABLE, StatementActions.ALTER);
+        PgObjLocation loc = addObjReference(ids, DbObjType.TABLE, ACTION_ALTER);
 
         for (Table_actionContext tablAction : ctx.table_action()) {
             if (tablAction.column != null && tablAction.DROP() != null && tablAction.ALTER() == null) {
@@ -93,7 +92,7 @@ public class AlterTable extends TableAbstract {
             if (tablAction.drop_constraint() != null) {
                 addObjReference(Arrays.asList(QNameParser.getSchemaNameCtx(ids), nameCtx,
                         tablAction.drop_constraint().constraint_name),
-                        DbObjType.CONSTRAINT, StatementActions.DROP);
+                        DbObjType.CONSTRAINT, ACTION_DROP);
             }
 
             if (isRefMode()) {
@@ -247,9 +246,9 @@ public class AlterTable extends TableAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
+    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        return new Pair<>(StatementActions.ALTER, new GenericColumn(QNameParser.getSchemaName(ids),
+        return new Pair<>(ACTION_ALTER, new GenericColumn(QNameParser.getSchemaName(ids),
                 QNameParser.getFirstNameCtx(ids).getText(), DbObjType.TABLE));
     }
 }

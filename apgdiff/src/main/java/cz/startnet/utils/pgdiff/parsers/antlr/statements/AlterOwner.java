@@ -17,7 +17,6 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import cz.startnet.utils.pgdiff.schema.StatementOverride;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -58,7 +57,7 @@ public class AlterOwner extends ParserAbstract {
                     parseSignature(operNameCtx.operator.getText(), targetOperCtx),
                     operNameCtx.operator.getStart());
             setOwner(st, owner);
-            addObjReference(ids, DbObjType.OPERATOR, StatementActions.ALTER);
+            addObjReference(ids, DbObjType.OPERATOR, ACTION_ALTER);
             return;
         }
 
@@ -103,7 +102,7 @@ public class AlterOwner extends ParserAbstract {
         }
 
         if (type != null)  {
-            addObjReference(ids, type, StatementActions.ALTER);
+            addObjReference(ids, type, ACTION_ALTER);
         }
 
         if (st == null || (type == DbObjType.SCHEMA
@@ -125,7 +124,7 @@ public class AlterOwner extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
+    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
         DbObjType type = null;
         if (ctx.SCHEMA() != null) {
             type = DbObjType.SCHEMA;
@@ -169,7 +168,6 @@ public class AlterOwner extends ParserAbstract {
             return null;
         }
 
-        return new Pair<>(StatementActions.ALTER, new GenericColumn(schemaName,
-                objName, type));
+        return new Pair<>(ACTION_ALTER, new GenericColumn(schemaName, objName, type));
     }
 }

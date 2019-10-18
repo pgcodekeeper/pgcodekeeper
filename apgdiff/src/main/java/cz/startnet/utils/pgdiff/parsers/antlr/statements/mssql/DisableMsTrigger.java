@@ -15,7 +15,6 @@ import cz.startnet.utils.pgdiff.schema.IStatementContainer;
 import cz.startnet.utils.pgdiff.schema.MsTrigger;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -40,13 +39,13 @@ public class DisableMsTrigger extends ParserAbstract {
         IStatementContainer cont = getSafe(AbstractSchema::getStatementContainer,
                 getSchemaSafe(Arrays.asList(schemaCtx, parent.name)), parent.name);
         addObjReference(Arrays.asList(parent.schema, parent.name),
-                DbObjType.TABLE, StatementActions.NONE);
+                DbObjType.TABLE, ACTION_NONE);
 
         for (Qualified_nameContext qname : triggers.qualified_name()) {
             MsTrigger trig = (MsTrigger) getSafe(IStatementContainer::getTrigger,
                     cont, qname.name);
             addObjReference(Arrays.asList(schemaCtx, parent.name, qname.name),
-                    DbObjType.TRIGGER, StatementActions.ALTER);
+                    DbObjType.TRIGGER, ACTION_ALTER);
             if (ctx.DISABLE() != null) {
                 doSafe(MsTrigger::setDisable, trig, true);
             }
@@ -86,7 +85,7 @@ public class DisableMsTrigger extends ParserAbstract {
     }
 
     @Override
-    protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
+    protected Pair<String, GenericColumn> getActionAndObjForStmtAction() {
         return null;
     }
 }
