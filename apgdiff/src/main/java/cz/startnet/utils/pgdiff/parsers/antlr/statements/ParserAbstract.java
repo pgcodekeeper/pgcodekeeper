@@ -493,14 +493,6 @@ public abstract class ParserAbstract {
     }
 
     /**
-     * Returns the Pair with StatementActions and GenericColumn objects which
-     * will be used for getting the action information of described statement.
-     * <br />
-     * (The action information will later be used for showing in console and in 'Outline')
-     */
-    protected abstract Pair<String, GenericColumn> getActionAndObjForStmtAction();
-
-    /**
      * Fills the 'PgObjLocation'-object with action information, query of statement
      * and it's position in the script from statement context, and then puts
      * filled 'PgObjLocation'-object to the storage of queries.
@@ -529,4 +521,12 @@ public abstract class ParserAbstract {
         }
         return result;
     }
+
+    /**
+     * Returns the Pair with StatementActions and GenericColumn objects which
+     * will be used for getting the action information of described statement.
+     * <br />
+     * (The action information will later be used for showing in console and in 'Outline')
+     */
+    protected abstract Pair<String, GenericColumn> getActionAndObjForStmtAction();
 }

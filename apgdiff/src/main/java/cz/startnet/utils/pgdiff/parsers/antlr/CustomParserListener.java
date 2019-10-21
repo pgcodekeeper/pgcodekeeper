@@ -23,6 +23,7 @@ public class CustomParserListener {
 
     protected final PgDatabase db;
     protected final ParserListenerMode mode;
+    protected final boolean isRefMode;
     protected final boolean isScriptMode;
     protected final boolean isNormMode;
     protected final String fileName;
@@ -39,6 +40,7 @@ public class CustomParserListener {
         this.monitor = monitor;
         this.fileName = fileName;
         this.mode = mode;
+        isRefMode = ParserListenerMode.REF == mode;
         isScriptMode = ParserListenerMode.SCRIPT == mode;
         isNormMode = ParserListenerMode.NORMAL == mode;
     }

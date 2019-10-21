@@ -141,23 +141,34 @@ implements SqlContextProcessor {
         } else if (ctx.create_fts_dictionary() != null) {
             p = new CreateFtsDictionary(ctx.create_fts_dictionary(), db);
         } else if (ctx.comment_on_statement() != null) {
-            if (!isNormMode) {
+            if (isNormMode) {
+                p = new CommentOn(ctx.comment_on_statement(), db);
+            } else if (isRefMode) {
+                p = new CommentOn(ctx.comment_on_statement(), db);
+                addUndescribedObjToQueries(ctx, stream);
+            } else {
                 addUndescribedObjToQueries(ctx, stream);
                 return;
             }
-            p = new CommentOn(ctx.comment_on_statement(), db);
         } else if (ctx.rule_common() != null) {
-            if (!isNormMode) {
+            if (isNormMode) {
+                p = new CreateRule(ctx.rule_common(), db);
+            } else if (isRefMode) {
+                p = new CreateRule(ctx.rule_common(), db);
+                addUndescribedObjToQueries(ctx, stream);
+            } else {
                 addUndescribedObjToQueries(ctx, stream);
                 return;
             }
-            p = new CreateRule(ctx.rule_common(), db);
         } else if (ctx.set_statement() != null) {
             Set_statementContext setCtx = ctx.set_statement();
-            if (!isNormMode) {
+            if (isNormMode) {
+                set(setCtx);
+            } else if (isRefMode) {
+                set(setCtx);
                 addUndescribedObjToQueries(setCtx, stream);
             } else {
-                set(setCtx);
+                addUndescribedObjToQueries(ctx, stream);
             }
             return;
         } else if (!isNormMode) {
@@ -226,8 +237,8 @@ implements SqlContextProcessor {
 
         switch (confParam.toLowerCase(Locale.ROOT)) {
         case "search_path":
-            if (ParserListenerMode.REF != mode
-            && (confValueCtx.size() != 1 || !ApgdiffConsts.PG_CATALOG.equals(confValue))) {
+            if (!isRefMode
+                    && (confValueCtx.size() != 1 || !ApgdiffConsts.PG_CATALOG.equals(confValue))) {
                 throw new UnresolvedReferenceException("Unsupported search_path", ctx.start);
             }
             break;
