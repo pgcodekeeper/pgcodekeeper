@@ -43,7 +43,7 @@ public class AlterSequence extends ParserAbstract {
                     doSafe(PgSequence::setOwnedBy, sequence, getFullCtxText(seqbody.col_name));
                 }
 
-                addObjReference(col, DbObjType.TABLE, ACTION_NONE);
+                addObjReference(col, DbObjType.TABLE, null);
             }
         }
 

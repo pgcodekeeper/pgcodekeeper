@@ -30,7 +30,7 @@ public class CreateRewrite extends ParserAbstract {
     @Override
     public void parseObject() {
         List<IdentifierContext> ids = ctx.table_name.identifier();
-        addObjReference(ids, DbObjType.TABLE, ACTION_NONE);
+        addObjReference(ids, DbObjType.TABLE, null);
 
         PgRule rule = new PgRule(ctx.name.getText());
         rule.setEvent(PgRuleEventType.valueOf(ctx.event.getText().toUpperCase(Locale.ROOT)));

@@ -137,7 +137,7 @@ public class CommentOn extends ParserAbstract {
             List<IdentifierContext> parentIds = obj.table_name.identifier();
             IStatementContainer table = getSafe(AbstractSchema::getStatementContainer,
                     schema, QNameParser.getFirstNameCtx(parentIds));
-            addObjReference(parentIds, DbObjType.TABLE, ACTION_NONE);
+            addObjReference(parentIds, DbObjType.TABLE, null);
             type = DbObjType.CONSTRAINT;
             ids = Arrays.asList(QNameParser.getSchemaNameCtx(parentIds),
                     QNameParser.getFirstNameCtx(parentIds), nameCtx);
@@ -150,7 +150,7 @@ public class CommentOn extends ParserAbstract {
         } else if (obj.TRIGGER() != null && obj.EVENT() == null) {
             type = DbObjType.TRIGGER;
             List<IdentifierContext> parentIds = obj.table_name.identifier();
-            addObjReference(parentIds, DbObjType.TABLE, ACTION_NONE);
+            addObjReference(parentIds, DbObjType.TABLE, null);
             ids = Arrays.asList(QNameParser.getSchemaNameCtx(parentIds),
                     QNameParser.getFirstNameCtx(parentIds), nameCtx);
             IStatementContainer c = getSafe(AbstractSchema::getStatementContainer, schema,
@@ -191,7 +191,7 @@ public class CommentOn extends ParserAbstract {
         } else if (obj.RULE() != null) {
             type = DbObjType.RULE;
             List<IdentifierContext> parentIds = obj.table_name.identifier();
-            addObjReference(parentIds, DbObjType.TABLE, ACTION_NONE);
+            addObjReference(parentIds, DbObjType.TABLE, null);
             ids = Arrays.asList(QNameParser.getSchemaNameCtx(parentIds),
                     QNameParser.getFirstNameCtx(parentIds), nameCtx);
             IStatementContainer c = getSafe(AbstractSchema::getStatementContainer, schema,

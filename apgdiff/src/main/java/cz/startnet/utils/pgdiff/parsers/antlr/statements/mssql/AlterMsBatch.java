@@ -52,10 +52,10 @@ public class AlterMsBatch extends ParserAbstract {
         // second schema ref
         // CREATE TRIGGER schema.trigger ON schema.table ...
         if (secondCtx != null) {
-            addObjReference(Arrays.asList(secondCtx), DbObjType.SCHEMA, ACTION_NONE);
+            addObjReference(Arrays.asList(secondCtx), DbObjType.SCHEMA, null);
         }
         addObjReference(Arrays.asList(schemaCtx, ctx.table_name.name),
-                DbObjType.TABLE, ACTION_NONE);
+                DbObjType.TABLE, null);
         addObjReference(Arrays.asList(schemaCtx, ctx.table_name.name, qname.name),
                 DbObjType.TRIGGER, ACTION_ALTER);
     }

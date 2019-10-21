@@ -96,7 +96,7 @@ public class CreateRule extends ParserAbstract {
 
         if (type != null) {
             for (Schema_qualified_nameContext name : objName) {
-                addObjReference(name.identifier(), type, ACTION_NONE);
+                addObjReference(name.identifier(), type, null);
 
                 if (isRefMode()) {
                     continue;
@@ -137,7 +137,7 @@ public class CreateRule extends ParserAbstract {
             StringBuilder sb = new StringBuilder();
             DbObjType type = obj.PROCEDURE() == null ?
                     DbObjType.FUNCTION : DbObjType.PROCEDURE;
-            addObjReference(funcIds, type, ACTION_NONE);
+            addObjReference(funcIds, type, null);
 
             if (isRefMode()) {
                 continue;
@@ -183,7 +183,7 @@ public class CreateRule extends ParserAbstract {
             Map<String, Entry<IdentifierContext, List<String>>> colPrivs, List<String> roles) {
         List<IdentifierContext> ids = tbl.identifier();
 
-        addObjReference(ids, DbObjType.TABLE, ACTION_NONE);
+        addObjReference(ids, DbObjType.TABLE, null);
 
         // TODO waits for column references
         // addObjReference(Arrays.asList(QNameParser.getSchemaNameCtx(ids),firstPart, colName),

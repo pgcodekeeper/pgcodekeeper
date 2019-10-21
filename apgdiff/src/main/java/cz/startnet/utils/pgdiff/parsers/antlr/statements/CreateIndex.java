@@ -42,7 +42,7 @@ public class CreateIndex extends ParserAbstract {
         List<IdentifierContext> ids = ctx.table_name.identifier();
         String schemaName = getSchemaNameSafe(ids);
         String tableName = QNameParser.getFirstName(ids);
-        addObjReference(ids, DbObjType.TABLE, ACTION_NONE);
+        addObjReference(ids, DbObjType.TABLE, null);
 
         IdentifierContext nameCtx = ctx.name;
         String name = nameCtx != null ? nameCtx.getText() : "";

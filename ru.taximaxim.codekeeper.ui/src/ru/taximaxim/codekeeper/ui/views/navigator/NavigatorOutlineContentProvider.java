@@ -30,7 +30,7 @@ public class NavigatorOutlineContentProvider implements ITreeContentProvider {
         Set<PgObjLocation> refs = PgDbParser.getParser(iProject).getObjsForPath(iFile.getLocation().toOSString());
         List<SegmentsWithParent> segments = new ArrayList<>(refs.size());
         for (PgObjLocation loc : refs) {
-            if (!"NONE".equalsIgnoreCase(loc.getAction())) {
+            if (loc.getAction() != null) {
                 segments.add(new SegmentsWithParent(loc, iFile));
             }
         }

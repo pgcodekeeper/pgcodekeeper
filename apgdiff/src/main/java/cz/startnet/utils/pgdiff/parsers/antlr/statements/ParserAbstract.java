@@ -59,7 +59,6 @@ public abstract class ParserAbstract {
     protected static final String ACTION_DROP = "DROP";
     protected static final String ACTION_UPDATE = "UPDATE";
     protected static final String ACTION_COMMENT = "COMMENT";
-    protected static final String ACTION_NONE = "NONE";
 
     protected final PgDatabase db;
 
@@ -324,7 +323,7 @@ public abstract class ParserAbstract {
         ParserRuleContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
         String schemaName;
         if (schemaCtx != null) {
-            addObjReference(Arrays.asList(schemaCtx), DbObjType.SCHEMA, ACTION_NONE);
+            addObjReference(Arrays.asList(schemaCtx), DbObjType.SCHEMA, null);
             schemaName = schemaCtx.getText();
         } else if (refMode && !isDep) {
             schemaName = null;
@@ -382,7 +381,7 @@ public abstract class ParserAbstract {
 
     protected void addDepSafe(PgStatement st, List<? extends ParserRuleContext> ids,
             DbObjType type, boolean isPostgres, String signature) {
-        PgObjLocation loc = getLocation(ids, type, ACTION_NONE, true, signature);
+        PgObjLocation loc = getLocation(ids, type, null, true, signature);
         if (loc != null && !ApgdiffUtils.isSystemSchema(loc.getSchema(), isPostgres)) {
             if (!refMode) {
                 st.addDep(loc.getGenericColumn());

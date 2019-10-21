@@ -39,7 +39,7 @@ public class DisableMsTrigger extends ParserAbstract {
         IStatementContainer cont = getSafe(AbstractSchema::getStatementContainer,
                 getSchemaSafe(Arrays.asList(schemaCtx, parent.name)), parent.name);
         addObjReference(Arrays.asList(parent.schema, parent.name),
-                DbObjType.TABLE, ACTION_NONE);
+                DbObjType.TABLE, null);
 
         for (Qualified_nameContext qname : triggers.qualified_name()) {
             MsTrigger trig = (MsTrigger) getSafe(IStatementContainer::getTrigger,
