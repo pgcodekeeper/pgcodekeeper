@@ -95,29 +95,32 @@ lock_mode
     ;
 
 script_additional
+    : additional_statement
+    | VACUUM (LEFT_PAREN vacuum_mode (COMMA vacuum_mode)* RIGHT_PAREN | vacuum_mode+)? table_cols_list?
+    | show_statement
+    | (FETCH | MOVE) fetch_move_direction? (FROM | IN)? identifier
+    | CLOSE (identifier | ALL)
+    | CALL function_call
+    | DISCARD (ALL | PLANS | SEQUENCES | TEMPORARY | TEMP)
+    | DECLARE identifier BINARY? INSENSITIVE? (NO? SCROLL)? CURSOR ((WITH | WITHOUT) HOLD)? FOR select_stmt
+    | EXECUTE identifier (LEFT_PAREN vex (COMMA vex)* RIGHT_PAREN)?
+    ;
+
+additional_statement
     : anonymous_block
     | LISTEN identifier
     | UNLISTEN (identifier | MULTIPLY)
     | ANALYZE VERBOSE? table_cols_list?
-    | CLUSTER VERBOSE? (identifier (ON schema_qualified_name | USING identifier)?)?
-    | VACUUM (LEFT_PAREN vacuum_mode (COMMA vacuum_mode)* RIGHT_PAREN | vacuum_mode+)? table_cols_list?
-    | show_statement
+    | CLUSTER VERBOSE? (schema_qualified_name (USING identifier)?)?
     | CHECKPOINT
     | LOAD Character_String_Literal
-    | DISCARD (ALL | PLANS | SEQUENCES | TEMPORARY | TEMP)
     | DEALLOCATE PREPARE? (identifier | ALL)
-    | (FETCH | MOVE) fetch_move_direction? (FROM | IN)? identifier
-    | CLOSE (identifier | ALL)
-    | CALL function_call
-    | REINDEX (LEFT_PAREN VERBOSE RIGHT_PAREN)? (INDEX | TABLE | SCHEMA | DATABASE | SYSTEM) identifier
+    | REINDEX (LEFT_PAREN VERBOSE RIGHT_PAREN)? (INDEX | TABLE | SCHEMA | DATABASE | SYSTEM) schema_qualified_name
     | RESET (identifier | TIME ZONE | SESSION AUTHORIZATION | ALL)
-    | DECLARE identifier BINARY? INSENSITIVE? (NO? SCROLL)? CURSOR ((WITH | WITHOUT) HOLD)? FOR select_stmt
     | EXPLAIN (ANALYZE? VERBOSE? | (LEFT_PAREN explain_option (COMMA explain_option)* RIGHT_PAREN)) statement
     | REFRESH MATERIALIZED VIEW CONCURRENTLY? schema_qualified_name (WITH NO? DATA)?
     | PREPARE identifier (LEFT_PAREN data_type (COMMA data_type)* RIGHT_PAREN)? AS data_statement
-    | EXECUTE identifier (LEFT_PAREN vex (COMMA vex)* RIGHT_PAREN)?
-    | REASSIGN OWNED BY user_identifer_current_session (COMMA user_identifer_current_session)*
-      TO user_identifer_current_session
+    | REASSIGN OWNED BY user_name (COMMA user_name)* TO user_name
     | copy_statement
     ;
 
@@ -130,7 +133,7 @@ explain_option
     | FORMAT (TEXT | XML | JSON | YAML)
     ;
 
-user_identifer_current_session
+user_name
     : name = identifier | CURRENT_USER | SESSION_USER
     ;
 
@@ -676,7 +679,7 @@ create_type_statement
     ;
 
 create_domain_statement
-    : DOMAIN name=schema_qualified_name (AS)? dat_type=data_type
+    : DOMAIN name=schema_qualified_name AS? dat_type=data_type
       (collate_identifier
       | DEFAULT def_value=vex
       | dom_constraint+=domain_constraint)*
@@ -742,24 +745,19 @@ collation_option
     ;
 
 create_user_mapping
-    : USER MAPPING if_not_exists? FOR (identifier | USER | CURRENT_USER | SESSION_USER)
-    SERVER identifier
-    define_foreign_options?
+    : USER MAPPING if_not_exists? FOR (user_name | USER) SERVER identifier define_foreign_options?
     ;
 
 alter_user_mapping
-    : USER MAPPING FOR (identifier | USER | CURRENT_USER | SESSION_USER) SERVER identifier
-    define_foreign_options?
+    : USER MAPPING FOR (user_name | USER) SERVER identifier define_foreign_options?
     ;
 
 alter_user_or_role
-    : (USER | ROLE) (alter_user_or_role_set_reset
-        | old_name=identifier rename_to
-        | user_identifer_current_session WITH? user_or_role_option_for_alter+)
+    : (USER | ROLE) (alter_user_or_role_set_reset | old_name=identifier rename_to | user_name WITH? user_or_role_option_for_alter+)
     ;
 
 alter_user_or_role_set_reset
-    : (user_identifer_current_session | ALL) (IN DATABASE db_name=identifier)? user_or_role_set_reset
+    : (user_name | ALL) (IN DATABASE db_name=identifier)? user_or_role_set_reset
     ;
 
 user_or_role_set_reset
@@ -775,8 +773,7 @@ alter_group
 
 alter_group_action
     : name=identifier rename_to
-    | user_identifer_current_session (ADD | DROP)
-        USER user_name+=identifier (COMMA user_name+=identifier)*
+    | user_name (ADD | DROP) USER user+=identifier (COMMA user+=identifier)*
     ;
 
 alter_tablespace
@@ -835,12 +832,11 @@ operator_set_restrict_join
     ;
 
 drop_user_mapping
-    : USER MAPPING (IF EXISTS)? FOR (identifier | USER | CURRENT_USER | SESSION_USER) SERVER identifier
+    : USER MAPPING (IF EXISTS)? FOR (user_name | USER) SERVER identifier
     ;
 
 drop_owned
-    : OWNED BY user_identifer_current_session (COMMA user_identifer_current_session)*
-      cascade_restrict?
+    : OWNED BY user_name (COMMA user_name)* cascade_restrict?
     ;
 
 drop_operator_statement
@@ -914,7 +910,7 @@ group_option
     ;
 
 create_tablespace
-    : TABLESPACE name=identifier (OWNER user_identifer_current_session)?
+    : TABLESPACE name=identifier (OWNER user_name)?
     LOCATION directory=Character_String_Literal
     (WITH LEFT_PAREN option_with_value (COMMA option_with_value)* RIGHT_PAREN)?
     ;
@@ -1120,7 +1116,7 @@ roles_names
     ;
 
 role_name_with_group
-    : GROUP? role_name=identifier | CURRENT_USER | SESSION_USER
+    : GROUP? user_name
     ;
 
 comment_on_statement
@@ -1209,8 +1205,9 @@ transform_for_type
     ;
 
 function_ret_table
-    :TABLE LEFT_PAREN function_column_name_type(COMMA function_column_name_type)* RIGHT_PAREN
+    : TABLE LEFT_PAREN function_column_name_type (COMMA function_column_name_type)* RIGHT_PAREN
     ;
+
 function_column_name_type
     : column_name=identifier column_type=data_type
     ;
@@ -1276,22 +1273,20 @@ sign
   ;
 
 create_schema_statement
-    : SCHEMA if_not_exists? name=identifier? (AUTHORIZATION (user_name = identifier | CURRENT_USER | SESSION_USER))?
+    : SCHEMA if_not_exists? name=identifier? (AUTHORIZATION (user=identifier | CURRENT_USER | SESSION_USER))?
     ;
 
 create_policy_statement
     : POLICY identifier ON schema_qualified_name 
     (AS (PERMISSIVE | RESTRICTIVE))?
     (FOR (ALL | SELECT | INSERT | UPDATE | DELETE))?
-    (TO user_identifer_current_session (COMMA user_identifer_current_session)*)?
+    (TO user_name (COMMA user_name)*)?
     (USING vex)? (WITH CHECK vex)?
     ;
 
 alter_policy_statement
     : POLICY identifier ON schema_qualified_name rename_to
-    | POLICY identifier ON schema_qualified_name
-        (TO user_identifer_current_session (COMMA user_identifer_current_session)*)?
-        (USING vex)? (WITH CHECK vex)?
+    | POLICY identifier ON schema_qualified_name (TO user_name (COMMA user_name)*)? (USING vex)? (WITH CHECK vex)?
     ;
 
 drop_policy_statement
@@ -2439,7 +2434,7 @@ type_list
   ;
 
 data_type
-  : SETOF? predefined_type (ARRAY array_type | array_type+)?
+  : SETOF? predefined_type (ARRAY array_type? | array_type+)?
   ;
 
 array_type
@@ -3003,10 +2998,9 @@ function_statement
     | transaction_statement
     | cursor_statement
     | message_statement
-    | anonymous_block
     | schema_statement
     | data_statement
-    | show_into_statement
+    | additional_statement
     ;
 
 base_statement
@@ -3069,6 +3063,7 @@ option
 transaction_statement
     : COMMIT
     | ROLLBACK
+    | lock_table
     ;
 
 message_statement
@@ -3102,7 +3097,7 @@ raise_param
     ;
 
 return_stmt
-    : RETURN vex?
+    : RETURN perform_stmt?
     | RETURN NEXT vex
     | RETURN QUERY (select_stmt | execute_stmt | show_statement)
     ;

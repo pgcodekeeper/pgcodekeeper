@@ -26,7 +26,7 @@ public class CreateSchema extends ParserAbstract {
             return;
         }
         AbstractSchema schema = new PgSchema(name);
-        IdentifierContext userName = ctx.user_name;
+        IdentifierContext userName = ctx.user;
         if (userName != null && !db.getArguments().isIgnorePrivileges()
                 && (!name.equals(ApgdiffConsts.PUBLIC) || !"postgres".equals(userName.getText()))) {
             schema.setOwner(userName.getText());
