@@ -96,7 +96,7 @@ public class CreateTrigger extends ParserAbstract {
             }
         }
 
-        Schema_qualified_name_nontypeContext funcNameCtx = ctx.func_name.function_name()
+        Schema_qualified_name_nontypeContext funcNameCtx = ctx.func_name
                 .schema_qualified_name_nontype();
         IdentifierContext sch = funcNameCtx.schema;
         if (sch != null) {

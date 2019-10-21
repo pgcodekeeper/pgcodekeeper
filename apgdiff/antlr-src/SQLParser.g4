@@ -1343,12 +1343,11 @@ operator_family_action
 
 add_operator_to_family
     : OPERATOR unsigned_numeric_literal target_operator (FOR SEARCH | FOR ORDER BY schema_qualified_name)?
-    | FUNCTION unsigned_numeric_literal (LEFT_PAREN (left_type=data_type | NONE) (COMMA (right_type=data_type | NONE))? RIGHT_PAREN)? 
-    function_name (LEFT_PAREN vex_or_named_notation (COMMA vex_or_named_notation)* RIGHT_PAREN)?
+    | FUNCTION unsigned_numeric_literal (LEFT_PAREN (data_type | NONE) (COMMA (data_type | NONE))? RIGHT_PAREN)? function_call
     ;
 
 drop_operator_from_family
-    : (OPERATOR | FUNCTION) unsigned_numeric_literal LEFT_PAREN (left_type=data_type | NONE) (COMMA (right_type=data_type | NONE))? RIGHT_PAREN
+    : (OPERATOR | FUNCTION) unsigned_numeric_literal LEFT_PAREN (data_type | NONE) (COMMA (data_type | NONE))? RIGHT_PAREN
     ;
 
 drop_operator_family_statement
@@ -2610,21 +2609,16 @@ cast_specification
 // using data_type for function name because keyword-named functions
 // use the same category of keywords as keyword-named types
 function_call
-    : function_name LEFT_PAREN (set_qualifier? vex_or_named_notation (COMMA vex_or_named_notation)* orderby_clause?)? RIGHT_PAREN
+    : schema_qualified_name_nontype LEFT_PAREN (set_qualifier? vex_or_named_notation (COMMA vex_or_named_notation)* orderby_clause?)? RIGHT_PAREN
         (WITHIN GROUP LEFT_PAREN orderby_clause RIGHT_PAREN)?
         filter_clause? (OVER (identifier | window_definition))?
+    | tokens_simple_functions LEFT_PAREN (vex (COMMA vex)*) RIGHT_PAREN
     | extract_function
     | system_function
     | date_time_function
     | string_value_function
     | xml_function
     ;
-
-function_name
-  : schema_qualified_name_nontype
-  // allow for all built-in function except those with explicit syntax rules defined
-  | (identifier DOT)? tokens_simple_functions
-  ;
 
 vex_or_named_notation
     : VARIADIC? (argname=identifier pointer)? vex

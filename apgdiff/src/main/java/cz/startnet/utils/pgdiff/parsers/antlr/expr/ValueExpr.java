@@ -29,7 +29,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Filter_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Frame_boundContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Frame_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.General_literalContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IndirectionContext;
@@ -378,7 +377,7 @@ public class ValueExpr extends AbstractExpr {
      * @return return signature
      */
     public ModPair<String, String> function(Function_callContext function) {
-        Function_nameContext funcNameCtx = function.function_name();
+        Schema_qualified_name_nontypeContext funcNameCtx = function.schema_qualified_name_nontype();
         if (funcNameCtx == null) {
             return functionSpecial(function);
         }
@@ -396,25 +395,11 @@ public class ValueExpr extends AbstractExpr {
         }
 
         String schemaName = null;
-        String functionName;
-        Schema_qualified_name_nontypeContext funcNameQualCtx = funcNameCtx.schema_qualified_name_nontype();
+        String functionName = funcNameCtx.identifier_nontype().getText();
 
-        IdentifierContext id;
-        Tokens_simple_functionsContext tokensSimpleFunc;
-        if (funcNameQualCtx != null) {
-            functionName = funcNameQualCtx.identifier_nontype().getText();
-
-            if ((id = funcNameQualCtx.identifier()) != null) {
-                schemaName = id.getText();
-            }
-        } else if ((tokensSimpleFunc = funcNameCtx.tokens_simple_functions()) != null) {
-            functionName = tokensSimpleFunc.getText();
-
-            if ((id = funcNameCtx.identifier()) != null) {
-                schemaName = id.getText();
-            }
-        } else {
-            functionName = funcNameCtx.getText();
+        IdentifierContext id = funcNameCtx.identifier();
+        if (id!= null) {
+            schemaName = id.getText();
         }
 
         // TODO add processing for named/mixed notation in functions, because
@@ -466,6 +451,7 @@ public class ValueExpr extends AbstractExpr {
         Date_time_functionContext datetime;
         String_value_functionContext string;
         Xml_functionContext xml;
+        Tokens_simple_functionsContext simple;
 
         if ((extract = function.extract_function()) != null) {
             analyze(new Vex(extract.vex()));
@@ -552,6 +538,22 @@ public class ValueExpr extends AbstractExpr {
                 coltype = TypesSetManually.FUNCTION_TABLE;
             } else {
                 // defaults work
+            }
+            ret = new ModPair<>(colname, coltype);
+        } else if ((simple = function.tokens_simple_functions()) != null) {
+            args = function.vex();
+
+            String colname = simple.getChild(0).getText().toLowerCase(Locale.ROOT);
+            String coltype;
+            if (simple.XMLCONCAT() != null) {
+                coltype = TypesSetManually.XML;
+            } else if (simple.ROW() != null) {
+                coltype = TypesSetManually.UNKNOWN;
+            } else if (simple.GROUPING() != null) {
+                coltype = TypesSetManually.INTEGER;
+            } else {
+                VexContext vex = args.remove(0);
+                coltype = analyze(new Vex(vex)).getSecond();
             }
             ret = new ModPair<>(colname, coltype);
         } else {
