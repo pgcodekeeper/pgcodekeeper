@@ -97,7 +97,7 @@ implements SqlContextProcessor {
             }
         } else if ((ds = statement.data_statement()) != null) {
             data(ds);
-        } else if (!isNormMode) {
+        } else {
             addUndescribedObjToQueries(statement, stream);
         }
     }
@@ -141,40 +141,18 @@ implements SqlContextProcessor {
         } else if (ctx.create_fts_dictionary() != null) {
             p = new CreateFtsDictionary(ctx.create_fts_dictionary(), db);
         } else if (ctx.comment_on_statement() != null) {
-            if (isNormMode) {
-                p = new CommentOn(ctx.comment_on_statement(), db);
-            } else if (isRefMode) {
-                p = new CommentOn(ctx.comment_on_statement(), db);
-                addUndescribedObjToQueries(ctx, stream);
-            } else {
-                addUndescribedObjToQueries(ctx, stream);
-                return;
-            }
+            p = new CommentOn(ctx.comment_on_statement(), db);
+            addUndescribedObjToQueries(ctx, stream);
         } else if (ctx.rule_common() != null) {
-            if (isNormMode) {
-                p = new CreateRule(ctx.rule_common(), db);
-            } else if (isRefMode) {
-                p = new CreateRule(ctx.rule_common(), db);
-                addUndescribedObjToQueries(ctx, stream);
-            } else {
-                addUndescribedObjToQueries(ctx, stream);
-                return;
-            }
+            p = new CreateRule(ctx.rule_common(), db);
+            addUndescribedObjToQueries(ctx, stream);
         } else if (ctx.set_statement() != null) {
             Set_statementContext setCtx = ctx.set_statement();
-            if (isNormMode) {
-                set(setCtx);
-            } else if (isRefMode) {
-                set(setCtx);
-                addUndescribedObjToQueries(setCtx, stream);
-            } else {
-                addUndescribedObjToQueries(ctx, stream);
-            }
-            return;
-        } else if (!isNormMode) {
-            addUndescribedObjToQueries(ctx, stream);
+            set(setCtx);
+            addUndescribedObjToQueries(setCtx, stream);
             return;
         } else {
+            addUndescribedObjToQueries(ctx, stream);
             return;
         }
         safeParseStatement(p, ctx);
@@ -201,10 +179,8 @@ implements SqlContextProcessor {
                 || ctx.alter_index_statement() != null
                 || ctx.alter_extension_statement() != null) {
             p = new AlterOther(ctx, db);
-        } else if (!isNormMode) {
-            addUndescribedObjToQueries(ctx, stream);
-            return;
         } else {
+            addUndescribedObjToQueries(ctx, stream);
             return;
         }
         safeParseStatement(p, ctx);
@@ -214,10 +190,8 @@ implements SqlContextProcessor {
         ParserAbstract p;
         if (ctx.update_stmt_for_psql() != null) {
             p =  new UpdateStatement(ctx.update_stmt_for_psql(), db);
-        } else if (!isNormMode) {
-            addUndescribedObjToQueries(ctx, stream);
-            return;
         } else {
+            addUndescribedObjToQueries(ctx, stream);
             return;
         }
 
