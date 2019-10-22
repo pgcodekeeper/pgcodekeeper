@@ -2818,7 +2818,7 @@ into_table
 from_item
     : LEFT_PAREN from_item RIGHT_PAREN alias_clause?
     | from_item CROSS JOIN from_item
-    | from_item (INNER | (LEFT | RIGHT | FULL) OUTER?)? JOIN from_item ON vex
+    | from_item (INNER | (LEFT | RIGHT | FULL) OUTER?)? JOIN from_item ON vex into_statement?
     | from_item (INNER | (LEFT | RIGHT | FULL) OUTER?)? JOIN from_item USING column_references
     | from_item NATURAL (INNER | (LEFT | RIGHT | FULL) OUTER?)? JOIN from_item
     | from_primary into_statement?
@@ -2946,7 +2946,7 @@ truncate_stmt
   ;
 
 comp_options
-    : HASH_SIGN identifier identifier
+    : HASH_SIGN identifier (identifier | truth_value)
     ;
 
 function_block
@@ -3006,7 +3006,7 @@ function_statement
 
 base_statement
     : assign_stmt
-    | execute_stmt
+    | EXECUTE vex (into_statement? using_vex? | using_vex into_statement)
     | PERFORM perform_stmt
     | GET (CURRENT | STACKED)? DIAGNOSTICS diagnostic_option (COMMA diagnostic_option)*
     | NULL
@@ -3038,7 +3038,7 @@ assign_stmt
     ;
 
 execute_stmt
-    : EXECUTE vex into_statement? using_vex?
+    : EXECUTE vex using_vex?
     ;
 
 control_statement
@@ -3051,7 +3051,7 @@ control_statement
 
 cursor_statement
     : OPEN var ((NO)? SCROLL)? FOR (select_stmt | execute_stmt)
-    | OPEN var (option (COMMA option)*)?
+    | OPEN var (LEFT_PAREN option (COMMA option)* RIGHT_PAREN)?
     | FETCH fetch_move_direction? (FROM | IN)? var into_statement
     | MOVE fetch_move_direction? (FROM | IN)? var
     | CLOSE var
@@ -3067,7 +3067,9 @@ transaction_statement
     ;
 
 message_statement
-    : RAISE log_level? SQLSTATE? (character_string (COMMA vex)*)? raise_using?
+    : RAISE log_level? (character_string (COMMA vex)*)? raise_using?
+    | RAISE log_level? identifier raise_using?
+    | RAISE log_level? SQLSTATE character_string raise_using?
     | ASSERT vex (COMMA vex)?
     ;
 
@@ -3141,6 +3143,6 @@ into_statement
     ;
 
 anonymous_block
-    : DO (LANGUAGE identifier)? character_string
-    | DO character_string LANGUAGE identifier
+    : DO (LANGUAGE (identifier | character_string))? character_string
+    | DO character_string LANGUAGE (identifier | character_string)
     ;

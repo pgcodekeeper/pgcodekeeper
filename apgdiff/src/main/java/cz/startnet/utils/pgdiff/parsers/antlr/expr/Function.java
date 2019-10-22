@@ -186,7 +186,6 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
 
     private void base(Base_statementContext base) {
         Assign_stmtContext assign = base.assign_stmt();
-        Execute_stmtContext exec;
         Perform_stmtContext perform;
 
         if (assign != null) {
@@ -196,8 +195,15 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
             } else {
                 new Select(this).analyze(assign.perform_stmt());
             }
-        } else if ((exec = base.execute_stmt()) != null) {
-            execute(exec);
+        } else if (base.EXECUTE() != null) {
+            ValueExpr vex = new ValueExpr(this);
+            vex.analyze(new Vex(base.vex()));
+            Using_vexContext using = base.using_vex();
+            if (using != null) {
+                for (VexContext v : using.vex()) {
+                    vex.analyze(new Vex(v));
+                }
+            }
         } else if ((perform = base.perform_stmt()) != null) {
             new Select(this).analyze(perform);
         }
