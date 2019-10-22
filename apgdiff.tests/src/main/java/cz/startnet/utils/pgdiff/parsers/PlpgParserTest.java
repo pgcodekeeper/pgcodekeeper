@@ -27,10 +27,10 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
 /**
- * Tests for PostgreSQL parser rules.
+ * Tests for plpgsql function bodies.
  *
  * @author galiev_mr
- * @since 5.3.8
+ * @since 5.9.0
  */
 @RunWith(value = Parameterized.class)
 public class PlpgParserTest {
