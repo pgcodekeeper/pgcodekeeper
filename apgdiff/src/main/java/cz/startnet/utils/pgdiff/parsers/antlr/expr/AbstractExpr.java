@@ -176,11 +176,14 @@ public abstract class AbstractExpr {
             return processTablelessColumn(ids.get(0));
         }
 
-        String columnType = TypesSetManually.COLUMN;
         String columnName = QNameParser.getFirstName(ids);
         String columnParent = QNameParser.getSecondName(ids);
         String schemaName = QNameParser.getThirdName(ids);
+        return processColumn(schemaName, columnParent, columnName);
+    }
 
+    protected ModPair<String, String> processColumn(String schemaName, String columnParent, String columnName) {
+        String columnType = TypesSetManually.COLUMN;
         Entry<String, GenericColumn> ref = findReference(schemaName, columnParent, columnName);
         List<Pair<String, String>> refComplex;
         if (ref != null) {

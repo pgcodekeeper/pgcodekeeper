@@ -2,9 +2,9 @@ package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -18,8 +18,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_elementsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Case_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Cast_specificationContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Col_labelContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Collate_identifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comparison_modContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Date_time_functionContext;
@@ -38,7 +38,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_varContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.OpContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Orderby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Partition_by_columnsContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Predefined_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sort_specifierContext;
@@ -48,6 +47,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_subqueryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Tokens_simple_functionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Truth_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Type_coercionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Type_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Unsigned_numeric_literalContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Unsigned_value_specificationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expression_primaryContext;
@@ -70,7 +70,14 @@ import ru.taximaxim.codekeeper.apgdiff.utils.ModPair;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class ValueExpr extends AbstractExpr {
+    /*
+    public static final Map<String, int[]> A = new HashMap<>();
 
+
+    static void a(String alt) {
+        A.computeIfAbsent(alt, s -> new int[1])[0]++;
+    }
+     */
     public ValueExpr(PgDatabase db, DbObjType... disabledDepcies) {
         super(db, disabledDepcies);
     }
@@ -79,215 +86,278 @@ public class ValueExpr extends AbstractExpr {
         super(parent);
     }
 
-    public ModPair<String, String> analyze(Vex vex) {
-        ModPair<String, String> ret;
-        Data_typeContext dataType = vex.dataType();
-        // TODO OpCtx user-operator reference
-        @SuppressWarnings("unused")
-        Collate_identifierContext collate;
-        String operator;
-        OpContext op = null;
-        Datetime_overlapsContext overlaps;
-        Value_expression_primaryContext primary;
-        List<ModPair<String, String>> operandsList;
+    /*
+        Alternative checks are ordered for performance according to their usage frequency in real code.
+        Statistics gathered on the internal DB codebase as of 2019-10-16.
+        Also note that some checks are constrained by the grammar to go before others.
+        Otherwise some alternatives would be mis-processed as a wrong kind.
 
-        List<Vex> operands = vex.vex();
-        if (!operands.isEmpty()) {
-            operandsList = new ArrayList<>(operands.size());
-            for (Vex v : operands) {
-                operandsList.add(analyze(v));
+        collate          1
+        isnull           3
+        similar          6
+        ilike          140
+        between        181
+        like           239
+        leq            311
+        not            328
+        geq            422
+        lth            468
+        in             622
+        gth            737
+        neq           1456
+        or            1525
+        op base       2404
+        is            3992
+        parens        5688
+        op full       6302
+        and           7594
+        eq           17496
+        cast         18050
+        primary     192884
+     */
+    public ModPair<String, String> analyze(Vex vex) {
+        List<ModPair<String, String>> operandsList = vex.vex()
+                .map(this::analyze)
+                // there are always at least 1 operand, most likely 2
+                .collect(Collectors.toList());
+        if (operandsList.isEmpty()) {
+            Value_expression_primaryContext primary = vex.primary();
+            if (primary != null) {
+                return primary(primary);
             }
-        } else {
-            operandsList = Collections.emptyList();
         }
 
-        if (vex.castExpression() != null && dataType != null) {
-            addTypeDepcy(dataType);
-            Predefined_typeContext pType = dataType.predefined_type();
-            Schema_qualified_name_nontypeContext customType = pType.schema_qualified_name_nontype();
-            IdentifierContext typeSchema = customType == null ? null : customType.identifier();
-            // TODO remove when tokens are refactored
-            if (dataType.array_type().isEmpty() && dataType.SETOF() == null && customType != null &&
-                    (typeSchema == null || ApgdiffConsts.PG_CATALOG.equals(typeSchema.getText()))) {
-                // check simple built-in types for reg*** casts
-                Value_expression_primaryContext castPrimary = vex.vex().get(0).primary();
-                Unsigned_value_specificationContext value;
-                General_literalContext literal;
-                if (castPrimary != null
-                        && (value = castPrimary.unsigned_value_specification()) != null
-                        && (literal = value.general_literal()) != null
-                        && literal.character_string() != null) {
-                    regCast(PgDiffUtils.unquoteQuotedString(literal.getText()),
-                            customType.getText());
-                }
-            }
+        ModPair<String, String> ret;
+        Data_typeContext dataType = vex.dataType();
+        String operator = null;
+        OpContext op;
 
+        if (dataType != null) {
+            cast(vex, dataType);
             ret = operandsList.get(0);
             ret.setSecond(ParserAbstract.getFullCtxText(dataType));
-        } else if (vex.in() != null) {
-            Select_stmt_no_parensContext selectStmt = vex.selectStmt();
-            if (selectStmt != null) {
-                new Select(this).analyze(selectStmt);
-            }
+        } else if (vex.equal() != null
+                || vex.and() != null) {
+            // BETWEEN is handled as AND, no separate processing required
             ret = new ModPair<>(NONAME, TypesSetManually.BOOLEAN);
-        } else if (vex.leftParen() != null && vex.rightParen() != null) {
-            if (operandsList.size() == 1) {
-                ret = operandsList.get(0);
-                Indirection_listContext indir = vex.indirectionList();
-                if (indir != null) {
-                    indirection(indir.indirection(), ret);
-                    if (indir.MULTIPLY() != null) {
-                        ret = new ModPair<>(NONAME, TypesSetManually.QUALIFIED_ASTERISK);
+        } else if ((op = vex.op()) != null || (operator = getOperatorToken(vex)) != null) {
+            ret = op(vex, operandsList, operator, op);
+        } else if (vex.leftParen() != null) {
+            Type_listContext typeList;
+            if (vex.in() != null) {
+                Select_stmt_no_parensContext selectStmt = vex.selectStmt();
+                if (selectStmt != null) {
+                    new Select(this).analyze(selectStmt);
+                }
+                ret = new ModPair<>(NONAME, TypesSetManually.BOOLEAN);
+            } else if ((typeList = vex.typeList()) != null) {
+                for (Data_typeContext type : typeList.data_type()) {
+                    addTypeDepcy(type);
+                }
+                ret = new ModPair<>(NONAME, TypesSetManually.BOOLEAN);
+            } else {
+                if (operandsList.size() == 1) {
+                    ret = operandsList.get(0);
+                    Indirection_listContext indir = vex.indirectionList();
+                    if (indir != null) {
+                        indirection(indir.indirection(), ret);
+                        if (indir.MULTIPLY() != null) {
+                            ret = new ModPair<>(NONAME, TypesSetManually.QUALIFIED_ASTERISK);
+                        }
                     }
-                }
-            } else {
-                // TODO add record type placeholder?
-                ret = new ModPair<>("row", TypesSetManually.UNKNOWN);
-            }
-        } else if ((collate = vex.collateIdentifier()) != null) {
-            // TODO pending DbObjType.COLLATION
-            ret = operandsList.get(0);
-        } else if (vex.timeZone() != null) {
-            ret = operandsList.get(0);
-        } else if ((overlaps = vex.datetimeOverlaps()) != null) {
-            for (VexContext v : overlaps.vex()) {
-                analyze(new Vex(v));
-            }
-            ret = new ModPair<>("overlaps", TypesSetManually.BOOLEAN);
-        } else if ((operator = getOperatorToken(vex)) != null || (op = vex.op()) != null) {
-            if (op != null) {
-                IdentifierContext opSchemaCtx = op.identifier();
-                if (opSchemaCtx == null) {
-                    operator = op.op_chars().getText();
-                } else if (opSchemaCtx.getText().equals(ApgdiffConsts.PG_CATALOG)) {
-                    operator = op.all_simple_op().getText();
-                }
-            }
-            if (operator != null) {
-                String larg = TypesSetManually.EMPTY;
-                String rarg = TypesSetManually.EMPTY;
-                if (operandsList.size() == 2) {
-                    larg = operandsList.get(0).getSecond();
-                    rarg = operandsList.get(1).getSecond();
-                } else if (op == null || vex.getVexCtx().getChild(0) instanceof OpContext) {
-                    rarg = operandsList.get(0).getSecond();
                 } else {
-                    larg = operandsList.get(0).getSecond();
+                    // TODO add record type placeholder?
+                    ret = new ModPair<>("row", TypesSetManually.UNKNOWN);
                 }
-                ret = operator(operator, larg, rarg);
-            } else {
-                // if we got to this point, operator didn't get filled by the OP_CHARS token
-                // meaning user-schema operator
-                Log.log(Log.LOG_WARNING, "Unsupported user operator!");
-                ret = new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
             }
-        } else if (vex.between() != null
+        } else if (vex.is() != null
+                || vex.or() != null
+                || vex.notEqual() != null
+                || vex.gth() != null
+                || vex.lth() != null
+                || vex.geq() != null
+                || vex.leq() != null
                 || vex.like() != null
                 || vex.ilike() != null
                 || vex.similar() != null
-                || vex.lth() != null
-                || vex.gth() != null
-                || vex.leq() != null
-                || vex.geq() != null
-                || vex.equal() != null
-                || vex.notEqual() != null
-                || vex.is() != null
                 || vex.isNull() != null
-                || vex.notNull() != null
-                || (vex.not() != null && vex.in() == null)
-                || vex.and() != null
-                || vex.or() != null ) {
+                || vex.not() != null
+                || vex.notNull() != null) {
+            // check IS after "OF ( type_list )"
+            // check unary NOT after all NOT-containing alternatives
             ret = new ModPair<>(NONAME, TypesSetManually.BOOLEAN);
-        } else if ((primary = vex.primary()) != null) {
-            Unsigned_value_specificationContext unsignedValue = primary.unsigned_value_specification();
-            Select_stmt_no_parensContext subSelectStmt;
-            Case_expressionContext caseExpr;
-            Comparison_modContext compMod;
-            Table_subqueryContext subquery;
-            Function_callContext function;
-            Indirection_varContext indirection;
-            Array_expressionContext array;
-            Type_coercionContext typeCoercion;
-
-            if (unsignedValue != null) {
-                ret = new ModPair<>(NONAME, literal(unsignedValue));
-            } else if ((indirection = primary.indirection_var()) != null) {
-                ret = indirectionVar(indirection);
-            } else if ((subSelectStmt = primary.select_stmt_no_parens()) != null) {
-                Select select = new Select(this);
-                ret = select.analyze(subSelectStmt).get(0);
-                Indirection_listContext indir = primary.indirection_list();
-                if (indir != null) {
-                    indirection(indir.indirection(), ret);
-                    if (indir.MULTIPLY() != null) {
-                        ret = new ModPair<>(NONAME, TypesSetManually.QUALIFIED_ASTERISK);
-                    }
-                }
-            } else if (primary.NULL() != null) {
-                ret = new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
-            } else if ((caseExpr = primary.case_expression()) != null) {
-                ret = new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
-                for (VexContext v : caseExpr.vex()) {
-                    // we need the Pair of the last expression (ELSE)
-                    ret = analyze(new Vex(v));
-                }
-                if (caseExpr.ELSE() == null || ret.getFirst() == null) {
-                    // CASE inherits its name only from the ELSE expression
-                    // if it is missing or doesn't carry any name, the name becomes "case"
-                    ret.setFirst("case");
-                }
-            } else if ((compMod = primary.comparison_mod()) != null) {
-                // type doesn't matter since this is not a real expression
-                // this is always an operand of comparison operator, which will reset the type
-                ret = new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
-                VexContext compModVex = compMod.vex();
-                if (compModVex != null) {
-                    analyze(new Vex(compModVex));
-                } else {
-                    new Select(this).analyze(compMod.select_stmt_no_parens());
-                }
-            } else if (primary.EXISTS() != null &&
-                    (subquery = primary.table_subquery()) != null) {
-                new Select(this).analyze(subquery.select_stmt());
-                ret = new ModPair<>("exists", TypesSetManually.BOOLEAN);
-            } else if ((function = primary.function_call()) != null) {
-                ret = function(function);
-            } else if (primary.MULTIPLY() != null) {
-                // handled in Select analyzer
-                ret = new ModPair<>(NONAME, TypesSetManually.QUALIFIED_ASTERISK);
-            } else if ((array = primary.array_expression()) != null) {
-                Array_bracketsContext arrayb = array.array_brackets();
-                if (arrayb != null) {
-                    ret = arrayElements(arrayb.array_elements());
-                } else {
-                    ret = new Select(this)
-                            .analyze(array.array_query().table_subquery().select_stmt())
-                            .get(0);
-                }
-                ret.setFirst("array");
-                ret.setSecond(ret.getSecond() + "[]");
-            } else if ((typeCoercion = primary.type_coercion()) != null) {
-                String type;
-                if (typeCoercion.INTERVAL() != null) {
-                    type = "interval";
-                } else {
-                    Data_typeContext coercionDataType = typeCoercion.data_type();
-                    addTypeDepcy(coercionDataType);
-                    type = ParserAbstract.getTypeName(coercionDataType);
-                }
-                // since this cast can only convert string literals into a type
-                // and types are restricted to the simplest
-                // column name here will always be derived from type name
-                ret = new ModPair<>(type, type);
-            } else {
-                Log.log(Log.LOG_WARNING, "No alternative in Vex Primary!");
-                ret = new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
-            }
+        } else if (vex.collateIdentifier() != null
+                || vex.timeZone() != null) {
+            // TODO pending DbObjType.COLLATION
+            ret = operandsList.get(0);
         } else {
             Log.log(Log.LOG_WARNING, "No alternative in Vex!");
             ret = new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
         }
 
+        return ret;
+    }
+
+    private void cast(Vex vex, Data_typeContext dataType) {
+        addTypeDepcy(dataType);
+        Schema_qualified_name_nontypeContext customType = dataType.predefined_type().schema_qualified_name_nontype();
+        IdentifierContext typeSchema = customType == null ? null : customType.identifier();
+        // TODO remove when tokens are refactored
+        if (customType != null && (typeSchema == null || ApgdiffConsts.PG_CATALOG.equals(typeSchema.getText()))
+                && dataType.array_type().isEmpty() && dataType.SETOF() == null) {
+            // check simple built-in types for reg*** casts
+            Value_expression_primaryContext castPrimary = vex.vex().findAny().get().primary();
+            Unsigned_value_specificationContext value;
+            General_literalContext literal;
+            Character_stringContext str;
+            if (castPrimary != null
+                    && (value = castPrimary.unsigned_value_specification()) != null
+                    && (literal = value.general_literal()) != null
+                    && (str = literal.character_string()) != null) {
+                regCast(str, customType.getText());
+            }
+        }
+    }
+
+    private ModPair<String, String> op(Vex vex, List<ModPair<String, String>> operandsList,
+            String operator, OpContext op) {
+        if (op != null) {
+            IdentifierContext opSchemaCtx = op.identifier();
+            if (opSchemaCtx == null) {
+                operator = op.op_chars().getText();
+            } else if (opSchemaCtx.getText().equals(ApgdiffConsts.PG_CATALOG)) {
+                operator = op.all_simple_op().getText();
+            }
+        }
+        if (operator != null) {
+            String larg = TypesSetManually.EMPTY;
+            String rarg = TypesSetManually.EMPTY;
+            if (operandsList.size() == 2) {
+                larg = operandsList.get(0).getSecond();
+                rarg = operandsList.get(1).getSecond();
+            } else if (op == null || vex.getVexCtx().getChild(0) instanceof OpContext) {
+                rarg = operandsList.get(0).getSecond();
+            } else {
+                larg = operandsList.get(0).getSecond();
+            }
+            // TODO When the user's operators will be also process by codeKeeper,
+            // put in 'findFunctions' operator's schema name instead of 'PgSystemStorage.SCHEMA_PG_CATALOG'.
+            IFunction resultOperFunction = resolveCall(operator, Arrays.asList(larg, rarg),
+                    availableFunctions(ApgdiffConsts.PG_CATALOG));
+            return new ModPair<>(NONAME, resultOperFunction != null ? resultOperFunction.getReturns()
+                    : TypesSetManually.FUNCTION_COLUMN);
+        } else {
+            // if we got to this point, operator didn't get filled by the OP_CHARS token
+            // meaning user-schema operator
+            Log.log(Log.LOG_WARNING, "Unsupported user operator!");
+            return new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
+        }
+    }
+
+    /*
+        Usage frequency in internal DB codebase.
+        coercion            54
+        asterisk           306
+        array              392
+        compmod            399
+        select             516
+        exists             551
+        case              2281
+        NULL              5507
+        function         25665
+        unsigned         39816
+        indirection     117397
+     */
+    private ModPair<String, String> primary(Value_expression_primaryContext primary) {
+        ModPair<String, String> ret;
+        Indirection_varContext indirection = primary.indirection_var();
+        Unsigned_value_specificationContext unsignedValue;
+        Select_stmt_no_parensContext subSelectStmt;
+        Case_expressionContext caseExpr;
+        Comparison_modContext compMod;
+        Table_subqueryContext subquery;
+        Function_callContext function;
+        Array_expressionContext array;
+        Type_coercionContext typeCoercion;
+        Datetime_overlapsContext overlaps;
+
+        if (indirection != null) {
+            ret = indirectionVar(indirection);
+        } else if ((unsignedValue = primary.unsigned_value_specification()) != null) {
+            ret = new ModPair<>(NONAME, literal(unsignedValue));
+        } else if ((function = primary.function_call()) != null) {
+            ret = function(function);
+        } else if (primary.NULL() != null) {
+            ret = new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
+        } else if ((caseExpr = primary.case_expression()) != null) {
+            ret = null;
+            for (VexContext v : caseExpr.vex()) {
+                // we need the Pair of the last expression (ELSE)
+                ret = analyze(new Vex(v));
+            }
+            if (ret.getFirst() == null || caseExpr.ELSE() == null) {
+                // CASE inherits its name only from the ELSE expression
+                // if it is missing or doesn't carry any name, the name becomes "case"
+                ret.setFirst("case");
+            }
+        } else if ((subquery = primary.table_subquery()) != null) {
+            new Select(this).analyze(subquery.select_stmt());
+            ret = new ModPair<>("exists", TypesSetManually.BOOLEAN);
+        } else if ((subSelectStmt = primary.select_stmt_no_parens()) != null) {
+            Select select = new Select(this);
+            ret = select.analyze(subSelectStmt).get(0);
+            Indirection_listContext indir = primary.indirection_list();
+            if (indir != null) {
+                indirection(indir.indirection(), ret);
+                if (indir.MULTIPLY() != null) {
+                    ret = new ModPair<>(NONAME, TypesSetManually.QUALIFIED_ASTERISK);
+                }
+            }
+        } else if ((compMod = primary.comparison_mod()) != null) {
+            // type doesn't matter since this is not a real expression
+            // this is always an operand of comparison operator, which will reset the type
+            ret = new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
+            VexContext compModVex = compMod.vex();
+            if (compModVex != null) {
+                analyze(new Vex(compModVex));
+            } else {
+                new Select(this).analyze(compMod.select_stmt_no_parens());
+            }
+        } else if ((array = primary.array_expression()) != null) {
+            Array_bracketsContext arrayb = array.array_brackets();
+            if (arrayb != null) {
+                ret = arrayElements(arrayb.array_elements());
+            } else {
+                ret = new Select(this)
+                        .analyze(array.array_query().table_subquery().select_stmt())
+                        .get(0);
+            }
+            ret.setFirst("array");
+            ret.setSecond(ret.getSecond() + "[]");
+        } else if (primary.MULTIPLY() != null) {
+            // handled in Select analyzer
+            ret = new ModPair<>(NONAME, TypesSetManually.QUALIFIED_ASTERISK);
+        } else if ((typeCoercion = primary.type_coercion()) != null) {
+            String type;
+            if (typeCoercion.INTERVAL() != null) {
+                type = "interval";
+            } else {
+                Data_typeContext coercionDataType = typeCoercion.data_type();
+                addTypeDepcy(coercionDataType);
+                type = ParserAbstract.getTypeName(coercionDataType);
+            }
+            // since this cast can only convert string literals into a type
+            // column name here will always be derived from type name
+            ret = new ModPair<>(type, type);
+        } else if ((overlaps = primary.datetime_overlaps()) != null) {
+            for (VexContext v : overlaps.vex()) {
+                analyze(new Vex(v));
+            }
+            ret = new ModPair<>("overlaps", TypesSetManually.BOOLEAN);
+        } else {
+            Log.log(Log.LOG_WARNING, "No alternative in Vex Primary!");
+            ret = new ModPair<>(NONAME, TypesSetManually.UNKNOWN);
+        }
         return ret;
     }
 
@@ -307,7 +377,17 @@ public class ValueExpr extends AbstractExpr {
             indirection(indir, null);
             return new ModPair<>(NONAME, TypesSetManually.QUALIFIED_ASTERISK);
         }
+        /*
+        String columnName = id.getText();
+        String columnParent = null;
+        String schemaName = null;
+        int i = 0;
+        for (; i < indir.size(); ++i) {
+            switch (i) {
 
+            }
+        }
+         */
         // reserve space for longest-yet-still-common case
         // this list has minimal size of 1, may as well reserve 3
         List<ParserRuleContext> ids = new ArrayList<>(3);
@@ -622,15 +702,6 @@ public class ValueExpr extends AbstractExpr {
                 .map(Pair::getFirst).orElse(null);
     }
 
-    private ModPair<String, String> operator(String operator, String... sourceArgsTypes) {
-        // TODO When the user's operators will be also process by codeKeeper,
-        // put in 'findFunctions' operator's schema name instead of 'PgSystemStorage.SCHEMA_PG_CATALOG'.
-        IFunction resultOperFunction = resolveCall(operator, Arrays.asList(sourceArgsTypes),
-                availableFunctions(ApgdiffConsts.PG_CATALOG));
-        return new ModPair<>(NONAME, resultOperFunction != null ? resultOperFunction.getReturns()
-                : TypesSetManually.FUNCTION_COLUMN);
-    }
-
     private Stream<Argument> getInInoutFuncArgs(IFunction func) {
         return func.getArguments().stream()
                 .filter(arg -> "IN".equals(arg.getMode()) || "INOUT".equals(arg.getMode()));
@@ -700,7 +771,11 @@ public class ValueExpr extends AbstractExpr {
         }
     }
 
-    private void regCast(String s, String regcast) {
+    private void regCast(Character_stringContext strCtx, String regcast) {
+        if (!regcast.startsWith("reg")) {
+            return;
+        }
+        String s = PgDiffUtils.unquoteQuotedString(strCtx.getText());
         switch (regcast) {
         case "regproc":
             // In this case, the function is not overloaded.
@@ -715,17 +790,17 @@ public class ValueExpr extends AbstractExpr {
 
         case "regnamespace":
             addSchemaDepcy(QNameParser.parsePg(s).getIds());
-            return;
+            break;
 
         case "regprocedure":
             addFunctionSigDepcy(s);
-            return;
+            break;
 
         case "regoper":
         case "regoperator":
             // TODO pending DbObjType.OPERATOR
         default:
-            return;
+            break;
         }
     }
 

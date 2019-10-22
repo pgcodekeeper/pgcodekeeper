@@ -2524,7 +2524,6 @@ vex
   | vex IS NOT? OF LEFT_PAREN type_list RIGHT_PAREN
   | vex ISNULL
   | vex NOTNULL
-  | datetime_overlaps
   | <assoc=right> NOT vex
   | vex AND vex
   | vex OR vex
@@ -2583,6 +2582,7 @@ value_expression_primary
   | indirection_var
   | array_expression
   | type_coercion
+  | datetime_overlaps
   ;
 
 unsigned_value_specification
