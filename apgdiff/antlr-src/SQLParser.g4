@@ -3001,6 +3001,7 @@ function_statement
     | schema_statement
     | data_statement
     | additional_statement
+    | show_into_statement
     ;
 
 base_statement
