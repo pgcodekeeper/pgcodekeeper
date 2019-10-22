@@ -1024,7 +1024,7 @@ rewrite_command
 create_trigger_statement
     : CONSTRAINT? TRIGGER name=identifier (before_true=BEFORE | (INSTEAD OF) | AFTER)
     (((insert_true=INSERT | delete_true=DELETE | truncate_true=TRUNCATE) 
-    | update_true=UPDATE (OF columns_list)?)OR?)+
+    | update_true=UPDATE (OF identifier_list)?)OR?)+
     ON table_name=schema_qualified_name
     (FROM referenced_table_name=schema_qualified_name)?
     table_deferrable? table_initialy_immed?
@@ -1032,10 +1032,6 @@ create_trigger_statement
     (for_each_true=FOR EACH? (ROW | STATEMENT))?
     when_trigger?
     EXECUTE (FUNCTION | PROCEDURE) func_name=function_call
-    ;
-
-columns_list
-    : name+=identifier (COMMA name+=identifier)*
     ;
 
 trigger_referencing
@@ -1445,11 +1441,11 @@ copy_option
     | HEADER truth_value?
     | QUOTE Character_String_Literal
     | ESCAPE Character_String_Literal
-    | FORCE QUOTE (MULTIPLY | columns_list)
-    | FORCE_QUOTE (MULTIPLY | LEFT_PAREN columns_list RIGHT_PAREN)
-    | FORCE NOT NULL columns_list
-    | FORCE_NOT_NULL LEFT_PAREN columns_list RIGHT_PAREN
-    | FORCE_NULL LEFT_PAREN columns_list RIGHT_PAREN
+    | FORCE QUOTE (MULTIPLY | identifier_list)
+    | FORCE_QUOTE (MULTIPLY | LEFT_PAREN identifier_list RIGHT_PAREN)
+    | FORCE NOT NULL identifier_list
+    | FORCE_NOT_NULL LEFT_PAREN identifier_list RIGHT_PAREN
+    | FORCE_NULL LEFT_PAREN identifier_list RIGHT_PAREN
     | ENCODING Character_String_Literal
     ;
 
