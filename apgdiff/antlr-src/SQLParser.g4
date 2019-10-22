@@ -67,12 +67,12 @@ script_statement
 
 script_transaction
     : (START TRANSACTION | BEGIN (WORK | TRANSACTION)?) (transaction_mode (COMMA transaction_mode)*)?
-    | (COMMIT | END) (WORK | TRANSACTION)?
+    | (COMMIT | END | ABORT | ROLLBACK) (WORK | TRANSACTION)? (AND NO? CHAIN)?
     | (COMMIT PREPARED | PREPARE TRANSACTION) Character_String_Literal
     | (SAVEPOINT | RELEASE SAVEPOINT?) identifier
-    | ROLLBACK (PREPARED Character_String_Literal | (WORK | TRANSACTION)? (TO SAVEPOINT? identifier)?)
+    | ROLLBACK PREPARED Character_String_Literal 
+    | ROLLBACK (WORK | TRANSACTION)? TO SAVEPOINT? identifier
     | lock_table
-    | ABORT (WORK | TRANSACTION)?
     ;
 
 transaction_mode
@@ -110,12 +110,12 @@ additional_statement
     : anonymous_block
     | LISTEN identifier
     | UNLISTEN (identifier | MULTIPLY)
-    | ANALYZE VERBOSE? table_cols_list?
+    | ANALYZE ((VERBOSE | SKIP_LOCKED) boolean_value?)? table_cols_list?
     | CLUSTER VERBOSE? (identifier ON schema_qualified_name | schema_qualified_name (USING identifier)?)?
     | CHECKPOINT
     | LOAD Character_String_Literal
     | DEALLOCATE PREPARE? (identifier | ALL)
-    | REINDEX (LEFT_PAREN VERBOSE RIGHT_PAREN)? (INDEX | TABLE | SCHEMA | DATABASE | SYSTEM) schema_qualified_name
+    | REINDEX (LEFT_PAREN VERBOSE RIGHT_PAREN)? (INDEX | TABLE | SCHEMA | DATABASE | SYSTEM) CONCURRENTLY? schema_qualified_name
     | RESET (identifier | TIME ZONE | SESSION AUTHORIZATION | ALL)
     | EXPLAIN (ANALYZE? VERBOSE? | (LEFT_PAREN explain_option (COMMA explain_option)* RIGHT_PAREN)) statement
     | REFRESH MATERIALIZED VIEW CONCURRENTLY? schema_qualified_name (WITH NO? DATA)?
@@ -129,7 +129,7 @@ show_statement
     ;
 
 explain_option
-    : (ANALYZE | VERBOSE | COSTS | BUFFERS | TIMING | SUMMARY) (TRUE | FALSE | OFF | ON)?
+    : (ANALYZE | VERBOSE | COSTS | SETTINGS | BUFFERS | TIMING | SUMMARY) boolean_value?
     | FORMAT (TEXT | XML | JSON | YAML)
     ;
 
@@ -146,11 +146,15 @@ table_cols
     ;
 
 vacuum_mode
-    : FULL
-    | FREEZE
-    | VERBOSE
-    | ANALYZE
-    | DISABLE_PAGE_SKIPPING
+    : (FULL | FREEZE | VERBOSE | ANALYZE | DISABLE_PAGE_SKIPPING | SKIP_LOCKED | INDEX_CLEANUP | TRUNCATE) boolean_value?
+    ;
+
+boolean_value
+    : TRUE 
+    | FALSE 
+    | OFF 
+    | ON 
+    | NUMBER_LITERAL
     ;
 
 fetch_move_direction
@@ -441,6 +445,7 @@ function_actions_common
     | PARALLEL (SAFE | UNSAFE | RESTRICTED)
     | COST execution_cost=unsigned_numeric_literal
     | ROWS result_rows=unsigned_numeric_literal
+    | SUPPORT schema_qualified_name
     | SET configuration_parameter=identifier (((TO | EQUAL) value+=set_statement_value) | FROM CURRENT)(COMMA value+=set_statement_value)*
     | LANGUAGE lang_name=identifier
     | WINDOW
@@ -733,7 +738,7 @@ create_fts_parser
 
 create_collation
     : COLLATION if_not_exists? name=schema_qualified_name
-      (FROM copy=schema_qualified_name | LEFT_PAREN (collation_option (COMMA collation_option)*)? RIGHT_PAREN)
+    (FROM copy=schema_qualified_name | LEFT_PAREN (collation_option (COMMA collation_option)*)? RIGHT_PAREN)
     ;
 
 alter_collation
@@ -742,6 +747,7 @@ alter_collation
 
 collation_option
     : (LOCALE | LC_COLLATE | LC_CTYPE | PROVIDER | VERSION) EQUAL (character_string | identifier)
+    | DETERMINISTIC EQUAL boolean_value
     ;
 
 create_user_mapping
@@ -782,9 +788,10 @@ alter_tablespace
 
 alter_owner
     : (OPERATOR target_operator
-    | (FUNCTION | PROCEDURE | AGGREGATE) name=schema_qualified_name function_args
-    | (TEXT SEARCH DICTIONARY | TEXT SEARCH CONFIGURATION | DOMAIN | SCHEMA | SEQUENCE | TYPE | MATERIALIZED? VIEW)
-    (IF EXISTS)? name=schema_qualified_name) owner_to
+        | LARGE OBJECT NUMBER_LITERAL
+        | (FUNCTION | PROCEDURE | AGGREGATE) name=schema_qualified_name function_args
+        | (TEXT SEARCH DICTIONARY | TEXT SEARCH CONFIGURATION | DOMAIN | SCHEMA | SEQUENCE | TYPE | MATERIALIZED? VIEW)
+        (IF EXISTS)? name=schema_qualified_name) owner_to
     ;
 
 alter_tablespace_action
@@ -797,9 +804,7 @@ alter_tablespace_action
     ;
 
 alter_statistics
-    : STATISTICS name=schema_qualified_name (rename_to
-        | SET SCHEMA schema_name=identifier
-        | owner_to)
+    : STATISTICS name=schema_qualified_name (rename_to | set_schema | owner_to)
     ;
 
 alter_foreign_data_wrapper
@@ -951,7 +956,7 @@ operator_option
     ;
 
 create_aggregate_statement
-    : AGGREGATE name=schema_qualified_name function_args? LEFT_PAREN
+    : (OR REPLACE)? AGGREGATE name=schema_qualified_name function_args? LEFT_PAREN
     (BASETYPE EQUAL base_type=data_type COMMA)?
     SFUNC EQUAL sfunc_name=schema_qualified_name COMMA
     STYPE EQUAL type=data_type
@@ -1058,7 +1063,7 @@ rule_member_object
     | FOREIGN DATA WRAPPER names_references
     | FOREIGN SERVER names_references
     | (FUNCTION | PROCEDURE | ROUTINE) func_name+=function_parameters (COMMA func_name+=function_parameters)*
-    | LARGE OBJECT unsigned_numeric_literal (COMMA unsigned_numeric_literal)*
+    | LARGE OBJECT NUMBER_LITERAL (COMMA NUMBER_LITERAL)*
     | LANGUAGE names_references
     | SCHEMA schema_names=names_references
     | TABLESPACE names_references
@@ -1138,7 +1143,7 @@ comment_member_object
     | FOREIGN DATA WRAPPER identifier
     | FOREIGN? TABLE name=schema_qualified_name
     | INDEX name=schema_qualified_name
-    | LARGE OBJECT unsigned_numeric_literal
+    | LARGE OBJECT NUMBER_LITERAL
     | MATERIALIZED? VIEW name=schema_qualified_name
     | OPERATOR target_operator
     | OPERATOR (FAMILY| CLASS) name=schema_qualified_name USING index_method=identifier
@@ -1169,7 +1174,7 @@ label_member_object
     | DOMAIN name=schema_qualified_name
     | EVENT TRIGGER identifier
     | FOREIGN? TABLE name=schema_qualified_name
-    | LARGE OBJECT unsigned_numeric_literal
+    | LARGE OBJECT NUMBER_LITERAL
     | MATERIALIZED? VIEW name=schema_qualified_name
     | PROCEDURAL? LANGUAGE name=schema_qualified_name
     | PUBLICATION identifier
@@ -1420,6 +1425,7 @@ copy_from_statement
     : COPY table_cols
     FROM (PROGRAM? Character_String_Literal | STDIN) 
     (WITH? (LEFT_PAREN copy_option_list RIGHT_PAREN | copy_option_list))?
+    (WHERE vex)?
     ;
 
 copy_to_statement
@@ -1450,12 +1456,14 @@ copy_option
     ;
 
 create_view_statement
-    : (OR REPLACE)? (TEMP | TEMPORARY)? RECURSIVE? MATERIALIZED? VIEW if_not_exists? name=schema_qualified_name column_names=view_columns?
-        (WITH storage_parameter)?
-        table_space?
-        AS v_query=select_stmt
-        with_check_option?
-        (WITH NO? DATA)?
+    : (OR REPLACE)? (TEMP | TEMPORARY)? RECURSIVE? MATERIALIZED? VIEW 
+    if_not_exists? name=schema_qualified_name column_names=view_columns?
+    (USING identifier)?
+    (WITH storage_parameter)?
+    table_space?
+    AS v_query=select_stmt
+    with_check_option?
+    (WITH NO? DATA)?
     ;
 
 if_not_exists
@@ -1474,6 +1482,7 @@ create_table_statement
   : ((GLOBAL | LOCAL)? (TEMPORARY | TEMP) | UNLOGGED)? TABLE if_not_exists? name=schema_qualified_name
     define_table
     partition_by?
+    (USING identifier)?
     storage_parameter_oid?
     on_commit?
     table_space?
@@ -1482,6 +1491,7 @@ create_table_statement
 create_table_as_statement
     : ((GLOBAL | LOCAL)? (TEMPORARY | TEMP) | UNLOGGED)? TABLE if_not_exists? name=schema_qualified_name
     column_references?
+    (USING identifier)?
     storage_parameter_oid?
     on_commit?
     table_space?
@@ -1589,7 +1599,7 @@ table_column_definition
     ;
 
 like_option
-    : (INCLUDING | EXCLUDING) (DEFAULTS | CONSTRAINTS | IDENTITY | INDEXES | STORAGE | COMMENTS | ALL)
+    : (INCLUDING | EXCLUDING) (COMMENTS | CONSTRAINTS | DEFAULTS | GENERATED | IDENTITY | INDEXES | STORAGE | ALL)
     ;
 /** NULL, DEFAULT - column constraint
 * EXCLUDE, FOREIGN KEY - table_constraint
@@ -1609,6 +1619,7 @@ constr_body
     | (UNIQUE | PRIMARY KEY) col=column_references? index_parameters
     | DEFAULT default_expr=vex
     | identity_body
+    | GENERATED ALWAYS AS LEFT_PAREN vex RIGHT_PAREN STORED
     ;
 
 all_op
@@ -2285,6 +2296,7 @@ tokens_nonkeyword
     | CREATEDB
     | CREATEROLE
     | DESERIALFUNC
+    | DETERMINISTIC
     | DISABLE_PAGE_SKIPPING
     | ELEMENT
     | EXTENDED
@@ -2300,6 +2312,7 @@ tokens_nonkeyword
     | HASHES
     | HEADLINE
     | HYPOTHETICAL
+    | INDEX_CLEANUP
     | INIT
     | INITCOND
     | INTERNALLENGTH
@@ -2349,8 +2362,10 @@ tokens_nonkeyword
     | SAFE
     | SEND
     | SERIALFUNC
+    | SETTINGS
     | SFUNC
     | SHAREABLE
+    | SKIP_LOCKED
     | SORTOP
     | SSPACE
     | STYPE
@@ -2757,7 +2772,7 @@ with_clause
 
 with_query
     : query_name=identifier (LEFT_PAREN column_name+=identifier (COMMA column_name+=identifier)* RIGHT_PAREN)?
-            AS LEFT_PAREN (select_stmt | insert_stmt_for_psql | update_stmt_for_psql | delete_stmt_for_psql) RIGHT_PAREN
+    AS (NOT? MATERIALIZED)? LEFT_PAREN (select_stmt | insert_stmt_for_psql | update_stmt_for_psql | delete_stmt_for_psql) RIGHT_PAREN
     ;
 
 select_ops
@@ -3046,8 +3061,7 @@ option
     ;
 
 transaction_statement
-    : COMMIT
-    | ROLLBACK
+    : (COMMIT | ROLLBACK) (AND NO? CHAIN)?
     | lock_table
     ;
 
