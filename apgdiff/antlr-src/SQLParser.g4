@@ -111,7 +111,7 @@ additional_statement
     | LISTEN identifier
     | UNLISTEN (identifier | MULTIPLY)
     | ANALYZE VERBOSE? table_cols_list?
-    | CLUSTER VERBOSE? (schema_qualified_name (USING identifier)?)?
+    | CLUSTER VERBOSE? (identifier ON schema_qualified_name | schema_qualified_name (USING identifier)?)?
     | CHECKPOINT
     | LOAD Character_String_Literal
     | DEALLOCATE PREPARE? (identifier | ALL)
@@ -2168,16 +2168,6 @@ tokens_nonreserved_except_function_type
     | XMLTABLE
     ;
 
-tokens_simple_functions
-    : COALESCE
-    | GREATEST
-    | GROUPING
-    | LEAST
-    | NULLIF
-    | ROW
-    | XMLCONCAT
-    ;
-
 tokens_reserved_except_function_type
     : AUTHORIZATION
     | BINARY
@@ -2612,7 +2602,7 @@ function_call
     : schema_qualified_name_nontype LEFT_PAREN (set_qualifier? vex_or_named_notation (COMMA vex_or_named_notation)* orderby_clause?)? RIGHT_PAREN
         (WITHIN GROUP LEFT_PAREN orderby_clause RIGHT_PAREN)?
         filter_clause? (OVER (identifier | window_definition))?
-    | tokens_simple_functions LEFT_PAREN (vex (COMMA vex)*) RIGHT_PAREN
+    | constructions
     | extract_function
     | system_function
     | date_time_function
@@ -2627,6 +2617,11 @@ vex_or_named_notation
 pointer
     : EQUAL_GTH | COLON_EQUAL
     ;
+
+constructions
+    : (COALESCE | GREATEST | GROUPING | LEAST | NULLIF | XMLCONCAT) LEFT_PAREN (vex (COMMA vex)*) RIGHT_PAREN
+    | ROW LEFT_PAREN (vex (COMMA vex)*)? RIGHT_PAREN
+    ;                       
 
 extract_function
   : EXTRACT LEFT_PAREN (identifier | character_string) FROM vex RIGHT_PAREN

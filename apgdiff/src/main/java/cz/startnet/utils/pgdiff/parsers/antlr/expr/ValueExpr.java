@@ -21,6 +21,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Cast_specificationContex
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Col_labelContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Collate_identifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comparison_modContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.ConstructionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Date_time_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Datetime_overlapsContext;
@@ -44,7 +45,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sort_specifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.String_value_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.System_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_subqueryContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Tokens_simple_functionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Truth_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Type_coercionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Unsigned_numeric_literalContext;
@@ -451,7 +451,7 @@ public class ValueExpr extends AbstractExpr {
         Date_time_functionContext datetime;
         String_value_functionContext string;
         Xml_functionContext xml;
-        Tokens_simple_functionsContext simple;
+        ConstructionsContext con;
 
         if ((extract = function.extract_function()) != null) {
             analyze(new Vex(extract.vex()));
@@ -540,19 +540,20 @@ public class ValueExpr extends AbstractExpr {
                 // defaults work
             }
             ret = new ModPair<>(colname, coltype);
-        } else if ((simple = function.tokens_simple_functions()) != null) {
-            args = function.vex();
+        } else if ((con = function.constructions()) != null) {
+            args = con.vex();
 
-            String colname = simple.getChild(0).getText().toLowerCase(Locale.ROOT);
+            String colname = con.getChild(0).getText().toLowerCase(Locale.ROOT);
             String coltype;
-            if (simple.XMLCONCAT() != null) {
+            if (con.XMLCONCAT() != null) {
                 coltype = TypesSetManually.XML;
-            } else if (simple.ROW() != null) {
+            } else if (con.ROW() != null) {
                 coltype = TypesSetManually.UNKNOWN;
-            } else if (simple.GROUPING() != null) {
+            } else if (con.GROUPING() != null) {
                 coltype = TypesSetManually.INTEGER;
             } else {
-                VexContext vex = args.remove(0);
+                VexContext vex = args.get(0);
+                args = args.subList(1, args.size());
                 coltype = analyze(new Vex(vex)).getSecond();
             }
             ret = new ModPair<>(colname, coltype);

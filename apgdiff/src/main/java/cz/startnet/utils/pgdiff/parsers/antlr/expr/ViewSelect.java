@@ -19,6 +19,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Case_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Cast_specificationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comparison_modContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.ConstructionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Datetime_overlapsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Extract_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Filter_clauseContext;
@@ -441,6 +442,7 @@ public class ViewSelect {
         String_value_functionContext string;
         System_functionContext sys;
         Xml_functionContext xml;
+        ConstructionsContext con;
 
         if (name != null){
             args = addVexCtxtoList(args, function.vex_or_named_notation(),
@@ -473,8 +475,8 @@ public class ViewSelect {
             if (cast != null) {
                 analyze(new Vex(cast.vex()));
             }
-        } else if (function.tokens_simple_functions() != null) {
-            args = addVexCtxtoList(args, function.vex());
+        } else if ((con = function.constructions()) != null) {
+            args = addVexCtxtoList(args, con.vex());
         }
 
         if (args != null) {
