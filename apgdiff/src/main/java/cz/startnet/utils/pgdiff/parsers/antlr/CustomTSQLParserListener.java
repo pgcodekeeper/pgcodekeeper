@@ -363,7 +363,7 @@ implements TSqlContextProcessor {
         StringBuilder sb = new StringBuilder();
         sb.append(isDel ? "DELETE" : "INSERT");
         if (qname != null) {
-            sb.append(isDel ? " FROM " : " INTO ").append(qname.name.getText());
+            sb.append(isDel ? " FROM " : " INTO ").append(qname.getText());
         }
         return sb.toString();
     }

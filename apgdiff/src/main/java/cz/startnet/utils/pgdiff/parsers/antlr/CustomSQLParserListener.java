@@ -263,11 +263,11 @@ implements SqlContextProcessor {
             if (data.select_stmt() != null) {
                 return "SELECT";
             } else if (data.insert_stmt_for_psql() != null) {
-                return "INSERT INTO " + QNameParser.getFirstNameCtx(data.insert_stmt_for_psql()
-                        .insert_table_name.identifier()).getText();
+                return "INSERT INTO " + data.insert_stmt_for_psql()
+                .insert_table_name.getText();
             } else if (data.delete_stmt_for_psql() != null) {
-                return "DELETE FROM " + QNameParser.getFirstNameCtx(data.delete_stmt_for_psql()
-                        .delete_table_name.identifier()).getText();
+                return "DELETE FROM " + data.delete_stmt_for_psql()
+                .delete_table_name.getText();
             }
             return ctx.getStart().getText().toUpperCase(Locale.ROOT);
         } else if (ctx instanceof Schema_createContext) {
