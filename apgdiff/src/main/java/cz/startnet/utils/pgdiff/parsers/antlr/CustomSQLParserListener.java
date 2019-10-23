@@ -141,11 +141,21 @@ implements SqlContextProcessor {
         } else if (ctx.create_fts_dictionary() != null) {
             p = new CreateFtsDictionary(ctx.create_fts_dictionary(), db);
         } else if (ctx.comment_on_statement() != null) {
-            p = new CommentOn(ctx.comment_on_statement(), db);
-            addUndescribedObjToQueries(ctx, stream);
+            if (!isScriptMode) {
+                p = new CommentOn(ctx.comment_on_statement(), db);
+                addUndescribedObjToQueries(ctx, stream);
+            } else {
+                addUndescribedObjToQueries(ctx, stream);
+                return;
+            }
         } else if (ctx.rule_common() != null) {
-            p = new CreateRule(ctx.rule_common(), db);
-            addUndescribedObjToQueries(ctx, stream);
+            if (!isScriptMode) {
+                p = new CreateRule(ctx.rule_common(), db);
+                addUndescribedObjToQueries(ctx, stream);
+            } else {
+                addUndescribedObjToQueries(ctx, stream);
+                return;
+            }
         } else if (ctx.set_statement() != null) {
             Set_statementContext setCtx = ctx.set_statement();
             set(setCtx);
