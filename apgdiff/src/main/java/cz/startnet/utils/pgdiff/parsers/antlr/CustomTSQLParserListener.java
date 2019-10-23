@@ -8,7 +8,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import cz.startnet.utils.pgdiff.loader.ParserListenerMode;
-import cz.startnet.utils.pgdiff.loader.callables.QueriesBatchCallable;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Another_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.BatchContext;
@@ -56,6 +55,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.DropMsStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.UpdateMsStatement;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
 public class CustomTSQLParserListener extends CustomParserListener
 implements TSqlContextProcessor {
@@ -90,10 +90,10 @@ implements TSqlContextProcessor {
     }
 
     private void endBatch(ParserRuleContext previousObjCtx) {
-        db.addToQueries(fileName, new PgObjLocation(null, QueriesBatchCallable.GO,
+        db.addToQueries(fileName, new PgObjLocation(null, ApgdiffConsts.GO,
                 previousObjCtx.getStop().getStopIndex() + OFFSET_TO_GO_POSITION,
                 previousObjCtx.getStop().getLine() + OFFSET_TO_GO_POSITION, 0, null,
-                isScriptMode ? QueriesBatchCallable.GO : null));
+                isScriptMode ? ApgdiffConsts.GO : null));
     }
 
     public void clause(St_clauseContext st) {

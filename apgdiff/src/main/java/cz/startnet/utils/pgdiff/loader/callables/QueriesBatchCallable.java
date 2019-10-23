@@ -22,11 +22,10 @@ import cz.startnet.utils.pgdiff.IProgressReporter;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.jdbc.JdbcType;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
 
 public class QueriesBatchCallable extends StatementCallable<String> {
-
-    public static final String GO = "GO";
 
     private final Set<PgObjLocation> batches;
     private final IProgressMonitor monitor;
@@ -153,7 +152,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
         batchesList.add(new ArrayList<>());
 
         batches.forEach(loc -> {
-            if (GO.equalsIgnoreCase(loc.getAction())) {
+            if (ApgdiffConsts.GO.equalsIgnoreCase(loc.getAction())) {
                 batchesList.add(new ArrayList<>());
             } else {
                 batchesList.get(batchesList.size() - 1).add(loc);
