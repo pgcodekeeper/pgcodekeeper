@@ -70,14 +70,7 @@ import ru.taximaxim.codekeeper.apgdiff.utils.ModPair;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class ValueExpr extends AbstractExpr {
-    /*
-    public static final Map<String, int[]> A = new HashMap<>();
 
-
-    static void a(String alt) {
-        A.computeIfAbsent(alt, s -> new int[1])[0]++;
-    }
-     */
     public ValueExpr(PgDatabase db, DbObjType... disabledDepcies) {
         super(db, disabledDepcies);
     }
