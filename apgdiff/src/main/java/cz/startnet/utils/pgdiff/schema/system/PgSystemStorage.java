@@ -60,8 +60,14 @@ public class PgSystemStorage implements Serializable {
      * @return true if storage contains cast
      */
     public boolean containsCastImplicit(String source, String target) {
-        return casts.stream().anyMatch(c -> CastContext.IMPLICIT == c.getContext()
-                && source.equals(c.getSource()) && target.equals(c.getTarget()));
+        for (PgSystemCast cast : casts) {
+            if (CastContext.IMPLICIT == cast.getContext()
+                    && source.equals(cast.getSource())
+                    && target.equals(cast.getTarget())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void addCast(PgSystemCast cast) {

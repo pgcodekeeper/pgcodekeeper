@@ -166,11 +166,13 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
             if (ref == null) {
                 continue;
             }
-            for (IRelation rel : PgDiffUtils.sIter(findRelations(ref.schema, ref.table))) {
-                for (Pair<String, String> col : PgDiffUtils.sIter(rel.getRelationColumns())) {
-                    if (col.getFirst().equals(name)) {
-                        return new Pair<>(rel, col);
-                    }
+            IRelation rel = findRelation(ref.schema, ref.table);
+            if (rel == null) {
+                continue;
+            }
+            for (Pair<String, String> col : PgDiffUtils.sIter(rel.getRelationColumns())) {
+                if (col.getFirst().equals(name)) {
+                    return new Pair<>(rel, col);
                 }
             }
         }
@@ -217,8 +219,7 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
             }
         }
 
-        IRelation rel = findRelations(argType.schema, argType.table)
-                .findAny().orElse(null);
+        IRelation rel = findRelation(argType.schema, argType.table);
         if (rel != null) {
             GenericColumn ref = new GenericColumn(rel.getSchemaName(), rel.getName(), rel.getStatementType());
             addReference(alias, ref);

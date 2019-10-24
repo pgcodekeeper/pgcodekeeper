@@ -270,9 +270,7 @@ public abstract class AbstractExpr {
      */
     protected Stream<Pair<String, String>> addFilteredRelationColumnsDepcies(String schemaName,
             String relationName, Predicate<String> colNamePredicate) {
-        IRelation relation = findRelations(schemaName, relationName)
-                .findAny()
-                .orElse(null);
+        IRelation relation = findRelation(schemaName, relationName);
         if (relation == null) {
             Log.log(Log.LOG_WARNING, "Relation not found: " + schemaName + '.' + relationName);
             return Stream.empty();
@@ -375,21 +373,25 @@ public abstract class AbstractExpr {
         }
     }
 
-    public Stream<IRelation> findRelations(String schemaName, String relationName) {
-        Stream<IRelation> foundRelations;
+    @SuppressWarnings("resource")
+    public IRelation findRelation(String schemaName, String relationName) {
+        Stream<? extends IRelation> foundRelations;
         if (schemaName != null) {
             if (ApgdiffUtils.isPgSystemSchema(schemaName)) {
-                foundRelations = systemStorage.getSchema(schemaName).getRelations()
-                        .map(r -> (IRelation) r);
+                foundRelations = systemStorage.getSchema(schemaName).getRelations();
             } else {
                 foundRelations = findSchema(schemaName, null).getRelations();
             }
         } else {
-            foundRelations = systemStorage.getPgCatalog().getRelations()
-                    .map(r -> (IRelation) r);
+            foundRelations = systemStorage.getPgCatalog().getRelations();
         }
 
-        return foundRelations.filter(r -> r.getName().equals(relationName));
+        for (IRelation r : PgDiffUtils.sIter(foundRelations)) {
+            if (r.getName().equals(relationName)) {
+                return r;
+            }
+        }
+        return null;
     }
 
     protected AbstractSchema findSchema(String schemaName, ParserRuleContext errorCtx) {

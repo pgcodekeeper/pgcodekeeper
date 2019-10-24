@@ -2,10 +2,10 @@ package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -508,22 +508,23 @@ public class ValueExpr extends AbstractExpr {
         List<String> argsType = new ArrayList<>(args.size());
         for (VexContext arg : PgDiffUtils.sIter(args.stream()
                 .map(Vex_or_named_notationContext::vex))) {
-            argsType.add(analyze(new Vex(arg)).getSecond());
+            String argType = analyze(new Vex(arg)).getSecond();
+            // strip once before calling resolveCall
+            argsType.add(stripParens(argType));
         }
 
         if (args.size() == 1 && TypesSetManually.QUALIFIED_ASTERISK.equals(argsType.get(0))) {
             //// In this case function's argument is '*' or 'source.*'.
 
-            int foundFuncsCount = 0;
             IFunction func = null;
-            for (IFunction f : PgDiffUtils.sIter(availableFunctions(schemaName))) {
-                if (f.getBareName().equals(functionName) && getInInoutFuncArgs(f).count() == 1) {
+            for (IFunction f : availableFunctions(schemaName)) {
+                if (f.getArguments().isEmpty() && f.getBareName().equals(functionName)) {
                     func = f;
-                    foundFuncsCount++;
+                    break;
                 }
             }
 
-            return new ModPair<>(functionName, foundFuncsCount == 1 ?
+            return new ModPair<>(functionName, func != null ?
                     getFunctionReturns(func) : TypesSetManually.FUNCTION_COLUMN);
         } else {
             IFunction resultFunction = resolveCall(functionName, argsType, availableFunctions(schemaName));
@@ -654,19 +655,22 @@ public class ValueExpr extends AbstractExpr {
      *      if none were found or an ambiguity was detected
      */
     private IFunction resolveCall(String functionName, List<String> sourceTypes,
-            Stream<? extends IFunction> availableFunctions) {
+            List<? extends IFunction> availableFunctions) {
         // save each applicable function with the number of exact type matches
         // between input args and function parameters
         // function that has more exact matches (less casts) wins
         List<Pair<IFunction, Integer>> matches = new ArrayList<>();
-        for (IFunction f : PgDiffUtils.sIter(availableFunctions)) {
+        for (IFunction f : availableFunctions) {
             if (!f.getBareName().equals(functionName)) {
                 continue;
             }
             int argN = 0;
             int exactMatches = 0;
             boolean signatureApplicable = true;
-            for (Argument arg : PgDiffUtils.sIter(getInInoutFuncArgs(f))) {
+            for (Argument arg : f.getArguments()) {
+                if (!arg.getMode().startsWith("IN")) {
+                    continue;
+                }
                 if (argN >= sourceTypes.size()) {
                     // supplied fewer arguments than function requires
                     // current (unsatisfied) parameter having a default value
@@ -674,12 +678,10 @@ public class ValueExpr extends AbstractExpr {
                     // because of ordering imposed by the standard
                     // thus, the function is applicable if the first unsatisfied parameter
                     // has a default value, and otherwise it is not
-                    if (arg.getDefaultExpression() == null) {
-                        signatureApplicable = false;
-                    }
+                    signatureApplicable = arg.getDefaultExpression() != null;
                     break;
                 }
-                String sourceType = stripParens(sourceTypes.get(argN));
+                String sourceType = sourceTypes.get(argN);
                 if (sourceType.equals(arg.getDataType())) {
                     ++exactMatches;
                 } else if (!systemStorage.containsCastImplicit(sourceType, arg.getDataType())) {
@@ -697,14 +699,12 @@ public class ValueExpr extends AbstractExpr {
             }
         }
 
-        return matches.stream()
-                .max((f1,f2) -> Integer.compare(f1.getSecond(), f2.getSecond()))
-                .map(Pair::getFirst).orElse(null);
-    }
-
-    private Stream<Argument> getInInoutFuncArgs(IFunction func) {
-        return func.getArguments().stream()
-                .filter(arg -> "IN".equals(arg.getMode()) || "INOUT".equals(arg.getMode()));
+        if (matches.isEmpty()) {
+            return null;
+        }
+        return Collections.max(matches,
+                (m1,m2) -> Integer.compare(m1.getSecond(), m2.getSecond()))
+                .getFirst();
     }
 
     private String getOperatorToken(Vex vex) {
@@ -725,15 +725,15 @@ public class ValueExpr extends AbstractExpr {
         }
     }
 
-    private Stream<? extends IFunction> availableFunctions(String schemaName) {
+    private List<? extends IFunction> availableFunctions(String schemaName) {
         if (schemaName != null) {
             ISchema schema = systemStorage.getSchema(schemaName);
             if (schema == null) {
                 schema = findSchema(schemaName, null);
             }
-            return schema.getFunctions().stream();
+            return schema.getFunctions();
         } else {
-            return systemStorage.getPgCatalog().getFunctions().stream();
+            return systemStorage.getPgCatalog().getFunctions();
         }
     }
 
