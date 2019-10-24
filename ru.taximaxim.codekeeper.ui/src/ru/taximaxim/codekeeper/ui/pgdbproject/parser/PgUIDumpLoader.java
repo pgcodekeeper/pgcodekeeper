@@ -63,6 +63,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
     public PgDatabase loadFile(PgDatabase db) throws InterruptedException, IOException {
         Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>(1);
         loadDatabase(db, antlrTasks);
+        ParserCacheCleaner.saveTimeOfLastParserStart();
         try {
             AntlrParser.finishAntlr(antlrTasks);
         } finally {
