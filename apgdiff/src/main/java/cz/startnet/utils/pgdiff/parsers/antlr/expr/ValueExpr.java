@@ -21,7 +21,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Cast_specificationContex
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Col_labelContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Collate_identifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comparison_modContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.ConstructionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Date_time_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Datetime_overlapsContext;
@@ -30,6 +29,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Filter_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Frame_boundContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Frame_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_constructContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.General_literalContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IndirectionContext;
@@ -451,7 +451,7 @@ public class ValueExpr extends AbstractExpr {
         Date_time_functionContext datetime;
         String_value_functionContext string;
         Xml_functionContext xml;
-        ConstructionsContext con;
+        Function_constructContext con;
 
         if ((extract = function.extract_function()) != null) {
             analyze(new Vex(extract.vex()));
@@ -540,7 +540,7 @@ public class ValueExpr extends AbstractExpr {
                 // defaults work
             }
             ret = new ModPair<>(colname, coltype);
-        } else if ((con = function.constructions()) != null) {
+        } else if ((con = function.function_construct()) != null) {
             args = con.vex();
 
             String colname = con.getChild(0).getText().toLowerCase(Locale.ROOT);

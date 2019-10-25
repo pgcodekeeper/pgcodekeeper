@@ -110,7 +110,7 @@ public class CreateRule extends ParserAbstract {
         List<String> roles = new ArrayList<>();
         for (Role_name_with_groupContext roleCtx : ctx.roles_names().role_name_with_group()) {
             // skip CURRENT_USER and SESSION_USER
-            IdentifierContext user = roleCtx.user_name().name;
+            IdentifierContext user = roleCtx.user_name().identifier();
             if (user == null) {
                 continue;
             }

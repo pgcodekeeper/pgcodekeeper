@@ -76,7 +76,7 @@ implements SqlContextProcessor {
     }
 
     private void createSchema(Create_schema_statementContext ctx) {
-        IdentifierContext owner = ctx.user;
+        IdentifierContext owner = ctx.identifier();
         if (db.getArguments().isIgnorePrivileges() || owner == null) {
             return;
         }

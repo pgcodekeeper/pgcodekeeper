@@ -19,7 +19,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Case_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Cast_specificationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comparison_modContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.ConstructionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Datetime_overlapsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Extract_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Filter_clauseContext;
@@ -28,6 +27,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Frame_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_itemContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_constructContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Groupby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_elementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_element_listContext;
@@ -442,7 +442,7 @@ public class ViewSelect {
         String_value_functionContext string;
         System_functionContext sys;
         Xml_functionContext xml;
-        ConstructionsContext con;
+        Function_constructContext con;
 
         if (name != null){
             args = addVexCtxtoList(args, function.vex_or_named_notation(),
@@ -475,7 +475,7 @@ public class ViewSelect {
             if (cast != null) {
                 analyze(new Vex(cast.vex()));
             }
-        } else if ((con = function.constructions()) != null) {
+        } else if ((con = function.function_construct()) != null) {
             args = addVexCtxtoList(args, con.vex());
         }
 

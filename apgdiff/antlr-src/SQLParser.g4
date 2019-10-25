@@ -110,7 +110,7 @@ additional_statement
     : anonymous_block
     | LISTEN identifier
     | UNLISTEN (identifier | MULTIPLY)
-    | ANALYZE ((VERBOSE | SKIP_LOCKED) boolean_value?)? table_cols_list?
+    | ANALYZE (LEFT_PAREN analyze_mode (COMMA analyze_mode)* RIGHT_PAREN | VERBOSE)? table_cols_list?
     | CLUSTER VERBOSE? (identifier ON schema_qualified_name | schema_qualified_name (USING identifier)?)?
     | CHECKPOINT
     | LOAD Character_String_Literal
@@ -134,7 +134,7 @@ explain_option
     ;
 
 user_name
-    : name = identifier | CURRENT_USER | SESSION_USER
+    : identifier | CURRENT_USER | SESSION_USER
     ;
 
 table_cols_list
@@ -147,6 +147,10 @@ table_cols
 
 vacuum_mode
     : (FULL | FREEZE | VERBOSE | ANALYZE | DISABLE_PAGE_SKIPPING | SKIP_LOCKED | INDEX_CLEANUP | TRUNCATE) boolean_value?
+    ;
+
+analyze_mode
+    : (VERBOSE | SKIP_LOCKED) boolean_value?
     ;
 
 boolean_value
@@ -1274,7 +1278,7 @@ sign
   ;
 
 create_schema_statement
-    : SCHEMA if_not_exists? name=identifier? (AUTHORIZATION (user=identifier | CURRENT_USER | SESSION_USER))?
+    : SCHEMA if_not_exists? name=identifier? (AUTHORIZATION user_name)?
     ;
 
 create_policy_statement
@@ -2613,7 +2617,7 @@ function_call
     : schema_qualified_name_nontype LEFT_PAREN (set_qualifier? vex_or_named_notation (COMMA vex_or_named_notation)* orderby_clause?)? RIGHT_PAREN
         (WITHIN GROUP LEFT_PAREN orderby_clause RIGHT_PAREN)?
         filter_clause? (OVER (identifier | window_definition))?
-    | constructions
+    | function_construct
     | extract_function
     | system_function
     | date_time_function
@@ -2629,8 +2633,8 @@ pointer
     : EQUAL_GTH | COLON_EQUAL
     ;
 
-constructions
-    : (COALESCE | GREATEST | GROUPING | LEAST | NULLIF | XMLCONCAT) LEFT_PAREN (vex (COMMA vex)*) RIGHT_PAREN
+function_construct
+    : (COALESCE | GREATEST | GROUPING | LEAST | NULLIF | XMLCONCAT) LEFT_PAREN vex (COMMA vex)* RIGHT_PAREN
     | ROW LEFT_PAREN (vex (COMMA vex)*)? RIGHT_PAREN
     ;                       
 
