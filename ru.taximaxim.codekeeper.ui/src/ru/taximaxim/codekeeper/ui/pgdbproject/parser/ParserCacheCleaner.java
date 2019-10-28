@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.ui.pgdbproject.parser;
 
 import org.eclipse.ui.IStartup;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
 /**
@@ -20,7 +21,7 @@ public class ParserCacheCleaner implements IStartup {
             while (true) {
                 if (lastStart != 0
                         && (DURATION_BEFORE_CLEAN < System.currentTimeMillis() - lastStart)) {
-                    cleanParserCache();
+                    AntlrParser.cleanParserCache();
                     lastStart = 0;
                 }
 
@@ -28,19 +29,13 @@ public class ParserCacheCleaner implements IStartup {
                     Thread.sleep(FREQUENCY_OF_CHECK);
                 } catch (InterruptedException e) {
                     Log.log(e);
-                    cleanParserCache();
+                    AntlrParser.cleanParserCache();
                     lastStart = 0;
                 }
             }
         });
         thread.setDaemon(true);
         thread.start();
-    }
-
-    private static void cleanParserCache() {
-        // TODO add logic to clean the parser cache
-        // (SQLParser.getInterpreter().clearDFA())
-        System.err.println("\n >>> clean the parser cache");
     }
 
     public static void saveTimeOfLastParserStart() {

@@ -227,6 +227,11 @@ public class AntlrParser {
         }
     }
 
+    public static void cleanParserCache() {
+        AntlrParser.makeBasicParser(SQLParser.class, ";",
+                "fake string to clean parser cache").getInterpreter().clearDFA();
+    }
+
     private AntlrParser() {
         // only static
     }
