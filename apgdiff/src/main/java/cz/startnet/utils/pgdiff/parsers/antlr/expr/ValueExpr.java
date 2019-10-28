@@ -106,7 +106,7 @@ public class ValueExpr extends AbstractExpr {
             Schema_qualified_name_nontypeContext customType = pType.schema_qualified_name_nontype();
             IdentifierContext typeSchema = customType == null ? null : customType.identifier();
             // TODO remove when tokens are refactored
-            if (dataType.ARRAY() == null && dataType.array_type().isEmpty() &&
+            if ((dataType.ARRAY() == null || dataType.array_type().isEmpty()) &&
                     dataType.SETOF() == null && customType != null &&
                     (typeSchema == null || ApgdiffConsts.PG_CATALOG.equals(typeSchema.getText()))) {
                 // check simple built-in types for reg*** casts
