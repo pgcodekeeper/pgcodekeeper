@@ -1639,7 +1639,7 @@ column_references
     ;
 
 names_references
-    : name+=schema_qualified_name (COMMA name+=schema_qualified_name)*
+    : schema_qualified_name (COMMA schema_qualified_name)*
     ;
 
 storage_parameter

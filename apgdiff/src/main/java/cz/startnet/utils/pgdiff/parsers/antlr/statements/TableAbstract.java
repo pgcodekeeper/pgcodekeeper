@@ -105,7 +105,7 @@ public abstract class TableAbstract extends ParserAbstract {
 
             String fColumn = null;
 
-            List<Schema_qualified_nameContext> colNames = body.ref.names_references().name;
+            List<Schema_qualified_nameContext> colNames = body.ref.names_references().schema_qualified_name();
             if (colNames.size() == 1) {
                 fColumn = getFullCtxText(colNames.get(0));
             } else {
@@ -186,7 +186,7 @@ public abstract class TableAbstract extends ParserAbstract {
 
         Column_referencesContext parentTable = columnsCtx.parent_table;
         if (parentTable != null) {
-            for (Schema_qualified_nameContext nameInher : parentTable.names_references().name) {
+            for (Schema_qualified_nameContext nameInher : parentTable.names_references().schema_qualified_name()) {
                 addInherit(table, nameInher.identifier());
             }
         }
@@ -263,7 +263,7 @@ public abstract class TableAbstract extends ParserAbstract {
             // TODO need ref to table
             Column_referencesContext refs = constrBody.ref;
             if (refs != null) {
-                for (Schema_qualified_nameContext name : refs.names_references().name) {
+                for (Schema_qualified_nameContext name : refs.names_references().schema_qualified_name()) {
                     String colName = QNameParser.getFirstName(name.identifier());
                     constrBlank.addForeignColumn(colName);
                     constrBlank.addDep(new GenericColumn(refSchemaName, refTableName, colName, DbObjType.COLUMN));
@@ -276,7 +276,7 @@ public abstract class TableAbstract extends ParserAbstract {
             constrBlank.setPrimaryKey(constrBody.PRIMARY() != null);
             Column_referencesContext cols = constrBody.col;
             if (cols != null) {
-                for (Schema_qualified_nameContext name : cols.names_references().name) {
+                for (Schema_qualified_nameContext name : cols.names_references().schema_qualified_name()) {
                     constrBlank.addColumn(QNameParser.getFirstName(name.identifier()));
                 }
             }

@@ -91,7 +91,7 @@ public class CreateRule extends ParserAbstract {
             return;
         }
 
-        List<Schema_qualified_nameContext> objName = obj.names_references().name;
+        List<Schema_qualified_nameContext> objName = obj.names_references().schema_qualified_name();
 
         if (type != null) {
             for (Schema_qualified_nameContext name : objName) {
@@ -174,7 +174,7 @@ public class CreateRule extends ParserAbstract {
         }
 
         // Разобрать объекты
-        for (Schema_qualified_nameContext tbl : ctx.rule_member_object().names_references().name) {
+        for (Schema_qualified_nameContext tbl : ctx.rule_member_object().names_references().schema_qualified_name()) {
             setColumnPrivilege(tbl, colPriv, roles);
         }
     }
