@@ -1236,11 +1236,7 @@ character_string
     ;
 
 function_arguments
-    :arg_mode=argmode? argname=identifier_nontype? argtype_data=data_type function_def_value?
-    ;
-
-function_def_value
-    : (DEFAULT | EQUAL) def_value=vex
+    : argmode? identifier_nontype? data_type ((DEFAULT | EQUAL) vex)?
     ;
 
 argmode

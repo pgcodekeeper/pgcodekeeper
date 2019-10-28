@@ -19,9 +19,10 @@ import cz.startnet.utils.pgdiff.loader.jdbc.JdbcReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.JdbcType;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.TypesSetManually;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
-import cz.startnet.utils.pgdiff.schema.ArgMode;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.system.CastContext;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemCast;
@@ -137,17 +138,14 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
     }
 
     private Argument getArgument(Function_argumentsContext argument) {
-        ArgMode mode = ArgMode.IN;
-        if (argument.arg_mode != null) {
-            mode = ArgMode.of(argument.arg_mode.getText());
-        }
+        Identifier_nontypeContext name = argument.identifier_nontype();
+        Argument arg = new Argument(ParserAbstract.parseArgMode(argument.argmode()),
+                (name != null ? name.getText() : null),
+                ParserAbstract.getFullCtxText(argument.data_type()));
 
-        Argument arg = new Argument(mode,
-                argument.argname != null ? argument.argname.getText() : null,
-                        ParserAbstract.getFullCtxText(argument.argtype_data));
-
-        if (argument.function_def_value() != null) {
-            arg.setDefaultExpression(ParserAbstract.getFullCtxText(argument.function_def_value().def_value));
+        VexContext def = argument.vex();
+        if (def != null) {
+            arg.setDefaultExpression(ParserAbstract.getFullCtxText(def));
         }
 
         return arg;

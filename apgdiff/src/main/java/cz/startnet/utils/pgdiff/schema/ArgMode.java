@@ -8,8 +8,7 @@ public enum ArgMode {
     OUT,
     VARIADIC,
     // MS SQL
-    OUTPUT,
-    READONLY;
+    OUTPUT;
 
     public static ArgMode of(String string) {
         String s = string.toLowerCase(Locale.ROOT);
@@ -28,8 +27,6 @@ public enum ArgMode {
             return VARIADIC;
         case "output":
             return OUTPUT;
-        case "readonly":
-            return READONLY;
         default:
             return valueOf(string);
         }
