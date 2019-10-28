@@ -143,6 +143,8 @@ public class AntlrParser {
                 errors.add(CustomSQLParserListener.handleUnresolvedReference(ex, parsedObjectName));
             }
         });
+
+        saveTimeOfLastParserStart();
     }
 
     public static void parseTSqlStream(InputStreamProvider inputStream, String charsetName,
@@ -167,6 +169,8 @@ public class AntlrParser {
                 errors.add(CustomTSQLParserListener.handleUnresolvedReference(ex, parsedObjectName));
             }
         });
+
+        saveTimeOfLastParserStart();
     }
 
     public static <T extends ParserRuleContext, P extends Parser>
@@ -175,6 +179,7 @@ public class AntlrParser {
         Future<T> f = submitAntlrTask(() -> parserEntry.apply(
                 makeBasicParser(parserClass, sql, parsedObjectName, errors)));
         try {
+            saveTimeOfLastParserStart();
             return f.get();
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();

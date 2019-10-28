@@ -151,7 +151,6 @@ public class UIProjectLoader extends ProjectLoader {
             loader.setOverridesMap(overrides);
         }
         loader.loadDatabase(db, antlrTasks);
-        AntlrParser.saveTimeOfLastParserStart();
         launchedLoaders.add(loader);
     }
 
