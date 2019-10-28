@@ -49,6 +49,9 @@ public class AntlrParser {
 
     private static final ExecutorService ANTLR_POOL;
 
+    private static final long CHECK_INTERVAL = 60000;
+    private static long lastParserStart;
+
     static {
         int count = Integer.getInteger(
                 POOL_SIZE, Runtime.getRuntime().availableProcessors() - 1);
@@ -227,9 +230,32 @@ public class AntlrParser {
         }
     }
 
-    public static void cleanParserCache() {
-        AntlrParser.makeBasicParser(SQLParser.class, ";",
-                "fake string to clean parser cache").getInterpreter().clearDFA();
+    public static Runnable checkLastParserStart(long cleaningInterval) {
+        return () -> {
+            while (true) {
+                if (lastParserStart != 0
+                        && (cleaningInterval < System.currentTimeMillis() - lastParserStart)) {
+                    cleanParserCache();
+                }
+
+                try {
+                    Thread.sleep(CHECK_INTERVAL);
+                } catch (InterruptedException e) {
+                    Log.log(e);
+                    cleanParserCache();
+                }
+            }
+        };
+    }
+
+    private static void cleanParserCache() {
+        makeBasicParser(SQLParser.class, ";", "fake string to clean parser cache")
+        .getInterpreter().clearDFA();
+        lastParserStart = 0;
+    }
+
+    public static void saveTimeOfLastParserStart() {
+        lastParserStart = System.currentTimeMillis();
     }
 
     private AntlrParser() {
