@@ -16,11 +16,13 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_funct_paramsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_actions_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_column_name_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statement_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
@@ -217,11 +219,13 @@ public class CreateFunction extends ParserAbstract {
         List<Pair<String, GenericColumn>> funcArgs = new ArrayList<>();
         for (Function_argumentsContext argument : ctx.function_parameters()
                 .function_args().function_arguments()) {
-            String argName = argument.argname != null ? argument.argname.getText() : null;
+            Identifier_nontypeContext name = argument.identifier_nontype();
+            String argName = name != null ? name.getText() : null;
             String typeSchema = ApgdiffConsts.PG_CATALOG;
             String typeName;
 
-            Schema_qualified_name_nontypeContext typeQname = argument.argtype_data.predefined_type()
+            Data_typeContext dataType = argument.data_type();
+            Schema_qualified_name_nontypeContext typeQname = dataType.predefined_type()
                     .schema_qualified_name_nontype();
             if (typeQname != null) {
                 if (typeQname.schema != null) {
@@ -229,18 +233,19 @@ public class CreateFunction extends ParserAbstract {
                 }
                 typeName = typeQname.identifier_nontype().getText();
             } else {
-                typeName = getFullCtxText(argument.argtype_data);
+                typeName = getFullCtxText(dataType);
             }
 
-            Argument arg = new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
-                    argName, getTypeName(argument.argtype_data));
-            addPgTypeDepcy(argument.argtype_data, function);
+            Argument arg = new Argument(parseArgMode(argument.argmode()),
+                    argName, getTypeName(dataType));
+            addPgTypeDepcy(dataType, function);
 
-            if (argument.function_def_value() != null) {
-                arg.setDefaultExpression(getFullCtxText(argument.function_def_value().def_value));
+            VexContext def = argument.vex();
+            if (def != null) {
+                arg.setDefaultExpression(getFullCtxText(def));
 
                 db.addAnalysisLauncher(new FuncProcAnalysisLauncher(
-                        function, argument.function_def_value().def_value));
+                        function, def));
             }
 
             function.addArgument(arg);

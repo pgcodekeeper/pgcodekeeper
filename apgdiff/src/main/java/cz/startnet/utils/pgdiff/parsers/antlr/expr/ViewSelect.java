@@ -303,34 +303,19 @@ public class ViewSelect {
 
     private void analyze(Vex vex) {
         Select_stmt_no_parensContext selectStmt;
-        Datetime_overlapsContext overlaps;
         Indirection_listContext indir;
         Value_expression_primaryContext primary;
-        boolean doneWork = true;
 
         if (vex.in() != null && vex.leftParen() != null && vex.rightParen() != null &&
                 (selectStmt = vex.selectStmt()) != null) {
             new ViewSelect(this).analyze(selectStmt);
-        } else if ((overlaps = vex.datetimeOverlaps()) != null) {
-            for (VexContext v : overlaps.vex()) {
-                analyze(new Vex(v));
-            }
         } else if ((primary = vex.primary()) != null) {
             analysePrimary(primary);
         } else if ((indir = vex.indirectionList()) != null) {
             indirection(indir.indirection());
-        } else {
-            doneWork = false;
         }
 
-        List<Vex> operands = vex.vex();
-        if (!operands.isEmpty()) {
-            for (Vex v : operands) {
-                analyze(v);
-            }
-        } else if (!doneWork) {
-            Log.log(Log.LOG_WARNING, "No alternative in Vex!");
-        }
+        vex.vex().forEach(this::analyze);
     }
 
     private void analysePrimary(Value_expression_primaryContext primary) {
@@ -341,6 +326,7 @@ public class ViewSelect {
         Function_callContext function;
         Indirection_varContext indirection;
         Array_expressionContext array;
+        Datetime_overlapsContext overlaps;
         ArrayList<Vex> subOperands = null;
 
         if (subSelectStmt != null) {
@@ -375,6 +361,10 @@ public class ViewSelect {
                 arrayElements(subOperands, arrayb.array_elements());
             } else {
                 new ViewSelect(this).analyze(array.array_query().table_subquery().select_stmt());
+            }
+        } else if ((overlaps = primary.datetime_overlaps()) != null) {
+            for (VexContext v : overlaps.vex()) {
+                analyze(new Vex(v));
             }
         }
 

@@ -15,18 +15,18 @@ public class Argument implements Serializable, IHashable {
 
     private static final long serialVersionUID = 7466228261754446064L;
 
-    private final String mode;
+    private final ArgMode mode;
     private final String name;
     private final String dataType;
     private String defaultExpression;
     private boolean isReadOnly;
 
     public Argument(String name, String dataType) {
-        this(null, name, dataType);
+        this(ArgMode.IN, name, dataType);
     }
 
-    public Argument(String mode, String name, String dataType) {
-        this.mode = mode == null || mode.isEmpty() ? "IN" : mode;
+    public Argument(ArgMode mode, String name, String dataType) {
+        this.mode = mode;
         this.name = (name != null && name.isEmpty()) ? null : name;
         this.dataType = dataType;
     }
@@ -51,7 +51,7 @@ public class Argument implements Serializable, IHashable {
         this.isReadOnly = isReadOnly;
     }
 
-    public String getMode() {
+    public ArgMode getMode() {
         return mode;
     }
 
@@ -69,7 +69,7 @@ public class Argument implements Serializable, IHashable {
             final Argument arg = (Argument) obj;
             eq = Objects.equals(dataType, arg.getDataType())
                     && Objects.equals(defaultExpression, arg.getDefaultExpression())
-                    && Objects.equals(mode, arg.getMode())
+                    && mode == arg.getMode()
                     && isReadOnly == arg.isReadOnly()
                     && Objects.equals(name, arg.getName());
         }

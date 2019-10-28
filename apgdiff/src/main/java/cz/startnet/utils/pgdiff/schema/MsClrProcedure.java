@@ -104,10 +104,9 @@ public class MsClrProcedure extends AbstractMsClrFunction {
             sbString.append(def);
         }
 
-        String mode = arg.getMode();
-        if (mode != null && !"IN".equalsIgnoreCase(mode)) {
-            sbString.append(' ');
-            sbString.append(mode);
+        ArgMode mode = arg.getMode();
+        if (ArgMode.IN != mode) {
+            sbString.append(' ').append(mode);
         }
 
         if (arg.isReadOnly()) {
