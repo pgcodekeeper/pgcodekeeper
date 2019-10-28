@@ -189,6 +189,12 @@ public class PgDiffDepciesTest {
             // добавление exclude ограничения с зависимой функцией
             // пользователь выбрал ограничение
             {"add_exclude_usr_constraint"},
+            // добавление объекта fts_template с зависимыми от него объектами,
+            // пользователь выбрал fts_template
+            {"add_fts_tmpl_usr_fts_tmpl"},
+            // добавление объекта fts_parser с зависимыми от него объектами,
+            // пользователь выбрал fts_parser
+            {"add_fts_parser_usr_fts_parser"},
             // зависимости от функции,
             // пользователь выбрал функцию
             {"add_func_with_dep_usr_f1"},
