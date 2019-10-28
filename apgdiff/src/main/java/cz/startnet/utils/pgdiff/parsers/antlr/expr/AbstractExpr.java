@@ -219,7 +219,7 @@ public abstract class AbstractExpr {
      * @param colName dependency from this column will be added
      * @return column type
      */
-    private String addFilteredColumnDepcy(String schemaName, String relationName, String colName) {
+    protected String addFilteredColumnDepcy(String schemaName, String relationName, String colName) {
         Stream<Pair<String, String>> columns = addFilteredRelationColumnsDepcies(
                 schemaName, relationName, col -> col.equals(colName));
         // handle system columns; look for relation anyway for a potential 'not found' warning
