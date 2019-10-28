@@ -196,7 +196,7 @@ public class ValueExpr extends AbstractExpr {
         IdentifierContext typeSchema = customType == null ? null : customType.identifier();
         // TODO remove when tokens are refactored
         if (customType != null && (typeSchema == null || ApgdiffConsts.PG_CATALOG.equals(typeSchema.getText()))
-                && dataType.array_type().isEmpty() && dataType.SETOF() == null) {
+                && dataType.ARRAY() == null && dataType.array_type().isEmpty() && dataType.SETOF() == null) {
             // check simple built-in types for reg*** casts
             Value_expression_primaryContext castPrimary = vex.vex().findAny().get().primary();
             Unsigned_value_specificationContext value;
