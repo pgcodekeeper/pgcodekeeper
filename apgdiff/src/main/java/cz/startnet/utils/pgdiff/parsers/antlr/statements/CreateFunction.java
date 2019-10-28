@@ -25,6 +25,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_no
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statement_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Transform_for_typeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_storage_parameterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.FuncProcAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
@@ -112,17 +113,7 @@ public class CreateFunction extends ParserAbstract {
             } else if (action.RESTRICTED() != null) {
                 function.setParallel("RESTRICTED");
             } else if (action.SET() != null) {
-                String par = PgDiffUtils.getQuotedName(action.configuration_parameter.getText());
-                if (action.FROM() != null) {
-                    function.addConfiguration(par, AbstractPgFunction.FROM_CURRENT);
-                } else {
-                    StringBuilder sb = new StringBuilder();
-                    for (Set_statement_valueContext val : action.value) {
-                        sb.append(getFullCtxText(val)).append(", ");
-                    }
-                    sb.setLength(sb.length() - 2);
-                    function.addConfiguration(par, sb.toString());
-                }
+                setConfigParams(action, function);
             }
         }
 
@@ -145,6 +136,33 @@ public class CreateFunction extends ParserAbstract {
         }
 
         function.setLanguageCost(language, cost);
+    }
+
+    private void setConfigParams(Function_actions_commonContext action, AbstractPgFunction function) {
+        IdentifierContext scope = action.config_scope;
+        String par;
+        if (scope != null) {
+            par = PgDiffUtils.getQuotedName(
+                    scope.getText() + '.' + action.config_param.getText());
+        } else {
+            par = PgDiffUtils.getQuotedName(action.config_param.getText());
+        }
+
+        if (action.FROM() != null) {
+            function.addConfiguration(par, AbstractPgFunction.FROM_CURRENT);
+        } else {
+            Set_statement_valueContext set = action.set_statement_value();
+            if (set.DEFAULT() != null) {
+                function.addConfiguration(par, "DEFAULT");
+            } else {
+                StringBuilder sb = new StringBuilder();
+                for (VexContext val : set.vex()) {
+                    sb.append(getFullCtxText(val)).append(", ");
+                }
+                sb.setLength(sb.length() - 2);
+                function.addConfiguration(par, sb.toString());
+            }
+        }
     }
 
     private void analyzeFunctionDefinition(AbstractPgFunction function, String language,

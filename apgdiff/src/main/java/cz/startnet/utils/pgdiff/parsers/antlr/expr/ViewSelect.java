@@ -27,7 +27,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Frame_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_itemContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_constructContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Groupby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_elementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_element_listContext;
@@ -38,6 +38,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_varContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Orderby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Partition_by_columnsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensContext;
@@ -435,12 +436,13 @@ public class ViewSelect {
     private void function(Function_callContext function) {
         ArrayList<Vex> args = null;
 
-        Function_nameContext name = function.function_name();
+        Schema_qualified_name_nontypeContext name = function.schema_qualified_name_nontype();
 
         Extract_functionContext extract;
         String_value_functionContext string;
         System_functionContext sys;
         Xml_functionContext xml;
+        Function_constructContext con;
 
         if (name != null){
             args = addVexCtxtoList(args, function.vex_or_named_notation(),
@@ -473,6 +475,8 @@ public class ViewSelect {
             if (cast != null) {
                 analyze(new Vex(cast.vex()));
             }
+        } else if ((con = function.function_construct()) != null) {
+            args = addVexCtxtoList(args, con.vex());
         }
 
         if (args != null) {

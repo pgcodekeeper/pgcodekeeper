@@ -29,7 +29,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Filter_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Frame_boundContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Frame_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_constructContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.General_literalContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IndirectionContext;
@@ -45,7 +45,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sort_specifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.String_value_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.System_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_subqueryContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Tokens_simple_functionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Truth_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Type_coercionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Unsigned_numeric_literalContext;
@@ -107,7 +106,8 @@ public class ValueExpr extends AbstractExpr {
             Schema_qualified_name_nontypeContext customType = pType.schema_qualified_name_nontype();
             IdentifierContext typeSchema = customType == null ? null : customType.identifier();
             // TODO remove when tokens are refactored
-            if (dataType.array_type().isEmpty() && dataType.SETOF() == null && customType != null &&
+            if ((dataType.ARRAY() == null || dataType.array_type().isEmpty()) &&
+                    dataType.SETOF() == null && customType != null &&
                     (typeSchema == null || ApgdiffConsts.PG_CATALOG.equals(typeSchema.getText()))) {
                 // check simple built-in types for reg*** casts
                 Value_expression_primaryContext castPrimary = vex.vex().get(0).primary();
@@ -377,7 +377,7 @@ public class ValueExpr extends AbstractExpr {
      * @return return signature
      */
     public ModPair<String, String> function(Function_callContext function) {
-        Function_nameContext funcNameCtx = function.function_name();
+        Schema_qualified_name_nontypeContext funcNameCtx = function.schema_qualified_name_nontype();
         if (funcNameCtx == null) {
             return functionSpecial(function);
         }
@@ -395,25 +395,11 @@ public class ValueExpr extends AbstractExpr {
         }
 
         String schemaName = null;
-        String functionName;
-        Schema_qualified_name_nontypeContext funcNameQualCtx = funcNameCtx.schema_qualified_name_nontype();
+        String functionName = funcNameCtx.identifier_nontype().getText();
 
-        IdentifierContext id;
-        Tokens_simple_functionsContext tokensSimpleFunc;
-        if (funcNameQualCtx != null) {
-            functionName = funcNameQualCtx.identifier_nontype().getText();
-
-            if ((id = funcNameQualCtx.identifier()) != null) {
-                schemaName = id.getText();
-            }
-        } else if ((tokensSimpleFunc = funcNameCtx.tokens_simple_functions()) != null) {
-            functionName = tokensSimpleFunc.getText();
-
-            if ((id = funcNameCtx.identifier()) != null) {
-                schemaName = id.getText();
-            }
-        } else {
-            functionName = funcNameCtx.getText();
+        IdentifierContext id = funcNameCtx.identifier();
+        if (id!= null) {
+            schemaName = id.getText();
         }
 
         // TODO add processing for named/mixed notation in functions, because
@@ -465,6 +451,7 @@ public class ValueExpr extends AbstractExpr {
         Date_time_functionContext datetime;
         String_value_functionContext string;
         Xml_functionContext xml;
+        Function_constructContext con;
 
         if ((extract = function.extract_function()) != null) {
             analyze(new Vex(extract.vex()));
@@ -551,6 +538,23 @@ public class ValueExpr extends AbstractExpr {
                 coltype = TypesSetManually.FUNCTION_TABLE;
             } else {
                 // defaults work
+            }
+            ret = new ModPair<>(colname, coltype);
+        } else if ((con = function.function_construct()) != null) {
+            args = con.vex();
+
+            String colname = con.getChild(0).getText().toLowerCase(Locale.ROOT);
+            String coltype;
+            if (con.XMLCONCAT() != null) {
+                coltype = TypesSetManually.XML;
+            } else if (con.ROW() != null) {
+                coltype = TypesSetManually.UNKNOWN;
+            } else if (con.GROUPING() != null) {
+                coltype = TypesSetManually.INTEGER;
+            } else {
+                VexContext vex = args.get(0);
+                args = args.subList(1, args.size());
+                coltype = analyze(new Vex(vex)).getSecond();
             }
             ret = new ModPair<>(colname, coltype);
         } else {

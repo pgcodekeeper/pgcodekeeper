@@ -442,3 +442,5 @@ fetch all in c1;
 begin transaction read only;
 begin transaction isolation level repeatable read;
 start transaction;
+COMMIT AND CHAIN;
+ROLLBACK AND NO CHAIN;

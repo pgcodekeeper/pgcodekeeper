@@ -87,15 +87,13 @@ public class PgFunction extends AbstractPgFunction {
             }
         }
 
-        if (!configurations.isEmpty()) {
-            for (Entry<String, String> param : configurations.entrySet()) {
-                String val = param.getValue();
-                sbSQL.append("\n    SET ").append(param.getKey());
-                if (FROM_CURRENT.equals(val)) {
-                    sbSQL.append(val);
-                } else {
-                    sbSQL.append(" TO ").append(val);
-                }
+        for (Entry<String, String> param : configurations.entrySet()) {
+            String val = param.getValue();
+            sbSQL.append("\n    SET ").append(param.getKey());
+            if (FROM_CURRENT.equals(val)) {
+                sbSQL.append(val);
+            } else {
+                sbSQL.append(" TO ").append(val);
             }
         }
 
