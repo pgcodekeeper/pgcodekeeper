@@ -155,7 +155,7 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction {
         final StringBuilder sbString = new StringBuilder();
 
         ArgMode mode = arg.getMode();
-        if (mode != null && ArgMode.IN != mode) {
+        if (ArgMode.IN != mode) {
             sbString.append(mode);
             sbString.append(' ');
         }

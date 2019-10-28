@@ -80,7 +80,7 @@ public class MsClrFunction extends AbstractMsClrFunction {
         }
 
         ArgMode mode = arg.getMode();
-        if (mode != null && ArgMode.IN != mode) {
+        if (ArgMode.IN != mode) {
             sbString.append(' ').append(mode);
         }
 

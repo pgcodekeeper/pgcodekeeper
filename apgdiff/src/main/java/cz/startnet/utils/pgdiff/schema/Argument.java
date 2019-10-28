@@ -69,7 +69,7 @@ public class Argument implements Serializable, IHashable {
             final Argument arg = (Argument) obj;
             eq = Objects.equals(dataType, arg.getDataType())
                     && Objects.equals(defaultExpression, arg.getDefaultExpression())
-                    && Objects.equals(mode, arg.getMode())
+                    && mode == arg.getMode()
                     && isReadOnly == arg.isReadOnly()
                     && Objects.equals(name, arg.getName());
         }
