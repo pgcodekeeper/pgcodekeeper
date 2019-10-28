@@ -989,7 +989,7 @@ set_action
 session_local_option
     : SESSION AUTHORIZATION (Character_String_Literal | identifier | DEFAULT)
     | TIME ZONE (Character_String_Literal | signed_numerical_literal | LOCAL | DEFAULT)
-    | (config_scope=identifier DOT)? config_param=identifier (TO | EQUAL) set_statement_value
+    | (identifier DOT)? config_param=identifier (TO | EQUAL) set_statement_value
     | ROLE (identifier | NONE)
     ;
 
