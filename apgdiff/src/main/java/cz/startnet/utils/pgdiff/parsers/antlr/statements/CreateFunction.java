@@ -214,7 +214,7 @@ public class CreateFunction extends ParserAbstract {
                 typeName = getFullCtxText(argument.argtype_data);
             }
 
-            Argument arg = new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
+            Argument arg = new Argument(parseArgMode(argument.arg_mode),
                     argName, getTypeName(argument.argtype_data));
             addPgTypeDepcy(argument.argtype_data, function);
 

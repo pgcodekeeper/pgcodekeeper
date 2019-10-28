@@ -17,8 +17,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameCon
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.PgAggregate;
-import cz.startnet.utils.pgdiff.schema.PgAggregate.AggKinds;
 import cz.startnet.utils.pgdiff.schema.PgAggregate.AggFuncs;
+import cz.startnet.utils.pgdiff.schema.PgAggregate.AggKinds;
 import cz.startnet.utils.pgdiff.schema.PgAggregate.ModifyType;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -78,9 +78,9 @@ public class CreateAggregate extends ParserAbstract {
 
     private void fillArguments(List<Function_argumentsContext> argumentsCtx, PgAggregate aggr) {
         for (Function_argumentsContext argument : argumentsCtx) {
-            Argument arg = new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
+            Argument arg = new Argument(parseArgMode(argument.arg_mode),
                     argument.argname != null ? argument.argname.getText() : null,
-                            getFullCtxText(argument.argtype_data));
+                            getTypeName(argument.argtype_data));
             addPgTypeDepcy(argument.data_type(), aggr);
             aggr.addArgument(arg);
         }

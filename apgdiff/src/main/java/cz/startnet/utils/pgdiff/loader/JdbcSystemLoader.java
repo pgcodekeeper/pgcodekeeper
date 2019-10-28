@@ -21,6 +21,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.TypesSetManually;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.ArgMode;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.system.CastContext;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemCast;
@@ -136,7 +137,12 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
     }
 
     private Argument getArgument(Function_argumentsContext argument) {
-        Argument arg = new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
+        ArgMode mode = ArgMode.IN;
+        if (argument.arg_mode != null) {
+            mode = ArgMode.of(argument.arg_mode.getText());
+        }
+
+        Argument arg = new Argument(mode,
                 argument.argname != null ? argument.argname.getText() : null,
                         ParserAbstract.getFullCtxText(argument.argtype_data));
 

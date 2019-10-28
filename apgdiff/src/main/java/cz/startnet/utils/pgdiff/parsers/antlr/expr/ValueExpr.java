@@ -59,6 +59,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Xml_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Xml_table_columnContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.ArgMode;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.ISchema;
@@ -661,7 +662,7 @@ public class ValueExpr extends AbstractExpr {
             int exactMatches = 0;
             boolean signatureApplicable = true;
             for (Argument arg : f.getArguments()) {
-                if (!arg.getMode().startsWith("IN")) {
+                if (arg.getMode() != ArgMode.IN || arg.getMode() != ArgMode.INOUT) {
                     continue;
                 }
                 if (argN >= sourceTypes.size()) {

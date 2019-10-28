@@ -176,9 +176,8 @@ public class CreateMsFunction extends BatchContextProcessor {
             addMsTypeDepcy(argument.data_type(), function);
 
             if (function instanceof AbstractMsClrFunction) {
-                Argument arg = new Argument(
-                        argument.arg_mode != null ? argument.arg_mode.getText() : null,
-                                argument.name.getText(), getFullCtxText(argument.data_type()));
+                Argument arg = new Argument(parseArgMode(argument.arg_mode()),
+                        argument.name.getText(), getFullCtxText(argument.data_type()));
                 if (argument.default_val != null) {
                     arg.setDefaultExpression(getFullCtxText(argument.default_val));
                 }

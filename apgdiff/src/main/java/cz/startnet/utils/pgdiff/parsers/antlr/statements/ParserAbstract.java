@@ -33,6 +33,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceExcep
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.ArgMode;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IStatement;
@@ -216,7 +217,7 @@ public abstract class ParserAbstract {
     private static void fillFuncArgs(List<Function_argumentsContext> argsCtx, AbstractPgFunction function) {
         for (Function_argumentsContext argument : argsCtx) {
             String type = getTypeName(argument.argtype_data);
-            function.addArgument(new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
+            function.addArgument(new Argument(parseArgMode(argument.arg_mode),
                     argument.argname != null ? argument.argname.getText() : null, type));
         }
     }
@@ -228,6 +229,14 @@ public abstract class ParserAbstract {
         oper.setRightArg(targerOperCtx.right_type == null ? null
                 : getTypeName(targerOperCtx.right_type));
         return oper.getSignature();
+    }
+
+    protected static ArgMode parseArgMode(ParserRuleContext mode) {
+        if (mode == null) {
+            return ArgMode.IN;
+        }
+
+        return ArgMode.of(mode.getText());
     }
 
     protected PgObjLocation addObjReference(List<? extends ParserRuleContext> ids,

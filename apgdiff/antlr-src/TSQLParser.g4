@@ -1622,7 +1622,11 @@ assembly_specifier
     ;
 
 procedure_param
-    : name=LOCAL_ID AS? data_type (EQUAL default_val=default_value)? arg_mode=(OUT | OUTPUT | READONLY)?
+    : name=LOCAL_ID AS? data_type (EQUAL default_val=default_value)? arg_mode?
+    ;
+
+arg_mode
+    : OUT | OUTPUT | READONLY
     ;
 
 procedure_option
