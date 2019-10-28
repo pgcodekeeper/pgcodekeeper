@@ -10,6 +10,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Foreign_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identity_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
@@ -129,15 +130,15 @@ public class AlterTable extends TableAbstract {
 
                 // column default
                 if (tablAction.set_def_column() != null) {
-                    VexContext exp = tablAction.set_def_column().expression;
+                    VexContext exp = tablAction.set_def_column().vex();
                     col.setDefaultValue(getFullCtxText(exp));
                     db.addAnalysisLauncher(new VexAnalysisLauncher(col, exp));
                 }
 
                 // column options
-                if (tablAction.set_attribute_option() != null){
-                    for (Storage_parameter_optionContext option :
-                        tablAction.set_attribute_option().storage_parameter().storage_parameter_option()){
+                Storage_parameterContext param = tablAction.storage_parameter();
+                if (param != null) {
+                    for (Storage_parameter_optionContext option : param.storage_parameter_option()) {
                         String value = option.value == null ? "" : option.value.getText();
                         fillOptionParams(value, option.storage_param.getText(), false, col::addOption);
                     }

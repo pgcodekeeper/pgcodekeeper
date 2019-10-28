@@ -2276,6 +2276,17 @@ BEGIN
   return DISTINCT c2 FROM public.t1 LIMIT 1;
 END;
 
+declare 
+  i text;
+begin
+  show DateStyle into i;
+  raise notice 'DateStyle is %', i;
+  show search_path into i;
+  raise notice 'search_path is %', i;
+  show plpgsql.print_strict_params into i;
+  raise notice 'plpgsql.print_strict_params is %', i;
+end;
+
 /*
 DECLARE n bigint = c1 from public.t1 limit 1;
 BEGIN
