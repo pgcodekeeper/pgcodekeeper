@@ -246,7 +246,6 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
                 }
             }
 
-            ret = new ArrayList<>();
             ValueExpr vex = new ValueExpr(this);
 
             Select_listContext list = primary.select_list();

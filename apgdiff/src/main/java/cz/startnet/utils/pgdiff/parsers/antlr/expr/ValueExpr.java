@@ -59,7 +59,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Xml_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Xml_table_columnContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
-import cz.startnet.utils.pgdiff.schema.ArgMode;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.ISchema;
@@ -512,9 +511,15 @@ public class ValueExpr extends AbstractExpr {
 
             IFunction func = null;
             for (IFunction f : availableFunctions(schemaName)) {
-                if (f.getArguments().isEmpty() && f.getBareName().equals(functionName)) {
+                if (f.getArguments().size() == 1
+                        && f.getArguments().get(0).getMode().isIn()
+                        && f.getBareName().equals(functionName)) {
+                    if (func != null) {
+                        // ambiguous call
+                        func = null;
+                        break;
+                    }
                     func = f;
-                    break;
                 }
             }
 
@@ -662,7 +667,7 @@ public class ValueExpr extends AbstractExpr {
             int exactMatches = 0;
             boolean signatureApplicable = true;
             for (Argument arg : f.getArguments()) {
-                if (arg.getMode() != ArgMode.IN || arg.getMode() != ArgMode.INOUT) {
+                if (!arg.getMode().isIn()) {
                     continue;
                 }
                 if (argN >= sourceTypes.size()) {

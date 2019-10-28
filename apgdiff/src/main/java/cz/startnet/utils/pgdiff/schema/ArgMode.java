@@ -10,6 +10,10 @@ public enum ArgMode {
     // MS SQL
     OUTPUT;
 
+    public boolean isIn() {
+        return this == IN || this == INOUT;
+    }
+
     public static ArgMode of(String string) {
         String s = string.toLowerCase(Locale.ROOT);
         switch (s) {

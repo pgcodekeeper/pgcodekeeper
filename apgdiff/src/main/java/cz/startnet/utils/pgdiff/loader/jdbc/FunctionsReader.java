@@ -89,7 +89,7 @@ public class FunctionsReader extends JdbcReader {
                                 break;
                             }
                             Argument a = f.getArguments().get(i);
-                            if (ArgMode.IN == a.getMode() || ArgMode.INOUT == a.getMode()) {
+                            if (a.getMode().isIn()) {
                                 VexContext vx = vexCtxListIterator.previous();
                                 a.setDefaultExpression(ParserAbstract.getFullCtxText(vx));
                                 db.addAnalysisLauncher(new FuncProcAnalysisLauncher(f, vx));
