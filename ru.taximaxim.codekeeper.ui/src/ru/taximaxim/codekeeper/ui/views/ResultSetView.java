@@ -51,9 +51,14 @@ public class ResultSetView extends ViewPart {
         GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         gd.widthHint = 700;
         tabFolder.setLayoutData(gd);
-        tabFolder.addListener(SWT.MenuDetect, event -> {
-            createPopupMenuForTab(tabFolder.getItem(tabFolder.getDisplay()
-                    .map(null, tabFolder, new Point(event.x,event.y))));
+        tabFolder.addMenuDetectListener(event -> {
+            CTabItem tabItem = tabFolder.getItem(tabFolder.getDisplay()
+                    .map(null, tabFolder, new Point(event.x,event.y)));
+            if (tabItem == null) {
+                event.doit = false;
+                return;
+            }
+            createPopupMenuForTab(tabItem);
         });
 
         tabFolder.addMouseListener(new MouseAdapter() {
@@ -62,8 +67,7 @@ public class ResultSetView extends ViewPart {
             public void mouseDown(MouseEvent event) {
                 // checking which button was pressed (1 - left; 2 - middle; 3 - right)
                 if (2 == event.button) {
-                    CTabItem clickedQueryTab = tabFolder.getItem(tabFolder.getDisplay()
-                            .map(null, tabFolder, tabFolder.toDisplay(event.x, event.y)));
+                    CTabItem clickedQueryTab = tabFolder.getItem(new Point(event.x,event.y));
                     if (clickedQueryTab != null) {
                         clickedQueryTab.dispose();
                     }
@@ -73,17 +77,12 @@ public class ResultSetView extends ViewPart {
     }
 
     private void createPopupMenuForTab(CTabItem clickedQueryTab) {
-        if (clickedQueryTab == null) {
-            tabFolder.setMenu(new Menu(tabFolder));
-            return;
-        }
-
         // getting index for clicked query tab
         CTabItem[] tabs = tabFolder.getItems();
         int tabsCount = tabs.length;
         int idxClickedQueryTab = IntStream.range(0, tabsCount)
                 .filter(i -> clickedQueryTab.equals(tabs[i]))
-                .findAny().orElse(0);
+                .findAny().getAsInt();
 
         // determination of displaying menu items
         boolean createCloseRightItem = false;
@@ -113,10 +112,7 @@ public class ResultSetView extends ViewPart {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                Object obj = e.getSource();
-                if (obj instanceof MenuItem) {
-                    clickedQueryTab.dispose();
-                }
+                clickedQueryTab.dispose();
             }
         });
 
@@ -127,12 +123,9 @@ public class ResultSetView extends ViewPart {
 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    Object obj = e.getSource();
-                    if (obj instanceof MenuItem) {
-                        Arrays.stream(tabFolder.getItems())
-                        .filter(item -> !clickedQueryTab.equals(item))
-                        .forEach(CTabItem::dispose);
-                    }
+                    Arrays.stream(tabFolder.getItems())
+                    .filter(item -> !clickedQueryTab.equals(item))
+                    .forEach(CTabItem::dispose);
                 }
             });
         }
@@ -144,21 +137,18 @@ public class ResultSetView extends ViewPart {
 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    Object obj = e.getSource();
-                    if (obj instanceof MenuItem) {
-                        boolean isReachedClickedQueryTab = false;
-                        ArrayList<CTabItem> tabs = new ArrayList<>(
-                                Arrays.asList(tabFolder.getItems()));
-                        ListIterator<CTabItem> listIter = tabs.listIterator(tabs.size());
-                        while (listIter.hasPrevious()) {
-                            CTabItem previousTab = listIter.previous();
-                            if (isReachedClickedQueryTab) {
-                                previousTab.dispose();
-                                continue;
-                            }
-                            if (clickedQueryTab.equals(previousTab)) {
-                                isReachedClickedQueryTab = true;
-                            }
+                    boolean isReachedClickedQueryTab = false;
+                    ArrayList<CTabItem> tabs = new ArrayList<>(
+                            Arrays.asList(tabFolder.getItems()));
+                    ListIterator<CTabItem> listIter = tabs.listIterator(tabs.size());
+                    while (listIter.hasPrevious()) {
+                        CTabItem previousTab = listIter.previous();
+                        if (isReachedClickedQueryTab) {
+                            previousTab.dispose();
+                            continue;
+                        }
+                        if (clickedQueryTab.equals(previousTab)) {
+                            isReachedClickedQueryTab = true;
                         }
                     }
                 }
@@ -172,20 +162,17 @@ public class ResultSetView extends ViewPart {
 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    Object obj = e.getSource();
-                    if (obj instanceof MenuItem) {
-                        boolean isReachedClickedQueryTab = false;
-                        Iterator<CTabItem> iter = new ArrayList<>(
-                                Arrays.asList(tabFolder.getItems())).iterator();
-                        while (iter.hasNext()) {
-                            CTabItem nextTab = iter.next();
-                            if (isReachedClickedQueryTab) {
-                                nextTab.dispose();
-                                continue;
-                            }
-                            if (clickedQueryTab.equals(nextTab)) {
-                                isReachedClickedQueryTab = true;
-                            }
+                    boolean isReachedClickedQueryTab = false;
+                    Iterator<CTabItem> iter = new ArrayList<>(
+                            Arrays.asList(tabFolder.getItems())).iterator();
+                    while (iter.hasNext()) {
+                        CTabItem nextTab = iter.next();
+                        if (isReachedClickedQueryTab) {
+                            nextTab.dispose();
+                            continue;
+                        }
+                        if (clickedQueryTab.equals(nextTab)) {
+                            isReachedClickedQueryTab = true;
                         }
                     }
                 }
@@ -201,10 +188,7 @@ public class ResultSetView extends ViewPart {
 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    Object obj = e.getSource();
-                    if (obj instanceof MenuItem) {
-                        Arrays.stream(tabFolder.getItems()).forEach(CTabItem::dispose);
-                    }
+                    Arrays.stream(tabFolder.getItems()).forEach(CTabItem::dispose);
                 }
             });
         }
