@@ -5,7 +5,6 @@ import java.util.List;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_index_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -24,14 +23,13 @@ public class AlterIndex extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        if (ctx.index_all_def() != null) {
+        if (ctx.ALL() != null) {
             return;
         }
 
-        Index_defContext def = ctx.index_def();
-        List<IdentifierContext> ids = def.index_if_exists_name().schema_qualified_name().identifier();
+        List<IdentifierContext> ids = ctx.schema_qualified_name().identifier();
 
-        Schema_qualified_nameContext inherit = def.index_def_action().index;
+        Schema_qualified_nameContext inherit = ctx.index_def_action().index;
 
         if (inherit != null) {
             // in this case inherit is real index name
