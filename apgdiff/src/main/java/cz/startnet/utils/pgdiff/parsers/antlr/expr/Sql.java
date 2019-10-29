@@ -36,7 +36,7 @@ public class Sql extends AbstractExprWithNmspc<SqlContext> {
         return Collections.emptyList();
     }
 
-    private void data(Data_statementContext data) {
+    public void data(Data_statementContext data) {
         Select_stmtContext selCtx = data.select_stmt();
         Insert_stmt_for_psqlContext insCtx;
         Update_stmt_for_psqlContext updCtx;

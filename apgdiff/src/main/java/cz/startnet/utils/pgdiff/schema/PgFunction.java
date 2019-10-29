@@ -87,15 +87,13 @@ public class PgFunction extends AbstractPgFunction {
             }
         }
 
-        if (!configurations.isEmpty()) {
-            for (Entry<String, String> param : configurations.entrySet()) {
-                String val = param.getValue();
-                sbSQL.append("\n    SET ").append(param.getKey());
-                if (FROM_CURRENT.equals(val)) {
-                    sbSQL.append(val);
-                } else {
-                    sbSQL.append(" TO ").append(val);
-                }
+        for (Entry<String, String> param : configurations.entrySet()) {
+            String val = param.getValue();
+            sbSQL.append("\n    SET ").append(param.getKey());
+            if (FROM_CURRENT.equals(val)) {
+                sbSQL.append(val);
+            } else {
+                sbSQL.append(" TO ").append(val);
             }
         }
 
@@ -143,7 +141,7 @@ public class PgFunction extends AbstractPgFunction {
                 return true;
             }
             // нельзя менять тип out параметров
-            if ("OUT".equalsIgnoreCase(argOld.getMode()) &&
+            if (ArgMode.OUT == argOld.getMode() &&
                     !Objects.equals(argOld.getDataType(), argNew.getDataType())) {
                 return true;
             }
@@ -151,12 +149,12 @@ public class PgFunction extends AbstractPgFunction {
         // Если добавляется или удаляется out параметр нужно удалить функцию,
         // т.к. меняется её возвращаемое значение
         while (iOld.hasNext()) {
-            if ("OUT".equalsIgnoreCase(iOld.next().getMode())) {
+            if (ArgMode.OUT  == iOld.next().getMode()) {
                 return true;
             }
         }
         while (iNew.hasNext()) {
-            if ("OUT".equalsIgnoreCase(iNew.next().getMode())) {
+            if (ArgMode.OUT == iNew.next().getMode()) {
                 return true;
             }
         }

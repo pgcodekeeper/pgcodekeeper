@@ -67,23 +67,23 @@ script_statement
 
 script_transaction
     : (START TRANSACTION | BEGIN (WORK | TRANSACTION)?) (transaction_mode (COMMA transaction_mode)*)?
-    | (COMMIT | END) (WORK | TRANSACTION)?
+    | (COMMIT | END | ABORT | ROLLBACK) (WORK | TRANSACTION)? (AND NO? CHAIN)?
     | (COMMIT PREPARED | PREPARE TRANSACTION) Character_String_Literal
     | (SAVEPOINT | RELEASE SAVEPOINT?) identifier
-    | ROLLBACK (PREPARED Character_String_Literal | (WORK | TRANSACTION)? (TO SAVEPOINT? identifier)?)
+    | ROLLBACK PREPARED Character_String_Literal 
+    | ROLLBACK (WORK | TRANSACTION)? TO SAVEPOINT? identifier
     | lock_table
-    | ABORT (WORK | TRANSACTION)?
     ;
 
 transaction_mode
     : ISOLATION LEVEL (SERIALIZABLE | REPEATABLE READ | READ COMMITTED | READ UNCOMMITTED)
-    | READ WRITE | READ ONLY
-    | (NOT)? DEFERRABLE
+    | READ WRITE
+    | READ ONLY
+    | NOT? DEFERRABLE
     ;
 
 lock_table
-    : LOCK TABLE? only_table_multiply (COMMA only_table_multiply)*
-     (IN lock_mode MODE)? NOWAIT?
+    : LOCK TABLE? only_table_multiply (COMMA only_table_multiply)* (IN lock_mode MODE)? NOWAIT?
     ;
 
 lock_mode
@@ -95,43 +95,46 @@ lock_mode
     ;
 
 script_additional
-    : anonymous_block
-    | LISTEN identifier
-    | UNLISTEN (identifier | MULTIPLY)
-    | ANALYZE VERBOSE? table_cols_list?
-    | CLUSTER VERBOSE? (identifier (ON schema_qualified_name | USING identifier)?)?
-    | VACUUM (LEFT_PAREN vacuum_mode (COMMA vacuum_mode)* RIGHT_PAREN | vacuum_mode+)? table_cols_list?
+    : additional_statement
+    | VACUUM vacuum_mode table_cols_list?
     | show_statement
-    | CHECKPOINT
-    | LOAD Character_String_Literal
-    | DISCARD (ALL | PLANS | SEQUENCES | TEMPORARY | TEMP)
-    | DEALLOCATE PREPARE? (identifier | ALL)
     | (FETCH | MOVE) fetch_move_direction? (FROM | IN)? identifier
     | CLOSE (identifier | ALL)
     | CALL function_call
-    | REINDEX (LEFT_PAREN VERBOSE RIGHT_PAREN)? (INDEX | TABLE | SCHEMA | DATABASE | SYSTEM) identifier
-    | RESET (identifier | TIME ZONE | SESSION AUTHORIZATION | ALL)
+    | DISCARD (ALL | PLANS | SEQUENCES | TEMPORARY | TEMP)
     | DECLARE identifier BINARY? INSENSITIVE? (NO? SCROLL)? CURSOR ((WITH | WITHOUT) HOLD)? FOR select_stmt
+    | EXECUTE identifier (LEFT_PAREN vex (COMMA vex)* RIGHT_PAREN)?
+    ;
+
+additional_statement
+    : anonymous_block
+    | LISTEN identifier
+    | UNLISTEN (identifier | MULTIPLY)
+    | ANALYZE (LEFT_PAREN analyze_mode (COMMA analyze_mode)* RIGHT_PAREN | VERBOSE)? table_cols_list?
+    | CLUSTER VERBOSE? (identifier ON schema_qualified_name | schema_qualified_name (USING identifier)?)?
+    | CHECKPOINT
+    | LOAD Character_String_Literal
+    | DEALLOCATE PREPARE? (identifier | ALL)
+    | REINDEX (LEFT_PAREN VERBOSE RIGHT_PAREN)? (INDEX | TABLE | SCHEMA | DATABASE | SYSTEM) CONCURRENTLY? schema_qualified_name
+    | RESET ((identifier DOT)? identifier | TIME ZONE | SESSION AUTHORIZATION | ALL)
     | EXPLAIN (ANALYZE? VERBOSE? | (LEFT_PAREN explain_option (COMMA explain_option)* RIGHT_PAREN)) statement
     | REFRESH MATERIALIZED VIEW CONCURRENTLY? schema_qualified_name (WITH NO? DATA)?
     | PREPARE identifier (LEFT_PAREN data_type (COMMA data_type)* RIGHT_PAREN)? AS data_statement
-    | EXECUTE identifier (LEFT_PAREN vex (COMMA vex)* RIGHT_PAREN)?
-    | REASSIGN OWNED BY user_identifer_current_session (COMMA user_identifer_current_session)*
-      TO user_identifer_current_session
+    | REASSIGN OWNED BY user_name (COMMA user_name)* TO user_name
     | copy_statement
     ;
 
 show_statement
-    : SHOW (identifier | ALL | TIME ZONE | TRANSACTION ISOLATION LEVEL | SESSION AUTHORIZATION)
+    : SHOW ((identifier DOT)? identifier | ALL | TIME ZONE | TRANSACTION ISOLATION LEVEL | SESSION AUTHORIZATION)
     ;
 
 explain_option
-    : (ANALYZE | VERBOSE | COSTS | BUFFERS | TIMING | SUMMARY) (TRUE | FALSE | OFF | ON)?
+    : (ANALYZE | VERBOSE | COSTS | SETTINGS | BUFFERS | TIMING | SUMMARY) boolean_value?
     | FORMAT (TEXT | XML | JSON | YAML)
     ;
 
-user_identifer_current_session
-    : name = identifier | CURRENT_USER | SESSION_USER
+user_name
+    : identifier | CURRENT_USER | SESSION_USER
     ;
 
 table_cols_list
@@ -143,11 +146,24 @@ table_cols
     ;
 
 vacuum_mode
-    : FULL
-    | FREEZE
-    | VERBOSE
-    | ANALYZE
-    | DISABLE_PAGE_SKIPPING
+    : LEFT_PAREN vacuum_option (COMMA vacuum_option)* RIGHT_PAREN 
+    | FULL? FREEZE? VERBOSE? ANALYZE?
+    ;
+
+vacuum_option
+    : (FULL | FREEZE | VERBOSE | ANALYZE | DISABLE_PAGE_SKIPPING | SKIP_LOCKED | INDEX_CLEANUP | TRUNCATE) boolean_value?
+    ;
+
+analyze_mode
+    : (VERBOSE | SKIP_LOCKED) boolean_value?
+    ;
+
+boolean_value
+    : TRUE 
+    | FALSE 
+    | OFF 
+    | ON 
+    | NUMBER_LITERAL
     ;
 
 fetch_move_direction
@@ -264,16 +280,15 @@ schema_drop
     ;
 
 schema_import
-    : IMPORT FOREIGN SCHEMA schema_name_remote=identifier
-    ((LIMIT TO | EXCEPT)
-    LEFT_PAREN (table_name+=identifier (COMMA table_name+=identifier)*) RIGHT_PAREN)?
-    FROM SERVER server_name=identifier INTO schema_name_local=identifier
+    : IMPORT FOREIGN SCHEMA name=identifier
+    ((LIMIT TO | EXCEPT) LEFT_PAREN identifier_list RIGHT_PAREN)?
+    FROM SERVER identifier INTO identifier
     define_foreign_options?
     ;
 
 alter_function_statement
     : (FUNCTION | PROCEDURE) function_parameters?
-      ((function_actions_common | RESET (configuration_parameter=identifier | ALL))+ RESTRICT?
+      ((function_actions_common | RESET ((identifier DOT)? identifier | ALL))+ RESTRICT?
     | rename_to
     | set_schema
     | DEPENDS ON EXTENSION identifier)
@@ -351,9 +366,9 @@ table_action
         | drop_def
         | ((set=SET | DROP) NOT NULL)
         | SET STATISTICS signed_number_literal
-        | set_attribute_option
+        | SET storage_parameter
         | define_foreign_options
-        | RESET storage_parameter
+        | RESET LEFT_PAREN names_references RIGHT_PAREN
         | set_storage
         | ADD identity_body
         | alter_identity+
@@ -367,13 +382,13 @@ table_action
     | (DISABLE | ENABLE) RULE rewrite_rule_name=schema_qualified_name
     | ENABLE (REPLICA | ALWAYS) RULE rewrite_rule_name=schema_qualified_name
     | (DISABLE | ENABLE) ROW LEVEL SECURITY
-    | (NO)? FORCE ROW LEVEL SECURITY
+    | NO? FORCE ROW LEVEL SECURITY
     | CLUSTER ON index_name=schema_qualified_name
     | SET WITHOUT (CLUSTER | OIDS)
     | SET WITH OIDS
     | SET (LOGGED | UNLOGGED)
     | SET storage_parameter
-    | RESET storage_parameter
+    | RESET LEFT_PAREN names_references RIGHT_PAREN
     | define_foreign_options
     | INHERIT parent_table=schema_qualified_name
     | NO INHERIT parent_table=schema_qualified_name
@@ -393,10 +408,6 @@ alter_identity
     : SET GENERATED (ALWAYS | BY DEFAULT)
     | SET sequence_body
     | RESTART (WITH? restart=NUMBER_LITERAL)?
-    ;
-
-set_attribute_option
-    : SET storage_parameter
     ;
 
 set_storage
@@ -419,7 +430,7 @@ drop_constraint
     ;
 
 table_deferrable
-    : (NOT)? DEFERRABLE
+    : NOT? DEFERRABLE
     ;
 
 table_initialy_immed
@@ -434,11 +445,12 @@ function_actions_common
     | VOLATILE
     | STABLE
     | NOT? LEAKPROOF
-    | (EXTERNAL)? SECURITY (INVOKER | DEFINER)
+    | EXTERNAL? SECURITY (INVOKER | DEFINER)
     | PARALLEL (SAFE | UNSAFE | RESTRICTED)
     | COST execution_cost=unsigned_numeric_literal
     | ROWS result_rows=unsigned_numeric_literal
-    | SET configuration_parameter=identifier (((TO | EQUAL) value+=set_statement_value) | FROM CURRENT)(COMMA value+=set_statement_value)*
+    | SUPPORT schema_qualified_name
+    | SET (config_scope=identifier DOT)? config_param=identifier ((TO | EQUAL) set_statement_value | FROM CURRENT)
     | LANGUAGE lang_name=identifier
     | WINDOW
     | AS function_def
@@ -449,16 +461,8 @@ function_def
     ;
 
 alter_index_statement
-    : index_def
-    | index_all_def
-    ;
-
-index_def
-    : index_if_exists_name index_def_action
-    ;
-
-index_if_exists_name
-    : INDEX (IF EXISTS)? schema_qualified_name
+    : INDEX (IF EXISTS)? schema_qualified_name index_def_action
+    | INDEX ALL IN TABLESPACE identifier (OWNED BY identifier_list)? SET TABLESPACE identifier NOWAIT?
     ;
 
 index_def_action
@@ -466,19 +470,15 @@ index_def_action
     | ATTACH PARTITION index=schema_qualified_name
     | DEPENDS ON EXTENSION extension=schema_qualified_name
     | ALTER COLUMN? sign? NUMBER_LITERAL SET STATISTICS signed_number_literal
-    | RESET LEFT_PAREN name+=identifier (COMMA name+=identifier)* RIGHT_PAREN
-    | SET (TABLESPACE tbl_spc=identifier | LEFT_PAREN option_with_value (COMMA option_with_value)* RIGHT_PAREN)
-    ;
-
-index_all_def
-    : INDEX ALL IN TABLESPACE tbl_spc=identifier (OWNED BY rolname+=identifier (COMMA rolname+=identifier)*)?
-      SET TABLESPACE new_tbl_spc=identifier NOWAIT?
+    | RESET LEFT_PAREN identifier_list RIGHT_PAREN
+    | SET TABLESPACE identifier 
+    | SET LEFT_PAREN option_with_value (COMMA option_with_value)* RIGHT_PAREN
     ;
 
 alter_default_privileges
     : DEFAULT PRIVILEGES
-    (FOR (ROLE | USER) target_role+=identifier (COMMA target_role+=identifier)*)?
-    (IN SCHEMA schema_name+=identifier (COMMA schema_name+=identifier)*)?
+    (FOR (ROLE | USER) identifier_list)?
+    (IN SCHEMA identifier_list)?
     abbreviated_grant_or_revoke
     ;
 
@@ -518,8 +518,8 @@ alter_view_statement
      (ALTER COLUMN? column_name=schema_qualified_name  (set_def_column | drop_def)
     | set_schema
     | rename_to
-    | SET LEFT_PAREN view_option_name=identifier (EQUAL view_option_value=vex)?(COMMA view_option_name=identifier (EQUAL view_option_value=vex)?)*  RIGHT_PAREN
-    | RESET LEFT_PAREN view_option_name=identifier (COMMA view_option_name=identifier)*  RIGHT_PAREN)
+    | SET storage_parameter
+    | RESET LEFT_PAREN names_references RIGHT_PAREN)
     ;
 
 alter_event_trigger
@@ -588,7 +588,7 @@ type_action
     ;
 
 set_def_column
-    : SET DEFAULT expression=vex
+    : SET DEFAULT vex
     ;
 
 drop_def
@@ -618,21 +618,18 @@ index_where
 
  create_extension_statement
     : EXTENSION if_not_exists? name=identifier WITH?
-         schema_with_name? (VERSION version=unsigned_value_specification)? (FROM old_version=unsigned_value_specification)?
+    schema_with_name? (VERSION version=unsigned_value_specification)? (FROM old_version=unsigned_value_specification)?
     ;
 
 create_language_statement
     : (OR REPLACE)? TRUSTED? PROCEDURAL? LANGUAGE name=identifier
-        (HANDLER call_handler=schema_qualified_name (INLINE inline_handler=schema_qualified_name)? (VALIDATOR valfunction=schema_qualified_name)?)?
+    (HANDLER schema_qualified_name (INLINE schema_qualified_name)? (VALIDATOR schema_qualified_name)?)?
     ;
 
 create_event_trigger
-    : EVENT TRIGGER name=identifier ON event=identifier
-        (WHEN (filter_variable=schema_qualified_name IN
-            LEFT_PAREN
-                filter_value+=character_string (COMMA filter_value+=character_string)*
-            RIGHT_PAREN AND?)+ )?
-        EXECUTE (PROCEDURE | FUNCTION) funct_name=vex
+    : EVENT TRIGGER name=identifier ON identifier
+    (WHEN (schema_qualified_name IN LEFT_PAREN character_string (COMMA character_string)* RIGHT_PAREN AND?)+ )?
+    EXECUTE (PROCEDURE | FUNCTION) vex
     ;
 
 create_type_statement
@@ -676,7 +673,7 @@ create_type_statement
     ;
 
 create_domain_statement
-    : DOMAIN name=schema_qualified_name (AS)? dat_type=data_type
+    : DOMAIN name=schema_qualified_name AS? dat_type=data_type
       (collate_identifier
       | DEFAULT def_value=vex
       | dom_constraint+=domain_constraint)*
@@ -730,7 +727,7 @@ create_fts_parser
 
 create_collation
     : COLLATION if_not_exists? name=schema_qualified_name
-      (FROM copy=schema_qualified_name | LEFT_PAREN (collation_option (COMMA collation_option)*)? RIGHT_PAREN)
+    (FROM copy=schema_qualified_name | LEFT_PAREN (collation_option (COMMA collation_option)*)? RIGHT_PAREN)
     ;
 
 alter_collation
@@ -739,33 +736,29 @@ alter_collation
 
 collation_option
     : (LOCALE | LC_COLLATE | LC_CTYPE | PROVIDER | VERSION) EQUAL (character_string | identifier)
+    | DETERMINISTIC EQUAL boolean_value
     ;
 
 create_user_mapping
-    : USER MAPPING if_not_exists? FOR (identifier | USER | CURRENT_USER | SESSION_USER)
-    SERVER identifier
-    define_foreign_options?
+    : USER MAPPING if_not_exists? FOR (user_name | USER) SERVER identifier define_foreign_options?
     ;
 
 alter_user_mapping
-    : USER MAPPING FOR (identifier | USER | CURRENT_USER | SESSION_USER) SERVER identifier
-    define_foreign_options?
+    : USER MAPPING FOR (user_name | USER) SERVER identifier define_foreign_options?
     ;
 
 alter_user_or_role
-    : (USER | ROLE) (alter_user_or_role_set_reset
-        | old_name=identifier rename_to
-        | user_identifer_current_session WITH? user_or_role_option_for_alter+)
+    : (USER | ROLE) (alter_user_or_role_set_reset | identifier rename_to | user_name WITH? user_or_role_option_for_alter+)
     ;
 
 alter_user_or_role_set_reset
-    : (user_identifer_current_session | ALL) (IN DATABASE db_name=identifier)? user_or_role_set_reset
+    : (user_name | ALL) (IN DATABASE identifier)? user_or_role_set_reset
     ;
 
 user_or_role_set_reset
-    : SET config_param=identifier (TO | EQUAL) config_param_val=set_statement_value
-    | SET config_param=identifier FROM CURRENT
-    | RESET config_param=identifier
+    : SET (identifier DOT)? identifier (TO | EQUAL) set_statement_value
+    | SET (identifier DOT)? identifier FROM CURRENT
+    | RESET (identifier DOT)? identifier
     | RESET ALL
     ;
 
@@ -775,8 +768,7 @@ alter_group
 
 alter_group_action
     : name=identifier rename_to
-    | user_identifer_current_session (ADD | DROP)
-        USER user_name+=identifier (COMMA user_name+=identifier)*
+    | user_name (ADD | DROP) USER user+=identifier (COMMA user+=identifier)*
     ;
 
 alter_tablespace
@@ -785,24 +777,21 @@ alter_tablespace
 
 alter_owner
     : (OPERATOR target_operator
-    | (FUNCTION | PROCEDURE | AGGREGATE) name=schema_qualified_name function_args
-    | (TEXT SEARCH DICTIONARY | TEXT SEARCH CONFIGURATION | DOMAIN | SCHEMA | SEQUENCE | TYPE | MATERIALIZED? VIEW)
-    (IF EXISTS)? name=schema_qualified_name) owner_to
+        | LARGE OBJECT NUMBER_LITERAL
+        | (FUNCTION | PROCEDURE | AGGREGATE) name=schema_qualified_name function_args
+        | (TEXT SEARCH DICTIONARY | TEXT SEARCH CONFIGURATION | DOMAIN | SCHEMA | SEQUENCE | TYPE | MATERIALIZED? VIEW)
+        (IF EXISTS)? name=schema_qualified_name) owner_to
     ;
 
 alter_tablespace_action
     : rename_to
     | owner_to
-    | SET LEFT_PAREN tablespace_option=identifier EQUAL value=vex
-            (COMMA tablespace_option=identifier EQUAL value=vex)* RIGHT_PAREN
-    | RESET LEFT_PAREN tablespace_option=identifier
-            (COMMA tablespace_option=identifier)* RIGHT_PAREN
+    | SET LEFT_PAREN option_with_value (COMMA option_with_value)* RIGHT_PAREN
+    | RESET LEFT_PAREN identifier_list RIGHT_PAREN
     ;
 
 alter_statistics
-    : STATISTICS name=schema_qualified_name (rename_to
-        | SET SCHEMA schema_name=identifier
-        | owner_to)
+    : STATISTICS name=schema_qualified_name (rename_to | set_schema | owner_to)
     ;
 
 alter_foreign_data_wrapper
@@ -835,12 +824,11 @@ operator_set_restrict_join
     ;
 
 drop_user_mapping
-    : USER MAPPING (IF EXISTS)? FOR (identifier | USER | CURRENT_USER | SESSION_USER) SERVER identifier
+    : USER MAPPING (IF EXISTS)? FOR (user_name | USER) SERVER identifier
     ;
 
 drop_owned
-    : OWNED BY user_identifer_current_session (COMMA user_identifer_current_session)*
-      cascade_restrict?
+    : OWNED BY user_name (COMMA user_name)* cascade_restrict?
     ;
 
 drop_operator_statement
@@ -914,26 +902,26 @@ group_option
     ;
 
 create_tablespace
-    : TABLESPACE name=identifier (OWNER user_identifer_current_session)?
+    : TABLESPACE name=identifier (OWNER user_name)?
     LOCATION directory=Character_String_Literal
     (WITH LEFT_PAREN option_with_value (COMMA option_with_value)* RIGHT_PAREN)?
     ;
 
 create_statistics
     : STATISTICS if_not_exists? name=schema_qualified_name
-    (LEFT_PAREN statistisc_type+=identifier (COMMA statistisc_type+=identifier)* RIGHT_PAREN)?
-    ON table_column+=identifier COMMA table_column+=identifier (COMMA table_column+=identifier)*
-    FROM table_name=schema_qualified_name
+    (LEFT_PAREN identifier (COMMA identifier)* RIGHT_PAREN)?
+    ON identifier COMMA identifier (COMMA identifier)*
+    FROM schema_qualified_name
     ;
 
 create_foreign_data_wrapper
-    : FOREIGN DATA WRAPPER name=identifier (HANDLER handler_function=identifier | NO HANDLER )?
-    (VALIDATOR validator_function=identifier | NO VALIDATOR)?
+    : FOREIGN DATA WRAPPER name=identifier (HANDLER identifier | NO HANDLER )?
+    (VALIDATOR identifier | NO VALIDATOR)?
     (OPTIONS LEFT_PAREN option_without_equal (COMMA option_without_equal)* RIGHT_PAREN )?
     ;
 
 option_without_equal
-    : name=identifier value=Character_String_Literal
+    : identifier Character_String_Literal
     ;
 
 create_operator_statement
@@ -955,7 +943,7 @@ operator_option
     ;
 
 create_aggregate_statement
-    : AGGREGATE name=schema_qualified_name function_args? LEFT_PAREN
+    : (OR REPLACE)? AGGREGATE name=schema_qualified_name function_args? LEFT_PAREN
     (BASETYPE EQUAL base_type=data_type COMMA)?
     SFUNC EQUAL sfunc_name=schema_qualified_name COMMA
     STYPE EQUAL type=data_type
@@ -990,22 +978,24 @@ set_statement
     ;
 
 set_action
-    : CONSTRAINTS (ALL | (constr_name+=schema_qualified_name (COMMA constr_name+=schema_qualified_name)*)) (DEFERRED | IMMEDIATE)
-    | TRANSACTION (transaction_mode (COMMA transaction_mode)* | SNAPSHOT snapshot_id=Character_String_Literal)
+    : CONSTRAINTS (ALL | names_references) (DEFERRED | IMMEDIATE)
+    | TRANSACTION transaction_mode (COMMA transaction_mode)*
+    | TRANSACTION SNAPSHOT Character_String_Literal
     | SESSION CHARACTERISTICS AS TRANSACTION transaction_mode (COMMA transaction_mode)*
     | (SESSION | LOCAL)? session_local_option
     | XML OPTION (DOCUMENT | CONTENT)
     ;
 
 session_local_option
-    : SESSION AUTHORIZATION (name=Character_String_Literal | identifier |DEFAULT)
-    | TIME ZONE (timezone=Character_String_Literal | signed_numerical_literal | LOCAL | DEFAULT)
-    | config_param=identifier (TO | EQUAL) config_param_val+=set_statement_value (COMMA config_param_val+=set_statement_value)*
+    : SESSION AUTHORIZATION (Character_String_Literal | identifier | DEFAULT)
+    | TIME ZONE (Character_String_Literal | signed_numerical_literal | LOCAL | DEFAULT)
+    | (identifier DOT)? config_param=identifier (TO | EQUAL) set_statement_value
     | ROLE (identifier | NONE)
     ;
 
 set_statement_value
-    : vex | DEFAULT
+    : vex (COMMA vex)*
+    | DEFAULT
     ;
 
 create_rewrite_statement
@@ -1028,7 +1018,7 @@ rewrite_command
 create_trigger_statement
     : CONSTRAINT? TRIGGER name=identifier (before_true=BEFORE | (INSTEAD OF) | AFTER)
     (((insert_true=INSERT | delete_true=DELETE | truncate_true=TRUNCATE) 
-    | update_true=UPDATE (OF columns_list)?)OR?)+
+    | update_true=UPDATE (OF identifier_list)?)OR?)+
     ON table_name=schema_qualified_name
     (FROM referenced_table_name=schema_qualified_name)?
     table_deferrable? table_initialy_immed?
@@ -1036,10 +1026,6 @@ create_trigger_statement
     (for_each_true=FOR EACH? (ROW | STATEMENT))?
     when_trigger?
     EXECUTE (FUNCTION | PROCEDURE) func_name=function_call
-    ;
-
-columns_list
-    : name+=identifier (COMMA name+=identifier)*
     ;
 
 trigger_referencing
@@ -1066,7 +1052,7 @@ rule_member_object
     | FOREIGN DATA WRAPPER names_references
     | FOREIGN SERVER names_references
     | (FUNCTION | PROCEDURE | ROUTINE) func_name+=function_parameters (COMMA func_name+=function_parameters)*
-    | LARGE OBJECT unsigned_numeric_literal (COMMA unsigned_numeric_literal)*
+    | LARGE OBJECT NUMBER_LITERAL (COMMA NUMBER_LITERAL)*
     | LANGUAGE names_references
     | SCHEMA schema_names=names_references
     | TABLESPACE names_references
@@ -1120,7 +1106,7 @@ roles_names
     ;
 
 role_name_with_group
-    : GROUP? role_name=identifier | CURRENT_USER | SESSION_USER
+    : GROUP? user_name
     ;
 
 comment_on_statement
@@ -1146,7 +1132,7 @@ comment_member_object
     | FOREIGN DATA WRAPPER identifier
     | FOREIGN? TABLE name=schema_qualified_name
     | INDEX name=schema_qualified_name
-    | LARGE OBJECT unsigned_numeric_literal
+    | LARGE OBJECT NUMBER_LITERAL
     | MATERIALIZED? VIEW name=schema_qualified_name
     | OPERATOR target_operator
     | OPERATOR (FAMILY| CLASS) name=schema_qualified_name USING index_method=identifier
@@ -1177,7 +1163,7 @@ label_member_object
     | DOMAIN name=schema_qualified_name
     | EVENT TRIGGER identifier
     | FOREIGN? TABLE name=schema_qualified_name
-    | LARGE OBJECT unsigned_numeric_literal
+    | LARGE OBJECT NUMBER_LITERAL
     | MATERIALIZED? VIEW name=schema_qualified_name
     | PROCEDURAL? LANGUAGE name=schema_qualified_name
     | PUBLICATION identifier
@@ -1209,8 +1195,9 @@ transform_for_type
     ;
 
 function_ret_table
-    :TABLE LEFT_PAREN function_column_name_type(COMMA function_column_name_type)* RIGHT_PAREN
+    : TABLE LEFT_PAREN function_column_name_type (COMMA function_column_name_type)* RIGHT_PAREN
     ;
+
 function_column_name_type
     : column_name=identifier column_type=data_type
     ;
@@ -1236,11 +1223,7 @@ character_string
     ;
 
 function_arguments
-    :arg_mode=argmode? argname=identifier_nontype? argtype_data=data_type function_def_value?
-    ;
-
-function_def_value
-    : (DEFAULT | EQUAL) def_value=vex
+    : argmode? identifier_nontype? data_type ((DEFAULT | EQUAL) vex)?
     ;
 
 argmode
@@ -1276,22 +1259,20 @@ sign
   ;
 
 create_schema_statement
-    : SCHEMA if_not_exists? name=identifier? (AUTHORIZATION (user_name = identifier | CURRENT_USER | SESSION_USER))?
+    : SCHEMA if_not_exists? name=identifier? (AUTHORIZATION user_name)?
     ;
 
 create_policy_statement
     : POLICY identifier ON schema_qualified_name 
     (AS (PERMISSIVE | RESTRICTIVE))?
     (FOR (ALL | SELECT | INSERT | UPDATE | DELETE))?
-    (TO user_identifer_current_session (COMMA user_identifer_current_session)*)?
+    (TO user_name (COMMA user_name)*)?
     (USING vex)? (WITH CHECK vex)?
     ;
 
 alter_policy_statement
     : POLICY identifier ON schema_qualified_name rename_to
-    | POLICY identifier ON schema_qualified_name
-        (TO user_identifer_current_session (COMMA user_identifer_current_session)*)?
-        (USING vex)? (WITH CHECK vex)?
+    | POLICY identifier ON schema_qualified_name (TO user_name (COMMA user_name)*)? (USING vex)? (WITH CHECK vex)?
     ;
 
 drop_policy_statement
@@ -1348,12 +1329,11 @@ operator_family_action
 
 add_operator_to_family
     : OPERATOR unsigned_numeric_literal target_operator (FOR SEARCH | FOR ORDER BY schema_qualified_name)?
-    | FUNCTION unsigned_numeric_literal (LEFT_PAREN (left_type=data_type | NONE) (COMMA (right_type=data_type | NONE))? RIGHT_PAREN)? 
-    function_name (LEFT_PAREN vex_or_named_notation (COMMA vex_or_named_notation)* RIGHT_PAREN)?
+    | FUNCTION unsigned_numeric_literal (LEFT_PAREN (data_type | NONE) (COMMA (data_type | NONE))? RIGHT_PAREN)? function_call
     ;
 
 drop_operator_from_family
-    : (OPERATOR | FUNCTION) unsigned_numeric_literal LEFT_PAREN (left_type=data_type | NONE) (COMMA (right_type=data_type | NONE))? RIGHT_PAREN
+    : (OPERATOR | FUNCTION) unsigned_numeric_literal LEFT_PAREN (data_type | NONE) (COMMA (data_type | NONE))? RIGHT_PAREN
     ;
 
 drop_operator_family_statement
@@ -1430,6 +1410,7 @@ copy_from_statement
     : COPY table_cols
     FROM (PROGRAM? Character_String_Literal | STDIN) 
     (WITH? (LEFT_PAREN copy_option_list RIGHT_PAREN | copy_option_list))?
+    (WHERE vex)?
     ;
 
 copy_to_statement
@@ -1451,21 +1432,23 @@ copy_option
     | HEADER truth_value?
     | QUOTE Character_String_Literal
     | ESCAPE Character_String_Literal
-    | FORCE QUOTE (MULTIPLY | columns_list)
-    | FORCE_QUOTE (MULTIPLY | LEFT_PAREN columns_list RIGHT_PAREN)
-    | FORCE NOT NULL columns_list
-    | FORCE_NOT_NULL LEFT_PAREN columns_list RIGHT_PAREN
-    | FORCE_NULL LEFT_PAREN columns_list RIGHT_PAREN
+    | FORCE QUOTE (MULTIPLY | identifier_list)
+    | FORCE_QUOTE (MULTIPLY | LEFT_PAREN identifier_list RIGHT_PAREN)
+    | FORCE NOT NULL identifier_list
+    | FORCE_NOT_NULL LEFT_PAREN identifier_list RIGHT_PAREN
+    | FORCE_NULL LEFT_PAREN identifier_list RIGHT_PAREN
     | ENCODING Character_String_Literal
     ;
 
 create_view_statement
-    : (OR REPLACE)? (TEMP | TEMPORARY)? RECURSIVE? MATERIALIZED? VIEW if_not_exists? name=schema_qualified_name column_names=view_columns?
-        (WITH storage_parameter)?
-        table_space?
-        AS v_query=select_stmt
-        with_check_option?
-        (WITH NO? DATA)?
+    : (OR REPLACE)? (TEMP | TEMPORARY)? RECURSIVE? MATERIALIZED? VIEW 
+    if_not_exists? name=schema_qualified_name column_names=view_columns?
+    (USING identifier)?
+    (WITH storage_parameter)?
+    table_space?
+    AS v_query=select_stmt
+    with_check_option?
+    (WITH NO? DATA)?
     ;
 
 if_not_exists
@@ -1484,6 +1467,7 @@ create_table_statement
   : ((GLOBAL | LOCAL)? (TEMPORARY | TEMP) | UNLOGGED)? TABLE if_not_exists? name=schema_qualified_name
     define_table
     partition_by?
+    (USING identifier)?
     storage_parameter_oid?
     on_commit?
     table_space?
@@ -1492,6 +1476,7 @@ create_table_statement
 create_table_as_statement
     : ((GLOBAL | LOCAL)? (TEMPORARY | TEMP) | UNLOGGED)? TABLE if_not_exists? name=schema_qualified_name
     column_references?
+    (USING identifier)?
     storage_parameter_oid?
     on_commit?
     table_space?
@@ -1599,7 +1584,7 @@ table_column_definition
     ;
 
 like_option
-    : (INCLUDING | EXCLUDING) (DEFAULTS | CONSTRAINTS | IDENTITY | INDEXES | STORAGE | COMMENTS | ALL)
+    : (INCLUDING | EXCLUDING) (COMMENTS | CONSTRAINTS | DEFAULTS | GENERATED | IDENTITY | INDEXES | STORAGE | ALL)
     ;
 /** NULL, DEFAULT - column constraint
 * EXCLUDE, FOREIGN KEY - table_constraint
@@ -1619,6 +1604,7 @@ constr_body
     | (UNIQUE | PRIMARY KEY) col=column_references? index_parameters
     | DEFAULT default_expr=vex
     | identity_body
+    | GENERATED ALWAYS AS LEFT_PAREN vex RIGHT_PAREN STORED
     ;
 
 all_op
@@ -1649,7 +1635,7 @@ column_references
     ;
 
 names_references
-    : name+=schema_qualified_name (COMMA name+=schema_qualified_name)*
+    : schema_qualified_name (COMMA schema_qualified_name)*
     ;
 
 storage_parameter
@@ -2174,16 +2160,6 @@ tokens_nonreserved_except_function_type
     | XMLTABLE
     ;
 
-tokens_simple_functions
-    : COALESCE
-    | GREATEST
-    | GROUPING
-    | LEAST
-    | NULLIF
-    | ROW
-    | XMLCONCAT
-    ;
-
 tokens_reserved_except_function_type
     : AUTHORIZATION
     | BINARY
@@ -2305,6 +2281,7 @@ tokens_nonkeyword
     | CREATEDB
     | CREATEROLE
     | DESERIALFUNC
+    | DETERMINISTIC
     | DISABLE_PAGE_SKIPPING
     | ELEMENT
     | EXTENDED
@@ -2320,6 +2297,7 @@ tokens_nonkeyword
     | HASHES
     | HEADLINE
     | HYPOTHETICAL
+    | INDEX_CLEANUP
     | INIT
     | INITCOND
     | INTERNALLENGTH
@@ -2369,8 +2347,10 @@ tokens_nonkeyword
     | SAFE
     | SEND
     | SERIALFUNC
+    | SETTINGS
     | SFUNC
     | SHAREABLE
+    | SKIP_LOCKED
     | SORTOP
     | SSPACE
     | STYPE
@@ -2439,7 +2419,7 @@ type_list
   ;
 
 data_type
-  : SETOF? predefined_type (ARRAY array_type | array_type+)?
+  : SETOF? predefined_type (ARRAY array_type? | array_type+)?
   ;
 
 array_type
@@ -2524,7 +2504,6 @@ vex
   | vex IS NOT? OF LEFT_PAREN type_list RIGHT_PAREN
   | vex ISNULL
   | vex NOTNULL
-  | datetime_overlaps
   | <assoc=right> NOT vex
   | vex AND vex
   | vex OR vex
@@ -2583,6 +2562,7 @@ value_expression_primary
   | indirection_var
   | array_expression
   | type_coercion
+  | datetime_overlaps
   ;
 
 unsigned_value_specification
@@ -2615,21 +2595,16 @@ cast_specification
 // using data_type for function name because keyword-named functions
 // use the same category of keywords as keyword-named types
 function_call
-    : function_name LEFT_PAREN (set_qualifier? vex_or_named_notation (COMMA vex_or_named_notation)* orderby_clause?)? RIGHT_PAREN
+    : schema_qualified_name_nontype LEFT_PAREN (set_qualifier? vex_or_named_notation (COMMA vex_or_named_notation)* orderby_clause?)? RIGHT_PAREN
         (WITHIN GROUP LEFT_PAREN orderby_clause RIGHT_PAREN)?
         filter_clause? (OVER (identifier | window_definition))?
+    | function_construct
     | extract_function
     | system_function
     | date_time_function
     | string_value_function
     | xml_function
     ;
-
-function_name
-  : schema_qualified_name_nontype
-  // allow for all built-in function except those with explicit syntax rules defined
-  | (identifier DOT)? tokens_simple_functions
-  ;
 
 vex_or_named_notation
     : VARIADIC? (argname=identifier pointer)? vex
@@ -2638,6 +2613,11 @@ vex_or_named_notation
 pointer
     : EQUAL_GTH | COLON_EQUAL
     ;
+
+function_construct
+    : (COALESCE | GREATEST | GROUPING | LEAST | NULLIF | XMLCONCAT) LEFT_PAREN vex (COMMA vex)* RIGHT_PAREN
+    | ROW LEFT_PAREN (vex (COMMA vex)*)? RIGHT_PAREN
+    ;                       
 
 extract_function
   : EXTRACT LEFT_PAREN (identifier | character_string) FROM vex RIGHT_PAREN
@@ -2777,7 +2757,7 @@ with_clause
 
 with_query
     : query_name=identifier (LEFT_PAREN column_name+=identifier (COMMA column_name+=identifier)* RIGHT_PAREN)?
-            AS LEFT_PAREN (select_stmt | insert_stmt_for_psql | update_stmt_for_psql | delete_stmt_for_psql) RIGHT_PAREN
+    AS (NOT? MATERIALIZED)? LEFT_PAREN (select_stmt | insert_stmt_for_psql | update_stmt_for_psql | delete_stmt_for_psql) RIGHT_PAREN
     ;
 
 select_ops
@@ -2823,7 +2803,7 @@ into_table
 from_item
     : LEFT_PAREN from_item RIGHT_PAREN alias_clause?
     | from_item CROSS JOIN from_item
-    | from_item (INNER | (LEFT | RIGHT | FULL) OUTER?)? JOIN from_item ON vex
+    | from_item (INNER | (LEFT | RIGHT | FULL) OUTER?)? JOIN from_item ON vex into_statement?
     | from_item (INNER | (LEFT | RIGHT | FULL) OUTER?)? JOIN from_item USING column_references
     | from_item NATURAL (INNER | (LEFT | RIGHT | FULL) OUTER?)? JOIN from_item
     | from_primary into_statement?
@@ -2951,7 +2931,7 @@ truncate_stmt
   ;
 
 comp_options
-    : HASH_SIGN identifier identifier
+    : HASH_SIGN identifier (identifier | truth_value)
     ;
 
 function_block
@@ -2969,13 +2949,13 @@ declarations
     ;
 
 declaration
-    : identifier type_declaration SEMI_COLON
+    : DECLARE* identifier type_declaration SEMI_COLON
     ;
 
 type_declaration
     : CONSTANT? data_type_dec collate_identifier? (NOT NULL)? ((DEFAULT | COLON_EQUAL | EQUAL) vex)?
     | ALIAS FOR (identifier | DOLLAR_NUMBER)
-    | ((NO)? SCROLL)? CURSOR (LEFT_PAREN arguments_list RIGHT_PAREN)? (FOR | IS) select_stmt
+    | (NO? SCROLL)? CURSOR (LEFT_PAREN arguments_list RIGHT_PAREN)? (FOR | IS) select_stmt
     ;
 
 arguments_list
@@ -3003,15 +2983,15 @@ function_statement
     | transaction_statement
     | cursor_statement
     | message_statement
-    | anonymous_block
     | schema_statement
     | data_statement
+    | additional_statement
     | show_into_statement
     ;
 
 base_statement
     : assign_stmt
-    | execute_stmt
+    | EXECUTE vex (into_statement? using_vex? | using_vex into_statement)
     | PERFORM perform_stmt
     | GET (CURRENT | STACKED)? DIAGNOSTICS diagnostic_option (COMMA diagnostic_option)*
     | NULL
@@ -3043,7 +3023,7 @@ assign_stmt
     ;
 
 execute_stmt
-    : EXECUTE vex into_statement? using_vex?
+    : EXECUTE vex using_vex?
     ;
 
 control_statement
@@ -3055,8 +3035,8 @@ control_statement
     ;
 
 cursor_statement
-    : OPEN var ((NO)? SCROLL)? FOR (select_stmt | execute_stmt)
-    | OPEN var (option (COMMA option)*)?
+    : OPEN var (NO? SCROLL)? FOR (select_stmt | execute_stmt)
+    | OPEN var (LEFT_PAREN option (COMMA option)* RIGHT_PAREN)?
     | FETCH fetch_move_direction? (FROM | IN)? var into_statement
     | MOVE fetch_move_direction? (FROM | IN)? var
     | CLOSE var
@@ -3067,12 +3047,14 @@ option
     ;
 
 transaction_statement
-    : COMMIT
-    | ROLLBACK
+    : (COMMIT | ROLLBACK) (AND NO? CHAIN)?
+    | lock_table
     ;
 
 message_statement
-    : RAISE log_level? SQLSTATE? (character_string (COMMA vex)*)? raise_using?
+    : RAISE log_level? (character_string (COMMA vex)*)? raise_using?
+    | RAISE log_level? identifier raise_using?
+    | RAISE log_level? SQLSTATE character_string raise_using?
     | ASSERT vex (COMMA vex)?
     ;
 
@@ -3102,9 +3084,9 @@ raise_param
     ;
 
 return_stmt
-    : RETURN vex?
+    : RETURN perform_stmt?
     | RETURN NEXT vex
-    | RETURN QUERY (select_stmt | execute_stmt)
+    | RETURN QUERY (select_stmt | execute_stmt | show_statement)
     ;
 
 loop_statement
@@ -3146,6 +3128,6 @@ into_statement
     ;
 
 anonymous_block
-    : DO (LANGUAGE identifier)? character_string
-    | DO character_string LANGUAGE identifier
+    : DO (LANGUAGE (identifier | character_string))? character_string
+    | DO character_string LANGUAGE (identifier | character_string)
     ;

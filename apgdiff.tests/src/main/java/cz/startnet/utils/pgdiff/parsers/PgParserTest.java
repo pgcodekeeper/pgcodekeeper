@@ -106,7 +106,6 @@ public class PgParserTest {
             {"partition_join"},
             {"partition_prune", 6},
             {"plancache"},
-            //{"plpgsql"},
             {"point", 5},
             {"policy"},
             {"polygon"},

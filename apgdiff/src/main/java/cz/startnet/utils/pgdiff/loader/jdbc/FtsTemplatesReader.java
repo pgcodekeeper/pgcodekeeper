@@ -20,10 +20,11 @@ public class FtsTemplatesReader extends JdbcReader {
 
         String init = res.getString("tmplinit");
         if (!"-".equals(init)) {
-            template.setInitFunction(init);
+            setFunctionWithDep(PgFtsTemplate::setInitFunction, template, init);
         }
 
-        template.setLexizeFunction(res.getString("tmpllexize"));
+        setFunctionWithDep(PgFtsTemplate::setLexizeFunction,
+                template, res.getString("tmpllexize"));
 
         // COMMENT
         String comment = res.getString("comment");
