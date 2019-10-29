@@ -142,6 +142,14 @@ public class CliArgs extends PgDiffArguments {
             usage="do not generate scripts containing dangerous statements\nsee: --allow-danger-ddl")
     private boolean safeMode;
 
+    @Option(name="--run-to-target", forbids={"--parse, --graph"},
+            usage="apply the script to the target database")
+    private boolean runToTarget;
+
+    @Option(name="--apply", metaVar="<JDBC>", forbids={"--graph", "--parse", "--write-mode"},
+            usage="the database on which the script is applied")
+    private String applySrc;
+
     @Option(name="-D", aliases="--allow-danger-ddl", forbids={"--graph", "--parse"},
             handler=DangerStatementOptionHandler.class,
             usage="allows dangerous statements in safe-mode scripts")
@@ -300,6 +308,26 @@ public class CliArgs extends PgDiffArguments {
     @Override
     public void setSafeMode(boolean safeMode) {
         this.safeMode = safeMode;
+    }
+
+    @Override
+    public boolean isRunToTarget() {
+        return runToTarget;
+    }
+
+    @Override
+    public void setRunToTarget(boolean runToTarget) {
+        this.runToTarget = runToTarget;
+    }
+
+    @Override
+    public String getApplySrc() {
+        return applySrc;
+    }
+
+    @Override
+    public void setApplySrc(String applySrc) {
+        this.applySrc = applySrc;
     }
 
     @Override
@@ -561,6 +589,12 @@ public class CliArgs extends PgDiffArguments {
                 badArgs("Cannot work with MS SQL database as PostgerSQL project.");
             }
         } else {
+            if (isRunToTarget() && !getOldSrc().startsWith("jdbc:")) {
+                badArgs("In write mode target must be datatabe");
+            }
+            if (getApplySrc() != null && !getApplySrc().startsWith("jdbc:")) {
+                badArgs("option --apply must be specified with the datatabe");
+            }
             if (getGraphDepth() != DEFAULT_DEPTH) {
                 badArgs("option --graph-depth cannot be used without the option(s) [--graph]");
             }

@@ -44,6 +44,10 @@ Usage
  -S (--safe-mode)                       : do not generate scripts containing
                                           dangerous statements
                                           see: --allow-danger-ddl
+ --run-to-target                        : apply the script to the target
+                                          database
+ --apply <JDBC>                         : the database on which the script is
+                                          applied
  -D (--allow-danger-ddl)                : allows dangerous statements in
  <DANGER_STATEMENT>                       safe-mode scripts
  -O (--allowed-object) <OBJECT_TYPE>    : build the script using these object
