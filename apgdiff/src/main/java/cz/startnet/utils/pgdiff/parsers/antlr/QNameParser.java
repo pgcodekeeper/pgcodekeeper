@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 
@@ -36,7 +38,7 @@ public final class QNameParser<T extends ParserRuleContext> {
 
     public static <T extends ParserRuleContext> String getSchemaName(List<T> ids) {
         ParserRuleContext schemaCtx = getSchemaNameCtx(ids);
-        return schemaCtx == null ? null : schemaCtx.getText();
+        return schemaCtx == null ? null : getText(schemaCtx);
     }
 
     public static <T extends ParserRuleContext> T getSchemaNameCtx(List<T> ids) {
@@ -45,12 +47,31 @@ public final class QNameParser<T extends ParserRuleContext> {
 
     private static <T extends ParserRuleContext> String getLastId(List<T> ids, int i) {
         ParserRuleContext ctx = getLastIdCtx(ids, i);
-        return ctx == null ? null : ctx.getText();
+        return ctx == null ? null : getText(ctx);
     }
 
     private static <T extends ParserRuleContext> T getLastIdCtx(List<T> ids, int i) {
         int n = ids.size() - i;
         return n < 0 ? null : ids.get(n);
+    }
+
+    private static String getText(ParserRuleContext ctx) {
+        List<ParseTree> children = ctx.children;
+        while (children != null) {
+            if (children.size() == 1) {
+                ParseTree tree = children.get(0);
+                if (tree instanceof ParserRuleContext) {
+                    children = ((ParserRuleContext) tree).children;
+                } else if (tree instanceof TerminalNode) {
+                    return tree.getText();
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+        return ctx.getText();
     }
 
     private final List<T> parts;

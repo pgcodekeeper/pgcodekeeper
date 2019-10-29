@@ -29,7 +29,14 @@ public class PgSystemStorage implements Serializable {
     private final List<PgSystemSchema> schemas = Collections.unmodifiableList(
             Arrays.asList(pgCatalogSchema, informationSchema));
 
-    public static PgSystemStorage getObjectsFromResources(SupportedVersion version) {
+    public static PgSystemStorage getObjectsFromResources(SupportedVersion ver) {
+        SupportedVersion version;
+        if (!SupportedVersion.VERSION_9_5.isLE(ver.getVersion())) {
+            version = SupportedVersion.VERSION_9_5;
+        } else {
+            version = ver;
+        }
+
         PgSystemStorage systemStorage = STORAGE_CACHE.get(version);
         if (systemStorage != null) {
             return systemStorage;
@@ -60,8 +67,14 @@ public class PgSystemStorage implements Serializable {
      * @return true if storage contains cast
      */
     public boolean containsCastImplicit(String source, String target) {
-        return casts.stream().anyMatch(c -> CastContext.IMPLICIT == c.getContext()
-                && source.equals(c.getSource()) && target.equals(c.getTarget()));
+        for (PgSystemCast cast : casts) {
+            if (CastContext.IMPLICIT == cast.getContext()
+                    && source.equals(cast.getSource())
+                    && target.equals(cast.getTarget())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void addCast(PgSystemCast cast) {
