@@ -12,21 +12,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.DefaultErrorStrategy;
-import org.antlr.v4.runtime.InputMismatchException;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.Vocabulary;
-import org.antlr.v4.runtime.misc.IntervalSet;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -96,9 +91,11 @@ public class AntlrParser {
         if (parserClass.isAssignableFrom(SQLParser.class)) {
             lexer = new SQLLexer(stream);
             parser = new SQLParser(new CommonTokenStream(lexer));
+            parser.setErrorHandler(new CustomSQLAntlrErrorStrategy());
         } else if (parserClass.isAssignableFrom(TSQLParser.class)) {
             lexer = new TSQLLexer(stream);
             parser = new TSQLParser(new CommonTokenStream(lexer));
+            parser.setErrorHandler(new CustomTSQLAntlrErrorStrategy());
         } else if (parserClass.isAssignableFrom(IgnoreListParser.class)) {
             lexer = new IgnoreListLexer(stream);
             parser = new IgnoreListParser(new CommonTokenStream(lexer));
@@ -114,7 +111,6 @@ public class AntlrParser {
         lexer.addErrorListener(err);
         parser.removeErrorListeners();
         parser.addErrorListener(err);
-        parser.setErrorHandler(new CustomAntlrErrorStrategy());
 
         return parserClass.cast(parser);
     }
@@ -289,61 +285,6 @@ class CustomAntlrErrorListener extends BaseErrorListener {
         if (errors != null) {
             Token token = offendingSymbol instanceof Token ? (Token) offendingSymbol : null;
             errors.add(new AntlrError(token, parsedObjectName, line, charPositionInLine, msg));
-        }
-    }
-}
-
-class CustomAntlrErrorStrategy extends DefaultErrorStrategy {
-
-    private static final int MAX_RULE_COUNT = 10;
-
-    @Override
-    protected void reportInputMismatch(Parser recognizer, InputMismatchException e) {
-        Token t = e.getOffendingToken();
-        StringBuilder sb = new StringBuilder();
-        sb.append("mismatched input ").append(getTokenErrorDisplay(t));
-        sb.append(" expecting ");
-        fillTokens(sb, recognizer.getVocabulary(), e.getExpectedTokens());
-        recognizer.notifyErrorListeners(t, sb.toString(), e);
-    }
-
-    @Override
-    protected void reportUnwantedToken(Parser recognizer) {
-        if (inErrorRecoveryMode(recognizer)) {
-            return;
-        }
-        beginErrorCondition(recognizer);
-
-        Token t = recognizer.getCurrentToken();
-        StringBuilder sb = new StringBuilder();
-        sb.append("extraneous input ").append(getTokenErrorDisplay(t));
-        sb.append(" expecting ");
-        fillTokens(sb, recognizer.getVocabulary(), getExpectedTokens(recognizer));
-        recognizer.notifyErrorListeners(t, sb.toString(), null);
-    }
-
-    @Override
-    protected void reportMissingToken(Parser recognizer) {
-        if (inErrorRecoveryMode(recognizer)) {
-            return;
-        }
-        beginErrorCondition(recognizer);
-
-        Token t = recognizer.getCurrentToken();
-        StringBuilder sb = new StringBuilder();
-        sb.append("missing ");
-        fillTokens(sb, recognizer.getVocabulary(), getExpectedTokens(recognizer));
-        sb.append(" at ").append(getTokenErrorDisplay(t));
-        recognizer.notifyErrorListeners(t, sb.toString(), null);
-    }
-
-    private void fillTokens(StringBuilder sb, Vocabulary vocabulary, IntervalSet tokens) {
-        String rules = tokens.toList().stream().limit(MAX_RULE_COUNT)
-                .map(vocabulary::getDisplayName).collect(Collectors.joining(", "));
-        sb.append(rules);
-        int size = tokens.size();
-        if (size > MAX_RULE_COUNT) {
-            sb.append(", ... and ").append(size - MAX_RULE_COUNT).append(" more");
         }
     }
 }
