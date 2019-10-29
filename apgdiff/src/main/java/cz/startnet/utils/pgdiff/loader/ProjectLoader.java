@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -12,7 +11,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Queue;
 import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -21,7 +19,6 @@ import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.MsSchema;
@@ -34,7 +31,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.MS_WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class ProjectLoader {
+public class ProjectLoader extends DatabaseLoader {
     /**
      * Loading order and directory names of the objects in exported DB schemas.
      * NOTE: constraints, triggers and indexes are now stored in tables,
@@ -48,24 +45,20 @@ public class ProjectLoader {
     private final String dirPath;
     protected final PgDiffArguments arguments;
     protected final IProgressMonitor monitor;
-    protected final List<AntlrError> errors;
     protected final Map<PgStatement, StatementOverride> overrides = new LinkedHashMap<>();
 
     protected boolean isOverrideMode;
-
-    protected final Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
-    protected final Queue<PgDumpLoader> launchedLoaders = new ArrayDeque<>();
 
     public ProjectLoader(String dirPath, PgDiffArguments arguments) {
         this(dirPath, arguments, null, null);
     }
 
     public ProjectLoader(String dirPath, PgDiffArguments arguments,
-            IProgressMonitor monitor, List<AntlrError> errors) {
+            IProgressMonitor monitor, List<? super AntlrError> errors) {
+        super(errors);
         this.dirPath = dirPath;
         this.arguments = arguments;
         this.monitor = monitor;
-        this.errors = errors;
     }
 
     /**
@@ -188,16 +181,11 @@ public class ProjectLoader {
         for (File f : files) {
             if (f.isFile() && f.getName().toLowerCase(Locale.ROOT).endsWith(".sql")) {
                 PgDumpLoader loader = new PgDumpLoader(f, arguments, monitor);
-                try {
-                    if (isOverrideMode) {
-                        loader.setOverridesMap(overrides);
-                    }
-                    loader.loadDatabase(db, antlrTasks);
-                } finally {
-                    if (errors != null) {
-                        errors.addAll(loader.getErrors());
-                    }
+                if (isOverrideMode) {
+                    loader.setOverridesMap(overrides);
                 }
+                loader.loadDatabase(db, antlrTasks);
+                launchedLoaders.add(loader);
             }
         }
     }
@@ -237,20 +225,6 @@ public class ProjectLoader {
                     st.addPrivilege(privilege);
                 }
             }
-        }
-    }
-
-    protected void finishLoaders() throws InterruptedException, IOException {
-        AntlrParser.finishAntlr(antlrTasks);
-        PgDumpLoader l;
-        while ((l = launchedLoaders.poll()) != null) {
-            finishLoader(l);
-        }
-    }
-
-    protected void finishLoader(PgDumpLoader l) {
-        if (errors != null) {
-            errors.addAll(l.getErrors());
         }
     }
 }

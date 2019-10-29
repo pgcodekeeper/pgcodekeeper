@@ -27,15 +27,18 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Frame_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_itemContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_constructContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Groupby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_elementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_element_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_identifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IndirectionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_listContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_varContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Orderby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Partition_by_columnsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensContext;
@@ -300,31 +303,19 @@ public class ViewSelect {
 
     private void analyze(Vex vex) {
         Select_stmt_no_parensContext selectStmt;
-        Datetime_overlapsContext overlaps;
+        Indirection_listContext indir;
         Value_expression_primaryContext primary;
-        boolean doneWork = true;
 
         if (vex.in() != null && vex.leftParen() != null && vex.rightParen() != null &&
                 (selectStmt = vex.selectStmt()) != null) {
             new ViewSelect(this).analyze(selectStmt);
-        } else if ((overlaps = vex.datetimeOverlaps()) != null) {
-            for (VexContext v : overlaps.vex()) {
-                analyze(new Vex(v));
-            }
         } else if ((primary = vex.primary()) != null) {
             analysePrimary(primary);
-        } else {
-            doneWork = false;
+        } else if ((indir = vex.indirectionList()) != null) {
+            indirection(indir.indirection());
         }
 
-        List<Vex> operands = vex.vex();
-        if (!operands.isEmpty()) {
-            for (Vex v : operands) {
-                analyze(v);
-            }
-        } else if (!doneWork) {
-            Log.log(Log.LOG_WARNING, "No alternative in Vex!");
-        }
+        vex.vex().forEach(this::analyze);
     }
 
     private void analysePrimary(Value_expression_primaryContext primary) {
@@ -333,13 +324,18 @@ public class ViewSelect {
         Comparison_modContext compMod;
         Table_subqueryContext subquery;
         Function_callContext function;
-        Indirection_identifierContext indirection;
+        Indirection_varContext indirection;
         Array_expressionContext array;
+        Datetime_overlapsContext overlaps;
         ArrayList<Vex> subOperands = null;
 
-        if (primary.LEFT_PAREN() != null && primary.RIGHT_PAREN() != null &&
-                subSelectStmt != null) {
-            new ViewSelect(this).analyze(subSelectStmt);
+        if (subSelectStmt != null) {
+            ViewSelect select = new ViewSelect(this);
+            select.analyze(subSelectStmt);
+            Indirection_listContext indir = primary.indirection_list();
+            if (indir != null) {
+                indirection(indir.indirection());
+            }
         } else if ((caseExpr = primary.case_expression()) != null) {
             subOperands = addVexCtxtoList(subOperands, caseExpr.vex());
         } else if ((compMod = primary.comparison_mod()) != null) {
@@ -354,8 +350,11 @@ public class ViewSelect {
             new ViewSelect(this).analyze(subquery.select_stmt());
         } else if ((function = primary.function_call()) != null) {
             function(function);
-        } else if ((indirection = primary.indirection_identifier()) != null) {
-            analyze(new Vex(indirection.vex()));
+        } else if ((indirection = primary.indirection_var()) != null) {
+            Indirection_listContext indir = indirection.indirection_list();
+            if (indir != null) {
+                indirection(indir.indirection());
+            }
         } else if ((array = primary.array_expression()) != null) {
             Array_bracketsContext arrayb = array.array_brackets();
             if (arrayb != null) {
@@ -363,11 +362,23 @@ public class ViewSelect {
             } else {
                 new ViewSelect(this).analyze(array.array_query().table_subquery().select_stmt());
             }
+        } else if ((overlaps = primary.datetime_overlaps()) != null) {
+            for (VexContext v : overlaps.vex()) {
+                analyze(new Vex(v));
+            }
         }
 
         if (subOperands != null) {
             for (Vex v : subOperands) {
                 analyze(v);
+            }
+        }
+    }
+
+    private void indirection(List<IndirectionContext> indirections) {
+        for (IndirectionContext ind : indirections) {
+            for (VexContext vex : ind.vex()) {
+                analyze(new Vex(vex));
             }
         }
     }
@@ -415,12 +426,13 @@ public class ViewSelect {
     private void function(Function_callContext function) {
         ArrayList<Vex> args = null;
 
-        Function_nameContext name = function.function_name();
+        Schema_qualified_name_nontypeContext name = function.schema_qualified_name_nontype();
 
         Extract_functionContext extract;
         String_value_functionContext string;
         System_functionContext sys;
         Xml_functionContext xml;
+        Function_constructContext con;
 
         if (name != null){
             args = addVexCtxtoList(args, function.vex_or_named_notation(),
@@ -453,6 +465,8 @@ public class ViewSelect {
             if (cast != null) {
                 analyze(new Vex(cast.vex()));
             }
+        } else if ((con = function.function_construct()) != null) {
+            args = addVexCtxtoList(args, con.vex());
         }
 
         if (args != null) {

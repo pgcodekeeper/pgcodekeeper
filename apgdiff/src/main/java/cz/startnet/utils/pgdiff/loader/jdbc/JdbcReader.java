@@ -5,9 +5,15 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ConcurrentModificationException;
+import java.util.function.BiConsumer;
 
 import cz.startnet.utils.pgdiff.loader.JdbcQuery;
+import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -83,6 +89,18 @@ public abstract class JdbcReader implements PgCatalogStrings {
             return ret;
         }
         return null;
+    }
+
+    protected <T extends PgStatement> void setFunctionWithDep(
+            BiConsumer<T, String> setter, T statement, String function) {
+        if (function.contains(".")) {
+            QNameParser<IdentifierContext> parser = QNameParser.parsePg(function);
+            String schemaName = parser.getSchemaName();
+            if (schemaName != null && !ApgdiffUtils.isPgSystemSchema(schemaName)) {
+                statement.addDep(new GenericColumn(schemaName, parser.getFirstName(), DbObjType.FUNCTION));
+            }
+        }
+        setter.accept(statement, function);
     }
 
     protected abstract void processResult(ResultSet result, AbstractSchema schema)

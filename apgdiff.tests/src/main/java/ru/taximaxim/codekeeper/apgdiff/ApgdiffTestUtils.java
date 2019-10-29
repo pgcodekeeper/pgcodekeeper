@@ -13,9 +13,16 @@ public final class ApgdiffTestUtils {
 
     public static PgDatabase loadTestDump(String resource, Class<?> c, PgDiffArguments args)
             throws IOException, InterruptedException {
-        return new PgDumpLoader(() -> c.getResourceAsStream(resource),
-                "test:/" + c.getName() + '/' + resource, args).load();
+        return loadTestDump(resource, c, args, true);
     }
+
+    public static PgDatabase loadTestDump(String resource, Class<?> c, PgDiffArguments args, boolean analysis)
+            throws IOException, InterruptedException {
+        PgDumpLoader loader =  new PgDumpLoader(() -> c.getResourceAsStream(resource),
+                "test:/" + c.getName() + '/' + resource, args);
+        return analysis ? loader.load() : loader.load(new PgDatabase(args));
+    }
+
 
     public static PgDatabase createDumpDB() {
         PgDatabase db = new PgDatabase();
