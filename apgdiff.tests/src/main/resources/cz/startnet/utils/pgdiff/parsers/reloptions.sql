@@ -49,9 +49,6 @@ ALTER TABLE reloptions_test RESET (autovacuum_enabled,
 SELECT reloptions FROM pg_class WHERE oid = 'reloptions_test'::regclass AND
        reloptions IS NULL;
 
--- RESET fails if a value is specified
-ALTER TABLE reloptions_test RESET (fillfactor=12);
-
 -- Test toast.* options
 DROP TABLE reloptions_test;
 

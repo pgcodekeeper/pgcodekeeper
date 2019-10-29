@@ -91,7 +91,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
         return analyze(select, null);
     }
 
-    public List<ModPair<String, String>> analyze(SelectStmt select, With_queryContext recursiveCteCtx) {
+    protected List<ModPair<String, String>> analyze(SelectStmt select, With_queryContext recursiveCteCtx) {
         With_clauseContext with = select.withClause();
         if (with != null) {
             analyzeCte(with);
@@ -246,7 +246,6 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
                 }
             }
 
-            ret = new ArrayList<>();
             ValueExpr vex = new ValueExpr(this);
 
             Select_listContext list = primary.select_list();

@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 
 import org.antlr.v4.runtime.tree.ParseTree;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Additional_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Arguments_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Assign_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Base_statementContext;
@@ -26,6 +27,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_statementsConte
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.If_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Insert_stmt_for_psqlContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Lock_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Loop_startContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Loop_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Message_statementContext;
@@ -35,8 +37,13 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Perform_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Plpgsql_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Raise_usingContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Return_stmtContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.StatementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_colsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_cols_listContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Transaction_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Truncate_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Type_declarationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_stmt_for_psqlContext;
@@ -155,6 +162,8 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
             Cursor_statementContext cursor;
             Message_statementContext message;
             Data_statementContext data;
+            Transaction_statementContext transaction;
+            Additional_statementContext additional;
             if (block != null) {
                 new Function(this).block(block);
             } else if ((base = statement.base_statement()) != null) {
@@ -167,13 +176,16 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
                 message(message);
             } else if ((data = statement.data_statement()) != null) {
                 data(data);
+            } else if ((transaction = statement.transaction_statement()) != null) {
+                transaction(transaction);
+            } else if ((additional = statement.additional_statement()) != null) {
+                additional(additional);
             }
         }
     }
 
     private void base(Base_statementContext base) {
         Assign_stmtContext assign = base.assign_stmt();
-        Execute_stmtContext exec;
         Perform_stmtContext perform;
 
         if (assign != null) {
@@ -183,8 +195,15 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
             } else {
                 new Select(this).analyze(assign.perform_stmt());
             }
-        } else if ((exec = base.execute_stmt()) != null) {
-            execute(exec);
+        } else if (base.EXECUTE() != null) {
+            ValueExpr vex = new ValueExpr(this);
+            vex.analyze(new Vex(base.vex()));
+            Using_vexContext using = base.using_vex();
+            if (using != null) {
+                for (VexContext v : using.vex()) {
+                    vex.analyze(new Vex(v));
+                }
+            }
         } else if ((perform = base.perform_stmt()) != null) {
             new Select(this).analyze(perform);
         }
@@ -286,6 +305,7 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
         VexContext vexCtx = returnStmt.vex();
         Execute_stmtContext exec;
         Select_stmtContext select;
+        Perform_stmtContext perform;
 
         if (vexCtx != null) {
             ValueExpr vex = new ValueExpr(this);
@@ -294,6 +314,8 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
             execute(exec);
         } else if ((select = returnStmt.select_stmt())!= null) {
             new Select(this).analyze(new SelectStmt(select));
+        } else if ((perform = returnStmt.perform_stmt())!= null) {
+            new Select(this).analyze(perform);
         }
     }
 
@@ -345,6 +367,49 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
         } else if ((truncate = data.truncate_stmt()) != null) {
             for (Only_table_multiplyContext name : truncate.only_table_multiply()) {
                 addRelationDepcy(name.schema_qualified_name().identifier());
+            }
+        }
+    }
+
+    private void transaction(Transaction_statementContext transaction) {
+        Lock_tableContext lock = transaction.lock_table();
+        if (lock != null) {
+            for (Only_table_multiplyContext name : lock.only_table_multiply()) {
+                addRelationDepcy(name.schema_qualified_name().identifier());
+            }
+        }
+    }
+
+    private void additional(Additional_statementContext additional) {
+        Schema_qualified_nameContext table = additional.schema_qualified_name();
+        StatementContext statement;
+        Data_statementContext data;
+        Table_cols_listContext col;
+
+        if (table != null) {
+            if (additional.CLUSTER() != null || additional.TABLE() != null || additional.REFRESH() != null) {
+                addRelationDepcy(table.identifier());
+            } else if (additional.SCHEMA() != null) {
+                addSchemaDepcy(table.identifier());
+            }
+        } else if ((statement = additional.statement()) != null) {
+            data = statement.data_statement();
+            if (data != null) {
+                new Sql(this).data(data);
+            }
+        } else if ((data = additional.data_statement()) != null) {
+            new Sql(this).data(data);
+
+            for (Data_typeContext type : additional.data_type()) {
+                addTypeDepcy(type);
+            }
+        } else if ((col = additional.table_cols_list()) != null) {
+            for (Table_colsContext tabl : col.table_cols()) {
+                List<IdentifierContext> ids = tabl.schema_qualified_name().identifier();
+                GenericColumn rel = addRelationDepcy(ids);
+                for (IdentifierContext id : tabl.identifier()) {
+                    addFilteredColumnDepcy(rel.schema, rel.table, id.getText());
+                }
             }
         }
     }
