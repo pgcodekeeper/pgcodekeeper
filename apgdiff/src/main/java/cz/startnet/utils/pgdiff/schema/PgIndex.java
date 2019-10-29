@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
 public class PgIndex extends AbstractIndex {
 
@@ -88,8 +89,8 @@ public class PgIndex extends AbstractIndex {
             sbSQL.append("\nWITH (").append(sb).append(")");
         }
 
-        if (getTableSpace() != null) {
-            sbSQL.append("\nTABLESPACE ").append(getTableSpace());
+        if (getTablespace() != null) {
+            sbSQL.append("\nTABLESPACE ").append(getTablespace());
         }
         if (getWhere() != null) {
             sbSQL.append("\nWHERE ").append(getWhere());
@@ -152,12 +153,12 @@ public class PgIndex extends AbstractIndex {
             return true;
         }
 
-        if (!Objects.equals(getTableSpace(), newIndex.getTableSpace())) {
+        if (!Objects.equals(getTablespace(), newIndex.getTablespace())) {
             sb.append("\n\nALTER INDEX ").append(newIndex.getQualifiedName())
             .append(" SET TABLESPACE ");
 
-            String newSpace = newIndex.getTableSpace();
-            sb.append(newSpace == null ? "pg_default" : newIndex.getTableSpace()).append(';');
+            String newSpace = newIndex.getTablespace();
+            sb.append(newSpace == null ? ApgdiffConsts.PG_DEFAULT : newSpace).append(';');
         }
 
         if (isClusterIndex() && !newIndex.isClusterIndex() &&

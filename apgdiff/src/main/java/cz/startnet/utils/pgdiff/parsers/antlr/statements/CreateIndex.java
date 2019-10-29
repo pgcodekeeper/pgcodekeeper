@@ -91,9 +91,9 @@ public class CreateIndex extends ParserAbstract {
         }
 
         if (rest.table_space() != null) {
-            ind.setTableSpace(getFullCtxText(rest.table_space().name));
+            ind.setTablespace(getFullCtxText(rest.table_space().name));
         } else if (tablespace != null) {
-            ind.setTableSpace(tablespace);
+            ind.setTablespace(tablespace);
         }
 
         Index_whereContext wherePart = rest.index_where();
