@@ -18,14 +18,14 @@ public class FtsParsersReader extends JdbcReader {
     protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException {
         PgFtsParser parser = new PgFtsParser(res.getString("prsname"));
 
-        parser.setStartFunction(res.getString("prsstart"));
-        parser.setGetTokenFunction(res.getString("prstoken"));
-        parser.setEndFunction(res.getString("prsend"));
-        parser.setLexTypesFunction(res.getString("prslextype"));
+        setFunctionWithDep(PgFtsParser::setStartFunction, parser, res.getString("prsstart"));
+        setFunctionWithDep(PgFtsParser::setGetTokenFunction, parser, res.getString("prstoken"));
+        setFunctionWithDep(PgFtsParser::setEndFunction, parser, res.getString("prsend"));
+        setFunctionWithDep(PgFtsParser::setLexTypesFunction, parser, res.getString("prslextype"));
 
         String headline = res.getString("prsheadline");
         if (!"-".equals(headline)) {
-            parser.setHeadLineFunction(headline);
+            setFunctionWithDep(PgFtsParser::setHeadLineFunction, parser, headline);
         }
 
         // COMMENT

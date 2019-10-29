@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_schema_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.User_nameContext;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -26,7 +27,8 @@ public class CreateSchema extends ParserAbstract {
             return;
         }
         AbstractSchema schema = new PgSchema(name);
-        IdentifierContext userName = ctx.user_name;
+        User_nameContext user = ctx.user_name();
+        IdentifierContext userName = user == null ? null : user.identifier();
         if (userName != null && !db.getArguments().isIgnorePrivileges()
                 && (!name.equals(ApgdiffConsts.PUBLIC) || !"postgres".equals(userName.getText()))) {
             schema.setOwner(userName.getText());
