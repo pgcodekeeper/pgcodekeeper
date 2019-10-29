@@ -400,10 +400,12 @@ public class Keyword {
         keywords.put("stdin", new Keyword("stdin", UNRESERVED_KEYWORD));
         keywords.put("stdout", new Keyword("stdout", UNRESERVED_KEYWORD));
         keywords.put("storage", new Keyword("storage", UNRESERVED_KEYWORD));
+        keywords.put("stored", new Keyword("stored", UNRESERVED_KEYWORD));
         keywords.put("strict", new Keyword("strict", UNRESERVED_KEYWORD));
         keywords.put("strip", new Keyword("strip", UNRESERVED_KEYWORD));
         keywords.put("subscription", new Keyword("subscription", UNRESERVED_KEYWORD));
         keywords.put("substring", new Keyword("substring", COL_NAME_KEYWORD));
+        keywords.put("support", new Keyword("support", UNRESERVED_KEYWORD));
         keywords.put("symmetric", new Keyword("symmetric", RESERVED_KEYWORD));
         keywords.put("sysid", new Keyword("sysid", UNRESERVED_KEYWORD));
         keywords.put("system", new Keyword("system", UNRESERVED_KEYWORD));

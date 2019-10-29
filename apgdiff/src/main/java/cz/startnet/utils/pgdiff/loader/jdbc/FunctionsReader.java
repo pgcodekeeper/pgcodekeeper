@@ -17,11 +17,12 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.ArgMode;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgAggregate;
-import cz.startnet.utils.pgdiff.schema.PgAggregate.AggKinds;
 import cz.startnet.utils.pgdiff.schema.PgAggregate.AggFuncs;
+import cz.startnet.utils.pgdiff.schema.PgAggregate.AggKinds;
 import cz.startnet.utils.pgdiff.schema.PgAggregate.ModifyType;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
@@ -88,7 +89,7 @@ public class FunctionsReader extends JdbcReader {
                                 break;
                             }
                             Argument a = f.getArguments().get(i);
-                            if ("IN".equals(a.getMode()) || "INOUT".equals(a.getMode())) {
+                            if (a.getMode().isIn()) {
                                 VexContext vx = vexCtxListIterator.previous();
                                 a.setDefaultExpression(ParserAbstract.getFullCtxText(vx));
                                 db.addAnalysisLauncher(new FuncProcAnalysisLauncher(f, vx));
@@ -211,9 +212,11 @@ public class FunctionsReader extends JdbcReader {
 
         // Parsing the function definition and adding its result context for analysis.
         if (!"-".equals(definition) && "SQL".equalsIgnoreCase(function.getLanguage())) {
-            loader.submitAntlrTask(definition.endsWith(";") ? definition : definition + "\n;",
-                    SQLParser::sql, ctx -> db.addAnalysisLauncher(
-                            new FuncProcAnalysisLauncher(function, ctx, argsQualTypes)));
+            loader.submitAntlrTask(definition, SQLParser::sql, ctx -> db.addAnalysisLauncher(
+                    new FuncProcAnalysisLauncher(function, ctx, argsQualTypes)));
+        } else if (!"-".equals(definition) && "PLPGSQL".equalsIgnoreCase(function.getLanguage())) {
+            loader.submitAntlrTask(definition, SQLParser::plpgsql_function, ctx -> db.addAnalysisLauncher(
+                    new FuncProcAnalysisLauncher(function, ctx, argsQualTypes)));
         }
     }
 
@@ -406,7 +409,7 @@ public class FunctionsReader extends JdbcReader {
             JdbcType returnType = loader.cachedTypesByOid.get(argTypes[i]);
             returnType.addTypeDepcy(f);
 
-            if("t".equals(aMode)) {
+            if ("t".equals(aMode)) {
                 String name = argNames[i];
                 String type = returnType.getFullName();
                 sb.append(PgDiffUtils.getQuotedName(name)).append(" ")
@@ -415,30 +418,13 @@ public class FunctionsReader extends JdbcReader {
                 continue;
             }
 
-            boolean isOutModeArg = false;
-            switch(aMode) {
-            case "i":
-                aMode = "IN";
-                break;
-            case "o":
-                aMode = "OUT";
-                isOutModeArg = true;
-                break;
-            case "b":
-                aMode = "INOUT";
-                break;
-            case "v":
-                aMode = "VARIADIC";
-                break;
-            }
-
             JdbcType argJdbcType = loader.cachedTypesByOid.get(argTypes[i]);
             String argName = argNames != null ? argNames[i] : null;
 
             // these require resetHash functionality for defaults
-            Argument a = f.new PgArgument(aMode, argName, argJdbcType.getFullName());
+            Argument a = f.new PgArgument(ArgMode.of(aMode), argName, argJdbcType.getFullName());
 
-            if (!isOutModeArg) {
+            if (!"o".equals(aMode)) {
                 argsQualifiedTypes.add(new Pair<>(argName, argJdbcType.getQualifiedName()));
             }
 

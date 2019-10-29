@@ -121,7 +121,7 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         sb.append(isPostgres() ? PgDiffUtils.getQuotedName(name) : MsDiffUtils.quoteName(name)).append('(');
         boolean addComma = false;
         for (final Argument argument : arguments) {
-            if (!includeArgNames && "OUT".equalsIgnoreCase(argument.getMode())) {
+            if (!includeArgNames && ArgMode.OUT == argument.getMode()) {
                 continue;
             }
             if (addComma) {
@@ -142,8 +142,8 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         final StringBuilder sbString = new StringBuilder();
 
         if (includeArgName) {
-            String mode = arg.getMode();
-            if (mode != null && !"IN".equalsIgnoreCase(mode)) {
+            ArgMode mode = arg.getMode();
+            if (mode != ArgMode.IN) {
                 sbString.append(mode);
                 sbString.append(' ');
             }
@@ -449,7 +449,7 @@ public abstract class AbstractPgFunction extends AbstractFunction {
 
         private static final long serialVersionUID = -6351018532827424260L;
 
-        public PgArgument(String mode, String name, String dataType) {
+        public PgArgument(ArgMode mode, String name, String dataType) {
             super(mode, name, dataType);
         }
 

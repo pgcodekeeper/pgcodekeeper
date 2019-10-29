@@ -42,7 +42,7 @@ public class PgParserTest {
             // func args in refs
             {"aggregates"},
             {"alter_table"},
-            //{"arrays"},
+            {"arrays"},
             {"case"},
             {"cluster"},
             {"collate", 7},
@@ -106,7 +106,6 @@ public class PgParserTest {
             {"partition_join"},
             {"partition_prune", 6},
             {"plancache"},
-            //{"plpgsql"},
             {"point", 5},
             {"policy"},
             {"polygon"},

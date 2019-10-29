@@ -9,6 +9,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.schema.AbstractMsClrFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.ArgMode;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.FuncTypes;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -96,7 +97,7 @@ public class MsExtendedObjectsReader extends JdbcReader {
 
         for (XmlReader arg : args) {
             boolean isUserDefined = arg.getBoolean("ud");
-            Argument argDst = new Argument(arg.getBoolean("ou") ? "OUTPUT" : null,
+            Argument argDst = new Argument(arg.getBoolean("ou") ? ArgMode.OUTPUT : ArgMode.IN,
                     arg.getString("name"), JdbcLoaderBase.getMsType(func, arg.getString("st"),
                             arg.getString("type"), isUserDefined, arg.getInt("size"),
                             arg.getInt("pr"), arg.getInt("sc")));

@@ -51,21 +51,22 @@ public abstract class AbstractAnalysisLauncher {
         }
     }
 
-    public void launchAnalyze(List<AntlrError> errors) {
+    public void launchAnalyze(List<? super AntlrError> errors) {
         // Duplicated objects don't have parent, skip them
         if (stmt.getParent() == null) {
             return;
         }
 
         PgObjLocation loc = stmt.getLocation();
+        String filePath = loc == null ? null : loc.getFilePath();
 
         try {
             analyze(ctx);
         } catch (UnresolvedReferenceException ex) {
-            unresolvRefExHandler(ex, errors, ctx, stmt.getLocation().getFilePath());
+            unresolvRefExHandler(ex, errors, ctx, filePath);
         } catch (Exception ex) {
             addError(errors, CustomParserListener.handleParserContextException(
-                    ex, loc == null ? null : loc.getFilePath(), ctx));
+                    ex, filePath, ctx));
         }
     }
 
@@ -111,14 +112,14 @@ public abstract class AbstractAnalysisLauncher {
     }
 
     private void unresolvRefExHandler(UnresolvedReferenceException ex,
-            List<AntlrError> errors, ParserRuleContext ctx, String location) {
+            List<? super AntlrError> errors, ParserRuleContext ctx, String location) {
         if (ex.getErrorToken() == null) {
             ex.setErrorToken(ctx.getStart());
         }
         addError(errors, CustomSQLParserListener.handleUnresolvedReference(ex, location));
     }
 
-    private void addError(List<AntlrError> errors, AntlrError err) {
+    private void addError(List<? super AntlrError> errors, AntlrError err) {
         if (errors != null) {
             errors.add(err);
         }

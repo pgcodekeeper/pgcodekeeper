@@ -307,9 +307,11 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     STDIN: [sS] [tT] [dD] [iI] [nN];
     STDOUT: [sS] [tT] [dD] [oO] [uU] [tT];
     STORAGE: [sS] [tT] [oO] [rR] [aA] [gG] [eE];
+    STORED: [sS] [tT] [oO] [rR] [eE] [dD];
     STRICT: [sS] [tT] [rR] [iI] [cC] [tT];
     STRIP: [sS] [tT] [rR] [iI] [pP];
     SUBSCRIPTION: [sS] [uU] [bB] [sS] [cC] [rR] [iI] [pP] [tT] [iI] [oO] [nN];
+    SUPPORT: [sS] [uU] [pP] [pP] [oO] [rR] [tT];
     SYSID: [sS] [yY] [sS] [iI] [dD];
     SYSTEM: [sS] [yY] [sS] [tT] [eE] [mM];
     
@@ -600,6 +602,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     CREATEROLE: [cC] [rR] [eE] [aA] [tT] [eE] [rR] [oO] [lL] [eE];
     
     DESERIALFUNC: [dD] [eE] [sS] [eE] [rR] [iI] [aA] [lL] [fF] [uU] [nN] [cC];
+    DETERMINISTIC: [dD] [eE] [tT] [eE] [rR] [mM] [iI] [nN] [iI] [sS] [tT] [iI] [cC];
     DISABLE_PAGE_SKIPPING: DISABLE UNDERLINE [pP] [aA] [gG] [eE] UNDERLINE [sS] [kK] [iI] [pP] [pP] [iI] [nN] [gG]; 
     
     ELEMENT: [eE] [lL] [eE] [mM] [eE] [nN] [tT];
@@ -620,6 +623,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     HEADLINE: [hH] [eE] [aA] [dD] [lL] [iI] [nN] [eE];
     HYPOTHETICAL: [hH] [yY] [pP] [oO] [tT] [hH] [eE] [tT] [iI] [cC] [aA] [lL];
     
+    INDEX_CLEANUP: [iI] [nN] [dD] [eE] [xX] UNDERLINE [cC] [lL] [eE] [aA] [nN] [uU] [pP];
     INIT: [iI] [nN] [iI] [tT];
     INITCOND: [iI] [nN] [iI] [tT] [cC] [oO] [nN] [dD];
     INTERNALLENGTH: [iI] [nN] [tT] [eE] [rR] [nN] [aA] [lL] [lL] [eE] [nN] [gG] [tT] [hH];
@@ -677,8 +681,10 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     SAFE: [sS] [aA] [fF] [eE];
     SEND: [sS] [eE] [nN] [dD];
     SERIALFUNC: [sS] [eE] [rR] [iI] [aA] [lL] [fF] [uU] [nN] [cC];
+    SETTINGS: [sS] [eE] [tT] [tT] [iI] [nN] [gG] [sS];
     SFUNC: [sS] [fF] [uU] [nN] [cC];
     SHAREABLE: [sS] [hH] [aA] [rR] [eE] [aA] [bB] [lL] [eE];
+    SKIP_LOCKED: [sS] [kK] [iI] [pP] UNDERLINE [lL] [oO] [cC] [kK] [eE] [dD];
     SORTOP: [sS] [oO] [rR] [tT] [oO] [pP];
     SSPACE: [sS] [sS] [pP] [aA] [cC] [eE];
     STYPE: [sS] [tT] [yY] [pP] [eE];

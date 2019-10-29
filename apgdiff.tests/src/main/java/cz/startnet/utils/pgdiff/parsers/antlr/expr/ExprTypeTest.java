@@ -9,9 +9,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map.Entry;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -27,6 +25,8 @@ import cz.startnet.utils.pgdiff.schema.AbstractView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
+import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 /**
  * Tests for checking column types.
@@ -40,20 +40,23 @@ public class ExprTypeTest {
     private static final String COMPARE = "compare_";
 
     @Parameters
-    public static Collection<?> parameters() {
-        return Arrays.asList(
-                new Object[][]{
-                    // Compare the types between an asterisk and an ordinary in view.
-                    {COMPARE+"types_aster_ord_view"},
-                    // Check types in columns of asterisk in view.
-                    {CHECK + "types_aster_cols_view"},
-                    // Check types in columns of view.
-                    {CHECK + "types_cols_view"},
-                    // Check types in columns of view (extended).
-                    {CHECK + "types_cols_view_extended"},
-                    // Check types in table-less columns.
-                    {CHECK + "tableless_cols_types"}
-                });
+    public static Iterable<Object[]> parameters() {
+        List<Object[]> p = Arrays.asList(new Object[][] {
+            // Compare the types between an asterisk and an ordinary in view.
+            {COMPARE + "types_aster_ord_view"},
+            // Check types in columns of asterisk in view.
+            {CHECK + "types_aster_cols_view"},
+            // Check types in columns of view.
+            {CHECK + "types_cols_view"},
+            // Check types in columns of view (extended).
+            {CHECK + "types_cols_view_extended"},
+            // Check types in table-less columns.
+            {CHECK + "tableless_cols_types"},
+            // Check array types.
+            {CHECK + "array_types"},
+        });
+
+        return p.stream()::iterator;
     }
 
     /**
@@ -65,13 +68,14 @@ public class ExprTypeTest {
 
     public ExprTypeTest(final String fileNameTemplate) {
         this.fileNameTemplate = fileNameTemplate;
+        Log.log(Log.LOG_DEBUG, fileNameTemplate);
     }
 
     private String getRelationColumnsTypes(PgDatabase db) throws IOException, InterruptedException {
         StringBuilder cols = new StringBuilder();
         for (AbstractSchema schema : db.getSchemas()) {
             List<AbstractView> views = schema.getViews();
-            if(views.isEmpty()) {
+            if (views.isEmpty()) {
                 continue;
             }
             cols.append("\n\nSchema: " + schema.getName());
@@ -79,8 +83,8 @@ public class ExprTypeTest {
                 cols.append("\n\n  View: " + view.getName());
                 cols.append("\n    RelationColumns : ");
 
-                for (Entry<String, String> col : PgDiffUtils.sIter(view.getRelationColumns())) {
-                    cols.append("\n     " + col.getKey() + " - " + col.getValue());
+                for (Pair<String, String> col : PgDiffUtils.sIter(view.getRelationColumns())) {
+                    cols.append("\n     " + col.getFirst() + " - " + col.getSecond());
                 }
             }
         }
