@@ -8,9 +8,11 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -26,17 +28,13 @@ import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.ModPair;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
-/**
- * @author levsha_aa
- *
- * @param <T> analyzed expression, should be extension of ParserRuleContext or a rulectx wrapper class
- */
 public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends AbstractExpr {
-
 
     private static final String FUNC_ARGS_KEY = "\\_SPECIAL_CONTAINER_FOR_PRIMITIVE_VARS\\";
 
@@ -88,14 +86,15 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
 
     @Override
     protected List<Pair<String, String>> findCte(String cteName) {
-        List<Pair<String, String>> pair = cte.get(cteName);
-        return pair != null ? pair : super.findCte(cteName);
+        List<Pair<String, String>> pairs = cte.get(cteName);
+        return pairs != null ? pairs : super.findCte(cteName);
+
     }
 
     @Override
     protected Entry<String, GenericColumn> findReference(String schema, String name, String column) {
         Entry<String, GenericColumn> ref = findReferenceInNmspc(schema, name, column);
-        return ref == null ? super.findReference(schema, name, column) : ref;
+        return ref != null ?  ref : super.findReference(schema, name, column);
     }
 
     @Override
@@ -104,10 +103,11 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
                 .filter(p -> name.equals(p.getKey()))
                 .map(Entry::getValue)
                 .findAny().orElse(super.findReferenceComplex(name));
+
     }
 
     protected Entry<String, GenericColumn> findReferenceInNmspc(String schema, String name, String column) {
-        boolean found;
+        boolean found = false;
         GenericColumn dereferenced = null;
         if (schema == null && namespace.containsKey(name)) {
             found = true;
@@ -130,27 +130,26 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
                 }
             }
             found = dereferenced != null;
-        } else {
-            found = false;
         }
 
-        if (found) {
-            // column aliases imply there must be a corresponding table alias
-            // so we may defer their lookup until here
-
-            // also, if we cannot dereference an existing name it's safe to assume
-            // all its columns are aliases
-            // this saves a lookup and extra space in columnAliases
-            if (column != null && dereferenced != null) {
-                Set<String> columns = columnAliases.get(name);
-                if (columns != null && columns.contains(column)) {
-                    dereferenced = null;
-                }
-            }
-            return new SimpleEntry<>(name, dereferenced);
-        } else {
+        if (!found) {
             return null;
         }
+
+        // column aliases imply there must be a corresponding table alias
+        // so we may defer their lookup until here
+
+        // also, if we cannot dereference an existing name it's safe to assume
+        // all its columns are aliases
+        // this saves a lookup and extra space in columnAliases
+        if (column != null && dereferenced != null) {
+            Set<String> columns = columnAliases.get(name);
+            if (columns != null && columns.contains(column)) {
+                dereferenced = null;
+            }
+        }
+
+        return new SimpleEntry<>(name, dereferenced);
     }
 
     @Override
@@ -167,11 +166,13 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
             if (ref == null) {
                 continue;
             }
-            for (IRelation rel : PgDiffUtils.sIter(findRelations(ref.schema, ref.table))) {
-                for (Pair<String, String> col : PgDiffUtils.sIter(rel.getRelationColumns())) {
-                    if (col.getFirst().equals(name)) {
-                        return new Pair<>(rel, col);
-                    }
+            IRelation rel = findRelation(ref.schema, ref.table);
+            if (rel == null) {
+                continue;
+            }
+            for (Pair<String, String> col : PgDiffUtils.sIter(rel.getRelationColumns())) {
+                if (col.getFirst().equals(name)) {
+                    return new Pair<>(rel, col);
                 }
             }
         }
@@ -191,13 +192,62 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
     }
 
     /**
+     * Declares a variable in the current namespace.
+     * Variables of relation types are declared as references, rest are treated as primitives.
+     *
+     * @param alias var alias (required)
+     * @param name var name (optional, may be null)
+     * @param argType var type
+     */
+    public void declareNamespaceVar(String alias, String name, GenericColumn argType) {
+        if (ApgdiffConsts.PG_CATALOG.equals(argType.schema)) {
+            String type = argType.table.toLowerCase(Locale.ROOT);
+
+            int firstParen = type.indexOf('(');
+            if (firstParen != -1) {
+                type = type.substring(0, firstParen);
+            }
+
+            int firstBracket = type.indexOf('[');
+            if (firstBracket != -1) {
+                type = type.substring(0, firstBracket);
+            }
+
+            if (ApgdiffConsts.SYS_TYPES.contains(type.trim())) {
+                addVarToPrims(alias, name, argType.table);
+                return;
+            }
+        }
+
+        IRelation rel = findRelation(argType.schema, argType.table);
+        if (rel != null) {
+            GenericColumn ref = new GenericColumn(rel.getSchemaName(), rel.getName(), rel.getStatementType());
+            addReference(alias, ref);
+            if (name != null) {
+                addReference(name, ref);
+            }
+        } else {
+            // treat all non-relations (custom types etc) as primitives for now
+            // this is in line with current behavior when, e.g., selecting from tables
+            // (the composite type's qualified name will be taken as is)
+            addVarToPrims(alias, name, argType.getQualifiedName());
+        }
+    }
+
+    private void addVarToPrims(String alias, String name, String argType) {
+        addNamespaceVariable(new Pair<>(alias, argType));
+        if (name != null) {
+            addNamespaceVariable(new Pair<>(name, argType));
+        }
+    }
+
+    /**
      * Adds a "free-standing" variable (e.g. a non-table function parameter)
      * into a special complexNamespace container.
      */
     public void addNamespaceVariable(Pair<String, String> var) {
-        List<Pair<String, String>> vars = complexNamespace.computeIfAbsent(
-                FUNC_ARGS_KEY, k -> new ArrayList<>());
-        vars.add(var);
+        complexNamespace.computeIfAbsent(FUNC_ARGS_KEY, k -> new ArrayList<>())
+        .add(var);
     }
 
     /**
@@ -288,14 +338,20 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
         }
     }
 
-    protected boolean addCteSignature(With_queryContext withQuery, List<Pair<String, String>> resultTypes) {
+    /**
+     * Renames entries in the signature list according to the CTE signature.
+     */
+    protected boolean addCteSignature(With_queryContext withQuery, List<ModPair<String, String>> resultTypes) {
         String withName = withQuery.query_name.getText();
         List<IdentifierContext> paramNamesIdentifers = withQuery.column_name;
-        for (int i = 0;  i < paramNamesIdentifers.size(); ++i) {
+        for (int i = 0; i < paramNamesIdentifers.size(); ++i) {
             resultTypes.get(i).setFirst(paramNamesIdentifers.get(i).getText());
         }
-        return cte.put(withName, resultTypes) != null;
+        List<Pair<String, String>> unmodifiable = resultTypes.stream()
+                .map(Pair::copy)
+                .collect(Collectors.toList());
+        return cte.put(withName, unmodifiable) != null;
     }
 
-    public abstract List<Pair<String, String>> analyze(T ruleCtx);
+    public abstract List<ModPair<String, String>> analyze(T ruleCtx);
 }

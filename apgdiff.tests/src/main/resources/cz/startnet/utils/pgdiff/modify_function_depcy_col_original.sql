@@ -1,5 +1,5 @@
 CREATE OR REPLACE FUNCTION public.f(s integer, k integer = 43) RETURNS integer
-    LANGUAGE plpgsql
+    LANGUAGE sql
     AS $$ SELECT 1111; $$;
 
 ALTER FUNCTION public.f(s integer, k integer) OWNER TO shamsutdinov_lr;

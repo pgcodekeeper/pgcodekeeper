@@ -12,7 +12,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.StatementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
+import ru.taximaxim.codekeeper.apgdiff.utils.ModPair;
 
 public class Sql extends AbstractExprWithNmspc<SqlContext> {
 
@@ -25,7 +25,7 @@ public class Sql extends AbstractExprWithNmspc<SqlContext> {
     }
 
     @Override
-    public List<Pair<String, String>> analyze(SqlContext sql) {
+    public List<ModPair<String, String>> analyze(SqlContext sql) {
         for (StatementContext st : sql.statement()) {
             Data_statementContext data = st.data_statement();
             if (data != null) {
@@ -36,7 +36,7 @@ public class Sql extends AbstractExprWithNmspc<SqlContext> {
         return Collections.emptyList();
     }
 
-    private void data(Data_statementContext data) {
+    public void data(Data_statementContext data) {
         Select_stmtContext selCtx = data.select_stmt();
         Insert_stmt_for_psqlContext insCtx;
         Update_stmt_for_psqlContext updCtx;

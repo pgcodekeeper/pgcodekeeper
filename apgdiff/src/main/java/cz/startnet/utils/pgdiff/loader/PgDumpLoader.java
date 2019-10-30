@@ -134,15 +134,20 @@ public class PgDumpLoader {
     }
 
     public PgDatabase load(PgDatabase d) throws IOException, InterruptedException {
+        Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>(1);
+        loadAsync(d, antlrTasks);
+        AntlrParser.finishAntlr(antlrTasks);
+        return d;
+    }
+
+    public PgDatabase loadAsync(PgDatabase d, Queue<AntlrTask<?>> antlrTasks)
+            throws InterruptedException {
         AbstractSchema schema = args.isMsSql() ? new MsSchema(ApgdiffConsts.DBO) :
             new PgSchema(ApgdiffConsts.PUBLIC);
         d.addSchema(schema);
         schema.setLocation(new PgObjLocation(inputObjectName));
         d.setDefaultSchema(schema.getName());
-        Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>(1);
         loadDatabase(d, antlrTasks);
-        AntlrParser.finishAntlr(antlrTasks);
-
         return d;
     }
 

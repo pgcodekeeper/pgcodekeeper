@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
@@ -22,7 +23,6 @@ import cz.startnet.utils.pgdiff.loader.JdbcMsLoader;
 import cz.startnet.utils.pgdiff.loader.LibraryLoader;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.loader.ProjectLoader;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.LibraryObjectDuplicationException;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -70,23 +70,10 @@ public class PgDiff {
         Path metaPath = Paths.get(System.getProperty("user.home")).resolve(".pgcodekeeper-cli")
                 .resolve("dependencies");
 
-        LibraryLoader oldLib = new LibraryLoader(oldDatabase, metaPath);
-
-        for (String xml : arguments.getSourceLibXmls()) {
-            oldLib.loadXml(new DependenciesXmlStore(Paths.get(xml)), arguments);
-        }
-
-        oldLib.loadLibraries(arguments, false, arguments.getSourceLibs());
-        oldLib.loadLibraries(arguments, true, arguments.getSourceLibsWithoutPriv());
-
-        LibraryLoader newLib = new LibraryLoader(newDatabase, metaPath);
-
-        for (String xml : arguments.getTargetLibXmls()) {
-            newLib.loadXml(new DependenciesXmlStore(Paths.get(xml)), arguments);
-        }
-
-        newLib.loadLibraries(arguments, false, arguments.getTargetLibs());
-        newLib.loadLibraries(arguments, true, arguments.getTargetLibsWithoutPriv());
+        loadLibraries(oldDatabase, metaPath, arguments.getSourceLibXmls(),
+                arguments.getSourceLibs(), arguments.getSourceLibsWithoutPriv());
+        loadLibraries(newDatabase, metaPath, arguments.getTargetLibXmls(),
+                arguments.getTargetLibs(), arguments.getTargetLibsWithoutPriv());
 
         if (arguments.isLibSafeMode() &&
                 (!oldDatabase.getOverrides().isEmpty() || !newDatabase.getOverrides().isEmpty())) {
@@ -96,12 +83,8 @@ public class PgDiff {
         }
 
         // read additional privileges from special folder
-        if ("parsed".equals(arguments.getOldSrcFormat())) {
-            new ProjectLoader(arguments.getOldSrc(), arguments).loadOverrides(oldDatabase);
-        }
-        if ("parsed".equals(arguments.getNewSrcFormat())) {
-            new ProjectLoader(arguments.getNewSrc(), arguments).loadOverrides(newDatabase);
-        }
+        loadOverrides(oldDatabase, arguments.getOldSrcFormat(), arguments.getOldSrc());
+        loadOverrides(newDatabase, arguments.getNewSrcFormat(), arguments.getNewSrc());
 
         FullAnalyze.fullAnalyze(oldDatabase, null);
         FullAnalyze.fullAnalyze(newDatabase, null);
@@ -114,20 +97,46 @@ public class PgDiff {
         return diffDatabaseSchemas(oldDatabase, newDatabase, ignoreParser.getIgnoreList());
     }
 
+    private void loadOverrides(PgDatabase db, String format, String source)
+            throws InterruptedException, IOException, PgCodekeeperException {
+        if (!"parsed".equals(format)) {
+            return;
+        }
+
+        new ProjectLoader(source, arguments, null, errors).loadOverrides(db);
+        assertErrors();
+    }
+
+    private void loadLibraries(PgDatabase db, Path metaPath, Collection<String> libXmls,
+            Collection<String> libs, Collection<String> libsWithoutPriv)
+                    throws InterruptedException, IOException, PgCodekeeperException {
+        LibraryLoader ll = new LibraryLoader(db, metaPath, errors);
+
+        for (String xml : libXmls) {
+            ll.loadXml(new DependenciesXmlStore(Paths.get(xml)), arguments);
+        }
+
+        ll.loadLibraries(arguments, false, libs);
+        ll.loadLibraries(arguments, true, libsWithoutPriv);
+        assertErrors();
+    }
+
     public PgDatabase loadNewDatabase() throws IOException, InterruptedException, PgCodekeeperException {
         PgDatabase db = loadDatabaseSchema(arguments.getNewSrcFormat(), arguments.getNewSrc());
-        if (!errors.isEmpty()) {
-            throw new PgCodekeeperException("Error while load database");
-        }
+        assertErrors();
         return db;
     }
 
     public PgDatabase loadOldDatabase() throws IOException, InterruptedException, PgCodekeeperException {
         PgDatabase db = loadDatabaseSchema(arguments.getOldSrcFormat(), arguments.getOldSrc());
+        assertErrors();
+        return db;
+    }
+
+    private void assertErrors() throws PgCodekeeperException {
         if (!errors.isEmpty()) {
             throw new PgCodekeeperException("Error while load database");
         }
-        return db;
     }
 
     /**
@@ -153,13 +162,7 @@ public class PgDiff {
         }
 
         if ("parsed".equals(format)) {
-            List<AntlrError> err = new ArrayList<>();
-            ProjectLoader loader = new ProjectLoader(srcPath, arguments, null, err);
-            try {
-                return loader.loadSchemaOnly();
-            } finally {
-                errors.addAll(err);
-            }
+            return new ProjectLoader(srcPath, arguments, null, errors).loadSchemaOnly();
         }
 
         if ("db".equals(format)) {
