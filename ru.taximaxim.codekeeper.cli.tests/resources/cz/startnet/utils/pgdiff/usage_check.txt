@@ -19,6 +19,10 @@ Usage
                                           mode only)
  -o (--output) <path>                   : script output file or parser output
                                           directory
+ -r (--run-on-target)                   : run generated script on the target
+                                          database
+ -R (--run-on) <JDBC>                   : run generated script on the specified
+                                          database
  --in-charset <charset>                 : input charset (default: UTF-8)
  --out-charset <charset>                : output charset (default: UTF-8)
  -E (--error)                           : print exception stacktrace
@@ -44,10 +48,6 @@ Usage
  -S (--safe-mode)                       : do not generate scripts containing
                                           dangerous statements
                                           see: --allow-danger-ddl
- --run-to-target                        : apply the script to the target
-                                          database
- --apply <JDBC>                         : the database on which the script is
-                                          applied
  -D (--allow-danger-ddl)                : allows dangerous statements in
  <DANGER_STATEMENT>                       safe-mode scripts
  -O (--allowed-object) <OBJECT_TYPE>    : build the script using these object

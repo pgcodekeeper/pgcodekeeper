@@ -116,8 +116,8 @@ public final class Main {
                 encodedWriter.println(text);
             }
 
-            String url = arguments.getApplySrc();
-            if (arguments.isRunToTarget() || url != null) {
+            String url = arguments.getRunOnDb();
+            if (arguments.isRunOnTarget() || url != null) {
                 if (url == null) {
                     url = arguments.getOldSrc();
                 }

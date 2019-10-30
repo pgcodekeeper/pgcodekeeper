@@ -96,6 +96,14 @@ public class CliArgs extends PgDiffArguments {
             usage="script output file or parser output directory")
     private String outputTarget;
 
+    @Option(name="-r", aliases="--run-on-target", forbids={"--parse, --graph", "-R"},
+            usage="run generated script on the target database")
+    private boolean runOnTarget;
+
+    @Option(name="-R", aliases="--run-on", metaVar="<JDBC>", forbids={"--parse", "--graph", "-r"},
+            usage="run generated script on the specified database")
+    private String runOnDb;
+
     @Option(name="--in-charset", metaVar="<charset>", usage="input charset")
     private String inCharsetName;
 
@@ -141,14 +149,6 @@ public class CliArgs extends PgDiffArguments {
     @Option(name="-S", aliases="--safe-mode", forbids={"--graph", "--parse"},
             usage="do not generate scripts containing dangerous statements\nsee: --allow-danger-ddl")
     private boolean safeMode;
-
-    @Option(name="--run-to-target", forbids={"--parse, --graph"},
-            usage="apply the script to the target database")
-    private boolean runToTarget;
-
-    @Option(name="--apply", metaVar="<JDBC>", forbids={"--graph", "--parse", "--write-mode"},
-            usage="the database on which the script is applied")
-    private String applySrc;
 
     @Option(name="-D", aliases="--allow-danger-ddl", forbids={"--graph", "--parse"},
             handler=DangerStatementOptionHandler.class,
@@ -311,23 +311,23 @@ public class CliArgs extends PgDiffArguments {
     }
 
     @Override
-    public boolean isRunToTarget() {
-        return runToTarget;
+    public boolean isRunOnTarget() {
+        return runOnTarget;
     }
 
     @Override
-    public void setRunToTarget(boolean runToTarget) {
-        this.runToTarget = runToTarget;
+    public void setRunOnTarget(boolean runOnTarget) {
+        this.runOnTarget = runOnTarget;
     }
 
     @Override
-    public String getApplySrc() {
-        return applySrc;
+    public String getRunOnDb() {
+        return runOnDb;
     }
 
     @Override
-    public void setApplySrc(String applySrc) {
-        this.applySrc = applySrc;
+    public void setRunOnDb(String runOnDb) {
+        this.runOnDb = runOnDb;
     }
 
     @Override
@@ -589,11 +589,11 @@ public class CliArgs extends PgDiffArguments {
                 badArgs("Cannot work with MS SQL database as PostgerSQL project.");
             }
         } else {
-            if (isRunToTarget() && !getOldSrc().startsWith("jdbc:")) {
-                badArgs("In write mode target must be datatabe");
+            if (isRunOnTarget() && !getOldSrc().startsWith("jdbc:")) {
+                badArgs("Cannot run script on non-database target");
             }
-            if (getApplySrc() != null && !getApplySrc().startsWith("jdbc:")) {
-                badArgs("option --apply must be specified with the datatabe");
+            if (getRunOnDb() != null && !getRunOnDb().startsWith("jdbc:")) {
+                badArgs("option -R (--run-on) must specify JDBC connection string");
             }
             if (getGraphDepth() != DEFAULT_DEPTH) {
                 badArgs("option --graph-depth cannot be used without the option(s) [--graph]");

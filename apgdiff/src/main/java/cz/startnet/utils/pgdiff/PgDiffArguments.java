@@ -33,8 +33,8 @@ public class PgDiffArguments implements Cloneable {
     private boolean usingTypeCastOff;
     private boolean concurrentlyMode;
     private boolean safeMode;
-    private boolean runToTarget;
-    private String applySrc;
+    private boolean runOnTarget;
+    private String runOnDb;
     private final List<DangerStatement> allowedDangers = new ArrayList<>();
     private final List<DbObjType> allowedTypes = new ArrayList<>();
     private boolean stopNotAllowed;
@@ -133,20 +133,20 @@ public class PgDiffArguments implements Cloneable {
         this.safeMode = safeMode;
     }
 
-    public boolean isRunToTarget() {
-        return runToTarget;
+    public boolean isRunOnTarget() {
+        return runOnTarget;
     }
 
-    public void setRunToTarget(boolean runToTarget) {
-        this.runToTarget = runToTarget;
+    public void setRunOnTarget(boolean runOnTarget) {
+        this.runOnTarget = runOnTarget;
     }
 
-    public String getApplySrc() {
-        return applySrc;
+    public String getRunOnDb() {
+        return runOnDb;
     }
 
-    public void setApplySrc(String applySrc) {
-        this.applySrc = applySrc;
+    public void setRunOnDb(String runOnDb) {
+        this.runOnDb = runOnDb;
     }
 
     public Collection<DangerStatement> getAllowedDangers() {
