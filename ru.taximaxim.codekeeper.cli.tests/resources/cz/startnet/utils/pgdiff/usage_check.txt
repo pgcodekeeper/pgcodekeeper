@@ -19,6 +19,10 @@ Usage
                                           mode only)
  -o (--output) <path>                   : script output file or parser output
                                           directory
+ -r (--run-on-target)                   : run generated script on the target
+                                          database
+ -R (--run-on) <JDBC>                   : run generated script on the specified
+                                          database
  --in-charset <charset>                 : input charset (default: UTF-8)
  --out-charset <charset>                : output charset (default: UTF-8)
  -E (--error)                           : print exception stacktrace
