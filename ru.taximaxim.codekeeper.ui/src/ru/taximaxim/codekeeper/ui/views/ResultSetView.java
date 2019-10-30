@@ -20,6 +20,8 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.MenuAdapter;
+import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -41,6 +43,8 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 public class ResultSetView extends ViewPart {
 
     private CTabFolder tabFolder;
+    private Menu popupMenu;
+    private CTabItem clickedQueryTab;
 
     @Override
     public void createPartControl(Composite parent) {
@@ -49,13 +53,11 @@ public class ResultSetView extends ViewPart {
         gd.widthHint = 700;
         tabFolder.setLayoutData(gd);
         tabFolder.addMenuDetectListener(event -> {
-            CTabItem tabItem = tabFolder.getItem(tabFolder.getDisplay()
+            clickedQueryTab = tabFolder.getItem(tabFolder.getDisplay()
                     .map(null, tabFolder, new Point(event.x,event.y)));
-            if (tabItem == null) {
+            if (clickedQueryTab == null) {
                 event.doit = false;
-                return;
             }
-            createPopupMenuForTab(tabItem);
         });
 
         tabFolder.addMouseListener(new MouseAdapter() {
@@ -71,9 +73,22 @@ public class ResultSetView extends ViewPart {
                 }
             }
         });
+
+        popupMenu = new Menu(tabFolder);
+        popupMenu.addMenuListener(new MenuAdapter()
+        {
+            @Override
+            public void menuShown(MenuEvent e)
+            {
+                Arrays.stream(popupMenu.getItems()).forEach(MenuItem::dispose);
+                createPopupMenuForTab();
+            }
+        });
+
+        tabFolder.setMenu(popupMenu);
     }
 
-    private void createPopupMenuForTab(CTabItem clickedQueryTab) {
+    private void createPopupMenuForTab() {
         // getting index for clicked query tab
         CTabItem[] tabs = tabFolder.getItems();
         int tabsCount = tabs.length;
@@ -92,16 +107,12 @@ public class ResultSetView extends ViewPart {
             createCloseLeftItem = true;
         } else if (idxClickedQueryTab == 0 && idxMaxArr > 0) {
             createCloseRightItem = true;
-            createCloseLeftItem = false;
         } else if (idxMaxArr == idxClickedQueryTab && idxMaxArr > 0) {
-            createCloseRightItem = false;
             createCloseLeftItem = true;
         } else if (idxMaxArr == 0) {
             createCloseOthersItem = false;
             createCloseAllItem = false;
         }
-
-        Menu popupMenu = new Menu(tabFolder);
 
         MenuItem closeItem = new MenuItem(popupMenu, SWT.NONE);
         closeItem.setText(Messages.resultSetView_close);
@@ -170,8 +181,6 @@ public class ResultSetView extends ViewPart {
                 }
             });
         }
-
-        tabFolder.setMenu(popupMenu);
     }
 
     public void addData(String query, List<List<Object>> results) {
