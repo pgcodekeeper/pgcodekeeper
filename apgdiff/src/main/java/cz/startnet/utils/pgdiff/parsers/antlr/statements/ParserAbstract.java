@@ -312,7 +312,7 @@ public abstract class ParserAbstract {
         }
     }
 
-    protected PgObjLocation getLocation(List<? extends ParserRuleContext> ids,
+    private PgObjLocation getLocation(List<? extends ParserRuleContext> ids,
             DbObjType type, StatementActions action, boolean isDep, String signature) {
         ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
         switch (type) {
