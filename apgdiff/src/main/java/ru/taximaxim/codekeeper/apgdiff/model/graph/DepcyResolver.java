@@ -256,6 +256,8 @@ public class DepcyResolver {
      * @return
      */
     private boolean inDropsList(PgStatement statement) {
+        // если овнедбай колонка или таблица уже в дроплисте
+        // то сиквенс тоже неявно с ними дропнут, возвращаем true
         if (statement instanceof PgSequence) {
             PgSequence seq = (PgSequence) statement;
             GenericColumn ownedBy = seq.getOwnedBy();
@@ -416,6 +418,8 @@ public class DepcyResolver {
                 PgStatement newTable = oldObj.getParent().getTwin(newDb);
 
                 if (newTable == null) {
+                    // случай, если дроп сиквенса тянет колонку, которую мы не пишем
+                    // потому что дропается таблица - дропаем таблицу
                     if (!inDropsList(oldTable)) {
                         addDropStatements(oldTable);
                     }
@@ -441,19 +445,14 @@ public class DepcyResolver {
                     return true;
                 }
             }
-            // TODO Костыль не совсем рабочий, нужно проверить статус таблицы и
-            // колонки, и если хотя бы одна из них удаляется то не дропать
-            // сиквенс
+
+            // пропускаем сиквенс, если дропается его овнедбай
+            // сиквенс дропнется неявно вместе с колонкой
             if (oldObj instanceof PgSequence) {
                 PgSequence seq = (PgSequence) oldObj;
                 GenericColumn ownedBy = seq.getOwnedBy();
-                if (ownedBy != null) {
-                    PgStatement newSt = ownedBy.getStatement(newDb);
-                    if (newSt == null) {
-                        return true;
-                    } else {
-                        addToListWithoutDepcies(StatementActions.DROP, oldObj, starter);
-                    }
+                if (ownedBy != null && ownedBy.getStatement(newDb) == null) {
+                    return true;
                 }
             }
             return false;
@@ -501,6 +500,8 @@ public class DepcyResolver {
                 }
             }
 
+            // если объект (таблица) создается, запускаем создание зависимостей ее колонок
+            // сами колонки создадутся неявно вместе с таблицей
             createColumnDependencies(newObj);
 
             if (newObj.getStatementType() == DbObjType.COLUMN) {

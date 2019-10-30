@@ -253,7 +253,7 @@ public class PgSequence extends AbstractSequence {
     @Override
     public void computeHash(Hasher hasher) {
         super.computeHash(hasher);
-        hasher.put(ownedBy == null ? null : ownedBy.getQualifiedName());
+        hasher.put(ownedBy == null ? 0 : ownedBy.hashCode());
     }
 
     @Override
