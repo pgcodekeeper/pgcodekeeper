@@ -1,10 +1,7 @@
 package ru.taximaxim.codekeeper.ui.views;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.stream.IntStream;
 
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -137,20 +134,10 @@ public class ResultSetView extends ViewPart {
 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    boolean isReachedClickedQueryTab = false;
-                    ArrayList<CTabItem> tabs = new ArrayList<>(
-                            Arrays.asList(tabFolder.getItems()));
-                    ListIterator<CTabItem> listIter = tabs.listIterator(tabs.size());
-                    while (listIter.hasPrevious()) {
-                        CTabItem previousTab = listIter.previous();
-                        if (isReachedClickedQueryTab) {
-                            previousTab.dispose();
-                            continue;
-                        }
-                        if (clickedQueryTab.equals(previousTab)) {
-                            isReachedClickedQueryTab = true;
-                        }
-                    }
+                    IntStream.range(0, tabsCount)
+                    .filter(i -> i < idxClickedQueryTab)
+                    .mapToObj(i -> tabs[i])
+                    .forEach(CTabItem::dispose);
                 }
             });
         }
@@ -162,19 +149,10 @@ public class ResultSetView extends ViewPart {
 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    boolean isReachedClickedQueryTab = false;
-                    Iterator<CTabItem> iter = new ArrayList<>(
-                            Arrays.asList(tabFolder.getItems())).iterator();
-                    while (iter.hasNext()) {
-                        CTabItem nextTab = iter.next();
-                        if (isReachedClickedQueryTab) {
-                            nextTab.dispose();
-                            continue;
-                        }
-                        if (clickedQueryTab.equals(nextTab)) {
-                            isReachedClickedQueryTab = true;
-                        }
-                    }
+                    IntStream.range(0, tabsCount)
+                    .filter(i -> i > idxClickedQueryTab)
+                    .mapToObj(i -> tabs[i])
+                    .forEach(CTabItem::dispose);
                 }
             });
         }
