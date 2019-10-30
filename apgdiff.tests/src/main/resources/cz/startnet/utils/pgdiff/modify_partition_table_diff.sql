@@ -27,8 +27,6 @@ ALTER TABLE public.tab_of_type
 
 DROP TABLE public.tab_of_type;
 
--- DEPCY: This TABLE is a dependency of COLUMN: public.tab_of_type.f3
-
 CREATE TABLE public.tab_of_type OF public.comp (
 	f1 WITH OPTIONS NOT NULL,
 	f2 WITH OPTIONS DEFAULT 'text'::text,

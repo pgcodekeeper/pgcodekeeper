@@ -25,6 +25,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.Argument;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsTable;
 import cz.startnet.utils.pgdiff.schema.MsView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -255,6 +256,17 @@ public class DepcyResolver {
      * @return
      */
     private boolean inDropsList(PgStatement statement) {
+        // если овнедбай колонка или таблица уже в дроплисте
+        // то сиквенс тоже неявно с ними дропнут, возвращаем true
+        if (statement instanceof PgSequence) {
+            PgSequence seq = (PgSequence) statement;
+            GenericColumn ownedBy = seq.getOwnedBy();
+            if (ownedBy != null) {
+                PgStatement column = ownedBy.getStatement(oldDb);
+                return column != null && (inDropsList(column) || inDropsList(column.getParent()));
+            }
+        }
+
         for (ActionContainer action : actions) {
             if (action.getAction() != StatementActions.DROP) {
                 continue;
@@ -406,6 +418,11 @@ public class DepcyResolver {
                 PgStatement newTable = oldObj.getParent().getTwin(newDb);
 
                 if (newTable == null) {
+                    // случай, если дроп сиквенса тянет колонку, которую мы не пишем
+                    // потому что дропается таблица - дропаем таблицу
+                    if (!inDropsList(oldTable)) {
+                        addDropStatements(oldTable);
+                    }
                     return true;
                 }
 
@@ -428,12 +445,13 @@ public class DepcyResolver {
                     return true;
                 }
             }
-            // TODO Костыль не совсем рабочий, нужно проверить статус таблицы и
-            // колонки, и если хотя бы одна из них удаляется то не дропать
-            // сиквенс
+
+            // пропускаем сиквенс, если дропается его овнедбай
+            // сиквенс дропнется неявно вместе с колонкой
             if (oldObj instanceof PgSequence) {
-                PgSequence seq = (PgSequence)oldObj;
-                if (seq.getOwnedBy() != null) {
+                PgSequence seq = (PgSequence) oldObj;
+                GenericColumn ownedBy = seq.getOwnedBy();
+                if (ownedBy != null && ownedBy.getStatement(newDb) == null) {
                     return true;
                 }
             }
@@ -460,6 +478,7 @@ public class DepcyResolver {
             action = StatementActions.CREATE;
             if (inDropsList(newObj)) {
                 // always create if droppped before
+                createColumnDependencies(newObj);
                 return false;
             }
 
@@ -480,6 +499,11 @@ public class DepcyResolver {
                     }
                 }
             }
+
+            // если объект (таблица) создается, запускаем создание зависимостей ее колонок
+            // сами колонки создадутся неявно вместе с таблицей
+            createColumnDependencies(newObj);
+
             if (newObj.getStatementType() == DbObjType.COLUMN) {
                 PgStatement oldTable = newObj.getParent().getTwin(oldDb);
                 AbstractTable newTable = (AbstractTable) newObj.getParent();
@@ -503,7 +527,26 @@ public class DepcyResolver {
                     return true;
                 }
             }
+
+            // создать колонку при создании сиквенса с owned by
+            if (newObj instanceof PgSequence) {
+                PgSequence seq = (PgSequence) newObj;
+                GenericColumn ownedBy = seq.getOwnedBy();
+                if (ownedBy != null && ownedBy.getStatement(oldDb) == null) {
+                    addCreateStatements(ownedBy.getStatement(newDb));
+                }
+            }
+
             return false;
+        }
+
+        private void createColumnDependencies(PgStatement newObj) {
+            if (newObj.getStatementType() == DbObjType.TABLE) {
+                // create column dependencies before table
+                for (AbstractColumn col : ((AbstractTable) newObj).getColumns()) {
+                    addCreateStatements(col);
+                }
+            }
         }
     }
     /**
