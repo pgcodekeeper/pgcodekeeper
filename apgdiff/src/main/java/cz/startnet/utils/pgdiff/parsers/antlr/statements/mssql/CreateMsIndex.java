@@ -86,7 +86,7 @@ public class CreateMsIndex extends ParserAbstract {
 
         IdContext tablespace = rest.id();
         if (tablespace != null) {
-            ind.setTableSpace(tablespace.getText());
+            ind.setTablespace(tablespace.getText());
         }
     }
 }

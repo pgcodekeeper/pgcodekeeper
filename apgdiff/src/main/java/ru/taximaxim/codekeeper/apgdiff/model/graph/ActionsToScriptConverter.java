@@ -91,7 +91,7 @@ public class ActionsToScriptConverter {
                     }
                     break;
                 case DROP:
-                    if (!toRefresh.contains(oldObj)) {
+                    if (!toRefresh.contains(oldObj) && oldObj.canDrop()) {
                         if (depcy != null) {
                             script.addStatement(depcy);
                         }
