@@ -22,13 +22,17 @@ class CustomTSQLAntlrErrorStrategy extends CustomAntlrErrorStrategy {
         switch (token) {
         case TSQLLexer.LOCAL_ID:
         case TSQLLexer.SQUARE_BRACKET_ID:
-        case TSQLLexer.ID: return IDENTIFIER;
+        case TSQLLexer.ID:
+            return IDENTIFIER;
         case TSQLLexer.DOUBLE_QUOTE_ID:
-        case TSQLLexer.STRING: return STRING;
+        case TSQLLexer.STRING:
+            return STRING;
         case TSQLLexer.DECIMAL:
         case TSQLLexer.FLOAT:
-        case TSQLLexer.REAL: return NUMBER;
-        default: return vocabulary.getDisplayName(token);
+        case TSQLLexer.REAL:
+            return NUMBER;
+        default:
+            return vocabulary.getDisplayName(token);
         }
     }
 }
