@@ -75,11 +75,10 @@ public class ResultSetView extends ViewPart {
         });
 
         popupMenu = new Menu(tabFolder);
-        popupMenu.addMenuListener(new MenuAdapter()
-        {
+        popupMenu.addMenuListener(new MenuAdapter() {
+
             @Override
-            public void menuShown(MenuEvent e)
-            {
+            public void menuShown(MenuEvent e) {
                 Arrays.stream(popupMenu.getItems()).forEach(MenuItem::dispose);
                 createPopupMenuForTab();
             }
