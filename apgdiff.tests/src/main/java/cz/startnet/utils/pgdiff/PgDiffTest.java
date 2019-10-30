@@ -76,6 +76,10 @@ public class PgDiffTest {
                     {"modify_index"},
                     // Tests scenario where INDEX option is modified.
                     {"modify_index_option"},
+                    // Tests scenario where INDEX tablespace is modified.
+                    {"modify_index_tablespace"},
+                    // Tests scenario where PARTITION INDEX is modified.
+                    {"modify_partition_index"},
                     // Tests scenario where STATISTICS information is added
                     // to COLUMN.
                     {"add_statistics"},

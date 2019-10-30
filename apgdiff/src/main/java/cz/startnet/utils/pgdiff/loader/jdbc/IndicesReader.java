@@ -32,7 +32,7 @@ public class IndicesReader extends JdbcReader {
     private AbstractIndex getIndex(ResultSet res, AbstractSchema schema, String tableName) throws SQLException {
         String schemaName = schema.getName();
         String indexName = res.getString(CLASS_RELNAME);
-        loader.setCurrentObject(new GenericColumn(schemaName, tableName, indexName, DbObjType.INDEX));
+        loader.setCurrentObject(new GenericColumn(schemaName, indexName, DbObjType.INDEX));
         PgIndex i = new PgIndex(indexName);
 
         String tablespace = res.getString("table_space");
@@ -52,6 +52,14 @@ public class IndicesReader extends JdbcReader {
         String comment = res.getString("comment");
         if (comment != null && !comment.isEmpty()) {
             i.setComment(loader.args, PgDiffUtils.quoteString(comment));
+        }
+
+        String inhnspname = res.getString("inhnspname");
+
+        if (inhnspname != null) {
+            String inhrelname = res.getString("inhrelname");
+            i.addInherit(inhnspname, inhrelname);
+            i.addDep(new GenericColumn(inhnspname, inhrelname, DbObjType.INDEX));
         }
 
         return i;
