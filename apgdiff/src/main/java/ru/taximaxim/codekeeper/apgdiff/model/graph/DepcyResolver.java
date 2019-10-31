@@ -412,17 +412,16 @@ public class DepcyResolver {
                     return true;
                 }
             }
+
             // Колонки пропускаются при удалении таблицы
             if (oldObj.getStatementType() == DbObjType.COLUMN) {
                 AbstractTable oldTable = (AbstractTable) oldObj.getParent();
                 PgStatement newTable = oldObj.getParent().getTwin(newDb);
 
-                if (newTable == null) {
-                    // случай, если дроп сиквенса тянет колонку, которую мы не пишем
+                if (newTable == null || oldTable.isRecreated((AbstractTable) newTable)) {
+                    // случай, если дроп зависимости тянет колонку, которую мы не пишем
                     // потому что дропается таблица - дропаем таблицу
-                    if (!inDropsList(oldTable)) {
-                        addDropStatements(oldTable);
-                    }
+                    addDropStatements(oldTable);
                     return true;
                 }
 
@@ -482,28 +481,6 @@ public class DepcyResolver {
                 return false;
             }
 
-            PgStatement oldObj;
-            if ((oldObj = newObj.getTwin(oldDb)) != null) {
-                AtomicBoolean isNeedDepcies = new AtomicBoolean();
-                action = askAlter(oldObj, newObj, isNeedDepcies);
-                if (action == StatementActions.NONE) {
-                    return true;
-                }
-                // в случае изменения объекта с зависимостями
-                if (isNeedDepcies.get()) {
-                    addDropStatements(oldObj);
-                    if (action == StatementActions.ALTER) {
-                        // add alter for old object
-                        addToList(oldObj);
-                        return true;
-                    }
-                }
-            }
-
-            // если объект (таблица) создается, запускаем создание зависимостей ее колонок
-            // сами колонки создадутся неявно вместе с таблицей
-            createColumnDependencies(newObj);
-
             if (newObj.getStatementType() == DbObjType.COLUMN) {
                 PgStatement oldTable = newObj.getParent().getTwin(oldDb);
                 AbstractTable newTable = (AbstractTable) newObj.getParent();
@@ -527,6 +504,28 @@ public class DepcyResolver {
                     return true;
                 }
             }
+
+            PgStatement oldObj;
+            if ((oldObj = newObj.getTwin(oldDb)) != null) {
+                AtomicBoolean isNeedDepcies = new AtomicBoolean();
+                action = askAlter(oldObj, newObj, isNeedDepcies);
+                if (action == StatementActions.NONE) {
+                    return true;
+                }
+                // в случае изменения объекта с зависимостями
+                if (isNeedDepcies.get()) {
+                    addDropStatements(oldObj);
+                    if (action == StatementActions.ALTER) {
+                        // add alter for old object
+                        addToList(oldObj);
+                        return true;
+                    }
+                }
+            }
+
+            // если объект (таблица) создается, запускаем создание зависимостей ее колонок
+            // сами колонки создадутся неявно вместе с таблицей
+            createColumnDependencies(newObj);
 
             // создать колонку при создании сиквенса с owned by
             if (newObj instanceof PgSequence) {

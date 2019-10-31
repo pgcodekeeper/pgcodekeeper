@@ -1,5 +1,7 @@
 SET search_path = pg_catalog;
 
+DROP TABLE public.cities_mz;
+
 DROP TABLE public.cities_hi;
 
 ALTER TABLE public.cities_cd
@@ -13,8 +15,6 @@ ALTER TABLE public.cities
 
 ALTER TABLE public.cities
 	ATTACH PARTITION public.cities_fg FOR VALUES IN ('e', 'g');
-
-DROP TABLE public.cities_mz;
 
 DROP FOREIGN TABLE public.f_cities_e;
 
