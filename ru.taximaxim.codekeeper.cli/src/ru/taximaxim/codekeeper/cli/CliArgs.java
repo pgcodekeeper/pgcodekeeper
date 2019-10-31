@@ -96,6 +96,14 @@ public class CliArgs extends PgDiffArguments {
             usage="script output file or parser output directory")
     private String outputTarget;
 
+    @Option(name="-r", aliases="--run-on-target", forbids={"--parse, --graph", "-R"},
+            usage="run generated script on the target database")
+    private boolean runOnTarget;
+
+    @Option(name="-R", aliases="--run-on", metaVar="<JDBC>", forbids={"--parse", "--graph", "-r"},
+            usage="run generated script on the specified database")
+    private String runOnDb;
+
     @Option(name="--in-charset", metaVar="<charset>", usage="input charset")
     private String inCharsetName;
 
@@ -300,6 +308,26 @@ public class CliArgs extends PgDiffArguments {
     @Override
     public void setSafeMode(boolean safeMode) {
         this.safeMode = safeMode;
+    }
+
+    @Override
+    public boolean isRunOnTarget() {
+        return runOnTarget;
+    }
+
+    @Override
+    public void setRunOnTarget(boolean runOnTarget) {
+        this.runOnTarget = runOnTarget;
+    }
+
+    @Override
+    public String getRunOnDb() {
+        return runOnDb;
+    }
+
+    @Override
+    public void setRunOnDb(String runOnDb) {
+        this.runOnDb = runOnDb;
     }
 
     @Override
@@ -561,6 +589,12 @@ public class CliArgs extends PgDiffArguments {
                 badArgs("Cannot work with MS SQL database as PostgerSQL project.");
             }
         } else {
+            if (isRunOnTarget() && !getOldSrc().startsWith("jdbc:")) {
+                badArgs("Cannot run script on non-database target");
+            }
+            if (getRunOnDb() != null && !getRunOnDb().startsWith("jdbc:")) {
+                badArgs("option -R (--run-on) must specify JDBC connection string");
+            }
             if (getGraphDepth() != DEFAULT_DEPTH) {
                 badArgs("option --graph-depth cannot be used without the option(s) [--graph]");
             }

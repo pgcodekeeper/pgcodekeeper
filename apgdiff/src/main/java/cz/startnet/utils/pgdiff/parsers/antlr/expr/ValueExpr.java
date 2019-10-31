@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -108,15 +107,16 @@ public class ValueExpr extends AbstractExpr {
         primary     192884
      */
     public ModPair<String, String> analyze(Vex vex) {
-        List<ModPair<String, String>> operandsList = vex.vex()
-                .map(this::analyze)
-                // there are always at least 1 operand, most likely 2
-                .collect(Collectors.toList());
-        if (operandsList.isEmpty()) {
+        List<Vex> operandVexs = vex.vex();
+        if (operandVexs.isEmpty()) {
             Value_expression_primaryContext primary = vex.primary();
             if (primary != null) {
                 return primary(primary);
             }
+        }
+        List<ModPair<String, String>> operandsList = new ArrayList<>(operandVexs.size());
+        for (Vex operand : operandVexs) {
+            operandsList.add(analyze(operand));
         }
 
         ModPair<String, String> ret;
@@ -125,7 +125,7 @@ public class ValueExpr extends AbstractExpr {
         OpContext op;
 
         if (dataType != null) {
-            cast(vex, dataType);
+            cast(operandVexs.get(0), dataType);
             ret = operandsList.get(0);
             ret.setSecond(ParserAbstract.getFullCtxText(dataType));
         } else if (vex.equal() != null
@@ -190,7 +190,7 @@ public class ValueExpr extends AbstractExpr {
         return ret;
     }
 
-    private void cast(Vex vex, Data_typeContext dataType) {
+    private void cast(Vex operand, Data_typeContext dataType) {
         addTypeDepcy(dataType);
         Schema_qualified_name_nontypeContext customType = dataType.predefined_type().schema_qualified_name_nontype();
         IdentifierContext typeSchema = customType == null ? null : customType.identifier();
@@ -198,7 +198,7 @@ public class ValueExpr extends AbstractExpr {
         if (customType != null && (typeSchema == null || ApgdiffConsts.PG_CATALOG.equals(typeSchema.getText()))
                 && dataType.ARRAY() == null && dataType.array_type().isEmpty() && dataType.SETOF() == null) {
             // check simple built-in types for reg*** casts
-            Value_expression_primaryContext castPrimary = vex.vex().findAny().get().primary();
+            Value_expression_primaryContext castPrimary = operand.primary();
             Unsigned_value_specificationContext value;
             General_literalContext literal;
             Character_stringContext str;

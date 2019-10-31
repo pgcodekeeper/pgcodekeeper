@@ -27,7 +27,7 @@ implements PgOptionContainer {
      */
     private String definition;
     private String where;
-    private String tableSpace;
+    private String tablespace;
     private boolean unique;
     private boolean clusterIndex;
 
@@ -97,12 +97,12 @@ implements PgOptionContainer {
         resetHash();
     }
 
-    public String getTableSpace() {
-        return tableSpace;
+    public String getTablespace() {
+        return tablespace;
     }
 
-    public void setTableSpace(String tableSpace) {
-        this.tableSpace = tableSpace;
+    public void setTablespace(String tableSpace) {
+        this.tablespace = tableSpace;
         resetHash();
     }
 
@@ -126,6 +126,7 @@ implements PgOptionContainer {
             AbstractIndex index = (AbstractIndex) obj;
             return compareUnalterable(index)
                     && clusterIndex == index.isClusterIndex()
+                    && Objects.equals(tablespace, index.getTablespace())
                     && Objects.equals(options, index.options);
         }
 
@@ -135,7 +136,6 @@ implements PgOptionContainer {
     protected boolean compareUnalterable(AbstractIndex index) {
         return Objects.equals(definition, index.getDefinition())
                 && Objects.equals(where, index.getWhere())
-                && Objects.equals(tableSpace, index.getTableSpace())
                 && Objects.equals(includes, index.includes)
                 && unique == index.isUnique();
     }
@@ -146,7 +146,7 @@ implements PgOptionContainer {
         hasher.put(unique);
         hasher.put(clusterIndex);
         hasher.put(where);
-        hasher.put(tableSpace);
+        hasher.put(tablespace);
         hasher.put(options);
         hasher.put(includes);
     }
@@ -159,7 +159,7 @@ implements PgOptionContainer {
         indexDst.setUnique(isUnique());
         indexDst.setClusterIndex(isClusterIndex());
         indexDst.setWhere(getWhere());
-        indexDst.setTableSpace(getTableSpace());
+        indexDst.setTablespace(getTablespace());
         indexDst.columns.addAll(columns);
         indexDst.options.putAll(options);
         indexDst.includes.addAll(includes);

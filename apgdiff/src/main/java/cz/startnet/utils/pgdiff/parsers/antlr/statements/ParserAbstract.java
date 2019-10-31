@@ -373,10 +373,10 @@ public abstract class ParserAbstract {
         case TABLE:
         case TYPE:
         case VIEW:
+        case INDEX:
             return new PgObjLocation(new GenericColumn(schemaName, name, type),
                     action.name(), getStart(nameCtx), nameCtx.start.getLine(), fileName);
         case CONSTRAINT:
-        case INDEX:
         case TRIGGER:
         case RULE:
         case COLUMN:

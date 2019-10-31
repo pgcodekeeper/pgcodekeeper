@@ -73,8 +73,8 @@ public class MsIndex extends AbstractIndex {
             sbSQL.append("\nWITH (").append(sb).append(')');
         }
 
-        if (getTableSpace() != null) {
-            sbSQL.append("\nON ").append(MsDiffUtils.quoteName(getTableSpace()));
+        if (getTablespace() != null) {
+            sbSQL.append("\nON ").append(MsDiffUtils.quoteName(getTablespace()));
         }
 
         sbSQL.append(GO);

@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Paths;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -25,6 +26,8 @@ import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffScript;
+import cz.startnet.utils.pgdiff.loader.JdbcConnector;
+import cz.startnet.utils.pgdiff.loader.JdbcRunner;
 import cz.startnet.utils.pgdiff.parsers.antlr.ScriptParser;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -78,7 +81,7 @@ public final class Main {
     }
 
     private static boolean diff(PrintWriter writer, PgDiffArguments arguments)
-            throws InterruptedException, IOException {
+            throws InterruptedException, IOException, SQLException {
         try (PrintWriter encodedWriter = getDiffWriter(arguments)) {
             PgDiff diff = new PgDiff(arguments);
             PgDiffScript script;
@@ -91,8 +94,9 @@ public final class Main {
 
             String text = script.getText();
 
+            ScriptParser parser = new ScriptParser("CLI", text, arguments.isMsSql());
+
             if (arguments.isSafeMode()) {
-                ScriptParser parser = new ScriptParser("CLI", text, arguments.isMsSql());
                 Set<DangerStatement> dangerTypes =
                         parser.getDangerDdl(arguments.getAllowedDangers());
 
@@ -109,9 +113,18 @@ public final class Main {
             }
 
             if (encodedWriter != null) {
-                encodedWriter.println(script.getText());
-            } else {
-                writer.println(script.getText());
+                encodedWriter.println(text);
+            }
+
+            String url = arguments.getRunOnDb();
+            if (arguments.isRunOnTarget() || url != null) {
+                if (url == null) {
+                    url = arguments.getOldSrc();
+                }
+                new JdbcRunner().runBatches(
+                        JdbcConnector.fromUrl(url), parser.batch(), null);
+            } else if (encodedWriter == null) {
+                writer.println(text);
             }
         }
 
