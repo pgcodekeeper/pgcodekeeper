@@ -2,9 +2,15 @@ package ru.taximaxim.codekeeper.ui.prefs;
 
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
+import org.eclipse.jface.preference.StringFieldEditor;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -49,5 +55,20 @@ implements IWorkbenchPreferencePage  {
         addField(new BooleanFieldEditor(PREF.IGNORE_CONCURRENT_MODIFICATION,
                 Messages.GeneralPrefPage_ignore_concurrent_modification,
                 getFieldEditorParent()));
+
+        addField(new StringFieldEditor(PREF.TIME_CLEAN_PARSER_CACHE,
+                Messages.GeneralPrefPage_time_to_clean_parser_cache, 10,
+                getFieldEditorParent()));
+
+        Button button = new Button(getFieldEditorParent(), SWT.PUSH);
+        button.setText(Messages.GeneralPrefPage_clean_parser_cache);
+        button.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                AntlrParser.cleanCacheOfBothParsers();
+                System.gc();
+            }
+        });
     }
 }

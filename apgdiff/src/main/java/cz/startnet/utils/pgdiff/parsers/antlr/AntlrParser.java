@@ -53,7 +53,8 @@ public class AntlrParser {
 
     private static final ExecutorService ANTLR_POOL;
 
-    private static final long CHECK_INTERVAL = 60000;
+    private static final long CHECK_INTERVAL = 30000;
+    private static final long MIN_CLEANING_INTERVAL = 60000;
     private static final String PG_PARSER = "ru.taximaxim.codekeeper.parser.pgsql";
     private static final String MS_PARSER = "ru.taximaxim.codekeeper.parser.mssql";
     private static Map<String, Long> lastParsersStartTime = new HashMap<>();
@@ -248,7 +249,7 @@ public class AntlrParser {
         return () -> {
             Consumer<String> checkToClean = (p) -> {
                 long lastParserStart = lastParsersStartTime.get(p);
-                if (lastParserStart != 0
+                if (lastParserStart != 0 && (cleaningInterval >= MIN_CLEANING_INTERVAL)
                         && (cleaningInterval < System.currentTimeMillis() - lastParserStart)) {
                     cleanParserCache(p);
                 }
@@ -262,8 +263,7 @@ public class AntlrParser {
                     Thread.sleep(CHECK_INTERVAL);
                 } catch (InterruptedException e) {
                     Log.log(e);
-                    cleanParserCache(PG_PARSER);
-                    cleanParserCache(MS_PARSER);
+                    cleanCacheOfBothParsers();
                 }
             }
         };
@@ -284,6 +284,15 @@ public class AntlrParser {
         makeBasicParser(parserClazz, ";", "fake string to clean parser cache")
         .getInterpreter().clearDFA();
         lastParsersStartTime.put(parser, 0L);
+    }
+
+    public static void cleanCacheOfBothParsers() {
+        if (lastParsersStartTime.get(PG_PARSER) != 0) {
+            cleanParserCache(PG_PARSER);
+        }
+        if (lastParsersStartTime.get(MS_PARSER) != 0) {
+            cleanParserCache(MS_PARSER);
+        }
     }
 
     public static void saveTimeOfLastParserStart(String parser) {

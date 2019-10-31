@@ -852,6 +852,9 @@ public final class Messages extends NLS {
 
     public static String GeneralPrefPage_ignore_concurrent_modification;
 
+    public static String GeneralPrefPage_time_to_clean_parser_cache;
+    public static String GeneralPrefPage_clean_parser_cache;
+
     public static String GeneralPrefPage_reuse_open_compare_editor;
 
     public static String GeneralPrefPage_simplify_view;

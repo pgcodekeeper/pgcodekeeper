@@ -1,8 +1,13 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject.parser;
 
+import java.util.concurrent.TimeUnit;
+
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.IStartup;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
+import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 
 /**
  * Periodically clears the parser cache
@@ -10,12 +15,14 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
  */
 public class ParserCacheCleaner implements IStartup {
 
-    private static final long CLEANING_INTERVAL = 600000;
+    private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
 
     @Override
     public void earlyStartup() {
-        Thread thread = new Thread(AntlrParser.checkLastParserStart(CLEANING_INTERVAL));
+        Thread thread = new Thread(AntlrParser.checkLastParserStart(
+                TimeUnit.MINUTES.toMillis(mainPrefs.getInt(PREF.TIME_CLEAN_PARSER_CACHE))));
         thread.setDaemon(true);
         thread.start();
     }
+
 }
