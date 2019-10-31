@@ -359,9 +359,9 @@ public abstract class ParserAbstract {
         case TABLE:
         case TYPE:
         case VIEW:
+        case INDEX:
             return new PgObjLocation(schemaName, name, type, action);
         case CONSTRAINT:
-        case INDEX:
         case TRIGGER:
         case RULE:
         case COLUMN:

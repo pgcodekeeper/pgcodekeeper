@@ -6,8 +6,7 @@ CREATE TABLE public.testtable (
 
 ALTER TABLE public.testtable OWNER TO galiev_mr;
 
-CREATE MATERIALIZED VIEW public.testview_1 
-TABLESPACE my_space AS
+CREATE MATERIALIZED VIEW public.testview_1 AS
     SELECT * FROM public.testtable
 WITH DATA;
 

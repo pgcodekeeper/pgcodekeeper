@@ -13,13 +13,20 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
 public class PgIndex extends AbstractIndex {
 
+    private Inherits inherit;
     private String method;
 
     public PgIndex(String name) {
         super(name);
+    }
+
+    @Override
+    public boolean canDrop() {
+        return inherit == null;
     }
 
     @Override
@@ -39,6 +46,9 @@ public class PgIndex extends AbstractIndex {
         PgDiffArguments args = getDatabase().getArguments();
         if (args != null && args.isConcurrentlyMode()) {
             sbSQL.append("CONCURRENTLY ");
+        }
+        if (inherit != null) {
+            sbSQL.append("IF NOT EXISTS ");
         }
         sbSQL.append(PgDiffUtils.getQuotedName(name));
         sbSQL.append(" ON ");
@@ -79,8 +89,8 @@ public class PgIndex extends AbstractIndex {
             sbSQL.append("\nWITH (").append(sb).append(")");
         }
 
-        if (getTableSpace() != null) {
-            sbSQL.append("\nTABLESPACE ").append(getTableSpace());
+        if (getTablespace() != null) {
+            sbSQL.append("\nTABLESPACE ").append(getTablespace());
         }
         if (getWhere() != null) {
             sbSQL.append("\nWHERE ").append(getWhere());
@@ -93,13 +103,22 @@ public class PgIndex extends AbstractIndex {
             appendCommentSql(sbSQL);
         }
 
+        if (inherit != null) {
+            sbSQL.append("\n\nALTER INDEX ").append(inherit.getQualifiedName())
+            .append(" ATTACH PARTITION ").append(getQualifiedName()).append(';');
+        }
+
         return sbSQL.toString();
     }
 
     @Override
+    public String getQualifiedName() {
+        return PgDiffUtils.getQuotedName(getSchemaName()) + '.' + PgDiffUtils.getQuotedName(getName());
+    }
+
+    @Override
     public String getDropSQL() {
-        return "DROP INDEX " + PgDiffUtils.getQuotedName(getSchemaName()) + '.'
-                + PgDiffUtils.getQuotedName(getName()) + ";";
+        return "DROP INDEX " + getQualifiedName() + ";";
     }
 
     @Override
@@ -132,6 +151,14 @@ public class PgIndex extends AbstractIndex {
                 sb.append("\nCOMMIT TRANSACTION;");
             }
             return true;
+        }
+
+        if (!Objects.equals(getTablespace(), newIndex.getTablespace())) {
+            sb.append("\n\nALTER INDEX ").append(newIndex.getQualifiedName())
+            .append(" SET TABLESPACE ");
+
+            String newSpace = newIndex.getTablespace();
+            sb.append(newSpace == null ? ApgdiffConsts.PG_DEFAULT : newSpace).append(';');
         }
 
         if (isClusterIndex() && !newIndex.isClusterIndex() &&
@@ -171,22 +198,34 @@ public class PgIndex extends AbstractIndex {
         resetHash();
     }
 
+    public Inherits getInherit() {
+        return inherit;
+    }
+
+    public void addInherit(final String schemaName, final String indexName) {
+        inherit = new Inherits(schemaName, indexName);
+        resetHash();
+    }
+
     @Override
     protected boolean compareUnalterable(AbstractIndex index) {
         return index instanceof PgIndex
                 && super.compareUnalterable(index)
+                && Objects.equals(inherit, ((PgIndex) index).inherit)
                 && Objects.equals(method, ((PgIndex) index).method);
     }
 
     @Override
     public void computeHash(Hasher hasher) {
         super.computeHash(hasher);
+        hasher.put(inherit);
         hasher.put(method);
     }
 
     @Override
     protected AbstractIndex getIndexCopy() {
         PgIndex index =  new PgIndex(getName());
+        index.inherit = inherit;
         index.setMethod(getMethod());
         return index;
     }
