@@ -57,7 +57,7 @@ implements IWorkbenchPreferencePage  {
                 getFieldEditorParent()));
 
         addField(new StringFieldEditor(PREF.TIME_CLEAN_PARSER_CACHE,
-                Messages.GeneralPrefPage_time_to_clean_parser_cache, 10,
+                Messages.GeneralPrefPage_time_to_clean_parser_cache, 4,
                 getFieldEditorParent()));
 
         Button button = new Button(getFieldEditorParent(), SWT.PUSH);
