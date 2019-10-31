@@ -46,7 +46,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     ==================================================
     */
     
-    ABORT: [aA] [bB] [oO] [rR] [tT];
+    ABORT: [aA] [bB] [oO] [rR] [tT];    // first identifier rule, sync with CustomSQLAntlrErrorStrategy
     ABSOLUTE: [aA] [bB] [sS] [oO] [lL] [uU] [tT] [eE];
     ACCESS: [aA] [cC] [cC] [eE] [sS] [sS];
     ACTION: [aA] [cC] [tT] [iI] [oO] [nN];
@@ -602,6 +602,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     CREATEROLE: [cC] [rR] [eE] [aA] [tT] [eE] [rR] [oO] [lL] [eE];
     
     DESERIALFUNC: [dD] [eE] [sS] [eE] [rR] [iI] [aA] [lL] [fF] [uU] [nN] [cC];
+    DETERMINISTIC: [dD] [eE] [tT] [eE] [rR] [mM] [iI] [nN] [iI] [sS] [tT] [iI] [cC];
     DISABLE_PAGE_SKIPPING: DISABLE UNDERLINE [pP] [aA] [gG] [eE] UNDERLINE [sS] [kK] [iI] [pP] [pP] [iI] [nN] [gG]; 
     
     ELEMENT: [eE] [lL] [eE] [mM] [eE] [nN] [tT];
@@ -622,6 +623,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     HEADLINE: [hH] [eE] [aA] [dD] [lL] [iI] [nN] [eE];
     HYPOTHETICAL: [hH] [yY] [pP] [oO] [tT] [hH] [eE] [tT] [iI] [cC] [aA] [lL];
     
+    INDEX_CLEANUP: [iI] [nN] [dD] [eE] [xX] UNDERLINE [cC] [lL] [eE] [aA] [nN] [uU] [pP];
     INIT: [iI] [nN] [iI] [tT];
     INITCOND: [iI] [nN] [iI] [tT] [cC] [oO] [nN] [dD];
     INTERNALLENGTH: [iI] [nN] [tT] [eE] [rR] [nN] [aA] [lL] [lL] [eE] [nN] [gG] [tT] [hH];
@@ -679,8 +681,10 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     SAFE: [sS] [aA] [fF] [eE];
     SEND: [sS] [eE] [nN] [dD];
     SERIALFUNC: [sS] [eE] [rR] [iI] [aA] [lL] [fF] [uU] [nN] [cC];
+    SETTINGS: [sS] [eE] [tT] [tT] [iI] [nN] [gG] [sS];
     SFUNC: [sS] [fF] [uU] [nN] [cC];
     SHAREABLE: [sS] [hH] [aA] [rR] [eE] [aA] [bB] [lL] [eE];
+    SKIP_LOCKED: [sS] [kK] [iI] [pP] UNDERLINE [lL] [oO] [cC] [kK] [eE] [dD];
     SORTOP: [sS] [oO] [rR] [tT] [oO] [pP];
     SSPACE: [sS] [sS] [pP] [aA] [cC] [eE];
     STYPE: [sS] [tT] [yY] [pP] [eE];
@@ -751,16 +755,14 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     STACKED: [sS] [tT] [aA] [cC] [kK] [eE] [dD];
 
     WARNING: [wW] [aA] [rR] [nN] [iI] [nN] [gG];
-    WHILE: [wW] [hH] [iI] [lL] [eE];
+    WHILE: [wW] [hH] [iI] [lL] [eE];     // last identifier rule, sync with CustomSQLAntlrErrorStrategy
 
 fragment UNDERLINE : '_';
 
 // Operators
 
 // Cast Operator
-CAST_EXPRESSION
-  : COLON COLON
-  ;
+CAST_EXPRESSION : ':' ':';   // first operator rule, sync with CustomSQLAntlrErrorStrategy
 
 EQUAL : '=';
 COLON :  ':';
@@ -793,7 +795,7 @@ COLON_EQUAL : ':=';
 LESS_LESS : '<<';
 GREATER_GREATER : '>>';
 DOUBLE_DOT: '..';
-HASH_SIGN: '#';
+HASH_SIGN: '#';              // last operator rule, sync with CustomSQLAntlrErrorStrategy
 
 BlockComment
     :   '/*' .*? '*/' -> channel(HIDDEN)

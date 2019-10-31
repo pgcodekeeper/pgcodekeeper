@@ -4,6 +4,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.hashers.Hasher;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
 /**
  * Base implementation of regular table
@@ -105,9 +106,10 @@ public abstract class AbstractRegularTable extends AbstractPgTable {
         AbstractRegularTable newRegTable = (AbstractRegularTable) newTable;
         if (!Objects.equals(tablespace, newRegTable.getTablespace())) {
             sb.append(getAlterTable(true, false))
-            .append("\n\tSET TABLESPACE ")
-            .append(newRegTable.getTablespace())
-            .append(';');
+            .append("\n\tSET TABLESPACE ");
+
+            String newSpace = newRegTable.getTablespace();
+            sb.append(newSpace == null ? ApgdiffConsts.PG_DEFAULT : newSpace).append(';');
         }
 
         // since 9.5 PostgreSQL

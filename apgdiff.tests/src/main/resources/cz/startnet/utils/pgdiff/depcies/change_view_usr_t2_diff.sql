@@ -26,8 +26,6 @@ ALTER TABLE ONLY public.t2
 ALTER TABLE public.t2
 	ADD COLUMN c6 text;
 
--- DEPCY: This TABLE is a dependency of VIEW: public.v8
-
 CREATE TABLE public.t3 (
 	c1 integer,
 	c2 text,

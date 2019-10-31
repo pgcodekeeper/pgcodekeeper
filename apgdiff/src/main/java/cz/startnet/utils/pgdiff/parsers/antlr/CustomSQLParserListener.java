@@ -18,9 +18,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statement_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.StatementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterDomain;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterFtsStatement;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterIndex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterOther;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterOwner;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterSequence;
@@ -147,6 +149,8 @@ implements SqlContextProcessor {
         ParserAbstract p;
         if (ctx.alter_table_statement() != null) {
             p = new AlterTable(ctx.alter_table_statement(), db, tablespace);
+        } else if (ctx.alter_index_statement() != null) {
+            p = new AlterIndex(ctx.alter_index_statement(), db);
         } else if (ctx.alter_sequence_statement() != null) {
             p = new AlterSequence(ctx.alter_sequence_statement(), db);
         } else if (ctx.alter_view_statement() != null) {
@@ -176,18 +180,22 @@ implements SqlContextProcessor {
 
     private void set(Set_statementContext ctx) {
         Session_local_optionContext sesLocOpt = ctx.set_action().session_local_option();
-        if (sesLocOpt == null || sesLocOpt.config_param == null) {
+        if (sesLocOpt == null || sesLocOpt.config_param == null || sesLocOpt.DOT() != null) {
             return;
         }
         String confParam = sesLocOpt.config_param.getText();
         // TODO set param values can be identifiers, quoted identifiers, string
         // or other literals: improve handling
-        List<Set_statement_valueContext> confValueCtx = sesLocOpt.config_param_val;
-        String confValue = confValueCtx.get(0).getText();
+        Set_statement_valueContext confValueCtx = sesLocOpt.set_statement_value();
+        if (confValueCtx.DEFAULT() != null) {
+            return;
+        }
+        List<VexContext> vex = confValueCtx.vex();
+        String confValue = vex.get(0).getText();
 
         switch (confParam.toLowerCase(Locale.ROOT)) {
         case "search_path":
-            if (!refMode && (confValueCtx.size() != 1 || !ApgdiffConsts.PG_CATALOG.equals(confValue))) {
+            if (!refMode && (vex.size() != 1 || !ApgdiffConsts.PG_CATALOG.equals(confValue))) {
                 throw new UnresolvedReferenceException("Unsupported search_path", ctx.start);
             }
             break;

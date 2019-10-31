@@ -134,7 +134,7 @@ public class MsIndicesAndPKReader extends JdbcReader {
             index.setUnique(isUnique);
             index.setDefinition(sb.toString());
             index.setWhere(filter);
-            index.setTableSpace(dataSpace);
+            index.setTablespace(dataSpace);
 
             for (String include : includes) {
                 index.addInclude(include);

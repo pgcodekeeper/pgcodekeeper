@@ -1,5 +1,7 @@
 SET search_path = pg_catalog;
 
+DROP TABLE public.cities_mz;
+
 DROP TABLE public.cities_hi;
 
 ALTER TABLE public.cities_cd
@@ -14,8 +16,6 @@ ALTER TABLE public.cities
 ALTER TABLE public.cities
 	ATTACH PARTITION public.cities_fg FOR VALUES IN ('e', 'g');
 
-DROP TABLE public.cities_mz;
-
 DROP FOREIGN TABLE public.f_cities_e;
 
 ALTER FOREIGN TABLE ONLY public.ftable SET WITHOUT OIDS;
@@ -26,8 +26,6 @@ ALTER TABLE public.tab_of_type
 	DROP CONSTRAINT tab_of_type_f3_check;
 
 DROP TABLE public.tab_of_type;
-
--- DEPCY: This TABLE is a dependency of COLUMN: public.tab_of_type.f3
 
 CREATE TABLE public.tab_of_type OF public.comp (
 	f1 WITH OPTIONS NOT NULL,
