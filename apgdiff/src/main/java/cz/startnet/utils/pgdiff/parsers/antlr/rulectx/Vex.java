@@ -1,7 +1,8 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.rulectx;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -41,24 +42,20 @@ public class Vex {
         this.isB = true;
     }
 
-    public Stream<Vex> vex() {
+    public List<Vex> vex() {
         List<ParseTree> children = (isB ? vexB : vex).children;
-        if (children == null) {
-            return Stream.empty();
+        if (children == null || children.isEmpty()) {
+            return Collections.emptyList();
         }
-        return children.stream()
-                .map(node -> {
-                    if (node instanceof VexContext) {
-                        return new Vex((VexContext) node);
-                    } else if (node instanceof Vex_bContext) {
-                        return new Vex((Vex_bContext) node);
-                    } else {
-                        // map other stuff to nulls and filter them after
-                        // to avoid duplicating instanceof checks
-                        return null;
-                    }
-                })
-                .filter(vex -> vex != null);
+        List<Vex> vex = new ArrayList<>();
+        for (ParseTree node : children) {
+            if (node instanceof VexContext) {
+                vex.add(new Vex((VexContext) node));
+            } else if (node instanceof Vex_bContext) {
+                vex.add(new Vex((Vex_bContext) node));
+            }
+        }
+        return vex;
     }
 
     public ParserRuleContext getVexCtx() {
