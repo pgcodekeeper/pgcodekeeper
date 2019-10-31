@@ -2,7 +2,7 @@ package ru.taximaxim.codekeeper.ui.prefs;
 
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
-import org.eclipse.jface.preference.StringFieldEditor;
+import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -56,9 +56,9 @@ implements IWorkbenchPreferencePage  {
                 Messages.GeneralPrefPage_ignore_concurrent_modification,
                 getFieldEditorParent()));
 
-        addField(new StringFieldEditor(PREF.TIME_CLEAN_PARSER_CACHE,
-                Messages.GeneralPrefPage_time_to_clean_parser_cache, 4,
-                getFieldEditorParent()));
+        addField(new IntegerFieldEditor(PREF.TIME_CLEAN_PARSER_CACHE,
+                Messages.GeneralPrefPage_time_to_clean_parser_cache,
+                getFieldEditorParent(), 3));
 
         Button button = new Button(getFieldEditorParent(), SWT.PUSH);
         button.setText(Messages.GeneralPrefPage_clean_parser_cache);
