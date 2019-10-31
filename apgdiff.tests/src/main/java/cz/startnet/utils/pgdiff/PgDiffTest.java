@@ -504,6 +504,8 @@ public class PgDiffTest {
                     {"add_privilege_quoted_name"},
                     //Tests scenario where MATERIALIZED VIEW is refreshed.
                     {"refresh_materialized_view"},
+                    //tests scenario where table is recreated and its column dependency is dropped
+                    {"tabl_to_func_drop"}
                 });
     }
 
