@@ -13,6 +13,10 @@ GRANT INSERT(c1),REFERENCES(c1),UPDATE(c1) ON TABLE public.t2 TO levsha_aa;
 
 GRANT INSERT(c2) ON TABLE public.t2 TO levsha_aa;
 
+REVOKE ALL ON TABLE public.t1 FROM PUBLIC;
+REVOKE ALL ON TABLE public.t1 FROM botov_av;
+GRANT ALL ON TABLE public.t1 TO botov_av;
+
 GRANT SELECT ON TABLE public.t1 TO levsha_aa;
 
 ALTER TABLE public.t1
