@@ -74,8 +74,8 @@ public class AlterOther extends ParserAbstract {
     }
 
     private void alterIndex(Alter_index_statementContext ctx) {
-        addObjReference(ctx.index_all_def() != null ? Arrays.asList(ctx.index_all_def().tbl_spc)
-                : ctx.index_def().index_if_exists_name().schema_qualified_name().identifier(),
+        addObjReference(ctx.ALL() != null ? Arrays.asList(ctx.identifier().get(0))
+                : ctx.schema_qualified_name().identifier(),
                 DbObjType.INDEX, ACTION_ALTER);
     }
 
@@ -126,8 +126,8 @@ public class AlterOther extends ParserAbstract {
             return ctx.alter_type_statement().name.identifier();
         } else if (ctx.alter_index_statement() != null) {
             Alter_index_statementContext alterIdxCtx = ctx.alter_index_statement();
-            return alterIdxCtx.index_all_def() != null ? Arrays.asList(alterIdxCtx.index_all_def().tbl_spc)
-                    : alterIdxCtx.index_def().index_if_exists_name().schema_qualified_name().identifier();
+            return alterIdxCtx.ALL() != null ? Arrays.asList(alterIdxCtx.identifier().get(0))
+                    : alterIdxCtx.schema_qualified_name().identifier();
         } else if (ctx.alter_extension_statement() != null) {
             return Arrays.asList(ctx.alter_extension_statement().identifier());
         }

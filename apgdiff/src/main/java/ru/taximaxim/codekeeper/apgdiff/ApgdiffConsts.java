@@ -20,6 +20,8 @@ public interface ApgdiffConsts {
     String PUBLIC = "public";
     String DBO = "dbo";
 
+    String PG_DEFAULT = "pg_default";
+
     String PG_CATALOG = "pg_catalog";
     String INFORMATION_SCHEMA = "information_schema";
     String SYS = "sys";

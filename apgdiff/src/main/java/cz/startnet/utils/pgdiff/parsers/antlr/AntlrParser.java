@@ -3,7 +3,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.Callable;
@@ -13,21 +12,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.DefaultErrorStrategy;
-import org.antlr.v4.runtime.InputMismatchException;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.Vocabulary;
-import org.antlr.v4.runtime.misc.IntervalSet;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -37,7 +31,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import ru.taximaxim.codekeeper.apgdiff.DaemonThreadFactory;
@@ -98,9 +91,11 @@ public class AntlrParser {
         if (parserClass.isAssignableFrom(SQLParser.class)) {
             lexer = new SQLLexer(stream);
             parser = new SQLParser(new CommonTokenStream(lexer));
+            parser.setErrorHandler(new CustomSQLAntlrErrorStrategy());
         } else if (parserClass.isAssignableFrom(TSQLParser.class)) {
             lexer = new TSQLLexer(stream);
             parser = new TSQLParser(new CommonTokenStream(lexer));
+            parser.setErrorHandler(new CustomTSQLAntlrErrorStrategy());
         } else if (parserClass.isAssignableFrom(IgnoreListParser.class)) {
             lexer = new IgnoreListLexer(stream);
             parser = new IgnoreListParser(new CommonTokenStream(lexer));
@@ -116,7 +111,6 @@ public class AntlrParser {
         lexer.addErrorListener(err);
         parser.removeErrorListeners();
         parser.addErrorListener(err);
-        parser.setErrorHandler(new CustomAntlrErrorStrategy());
 
         return parserClass.cast(parser);
     }
@@ -167,20 +161,6 @@ public class AntlrParser {
                 errors.add(CustomTSQLParserListener.handleUnresolvedReference(ex, parsedObjectName));
             }
         });
-    }
-
-    public static void submitSqlCtxToAnalyze(String sql, List<AntlrError> errors,
-            int offset, int lineOffset, int inLineOffset, String name,
-            Consumer<SqlContext> finalizer, Queue<AntlrTask<?>> antlrTasks) {
-        List<AntlrError> err = new ArrayList<>();
-        submitAntlrTask(antlrTasks, () -> makeBasicParser(
-                SQLParser.class, sql, name, err).sql(),
-                ctx -> {
-                    err.stream()
-                    .map(e -> e.copyWithOffset(offset, lineOffset, inLineOffset))
-                    .forEach(errors::add);
-                    finalizer.accept(ctx);
-                });
     }
 
     public static <T extends ParserRuleContext, P extends Parser>
@@ -307,28 +287,5 @@ class CustomAntlrErrorListener extends BaseErrorListener {
             Token token = offendingSymbol instanceof Token ? (Token) offendingSymbol : null;
             errors.add(new AntlrError(token, parsedObjectName, line, charPositionInLine, msg));
         }
-    }
-}
-
-class CustomAntlrErrorStrategy extends DefaultErrorStrategy {
-
-    private static final int MAX_RULE_COUNT = 10;
-
-    @Override
-    protected void reportInputMismatch(Parser recognizer, InputMismatchException e) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("mismatched input ").append(getTokenErrorDisplay(e.getOffendingToken()));
-        sb.append(" expecting ");
-        IntervalSet set = e.getExpectedTokens();
-        Vocabulary vocabulary = recognizer.getVocabulary();
-        String rules = set.toList().stream().limit(MAX_RULE_COUNT)
-                .map(vocabulary::getDisplayName).collect(Collectors.joining(", "));
-        sb.append(rules);
-        int size = set.size();
-        if (size > MAX_RULE_COUNT) {
-            sb.append(", ... and ").append(size - MAX_RULE_COUNT).append(" more");
-        }
-
-        recognizer.notifyErrorListeners(e.getOffendingToken(), sb.toString(), e);
     }
 }

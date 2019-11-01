@@ -88,7 +88,7 @@ public class DropStatement extends ParserAbstract {
         }
 
         for (Schema_qualified_nameContext objName :
-            ctx.if_exist_names_restrict_cascade().names_references().name) {
+            ctx.if_exist_names_restrict_cascade().names_references().schema_qualified_name()) {
             List<IdentifierContext> ids = objName.identifier();
             PgObjLocation loc = addObjReference(ids, type, ACTION_DROP);
 
@@ -173,7 +173,7 @@ public class DropStatement extends ParserAbstract {
             type = getTypeOfDropStmt(dropStmtCtx);
             if (type != null) {
                 List<Schema_qualified_nameContext> objNames = dropStmtCtx
-                        .if_exist_names_restrict_cascade().names_references().name;
+                        .if_exist_names_restrict_cascade().names_references().schema_qualified_name();
                 ids = objNames.get(0).identifier();
                 String schemaName = "";
                 String objName = "";

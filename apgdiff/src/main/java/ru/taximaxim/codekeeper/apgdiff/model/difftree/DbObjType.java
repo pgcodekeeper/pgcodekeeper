@@ -16,12 +16,6 @@ public enum DbObjType {
     TYPE,
     DOMAIN,
     SEQUENCE,
-    // TODO workaround for function call dependencies from COLUMN DEFAULT
-    // maybe move back after COLUMN, when proper function call dependencies are implemented
-    // see test case PgDiffTest#177 (tabl_to_func)
-    FUNCTION,
-    PROCEDURE,
-    AGGREGATE,
     OPERATOR,
     FTS_PARSER,
     FTS_TEMPLATE,
@@ -29,6 +23,9 @@ public enum DbObjType {
     FTS_CONFIGURATION,
     TABLE,
     COLUMN,
+    FUNCTION,
+    PROCEDURE,
+    AGGREGATE,
     CONSTRAINT,
     VIEW,
     INDEX,

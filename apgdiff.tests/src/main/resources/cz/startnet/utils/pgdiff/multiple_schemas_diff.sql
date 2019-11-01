@@ -10,6 +10,8 @@ CREATE SCHEMA testschema2;
 
 ALTER SCHEMA testschema2 OWNER TO fordfrog;
 
+-- DEPCY: This SEQUENCE is a dependency of COLUMN: public.testtable3.id
+
 CREATE SEQUENCE public.testtable3_id_seq
 	START WITH 1
 	INCREMENT BY 1
@@ -19,6 +21,14 @@ CREATE SEQUENCE public.testtable3_id_seq
 
 ALTER SEQUENCE public.testtable3_id_seq OWNER TO fordfrog;
 
+CREATE TABLE public.testtable3 (
+	id bigint DEFAULT nextval('public.testtable3_id_seq'::regclass) NOT NULL
+);
+
+ALTER TABLE public.testtable3 OWNER TO fordfrog;
+
+-- DEPCY: This SEQUENCE is a dependency of COLUMN: testschema2.testtable1.id
+
 CREATE SEQUENCE testschema2.testtable1_id_seq
 	START WITH 1
 	INCREMENT BY 1
@@ -27,12 +37,6 @@ CREATE SEQUENCE testschema2.testtable1_id_seq
 	CACHE 1;
 
 ALTER SEQUENCE testschema2.testtable1_id_seq OWNER TO fordfrog;
-
-CREATE TABLE public.testtable3 (
-	id bigint DEFAULT nextval('public.testtable3_id_seq'::regclass) NOT NULL
-);
-
-ALTER TABLE public.testtable3 OWNER TO fordfrog;
 
 CREATE TABLE testschema2.testtable1 (
 	id integer DEFAULT nextval('testschema2.testtable1_id_seq'::regclass) NOT NULL

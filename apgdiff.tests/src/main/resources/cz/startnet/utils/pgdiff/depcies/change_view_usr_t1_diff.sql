@@ -22,8 +22,6 @@ DROP VIEW public.v1;
 ALTER TABLE public.t1
 	ALTER COLUMN c4 TYPE integer USING c4::integer; /* TYPE change - table: public.t1 original: text new: integer */
 
--- DEPCY: This TABLE is a dependency of VIEW: public.v8
-
 CREATE TABLE public.t3 (
 	c1 integer,
 	c2 text,

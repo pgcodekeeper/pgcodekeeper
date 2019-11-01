@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.schema.ArgMode;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -129,7 +130,7 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction {
         sb.append(PgDiffUtils.getQuotedName(name)).append('(');
         boolean addComma = false;
         for (final Argument argument : getArguments()) {
-            if ("OUT".equalsIgnoreCase(argument.getMode())) {
+            if (ArgMode.OUT == argument.getMode()) {
                 continue;
             }
             if (addComma) {
@@ -153,8 +154,8 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction {
     public String getDeclaration(Argument arg, boolean includeDefaultValue, boolean includeArgName) {
         final StringBuilder sbString = new StringBuilder();
 
-        String mode = arg.getMode();
-        if (mode != null && !"IN".equalsIgnoreCase(mode)) {
+        ArgMode mode = arg.getMode();
+        if (ArgMode.IN != mode) {
             sbString.append(mode);
             sbString.append(' ');
         }

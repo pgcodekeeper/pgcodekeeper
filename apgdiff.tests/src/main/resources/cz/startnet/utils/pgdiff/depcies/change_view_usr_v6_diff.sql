@@ -10,8 +10,6 @@ DROP VIEW public.v7;
 
 DROP VIEW public.v6;
 
--- DEPCY: This TABLE is a dependency of VIEW: public.v8
-
 CREATE TABLE public.t3 (
 	c1 integer,
 	c2 text,

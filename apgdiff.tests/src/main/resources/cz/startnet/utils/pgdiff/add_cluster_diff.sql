@@ -1,5 +1,7 @@
 SET search_path = pg_catalog;
 
+-- DEPCY: This SEQUENCE is a dependency of COLUMN: public.testtable2.id
+
 CREATE SEQUENCE public.testtable2_id_seq
 	START WITH 1
 	INCREMENT BY 1

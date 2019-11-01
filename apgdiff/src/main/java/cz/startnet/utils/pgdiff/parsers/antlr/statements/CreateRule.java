@@ -92,7 +92,7 @@ public class CreateRule extends ParserAbstract {
             return;
         }
 
-        List<Schema_qualified_nameContext> objName = obj.names_references().name;
+        List<Schema_qualified_nameContext> objName = obj.names_references().schema_qualified_name();
 
         if (type != null) {
             for (Schema_qualified_nameContext name : objName) {
@@ -111,10 +111,11 @@ public class CreateRule extends ParserAbstract {
         List<String> roles = new ArrayList<>();
         for (Role_name_with_groupContext roleCtx : ctx.roles_names().role_name_with_group()) {
             // skip CURRENT_USER and SESSION_USER
-            if (roleCtx.role_name == null) {
+            IdentifierContext user = roleCtx.user_name().identifier();
+            if (user == null) {
                 continue;
             }
-            String role = ParserAbstract.getFullCtxText(roleCtx.role_name);
+            String role = ParserAbstract.getFullCtxText(user);
             if (roleCtx.GROUP() != null) {
                 role = "GROUP " + role;
             }
@@ -174,7 +175,7 @@ public class CreateRule extends ParserAbstract {
         }
 
         // Разобрать объекты
-        for (Schema_qualified_nameContext tbl : ctx.rule_member_object().names_references().name) {
+        for (Schema_qualified_nameContext tbl : ctx.rule_member_object().names_references().schema_qualified_name()) {
             setColumnPrivilege(tbl, colPriv, roles);
         }
     }

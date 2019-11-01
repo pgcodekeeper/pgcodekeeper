@@ -6,6 +6,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_sequence_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Tokens_nonreserved_except_function_typeContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
@@ -13,7 +14,9 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class CreateSequence extends ParserAbstract {
+
     private final Create_sequence_statementContext ctx;
+
     public CreateSequence(Create_sequence_statementContext ctx, PgDatabase db) {
         super(db);
         this.ctx = ctx;
@@ -49,7 +52,13 @@ public class CreateSequence extends ParserAbstract {
             } else if (body.col_name != null) {
                 // TODO incorrect qualified name work
                 // also broken in altersequence
-                sequence.setOwnedBy(ParserAbstract.getFullCtxText(body.col_name));
+                List<IdentifierContext> col = body.col_name.identifier();
+                Tokens_nonreserved_except_function_typeContext word;
+                if (col.size() != 1 || (word = col.get(0).tokens_nonreserved_except_function_type()) == null
+                        || word.NONE() == null) {
+                    sequence.setOwnedBy(new GenericColumn(QNameParser.getThirdName(col),
+                            QNameParser.getSecondName(col), QNameParser.getFirstName(col), DbObjType.COLUMN));
+                }
             }
         }
         sequence.setMinMaxInc(inc, maxValue, minValue, sequence.getDataType(), 0L);

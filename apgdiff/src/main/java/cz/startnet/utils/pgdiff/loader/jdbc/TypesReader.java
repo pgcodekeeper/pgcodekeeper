@@ -2,12 +2,9 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.function.BiConsumer;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
-import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.VexAnalysisLauncher;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateDomain;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
@@ -21,7 +18,6 @@ import cz.startnet.utils.pgdiff.schema.PgDomain;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgType.PgTypeForm;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class TypesReader extends JdbcReader {
@@ -290,16 +286,5 @@ public class TypesReader extends JdbcReader {
             setFunctionWithDep(PgType::setSubtypeDiff, t, res.getString("rngsubdiff"));
         }
         return t;
-    }
-
-    private void setFunctionWithDep(BiConsumer<PgType, String> setter, PgType type, String function) {
-        if (function.contains(".")) {
-            QNameParser<IdentifierContext> parser = QNameParser.parsePg(function);
-            String schemaName = parser.getSchemaName();
-            if (schemaName != null && !ApgdiffUtils.isPgSystemSchema(schemaName)) {
-                type.addDep(new GenericColumn(schemaName, parser.getFirstName(), DbObjType.FUNCTION));
-            }
-        }
-        setter.accept(type, function);
     }
 }

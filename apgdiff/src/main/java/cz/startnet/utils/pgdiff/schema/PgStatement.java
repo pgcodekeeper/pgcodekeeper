@@ -60,6 +60,10 @@ public abstract class PgStatement implements IStatement, IHashable {
         return true;
     }
 
+    public boolean canDrop() {
+        return true;
+    }
+
     public boolean isOwned() {
         switch (getStatementType()) {
         case FTS_CONFIGURATION:
@@ -196,12 +200,6 @@ public abstract class PgStatement implements IStatement, IHashable {
             sb.append(PgDiffUtils.getQuotedName(getName()))
             .append(" ON ")
             .append(getParent().getQualifiedName());
-            break;
-
-        case INDEX:
-            sb.append(PgDiffUtils.getQuotedName(getParent().getParent().getName()))
-            .append('.')
-            .append(PgDiffUtils.getQuotedName(getName()));
             break;
 
         case DATABASE:

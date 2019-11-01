@@ -49,9 +49,8 @@ public class SequencesReader extends JdbcReader {
         }
 
         if (refTable != null && identityType == null) {
-            s.setOwnedBy(PgDiffUtils.getQuotedName(schema.getName()) + '.'
-                    + PgDiffUtils.getQuotedName(refTable) + '.'
-                    + PgDiffUtils.getQuotedName(res.getString("ref_col_name")));
+            s.setOwnedBy(new GenericColumn(schema.getName(), refTable,
+                    res.getString("ref_col_name"), DbObjType.COLUMN));
         }
 
         if (identityType == null) {

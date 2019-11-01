@@ -20,6 +20,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.StatementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.User_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterOwner;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateRule;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
@@ -78,7 +79,8 @@ implements SqlContextProcessor {
     }
 
     private void createSchema(Create_schema_statementContext ctx) {
-        IdentifierContext owner = ctx.user_name;
+        User_nameContext user = ctx.user_name();
+        IdentifierContext owner = user == null ? null : user.identifier();
         if (db.getArguments().isIgnorePrivileges() || owner == null) {
             return;
         }

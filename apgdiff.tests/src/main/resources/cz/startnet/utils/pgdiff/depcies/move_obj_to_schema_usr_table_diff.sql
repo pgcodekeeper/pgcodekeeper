@@ -1,27 +1,24 @@
 SET search_path = pg_catalog;
 
-DROP RULE notify_me ON public.emp;
-
-DROP TRIGGER emp_stamp ON public.emp;
-
-DROP INDEX public.name_ind;
+-- DEPCY: This VIEW depends on the TABLE: public.emp
 
 DROP VIEW public.emp_view;
 
+-- DEPCY: This RULE depends on the TABLE: public.emp
+
+DROP RULE notify_me ON public.emp;
+
+-- DEPCY: This TRIGGER depends on the TABLE: public.emp
+
+DROP TRIGGER emp_stamp ON public.emp;
+
+-- DEPCY: This INDEX depends on the TABLE: public.emp
+
+DROP INDEX public.name_ind;
+
 DROP TABLE public.emp;
 
-DROP FUNCTION public.emp_stamp();
-
-DROP FUNCTION public.increment(i integer);
-
-DROP TYPE public.user_code;
-
-CREATE TYPE test.user_code AS (
-	f1 integer,
-	f2 text
-);
-
-ALTER TYPE test.user_code OWNER TO galiev_mr;
+-- DEPCY: This SEQUENCE is a dependency of COLUMN: test.emp.id
 
 CREATE SEQUENCE test.emp_id_seq
 	START WITH 1
@@ -31,6 +28,39 @@ CREATE SEQUENCE test.emp_id_seq
 	CACHE 1;
 
 ALTER SEQUENCE test.emp_id_seq OWNER TO galiev_mr;
+
+-- DEPCY: This TYPE is a dependency of COLUMN: test.emp.code
+
+CREATE TYPE test.user_code AS (
+	f1 integer,
+	f2 text
+);
+
+ALTER TYPE test.user_code OWNER TO galiev_mr;
+
+CREATE TABLE test.emp (
+	id integer DEFAULT nextval('test.emp_id_seq'::regclass) NOT NULL,
+	empname text,
+	salary integer,
+	last_date timestamp without time zone,
+	last_user text,
+	code test.user_code
+);
+
+ALTER TABLE test.emp OWNER TO galiev_mr;
+
+CREATE VIEW test.emp_view AS
+	SELECT emp.empname,
+    emp.last_date,
+    increment(emp.salary) AS salary,
+    emp.code
+   FROM test.emp;
+
+ALTER VIEW test.emp_view OWNER TO galiev_mr;
+
+CREATE UNIQUE INDEX name_ind ON test.emp USING btree (empname);
+
+-- DEPCY: This FUNCTION is a dependency of TRIGGER: test.emp.emp_stamp
 
 CREATE OR REPLACE FUNCTION test.emp_stamp() RETURNS trigger
     LANGUAGE plpgsql
@@ -57,38 +87,6 @@ CREATE OR REPLACE FUNCTION test.emp_stamp() RETURNS trigger
 $$;
 
 ALTER FUNCTION test.emp_stamp() OWNER TO galiev_mr;
-
-CREATE OR REPLACE FUNCTION test.increment(i integer) RETURNS integer
-    LANGUAGE plpgsql
-    AS $$
-        BEGIN
-                RETURN i + 1;
-        END;
-$$;
-
-ALTER FUNCTION test.increment(i integer) OWNER TO galiev_mr;
-
-CREATE TABLE test.emp (
-	id integer DEFAULT nextval('test.emp_id_seq'::regclass) NOT NULL,
-	empname text,
-	salary integer,
-	last_date timestamp without time zone,
-	last_user text,
-	code user_code
-);
-
-ALTER TABLE test.emp OWNER TO galiev_mr;
-
-CREATE VIEW test.emp_view AS
-	SELECT emp.empname,
-    emp.last_date,
-    increment(emp.salary) AS salary,
-    emp.code
-   FROM test.emp;
-
-ALTER VIEW test.emp_view OWNER TO galiev_mr;
-
-CREATE UNIQUE INDEX name_ind ON test.emp USING btree (empname);
 
 CREATE TRIGGER emp_stamp
 	BEFORE INSERT OR UPDATE ON test.emp
