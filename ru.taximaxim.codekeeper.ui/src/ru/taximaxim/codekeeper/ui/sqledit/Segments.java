@@ -23,11 +23,14 @@ public class Segments extends Position {
         this.type = loc.getType();
 
         String act = loc.getAction();
+
+        // crutch for the correct showing of the object name in 'Outline'
         if (act.contains("INSERT")) {
             act = "INSERT INTO " + act.substring(act.lastIndexOf('.') + 1);
         } else if (act.contains("DELETE")) {
             act = "DELETE FROM " + act.substring(act.lastIndexOf('.') + 1);
         }
+
         this.action = act;
     }
 
