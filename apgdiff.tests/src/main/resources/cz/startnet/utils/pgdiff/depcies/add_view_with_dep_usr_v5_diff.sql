@@ -6,8 +6,6 @@ CREATE OR REPLACE FUNCTION public.foo() RETURNS SETOF record
     LANGUAGE sql
     AS $$SELECT 1::int,2::int,'A'::text;$$;
 
--- DEPCY: This TABLE is a dependency of VIEW: public.v5
-
 CREATE TABLE public.t1 (
 	c1 integer,
 	c2 integer,

@@ -269,6 +269,13 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         return Stream.concat(getTables().stream(), getViews().stream());
     }
 
+    public AbstractIndex getIndexByName(String indexName) {
+        return getStatementContainers()
+                .flatMap(c -> c.getIndexes().stream())
+                .filter(s -> s.getName().equals(indexName))
+                .findAny().orElse(null);
+    }
+
     /**
      * Finds type according to specified type {@code name}.
      *

@@ -218,6 +218,13 @@ public final class Messages extends NLS {
 
     public static String txtNameEditingSupport_cannot_add_empty;
 
+    // query results tabs
+    public static String resultSetView_close;
+    public static String resultSetView_close_others;
+    public static String resultSetView_close_tabs_to_the_right;
+    public static String resultSetView_close_tabs_to_the_left;
+    public static String resultSetView_close_all;
+
     // ui.prefs
     public static String dBUpdatePrefPage_alter_column_statement;
     public static String dBUpdatePrefPage_drop_column_statement;

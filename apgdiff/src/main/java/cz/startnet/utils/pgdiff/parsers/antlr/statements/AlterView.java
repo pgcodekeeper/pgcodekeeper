@@ -16,7 +16,9 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class AlterView extends ParserAbstract {
+
     private final Alter_view_statementContext ctx;
+
     public AlterView(Alter_view_statementContext ctx, PgDatabase db) {
         super(db);
         this.ctx = ctx;
@@ -28,7 +30,7 @@ public class AlterView extends ParserAbstract {
         PgView dbView = (PgView) getSafe(AbstractSchema::getView,
                 getSchemaSafe(ids), QNameParser.getFirstNameCtx(ids));
         if (ctx.set_def_column() != null) {
-            VexContext exp = ctx.set_def_column().expression;
+            VexContext exp = ctx.set_def_column().vex();
             doSafe((s,o) -> {
                 s.addColumnDefaultValue(getFullCtxText(ctx.column_name), getFullCtxText(exp));
                 db.addAnalysisLauncher(new ViewAnalysisLauncher(s, exp));

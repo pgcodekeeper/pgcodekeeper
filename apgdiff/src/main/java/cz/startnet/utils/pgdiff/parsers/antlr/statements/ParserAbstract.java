@@ -21,6 +21,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Id_tokenContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Including_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Predefined_typeContext;
@@ -34,6 +35,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceExcep
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.ArgMode;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IStatement;
@@ -221,9 +223,10 @@ public abstract class ParserAbstract {
 
     private static void fillFuncArgs(List<Function_argumentsContext> argsCtx, AbstractPgFunction function) {
         for (Function_argumentsContext argument : argsCtx) {
-            String type = getTypeName(argument.argtype_data);
-            function.addArgument(new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
-                    argument.argname != null ? argument.argname.getText() : null, type));
+            String type = getTypeName(argument.data_type());
+            Identifier_nontypeContext name = argument.identifier_nontype();
+            function.addArgument(new Argument(parseArgMode(argument.argmode()),
+                    name != null ? name.getText() : null, type));
         }
     }
 
@@ -234,6 +237,14 @@ public abstract class ParserAbstract {
         oper.setRightArg(targerOperCtx.right_type == null ? null
                 : getTypeName(targerOperCtx.right_type));
         return oper.getSignature();
+    }
+
+    public static ArgMode parseArgMode(ParserRuleContext mode) {
+        if (mode == null) {
+            return ArgMode.IN;
+        }
+
+        return ArgMode.of(mode.getText());
     }
 
     protected PgObjLocation addObjReference(List<? extends ParserRuleContext> ids,
@@ -347,10 +358,10 @@ public abstract class ParserAbstract {
         case TABLE:
         case TYPE:
         case VIEW:
+        case INDEX:
             return new PgObjLocation(new GenericColumn(schemaName, name, type),
                     action.name(), getStart(nameCtx), nameCtx.start.getLine(), fileName);
         case CONSTRAINT:
-        case INDEX:
         case TRIGGER:
         case RULE:
         case COLUMN:

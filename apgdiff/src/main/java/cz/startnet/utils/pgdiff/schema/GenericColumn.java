@@ -125,6 +125,7 @@ public class GenericColumn implements Serializable {
         case FTS_TEMPLATE: return s.getFtsTemplate(table);
         case FTS_DICTIONARY: return s.getFtsDictionary(table);
         case FTS_CONFIGURATION: return s.getFtsConfiguration(table);
+        case INDEX: return s.getIndexByName(table);
         // handled in getStatement, left here for consistency
         case COLUMN:
             AbstractTable t = s.getTable(table);
@@ -136,8 +137,6 @@ public class GenericColumn implements Serializable {
         switch (type) {
         case CONSTRAINT:
             return sc == null ? null : sc.getConstraint(column);
-        case INDEX:
-            return sc == null ? null : sc.getIndex(column);
         case TRIGGER:
             return sc == null ? null : sc.getTrigger(column);
         case RULE:

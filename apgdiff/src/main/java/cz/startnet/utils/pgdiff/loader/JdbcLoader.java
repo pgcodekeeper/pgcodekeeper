@@ -43,7 +43,7 @@ public class JdbcLoader extends JdbcLoaderBase {
         super(connector, monitor, pgDiffArguments);
     }
 
-    public List<String> getErrors() {
+    public List<Object> getErrors() {
         return Collections.unmodifiableList(errors);
     }
 
