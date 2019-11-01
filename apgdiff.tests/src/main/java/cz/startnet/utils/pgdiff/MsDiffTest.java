@@ -306,7 +306,7 @@ public class MsDiffTest {
     public void runDiffSame(PgDatabase db) throws IOException, InterruptedException {
         final PgDiffArguments arguments = new PgDiffArguments();
         arguments.setMsSql(true);
-        String script = PgDiff.diffDatabaseSchemas(arguments, db, db, null).getText();
+        String script = PgDiff.diffDatabaseSchemas(arguments, db, db, null);
         Assert.assertEquals("File name template: " + fileNameTemplate, "", script.trim());
     }
 
@@ -323,7 +323,7 @@ public class MsDiffTest {
         runDiffSame(dbOld);
         runDiffSame(dbNew);
 
-        String script = PgDiff.diffDatabaseSchemas(args, dbOld, dbNew, null).getText();
+        String script = PgDiff.diffDatabaseSchemas(args, dbOld, dbNew, null);
 
         StringBuilder sbExpDiff;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(

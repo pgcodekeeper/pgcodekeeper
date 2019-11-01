@@ -251,7 +251,7 @@ public class PgDiffDepciesTest {
     }
 
     public void runDiffSame(PgDatabase db) throws IOException, InterruptedException {
-        String script = PgDiff.diffDatabaseSchemas(new PgDiffArguments(), db, db, null).getText();
+        String script = PgDiff.diffDatabaseSchemas(new PgDiffArguments(), db, db, null);
         Assert.assertEquals("File name template: " + dbTemplate, "", script.trim());
     }
 
@@ -285,7 +285,7 @@ public class PgDiffDepciesTest {
         TreeElement tree = DiffTree.create(oldDatabase, newDatabase, null);
         tree.setAllChecked();
         String script = new PgDiff(args).diffDatabaseSchemasAdditionalDepcies(
-                tree, oldDbFull, newDbFull, null, null).getText();
+                tree, oldDbFull, newDbFull, null, null);
 
         StringBuilder sbExpDiff;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(

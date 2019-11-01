@@ -522,7 +522,7 @@ public class PgDiffTest {
     }
 
     public void runDiffSame(PgDatabase db) throws IOException, InterruptedException {
-        String script = PgDiff.diffDatabaseSchemas(new PgDiffArguments(), db, db, null).getText();
+        String script = PgDiff.diffDatabaseSchemas(new PgDiffArguments(), db, db, null);
         Assert.assertEquals("File name template: " + fileNameTemplate,
                 "", script.trim());
     }
@@ -538,7 +538,7 @@ public class PgDiffTest {
         runDiffSame(dbOld);
         runDiffSame(dbNew);
 
-        String script = PgDiff.diffDatabaseSchemas(args, dbOld, dbNew, null).getText();
+        String script = PgDiff.diffDatabaseSchemas(args, dbOld, dbNew, null);
 
         StringBuilder sbExpDiff;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(

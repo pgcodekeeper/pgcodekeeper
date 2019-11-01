@@ -66,7 +66,7 @@ public class MsDiffDepciesTest {
     public void runDiffSame(PgDatabase db) throws IOException, InterruptedException {
         final PgDiffArguments arguments = new PgDiffArguments();
         arguments.setMsSql(true);
-        String script = PgDiff.diffDatabaseSchemas(arguments, db, db, null).getText();
+        String script = PgDiff.diffDatabaseSchemas(arguments, db, db, null);
         Assert.assertEquals("File name template: " + dbTemplate, "", script.trim());
     }
 
@@ -96,7 +96,7 @@ public class MsDiffDepciesTest {
         TreeElement tree = DiffTree.create(oldDatabase, newDatabase, null);
         tree.setAllChecked();
         String script = new PgDiff(args).diffDatabaseSchemasAdditionalDepcies(
-                tree, oldDbFull, newDbFull, null, null).getText();
+                tree, oldDbFull, newDbFull, null, null);
 
         StringBuilder sbExpDiff;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(
