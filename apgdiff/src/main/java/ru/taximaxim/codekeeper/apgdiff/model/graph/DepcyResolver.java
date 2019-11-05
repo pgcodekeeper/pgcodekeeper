@@ -507,7 +507,10 @@ public class DepcyResolver {
                 PgSequence seq = (PgSequence) newObj;
                 GenericColumn ownedBy = seq.getOwnedBy();
                 if (ownedBy != null && ownedBy.getStatement(oldDb) == null) {
-                    addCreateStatements(ownedBy.getStatement(newDb));
+                    PgStatement col = ownedBy.getStatement(newDb);
+                    if (col != null) {
+                        addCreateStatements(col);
+                    }
                 }
             }
 
