@@ -5,6 +5,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.jgrapht.DirectedGraph;
+import org.jgrapht.alg.CycleDetector;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.EdgeReversedGraph;
 import org.jgrapht.graph.SimpleDirectedGraph;
@@ -12,6 +13,7 @@ import org.jgrapht.graph.SimpleDirectedGraph;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
+import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -33,6 +35,15 @@ public class DepcyGraph {
             new EdgeReversedGraph<>(graph);
 
     /**
+     * Graph without columns (source and target columns moved to their parents)
+     */
+    private final DirectedGraph<PgStatement, DefaultEdge> reducedGraph =
+            new SimpleDirectedGraph<>(DefaultEdge.class);
+
+    private final EdgeReversedGraph<PgStatement, DefaultEdge> reversedReducedGraph =
+            new EdgeReversedGraph<>(reducedGraph);
+
+    /**
      * Направление связей в графе:<br>
      * зависящий объект → зависимость <br>
      * source → target
@@ -43,6 +54,14 @@ public class DepcyGraph {
 
     public EdgeReversedGraph<PgStatement, DefaultEdge> getReversedGraph(){
         return reversedGraph;
+    }
+
+    public DirectedGraph<PgStatement, DefaultEdge> getReducedGraph() {
+        return reducedGraph;
+    }
+
+    public EdgeReversedGraph<PgStatement, DefaultEdge> getReversedReducedGraph() {
+        return reversedReducedGraph;
     }
 
     private final PgDatabase db;
@@ -59,6 +78,8 @@ public class DepcyGraph {
     public DepcyGraph(PgDatabase graphSrc) {
         db = (PgDatabase) graphSrc.deepCopy();
         create();
+        reduce();
+        removeCycles();
     }
 
     private void create() {
@@ -93,6 +114,48 @@ public class DepcyGraph {
                 }
             }
         });
+    }
+
+    private void reduce() {
+        for (PgStatement st : graph.vertexSet()) {
+            if (st.getStatementType() != DbObjType.COLUMN) {
+                reducedGraph.addVertex(st);
+            }
+        }
+
+        for (DefaultEdge edge : graph.edgeSet()) {
+            PgStatement source = graph.getEdgeSource(edge);
+            PgStatement target = graph.getEdgeTarget(edge);
+            while (source != null && source.getStatementType() == DbObjType.COLUMN) {
+                source = source.getParent();
+            }
+            while (target != null && target.getStatementType() == DbObjType.COLUMN) {
+                target = target.getParent();
+            }
+            if (source != null && target != null && !source.equals(target)) {
+                reducedGraph.addEdge(source, target);
+            }
+        }
+    }
+
+    private void removeCycles() {
+        CycleDetector<PgStatement, DefaultEdge> detector =
+                new CycleDetector<>(reducedGraph);
+
+        for (PgStatement st : detector.findCycles()) {
+            if (st instanceof AbstractPgFunction) {
+                for (PgStatement vertex : detector.findCyclesContainingVertex(st)) {
+                    if (vertex.getStatementType() == DbObjType.TABLE
+                            && graph.removeEdge(st, vertex) != null) {
+                        reducedGraph.removeEdge(st, vertex);
+
+                        Log.log(Log.LOG_INFO, "Remove dependency from "
+                                + st.getQualifiedName() +
+                                " to " + vertex.getQualifiedName());
+                    }
+                }
+            }
+        }
     }
 
     private void processDeps(PgStatement st) {
