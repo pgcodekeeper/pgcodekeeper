@@ -217,6 +217,9 @@ public class PgDiffDepciesTest {
             // изменение сиквенсов с зависимостями
             // пользователь выбрал таблицу t6
             {"change_sequence_usr_t6"},
+            // добавление таблицы с цикличной зависимотью к функции
+            // пользователь выбрал таблицу t1
+            {"add_table_with_cyclic_dep_usr_t1", true},
         });
 
         int maxLength = p.stream()
