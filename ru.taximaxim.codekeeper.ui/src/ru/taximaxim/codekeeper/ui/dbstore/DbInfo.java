@@ -7,6 +7,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.equinox.security.storage.ISecurePreferences;
+import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
+import org.eclipse.equinox.security.storage.StorageException;
+
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
@@ -17,10 +21,13 @@ public class DbInfo {
     public static final String DEFAULT_EXECUTE_PATH = "pg_dump"; //$NON-NLS-1$
     public static final String DEFAULT_CUSTOM_PARAMS = "--schema-only --no-password"; //$NON-NLS-1$
 
+    private static final ISecurePreferences SECURE_PREFS = SecurePreferencesFactory
+            .getDefault().node("pgCodeKeeperDbPass"); //$NON-NLS-1$
+
     private final String name;
     private final String dbname;
     private final String dbuser;
-    private final String dbpass;
+    private String dbpass;
     private final String dbhost;
     private final int dbport;
     private final String pgdumpExePath;
@@ -48,6 +55,10 @@ public class DbInfo {
 
     public String getDbPass() {
         return dbpass;
+    }
+
+    public void setDbPass(String dbpass) {
+        this.dbpass = dbpass;
     }
 
     public String getDbHost() {
@@ -145,12 +156,31 @@ public class DbInfo {
 
     public static List<DbInfo> readStoreFromXml() {
         try {
-            return DbXmlStore.INSTANCE.readObjects();
-        } catch (IOException e) {
+            return addPasswordsFromSecureStorage(DbXmlStore.INSTANCE.readObjects());
+        } catch (IOException | StorageException e) {
             Log.log(e);
         }
 
         return new ArrayList<>();
+    }
+
+    private static List<DbInfo> addPasswordsFromSecureStorage(List<DbInfo> dbStore)
+            throws StorageException {
+        for (DbInfo dbInf : dbStore) {
+            if (dbInf.getDbPass().isEmpty()) {
+                dbInf.setDbPass(SECURE_PREFS.get(dbInf.getName(), ""));
+            }
+        }
+        return dbStore;
+    }
+
+    public static void writePasswordsToSecureStorage(List<DbInfo> list)
+            throws IOException, StorageException {
+        SECURE_PREFS.clear();
+        for (DbInfo dbInf : list) {
+            SECURE_PREFS.put(dbInf.getName(), dbInf.getDbPass(), true);
+        }
+        SECURE_PREFS.flush();
     }
 
     public static DbInfo getLastDb(String preference) {

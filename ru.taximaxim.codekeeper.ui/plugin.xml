@@ -1447,4 +1447,8 @@
             id="ru.taximaxim.codekeeper.ui.SqlContentViewerCreator">
         </viewer>
     </extension>
+    <extension
+          id="ru.taximaxim.codekeeper.ui.SecureStorage"
+          point="org.eclipse.equinox.security.secureStorage">
+    </extension>
 </plugin>

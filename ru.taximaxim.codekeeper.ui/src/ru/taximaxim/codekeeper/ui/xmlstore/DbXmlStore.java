@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.equinox.security.storage.StorageException;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -82,8 +83,11 @@ public class DbXmlStore extends XmlStore<DbInfo> {
         try {
             super.writeObjects(list);
             notifyListeners();
+            DbInfo.writePasswordsToSecureStorage(list);
         } catch (IOException e) {
             Log.log(Log.LOG_ERROR, "Error writing db store to xml " + e); //$NON-NLS-1$
+        } catch (StorageException e) {
+            Log.log(Log.LOG_ERROR, "Error writing to secure store " + e); //$NON-NLS-1$
         }
     }
 
@@ -96,7 +100,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
             createSubElement(xml, keyElement, Tags.NAME.toString(), dbInfo.getName());
             createSubElement(xml, keyElement, Tags.DBNAME.toString(), dbInfo.getDbName());
             createSubElement(xml, keyElement, Tags.DBUSER.toString(), dbInfo.getDbUser());
-            createSubElement(xml, keyElement, Tags.DBPASS.toString(), dbInfo.getDbPass());
+            createSubElement(xml, keyElement, Tags.DBPASS.toString(), ""); //$NON-NLS-1$
             createSubElement(xml, keyElement, Tags.DBHOST.toString(), dbInfo.getDbHost());
             createSubElement(xml, keyElement, Tags.DBPORT.toString(), String.valueOf(dbInfo.getDbPort()));
             createSubElement(xml, keyElement, Tags.READ_ONLY.toString(), String.valueOf(dbInfo.isReadOnly()));
