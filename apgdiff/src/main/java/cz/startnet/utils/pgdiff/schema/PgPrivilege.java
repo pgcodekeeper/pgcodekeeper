@@ -76,29 +76,34 @@ public class PgPrivilege implements IHashable {
             return sb;
         }
 
-        String name = newObj.getName();
-        String column = "";
-
         boolean isFunctionOrTypeOrDomain = false;
-        if (type == DbObjType.SCHEMA) {
-            name = PgDiffUtils.getQuotedName(name);
-        } else {
-            name = PgDiffUtils.getQuotedName(newObj.getParent().getName()) + '.' + name;
-            isFunctionOrTypeOrDomain = (DbObjType.FUNCTION == type) || (DbObjType.PROCEDURE == type)
-                    || (DbObjType.AGGREGATE == type) || (DbObjType.TYPE == type)
-                    || (DbObjType.DOMAIN == type);
-            if (type == DbObjType.VIEW) {
-                type = DbObjType.TABLE;
-            } else if (type == DbObjType.AGGREGATE) {
-                // for AGGREGATEs in GRANT/REVOKE the type will be the same as in FUNCTIONs
-                type = DbObjType.FUNCTION;
-            }
+        isFunctionOrTypeOrDomain = (DbObjType.FUNCTION == type) || (DbObjType.PROCEDURE == type)
+                || (DbObjType.AGGREGATE == type) || (DbObjType.TYPE == type)
+                || (DbObjType.DOMAIN == type);
+        if (type == DbObjType.VIEW) {
+            type = DbObjType.TABLE;
+        } else if (type == DbObjType.AGGREGATE) {
+            // for AGGREGATEs in GRANT/REVOKE the type will be the same as in FUNCTIONs
+            type = DbObjType.FUNCTION;
         }
+
+        StringBuilder sbName = new StringBuilder()
+                .append(type.name())
+                .append(' ');
+        if (type == DbObjType.FUNCTION || type == DbObjType.PROCEDURE) {
+            AbstractPgFunction func = (AbstractPgFunction) newObj;
+            sbName.append(PgDiffUtils.getQuotedName(func.getParent().getName()))
+            .append('.');
+            func.appendFunctionSignature(sbName, false, true);
+        } else {
+            sbName.append(newObj.getQualifiedName());
+        }
+        String name = sbName.toString();
 
         // FUNCTION/PROCEDURE/AGGREGATE/TYPE/DOMAIN by default has "GRANT ALL to PUBLIC".
         // That's why for them set "GRANT ALL to PUBLIC".
         PgPrivilege priv = new PgPrivilege(isFunctionOrTypeOrDomain ? "GRANT" : "REVOKE",
-                "ALL" + column, type + " " + name, "PUBLIC", false);
+                "ALL", name, "PUBLIC", false);
         sb.append('\n').append(priv.getCreationSQL()).append(';');
 
         if (owner == null) {
@@ -106,10 +111,10 @@ public class PgPrivilege implements IHashable {
         }
         owner = PgDiffUtils.getQuotedName(owner);
 
-        priv = new PgPrivilege("REVOKE", "ALL" + column, type + " " + name, owner, false);
+        priv = new PgPrivilege("REVOKE", "ALL", name, owner, false);
         sb.append('\n').append(priv.getCreationSQL()).append(';');
 
-        priv = new PgPrivilege("GRANT", "ALL" + column, type + " " + name, owner, false);
+        priv = new PgPrivilege("GRANT", "ALL", name, owner, false);
         sb.append('\n').append(priv.getCreationSQL()).append(';');
 
         return sb;

@@ -103,6 +103,9 @@ public class PgDiffDepciesTest {
             // зависимости от вьюхи,
             // пользователь выбрал вьюху с группировкой
             {"add_view_with_dep_usr_v5"},
+            // зависимости от вьюхи,
+            // пользователь выбрал вьюху с группировкой по primary key
+            {"add_view_with_dep_usr_v6"},
             // изменение таблиц и вьюх, зависящих от них
             // пользователь выбрал таблицу t1
             {"change_view_usr_t1"},
@@ -217,6 +220,9 @@ public class PgDiffDepciesTest {
             // изменение сиквенсов с зависимостями
             // пользователь выбрал таблицу t6
             {"change_sequence_usr_t6"},
+            // добавление таблицы с цикличной зависимотью к функции
+            // пользователь выбрал таблицу t1
+            {"add_table_with_cyclic_dep_usr_t1", true},
         });
 
         int maxLength = p.stream()

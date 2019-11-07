@@ -35,7 +35,6 @@ import org.eclipse.zest.layouts.algorithms.SpringLayoutAlgorithm;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 
-import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
@@ -194,9 +193,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
                     PgStatement root = el.getPgStatement(currentDb);
                     rootSet.add(root);
                     for (PgStatement dependant : depRes.getDropDepcies(root)) {
-                        if (!(dependant instanceof AbstractColumn)) {
-                            newInput.add(dependant);
-                        }
+                        newInput.add(dependant);
                     }
                 }
             }
@@ -214,18 +211,13 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
 
         @Override
         public Object[] getConnectedTo(Object entity) {
-            if (entity instanceof PgStatement){
-                DirectedGraph<PgStatement, DefaultEdge> currentGraph = depRes.getOldGraph();
-                if (currentGraph != null){
-                    List<PgStatement> connected = new ArrayList<>();
-                    for (DefaultEdge e : currentGraph.outgoingEdgesOf((PgStatement)entity)){
-                        PgStatement connectedVertex = currentGraph.getEdgeTarget(e);
-                        if (!(connectedVertex instanceof AbstractColumn)) {
-                            connected.add(connectedVertex);
-                        }
-                    }
-                    return connected.toArray();
+            DirectedGraph<PgStatement, DefaultEdge> currentGraph = depRes.getOldGraph();
+            if (currentGraph != null && entity instanceof PgStatement) {
+                List<PgStatement> connected = new ArrayList<>();
+                for (DefaultEdge e : currentGraph.outgoingEdgesOf((PgStatement) entity)) {
+                    connected.add(currentGraph.getEdgeTarget(e));
                 }
+                return connected.toArray();
             }
             return null;
         }
