@@ -3,8 +3,10 @@ package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -42,8 +44,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_queryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectOps;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
+import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
+import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.ModPair;
@@ -141,7 +146,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
 
         Groupby_clauseContext groupBy = perform.groupby_clause();
         if (groupBy != null) {
-            groupby(groupBy.grouping_element_list(), vex);
+            groupBy(groupBy.grouping_element_list(), vex);
         }
 
         if (perform.WINDOW() != null) {
@@ -265,7 +270,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
 
             Groupby_clauseContext groupBy = primary.groupby_clause();
             if (groupBy != null) {
-                groupby(groupBy.grouping_element_list(), vex);
+                groupBy(groupBy.grouping_element_list(), vex);
             }
 
             if (primary.WINDOW() != null) {
@@ -365,14 +370,46 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
         }
     }
 
-    private void groupby(Grouping_element_listContext list, ValueExpr vex) {
+    private void groupBy(Grouping_element_listContext list, ValueExpr vex) {
+        Set<GenericColumn> subSet = new HashSet<>();
+        ValueExpr child = new ValueExpr(this, subSet);
+
+        for (Grouping_elementContext el : list.grouping_element()) {
+            VexContext vexCtx = el.vex();
+            Grouping_element_listContext sub;
+            if (vexCtx != null) {
+                child.analyze(new Vex(vexCtx));
+            } else if ((sub = el.grouping_element_list()) != null) {
+                groupingSet(sub, vex);
+            }
+        }
+
+        // add dependencies to primary key
+        for (GenericColumn dep : child.getDepcies()) {
+            vex.addDepcy(dep);
+            PgStatement column;
+            if (dep.type == DbObjType.COLUMN && (column = dep.getStatement(db)) != null) {
+                PgStatement table = column.getParent();
+                if (table instanceof AbstractPgTable) {
+                    for (AbstractConstraint con : ((AbstractPgTable) table).getConstraints()) {
+                        if (con.isPrimaryKey() && con.getColumns().contains(dep.getObjName())) {
+                            vex.addDepcy(new GenericColumn(con.getSchemaName(),
+                                    con.getParent().getName(), con.getName(), DbObjType.CONSTRAINT));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void groupingSet(Grouping_element_listContext list, ValueExpr vex) {
         for (Grouping_elementContext el : list.grouping_element()) {
             VexContext vexCtx = el.vex();
             Grouping_element_listContext sub;
             if (vexCtx != null) {
                 vex.analyze(new Vex(vexCtx));
-            } else if ((sub = el.c) != null) {
-                groupby(sub, vex);
+            } else if ((sub = el.grouping_element_list()) != null) {
+                groupingSet(sub, vex);
             }
         }
     }

@@ -2829,7 +2829,7 @@ from_function_column_def
     ;
 
 groupby_clause
-  : GROUP BY g=grouping_element_list
+  : GROUP BY grouping_element_list
   ;
 
 grouping_element_list
@@ -2839,7 +2839,7 @@ grouping_element_list
 grouping_element
   : vex
   | LEFT_PAREN RIGHT_PAREN
-  | (ROLLUP | CUBE | GROUPING SETS) LEFT_PAREN c=grouping_element_list RIGHT_PAREN
+  | (ROLLUP | CUBE | GROUPING SETS) LEFT_PAREN grouping_element_list RIGHT_PAREN
   ;
 
 values_stmt

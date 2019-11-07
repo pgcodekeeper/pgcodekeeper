@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -58,6 +59,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Xml_table_columnContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.Argument;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.ISchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -75,6 +77,10 @@ public class ValueExpr extends AbstractExpr {
 
     protected ValueExpr(AbstractExpr parent) {
         super(parent);
+    }
+
+    protected ValueExpr(AbstractExpr parent, Set<GenericColumn> depcies) {
+        super(parent, depcies);
     }
 
     /*
