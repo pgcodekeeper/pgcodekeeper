@@ -60,6 +60,8 @@ public abstract class ParserAbstract {
     protected static final String ACTION_ALTER = "ALTER";
     protected static final String ACTION_DROP = "DROP";
     protected static final String ACTION_UPDATE = "UPDATE";
+    protected static final String ACTION_INSERT = "INSERT";
+    protected static final String ACTION_DELETE = "DELETE";
     protected static final String ACTION_COMMENT = "COMMENT";
 
     protected final PgDatabase db;
@@ -525,9 +527,21 @@ public abstract class ParserAbstract {
 
             StringBuilder sb = new StringBuilder();
             sb.append(action);
-            if (!ACTION_UPDATE.equalsIgnoreCase(action)) {
+
+            switch (action) {
+            case ACTION_UPDATE:
+                break;
+            case ACTION_INSERT:
+                sb.append(' ').append("INTO");
+                break;
+            case ACTION_DELETE:
+                sb.append(' ').append("FROM");
+                break;
+            default:
                 sb.append(' ').append(descrObj.type);
+                break;
             }
+
             result = sb.append(' ').append(descrObj.getQualifiedName()).toString();
         }
         return result;

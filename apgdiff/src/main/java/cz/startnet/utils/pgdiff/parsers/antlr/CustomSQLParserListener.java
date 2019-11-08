@@ -52,7 +52,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTable;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateType;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.DeleteStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.DropStatement;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.InsertStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.UpdateStatement;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -204,6 +206,10 @@ implements SqlContextProcessor {
         ParserAbstract p;
         if (ctx.update_stmt_for_psql() != null) {
             p =  new UpdateStatement(ctx.update_stmt_for_psql(), db);
+        } else if (ctx.insert_stmt_for_psql() != null) {
+            p =  new InsertStatement(ctx.insert_stmt_for_psql(), db);
+        } else if (ctx.delete_stmt_for_psql() != null) {
+            p =  new DeleteStatement(ctx.delete_stmt_for_psql(), db);
         } else {
             addUndescribedObjToQueries(ctx, stream);
             return;
@@ -267,15 +273,8 @@ implements SqlContextProcessor {
                 return "START TRANSACTION";
             }
         } else if (ctx instanceof Data_statementContext) {
-            Data_statementContext data = (Data_statementContext) ctx;
-            if (data.select_stmt() != null) {
+            if (((Data_statementContext) ctx).select_stmt() != null) {
                 return "SELECT";
-            } else if (data.insert_stmt_for_psql() != null) {
-                return "INSERT INTO " + data.insert_stmt_for_psql()
-                .insert_table_name.getText();
-            } else if (data.delete_stmt_for_psql() != null) {
-                return "DELETE FROM " + data.delete_stmt_for_psql()
-                .delete_table_name.getText();
             }
             return ctx.getStart().getText().toUpperCase(Locale.ROOT);
         } else if (ctx instanceof Schema_createContext) {

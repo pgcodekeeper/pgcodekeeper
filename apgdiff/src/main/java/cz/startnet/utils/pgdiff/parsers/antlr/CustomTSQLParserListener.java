@@ -16,9 +16,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statement_bodyCon
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_viewContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_xml_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Ddl_clauseContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Delete_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Dml_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Enable_disable_triggerContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Insert_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_alterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_createContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Schema_dropContext;
@@ -50,8 +51,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsTrigger;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsType;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsUser;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsView;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.DeleteMsStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.DisableMsTrigger;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.DropMsStatement;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.InsertMsStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.UpdateMsStatement;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
@@ -119,8 +122,14 @@ implements TSqlContextProcessor {
             }
         } else if ((dml = st.dml_clause()) != null) {
             Update_statementContext update = dml.update_statement();
+            Insert_statementContext insert = dml.insert_statement();
+            Delete_statementContext delete = dml.delete_statement();
             if (update != null) {
                 safeParseStatement(new UpdateMsStatement(update, db), update);
+            } else if (insert != null) {
+                safeParseStatement(new InsertMsStatement(insert, db), insert);
+            } else if (delete != null) {
+                safeParseStatement(new DeleteMsStatement(delete, db), delete);
             } else {
                 addUndescribedObjToQueries(dml, stream);
             }
@@ -261,10 +270,6 @@ implements TSqlContextProcessor {
             Dml_clauseContext dml = (Dml_clauseContext) ctx;
             if (dml.merge_statement() != null) {
                 return "MERGE";
-            } else if (dml.delete_statement() != null) {
-                return getInserOrDelActionMs(dml.delete_statement().qualified_name(), true);
-            } else if (dml.insert_statement() != null) {
-                return getInserOrDelActionMs(dml.insert_statement().qualified_name(), false);
             } else if (dml.select_statement() != null) {
                 return "SELECT";
             }
@@ -357,14 +362,5 @@ implements TSqlContextProcessor {
             return getActionDescription(tokenStream, ctx, descrWordsCount);
         }
         return super.getActionForUndescribedObj(ctx, tokenStream);
-    }
-
-    private String getInserOrDelActionMs(Qualified_nameContext qname, boolean isDel) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(isDel ? "DELETE" : "INSERT");
-        if (qname != null) {
-            sb.append(isDel ? " FROM " : " INTO ").append(qname.getText());
-        }
-        return sb.toString();
     }
 }
