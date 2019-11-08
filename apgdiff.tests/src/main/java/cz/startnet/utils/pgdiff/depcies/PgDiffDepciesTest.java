@@ -1,12 +1,9 @@
 package cz.startnet.utils.pgdiff.depcies;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -256,11 +253,6 @@ public class PgDiffDepciesTest {
         Log.log(Log.LOG_DEBUG, dbTemplate + ' ' + userSelTemplate);
     }
 
-    public void runDiffSame(PgDatabase db) throws IOException, InterruptedException {
-        String script = PgDiff.diffDatabaseSchemas(new PgDiffArguments(), db, db, null);
-        Assert.assertEquals("File name template: " + dbTemplate, "", script.trim());
-    }
-
     @Test(timeout = 120000)
     public void runDiff() throws IOException, InterruptedException {
         PgDatabase oldDatabase;
@@ -285,29 +277,15 @@ public class PgDiffDepciesTest {
                     getDbName(FILES_POSTFIX.NEW_SQL), PgDiffDepciesTest.class, args);
         }
 
-        runDiffSame(oldDbFull);
-        runDiffSame(newDbFull);
+        ApgdiffTestUtils.runDiffSame(oldDbFull, dbTemplate, args);
+        ApgdiffTestUtils.runDiffSame(newDbFull, dbTemplate, args);
 
         TreeElement tree = DiffTree.create(oldDatabase, newDatabase, null);
         tree.setAllChecked();
         String script = new PgDiff(args).diffDatabaseSchemasAdditionalDepcies(
                 tree, oldDbFull, newDbFull, null, null);
 
-        StringBuilder sbExpDiff;
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                PgDiffDepciesTest.class.getResourceAsStream(getUsrSelName(FILES_POSTFIX.DIFF_SQL))))) {
-            sbExpDiff = new StringBuilder(1024);
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                sbExpDiff.append(line);
-                sbExpDiff.append('\n');
-            }
-        }
-
-        Assert.assertEquals("File name template: " + userSelTemplate,
-                sbExpDiff.toString().trim(),
-                script.trim());
+        ApgdiffTestUtils.compareResult(script, userSelTemplate, PgDiffDepciesTest.class);
     }
 
     private String getUsrSelName(FILES_POSTFIX postfix) {

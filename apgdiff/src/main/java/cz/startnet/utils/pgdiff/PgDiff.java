@@ -183,7 +183,7 @@ public class PgDiff {
                 MessageFormat.format(Messages.UnknownDBFormat, format));
     }
 
-    private String diffDatabaseSchemas(PgDatabase oldDbFull, PgDatabase newDbFull,
+    public String diffDatabaseSchemas(PgDatabase oldDbFull, PgDatabase newDbFull,
             IgnoreList ignoreList) throws InterruptedException {
         TreeElement root = DiffTree.create(oldDbFull, newDbFull, null);
         root.setAllChecked();
@@ -334,12 +334,5 @@ public class PgDiff {
             }
         }
         selected.addAll(tempColumns);
-    }
-
-    // used in tests
-    public static String diffDatabaseSchemas(PgDiffArguments arguments,
-            PgDatabase oldDbFull, PgDatabase newDbFull, IgnoreList ignoreList)
-                    throws InterruptedException {
-        return new PgDiff(arguments).diffDatabaseSchemas(oldDbFull, newDbFull, ignoreList);
     }
 }
