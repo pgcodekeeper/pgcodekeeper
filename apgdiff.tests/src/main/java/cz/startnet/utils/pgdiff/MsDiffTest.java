@@ -288,6 +288,10 @@ public class MsDiffTest {
                     {"drop_ms_column_options"},
                     // Tests scenario where MS COLUMNS added to recreated table.
                     {"add_ms_column_and_recreate"},
+                    // Tests scenario where ansi_nulls parameter is changed.
+                    {"modify_ansi_nulls"},
+                    // Tests scenario where quoted_identifier parameter is changed.
+                    {"modify_quoted_identifier"},
                 });
     }
 

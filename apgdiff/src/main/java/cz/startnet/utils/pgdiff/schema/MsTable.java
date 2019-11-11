@@ -137,6 +137,7 @@ public class MsTable extends AbstractTable {
         if (newTable instanceof MsTable) {
             MsTable smt = (MsTable) newTable;
             return !Objects.equals(smt.getTablespace(), getTablespace())
+                    || isAnsiNulls() != smt.isAnsiNulls()
                     || !Objects.equals(smt.getOptions(), getOptions())
                     || !Objects.equals(smt.getFileStream(), getFileStream())
                     || (smt.getTextImage() != null && getTextImage() != null
