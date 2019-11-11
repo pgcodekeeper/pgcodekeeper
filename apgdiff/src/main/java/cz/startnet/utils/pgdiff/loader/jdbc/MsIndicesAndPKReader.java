@@ -102,7 +102,9 @@ public class MsIndicesAndPKReader extends JdbcReader {
                 sb.append(")");
             }
 
-            sb.append(" ON ").append(MsDiffUtils.quoteName(dataSpace));
+            if (dataSpace != null) {
+                sb.append(" ON ").append(MsDiffUtils.quoteName(dataSpace));
+            }
 
             StringBuilder definition = new StringBuilder();
             if (!isUniqueConstraint) {
