@@ -56,7 +56,7 @@ implements IWorkbenchPreferencePage  {
                 Messages.GeneralPrefPage_ignore_concurrent_modification,
                 getFieldEditorParent()));
 
-        addField(new IntegerFieldEditor(PREF.TIME_CLEAN_PARSER_CACHE,
+        addField(new IntegerFieldEditor(PREF.PARSER_CACHE_CLEANING_INTERVAL,
                 Messages.GeneralPrefPage_time_to_clean_parser_cache,
                 getFieldEditorParent(), 3));
 

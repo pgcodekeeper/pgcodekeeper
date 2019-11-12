@@ -6,6 +6,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.IStartup;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 
@@ -15,14 +16,26 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
  */
 public class ParserCacheCleaner implements IStartup {
 
+    private static final long CHECK_INTERVAL = 30000;
+
     private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
 
     @Override
     public void earlyStartup() {
-        Thread thread = new Thread(AntlrParser.checkLastParserStart(
-                TimeUnit.MINUTES.toMillis(mainPrefs.getInt(PREF.TIME_CLEAN_PARSER_CACHE))));
+        Thread thread = new Thread(() -> {
+            while (true) {
+                long cleaningInterval = TimeUnit.MINUTES
+                        .toMillis(mainPrefs.getInt(PREF.PARSER_CACHE_CLEANING_INTERVAL));
+                AntlrParser.checkToClean(false, cleaningInterval);
+                AntlrParser.checkToClean(true, cleaningInterval);
+                try {
+                    Thread.sleep(CHECK_INTERVAL);
+                } catch (InterruptedException e) {
+                    Log.log(e);
+                }
+            }
+        });
         thread.setDaemon(true);
         thread.start();
     }
-
 }
