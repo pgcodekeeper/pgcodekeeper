@@ -101,7 +101,7 @@ public class Formatter {
             return;
         }
 
-        Create_funct_paramsContext body = function.funct_body;
+        Create_funct_paramsContext body = function.create_funct_params();
         if (body == null) {
             return;
         }

@@ -108,7 +108,7 @@ public class DifferTest {
         differ.setAdditionalDepciesTarget(differData.getAdditionalDepciesTarget(dbTarget.getDbObject()));
 
         try{
-            differ.getScript();
+            differ.getDiffDirect();
             Assert.fail("Expected to throw an exception");
         } catch(IllegalStateException e) {
             // expected behavior
@@ -118,7 +118,7 @@ public class DifferTest {
         job.schedule();
         job.join();
 
-        differ.getScript();
+        differ.getDiffDirect();
         assertEquals("Direct script differs",
                 differData.getPredefinedDirectDiff(), differ.getDiffDirect());
         assertEquals("Reverse script differs",

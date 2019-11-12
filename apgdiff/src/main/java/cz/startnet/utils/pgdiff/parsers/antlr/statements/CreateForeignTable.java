@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_foreign_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_columnsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_foreign_optionsContext;
@@ -55,12 +56,12 @@ public class CreateForeignTable extends TableAbstract {
 
         if (colCtx != null) {
             table = fillForeignTable(srvCtx, new SimpleForeignPgTable(
-                    tableName, srvCtx.server_name.getText()));
+                    tableName, srvCtx.identifier().getText()));
             fillColumns(colCtx, table, schemaName, null);
         } else {
             String partBound = ParserAbstract.getFullCtxText(partCtx.for_values_bound());
             table = fillForeignTable(srvCtx, new PartitionForeignPgTable(
-                    tableName, srvCtx.server_name.getText(), partBound));
+                    tableName, srvCtx.identifier().getText(), partBound));
 
             fillTypeColumns(partCtx.list_of_type_column_def(), table, schemaName, null);
             addInherit(table, partCtx.parent_table.identifier());
@@ -72,9 +73,10 @@ public class CreateForeignTable extends TableAbstract {
     private AbstractForeignTable fillForeignTable(Define_serverContext server, AbstractForeignTable table) {
         Define_foreign_optionsContext options = server.define_foreign_options();
         if (options != null){
-            for (Foreign_optionContext option : options.foreign_option()){
-                String value = option.value == null ? null : option.value.getText();
-                fillOptionParams(value, option.name.getText(), false, table::addOption);
+            for (Foreign_optionContext option : options.foreign_option()) {
+                Character_stringContext opt = option.character_string();
+                String value = opt == null ? null : opt.getText();
+                fillOptionParams(value, option.foreign_option_name().getText(), false, table::addOption);
             }
         }
         return table;

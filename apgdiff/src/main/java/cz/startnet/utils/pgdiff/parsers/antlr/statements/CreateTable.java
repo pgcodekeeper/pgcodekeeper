@@ -92,11 +92,10 @@ public class CreateTable extends TableAbstract {
     }
 
     private AbstractRegularTable fillRegularTable(AbstractRegularTable table) {
-        if (tablespace != null) {
-            table.setTablespace(tablespace);
-        }
         if (ctx.table_space() != null) {
-            table.setTablespace(QNameParser.getFirstName(ctx.table_space().name.identifier()));
+            table.setTablespace(ctx.table_space().identifier().getText());
+        } else if (tablespace != null) {
+            table.setTablespace(tablespace);
         }
 
         boolean explicitOids = false;
