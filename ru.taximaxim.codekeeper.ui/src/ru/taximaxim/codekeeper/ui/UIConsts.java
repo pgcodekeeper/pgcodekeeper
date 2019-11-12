@@ -49,8 +49,6 @@ public interface UIConsts {
         (value of org.eclipse.egit.ui.internal.actions.ActionCommands.COMMIT_ACTION) */
         String COMMIT_COMMAND_ID = "org.eclipse.egit.ui.team.Commit"; //$NON-NLS-1$
 
-        String GET_CHANGES = PLUGIN_ID.THIS + ".command.GetChanges"; //$NON-NLS-1$
-        String UPDATE_DDL = PLUGIN_ID.THIS + ".command.UpdateDdl"; //$NON-NLS-1$
         String ADD_DEPCY = PLUGIN_ID.THIS + ".command.AddDepcy"; //$NON-NLS-1$
     }
 
@@ -123,31 +121,6 @@ public interface UIConsts {
         String MS_SQL = "MS SQL"; //$NON-NLS-1$
     }
 
-    public enum DBSources {
-        SOURCE_TYPE_JDBC("jdbc"), //$NON-NLS-1$
-        SOURCE_TYPE_DB("db"), //$NON-NLS-1$
-        SOURCE_TYPE_DUMP("dump"); //$NON-NLS-1$
-
-        private final String sourceName;
-        private DBSources(String sourceName) {
-            this.sourceName = sourceName;
-        }
-
-        @Override
-        public String toString() {
-            return sourceName;
-        }
-        public static DBSources getEnum(String value) {
-            for (DBSources v : values()) {
-                if (v.sourceName.equalsIgnoreCase(value)) {
-                    return v;
-                }
-            }
-            // источником по умолчанию для всего что не попадает в enum
-            return SOURCE_TYPE_DUMP;
-        }
-    }
-
     interface PROJ_PREF {
         String TIMEZONE = "prefGeneralTimezone"; //$NON-NLS-1$
         String FORCE_UNIX_NEWLINES = "prefForceUnixNewlines"; //$NON-NLS-1$
@@ -178,7 +151,6 @@ public interface UIConsts {
     interface FILE {
         String IGNORED_OBJECTS = ".pgcodekeeperignore"; //$NON-NLS-1$
         String IGNORE_LISTS_STORE = PLUGIN_ID.THIS + ".ignoreliststore"; //$NON-NLS-1$
-        String DDL_UPDATE_COMMANDS_HIST_FILENAME = "rollon_cmd_history.xml"; //$NON-NLS-1$
 
         // external icons
         String ICONAPPSMALL = "/icons/app_icon16.png"; //$NON-NLS-1$
@@ -213,15 +185,6 @@ public interface UIConsts {
 
     interface WORKING_SET {
         String RESOURCE_WORKING_SET = "org.eclipse.ui.resourceWorkingSetPage"; //$NON-NLS-1$
-    }
-
-    interface XML_TAGS{
-        String DDL_UPDATE_COMMANDS_HIST_ROOT = "scripts"; //$NON-NLS-1$
-        String DDL_UPDATE_COMMANDS_HIST_ELEMENT = "s"; //$NON-NLS-1$
-        int DDL_UPDATE_COMMANDS_MAX_STORED = 20;
-
-        String IGNORED_OBJS_ROOT = "ignored_objects"; //$NON-NLS-1$
-        String IGNORED_OBJS_ELEMENT = "obj"; //$NON-NLS-1$
     }
 
     interface CMD_VARS {
