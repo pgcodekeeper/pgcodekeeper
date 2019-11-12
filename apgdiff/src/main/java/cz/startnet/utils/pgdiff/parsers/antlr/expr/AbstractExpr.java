@@ -70,8 +70,12 @@ public abstract class AbstractExpr {
     }
 
     protected AbstractExpr(AbstractExpr parent) {
+        this(parent, parent.depcies);
+    }
+
+    protected AbstractExpr(AbstractExpr parent, Set<GenericColumn> depcies) {
         this.parent = parent;
-        this.depcies = parent.depcies;
+        this.depcies = depcies;
         this.db = parent.db;
         this.systemStorage = parent.systemStorage;
         this.disabledDepcies = parent.disabledDepcies;
@@ -162,7 +166,7 @@ public abstract class AbstractExpr {
         return gc;
     }
 
-    private void addDepcy(GenericColumn depcy) {
+    protected void addDepcy(GenericColumn depcy) {
         if (!disabledDepcies.contains(depcy.type)) {
             depcies.add(depcy);
         }

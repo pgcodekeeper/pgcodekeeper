@@ -15,7 +15,6 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 
 import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
-import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -39,7 +38,6 @@ public class Differ implements IRunnableWithProgress {
 
     private String diffDirect;
     private String diffReverse;
-    private PgDiffScript script;
 
     private List<Entry<PgStatement, PgStatement>> additionalDepciesSource;
     private List<Entry<PgStatement, PgStatement>> additionalDepciesTarget;
@@ -111,13 +109,6 @@ public class Differ implements IRunnableWithProgress {
         return diffReverse;
     }
 
-    public PgDiffScript getScript() {
-        if (script == null) {
-            throw new IllegalStateException(Messages.runnable_has_not_finished);
-        }
-        return script;
-    }
-
     public String getTimezone() {
         return timezone;
     }
@@ -137,11 +128,10 @@ public class Differ implements IRunnableWithProgress {
             PgDiffArguments args =
                     DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone, true, msSql, proj);
 
-            script = new PgDiff(args).diffDatabaseSchemasAdditionalDepcies(
+            diffDirect = new PgDiff(args).diffDatabaseSchemasAdditionalDepcies(
                     root,
                     sourceDbFull, targetDbFull,
                     additionalDepciesSource, additionalDepciesTarget);
-            diffDirect = script.getText();
 
             if (needTwoWay) {
                 Log.log(Log.LOG_INFO, "Diff from: " + targetDbFull.getName() //$NON-NLS-1$
@@ -151,7 +141,7 @@ public class Differ implements IRunnableWithProgress {
                 diffReverse = new PgDiff(args).diffDatabaseSchemasAdditionalDepcies(
                         root.getRevertedCopy(),
                         targetDbFull, sourceDbFull,
-                        additionalDepciesTarget, additionalDepciesSource).getText();
+                        additionalDepciesTarget, additionalDepciesSource);
             }
         }
 

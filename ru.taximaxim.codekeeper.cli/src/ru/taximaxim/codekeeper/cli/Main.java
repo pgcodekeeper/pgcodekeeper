@@ -25,7 +25,6 @@ import cz.startnet.utils.pgdiff.NotAllowedObjectException;
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
-import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
 import cz.startnet.utils.pgdiff.parsers.antlr.ScriptParser;
@@ -84,15 +83,13 @@ public final class Main {
             throws InterruptedException, IOException, SQLException {
         try (PrintWriter encodedWriter = getDiffWriter(arguments)) {
             PgDiff diff = new PgDiff(arguments);
-            PgDiffScript script;
+            String text;
             try {
-                script = diff.createDiff();
+                text = diff.createDiff();
             } catch (PgCodekeeperException ex) {
                 diff.getErrors().forEach(System.err::println);
                 return false;
             }
-
-            String text = script.getText();
 
             ScriptParser parser = new ScriptParser("CLI", text, arguments.isMsSql());
 

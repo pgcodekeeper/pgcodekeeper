@@ -1,10 +1,13 @@
 package ru.taximaxim.codekeeper.apgdiff.model.graph;
 
+import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
 import org.jgrapht.DirectedGraph;
+import org.jgrapht.alg.CycleDetector;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.EdgeReversedGraph;
 import org.jgrapht.graph.SimpleDirectedGraph;
@@ -12,6 +15,7 @@ import org.jgrapht.graph.SimpleDirectedGraph;
 import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
+import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractPgTable;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -23,8 +27,11 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class DepcyGraph {
+
+    private static final String REMOVE_DEP = "Remove dependency from {0} to {1}";
 
     private final DirectedGraph<PgStatement, DefaultEdge> graph =
             new SimpleDirectedGraph<>(DefaultEdge.class);
@@ -57,8 +64,20 @@ public class DepcyGraph {
     }
 
     public DepcyGraph(PgDatabase graphSrc) {
+        this(graphSrc, false);
+    }
+
+    /**
+     * @param reduceGraph if true, merge column nodes into table nodes in the graph
+     */
+    public DepcyGraph(PgDatabase graphSrc, boolean reduceGraph) {
         db = (PgDatabase) graphSrc.deepCopy();
         create();
+        removeCycles();
+
+        if (reduceGraph) {
+            reduce();
+        }
     }
 
     private void create() {
@@ -93,6 +112,61 @@ public class DepcyGraph {
                 }
             }
         });
+    }
+
+    private void reduce() {
+        List<Pair<PgStatement, PgStatement>> newEdges = new ArrayList<>();
+        for (DefaultEdge edge : graph.edgeSet()) {
+            PgStatement source = graph.getEdgeSource(edge);
+            PgStatement target = graph.getEdgeTarget(edge);
+            boolean changeEdge = false;
+            if (source.getStatementType() == DbObjType.COLUMN) {
+                changeEdge = true;
+                source = source.getParent();
+            }
+            if (target.getStatementType() == DbObjType.COLUMN) {
+                changeEdge = true;
+                target = target.getParent();
+            }
+            if (changeEdge && !source.equals(target)) {
+                newEdges.add(new Pair<>(source, target));
+            }
+        }
+        for (Pair<PgStatement, PgStatement> edge : newEdges) {
+            graph.addEdge(edge.getFirst(), edge.getSecond());
+        }
+
+        List<PgStatement> toRemove = new ArrayList<>();
+        for (PgStatement st : graph.vertexSet()) {
+            if (st.getStatementType() == DbObjType.COLUMN) {
+                toRemove.add(st);
+            }
+        }
+        graph.removeAllVertices(toRemove);
+    }
+
+    private void removeCycles() {
+        CycleDetector<PgStatement, DefaultEdge> detector = new CycleDetector<>(graph);
+
+        for (PgStatement st : detector.findCycles()) {
+            if (!(st instanceof AbstractPgFunction)) {
+                continue;
+            }
+
+            for (PgStatement vertex : detector.findCyclesContainingVertex(st)) {
+                if (vertex.getStatementType() == DbObjType.COLUMN) {
+                    graph.removeEdge(st, vertex);
+                    Log.log(Log.LOG_INFO, MessageFormat.format(REMOVE_DEP,
+                            st.getQualifiedName(), vertex.getQualifiedName()));
+
+                    PgStatement table = vertex.getParent();
+                    if (graph.removeEdge(st, table) != null) {
+                        Log.log(Log.LOG_INFO, MessageFormat.format(REMOVE_DEP,
+                                st.getQualifiedName(), table.getQualifiedName()));
+                    }
+                }
+            }
+        }
     }
 
     private void processDeps(PgStatement st) {
