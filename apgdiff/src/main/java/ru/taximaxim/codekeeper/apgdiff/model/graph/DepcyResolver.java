@@ -56,11 +56,7 @@ public class DepcyResolver {
     private final Set<Entry<PgStatement, StatementActions>> sKippedObjects = new HashSet<>();
 
     public DirectedGraph<PgStatement, DefaultEdge> getOldGraph() {
-        return oldDepcyGraph.getReducedGraph();
-    }
-
-    public DirectedGraph<PgStatement, DefaultEdge> getNewGraph() {
-        return newDepcyGraph.getReducedGraph();
+        return oldDepcyGraph.getGraph();
     }
 
     /**
@@ -92,11 +88,17 @@ public class DepcyResolver {
         return Collections.unmodifiableSet(toRefresh);
     }
 
-    public DepcyResolver(PgDatabase oldDatabase, PgDatabase newDatabase, boolean isNeedReduce) {
+    public DepcyResolver(PgDatabase oldDatabase, PgDatabase newDatabase) {
+        this(oldDatabase, newDatabase, false);
+    }
+    /**
+     * @param reduceGraph see {@link DepcyGraph#DepcyGraph(PgDatabase, boolean)}
+     */
+    public DepcyResolver(PgDatabase oldDatabase, PgDatabase newDatabase, boolean reduceGraph) {
         this.oldDb = oldDatabase;
         this.newDb = newDatabase;
-        this.oldDepcyGraph = new DepcyGraph(oldDatabase, isNeedReduce);
-        this.newDepcyGraph = new DepcyGraph(newDatabase, isNeedReduce);
+        this.oldDepcyGraph = new DepcyGraph(oldDatabase, reduceGraph);
+        this.newDepcyGraph = new DepcyGraph(newDatabase, reduceGraph);
     }
 
     /**
@@ -306,9 +308,9 @@ public class DepcyResolver {
     public Set<PgStatement> getCreateDepcies(PgStatement toCreate) {
         PgStatement statement = toCreate.getTwin(newDb);
         Set<PgStatement> depcies = new HashSet<>();
-        if (newDepcyGraph.getReducedGraph().containsVertex(statement)) {
+        if (newDepcyGraph.getGraph().containsVertex(statement)) {
             DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
-                    newDepcyGraph.getReducedGraph(), statement);
+                    newDepcyGraph.getGraph(), statement);
             customIteration(dfi, new DepcyIterator(depcies));
         }
 
@@ -318,9 +320,9 @@ public class DepcyResolver {
     public Set<PgStatement> getDropDepcies(PgStatement toDrop) {
         PgStatement statement = toDrop.getTwin(oldDb);
         Set<PgStatement> depcies = new HashSet<>();
-        if (oldDepcyGraph.getReversedReducedGraph().containsVertex(statement)) {
+        if (oldDepcyGraph.getReversedGraph().containsVertex(statement)) {
             DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
-                    oldDepcyGraph.getReversedReducedGraph(), statement);
+                    oldDepcyGraph.getReversedGraph(), statement);
             customIteration(dfi, new DepcyIterator(depcies));
         }
 

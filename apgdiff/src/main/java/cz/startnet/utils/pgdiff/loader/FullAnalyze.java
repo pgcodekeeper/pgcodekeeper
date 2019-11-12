@@ -30,7 +30,7 @@ public final class FullAnalyze {
 
     public void fullAnalyze() {
         TopologicalOrderIterator<PgStatement, DefaultEdge> orderIterator =
-                new TopologicalOrderIterator<>(new DepcyGraph(db, false).getReversedGraph());
+                new TopologicalOrderIterator<>(new DepcyGraph(db).getReversedGraph());
 
         orderIterator.addTraversalListener(new ViewsAnalyzeTraversal());
 

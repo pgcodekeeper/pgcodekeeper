@@ -227,7 +227,7 @@ public class PgDiff {
             script.addStatement("START TRANSACTION;");
         }
 
-        DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull, false);
+        DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull);
         createScript(depRes, root, oldDbFull, newDbFull,
                 additionalDepciesSource, additionalDepciesTarget, ignoreList);
 
@@ -253,7 +253,7 @@ public class PgDiff {
             script.addStatement("BEGIN TRANSACTION\nGO");
         }
 
-        DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull, false);
+        DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull);
         createScript(depRes, root, oldDbFull, newDbFull,
                 additionalDepciesSource, additionalDepciesTarget, ignoreList);
 

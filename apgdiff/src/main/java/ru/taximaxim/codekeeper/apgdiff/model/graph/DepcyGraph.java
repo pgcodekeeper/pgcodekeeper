@@ -38,15 +38,6 @@ public class DepcyGraph {
             new EdgeReversedGraph<>(graph);
 
     /**
-     * Graph without columns (source and target columns moved to their parents)
-     */
-    private final DirectedGraph<PgStatement, DefaultEdge> reducedGraph =
-            new SimpleDirectedGraph<>(DefaultEdge.class);
-
-    private final EdgeReversedGraph<PgStatement, DefaultEdge> reversedReducedGraph =
-            new EdgeReversedGraph<>(reducedGraph);
-
-    /**
      * Направление связей в графе:<br>
      * зависящий объект → зависимость <br>
      * source → target
@@ -57,14 +48,6 @@ public class DepcyGraph {
 
     public EdgeReversedGraph<PgStatement, DefaultEdge> getReversedGraph(){
         return reversedGraph;
-    }
-
-    public DirectedGraph<PgStatement, DefaultEdge> getReducedGraph() {
-        return reducedGraph;
-    }
-
-    public EdgeReversedGraph<PgStatement, DefaultEdge> getReversedReducedGraph() {
-        return reversedReducedGraph;
     }
 
     private final PgDatabase db;
@@ -78,12 +61,19 @@ public class DepcyGraph {
         return db;
     }
 
-    public DepcyGraph(PgDatabase graphSrc, boolean isNeedReduce) {
+    public DepcyGraph(PgDatabase graphSrc) {
+        this(graphSrc, false);
+    }
+
+    /**
+     * @param reduceGraph if true, merge column nodes into table nodes in the graph
+     */
+    public DepcyGraph(PgDatabase graphSrc, boolean reduceGraph) {
         db = (PgDatabase) graphSrc.deepCopy();
         create();
         removeCycles();
 
-        if (isNeedReduce) {
+        if (reduceGraph) {
             reduce();
         }
     }
@@ -123,12 +113,6 @@ public class DepcyGraph {
     }
 
     private void reduce() {
-        for (PgStatement st : graph.vertexSet()) {
-            if (st.getStatementType() != DbObjType.COLUMN) {
-                reducedGraph.addVertex(st);
-            }
-        }
-
         for (DefaultEdge edge : graph.edgeSet()) {
             PgStatement source = graph.getEdgeSource(edge);
             PgStatement target = graph.getEdgeTarget(edge);
@@ -139,7 +123,12 @@ public class DepcyGraph {
                 target = target.getParent();
             }
             if (!source.equals(target)) {
-                reducedGraph.addEdge(source, target);
+                graph.addEdge(source, target);
+            }
+        }
+        for (PgStatement st : graph.vertexSet()) {
+            if (st.getStatementType() == DbObjType.COLUMN) {
+                graph.removeVertex(st);
             }
         }
     }
