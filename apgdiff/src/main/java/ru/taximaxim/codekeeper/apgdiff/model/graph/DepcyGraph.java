@@ -1,5 +1,6 @@
 package ru.taximaxim.codekeeper.apgdiff.model.graph;
 
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -27,6 +28,8 @@ import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class DepcyGraph {
+
+    private static final String REMOVE_DEP = "Remove dependency from {0} to {1}";
 
     private final DirectedGraph<PgStatement, DefaultEdge> graph =
             new SimpleDirectedGraph<>(DefaultEdge.class);
@@ -75,11 +78,14 @@ public class DepcyGraph {
         return db;
     }
 
-    public DepcyGraph(PgDatabase graphSrc) {
+    public DepcyGraph(PgDatabase graphSrc, boolean isNeedReduce) {
         db = (PgDatabase) graphSrc.deepCopy();
         create();
-        reduce();
         removeCycles();
+
+        if (isNeedReduce) {
+            reduce();
+        }
     }
 
     private void create() {
@@ -126,32 +132,36 @@ public class DepcyGraph {
         for (DefaultEdge edge : graph.edgeSet()) {
             PgStatement source = graph.getEdgeSource(edge);
             PgStatement target = graph.getEdgeTarget(edge);
-            while (source != null && source.getStatementType() == DbObjType.COLUMN) {
+            if (source.getStatementType() == DbObjType.COLUMN) {
                 source = source.getParent();
             }
-            while (target != null && target.getStatementType() == DbObjType.COLUMN) {
+            if (target.getStatementType() == DbObjType.COLUMN) {
                 target = target.getParent();
             }
-            if (source != null && target != null && !source.equals(target)) {
+            if (!source.equals(target)) {
                 reducedGraph.addEdge(source, target);
             }
         }
     }
 
     private void removeCycles() {
-        CycleDetector<PgStatement, DefaultEdge> detector =
-                new CycleDetector<>(reducedGraph);
+        CycleDetector<PgStatement, DefaultEdge> detector = new CycleDetector<>(graph);
 
         for (PgStatement st : detector.findCycles()) {
-            if (st instanceof AbstractPgFunction) {
-                for (PgStatement vertex : detector.findCyclesContainingVertex(st)) {
-                    if (vertex.getStatementType() == DbObjType.TABLE
-                            && graph.removeEdge(st, vertex) != null) {
-                        reducedGraph.removeEdge(st, vertex);
+            if (!(st instanceof AbstractPgFunction)) {
+                continue;
+            }
 
-                        Log.log(Log.LOG_INFO, "Remove dependency from "
-                                + st.getQualifiedName() +
-                                " to " + vertex.getQualifiedName());
+            for (PgStatement vertex : detector.findCyclesContainingVertex(st)) {
+                if (vertex.getStatementType() == DbObjType.COLUMN) {
+                    graph.removeEdge(st, vertex);
+                    Log.log(Log.LOG_INFO, MessageFormat.format(REMOVE_DEP,
+                            st.getQualifiedName(), vertex.getQualifiedName()));
+
+                    PgStatement table = vertex.getParent();
+                    if (graph.removeEdge(st, table) != null) {
+                        Log.log(Log.LOG_INFO, MessageFormat.format(REMOVE_DEP,
+                                st.getQualifiedName(), table.getQualifiedName()));
                     }
                 }
             }

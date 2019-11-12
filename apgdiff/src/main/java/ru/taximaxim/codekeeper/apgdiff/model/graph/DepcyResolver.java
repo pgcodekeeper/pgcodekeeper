@@ -92,11 +92,11 @@ public class DepcyResolver {
         return Collections.unmodifiableSet(toRefresh);
     }
 
-    public DepcyResolver(PgDatabase oldDatabase, PgDatabase newDatabase) {
+    public DepcyResolver(PgDatabase oldDatabase, PgDatabase newDatabase, boolean isNeedReduce) {
         this.oldDb = oldDatabase;
         this.newDb = newDatabase;
-        this.oldDepcyGraph = new DepcyGraph(oldDatabase);
-        this.newDepcyGraph = new DepcyGraph(newDatabase);
+        this.oldDepcyGraph = new DepcyGraph(oldDatabase, isNeedReduce);
+        this.newDepcyGraph = new DepcyGraph(newDatabase, isNeedReduce);
     }
 
     /**

@@ -173,8 +173,8 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         PgDatabase newDb = showProject ? dss.dbProject.getDbObject() : dss.dbRemote.getDbObject();
         if (currentDb != newDb) {
             currentDb = newDb;
-            depRes = new DepcyResolver(currentDb,
-                    showProject ? dss.dbRemote.getDbObject() : dss.dbProject.getDbObject());
+            // second database is not interesting
+            depRes = new DepcyResolver(currentDb, new PgDatabase(), true);
         }
 
         if (currentDb == null || depRes == null) {
