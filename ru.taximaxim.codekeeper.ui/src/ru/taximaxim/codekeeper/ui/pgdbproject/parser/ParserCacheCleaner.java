@@ -32,6 +32,7 @@ public class ParserCacheCleaner implements IStartup {
                     Thread.sleep(CHECK_INTERVAL);
                 } catch (InterruptedException e) {
                     Log.log(e);
+                    Thread.currentThread().interrupt();
                 }
             }
         });
