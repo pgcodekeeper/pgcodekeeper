@@ -111,12 +111,11 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
             return;
         }
 
-        if (proj != null) {
-            try {
-                storePicker.filter(proj.hasNature(NATURE.ID) ? proj.hasNature(NATURE.MS) : null);
-            } catch (CoreException ex) {
-                Log.log(ex);
-            }
+        try {
+            storePicker.filter(proj != null && proj.hasNature(NATURE.ID) ?
+                    proj.hasNature(NATURE.MS) : null);
+        } catch (CoreException ex) {
+            Log.log(ex);
         }
 
         if (lastDb == null) {
