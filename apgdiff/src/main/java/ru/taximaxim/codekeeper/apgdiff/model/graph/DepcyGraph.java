@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.apgdiff.model.graph;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -26,6 +27,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class DepcyGraph {
 
@@ -113,24 +115,34 @@ public class DepcyGraph {
     }
 
     private void reduce() {
+        List<Pair<PgStatement, PgStatement>> newEdges = new ArrayList<>();
         for (DefaultEdge edge : graph.edgeSet()) {
             PgStatement source = graph.getEdgeSource(edge);
             PgStatement target = graph.getEdgeTarget(edge);
+            boolean changeEdge = false;
             if (source.getStatementType() == DbObjType.COLUMN) {
+                changeEdge = true;
                 source = source.getParent();
             }
             if (target.getStatementType() == DbObjType.COLUMN) {
+                changeEdge = true;
                 target = target.getParent();
             }
-            if (!source.equals(target)) {
-                graph.addEdge(source, target);
+            if (changeEdge && !source.equals(target)) {
+                newEdges.add(new Pair<>(source, target));
             }
         }
+        for (Pair<PgStatement, PgStatement> edge : newEdges) {
+            graph.addEdge(edge.getFirst(), edge.getSecond());
+        }
+
+        List<PgStatement> toRemove = new ArrayList<>();
         for (PgStatement st : graph.vertexSet()) {
             if (st.getStatementType() == DbObjType.COLUMN) {
-                graph.removeVertex(st);
+                toRemove.add(st);
             }
         }
+        graph.removeAllVertices(toRemove);
     }
 
     private void removeCycles() {
