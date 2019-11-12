@@ -39,7 +39,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
-import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
+import ru.taximaxim.codekeeper.apgdiff.model.graph.SimpleDepcyResolver;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
@@ -55,7 +55,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
     private DepcyGraphLabelProvider labelProvider;
 
     private PgDatabase currentDb;
-    private DepcyResolver depRes;
+    private SimpleDepcyResolver depRes;
     private IWorkbenchPart lastSelectionPart;
     private ISelection lastSelection;
     private IProject currentProject;
@@ -173,8 +173,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         PgDatabase newDb = showProject ? dss.dbProject.getDbObject() : dss.dbRemote.getDbObject();
         if (currentDb != newDb) {
             currentDb = newDb;
-            // second database is not interesting
-            depRes = new DepcyResolver(currentDb, new PgDatabase(), true);
+            depRes = new SimpleDepcyResolver(currentDb);
         }
 
         if (currentDb == null || depRes == null) {
