@@ -19,6 +19,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import cz.startnet.utils.pgdiff.hashers.IHashable;
 import cz.startnet.utils.pgdiff.hashers.JavaHasher;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
 /**
  * Stores view information.
@@ -150,12 +151,17 @@ public class PgView extends AbstractView implements PgOptionContainer  {
         final int startLength = sb.length();
         PgView newView = (PgView) newCondition;
 
-        // TODO add alter for materialized view
-        if (isViewModified(newView)
-                || isMatView() != newView.isMatView()
-                || getTablespace() != newView.getTablespace()) {
+        if (isViewModified(newView) || isMatView() != newView.isMatView()) {
             isNeedDepcies.set(true);
             return true;
+        }
+
+        if (!Objects.equals(getTablespace(), newView.getTablespace())) {
+            sb.append("\n\nALTER TABLE ").append(newView.getQualifiedName())
+            .append("\n\tSET TABLESPACE ");
+
+            String newSpace = newView.getTablespace();
+            sb.append(newSpace == null ? ApgdiffConsts.PG_DEFAULT : newSpace).append(';');
         }
 
         if (!Objects.equals(isWithData(), newView.isWithData())) {

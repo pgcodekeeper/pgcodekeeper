@@ -20,22 +20,22 @@ REVOKE ALL ON SEQUENCE public.test_id_seq FROM PUBLIC;
 REVOKE ALL ON SEQUENCE public.test_id_seq FROM botov_av;
 GRANT ALL ON SEQUENCE public.test_id_seq TO botov_av;
 
-REVOKE ALL ON FUNCTION public.test_fnc(arg character varying) FROM maindb;
-GRANT ALL ON FUNCTION public.test_fnc(character varying) TO PUBLIC;
-REVOKE ALL ON FUNCTION public.test_fnc(character varying) FROM botov_av;
-GRANT ALL ON FUNCTION public.test_fnc(character varying) TO botov_av;
-
-REVOKE ALL ON FUNCTION public.trigger_fnc() FROM maindb;
-GRANT ALL ON FUNCTION public.trigger_fnc() TO PUBLIC;
-REVOKE ALL ON FUNCTION public.trigger_fnc() FROM botov_av;
-GRANT ALL ON FUNCTION public.trigger_fnc() TO botov_av;
-
 REVOKE ALL ON TABLE public.test FROM maindb;
 REVOKE ALL ON TABLE public.test FROM PUBLIC;
 REVOKE ALL ON TABLE public.test FROM botov_av;
 GRANT ALL ON TABLE public.test TO botov_av;
 
 REVOKE ALL(id) ON TABLE public.test FROM maindb;
+
+REVOKE ALL ON FUNCTION public.test_fnc(arg character varying) FROM maindb;
+GRANT ALL ON FUNCTION public.test_fnc(arg character varying) TO PUBLIC;
+REVOKE ALL ON FUNCTION public.test_fnc(arg character varying) FROM botov_av;
+GRANT ALL ON FUNCTION public.test_fnc(arg character varying) TO botov_av;
+
+REVOKE ALL ON FUNCTION public.trigger_fnc() FROM maindb;
+GRANT ALL ON FUNCTION public.trigger_fnc() TO PUBLIC;
+REVOKE ALL ON FUNCTION public.trigger_fnc() FROM botov_av;
+GRANT ALL ON FUNCTION public.trigger_fnc() TO botov_av;
 
 REVOKE ALL ON TABLE public.test_view FROM maindb;
 REVOKE ALL ON TABLE public.test_view FROM PUBLIC;

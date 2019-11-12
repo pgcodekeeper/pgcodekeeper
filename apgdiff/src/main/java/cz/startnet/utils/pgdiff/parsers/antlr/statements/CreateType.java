@@ -9,7 +9,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_type_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
+import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgType.PgTypeForm;
@@ -53,7 +55,6 @@ public class CreateType extends ParserAbstract {
 
         for (Table_column_definitionContext attr : ctx.attrs) {
             type.addAttr(getColumn(attr));
-            addPgTypeDepcy(attr.datatype, type);
         }
         for (Character_stringContext enume : ctx.enums) {
             type.addEnum(enume.getText());
@@ -144,5 +145,15 @@ public class CreateType extends ParserAbstract {
             // add only newly created type, not a filled SHELL that was added before
             addSafe(schema, type, ids);
         }
+    }
+
+    private AbstractColumn getColumn(Table_column_definitionContext colCtx) {
+        AbstractColumn col = new PgColumn(colCtx.identifier().getText());
+        col.setType(getTypeName(colCtx.data_type()));
+        addPgTypeDepcy(colCtx.data_type(), col);
+        if (colCtx.collate_identifier() != null) {
+            col.setCollation(getFullCtxText(colCtx.collate_identifier().collation));
+        }
+        return col;
     }
 }

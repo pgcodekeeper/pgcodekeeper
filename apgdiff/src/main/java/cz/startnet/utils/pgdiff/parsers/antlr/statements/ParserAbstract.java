@@ -25,19 +25,16 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Including_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Predefined_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Target_operatorContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.IdContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
-import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.ArgMode;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IStatement;
-import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
@@ -126,16 +123,6 @@ public abstract class ParserAbstract {
         Token start = startTokens != null ? startTokens.get(0) : ctx.getStart();
         Token stop = stopTokens != null ? stopTokens.get(stopTokens.size() - 1) : ctx.getStop();
         return getFullCtxText(start, stop);
-    }
-
-    protected AbstractColumn getColumn(Table_column_definitionContext colCtx) {
-        AbstractColumn col = new PgColumn(colCtx.column_name.getText());
-        col.setType(getTypeName(colCtx.datatype));
-        addPgTypeDepcy(colCtx.datatype, col);
-        if (colCtx.collate_name != null) {
-            col.setCollation(getFullCtxText(colCtx.collate_name.collation));
-        }
-        return col;
     }
 
     public static String getTypeName(Data_typeContext datatype) {
@@ -349,9 +336,9 @@ public abstract class ParserAbstract {
         case TABLE:
         case TYPE:
         case VIEW:
+        case INDEX:
             return new PgObjLocation(schemaName, name, type, action);
         case CONSTRAINT:
-        case INDEX:
         case TRIGGER:
         case RULE:
         case COLUMN:

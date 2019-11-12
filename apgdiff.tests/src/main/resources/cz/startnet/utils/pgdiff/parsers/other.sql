@@ -31,8 +31,7 @@ NOTIFY notify_async2;
 LISTEN notify_async2;
 UNLISTEN notify_async2;
 UNLISTEN *;
-explain (verbose, costs off, analyze on, timing off, summary off)
-explain (costs off)
+explain (verbose, costs off, analyze on, timing off, summary off) create table t1 as select 1;
 EXPLAIN (COSTS OFF) SELECT * FROM t1;
 ANALYZE onek2;
 PREPARE p1(int) AS SELECT * FROM t1 WHERE a <= $1;

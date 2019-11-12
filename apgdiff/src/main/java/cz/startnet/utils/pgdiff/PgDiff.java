@@ -63,7 +63,7 @@ public class PgDiff {
     /**
      * Creates diff on the two database schemas.
      */
-    public PgDiffScript createDiff() throws InterruptedException, IOException, PgCodekeeperException {
+    public String createDiff() throws InterruptedException, IOException, PgCodekeeperException {
         PgDatabase oldDatabase = loadOldDatabase();
         PgDatabase newDatabase = loadNewDatabase();
 
@@ -183,7 +183,7 @@ public class PgDiff {
                 MessageFormat.format(Messages.UnknownDBFormat, format));
     }
 
-    private PgDiffScript diffDatabaseSchemas(PgDatabase oldDbFull, PgDatabase newDbFull,
+    public String diffDatabaseSchemas(PgDatabase oldDbFull, PgDatabase newDbFull,
             IgnoreList ignoreList) throws InterruptedException {
         TreeElement root = DiffTree.create(oldDbFull, newDbFull, null);
         root.setAllChecked();
@@ -195,7 +195,7 @@ public class PgDiff {
      * Делает то же, что и метод выше, однако принимает TreeElement - как
      * элементы нужные для наката
      */
-    public PgDiffScript diffDatabaseSchemasAdditionalDepcies(TreeElement root,
+    public String diffDatabaseSchemasAdditionalDepcies(TreeElement root,
             PgDatabase oldDbFull, PgDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget) {
@@ -207,7 +207,7 @@ public class PgDiff {
                 additionalDepciesSource, additionalDepciesTarget, null);
     }
 
-    private PgDiffScript diffDatabaseSchemasAdditionalDepcies(
+    private String diffDatabaseSchemasAdditionalDepcies(
             TreeElement root, PgDatabase oldDbFull, PgDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
@@ -239,10 +239,10 @@ public class PgDiff {
             script.addStatement("COMMIT TRANSACTION;");
         }
 
-        return script;
+        return script.getText();
     }
 
-    private PgDiffScript diffMsDatabaseSchemas(
+    private String diffMsDatabaseSchemas(
             TreeElement root, PgDatabase oldDbFull, PgDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
@@ -264,7 +264,7 @@ public class PgDiff {
             script.addStatement("COMMIT\nGO");
         }
 
-        return script;
+        return script.getText();
     }
 
     private void createScript(DepcyResolver depRes, TreeElement root,
@@ -334,12 +334,5 @@ public class PgDiff {
             }
         }
         selected.addAll(tempColumns);
-    }
-
-    // used in tests
-    public static PgDiffScript diffDatabaseSchemas(PgDiffArguments arguments,
-            PgDatabase oldDbFull, PgDatabase newDbFull, IgnoreList ignoreList)
-                    throws InterruptedException {
-        return new PgDiff(arguments).diffDatabaseSchemas(oldDbFull, newDbFull, ignoreList);
     }
 }

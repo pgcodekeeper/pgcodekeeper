@@ -3,7 +3,7 @@ lexer grammar TSQLLexer;
 @header {package cz.startnet.utils.pgdiff.parsers.antlr;}
 
 // Basic keywords (from https://msdn.microsoft.com/en-us/library/ms189822.aspx)
-ADD: A D D;
+ADD: A D D;  // first identifier rule, sync with CustomTSQLAntlrErrorStrategy
 ALL: A L L;
 ALTER: A L T E R;
 AND: A N D;
@@ -828,7 +828,7 @@ XMLDATA: X M L D A T A;
 XMLNAMESPACES: X M L N A M E S P A C E S;
 XMLSCHEMA: X M L S C H E M A;
 XQUERY: X Q U E R Y;
-XSINIL: X S I N I L; 
+XSINIL: X S I N I L;  // last identifier rule, sync with CustomTSQLAntlrErrorStrategy
 
 
 // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/slash-star-comment-transact-sql

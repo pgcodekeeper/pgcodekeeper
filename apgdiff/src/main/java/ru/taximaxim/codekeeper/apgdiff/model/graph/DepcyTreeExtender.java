@@ -24,7 +24,7 @@ public class DepcyTreeExtender {
 
     private final PgDatabase dbSource;
     private final PgDatabase dbTarget;
-    private final DepcyResolver depRes;
+    private final SimpleDepcyResolver depRes;
     private final TreeElement root;
     /**
      * Элементы выбранные пользователем для наката на Проект
@@ -44,7 +44,7 @@ public class DepcyTreeExtender {
         this.dbTarget = dbTarget;
         this.root = root;
         userSelection = new TreeFlattener().onlySelected().flatten(root);
-        depRes = new DepcyResolver(dbSource, dbTarget);
+        depRes = new SimpleDepcyResolver(dbSource, dbTarget);
     }
 
     /**

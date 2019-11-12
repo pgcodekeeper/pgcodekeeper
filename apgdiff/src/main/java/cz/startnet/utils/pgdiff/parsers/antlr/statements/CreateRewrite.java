@@ -51,7 +51,7 @@ public class CreateRewrite extends ParserAbstract {
         rule.setCondition((ctx.WHERE() != null) ? getFullCtxText(ctx.vex()) : null);
 
         // allows to write a common namespace-setup code with no copy-paste for each cmd type
-        for (Rewrite_commandContext cmd : ctx.commands) {
+        for (Rewrite_commandContext cmd : ctx.rewrite_command()) {
             rule.addCommand(db.getArguments(), getFullCtxText(cmd));
         }
 

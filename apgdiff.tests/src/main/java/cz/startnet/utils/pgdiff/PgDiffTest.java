@@ -5,13 +5,10 @@
  */
 package cz.startnet.utils.pgdiff;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -76,6 +73,10 @@ public class PgDiffTest {
                     {"modify_index"},
                     // Tests scenario where INDEX option is modified.
                     {"modify_index_option"},
+                    // Tests scenario where INDEX tablespace is modified.
+                    {"modify_index_tablespace"},
+                    // Tests scenario where PARTITION INDEX is modified.
+                    {"modify_partition_index"},
                     // Tests scenario where STATISTICS information is added
                     // to COLUMN.
                     {"add_statistics"},
@@ -410,7 +411,6 @@ public class PgDiffTest {
                     // Tests scenario where materialized VIEW options is changed.
                     {"modify_materialized_view_options"},
                     // Tests scenario where materialized VIEW is changed.
-                    // TODO изменить после добавления поддержки ALTER MATERIALIZED VIEW
                     {"modify_materialized_view"},
                     //Tests scenario where empty SEQUENCE is compared.
                     {"compare_empty_sequence"},
@@ -500,6 +500,10 @@ public class PgDiffTest {
                     {"add_privilege_quoted_name"},
                     //Tests scenario where MATERIALIZED VIEW is refreshed.
                     {"refresh_materialized_view"},
+                    //tests scenario where table is recreated and its column dependency is dropped
+                    {"tabl_to_func_drop"},
+                    // tests scenario where owner and its privileges are both changed
+                    {"chg_owner_grant"}
                 });
     }
 
@@ -515,12 +519,6 @@ public class PgDiffTest {
         Log.log(Log.LOG_DEBUG, fileNameTemplate);
     }
 
-    public void runDiffSame(PgDatabase db) throws IOException, InterruptedException {
-        String script = PgDiff.diffDatabaseSchemas(new PgDiffArguments(), db, db, null).getText();
-        Assert.assertEquals("File name template: " + fileNameTemplate,
-                "", script.trim());
-    }
-
     @Test
     public void runDiff() throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
@@ -529,26 +527,11 @@ public class PgDiffTest {
         PgDatabase dbNew = ApgdiffTestUtils.loadTestDump(
                 fileNameTemplate + FILES_POSTFIX.NEW_SQL, PgDiffTest.class, args);
 
-        runDiffSame(dbOld);
-        runDiffSame(dbNew);
+        ApgdiffTestUtils.runDiffSame(dbOld, fileNameTemplate, args);
+        ApgdiffTestUtils.runDiffSame(dbNew, fileNameTemplate, args);
 
-        String script = PgDiff.diffDatabaseSchemas(args, dbOld, dbNew, null).getText();
+        String script = new PgDiff(args).diffDatabaseSchemas(dbOld, dbNew, null);
 
-        StringBuilder sbExpDiff;
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                PgDiffTest.class.getResourceAsStream(fileNameTemplate
-                        + FILES_POSTFIX.DIFF_SQL)))) {
-            sbExpDiff = new StringBuilder(1024);
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                sbExpDiff.append(line);
-                sbExpDiff.append('\n');
-            }
-        }
-
-        Assert.assertEquals("File name template: " + fileNameTemplate,
-                sbExpDiff.toString().trim(),
-                script.trim());
+        ApgdiffTestUtils.compareResult(script, fileNameTemplate, PgDiffTest.class);
     }
 }

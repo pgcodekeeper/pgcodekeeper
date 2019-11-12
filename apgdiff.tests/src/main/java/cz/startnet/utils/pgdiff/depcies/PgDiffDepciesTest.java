@@ -1,12 +1,9 @@
 package cz.startnet.utils.pgdiff.depcies;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -86,10 +83,8 @@ public class PgDiffDepciesTest {
             // пользователь выбрал все
             {"add_table_and_trigger"},
             // перенос объектов из одной схемы в другую,
-            // пользователь выбрал все объекты
-            // TODO ошибки при частичном выборе, к примеру при выборе таблицы не подтягивается
-            // тип и последовательность, исправляется переработкой алгоритма работой с колонками
-            {"move_obj_to_schema"},
+            // пользователь выбрал таблицу
+            {"move_obj_to_schema_usr_table"},
             // зависимости от вьюхи, пользователь выбрал вьюху с FROM ROW FROM
             // https://github.com/pgcodekeeper/pgcodekeeper/issues/54
             {"add_view_with_dep_usr_v1"},
@@ -105,6 +100,9 @@ public class PgDiffDepciesTest {
             // зависимости от вьюхи,
             // пользователь выбрал вьюху с группировкой
             {"add_view_with_dep_usr_v5"},
+            // зависимости от вьюхи,
+            // пользователь выбрал вьюху с группировкой по primary key
+            {"add_view_with_dep_usr_v6"},
             // изменение таблиц и вьюх, зависящих от них
             // пользователь выбрал таблицу t1
             {"change_view_usr_t1"},
@@ -198,6 +196,30 @@ public class PgDiffDepciesTest {
             // зависимости от функции,
             // пользователь выбрал функцию
             {"add_func_with_dep_usr_f1"},
+            // изменение сиквенсов с зависимостями
+            // пользователь выбрал сиквенс s1
+            {"change_sequence_usr_s1"},
+            // изменение сиквенсов с зависимостями
+            // пользователь выбрал сиквенс s2
+            {"change_sequence_usr_s2"},
+            // изменение сиквенсов с зависимостями
+            // пользователь выбрал сиквенс s3
+            {"change_sequence_usr_s3"},
+            // изменение сиквенсов с зависимостями
+            // пользователь выбрал сиквенс s4
+            {"change_sequence_usr_s4"},
+            // изменение сиквенсов с зависимостями
+            // пользователь выбрал сиквенс s5
+            {"change_sequence_usr_s5"},
+            // изменение сиквенсов с зависимостями
+            // пользователь выбрал таблицу t0
+            {"change_sequence_usr_t0"},
+            // изменение сиквенсов с зависимостями
+            // пользователь выбрал таблицу t6
+            {"change_sequence_usr_t6"},
+            // добавление таблицы с цикличной зависимотью к функции
+            // пользователь выбрал таблицу t1
+            {"add_table_with_cyclic_dep_usr_t1", true},
         });
 
         int maxLength = p.stream()
@@ -231,11 +253,6 @@ public class PgDiffDepciesTest {
         Log.log(Log.LOG_DEBUG, dbTemplate + ' ' + userSelTemplate);
     }
 
-    public void runDiffSame(PgDatabase db) throws IOException, InterruptedException {
-        String script = PgDiff.diffDatabaseSchemas(new PgDiffArguments(), db, db, null).getText();
-        Assert.assertEquals("File name template: " + dbTemplate, "", script.trim());
-    }
-
     @Test(timeout = 120000)
     public void runDiff() throws IOException, InterruptedException {
         PgDatabase oldDatabase;
@@ -260,29 +277,15 @@ public class PgDiffDepciesTest {
                     getDbName(FILES_POSTFIX.NEW_SQL), PgDiffDepciesTest.class, args);
         }
 
-        runDiffSame(oldDbFull);
-        runDiffSame(newDbFull);
+        ApgdiffTestUtils.runDiffSame(oldDbFull, dbTemplate, args);
+        ApgdiffTestUtils.runDiffSame(newDbFull, dbTemplate, args);
 
         TreeElement tree = DiffTree.create(oldDatabase, newDatabase, null);
         tree.setAllChecked();
         String script = new PgDiff(args).diffDatabaseSchemasAdditionalDepcies(
-                tree, oldDbFull, newDbFull, null, null).getText();
+                tree, oldDbFull, newDbFull, null, null);
 
-        StringBuilder sbExpDiff;
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                PgDiffDepciesTest.class.getResourceAsStream(getUsrSelName(FILES_POSTFIX.DIFF_SQL))))) {
-            sbExpDiff = new StringBuilder(1024);
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                sbExpDiff.append(line);
-                sbExpDiff.append('\n');
-            }
-        }
-
-        Assert.assertEquals("File name template: " + userSelTemplate,
-                sbExpDiff.toString().trim(),
-                script.trim());
+        ApgdiffTestUtils.compareResult(script, userSelTemplate, PgDiffDepciesTest.class);
     }
 
     private String getUsrSelName(FILES_POSTFIX postfix) {

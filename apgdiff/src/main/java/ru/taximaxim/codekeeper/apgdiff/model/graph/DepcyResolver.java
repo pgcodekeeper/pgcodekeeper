@@ -14,7 +14,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
-import org.jgrapht.DirectedGraph;
 import org.jgrapht.event.TraversalListenerAdapter;
 import org.jgrapht.event.VertexTraversalEvent;
 import org.jgrapht.graph.DefaultEdge;
@@ -25,9 +24,11 @@ import cz.startnet.utils.pgdiff.schema.AbstractFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.Argument;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsTable;
 import cz.startnet.utils.pgdiff.schema.MsView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.SourceStatement;
@@ -52,14 +53,6 @@ public class DepcyResolver {
      * Хранит запущенные итерации, используется для предотвращения циклического прохода по графу
      */
     private final Set<Entry<PgStatement, StatementActions>> sKippedObjects = new HashSet<>();
-
-    public DirectedGraph<PgStatement, DefaultEdge> getOldGraph() {
-        return oldDepcyGraph.getGraph();
-    }
-
-    public DirectedGraph<PgStatement, DefaultEdge> getNewGraph() {
-        return newDepcyGraph.getGraph();
-    }
 
     /**
      * Добавить ручную зависимость к старому графу
@@ -115,7 +108,12 @@ public class DepcyResolver {
 
             DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
                     oldDepcyGraph.getReversedGraph(), statement);
-            customIteration(dfi, new DropTraversalAdapter(statement, StatementActions.DROP));
+            customIteration(dfi, new DropTraversalAdapter(statement));
+
+            if (!statement.canDrop()) {
+                customIteration(new DepthFirstIterator<>(oldDepcyGraph.getGraph(), statement),
+                        new CannotDropTraversalListener(statement));
+            }
         }
     }
 
@@ -136,7 +134,7 @@ public class DepcyResolver {
 
             DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
                     newDepcyGraph.getGraph(), statement);
-            customIteration(dfi, new CreateTraversalAdapter(statement, StatementActions.CREATE));
+            customIteration(dfi, new CreateTraversalAdapter(statement));
         }
     }
 
@@ -249,6 +247,17 @@ public class DepcyResolver {
      * @return
      */
     private boolean inDropsList(PgStatement statement) {
+        // если овнедбай колонка или таблица уже в дроплисте
+        // то сиквенс тоже неявно с ними дропнут, возвращаем true
+        if (statement instanceof PgSequence) {
+            PgSequence seq = (PgSequence) statement;
+            GenericColumn ownedBy = seq.getOwnedBy();
+            if (ownedBy != null) {
+                PgStatement column = ownedBy.getStatement(oldDb);
+                return column != null && (inDropsList(column) || inDropsList(column.getParent()));
+            }
+        }
+
         for (ActionContainer action : actions) {
             if (action.getAction() != StatementActions.DROP) {
                 continue;
@@ -286,78 +295,13 @@ public class DepcyResolver {
     }
 
     /**
-     * TODO Временно (?) заменен методами простой итерации по графу (getDropDepcies)
-     * Возвращает упорядоченный набор объектов для наката с указанием действия
-     * @param actionType необходимое действие
-     * @return
-     */
-    public Set<PgStatement> getOrderedDepcies(StatementActions actionType) {
-        Set<PgStatement> result = new LinkedHashSet<>();
-        for (ActionContainer obj : actions) {
-            if (obj.getAction() == actionType) {
-                result.add(obj.getOldObj());
-            }
-        }
-        return result;
-    }
-
-    /**
-     * TODO костыльный метод убрать при переделке дерева TreeElement
-     * @param toCreate
-     * @return
-     */
-    public Set<PgStatement> getCreateDepcies(PgStatement toCreate) {
-        PgStatement statement = toCreate.getTwin(newDb);
-        Set<PgStatement> depcies = new HashSet<>();
-        if (newDepcyGraph.getGraph().containsVertex(statement)) {
-
-            DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
-                    newDepcyGraph.getGraph(), statement);
-            customIteration(dfi, new DepcyIterator(depcies));
-        }
-        return depcies;
-    }
-
-    /**
-     * TODO костыльный метод убрать при переделке дерева TreeElement
-     * @param toDrop
-     * @return
-     */
-    public Set<PgStatement> getDropDepcies(PgStatement toDrop) {
-        PgStatement statement = toDrop.getTwin(oldDb);
-        Set<PgStatement> depcies = new HashSet<>();
-        if (oldDepcyGraph.getReversedGraph().containsVertex(statement)) {
-            DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
-                    oldDepcyGraph.getReversedGraph(), statement);
-            customIteration(dfi, new DepcyIterator(depcies));
-        }
-        return depcies;
-    }
-
-    private class DepcyIterator extends TraversalListenerAdapter<PgStatement, DefaultEdge> {
-        Set<PgStatement> depcies = new HashSet<>();
-
-        public DepcyIterator(Set<PgStatement> depcies) {
-            this.depcies = depcies;
-        }
-
-        @Override
-        public void vertexFinished(VertexTraversalEvent<PgStatement> e) {
-            PgStatement statement = e.getVertex();
-            if (statement.getStatementType() != DbObjType.DATABASE) {
-                depcies.add(statement);
-            }
-        }
-    }
-
-    /**
      * Используется для прохода по графу зависимостей для формирования
      * зависимостей (ALTER, DROP)
      */
     private class DropTraversalAdapter extends CustomTraversalListenerAdapter {
 
-        DropTraversalAdapter(PgStatement starter, StatementActions action) {
-            super(starter, action);
+        DropTraversalAdapter(PgStatement starter) {
+            super(starter, StatementActions.DROP);
         }
 
         @Override
@@ -394,12 +338,16 @@ public class DepcyResolver {
                     return true;
                 }
             }
+
             // Колонки пропускаются при удалении таблицы
             if (oldObj.getStatementType() == DbObjType.COLUMN) {
                 AbstractTable oldTable = (AbstractTable) oldObj.getParent();
                 PgStatement newTable = oldObj.getParent().getTwin(newDb);
 
-                if (newTable == null) {
+                if (newTable == null || oldTable.isRecreated((AbstractTable) newTable)) {
+                    // случай, если дроп зависимости тянет колонку, которую мы не пишем
+                    // потому что дропается таблица - дропаем таблицу
+                    addDropStatements(oldTable);
                     return true;
                 }
 
@@ -422,12 +370,13 @@ public class DepcyResolver {
                     return true;
                 }
             }
-            // TODO Костыль не совсем рабочий, нужно проверить статус таблицы и
-            // колонки, и если хотя бы одна из них удаляется то не дропать
-            // сиквенс
+
+            // пропускаем сиквенс, если дропается его овнедбай
+            // сиквенс дропнется неявно вместе с колонкой
             if (oldObj instanceof PgSequence) {
-                PgSequence seq = (PgSequence)oldObj;
-                if (seq.getOwnedBy() != null) {
+                PgSequence seq = (PgSequence) oldObj;
+                GenericColumn ownedBy = seq.getOwnedBy();
+                if (ownedBy != null && ownedBy.getStatement(newDb) == null) {
                     return true;
                 }
             }
@@ -441,8 +390,8 @@ public class DepcyResolver {
      */
     private class CreateTraversalAdapter extends CustomTraversalListenerAdapter {
 
-        CreateTraversalAdapter(PgStatement starter, StatementActions action) {
-            super(starter, action);
+        CreateTraversalAdapter(PgStatement starter) {
+            super(starter, StatementActions.CREATE);
         }
 
         @Override
@@ -454,26 +403,10 @@ public class DepcyResolver {
             action = StatementActions.CREATE;
             if (inDropsList(newObj)) {
                 // always create if droppped before
+                createColumnDependencies(newObj);
                 return false;
             }
 
-            PgStatement oldObj;
-            if ((oldObj = newObj.getTwin(oldDb)) != null) {
-                AtomicBoolean isNeedDepcies = new AtomicBoolean();
-                action = askAlter(oldObj, newObj, isNeedDepcies);
-                if (action == StatementActions.NONE) {
-                    return true;
-                }
-                // в случае изменения объекта с зависимостями
-                if (isNeedDepcies.get()) {
-                    addDropStatements(oldObj);
-                    if (action == StatementActions.ALTER) {
-                        // add alter for old object
-                        addToList(oldObj);
-                        return true;
-                    }
-                }
-            }
             if (newObj.getStatementType() == DbObjType.COLUMN) {
                 PgStatement oldTable = newObj.getParent().getTwin(oldDb);
                 AbstractTable newTable = (AbstractTable) newObj.getParent();
@@ -497,7 +430,51 @@ public class DepcyResolver {
                     return true;
                 }
             }
+
+            PgStatement oldObj;
+            if ((oldObj = newObj.getTwin(oldDb)) != null) {
+                AtomicBoolean isNeedDepcies = new AtomicBoolean();
+                action = askAlter(oldObj, newObj, isNeedDepcies);
+                if (action == StatementActions.NONE) {
+                    return true;
+                }
+                // в случае изменения объекта с зависимостями
+                if (isNeedDepcies.get()) {
+                    addDropStatements(oldObj);
+                    if (action == StatementActions.ALTER) {
+                        // add alter for old object
+                        addToList(oldObj);
+                        return true;
+                    }
+                }
+            }
+
+            // если объект (таблица) создается, запускаем создание зависимостей ее колонок
+            // сами колонки создадутся неявно вместе с таблицей
+            createColumnDependencies(newObj);
+
+            // создать колонку при создании сиквенса с owned by
+            if (newObj instanceof PgSequence) {
+                PgSequence seq = (PgSequence) newObj;
+                GenericColumn ownedBy = seq.getOwnedBy();
+                if (ownedBy != null && ownedBy.getStatement(oldDb) == null) {
+                    PgStatement col = ownedBy.getStatement(newDb);
+                    if (col != null) {
+                        addCreateStatements(col);
+                    }
+                }
+            }
+
             return false;
+        }
+
+        private void createColumnDependencies(PgStatement newObj) {
+            if (newObj.getStatementType() == DbObjType.TABLE) {
+                // create column dependencies before table
+                for (AbstractColumn col : ((AbstractTable) newObj).getColumns()) {
+                    addCreateStatements(col);
+                }
+            }
         }
     }
     /**
@@ -615,6 +592,23 @@ public class DepcyResolver {
             PgStatement st = e.getVertex();
             if (st instanceof MsView && st.getTwin(newDb) != null) {
                 toRefresh.add(st);
+            }
+        }
+    }
+
+    private class CannotDropTraversalListener extends CustomTraversalListenerAdapter {
+
+        public CannotDropTraversalListener(PgStatement starter) {
+            super(starter, StatementActions.DROP);
+        }
+
+        @Override
+        public void vertexFinished(VertexTraversalEvent<PgStatement> e) {
+            PgStatement st = e.getVertex();
+            // dependencies between partition indices
+            if (st instanceof PgIndex && starter instanceof PgIndex) {
+                addToListWithoutDepcies(action, st, starter);
+                addDropStatements(st);
             }
         }
     }

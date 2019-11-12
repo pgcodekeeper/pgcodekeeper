@@ -31,7 +31,7 @@ public class Insert extends AbstractExprWithNmspc<Insert_stmt_for_psqlContext> {
         addNameReference(insert.insert_table_name, null, null);
         Insert_columnsContext columns = insert.insert_columns();
         if (columns != null) {
-            addColumnsDepcies(insert.insert_table_name, columns.column);
+            addColumnsDepcies(insert.insert_table_name, columns.indirection_identifier());
         }
 
         Select_stmtContext selectCtx = insert.select_stmt();
