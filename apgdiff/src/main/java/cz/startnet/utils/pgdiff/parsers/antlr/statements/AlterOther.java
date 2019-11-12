@@ -6,7 +6,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statement
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_operator_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_type_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Operator_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_alterContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -45,13 +44,12 @@ public class AlterOther extends ParserAbstract {
             type = DbObjType.AGGREGATE;
         }
 
-        addObjReference(ctx.function_parameters().name.identifier(),
+        addObjReference(ctx.function_parameters().schema_qualified_name().identifier(),
                 type, StatementActions.ALTER);
     }
 
     public void alterSchema(Alter_schema_statementContext ctx) {
-        IdentifierContext nameCtx = ctx.schema_with_name().name;
-        addObjReference(Arrays.asList(nameCtx), DbObjType.SCHEMA, StatementActions.ALTER);
+        addObjReference(Arrays.asList(ctx.identifier()), DbObjType.SCHEMA, StatementActions.ALTER);
     }
 
     public void alterType(Alter_type_statementContext ctx) {

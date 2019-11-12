@@ -88,7 +88,7 @@ public class CreateTrigger extends ParserAbstract {
         }
 
         for (Trigger_referencingContext ref : ctx.trigger_referencing()) {
-            String name = ref.transition_relation_name.getText();
+            String name = ref.identifier().getText();
             if (ref.NEW() != null) {
                 trigger.setNewTable(name);
             } else {
@@ -123,7 +123,7 @@ public class CreateTrigger extends ParserAbstract {
     public static void parseWhen(When_triggerContext whenCtx, PgTrigger trigger,
             PgDatabase db) {
         if (whenCtx != null) {
-            VexContext vex = whenCtx.when_expr;
+            VexContext vex = whenCtx.vex();
             trigger.setWhen(getFullCtxText(vex));
             db.addAnalysisLauncher(new TriggerAnalysisLauncher(trigger, vex));
         }
