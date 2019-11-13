@@ -93,7 +93,7 @@ public abstract class XmlStore<T> {
         }
     }
 
-    protected abstract void appendChildren(Document xml, Element root, List<T> list);
+    protected abstract void appendChildren(Document xml, Element root, List<T> list) throws IOException;
 
     /**
      * Reads (well-formed) list XML and checks it for basic validity:

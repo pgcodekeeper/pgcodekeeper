@@ -4,14 +4,8 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.eclipse.equinox.security.storage.ISecurePreferences;
-import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
-import org.eclipse.equinox.security.storage.StorageException;
-import org.eclipse.equinox.security.storage.provider.IProviderHints;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -26,7 +20,7 @@ public class DbInfo {
     private final String name;
     private final String dbname;
     private final String dbuser;
-    private String dbpass;
+    private final String dbpass;
     private final String dbhost;
     private final int dbport;
     private final String pgdumpExePath;
@@ -39,21 +33,6 @@ public class DbInfo {
     private final boolean generateName;
     private final List<String> ignoreFiles;
     private final Map<String, String> properties;
-
-    private static ISecurePreferences securePrefs;
-    static {
-        try {
-            // it's necessary for disable dialog "Secure Storage - Password Hint Needed"
-            // "https://www.eclipse.org/lists/equinox-dev/msg08899.html"
-            // "https://bugs.eclipse.org/bugs/show_bug.cgi?id=260899"
-            Map<String, Boolean> options = new HashMap<>();
-            options.put(IProviderHints.PROMPT_USER, false);
-            securePrefs = SecurePreferencesFactory
-                    .open(null, options).node("pgCodeKeeperDbPass"); //$NON-NLS-1$
-        } catch (IOException e) {
-            Log.log(e);
-        }
-    }
 
     public String getName() {
         return name;
@@ -69,10 +48,6 @@ public class DbInfo {
 
     public String getDbPass() {
         return dbpass;
-    }
-
-    public void setDbPass(String dbpass) {
-        this.dbpass = dbpass;
     }
 
     public String getDbHost() {
@@ -170,31 +145,12 @@ public class DbInfo {
 
     public static List<DbInfo> readStoreFromXml() {
         try {
-            return addPasswordsFromSecureStorage(DbXmlStore.INSTANCE.readObjects());
-        } catch (IOException | StorageException e) {
+            return DbXmlStore.INSTANCE.readObjects();
+        } catch (IOException e) {
             Log.log(e);
         }
 
         return new ArrayList<>();
-    }
-
-    private static List<DbInfo> addPasswordsFromSecureStorage(List<DbInfo> dbStore)
-            throws StorageException {
-        for (DbInfo dbInf : dbStore) {
-            if (dbInf.getDbPass().isEmpty()) {
-                dbInf.setDbPass(securePrefs.get(dbInf.getName(), ""));
-            }
-        }
-        return dbStore;
-    }
-
-    public static void writePasswordsToSecureStorage(List<DbInfo> list)
-            throws IOException, StorageException {
-        securePrefs.clear();
-        for (DbInfo dbInf : list) {
-            securePrefs.put(dbInf.getName(), dbInf.getDbPass(), true);
-        }
-        securePrefs.flush();
     }
 
     public static DbInfo getLastDb(String preference) {

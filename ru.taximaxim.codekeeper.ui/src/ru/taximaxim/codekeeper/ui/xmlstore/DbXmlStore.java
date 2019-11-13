@@ -12,7 +12,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.equinox.security.storage.ISecurePreferences;
+import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.eclipse.equinox.security.storage.StorageException;
+import org.eclipse.equinox.security.storage.provider.IProviderHints;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -31,6 +34,24 @@ public class DbXmlStore extends XmlStore<DbInfo> {
     private static final String FILE_NAME = "dbstore.xml"; //$NON-NLS-1$
 
     private final List<IPropertyChangeListener> listeners = new ArrayList<>();
+
+    private static ISecurePreferences securePrefs;
+    static {
+        try {
+            // it's necessary for disable dialog "Secure Storage - Password Hint Needed"
+            // "https://www.eclipse.org/lists/equinox-dev/msg08899.html"
+            // "https://bugs.eclipse.org/bugs/show_bug.cgi?id=260899"
+            Map<String, Boolean> options = new HashMap<>();
+            options.put(IProviderHints.PROMPT_USER, false);
+            securePrefs = SecurePreferencesFactory
+                    .open(null, options).node("pgCodeKeeperDbPass"); //$NON-NLS-1$
+        } catch (IOException e) {
+            Log.log(e);
+            // it's necessary for guaranteed creation of Secure Storage
+            securePrefs = SecurePreferencesFactory.getDefault()
+                    .node("pgCodeKeeperDbPass"); //$NON-NLS-1$
+        }
+    }
 
     private enum Tags {
         DB_STORE("db_store"), //$NON-NLS-1$
@@ -83,16 +104,15 @@ public class DbXmlStore extends XmlStore<DbInfo> {
         try {
             super.writeObjects(list);
             notifyListeners();
-            DbInfo.writePasswordsToSecureStorage(list);
         } catch (IOException e) {
             Log.log(Log.LOG_ERROR, "Error writing db store to xml " + e); //$NON-NLS-1$
-        } catch (StorageException e) {
-            Log.log(Log.LOG_ERROR, "Error writing to secure store " + e); //$NON-NLS-1$
         }
     }
 
     @Override
-    protected void appendChildren(Document xml, Element root, List<DbInfo> list) {
+    protected void appendChildren(Document xml, Element root, List<DbInfo> list)
+            throws IOException {
+        securePrefs.clear();
         for (DbInfo dbInfo : list) {
             Element keyElement = xml.createElement(Tags.DB_INFO.toString());
             root.appendChild(keyElement);
@@ -125,7 +145,14 @@ public class DbXmlStore extends XmlStore<DbInfo> {
                 createSubElement(xml, propertyTag, Tags.PROPERTY_NAME.toString(), property.getKey());
                 createSubElement(xml, propertyTag, Tags.PROPERTY_VALUE.toString(), property.getValue());
             }
+
+            try {
+                securePrefs.put(dbInfo.getName(), dbInfo.getDbPass(), true);
+            } catch (StorageException e) {
+                Log.log(Log.LOG_ERROR, "Error writing to secure storage: " + e); //$NON-NLS-1$
+            }
         }
+        securePrefs.flush();
     }
 
     @Override
@@ -174,8 +201,17 @@ public class DbXmlStore extends XmlStore<DbInfo> {
             }
         }
 
+        String dbPass = "";
+        try {
+            String dbXmlPass = object.get(Tags.DBPASS);
+            dbPass = dbXmlPass.isEmpty() ?
+                    securePrefs.get(object.get(Tags.NAME), "") : dbXmlPass;
+        } catch (StorageException e) {
+            Log.log(Log.LOG_ERROR, "Error reading from secure storage: " + e); //$NON-NLS-1$
+        }
+
         return new DbInfo(object.get(Tags.NAME), object.get(Tags.DBNAME),
-                object.get(Tags.DBUSER), object.get(Tags.DBPASS), object.get(Tags.DBHOST),
+                object.get(Tags.DBUSER), dbPass, object.get(Tags.DBHOST),
                 Integer.parseInt(object.get(Tags.DBPORT)),
                 Boolean.parseBoolean(object.get(Tags.READ_ONLY)),
                 Boolean.parseBoolean(object.get(Tags.GENERATE_NAME)),
