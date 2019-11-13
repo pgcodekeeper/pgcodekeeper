@@ -14,7 +14,6 @@ public final class Messages extends NLS {
     public static String dB_user;
     public static String entry_name;
     public static String domain;
-    public static String warning_providing_password_here_is_insecure_use_pgpass_instead;
     public static String calculating_diff;
     public static String runnable_has_not_finished;
     public static String select_all;
