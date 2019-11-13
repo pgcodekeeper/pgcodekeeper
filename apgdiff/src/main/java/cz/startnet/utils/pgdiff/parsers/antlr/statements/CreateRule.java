@@ -127,7 +127,7 @@ public class CreateRule extends ParserAbstract {
 
     private void parseFunction(Rule_member_objectContext obj, String permissions, List<String> roles) {
         for (Function_parametersContext funct : obj.func_name) {
-            List<IdentifierContext> funcIds = funct.name.identifier();
+            List<IdentifierContext> funcIds = funct.schema_qualified_name().identifier();
             IdentifierContext functNameCtx = QNameParser.getFirstNameCtx(funcIds);
             AbstractSchema schema = getSchemaSafe(funcIds);
             AbstractPgFunction func = (AbstractPgFunction) getSafe(AbstractSchema::getFunction, schema,
@@ -167,7 +167,7 @@ public class CreateRule extends ParserAbstract {
         Map<String, Entry<IdentifierContext, List<String>>> colPriv = new HashMap<>();
         for (Table_column_privilegesContext priv : columnsCtx.table_column_privileges()) {
             String privName = getFullCtxText(priv.table_column_privilege());
-            for (IdentifierContext col : priv.column) {
+            for (IdentifierContext col : priv.identifier_list().identifier()) {
                 colPriv.computeIfAbsent(col.getText(),
                         k -> new SimpleEntry<>(col, new ArrayList<>())).getValue().add(privName);
             }

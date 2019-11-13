@@ -83,15 +83,15 @@ public class CreateIndex extends ParserAbstract {
 
         if (options != null) {
             for (Storage_parameter_optionContext option : options.storage_parameter().storage_parameter_option()) {
-                String key = option.storage_param.getText();
-                VexContext v = option.value;
+                String key = option.schema_qualified_name().getText();
+                VexContext v = option.vex();
                 String value = v == null ? "" : v.getText();
                 ind.addOption(key, value);
             }
         }
 
         if (rest.table_space() != null) {
-            ind.setTablespace(getFullCtxText(rest.table_space().name));
+            ind.setTablespace(getFullCtxText(rest.table_space().identifier()));
         } else if (tablespace != null) {
             ind.setTablespace(tablespace);
         }
