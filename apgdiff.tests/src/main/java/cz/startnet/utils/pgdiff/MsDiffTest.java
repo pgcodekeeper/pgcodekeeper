@@ -1,12 +1,9 @@
 package cz.startnet.utils.pgdiff;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -303,13 +300,6 @@ public class MsDiffTest {
         Log.log(Log.LOG_DEBUG, fileNameTemplate);
     }
 
-    public void runDiffSame(PgDatabase db) throws IOException, InterruptedException {
-        final PgDiffArguments arguments = new PgDiffArguments();
-        arguments.setMsSql(true);
-        String script = PgDiff.diffDatabaseSchemas(arguments, db, db, null).getText();
-        Assert.assertEquals("File name template: " + fileNameTemplate, "", script.trim());
-    }
-
     @Test
     public void runDiff() throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
@@ -320,25 +310,11 @@ public class MsDiffTest {
         PgDatabase dbNew = ApgdiffTestUtils.loadTestDump(
                 fileNameTemplate + FILES_POSTFIX.NEW_SQL, MsDiffTest.class, args);
 
-        runDiffSame(dbOld);
-        runDiffSame(dbNew);
+        ApgdiffTestUtils.runDiffSame(dbOld, fileNameTemplate, args);
+        ApgdiffTestUtils.runDiffSame(dbNew, fileNameTemplate, args);
 
-        String script = PgDiff.diffDatabaseSchemas(args, dbOld, dbNew, null).getText();
+        String script = new PgDiff(args).diffDatabaseSchemas(dbOld, dbNew, null);
 
-        StringBuilder sbExpDiff;
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                MsDiffTest.class.getResourceAsStream(fileNameTemplate
-                        + FILES_POSTFIX.DIFF_SQL)))) {
-            sbExpDiff = new StringBuilder(1024);
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                sbExpDiff.append(line);
-                sbExpDiff.append('\n');
-            }
-        }
-
-        Assert.assertEquals("File name template: " + fileNameTemplate,
-                sbExpDiff.toString().trim(), script.trim());
+        ApgdiffTestUtils.compareResult(script, fileNameTemplate, MsDiffTest.class);
     }
 }

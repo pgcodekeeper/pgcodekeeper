@@ -14,7 +14,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
-import org.jgrapht.DirectedGraph;
 import org.jgrapht.event.TraversalListenerAdapter;
 import org.jgrapht.event.VertexTraversalEvent;
 import org.jgrapht.graph.DefaultEdge;
@@ -54,14 +53,6 @@ public class DepcyResolver {
      * Хранит запущенные итерации, используется для предотвращения циклического прохода по графу
      */
     private final Set<Entry<PgStatement, StatementActions>> sKippedObjects = new HashSet<>();
-
-    public DirectedGraph<PgStatement, DefaultEdge> getOldGraph() {
-        return oldDepcyGraph.getGraph();
-    }
-
-    public DirectedGraph<PgStatement, DefaultEdge> getNewGraph() {
-        return newDepcyGraph.getGraph();
-    }
 
     /**
      * Добавить ручную зависимость к старому графу
@@ -304,71 +295,6 @@ public class DepcyResolver {
     }
 
     /**
-     * TODO Временно (?) заменен методами простой итерации по графу (getDropDepcies)
-     * Возвращает упорядоченный набор объектов для наката с указанием действия
-     * @param actionType необходимое действие
-     * @return
-     */
-    public Set<PgStatement> getOrderedDepcies(StatementActions actionType) {
-        Set<PgStatement> result = new LinkedHashSet<>();
-        for (ActionContainer obj : actions) {
-            if (obj.getAction() == actionType) {
-                result.add(obj.getOldObj());
-            }
-        }
-        return result;
-    }
-
-    /**
-     * TODO костыльный метод убрать при переделке дерева TreeElement
-     * @param toCreate
-     * @return
-     */
-    public Set<PgStatement> getCreateDepcies(PgStatement toCreate) {
-        PgStatement statement = toCreate.getTwin(newDb);
-        Set<PgStatement> depcies = new HashSet<>();
-        if (newDepcyGraph.getGraph().containsVertex(statement)) {
-
-            DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
-                    newDepcyGraph.getGraph(), statement);
-            customIteration(dfi, new DepcyIterator(depcies));
-        }
-        return depcies;
-    }
-
-    /**
-     * TODO костыльный метод убрать при переделке дерева TreeElement
-     * @param toDrop
-     * @return
-     */
-    public Set<PgStatement> getDropDepcies(PgStatement toDrop) {
-        PgStatement statement = toDrop.getTwin(oldDb);
-        Set<PgStatement> depcies = new HashSet<>();
-        if (oldDepcyGraph.getReversedGraph().containsVertex(statement)) {
-            DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
-                    oldDepcyGraph.getReversedGraph(), statement);
-            customIteration(dfi, new DepcyIterator(depcies));
-        }
-        return depcies;
-    }
-
-    private class DepcyIterator extends TraversalListenerAdapter<PgStatement, DefaultEdge> {
-        Set<PgStatement> depcies = new HashSet<>();
-
-        public DepcyIterator(Set<PgStatement> depcies) {
-            this.depcies = depcies;
-        }
-
-        @Override
-        public void vertexFinished(VertexTraversalEvent<PgStatement> e) {
-            PgStatement statement = e.getVertex();
-            if (statement.getStatementType() != DbObjType.DATABASE) {
-                depcies.add(statement);
-            }
-        }
-    }
-
-    /**
      * Используется для прохода по графу зависимостей для формирования
      * зависимостей (ALTER, DROP)
      */
@@ -532,7 +458,10 @@ public class DepcyResolver {
                 PgSequence seq = (PgSequence) newObj;
                 GenericColumn ownedBy = seq.getOwnedBy();
                 if (ownedBy != null && ownedBy.getStatement(oldDb) == null) {
-                    addCreateStatements(ownedBy.getStatement(newDb));
+                    PgStatement col = ownedBy.getStatement(newDb);
+                    if (col != null) {
+                        addCreateStatements(col);
+                    }
                 }
             }
 

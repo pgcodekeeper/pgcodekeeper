@@ -18,9 +18,12 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_type_decContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.DeclarationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.DeclarationsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Declare_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Delete_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Exception_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Execute_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Execute_stmtContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Explain_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_blockContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_statementsContext;
@@ -40,7 +43,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Return_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.StatementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_colsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_cols_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Transaction_statementContext;
@@ -48,6 +50,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Truncate_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Type_declarationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Using_vexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Values_stmtContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Values_valuesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
@@ -382,7 +386,7 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
 
     private void additional(Additional_statementContext additional) {
         Schema_qualified_nameContext table = additional.schema_qualified_name();
-        StatementContext statement;
+        Explain_statementContext statement;
         Data_statementContext data;
         Table_cols_listContext col;
 
@@ -392,10 +396,28 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
             } else if (additional.SCHEMA() != null) {
                 addSchemaDepcy(table.identifier());
             }
-        } else if ((statement = additional.statement()) != null) {
+        } else if ((statement = additional.explain_statement()) != null) {
             data = statement.data_statement();
+            Values_stmtContext values;
+            Execute_statementContext exec;
+            Declare_statementContext dec;
+
             if (data != null) {
                 new Sql(this).data(data);
+            } else if ((values = statement.values_stmt()) != null) {
+                ValueExpr vex = new ValueExpr(this);
+                for (Values_valuesContext vals : values.values_values()) {
+                    for (VexContext v : vals.vex()) {
+                        vex.analyze(new Vex(v));
+                    }
+                }
+            } else if ((exec = statement.execute_statement()) != null) {
+                ValueExpr vex = new ValueExpr(this);
+                for (VexContext v : exec.vex()) {
+                    vex.analyze(new Vex(v));
+                }
+            } else if ((dec = statement.declare_statement()) != null) {
+                new Select(this).analyze(dec.select_stmt());
             }
         } else if ((data = additional.data_statement()) != null) {
             new Sql(this).data(data);

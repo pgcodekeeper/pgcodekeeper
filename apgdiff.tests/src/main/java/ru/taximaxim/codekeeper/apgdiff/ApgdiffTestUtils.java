@@ -1,7 +1,13 @@
 package ru.taximaxim.codekeeper.apgdiff;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
+import org.junit.Assert;
+
+import cz.startnet.utils.pgdiff.FILES_POSTFIX;
+import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
@@ -23,7 +29,6 @@ public final class ApgdiffTestUtils {
         return analysis ? loader.load() : loader.load(new PgDatabase(args));
     }
 
-
     public static PgDatabase createDumpDB() {
         PgDatabase db = new PgDatabase();
         AbstractSchema schema = new PgSchema(ApgdiffConsts.PUBLIC);
@@ -38,6 +43,30 @@ public final class ApgdiffTestUtils {
         db.addSchema(schema);
         db.setDefaultSchema(ApgdiffConsts.DBO);
         return db;
+    }
+
+    public static void runDiffSame(PgDatabase db, String template, PgDiffArguments args)
+            throws IOException, InterruptedException {
+        String script = new PgDiff(args).diffDatabaseSchemas(db, db, null);
+        Assert.assertEquals("File name template: " + template, "", script.trim());
+    }
+
+    public static void compareResult(String script, String template,
+            Class<?> clazz) throws IOException {
+        StringBuilder sbExpDiff;
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                clazz.getResourceAsStream(template + FILES_POSTFIX.DIFF_SQL)))) {
+            sbExpDiff = new StringBuilder(1024);
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sbExpDiff.append(line);
+                sbExpDiff.append('\n');
+            }
+        }
+
+        Assert.assertEquals("File name template: " + template,
+                sbExpDiff.toString().trim(), script.trim());
     }
 
     private ApgdiffTestUtils() {

@@ -18,6 +18,9 @@ CREATE TABLE public.t1 (
     c3 integer
 );
 
+ALTER TABLE public.t1  
+    ADD CONSTRAINT t1_c1_pk PRIMARY KEY (c1);
+
 CREATE VIEW public.v1 AS
 SELECT q.c1,
     q.c2,
@@ -57,3 +60,9 @@ CREATE VIEW public.v5 AS
    FROM public.t1
   GROUP BY GROUPING SETS ((t1.c1, t1.c2), (t1.c1), (t1.c2), ((public.foo())))
   ORDER BY t1.c1, t1.c2;
+
+CREATE VIEW public.v6 AS
+    SELECT 
+        c1, c2
+    FROM public.t1
+    GROUP BY t1.c1;

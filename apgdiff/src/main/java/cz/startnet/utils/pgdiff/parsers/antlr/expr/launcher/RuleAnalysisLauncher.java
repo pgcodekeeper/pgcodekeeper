@@ -31,7 +31,7 @@ public class RuleAnalysisLauncher extends AbstractAnalysisLauncher {
             analyzeTableChild(createRewriteCtx.vex(), vex);
         }
 
-        for (Rewrite_commandContext cmd : createRewriteCtx.commands) {
+        for (Rewrite_commandContext cmd : createRewriteCtx.rewrite_command()) {
             analyzeRulesCommand(cmd);
         }
     }
