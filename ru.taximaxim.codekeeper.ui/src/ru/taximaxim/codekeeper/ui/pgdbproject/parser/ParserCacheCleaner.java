@@ -26,8 +26,11 @@ public class ParserCacheCleaner implements IStartup {
             while (true) {
                 long cleaningInterval = TimeUnit.MINUTES
                         .toMillis(mainPrefs.getInt(PREF.PARSER_CACHE_CLEANING_INTERVAL));
-                AntlrParser.checkToClean(false, cleaningInterval);
-                AntlrParser.checkToClean(true, cleaningInterval);
+                if (cleaningInterval != 0) {
+                    AntlrParser.checkToClean(false, cleaningInterval);
+                    AntlrParser.checkToClean(true, cleaningInterval);
+                }
+
                 try {
                     Thread.sleep(CHECK_INTERVAL);
                 } catch (InterruptedException e) {

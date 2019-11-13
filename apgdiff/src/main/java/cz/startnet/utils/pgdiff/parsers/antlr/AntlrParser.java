@@ -46,7 +46,6 @@ public class AntlrParser {
 
     private static final ExecutorService ANTLR_POOL;
 
-    private static final long MIN_CLEANING_INTERVAL = 60000;
     private static volatile long pgParserLastStart;
     private static volatile long msParserLastStart;
 
@@ -237,7 +236,7 @@ public class AntlrParser {
 
     public static void checkToClean(boolean isMsParser, long cleaningInterval) {
         long lastParserStart = isMsParser ? msParserLastStart : pgParserLastStart;
-        if (lastParserStart != 0 && (cleaningInterval >= MIN_CLEANING_INTERVAL)
+        if (lastParserStart != 0
                 && (cleaningInterval < System.currentTimeMillis() - lastParserStart)) {
             cleanParserCache(isMsParser);
         }
