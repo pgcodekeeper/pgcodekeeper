@@ -248,10 +248,24 @@ public class DbStoreEditorDialog extends TrayDialog {
         txtDbPass = new Text(tabAreaDb, SWT.BORDER | SWT.PASSWORD);
         txtDbPass.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, false, false, 3, 1));
 
-        new Label(tabAreaDb, SWT.NONE).setText(Messages.DbStoreEditorDialog_read_only);
+        new Label(tabAreaDb, SWT.NONE);
+
+        Label lblPgpassSupport = new Label(tabAreaDb, SWT.NONE);
+        lblPgpassSupport.setText(Messages.pgpass_passwords_supported);
+        lblPgpassSupport.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1));
+
+        int verticalIndent = 15;
+
+        Label lblReadOnly = new Label(tabAreaDb, SWT.NONE);
+        lblReadOnly.setText(Messages.DbStoreEditorDialog_read_only);
+        gd = new GridData();
+        gd.verticalIndent = verticalIndent;
+        lblReadOnly.setLayoutData(gd);
 
         btnReadOnly = new Button(tabAreaDb, SWT.CHECK);
-        btnReadOnly.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, false, false, 3, 1));
+        gd = new GridData(SWT.FILL, SWT.DEFAULT, false, false, 3, 1);
+        gd.verticalIndent = verticalIndent;
+        btnReadOnly.setLayoutData(gd);
         btnReadOnly.setText(Messages.DbStoreEditorDialog_read_only_description);
 
         new Label(tabAreaDb, SWT.NONE).setText(Messages.DbStoreEditorDialog_ms_sql_database);
@@ -290,8 +304,6 @@ public class DbStoreEditorDialog extends TrayDialog {
                 }
             });
         }
-
-        int verticalIndent = 15;
 
         Label lblEntryName = new Label(tabAreaDb, SWT.NONE);
         lblEntryName.setText(Messages.entry_name);

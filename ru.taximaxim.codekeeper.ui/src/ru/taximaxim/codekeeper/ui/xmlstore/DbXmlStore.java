@@ -205,9 +205,9 @@ public class DbXmlStore extends XmlStore<DbInfo> {
             }
         }
 
-        String dbPass = ""; //$NON-NLS-1$
+        String dbPass = object.get(Tags.DBPASS);
         try {
-            dbPass = securePrefs.get(object.get(Tags.NAME), object.get(Tags.DBPASS));
+            dbPass = securePrefs.get(object.get(Tags.NAME), dbPass);
         } catch (StorageException e) {
             Log.log(Log.LOG_ERROR, "Error reading from secure storage: " + e); //$NON-NLS-1$
         }
