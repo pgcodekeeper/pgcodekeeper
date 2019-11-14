@@ -1438,6 +1438,8 @@
     <extension point="org.eclipse.ui.startup">
         <startup class="ru.taximaxim.codekeeper.ui.reports.UsageReportDispatcher">
         </startup>
+        <startup class="ru.taximaxim.codekeeper.ui.pgdbproject.parser.ParserCacheCleaner">
+        </startup>
     </extension>
     <extension point="org.eclipse.compare.contentMergeViewers">
         <viewer
