@@ -254,7 +254,7 @@ public class DbStoreEditorDialog extends TrayDialog {
         lblPgpassSupport.setText(Messages.pgpass_passwords_supported);
         lblPgpassSupport.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1));
 
-        int verticalIndent = 15;
+        int verticalIndent = 10;
 
         Label lblReadOnly = new Label(tabAreaDb, SWT.NONE);
         lblReadOnly.setText(Messages.DbStoreEditorDialog_read_only);
