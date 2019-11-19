@@ -12,6 +12,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.equinox.security.storage.ISecurePreferences;
+import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
+import org.eclipse.equinox.security.storage.StorageException;
+import org.eclipse.equinox.security.storage.provider.IProviderHints;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -21,6 +25,7 @@ import org.w3c.dom.NodeList;
 import cz.startnet.utils.pgdiff.xmlstore.XmlStore;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 
 public class DbXmlStore extends XmlStore<DbInfo> {
@@ -30,6 +35,8 @@ public class DbXmlStore extends XmlStore<DbInfo> {
     private static final String FILE_NAME = "dbstore.xml"; //$NON-NLS-1$
 
     private final List<IPropertyChangeListener> listeners = new ArrayList<>();
+
+    private final ISecurePreferences securePrefs;
 
     private enum Tags {
         DB_STORE("db_store"), //$NON-NLS-1$
@@ -69,6 +76,23 @@ public class DbXmlStore extends XmlStore<DbInfo> {
 
     private DbXmlStore() {
         super(FILE_NAME, Tags.DB_STORE.toString());
+
+        ISecurePreferences pref;
+        try {
+            // it's necessary for disable dialog "Secure Storage - Password Hint Needed"
+            // "https://www.eclipse.org/lists/equinox-dev/msg08899.html"
+            // "https://bugs.eclipse.org/bugs/show_bug.cgi?id=260899"
+            Map<String, Boolean> options = new HashMap<>();
+            options.put(IProviderHints.PROMPT_USER, false);
+            pref = SecurePreferencesFactory
+                    .open(null, options).node(PLUGIN_ID.THIS);
+        } catch (IOException e) {
+            Log.log(e);
+            // it's necessary for guaranteed creation of Secure Storage
+            pref = SecurePreferencesFactory.getDefault().node(PLUGIN_ID.THIS);
+        }
+
+        securePrefs = pref;
     }
 
     @Override
@@ -81,10 +105,21 @@ public class DbXmlStore extends XmlStore<DbInfo> {
     public void writeObjects(List<DbInfo> list) {
         try {
             super.writeObjects(list);
+            saveToSecureStorage(list);
             notifyListeners();
+        } catch (StorageException e) {
+            Log.log(Log.LOG_ERROR, "Error writing to secure storage: " + e); //$NON-NLS-1$
         } catch (IOException e) {
             Log.log(Log.LOG_ERROR, "Error writing db store to xml " + e); //$NON-NLS-1$
         }
+    }
+
+    private void saveToSecureStorage(List<DbInfo> list) throws StorageException, IOException {
+        securePrefs.clear();
+        for (DbInfo dbInfo : list) {
+            securePrefs.put(dbInfo.getName(), dbInfo.getDbPass(), true);
+        }
+        securePrefs.flush();
     }
 
     @Override
@@ -96,7 +131,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
             createSubElement(xml, keyElement, Tags.NAME.toString(), dbInfo.getName());
             createSubElement(xml, keyElement, Tags.DBNAME.toString(), dbInfo.getDbName());
             createSubElement(xml, keyElement, Tags.DBUSER.toString(), dbInfo.getDbUser());
-            createSubElement(xml, keyElement, Tags.DBPASS.toString(), dbInfo.getDbPass());
+            createSubElement(xml, keyElement, Tags.DBPASS.toString(), ""); //$NON-NLS-1$
             createSubElement(xml, keyElement, Tags.DBHOST.toString(), dbInfo.getDbHost());
             createSubElement(xml, keyElement, Tags.DBPORT.toString(), String.valueOf(dbInfo.getDbPort()));
             createSubElement(xml, keyElement, Tags.READ_ONLY.toString(), String.valueOf(dbInfo.isReadOnly()));
@@ -170,8 +205,15 @@ public class DbXmlStore extends XmlStore<DbInfo> {
             }
         }
 
+        String dbPass = object.get(Tags.DBPASS);
+        try {
+            dbPass = securePrefs.get(object.get(Tags.NAME), dbPass);
+        } catch (StorageException e) {
+            Log.log(Log.LOG_ERROR, "Error reading from secure storage: " + e); //$NON-NLS-1$
+        }
+
         return new DbInfo(object.get(Tags.NAME), object.get(Tags.DBNAME),
-                object.get(Tags.DBUSER), object.get(Tags.DBPASS), object.get(Tags.DBHOST),
+                object.get(Tags.DBUSER), dbPass, object.get(Tags.DBHOST),
                 Integer.parseInt(object.get(Tags.DBPORT)),
                 Boolean.parseBoolean(object.get(Tags.READ_ONLY)),
                 Boolean.parseBoolean(object.get(Tags.GENERATE_NAME)),
