@@ -58,6 +58,7 @@ public class CustomSQLParserListener extends CustomParserListener
 implements SqlContextProcessor {
 
     private String tablespace;
+    private String accessMethod;
     private String oids;
     private final Queue<AntlrTask<?>> antlrTasks;
 
@@ -119,7 +120,7 @@ implements SqlContextProcessor {
         } else if (ctx.create_schema_statement() != null) {
             p = new CreateSchema(ctx.create_schema_statement(), db);
         } else if (ctx.create_view_statement() != null) {
-            p = new CreateView(ctx.create_view_statement(), db, tablespace);
+            p = new CreateView(ctx.create_view_statement(), db, tablespace, accessMethod);
         } else if (ctx.create_type_statement() != null) {
             p = new CreateType(ctx.create_type_statement(), db);
         } else if (ctx.create_domain_statement() != null) {
@@ -213,6 +214,9 @@ implements SqlContextProcessor {
                     || "''".equals(tablespace)) {
                 tablespace = null;
             }
+            break;
+        case "default_table_access_method":
+            accessMethod = confValue;
             break;
         default:
             break;

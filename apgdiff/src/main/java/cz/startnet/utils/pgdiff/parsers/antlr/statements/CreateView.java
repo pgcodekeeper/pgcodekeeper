@@ -28,15 +28,16 @@ public class CreateView extends ParserAbstract {
             + "\nSELECT {1}"
             + "\nFROM {0};";
 
-    private static final String DEFAULT_ACCESS_METHOD = "heap";
-
     private final Create_view_statementContext context;
     private final String tablespace;
+    private final String accessMethod;
 
-    public CreateView(Create_view_statementContext context, PgDatabase db, String tablespace) {
+    public CreateView(Create_view_statementContext context, PgDatabase db,
+            String tablespace, String accessMethod) {
         super(db);
         this.context = context;
         this.tablespace = tablespace;
+        this.accessMethod = accessMethod;
     }
 
     @Override
@@ -53,8 +54,11 @@ public class CreateView extends ParserAbstract {
             } else if (tablespace != null) {
                 view.setTablespace(tablespace);
             }
-            view.setMethod(ctx.USING() != null ?
-                    ctx.identifier().getText() : DEFAULT_ACCESS_METHOD);
+            if (ctx.USING() != null) {
+                view.setMethod(ctx.identifier().getText());
+            } else if (accessMethod != null) {
+                view.setMethod(accessMethod);
+            }
         } else if (ctx.RECURSIVE() != null) {
             String sql = MessageFormat.format(RECURSIVE_PATTERN,
                     ParserAbstract.getFullCtxText(name),

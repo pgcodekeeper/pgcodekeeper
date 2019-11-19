@@ -13,7 +13,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Predicate;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -157,14 +156,8 @@ public class PgView extends AbstractView implements PgOptionContainer  {
         final int startLength = sb.length();
         PgView newView = (PgView) newCondition;
 
-        Predicate<PgView> isAccessMethodChanged = v -> (getMethod() != null
-                && newView.getMethod() == null)
-                || (getMethod() == null && v.getMethod() != null)
-                || (getMethod() != null && v.getMethod() != null
-                && !getMethod().equals(v.getMethod()));
-
         if (isViewModified(newView) || isMatView() != newView.isMatView()
-                || isAccessMethodChanged.test(newView)) {
+                || !Objects.equals(getMethod(), newView.getMethod())) {
             isNeedDepcies.set(true);
             return true;
         }
