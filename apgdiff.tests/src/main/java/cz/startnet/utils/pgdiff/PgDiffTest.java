@@ -410,6 +410,8 @@ public class PgDiffTest {
                     {"modify_empty_foreign_table"},
                     // Tests scenario where materialized VIEW options is changed.
                     {"modify_materialized_view_options"},
+                    // Tests scenario where materialized VIEW access method is changed.
+                    {"modify_materialized_view_access_method"},
                     // Tests scenario where materialized VIEW is changed.
                     {"modify_materialized_view"},
                     //Tests scenario where empty SEQUENCE is compared.
