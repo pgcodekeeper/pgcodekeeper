@@ -30,9 +30,11 @@ public class PgView extends AbstractView implements PgOptionContainer  {
 
     public static final String CHECK_OPTION = "check_option";
 
+    private static final String HEAP = "heap";
+
     private String query;
     private String normalizedQuery;
-    private String method;
+    private String method = HEAP;
     private String tablespace;
     private Boolean isWithData;
     private final List<DefaultValue> defaultValues = new ArrayList<>();
@@ -67,8 +69,8 @@ public class PgView extends AbstractView implements PgOptionContainer  {
             sbSQL.append(')');
         }
 
-        if (getMethod() != null) {
-            sbSQL.append("\nUSING ").append(getMethod());
+        if (method != null && !HEAP.equals(method)) {
+            sbSQL.append("\nUSING ").append(PgDiffUtils.getQuotedName(method));
         }
 
         StringBuilder sb = new StringBuilder();

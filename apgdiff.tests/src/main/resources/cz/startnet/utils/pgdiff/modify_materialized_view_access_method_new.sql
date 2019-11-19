@@ -17,19 +17,28 @@ CREATE MATERIALIZED VIEW public.v1
     SELECT c1 as vc1, c2 as vc2, c3 as vc3
     FROM public.t1;
 
+CREATE MATERIALIZED VIEW public.v2 
+    USING heap AS 
+    SELECT c1 as vc1, c2 as vc2, c3 as vc3
+    FROM public.t1;
+
+CREATE MATERIALIZED VIEW public.v3 AS 
+    SELECT c1 as vc1, c2 as vc2, c3 as vc3
+    FROM public.t1;
+
 
 -- Test group II
-CREATE MATERIALIZED VIEW public.v2
+CREATE MATERIALIZED VIEW public.v4
     USING my_method AS
     SELECT c1 as vc1, c2 as vc2
     FROM public.t1;
 
-CREATE MATERIALIZED VIEW public.v3
+CREATE MATERIALIZED VIEW public.v5
     USING heap AS
     SELECT c1 as vc1, c2 as vc2
     FROM public.t1;
 
-CREATE MATERIALIZED VIEW public.v4 AS 
+CREATE MATERIALIZED VIEW public.v6 AS 
     SELECT c1 as vc1, c2 as vc2
     FROM public.t1;
 
@@ -37,6 +46,6 @@ CREATE MATERIALIZED VIEW public.v4 AS
 -- Test group III
 SET default_table_access_method = my_method;
 
-CREATE MATERIALIZED VIEW public.v5 AS 
+CREATE MATERIALIZED VIEW public.v7 AS 
     SELECT c1 as vc1
     FROM public.t1;
