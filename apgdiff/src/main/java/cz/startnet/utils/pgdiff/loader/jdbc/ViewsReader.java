@@ -44,6 +44,7 @@ public class ViewsReader extends JdbcReader {
             if (tableSpace != null && !tableSpace.isEmpty()) {
                 v.setTablespace(tableSpace);
             }
+            v.setMethod(res.getString("access_method"));
         }
 
         String definition = res.getString("definition");

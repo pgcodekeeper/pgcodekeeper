@@ -28,6 +28,8 @@ public class CreateView extends ParserAbstract {
             + "\nSELECT {1}"
             + "\nFROM {0};";
 
+    private static final String DEFAULT_ACCESS_METHOD = "heap";
+
     private final Create_view_statementContext context;
     private final String tablespace;
 
@@ -51,6 +53,8 @@ public class CreateView extends ParserAbstract {
             } else if (tablespace != null) {
                 view.setTablespace(tablespace);
             }
+            view.setMethod(ctx.USING() != null ?
+                    ctx.identifier().getText() : DEFAULT_ACCESS_METHOD);
         } else if (ctx.RECURSIVE() != null) {
             String sql = MessageFormat.format(RECURSIVE_PATTERN,
                     ParserAbstract.getFullCtxText(name),
