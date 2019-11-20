@@ -61,17 +61,7 @@ public class ActionsToScriptConverter {
             if (allowedTypes.isEmpty() || allowedTypes.contains(type)){
                 processSequence(action);
                 PgStatement oldObj = action.getOldObj();
-                String depcy = null;
-                PgStatement objStarter = action.getStarter();
-                if (objStarter != null && objStarter != oldObj
-                        && objStarter != action.getNewObj()) {
-                    depcy = MessageFormat.format(
-                            action.getAction() == StatementActions.CREATE ?
-                                    CREATE_COMMENT : DROP_COMMENT,
-                                    oldObj.getStatementType(),
-                                    objStarter.getStatementType(),
-                                    objStarter.getQualifiedName());
-                }
+                String depcy = getComment(action, oldObj);
                 switch (action.getAction()) {
                 case CREATE:
                     if (toRefresh.contains(oldObj)) {
@@ -91,7 +81,7 @@ public class ActionsToScriptConverter {
                     }
                     break;
                 case DROP:
-                    if (!toRefresh.contains(oldObj)) {
+                    if (!toRefresh.contains(oldObj) && oldObj.canDrop()) {
                         if (depcy != null) {
                             script.addStatement(depcy);
                         }
@@ -141,12 +131,31 @@ public class ActionsToScriptConverter {
         }
     }
 
+    private String getComment(ActionContainer action, PgStatement oldObj) {
+        PgStatement objStarter = action.getStarter();
+        if (objStarter == null || objStarter == oldObj || objStarter == action.getNewObj()) {
+            return null;
+        }
+
+        // skip column to parent
+        if (objStarter.getStatementType() == DbObjType.COLUMN
+                && objStarter.getParent().equals(oldObj)) {
+            return null;
+        }
+
+        return MessageFormat.format(
+                action.getAction() == StatementActions.CREATE ?
+                        CREATE_COMMENT : DROP_COMMENT,
+                        oldObj.getStatementType(),
+                        objStarter.getStatementType(),
+                        objStarter.getQualifiedName());
+    }
+
     private void processSequence(ActionContainer action) {
         if (action.getOldObj() instanceof PgSequence) {
             PgSequence oldSeq = (PgSequence) action.getOldObj();
             PgSequence newSeq = (PgSequence) action.getNewObj();
             if (newSeq.getOwnedBy() != null
-                    && !newSeq.getOwnedBy().isEmpty()
                     && action.getAction() == StatementActions.CREATE
                     || (action.getAction() == StatementActions.ALTER &&
                     !Objects.equals(newSeq.getOwnedBy(), oldSeq.getOwnedBy()))) {

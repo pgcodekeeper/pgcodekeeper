@@ -49,9 +49,9 @@ public class AlterFtsStatement extends ParserAbstract {
 
         Alter_fts_configurationContext afc = ctx.alter_fts_configuration();
         if (afc != null && afc.ADD() != null) {
-            for (IdentifierContext type : afc.types) {
+            for (IdentifierContext type : afc.identifier_list().identifier()) {
                 List<String> dics = new ArrayList<>();
-                for (Schema_qualified_nameContext dictionary : afc.dictionaries) {
+                for (Schema_qualified_nameContext dictionary : afc.schema_qualified_name()) {
                     List<IdentifierContext> dIds = dictionary.identifier();
                     dics.add(getFullCtxText(dictionary));
                     addDepSafe(config, dIds, DbObjType.FTS_DICTIONARY, true);

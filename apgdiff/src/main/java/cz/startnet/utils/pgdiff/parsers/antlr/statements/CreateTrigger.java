@@ -5,9 +5,9 @@ import java.util.List;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Columns_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_trigger_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_deferrableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_initialy_immedContext;
@@ -88,7 +88,7 @@ public class CreateTrigger extends ParserAbstract {
         }
 
         for (Trigger_referencingContext ref : ctx.trigger_referencing()) {
-            String name = ref.transition_relation_name.getText();
+            String name = ref.identifier().getText();
             if (ref.NEW() != null) {
                 trigger.setNewTable(name);
             } else {
@@ -96,7 +96,7 @@ public class CreateTrigger extends ParserAbstract {
             }
         }
 
-        Schema_qualified_name_nontypeContext funcNameCtx = ctx.func_name.function_name()
+        Schema_qualified_name_nontypeContext funcNameCtx = ctx.func_name
                 .schema_qualified_name_nontype();
         IdentifierContext sch = funcNameCtx.schema;
         if (sch != null) {
@@ -104,8 +104,8 @@ public class CreateTrigger extends ParserAbstract {
                     DbObjType.FUNCTION, true, "()");
         }
 
-        for (Columns_listContext column : ctx.columns_list()) {
-            for (IdentifierContext nameCol : column.name) {
+        for (Identifier_listContext column : ctx.identifier_list()) {
+            for (IdentifierContext nameCol : column.identifier()) {
                 trigger.addUpdateColumn(nameCol.getText());
                 addDepSafe(trigger, Arrays.asList(sch, QNameParser.getFirstNameCtx(ids), nameCol),
                         DbObjType.COLUMN, true);
@@ -123,7 +123,7 @@ public class CreateTrigger extends ParserAbstract {
     public static void parseWhen(When_triggerContext whenCtx, PgTrigger trigger,
             PgDatabase db) {
         if (whenCtx != null) {
-            VexContext vex = whenCtx.when_expr;
+            VexContext vex = whenCtx.vex();
             trigger.setWhen(getFullCtxText(vex));
             db.addAnalysisLauncher(new TriggerAnalysisLauncher(trigger, vex));
         }

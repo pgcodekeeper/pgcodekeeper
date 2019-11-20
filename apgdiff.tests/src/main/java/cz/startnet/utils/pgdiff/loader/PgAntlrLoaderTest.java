@@ -24,6 +24,7 @@ import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractSequence;
 import cz.startnet.utils.pgdiff.schema.AbstractTable;
 import cz.startnet.utils.pgdiff.schema.Argument;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -44,6 +45,7 @@ import cz.startnet.utils.pgdiff.schema.SimplePgTable;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.TempDir;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 
 /**
@@ -477,7 +479,7 @@ class PgDB5 implements PgDatabaseObjectCreator {
         schema.addFunction(func);
 
         func = new PgFunction("select_something");
-        func.setLanguageCost("plpgsql", null);
+        func.setLanguageCost("sql", null);
         func.setBody("$_$SELECT number1 * number2$_$");
         func.setReturns("integer");
 
@@ -490,7 +492,7 @@ class PgDB5 implements PgDatabaseObjectCreator {
         schema.addFunction(func);
 
         func = new PgFunction("select_something2");
-        func.setLanguageCost("plpgsql", null);
+        func.setLanguageCost("sql", null);
         func.setBody("'SELECT number1 * number2 || ''text'''");
         func.setReturns("integer");
 
@@ -503,7 +505,7 @@ class PgDB5 implements PgDatabaseObjectCreator {
         schema.addFunction(func);
 
         func = new PgFunction("select_something3");
-        func.setLanguageCost("plpgsql", null);
+        func.setLanguageCost("sql", null);
         func.setBody("'\nSELECT number1 * number2 || ''text''\n'");
         func.setReturns("integer");
 
@@ -685,7 +687,7 @@ class PgDB9 implements PgDatabaseObjectCreator {
         PgSequence seq = new PgSequence("user_id_seq");
         seq.setMinMaxInc(1L, null, null, null, 0L);
         seq.setCache("1");
-        seq.setOwnedBy("public.user_data.id");
+        seq.setOwnedBy(new GenericColumn("public", "user_data" ,"id", DbObjType.COLUMN));
         schema.addSequence(seq);
         seq.setOwner("postgres");
 
@@ -940,7 +942,7 @@ class PgDB14 implements PgDatabaseObjectCreator {
         seq.setCache("1");
         schema.addSequence(seq);
 
-        seq.setOwnedBy("public.test.id");
+        seq.setOwnedBy(new GenericColumn("public", "test" ,"id", DbObjType.COLUMN));
 
         seq.setOwner("fordfrog");
 

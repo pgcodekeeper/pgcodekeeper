@@ -8,7 +8,7 @@ ALTER TABLE ONLY public.tbl
 DROP FUNCTION public.f(s integer, k integer);
 
 CREATE OR REPLACE FUNCTION public.f(s integer, k text = 'qwerty'::text) RETURNS integer
-    LANGUAGE plpgsql
+    LANGUAGE sql
     AS $$ SELECT 1111; $$;
 
 ALTER FUNCTION public.f(s integer, k text) OWNER TO shamsutdinov_lr;

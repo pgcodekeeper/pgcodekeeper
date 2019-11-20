@@ -27,7 +27,6 @@ SELECT  -- GENERAL
     c.relowner::bigint,
     c.relacl::text AS aclarray,
     c.relpersistence AS persistence,
-    c.relhasoids AS has_oids,
     c.reloptions,
     tc.reloptions AS toast_reloptions,
     tabsp.spcname AS table_space,

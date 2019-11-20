@@ -35,9 +35,8 @@ public class DropMsStatement extends ParserAbstract {
                 ctx.drop_index().drop_relational_or_xml_or_spatial_index()) {
                 Qualified_nameContext tableIds = ind.qualified_name();
                 IdContext schemaCtx = tableIds.schema;
-                IdContext parentCtx = tableIds.name;
                 IdContext nameCtx = ind.index_name;
-                addObjReference(Arrays.asList(schemaCtx, parentCtx, nameCtx),
+                addObjReference(Arrays.asList(schemaCtx, nameCtx),
                         DbObjType.INDEX, StatementActions.DROP);
             }
         } else if (ctx.drop_statements() != null) {

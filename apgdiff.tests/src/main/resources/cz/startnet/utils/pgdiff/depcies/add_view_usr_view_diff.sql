@@ -1,7 +1,5 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This TABLE is a dependency of VIEW: public.test
-
 CREATE TABLE public.t1 (
 	id integer,
 	val integer
@@ -12,8 +10,6 @@ CREATE TABLE public.t1 (
 CREATE OR REPLACE FUNCTION public.f2() RETURNS integer
     LANGUAGE sql
     AS $$ select 15 as q LIMIT 1 $$;
-
--- DEPCY: This TABLE is a dependency of VIEW: public.test
 
 CREATE TABLE public.t2 (
 	c1 integer,

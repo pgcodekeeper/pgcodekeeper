@@ -63,37 +63,6 @@ public class UsageReporter {
 
     /**
      * Tracks a user's event
-     *
-     * @param event
-     */
-    public void trackEvent(final UsageEvent event) {
-        try {
-            if (isEnabled()) {
-                ReportingJob job = new ReportingJob() {
-
-                    @Override
-                    public void report() {
-                        if (mainPrefs.getBoolean(USAGE_REPORT_PREF.USAGEREPORT_ENABLED_ID)) {
-                            sendRequest(getPagePath(event), event.getType().getComponentName(), event, false, false);
-                        }
-                    }
-                };
-                job.schedule();
-            }
-        } catch(Exception t) {
-            // Catch all Exceptions to make sure, in case of bugs, Usage doesn't prevent JBT from working
-            Log.log(Log.LOG_ERROR, t.getMessage());
-        }
-    }
-
-    /**
-     * Tracks a user's event
-     *
-     * @param pagePath
-     * @param title
-     * @param event
-     * @param type
-     * @param startNewVisitSession
      */
     public void trackEvent(final String pagePath,
             final String title,
@@ -105,35 +74,8 @@ public class UsageReporter {
 
                     @Override
                     public void report() {
-                        if (mainPrefs.getBoolean(USAGE_REPORT_PREF.USAGEREPORT_ENABLED_ID)) {
+                        if (isEnabled()) {
                             sendRequest(pagePath, title, event, startNewVisitSession, false);
-                        }
-                    }
-                };
-                job.schedule();
-            }
-        } catch(Exception t) {
-            // Catch all Exceptions to make sure, in case of bugs, Usage doesn't prevent JBT from working
-            Log.log(Log.LOG_ERROR, t.getMessage());
-        }
-    }
-
-    /**
-     * Doesn't send a tracking request instantly but remembers the event's value for tracking events once a day.
-     * If the type of this event was used for sending or counting events a day before then a new event with a sum (if bigger than 0) of all previously collected events is sent.
-     * Category, action names and labels are taken into account when values are being counted.
-     * For events without labels and/or values the "N/A" is used as a label and "1" is used as the default value.
-     * @param event
-     */
-    public void countEvent(final UsageEvent event) {
-        try {
-            if (isEnabled()) {
-                ReportingJob job = new ReportingJob() {
-
-                    @Override
-                    public void report() {
-                        if (mainPrefs.getBoolean(USAGE_REPORT_PREF.USAGEREPORT_ENABLED_ID)) {
-                            sendRequest(getPagePath(event), event.getType().getComponentName(), event, false, true);
                         }
                     }
                 };
@@ -179,7 +121,7 @@ public class UsageReporter {
      */
     private int checkCountEventInternal(UsageEventType type) {
         int sent = 0;
-        if (mainPrefs.getBoolean(USAGE_REPORT_PREF.USAGEREPORT_ENABLED_ID)) {
+        if (isEnabled()) {
             Set<Result> results = EventRegister.getInstance().checkCountEvent(type);
             for (Result result : results) {
                 if (result.isOkToSend()) {

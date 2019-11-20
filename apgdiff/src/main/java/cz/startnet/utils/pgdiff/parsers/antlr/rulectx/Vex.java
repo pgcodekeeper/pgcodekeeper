@@ -5,14 +5,16 @@ import java.util.Collections;
 import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Collate_identifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Datetime_overlapsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.OpContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Truth_valueContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Type_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expression_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Vex_bContext;
@@ -41,29 +43,19 @@ public class Vex {
     }
 
     public List<Vex> vex() {
-        List<VexContext> vexs = isB ? vexB.vex() : vex.vex();
-        List<Vex_bContext> vexBs = isB ? vexB.vex_b() : null;
-        Vex_bContext vexBChild = isB ? null : vex.vex_b();
-
-        int totalVex = vexs.size() +
-                (vexBs != null ? vexBs.size() : vexBChild != null ? 1 : 0);
-        if (totalVex == 0) {
+        List<ParseTree> children = (isB ? vexB : vex).children;
+        if (children == null || children.isEmpty()) {
             return Collections.emptyList();
         }
-        List<Vex> vexAll = new ArrayList<>(totalVex);
-
-        for (VexContext v : vexs) {
-            vexAll.add(new Vex(v));
-        }
-        if (vexBs != null) {
-            for (Vex_bContext vb : vexBs) {
-                vexAll.add(new Vex(vb));
+        List<Vex> vex = new ArrayList<>();
+        for (ParseTree node : children) {
+            if (node instanceof VexContext) {
+                vex.add(new Vex((VexContext) node));
+            } else if (node instanceof Vex_bContext) {
+                vex.add(new Vex((Vex_bContext) node));
             }
         }
-        if (vexBChild != null) {
-            vexAll.add(new Vex(vexBChild));
-        }
-        return vexAll;
+        return vex;
     }
 
     public ParserRuleContext getVexCtx() {
@@ -90,12 +82,8 @@ public class Vex {
         return isB ? vexB.RIGHT_PAREN() : vex.RIGHT_PAREN();
     }
 
-    public TerminalNode leftBracket() {
-        return isB ? vexB.LEFT_BRACKET() : vex.LEFT_BRACKET();
-    }
-
-    public TerminalNode rightBracket() {
-        return isB ? vexB.RIGHT_BRACKET() : vex.RIGHT_BRACKET();
+    public Indirection_listContext indirectionList() {
+        return isB ? vexB.indirection_list() : vex.indirection_list();
     }
 
     public TerminalNode in() {
@@ -106,8 +94,8 @@ public class Vex {
         return isB ? null : vex.select_stmt_no_parens();
     }
 
-    public Datetime_overlapsContext datetimeOverlaps() {
-        return isB ? null : vex.datetime_overlaps();
+    public Type_listContext typeList() {
+        return isB ? vexB.type_list() : vex.type_list();
     }
 
     public Value_expression_primaryContext primary() {
@@ -124,10 +112,6 @@ public class Vex {
 
     public TerminalNode timeZone() {
         return isB ? null : vex.ZONE();
-    }
-
-    public TerminalNode colon() {
-        return isB ? vexB.COLON() : vex.COLON();
     }
 
     public TerminalNode exp() {

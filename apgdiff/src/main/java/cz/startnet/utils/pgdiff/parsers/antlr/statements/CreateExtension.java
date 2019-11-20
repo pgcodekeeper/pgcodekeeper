@@ -21,8 +21,8 @@ public class CreateExtension extends ParserAbstract {
     public void parseObject() {
         IdentifierContext nameCtx = ctx.name;
         PgExtension ext = new PgExtension(nameCtx.getText());
-        if (ctx.schema_with_name() != null) {
-            IdentifierContext id = ctx.schema_with_name().name;
+        IdentifierContext id = ctx.schema;
+        if (id != null) {
             ext.setSchema(id.getText());
             addDepSafe(ext, Arrays.asList(id), DbObjType.SCHEMA, true);
         }

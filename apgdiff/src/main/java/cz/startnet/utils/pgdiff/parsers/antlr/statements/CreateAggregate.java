@@ -13,12 +13,13 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.schema.AbstractPgFunction;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.PgAggregate;
-import cz.startnet.utils.pgdiff.schema.PgAggregate.AggKinds;
 import cz.startnet.utils.pgdiff.schema.PgAggregate.AggFuncs;
+import cz.startnet.utils.pgdiff.schema.PgAggregate.AggKinds;
 import cz.startnet.utils.pgdiff.schema.PgAggregate.ModifyType;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -78,9 +79,10 @@ public class CreateAggregate extends ParserAbstract {
 
     private void fillArguments(List<Function_argumentsContext> argumentsCtx, PgAggregate aggr) {
         for (Function_argumentsContext argument : argumentsCtx) {
-            Argument arg = new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
-                    argument.argname != null ? argument.argname.getText() : null,
-                            getFullCtxText(argument.argtype_data));
+            Identifier_nontypeContext name = argument.identifier_nontype();
+            Argument arg = new Argument(parseArgMode(argument.argmode()),
+                    (name != null ? name.getText() : null),
+                    getTypeName(argument.data_type()));
             addPgTypeDepcy(argument.data_type(), aggr);
             aggr.addArgument(arg);
         }

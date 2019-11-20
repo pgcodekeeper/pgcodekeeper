@@ -30,6 +30,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.InputStreamProvider;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.consoles.UiProgressReporter;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
@@ -102,7 +103,8 @@ public abstract class DbSource {
         args.setAddTransaction(prefs.getBoolean(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION));
         args.setDisableCheckFunctionBodies(!prefs.getBoolean(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES));
         args.setEnableFunctionBodiesDependencies(prefs.isEnableBodyDependencies());
-        args.setIgnoreConcurrentModification(prefs.getBoolean(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
+        args.setIgnoreConcurrentModification(prefs.getBoolean(PREF.IGNORE_CONCURRENT_MODIFICATION));
+        args.setConcurrentlyMode(prefs.getBoolean(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
         args.setUsingTypeCastOff(!prefs.getBoolean(DB_UPDATE_PREF.USING_ON_OFF));
         args.setIgnorePrivileges(prefs.isIgnorePrivileges());
         args.setSimplifyView(prefs.isSimplifyView());

@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_member_objectContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -31,7 +32,9 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CommentOn extends ParserAbstract {
+
     private final Comment_on_statementContext ctx;
+
     public CommentOn(Comment_on_statementContext ctx, PgDatabase db) {
         super(db);
         this.ctx = ctx;
@@ -39,9 +42,9 @@ public class CommentOn extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        String comment = ctx.comment_text == null ? null : ctx.comment_text.getText();
+        Character_stringContext str = ctx.character_string();
+        String comment = str == null ? null : str.getText();
         Comment_member_objectContext obj = ctx.comment_member_object();
-
 
         List<? extends ParserRuleContext> ids = null;
         if (obj.target_operator() != null) {

@@ -23,6 +23,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 
         store.setDefault(PREF.FORCE_SHOW_CONSOLE, true);
+        store.setDefault(PREF.PARSER_CACHE_CLEANING_INTERVAL, 30);
 
         store.setDefault(PG_EDIT_PREF.EDITOR_UPDATE_ACTION, PG_EDIT_PREF.NO_ACTION);
         store.setDefault(PG_EDIT_PREF.SHOW_GIT_USER, true);

@@ -3,7 +3,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.Callable;
@@ -13,21 +12,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.DefaultErrorStrategy;
-import org.antlr.v4.runtime.InputMismatchException;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.Vocabulary;
-import org.antlr.v4.runtime.misc.IntervalSet;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -38,6 +32,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Tsql_fileContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import ru.taximaxim.codekeeper.apgdiff.DaemonThreadFactory;
@@ -50,6 +45,9 @@ public class AntlrParser {
     private static final String POOL_SIZE = "ru.taximaxim.codekeeper.parser.poolsize";
 
     private static final ExecutorService ANTLR_POOL;
+
+    private static volatile long pgParserLastStart;
+    private static volatile long msParserLastStart;
 
     static {
         int count = Integer.getInteger(
@@ -98,9 +96,11 @@ public class AntlrParser {
         if (parserClass.isAssignableFrom(SQLParser.class)) {
             lexer = new SQLLexer(stream);
             parser = new SQLParser(new CommonTokenStream(lexer));
+            parser.setErrorHandler(new CustomSQLAntlrErrorStrategy());
         } else if (parserClass.isAssignableFrom(TSQLParser.class)) {
             lexer = new TSQLLexer(stream);
             parser = new TSQLParser(new CommonTokenStream(lexer));
+            parser.setErrorHandler(new CustomTSQLAntlrErrorStrategy());
         } else if (parserClass.isAssignableFrom(IgnoreListParser.class)) {
             lexer = new IgnoreListLexer(stream);
             parser = new IgnoreListParser(new CommonTokenStream(lexer));
@@ -116,7 +116,6 @@ public class AntlrParser {
         lexer.addErrorListener(err);
         parser.removeErrorListeners();
         parser.addErrorListener(err);
-        parser.setErrorHandler(new CustomAntlrErrorStrategy());
 
         return parserClass.cast(parser);
     }
@@ -131,7 +130,9 @@ public class AntlrParser {
                         charsetName, parsedObjectName, errors);
                 parser.addParseListener(new CustomParseTreeListener(
                         monitoringLevel, mon == null ? new NullProgressMonitor() : mon));
-                return parser.sql();
+                saveTimeOfLastParserStart(false);
+                SqlContext sqlCtx = parser.sql();
+                return sqlCtx;
             } catch (MonitorCancelledRuntimeException mcre){
                 throw new InterruptedException();
             }
@@ -154,7 +155,9 @@ public class AntlrParser {
                         stream, charsetName, parsedObjectName, errors);
                 parser.addParseListener(new CustomParseTreeListener(
                         monitoringLevel, mon == null ? new NullProgressMonitor() : mon));
-                return new Pair<>(parser, parser.tsql_file());
+                saveTimeOfLastParserStart(true);
+                Pair<TSQLParser, Tsql_fileContext> parserAndTSqlCtx = new Pair<>(parser, parser.tsql_file());
+                return parserAndTSqlCtx;
             } catch (MonitorCancelledRuntimeException mcre){
                 throw new InterruptedException();
             }
@@ -168,27 +171,15 @@ public class AntlrParser {
         });
     }
 
-    public static void submitSqlCtxToAnalyze(String sql, List<AntlrError> errors,
-            int offset, int lineOffset, int inLineOffset, String name,
-            Consumer<SqlContext> finalizer, Queue<AntlrTask<?>> antlrTasks) {
-        List<AntlrError> err = new ArrayList<>();
-        submitAntlrTask(antlrTasks, () -> makeBasicParser(
-                SQLParser.class, sql, name, err).sql(),
-                ctx -> {
-                    err.stream()
-                    .map(e -> e.copyWithOffset(offset, lineOffset, inLineOffset))
-                    .forEach(errors::add);
-                    finalizer.accept(ctx);
-                });
-    }
-
     public static <T extends ParserRuleContext, P extends Parser>
     T parseSqlString(Class<P> parserClass, Function<P, T> parserEntry, String sql,
             String parsedObjectName, List<AntlrError> errors) {
         Future<T> f = submitAntlrTask(() -> parserEntry.apply(
                 makeBasicParser(parserClass, sql, parsedObjectName, errors)));
         try {
-            return f.get();
+            saveTimeOfLastParserStart(parserClass.isAssignableFrom(TSQLParser.class));
+            T ctx = f.get();
+            return ctx;
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException(ex);
@@ -241,6 +232,44 @@ public class AntlrParser {
         } else {
             throw new IllegalStateException(ex);
         }
+    }
+
+    public static void checkToClean(boolean isMsParser, long cleaningInterval) {
+        long lastParserStart = isMsParser ? msParserLastStart : pgParserLastStart;
+        if (lastParserStart != 0
+                && (cleaningInterval < System.currentTimeMillis() - lastParserStart)) {
+            cleanParserCache(isMsParser);
+        }
+    }
+
+    private static void cleanParserCache(boolean isMsParser) {
+        Class<? extends Parser> parserClazz = null;
+        if (isMsParser) {
+            msParserLastStart = 0;
+            parserClazz = TSQLParser.class;
+        } else {
+            pgParserLastStart = 0;
+            parserClazz = SQLParser.class;
+        }
+        makeBasicParser(parserClazz, ";", "fake string to clean parser cache")
+        .getInterpreter().clearDFA();
+    }
+
+    public static void cleanCacheOfBothParsers() {
+        if (pgParserLastStart != 0) {
+            cleanParserCache(false);
+        }
+        if (msParserLastStart != 0) {
+            cleanParserCache(true);
+        }
+    }
+
+    private static void saveTimeOfLastParserStart(boolean isMsParser) {
+        if (isMsParser) {
+            msParserLastStart = System.currentTimeMillis();
+            return;
+        }
+        pgParserLastStart = System.currentTimeMillis();
     }
 
     private AntlrParser() {
@@ -306,28 +335,5 @@ class CustomAntlrErrorListener extends BaseErrorListener {
             Token token = offendingSymbol instanceof Token ? (Token) offendingSymbol : null;
             errors.add(new AntlrError(token, parsedObjectName, line, charPositionInLine, msg));
         }
-    }
-}
-
-class CustomAntlrErrorStrategy extends DefaultErrorStrategy {
-
-    private static final int MAX_RULE_COUNT = 10;
-
-    @Override
-    protected void reportInputMismatch(Parser recognizer, InputMismatchException e) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("mismatched input ").append(getTokenErrorDisplay(e.getOffendingToken()));
-        sb.append(" expecting ");
-        IntervalSet set = e.getExpectedTokens();
-        Vocabulary vocabulary = recognizer.getVocabulary();
-        String rules = set.toList().stream().limit(MAX_RULE_COUNT)
-                .map(vocabulary::getDisplayName).collect(Collectors.joining(", "));
-        sb.append(rules);
-        int size = set.size();
-        if (size > MAX_RULE_COUNT) {
-            sb.append(", ... and ").append(size - MAX_RULE_COUNT).append(" more");
-        }
-
-        recognizer.notifyErrorListeners(e.getOffendingToken(), sb.toString(), e);
     }
 }

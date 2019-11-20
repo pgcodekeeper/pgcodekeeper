@@ -19,6 +19,10 @@ Usage
                                           mode only)
  -o (--output) <path>                   : script output file or parser output
                                           directory
+ -r (--run-on-target)                   : run generated script on the target
+                                          database
+ -R (--run-on) <JDBC>                   : run generated script on the specified
+                                          database
  --in-charset <charset>                 : input charset (default: UTF-8)
  --out-charset <charset>                : output charset (default: UTF-8)
  -E (--error)                           : print exception stacktrace
@@ -99,7 +103,7 @@ Usage
                                           PostgreSQL)
 
 DANGER_STATEMENT : [DROP_TABLE | ALTER_COLUMN | DROP_COLUMN | RESTART_WITH | UPDATE]
-OBJECT_TYPE : [USER | ROLE | ASSEMBLY | SCHEMA | EXTENSION | TYPE | DOMAIN | SEQUENCE | FUNCTION | PROCEDURE | AGGREGATE | OPERATOR | FTS_PARSER | FTS_TEMPLATE | FTS_DICTIONARY | FTS_CONFIGURATION | TABLE | CONSTRAINT | VIEW | INDEX | TRIGGER | RULE]
+OBJECT_TYPE : [USER | ROLE | ASSEMBLY | SCHEMA | EXTENSION | TYPE | DOMAIN | SEQUENCE | OPERATOR | FTS_PARSER | FTS_TEMPLATE | FTS_DICTIONARY | FTS_CONFIGURATION | TABLE | FUNCTION | PROCEDURE | AGGREGATE | CONSTRAINT | VIEW | INDEX | TRIGGER | RULE]
 
 Library load order
 	Libraries are loaded in the following order:

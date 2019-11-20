@@ -45,7 +45,7 @@ public class PgDatabase extends PgStatement {
     private final Map<String, Set<PgObjLocation>> objReferences = new HashMap<>();
     // Contains analysis launchers for all statements
     // (used for launch analyze and getting dependencies).
-    private final List<AbstractAnalysisLauncher> analysisLaunchers = new ArrayList<>();
+    private final ArrayList<AbstractAnalysisLauncher> analysisLaunchers = new ArrayList<>();
 
     private PgDiffArguments arguments;
 
@@ -59,6 +59,11 @@ public class PgDatabase extends PgStatement {
 
     public PgDatabase() {
         super("DB_name_placeholder");
+    }
+
+    public PgDatabase(PgDiffArguments arguments) {
+        this();
+        this.arguments = arguments;
     }
 
     public void setDefaultSchema(final String name) {
@@ -87,6 +92,11 @@ public class PgDatabase extends PgStatement {
 
     public List<AbstractAnalysisLauncher> getAnalysisLaunchers() {
         return analysisLaunchers;
+    }
+
+    public void clearAnalysisLaunchers() {
+        analysisLaunchers.clear();
+        analysisLaunchers.trimToSize();
     }
 
     /**
@@ -404,9 +414,8 @@ public class PgDatabase extends PgStatement {
 
     @Override
     public PgDatabase shallowCopy() {
-        PgDatabase dbDst = new PgDatabase();
+        PgDatabase dbDst = new PgDatabase(getArguments());
         copyBaseFields(dbDst);
-        dbDst.setArguments(getArguments());
         dbDst.setPostgresVersion(getPostgresVersion());
         return dbDst;
     }
@@ -416,9 +425,13 @@ public class PgDatabase extends PgStatement {
             st.markAsLib();
             concat(st);
         });
-        lib.analysisLaunchers
-        .forEach(l -> l.updateStmt(this));
-        analysisLaunchers.addAll(lib.analysisLaunchers);
+
+        lib.analysisLaunchers.stream()
+        .filter(st -> st.getStmt().getParent() != null)
+        .forEach(l -> {
+            l.updateStmt(this);
+            analysisLaunchers.add(l);
+        });
     }
 
     public void concat(PgStatement st) {
