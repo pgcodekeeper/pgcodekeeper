@@ -161,9 +161,9 @@ public class Differ implements IRunnableWithProgress {
             // применить параметры для генерации кода ко всем БД
             OverridablePrefs prefs = new OverridablePrefs(proj);
             newArgs.setConcurrentlyMode(
-                    prefs.getBoolean(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
+                    prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
             newArgs.setUsingTypeCastOff(
-                    !prefs.getBoolean(DB_UPDATE_PREF.USING_ON_OFF));
+                    !prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.USING_ON_OFF));
             db.setArguments(newArgs);
         }
 
