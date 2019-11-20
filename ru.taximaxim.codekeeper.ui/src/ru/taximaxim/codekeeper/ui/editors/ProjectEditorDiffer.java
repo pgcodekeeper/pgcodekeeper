@@ -442,8 +442,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         Shell shell = container.getShell();
         menuGetChangesCustom = new Menu (shell, SWT.POP_UP);
         MenuItem itemGetChangesCustom = new MenuItem (menuGetChangesCustom, SWT.PUSH);
-        itemGetChangesCustom.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
-                .getBundle().getResource(FILE.ICONREFRESH2))));
         itemGetChangesCustom.setText(Messages.DiffTableViewer_get_changes_custom);
         itemGetChangesCustom.addSelectionListener(new SelectionAdapter() {
             @Override
