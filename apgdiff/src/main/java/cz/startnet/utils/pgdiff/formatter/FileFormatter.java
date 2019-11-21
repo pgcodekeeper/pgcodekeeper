@@ -73,14 +73,14 @@ public class FileFormatter {
         SqlContext root = parser.sql();
         for (StatementContext st : root.statement()) {
             if (start <= st.stop.getStopIndex() || st.start.getStartIndex() < stop) {
-                fillFunction(st, changes);
+                fillChanges(st, changes);
             }
         }
 
         return changes;
     }
 
-    private void fillFunction(StatementContext st, List<FormatItem> changes) {
+    private void fillChanges(StatementContext st, List<FormatItem> changes) {
         Schema_statementContext schema = st.schema_statement();
         if (schema == null) {
             return;
@@ -112,7 +112,7 @@ public class FileFormatter {
             }
         }
 
-        if (!"PLPGSQL".equalsIgnoreCase(language) || funcDef == null) {
+        if ((!"PLPGSQL".equalsIgnoreCase(language) && !"SQL".equalsIgnoreCase(language)) || funcDef == null) {
             return;
         }
 
@@ -136,7 +136,7 @@ public class FileFormatter {
         sf.setAddWhitespaceAfterOp(addWhitespaceAfterOp);
         sf.setWhitespaceCount(whitespaceCount);
 
-        sf.parseDefsToFormat(definition, codeStart.getSymbol().getStartIndex());
+        sf.parseDefsToFormat(definition, language, codeStart.getSymbol().getStartIndex());
         changes.addAll(sf.getChanges());
     }
 }

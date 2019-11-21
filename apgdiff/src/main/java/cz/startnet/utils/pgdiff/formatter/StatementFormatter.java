@@ -68,10 +68,10 @@ public class StatementFormatter {
         this.indentSize = indentSize;
     }
 
-    public void parseDefsToFormat(String definition, int offset) {
+    public void parseDefsToFormat(String definition, String language, int offset) {
         lastTokenOffset = offset;
 
-        for (Token t : getTokensFromDefinition(definition)) {
+        for (Token t : getTokensFromDefinition(definition, language)) {
             int tokenStart = offset + t.getStartIndex();
             int lenght = t.getStopIndex() - t.getStartIndex() + 1;
             int type = t.getType();
@@ -105,12 +105,17 @@ public class StatementFormatter {
         }
     }
 
-    private List<Token> getTokensFromDefinition(String definition) {
+    private List<Token> getTokensFromDefinition(String definition, String language) {
         Lexer lexer = new SQLLexer(new ANTLRInputStream(definition));
         CommonTokenStream stream = new CommonTokenStream(lexer);
         SQLParser parser = new SQLParser(stream);
         parser.addParseListener(new FormatParseTreeListener(indents));
-        parser.plpgsql_function();
+        if ("SQL".equalsIgnoreCase(language)) {
+            parser.sql();
+            currentIndent = 0;
+        } else {
+            parser.plpgsql_function();
+        }
 
         return stream.getTokens();
     }

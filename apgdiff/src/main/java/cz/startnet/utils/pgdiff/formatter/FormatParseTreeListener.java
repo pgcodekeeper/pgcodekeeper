@@ -27,6 +27,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Loop_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.StatementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_setContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_stmt_for_psqlContext;
 
@@ -73,7 +74,7 @@ public class FormatParseTreeListener implements ParseTreeListener {
             formatUpdateStatement((Update_stmt_for_psqlContext) ctx);
         } else if (ctx instanceof Insert_stmt_for_psqlContext) {
             formatInsertStatement((Insert_stmt_for_psqlContext) ctx);
-        } else if (ctx instanceof Case_expressionContext ) {
+        } else if (ctx instanceof Case_expressionContext) {
             formatCaseExpression((Case_expressionContext) ctx);
         } else if (ctx instanceof Exception_statementContext) {
             formatExceptionStatement((Exception_statementContext) ctx);
@@ -85,9 +86,10 @@ public class FormatParseTreeListener implements ParseTreeListener {
             indents.put(ctx.getStop(), IndentDirection.BLOCK_STOP);
         } else if (ctx instanceof After_opsContext || ctx instanceof Into_statementContext) {
             indents.put(ctx.getStart(), IndentDirection.BLOCK_LINE);
+        } else if (ctx instanceof StatementContext) {
+            formatSql((StatementContext) ctx);
         }
     }
-
 
     private void formatFunctionStatements(Function_statementsContext ctx) {
         List<Function_statementContext> statements = ctx.function_statement();
@@ -251,6 +253,8 @@ public class FormatParseTreeListener implements ParseTreeListener {
     }
 
     private void formatCaseExpression(Case_expressionContext ctx) {
+        indents.put(ctx.CASE().getSymbol(), IndentDirection.BLOCK_START);
+
         for (TerminalNode node : ctx.WHEN()) {
             indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
         }
@@ -260,6 +264,13 @@ public class FormatParseTreeListener implements ParseTreeListener {
             indents.put(elseCtx.getSymbol(), IndentDirection.BLOCK_LINE);
         }
 
-        indents.put(ctx.END().getSymbol(), IndentDirection.BLOCK_LINE);
+        indents.put(ctx.END().getSymbol(), IndentDirection.BLOCK_STOP);
+    }
+
+    private void formatSql(StatementContext ctx) {
+        indents.put(ctx.getStart(), IndentDirection.BLOCK_START);
+        // if token already is present (only BLOCK_STOP can be here), we change to double reduce
+        indents.merge(ctx.getStop(), IndentDirection.BLOCK_STOP,
+                (o, n) -> IndentDirection.REDUCE_TWICE);
     }
 }
