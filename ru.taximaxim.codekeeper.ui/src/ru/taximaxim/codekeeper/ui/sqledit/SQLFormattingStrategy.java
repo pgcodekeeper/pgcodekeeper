@@ -18,8 +18,8 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.text.edits.TextEdit;
 
+import cz.startnet.utils.pgdiff.formatter.FileFormatter;
 import cz.startnet.utils.pgdiff.formatter.FormatItem;
-import cz.startnet.utils.pgdiff.formatter.Formatter;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FORMATTER_PREF;
@@ -74,7 +74,7 @@ public class SQLFormattingStrategy extends ContextBasedFormattingStrategy {
     }
 
     private TextEdit formatDoc(int offset, int lenght, String source) {
-        Formatter formatter = new Formatter(offset, lenght);
+        FileFormatter formatter = new FileFormatter(offset, lenght);
 
         formatter.setIndentSize(mainPrefs.getInt(FORMATTER_PREF.INDENT_SIZE));
         formatter.setRemoveTrailingWhitespace(
@@ -88,9 +88,7 @@ public class SQLFormattingStrategy extends ContextBasedFormattingStrategy {
             formatter.setWhitespaceCount(mainPrefs.getInt(FORMATTER_PREF.WHITESPACE_COUNT));
         }
 
-        formatter.formatString(source, editor.isMsSql());
-
-        List<FormatItem> list =  formatter.getChanges();
+        List<FormatItem> list = formatter.formatString(source, editor.isMsSql());
 
         if (list.isEmpty()) {
             return null;
@@ -99,7 +97,7 @@ public class SQLFormattingStrategy extends ContextBasedFormattingStrategy {
         TextEdit edit = new MultiTextEdit(offset, lenght);
 
         for (FormatItem item : list) {
-            edit.addChild(new ReplaceEdit(item.getStart(), item.getLenght(), item.getText()));
+            edit.addChild(new ReplaceEdit(item.getStart(), item.getLength(), item.getText()));
         }
 
         return edit;

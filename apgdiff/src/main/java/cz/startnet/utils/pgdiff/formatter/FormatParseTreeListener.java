@@ -9,12 +9,26 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.After_opsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Case_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Case_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.DeclarationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.DeclarationsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Delete_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Exception_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_blockContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_statementsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Groupby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.If_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Insert_stmt_for_psqlContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Into_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Loop_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_primaryContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_setContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_stmt_for_psqlContext;
 
 public class FormatParseTreeListener implements ParseTreeListener {
 
@@ -42,81 +56,210 @@ public class FormatParseTreeListener implements ParseTreeListener {
     @Override
     public void exitEveryRule(ParserRuleContext ctx) {
         if (ctx instanceof Function_blockContext) {
-            exitFunctionBlock((Function_blockContext) ctx);
+            formatFunctionBlock((Function_blockContext) ctx);
         } else if (ctx instanceof If_statementContext) {
-            exitIfStatement((If_statementContext) ctx);
+            formatIfStatement((If_statementContext) ctx);
         } else if (ctx instanceof Loop_statementContext) {
-            exitLoopStatement((Loop_statementContext) ctx);
+            formatLoopStatement((Loop_statementContext) ctx);
         } else if (ctx instanceof Case_statementContext) {
-            exitCaseStatement((Case_statementContext) ctx);
+            formatCaseStatement((Case_statementContext) ctx);
+        } else if (ctx instanceof Function_statementsContext) {
+            formatFunctionStatements((Function_statementsContext) ctx);
+        } else if (ctx instanceof Select_primaryContext) {
+            formatSelectPrimary((Select_primaryContext) ctx);
+        } else if (ctx instanceof Delete_stmt_for_psqlContext) {
+            formatDeleteStatement((Delete_stmt_for_psqlContext) ctx);
+        } else if (ctx instanceof Update_stmt_for_psqlContext) {
+            formatUpdateStatement((Update_stmt_for_psqlContext) ctx);
+        } else if (ctx instanceof Insert_stmt_for_psqlContext) {
+            formatInsertStatement((Insert_stmt_for_psqlContext) ctx);
+        } else if (ctx instanceof Case_expressionContext ) {
+            formatCaseExpression((Case_expressionContext) ctx);
+        } else if (ctx instanceof Exception_statementContext) {
+            formatExceptionStatement((Exception_statementContext) ctx);
+        } else if (ctx instanceof Select_stmt_no_parensContext
+                || (ctx instanceof Select_stmtContext
+                        && !(ctx.parent.parent instanceof Function_statementContext))) {
+            // subselect
+            indents.put(ctx.getStart(), IndentDirection.BLOCK_START);
+            indents.put(ctx.getStop(), IndentDirection.BLOCK_STOP);
+        } else if (ctx instanceof After_opsContext || ctx instanceof Into_statementContext) {
+            indents.put(ctx.getStart(), IndentDirection.BLOCK_LINE);
         }
     }
 
-    private void exitFunctionBlock(Function_blockContext block) {
-        DeclarationsContext declare = block.declarations();
 
-        if (declare != null) {
-            indents.put(declare.DECLARE().getSymbol(), IndentDirection.INCREACE);
+    private void formatFunctionStatements(Function_statementsContext ctx) {
+        List<Function_statementContext> statements = ctx.function_statement();
+        List<TerminalNode> colons = ctx.SEMI_COLON();
+        for (int i = 0; i < statements.size(); i++) {
+            indents.put(statements.get(i).getStart(), IndentDirection.BLOCK_START);
+            indents.put(colons.get(i).getSymbol(), IndentDirection.BLOCK_STOP);
         }
+    }
 
-        indents.put(block.BEGIN().getSymbol(),
-                declare == null ? IndentDirection.INCREACE : IndentDirection.REDUCE_AND_INCREACE);
-
-        Exception_statementContext exception = block.exception_statement();
-        if (exception != null) {
-            indents.put(exception.EXCEPTION().getSymbol(), IndentDirection.REDUCE_AND_INCREACE);
-
-            List<TerminalNode> whens = exception.WHEN();
-            for (int i = 0; i < whens.size(); i++) {
-                indents.put(whens.get(i).getSymbol(),
-                        i == 0 ? IndentDirection.INCREACE : IndentDirection.REDUCE_AND_INCREACE);
+    private void formatFunctionBlock(Function_blockContext block) {
+        DeclarationsContext declare = block.declarations();
+        if (declare != null) {
+            indents.put(declare.DECLARE().getSymbol(), IndentDirection.BLOCK_LINE);
+            for (DeclarationContext dec : declare.declaration()) {
+                indents.put(dec.getStart(), IndentDirection.BLOCK_START);
+                indents.put(dec.getStop(), IndentDirection.BLOCK_STOP);
             }
         }
 
-        indents.put(block.END().getSymbol(),
-                exception == null ? IndentDirection.REDUCE : IndentDirection.REDUCE_TWICE);
+        indents.put(block.BEGIN().getSymbol(), IndentDirection.BLOCK_LINE);
+        indents.put(block.END().getSymbol(), IndentDirection.BLOCK_LINE);
     }
 
-    private void exitIfStatement(If_statementContext ctx) {
-        indents.put(ctx.IF().get(0).getSymbol(), IndentDirection.INCREACE);
+    private void formatExceptionStatement(Exception_statementContext ctx) {
+        indents.put(ctx.EXCEPTION().getSymbol(), IndentDirection.BLOCK_LINE);
+        indents.put(ctx.WHEN().get(0).getSymbol(), IndentDirection.BLOCK_START);
+        indents.put(ctx.getStop(), IndentDirection.REDUCE_TWICE);
+    }
 
+    private void formatSelectPrimary(Select_primaryContext ctx) {
+        TerminalNode node = ctx.SELECT();
+        if (node != null) {
+            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
+        }
+
+        node = ctx.FROM();
+        if (node != null) {
+            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
+        }
+
+        node = ctx.WHERE();
+        if (node != null) {
+            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
+        }
+
+        node = ctx.HAVING();
+        if (node != null) {
+            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
+        }
+
+        node = ctx.WINDOW();
+        if (node != null) {
+            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
+        }
+
+        Groupby_clauseContext groupBy = ctx.groupby_clause();
+        if (groupBy != null) {
+            indents.put(groupBy.GROUP().getSymbol(), IndentDirection.BLOCK_LINE);
+        }
+    }
+
+    private void formatDeleteStatement(Delete_stmt_for_psqlContext ctx) {
+        indents.put(ctx.DELETE().getSymbol(), IndentDirection.BLOCK_LINE);
+
+        TerminalNode node = ctx.USING();
+        if (node != null) {
+            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
+        }
+
+        node = ctx.WHERE();
+        if (node != null) {
+            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
+        }
+
+        node = ctx.RETURNING();
+        if (node != null) {
+            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
+        }
+    }
+
+    private void formatUpdateStatement(Update_stmt_for_psqlContext ctx) {
+        indents.put(ctx.UPDATE().getSymbol(), IndentDirection.BLOCK_LINE);
+
+        for (Update_setContext update : ctx.update_set()) {
+            indents.put(update.getStart(), IndentDirection.BLOCK_START);
+            indents.put(update.getStop(), IndentDirection.BLOCK_STOP);
+        }
+
+        TerminalNode node = ctx.FROM();
+        if (node != null) {
+            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
+        }
+
+        node = ctx.WHERE();
+        if (node != null) {
+            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
+        }
+
+        node = ctx.RETURNING();
+        if (node != null) {
+            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
+        }
+    }
+
+    private void formatInsertStatement(Insert_stmt_for_psqlContext ctx) {
+        indents.put(ctx.INSERT().getSymbol(), IndentDirection.BLOCK_LINE);
+
+        TerminalNode node = ctx.OVERRIDING();
+        if (node != null) {
+            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
+        }
+
+        node = ctx.ON();
+        if (node != null) {
+            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
+        }
+
+        node = ctx.RETURNING();
+        if (node != null) {
+            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
+        }
+    }
+
+    private void formatIfStatement(If_statementContext ctx) {
         for (TerminalNode node : ctx.ELSIF()) {
-            indents.put(node.getSymbol(), IndentDirection.REDUCE_AND_INCREACE);
+            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
         }
         for (TerminalNode node : ctx.ELSEIF()) {
-            indents.put(node.getSymbol(), IndentDirection.REDUCE_AND_INCREACE);
+            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
         }
         TerminalNode elseCtx = ctx.ELSE();
         if (elseCtx != null) {
-            indents.put(elseCtx.getSymbol(), IndentDirection.REDUCE_AND_INCREACE);
+            indents.put(elseCtx.getSymbol(), IndentDirection.BLOCK_LINE);
         }
 
-        indents.put(ctx.END().getSymbol(), IndentDirection.REDUCE);
+        indents.put(ctx.END().getSymbol(), IndentDirection.BLOCK_LINE);
     }
 
-    private void exitLoopStatement(Loop_statementContext ctx) {
+    private void formatLoopStatement(Loop_statementContext ctx) {
         List<TerminalNode> loops = ctx.LOOP();
         if (!loops.isEmpty()) {
-            indents.put(loops.get(0).getSymbol(), IndentDirection.INCREACE);
-            indents.put(ctx.END().getSymbol(), IndentDirection.REDUCE);
+            indents.put(loops.get(0).getSymbol(), IndentDirection.BLOCK_LINE);
+            indents.put(ctx.END().getSymbol(), IndentDirection.BLOCK_LINE);
         }
     }
 
-    private void exitCaseStatement(Case_statementContext ctx) {
-        indents.put(ctx.CASE().get(0).getSymbol(), IndentDirection.INCREACE);
+    private void formatCaseStatement(Case_statementContext ctx) {
+        indents.put(ctx.CASE().get(0).getSymbol(), IndentDirection.BLOCK_LINE);
 
-        List<TerminalNode> whens = ctx.WHEN();
-        for (int i = 0; i < whens.size(); i++) {
-            Token t = whens.get(i).getSymbol();
-            indents.put(t, i == 0 ? IndentDirection.INCREACE :
-                IndentDirection.REDUCE_AND_INCREACE);
+        for (TerminalNode node : ctx.WHEN()) {
+            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
         }
 
         TerminalNode elseCtx = ctx.ELSE();
         if (elseCtx != null) {
-            indents.put(elseCtx.getSymbol(), IndentDirection.REDUCE_AND_INCREACE);
+            indents.put(elseCtx.getSymbol(), IndentDirection.BLOCK_LINE);
         }
 
-        indents.put(ctx.END().getSymbol(), IndentDirection.REDUCE_TWICE);
+        indents.put(ctx.END().getSymbol(), IndentDirection.BLOCK_LINE);
+    }
+
+    private void formatCaseExpression(Case_expressionContext ctx) {
+        for (TerminalNode node : ctx.WHEN()) {
+            indents.put(node.getSymbol(), IndentDirection.BLOCK_LINE);
+        }
+
+        TerminalNode elseCtx = ctx.ELSE();
+        if (elseCtx != null) {
+            indents.put(elseCtx.getSymbol(), IndentDirection.BLOCK_LINE);
+        }
+
+        indents.put(ctx.END().getSymbol(), IndentDirection.BLOCK_LINE);
     }
 }
