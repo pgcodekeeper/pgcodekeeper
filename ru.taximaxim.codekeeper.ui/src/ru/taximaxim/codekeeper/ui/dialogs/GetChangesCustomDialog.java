@@ -19,6 +19,10 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
+/**
+ * Dialog box for filling in one-time preferences that will be used
+ * when showing the difference.
+ */
 public class GetChangesCustomDialog extends Dialog {
 
     private Button btnNoPrivileges;

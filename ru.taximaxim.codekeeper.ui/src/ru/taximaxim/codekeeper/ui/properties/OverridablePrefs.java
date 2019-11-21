@@ -1,5 +1,7 @@
 package ru.taximaxim.codekeeper.ui.properties;
 
+import java.util.Map;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
@@ -16,29 +18,47 @@ public class OverridablePrefs {
 
     private final IPreferenceStore mainPS;
     private IEclipsePreferences projPS;
+    private final Map<String, Boolean> oneTimePS;
 
     private boolean isEnableProjPrefRoot;
     private boolean isEnableProjPrefDbUpdate;
 
-    public OverridablePrefs(IProject project) {
+    public OverridablePrefs(IProject project, Map<String, Boolean> oneTimePS) {
         mainPS = Activator.getDefault().getPreferenceStore();
         if (project != null) {
             projPS = new ProjectScope(project).getNode(UIConsts.PLUGIN_ID.THIS);
             this.isEnableProjPrefRoot = projPS.getBoolean(PROJ_PREF.ENABLE_PROJ_PREF_ROOT, false);
             this.isEnableProjPrefDbUpdate = projPS.getBoolean(PROJ_PREF.ENABLE_PROJ_PREF_DB_UPDATE, false);
         }
+        this.oneTimePS = oneTimePS;
     }
 
     public boolean isUseGlobalIgnoreList() {
-        return isEnableProjPrefRoot ? projPS.getBoolean(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, true)
-                : true;
+        if (oneTimePS != null) {
+            Boolean value = oneTimePS.get(PROJ_PREF.USE_GLOBAL_IGNORE_LIST);
+            if (value != null) {
+                return value;
+            }
+        }
+        return isEnableProjPrefRoot ?
+                projPS.getBoolean(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, true) : true;
     }
 
     public boolean getBooleanOfRootPref(String key) {
-        return isEnableProjPrefRoot ? projPS.getBoolean(key, false) : mainPS.getBoolean(key);
+        return getBoolean(key, isEnableProjPrefRoot);
     }
 
     public boolean getBooleanOfDbUpdatePref(String key) {
-        return isEnableProjPrefDbUpdate ? projPS.getBoolean(key, false) : mainPS.getBoolean(key);
+        return getBoolean(key, isEnableProjPrefDbUpdate);
+    }
+
+    private boolean getBoolean(String key, boolean isEnableProjPref) {
+        if (oneTimePS != null) {
+            Boolean value = oneTimePS.get(key);
+            if (value != null) {
+                return value;
+            }
+        }
+        return isEnableProjPref ? projPS.getBoolean(key, false) : mainPS.getBoolean(key);
     }
 }

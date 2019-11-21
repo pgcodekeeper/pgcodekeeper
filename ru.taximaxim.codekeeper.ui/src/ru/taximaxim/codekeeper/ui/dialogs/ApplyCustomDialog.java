@@ -19,6 +19,10 @@ import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
+/**
+ * Dialog box for filling in one-time preferences that will be used
+ * when generating the script.
+ */
 public class ApplyCustomDialog extends Dialog {
 
     private Button btnScriptAddTransact;

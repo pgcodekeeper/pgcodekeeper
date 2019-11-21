@@ -116,7 +116,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
 
             Differ differ = new Differ(source, treediffer.getDbTarget().getDbObject(),
                     treediffer.getDiffTree(), false, pageDiff.getTimezone(),
-                    source.getArguments().isMsSql(), null);
+                    source.getArguments().isMsSql(), null, null);
             getContainer().run(true, true, differ);
 
             FileUtilsUi.saveOpenTmpSqlEditor(differ.getDiffDirect(),
