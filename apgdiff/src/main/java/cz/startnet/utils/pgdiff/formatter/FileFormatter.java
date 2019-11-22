@@ -28,36 +28,12 @@ public class FileFormatter {
     private final int start;
     private final int stop;
 
-    private boolean addWhitespaceBeforeOp;
-    private boolean addWhitespaceAfterOp;
-    private boolean removeTrailingWhitespace;
+    private final FormatConfiguration config;
 
-    private int indentSize;
-    private int whitespaceCount = -1;
-
-    public FileFormatter(int offset, int lenght) {
+    public FileFormatter(int offset, int lenght, FormatConfiguration config) {
         this.start = offset;
         this.stop = offset + lenght;
-    }
-
-    public void setAddWhitespaceBeforeOp(boolean addWhitespaceBeforeOp) {
-        this.addWhitespaceBeforeOp = addWhitespaceBeforeOp;
-    }
-
-    public void setAddWhitespaceAfterOp(boolean addWhitespaceAfterOp) {
-        this.addWhitespaceAfterOp = addWhitespaceAfterOp;
-    }
-
-    public void setRemoveTrailingWhitespace(boolean removeTrailingWhitespace) {
-        this.removeTrailingWhitespace = removeTrailingWhitespace;
-    }
-
-    public void setIndentSize(int indentSize) {
-        this.indentSize = indentSize;
-    }
-
-    public void setWhitespaceCount(int whitespaceCount) {
-        this.whitespaceCount  = whitespaceCount;
+        this.config = config;
     }
 
     public List<FormatItem> formatString(String source, boolean isMsSql) {
@@ -129,13 +105,7 @@ public class FileFormatter {
             definition = dollarText.stream().map(TerminalNode::getText).collect(Collectors.joining());
         }
 
-        StatementFormatter sf = new StatementFormatter(start, stop);
-        sf.setIndentSize(indentSize);
-        sf.setRemoveTrailingWhitespace(removeTrailingWhitespace);
-        sf.setAddWhitespaceBeforeOp(addWhitespaceBeforeOp);
-        sf.setAddWhitespaceAfterOp(addWhitespaceAfterOp);
-        sf.setWhitespaceCount(whitespaceCount);
-
+        StatementFormatter sf = new StatementFormatter(start, stop, config);
         sf.parseDefsToFormat(definition, language, codeStart.getSymbol().getStartIndex());
         changes.addAll(sf.getChanges());
     }

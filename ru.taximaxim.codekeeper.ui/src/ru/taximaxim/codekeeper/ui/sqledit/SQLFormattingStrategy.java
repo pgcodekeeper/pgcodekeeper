@@ -19,6 +19,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.text.edits.TextEdit;
 
 import cz.startnet.utils.pgdiff.formatter.FileFormatter;
+import cz.startnet.utils.pgdiff.formatter.FormatConfiguration;
 import cz.startnet.utils.pgdiff.formatter.FormatItem;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -74,20 +75,21 @@ public class SQLFormattingStrategy extends ContextBasedFormattingStrategy {
     }
 
     private TextEdit formatDoc(int offset, int lenght, String source) {
-        FileFormatter formatter = new FileFormatter(offset, lenght);
+        FormatConfiguration config = new FormatConfiguration();
 
-        formatter.setIndentSize(mainPrefs.getInt(FORMATTER_PREF.INDENT_SIZE));
-        formatter.setRemoveTrailingWhitespace(
+        config.setIndentSize(mainPrefs.getInt(FORMATTER_PREF.INDENT_SIZE));
+        config.setRemoveTrailingWhitespace(
                 mainPrefs.getBoolean(FORMATTER_PREF.REMOVE_TRAILING_WHITESPACE));
-        formatter.setAddWhitespaceBeforeOp(
+        config.setAddWhitespaceBeforeOp(
                 mainPrefs.getBoolean(FORMATTER_PREF.ADD_WHITESPACE_BEFORE_OP));
-        formatter.setAddWhitespaceAfterOp(
+        config.setAddWhitespaceAfterOp(
                 mainPrefs.getBoolean(FORMATTER_PREF.ADD_WHITESPACE_AFTER_OP));
 
         if (mainPrefs.getBoolean(FORMATTER_PREF.REPLACE_TAB)) {
-            formatter.setWhitespaceCount(mainPrefs.getInt(FORMATTER_PREF.WHITESPACE_COUNT));
+            config.setWhitespaceCount(mainPrefs.getInt(FORMATTER_PREF.WHITESPACE_COUNT));
         }
 
+        FileFormatter formatter = new FileFormatter(offset, lenght, config);
         List<FormatItem> list = formatter.formatString(source, editor.isMsSql());
 
         if (list.isEmpty()) {

@@ -18,14 +18,6 @@ public class StatementFormatter {
     private final int start;
     private final int stop;
 
-    private boolean removeTrailingWhitespace;
-    private boolean addWhitespaceBeforeOp;
-    private boolean addWhitespaceAfterOp;
-
-    private int indentSize;
-    private int whitespaceCount;
-    private String tabReplace = "";
-
     private int currentIndent = 1;
     private int spaceSize;
     private int lastTokenOffset;
@@ -35,37 +27,16 @@ public class StatementFormatter {
     private final Map<Token, IndentDirection> indents = new HashMap<>();
     private final List<FormatItem> tabs = new ArrayList<>();
     private final List<FormatItem> changes = new ArrayList<>();
+    private final FormatConfiguration config;
 
-    public StatementFormatter(int start, int stop) {
+    public StatementFormatter(int start, int stop, FormatConfiguration config) {
         this.start = start;
         this.stop = stop;
+        this.config = config;
     }
 
     public List<FormatItem> getChanges() {
         return changes;
-    }
-
-    public void setRemoveTrailingWhitespace(boolean removeTrailingWhitespace) {
-        this.removeTrailingWhitespace = removeTrailingWhitespace;
-    }
-
-    public void setWhitespaceCount(int whitespaceCount) {
-        this.whitespaceCount = whitespaceCount;
-        if (whitespaceCount > 0) {
-            tabReplace = String.format("%1$" + whitespaceCount + 's', "");
-        }
-    }
-
-    public void setAddWhitespaceBeforeOp(boolean addWhitespaceBeforeOp) {
-        this.addWhitespaceBeforeOp = addWhitespaceBeforeOp;
-    }
-
-    public void setAddWhitespaceAfterOp(boolean addWhitespaceAfterOp) {
-        this.addWhitespaceAfterOp = addWhitespaceAfterOp;
-    }
-
-    public void setIndentSize(int indentSize) {
-        this.indentSize = indentSize;
     }
 
     public void parseDefsToFormat(String definition, String language, int offset) {
@@ -83,10 +54,14 @@ public class StatementFormatter {
                 continue;
             }
 
-            if (tokenStart > stop || type == SQLLexer.EOF) {
-                // ignore all after stop, but try to remove partial trailing space.
-                // tokens before start are not ignored, because need right indent level
+            if (tokenStart > stop) {
+                // ignore all after stop, but try to remove partial trailing space
                 tabs.forEach(this::addChange);
+                return;
+            }
+
+            if (type == SQLLexer.EOF) {
+                removeTrailingWhitespace(tokenStart);
                 return;
             }
 
@@ -95,7 +70,7 @@ public class StatementFormatter {
             tabs.forEach(this::addChange);
             tabs.clear();
 
-            if (addWhitespaceAfterOp || addWhitespaceBeforeOp) {
+            if (config.isAddWhitespaceAfterOp() || config.isAddWhitespaceBeforeOp()) {
                 proccessOperators(type, tokenStart);
             }
 
@@ -122,25 +97,28 @@ public class StatementFormatter {
 
     private void processSpaces(int type, int tokenStart, int lenght) {
         if (type == SQLLexer.New_Line) {
-            if (tokenStart > lastTokenOffset && removeTrailingWhitespace) {
-                addChange(new FormatItem(lastTokenOffset,
-                        tokenStart - lastTokenOffset, ""));
-                tabs.clear();
-            }
+            removeTrailingWhitespace(tokenStart);
             spaceSize = 0;
             firstTokenInLine = true;
             lastTokenOffset = tokenStart + lenght;
-        } else if (type == SQLLexer.Tab && whitespaceCount >= 0) {
-            FormatItem item = new FormatItem(tokenStart, lenght, tabReplace);
-            if (removeTrailingWhitespace) {
+        } else if (type == SQLLexer.Tab && config.getWhitespaceCount() >= 0) {
+            FormatItem item = new FormatItem(tokenStart, lenght, config.getTabReplace());
+            if (config.isRemoveTrailingWhitespace() || firstTokenInLine) {
                 tabs.add(item);
             } else {
                 addChange(item);
             }
 
-            spaceSize += whitespaceCount;
+            spaceSize += config.getWhitespaceCount();
         } else {
             spaceSize++;
+        }
+    }
+
+    private void removeTrailingWhitespace(int tokenStart) {
+        if (config.isRemoveTrailingWhitespace() && tokenStart > lastTokenOffset) {
+            addChange(new FormatItem(lastTokenOffset, tokenStart - lastTokenOffset, ""));
+            tabs.clear();
         }
     }
 
@@ -185,10 +163,10 @@ public class StatementFormatter {
         case SQLLexer.LESS_LESS:
         case SQLLexer.GREATER_GREATER:
         case SQLLexer.OP_CHARS:
-            if (addWhitespaceBeforeOp && lastTokenOffset == tokenStart) {
+            if (config.isAddWhitespaceBeforeOp() && lastTokenOffset == tokenStart) {
                 addChange(new FormatItem(tokenStart, 0, " "));
             }
-            needSpace = addWhitespaceAfterOp;
+            needSpace = config.isAddWhitespaceAfterOp();
             break;
         default:
             if (needSpace) {
@@ -207,7 +185,7 @@ public class StatementFormatter {
             }
         }
 
-        int expectedIndent = indent * indentSize;
+        int expectedIndent = indent * config.getIndentSize();
         if (spaceSize != expectedIndent) {
             String text = expectedIndent > 0 ? String.format("%1$" + expectedIndent + 's', "") : "";
             addChange(new FormatItem(lastTokenOffset, tokenStart - lastTokenOffset, text));
