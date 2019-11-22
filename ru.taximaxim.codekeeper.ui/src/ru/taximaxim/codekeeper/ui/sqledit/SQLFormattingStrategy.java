@@ -20,6 +20,7 @@ import org.eclipse.text.edits.TextEdit;
 
 import cz.startnet.utils.pgdiff.formatter.FileFormatter;
 import cz.startnet.utils.pgdiff.formatter.FormatConfiguration;
+import cz.startnet.utils.pgdiff.formatter.FormatConfiguration.IndentType;
 import cz.startnet.utils.pgdiff.formatter.FormatItem;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -76,6 +77,13 @@ public class SQLFormattingStrategy extends ContextBasedFormattingStrategy {
 
     private TextEdit formatDoc(int offset, int lenght, String source) {
         FormatConfiguration config = new FormatConfiguration();
+
+        String mode = mainPrefs.getString(FORMATTER_PREF.INDENT_TYPE);
+        if (FORMATTER_PREF.WHITESPACE.equals(mode)) {
+            config.setIndentType(IndentType.WHITESPACE);
+        } else if (FORMATTER_PREF.TAB.equals(mode)) {
+            config.setIndentType(IndentType.TAB);
+        }
 
         config.setIndentSize(mainPrefs.getInt(FORMATTER_PREF.INDENT_SIZE));
         config.setRemoveTrailingWhitespace(

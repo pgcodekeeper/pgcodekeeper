@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.formatter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +11,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Token;
 
+import cz.startnet.utils.pgdiff.formatter.FormatConfiguration.IndentType;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLLexer;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 
@@ -19,8 +21,8 @@ public class StatementFormatter {
     private final int stop;
 
     private int currentIndent = 1;
-    private int spaceSize;
     private int lastTokenOffset;
+    private boolean isMixedIndent;
     private boolean needSpace;
     private boolean firstTokenInLine = true;
 
@@ -65,7 +67,9 @@ public class StatementFormatter {
                 return;
             }
 
-            processIndents(indents.get(t), tokenStart);
+            if (IndentType.DISABLE != config.getIndentType()) {
+                processIndents(indents.get(t), tokenStart);
+            }
 
             tabs.forEach(this::addChange);
             tabs.clear();
@@ -74,7 +78,7 @@ public class StatementFormatter {
                 proccessOperators(type, tokenStart);
             }
 
-            spaceSize = 0;
+            isMixedIndent = false;
             firstTokenInLine = false;
             lastTokenOffset = tokenStart + lenght;
         }
@@ -98,20 +102,19 @@ public class StatementFormatter {
     private void processSpaces(int type, int tokenStart, int lenght) {
         if (type == SQLLexer.New_Line) {
             removeTrailingWhitespace(tokenStart);
-            spaceSize = 0;
+            isMixedIndent = false;
             firstTokenInLine = true;
             lastTokenOffset = tokenStart + lenght;
-        } else if (type == SQLLexer.Tab && config.getWhitespaceCount() >= 0) {
-            FormatItem item = new FormatItem(tokenStart, lenght, config.getTabReplace());
-            if (config.isRemoveTrailingWhitespace() || firstTokenInLine) {
-                tabs.add(item);
-            } else {
-                addChange(item);
-            }
+            return;
+        }
 
-            spaceSize += config.getWhitespaceCount();
-        } else {
-            spaceSize++;
+        if (type == SQLLexer.Tab && config.getIndentType() == IndentType.WHITESPACE
+                || type == SQLLexer.Space && config.getIndentType() == IndentType.TAB) {
+            isMixedIndent = true;
+        }
+
+        if (type == SQLLexer.Tab && config.getWhitespaceCount() >= 0) {
+            tabs.add(new FormatItem(tokenStart, lenght, config.getTabReplace()));
         }
     }
 
@@ -128,15 +131,15 @@ public class StatementFormatter {
             case BLOCK_START:
                 writeIndent(true, currentIndent++, tokenStart);
                 break;
-            case BLOCK_STOP:
-                writeIndent(false, --currentIndent, tokenStart);
-                break;
             case BLOCK_LINE:
                 writeIndent(true, currentIndent - 1, tokenStart);
                 break;
+            case BLOCK_STOP:
+                writeIndent(false, --currentIndent, tokenStart);
+                break;
             case REDUCE_TWICE:
+                writeIndent(false, --currentIndent, tokenStart);
                 currentIndent--;
-                writeIndent(false, currentIndent--, tokenStart);
                 break;
             }
         } else if (firstTokenInLine) {
@@ -186,11 +189,23 @@ public class StatementFormatter {
         }
 
         int expectedIndent = indent * config.getIndentSize();
-        if (spaceSize != expectedIndent) {
-            String text = expectedIndent > 0 ? String.format("%1$" + expectedIndent + 's', "") : "";
-            addChange(new FormatItem(lastTokenOffset, tokenStart - lastTokenOffset, text));
-            tabs.clear();
+        int spaceSize = tokenStart - lastTokenOffset;
+
+        if (spaceSize != expectedIndent || isMixedIndent) {
+            addChange(new FormatItem(lastTokenOffset, spaceSize, createText(expectedIndent)));
         }
+        tabs.clear();
+    }
+
+    private String createText(int expectedIndent) {
+        if (expectedIndent <= 0) {
+            return "";
+        }
+
+        char [] chars  = new char[expectedIndent];
+        Arrays.fill(chars, config.getIndentType() == IndentType.TAB ? '\t' : ' ');
+
+        return new String(chars);
     }
 
     private void addChange(FormatItem item) {

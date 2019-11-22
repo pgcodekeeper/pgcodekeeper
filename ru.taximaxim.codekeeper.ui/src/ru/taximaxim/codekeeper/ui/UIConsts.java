@@ -115,6 +115,11 @@ public interface UIConsts {
         String ADD_WHITESPACE_AFTER_OP = "addWhitespaceAfterOperator"; //$NON-NLS-1$
         String REPLACE_TAB = "replaceTab"; //$NON-NLS-1$
         String WHITESPACE_COUNT = "whitespaceCount"; //$NON-NLS-1$
+
+        String INDENT_TYPE = "indentType"; //$NON-NLS-1$
+        String WHITESPACE = "whitespace"; //$NON-NLS-1$
+        String TAB = "tab"; //$NON-NLS-1$
+        String DISABLE = "disable"; //$NON-NLS-1$
     }
 
     interface USAGE_REPORT_PREF {

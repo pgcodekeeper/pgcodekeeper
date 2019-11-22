@@ -92,11 +92,19 @@ public final class Messages extends NLS {
 
     public static String SQLEditorFormatterPrefPage_add_whitespace_before_operators;
 
+    public static String SQLEditorFormatterPrefPage_disable;
+
     public static String SQLEditorFormatterPrefPage_indent_size;
+
+    public static String SQLEditorFormatterPrefPage_indent_type;
 
     public static String SQLEditorFormatterPrefPage_remove_trailing_whitespace;
 
     public static String SQLEditorFormatterPrefPage_replace_tab_with_whitespaces;
+
+    public static String SQLEditorFormatterPrefPage_tab;
+
+    public static String SQLEditorFormatterPrefPage_whitespace;
 
     public static String SQLEditorFormatterPrefPage_whitespace_count;
 

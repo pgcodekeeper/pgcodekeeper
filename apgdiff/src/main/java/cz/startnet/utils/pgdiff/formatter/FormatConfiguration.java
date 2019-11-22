@@ -2,10 +2,15 @@ package cz.startnet.utils.pgdiff.formatter;
 
 public class FormatConfiguration {
 
+    public enum IndentType {
+        DISABLE, TAB, WHITESPACE
+    }
+
     private boolean addWhitespaceBeforeOp;
     private boolean addWhitespaceAfterOp;
     private boolean removeTrailingWhitespace;
 
+    private IndentType indentType = IndentType.DISABLE;
     private int indentSize;
     private int whitespaceCount = -1;
 
@@ -54,5 +59,13 @@ public class FormatConfiguration {
 
     public String getTabReplace() {
         return tabReplace;
+    }
+
+    public IndentType getIndentType() {
+        return indentType;
+    }
+
+    public void setIndentType(IndentType indentType) {
+        this.indentType = indentType;
     }
 }

@@ -51,6 +51,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(SQL_EDITOR_PREF.HIGHLIGHT_BRACKET_AT_CARET_LOCATION, true);
         store.setDefault(SQL_EDITOR_PREF.ENCLOSING_BRACKETS, true);
 
+        store.setDefault(FORMATTER_PREF.INDENT_TYPE, FORMATTER_PREF.WHITESPACE);
         store.setDefault(FORMATTER_PREF.INDENT_SIZE, 2);
         store.setDefault(FORMATTER_PREF.REMOVE_TRAILING_WHITESPACE, true);
         store.setDefault(FORMATTER_PREF.ADD_WHITESPACE_BEFORE_OP, true);

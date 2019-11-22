@@ -83,7 +83,7 @@ public class FormatParseTreeListener implements ParseTreeListener {
                         && !(ctx.parent.parent instanceof Function_statementContext))) {
             // subselect
             indents.put(ctx.getStart(), IndentDirection.BLOCK_START);
-            indents.put(ctx.getStop(), IndentDirection.BLOCK_STOP);
+            putBlockStop(ctx.getStop());
         } else if (ctx instanceof After_opsContext || ctx instanceof Into_statementContext) {
             indents.put(ctx.getStart(), IndentDirection.BLOCK_LINE);
         } else if (ctx instanceof StatementContext) {
@@ -96,7 +96,7 @@ public class FormatParseTreeListener implements ParseTreeListener {
         List<TerminalNode> colons = ctx.SEMI_COLON();
         for (int i = 0; i < statements.size(); i++) {
             indents.put(statements.get(i).getStart(), IndentDirection.BLOCK_START);
-            indents.put(colons.get(i).getSymbol(), IndentDirection.BLOCK_STOP);
+            putBlockStop(colons.get(i).getSymbol());
         }
     }
 
@@ -106,7 +106,7 @@ public class FormatParseTreeListener implements ParseTreeListener {
             indents.put(declare.DECLARE().getSymbol(), IndentDirection.BLOCK_LINE);
             for (DeclarationContext dec : declare.declaration()) {
                 indents.put(dec.getStart(), IndentDirection.BLOCK_START);
-                indents.put(dec.getStop(), IndentDirection.BLOCK_STOP);
+                putBlockStop(dec.getStop());
             }
         }
 
@@ -117,7 +117,7 @@ public class FormatParseTreeListener implements ParseTreeListener {
     private void formatExceptionStatement(Exception_statementContext ctx) {
         indents.put(ctx.EXCEPTION().getSymbol(), IndentDirection.BLOCK_LINE);
         indents.put(ctx.WHEN().get(0).getSymbol(), IndentDirection.BLOCK_START);
-        indents.put(ctx.getStop(), IndentDirection.REDUCE_TWICE);
+        putBlockStop(ctx.getStop());
     }
 
     private void formatSelectPrimary(Select_primaryContext ctx) {
@@ -176,7 +176,7 @@ public class FormatParseTreeListener implements ParseTreeListener {
 
         for (Update_setContext update : ctx.update_set()) {
             indents.put(update.getStart(), IndentDirection.BLOCK_START);
-            indents.put(update.getStop(), IndentDirection.BLOCK_STOP);
+            putBlockStop(update.getStop());
         }
 
         TerminalNode node = ctx.FROM();
@@ -264,13 +264,17 @@ public class FormatParseTreeListener implements ParseTreeListener {
             indents.put(elseCtx.getSymbol(), IndentDirection.BLOCK_LINE);
         }
 
-        indents.put(ctx.END().getSymbol(), IndentDirection.BLOCK_STOP);
+        putBlockStop(ctx.END().getSymbol());
     }
 
     private void formatSql(StatementContext ctx) {
         indents.put(ctx.getStart(), IndentDirection.BLOCK_START);
-        // if token already is present (only BLOCK_STOP can be here), we change to double reduce
-        indents.merge(ctx.getStop(), IndentDirection.BLOCK_STOP,
-                (o, n) -> IndentDirection.REDUCE_TWICE);
+        putBlockStop(ctx.getStop());
+    }
+
+    private void putBlockStop(Token token) {
+        // if token already is block end, reduce twice
+        indents.merge(token, IndentDirection.BLOCK_STOP,
+                (o, n) -> o == IndentDirection.BLOCK_STOP ? IndentDirection.REDUCE_TWICE : n);
     }
 }
