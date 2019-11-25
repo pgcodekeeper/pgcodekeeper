@@ -27,7 +27,6 @@ import org.eclipse.swt.widgets.Shell;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject;
-import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.PrefListEditor;
 
@@ -106,7 +105,6 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject, T
 
         addColumns(viewer);
         GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 2);
-        gd.widthHint = PREF_PAGE.WIDTH_HINT_PX;
         viewer.getTable().setLayoutData(gd);
         viewer.getTable().setLinesVisible(true);
         viewer.getTable().setHeaderVisible(true);

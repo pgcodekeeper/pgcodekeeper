@@ -24,7 +24,6 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
-import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStoreEditorDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.PgPassDialog;
@@ -85,7 +84,6 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo, ListViewer> {
     protected ListViewer createViewer(Composite parent) {
         ListViewer viewerObjs = new ListViewer(parent, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
         GridData gd =  new GridData(SWT.FILL, SWT.FILL, true, true, 1, 7);
-        gd.widthHint = PREF_PAGE.WIDTH_HINT_PX;
         viewerObjs.getControl().setLayoutData(gd);
 
         viewerObjs.setContentProvider(ArrayContentProvider.getInstance());
