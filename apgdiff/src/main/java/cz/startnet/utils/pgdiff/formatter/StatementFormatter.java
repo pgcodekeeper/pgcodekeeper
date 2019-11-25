@@ -86,6 +86,9 @@ public class StatementFormatter {
 
     private List<Token> getTokensFromDefinition(String definition, String language) {
         Lexer lexer = new SQLLexer(new ANTLRInputStream(definition));
+        if (IndentType.DISABLE == config.getIndentType()) {
+            return new ArrayList<>(lexer.getAllTokens());
+        }
         CommonTokenStream stream = new CommonTokenStream(lexer);
         SQLParser parser = new SQLParser(stream);
         parser.addParseListener(new FormatParseTreeListener(indents));
