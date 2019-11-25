@@ -33,6 +33,8 @@ public class QueriesBatchCallable extends StatementCallable<String> {
     private final Connection connection;
     private final IProgressReporter reporter;
 
+    private boolean isAutoCommitEnabled = true;
+
     public QueriesBatchCallable(Statement st, List<List<String>> batches,
             IProgressMonitor monitor, IProgressReporter reporter, Connection connection) {
         super(st, null);
@@ -60,7 +62,6 @@ public class QueriesBatchCallable extends StatementCallable<String> {
                 }
             } else {
                 subMonitor.setWorkRemaining(batches.size());
-                connection.setAutoCommit(false);
                 for (List<String> queriesList : batches) {
                     PgDiffUtils.checkCancelled(monitor);
                     // in case we're executing a real batch after a single-statement one
@@ -69,17 +70,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
                         currQuery = queriesList.get(0);
                         executeSingleStatement(currQuery);
                     } else {
-                        for (String query : queriesList) {
-                            st.addBatch(query);
-                            writeStatus(query);
-                        }
-
-                        if (reporter != null) {
-                            reporter.writeMessage("Executing batch");
-                        }
-
-                        st.executeBatch();
-                        writeWarnings();
+                        runBatch(queriesList);
                     }
                     subMonitor.worked(1);
                 }
@@ -134,6 +125,25 @@ public class QueriesBatchCallable extends StatementCallable<String> {
         }
         writeWarnings();
         writeStatus(query);
+    }
+
+    private void runBatch(List<String> queriesList) throws SQLException {
+        if (isAutoCommitEnabled) {
+            connection.setAutoCommit(false);
+            isAutoCommitEnabled = false;
+        }
+
+        for (String query : queriesList) {
+            st.addBatch(query);
+            writeStatus(query);
+        }
+
+        if (reporter != null) {
+            reporter.writeMessage("Executing batch");
+        }
+
+        st.executeBatch();
+        writeWarnings();
     }
 
     private void writeResult(String query) throws SQLException {
