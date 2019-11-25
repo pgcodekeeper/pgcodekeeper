@@ -32,7 +32,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.With_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.MsSelectOps;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.MsSelectStmt;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
