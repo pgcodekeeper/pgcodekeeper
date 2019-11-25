@@ -1,5 +1,6 @@
 package ru.taximaxim.codekeeper.ui.prefs;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -58,8 +59,14 @@ implements IWorkbenchPreferencePage {
 
     @Override
     public boolean performOk() {
-        DbXmlStore.INSTANCE.writeObjects(dbList.getList());
-        return true;
+        setErrorMessage(null);
+        try {
+            DbXmlStore.INSTANCE.writeObjects(dbList.getList());
+            return true;
+        } catch (IOException e) {
+            setErrorMessage(e.getLocalizedMessage());
+            return false;
+        }
     }
 }
 
