@@ -25,7 +25,7 @@ public class CreateFtsDictionary extends ParserAbstract {
         String name = QNameParser.getFirstName(ids);
         PgFtsDictionary dictionary = new PgFtsDictionary(name);
         for (Option_with_valueContext option : ctx.option_with_value()) {
-            fillOptionParams(option.value.getText(), option.name.getText(), false, dictionary::addOption);
+            fillOptionParams(option.vex().getText(), option.identifier().getText(), false, dictionary::addOption);
         }
 
         List<IdentifierContext> templateIds = ctx.template.identifier();

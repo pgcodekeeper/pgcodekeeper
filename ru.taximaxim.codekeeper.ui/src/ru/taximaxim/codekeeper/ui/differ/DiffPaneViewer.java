@@ -53,8 +53,6 @@ public class DiffPaneViewer extends Composite {
 
         diffPane = new SqlMergeViewer(this, SWT.BORDER, conf);
         diffPane.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
-        // add initial input in order to avoid problems when disposing the viewer later
-        resetInput();
     }
 
     public void setInput(TreeElement el, Collection<TreeElement> availableElements) {
@@ -63,14 +61,8 @@ public class DiffPaneViewer extends Composite {
             diffPane.setInput(new DiffNode(new CompareItem(Messages.database, getSql(el, false)),
                     new CompareItem(Messages.DiffPaneViewer_project, getSql(el, true))));
         } else {
-            resetInput();
+            diffPane.setInput(null);
         }
-    }
-
-
-    private void resetInput() {
-        diffPane.setInput(new DiffNode(new CompareItem(Messages.database, ""), //$NON-NLS-1$
-                new CompareItem(Messages.DiffPaneViewer_project, ""))); //$NON-NLS-1$
     }
 
     private String getSql(TreeElement el, boolean project) {

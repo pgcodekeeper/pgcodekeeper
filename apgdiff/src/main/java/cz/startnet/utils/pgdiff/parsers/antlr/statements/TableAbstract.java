@@ -5,8 +5,8 @@ import java.util.List;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Collate_identifierContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Column_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
@@ -18,6 +18,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identity_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Including_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_parametersContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.List_of_type_column_defContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Names_in_parensContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sort_specifierContext;
@@ -59,7 +60,7 @@ public abstract class TableAbstract extends ParserAbstract {
         if (columns == null) {
             return;
         }
-        for (Table_of_type_column_defContext colCtx : columns.table_col_def) {
+        for (Table_of_type_column_defContext colCtx : columns.table_of_type_column_def()) {
             if (colCtx.tabl_constraint != null) {
                 addTableConstraint(colCtx.tabl_constraint, table, schemaName, tablespace);
             } else {
@@ -91,14 +92,14 @@ public abstract class TableAbstract extends ParserAbstract {
         } else if (body.REFERENCES() != null) {
             Schema_qualified_nameContext tblRef = body.schema_qualified_name();
             List<IdentifierContext> ids = tblRef.identifier();
-            String refTableName = QNameParser.getFirstName(ids);
             String refSchemaName = QNameParser.getSchemaName(ids);
             if (refSchemaName == null) {
                 return;
             }
+            String refTableName = QNameParser.getFirstName(ids);
             GenericColumn ftable = new GenericColumn(refSchemaName, refTableName, DbObjType.TABLE);
-            String constrName = ctx.constraint_name == null ?
-                    table.getName() + '_' + colName + "_fkey" : ctx.constraint_name.getText();
+            IdentifierContext id = ctx.identifier();
+            String constrName = id == null ? table.getName() + '_' + colName + "_fkey" : id.getText();
 
             constr = new PgConstraint(constrName);
             constr.setForeignTable(ftable);
@@ -123,11 +124,15 @@ public abstract class TableAbstract extends ParserAbstract {
                     + '.' + PgDiffUtils.getQuotedName(ftable.table)
                     + '(' + PgDiffUtils.getQuotedName(fColumn) +')');
         } else if (body.UNIQUE() != null || body.PRIMARY() != null) {
-            String genName = body.PRIMARY() == null ?
-                    table.getName() + '_' + colName + "_key"
-                    : table.getName() + "_pkey";
-
-            String constrName = ctx.constraint_name == null ? genName : ctx.constraint_name.getText();
+            IdentifierContext id = ctx.identifier();
+            String constrName;
+            if (id != null) {
+                constrName = id.getText();
+            } else if (body.PRIMARY() != null) {
+                constrName = table.getName() + "_pkey";
+            } else {
+                constrName = table.getName() + '_' + colName + "_key";
+            }
             constr = new PgConstraint(constrName);
 
             if (body.PRIMARY() != null) {
@@ -143,8 +148,13 @@ public abstract class TableAbstract extends ParserAbstract {
 
             constr.addColumn(colName);
         } else if (body.CHECK() != null) {
-            String genName = table.getName() + '_' + col.getName() + "_check";
-            String constrName = ctx.constraint_name == null ? genName : ctx.constraint_name.getText();
+            IdentifierContext id = ctx.identifier();
+            String constrName;
+            if (id != null) {
+                constrName = id.getText();
+            } else {
+                constrName = table.getName() + '_' + col.getName() + "_check";
+            }
             constr = new PgConstraint(constrName);
             VexContext expCtx = body.expression;
             constr.setDefinition("CHECK ((" + getFullCtxText(expCtx) + "))");
@@ -173,18 +183,18 @@ public abstract class TableAbstract extends ParserAbstract {
 
     protected void fillColumns(Define_columnsContext columnsCtx, AbstractPgTable table,
             String schemaName, String tablespace) {
-        for (Table_column_defContext colCtx : columnsCtx.table_col_def) {
+        for (Table_column_defContext colCtx : columnsCtx.table_column_def()) {
             if (colCtx.tabl_constraint != null) {
                 addTableConstraint(colCtx.tabl_constraint, table, schemaName, tablespace);
             } else if (colCtx.table_column_definition() != null) {
                 Table_column_definitionContext column = colCtx.table_column_definition();
-                addColumn(column.column_name.getText(), column.datatype,
-                        column.collate_name, column.constraint_common(),
+                addColumn(column.identifier().getText(), column.data_type(),
+                        column.collate_identifier(), column.constraint_common(),
                         column.define_foreign_options(), table);
             }
         }
 
-        Column_referencesContext parentTable = columnsCtx.parent_table;
+        Names_in_parensContext parentTable = columnsCtx.names_in_parens();
         if (parentTable != null) {
             for (Schema_qualified_nameContext nameInher : parentTable.names_references().schema_qualified_name()) {
                 addInherit(table, nameInher.identifier());
@@ -209,8 +219,9 @@ public abstract class TableAbstract extends ParserAbstract {
         if (options != null) {
             if (table instanceof AbstractForeignTable) {
                 for (Foreign_optionContext option : options.foreign_option()) {
-                    String value = option.value == null ? "" : option.value.getText();
-                    fillOptionParams(value, option.name.getText(), false, col::addForeignOption);
+                    Character_stringContext opt = option.character_string();
+                    String value = opt == null ? "" : opt.getText();
+                    fillOptionParams(value, option.foreign_option_name().getText(), false, col::addForeignOption);
                 }
             } else {
                 //throw new IllegalStateException("Options used only for foreign table");
@@ -232,7 +243,8 @@ public abstract class TableAbstract extends ParserAbstract {
     }
 
     protected static PgConstraint createTableConstraintBlank(Constraint_commonContext ctx) {
-        String constrName = ctx.constraint_name == null ? "" : ctx.constraint_name.getText();
+        IdentifierContext id = ctx.identifier();
+        String constrName = id == null ? "" : id.getText();
         return new PgConstraint(constrName);
     }
 
@@ -261,7 +273,7 @@ public abstract class TableAbstract extends ParserAbstract {
             constrBlank.addDep(ftable);
 
             // TODO need ref to table
-            Column_referencesContext refs = constrBody.ref;
+            Names_in_parensContext refs = constrBody.ref;
             if (refs != null) {
                 for (Schema_qualified_nameContext name : refs.names_references().schema_qualified_name()) {
                     String colName = QNameParser.getFirstName(name.identifier());
@@ -274,7 +286,7 @@ public abstract class TableAbstract extends ParserAbstract {
         if (constrBody.UNIQUE() != null || constrBody.PRIMARY() != null) {
             constrBlank.setUnique(constrBody.UNIQUE() != null);
             constrBlank.setPrimaryKey(constrBody.PRIMARY() != null);
-            Column_referencesContext cols = constrBody.col;
+            Names_in_parensContext cols = constrBody.col;
             if (cols != null) {
                 for (Schema_qualified_nameContext name : cols.names_references().schema_qualified_name()) {
                     constrBlank.addColumn(QNameParser.getFirstName(name.identifier()));

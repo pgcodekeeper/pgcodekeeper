@@ -251,7 +251,7 @@ public class ViewSelect {
             Grouping_element_listContext sub;
             if (vexCtx != null) {
                 analyze(new Vex(vexCtx));
-            } else if ((sub = el.c) != null) {
+            } else if ((sub = el.grouping_element_list()) != null) {
                 groupBy(sub);
             }
         }

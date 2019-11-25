@@ -4,9 +4,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,81 +22,79 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 
 /**
- * An abstract 'factory' that creates 'artificial' predefined objects
+ * An 'factory' that creates 'artificial' predefined objects
  * for specific test-cases
  */
-abstract class TreeElementCreator {
-
+interface TreeElementCreator {
     /**
      * Возвращает дерево, представляющее собой выбор пользователя (фильтр дерева
      * диффа по селекшену)
      */
-    public abstract TreeElement getFilteredTree();
+    TreeElement getFilteredTree();
 
     /**
      * Возвращает зависимости от объектов в дереве
      * @param db
      */
-    public abstract Set<TreeElement> getDepcySet(PgDatabase source, PgDatabase target, TreeElement tree);
-
-    public abstract int getFileIndex();
-
-    public String getFilename(){
-        return "depcy_schema_" + getFileIndex() + ".sql";
-    }
-
-    public String getTargetFileName() {
-        return "depcy_schema_new_"+getFileIndex() + ".sql";
-    }
+    Set<TreeElement> getDepcySet(PgDatabase source, PgDatabase target, TreeElement tree);
 }
 
 /**
- * Tests for DepcyTreeExtender2 class
+ * Tests for DepcyTreeExtender class
  *
  * @author ryabinin_av
  */
 @RunWith(value = Parameterized.class)
 public class DepcyTreeExtenderTest {
 
-    private final TreeElementCreator predefined;
-
-    private final PgDatabase dbSource;
-    private final PgDatabase dbTarget;
-
-    public DepcyTreeExtenderTest(TreeElementCreator predefined)
-            throws InterruptedException, IOException {
-        this.predefined = predefined;
-        PgDiffArguments args = new PgDiffArguments();
-        args.setInCharsetName(ApgdiffConsts.UTF_8);
-        this.dbSource = ApgdiffTestUtils.loadTestDump(
-                predefined.getFilename(), DepcyTreeExtenderTest.class, args);
-        this.dbTarget = ApgdiffTestUtils.loadTestDump(
-                predefined.getTargetFileName(), DepcyTreeExtenderTest.class, args);
-    }
+    private static final TreeElementCreator[] DB_OBJS = {
+            // SONAR-OFF
+            new Predefined1(),
+            new Predefined2(),
+            new Predefined3(),
+            new Predefined4(),
+            new Predefined5(),
+            new Predefined6()
+            // SONAR-ON
+    };
 
     /**
      * Provides parameters for running the tests.
      */
     @Parameters
-    public static Collection<?> parameters() {
-        return Arrays.asList(
-                new Object[][]{
-                    // SONAR-OFF
-                    {new Predefined1()},
-                    {new Predefined2()},
-                    {new Predefined3()},
-                    {new Predefined4()},
-                    {new Predefined5()}
-                    // SONAR-ON
-                });
+    public static Iterable<Integer> parameters() {
+        return IntStream.range(1, DB_OBJS.length + 1).mapToObj(i -> (Integer) i)::iterator;
+    }
+
+    /**
+     * Index of the file that should be tested.
+     */
+    private final int fileIndex;
+
+    public DepcyTreeExtenderTest(int fileIndex) {
+        this.fileIndex = fileIndex;
     }
 
     /**
      * Тестирует зависимости от новых(и возможных edit) объектов, полученные из dte
+     * @throws IOException
      * @throws InterruptedException
      */
     @Test
-    public void testGetDependencies() {
+    public void testGetDependencies() throws IOException, InterruptedException {
+        PgDiffArguments args = new PgDiffArguments();
+        args.setInCharsetName(ApgdiffConsts.UTF_8);
+
+        String fileName = "depcy_schema_" + fileIndex + ".sql";
+        String targetFileName = "depcy_schema_new_" + fileIndex + ".sql";
+
+        PgDatabase dbSource = ApgdiffTestUtils.loadTestDump(
+                fileName, DepcyTreeExtenderTest.class, args);
+        PgDatabase dbTarget = ApgdiffTestUtils.loadTestDump(
+                targetFileName, DepcyTreeExtenderTest.class, args);
+
+        TreeElementCreator predefined = DB_OBJS[fileIndex - 1];
+
         TreeElement tree = predefined.getFilteredTree();
         DepcyTreeExtender dte = new DepcyTreeExtender(dbSource, dbTarget, tree);
         Set<TreeElement> depcy = dte.getDepcies();
@@ -105,7 +103,6 @@ public class DepcyTreeExtenderTest {
     }
 }
 
-// SONAR-OFF
 /**
  * Различаются объекты: добавились view v1, v2, у таблицы изменилась колонка с1,
  * пользователь выбрал v1, по зависимости подтянулась v2, и таблица t1 (т.к.
@@ -114,7 +111,7 @@ public class DepcyTreeExtenderTest {
  * @author botov_av
  *
  */
-class Predefined1 extends TreeElementCreator{
+class Predefined1 implements TreeElementCreator {
 
     @Override
     public TreeElement getFilteredTree() {
@@ -143,18 +140,13 @@ class Predefined1 extends TreeElementCreator{
         TreeElement publicSchema = tree.findElement(target.getDefaultSchema());
         return new HashSet<>(Arrays.asList(table, publicSchema, view));
     }
-
-    @Override
-    public int getFileIndex() {
-        return 1;
-    }
 }
 /**
  * Различаются объекты: меняется сиквенс, пользователь выбрал его
  * @author botov_av
  *
  */
-class Predefined2 extends TreeElementCreator{
+class Predefined2 implements TreeElementCreator {
 
     @Override
     public TreeElement getFilteredTree() {
@@ -174,11 +166,6 @@ class Predefined2 extends TreeElementCreator{
     public Set<TreeElement> getDepcySet(PgDatabase source, PgDatabase target, TreeElement tree) {
         return new HashSet<>();
     }
-
-    @Override
-    public int getFileIndex() {
-        return 2;
-    }
 }
 
 /**
@@ -187,7 +174,7 @@ class Predefined2 extends TreeElementCreator{
  *
  * Различаются объекты: новый сиквенс, пользователь выбрал его.
  */
-class Predefined3 extends TreeElementCreator{
+class Predefined3 implements TreeElementCreator {
 
     @Override
     public TreeElement getFilteredTree() {
@@ -210,11 +197,6 @@ class Predefined3 extends TreeElementCreator{
         //        PgSequence seq = schema.getSequence("s1");
         return new HashSet<>(/*Arrays.asList(schema, table, seq)*/);
     }
-
-    @Override
-    public int getFileIndex() {
-        return 3;
-    }
 }
 
 /**
@@ -224,7 +206,7 @@ class Predefined3 extends TreeElementCreator{
  * @author botov_av
  *
  */
-class Predefined4 extends TreeElementCreator{
+class Predefined4 implements TreeElementCreator {
 
     @Override
     public TreeElement getFilteredTree() {
@@ -244,11 +226,6 @@ class Predefined4 extends TreeElementCreator{
     public Set<TreeElement> getDepcySet(PgDatabase source, PgDatabase target, TreeElement tree) {
         return new HashSet<>(Arrays.asList(tree.findElement(source.getDefaultSchema())));
     }
-
-    @Override
-    public int getFileIndex() {
-        return 4;
-    }
 }
 
 /**
@@ -258,7 +235,7 @@ class Predefined4 extends TreeElementCreator{
  * @author botov_av
  *
  */
-class Predefined5 extends TreeElementCreator{
+class Predefined5 implements TreeElementCreator {
 
     @Override
     public TreeElement getFilteredTree() {
@@ -282,10 +259,34 @@ class Predefined5 extends TreeElementCreator{
         TreeElement table = tree.findElement(target.getSchema("republic").getTable("t_test2foreign"));
         return new HashSet<>(Arrays.asList(table));
     }
+}
+
+/**
+ * Различаются объекты: меняется таблица, добавляется функция, пользователь
+ * выбрал таблицу, по зависимости тянется новая функция
+ */
+class Predefined6 implements TreeElementCreator {
 
     @Override
-    public int getFileIndex() {
-        return 5;
+    public TreeElement getFilteredTree() {
+        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
+
+        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, DiffSide.BOTH);
+        database.addChild(publicSchema);
+
+        TreeElement table = new TreeElement("t1", DbObjType.TABLE, DiffSide.BOTH);
+        table.setSelected(true);
+        publicSchema.addChild(table);
+
+        TreeElement func = new TreeElement("f1()", DbObjType.FUNCTION, DiffSide.RIGHT);
+        publicSchema.addChild(func);
+
+        return database;
+    }
+
+    @Override
+    public Set<TreeElement> getDepcySet(PgDatabase source, PgDatabase target, TreeElement tree) {
+        TreeElement func = tree.findElement(target.getSchema(ApgdiffConsts.PUBLIC).getFunction("f1()"));
+        return new HashSet<>(Arrays.asList(func));
     }
 }
-// SONAR-ON
