@@ -201,15 +201,15 @@ public abstract class AbstractExpr {
                         .map(Pair::getSecond)
                         .findAny()
                         .orElseGet(() -> {
-                            Log.log(Log.LOG_WARNING, "Column " + columnName +
+                            log(Log.LOG_WARNING, "Column " + columnName +
                                     " not found in complex " + columnParent);
                             return TypesSetManually.COLUMN;
                         });
             } else {
-                Log.log(Log.LOG_WARNING, "Complex not found: " + columnParent);
+                log(Log.LOG_WARNING, "Complex not found: " + columnParent);
             }
         } else {
-            Log.log(Log.LOG_WARNING, "Unknown column reference: "
+            log(Log.LOG_WARNING, "Unknown column reference: "
                     + schemaName + ' ' + columnParent + ' ' + columnName);
         }
 
@@ -245,7 +245,7 @@ public abstract class AbstractExpr {
         }
 
         return columns.findAny().map(Pair::getSecond).orElseGet(() -> {
-            Log.log(Log.LOG_WARNING,
+            log(Log.LOG_WARNING,
                     "Column " + colName + " not found in relation " + relationName);
             return TypesSetManually.COLUMN;
         });
@@ -276,7 +276,7 @@ public abstract class AbstractExpr {
             String relationName, Predicate<String> colNamePredicate) {
         IRelation relation = findRelation(schemaName, relationName);
         if (relation == null) {
-            Log.log(Log.LOG_WARNING, "Relation not found: " + schemaName + '.' + relationName);
+            log(Log.LOG_WARNING, "Relation not found: " + schemaName + '.' + relationName);
             return Stream.empty();
         }
 
@@ -297,7 +297,7 @@ public abstract class AbstractExpr {
         if (col == null) {
             Pair<IRelation, Pair<String, String>> relCol = findColumn(name);
             if (relCol == null) {
-                Log.log(Log.LOG_WARNING, "Tableless column not resolved: " + name);
+                log(Log.LOG_WARNING, "Tableless column not resolved: " + name);
                 return new ModPair<>(name, TypesSetManually.COLUMN);
             }
             IRelation rel = relCol.getFirst();
@@ -405,5 +405,10 @@ public abstract class AbstractExpr {
                     errorCtx != null ? errorCtx.getStart() : null);
         }
         return foundSchema;
+    }
+
+    protected void log(int level, String msg) {
+        // debug method
+        // Log.log(level, msg);
     }
 }
