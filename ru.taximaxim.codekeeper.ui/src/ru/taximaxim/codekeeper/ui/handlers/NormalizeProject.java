@@ -58,7 +58,7 @@ public class NormalizeProject extends AbstractHandler {
                 SubMonitor mon = SubMonitor.convert(monitor,
                         Messages.NormalizeProject_normalizing_project, 2);
                 try {
-                    PgDatabase db = DbSource.fromProject(proj, null).get(mon.newChild(1));
+                    PgDatabase db = DbSource.fromProject(proj).get(mon.newChild(1));
                     mon.newChild(1).subTask(Messages.NormalizeProject_exporting_project);
                     new ProjectUpdater(db, proj).updateFull();
                 } catch (IOException | CoreException ex) {

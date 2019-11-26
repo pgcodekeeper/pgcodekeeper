@@ -99,11 +99,11 @@ class DbSourcePicker extends Composite {
                     pageDiff.getTimezone(), null, null);
         } else if ((file = storePicker.getPathOfFile()) != null) {
             return DbSource.fromFile(forceUnixNewlines, file, getEncoding(),
-                    isMsSql, null, null);
+                    isMsSql, null);
         } else if ((dir = storePicker.getPathOfDir()) != null) {
             PgDbProject project = getProjectFromDir(dir);
             if (project != null) {
-                return DbSource.fromProject(project, null);
+                return DbSource.fromProject(project);
             } else {
                 return DbSource.fromDirTree(forceUnixNewlines, dir.getAbsolutePath(),
                         getEncoding(), isMsSql, null, null);

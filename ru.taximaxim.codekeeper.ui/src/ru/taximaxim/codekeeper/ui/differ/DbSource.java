@@ -125,10 +125,19 @@ public abstract class DbSource {
         return new DbSourceProject(proj, oneTimePrefs);
     }
 
+    public static DbSource fromProject(PgDbProject proj) {
+        return new DbSourceProject(proj, null);
+    }
+
     public static DbSource fromFile(boolean forceUnixNewlines, File filename,
             String encoding, boolean isMsSql, IProject proj, Map<String, Boolean> oneTimePrefs) {
         return new DbSourceFile(forceUnixNewlines, filename, encoding, isMsSql,
                 proj, oneTimePrefs);
+    }
+
+    public static DbSource fromFile(boolean forceUnixNewlines, File filename,
+            String encoding, boolean isMsSql, IProject proj) {
+        return new DbSourceFile(forceUnixNewlines, filename, encoding, isMsSql, proj, null);
     }
 
     public static DbSource fromDbInfo(DbInfo dbinfo, boolean forceUnixNewlines,

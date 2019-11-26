@@ -68,7 +68,7 @@ public class DbSourceTest {
         URL urla = DbSourceTest.class.getResource(DUMP);
 
         performTest(DbSource.fromFile(true, ApgdiffUtils.getFileFromOsgiRes(urla),
-                ApgdiffConsts.UTF_8, false, null, null));
+                ApgdiffConsts.UTF_8, false, null));
     }
 
     @Test
@@ -85,7 +85,7 @@ public class DbSourceTest {
 
             // testing itself
             assertEquals("Project name differs", dir.getFileName().toString(), project.getName());
-            performTest(DbSource.fromProject(new PgDbProject(project), null));
+            performTest(DbSource.fromProject(new PgDbProject(project)));
             project.delete(false, true, null);
         }
     }

@@ -81,6 +81,11 @@ public class Differ implements IRunnableWithProgress {
         this.oneTimePrefs = oneTimePrefs;
     }
 
+    public Differ(PgDatabase sourceDbFull, PgDatabase targetDbFull, TreeElement root,
+            boolean needTwoWay, String timezone, boolean msSql, IProject proj) {
+        this(sourceDbFull, targetDbFull, root, needTwoWay, timezone, msSql, proj, null);
+    }
+
     public Job getDifferJob() {
         return new Job(Messages.differ_get_differ) {
 

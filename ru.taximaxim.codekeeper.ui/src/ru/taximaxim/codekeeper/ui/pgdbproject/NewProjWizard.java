@@ -181,7 +181,7 @@ implements IExecutableExtension, INewWizard {
         } else if (dbinfo != null) {
             src = DbSource.fromDbInfo(dbinfo, forceUnixNewlines, charset, timezone, props.getProject(), null);
         } else if ((dump = pageDb.getDumpPath()) != null) {
-            src = DbSource.fromFile(forceUnixNewlines, dump, charset, !isPostgres, props.getProject(), null);
+            src = DbSource.fromFile(forceUnixNewlines, dump, charset, !isPostgres, props.getProject());
         } else {
             // should be prevented by page completion state
             throw new IllegalStateException(Messages.initProjectFromSource_init_request_but_no_schema_source);
