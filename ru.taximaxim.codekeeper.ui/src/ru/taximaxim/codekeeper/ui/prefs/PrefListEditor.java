@@ -36,6 +36,9 @@ public abstract class PrefListEditor<T, V extends StructuredViewer> extends Comp
     public static final int DOWN_ID = 6;
     public static final int CLIENT_ID = 1024;
 
+    private static final int WIDTH_HINT_PX = 240;
+    private static final int HEIGHT_HINT_PX = 400;
+
     private List<T> objsList = new LinkedList<>();
 
     protected final LocalResourceManager lrm = new LocalResourceManager(JFaceResources.getResources(), this);
@@ -51,6 +54,9 @@ public abstract class PrefListEditor<T, V extends StructuredViewer> extends Comp
         setLayout(gridLayout);
         setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         viewerObjs = createViewer(this);
+        GridData gd = (GridData) viewerObjs.getControl().getLayoutData();
+        gd.widthHint = WIDTH_HINT_PX;
+        gd.heightHint = HEIGHT_HINT_PX;
         createButtonsForSideBar(this);
     }
 
