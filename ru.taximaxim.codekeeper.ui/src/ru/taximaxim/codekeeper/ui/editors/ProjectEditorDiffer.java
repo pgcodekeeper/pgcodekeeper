@@ -160,7 +160,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private Link linkRefresh;
     private Menu menuGetChangesCustom;
 
-    private Action applyAction;
     private Action getChangesAction;
     private Action actionToProj;
     private Action actionToDb;
@@ -383,7 +382,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
      * with custom settings.
      */
     private void addBtnApplyWithMenu(Composite container, ToolBarManager mgrTblBtn) {
-        applyAction = new Action(Messages.DiffTableViewer_apply_to,
+        Action applyAction = new Action(Messages.DiffTableViewer_apply_to,
                 IAction.AS_DROP_DOWN_MENU) {
 
             @Override
