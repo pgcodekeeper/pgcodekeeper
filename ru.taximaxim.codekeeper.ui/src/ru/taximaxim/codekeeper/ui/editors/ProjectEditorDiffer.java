@@ -36,7 +36,13 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ActionContributionItem;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IMenuCreator;
 import org.eclipse.jface.action.IStatusLineManager;
+import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -54,21 +60,17 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
-import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
@@ -156,13 +158,12 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private Composite contNotifications;
     private Label lblNotificationText;
     private Link linkRefresh;
-    private ToolBar toolGetChanges;
     private Menu menuGetChangesCustom;
-    private ToolBar toolApply;
-    private Menu menuApplyCustom;
 
-    private Button btnToProj;
-    private Button btnToDb;
+    private Action applyAction;
+    private Action getChangesAction;
+    private Action actionToProj;
+    private Action actionToDb;
 
     private DiffTableViewer diffTable;
     private DiffPaneViewer diffPane;
@@ -190,8 +191,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                             : Messages.ProjectEditorDiffer_database));
             mb.open();
 
-            btnToProj.setSelection(isApplyToProj);
-            btnToDb.setSelection(!isApplyToProj);
+            actionToProj.setChecked(isApplyToProj);
+            actionToDb.setChecked(!isApplyToProj);
         }
         diffTable.setApplyToProj(isApplyToProj);
         diffTable.getViewer().refresh();
@@ -247,33 +248,48 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 layout.marginWidth = 0;
                 container.setLayout(layout);
 
-                addBtnApplyWithMenu(container);
+                ToolBar toolBarTblBtn = new ToolBar(container, SWT.FLAT | SWT.RIGHT);
+                toolBarTblBtn.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
+                final ToolBarManager mgrTblBtn = new ToolBarManager(toolBarTblBtn);
 
-                btnToProj = new Button(container, SWT.RADIO);
-                btnToProj.setText(Messages.DiffTableViewer_to_project);
-                btnToProj.setImage(Activator.getRegisteredImage(FILE.ICONAPPSMALL));
-                btnToProj.setSelection(true);
-                btnToProj.addSelectionListener(new SelectionAdapter()  {
+                addBtnApplyWithMenu(container, mgrTblBtn);
+
+                actionToProj = new Action(Messages.DiffTableViewer_to_project,
+                        IAction.AS_RADIO_BUTTON) {
 
                     @Override
-                    public void widgetSelected(SelectionEvent e) {
+                    public void run() {
                         changeMigrationDireciton(true, false);
                     }
-                });
+                };
+                actionToProj.setImageDescriptor(ImageDescriptor
+                        .createFromImage(Activator.getRegisteredImage(FILE.ICONAPPSMALL)));
+                actionToProj.setChecked(true);
+                ActionContributionItem itemToProj = new ActionContributionItem(actionToProj);
+                itemToProj.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+                mgrTblBtn.add(itemToProj);
 
-                btnToDb = new Button(container, SWT.RADIO);
-                btnToDb.setText(Messages.DiffTableViewer_to_database);
-                btnToDb.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
-                        .getBundle().getResource(FILE.ICONDATABASE))));
-                btnToDb.addSelectionListener(new SelectionAdapter()  {
+                actionToDb = new Action(Messages.DiffTableViewer_to_database,
+                        IAction.AS_RADIO_BUTTON) {
 
                     @Override
-                    public void widgetSelected(SelectionEvent e) {
+                    public void run() {
                         changeMigrationDireciton(false, false);
                     }
-                });
+                };
+                actionToDb.setImageDescriptor(ImageDescriptor.createFromURL(
+                        Activator.getContext().getBundle().getResource(FILE.ICONDATABASE)));
+                actionToDb.setChecked(false);
+                ActionContributionItem itemToDb = new ActionContributionItem(actionToDb);
+                itemToDb.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+                mgrTblBtn.add(itemToDb);
 
-                addBtnGetChangesWithMenu(container);
+                mgrTblBtn.add(new Separator());
+
+                addBtnGetChangesWithMenu(container, mgrTblBtn);
+
+                mgrTblBtn.update(true);
+                toolBarTblBtn.pack();
             }
         };
 
@@ -366,57 +382,76 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
      * main button [Apply] and additional button for applying
      * with custom settings.
      */
-    private void addBtnApplyWithMenu(Composite container) {
-        Shell shell = container.getShell();
-        menuApplyCustom = new Menu (shell, SWT.POP_UP);
-        MenuItem itemApplyCustom = new MenuItem (menuApplyCustom, SWT.PUSH);
-        itemApplyCustom.setText(Messages.DiffTableViewer_apply_to_custom);
-        itemApplyCustom.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                if (!btnToDb.getSelection()) {
-                    MessageBox mb = new MessageBox(shell, SWT.ICON_INFORMATION);
-                    mb.setText(Messages.projectEditorDiffer_works_only_for_db_title);
-                    mb.setMessage(Messages.projectEditorDiffer_works_only_for_db);
-                    mb.open();
-                    return;
-                }
+    private void addBtnApplyWithMenu(Composite container, ToolBarManager mgrTblBtn) {
+        applyAction = new Action(Messages.DiffTableViewer_apply_to,
+                IAction.AS_DROP_DOWN_MENU) {
 
-                ApplyCustomDialog dialog = new ApplyCustomDialog(shell, projPrefs,
-                        isMsSql, oneTimePrefs);
-                if (dialog.open() == Dialog.OK) {
-                    // 'oneTimePrefs' filled by one-time preferences
-                    // will be used in 'diff()'
+            @Override
+            public void run() {
+                if (actionToDb.isChecked()) {
                     diff();
+                } else {
+                    commit();
                 }
             }
-        });
+        };
 
-        toolApply = new ToolBar (container, SWT.RIGHT);
-        toolApply.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
-        Rectangle clientArea = container.getClientArea();
-        toolApply.setLocation(clientArea.x, clientArea.y);
-        final ToolItem itemApply = new ToolItem (toolApply, SWT.DROP_DOWN);
-        itemApply.setText(Messages.DiffTableViewer_apply_to);
-        itemApply.addSelectionListener(new SelectionAdapter() {
+        applyAction.setMenuCreator(new IMenuCreator() {
+
+            private Menu menuApplyCustom = null;
 
             @Override
-            public void widgetSelected(SelectionEvent e) {
-                if (e.detail == SWT.ARROW) {
-                    Rectangle rect = itemApply.getBounds();
-                    Point pt = new Point(rect.x, rect.y + rect.height);
-                    pt = toolApply.toDisplay(pt);
-                    menuApplyCustom.setLocation(pt.x, pt.y);
-                    menuApplyCustom.setVisible(true);
-                } else {
-                    if (btnToDb.getSelection()) {
-                        diff();
-                    } else {
-                        commit();
-                    }
+            public void dispose() {
+                if (menuApplyCustom != null) {
+                    menuApplyCustom.dispose();
+                    menuApplyCustom = null;
                 }
             }
+
+            @Override
+            public Menu getMenu(Control parent) {
+                if (menuApplyCustom != null) {
+                    menuApplyCustom.dispose();
+                }
+
+                menuApplyCustom = new Menu(parent);
+
+                MenuItem itemApplyCustom = new MenuItem (menuApplyCustom, SWT.PUSH);
+                itemApplyCustom.setText(Messages.DiffTableViewer_apply_to_custom);
+                itemApplyCustom.addSelectionListener(new SelectionAdapter() {
+
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        if (!actionToDb.isChecked()) {
+                            MessageBox mb = new MessageBox(container.getShell(), SWT.ICON_INFORMATION);
+                            mb.setText(Messages.projectEditorDiffer_works_only_for_db_title);
+                            mb.setMessage(Messages.projectEditorDiffer_works_only_for_db);
+                            mb.open();
+                            return;
+                        }
+
+                        ApplyCustomDialog dialog = new ApplyCustomDialog(container.getShell(), projPrefs,
+                                isMsSql, oneTimePrefs);
+                        if (dialog.open() == Dialog.OK) {
+                            // 'oneTimePrefs' filled by one-time preferences
+                            // will be used in 'diff()'
+                            diff();
+                        }
+                    }
+                });
+
+                return menuApplyCustom;
+            }
+
+            @Override
+            public Menu getMenu(Menu parent) {
+                return null;
+            }
         });
+
+        ActionContributionItem applyItem = new ActionContributionItem(applyAction);
+        applyItem.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+        mgrTblBtn.add(applyItem);
     }
 
     /**
@@ -424,46 +459,65 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
      * main button [GetChanges] and additional button for getting
      * changes with custom settings.
      */
-    private void addBtnGetChangesWithMenu(Composite container) {
-        Shell shell = container.getShell();
-        menuGetChangesCustom = new Menu (shell, SWT.POP_UP);
-        MenuItem itemGetChangesCustom = new MenuItem (menuGetChangesCustom, SWT.PUSH);
-        itemGetChangesCustom.setText(Messages.DiffTableViewer_get_changes_custom);
-        itemGetChangesCustom.addSelectionListener(new SelectionAdapter() {
+    private void addBtnGetChangesWithMenu(Composite container, ToolBarManager mgrTblBtn) {
+        getChangesAction = new Action(Messages.DiffTableViewer_get_changes,
+                IAction.AS_DROP_DOWN_MENU) {
+
             @Override
-            public void widgetSelected(SelectionEvent e) {
-                GetChangesCustomDialog dialog = new GetChangesCustomDialog(shell,
-                        projPrefs, isMsSql, oneTimePrefs);
-                if (dialog.open() == Dialog.OK) {
-                    // 'oneTimePrefs' filled by one-time preferences
-                    // will be used in 'getChanges()'
-                    getChanges();
+            public void run() {
+                getChanges();
+            }
+        };
+
+        getChangesAction.setImageDescriptor(ImageDescriptor.createFromURL(Activator.getContext()
+                .getBundle().getResource(FILE.ICONREFRESH)));
+
+        getChangesAction.setMenuCreator(new IMenuCreator() {
+
+            @Override
+            public void dispose() {
+                if (menuGetChangesCustom != null) {
+                    menuGetChangesCustom.dispose();
+                    menuGetChangesCustom = null;
                 }
+            }
+
+            @Override
+            public Menu getMenu(Control parent) {
+                if (menuGetChangesCustom != null) {
+                    menuGetChangesCustom.dispose();
+                }
+
+                menuGetChangesCustom = new Menu(parent);
+
+                MenuItem itemGetChangesCustom = new MenuItem (menuGetChangesCustom, SWT.PUSH);
+                itemGetChangesCustom.setText(Messages.DiffTableViewer_get_changes_custom);
+                itemGetChangesCustom.addSelectionListener(new SelectionAdapter() {
+
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        GetChangesCustomDialog dialog = new GetChangesCustomDialog(
+                                container.getShell(), projPrefs, isMsSql, oneTimePrefs);
+                        if (dialog.open() == Dialog.OK) {
+                            // 'oneTimePrefs' filled by one-time preferences
+                            // will be used in 'getChanges()'
+                            getChanges();
+                        }
+                    }
+                });
+
+                return menuGetChangesCustom;
+            }
+
+            @Override
+            public Menu getMenu(Menu parent) {
+                return null;
             }
         });
 
-        toolGetChanges = new ToolBar (container, SWT.RIGHT);
-        Rectangle clientArea = container.getClientArea();
-        toolGetChanges.setLocation(clientArea.x, clientArea.y);
-        final ToolItem itemGetChanges = new ToolItem (toolGetChanges, SWT.DROP_DOWN);
-        itemGetChanges.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
-                .getBundle().getResource(FILE.ICONREFRESH))));
-        itemGetChanges.setText(Messages.DiffTableViewer_get_changes);
-        itemGetChanges.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                if (e.detail == SWT.ARROW) {
-                    Rectangle rect = itemGetChanges.getBounds();
-                    Point pt = new Point(rect.x, rect.y + rect.height);
-                    pt = toolGetChanges.toDisplay(pt);
-                    menuGetChangesCustom.setLocation(pt.x, pt.y);
-                    menuGetChangesCustom.setVisible(true);
-                } else {
-                    getChanges();
-                }
-            }
-        });
+        ActionContributionItem getChangesItem = new ActionContributionItem(getChangesAction);
+        getChangesItem.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+        mgrTblBtn.add(getChangesItem);
     }
 
     public void addDependency() {
@@ -670,8 +724,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             public void aboutToRun(IJobChangeEvent event) {
                 UiSync.exec(parent, () -> {
                     if (!parent.isDisposed()) {
-                        toolGetChanges.setEnabled(false);
-                        menuGetChangesCustom.setEnabled(false);
+                        getChangesAction.setEnabled(false);
                     }
                 });
             }
@@ -681,8 +734,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             public void done(IJobChangeEvent event) {
                 UiSync.exec(parent, () -> {
                     if (!parent.isDisposed()) {
-                        toolGetChanges.setEnabled(true);
-                        menuGetChangesCustom.setEnabled(true);
+                        getChangesAction.setEnabled(true);
                     }
                 });
 
