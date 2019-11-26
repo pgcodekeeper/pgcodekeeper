@@ -20,7 +20,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.IgnoreListParser.Rule_restContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.IgnoreListParser.Show_ruleContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.IgnoreListParser.WhiteContext;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject;

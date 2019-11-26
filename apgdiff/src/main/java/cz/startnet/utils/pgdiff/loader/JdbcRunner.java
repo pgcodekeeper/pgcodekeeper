@@ -24,7 +24,7 @@ import cz.startnet.utils.pgdiff.loader.callables.QueryCallable;
 import cz.startnet.utils.pgdiff.loader.callables.ResultSetCallable;
 import cz.startnet.utils.pgdiff.loader.callables.StatementCallable;
 import ru.taximaxim.codekeeper.apgdiff.DaemonThreadFactory;
-import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.log.Log;
 
 public class JdbcRunner {
 
