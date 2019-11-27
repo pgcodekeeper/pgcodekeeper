@@ -242,7 +242,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
             @Override
             public void createRightSide(Composite container) {
-                GridLayout layout = new GridLayout(4, false);
+                GridLayout layout = new GridLayout();
                 layout.marginHeight = 0;
                 layout.marginWidth = 0;
                 container.setLayout(layout);

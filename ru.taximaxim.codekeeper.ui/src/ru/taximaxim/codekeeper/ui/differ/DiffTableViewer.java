@@ -218,7 +218,7 @@ public class DiffTableViewer extends Composite {
         Composite upperComp = new Composite(this, SWT.NONE);
         upperComp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        gl = new GridLayout(viewOnly ? 3 : 8, false);
+        gl = new GridLayout(viewOnly ? 3 : 4, false);
         gl.marginWidth = gl.marginHeight = 0;
         upperComp.setLayout(gl);
 
