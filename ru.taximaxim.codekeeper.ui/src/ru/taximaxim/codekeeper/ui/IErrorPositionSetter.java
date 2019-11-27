@@ -1,4 +1,4 @@
-package cz.startnet.utils.pgdiff;
+package ru.taximaxim.codekeeper.ui;
 
 public interface IErrorPositionSetter {
     /**
