@@ -28,6 +28,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.InputStreamProvider;
+import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
@@ -104,7 +105,8 @@ public abstract class DbSource {
         args.setAddTransaction(prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION));
         args.setDisableCheckFunctionBodies(!prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES));
         args.setEnableFunctionBodiesDependencies(prefs.getBooleanOfRootPref(PREF.ENABLE_BODY_DEPENDENCIES));
-        args.setIgnoreConcurrentModification(prefs.getBooleanOfDbUpdatePref(PREF.IGNORE_CONCURRENT_MODIFICATION));
+        args.setIgnoreConcurrentModification(Activator.getDefault().getPreferenceStore()
+                .getBoolean(PREF.IGNORE_CONCURRENT_MODIFICATION));
         args.setConcurrentlyMode(prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
         args.setUsingTypeCastOff(!prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.USING_ON_OFF));
         args.setIgnorePrivileges(prefs.getBooleanOfRootPref(PREF.NO_PRIVILEGES));
