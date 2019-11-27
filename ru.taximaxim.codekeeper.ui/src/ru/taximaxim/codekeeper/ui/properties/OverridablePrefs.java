@@ -16,15 +16,12 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
  */
 public class OverridablePrefs {
 
-    public static final int MAIN_PREF = 1;
-    public static final int DB_UPDATE_PREF = 2;
-
     private final IPreferenceStore mainPS;
-    private IEclipsePreferences projPS;
+    private final IEclipsePreferences projPS;
     private final Map<String, Boolean> oneTimePS;
 
-    private boolean isEnableProjPrefRoot;
-    private boolean isEnableProjPrefDbUpdate;
+    private final boolean isEnableProjPrefRoot;
+    private final boolean isEnableProjPrefDbUpdate;
 
     public OverridablePrefs(IProject project, Map<String, Boolean> oneTimePS) {
         mainPS = Activator.getDefault().getPreferenceStore();
@@ -32,6 +29,10 @@ public class OverridablePrefs {
             projPS = new ProjectScope(project).getNode(UIConsts.PLUGIN_ID.THIS);
             this.isEnableProjPrefRoot = projPS.getBoolean(PROJ_PREF.ENABLE_PROJ_PREF_ROOT, false);
             this.isEnableProjPrefDbUpdate = projPS.getBoolean(PROJ_PREF.ENABLE_PROJ_PREF_DB_UPDATE, false);
+        } else {
+            projPS = null;
+            this.isEnableProjPrefRoot = false;
+            this.isEnableProjPrefDbUpdate = false;
         }
         this.oneTimePS = oneTimePS;
     }
@@ -47,27 +48,21 @@ public class OverridablePrefs {
                 projPS.getBoolean(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, true);
     }
 
-    public boolean getBoolean(String key, int prefType) {
+    public boolean getBooleanOfRootPref(String key) {
+        return getBoolean(key, isEnableProjPrefRoot);
+    }
+
+    public boolean getBooleanOfDbUpdatePref(String key) {
+        return getBoolean(key, isEnableProjPrefDbUpdate);
+    }
+
+    private boolean getBoolean(String key, boolean isEnableProjPref) {
         if (oneTimePS != null) {
             Boolean value = oneTimePS.get(key);
             if (value != null) {
                 return value;
             }
         }
-
-        boolean isEnableProjPref;
-
-        switch (prefType) {
-        case MAIN_PREF:
-            isEnableProjPref = isEnableProjPrefRoot;
-            break;
-        case DB_UPDATE_PREF:
-            isEnableProjPref = isEnableProjPrefDbUpdate;
-            break;
-        default:
-            throw new IllegalArgumentException("Unsupported pref type"); //$NON-NLS-1$
-        }
-
         return isEnableProjPref ? projPS.getBoolean(key, false) : mainPS.getBoolean(key);
     }
 }

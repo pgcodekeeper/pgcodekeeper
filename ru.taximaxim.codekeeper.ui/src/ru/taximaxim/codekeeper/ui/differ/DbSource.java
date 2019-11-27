@@ -101,22 +101,14 @@ public abstract class DbSource {
         PgDiffArguments args = new PgDiffArguments();
         OverridablePrefs prefs = new OverridablePrefs(proj, oneTimePrefs);
         args.setInCharsetName(charset);
-        args.setAddTransaction(prefs.getBoolean(
-                DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION, OverridablePrefs.DB_UPDATE_PREF));
-        args.setDisableCheckFunctionBodies(!prefs.getBoolean(
-                DB_UPDATE_PREF.CHECK_FUNCTION_BODIES, OverridablePrefs.DB_UPDATE_PREF));
-        args.setEnableFunctionBodiesDependencies(prefs.getBoolean(
-                PREF.ENABLE_BODY_DEPENDENCIES, OverridablePrefs.MAIN_PREF));
-        args.setIgnoreConcurrentModification(prefs.getBoolean(
-                PREF.IGNORE_CONCURRENT_MODIFICATION, OverridablePrefs.DB_UPDATE_PREF));
-        args.setConcurrentlyMode(prefs.getBoolean(
-                DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY, OverridablePrefs.DB_UPDATE_PREF));
-        args.setUsingTypeCastOff(!prefs.getBoolean(
-                DB_UPDATE_PREF.USING_ON_OFF, OverridablePrefs.DB_UPDATE_PREF));
-        args.setIgnorePrivileges(prefs.getBoolean(
-                PREF.NO_PRIVILEGES, OverridablePrefs.MAIN_PREF));
-        args.setSimplifyView(prefs.getBoolean(
-                PREF.SIMPLIFY_VIEW, OverridablePrefs.MAIN_PREF));
+        args.setAddTransaction(prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION));
+        args.setDisableCheckFunctionBodies(!prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES));
+        args.setEnableFunctionBodiesDependencies(prefs.getBooleanOfRootPref(PREF.ENABLE_BODY_DEPENDENCIES));
+        args.setIgnoreConcurrentModification(prefs.getBooleanOfDbUpdatePref(PREF.IGNORE_CONCURRENT_MODIFICATION));
+        args.setConcurrentlyMode(prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
+        args.setUsingTypeCastOff(!prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.USING_ON_OFF));
+        args.setIgnorePrivileges(prefs.getBooleanOfRootPref(PREF.NO_PRIVILEGES));
+        args.setSimplifyView(prefs.getBooleanOfRootPref(PREF.SIMPLIFY_VIEW));
         args.setTimeZone(timeZone);
         args.setKeepNewlines(!forceUnixNewlines);
         args.setMsSql(msSql);

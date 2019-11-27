@@ -169,10 +169,10 @@ public class Differ implements IRunnableWithProgress {
             PgDiffArguments newArgs = oldArgs.clone();
             // применить параметры для генерации кода ко всем БД
             OverridablePrefs prefs = new OverridablePrefs(proj, oneTimePrefs);
-            newArgs.setConcurrentlyMode(prefs.getBoolean(
-                    DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY, OverridablePrefs.DB_UPDATE_PREF));
-            newArgs.setUsingTypeCastOff(!prefs.getBoolean(
-                    DB_UPDATE_PREF.USING_ON_OFF, OverridablePrefs.DB_UPDATE_PREF));
+            newArgs.setConcurrentlyMode(
+                    prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
+            newArgs.setUsingTypeCastOff(
+                    !prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.USING_ON_OFF));
             db.setArguments(newArgs);
         }
 
