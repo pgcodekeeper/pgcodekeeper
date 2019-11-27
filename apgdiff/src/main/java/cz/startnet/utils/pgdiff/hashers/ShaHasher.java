@@ -8,9 +8,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
-import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.log.Log;
+
+import java.util.Set;
 
 public class ShaHasher implements Hasher {
 

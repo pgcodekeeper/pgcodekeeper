@@ -10,7 +10,7 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 
 import cz.startnet.utils.pgdiff.libraries.PgLibrary;
 import cz.startnet.utils.pgdiff.xmlstore.DependenciesXmlStore;
-import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 
 public class NavigationLibrariesContentProvider implements ITreeContentProvider {

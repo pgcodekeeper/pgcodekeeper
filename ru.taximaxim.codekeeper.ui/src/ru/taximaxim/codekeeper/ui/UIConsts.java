@@ -53,7 +53,6 @@ public interface UIConsts {
     }
 
     interface PREF_PAGE {
-        int WIDTH_HINT_PX = 240;
         String DB_STORE = PLUGIN_ID.THIS + ".dbstore"; //$NON-NLS-1$
     }
 
