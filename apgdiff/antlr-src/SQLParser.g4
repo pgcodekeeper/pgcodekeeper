@@ -109,7 +109,7 @@ additional_statement
     | DEALLOCATE PREPARE? (identifier | ALL)
     | REINDEX (LEFT_PAREN VERBOSE RIGHT_PAREN)? (INDEX | TABLE | SCHEMA | DATABASE | SYSTEM) CONCURRENTLY? schema_qualified_name
     | RESET ((identifier DOT)? identifier | TIME ZONE | SESSION AUTHORIZATION | ALL)
-    | EXPLAIN (ANALYZE? VERBOSE? | (LEFT_PAREN explain_option (COMMA explain_option)* RIGHT_PAREN)) explain_statement
+    | explain_statement
     | REFRESH MATERIALIZED VIEW CONCURRENTLY? schema_qualified_name (WITH NO? DATA)?
     | PREPARE identifier (LEFT_PAREN data_type (COMMA data_type)* RIGHT_PAREN)? AS data_statement
     | REASSIGN OWNED BY user_name (COMMA user_name)* TO user_name
@@ -117,6 +117,9 @@ additional_statement
     ;
 
 explain_statement
+    : EXPLAIN (ANALYZE? VERBOSE? | (LEFT_PAREN explain_option (COMMA explain_option)* RIGHT_PAREN)) explain_query;
+
+explain_query
     : data_statement
     | values_stmt
     | execute_statement
@@ -3070,7 +3073,7 @@ raise_param
 return_stmt
     : RETURN perform_stmt?
     | RETURN NEXT vex
-    | RETURN QUERY (select_stmt | execute_stmt | show_statement)
+    | RETURN QUERY (select_stmt | execute_stmt | show_statement | explain_statement)
     ;
 
 loop_statement

@@ -27,8 +27,8 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.dialogs.PropertyPage;
 
-import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.dialogs.IgnoreListEditorDialog;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;

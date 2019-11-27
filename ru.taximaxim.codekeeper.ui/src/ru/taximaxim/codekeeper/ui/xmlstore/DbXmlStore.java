@@ -102,24 +102,22 @@ public class DbXmlStore extends XmlStore<DbInfo> {
     }
 
     @Override
-    public void writeObjects(List<DbInfo> list) {
-        try {
-            super.writeObjects(list);
-            saveToSecureStorage(list);
-            notifyListeners();
-        } catch (StorageException e) {
-            Log.log(Log.LOG_ERROR, "Error writing to secure storage: " + e); //$NON-NLS-1$
-        } catch (IOException e) {
-            Log.log(Log.LOG_ERROR, "Error writing db store to xml " + e); //$NON-NLS-1$
-        }
+    public void writeObjects(List<DbInfo> list) throws IOException {
+        super.writeObjects(list);
+        saveToSecureStorage(list);
+        notifyListeners();
     }
 
-    private void saveToSecureStorage(List<DbInfo> list) throws StorageException, IOException {
-        securePrefs.clear();
-        for (DbInfo dbInfo : list) {
-            securePrefs.put(dbInfo.getName(), dbInfo.getDbPass(), true);
+    private void saveToSecureStorage(List<DbInfo> list) throws IOException {
+        try {
+            for (DbInfo dbInfo : list) {
+                securePrefs.put(dbInfo.getName(), dbInfo.getDbPass(), true);
+            }
+            securePrefs.flush();
+        } catch (StorageException | IOException e) {
+            throw new IOException("Error while writing to secure storage: " //$NON-NLS-1$
+                    + e.getLocalizedMessage(), e);
         }
-        securePrefs.flush();
     }
 
     @Override
