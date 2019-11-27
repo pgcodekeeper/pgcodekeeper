@@ -16,6 +16,9 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
  */
 public class OverridablePrefs {
 
+    public static final int MAIN_PREF = 1;
+    public static final int DB_UPDATE_PREF = 2;
+
     private final IPreferenceStore mainPS;
     private IEclipsePreferences projPS;
     private final Map<String, Boolean> oneTimePS;
@@ -40,25 +43,31 @@ public class OverridablePrefs {
                 return value;
             }
         }
-        return isEnableProjPrefRoot ?
-                projPS.getBoolean(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, true) : true;
+        return !isEnableProjPrefRoot ||
+                projPS.getBoolean(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, true);
     }
 
-    public boolean getBooleanOfRootPref(String key) {
-        return getBoolean(key, isEnableProjPrefRoot);
-    }
-
-    public boolean getBooleanOfDbUpdatePref(String key) {
-        return getBoolean(key, isEnableProjPrefDbUpdate);
-    }
-
-    private boolean getBoolean(String key, boolean isEnableProjPref) {
+    public boolean getBoolean(String key, int prefType) {
         if (oneTimePS != null) {
             Boolean value = oneTimePS.get(key);
             if (value != null) {
                 return value;
             }
         }
+
+        boolean isEnableProjPref;
+
+        switch (prefType) {
+        case MAIN_PREF:
+            isEnableProjPref = isEnableProjPrefRoot;
+            break;
+        case DB_UPDATE_PREF:
+            isEnableProjPref = isEnableProjPrefDbUpdate;
+            break;
+        default:
+            throw new IllegalArgumentException("Unsupported pref type"); //$NON-NLS-1$
+        }
+
         return isEnableProjPref ? projPS.getBoolean(key, false) : mainPS.getBoolean(key);
     }
 }
