@@ -58,7 +58,7 @@ public class DbSourceTest {
             new ModelExporter(dir, dbPredefined, ApgdiffConsts.UTF_8).exportFull();
 
             performTest(DbSource.fromDirTree(true, dir.toAbsolutePath().toString(),
-                    ApgdiffConsts.UTF_8, false, null, null));
+                    ApgdiffConsts.UTF_8, false, null));
         }
     }
 

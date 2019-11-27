@@ -96,7 +96,7 @@ class DbSourcePicker extends Composite {
         File dir;
         if ((dbInfo = storePicker.getDbInfo()) != null) {
             return DbSource.fromDbInfo(dbInfo, forceUnixNewlines, getEncoding(),
-                    pageDiff.getTimezone(), null, null);
+                    pageDiff.getTimezone(), null);
         } else if ((file = storePicker.getPathOfFile()) != null) {
             return DbSource.fromFile(forceUnixNewlines, file, getEncoding(),
                     isMsSql, null);
@@ -106,7 +106,7 @@ class DbSourcePicker extends Composite {
                 return DbSource.fromProject(project);
             } else {
                 return DbSource.fromDirTree(forceUnixNewlines, dir.getAbsolutePath(),
-                        getEncoding(), isMsSql, null, null);
+                        getEncoding(), isMsSql, null);
             }
         }
         return null;

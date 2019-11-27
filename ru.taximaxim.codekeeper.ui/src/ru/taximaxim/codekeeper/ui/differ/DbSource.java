@@ -118,9 +118,9 @@ public abstract class DbSource {
     }
 
     public static DbSource fromDirTree(boolean forceUnixNewlines,String dirTreePath,
-            String encoding, boolean isMsSql, IProject proj, Map<String, Boolean> oneTimePrefs) {
+            String encoding, boolean isMsSql, IProject proj) {
         return new DbSourceDirTree(forceUnixNewlines, dirTreePath, encoding,
-                isMsSql, proj, oneTimePrefs);
+                isMsSql, proj, null);
     }
 
     public static DbSource fromProject(PgDbProject proj, Map<String, Boolean> oneTimePrefs) {
@@ -149,6 +149,15 @@ public abstract class DbSource {
                     proj, oneTimePrefs);
         } else {
             return new DbSourceJdbc(dbinfo, timezone, forceUnixNewlines, proj, oneTimePrefs);
+        }
+    }
+
+    public static DbSource fromDbInfo(DbInfo dbinfo, boolean forceUnixNewlines,
+            String charset, String timezone, IProject proj) {
+        if (dbinfo.isPgDumpSwitch()) {
+            return new DbSourceDb(forceUnixNewlines, dbinfo, charset, timezone, proj, null);
+        } else {
+            return new DbSourceJdbc(dbinfo, timezone, forceUnixNewlines, proj, null);
         }
     }
 

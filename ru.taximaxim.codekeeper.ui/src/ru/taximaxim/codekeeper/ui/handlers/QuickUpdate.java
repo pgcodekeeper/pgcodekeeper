@@ -177,7 +177,7 @@ class QuickUpdateJob extends SingletonEditorJob {
         checkFileModified();
 
         DbSource dbRemote = DbSource.fromDbInfo(dbinfo, projPrefs.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
-                proj.getProjectCharset(), timezone, proj.getProject(), null);
+                proj.getProjectCharset(), timezone, proj.getProject());
         DbSource dbProject = DbSource.fromProject(proj);
 
         TreeDiffer treediffer = new TreeDiffer(dbRemote, dbProject);
