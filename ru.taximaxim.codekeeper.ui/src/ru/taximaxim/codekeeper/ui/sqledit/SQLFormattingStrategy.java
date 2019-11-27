@@ -22,8 +22,8 @@ import cz.startnet.utils.pgdiff.formatter.FileFormatter;
 import cz.startnet.utils.pgdiff.formatter.FormatConfiguration;
 import cz.startnet.utils.pgdiff.formatter.FormatConfiguration.IndentType;
 import cz.startnet.utils.pgdiff.formatter.FormatItem;
-import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.FORMATTER_PREF;
 
 public class SQLFormattingStrategy extends ContextBasedFormattingStrategy {
