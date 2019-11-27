@@ -158,7 +158,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private Composite contNotifications;
     private Label lblNotificationText;
     private Link linkRefresh;
-    private Menu menuGetChangesCustom;
 
     private Action getChangesAction;
     private Action actionToProj;
@@ -397,7 +396,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         applyAction.setMenuCreator(new IMenuCreator() {
 
-            private Menu menuApplyCustom = null;
+            private Menu menuApplyCustom;
 
             @Override
             public void dispose() {
@@ -472,6 +471,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 .getBundle().getResource(FILE.ICONREFRESH)));
 
         getChangesAction.setMenuCreator(new IMenuCreator() {
+
+            private Menu menuGetChangesCustom;
 
             @Override
             public void dispose() {
