@@ -120,7 +120,7 @@ public class MsTable extends AbstractTable {
 
     @Override
     public void addConstraint(AbstractConstraint constraint) {
-        if (constraint.isPrimaryKey() && isMemoryOptimaized()) {
+        if (constraint.isPrimaryKey() && isMemoryOptimized()) {
             if (pkeys == null) {
                 pkeys = new ArrayList<>();
             }
@@ -268,7 +268,7 @@ public class MsTable extends AbstractTable {
         resetHash();
     }
 
-    public boolean isMemoryOptimaized() {
+    public boolean isMemoryOptimized() {
         return "ON".equalsIgnoreCase(getOptions().get(MEMORY_OPTIMIZED));
     }
 
@@ -316,7 +316,7 @@ public class MsTable extends AbstractTable {
 
         if (pkeys != null) {
             table.pkeys = new ArrayList<>();
-            table.pkeys.addAll(getPkeys());
+            table.pkeys.addAll(pkeys);
         }
         return table;
     }
