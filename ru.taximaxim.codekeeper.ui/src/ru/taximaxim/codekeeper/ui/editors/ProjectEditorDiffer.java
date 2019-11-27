@@ -70,7 +70,6 @@ import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
@@ -246,9 +245,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 layout.marginWidth = 0;
                 container.setLayout(layout);
 
-                ToolBar toolBarTblBtn = new ToolBar(container, SWT.FLAT | SWT.RIGHT);
-                toolBarTblBtn.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
-                final ToolBarManager mgrTblBtn = new ToolBarManager(toolBarTblBtn);
+                final ToolBarManager mgrTblBtn = new ToolBarManager(SWT.FLAT | SWT.RIGHT);
 
                 addBtnApplyWithMenu(container, mgrTblBtn);
 
@@ -286,8 +283,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
                 addBtnGetChangesWithMenu(container, mgrTblBtn);
 
-                mgrTblBtn.update(true);
-                toolBarTblBtn.pack();
+                container.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
+                mgrTblBtn.createControl(container);
             }
         };
 

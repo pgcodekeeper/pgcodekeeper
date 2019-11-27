@@ -88,7 +88,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.ISharedImages;
 import org.osgi.framework.Bundle;
@@ -223,8 +222,7 @@ public class DiffTableViewer extends Composite {
         upperComp.setLayout(gl);
 
         if (!viewOnly) {
-            ToolBar toolBarTblBtn = new ToolBar(upperComp, SWT.FLAT | SWT.RIGHT);
-            ToolBarManager mgrTblBtn = new ToolBarManager(toolBarTblBtn);
+            ToolBarManager mgrTblBtn = new ToolBarManager(SWT.FLAT | SWT.RIGHT);
 
             mgrTblBtn.add(new Action(Messages.select_all, ImageDescriptor
                     .createFromURL(bundle.getResource(FILE.ICONSELECTALL))) {
@@ -281,8 +279,7 @@ public class DiffTableViewer extends Composite {
                 }
             });
 
-            mgrTblBtn.update(true);
-            toolBarTblBtn.pack();
+            mgrTblBtn.createControl(upperComp);
         }
 
         txtFilterName = new Text(upperComp, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
