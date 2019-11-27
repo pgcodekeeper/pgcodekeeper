@@ -289,6 +289,8 @@ public class MsDiffTest {
                     {"modify_ansi_nulls"},
                     // Tests scenario where quoted_identifier parameter is changed.
                     {"modify_quoted_identifier"},
+                    // Tests scenario where TABLE type is changed to memory optimized.
+                    {"change_ms_table_type"},
                 });
     }
 

@@ -1,6 +1,7 @@
 SELECT 
     o.schema_id AS schema_oid,
-    o.name AS table_name, 
+    o.name AS table_name,
+    o.is_memory_optimized, 
     si.name,
     si.is_primary_key,
     si.is_unique,
@@ -18,7 +19,7 @@ SELECT
 FROM sys.indexes si WITH (NOLOCK)
 LEFT JOIN sys.filegroups f WITH (NOLOCK) ON si.data_space_id = f.data_space_id
 LEFT JOIN sys.data_spaces d WITH (NOLOCK) ON si.data_space_id = d.data_space_id
-JOIN sys.objects o WITH (NOLOCK) ON si.object_id = o.object_id
+JOIN sys.tables o WITH (NOLOCK) ON si.object_id = o.object_id
 JOIN sys.partitions sp WITH (NOLOCK) ON sp.object_id = si.object_id AND sp.index_id = si.index_id AND sp.partition_number = 1
 CROSS APPLY (
     SELECT * FROM (
