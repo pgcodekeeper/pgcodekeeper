@@ -51,7 +51,9 @@ public class MsFunction extends AbstractMsFunction {
         final int startLength = sb.length();
         MsFunction newFunction = (MsFunction) newCondition;
 
-        if (!Objects.equals(getFirstPart(), newFunction.getFirstPart())
+        if (isAnsiNulls() != newFunction.isAnsiNulls()
+                || isQuotedIdentified() != newFunction.isQuotedIdentified()
+                || !Objects.equals(getFirstPart(), newFunction.getFirstPart())
                 || !Objects.equals(getSecondPart(), newFunction.getSecondPart())) {
             isNeedDepcies.set(true);
             if (!getFuncType().equals(newFunction.getFuncType())) {
