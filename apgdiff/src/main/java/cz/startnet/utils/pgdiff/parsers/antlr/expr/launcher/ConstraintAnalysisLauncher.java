@@ -1,8 +1,11 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher;
 
+import java.util.Set;
+
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 
 public class ConstraintAnalysisLauncher extends AbstractAnalysisLauncher {
@@ -12,7 +15,7 @@ public class ConstraintAnalysisLauncher extends AbstractAnalysisLauncher {
     }
 
     @Override
-    public void analyze(ParserRuleContext ctx) {
-        analyzeTableChildVex((VexContext) ctx);
+    public Set<GenericColumn> analyze(ParserRuleContext ctx) {
+        return analyzeTableChildVex((VexContext) ctx);
     }
 }

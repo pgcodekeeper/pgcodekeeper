@@ -1,6 +1,8 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -51,42 +53,45 @@ public abstract class AbstractAnalysisLauncher {
         }
     }
 
-    public void launchAnalyze(List<? super AntlrError> errors) {
+    public Set<GenericColumn> launchAnalyze(List<? super AntlrError> errors) {
         // Duplicated objects don't have parent, skip them
         if (stmt.getParent() == null) {
-            return;
+            return Collections.emptySet();
         }
 
         PgObjLocation loc = stmt.getLocation();
         String filePath = loc == null ? null : loc.getFilePath();
 
         try {
-            analyze(ctx);
+            return analyze(ctx);
         } catch (UnresolvedReferenceException ex) {
             unresolvRefExHandler(ex, errors, ctx, filePath);
         } catch (Exception ex) {
             addError(errors, CustomParserListener.handleParserContextException(
                     ex, filePath, ctx));
         }
+
+        return Collections.emptySet();
     }
 
-    protected abstract void analyze(ParserRuleContext ctx);
+    protected abstract Set<GenericColumn> analyze(ParserRuleContext ctx);
 
-    protected <T extends ParserRuleContext> void analyze(
+    protected <T extends ParserRuleContext> Set<GenericColumn> analyze(
             T ctx, AbstractExprWithNmspc<T> analyzer) {
         analyzer.analyze(ctx);
-        stmt.addAllDeps(analyzer.getDepcies());
+        return analyzer.getDepcies();
     }
 
-    protected void analyze(VexContext ctx, ValueExpr analyzer) {
+    protected Set<GenericColumn> analyze(VexContext ctx, ValueExpr analyzer) {
         analyzer.analyze(new Vex(ctx));
-        stmt.addAllDeps(analyzer.getDepcies());
+        return analyzer.getDepcies();
     }
 
     /**
      * Sets up namespace for Constraint/Index expr analysis
+     * @return
      */
-    protected void analyzeTableChildVex(VexContext ctx) {
+    protected Set<GenericColumn> analyzeTableChildVex(VexContext ctx) {
         PgStatement table = stmt.getParent();
         String schemaName = table.getParent().getName();
         String rawTableReference = table.getName();
@@ -94,13 +99,14 @@ public abstract class AbstractAnalysisLauncher {
         ValueExprWithNmspc valExptWithNmspc = new ValueExprWithNmspc(stmt.getDatabase());
         valExptWithNmspc.addRawTableReference(
                 new GenericColumn(schemaName, rawTableReference, DbObjType.TABLE));
-        analyze(ctx, valExptWithNmspc);
+        return analyze(ctx, valExptWithNmspc);
     }
 
     /**
      * Sets up namespace for Trigger/Rule expr/command analysis
+     * @return
      */
-    protected <T extends ParserRuleContext> void analyzeTableChild(
+    protected <T extends ParserRuleContext> Set<GenericColumn> analyzeTableChild(
             T ctx, AbstractExprWithNmspc<T> analyzer) {
         PgStatement table = stmt.getParent();
         String schemaName = table.getParent().getName();
@@ -108,7 +114,7 @@ public abstract class AbstractAnalysisLauncher {
         GenericColumn implicitTable = new GenericColumn(schemaName, tableName, DbObjType.TABLE);
         analyzer.addReference("new", implicitTable);
         analyzer.addReference("old", implicitTable);
-        analyze(ctx, analyzer);
+        return analyze(ctx, analyzer);
     }
 
     private void unresolvRefExHandler(UnresolvedReferenceException ex,

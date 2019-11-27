@@ -31,8 +31,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.TSqlContextProcessor;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Tsql_fileContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import ru.taximaxim.codekeeper.apgdiff.DaemonThreadFactory;
@@ -131,8 +129,7 @@ public class AntlrParser {
                 parser.addParseListener(new CustomParseTreeListener(
                         monitoringLevel, mon == null ? new NullProgressMonitor() : mon));
                 saveTimeOfLastParserStart(false);
-                SqlContext sqlCtx = parser.sql();
-                return sqlCtx;
+                return parser.sql();
             } catch (MonitorCancelledRuntimeException mcre){
                 throw new InterruptedException();
             }
@@ -156,8 +153,7 @@ public class AntlrParser {
                 parser.addParseListener(new CustomParseTreeListener(
                         monitoringLevel, mon == null ? new NullProgressMonitor() : mon));
                 saveTimeOfLastParserStart(true);
-                Pair<TSQLParser, Tsql_fileContext> parserAndTSqlCtx = new Pair<>(parser, parser.tsql_file());
-                return parserAndTSqlCtx;
+                return new Pair<>(parser, parser.tsql_file());
             } catch (MonitorCancelledRuntimeException mcre){
                 throw new InterruptedException();
             }
@@ -178,8 +174,7 @@ public class AntlrParser {
                 makeBasicParser(parserClass, sql, parsedObjectName, errors)));
         try {
             saveTimeOfLastParserStart(parserClass.isAssignableFrom(TSQLParser.class));
-            T ctx = f.get();
-            return ctx;
+            return f.get();
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException(ex);
