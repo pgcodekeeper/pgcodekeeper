@@ -53,7 +53,6 @@ public class GetChangesCustomDialog extends Dialog {
     protected Control createDialogArea(Composite parent) {
         Composite panel = new Composite(parent, SWT.NONE);
         panel.setLayout(new GridLayout());
-        panel.setLayoutData(new GridData());
 
         new Label(panel, SWT.NONE).setText(MessageFormat
                 .format(Messages.getChangesCustomDialog_custom_prefs_description,
@@ -61,7 +60,7 @@ public class GetChangesCustomDialog extends Dialog {
 
         btnNoPrivileges = new Button(panel, SWT.CHECK);
         btnNoPrivileges.setText(Messages.dbUpdatePrefPage_ignore_privileges);
-        GridData gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
+        GridData gd = new GridData();
         gd.horizontalIndent = 10;
         btnNoPrivileges.setLayoutData(gd);
         btnNoPrivileges.setSelection(projPS.getBoolean(PREF.NO_PRIVILEGES, false));
@@ -69,7 +68,7 @@ public class GetChangesCustomDialog extends Dialog {
         btnEnableFuncDep = new Button(panel, SWT.CHECK);
         btnEnableFuncDep.setText(Messages.GeneralPrefPage_enable_body_dependencies);
         btnEnableFuncDep.setToolTipText(Messages.GeneralPrefPage_body_depcy_tooltip);
-        gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
+        gd = new GridData();
         gd.horizontalIndent = 10;
         btnEnableFuncDep.setLayoutData(gd);
         btnEnableFuncDep.setSelection(projPS.getBoolean(PREF.ENABLE_BODY_DEPENDENCIES, false));
@@ -77,7 +76,7 @@ public class GetChangesCustomDialog extends Dialog {
         if (!isMsSql) {
             btnSimplifyView = new Button(panel, SWT.CHECK);
             btnSimplifyView.setText(Messages.GeneralPrefPage_simplify_view);
-            gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
+            gd = new GridData();
             gd.horizontalIndent = 10;
             btnSimplifyView.setLayoutData(gd);
             btnSimplifyView.setSelection(projPS.getBoolean(PREF.SIMPLIFY_VIEW, false));
@@ -85,7 +84,7 @@ public class GetChangesCustomDialog extends Dialog {
 
         btnUseGlobalIgnoreList = new Button(panel, SWT.CHECK);
         btnUseGlobalIgnoreList.setText(Messages.ProjectProperties_use_global_ignore_list);
-        gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
+        gd = new GridData();
         gd.horizontalIndent = 10;
         btnUseGlobalIgnoreList.setLayoutData(gd);
         btnUseGlobalIgnoreList.setSelection(projPS.getBoolean(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, true));

@@ -53,7 +53,6 @@ public class ApplyCustomDialog extends Dialog {
     protected Control createDialogArea(Composite parent) {
         Composite panel = new Composite(parent, SWT.NONE);
         panel.setLayout(new GridLayout());
-        panel.setLayoutData(new GridData());
 
         new Label(panel, SWT.NONE).setText(MessageFormat
                 .format(Messages.getChangesCustomDialog_custom_prefs_description,
@@ -61,7 +60,7 @@ public class ApplyCustomDialog extends Dialog {
 
         btnScriptAddTransact = new Button(panel, SWT.CHECK);
         btnScriptAddTransact.setText(Messages.dbUpdatePrefPage_script_add_transaction);
-        GridData gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
+        GridData gd = new GridData();
         gd.horizontalIndent = 10;
         btnScriptAddTransact.setLayoutData(gd);
         btnScriptAddTransact.setSelection(projPS.getBoolean(DB_UPDATE_PREF
@@ -70,7 +69,7 @@ public class ApplyCustomDialog extends Dialog {
         if (!isMsSql) {
             btnCheckFuncBodies = new Button(panel, SWT.CHECK);
             btnCheckFuncBodies.setText(Messages.dbUpdatePrefPage_check_function_bodies);
-            gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
+            gd = new GridData();
             gd.horizontalIndent = 10;
             btnCheckFuncBodies.setLayoutData(gd);
             btnCheckFuncBodies.setSelection(projPS.getBoolean(DB_UPDATE_PREF
@@ -78,7 +77,7 @@ public class ApplyCustomDialog extends Dialog {
 
             btnAlterColUsingExpr = new Button(panel, SWT.CHECK);
             btnAlterColUsingExpr.setText(Messages.dbUpdatePrefPage_switch_on_off_using);
-            gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
+            gd = new GridData();
             gd.horizontalIndent = 10;
             btnAlterColUsingExpr.setLayoutData(gd);
             btnAlterColUsingExpr.setSelection(projPS.getBoolean(DB_UPDATE_PREF
@@ -86,7 +85,7 @@ public class ApplyCustomDialog extends Dialog {
 
             btnCreateIdxConcurrent = new Button(panel, SWT.CHECK);
             btnCreateIdxConcurrent.setText(Messages.DbUpdatePrefPage_print_index_with_concurrently);
-            gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
+            gd = new GridData();
             gd.horizontalIndent = 10;
             btnCreateIdxConcurrent.setLayoutData(gd);
             btnCreateIdxConcurrent.setSelection(projPS.getBoolean(DB_UPDATE_PREF
@@ -119,10 +118,5 @@ public class ApplyCustomDialog extends Dialog {
         }
 
         super.okPressed();
-    }
-
-    @Override
-    protected boolean isResizable() {
-        return false;
     }
 }
