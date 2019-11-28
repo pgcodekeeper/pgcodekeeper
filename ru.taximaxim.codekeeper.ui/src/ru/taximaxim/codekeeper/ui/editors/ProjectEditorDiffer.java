@@ -161,6 +161,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private Action getChangesAction;
     private Action actionToProj;
     private Action actionToDb;
+    private Action applyCustomAction;
 
     private DiffTableViewer diffTable;
     private DiffPaneViewer diffPane;
@@ -193,6 +194,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
         diffTable.setApplyToProj(isApplyToProj);
         diffTable.getViewer().refresh();
+        applyCustomAction.setEnabled(!isApplyToProj);
     }
 
     @Override
@@ -410,18 +412,10 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 }
 
                 menuMgrApplyCustom = new MenuManager();
-                menuMgrApplyCustom.add(new Action(Messages.DiffTableViewer_apply_to_custom) {
+                applyCustomAction = new Action(Messages.DiffTableViewer_apply_to_custom) {
 
                     @Override
                     public void run() {
-                        if (!actionToDb.isChecked()) {
-                            MessageBox mb = new MessageBox(container.getShell(), SWT.ICON_INFORMATION);
-                            mb.setText(Messages.projectEditorDiffer_works_only_for_db_title);
-                            mb.setMessage(Messages.projectEditorDiffer_works_only_for_db);
-                            mb.open();
-                            return;
-                        }
-
                         ApplyCustomDialog dialog = new ApplyCustomDialog(container.getShell(), projPrefs,
                                 isMsSql, oneTimePrefs);
                         if (dialog.open() == Dialog.OK) {
@@ -430,7 +424,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                             diff();
                         }
                     }
-                });
+                };
+                applyCustomAction.setEnabled(actionToDb.isChecked());
+                menuMgrApplyCustom.add(applyCustomAction);
                 return menuMgrApplyCustom.createContextMenu(parent);
             }
 

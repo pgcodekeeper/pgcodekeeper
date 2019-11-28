@@ -151,8 +151,6 @@ public final class Messages extends NLS {
     public static String diffTreeViewer_expand_all;
     public static String diffTreeViewer_expand_subtree;
     public static String diffTreeViewer_select_subtree;
-    public static String projectEditorDiffer_works_only_for_db_title;
-    public static String projectEditorDiffer_works_only_for_db;
     public static String treeDiffer_building_diff_tree;
     public static String reading_db_from_jdbc;
 
