@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.FullAnalyze;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
@@ -32,6 +33,7 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgView;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
@@ -56,6 +58,8 @@ public abstract class AbstractExpr {
 
     protected final PgDatabase db;
 
+    private FullAnalyze fullAnalyze;
+
     public Set<GenericColumn> getDepcies() {
         return Collections.unmodifiableSet(depcies);
     }
@@ -78,7 +82,12 @@ public abstract class AbstractExpr {
         this.depcies = depcies;
         this.db = parent.db;
         this.systemStorage = parent.systemStorage;
+        this.fullAnalyze = parent.fullAnalyze;
         this.disabledDepcies = parent.disabledDepcies;
+    }
+
+    public void setFullAnaLyze(FullAnalyze fullAnalyze) {
+        this.fullAnalyze = fullAnalyze;
     }
 
     protected List<Pair<String, String>> findCte(String cteName) {
@@ -280,6 +289,10 @@ public abstract class AbstractExpr {
             return Stream.empty();
         }
 
+        if (relation instanceof PgView) {
+            analyzeViewColumns((PgView) relation);
+        }
+
         Stream<Pair<String, String>> cols = relation.getRelationColumns()
                 .filter(col -> colNamePredicate.test(col.getFirst()));
         if (DbObjNature.USER == relation.getStatementNature()) {
@@ -289,6 +302,12 @@ public abstract class AbstractExpr {
                             relation.getName(), col.getFirst(), DbObjType.COLUMN)));
         }
         return cols;
+    }
+
+    protected void analyzeViewColumns(PgView view) {
+        if (!view.isInitialized() && fullAnalyze != null) {
+            fullAnalyze.analyzeView(view);
+        }
     }
 
     protected ModPair<String, String> processTablelessColumn(ParserRuleContext id) {
