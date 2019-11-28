@@ -194,7 +194,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
         diffTable.setApplyToProj(isApplyToProj);
         diffTable.getViewer().refresh();
-        applyCustomAction.setEnabled(!isApplyToProj);
+        if (applyCustomAction != null) {
+            applyCustomAction.setEnabled(!isApplyToProj);
+        }
     }
 
     @Override
