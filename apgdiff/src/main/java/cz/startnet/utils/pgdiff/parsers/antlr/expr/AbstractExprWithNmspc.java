@@ -31,6 +31,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -172,6 +173,9 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
             IRelation rel = findRelation(ref.schema, ref.table);
             if (rel == null) {
                 continue;
+            }
+            if (rel instanceof PgView) {
+                analyzeViewColumns((PgView) rel);
             }
             for (Pair<String, String> col : PgDiffUtils.sIter(rel.getRelationColumns())) {
                 if (col.getFirst().equals(name)) {

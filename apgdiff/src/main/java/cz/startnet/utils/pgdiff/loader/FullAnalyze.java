@@ -5,19 +5,13 @@ import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Queue;
 
-import org.jgrapht.event.TraversalListenerAdapter;
-import org.jgrapht.event.VertexTraversalEvent;
-import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.traverse.TopologicalOrderIterator;
-
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrTask;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.AbstractAnalysisLauncher;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.ViewAnalysisLauncher;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
+import cz.startnet.utils.pgdiff.schema.PgView;
 
 public final class FullAnalyze {
 
@@ -36,18 +30,10 @@ public final class FullAnalyze {
     }
 
     public void fullAnalyze() throws InterruptedException, IOException {
-        TopologicalOrderIterator<PgStatement, DefaultEdge> orderIterator =
-                new TopologicalOrderIterator<>(new DepcyGraph(db).getReversedGraph());
-
-        orderIterator.addTraversalListener(new ViewsAnalyzeTraversal());
-
-        // 'VIEW' statements analysis.
-        while (orderIterator.hasNext()) {
-            orderIterator.next();
-        }
+        analyzeView(null);
 
         for (AbstractAnalysisLauncher l : db.getAnalysisLaunchers()) {
-            if (l != null && DbObjType.VIEW != l.getStmt().getStatementType()) {
+            if (l != null) {
                 AntlrParser.submitAntlrTask(antlrTasks,
                         () -> l.launchAnalyze(errors),
                         deps -> l.getStmt().addAllDeps(deps));
@@ -57,24 +43,17 @@ public final class FullAnalyze {
         AntlrParser.finishAntlr(antlrTasks);
     }
 
-    private class ViewsAnalyzeTraversal extends TraversalListenerAdapter<PgStatement, DefaultEdge> {
-
-        private final List<AbstractAnalysisLauncher> launchers = db.getAnalysisLaunchers();
-
-        @Override
-        public void vertexTraversed(VertexTraversalEvent<PgStatement> event) {
-            PgStatement st = event.getVertex();
-            if (DbObjType.VIEW != st.getStatementType()) {
-                return;
-            }
-
-            for (int i = 0; i < launchers.size(); ++i) {
-                AbstractAnalysisLauncher l = launchers.get(i);
-                if (l != null && st.equals(l.getStmt())) {
-                    l.launchAnalyze(errors);
-                    // allow GC to reclaim context memory immediately
-                    launchers.set(i, null);
-                }
+    public void analyzeView(PgView st) {
+        List<AbstractAnalysisLauncher> launchers = db.getAnalysisLaunchers();
+        for (int i = 0; i < launchers.size(); ++i) {
+            AbstractAnalysisLauncher l = launchers.get(i);
+            if (l instanceof ViewAnalysisLauncher
+                    && (st == null || st.equals(l.getStmt()))) {
+                // allow GC to reclaim context memory immediately
+                // and protects from infinite recursion
+                launchers.set(i, null);
+                ((ViewAnalysisLauncher) l).setFullAnalyze(this);
+                l.launchAnalyze(errors);
             }
         }
     }
