@@ -111,7 +111,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
                     }
                     sb.append('\n').append(currQuery);
                 }
-                reporter.setErrorPosition(currQueryOffset, currQuery.length());
+                reporter.reportErrorLocation(currQueryOffset, currQuery.length());
             }
 
             reporter.writeError(sb.toString());

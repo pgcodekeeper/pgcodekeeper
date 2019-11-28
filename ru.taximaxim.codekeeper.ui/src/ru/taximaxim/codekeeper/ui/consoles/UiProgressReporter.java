@@ -75,7 +75,7 @@ public class UiProgressReporter implements IProgressReporter {
     }
 
     @Override
-    public void setErrorPosition(int start, int length) {
+    public void reportErrorLocation(int start, int length) {
         if (errorReporter != null) {
             errorReporter.setErrorPosition(start, length);
         }
