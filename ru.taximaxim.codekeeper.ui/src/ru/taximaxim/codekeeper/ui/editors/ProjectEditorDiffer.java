@@ -161,7 +161,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private Action getChangesAction;
     private Action actionToProj;
     private Action actionToDb;
-    private Action applyCustomAction;
 
     private DiffTableViewer diffTable;
     private DiffPaneViewer diffPane;
@@ -194,9 +193,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
         diffTable.setApplyToProj(isApplyToProj);
         diffTable.getViewer().refresh();
-        if (applyCustomAction != null) {
-            applyCustomAction.setEnabled(!isApplyToProj);
-        }
     }
 
     @Override
@@ -414,7 +410,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 }
 
                 menuMgrApplyCustom = new MenuManager();
-                applyCustomAction = new Action(Messages.DiffTableViewer_apply_to_custom) {
+                IAction applyCustomAction = new Action(Messages.DiffTableViewer_apply_to_custom) {
 
                     @Override
                     public void run() {
