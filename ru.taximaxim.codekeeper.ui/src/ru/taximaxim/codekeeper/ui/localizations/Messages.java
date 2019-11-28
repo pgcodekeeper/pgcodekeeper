@@ -390,6 +390,7 @@ public final class Messages extends NLS {
 
     public static String DiffTableViewer_collapse_all;
     public static String DiffTableViewer_apply_to;
+    public static String DiffTableViewer_apply_to_custom;
 
     public static String DiffTableViewer_copy_as_regex;
 
@@ -405,6 +406,7 @@ public final class Messages extends NLS {
 
     public static String DiffTableViewer_filter_placeholder;
     public static String DiffTableViewer_get_changes;
+    public static String DiffTableViewer_get_changes_custom;
 
     public static String DiffTableViewer_library;
 
@@ -448,6 +450,9 @@ public final class Messages extends NLS {
     public static String generalPrefPage_show_console_when_program_write_to_console;
 
     public static String generalPrefPage_use_depcy_on_commit_page;
+
+    public static String getChangesCustomDialog_custom_prefs_description;
+    public static String getChangesCustomDialog_run_with_specified_prefs;
 
     public static String IgnoredObjectPrefListEditor_already_present;
 
