@@ -66,6 +66,14 @@ public class ApplyCustomDialog extends Dialog {
         btnScriptAddTransact.setSelection(projPS.getBoolean(DB_UPDATE_PREF
                 .SCRIPT_IN_TRANSACTION, false));
 
+        btnCreateIdxConcurrent = new Button(panel, SWT.CHECK);
+        btnCreateIdxConcurrent.setText(Messages.DbUpdatePrefPage_print_index_with_concurrently);
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        btnCreateIdxConcurrent.setLayoutData(gd);
+        btnCreateIdxConcurrent.setSelection(projPS.getBoolean(DB_UPDATE_PREF
+                .PRINT_INDEX_WITH_CONCURRENTLY, false));
+
         if (!isMsSql) {
             btnCheckFuncBodies = new Button(panel, SWT.CHECK);
             btnCheckFuncBodies.setText(Messages.dbUpdatePrefPage_check_function_bodies);
@@ -82,14 +90,6 @@ public class ApplyCustomDialog extends Dialog {
             btnAlterColUsingExpr.setLayoutData(gd);
             btnAlterColUsingExpr.setSelection(projPS.getBoolean(DB_UPDATE_PREF
                     .USING_ON_OFF, false));
-
-            btnCreateIdxConcurrent = new Button(panel, SWT.CHECK);
-            btnCreateIdxConcurrent.setText(Messages.DbUpdatePrefPage_print_index_with_concurrently);
-            gd = new GridData();
-            gd.horizontalIndent = 10;
-            btnCreateIdxConcurrent.setLayoutData(gd);
-            btnCreateIdxConcurrent.setSelection(projPS.getBoolean(DB_UPDATE_PREF
-                    .PRINT_INDEX_WITH_CONCURRENTLY, false));
         }
 
         return panel;
@@ -108,13 +108,13 @@ public class ApplyCustomDialog extends Dialog {
         customSettings.put(PROJ_PREF.ENABLE_PROJ_PREF_DB_UPDATE, true);
         customSettings.put(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION,
                 btnScriptAddTransact.getSelection());
+        customSettings.put(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY,
+                btnCreateIdxConcurrent.getSelection());
         if (!isMsSql) {
             customSettings.put(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES,
                     btnCheckFuncBodies.getSelection());
             customSettings.put(DB_UPDATE_PREF.USING_ON_OFF,
                     btnAlterColUsingExpr.getSelection());
-            customSettings.put(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY,
-                    btnCreateIdxConcurrent.getSelection());
         }
 
         super.okPressed();

@@ -111,9 +111,4 @@ public class GetChangesCustomDialog extends Dialog {
         customSettings.put(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, btnUseGlobalIgnoreList.getSelection());
         super.okPressed();
     }
-
-    @Override
-    protected boolean isResizable() {
-        return false;
-    }
 }
