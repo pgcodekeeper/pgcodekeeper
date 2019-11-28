@@ -41,6 +41,7 @@ import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuCreator;
 import org.eclipse.jface.action.IStatusLineManager;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.dialogs.Dialog;
@@ -68,7 +69,6 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -283,8 +283,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
                 addBtnGetChangesWithMenu(container, mgrTblBtn);
 
-                container.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
-                mgrTblBtn.createControl(container);
+                mgrTblBtn.createControl(container).setLayoutData(
+                        new GridData(SWT.END, SWT.CENTER, true, false));
             }
         };
 
@@ -393,30 +393,27 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         applyAction.setMenuCreator(new IMenuCreator() {
 
-            private Menu menuApplyCustom;
+            private MenuManager menuMgrApplyCustom;
 
             @Override
             public void dispose() {
-                if (menuApplyCustom != null) {
-                    menuApplyCustom.dispose();
-                    menuApplyCustom = null;
+                if (menuMgrApplyCustom != null) {
+                    menuMgrApplyCustom.dispose();
+                    menuMgrApplyCustom = null;
                 }
             }
 
             @Override
             public Menu getMenu(Control parent) {
-                if (menuApplyCustom != null) {
-                    menuApplyCustom.dispose();
+                if (menuMgrApplyCustom != null) {
+                    menuMgrApplyCustom.dispose();
                 }
 
-                menuApplyCustom = new Menu(parent);
-
-                MenuItem itemApplyCustom = new MenuItem (menuApplyCustom, SWT.PUSH);
-                itemApplyCustom.setText(Messages.DiffTableViewer_apply_to_custom);
-                itemApplyCustom.addSelectionListener(new SelectionAdapter() {
+                menuMgrApplyCustom = new MenuManager();
+                menuMgrApplyCustom.add(new Action(Messages.DiffTableViewer_apply_to_custom) {
 
                     @Override
-                    public void widgetSelected(SelectionEvent e) {
+                    public void run() {
                         if (!actionToDb.isChecked()) {
                             MessageBox mb = new MessageBox(container.getShell(), SWT.ICON_INFORMATION);
                             mb.setText(Messages.projectEditorDiffer_works_only_for_db_title);
@@ -434,8 +431,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                         }
                     }
                 });
-
-                return menuApplyCustom;
+                return menuMgrApplyCustom.createContextMenu(parent);
             }
 
             @Override
@@ -469,30 +465,27 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         getChangesAction.setMenuCreator(new IMenuCreator() {
 
-            private Menu menuGetChangesCustom;
+            private MenuManager menuMgrGetChangesCustom;
 
             @Override
             public void dispose() {
-                if (menuGetChangesCustom != null) {
-                    menuGetChangesCustom.dispose();
-                    menuGetChangesCustom = null;
+                if (menuMgrGetChangesCustom != null) {
+                    menuMgrGetChangesCustom.dispose();
+                    menuMgrGetChangesCustom = null;
                 }
             }
 
             @Override
             public Menu getMenu(Control parent) {
-                if (menuGetChangesCustom != null) {
-                    menuGetChangesCustom.dispose();
+                if (menuMgrGetChangesCustom != null) {
+                    menuMgrGetChangesCustom.dispose();
                 }
 
-                menuGetChangesCustom = new Menu(parent);
-
-                MenuItem itemGetChangesCustom = new MenuItem (menuGetChangesCustom, SWT.PUSH);
-                itemGetChangesCustom.setText(Messages.DiffTableViewer_get_changes_custom);
-                itemGetChangesCustom.addSelectionListener(new SelectionAdapter() {
+                menuMgrGetChangesCustom = new MenuManager();
+                menuMgrGetChangesCustom.add(new Action(Messages.DiffTableViewer_get_changes_custom) {
 
                     @Override
-                    public void widgetSelected(SelectionEvent e) {
+                    public void run() {
                         GetChangesCustomDialog dialog = new GetChangesCustomDialog(
                                 container.getShell(), projPrefs, isMsSql, oneTimePrefs);
                         if (dialog.open() == Dialog.OK) {
@@ -502,8 +495,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                         }
                     }
                 });
-
-                return menuGetChangesCustom;
+                return menuMgrGetChangesCustom.createContextMenu(parent);
             }
 
             @Override
@@ -746,9 +738,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                             }
 
                             // clearing because this preferences must be used only once
-                            if (!oneTimePrefs.isEmpty()) {
-                                oneTimePrefs.clear();
-                            }
+                            oneTimePrefs.clear();
                         }
                     });
                 }
@@ -893,9 +883,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 }
 
                 // clearing because this preferences must be used only once
-                if (!oneTimePrefs.isEmpty()) {
-                    oneTimePrefs.clear();
-                }
+                oneTimePrefs.clear();
             }
         });
         job.setUser(true);
