@@ -118,9 +118,9 @@ public abstract class DbSource {
     }
 
     public static DbSource fromDirTree(boolean forceUnixNewlines,String dirTreePath,
-            String encoding, boolean isMsSql, IProject proj) {
+            String encoding, boolean isMsSql, Map<String, Boolean> oneTimePrefs) {
         return new DbSourceDirTree(forceUnixNewlines, dirTreePath, encoding,
-                isMsSql, proj, null);
+                isMsSql, oneTimePrefs);
     }
 
     public static DbSource fromProject(PgDbProject proj, Map<String, Boolean> oneTimePrefs) {
@@ -179,18 +179,16 @@ class DbSourceDirTree extends DbSource {
     private final String dirTreePath;
     private final String encoding;
     private final boolean isMsSql;
-    private final IProject proj;
     private final Map<String, Boolean> oneTimePrefs;
 
     DbSourceDirTree(boolean forceUnixNewlines, String dirTreePath, String encoding,
-            boolean isMsSql, IProject proj, Map<String, Boolean> oneTimePrefs) {
+            boolean isMsSql, Map<String, Boolean> oneTimePrefs) {
         super(dirTreePath);
 
         this.forceUnixNewlines = forceUnixNewlines;
         this.dirTreePath = dirTreePath;
         this.encoding = encoding;
         this.isMsSql = isMsSql;
-        this.proj = proj;
         this.oneTimePrefs = oneTimePrefs;
     }
 
@@ -201,7 +199,7 @@ class DbSourceDirTree extends DbSource {
 
         List<AntlrError> er = new ArrayList<>();
         PgDatabase db = new ProjectLoader(dirTreePath, getPgDiffArgs(encoding,
-                forceUnixNewlines, isMsSql, proj, oneTimePrefs), monitor, er)
+                forceUnixNewlines, isMsSql, null, oneTimePrefs), monitor, er)
                 .loadDatabaseSchemaFromDirTree();
         errors = er;
         return db;

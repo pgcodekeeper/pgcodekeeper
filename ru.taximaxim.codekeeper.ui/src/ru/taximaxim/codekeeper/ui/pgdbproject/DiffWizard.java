@@ -2,6 +2,8 @@ package ru.taximaxim.codekeeper.ui.pgdbproject;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.IPageChangingListener;
@@ -33,7 +35,11 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
+import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
@@ -96,7 +102,6 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
             }
 
             pagePartial.setData(dbSource.getOrigin(), dbTarget.getOrigin(), treediffer);
-            getShell().layout(true, true);
         }
     }
 
@@ -116,11 +121,11 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
 
             Differ differ = new Differ(source, treediffer.getDbTarget().getDbObject(),
                     treediffer.getDiffTree(), false, pageDiff.getTimezone(),
-                    source.getArguments().isMsSql(), null);
+                    source.getArguments().isMsSql(), null, pageDiff.getOneTimePrefs());
             getContainer().run(true, true, differ);
 
             FileUtilsUi.saveOpenTmpSqlEditor(differ.getDiffDirect(),
-                    "diff_wizard_result", source.getArguments().isMsSql());
+                    "diff_wizard_result", source.getArguments().isMsSql()); //$NON-NLS-1$
             return true;
         } catch (InvocationTargetException ex) {
             ExceptionNotifier.notifyDefault(Messages.error_in_differ_thread, ex);
@@ -146,6 +151,16 @@ class PageDiff extends WizardPage implements Listener {
     private ComboViewer cmbTimezone;
     private CLabel lblWarnPosix;
 
+    private Button btnNoPrivileges;
+    private Button btnEnableFuncDep;
+    private Button btnSimplifyView;
+    private Button btnUseGlobalIgnoreList;
+
+    private Button btnScriptAddTransact;
+    private Button btnCheckFuncBodies;
+    private Button btnAlterColUsingExpr;
+    private Button btnCreateIdxConcurrent;
+
     public PageDiff(String pageName, IPreferenceStore mainPrefs, PgDbProject proj) {
         super(pageName, pageName, null);
 
@@ -155,11 +170,11 @@ class PageDiff extends WizardPage implements Listener {
     }
 
     public DbSource getDbSource() {
-        return dbSource.getDbSource(btnMsSql.getSelection());
+        return dbSource.getDbSource(btnMsSql.getSelection(), getOneTimePrefs());
     }
 
     public DbSource getDbTarget() {
-        return dbTarget.getDbSource(btnMsSql.getSelection());
+        return dbTarget.getDbSource(btnMsSql.getSelection(), getOneTimePrefs());
     }
 
     public String getTimezone() {
@@ -177,18 +192,20 @@ class PageDiff extends WizardPage implements Listener {
     @Override
     public void createControl(Composite parent) {
         Composite container = new Composite(parent, SWT.NONE);
-        container.setLayout(new GridLayout(2, true));
+        container.setLayout(new GridLayout());
 
-        dbSource = new DbSourcePicker(container, Messages.DiffWizard_source, mainPrefs, this);
+        Composite dbContainer = new Composite(container, SWT.NONE);
+        dbContainer.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        dbContainer.setLayout(new GridLayout(2, true));
+
+        dbSource = new DbSourcePicker(dbContainer, Messages.DiffWizard_source, mainPrefs, this);
         dbSource.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        dbTarget = new DbSourcePicker(container, Messages.DiffWizard_target, mainPrefs, this);
+        dbTarget = new DbSourcePicker(dbContainer, Messages.DiffWizard_target, mainPrefs, this);
         dbTarget.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         Composite compTz = new Composite(container, SWT.NONE);
-        GridLayout gl = new GridLayout(2, false);
-        gl.marginWidth = gl.marginHeight = 0;
-        compTz.setLayout(gl);
+        compTz.setLayout(new GridLayout(2, false));
 
         new Label(compTz, SWT.NONE).setText(Messages.DiffWizard_db_tz);
 
@@ -198,6 +215,13 @@ class PageDiff extends WizardPage implements Listener {
         cmbTimezone.setInput(UIConsts.TIME_ZONES);
         cmbTimezone.getCombo().setText(ApgdiffConsts.UTC);
         cmbTimezone.getCombo().addModifyListener(e -> timeZoneWarn());
+
+        lblWarnPosix = new CLabel(container, SWT.NONE);
+        lblWarnPosix.setImage(Activator.getEclipseImage(ISharedImages.IMG_OBJS_WARN_TSK));
+        lblWarnPosix.setText(Messages.ProjectProperties_posix_is_used_warn);
+        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+        gd.exclude = true;
+        lblWarnPosix.setLayoutData(gd);
 
         btnMsSql = new Button(container, SWT.CHECK);
         btnMsSql.setText(Messages.DiffWizard_ms_sql_dump);
@@ -210,12 +234,66 @@ class PageDiff extends WizardPage implements Listener {
             }
         });
 
-        lblWarnPosix = new CLabel(container, SWT.NONE);
-        lblWarnPosix.setImage(Activator.getEclipseImage(ISharedImages.IMG_OBJS_WARN_TSK));
-        lblWarnPosix.setText(Messages.ProjectProperties_posix_is_used_warn);
-        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
-        gd.exclude = true;
-        lblWarnPosix.setLayoutData(gd);
+        Button btnShowPrefs = new Button(container, SWT.CHECK);
+        btnShowPrefs.setText(Messages.DiffWizard_show_advanced_options);
+        btnShowPrefs.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                boolean selected = btnShowPrefs.getSelection();
+                btnNoPrivileges.setVisible(selected);
+                btnEnableFuncDep.setVisible(selected);
+                btnSimplifyView.setVisible(selected);
+                btnUseGlobalIgnoreList.setVisible(selected);
+                btnScriptAddTransact.setVisible(selected);
+                btnCheckFuncBodies.setVisible(selected);
+                btnAlterColUsingExpr.setVisible(selected);
+                btnCreateIdxConcurrent.setVisible(selected);
+
+                UiSync.exec(getShell(), () -> getShell().pack());
+            }
+        });
+
+        btnNoPrivileges = new Button(container, SWT.CHECK);
+        btnNoPrivileges.setText(Messages.dbUpdatePrefPage_ignore_privileges);
+        btnNoPrivileges.setSelection(mainPrefs.getBoolean(PREF.NO_PRIVILEGES));
+        btnNoPrivileges.setVisible(false);
+
+        btnEnableFuncDep = new Button(container, SWT.CHECK);
+        btnEnableFuncDep.setText(Messages.GeneralPrefPage_enable_body_dependencies);
+        btnEnableFuncDep.setToolTipText(Messages.GeneralPrefPage_body_depcy_tooltip);
+        btnEnableFuncDep.setSelection(mainPrefs.getBoolean(PREF.ENABLE_BODY_DEPENDENCIES));
+        btnEnableFuncDep.setVisible(false);
+
+        btnSimplifyView = new Button(container, SWT.CHECK);
+        btnSimplifyView.setText(Messages.GeneralPrefPage_simplify_view);
+        btnSimplifyView.setSelection(mainPrefs.getBoolean(PREF.SIMPLIFY_VIEW));
+        btnSimplifyView.setVisible(false);
+
+        btnUseGlobalIgnoreList = new Button(container, SWT.CHECK);
+        btnUseGlobalIgnoreList.setText(Messages.ProjectProperties_use_global_ignore_list);
+        btnUseGlobalIgnoreList.setSelection(true);
+        btnUseGlobalIgnoreList.setVisible(false);
+
+        btnScriptAddTransact = new Button(container, SWT.CHECK);
+        btnScriptAddTransact.setText(Messages.dbUpdatePrefPage_script_add_transaction);
+        btnScriptAddTransact.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION));
+        btnScriptAddTransact.setVisible(false);
+
+        btnCheckFuncBodies = new Button(container, SWT.CHECK);
+        btnCheckFuncBodies.setText(Messages.dbUpdatePrefPage_check_function_bodies);
+        btnCheckFuncBodies.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES));
+        btnCheckFuncBodies.setVisible(false);
+
+        btnAlterColUsingExpr = new Button(container, SWT.CHECK);
+        btnAlterColUsingExpr.setText(Messages.dbUpdatePrefPage_switch_on_off_using);
+        btnAlterColUsingExpr.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.USING_ON_OFF));
+        btnAlterColUsingExpr.setVisible(false);
+
+        btnCreateIdxConcurrent = new Button(container, SWT.CHECK);
+        btnCreateIdxConcurrent.setText(Messages.DbUpdatePrefPage_print_index_with_concurrently);
+        btnCreateIdxConcurrent.setSelection(mainPrefs.getBoolean(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
+        btnCreateIdxConcurrent.setVisible(false);
 
         if (proj != null) {
             dbTarget.setDbStore(new StructuredSelection(proj.getProject().getLocation().toFile()));
@@ -225,13 +303,14 @@ class PageDiff extends WizardPage implements Listener {
     }
 
     private void timeZoneWarn() {
-        String tz =  cmbTimezone.getCombo().getText();
+        String tz = cmbTimezone.getCombo().getText();
         GridData data = (GridData) lblWarnPosix.getLayoutData();
         if ((!ApgdiffConsts.UTC.equals(tz)
                 && tz.startsWith(ApgdiffConsts.UTC)) == data.exclude)  {
             lblWarnPosix.setVisible(data.exclude);
             data.exclude = !data.exclude;
             lblWarnPosix.getParent().layout();
+            UiSync.exec(getShell(), () -> getShell().pack());
         }
     }
 
@@ -258,6 +337,11 @@ class PageDiff extends WizardPage implements Listener {
             err = Messages.DiffWizard_different_types;
         }
 
+        boolean isPg = !isMsSqlDb(dbSource);
+        btnSimplifyView.setEnabled(isPg);
+        btnCheckFuncBodies.setEnabled(isPg);
+        btnAlterColUsingExpr.setEnabled(isPg);
+
         setErrorMessage(err);
         return err == null;
     }
@@ -266,6 +350,21 @@ class PageDiff extends WizardPage implements Listener {
     public void handleEvent(Event event) {
         getWizard().getContainer().updateButtons();
         getWizard().getContainer().updateMessage();
+    }
+
+    public Map<String, Boolean> getOneTimePrefs() {
+        Map<String, Boolean> oneTimePrefs = new HashMap<>();
+
+        oneTimePrefs.put(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION, btnScriptAddTransact.getSelection());
+        oneTimePrefs.put(PREF.NO_PRIVILEGES, btnNoPrivileges.getSelection());
+        oneTimePrefs.put(PREF.ENABLE_BODY_DEPENDENCIES, btnEnableFuncDep.getSelection());
+        oneTimePrefs.put(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, btnUseGlobalIgnoreList.getSelection());
+        oneTimePrefs.put(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES, btnCheckFuncBodies.getSelection());
+        oneTimePrefs.put(DB_UPDATE_PREF.USING_ON_OFF, btnAlterColUsingExpr.getSelection());
+        oneTimePrefs.put(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY, btnCreateIdxConcurrent.getSelection());
+        oneTimePrefs.put(PREF.SIMPLIFY_VIEW, btnSimplifyView.getSelection());
+
+        return oneTimePrefs;
     }
 }
 
@@ -303,10 +402,7 @@ class PagePartial extends WizardPage {
         lblTarget = new Label(container, SWT.WRAP);
 
         diffTable = new DiffTableViewer(container, false);
-        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
-        gd.widthHint = 480;
-        gd.heightHint = 360;
-        diffTable.setLayoutData(gd);
+        diffTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 
         setControl(container);
     }
