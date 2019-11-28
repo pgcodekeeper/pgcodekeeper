@@ -1,7 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -32,8 +31,7 @@ public class ViewAnalysisLauncher extends AbstractAnalysisLauncher {
             Select select = new Select(stmt.getDatabase());
             select.setFullAnaLyze(fullAnalyze);
             ((PgView) stmt).addRelationColumns(new ArrayList<>(select.analyze((Select_stmtContext) ctx)));
-            stmt.addAllDeps(select.getDepcies());
-            return Collections.emptySet();
+            return select.getDepcies();
         } else {
             return analyze((VexContext) ctx, new ValueExpr(stmt.getDatabase()));
         }

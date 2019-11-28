@@ -53,7 +53,7 @@ public final class FullAnalyze {
                 // and protects from infinite recursion
                 launchers.set(i, null);
                 ((ViewAnalysisLauncher) l).setFullAnalyze(this);
-                l.launchAnalyze(errors);
+                l.getStmt().addAllDeps(l.launchAnalyze(errors));
             }
         }
     }

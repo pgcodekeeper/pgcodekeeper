@@ -1,7 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher;
 
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -29,7 +29,7 @@ public class RuleAnalysisLauncher extends AbstractAnalysisLauncher {
 
     @Override
     public Set<GenericColumn> analyze(ParserRuleContext ctx) {
-        Set<GenericColumn> depcies = new HashSet<>();
+        Set<GenericColumn> depcies = new LinkedHashSet<>();
 
         Create_rewrite_statementContext createRewriteCtx = (Create_rewrite_statementContext) ctx;
 

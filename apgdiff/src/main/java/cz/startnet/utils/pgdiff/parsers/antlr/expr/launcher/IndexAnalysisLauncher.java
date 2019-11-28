@@ -1,6 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -18,7 +18,7 @@ public class IndexAnalysisLauncher extends AbstractAnalysisLauncher {
 
     @Override
     public Set<GenericColumn> analyze(ParserRuleContext ctx) {
-        Set<GenericColumn> depcies = new HashSet<>();
+        Set<GenericColumn> depcies = new LinkedHashSet<>();
         Index_restContext rest = (Index_restContext) ctx;
 
         for (Sort_specifierContext sort_ctx : rest.index_sort().sort_specifier_list()
