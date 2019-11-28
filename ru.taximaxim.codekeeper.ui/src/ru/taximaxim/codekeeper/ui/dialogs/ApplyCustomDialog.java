@@ -52,8 +52,8 @@ public class ApplyCustomDialog extends Dialog {
     @Override
     protected Control createDialogArea(Composite parent) {
         Composite panel = new Composite(parent, SWT.NONE);
-        panel.setLayout(new GridLayout(2, false));
-        panel.setLayoutData(new GridData(GridData.FILL_BOTH));
+        panel.setLayout(new GridLayout());
+        panel.setLayoutData(new GridData());
 
         new Label(panel, SWT.NONE).setText(MessageFormat
                 .format(Messages.getChangesCustomDialog_custom_prefs_description,
@@ -123,6 +123,6 @@ public class ApplyCustomDialog extends Dialog {
 
     @Override
     protected boolean isResizable() {
-        return true;
+        return false;
     }
 }
