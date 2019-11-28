@@ -85,7 +85,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.IErrorPositionSetter;
+import ru.taximaxim.codekeeper.ui.ITextErrorReporter;
 import ru.taximaxim.codekeeper.ui.IPartAdapter2;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.CMD_VARS;
@@ -113,7 +113,7 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 import ru.taximaxim.codekeeper.ui.propertytests.UpdateDdlJobTester;
 
 public class SQLEditor extends AbstractDecoratedTextEditor
-implements IResourceChangeListener, IErrorPositionSetter {
+implements IResourceChangeListener, ITextErrorReporter {
 
     static final String CONTENT_ASSIST = "ContentAssist"; //$NON-NLS-1$
 

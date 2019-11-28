@@ -1,6 +1,6 @@
 package ru.taximaxim.codekeeper.ui;
 
-public interface IErrorPositionSetter {
+public interface ITextErrorReporter {
     /**
      * Set caret in editor to the error position.
      * @param start the offset of the error query
