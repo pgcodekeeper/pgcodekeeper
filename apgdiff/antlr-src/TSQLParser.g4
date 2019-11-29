@@ -2744,7 +2744,7 @@ schema_declaration
     ;
 
 column_declaration
-    : simple_id data_type (STRING)?
+    : id data_type (STRING)?
     ;
 
 change_table
