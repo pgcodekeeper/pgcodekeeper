@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentMap;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
-import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.log.Log;
 
 public class PgSystemStorage implements Serializable {
 

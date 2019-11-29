@@ -18,9 +18,9 @@ import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.eclipse.ui.part.FileEditorInput;
 
-import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.IPartAdapter2;
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
@@ -111,12 +111,11 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
             return;
         }
 
-        if (proj != null) {
-            try {
-                storePicker.filter(proj.hasNature(NATURE.ID) ? proj.hasNature(NATURE.MS) : null);
-            } catch (CoreException ex) {
-                Log.log(ex);
-            }
+        try {
+            storePicker.filter(proj != null && proj.hasNature(NATURE.ID) ?
+                    proj.hasNature(NATURE.MS) : null);
+        } catch (CoreException ex) {
+            Log.log(ex);
         }
 
         if (lastDb == null) {

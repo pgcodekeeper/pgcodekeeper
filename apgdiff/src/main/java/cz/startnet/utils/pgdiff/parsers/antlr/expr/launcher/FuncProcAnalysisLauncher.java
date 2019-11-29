@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher;
 
 import java.util.List;
+import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -43,11 +44,13 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
     }
 
     @Override
-    public void analyze(ParserRuleContext ctx) {
+    public Set<GenericColumn> analyze(ParserRuleContext ctx) {
         PgDatabase db = stmt.getDatabase();
         if (ctx instanceof VexContext) {
-            analyze((VexContext) ctx, new ValueExpr(db));
-        } else if (ctx instanceof SqlContext) {
+            return analyze((VexContext) ctx, new ValueExpr(db));
+        }
+
+        if (ctx instanceof SqlContext) {
             Sql sql;
             if (db.getArguments().isEnableFunctionBodiesDependencies()) {
                 sql = new Sql(db);
@@ -58,19 +61,21 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
                 Pair<String, GenericColumn> arg = funcArgs.get(i);
                 sql.declareNamespaceVar("$" + (i + 1), arg.getFirst(), arg.getSecond());
             }
-            analyze((SqlContext) ctx, sql);
-        } else if (ctx instanceof Plpgsql_functionContext) {
-            Function function;
-            if (db.getArguments().isEnableFunctionBodiesDependencies()) {
-                function = new Function(db);
-            } else {
-                function = new Function(db, DbObjType.FUNCTION, DbObjType.PROCEDURE);
-            }
-            for (int i = 0; i < funcArgs.size(); i++) {
-                Pair<String, GenericColumn> arg = funcArgs.get(i);
-                function.declareNamespaceVar("$" + (i + 1), arg.getFirst(), arg.getSecond());
-            }
-            analyze((Plpgsql_functionContext) ctx, function);
+            return analyze((SqlContext) ctx, sql);
         }
+
+        Function function;
+        if (db.getArguments().isEnableFunctionBodiesDependencies()) {
+            function = new Function(db);
+        } else {
+            function = new Function(db, DbObjType.FUNCTION, DbObjType.PROCEDURE);
+        }
+
+        for (int i = 0; i < funcArgs.size(); i++) {
+            Pair<String, GenericColumn> arg = funcArgs.get(i);
+            function.declareNamespaceVar("$" + (i + 1), arg.getFirst(), arg.getSecond());
+        }
+
+        return analyze((Plpgsql_functionContext) ctx, function);
     }
 }

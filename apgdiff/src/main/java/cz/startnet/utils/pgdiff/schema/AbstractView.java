@@ -16,7 +16,6 @@ implements IStatementContainer, IRelation {
     private final List<PgRule> rules = new ArrayList<>();
     private final List<AbstractTrigger> triggers = new ArrayList<>();
     private final List<AbstractIndex> indexes = new ArrayList<>();
-    private final List<Pair<String, String>> relationColumns = new ArrayList<>();
 
     @Override
     public DbObjType getStatementType() {
@@ -159,11 +158,7 @@ implements IStatementContainer, IRelation {
 
     @Override
     public Stream<Pair<String, String>> getRelationColumns() {
-        return relationColumns.stream();
-    }
-
-    public void addRelationColumns(List<Pair<String, String>> relationColumns) {
-        this.relationColumns.addAll(relationColumns);
+        return Stream.empty();
     }
 
     @Override
@@ -193,7 +188,6 @@ implements IStatementContainer, IRelation {
     public AbstractView shallowCopy() {
         AbstractView viewDst = getViewCopy();
         copyBaseFields(viewDst);
-        viewDst.relationColumns.addAll(relationColumns);
         return viewDst;
     }
 
@@ -201,6 +195,6 @@ implements IStatementContainer, IRelation {
 
     @Override
     public AbstractSchema getContainingSchema() {
-        return (AbstractSchema)this.getParent();
+        return (AbstractSchema) this.getParent();
     }
 }

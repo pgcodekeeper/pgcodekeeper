@@ -24,7 +24,7 @@ import cz.startnet.utils.pgdiff.loader.callables.QueryCallable;
 import cz.startnet.utils.pgdiff.loader.callables.ResultSetCallable;
 import cz.startnet.utils.pgdiff.loader.callables.StatementCallable;
 import ru.taximaxim.codekeeper.apgdiff.DaemonThreadFactory;
-import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.log.Log;
 
 public class JdbcRunner {
 
@@ -82,7 +82,8 @@ public class JdbcRunner {
             IProgressReporter reporter) throws SQLException, IOException, InterruptedException {
         try (Connection connection = connector.getConnection();
                 Statement st = connection.createStatement()) {
-            runScript(new QueriesBatchCallable(st, batches, monitor, reporter, connection));
+            boolean isMsSql = connector instanceof JdbcMsConnector;
+            runScript(new QueriesBatchCallable(st, batches, monitor, reporter, connection, isMsSql));
         }
     }
 

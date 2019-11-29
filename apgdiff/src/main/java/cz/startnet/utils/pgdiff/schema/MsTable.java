@@ -1,10 +1,14 @@
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 
 /**
@@ -14,6 +18,13 @@ import cz.startnet.utils.pgdiff.hashers.Hasher;
  * @author galiev_mr
  */
 public class MsTable extends AbstractTable {
+
+    private static final String MEMORY_OPTIMIZED = "MEMORY_OPTIMIZED";
+
+    /**
+     * list of internal primary keys for memory optimized table
+     */
+    private List<AbstractConstraint> pkeys;
 
     private boolean ansiNulls;
     private Boolean isTracked;
@@ -28,17 +39,16 @@ public class MsTable extends AbstractTable {
 
     @Override
     public String getCreationSQL() {
-        final StringBuilder sbOption = new StringBuilder();
         final StringBuilder sbSQL = new StringBuilder();
 
         appendName(sbSQL);
         appendColumns(sbSQL);
         appendOptions(sbSQL);
-        sbSQL.append(sbOption);
         appendAlterOptions(sbSQL);
         appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
         appendColumnsPriliges(sbSQL);
+
         return sbSQL.toString();
     }
 
@@ -84,12 +94,40 @@ public class MsTable extends AbstractTable {
             sbSQL.append(",\n");
         }
 
+        for (AbstractConstraint con : getPkeys()) {
+            if (con.isPrimaryKey()) {
+                sbSQL.append("\t");
+                String name = con.name;
+                if (!name.isEmpty()) {
+                    sbSQL.append("CONSTRAINT ").append(MsDiffUtils.quoteName(name)).append(' ');
+                }
+                sbSQL.append(con.getDefinition());
+                sbSQL.append(",\n");
+            }
+        }
+
         if (start != sbSQL.length()) {
             sbSQL.setLength(sbSQL.length() - 2);
             sbSQL.append('\n');
         }
 
         sbSQL.append(')');
+    }
+
+    public List<AbstractConstraint> getPkeys() {
+        return pkeys == null ? Collections.emptyList() : Collections.unmodifiableList(pkeys);
+    }
+
+    @Override
+    public void addConstraint(AbstractConstraint constraint) {
+        if (constraint.isPrimaryKey() && isMemoryOptimized()) {
+            if (pkeys == null) {
+                pkeys = new ArrayList<>();
+            }
+            pkeys.add(constraint);
+        } else {
+            super.addConstraint(constraint);
+        }
     }
 
     protected void appendOptions(StringBuilder sbSQL) {
@@ -128,7 +166,6 @@ public class MsTable extends AbstractTable {
             sbSQL.append("\nWITH (").append(sb).append(")");
         }
 
-
         sbSQL.append(GO);
     }
 
@@ -137,6 +174,8 @@ public class MsTable extends AbstractTable {
         if (newTable instanceof MsTable) {
             MsTable smt = (MsTable) newTable;
             return !Objects.equals(smt.getTablespace(), getTablespace())
+                    || isAnsiNulls() != smt.isAnsiNulls()
+                    || !PgDiffUtils.setlikeEquals(smt.getPkeys(), getPkeys())
                     || !Objects.equals(smt.getOptions(), getOptions())
                     || !Objects.equals(smt.getFileStream(), getFileStream())
                     || (smt.getTextImage() != null && getTextImage() != null
@@ -229,6 +268,10 @@ public class MsTable extends AbstractTable {
         resetHash();
     }
 
+    public boolean isMemoryOptimized() {
+        return "ON".equalsIgnoreCase(getOptions().get(MEMORY_OPTIMIZED));
+    }
+
     @Override
     public boolean isPostgres() {
         return false;
@@ -244,7 +287,8 @@ public class MsTable extends AbstractTable {
                     && Objects.equals(textImage, table.getTextImage())
                     && Objects.equals(fileStream, table.getFileStream())
                     && Objects.equals(isTracked, table.isTracked())
-                    && Objects.equals(tablespace, table.getTablespace());
+                    && Objects.equals(tablespace, table.getTablespace())
+                    && PgDiffUtils.setlikeEquals(getPkeys(), table.getPkeys());
         }
 
         return false;
@@ -258,8 +302,8 @@ public class MsTable extends AbstractTable {
         hasher.put(isAnsiNulls());
         hasher.put(isTracked());
         hasher.put(getTablespace());
+        hasher.putUnordered(getPkeys());
     }
-
 
     @Override
     protected MsTable getTableCopy() {
@@ -269,6 +313,11 @@ public class MsTable extends AbstractTable {
         table.setAnsiNulls(isAnsiNulls());
         table.setTracked(isTracked());
         table.setTablespace(getTablespace());
+
+        if (pkeys != null) {
+            table.pkeys = new ArrayList<>();
+            table.pkeys.addAll(pkeys);
+        }
         return table;
     }
 }

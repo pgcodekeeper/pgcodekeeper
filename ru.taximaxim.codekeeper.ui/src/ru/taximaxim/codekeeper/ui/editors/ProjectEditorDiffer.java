@@ -9,7 +9,9 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -34,7 +36,14 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ActionContributionItem;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IMenuCreator;
 import org.eclipse.jface.action.IStatusLineManager;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -54,11 +63,12 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -107,8 +117,10 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.VIEW;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
+import ru.taximaxim.codekeeper.ui.dialogs.ApplyCustomDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.CommitDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
+import ru.taximaxim.codekeeper.ui.dialogs.GetChangesCustomDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ManualDepciesDialog;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffPaneViewer;
@@ -145,10 +157,10 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private Composite contNotifications;
     private Label lblNotificationText;
     private Link linkRefresh;
-    private Button btnGetChanges;
 
-    private Button btnToProj;
-    private Button btnToDb;
+    private Action getChangesAction;
+    private Action actionToProj;
+    private Action actionToDb;
 
     private DiffTableViewer diffTable;
     private DiffPaneViewer diffPane;
@@ -158,6 +170,10 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private boolean isCommitCommandAvailable;
     private List<Entry<PgStatement, PgStatement>> manualDepciesSource = new ArrayList<>();
     private List<Entry<PgStatement, PgStatement>> manualDepciesTarget = new ArrayList<>();
+
+    private boolean isMsSql;
+    private IEclipsePreferences projPrefs;
+    private final Map<String, Boolean> oneTimePrefs = new HashMap<>();
 
     public IProject getProject() {
         return proj.getProject();
@@ -172,8 +188,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                             : Messages.ProjectEditorDiffer_database));
             mb.open();
 
-            btnToProj.setSelection(isApplyToProj);
-            btnToDb.setSelection(!isApplyToProj);
+            actionToProj.setChecked(isApplyToProj);
+            actionToDb.setChecked(!isApplyToProj);
         }
         diffTable.setApplyToProj(isApplyToProj);
         diffTable.getViewer().refresh();
@@ -197,6 +213,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         proj = new PgDbProject(in.getProject());
         sp = new ProjectEditorSelectionProvider(getProject());
+        projPrefs = proj.getPrefs();
+        isMsSql = OpenProjectUtils.checkMsSql(getProject());
 
         // message box
         if(!site.getPage().getPerspective().getId().equals(PERSPECTIVE.MAIN)){
@@ -222,65 +240,51 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
             @Override
             public void createRightSide(Composite container) {
-                GridLayout layout = new GridLayout(4, false);
+                GridLayout layout = new GridLayout();
                 layout.marginHeight = 0;
                 layout.marginWidth = 0;
                 container.setLayout(layout);
 
-                Button btnApply = new Button(container, SWT.PUSH);
-                btnApply.setText(Messages.DiffTableViewer_apply_to);
-                btnApply.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
+                final ToolBarManager mgrTblBtn = new ToolBarManager(SWT.FLAT | SWT.RIGHT);
 
-                btnToProj = new Button(container, SWT.RADIO);
-                btnToProj.setText(Messages.DiffTableViewer_to_project);
-                btnToProj.setImage(Activator.getRegisteredImage(FILE.ICONAPPSMALL));
-                btnToProj.setSelection(true);
-                btnToProj.addSelectionListener(new SelectionAdapter()  {
+                addBtnApplyWithMenu(container, mgrTblBtn);
+
+                actionToProj = new Action(Messages.DiffTableViewer_to_project,
+                        IAction.AS_RADIO_BUTTON) {
 
                     @Override
-                    public void widgetSelected(SelectionEvent e) {
+                    public void run() {
                         changeMigrationDireciton(true, false);
                     }
-                });
+                };
+                actionToProj.setImageDescriptor(ImageDescriptor
+                        .createFromImage(Activator.getRegisteredImage(FILE.ICONAPPSMALL)));
+                actionToProj.setChecked(true);
+                ActionContributionItem itemToProj = new ActionContributionItem(actionToProj);
+                itemToProj.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+                mgrTblBtn.add(itemToProj);
 
-                btnToDb = new Button(container, SWT.RADIO);
-                btnToDb.setText(Messages.DiffTableViewer_to_database);
-                btnToDb.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
-                        .getBundle().getResource(FILE.ICONDATABASE))));
-                btnToDb.addSelectionListener(new SelectionAdapter()  {
+                actionToDb = new Action(Messages.DiffTableViewer_to_database,
+                        IAction.AS_RADIO_BUTTON) {
 
                     @Override
-                    public void widgetSelected(SelectionEvent e) {
+                    public void run() {
                         changeMigrationDireciton(false, false);
                     }
-                });
+                };
+                actionToDb.setImageDescriptor(ImageDescriptor.createFromURL(
+                        Activator.getContext().getBundle().getResource(FILE.ICONDATABASE)));
+                actionToDb.setChecked(false);
+                ActionContributionItem itemToDb = new ActionContributionItem(actionToDb);
+                itemToDb.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+                mgrTblBtn.add(itemToDb);
 
-                btnApply.addSelectionListener(new SelectionAdapter() {
+                mgrTblBtn.add(new Separator());
 
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        if (btnToDb.getSelection()) {
-                            diff();
-                        } else {
-                            commit();
-                        }
-                    }
-                });
+                addBtnGetChangesWithMenu(container, mgrTblBtn);
 
-                btnGetChanges = new Button(container, SWT.PUSH);
-                btnGetChanges.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
-                        .getBundle().getResource(FILE.ICONREFRESH))));
-                btnGetChanges.setText(Messages.DiffTableViewer_get_changes);
-                GridData gd = new GridData();
-                gd.horizontalIndent = 8;
-                btnGetChanges.setLayoutData(gd);
-                btnGetChanges.addSelectionListener(new SelectionAdapter() {
-
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        getChanges();
-                    }
-                });
+                mgrTblBtn.createControl(container).setLayoutData(
+                        new GridData(SWT.END, SWT.CENTER, true, false));
             }
         };
 
@@ -366,6 +370,137 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         isCommitCommandAvailable = commandIds.contains(COMMAND.COMMIT_COMMAND_ID);
 
         getSite().getService(IContextService.class).activateContext(CONTEXT.MAIN);
+    }
+
+    /**
+     * Adds [Apply] button with drop-down menu, which contains
+     * main button [Apply] and additional button for applying
+     * with custom settings.
+     */
+    private void addBtnApplyWithMenu(Composite container, ToolBarManager mgrTblBtn) {
+        Action applyAction = new Action(Messages.DiffTableViewer_apply_to,
+                IAction.AS_DROP_DOWN_MENU) {
+
+            @Override
+            public void run() {
+                if (actionToDb.isChecked()) {
+                    diff();
+                } else {
+                    commit();
+                }
+            }
+        };
+
+        applyAction.setMenuCreator(new IMenuCreator() {
+
+            private MenuManager menuMgrApplyCustom;
+
+            @Override
+            public void dispose() {
+                if (menuMgrApplyCustom != null) {
+                    menuMgrApplyCustom.dispose();
+                    menuMgrApplyCustom = null;
+                }
+            }
+
+            @Override
+            public Menu getMenu(Control parent) {
+                if (menuMgrApplyCustom != null) {
+                    menuMgrApplyCustom.dispose();
+                }
+
+                menuMgrApplyCustom = new MenuManager();
+                IAction applyCustomAction = new Action(Messages.DiffTableViewer_apply_to_custom) {
+
+                    @Override
+                    public void run() {
+                        ApplyCustomDialog dialog = new ApplyCustomDialog(container.getShell(), projPrefs,
+                                isMsSql, oneTimePrefs);
+                        if (dialog.open() == Dialog.OK) {
+                            // 'oneTimePrefs' filled by one-time preferences
+                            // will be used in 'diff()'
+                            diff();
+                        }
+                    }
+                };
+                applyCustomAction.setEnabled(actionToDb.isChecked());
+                menuMgrApplyCustom.add(applyCustomAction);
+                return menuMgrApplyCustom.createContextMenu(parent);
+            }
+
+            @Override
+            public Menu getMenu(Menu parent) {
+                return null;
+            }
+        });
+
+        ActionContributionItem applyItem = new ActionContributionItem(applyAction);
+        applyItem.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+        mgrTblBtn.add(applyItem);
+    }
+
+    /**
+     * Adds [GetChanges] button with drop-down menu, which contains
+     * main button [GetChanges] and additional button for getting
+     * changes with custom settings.
+     */
+    private void addBtnGetChangesWithMenu(Composite container, ToolBarManager mgrTblBtn) {
+        getChangesAction = new Action(Messages.DiffTableViewer_get_changes,
+                IAction.AS_DROP_DOWN_MENU) {
+
+            @Override
+            public void run() {
+                getChanges();
+            }
+        };
+
+        getChangesAction.setImageDescriptor(ImageDescriptor.createFromURL(Activator.getContext()
+                .getBundle().getResource(FILE.ICONREFRESH)));
+
+        getChangesAction.setMenuCreator(new IMenuCreator() {
+
+            private MenuManager menuMgrGetChangesCustom;
+
+            @Override
+            public void dispose() {
+                if (menuMgrGetChangesCustom != null) {
+                    menuMgrGetChangesCustom.dispose();
+                    menuMgrGetChangesCustom = null;
+                }
+            }
+
+            @Override
+            public Menu getMenu(Control parent) {
+                if (menuMgrGetChangesCustom != null) {
+                    menuMgrGetChangesCustom.dispose();
+                }
+
+                menuMgrGetChangesCustom = new MenuManager();
+                menuMgrGetChangesCustom.add(new Action(Messages.DiffTableViewer_get_changes_custom) {
+
+                    @Override
+                    public void run() {
+                        GetChangesCustomDialog dialog = new GetChangesCustomDialog(
+                                container.getShell(), projPrefs, isMsSql, oneTimePrefs);
+                        if (dialog.open() == Dialog.OK) {
+                            // 'oneTimePrefs' filled by one-time preferences
+                            // will be used in 'getChanges()'
+                            getChanges();
+                        }
+                    }
+                });
+                return menuMgrGetChangesCustom.createContextMenu(parent);
+            }
+
+            @Override
+            public Menu getMenu(Menu parent) {
+                return null;
+            }
+        });
+
+        ActionContributionItem getChangesItem = new ActionContributionItem(getChangesAction);
+        getChangesItem.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+        mgrTblBtn.add(getChangesItem);
     }
 
     public void addDependency() {
@@ -478,7 +613,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
     }
 
-    public void getChanges(){
+    public void getChanges() {
         Object currentRemote = this.currentRemote;
         if (currentRemote == null) {
             MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_INFORMATION);
@@ -509,7 +644,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         boolean forceUnixNewlines = projProps.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true);
 
-        DbSource dbProject = DbSource.fromProject(proj);
+        DbSource dbProject = DbSource.fromProject(proj, oneTimePrefs);
 
         TreeDiffer newDiffer;
         String name;
@@ -518,7 +653,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             DbInfo dbInfo = (DbInfo) currentRemote;
             DbSource dbRemote = DbSource.fromDbInfo(dbInfo, forceUnixNewlines,
                     charset, projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC),
-                    getProject());
+                    getProject(), oneTimePrefs);
             newDiffer = new TreeDiffer(dbProject, dbRemote);
             name = dbInfo.getName();
             saveLastDb(dbInfo);
@@ -526,7 +661,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             File file = (File) currentRemote;
             name = file.getName();
             DbSource dbRemote = DbSource.fromFile(forceUnixNewlines, file, charset,
-                    isMsProj, getProject());
+                    isMsProj, getProject(), oneTimePrefs);
             newDiffer = new TreeDiffer(dbProject, dbRemote);
         }
 
@@ -572,7 +707,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             public void aboutToRun(IJobChangeEvent event) {
                 UiSync.exec(parent, () -> {
                     if (!parent.isDisposed()) {
-                        btnGetChanges.setEnabled(false);
+                        getChangesAction.setEnabled(false);
                     }
                 });
             }
@@ -582,7 +717,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             public void done(IJobChangeEvent event) {
                 UiSync.exec(parent, () -> {
                     if (!parent.isDisposed()) {
-                        btnGetChanges.setEnabled(true);
+                        getChangesAction.setEnabled(true);
                     }
                 });
 
@@ -595,6 +730,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                             if (diffTable.getElements().isEmpty()) {
                                 showNotificationArea(true, Messages.ProjectEditorDiffer_no_differences);
                             }
+
+                            // clearing because this preferences must be used only once
+                            oneTimePrefs.clear();
                         }
                     });
                 }
@@ -714,7 +852,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         final Differ differ = new Differ(dbRemote.getDbObject(),
                 dbProject.getDbObject(), diffTree.getRevertedCopy(), false,
                 pref.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC),
-                OpenProjectUtils.checkMsSql(getProject()), getProject());
+                OpenProjectUtils.checkMsSql(getProject()), getProject(), oneTimePrefs);
         differ.setAdditionalDepciesSource(manualDepciesSource);
         differ.setAdditionalDepciesTarget(manualDepciesTarget);
 
@@ -737,6 +875,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                         }
                     });
                 }
+
+                // clearing because this preferences must be used only once
+                oneTimePrefs.clear();
             }
         });
         job.setUser(true);
@@ -762,7 +903,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         IgnoreList ignoreList = null;
         if (diffTree != null) {
-            boolean isGlobal = new OverridablePrefs(getProject()).isUseGlobalIgnoreList();
+            boolean isGlobal = new OverridablePrefs(getProject(), oneTimePrefs).isUseGlobalIgnoreList();
             ignoreList = isGlobal ? InternalIgnoreList.readInternalList() : new IgnoreList();
 
             InternalIgnoreList.readAppendList(
