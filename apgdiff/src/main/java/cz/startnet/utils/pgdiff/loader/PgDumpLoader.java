@@ -57,8 +57,6 @@ public class PgDumpLoader {
 
     private final List<AntlrError> errors = new ArrayList<>();
 
-    private final List<List<QueryLocation>> batches = new ArrayList<>();
-
     private ParserListenerMode mode = ParserListenerMode.NORMAL;
     private List<StatementBodyContainer> statementBodyReferences;
     private Map<PgStatement, StatementOverride> overrides;
@@ -127,10 +125,6 @@ public class PgDumpLoader {
      */
     public PgDumpLoader(File inputFile, PgDiffArguments args) {
         this(inputFile, args, new NullProgressMonitor(), 0);
-    }
-
-    public List<List<QueryLocation>> batch() {
-        return batches;
     }
 
     public PgDatabase load() throws IOException, InterruptedException {

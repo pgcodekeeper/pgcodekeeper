@@ -42,20 +42,16 @@ public class QueriesBatchCallable extends StatementCallable<String> {
     @Override
     public String call() throws Exception {
         SubMonitor subMonitor = SubMonitor.convert(monitor);
-        String currQuery = null;
-        int currQueryLine = 1;
-        int currQueryOffset = 0;
+        // !!! переименовать в currQuery
+        QueryLocation currQuery = null;
         try {
             if (batches.size() == 1) {
                 List<QueryLocation> queries = batches.get(0);
                 subMonitor.setWorkRemaining(queries.size());
                 for (QueryLocation query : queries) {
                     PgDiffUtils.checkCancelled(monitor);
-                    currQuery = query.getSql();
-                    currQueryLine = query.getLineNumber();
-                    currQueryOffset = query.getOffset();
+                    currQuery = query;
                     executeSingleStatement(query);
-
                     subMonitor.worked(1);
                 }
             } else {
@@ -66,17 +62,12 @@ public class QueriesBatchCallable extends StatementCallable<String> {
                     // in case we're executing a real batch after a single-statement one
                     currQuery = null;
                     if (queriesList.size() == 1) {
-                        QueryLocation query = queriesList.get(0);
-                        currQuery = query.getSql();
-                        currQueryLine = query.getLineNumber();
-                        currQueryOffset = query.getOffset();
-                        executeSingleStatement(query);
+                        currQuery = queriesList.get(0);
+                        executeSingleStatement(currQuery);
                     } else {
                         for (QueryLocation query : queriesList) {
-                            currQuery = query.getSql();
-                            currQueryLine = query.getLineNumber();
-                            currQueryOffset = query.getOffset();
-                            st.addBatch(currQuery);
+                            currQuery = query;
+                            st.addBatch(currQuery.getSql());
                             writeStatus(query.getAction());
                         }
 
@@ -104,14 +95,15 @@ public class QueriesBatchCallable extends StatementCallable<String> {
             int offset = sem.getPosition();
             if (currQuery != null) {
                 if (offset > 0) {
-                    appendPosition(sb, currQuery, offset);
+                    appendPosition(sb, currQuery.getSql(), offset);
                 } else {
-                    if (currQueryLine > 1) {
-                        sb.append("\n  Line: ").append(currQueryLine);
+                    if (currQuery.getLineNumber() > 1) {
+                        sb.append("\n  Line: ").append(currQuery.getLineNumber());
                     }
-                    sb.append('\n').append(currQuery);
+                    sb.append('\n').append(currQuery.getSql());
                 }
-                reporter.reportErrorLocation(currQueryOffset, currQuery.length());
+                reporter.reportErrorLocation(currQuery.getOffset(),
+                        currQuery.getSql().length());
             }
 
             reporter.writeError(sb.toString());
@@ -124,10 +116,10 @@ public class QueriesBatchCallable extends StatementCallable<String> {
             if (currQuery != null) {
                 if (err.getLineNumber() > 1) {
                     sb.append("\n  Line: ").append(err.getLineNumber());
-                } else if (currQueryLine > 1) {
-                    sb.append("\n  Line: ").append(currQueryLine);
+                } else if (currQuery.getLineNumber() > 1) {
+                    sb.append("\n  Line: ").append(currQuery.getLineNumber());
                 }
-                sb.append('\n').append(currQuery);
+                sb.append('\n').append(currQuery.getSql());
             }
 
             reporter.writeError(sb.toString());

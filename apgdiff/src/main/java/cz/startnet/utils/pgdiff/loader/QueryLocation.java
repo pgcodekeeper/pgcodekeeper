@@ -1,7 +1,5 @@
 package cz.startnet.utils.pgdiff.loader;
 
-import java.util.Objects;
-
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
@@ -13,7 +11,7 @@ import cz.startnet.utils.pgdiff.schema.PgObjLocation;
  */
 public class QueryLocation extends PgObjLocation {
 
-    private static final long serialVersionUID = 7310018993032523902L;
+    private static final long serialVersionUID = 1246030747266508296L;
 
     private final String sql;
 
@@ -25,25 +23,5 @@ public class QueryLocation extends PgObjLocation {
 
     public String getSql() {
         return sql;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!super.equals(obj)) {
-            return false;
-        }
-        if (obj instanceof QueryLocation) {
-            return Objects.equals(sql, ((QueryLocation) obj).getSql());
-        }
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        return prime * super.hashCode() + (sql == null ? 0 : sql.hashCode());
     }
 }

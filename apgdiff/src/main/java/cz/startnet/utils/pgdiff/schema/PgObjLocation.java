@@ -50,7 +50,6 @@ public class PgObjLocation extends ContextLocation {
             PgObjLocation loc = (PgObjLocation) obj;
             return Objects.equals(loc.getGenericColumn(), getGenericColumn())
                     && getOffset() == loc.getOffset()
-                    && getLineNumber() == loc.getLineNumber()
                     && Objects.equals(loc.getFilePath(), getFilePath());
         }
         return false;
@@ -67,7 +66,6 @@ public class PgObjLocation extends ContextLocation {
             result = prime * result + ((gObj.type == null) ? 0 : gObj.type.hashCode());
         }
         result = prime * result + getOffset();
-        result = prime * result + getLineNumber();
         result = prime * result + ((getFilePath() == null) ? 0 : getFilePath().hashCode());
         return result;
     }
