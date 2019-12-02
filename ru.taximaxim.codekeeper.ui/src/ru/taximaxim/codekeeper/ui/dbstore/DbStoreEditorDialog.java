@@ -14,7 +14,6 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -35,15 +34,12 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.ISharedImages;
 
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcMsConnector;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.CMD_VARS;
-import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.properties.IgnoreListProperties.IgnoreListEditor;
 
@@ -64,7 +60,6 @@ public class DbStoreEditorDialog extends TrayDialog {
     private Text txtDumpFile;
     private Text txtDumpParameters;
     private Text txtDomain;
-    private CLabel lblWarnDbPass;
     private Button btnReadOnly;
     private Button btnGenerateName;
     private Button btnMsSql;
@@ -252,28 +247,25 @@ public class DbStoreEditorDialog extends TrayDialog {
 
         txtDbPass = new Text(tabAreaDb, SWT.BORDER | SWT.PASSWORD);
         txtDbPass.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, false, false, 3, 1));
-        txtDbPass.addModifyListener(e -> {
-            GridData data = (GridData) lblWarnDbPass.getLayoutData();
 
-            if (txtDbPass.getText().isEmpty() != data.exclude) {
-                lblWarnDbPass.setVisible(data.exclude);
-                data.exclude = !data.exclude;
+        new Label(tabAreaDb, SWT.NONE);
 
-                // ensures correct pack during shell activation
-                UiSync.exec(getShell(), () -> getShell().pack());
-            }
-        });
-        txtDbPass.addModifyListener(modifyListener);
+        Label lblPgpassSupport = new Label(tabAreaDb, SWT.NONE);
+        lblPgpassSupport.setText(Messages.pgpass_passwords_supported);
+        lblPgpassSupport.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1));
 
-        lblWarnDbPass = new CLabel(tabAreaDb, SWT.NONE);
-        lblWarnDbPass.setImage(Activator.getEclipseImage(ISharedImages.IMG_OBJS_WARN_TSK));
-        lblWarnDbPass.setText(Messages.warning_providing_password_here_is_insecure_use_pgpass_instead);
-        lblWarnDbPass.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 4, 1));
+        int verticalIndent = 10;
 
-        new Label(tabAreaDb, SWT.NONE).setText(Messages.DbStoreEditorDialog_read_only);
+        Label lblReadOnly = new Label(tabAreaDb, SWT.NONE);
+        lblReadOnly.setText(Messages.DbStoreEditorDialog_read_only);
+        gd = new GridData();
+        gd.verticalIndent = verticalIndent;
+        lblReadOnly.setLayoutData(gd);
 
         btnReadOnly = new Button(tabAreaDb, SWT.CHECK);
-        btnReadOnly.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, false, false, 3, 1));
+        gd = new GridData(SWT.FILL, SWT.DEFAULT, false, false, 3, 1);
+        gd.verticalIndent = verticalIndent;
+        btnReadOnly.setLayoutData(gd);
         btnReadOnly.setText(Messages.DbStoreEditorDialog_read_only_description);
 
         new Label(tabAreaDb, SWT.NONE).setText(Messages.DbStoreEditorDialog_ms_sql_database);
@@ -312,8 +304,6 @@ public class DbStoreEditorDialog extends TrayDialog {
                 }
             });
         }
-
-        int verticalIndent = 15;
 
         Label lblEntryName = new Label(tabAreaDb, SWT.NONE);
         lblEntryName.setText(Messages.entry_name);

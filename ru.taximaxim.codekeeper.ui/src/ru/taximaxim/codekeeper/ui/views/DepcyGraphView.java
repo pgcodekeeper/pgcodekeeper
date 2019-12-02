@@ -35,12 +35,11 @@ import org.eclipse.zest.layouts.algorithms.SpringLayoutAlgorithm;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 
-import cz.startnet.utils.pgdiff.schema.AbstractColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
-import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
+import ru.taximaxim.codekeeper.apgdiff.model.graph.SimpleDepcyResolver;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
@@ -56,7 +55,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
     private DepcyGraphLabelProvider labelProvider;
 
     private PgDatabase currentDb;
-    private DepcyResolver depRes;
+    private SimpleDepcyResolver depRes;
     private IWorkbenchPart lastSelectionPart;
     private ISelection lastSelection;
     private IProject currentProject;
@@ -174,8 +173,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         PgDatabase newDb = showProject ? dss.dbProject.getDbObject() : dss.dbRemote.getDbObject();
         if (currentDb != newDb) {
             currentDb = newDb;
-            depRes = new DepcyResolver(currentDb,
-                    showProject ? dss.dbRemote.getDbObject() : dss.dbProject.getDbObject());
+            depRes = new SimpleDepcyResolver(currentDb);
         }
 
         if (currentDb == null || depRes == null) {
@@ -194,9 +192,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
                     PgStatement root = el.getPgStatement(currentDb);
                     rootSet.add(root);
                     for (PgStatement dependant : depRes.getDropDepcies(root)) {
-                        if (!(dependant instanceof AbstractColumn)) {
-                            newInput.add(dependant);
-                        }
+                        newInput.add(dependant);
                     }
                 }
             }
@@ -214,18 +210,13 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
 
         @Override
         public Object[] getConnectedTo(Object entity) {
-            if (entity instanceof PgStatement){
-                DirectedGraph<PgStatement, DefaultEdge> currentGraph = depRes.getOldGraph();
-                if (currentGraph != null){
-                    List<PgStatement> connected = new ArrayList<>();
-                    for (DefaultEdge e : currentGraph.outgoingEdgesOf((PgStatement)entity)){
-                        PgStatement connectedVertex = currentGraph.getEdgeTarget(e);
-                        if (!(connectedVertex instanceof AbstractColumn)) {
-                            connected.add(connectedVertex);
-                        }
-                    }
-                    return connected.toArray();
+            DirectedGraph<PgStatement, DefaultEdge> currentGraph = depRes.getOldGraph();
+            if (currentGraph != null && entity instanceof PgStatement) {
+                List<PgStatement> connected = new ArrayList<>();
+                for (DefaultEdge e : currentGraph.outgoingEdgesOf((PgStatement) entity)) {
+                    connected.add(currentGraph.getEdgeTarget(e));
                 }
+                return connected.toArray();
             }
             return null;
         }

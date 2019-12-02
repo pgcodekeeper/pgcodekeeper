@@ -8,6 +8,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Foreign_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identity_bodyContext;
@@ -77,7 +78,7 @@ public class AlterTable extends TableAbstract {
             tabl = (AbstractPgTable) getSafe(AbstractSchema::getTable, schema, nameCtx);
 
             if (tablAction.tabl_constraint != null) {
-                IdentifierContext conNameCtx = tablAction.tabl_constraint.constraint_name;
+                IdentifierContext conNameCtx = tablAction.tabl_constraint.identifier();
                 AbstractConstraint con = parseAlterTableConstraint(tablAction,
                         createTableConstraintBlank(tablAction.tabl_constraint), db,
                         getSchemaNameSafe(ids), nameCtx.getText(), tablespace, isRefMode());
@@ -103,8 +104,8 @@ public class AlterTable extends TableAbstract {
 
             if (tablAction.table_column_definition() != null) {
                 Table_column_definitionContext column = tablAction.table_column_definition();
-                addColumn(column.column_name.getText(), column.datatype,
-                        column.collate_name, column.constraint_common(),
+                addColumn(column.identifier().getText(), column.data_type(),
+                        column.collate_identifier(), column.constraint_common(),
                         column.define_foreign_options(), tabl);
             }
 
@@ -144,16 +145,18 @@ public class AlterTable extends TableAbstract {
                 Storage_parameterContext param = tablAction.storage_parameter();
                 if (param != null) {
                     for (Storage_parameter_optionContext option : param.storage_parameter_option()) {
-                        String value = option.value == null ? "" : option.value.getText();
-                        fillOptionParams(value, option.storage_param.getText(), false, col::addOption);
+                        VexContext opt = option.vex();
+                        String value = opt == null ? null : opt.getText();
+                        fillOptionParams(value, option.schema_qualified_name().getText(), false, col::addOption);
                     }
                 }
 
                 // foreign options
                 if (tablAction.define_foreign_options() != null) {
                     for (Foreign_optionContext option : tablAction.define_foreign_options().foreign_option()) {
-                        String value = option.value == null ? "" : option.value.getText();
-                        fillOptionParams(value, option.name.getText(), false, col::addForeignOption);
+                        Character_stringContext opt = option.character_string();
+                        String value = opt == null ? null : opt.getText();
+                        fillOptionParams(value, option.foreign_option_name().getText(), false, col::addForeignOption);
                     }
                 }
 

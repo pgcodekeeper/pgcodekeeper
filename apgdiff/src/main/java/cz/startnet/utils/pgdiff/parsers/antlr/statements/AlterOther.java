@@ -56,13 +56,12 @@ public class AlterOther extends ParserAbstract {
             type = DbObjType.AGGREGATE;
         }
 
-        addObjReference(ctx.function_parameters().name.identifier(),
+        addObjReference(ctx.function_parameters().schema_qualified_name().identifier(),
                 type, StatementActions.ALTER);
     }
 
     public void alterSchema(Alter_schema_statementContext ctx) {
-        IdentifierContext nameCtx = ctx.schema_with_name().name;
-        addObjReference(Arrays.asList(nameCtx), DbObjType.SCHEMA, StatementActions.ALTER);
+        addObjReference(Arrays.asList(ctx.identifier()), DbObjType.SCHEMA, StatementActions.ALTER);
     }
 
     public void alterType(Alter_type_statementContext ctx) {
@@ -122,9 +121,10 @@ public class AlterOther extends ParserAbstract {
 
     private List<IdentifierContext> getIds() {
         if (ctx.alter_function_statement() != null) {
-            return ctx.alter_function_statement().function_parameters().name.identifier();
+            return ctx.alter_function_statement().function_parameters()
+                    .schema_qualified_name().identifier();
         } else if (ctx.alter_schema_statement() != null) {
-            return Arrays.asList(ctx.alter_schema_statement().schema_with_name().name);
+            return Arrays.asList(ctx.alter_schema_statement().identifier());
         } else if (ctx.alter_type_statement() != null) {
             return ctx.alter_type_statement().name.identifier();
         } else if (ctx.alter_index_statement() != null) {

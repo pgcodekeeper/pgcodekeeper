@@ -14,6 +14,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
@@ -81,7 +82,7 @@ public class NormalizeProject extends AbstractHandler {
                                 Messages.ProjectEditorDiffer_error_refreshing_project, ex);
                         return;
                     }
-                    UiSync.exec(PlatformUI.getWorkbench().getDisplay(), (Runnable) () -> {
+                    UiSync.exec(PlatformUI.getWorkbench().getDisplay(), () -> {
                         Shell parent = shell;
                         if (parent.isDisposed()) {
                             IWorkbenchWindow w = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
@@ -93,10 +94,11 @@ public class NormalizeProject extends AbstractHandler {
                                 return;
                             }
                         }
-                        MessageBox mb = new MessageBox(parent, SWT.ICON_INFORMATION);
-                        mb.setMessage(Messages.NormalizeProject_project_normalized_success);
-                        mb.setText(Messages.NormalizeProject_project_normalized);
-                        mb.open();
+
+                        MessageDialog.open(MessageDialog.INFORMATION,
+                                parent, Messages.NormalizeProject_project_normalized,
+                                Messages.NormalizeProject_project_normalized_success,
+                                SWT.NONE);
                     });
                 }
             }

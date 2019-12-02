@@ -58,18 +58,18 @@ public class CreateFunction extends ParserAbstract {
 
     @Override
     public void parseObject() {
-        List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
+        List<IdentifierContext> ids = ctx.function_parameters().schema_qualified_name().identifier();
         String name = QNameParser.getFirstName(ids);
         AbstractPgFunction function = ctx.PROCEDURE() != null ? new PgProcedure(name)
                 : new PgFunction(name);
 
-        fillFunction(ctx.funct_body, function);
+        fillFunction(ctx.create_funct_params(), function);
 
         if (ctx.ret_table != null) {
             function.setReturns(getFullCtxText(ctx.ret_table));
             for (Function_column_name_typeContext ret_col : ctx.ret_table.function_column_name_type()) {
-                addPgTypeDepcy(ret_col.column_type, function);
-                function.addReturnsColumn(ret_col.column_name.getText(), getTypeName(ret_col.column_type));
+                addPgTypeDepcy(ret_col.data_type(), function);
+                function.addReturnsColumn(ret_col.identifier().getText(), getTypeName(ret_col.data_type()));
             }
         } else if (ctx.rettype_data != null) {
             function.setReturns(getTypeName(ctx.rettype_data));
@@ -109,7 +109,7 @@ public class CreateFunction extends ParserAbstract {
                 function.setBody(db.getArguments(), getFullCtxText(funcDef));
             } else if (action.TRANSFORM() != null) {
                 for (Transform_for_typeContext transform : action.transform_for_type()) {
-                    function.addTransform(ParserAbstract.getFullCtxText(transform.type_name));
+                    function.addTransform(ParserAbstract.getFullCtxText(transform.data_type()));
                 }
             } else if (action.SAFE() != null) {
                 function.setParallel("SAFE");
@@ -257,7 +257,7 @@ public class CreateFunction extends ParserAbstract {
 
     @Override
     protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
-        List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
+        List<IdentifierContext> ids = ctx.function_parameters().schema_qualified_name().identifier();
         return new Pair<>(StatementActions.CREATE, new GenericColumn(
                 QNameParser.getSchemaName(ids), QNameParser.getFirstNameCtx(ids).getText(),
                 ctx.PROCEDURE() != null ? DbObjType.PROCEDURE : DbObjType.FUNCTION));

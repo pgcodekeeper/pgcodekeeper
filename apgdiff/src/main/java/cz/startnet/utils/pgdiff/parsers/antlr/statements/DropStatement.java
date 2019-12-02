@@ -140,7 +140,6 @@ public class DropStatement extends ParserAbstract {
         return loc;
     }
 
-
     @Override
     protected Pair<StatementActions, GenericColumn> getActionAndObjForStmtAction() {
         DbObjType type;

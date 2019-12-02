@@ -14,7 +14,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Another_statementContex
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.BatchContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Batch_statement_bodyContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_or_alter_viewContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Create_xml_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Ddl_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.TSQLParser.Dml_clauseContext;
@@ -184,11 +183,6 @@ implements TSqlContextProcessor {
             return;
         }
 
-        safeParseStatement(p, ctx);
-    }
-
-    public void schemaViewStatement(Create_or_alter_viewContext ctx, CommonTokenStream stream) {
-        ParserAbstract p = new CreateMsView(ctx, db, ansiNulls, quotedIdentifier, stream);
         safeParseStatement(p, ctx);
     }
 

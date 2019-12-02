@@ -32,66 +32,49 @@ public class QueriesBatchCallable extends StatementCallable<String> {
     private final IProgressMonitor monitor;
     private final Connection connection;
     private final IProgressReporter reporter;
+    private final boolean isMsSql;
 
-    public QueriesBatchCallable(Statement st, Set<PgObjLocation> batches, IProgressMonitor monitor,
-            IProgressReporter reporter, Connection connection) {
+    private boolean isAutoCommitEnabled = true;
+
+    public QueriesBatchCallable(Statement st, Set<PgObjLocation> batches,
+            IProgressMonitor monitor, IProgressReporter reporter,
+            Connection connection, boolean isMsSql) {
         super(st, null);
         this.batches = batches;
         this.monitor = monitor;
         this.connection = connection;
         this.reporter = reporter;
+        this.isMsSql = isMsSql;
     }
 
     @Override
     public String call() throws Exception {
         SubMonitor subMonitor = SubMonitor.convert(monitor);
-        String currQuery = null;
-        int currQueryLine = 1;
-        int currQueryOffset = 0;
+        PgObjLocation currQuery = null;
 
         List<List<PgObjLocation>> batchesList = getListBatchesFromSetBatches();
 
         try {
-            if (batchesList.size() == 1) {
+            if (!isMsSql && batchesList.size() == 1) {
                 List<PgObjLocation> queries = batchesList.get(0);
                 subMonitor.setWorkRemaining(queries.size());
                 for (PgObjLocation query : queries) {
                     PgDiffUtils.checkCancelled(monitor);
-                    currQuery = query.getSql();
-                    currQueryLine = query.getLineNumber();
-                    currQueryOffset = query.getOffset();
+                    currQuery = query;
                     executeSingleStatement(query);
-
                     subMonitor.worked(1);
                 }
             } else {
                 subMonitor.setWorkRemaining(batchesList.size());
-                connection.setAutoCommit(false);
                 for (List<PgObjLocation> queriesList : batchesList) {
                     PgDiffUtils.checkCancelled(monitor);
                     // in case we're executing a real batch after a single-statement one
                     currQuery = null;
                     if (queriesList.size() == 1) {
-                        PgObjLocation query = queriesList.get(0);
-                        currQuery = query.getSql();
-                        currQueryLine = query.getLineNumber();
-                        currQueryOffset = query.getOffset();
-                        executeSingleStatement(query);
+                        currQuery = queriesList.get(0);
+                        executeSingleStatement(currQuery);
                     } else {
-                        for (PgObjLocation query : queriesList) {
-                            currQuery = query.getSql();
-                            currQueryLine = query.getLineNumber();
-                            currQueryOffset = query.getOffset();
-                            st.addBatch(currQuery);
-                            writeStatus(query.getAction());
-                        }
-
-                        if (reporter != null) {
-                            reporter.writeMessage("Executing batch");
-                        }
-
-                        st.executeBatch();
-                        writeWarnings();
+                        runBatch(queriesList, currQuery);
                     }
                     subMonitor.worked(1);
                 }
@@ -110,14 +93,15 @@ public class QueriesBatchCallable extends StatementCallable<String> {
             if (currQuery != null) {
                 int offset = sem.getPosition();
                 if (offset > 0) {
-                    appendPosition(sb, currQuery, offset);
+                    appendPosition(sb, currQuery.getSql(), offset);
                 } else {
-                    if (currQueryLine > 1) {
-                        sb.append("\n  Line: ").append(currQueryLine);
+                    if (currQuery.getLineNumber() > 1) {
+                        sb.append("\n  Line: ").append(currQuery.getLineNumber());
                     }
-                    sb.append('\n').append(currQuery);
+                    sb.append('\n').append(currQuery.getSql());
                 }
-                reporter.setErrorPosition(currQueryOffset, currQuery.length());
+                reporter.reportErrorLocation(currQuery.getOffset(),
+                        currQuery.getSql().length());
             }
 
             reporter.writeError(sb.toString());
@@ -130,10 +114,10 @@ public class QueriesBatchCallable extends StatementCallable<String> {
             if (currQuery != null) {
                 if (err.getLineNumber() > 1) {
                     sb.append("\n  Line: ").append(err.getLineNumber());
-                } else if (currQueryLine > 1) {
-                    sb.append("\n  Line: ").append(currQueryLine);
+                } else if (currQuery.getLineNumber() > 1) {
+                    sb.append("\n  Line: ").append(currQuery.getLineNumber());
                 }
-                sb.append('\n').append(currQuery);
+                sb.append('\n').append(currQuery.getSql());
             }
 
             reporter.writeError(sb.toString());
@@ -174,6 +158,27 @@ public class QueriesBatchCallable extends StatementCallable<String> {
         }
         writeWarnings();
         writeStatus(query.getAction());
+    }
+
+    private void runBatch(List<PgObjLocation> queriesList, PgObjLocation currQuery)
+            throws SQLException {
+        if (isAutoCommitEnabled) {
+            connection.setAutoCommit(false);
+            isAutoCommitEnabled = false;
+        }
+
+        for (PgObjLocation query : queriesList) {
+            currQuery = query;
+            st.addBatch(query.getSql());
+            writeStatus(query.getAction());
+        }
+
+        if (reporter != null) {
+            reporter.writeMessage("Executing batch");
+        }
+
+        st.executeBatch();
+        writeWarnings();
     }
 
     private void writeResult(String query) throws SQLException {

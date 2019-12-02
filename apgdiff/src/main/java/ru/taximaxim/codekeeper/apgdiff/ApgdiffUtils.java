@@ -14,6 +14,8 @@ import java.nio.file.Paths;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.URIUtil;
 
+import ru.taximaxim.codekeeper.apgdiff.log.Log;
+
 public final class ApgdiffUtils {
 
     /**

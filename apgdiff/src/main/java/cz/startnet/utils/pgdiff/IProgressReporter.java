@@ -8,7 +8,7 @@ public interface IProgressReporter extends AutoCloseable {
     void writeError(String message);
     void terminate();
     void showData(String query, List<List<Object>> Object);
-    void setErrorPosition(int start, int length);
+    void reportErrorLocation(int start, int length);
 
     @Override
     default void close() {

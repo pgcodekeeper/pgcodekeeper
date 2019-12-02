@@ -345,6 +345,9 @@ implements SqlContextProcessor {
      */
     protected static String getActionDescription(CommonTokenStream tokenStream,
             ParserRuleContext ctx, int descrWordsCount) {
+        if (tokenStream == null) {
+            return ctx.getStart().getText().toUpperCase(Locale.ROOT);
+        }
         List<Token> tokens = tokenStream.getTokens(ctx.getStart().getTokenIndex(),
                 ctx.getStop().getTokenIndex());
         StringBuilder sb = new StringBuilder();

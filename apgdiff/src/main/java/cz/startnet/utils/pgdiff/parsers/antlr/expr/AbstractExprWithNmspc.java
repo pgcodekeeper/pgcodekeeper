@@ -19,17 +19,21 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alias_clauseContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Delete_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Insert_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_queryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.ModPair;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
@@ -169,6 +173,9 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
             IRelation rel = findRelation(ref.schema, ref.table);
             if (rel == null) {
                 continue;
+            }
+            if (rel instanceof PgView) {
+                analyzeViewColumns((PgView) rel);
             }
             for (Pair<String, String> col : PgDiffUtils.sIter(rel.getRelationColumns())) {
                 if (col.getFirst().equals(name)) {
@@ -326,13 +333,25 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
             String withName = withQuery.query_name.getText();
 
             Select_stmtContext withSelect = withQuery.select_stmt();
-            if (withSelect == null) {
-                Log.log(Log.LOG_WARNING, "Skipped analisys of modifying CTE " + withName);
+            Delete_stmt_for_psqlContext delete;
+            Insert_stmt_for_psqlContext insert;
+            Update_stmt_for_psqlContext update;
+
+            List<ModPair<String, String>> pairs;
+            if (withSelect != null) {
+                pairs = new Select(this).analyze(new SelectStmt(withSelect), withQuery);
+            } else if ((delete = withQuery.delete_stmt_for_psql()) != null) {
+                pairs = new Delete(this).analyze(delete);
+            } else if ((insert = withQuery.insert_stmt_for_psql()) != null) {
+                pairs = new Insert(this).analyze(insert);
+            } else if ((update = withQuery.update_stmt_for_psql()) != null) {
+                pairs = new Update(this).analyze(update);
+            } else {
+                Log.log(Log.LOG_WARNING, "No alternative in Cte!");
                 continue;
             }
 
-            if (addCteSignature(withQuery,
-                    new Select(this).analyze(new SelectStmt(withSelect), withQuery))) {
+            if (addCteSignature(withQuery, pairs)) {
                 Log.log(Log.LOG_WARNING, "Duplicate CTE " + withName);
             }
         }
