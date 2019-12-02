@@ -4,10 +4,10 @@ SELECT
     tt.name AS space_name,
     c.name AS part_column,
     p.name AS owner,
-    ds.name AS file_stream, 
+    ds.name AS file_stream,
     cc.cols,
     aa.acl,
-    dsx.name AS text_image, 
+    dsx.name AS text_image,
     o.uses_ansi_nulls,
     o.is_memory_optimized,
     o.durability,
@@ -19,7 +19,7 @@ FROM sys.tables o WITH (NOLOCK)
 JOIN sys.partitions sp WITH (NOLOCK) ON sp.object_id = o.object_id AND sp.index_id IN (0,1) AND sp.partition_number = 1
 LEFT JOIN sys.database_principals p WITH (NOLOCK) ON p.principal_id=o.principal_id
 LEFT JOIN sys.indexes ind WITH (NOLOCK) on ind.object_id = o.object_id AND ind.index_id = 0
-LEFT JOIN sys.data_spaces dsp WITH (NOLOCK) on dsp.data_space_id = ind.data_space_id  
+LEFT JOIN sys.data_spaces dsp WITH (NOLOCK) on dsp.data_space_id = ind.data_space_id
 LEFT JOIN sys.data_spaces ds WITH (NOLOCK) ON o.filestream_data_space_id = ds.data_space_id
 LEFT JOIN sys.data_spaces dsx WITH (NOLOCK) ON dsx.data_space_id=o.lob_data_space_id
 LEFT JOIN sys.index_columns ic WITH (NOLOCK) ON ic.partition_ordinal > 0 AND ic.index_id = ind.index_id and ic.object_id = o.object_id
@@ -27,7 +27,7 @@ LEFT JOIN sys.columns c WITH (NOLOCK) ON c.object_id = ic.object_id AND c.column
 LEFT JOIN sys.change_tracking_tables ctt WITH (NOLOCK) ON ctt.object_id = o.object_id
 CROSS APPLY (
     SELECT * FROM (
-        SELECT  
+        SELECT
             perm.state_desc AS sd,
             perm.permission_name AS pn,
             roleprinc.name AS r,
@@ -36,16 +36,16 @@ CROSS APPLY (
         JOIN sys.database_permissions perm WITH (NOLOCK) ON perm.grantee_principal_id = roleprinc.principal_id
         LEFT JOIN sys.columns col WITH (NOLOCK) ON col.object_id = perm.major_id  AND col.column_id = perm.minor_id
         WHERE major_id = o.object_id AND perm.class = 1
-    ) cc 
+    ) cc
     FOR XML RAW, ROOT
 ) aa (acl)
 
 CROSS APPLY (
     SELECT TOP 1 dsp.name
-    FROM sys.indexes ind WITH (NOLOCK) 
-    JOIN sys.data_spaces dsp WITH (NOLOCK) on dsp.data_space_id = ind.data_space_id  
+    FROM sys.indexes ind WITH (NOLOCK)
+    LEFT JOIN sys.data_spaces dsp WITH (NOLOCK) on dsp.data_space_id = ind.data_space_id
     WHERE ind.object_id = o.object_id
-) tt 
+) tt
 
 CROSS APPLY (
     SELECT * FROM (

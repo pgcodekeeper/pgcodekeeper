@@ -1,9 +1,11 @@
-package ru.taximaxim.codekeeper.apgdiff;
+package ru.taximaxim.codekeeper.apgdiff.log;
 
 import org.eclipse.equinox.log.ExtendedLogService;
 import org.eclipse.equinox.log.Logger;
 import org.osgi.service.log.LogService;
 import org.osgi.util.tracker.ServiceTracker;
+
+import ru.taximaxim.codekeeper.apgdiff.Activator;
 
 public final class Log {
 

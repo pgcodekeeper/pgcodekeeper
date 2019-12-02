@@ -6,9 +6,7 @@ import java.sql.SQLException;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.ViewSelect;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.ViewAnalysisLauncher;
-import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.AbstractView;
@@ -54,17 +52,9 @@ public class ViewsReader extends JdbcReader {
 
         PgDatabase dataBase = schema.getDatabase();
 
-        loader.submitAntlrTask(viewDef, p -> p.sql().statement(0).data_statement()
-                .select_stmt(),
-                ctx -> {
-                    dataBase.addAnalysisLauncher(new ViewAnalysisLauncher(v, ctx));
-
-                    // collect basic FROM dependencies between VIEW objects themselves
-                    // to ensure correct order during the main analysis phase
-                    ViewSelect select = new ViewSelect();
-                    select.analyze(new SelectStmt(ctx));
-                    v.addAllDeps(select.getDepcies());
-                });
+        loader.submitAntlrTask(viewDef,
+                p -> p.sql().statement(0).data_statement().select_stmt(),
+                ctx -> dataBase.addAnalysisLauncher(new ViewAnalysisLauncher(v, ctx)));
 
         // OWNER
         loader.setOwner(v, res.getLong(CLASS_RELOWNER));

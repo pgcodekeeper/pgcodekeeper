@@ -35,8 +35,11 @@ public class MsIndicesAndPKReader extends JdbcReader {
         boolean isUnique = res.getBoolean("is_unique");
         boolean isClustered = res.getBoolean("is_clustered");
         boolean isPadded = res.getBoolean("is_padded");
-        boolean allowRowLocks = res.getBoolean("allow_row_locks");
-        boolean allowPageLocks = res.getBoolean("allow_page_locks");
+        boolean isMemoryOptimized = res.getBoolean("is_memory_optimized");
+
+        // cannot be used in memory_optimized tables
+        boolean allowRowLocks = isMemoryOptimized || res.getBoolean("allow_row_locks");
+        boolean allowPageLocks = isMemoryOptimized || res.getBoolean("allow_page_locks");
         boolean compression = res.getBoolean("data_compression");
         long fillfactor = res.getLong("fill_factor");
         String dataSpace = res.getString("data_space");
@@ -102,7 +105,9 @@ public class MsIndicesAndPKReader extends JdbcReader {
                 sb.append(")");
             }
 
-            sb.append(" ON ").append(MsDiffUtils.quoteName(dataSpace));
+            if (dataSpace != null) {
+                sb.append(" ON ").append(MsDiffUtils.quoteName(dataSpace));
+            }
 
             StringBuilder definition = new StringBuilder();
             if (!isUniqueConstraint) {

@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject;
 
 import java.io.File;
+import java.util.Map;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IProject;
@@ -89,22 +90,24 @@ class DbSourcePicker extends Composite {
         return cmbEncoding.getCombo().getText();
     }
 
-    public DbSource getDbSource(boolean isMsSql) {
+    public DbSource getDbSource(boolean isMsSql, Map<String, Boolean> oneTimePrefs) {
         final boolean forceUnixNewlines = true; // true by default, check project if path is given
         DbInfo dbInfo;
         File file;
         File dir;
         if ((dbInfo = storePicker.getDbInfo()) != null) {
-            return DbSource.fromDbInfo(dbInfo, forceUnixNewlines, getEncoding(), pageDiff.getTimezone(), null);
+            return DbSource.fromDbInfo(dbInfo, forceUnixNewlines, getEncoding(),
+                    pageDiff.getTimezone(), null, oneTimePrefs);
         } else if ((file = storePicker.getPathOfFile()) != null) {
-            return DbSource.fromFile(forceUnixNewlines, file, getEncoding(), isMsSql, null);
+            return DbSource.fromFile(forceUnixNewlines, file, getEncoding(),
+                    isMsSql, null, oneTimePrefs);
         } else if ((dir = storePicker.getPathOfDir()) != null) {
             PgDbProject project = getProjectFromDir(dir);
             if (project != null) {
-                return DbSource.fromProject(project);
+                return DbSource.fromProject(project, oneTimePrefs);
             } else {
                 return DbSource.fromDirTree(forceUnixNewlines, dir.getAbsolutePath(),
-                        getEncoding(), isMsSql, null);
+                        getEncoding(), isMsSql, oneTimePrefs);
             }
         }
         return null;

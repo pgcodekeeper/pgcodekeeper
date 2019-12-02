@@ -56,7 +56,9 @@ public class MsProcedure extends AbstractMsFunction {
         final int startLength = sb.length();
         MsProcedure newProcedure = (MsProcedure) newCondition;
 
-        if (!Objects.equals(getFirstPart(), newProcedure.getFirstPart())
+        if (isAnsiNulls() != newProcedure.isAnsiNulls()
+                || isQuotedIdentified() != newProcedure.isQuotedIdentified()
+                || !Objects.equals(getFirstPart(), newProcedure.getFirstPart())
                 || !Objects.equals(getSecondPart(), newProcedure.getSecondPart())) {
             sb.append(newProcedure.getProcedureFullSQL(false));
             isNeedDepcies.set(true);

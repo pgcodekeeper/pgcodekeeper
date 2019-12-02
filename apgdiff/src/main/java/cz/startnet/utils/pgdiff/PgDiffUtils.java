@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
-import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.sql.Keyword;
 import ru.taximaxim.codekeeper.apgdiff.sql.Keyword.KeywordCategory;
 

@@ -29,8 +29,8 @@ import cz.startnet.utils.pgdiff.schema.system.PgSystemCast;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemFunction;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemRelation;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
-import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
+import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class JdbcSystemLoader extends JdbcLoaderBase {

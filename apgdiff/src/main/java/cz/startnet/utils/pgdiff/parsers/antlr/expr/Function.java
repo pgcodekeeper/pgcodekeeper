@@ -23,6 +23,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Delete_stmt_for_psqlCont
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Exception_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Execute_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Execute_stmtContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Explain_queryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Explain_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_blockContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_statementContext;
@@ -57,7 +58,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.ModPair;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
@@ -397,26 +398,27 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
                 addSchemaDepcy(table.identifier());
             }
         } else if ((statement = additional.explain_statement()) != null) {
-            data = statement.data_statement();
+            Explain_queryContext query = statement.explain_query();
+            data = query.data_statement();
             Values_stmtContext values;
             Execute_statementContext exec;
             Declare_statementContext dec;
 
             if (data != null) {
                 new Sql(this).data(data);
-            } else if ((values = statement.values_stmt()) != null) {
+            } else if ((values = query.values_stmt()) != null) {
                 ValueExpr vex = new ValueExpr(this);
                 for (Values_valuesContext vals : values.values_values()) {
                     for (VexContext v : vals.vex()) {
                         vex.analyze(new Vex(v));
                     }
                 }
-            } else if ((exec = statement.execute_statement()) != null) {
+            } else if ((exec = query.execute_statement()) != null) {
                 ValueExpr vex = new ValueExpr(this);
                 for (VexContext v : exec.vex()) {
                     vex.analyze(new Vex(v));
                 }
-            } else if ((dec = statement.declare_statement()) != null) {
+            } else if ((dec = query.declare_statement()) != null) {
                 new Select(this).analyze(dec.select_stmt());
             }
         } else if ((data = additional.data_statement()) != null) {
