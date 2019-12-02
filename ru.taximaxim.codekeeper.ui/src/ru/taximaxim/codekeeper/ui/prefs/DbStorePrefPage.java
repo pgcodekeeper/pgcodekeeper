@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.equinox.security.storage.StorageException;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -19,6 +21,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -61,6 +64,25 @@ implements IWorkbenchPreferencePage {
     public boolean performOk() {
         setErrorMessage(null);
         try {
+            try {
+                DbXmlStore.INSTANCE.savePasswords(dbList.getList());
+            } catch (StorageException e) {
+                MessageBox mb;
+                String text;
+                if (Platform.OS_LINUX.equals(Platform.getOS())) {
+                    mb = new MessageBox(getShell(), SWT.ICON_WARNING | SWT.YES | SWT.NO);
+                    text = Messages.DbStorePrefPage_secure_storage_error_text_linux;
+                } else {
+                    mb = new MessageBox(getShell(), SWT.ERROR);
+                    text = Messages.DbStorePrefPage_secure_storage_error_text_other;
+                }
+                mb.setMessage(MessageFormat.format(text, e.getLocalizedMessage()));
+                mb.setText(Messages.DbStorePrefPage_secure_storage_error_title);
+                if (mb.open() != SWT.YES) {
+                    setErrorMessage(e.getLocalizedMessage());
+                    return false;
+                }
+            }
             DbXmlStore.INSTANCE.writeObjects(dbList.getList());
             return true;
         } catch (IOException e) {
