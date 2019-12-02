@@ -133,58 +133,50 @@
             class="ru.taximaxim.codekeeper.ui.handlers.GetChanges"
             commandId="ru.taximaxim.codekeeper.ui.command.GetChanges">
             <enabledWhen>
-                <and>
-                    <with variable="activeEditorId">
-                        <or>
-                            <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
-                            </equals>
-                            <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
-                            </equals>
-                        </or>
-                    </with>
-                    <with variable="activeEditor">
-                        <not>
-                            <test property="ru.taximaxim.codekeeper.ui.isGetChangesRunning">
-                            </test>
-                        </not>
-                    </with>
-                </and>
+                <with variable="activeEditor">
+                    <or>
+                        <adapt type="ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer">
+                            <not>
+                                <test property="ru.taximaxim.codekeeper.ui.isGetChangesRunning">
+                                </test>
+                            </not>
+                        </adapt>
+                        <adapt type="ru.taximaxim.codekeeper.ui.sqledit.SQLEditor">
+                            <not>
+                                <test property="ru.taximaxim.codekeeper.ui.isGetChangesRunning">
+                                </test>
+                            </not>
+                        </adapt>
+                    </or>
+                </with>
             </enabledWhen>
         </handler>
         <handler
             class="ru.taximaxim.codekeeper.ui.handlers.UpdateDdl"
             commandId="ru.taximaxim.codekeeper.ui.command.UpdateDdl">
             <enabledWhen>
-                <and>
-                    <with variable="activeEditorId">
-                        <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
-                        </equals>
-                    </with>
-                    <with variable="activeEditor">
+                <with variable="activeEditor">
+                    <adapt type="ru.taximaxim.codekeeper.ui.sqledit.SQLEditor">
                         <not>
                             <test property="ru.taximaxim.codekeeper.ui.isUpdateDdlRunning">
                             </test>
                         </not>
-                    </with>
-                </and>
+                    </adapt>
+                </with>
             </enabledWhen>
         </handler>
         <handler
             class="ru.taximaxim.codekeeper.ui.handlers.QuickUpdate"
             commandId="ru.taximaxim.codekeeper.ui.command.QuickUpdate">
             <enabledWhen>
-                <and>
-                    <with variable="activeEditorId">
-                        <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
-                        </equals>
-                    </with>
-                    <with variable="activeEditor">
+                <with variable="activeEditor">
+                    <adapt type="ru.taximaxim.codekeeper.ui.sqledit.SQLEditor">
                         <not>
                             <test property="ru.taximaxim.codekeeper.ui.isQuickUpdateRunning">
                             </test>
                         </not>
-                    </with>
-                </and>
+                    </adapt>
+                </with>
             </enabledWhen>
         </handler>
         <handler
@@ -195,16 +187,12 @@
             class="ru.taximaxim.codekeeper.ui.handlers.CancelDdl"
             commandId="ru.taximaxim.codekeeper.ui.command.CancelDdl">
             <enabledWhen>
-                <and>
-                    <with variable="activeEditorId">
-                        <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
-                        </equals>
-                    </with>
-                    <with variable="activeEditor">
+                <with variable="activeEditor">
+                    <adapt type="ru.taximaxim.codekeeper.ui.sqledit.SQLEditor">
                         <test property="ru.taximaxim.codekeeper.ui.isUpdateDdlRunning">
                         </test>
-                    </with>
-                </and>
+                    </adapt>
+                </with>
             </enabledWhen>
         </handler>
     </extension>
