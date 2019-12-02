@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.ui.differ;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
 
@@ -35,6 +36,7 @@ public class Differ implements IRunnableWithProgress {
     private final String timezone;
     private final boolean msSql;
     private final IProject proj;
+    private final Map<String, Boolean> oneTimePrefs;
 
     private String diffDirect;
     private String diffReverse;
@@ -67,7 +69,8 @@ public class Differ implements IRunnableWithProgress {
     }
 
     public Differ(PgDatabase sourceDbFull, PgDatabase targetDbFull, TreeElement root,
-            boolean needTwoWay, String timezone, boolean msSql, IProject proj) {
+            boolean needTwoWay, String timezone, boolean msSql, IProject proj,
+            Map<String, Boolean> oneTimePrefs) {
         this.sourceDbFull = sourceDbFull;
         this.targetDbFull = targetDbFull;
         this.root = root;
@@ -75,6 +78,12 @@ public class Differ implements IRunnableWithProgress {
         this.timezone = timezone;
         this.msSql = msSql;
         this.proj = proj;
+        this.oneTimePrefs = oneTimePrefs;
+    }
+
+    public Differ(PgDatabase sourceDbFull, PgDatabase targetDbFull, TreeElement root,
+            boolean needTwoWay, String timezone, boolean msSql, IProject proj) {
+        this(sourceDbFull, targetDbFull, root, needTwoWay, timezone, msSql, proj, null);
     }
 
     public Job getDifferJob() {
@@ -122,11 +131,11 @@ public class Differ implements IRunnableWithProgress {
         + " to: " + targetDbFull.getName()); //$NON-NLS-1$
 
         pm.newChild(25).subTask(Messages.differ_direct_diff); // 75
-        try (Getter source = new Getter(sourceDbFull, proj);
-                Getter target = new Getter(targetDbFull, proj)) {
+        try (Getter source = new Getter(sourceDbFull, proj, oneTimePrefs);
+                Getter target = new Getter(targetDbFull, proj, oneTimePrefs)) {
             // forceUnixNewLines has no effect on diff operaiton, just pass true
             PgDiffArguments args =
-                    DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone, true, msSql, proj);
+                    DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone, true, msSql, proj, oneTimePrefs);
 
             diffDirect = new PgDiff(args).diffDatabaseSchemasAdditionalDepcies(
                     root,
@@ -154,16 +163,16 @@ public class Differ implements IRunnableWithProgress {
         private final Consumer<PgDiffArguments> consumer;
         private final PgDiffArguments oldArgs;
 
-        public Getter(PgDatabase db, IProject proj) {
+        public Getter(PgDatabase db, IProject proj, Map<String, Boolean> oneTimePrefs) {
             oldArgs = db.getArguments();
             consumer = (db::setArguments);
             PgDiffArguments newArgs = oldArgs.clone();
             // применить параметры для генерации кода ко всем БД
-            OverridablePrefs prefs = new OverridablePrefs(proj);
+            OverridablePrefs prefs = new OverridablePrefs(proj, oneTimePrefs);
             newArgs.setConcurrentlyMode(
-                    prefs.getBoolean(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
+                    prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
             newArgs.setUsingTypeCastOff(
-                    !prefs.getBoolean(DB_UPDATE_PREF.USING_ON_OFF));
+                    !prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.USING_ON_OFF));
             db.setArguments(newArgs);
         }
 

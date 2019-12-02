@@ -44,6 +44,7 @@ import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
@@ -216,66 +217,54 @@ public class DiffTableViewer extends Composite {
         Composite upperComp = new Composite(this, SWT.NONE);
         upperComp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        gl = new GridLayout(viewOnly ? 3 : 8, false);
+        gl = new GridLayout(viewOnly ? 3 : 4, false);
         gl.marginWidth = gl.marginHeight = 0;
         upperComp.setLayout(gl);
 
         if (!viewOnly) {
-            Button btnSelectAll = new Button(upperComp, SWT.PUSH);
-            btnSelectAll.setToolTipText(Messages.select_all);
-            btnSelectAll.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                    bundle.getResource(FILE.ICONSELECTALL))));
-            btnSelectAll.addSelectionListener(new SelectionAdapter() {
+            ToolBarManager mgrTblBtn = new ToolBarManager(SWT.FLAT | SWT.RIGHT);
+
+            mgrTblBtn.add(new Action(Messages.select_all, ImageDescriptor
+                    .createFromURL(bundle.getResource(FILE.ICONSELECTALL))) {
 
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void run() {
                     setElementsChecked(elements, true, true);
                 }
             });
 
-            Button btnSelectNone = new Button(upperComp, SWT.PUSH);
-            btnSelectNone.setToolTipText(Messages.select_none);
-            btnSelectNone.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                    bundle.getResource(FILE.ICONSELECTNONE))));
-            btnSelectNone.addSelectionListener(new SelectionAdapter() {
+            mgrTblBtn.add(new Action(Messages.select_none, ImageDescriptor
+                    .createFromURL(bundle.getResource(FILE.ICONSELECTNONE))) {
 
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void run() {
                     setElementsChecked(elements, false, true);
                 }
             });
 
-            Button btnInvertSelection = new Button(upperComp, SWT.PUSH);
-            btnInvertSelection.setToolTipText(Messages.diffTableViewer_invert_selection);
-            btnInvertSelection.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                    bundle.getResource(FILE.ICONINVERTSELECTION))));
-            btnInvertSelection.addSelectionListener(new SelectionAdapter() {
+            mgrTblBtn.add(new Action(Messages.diffTableViewer_invert_selection, ImageDescriptor
+                    .createFromURL(bundle.getResource(FILE.ICONINVERTSELECTION))) {
 
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void run() {
                     setElementsChecked(elements, el -> !el.isSelected(), true);
                 }
             });
 
-            Button saveCheck2Clipboard = new Button(upperComp, SWT.PUSH);
-            saveCheck2Clipboard.setImage(Activator.getEclipseImage(ISharedImages.IMG_TOOL_COPY));
-            saveCheck2Clipboard.setToolTipText(Messages.DiffTableViewer_copy_as_regex);
-            saveCheck2Clipboard.addSelectionListener(new SelectionAdapter() {
+            mgrTblBtn.add(new Action(Messages.DiffTableViewer_copy_as_regex, ImageDescriptor
+                    .createFromImage(Activator.getEclipseImage(ISharedImages.IMG_TOOL_COPY))) {
 
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void run() {
                     saveCheckedElements2ClipboardAsExpession();
                 }
             });
 
-            Button btnTypeFilter = new Button(upperComp, SWT.NONE);
-            btnTypeFilter.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                    bundle.getResource(FILE.ICONEMPTYFILTER))));
-            btnTypeFilter.setToolTipText(Messages.DiffTableViewer_show_filters);
-            btnTypeFilter.addSelectionListener(new SelectionAdapter() {
+            mgrTblBtn.add(new Action(Messages.DiffTableViewer_show_filters, ImageDescriptor
+                    .createFromURL(bundle.getResource(FILE.ICONEMPTYFILTER))) {
 
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void run() {
                     FilterDialog dialog = new FilterDialog(getShell(),
                             viewerFilter.schemaFilter, viewerFilter.codeFilter,
                             viewerFilter.gitUserFilter, viewerFilter.dbUserFilter,
@@ -283,13 +272,14 @@ public class DiffTableViewer extends Composite {
                             viewerFilter.isLocalChange, viewerFilter.isHideLibs,
                             isApplyToProj);
                     if (dialog.open() == Dialog.OK) {
-                        btnTypeFilter.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                                bundle.getResource(
-                                        viewerFilter.isAdvancedEmpty() ? FILE.ICONEMPTYFILTER : FILE.ICONFILTER))));
+                        setImageDescriptor(ImageDescriptor.createFromURL(bundle.getResource(
+                                viewerFilter.isAdvancedEmpty() ? FILE.ICONEMPTYFILTER : FILE.ICONFILTER)));
                         viewer.refresh();
                     }
                 }
             });
+
+            mgrTblBtn.createControl(upperComp);
         }
 
         txtFilterName = new Text(upperComp, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);

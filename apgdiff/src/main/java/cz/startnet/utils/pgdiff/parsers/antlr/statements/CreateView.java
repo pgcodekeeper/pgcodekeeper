@@ -14,9 +14,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameterContext
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_spaceContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.ViewSelect;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.ViewAnalysisLauncher;
-import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
@@ -65,9 +63,6 @@ public class CreateView extends ParserAbstract {
             addStatementBody(vQuery);
             view.setQuery(getFullCtxText(vQuery));
             db.addAnalysisLauncher(new ViewAnalysisLauncher(view, vQuery));
-            ViewSelect select = new ViewSelect();
-            select.analyze(new SelectStmt(vQuery));
-            view.addAllDeps(select.getDepcies());
         }
         if (ctx.column_names != null) {
             for (IdentifierContext column : ctx.column_names.identifier()) {
