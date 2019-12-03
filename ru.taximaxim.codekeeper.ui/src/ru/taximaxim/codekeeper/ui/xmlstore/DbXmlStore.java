@@ -104,11 +104,10 @@ public class DbXmlStore extends XmlStore<DbInfo> {
     @Override
     public void writeObjects(List<DbInfo> list) throws IOException {
         super.writeObjects(list);
-        saveToSecureStorage(list);
         notifyListeners();
     }
 
-    private void saveToSecureStorage(List<DbInfo> list) throws IOException {
+    public void savePasswords(List<DbInfo> list) throws IOException, StorageException {
         try {
             for (DbInfo dbInfo : list) {
                 securePrefs.put(dbInfo.getName(), dbInfo.getDbPass(), true);
