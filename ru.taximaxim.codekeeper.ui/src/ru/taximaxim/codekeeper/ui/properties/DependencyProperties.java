@@ -48,7 +48,6 @@ import ru.taximaxim.codekeeper.ui.CommonEditingSupport;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
-import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.AbstractTxtEditingSupport;
@@ -159,7 +158,6 @@ public class DependencyProperties extends PropertyPage {
             addColumns(viewer);
 
             GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 7);
-            gd.widthHint = PREF_PAGE.WIDTH_HINT_PX;
             viewer.getTable().setLayoutData(gd);
             viewer.getTable().setLinesVisible(true);
             viewer.getTable().setHeaderVisible(true);

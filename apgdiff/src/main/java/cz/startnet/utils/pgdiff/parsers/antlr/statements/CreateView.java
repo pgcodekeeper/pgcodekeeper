@@ -14,9 +14,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameterContext
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_spaceContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.ViewSelect;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.ViewAnalysisLauncher;
-import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgView;
@@ -50,14 +48,14 @@ public class CreateView extends ParserAbstract {
             view.setIsWithData(ctx.NO() == null);
             Table_spaceContext space = ctx.table_space();
             if (space != null) {
-                view.setTablespace(space.name.getText());
+                view.setTablespace(space.identifier().getText());
             } else if (tablespace != null) {
                 view.setTablespace(tablespace);
             }
         } else if (ctx.RECURSIVE() != null) {
             String sql = MessageFormat.format(RECURSIVE_PATTERN,
                     ParserAbstract.getFullCtxText(name),
-                    ParserAbstract.getFullCtxText(ctx.column_names.column_name),
+                    ParserAbstract.getFullCtxText(ctx.column_names.identifier()),
                     ParserAbstract.getFullCtxText(ctx.v_query));
 
             ctx = AntlrParser.parseSqlString(SQLParser.class, SQLParser::sql, sql, "recursive view", null)
@@ -68,12 +66,9 @@ public class CreateView extends ParserAbstract {
             addStatementBody(vQuery);
             view.setQuery(getFullCtxText(vQuery));
             db.addAnalysisLauncher(new ViewAnalysisLauncher(view, vQuery));
-            ViewSelect select = new ViewSelect();
-            select.analyze(new SelectStmt(vQuery));
-            view.addAllDeps(select.getDepcies());
         }
         if (ctx.column_names != null) {
-            for (IdentifierContext column : ctx.column_names.column_name) {
+            for (IdentifierContext column : ctx.column_names.identifier()) {
                 view.addColumnName(column.getText());
             }
         }

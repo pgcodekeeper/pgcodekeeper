@@ -61,15 +61,15 @@ public class PgObjLocation extends ContextLocation {
         if (this == obj) {
             return true;
         }
+        if (!super.equals(obj)) {
+            return false;
+        }
         if (obj instanceof PgObjLocation) {
             PgObjLocation loc = (PgObjLocation) obj;
             return Objects.equals(loc.getGenericColumn(), getGenericColumn())
-                    && getOffset() == loc.getOffset()
-                    && getLineNumber() == loc.getLineNumber()
-                    && getCharPositionInLine() == loc.getCharPositionInLine()
-                    && Objects.equals(loc.getFilePath(), getFilePath())
                     && Objects.equals(loc.getSql(), getSql())
                     && Objects.equals(loc.getAction(), getAction());
+
         }
         return false;
     }
@@ -77,17 +77,13 @@ public class PgObjLocation extends ContextLocation {
     @Override
     public int hashCode() {
         final int prime = 31;
-        int result = 1;
+        int result = super.hashCode();
         if (gObj != null) {
             result = prime * result + ((gObj.column == null) ? 0 : gObj.column.hashCode());
             result = prime * result + ((gObj.schema == null) ? 0 : gObj.schema.hashCode());
             result = prime * result + ((gObj.table == null) ? 0 : gObj.table.hashCode());
             result = prime * result + ((gObj.type == null) ? 0 : gObj.type.hashCode());
         }
-        result = prime * result + getOffset();
-        result = prime * result + getLineNumber();
-        result = prime * result + getCharPositionInLine();
-        result = prime * result + ((getFilePath() == null) ? 0 : getFilePath().hashCode());
         result = prime * result + ((getSql() == null) ? 0 : getSql().hashCode());
         result = prime * result + ((getAction() == null) ? 0 : getAction().hashCode());
         return result;

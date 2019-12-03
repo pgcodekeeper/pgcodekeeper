@@ -276,7 +276,6 @@ implements SqlContextProcessor {
             if (((Data_statementContext) ctx).select_stmt() != null) {
                 return "SELECT";
             }
-            return ctx.getStart().getText().toUpperCase(Locale.ROOT);
         } else if (ctx instanceof Schema_createContext) {
             Schema_createContext createCtx = (Schema_createContext) ctx;
             int descrWordsCount = 0;

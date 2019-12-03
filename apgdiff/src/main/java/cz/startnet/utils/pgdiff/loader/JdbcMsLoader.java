@@ -22,8 +22,8 @@ import cz.startnet.utils.pgdiff.loader.jdbc.MsTypesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.MsUsersReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.SchemasMsReader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
+import ru.taximaxim.codekeeper.apgdiff.log.Log;
 
 public class JdbcMsLoader extends JdbcLoaderBase {
 

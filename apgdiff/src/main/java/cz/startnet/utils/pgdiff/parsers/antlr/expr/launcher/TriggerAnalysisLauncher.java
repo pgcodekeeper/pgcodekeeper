@@ -1,9 +1,12 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher;
 
+import java.util.Set;
+
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 
 public class TriggerAnalysisLauncher extends AbstractAnalysisLauncher {
@@ -13,8 +16,8 @@ public class TriggerAnalysisLauncher extends AbstractAnalysisLauncher {
     }
 
     @Override
-    public void analyze(ParserRuleContext ctx) {
+    public Set<GenericColumn> analyze(ParserRuleContext ctx) {
         ValueExprWithNmspc vex = new ValueExprWithNmspc(stmt.getDatabase());
-        analyzeTableChild((VexContext) ctx, vex);
+        return analyzeTableChild((VexContext) ctx, vex);
     }
 }

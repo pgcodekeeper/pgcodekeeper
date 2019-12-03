@@ -34,8 +34,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrContextProcessor.TSqlContextP
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import ru.taximaxim.codekeeper.apgdiff.DaemonThreadFactory;
-import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.InputStreamProvider;
+import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class AntlrParser {
@@ -43,6 +43,9 @@ public class AntlrParser {
     private static final String POOL_SIZE = "ru.taximaxim.codekeeper.parser.poolsize";
 
     private static final ExecutorService ANTLR_POOL;
+
+    private static volatile long pgParserLastStart;
+    private static volatile long msParserLastStart;
 
     static {
         int count = Integer.getInteger(
@@ -125,6 +128,7 @@ public class AntlrParser {
                         charsetName, parsedObjectName, errors);
                 parser.addParseListener(new CustomParseTreeListener(
                         monitoringLevel, mon == null ? new NullProgressMonitor() : mon));
+                saveTimeOfLastParserStart(false);
                 return new Pair<>(parser, parser.sql());
             } catch (MonitorCancelledRuntimeException mcre){
                 throw new InterruptedException();
@@ -149,6 +153,7 @@ public class AntlrParser {
                         stream, charsetName, parsedObjectName, errors);
                 parser.addParseListener(new CustomParseTreeListener(
                         monitoringLevel, mon == null ? new NullProgressMonitor() : mon));
+                saveTimeOfLastParserStart(true);
                 return new Pair<>(parser, parser.tsql_file());
             } catch (MonitorCancelledRuntimeException mcre){
                 throw new InterruptedException();
@@ -169,6 +174,7 @@ public class AntlrParser {
         Future<T> f = submitAntlrTask(() -> parserEntry.apply(
                 makeBasicParser(parserClass, sql, parsedObjectName, errors)));
         try {
+            saveTimeOfLastParserStart(parserClass.isAssignableFrom(TSQLParser.class));
             return f.get();
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
@@ -222,6 +228,44 @@ public class AntlrParser {
         } else {
             throw new IllegalStateException(ex);
         }
+    }
+
+    public static void checkToClean(boolean isMsParser, long cleaningInterval) {
+        long lastParserStart = isMsParser ? msParserLastStart : pgParserLastStart;
+        if (lastParserStart != 0
+                && (cleaningInterval < System.currentTimeMillis() - lastParserStart)) {
+            cleanParserCache(isMsParser);
+        }
+    }
+
+    private static void cleanParserCache(boolean isMsParser) {
+        Class<? extends Parser> parserClazz = null;
+        if (isMsParser) {
+            msParserLastStart = 0;
+            parserClazz = TSQLParser.class;
+        } else {
+            pgParserLastStart = 0;
+            parserClazz = SQLParser.class;
+        }
+        makeBasicParser(parserClazz, ";", "fake string to clean parser cache")
+        .getInterpreter().clearDFA();
+    }
+
+    public static void cleanCacheOfBothParsers() {
+        if (pgParserLastStart != 0) {
+            cleanParserCache(false);
+        }
+        if (msParserLastStart != 0) {
+            cleanParserCache(true);
+        }
+    }
+
+    private static void saveTimeOfLastParserStart(boolean isMsParser) {
+        if (isMsParser) {
+            msParserLastStart = System.currentTimeMillis();
+            return;
+        }
+        pgParserLastStart = System.currentTimeMillis();
     }
 
     private AntlrParser() {

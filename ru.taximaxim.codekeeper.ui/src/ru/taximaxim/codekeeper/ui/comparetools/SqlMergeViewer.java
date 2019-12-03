@@ -13,6 +13,8 @@ public class SqlMergeViewer extends TextMergeViewer {
 
     public SqlMergeViewer(Composite parent, int style, CompareConfiguration conf) {
         super(parent, style, conf);
+        // add initial input in order to avoid problems when disposing the viewer later
+        updateContent(null, null, null);
     }
 
     @Override

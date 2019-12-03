@@ -26,7 +26,7 @@ public class MsTablesReader extends JdbcReader {
         MsTable table = new MsTable(tableName);
 
         if (res.getBoolean("is_memory_optimized")) {
-            table.addOption("MEMORY_OPTIMIZED" , "ON");
+            table.addOption("MEMORY_OPTIMIZED", "ON");
         }
 
         if (res.getBoolean("durability")) {
@@ -54,12 +54,17 @@ public class MsTablesReader extends JdbcReader {
             table.setTextImage(res.getString("text_image"));
         }
 
-        String tableSpace = MsDiffUtils.quoteName(res.getString("space_name"));
-        String partCol = res.getString("part_column");
-        if (partCol != null) {
-            tableSpace = tableSpace + '(' + MsDiffUtils.quoteName(partCol) + ')';
+        String tableSpace = res.getString("space_name");
+        if (tableSpace != null) {
+            StringBuilder sb = new StringBuilder(MsDiffUtils.quoteName(tableSpace));
+
+            String partCol = res.getString("part_column");
+            if (partCol != null) {
+                sb.append('(').append(MsDiffUtils.quoteName(partCol)).append(')');
+            }
+
+            table.setTablespace(sb.toString());
         }
-        table.setTablespace(tableSpace);
 
         loader.setOwner(table, res.getString("owner"));
 

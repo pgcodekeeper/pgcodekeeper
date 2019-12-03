@@ -1,9 +1,13 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_restContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sort_specifierContext;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 
 public class IndexAnalysisLauncher extends AbstractAnalysisLauncher {
@@ -13,16 +17,19 @@ public class IndexAnalysisLauncher extends AbstractAnalysisLauncher {
     }
 
     @Override
-    public void analyze(ParserRuleContext ctx) {
+    public Set<GenericColumn> analyze(ParserRuleContext ctx) {
+        Set<GenericColumn> depcies = new LinkedHashSet<>();
         Index_restContext rest = (Index_restContext) ctx;
 
         for (Sort_specifierContext sort_ctx : rest.index_sort().sort_specifier_list()
                 .sort_specifier()) {
-            analyzeTableChildVex(sort_ctx.key);
+            depcies.addAll(analyzeTableChildVex(sort_ctx.key));
         }
 
         if (rest.index_where() != null){
-            analyzeTableChildVex(rest.index_where().vex());
+            depcies.addAll(analyzeTableChildVex(rest.index_where().vex()));
         }
+
+        return depcies;
     }
 }
