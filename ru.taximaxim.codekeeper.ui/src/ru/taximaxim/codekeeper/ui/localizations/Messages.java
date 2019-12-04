@@ -320,6 +320,12 @@ public final class Messages extends NLS {
 
     public static String DbStorePrefPage_pg_pass_import_tooltip;
 
+    public static String DbStorePrefPage_secure_storage_error_text_linux;
+
+    public static String DbStorePrefPage_secure_storage_error_text_other;
+
+    public static String DbStorePrefPage_secure_storage_error_title;
+
     public static String DbUpdatePrefPage_alter_seq_restart_statement;
 
     public static String DbUpdatePrefPage_print_index_with_concurrently;
@@ -390,6 +396,7 @@ public final class Messages extends NLS {
 
     public static String DiffTableViewer_collapse_all;
     public static String DiffTableViewer_apply_to;
+    public static String DiffTableViewer_apply_to_custom;
 
     public static String DiffTableViewer_copy_as_regex;
 
@@ -405,6 +412,7 @@ public final class Messages extends NLS {
 
     public static String DiffTableViewer_filter_placeholder;
     public static String DiffTableViewer_get_changes;
+    public static String DiffTableViewer_get_changes_custom;
 
     public static String DiffTableViewer_library;
 
@@ -433,6 +441,8 @@ public final class Messages extends NLS {
 
     public static String DiffWizard_select_db_tz;
 
+    public static String DiffWizard_show_advanced_options;
+
     public static String DiffWizard_different_types;
 
     public static String DiffWizard_source;
@@ -448,6 +458,9 @@ public final class Messages extends NLS {
     public static String generalPrefPage_show_console_when_program_write_to_console;
 
     public static String generalPrefPage_use_depcy_on_commit_page;
+
+    public static String getChangesCustomDialog_custom_prefs_description;
+    public static String getChangesCustomDialog_run_with_specified_prefs;
 
     public static String IgnoredObjectPrefListEditor_already_present;
 

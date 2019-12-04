@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.FullAnalyze;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
@@ -32,10 +33,11 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgView;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
-import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.ModPair;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
@@ -55,6 +57,8 @@ public abstract class AbstractExpr {
     private final Set<DbObjType> disabledDepcies;
 
     protected final PgDatabase db;
+
+    private FullAnalyze fullAnalyze;
 
     public Set<GenericColumn> getDepcies() {
         return Collections.unmodifiableSet(depcies);
@@ -78,7 +82,12 @@ public abstract class AbstractExpr {
         this.depcies = depcies;
         this.db = parent.db;
         this.systemStorage = parent.systemStorage;
+        this.fullAnalyze = parent.fullAnalyze;
         this.disabledDepcies = parent.disabledDepcies;
+    }
+
+    public void setFullAnaLyze(FullAnalyze fullAnalyze) {
+        this.fullAnalyze = fullAnalyze;
     }
 
     protected List<Pair<String, String>> findCte(String cteName) {
@@ -201,15 +210,15 @@ public abstract class AbstractExpr {
                         .map(Pair::getSecond)
                         .findAny()
                         .orElseGet(() -> {
-                            Log.log(Log.LOG_WARNING, "Column " + columnName +
+                            log(Log.LOG_WARNING, "Column " + columnName +
                                     " not found in complex " + columnParent);
                             return TypesSetManually.COLUMN;
                         });
             } else {
-                Log.log(Log.LOG_WARNING, "Complex not found: " + columnParent);
+                log(Log.LOG_WARNING, "Complex not found: " + columnParent);
             }
         } else {
-            Log.log(Log.LOG_WARNING, "Unknown column reference: "
+            log(Log.LOG_WARNING, "Unknown column reference: "
                     + schemaName + ' ' + columnParent + ' ' + columnName);
         }
 
@@ -245,7 +254,7 @@ public abstract class AbstractExpr {
         }
 
         return columns.findAny().map(Pair::getSecond).orElseGet(() -> {
-            Log.log(Log.LOG_WARNING,
+            log(Log.LOG_WARNING,
                     "Column " + colName + " not found in relation " + relationName);
             return TypesSetManually.COLUMN;
         });
@@ -276,8 +285,12 @@ public abstract class AbstractExpr {
             String relationName, Predicate<String> colNamePredicate) {
         IRelation relation = findRelation(schemaName, relationName);
         if (relation == null) {
-            Log.log(Log.LOG_WARNING, "Relation not found: " + schemaName + '.' + relationName);
+            log(Log.LOG_WARNING, "Relation not found: " + schemaName + '.' + relationName);
             return Stream.empty();
+        }
+
+        if (relation instanceof PgView) {
+            analyzeViewColumns((PgView) relation);
         }
 
         Stream<Pair<String, String>> cols = relation.getRelationColumns()
@@ -291,13 +304,19 @@ public abstract class AbstractExpr {
         return cols;
     }
 
+    protected void analyzeViewColumns(PgView view) {
+        if (!view.isInitialized() && fullAnalyze != null) {
+            fullAnalyze.analyzeView(view);
+        }
+    }
+
     protected ModPair<String, String> processTablelessColumn(ParserRuleContext id) {
         String name = id.getText();
         Pair<String, String> col = findColumnInComplex(name);
         if (col == null) {
             Pair<IRelation, Pair<String, String>> relCol = findColumn(name);
             if (relCol == null) {
-                Log.log(Log.LOG_WARNING, "Tableless column not resolved: " + name);
+                log(Log.LOG_WARNING, "Tableless column not resolved: " + name);
                 return new ModPair<>(name, TypesSetManually.COLUMN);
             }
             IRelation rel = relCol.getFirst();
@@ -405,5 +424,10 @@ public abstract class AbstractExpr {
                     errorCtx != null ? errorCtx.getStart() : null);
         }
         return foundSchema;
+    }
+
+    protected void log(int level, String msg) {
+        // debug method
+        // Log.log(level, msg);
     }
 }

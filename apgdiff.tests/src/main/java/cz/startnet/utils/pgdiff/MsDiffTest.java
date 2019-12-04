@@ -11,7 +11,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
-import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.log.Log;
 
 /**
  * Tests for MS SQL statements
@@ -285,6 +285,12 @@ public class MsDiffTest {
                     {"drop_ms_column_options"},
                     // Tests scenario where MS COLUMNS added to recreated table.
                     {"add_ms_column_and_recreate"},
+                    // Tests scenario where ansi_nulls parameter is changed.
+                    {"modify_ansi_nulls"},
+                    // Tests scenario where quoted_identifier parameter is changed.
+                    {"modify_quoted_identifier"},
+                    // Tests scenario where TABLE type is changed to memory optimized.
+                    {"change_ms_table_type"},
                 });
     }
 

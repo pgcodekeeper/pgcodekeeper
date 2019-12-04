@@ -32,14 +32,19 @@ public class QueriesBatchCallable extends StatementCallable<String> {
     private final IProgressMonitor monitor;
     private final Connection connection;
     private final IProgressReporter reporter;
+    private final boolean isMsSql;
+
+    private boolean isAutoCommitEnabled = true;
 
     public QueriesBatchCallable(Statement st, List<List<String>> batches,
-            IProgressMonitor monitor, IProgressReporter reporter, Connection connection) {
+            IProgressMonitor monitor, IProgressReporter reporter,
+            Connection connection, boolean isMsSql) {
         super(st, null);
         this.batches = batches;
         this.monitor = monitor;
         this.connection = connection;
         this.reporter = reporter;
+        this.isMsSql = isMsSql;
     }
 
     @Override
@@ -47,7 +52,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
         SubMonitor subMonitor = SubMonitor.convert(monitor);
         String currQuery = null;
         try {
-            if (batches.size() == 1) {
+            if (!isMsSql) {
                 List<String> queries = batches.get(0);
                 subMonitor.setWorkRemaining(queries.size());
                 for (String query : queries) {
@@ -60,7 +65,6 @@ public class QueriesBatchCallable extends StatementCallable<String> {
                 }
             } else {
                 subMonitor.setWorkRemaining(batches.size());
-                connection.setAutoCommit(false);
                 for (List<String> queriesList : batches) {
                     PgDiffUtils.checkCancelled(monitor);
                     // in case we're executing a real batch after a single-statement one
@@ -69,17 +73,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
                         currQuery = queriesList.get(0);
                         executeSingleStatement(currQuery);
                     } else {
-                        for (String query : queriesList) {
-                            st.addBatch(query);
-                            writeStatus(query);
-                        }
-
-                        if (reporter != null) {
-                            reporter.writeMessage("Executing batch");
-                        }
-
-                        st.executeBatch();
-                        writeWarnings();
+                        runBatch(queriesList);
                     }
                     subMonitor.worked(1);
                 }
@@ -134,6 +128,25 @@ public class QueriesBatchCallable extends StatementCallable<String> {
         }
         writeWarnings();
         writeStatus(query);
+    }
+
+    private void runBatch(List<String> queriesList) throws SQLException {
+        if (isAutoCommitEnabled) {
+            connection.setAutoCommit(false);
+            isAutoCommitEnabled = false;
+        }
+
+        for (String query : queriesList) {
+            st.addBatch(query);
+            writeStatus(query);
+        }
+
+        if (reporter != null) {
+            reporter.writeMessage("Executing batch");
+        }
+
+        st.executeBatch();
+        writeWarnings();
     }
 
     private void writeResult(String query) throws SQLException {

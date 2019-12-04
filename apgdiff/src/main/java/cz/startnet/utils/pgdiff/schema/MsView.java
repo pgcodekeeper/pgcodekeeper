@@ -46,7 +46,9 @@ public class MsView extends AbstractView implements SourceStatement {
         final int startLength = sb.length();
         MsView newView = (MsView) newCondition;
 
-        if (!Objects.equals(getFirstPart(), newView.getFirstPart())
+        if (isAnsiNulls() != newView.isAnsiNulls()
+                || isQuotedIdentified() != newView.isQuotedIdentified()
+                || !Objects.equals(getFirstPart(), newView.getFirstPart())
                 || !Objects.equals(getSecondPart(), newView.getSecondPart())) {
             sb.append(newView.getViewFullSQL(false));
             isNeedDepcies.set(true);
