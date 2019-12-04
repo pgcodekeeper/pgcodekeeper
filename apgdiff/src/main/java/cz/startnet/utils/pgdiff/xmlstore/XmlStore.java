@@ -99,7 +99,7 @@ public abstract class XmlStore<T> {
      * Reads (well-formed) list XML and checks it for basic validity:
      * root node must be <code>&lt;rootTagName&gt;</code>
      */
-    protected Document readXml(Reader reader) throws IOException, SAXException {
+    private Document readXml(Reader reader) throws IOException, SAXException {
         try {
             Document xml = DocumentBuilderFactory.newInstance().newDocumentBuilder()
                     .parse(new InputSource(reader));
