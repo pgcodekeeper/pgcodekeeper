@@ -74,7 +74,7 @@ public class PgView extends AbstractView implements PgOptionContainer  {
             sbSQL.append(')');
         }
 
-        if (method != null && !HEAP.equals(method)) {
+        if (!HEAP.equals(method)) {
             sbSQL.append("\nUSING ").append(PgDiffUtils.getQuotedName(method));
         }
 
