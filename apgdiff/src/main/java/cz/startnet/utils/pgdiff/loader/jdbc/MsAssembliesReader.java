@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.mssql.CreateMsAssembly;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -25,6 +26,7 @@ public class MsAssembliesReader {
         String query = JdbcQueries.QUERY_MS_ASSEMBLIES.getQuery();
         try (ResultSet res = loader.runner.runScript(loader.statement, query)) {
             while (res.next()) {
+                PgDiffUtils.checkCancelled(loader.monitor);
                 String name = res.getString("name");
                 loader.setCurrentObject(new GenericColumn(name, DbObjType.ASSEMBLY));
 
