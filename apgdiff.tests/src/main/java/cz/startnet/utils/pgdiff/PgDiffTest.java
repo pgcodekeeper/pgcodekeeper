@@ -52,6 +52,8 @@ public class PgDiffTest {
                     {"delete_table_option"},
                     // Tests scenario where TABLE is modified by changing of an option.
                     {"modify_table_option"},
+                    // Tests scenario where access method of TABLE is changed.
+                    {"modify_table_access_method"},
                     // Tests scenario where TABLE with partition is added.
                     {"add_table_with_partition"},
                     // Tests scenario where WITH OIDS is dropped from TABLE.
