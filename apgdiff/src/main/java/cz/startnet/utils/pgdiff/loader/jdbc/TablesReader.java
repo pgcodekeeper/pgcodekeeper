@@ -63,6 +63,10 @@ public class TablesReader extends JdbcReader {
             t = new SimplePgTable(tableName);
         }
 
+        if (SupportedVersion.VERSION_12.isLE(loader.version)) {
+            t.setMethod(res.getString("access_method"));
+        }
+
         String[] foptions = getColArray(res, "ftoptions");
         if (foptions != null) {
             ParserAbstract.fillOptionParams(foptions, t::addOption, false, true, false);

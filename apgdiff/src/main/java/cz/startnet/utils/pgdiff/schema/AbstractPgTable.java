@@ -5,11 +5,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 /**
@@ -22,6 +24,7 @@ public abstract class AbstractPgTable extends AbstractTable {
 
     protected boolean hasOids;
     protected final List<Inherits> inherits = new ArrayList<>();
+    private String method = ApgdiffConsts.HEAP;
 
     public AbstractPgTable(String name) {
         super(name);
@@ -44,6 +47,9 @@ public abstract class AbstractPgTable extends AbstractTable {
         appendName(sbSQL);
         appendColumns(sbSQL, sbOption);
         appendInherit(sbSQL);
+        if (method != null && !ApgdiffConsts.HEAP.equals(method)) {
+            sbSQL.append("\nUSING ").append(PgDiffUtils.getQuotedName(method));
+        }
         appendOptions(sbSQL);
         sbSQL.append(sbOption);
         appendAlterOptions(sbSQL);
@@ -170,7 +176,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         final int startLength = sb.length();
         AbstractPgTable newTable = (AbstractPgTable) newCondition;
 
-        if (isRecreated(newTable)) {
+        if (isRecreated(newTable) || !isAccessMethodEquals(getMethod(), newTable.getMethod())) {
             isNeedDepcies.set(true);
             return true;
         }
@@ -184,6 +190,15 @@ public abstract class AbstractPgTable extends AbstractTable {
         compareComment(newTable,sb);
 
         return sb.length() > startLength;
+    }
+
+    private boolean isAccessMethodEquals(String oldMethod, String newMethod) {
+        // this condition is a crutch for partitional tables
+        if ((oldMethod == null && ApgdiffConsts.HEAP.equals(newMethod))
+                || (newMethod == null && ApgdiffConsts.HEAP.equals(oldMethod))) {
+            return true;
+        }
+        return Objects.equals(oldMethod, newMethod);
     }
 
     @Override
@@ -276,6 +291,15 @@ public abstract class AbstractPgTable extends AbstractTable {
 
     public void setHasOids(final boolean hasOids) {
         this.hasOids = hasOids;
+        resetHash();
+    }
+
+    public String getMethod() {
+        return method;
+    }
+
+    public void setMethod(String using) {
+        this.method = using;
         resetHash();
     }
 
@@ -397,7 +421,8 @@ public abstract class AbstractPgTable extends AbstractTable {
             AbstractPgTable table = (AbstractPgTable) obj;
 
             return hasOids == table.getHasOids()
-                    && inherits.equals(table.inherits);
+                    && inherits.equals(table.inherits)
+                    && isAccessMethodEquals(method, table.getMethod());
         }
         return false;
     }
@@ -407,6 +432,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         super.computeHash(hasher);
         hasher.putOrdered(inherits);
         hasher.put(hasOids);
+        hasher.put(method);
     }
 
     @Override
@@ -414,6 +440,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         AbstractPgTable copy = (AbstractPgTable) super.shallowCopy();
         copy.inherits.addAll(inherits);
         copy.setHasOids(getHasOids());
+        copy.setMethod(getMethod());
         return copy;
     }
 }

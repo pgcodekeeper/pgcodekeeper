@@ -31,12 +31,15 @@ import cz.startnet.utils.pgdiff.schema.TypedPgTable;
 public class CreateTable extends TableAbstract {
     private final Create_table_statementContext ctx;
     private final String tablespace;
+    protected final String accessMethod;
     private final String oids;
 
-    public CreateTable(Create_table_statementContext ctx, PgDatabase db, String tablespace, String oids) {
+    public CreateTable(Create_table_statementContext ctx, PgDatabase db,
+            String tablespace, String accessMethod, String oids) {
         super(db);
         this.ctx = ctx;
         this.tablespace = tablespace;
+        this.accessMethod = accessMethod;
         this.oids = oids;
     }
 
@@ -46,7 +49,7 @@ public class CreateTable extends TableAbstract {
         String tableName = QNameParser.getFirstName(ids);
         String schemaName = getSchemaNameSafe(ids);
         AbstractSchema schema = getSchemaSafe(ids);
-        AbstractTable table = defineTable(tableName, schemaName);
+        AbstractPgTable table = (AbstractPgTable) defineTable(tableName, schemaName);
         addSafe(schema, table, ids);
 
         for (AbstractColumn col : table.getColumns()) {
@@ -54,6 +57,12 @@ public class CreateTable extends TableAbstract {
             if (seq != null) {
                 seq.setParent(schema);
             }
+        }
+
+        if (ctx.USING() != null) {
+            table.setMethod(ctx.identifier().getText());
+        } else if (accessMethod != null) {
+            table.setMethod(accessMethod);
         }
     }
 
