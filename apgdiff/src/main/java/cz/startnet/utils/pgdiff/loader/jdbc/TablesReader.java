@@ -63,7 +63,8 @@ public class TablesReader extends JdbcReader {
             t = new SimplePgTable(tableName);
         }
 
-        if (SupportedVersion.VERSION_12.isLE(loader.version)) {
+        // used this condition because the table access method for partitioned tables is not supported
+        if (SupportedVersion.VERSION_12.isLE(loader.version) && !"p".equals(res.getString("relkind"))) {
             t.setMethod(res.getString("access_method"));
         }
 

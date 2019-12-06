@@ -59,10 +59,13 @@ public class CreateTable extends TableAbstract {
             }
         }
 
-        if (ctx.USING() != null) {
-            table.setMethod(ctx.identifier().getText());
-        } else if (accessMethod != null) {
-            table.setMethod(accessMethod);
+        // used this condition because the table access method for partitioned tables is not supported
+        if (ctx.partition_by() == null) {
+            if (ctx.USING() != null) {
+                table.setMethod(ctx.identifier().getText());
+            } else if (accessMethod != null) {
+                table.setMethod(accessMethod);
+            }
         }
     }
 

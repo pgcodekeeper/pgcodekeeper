@@ -176,7 +176,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         final int startLength = sb.length();
         AbstractPgTable newTable = (AbstractPgTable) newCondition;
 
-        if (isRecreated(newTable) || !isAccessMethodEquals(getMethod(), newTable.getMethod())) {
+        if (isRecreated(newTable) || !Objects.equals(getMethod(), newTable.getMethod())) {
             isNeedDepcies.set(true);
             return true;
         }
@@ -190,15 +190,6 @@ public abstract class AbstractPgTable extends AbstractTable {
         compareComment(newTable,sb);
 
         return sb.length() > startLength;
-    }
-
-    private boolean isAccessMethodEquals(String oldMethod, String newMethod) {
-        // this condition is a crutch for partitional tables
-        if ((oldMethod == null && ApgdiffConsts.HEAP.equals(newMethod))
-                || (newMethod == null && ApgdiffConsts.HEAP.equals(oldMethod))) {
-            return true;
-        }
-        return Objects.equals(oldMethod, newMethod);
     }
 
     @Override
@@ -422,7 +413,7 @@ public abstract class AbstractPgTable extends AbstractTable {
 
             return hasOids == table.getHasOids()
                     && inherits.equals(table.inherits)
-                    && isAccessMethodEquals(method, table.getMethod());
+                    && Objects.equals(method, table.getMethod());
         }
         return false;
     }
