@@ -47,9 +47,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         appendName(sbSQL);
         appendColumns(sbSQL, sbOption);
         appendInherit(sbSQL);
-        if (!ApgdiffConsts.HEAP.equals(method)) {
-            sbSQL.append("\nUSING ").append(PgDiffUtils.getQuotedName(method));
-        }
+        appendAccessMethod(sbSQL);
         appendOptions(sbSQL);
         sbSQL.append(sbOption);
         appendAlterOptions(sbSQL);
@@ -102,6 +100,20 @@ public abstract class AbstractPgTable extends AbstractTable {
             }
             sbSQL.setLength(sbSQL.length() - 2);
             sbSQL.append(")");
+        }
+    }
+
+    /**
+     * Appends table access method.
+     * <br />
+     * (defined here because the table access method is not used for partitioned
+     * and foreign tables)
+     *
+     * @param sbSQL - StringBuilder for access method
+     */
+    protected void appendAccessMethod(StringBuilder sbSQL) {
+        if (!ApgdiffConsts.HEAP.equals(method)) {
+            sbSQL.append("\nUSING ").append(PgDiffUtils.getQuotedName(method));
         }
     }
 
