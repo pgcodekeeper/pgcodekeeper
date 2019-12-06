@@ -47,7 +47,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         appendName(sbSQL);
         appendColumns(sbSQL, sbOption);
         appendInherit(sbSQL);
-        if (method != null && !ApgdiffConsts.HEAP.equals(method)) {
+        if (!ApgdiffConsts.HEAP.equals(method)) {
             sbSQL.append("\nUSING ").append(PgDiffUtils.getQuotedName(method));
         }
         appendOptions(sbSQL);
