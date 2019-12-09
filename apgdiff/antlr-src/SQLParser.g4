@@ -810,7 +810,7 @@ alter_foreign_data_wrapper
     ;
 
 alter_foreign_data_wrapper_action
-    : (HANDLER identifier | NO HANDLER )? (VALIDATOR identifier | NO VALIDATOR)? define_foreign_options?
+    : (HANDLER schema_qualified_name_nontype | NO HANDLER )? (VALIDATOR schema_qualified_name_nontype | NO VALIDATOR)? define_foreign_options?
     | owner_to
     | rename_to
     ;
@@ -919,8 +919,8 @@ create_statistics
     ;
 
 create_foreign_data_wrapper
-    : FOREIGN DATA WRAPPER name=identifier (HANDLER identifier | NO HANDLER )?
-    (VALIDATOR identifier | NO VALIDATOR)?
+    : FOREIGN DATA WRAPPER name=identifier (HANDLER schema_qualified_name_nontype | NO HANDLER )?
+    (VALIDATOR schema_qualified_name_nontype | NO VALIDATOR)?
     (OPTIONS LEFT_PAREN option_without_equal (COMMA option_without_equal)* RIGHT_PAREN )?
     ;
 
