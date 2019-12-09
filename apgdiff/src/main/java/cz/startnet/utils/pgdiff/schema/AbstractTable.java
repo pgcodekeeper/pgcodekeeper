@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -8,7 +9,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
@@ -23,10 +23,11 @@ implements IStatementContainer, PgOptionContainer, IRelation {
 
     protected final List<AbstractColumn> columns = new ArrayList<>();
     protected final Map<String, String> options = new LinkedHashMap<>();
-    protected final List<AbstractConstraint> constraints = new ArrayList<>();
-    protected final List<AbstractIndex> indexes = new ArrayList<>();
-    protected final List<AbstractTrigger> triggers = new ArrayList<>();
-    protected final List<PgRule> rules = new ArrayList<>();
+
+    protected final Map<String, AbstractConstraint> constraints = new LinkedHashMap<>();
+    protected final Map<String, AbstractIndex> indexes = new LinkedHashMap<>();
+    protected final Map<String, AbstractTrigger> triggers = new LinkedHashMap<>();
+    protected final Map<String, PgRule> rules = new LinkedHashMap<>();
 
     @Override
     public DbObjType getStatementType() {
@@ -38,11 +39,27 @@ implements IStatementContainer, PgOptionContainer, IRelation {
     }
 
     @Override
-    protected void fillChildrenList(List<List<? extends PgStatement>> l) {
-        l.add(indexes);
-        l.add(triggers);
-        l.add(rules);
-        l.add(constraints);
+    protected void fillChildrenList(List<Collection<? extends PgStatement>> l) {
+        l.add(indexes.values());
+        l.add(triggers.values());
+        l.add(rules.values());
+        l.add(constraints.values());
+    }
+
+    @Override
+    public PgStatement getChild(String name, DbObjType type) {
+        switch (type) {
+        case INDEX:
+            return getIndex(name);
+        case TRIGGER:
+            return getTrigger(name);
+        case RULE:
+            return getRule(name);
+        case CONSTRAINT:
+            return getConstraint(name);
+        default:
+            return null;
+        }
     }
 
     @Override
@@ -125,13 +142,7 @@ implements IStatementContainer, PgOptionContainer, IRelation {
      */
     @Override
     public AbstractConstraint getConstraint(final String name) {
-        for (AbstractConstraint constraint : constraints) {
-            if (constraint.getName().equals(name)) {
-                return constraint;
-            }
-        }
-
-        return null;
+        return constraints.get(name);
     }
 
     /**
@@ -140,8 +151,8 @@ implements IStatementContainer, PgOptionContainer, IRelation {
      * @return {@link #constraints}
      */
     @Override
-    public List<AbstractConstraint> getConstraints() {
-        return Collections.unmodifiableList(constraints);
+    public Collection<AbstractConstraint> getConstraints() {
+        return Collections.unmodifiableCollection(constraints.values());
     }
 
     /** Checks if the order of the table columns has changed.<br><br>
@@ -245,13 +256,7 @@ implements IStatementContainer, PgOptionContainer, IRelation {
      */
     @Override
     public AbstractIndex getIndex(final String name) {
-        for (AbstractIndex index : indexes) {
-            if (index.getName().equals(name)) {
-                return index;
-            }
-        }
-
-        return null;
+        return indexes.get(name);
     }
 
     /**
@@ -263,13 +268,7 @@ implements IStatementContainer, PgOptionContainer, IRelation {
      */
     @Override
     public AbstractTrigger getTrigger(final String name) {
-        for (AbstractTrigger trigger : triggers) {
-            if (trigger.getName().equals(name)) {
-                return trigger;
-            }
-        }
-
-        return null;
+        return triggers.get(name);
     }
 
     /**
@@ -281,13 +280,7 @@ implements IStatementContainer, PgOptionContainer, IRelation {
      */
     @Override
     public PgRule getRule(final String name) {
-        for (PgRule rule : rules) {
-            if (rule.getName().equals(name)) {
-                return rule;
-            }
-        }
-
-        return null;
+        return rules.get(name);
     }
 
     /**
@@ -296,8 +289,8 @@ implements IStatementContainer, PgOptionContainer, IRelation {
      * @return {@link #indexes}
      */
     @Override
-    public List<AbstractIndex> getIndexes() {
-        return Collections.unmodifiableList(indexes);
+    public Collection<AbstractIndex> getIndexes() {
+        return Collections.unmodifiableCollection(indexes.values());
     }
 
     @Override
@@ -317,8 +310,8 @@ implements IStatementContainer, PgOptionContainer, IRelation {
      * @return {@link #triggers}
      */
     @Override
-    public List<AbstractTrigger> getTriggers() {
-        return Collections.unmodifiableList(triggers);
+    public Collection<AbstractTrigger> getTriggers() {
+        return Collections.unmodifiableCollection(triggers.values());
     }
 
     /**
@@ -327,12 +320,12 @@ implements IStatementContainer, PgOptionContainer, IRelation {
      * @return {@link #rules}
      */
     @Override
-    public List<PgRule> getRules() {
-        return Collections.unmodifiableList(rules);
+    public Collection<PgRule> getRules() {
+        return Collections.unmodifiableCollection(rules.values());
     }
 
     public void addColumn(final AbstractColumn column) {
-        assertUnique(this::getColumn, column);
+        assertUnique(getColumn(column.getName()), column);
         columns.add(column);
         column.setParent(this);
         resetHash();
@@ -340,34 +333,22 @@ implements IStatementContainer, PgOptionContainer, IRelation {
 
     @Override
     public void addConstraint(final AbstractConstraint constraint) {
-        assertUnique(this::getConstraint, constraint);
-        constraints.add(constraint);
-        constraint.setParent(this);
-        resetHash();
+        addUnique(constraints, constraint, this);
     }
 
     @Override
     public void addIndex(final AbstractIndex index) {
-        assertUnique(this::getIndex, index);
-        indexes.add(index);
-        index.setParent(this);
-        resetHash();
+        addUnique(indexes, index, this);
     }
 
     @Override
     public void addTrigger(final AbstractTrigger trigger) {
-        assertUnique(this::getTrigger, trigger);
-        triggers.add(trigger);
-        trigger.setParent(this);
-        resetHash();
+        addUnique(triggers, trigger, this);
     }
 
     @Override
     public void addRule(final PgRule rule) {
-        assertUnique(this::getRule, rule);
-        rules.add(rule);
-        rule.setParent(this);
-        resetHash();
+        addUnique(rules, rule, this);
     }
 
     public boolean containsColumn(final String name) {
@@ -394,10 +375,10 @@ implements IStatementContainer, PgOptionContainer, IRelation {
     public boolean compareChildren(PgStatement obj) {
         if (obj instanceof AbstractTable) {
             AbstractTable table = (AbstractTable) obj;
-            return PgDiffUtils.setlikeEquals(constraints, table.constraints)
-                    && PgDiffUtils.setlikeEquals(indexes, table.indexes)
-                    && PgDiffUtils.setlikeEquals(triggers, table.triggers)
-                    && PgDiffUtils.setlikeEquals(rules, table.rules);
+            return constraints.equals(table.constraints)
+                    && indexes.equals(table.indexes)
+                    && triggers.equals(table.triggers)
+                    && rules.equals(table.rules);
         }
         return false;
     }

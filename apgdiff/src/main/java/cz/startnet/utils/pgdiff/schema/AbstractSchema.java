@@ -1,31 +1,31 @@
 package cz.startnet.utils.pgdiff.schema;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-
 
 /**
  * Stores base schema information.
  */
 public abstract class AbstractSchema extends PgStatement implements ISchema {
 
-    private final List<PgDomain> domains = new ArrayList<>();
-    private final List<AbstractFunction> functions = new ArrayList<>();
-    private final List<AbstractSequence> sequences = new ArrayList<>();
-    private final List<AbstractTable> tables = new ArrayList<>();
-    private final List<AbstractView> views = new ArrayList<>();
-    private final List<AbstractType> types = new ArrayList<>();
-    private final List<PgFtsParser> parsers = new ArrayList<>();
-    private final List<PgFtsTemplate> templates = new ArrayList<>();
-    private final List<PgFtsDictionary> dictionaries = new ArrayList<>();
-    private final List<PgFtsConfiguration> configurations = new ArrayList<>();
-    private final List<PgOperator> operators = new ArrayList<>();
+    private final Map<String, PgDomain> domains = new LinkedHashMap<>();
+    private final Map<String, AbstractFunction> functions = new LinkedHashMap<>();
+    private final Map<String, AbstractSequence> sequences = new LinkedHashMap<>();
+    private final Map<String, AbstractTable> tables = new LinkedHashMap<>();
+    private final Map<String, AbstractView> views = new LinkedHashMap<>();
+    private final Map<String, AbstractType> types = new LinkedHashMap<>();
+    private final Map<String, PgFtsParser> parsers = new LinkedHashMap<>();
+    private final Map<String, PgFtsTemplate> templates = new LinkedHashMap<>();
+    private final Map<String, PgFtsDictionary> dictionaries = new LinkedHashMap<>();
+    private final Map<String, PgFtsConfiguration> configurations = new LinkedHashMap<>();
+    private final Map<String, PgOperator> operators = new LinkedHashMap<>();
 
     @Override
     public DbObjType getStatementType() {
@@ -49,12 +49,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      * @return found domain or null if no such domain has been found
      */
     public PgDomain getDomain(String name) {
-        for (PgDomain dom : domains) {
-            if (name.equals(dom.getName())) {
-                return dom;
-            }
-        }
-        return null;
+        return domains.get(name);
     }
 
     /**
@@ -62,8 +57,8 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      *
      * @return {@link #domains}
      */
-    public List<PgDomain> getDomains() {
-        return Collections.unmodifiableList(domains);
+    public Collection<PgDomain> getDomains() {
+        return Collections.unmodifiableCollection(domains.values());
     }
 
     /**
@@ -75,13 +70,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      */
     @Override
     public AbstractFunction getFunction(final String signature) {
-        for (AbstractFunction function : functions) {
-            if (function.getName().equals(signature)) {
-                return function;
-            }
-        }
-
-        return null;
+        return functions.get(signature);
     }
 
     /**
@@ -99,8 +88,8 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      * @return {@link #functions}
      */
     @Override
-    public List<AbstractFunction> getFunctions() {
-        return Collections.unmodifiableList(functions);
+    public Collection<AbstractFunction> getFunctions() {
+        return Collections.unmodifiableCollection(functions.values());
     }
 
     @Override
@@ -110,29 +99,61 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     }
 
     @Override
-    protected void fillDescendantsList(List<List<? extends PgStatement>> l) {
+    protected void fillDescendantsList(List<Collection<? extends PgStatement>> l) {
         fillChildrenList(l);
-        for (AbstractTable table : tables) {
+        for (AbstractTable table : tables.values()) {
             table.fillDescendantsList(l);
         }
-        for (AbstractView view : views) {
+        for (AbstractView view : views.values()) {
             view.fillDescendantsList(l);
         }
     }
 
     @Override
-    protected void fillChildrenList(List<List<? extends PgStatement>> l) {
-        l.add(functions);
-        l.add(sequences);
-        l.add(types);
-        l.add(domains);
-        l.add(tables);
-        l.add(views);
-        l.add(parsers);
-        l.add(templates);
-        l.add(dictionaries);
-        l.add(configurations);
-        l.add(operators);
+    protected void fillChildrenList(List<Collection<? extends PgStatement>> l) {
+        l.add(functions.values());
+        l.add(sequences.values());
+        l.add(types.values());
+        l.add(domains.values());
+        l.add(tables.values());
+        l.add(views.values());
+        l.add(parsers.values());
+        l.add(templates.values());
+        l.add(dictionaries.values());
+        l.add(configurations.values());
+        l.add(operators.values());
+    }
+
+    @Override
+    public PgStatement getChild(String name, DbObjType type) {
+        switch (type) {
+        case FUNCTION:
+        case PROCEDURE:
+        case AGGREGATE:
+            return getFunction(name);
+        case SEQUENCE:
+            return getSequence(name);
+        case TYPE:
+            return getType(name);
+        case DOMAIN:
+            return getDomain(name);
+        case TABLE:
+            return getTable(name);
+        case VIEW:
+            return getView(name);
+        case FTS_PARSER:
+            return getFtsParser(name);
+        case FTS_TEMPLATE:
+            return getFtsTemplate(name);
+        case FTS_DICTIONARY:
+            return getFtsDictionary(name);
+        case FTS_CONFIGURATION:
+            return getFtsConfiguration(name);
+        case OPERATOR:
+            return getOperator(name);
+        default:
+            return null;
+        }
     }
 
     @Override
@@ -187,13 +208,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      * @return found sequence or null if no such sequence has been found
      */
     public AbstractSequence getSequence(final String name) {
-        for (AbstractSequence sequence : sequences) {
-            if (sequence.getName().equals(name)) {
-                return sequence;
-            }
-        }
-
-        return null;
+        return sequences.get(name);
     }
 
     /**
@@ -201,8 +216,8 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      *
      * @return {@link #sequences}
      */
-    public List<AbstractSequence> getSequences() {
-        return Collections.unmodifiableList(sequences);
+    public Collection<AbstractSequence> getSequences() {
+        return Collections.unmodifiableCollection(sequences.values());
     }
 
     /**
@@ -213,13 +228,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      * @return found table or null if no such table has been found
      */
     public AbstractTable getTable(final String name) {
-        for (AbstractTable table : tables) {
-            if (table.getName().equals(name)) {
-                return table;
-            }
-        }
-
-        return null;
+        return tables.get(name);
     }
 
     /**
@@ -227,8 +236,8 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      *
      * @return {@link #tables}
      */
-    public List<AbstractTable> getTables() {
-        return Collections.unmodifiableList(tables);
+    public Collection<AbstractTable> getTables() {
+        return Collections.unmodifiableCollection(tables.values());
     }
 
     /**
@@ -239,13 +248,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      * @return found view or null if no such view has been found
      */
     public AbstractView getView(final String name) {
-        for (AbstractView view : views) {
-            if (view.getName().equals(name)) {
-                return view;
-            }
-        }
-
-        return null;
+        return views.get(name);
     }
 
     /**
@@ -253,8 +256,8 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      *
      * @return {@link #views}
      */
-    public List<AbstractView> getViews() {
-        return Collections.unmodifiableList(views);
+    public Collection<AbstractView> getViews() {
+        return Collections.unmodifiableCollection(views.values());
     }
 
     /**
@@ -284,12 +287,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      * @return found type or null if no such type has been found
      */
     public AbstractType getType(final String name) {
-        for (AbstractType type : types) {
-            if (type.getName().equals(name)) {
-                return type;
-            }
-        }
-        return null;
+        return types.get(name);
     }
 
     /**
@@ -300,13 +298,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      * @return found parser or null if no such type has been found
      */
     public PgFtsParser getFtsParser(final String name) {
-        for (PgFtsParser parser : parsers) {
-            if (parser.getName().equals(name)) {
-                return parser;
-            }
-        }
-
-        return null;
+        return parsers.get(name);
     }
 
     /**
@@ -317,13 +309,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      * @return found template or null if no such type has been found
      */
     public PgFtsTemplate getFtsTemplate(final String name) {
-        for (PgFtsTemplate template : templates) {
-            if (template.getName().equals(name)) {
-                return template;
-            }
-        }
-
-        return null;
+        return templates.get(name);
     }
 
     /**
@@ -334,13 +320,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      * @return found dictionary or null if no such type has been found
      */
     public PgFtsDictionary getFtsDictionary(final String name) {
-        for (PgFtsDictionary dictionary : dictionaries) {
-            if (dictionary.getName().equals(name)) {
-                return dictionary;
-            }
-        }
-
-        return null;
+        return dictionaries.get(name);
     }
 
     /**
@@ -351,13 +331,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      * @return found configuration or null if no such type has been found
      */
     public PgFtsConfiguration getFtsConfiguration(final String name) {
-        for (PgFtsConfiguration configuration : configurations) {
-            if (configuration.getName().equals(name)) {
-                return configuration;
-            }
-        }
-
-        return null;
+        return configurations.get(name);
     }
 
     /**
@@ -368,13 +342,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      * @return found operator or null if no such operator has been found
      */
     public PgOperator getOperator(final String signature) {
-        for (PgOperator oper : operators) {
-            if (oper.getName().equals(signature)) {
-                return oper;
-            }
-        }
-
-        return null;
+        return operators.get(signature);
     }
 
     /**
@@ -382,8 +350,8 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      *
      * @return {@link #types}
      */
-    public List<AbstractType> getTypes() {
-        return Collections.unmodifiableList(types);
+    public Collection<AbstractType> getTypes() {
+        return Collections.unmodifiableCollection(types.values());
     }
 
     /**
@@ -391,8 +359,8 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      *
      * @return {@link #parsers}
      */
-    public List<PgFtsParser> getFtsParsers() {
-        return Collections.unmodifiableList(parsers);
+    public Collection<PgFtsParser> getFtsParsers() {
+        return Collections.unmodifiableCollection(parsers.values());
     }
 
     /**
@@ -400,8 +368,8 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      *
      * @return {@link #templates}
      */
-    public List<PgFtsTemplate> getFtsTemplates() {
-        return Collections.unmodifiableList(templates);
+    public Collection<PgFtsTemplate> getFtsTemplates() {
+        return Collections.unmodifiableCollection(templates.values());
     }
 
     /**
@@ -409,8 +377,8 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      *
      * @return {@link #dictionaries}
      */
-    public List<PgFtsDictionary> getFtsDictionaries() {
-        return Collections.unmodifiableList(dictionaries);
+    public Collection<PgFtsDictionary> getFtsDictionaries() {
+        return Collections.unmodifiableCollection(dictionaries.values());
     }
 
     /**
@@ -418,8 +386,8 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      *
      * @return {@link #configurations}
      */
-    public List<PgFtsConfiguration> getFtsConfigurations() {
-        return Collections.unmodifiableList(configurations);
+    public Collection<PgFtsConfiguration> getFtsConfigurations() {
+        return Collections.unmodifiableCollection(configurations.values());
     }
 
     /**
@@ -427,85 +395,52 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      *
      * @return {@link #operators}
      */
-    public List<PgOperator> getOperators() {
-        return Collections.unmodifiableList(operators);
+    public Collection<PgOperator> getOperators() {
+        return Collections.unmodifiableCollection(operators.values());
     }
 
     public void addDomain(PgDomain dom) {
-        assertUnique(this::getDomain, dom);
-        domains.add(dom);
-        dom.setParent(this);
-        resetHash();
+        addUnique(domains, dom, this);
     }
 
     public void addFunction(final AbstractFunction function) {
-        assertUnique(this::getFunction, function);
-        functions.add(function);
-        function.setParent(this);
-        resetHash();
+        addUnique(functions, function, this);
     }
 
     public void addSequence(final AbstractSequence sequence) {
-        assertUnique(this::getSequence, sequence);
-        sequences.add(sequence);
-        sequence.setParent(this);
-        resetHash();
+        addUnique(sequences, sequence, this);
     }
 
     public void addTable(final AbstractTable table) {
-        assertUnique(this::getTable, table);
-        tables.add(table);
-        table.setParent(this);
-        resetHash();
+        addUnique(tables, table, this);
     }
 
     public void addView(final AbstractView view) {
-        assertUnique(this::getView, view);
-        views.add(view);
-        view.setParent(this);
-        resetHash();
+        addUnique(views, view, this);
     }
 
     public void addType(final AbstractType type) {
-        assertUnique(this::getType, type);
-        types.add(type);
-        type.setParent(this);
-        resetHash();
+        addUnique(types, type, this);
     }
 
     public void addFtsParser(final PgFtsParser parser) {
-        assertUnique(this::getFtsParser, parser);
-        parsers.add(parser);
-        parser.setParent(this);
-        resetHash();
+        addUnique(parsers, parser, this);
     }
 
     public void addFtsTemplate(final PgFtsTemplate template) {
-        assertUnique(this::getFtsTemplate, template);
-        templates.add(template);
-        template.setParent(this);
-        resetHash();
+        addUnique(templates, template, this);
     }
 
     public void addFtsDictionary(final PgFtsDictionary dictionary) {
-        assertUnique(this::getFtsDictionary, dictionary);
-        dictionaries.add(dictionary);
-        dictionary.setParent(this);
-        resetHash();
+        addUnique(dictionaries, dictionary, this);
     }
 
     public void addFtsConfiguration(final PgFtsConfiguration configuration) {
-        assertUnique(this::getFtsConfiguration, configuration);
-        configurations.add(configuration);
-        configuration.setParent(this);
-        resetHash();
+        addUnique(configurations, configuration, this);
     }
 
     public void addOperator(final PgOperator oper) {
-        assertUnique(this::getOperator, oper);
-        operators.add(oper);
-        oper.setParent(this);
-        resetHash();
+        addUnique(operators, oper, this);
     }
 
     @Override
@@ -517,17 +452,17 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     public boolean compareChildren(PgStatement obj) {
         if (obj instanceof AbstractSchema) {
             AbstractSchema schema = (AbstractSchema) obj;
-            return PgDiffUtils.setlikeEquals(domains, schema.domains)
-                    && PgDiffUtils.setlikeEquals(sequences, schema.sequences)
-                    && PgDiffUtils.setlikeEquals(functions, schema.functions)
-                    && PgDiffUtils.setlikeEquals(views, schema.views)
-                    && PgDiffUtils.setlikeEquals(tables, schema.tables)
-                    && PgDiffUtils.setlikeEquals(types, schema.types)
-                    && PgDiffUtils.setlikeEquals(parsers, schema.parsers)
-                    && PgDiffUtils.setlikeEquals(templates, schema.templates)
-                    && PgDiffUtils.setlikeEquals(dictionaries, schema.dictionaries)
-                    && PgDiffUtils.setlikeEquals(configurations, schema.configurations)
-                    && PgDiffUtils.setlikeEquals(operators, schema.operators);
+            return domains.equals(schema.domains)
+                    && sequences.equals(schema.sequences)
+                    && functions.equals(schema.functions)
+                    && views.equals(schema.views)
+                    && tables.equals(schema.tables)
+                    && types.equals(schema.types)
+                    && parsers.equals(schema.parsers)
+                    && templates.equals(schema.templates)
+                    && dictionaries.equals(schema.dictionaries)
+                    && configurations.equals(schema.configurations)
+                    && operators.equals(schema.operators);
         }
         return false;
     }

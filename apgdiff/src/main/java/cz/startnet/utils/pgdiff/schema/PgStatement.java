@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -487,51 +488,55 @@ public abstract class PgStatement implements IStatement, IHashable {
      * @return an element in another db sharing the same name and location
      */
     public PgStatement getTwin(PgDatabase db) {
-        if (getStatementType() == DbObjType.DATABASE) {
+        // fast path for getting a "twin" from the same database
+        // return the same object immediately
+        return getDatabase() == db ? this : getTwinRecursive(db);
+    }
+
+    private PgStatement getTwinRecursive(PgDatabase db) {
+        DbObjType type = getStatementType();
+        if (DbObjType.DATABASE == type) {
             return db;
         }
         PgStatement twinParent = getParent().getTwin(db);
         if (twinParent == null) {
             return null;
         }
-        return getStatementType() == DbObjType.COLUMN ? ((AbstractTable) twinParent).getColumn(getName())
-                : twinParent.getChild(getName(), getStatementType());
+        return DbObjType.COLUMN == type ? ((AbstractTable) twinParent).getColumn(getName())
+                : twinParent.getChild(getName(), type);
     }
 
     /**
      * Returns all subtree elements
      */
     public final Stream<PgStatement> getDescendants() {
-        List<List<? extends PgStatement>> l = new ArrayList<>();
+        List<Collection<? extends PgStatement>> l = new ArrayList<>();
         fillDescendantsList(l);
-        return l.stream().flatMap(List::stream);
+        return l.stream().flatMap(Collection::stream);
     }
 
     /**
      * Returns all subelements of current element
      */
     public final Stream<PgStatement> getChildren() {
-        List<List<? extends PgStatement>> l = new ArrayList<>();
+        List<Collection<? extends PgStatement>> l = new ArrayList<>();
         fillChildrenList(l);
-        return l.stream().flatMap(List::stream);
+        return l.stream().flatMap(Collection::stream);
     }
 
     public PgStatement getChild(String name, DbObjType type) {
-        return getChildren()
-                .filter(st -> type == st.getStatementType() && name.equals(st.getName()))
-                .findAny()
-                .orElse(null);
+        return null;
     }
 
     public boolean hasChildren() {
         return getChildren().anyMatch(e -> true);
     }
 
-    protected void fillDescendantsList(List<List<? extends PgStatement>> l) {
+    protected void fillDescendantsList(List<Collection<? extends PgStatement>> l) {
         fillChildrenList(l);
     }
 
-    protected void fillChildrenList(List<List<? extends PgStatement>> l) {
+    protected void fillChildrenList(List<Collection<? extends PgStatement>> l) {
         // default no op
     }
 
@@ -679,15 +684,21 @@ public abstract class PgStatement implements IStatement, IHashable {
         return name == null ? "Unnamed object" : name;
     }
 
-    protected void assertUnique(Function<String, ? extends PgStatement> getter,
-            PgStatement newSt) {
-        PgStatement found = getter.apply(newSt.getName());
+    protected void assertUnique(PgStatement found, PgStatement newSt) {
         if (found != null) {
             PgStatement foundParent = found.getParent();
             throw foundParent instanceof PgStatementWithSearchPath
             ? new ObjectCreationException(newSt, foundParent)
                     : new ObjectCreationException(newSt);
         }
+    }
+
+    protected <T extends PgStatement>
+    void addUnique(Map<String, T> map, T newSt, PgStatement parent) {
+        PgStatement found = map.putIfAbsent(newSt.getName(), newSt);
+        assertUnique(found, newSt);
+        newSt.setParent(parent);
+        parent.resetHash();
     }
 
     @Override

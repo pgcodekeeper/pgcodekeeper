@@ -8,10 +8,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import ru.taximaxim.codekeeper.apgdiff.log.Log;
-
-import java.util.Set;
 
 public class ShaHasher implements Hasher {
 
@@ -184,6 +183,25 @@ public class ShaHasher implements Hasher {
             hashable.computeHash(child);
             byte[] second = child.getArray();
             xorByteArrays(sum, second);
+        }
+        md.update(sum);
+    }
+
+    @Override
+    public void putUnordered(Map<String, ? extends IHashable> map) {
+        byte[] sum = EMPTY.clone();
+        for (Entry<String, ? extends IHashable> entry : map.entrySet()) {
+
+            ShaHasher first = new ShaHasher(this);
+            first.put(entry.getKey());
+
+            ShaHasher second = new ShaHasher(this);
+            second.put(entry.getValue());
+
+            ShaHasher child = new ShaHasher(this);
+            child.put(first.getArray());
+            child.put(second.getArray());
+            xorByteArrays(sum, child.getArray());
         }
         md.update(sum);
     }

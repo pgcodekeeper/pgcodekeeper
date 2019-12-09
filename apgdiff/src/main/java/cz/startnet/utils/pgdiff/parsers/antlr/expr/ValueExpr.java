@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -663,7 +664,7 @@ public class ValueExpr extends AbstractExpr {
      *      if none were found or an ambiguity was detected
      */
     private IFunction resolveCall(String functionName, List<String> sourceTypes,
-            List<? extends IFunction> availableFunctions) {
+            Collection<? extends IFunction> availableFunctions) {
         // save each applicable function with the number of exact type matches
         // between input args and function parameters
         // function that has more exact matches (less casts) wins
@@ -733,7 +734,7 @@ public class ValueExpr extends AbstractExpr {
         }
     }
 
-    private List<? extends IFunction> availableFunctions(String schemaName) {
+    private Collection<? extends IFunction> availableFunctions(String schemaName) {
         if (schemaName != null) {
             ISchema schema = systemStorage.getSchema(schemaName);
             if (schema == null) {
