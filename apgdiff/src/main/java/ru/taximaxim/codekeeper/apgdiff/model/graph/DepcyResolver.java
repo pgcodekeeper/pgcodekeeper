@@ -102,10 +102,8 @@ public class DepcyResolver {
      */
     public void addDropStatements(PgStatement toDrop) {
         PgStatement statement = toDrop.getTwin(oldDb);
-        if (oldDepcyGraph.getReversedGraph().containsVertex(statement)
-                && !sKippedObjects.contains(new SimpleEntry<>(statement, StatementActions.DROP))) {
-            sKippedObjects.add(new SimpleEntry<>(statement, StatementActions.DROP));
-
+        Entry<PgStatement, StatementActions> guard = new SimpleEntry<>(statement, StatementActions.DROP);
+        if (oldDepcyGraph.getReversedGraph().containsVertex(statement) && sKippedObjects.add(guard)) {
             DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
                     oldDepcyGraph.getReversedGraph(), statement);
             customIteration(dfi, new DropTraversalAdapter(statement));
@@ -128,10 +126,8 @@ public class DepcyResolver {
      */
     public void addCreateStatements(PgStatement toCreate) {
         PgStatement statement = toCreate.getTwin(newDb);
-        if (newDepcyGraph.getGraph().containsVertex(statement)
-                && !sKippedObjects.contains(new SimpleEntry<>(statement, StatementActions.CREATE))) {
-            sKippedObjects.add(new SimpleEntry<>(statement, StatementActions.CREATE));
-
+        Entry<PgStatement, StatementActions> guard = new SimpleEntry<>(statement, StatementActions.CREATE);
+        if (newDepcyGraph.getGraph().containsVertex(statement) && sKippedObjects.add(guard)) {
             DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
                     newDepcyGraph.getGraph(), statement);
             customIteration(dfi, new CreateTraversalAdapter(statement));
@@ -199,10 +195,11 @@ public class DepcyResolver {
      */
     public void recreateDrops() {
         int oldActionsSize = -1;
+        List<PgStatement> toRecreate = new ArrayList<>();
         // since a recreate can trigger a drop via  dependency being altered
         // run recreates until no more statements are being added (may need optimization)
         while (actions.size() > oldActionsSize) {
-            List<PgStatement> toRecreate = new ArrayList<>();
+            toRecreate.clear();
             oldActionsSize = actions.size();
             for (ActionContainer action : actions) {
                 if (action.getAction() == StatementActions.DROP) {
@@ -258,18 +255,8 @@ public class DepcyResolver {
             }
         }
 
-        for (ActionContainer action : actions) {
-            if (action.getAction() != StatementActions.DROP) {
-                continue;
-            }
-            PgStatement drop = action.getOldObj();
-            if (drop.getStatementType() == statement.getStatementType()
-                    && drop.getQualifiedName().equals(
-                            statement.getQualifiedName())) {
-                return true;
-            }
-        }
-        return false;
+        PgStatement oldObj = statement.getTwin(oldDb);
+        return actions.contains(new ActionContainer(oldObj, oldObj, StatementActions.DROP, null));
     }
 
     /**
@@ -306,9 +293,6 @@ public class DepcyResolver {
 
         @Override
         protected boolean notAllowedToAdd(PgStatement oldObj) {
-            if (super.notAllowedToAdd(oldObj)) {
-                return true;
-            }
             // Изначально будем удалять объект
             action = StatementActions.DROP;
 
@@ -396,9 +380,6 @@ public class DepcyResolver {
 
         @Override
         protected boolean notAllowedToAdd(PgStatement newObj) {
-            if (super.notAllowedToAdd(newObj)) {
-                return true;
-            }
             // Изначально будем создавать объект
             action = StatementActions.CREATE;
             if (inDropsList(newObj)) {
@@ -499,17 +480,12 @@ public class DepcyResolver {
         @Override
         public void vertexFinished(VertexTraversalEvent<PgStatement> e) {
             PgStatement statement = e.getVertex();
-            if (notAllowedToAdd(statement)) {
-                return;
-            }
-            if (statement.getStatementType() != DbObjType.DATABASE) {
+            if (statement.getStatementType() != DbObjType.DATABASE && !notAllowedToAdd(statement)) {
                 addToList(statement);
             }
         }
 
-        protected boolean notAllowedToAdd(PgStatement statement) {
-            return statement.getStatementType() == null;
-        }
+        protected abstract boolean notAllowedToAdd(PgStatement statement);
 
         protected void addToList(PgStatement statement) {
             addToListWithoutDepcies(action, statement, starter);
@@ -610,6 +586,12 @@ public class DepcyResolver {
                 addToListWithoutDepcies(action, st, starter);
                 addDropStatements(st);
             }
+        }
+
+        @Override
+        protected boolean notAllowedToAdd(PgStatement statement) {
+            // unused
+            return false;
         }
     }
 }

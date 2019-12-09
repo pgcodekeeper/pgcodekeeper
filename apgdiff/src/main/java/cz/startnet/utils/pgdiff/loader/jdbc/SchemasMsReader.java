@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -27,6 +28,7 @@ public class SchemasMsReader {
         String query = JdbcQueries.QUERY_MS_SCHEMAS.getQuery();
         try (ResultSet result = loader.runner.runScript(loader.statement, query)) {
             while (result.next()) {
+                PgDiffUtils.checkCancelled(loader.monitor);
                 AbstractSchema schema = getSchema(result);
                 db.addSchema(schema);
                 loader.schemaIds.put(result.getLong("schema_id"), schema);

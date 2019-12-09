@@ -28,7 +28,7 @@ public abstract class AbstractPgTable extends AbstractTable {
     }
 
     public boolean isClustered() {
-        for (AbstractIndex ind : indexes) {
+        for (AbstractIndex ind : indexes.values()) {
             if (ind.isClusterIndex()) {
                 return true;
             }

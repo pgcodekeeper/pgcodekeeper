@@ -49,7 +49,7 @@ to update all relevant poms and metadatas
     </modules>
 
     <properties>
-        <global.version>5.9.4-SNAPSHOT</global.version>
+        <global.version>5.9.5-SNAPSHOT</global.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <tycho.version>1.2.0</tycho.version>

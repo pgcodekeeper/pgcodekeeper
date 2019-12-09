@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.MsUser;
@@ -24,6 +25,7 @@ public class MsUsersReader {
         String query = JdbcQueries.QUERY_MS_USERS.getQuery();
         try (ResultSet res = loader.runner.runScript(loader.statement, query)) {
             while (res.next()) {
+                PgDiffUtils.checkCancelled(loader.monitor);
                 String name = res.getString("name");
                 loader.setCurrentObject(new GenericColumn(name, DbObjType.USER));
 

@@ -68,7 +68,7 @@ public class PgDomain extends PgStatementWithSearchPath {
     }
 
     public void addConstraint(AbstractConstraint constraint) {
-        assertUnique(this::getConstraint, constraint);
+        assertUnique(getConstraint(constraint.getName()), constraint);
         constraints.add(constraint);
         constraint.setParent(this);
         resetHash();

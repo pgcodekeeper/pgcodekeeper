@@ -32,18 +32,10 @@ public class TreeDiffer implements IRunnableWithProgress {
     private final DbSource dbTarget;
 
     private TreeElement diffTree;
-    private TreeElement diffTreeRevert;
-
-    private Stream<Object> errors = Stream.empty();
 
     public Stream<Object> getErrors() {
-        if (dbSource != null) {
-            errors = Stream.concat(errors, dbSource.getErrors().stream());
-        }
-        if (dbTarget != null) {
-            errors = Stream.concat(errors, dbTarget.getErrors().stream());
-        }
-        return errors;
+        return Stream.of(dbSource, dbTarget)
+                .flatMap(s -> s == null ? Stream.empty() : s.getErrors().stream());
     }
 
     public DbSource getDbSource() {
@@ -59,13 +51,6 @@ public class TreeDiffer implements IRunnableWithProgress {
             throw new IllegalStateException(Messages.runnable_has_not_finished);
         }
         return diffTree;
-    }
-
-    public TreeElement getDiffTreeRevert() {
-        if (diffTreeRevert == null) {
-            throw new IllegalStateException(Messages.runnable_has_not_finished);
-        }
-        return diffTreeRevert;
     }
 
     public TreeDiffer(DbSource dbSource, DbSource dbTarget) {
