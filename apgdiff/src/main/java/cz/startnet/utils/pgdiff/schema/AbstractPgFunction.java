@@ -77,6 +77,10 @@ public abstract class AbstractPgFunction extends AbstractFunction {
             }
         }
 
+        if (!Objects.equals(supportFunc, newAbstractPgFunction.getSupportFunc())) {
+            appendAlterSupportFunc(newAbstractPgFunction, sb);
+        }
+
         if (!Objects.equals(getOwner(), newAbstractPgFunction.getOwner())) {
             newAbstractPgFunction.alterOwnerSQL(sb);
         }
@@ -89,6 +93,15 @@ public abstract class AbstractPgFunction extends AbstractFunction {
     }
 
     protected abstract boolean needDrop(AbstractPgFunction newFunction);
+
+    private StringBuilder appendAlterSupportFunc(AbstractPgFunction newFunc, StringBuilder sb) {
+        sb.append("\n\nALTER FUNCTION ");
+        sb.append(PgDiffUtils.getQuotedName(getSchemaName())).append('.');
+        appendFunctionSignature(sb, false, true);
+        sb.append("\n\tSUPPORT ").append(newFunc.getSupportFunc());
+        sb.append(';');
+        return sb;
+    }
 
     /**
      * Alias for {@link #getSignature()} which provides a unique function ID.
