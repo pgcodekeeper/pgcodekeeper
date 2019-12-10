@@ -33,6 +33,7 @@ public abstract class AbstractPgFunction extends AbstractFunction {
     private String volatileType;
     private String body;
     private String returns;
+    private String supportFunc;
 
     protected final List<Argument> arguments = new ArrayList<>();
     protected final List<String> transforms = new ArrayList<>();
@@ -323,6 +324,15 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         resetHash();
     }
 
+    public String getSupportFunc() {
+        return supportFunc;
+    }
+
+    public void setSupportFunc(String supportFunc) {
+        this.supportFunc = supportFunc;
+        resetHash();
+    }
+
     /**
      * @return unmodifiable RETURNS TABLE map
      */
@@ -389,13 +399,15 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         }
 
         return obj instanceof AbstractPgFunction && super.compare(obj)
-                && compareUnalterable((AbstractPgFunction) obj);
+                && compareUnalterable((AbstractPgFunction) obj)
+                && Objects.equals(supportFunc, ((AbstractPgFunction) obj).getSupportFunc());
     }
 
     @Override
     public void computeHash(Hasher hasher) {
         hasher.putOrdered(arguments);
         hasher.put(returns);
+        hasher.put(supportFunc);
         hasher.put(body);
         hasher.put(transforms);
         hasher.put(configurations);
@@ -415,6 +427,7 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         AbstractPgFunction functionDst = getFunctionCopy();
         copyBaseFields(functionDst);
         functionDst.setReturns(getReturns());
+        functionDst.setSupportFunc(getSupportFunc());
         functionDst.setBody(getBody());
         functionDst.setWindow(isWindow());
         functionDst.language = getLanguage();

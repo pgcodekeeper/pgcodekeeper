@@ -87,6 +87,10 @@ public class PgFunction extends AbstractPgFunction {
             }
         }
 
+        if (getSupportFunc() != null) {
+            sbSQL.append(" SUPPORT ").append(getSupportFunc());
+        }
+
         for (Entry<String, String> param : configurations.entrySet()) {
             String val = param.getValue();
             sbSQL.append("\n    SET ").append(param.getKey());
