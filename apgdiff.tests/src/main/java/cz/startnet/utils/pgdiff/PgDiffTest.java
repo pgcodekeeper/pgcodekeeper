@@ -204,6 +204,10 @@ public class PgDiffTest {
                     {"drop_function_args"},
                     // Tests scenario where FUNCTION with args is modified.
                     {"modify_function_args"},
+                    // Tests scenario where new FUNCTION with support function is added.
+                    {"add_function_with_support_function"},
+                    // Tests scenario where FUNCTION with support function is modified.
+                    {"modify_function_with_support_function"},
                     // изменить тип out аргумента
                     {"function_out_type_chg"},
                     // изменить out параметра
