@@ -73,7 +73,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
                         currQuery = queriesList.get(0);
                         executeSingleStatement(currQuery);
                     } else {
-                        runBatch(queriesList, currQuery);
+                        runBatch(queriesList);
                     }
                     subMonitor.worked(1);
                 }
@@ -117,6 +117,8 @@ public class QueriesBatchCallable extends StatementCallable<String> {
                     sb.append("\n  Line: ").append(currQuery.getLineNumber());
                 }
                 sb.append('\n').append(currQuery.getSql());
+                reporter.reportErrorLocation(currQuery.getOffset(),
+                        currQuery.getSql().length());
             }
 
             reporter.writeError(sb.toString());
@@ -159,7 +161,7 @@ public class QueriesBatchCallable extends StatementCallable<String> {
         writeStatus(query.getAction());
     }
 
-    private void runBatch(List<PgObjLocation> queriesList, PgObjLocation currQuery)
+    private void runBatch(List<PgObjLocation> queriesList)
             throws SQLException {
         if (isAutoCommitEnabled) {
             connection.setAutoCommit(false);
@@ -167,7 +169,6 @@ public class QueriesBatchCallable extends StatementCallable<String> {
         }
 
         for (PgObjLocation query : queriesList) {
-            currQuery = query;
             st.addBatch(query.getSql());
             writeStatus(query.getAction());
         }
