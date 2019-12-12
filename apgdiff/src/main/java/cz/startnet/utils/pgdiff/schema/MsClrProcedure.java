@@ -1,7 +1,5 @@
 package cz.startnet.utils.pgdiff.schema;
 
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
@@ -22,14 +20,15 @@ public class MsClrProcedure extends AbstractMsClrFunction {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append(getProcedureFullSQL(true));
+        sbSQL.append(getFunctionFullSQL(true));
 
         appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
         return sbSQL.toString();
     }
 
-    private String getProcedureFullSQL(boolean isCreate) {
+    @Override
+    protected String getFunctionFullSQL(boolean isCreate) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("SET QUOTED_IDENTIFIER OFF").append(GO).append('\n');
         sbSQL.append("SET ANSI_NULLS OFF").append(GO).append('\n');
@@ -56,27 +55,8 @@ public class MsClrProcedure extends AbstractMsClrFunction {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        if (newCondition instanceof MsProcedure) {
-            isNeedDepcies.set(true);
-            return true;
-        }
-
-        final int startLength = sb.length();
-        MsClrProcedure newProcedure = (MsClrProcedure) newCondition;
-
-        if (!compareUnalterable(newProcedure)) {
-            sb.append(newProcedure.getProcedureFullSQL(false));
-        }
-
-        if (!Objects.equals(getOwner(), newProcedure.getOwner())) {
-            newProcedure.alterOwnerSQL(sb);
-        }
-
-        alterPrivileges(newProcedure, sb);
-
-        return sb.length() > startLength;
+    public boolean needDrop(AbstractFunction newFunction) {
+        return newFunction instanceof MsProcedure;
     }
 
     @Override

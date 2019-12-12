@@ -78,8 +78,7 @@ public class CreateMsProcedure extends BatchContextProcessor {
         procedure.setAnsiNulls(ansiNulls);
         procedure.setQuotedIdentified(quotedIdentifier);
 
-        ctx.procedure_param().forEach(arg -> addMsTypeDepcy(arg.data_type(), procedure));
-
+        fillArguments(procedure);
         setSourceParts(procedure);
 
         String schemaName;
@@ -105,7 +104,7 @@ public class CreateMsProcedure extends BatchContextProcessor {
         return procedure;
     }
 
-    private void fillArguments(MsClrProcedure function) {
+    private void fillArguments(AbstractFunction function) {
         for (Procedure_paramContext argument : ctx.procedure_param()) {
             Argument arg = new Argument(parseArgMode(argument.arg_mode()),
                     argument.name.getText(), getFullCtxText(argument.data_type()));
