@@ -105,6 +105,10 @@ public class PgDiffTest {
                     {"drop_column"},
                     // Tests scenario where COLUMNs are dropped from partitioned TABLE.
                     {"drop_col_from_partitioned_tbl"},
+                    // Tests scenario where generated COLUMN is added to TABLE definition.
+                    {"add_column_generated"},
+                    // Tests scenario where generated COLUMN is modified.
+                    {"modify_column_generated"},
                     // Tests scenario where new TABLE is added.
                     {"add_table"},
                     // Tests scenario where new FOREIGN TABLE is added.
@@ -133,6 +137,8 @@ public class PgDiffTest {
                     {"modify_table_row_security"},
                     // Tests scenario where TABLE logged status is changed.
                     {"modify_table_unlogged"},
+                    // Tests scenario where new TABLE with generated column is added.
+                    {"add_table_with_generated_col"},
                     // Tests scenario where TABLE CONSTRAINT is added.
                     {"add_constraint"},
                     // Tests scenario where TABLE CONSTRAINT with tablespace is added.
