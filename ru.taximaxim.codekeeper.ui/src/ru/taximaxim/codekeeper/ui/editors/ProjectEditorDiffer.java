@@ -165,7 +165,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private DiffTableViewer diffTable;
     private DiffPaneViewer diffPane;
 
-    private LocalResourceManager lrm;
     private boolean isDBLoaded;
     private boolean isCommitCommandAvailable;
     private List<Entry<PgStatement, PgStatement>> manualDepciesSource = new ArrayList<>();
@@ -228,7 +227,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         this.parent = parent;
 
         parent.setLayout(new GridLayout());
-        lrm = new LocalResourceManager(JFaceResources.getResources(), parent);
+        LocalResourceManager lrm = new LocalResourceManager(JFaceResources.getResources(), parent);
 
         SashForm sashOuter = new SashForm(parent, SWT.VERTICAL | SWT.SMOOTH);
         sashOuter.setLayoutData(new GridData(GridData.FILL_BOTH));
