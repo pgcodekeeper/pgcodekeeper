@@ -122,8 +122,6 @@ public class QueriesBatchCallable extends StatementCallable<String> {
             }
 
             reporter.writeError(sb.toString());
-        } finally {
-            batchesList.clear();
         }
         // BatchUpdateException
         // MS SQL driver returns a useless batch update status array
@@ -137,17 +135,18 @@ public class QueriesBatchCallable extends StatementCallable<String> {
         List<List<PgObjLocation>> batchesList = new ArrayList<>();
         batchesList.add(new ArrayList<>());
 
-        batches.forEach(loc -> {
+        for (PgObjLocation loc : batches) {
             if (ApgdiffConsts.GO.equalsIgnoreCase(loc.getAction())) {
                 batchesList.add(new ArrayList<>());
             } else {
                 batchesList.get(batchesList.size() - 1).add(loc);
             }
-        });
+        }
 
-        List<PgObjLocation> lastBatch = batchesList.get(batchesList.size() - 1);
+        int lastBatchIdx = batchesList.size() - 1;
+        List<PgObjLocation> lastBatch = batchesList.get(lastBatchIdx);
         if (lastBatch.isEmpty()) {
-            batchesList.remove(lastBatch);
+            batchesList.remove(lastBatchIdx);
         }
 
         return batchesList;
