@@ -187,7 +187,9 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
         final int startLength = sb.length();
         PgColumn newColumn = (PgColumn) newCondition;
 
-        if (isGenerated() != newColumn.isGenerated()) {
+        if (isGenerated() != newColumn.isGenerated()
+                || (isGenerated() && newColumn.isGenerated()
+                        && !Objects.equals(getDefaultValue(), newColumn.getDefaultValue()))) {
             return true;
         }
 
