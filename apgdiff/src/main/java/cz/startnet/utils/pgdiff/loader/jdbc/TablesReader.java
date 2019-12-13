@@ -167,6 +167,11 @@ public class TablesReader extends JdbcReader {
         String[] colStorages = getColArray(res, "col_storages");
         String[] colDefaultStorages = getColArray(res, "col_default_storages");
 
+        String[] colGenerated = null;
+        if (SupportedVersion.VERSION_12.isLE(loader.version)) {
+            colGenerated = getColArray(res, "col_generated");
+        }
+
         for (int i = 0; i < colNames.length; i++) {
             PgColumn column = new PgColumn(colNames[i]);
             column.setInherit(!colIsLocal[i]);
@@ -232,6 +237,10 @@ public class TablesReader extends JdbcReader {
             // non-negative (i.e. it's not the default value)
             if (statistics > -1) {
                 column.setStatistics(statistics);
+            }
+
+            if (colGenerated != null && !colGenerated[i].isEmpty()) {
+                column.setGenerated("s".equals(colGenerated[i]));
             }
 
             String comment = colComments[i];

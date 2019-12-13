@@ -34,6 +34,7 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
     private AbstractSequence sequence;
     private String identityType;
     private boolean isInherit;
+    private boolean isGenerated;
 
     public PgColumn(String name) {
         super(name);
@@ -57,11 +58,13 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
 
         definitionDefaultNotNull(sbDefinition);
 
+        generatedAlwaysAsStored(sbDefinition);
+
         return sbDefinition.toString();
     }
 
     private StringBuilder definitionDefaultNotNull(StringBuilder sbDefinition) {
-        if (getDefaultValue() != null) {
+        if (getDefaultValue() != null && !isGenerated()) {
             sbDefinition.append(" DEFAULT ");
             sbDefinition.append(getDefaultValue());
         }
@@ -70,6 +73,15 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
             sbDefinition.append(NOT_NULL);
         }
 
+        return sbDefinition;
+    }
+
+    private StringBuilder generatedAlwaysAsStored(StringBuilder sbDefinition) {
+        if (isGenerated()) {
+            sbDefinition.append(" GENERATED ALWAYS AS (")
+            .append(getDefaultValue())
+            .append(") STORED");
+        }
         return sbDefinition;
     }
 
@@ -96,10 +108,14 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
                 definitionDefaultNotNull(sb);
             }
 
+            generatedAlwaysAsStored(sb);
+
             sb.append(';');
         }
 
-        if (!mergeDefaultNotNull) {
+        // column may have a default expression or a generation expression
+        // (https://www.postgresql.org/docs/12/catalog-pg-attribute.html) (param - 'atthasdef')
+        if (!mergeDefaultNotNull && !isGenerated()) {
             compareDefaults(null, getDefaultValue(), new AtomicBoolean(), sb);
             compareNullValues(true, getNullValue(), getDefaultValue() != null, sb);
         }
@@ -170,6 +186,10 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         PgColumn newColumn = (PgColumn) newCondition;
+
+        if (isGenerated() != newColumn.isGenerated()) {
+            return true;
+        }
 
         boolean isNeedDropDefault = !Objects.equals(getType(), newColumn.getType())
                 && !Objects.equals(getDefaultValue(), newColumn.getDefaultValue());
@@ -501,6 +521,15 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
         resetHash();
     }
 
+    public boolean isGenerated() {
+        return isGenerated;
+    }
+
+    public void setGenerated(boolean isGenerated) {
+        this.isGenerated = isGenerated;
+        resetHash();
+    }
+
     public void setStatistics(final Integer statistics) {
         this.statistics = statistics;
         resetHash();
@@ -545,6 +574,7 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
                     && Objects.equals(storage, col.getStorage())
                     && Objects.equals(identityType, col.getIdentityType())
                     && isInherit == col.isInherit()
+                    && isGenerated == col.isGenerated()
                     && options.equals(col.options)
                     && fOptions.equals(col.fOptions)
                     && Objects.equals(sequence, col.getSequence());
@@ -563,6 +593,7 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
         hasher.put(sequence);
         hasher.put(identityType);
         hasher.put(isInherit);
+        hasher.put(isGenerated);
     }
 
     @Override
@@ -575,6 +606,7 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
         copy.setIdentityType(getIdentityType());
         copy.setSequence(getSequence());
         copy.setInherit(isInherit());
+        copy.setGenerated(isGenerated());
         return copy;
     }
 }
