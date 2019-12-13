@@ -102,7 +102,6 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
-import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.CONTEXT;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
@@ -1064,14 +1063,11 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             }
         }
 
-        boolean considerDepcy = mainPrefs.getBoolean(COMMIT_PREF.CONSIDER_DEPCY_IN_COMMIT);
-        Set<TreeElement> sumNewAndDelete = null;
         TreeElement treeCopy = diffTree.getCopy();
-        if (considerDepcy) {
-            Log.log(Log.LOG_INFO, "Processing depcies for project update"); //$NON-NLS-1$
-            sumNewAndDelete = new DepcyTreeExtender(dbProject.getDbObject(),
-                    dbRemote.getDbObject(), treeCopy).getDepcies();
-        }
+
+        Log.log(Log.LOG_INFO, "Processing depcies for project update"); //$NON-NLS-1$
+        Set<TreeElement> sumNewAndDelete = new DepcyTreeExtender(
+                dbProject.getDbObject(), dbRemote.getDbObject(), treeCopy).getDepcies();
 
         Log.log(Log.LOG_INFO, "Querying user for project update"); //$NON-NLS-1$
         // display commit dialog
