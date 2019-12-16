@@ -217,9 +217,6 @@ implements SqlContextProcessor {
             break;
         case "default_table_access_method":
             accessMethod = confValue;
-            if (accessMethod.isEmpty()) {
-                accessMethod = null;
-            }
             break;
         default:
             break;

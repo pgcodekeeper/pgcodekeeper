@@ -128,14 +128,14 @@ public class CreateTable extends TableAbstract {
         Partition_byContext part = ctx.partition_by();
         if (part != null) {
             table.setPartitionBy(ParserAbstract.getFullCtxText(part.partition_method()));
-        } else {
+
             // table access method for partitioned tables is not supported
-            if (ctx.USING() != null) {
-                table.setMethod(ctx.identifier().getText());
-            } else if (accessMethod != null) {
-                table.setMethod(accessMethod);
-            }
+        } else if (ctx.USING() != null) {
+            table.setMethod(ctx.identifier().getText());
+        } else if (accessMethod != null) {
+            table.setMethod(accessMethod);
         }
+
         return table;
     }
 
