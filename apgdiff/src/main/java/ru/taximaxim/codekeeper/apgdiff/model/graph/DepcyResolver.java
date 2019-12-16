@@ -528,12 +528,14 @@ public class DepcyResolver {
                 }
                 return;
             }
+
+            if ((type == DbObjType.FUNCTION || type == DbObjType.PROCEDURE)
+                    && !((AbstractFunction) oldSt).needDrop((AbstractFunction) newSt)) {
+                return;
+            }
+
             AtomicBoolean isNeedDepcy = new AtomicBoolean();
             if (oldSt.appendAlterSQL(newSt, new StringBuilder(), isNeedDepcy) && isNeedDepcy.get()) {
-                if ((type == DbObjType.FUNCTION || type == DbObjType.PROCEDURE)
-                        && !((AbstractFunction) oldSt).needDrop((AbstractFunction) newSt)) {
-                    return;
-                }
                 needDrop = oldSt;
             }
         }
