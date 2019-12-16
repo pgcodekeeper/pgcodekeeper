@@ -235,7 +235,7 @@ public abstract class PgStatement implements IStatement, IHashable {
             // The privileges of columns for role are not set lower than for the
             // same role in the parent table, they may be the same or higher.
             if (DbObjType.COLUMN != getStatementType()
-                    && privilege.getPermission().equalsIgnoreCase("ALL")) {
+                    && "ALL".equalsIgnoreCase(privilege.getPermission())) {
                 addPrivilegeFiltered(privilege, locOwner);
             } else {
                 privileges.add(privilege);
