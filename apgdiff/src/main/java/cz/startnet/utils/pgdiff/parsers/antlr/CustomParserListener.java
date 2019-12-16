@@ -30,8 +30,7 @@ public class CustomParserListener {
     private final List<StatementBodyContainer> statementBodies = new ArrayList<>();
 
     public CustomParserListener(PgDatabase database, String filename,
-            ParserListenerMode mode, List<AntlrError> errors,
-            IProgressMonitor monitor) {
+            ParserListenerMode mode, List<AntlrError> errors, IProgressMonitor monitor) {
         this.db = database;
         this.errors = errors;
         this.monitor = monitor;
