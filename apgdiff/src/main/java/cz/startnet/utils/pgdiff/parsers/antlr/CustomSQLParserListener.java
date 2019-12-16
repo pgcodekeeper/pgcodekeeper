@@ -80,7 +80,7 @@ implements SqlContextProcessor {
         for (StatementContext s : rootCtx.statement()) {
             statement(s);
         }
-        if (isNormMode) {
+        if (ParserListenerMode.NORMAL == mode) {
             db.sortColumns();
         }
     }
@@ -145,7 +145,7 @@ implements SqlContextProcessor {
         } else if (ctx.create_fts_dictionary() != null) {
             p = new CreateFtsDictionary(ctx.create_fts_dictionary(), db);
         } else if (ctx.comment_on_statement() != null) {
-            if (!isScriptMode) {
+            if (ParserListenerMode.SCRIPT != mode) {
                 p = new CommentOn(ctx.comment_on_statement(), db);
                 addUndescribedObjToQueries(ctx, stream);
             } else {
@@ -153,7 +153,7 @@ implements SqlContextProcessor {
                 return;
             }
         } else if (ctx.rule_common() != null) {
-            if (!isScriptMode) {
+            if (ParserListenerMode.SCRIPT != mode) {
                 p = new CreateRule(ctx.rule_common(), db);
                 addUndescribedObjToQueries(ctx, stream);
             } else {
@@ -235,8 +235,8 @@ implements SqlContextProcessor {
 
         switch (confParam.toLowerCase(Locale.ROOT)) {
         case "search_path":
-            if (!isRefMode
-                    && (vex.size() != 1 || !ApgdiffConsts.PG_CATALOG.equals(confValue))) {
+            if (ParserListenerMode.REF != mode
+            && (vex.size() != 1 || !ApgdiffConsts.PG_CATALOG.equals(confValue))) {
                 throw new UnresolvedReferenceException("Unsupported search_path", ctx.start);
             }
             break;

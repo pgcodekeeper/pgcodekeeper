@@ -95,7 +95,7 @@ implements TSqlContextProcessor {
         db.addToQueries(fileName, new PgObjLocation(null, ApgdiffConsts.GO,
                 previousObjCtx.getStop().getStopIndex() + OFFSET_TO_GO_POSITION,
                 previousObjCtx.getStop().getLine() + OFFSET_TO_GO_POSITION, 0, null,
-                isScriptMode ? ApgdiffConsts.GO : null));
+                ParserListenerMode.SCRIPT == mode ? ApgdiffConsts.GO : null));
     }
 
     public void clause(St_clauseContext st) {
