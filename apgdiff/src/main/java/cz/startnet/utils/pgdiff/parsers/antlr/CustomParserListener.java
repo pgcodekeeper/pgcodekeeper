@@ -23,19 +23,19 @@ public class CustomParserListener {
 
     protected final PgDatabase db;
     protected final ParserListenerMode mode;
-    protected final String fileName;
+    protected final String filename;
     protected final List<AntlrError> errors;
     private final IProgressMonitor monitor;
 
     private final List<StatementBodyContainer> statementBodies = new ArrayList<>();
 
-    public CustomParserListener(PgDatabase database, String fileName,
+    public CustomParserListener(PgDatabase database, String filename,
             ParserListenerMode mode, List<AntlrError> errors,
             IProgressMonitor monitor) {
         this.db = database;
         this.errors = errors;
         this.monitor = monitor;
-        this.fileName = fileName;
+        this.filename = filename;
         this.mode = mode;
     }
 
@@ -43,7 +43,7 @@ public class CustomParserListener {
      * @param ctx statememnt's first token rule
      */
     protected void safeParseStatement(ParserAbstract p, ParserRuleContext ctx) {
-        safeParseStatement(() -> p.parseObject(fileName, mode, statementBodies, ctx), ctx);
+        safeParseStatement(() -> p.parseObject(filename, mode, statementBodies, ctx), ctx);
     }
 
     protected void safeParseStatement(Runnable r, ParserRuleContext ctx) {
@@ -51,11 +51,11 @@ public class CustomParserListener {
             PgDiffUtils.checkCancelled(monitor);
             r.run();
         } catch (UnresolvedReferenceException ex) {
-            errors.add(handleUnresolvedReference(ex, fileName));
+            errors.add(handleUnresolvedReference(ex, filename));
         } catch (InterruptedException ex) {
             throw new MonitorCancelledRuntimeException();
         } catch (Exception e) {
-            errors.add(handleParserContextException(e, fileName, ctx));
+            errors.add(handleParserContextException(e, filename, ctx));
         }
     }
 
@@ -86,7 +86,7 @@ public class CustomParserListener {
      * {@link cz.startnet.utils.pgdiff.schema.PgStatement}.
      */
     protected void addUndescribedObjToQueries(ParserRuleContext ctx, CommonTokenStream tokenStream) {
-        safeParseStatement(() -> db.addToQueries(fileName, new PgObjLocation(
+        safeParseStatement(() -> db.addToQueries(filename, new PgObjLocation(
                 getActionForUndescribedObj(ctx, tokenStream), ctx,
                 ParserListenerMode.SCRIPT == mode ? ParserAbstract.getFullCtxText(ctx) : null)), ctx);
     }
