@@ -112,33 +112,31 @@ public class CommitDialog extends TrayDialog {
         List<TreeElement> result = new TreeFlattener().onlySelected().flatten(diffTree);
         dtvTop.setInputCollection(result, dbProject, dbRemote);
 
-        if (depcyElementsSet != null){
-            Group gBottom = new Group(container, SWT.NONE);
-            gBottom.setLayout(new GridLayout());
+        Group gBottom = new Group(container, SWT.NONE);
+        gBottom.setLayout(new GridLayout());
 
-            gd = new GridData(GridData.FILL_BOTH);
-            gBottom.setLayoutData(gd);
-            gBottom.setText(Messages.commitDialog_depcy_elements);
+        gd = new GridData(GridData.FILL_BOTH);
+        gBottom.setLayoutData(gd);
+        gBottom.setText(Messages.commitDialog_depcy_elements);
 
-            DiffTableViewer dtvBottom = new DiffTableViewer(gBottom, false);
-            gd = new GridData(GridData.FILL_BOTH);
-            gd.heightHint = 300;
-            gd.widthHint = 1000;
-            dtvBottom.setLayoutData(gd);
+        DiffTableViewer dtvBottom = new DiffTableViewer(gBottom, false);
+        gd = new GridData(GridData.FILL_BOTH);
+        gd.heightHint = 300;
+        gd.widthHint = 1000;
+        dtvBottom.setLayoutData(gd);
 
-            // выбрать все зависимые элементы для наката
-            for (TreeElement el : depcyElementsSet) {
-                el.setSelected(true);
-            }
-            dtvTop.setAutoExpand(true);
-            dtvBottom.setInputCollection(depcyElementsSet, dbProject, dbRemote);
-
-            dtvBottom.addCheckStateListener(new ValidationCheckStateListener());
-            warningLbl = new Label(gBottom, SWT.NONE);
-            warningLbl.setText(Messages.CommitDialog_unchecked_objects_can_occur_unexpected_errors);
-            warningLbl.setForeground(getShell().getDisplay().getSystemColor(SWT.COLOR_RED));
-            warningLbl.setVisible(false);
+        // выбрать все зависимые элементы для наката
+        for (TreeElement el : depcyElementsSet) {
+            el.setSelected(true);
         }
+        dtvTop.setAutoExpand(true);
+        dtvBottom.setInputCollection(depcyElementsSet, dbProject, dbRemote);
+
+        dtvBottom.addCheckStateListener(new ValidationCheckStateListener());
+        warningLbl = new Label(gBottom, SWT.NONE);
+        warningLbl.setText(Messages.CommitDialog_unchecked_objects_can_occur_unexpected_errors);
+        warningLbl.setForeground(getShell().getDisplay().getSystemColor(SWT.COLOR_RED));
+        warningLbl.setVisible(false);
 
         btnAutocommit = new Button(container, SWT.CHECK);
         btnAutocommit.setText(Messages.commitPartDescr_show_commit_window);
