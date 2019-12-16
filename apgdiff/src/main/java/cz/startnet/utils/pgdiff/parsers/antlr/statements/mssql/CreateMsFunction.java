@@ -25,7 +25,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSelect;
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsSqlClauses;
 import cz.startnet.utils.pgdiff.parsers.antlr.msexpr.MsValueExpr;
 import cz.startnet.utils.pgdiff.schema.AbstractFunction;
-import cz.startnet.utils.pgdiff.schema.AbstractMsClrFunction;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
 import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.FuncTypes;
@@ -175,16 +174,14 @@ public class CreateMsFunction extends BatchContextProcessor {
         for (Procedure_paramContext argument : ctx.procedure_param()) {
             addMsTypeDepcy(argument.data_type(), function);
 
-            if (function instanceof AbstractMsClrFunction) {
-                Argument arg = new Argument(parseArgMode(argument.arg_mode()),
-                        argument.name.getText(), getFullCtxText(argument.data_type()));
-                arg.setReadOnly(argument.READONLY() != null);
-                if (argument.default_val != null) {
-                    arg.setDefaultExpression(getFullCtxText(argument.default_val));
-                }
-
-                ((AbstractMsClrFunction) function).addArgument(arg);
+            Argument arg = new Argument(parseArgMode(argument.arg_mode()),
+                    argument.name.getText(), getFullCtxText(argument.data_type()));
+            arg.setReadOnly(argument.READONLY() != null);
+            if (argument.default_val != null) {
+                arg.setDefaultExpression(getFullCtxText(argument.default_val));
             }
+
+            function.addArgument(arg);
         }
     }
 }

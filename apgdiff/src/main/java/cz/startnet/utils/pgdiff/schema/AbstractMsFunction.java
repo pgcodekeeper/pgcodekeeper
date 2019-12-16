@@ -58,6 +58,7 @@ implements SourceStatement {
 
     @Override
     public void computeHash(Hasher hasher) {
+        super.computeHash(hasher);
         hasher.put(getFirstPart());
         hasher.put(getSecondPart());
         hasher.put(isQuotedIdentified());
@@ -65,13 +66,13 @@ implements SourceStatement {
     }
 
     @Override
-    public boolean compare(PgStatement obj) {
-        if (obj instanceof AbstractMsFunction && super.compare(obj)) {
-            AbstractMsFunction func = (AbstractMsFunction) obj;
-            return Objects.equals(getFirstPart(), func.getFirstPart())
-                    && Objects.equals(getSecondPart(), func.getSecondPart())
-                    && isQuotedIdentified() == func.isQuotedIdentified()
-                    && isAnsiNulls() == func.isAnsiNulls();
+    protected boolean compareUnalterable(AbstractFunction func) {
+        if (func instanceof AbstractMsFunction && super.compareUnalterable(func)) {
+            AbstractMsFunction newFunction = (AbstractMsFunction) func;
+            return isAnsiNulls() == newFunction.isAnsiNulls()
+                    && isQuotedIdentified() == newFunction.isQuotedIdentified()
+                    && Objects.equals(getFirstPart(), newFunction.getFirstPart())
+                    && Objects.equals(getSecondPart(), newFunction.getSecondPart());
         }
 
         return false;
@@ -79,16 +80,13 @@ implements SourceStatement {
 
     @Override
     public AbstractFunction shallowCopy() {
-        AbstractMsFunction functionDst = getFunctionCopy();
-        copyBaseFields(functionDst);
+        AbstractMsFunction functionDst = (AbstractMsFunction) super.shallowCopy();
         functionDst.setAnsiNulls(isAnsiNulls());
         functionDst.setQuotedIdentified(isQuotedIdentified());
         functionDst.setFirstPart(getFirstPart());
         functionDst.setSecondPart(getSecondPart());
         return functionDst;
     }
-
-    protected abstract AbstractMsFunction getFunctionCopy();
 
     @Override
     public boolean isPostgres() {

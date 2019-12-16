@@ -1,7 +1,6 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
@@ -34,34 +33,6 @@ public class MsClrFunction extends AbstractMsClrFunction {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
-        if (newCondition instanceof MsFunction) {
-            isNeedDepcies.set(true);
-            return true;
-        }
-
-        MsClrFunction newFunction = (MsClrFunction) newCondition;
-
-        if (!compareUnalterable(newFunction)) {
-            if (!getFuncType().equals(newFunction.getFuncType())) {
-                isNeedDepcies.set(true);
-                return true;
-            }
-            sb.append(newFunction.getFunctionFullSQL(false));
-        }
-
-        if (!Objects.equals(getOwner(), newFunction.getOwner())) {
-            newFunction.alterOwnerSQL(sb);
-        }
-
-        alterPrivileges(newFunction, sb);
-
-        return sb.length() > startLength;
-    }
-
-    @Override
     public String getDropSQL() {
         return "DROP FUNCTION " + getQualifiedName() + GO;
     }
@@ -87,7 +58,8 @@ public class MsClrFunction extends AbstractMsClrFunction {
         return sbString.toString();
     }
 
-    private String getFunctionFullSQL(boolean isCreate) {
+    @Override
+    protected String getFunctionFullSQL(boolean isCreate) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("SET QUOTED_IDENTIFIER OFF").append(GO).append('\n');
         sbSQL.append("SET ANSI_NULLS OFF").append(GO).append('\n');
@@ -139,10 +111,19 @@ public class MsClrFunction extends AbstractMsClrFunction {
     }
 
     @Override
-    public boolean compareUnalterable(AbstractMsClrFunction func) {
+    protected boolean compareUnalterable(AbstractFunction func) {
         return func instanceof MsClrFunction && super.compareUnalterable(func)
                 && Objects.equals(returns, func.getReturns())
                 && Objects.equals(getFuncType(), ((MsClrFunction) func).getFuncType());
+    }
+
+    @Override
+    public boolean needDrop(AbstractFunction newFunction) {
+        if (newFunction instanceof MsClrFunction) {
+            return getFuncType() != ((MsClrFunction) newFunction).getFuncType();
+        }
+
+        return true;
     }
 
     @Override

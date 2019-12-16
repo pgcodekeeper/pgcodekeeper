@@ -62,7 +62,7 @@ SET default_with_oids = false;
 --
 
 CREATE TABLE public.t1 (
-    c1 integer DEFAULT nextval('seq1'::regclass),
+    c1 integer DEFAULT nextval('public.seq1'::regclass),
     c2 integer
 );
 

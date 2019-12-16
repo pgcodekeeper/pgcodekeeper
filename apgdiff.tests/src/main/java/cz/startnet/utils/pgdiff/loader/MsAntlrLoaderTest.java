@@ -20,6 +20,7 @@ import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.schema.AbstractConstraint;
 import cz.startnet.utils.pgdiff.schema.AbstractIndex;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
+import cz.startnet.utils.pgdiff.schema.Argument;
 import cz.startnet.utils.pgdiff.schema.FuncTypes;
 import cz.startnet.utils.pgdiff.schema.MsColumn;
 import cz.startnet.utils.pgdiff.schema.MsConstraint;
@@ -546,6 +547,7 @@ class MsDB4 implements MsDatabaseObjectCreator {
         MsFunction func = new MsFunction("gtsq_in");
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
+        func.addArgument(new Argument("@eid", "int"));
         func.setFirstPart("");
         func.setSecondPart("(@eid int)\n" +
                 "RETURNS varchar(100)\n" +
@@ -563,6 +565,8 @@ class MsDB4 implements MsDatabaseObjectCreator {
         func = new MsFunction("multiply_numbers");
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
+        func.addArgument(new Argument("@First", "int"));
+        func.addArgument(new Argument("@Second", "int"));
         func.setFirstPart("");
         func.setSecondPart("(@First int, @Second int) \n" +
                 "RETURNS integer\n" +
@@ -582,6 +586,8 @@ class MsDB4 implements MsDatabaseObjectCreator {
         func = new MsFunction("select_something");
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
+        func.addArgument(new Argument("@First", "int"));
+        func.addArgument(new Argument("@Second", "int"));
         func.setFirstPart("");
         func.setSecondPart("(@First int, @Second int) \n" +
                 "RETURNS integer\n" +
@@ -687,6 +693,7 @@ class MsDB7 implements MsDatabaseObjectCreator {
         MsFunction func = new MsFunction(".x\"\".\"\"\"\".");
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
+        func.addArgument(new Argument("@arg1", "int"));
         func.setFirstPart("/*Name test*/\n");
         func.setSecondPart("(@arg1 int)\n" +
                 "RETURNS bit\n" +
@@ -1021,6 +1028,8 @@ class MsDB12 implements MsDatabaseObjectCreator {
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
         func.setFuncType(FuncTypes.MULTI);
+        func.addArgument(new Argument("@string", "nvarchar(MAX)"));
+        func.addArgument(new Argument("@delimiter", "char(1)"));
         func.setFirstPart("");
         func.setSecondPart("\n" +
                 "(@string nvarchar(MAX), @delimiter char(1))\n" +
@@ -1047,6 +1056,8 @@ class MsDB12 implements MsDatabaseObjectCreator {
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
         func.setFuncType(FuncTypes.MULTI);
+        func.addArgument(new Argument("@string", "nvarchar(MAX)"));
+        func.addArgument(new Argument("@delimiter", "char(1)"));
         func.setFirstPart("");
         func.setSecondPart("\n" +
                 "(@string nvarchar(MAX), @delimiter char(1))\n" +
@@ -1097,6 +1108,7 @@ class MsDB13 implements MsDatabaseObjectCreator {
         MsFunction func = new MsFunction("test_fnc");
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
+        func.addArgument(new Argument("@arg", "nvarchar"));
         func.setFirstPart("");
         func.setSecondPart("(@arg nvarchar) \n" +
                 "RETURNS bit\n" +

@@ -1,8 +1,5 @@
 package cz.startnet.utils.pgdiff.schema;
 
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class MsProcedure extends AbstractMsFunction {
@@ -19,7 +16,7 @@ public class MsProcedure extends AbstractMsFunction {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append(getProcedureFullSQL(true));
+        sbSQL.append(getFunctionFullSQL(true));
 
         appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
@@ -27,7 +24,8 @@ public class MsProcedure extends AbstractMsFunction {
         return sbSQL.toString();
     }
 
-    private String getProcedureFullSQL(boolean isCreate) {
+    @Override
+    protected String getFunctionFullSQL(boolean isCreate) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("SET QUOTED_IDENTIFIER ").append(isQuotedIdentified() ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
@@ -46,36 +44,8 @@ public class MsProcedure extends AbstractMsFunction {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        if (newCondition instanceof MsClrProcedure) {
-            isNeedDepcies.set(true);
-            return true;
-        }
-
-        final int startLength = sb.length();
-        MsProcedure newProcedure = (MsProcedure) newCondition;
-
-        if (isAnsiNulls() != newProcedure.isAnsiNulls()
-                || isQuotedIdentified() != newProcedure.isQuotedIdentified()
-                || !Objects.equals(getFirstPart(), newProcedure.getFirstPart())
-                || !Objects.equals(getSecondPart(), newProcedure.getSecondPart())) {
-            sb.append(newProcedure.getProcedureFullSQL(false));
-            isNeedDepcies.set(true);
-        }
-
-        if (!Objects.equals(getOwner(), newProcedure.getOwner())) {
-            newProcedure.alterOwnerSQL(sb);
-        }
-
-        alterPrivileges(newProcedure, sb);
-
-        return sb.length() > startLength;
-    }
-
-    @Override
-    public boolean compare(PgStatement obj) {
-        return obj instanceof MsProcedure && super.compare(obj);
+    public boolean needDrop(AbstractFunction newFunction) {
+        return newFunction instanceof MsClrProcedure;
     }
 
     @Override
