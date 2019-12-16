@@ -857,7 +857,7 @@ create_transform_statement
     ;
 
 create_access_method
-    : ACCESS METHOD name=identifier TYPE type=identifier HANDLER func_name=schema_qualified_name
+    : ACCESS METHOD identifier TYPE (TABLE | INDEX) HANDLER schema_qualified_name
     ;
 
 create_user_or_role

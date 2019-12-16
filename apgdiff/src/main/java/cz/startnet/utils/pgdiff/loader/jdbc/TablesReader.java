@@ -63,9 +63,11 @@ public class TablesReader extends JdbcReader {
             t = new SimplePgTable(tableName);
         }
 
-        // used this condition because the table access method for partitioned tables is not supported
-        if (SupportedVersion.VERSION_12.isLE(loader.version) && !"p".equals(res.getString("relkind"))) {
-            t.setMethod(res.getString("access_method"));
+        if (SupportedVersion.VERSION_12.isLE(loader.version)) {
+            String accessMethod = res.getString("access_method");
+            if (accessMethod != null) {
+                t.setMethod(accessMethod);
+            }
         }
 
         String[] foptions = getColArray(res, "ftoptions");
@@ -239,8 +241,8 @@ public class TablesReader extends JdbcReader {
                 column.setStatistics(statistics);
             }
 
-            if (colGenerated != null && !colGenerated[i].isEmpty()) {
-                column.setGenerated("s".equals(colGenerated[i]));
+            if (colGenerated != null && "s".equals(colGenerated[i])) {
+                column.setGenerated(true);
             }
 
             String comment = colComments[i];

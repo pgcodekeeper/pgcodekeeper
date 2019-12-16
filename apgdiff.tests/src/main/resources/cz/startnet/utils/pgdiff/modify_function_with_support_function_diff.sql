@@ -1,7 +1,9 @@
 SET search_path = pg_catalog;
 
-ALTER FUNCTION public.f_sp(s text)
-	SUPPORT tester.my_support2;
+CREATE OR REPLACE FUNCTION public.f_sp(s text) RETURNS text
+    LANGUAGE plpgsql SUPPORT tester.my_support2
+    AS $$begin return 'textttt'; end;$$;
 
-ALTER FUNCTION public.f_sp_2(s text)
-	SUPPORT public.my_support;
+CREATE OR REPLACE FUNCTION public.f_sp_2(s text) RETURNS text
+    LANGUAGE plpgsql SUPPORT public.my_support
+    AS $$begin return 'textttt'; end;$$;

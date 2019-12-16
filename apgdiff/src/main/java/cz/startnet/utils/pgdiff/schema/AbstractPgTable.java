@@ -188,7 +188,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         final int startLength = sb.length();
         AbstractPgTable newTable = (AbstractPgTable) newCondition;
 
-        if (isRecreated(newTable) || !Objects.equals(getMethod(), newTable.getMethod())) {
+        if (isRecreated(newTable)) {
             isNeedDepcies.set(true);
             return true;
         }
@@ -202,6 +202,11 @@ public abstract class AbstractPgTable extends AbstractTable {
         compareComment(newTable,sb);
 
         return sb.length() > startLength;
+    }
+
+    @Override
+    protected boolean isNeedRecreate(AbstractTable newTable) {
+        return !Objects.equals(getMethod(), ((AbstractPgTable) newTable).getMethod());
     }
 
     @Override

@@ -31,7 +31,7 @@ import cz.startnet.utils.pgdiff.schema.TypedPgTable;
 public class CreateTable extends TableAbstract {
     private final Create_table_statementContext ctx;
     private final String tablespace;
-    protected final String accessMethod;
+    private final String accessMethod;
     private final String oids;
 
     public CreateTable(Create_table_statementContext ctx, PgDatabase db,
@@ -49,22 +49,13 @@ public class CreateTable extends TableAbstract {
         String tableName = QNameParser.getFirstName(ids);
         String schemaName = getSchemaNameSafe(ids);
         AbstractSchema schema = getSchemaSafe(ids);
-        AbstractPgTable table = (AbstractPgTable) defineTable(tableName, schemaName);
+        AbstractTable table = defineTable(tableName, schemaName);
         addSafe(schema, table, ids);
 
         for (AbstractColumn col : table.getColumns()) {
             AbstractSequence seq = ((PgColumn) col).getSequence();
             if (seq != null) {
                 seq.setParent(schema);
-            }
-        }
-
-        // used this condition because the table access method for partitioned tables is not supported
-        if (ctx.partition_by() == null) {
-            if (ctx.USING() != null) {
-                table.setMethod(ctx.identifier().getText());
-            } else if (accessMethod != null) {
-                table.setMethod(accessMethod);
             }
         }
     }
@@ -137,6 +128,13 @@ public class CreateTable extends TableAbstract {
         Partition_byContext part = ctx.partition_by();
         if (part != null) {
             table.setPartitionBy(ParserAbstract.getFullCtxText(part.partition_method()));
+        } else {
+            // table access method for partitioned tables is not supported
+            if (ctx.USING() != null) {
+                table.setMethod(ctx.identifier().getText());
+            } else if (accessMethod != null) {
+                table.setMethod(accessMethod);
+            }
         }
         return table;
     }
