@@ -171,7 +171,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private List<Entry<PgStatement, PgStatement>> manualDepciesTarget = new ArrayList<>();
 
     private boolean isMsSql;
-    private IEclipsePreferences projPrefs;
     private final Map<String, Boolean> oneTimePrefs = new HashMap<>();
 
     public IProject getProject() {
@@ -212,7 +211,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         proj = new PgDbProject(in.getProject());
         sp = new ProjectEditorSelectionProvider(getProject());
-        projPrefs = proj.getPrefs();
         isMsSql = OpenProjectUtils.checkMsSql(getProject());
 
         // message box
@@ -413,8 +411,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
                     @Override
                     public void run() {
-                        ApplyCustomDialog dialog = new ApplyCustomDialog(container.getShell(), projPrefs,
-                                isMsSql, oneTimePrefs);
+                        ApplyCustomDialog dialog = new ApplyCustomDialog(container.getShell(),
+                                new OverridablePrefs(proj.getProject(), null), isMsSql, oneTimePrefs);
                         if (dialog.open() == Dialog.OK) {
                             // 'oneTimePrefs' filled by one-time preferences
                             // will be used in 'diff()'
@@ -479,8 +477,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
                     @Override
                     public void run() {
-                        GetChangesCustomDialog dialog = new GetChangesCustomDialog(
-                                container.getShell(), projPrefs, isMsSql, oneTimePrefs);
+                        GetChangesCustomDialog dialog = new GetChangesCustomDialog(container.getShell(),
+                                new OverridablePrefs(proj.getProject(), null), isMsSql, oneTimePrefs);
                         if (dialog.open() == Dialog.OK) {
                             // 'oneTimePrefs' filled by one-time preferences
                             // will be used in 'getChanges()'

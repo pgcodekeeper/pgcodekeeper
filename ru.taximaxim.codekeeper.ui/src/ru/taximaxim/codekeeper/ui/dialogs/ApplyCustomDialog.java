@@ -3,7 +3,6 @@ package ru.taximaxim.codekeeper.ui.dialogs;
 import java.text.MessageFormat;
 import java.util.Map;
 
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
@@ -18,6 +17,7 @@ import org.eclipse.swt.widgets.Shell;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
 
 /**
  * Dialog box for filling in one-time preferences that will be used
@@ -30,16 +30,16 @@ public class ApplyCustomDialog extends Dialog {
     private Button btnAlterColUsingExpr;
     private Button btnCreateIdxConcurrent;
 
-    private final IEclipsePreferences projPS;
+    private final OverridablePrefs prefs;
     private final boolean isMsSql;
 
     private final Map<String, Boolean> customSettings;
 
-    public ApplyCustomDialog(Shell parentShell, IEclipsePreferences projPS,
+    public ApplyCustomDialog(Shell parentShell, OverridablePrefs prefs,
             boolean isMsSql, Map<String, Boolean> customSettings) {
         super(parentShell);
         this.customSettings = customSettings;
-        this.projPS = projPS;
+        this.prefs = prefs;
         this.isMsSql = isMsSql;
     }
 
@@ -63,16 +63,16 @@ public class ApplyCustomDialog extends Dialog {
         GridData gd = new GridData();
         gd.horizontalIndent = 10;
         btnScriptAddTransact.setLayoutData(gd);
-        btnScriptAddTransact.setSelection(projPS.getBoolean(DB_UPDATE_PREF
-                .SCRIPT_IN_TRANSACTION, false));
+        btnScriptAddTransact.setSelection(prefs.getBooleanOfDbUpdatePref(
+                DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION));
 
         btnCreateIdxConcurrent = new Button(panel, SWT.CHECK);
         btnCreateIdxConcurrent.setText(Messages.DbUpdatePrefPage_print_index_with_concurrently);
         gd = new GridData();
         gd.horizontalIndent = 10;
         btnCreateIdxConcurrent.setLayoutData(gd);
-        btnCreateIdxConcurrent.setSelection(projPS.getBoolean(DB_UPDATE_PREF
-                .PRINT_INDEX_WITH_CONCURRENTLY, false));
+        btnCreateIdxConcurrent.setSelection(prefs.getBooleanOfDbUpdatePref(
+                DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
 
         if (!isMsSql) {
             btnCheckFuncBodies = new Button(panel, SWT.CHECK);
@@ -80,16 +80,16 @@ public class ApplyCustomDialog extends Dialog {
             gd = new GridData();
             gd.horizontalIndent = 10;
             btnCheckFuncBodies.setLayoutData(gd);
-            btnCheckFuncBodies.setSelection(projPS.getBoolean(DB_UPDATE_PREF
-                    .CHECK_FUNCTION_BODIES, false));
+            btnCheckFuncBodies.setSelection(prefs.getBooleanOfDbUpdatePref(
+                    DB_UPDATE_PREF.CHECK_FUNCTION_BODIES));
 
             btnAlterColUsingExpr = new Button(panel, SWT.CHECK);
             btnAlterColUsingExpr.setText(Messages.dbUpdatePrefPage_switch_on_off_using);
             gd = new GridData();
             gd.horizontalIndent = 10;
             btnAlterColUsingExpr.setLayoutData(gd);
-            btnAlterColUsingExpr.setSelection(projPS.getBoolean(DB_UPDATE_PREF
-                    .USING_ON_OFF, false));
+            btnAlterColUsingExpr.setSelection(prefs.getBooleanOfDbUpdatePref(
+                    DB_UPDATE_PREF.USING_ON_OFF));
         }
 
         return panel;
