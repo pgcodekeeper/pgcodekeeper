@@ -86,8 +86,8 @@ public class PgDiff {
         loadOverrides(oldDatabase, arguments.getOldSrcFormat(), arguments.getOldSrc());
         loadOverrides(newDatabase, arguments.getNewSrcFormat(), arguments.getNewSrc());
 
-        FullAnalyze.fullAnalyze(oldDatabase, null);
-        FullAnalyze.fullAnalyze(newDatabase, null);
+        analyzeDatabase(oldDatabase);
+        analyzeDatabase(newDatabase);
 
         IgnoreParser ignoreParser = new IgnoreParser();
         for (String listFilename : arguments.getIgnoreLists()) {
@@ -95,6 +95,12 @@ public class PgDiff {
         }
 
         return diffDatabaseSchemas(oldDatabase, newDatabase, ignoreParser.getIgnoreList());
+    }
+
+    private void analyzeDatabase(PgDatabase db)
+            throws InterruptedException, IOException, PgCodekeeperException {
+        FullAnalyze.fullAnalyze(db, errors);
+        assertErrors();
     }
 
     private void loadOverrides(PgDatabase db, String format, String source)

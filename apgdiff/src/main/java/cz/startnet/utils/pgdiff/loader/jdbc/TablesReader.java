@@ -214,7 +214,7 @@ public class TablesReader extends JdbcReader {
                     column.setDefaultValue(columnDefault);
                     loader.submitAntlrTask(columnDefault, p -> p.vex_eof().vex().get(0),
                             ctx -> schema.getDatabase().addAnalysisLauncher(
-                                    new VexAnalysisLauncher(column, ctx)));
+                                    new VexAnalysisLauncher(column, ctx, loader.getCurrentLocation())));
                 }
             }
 

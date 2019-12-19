@@ -21,7 +21,6 @@ import java.util.zip.ZipInputStream;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.libraries.PgLibrary;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -34,7 +33,7 @@ public class LibraryLoader extends DatabaseLoader {
     private final PgDatabase database;
     private final Path metaPath;
 
-    public LibraryLoader(PgDatabase database, Path metaPath, List<? super AntlrError> errors) {
+    public LibraryLoader(PgDatabase database, Path metaPath, List<Object> errors) {
         super(errors);
         this.database = database;
         this.metaPath = metaPath;

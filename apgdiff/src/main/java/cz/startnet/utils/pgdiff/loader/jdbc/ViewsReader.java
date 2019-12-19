@@ -54,7 +54,8 @@ public class ViewsReader extends JdbcReader {
 
         loader.submitAntlrTask(viewDef,
                 p -> p.sql().statement(0).data_statement().select_stmt(),
-                ctx -> dataBase.addAnalysisLauncher(new ViewAnalysisLauncher(v, ctx)));
+                ctx -> dataBase.addAnalysisLauncher(
+                        new ViewAnalysisLauncher(v, ctx, loader.getCurrentLocation())));
 
         // OWNER
         loader.setOwner(v, res.getLong(CLASS_RELOWNER));
@@ -73,7 +74,7 @@ public class ViewsReader extends JdbcReader {
                     v.addColumnDefaultValue(colName, colDefault);
                     loader.submitAntlrTask(colDefault, p -> p.vex_eof().vex().get(0),
                             ctx -> dataBase.addAnalysisLauncher(
-                                    new ViewAnalysisLauncher(v, ctx)));
+                                    new ViewAnalysisLauncher(v, ctx, loader.getCurrentLocation())));
                 }
                 String colComment = colComments[i];
                 if (colComment != null) {

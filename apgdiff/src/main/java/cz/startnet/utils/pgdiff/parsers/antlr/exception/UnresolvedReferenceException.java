@@ -6,7 +6,7 @@ public class UnresolvedReferenceException extends RuntimeException {
 
     private static final long serialVersionUID = 9062166166340935325L;
 
-    private transient Token errorToken;
+    private final transient Token errorToken;
 
     public UnresolvedReferenceException(Token errorToken) {
         super();
@@ -36,9 +36,5 @@ public class UnresolvedReferenceException extends RuntimeException {
 
     public Token getErrorToken() {
         return errorToken;
-    }
-
-    public void setErrorToken(Token errorToken) {
-        this.errorToken = errorToken;
     }
 }

@@ -76,7 +76,7 @@ public class AlterTable extends TableAbstract {
                 IdentifierContext conNameCtx = tablAction.tabl_constraint.identifier();
                 AbstractConstraint con = parseAlterTableConstraint(tablAction,
                         createTableConstraintBlank(tablAction.tabl_constraint), db,
-                        getSchemaNameSafe(ids), nameCtx.getText(), tablespace, isRefMode());
+                        getSchemaNameSafe(ids), nameCtx.getText(), tablespace, fileName, isRefMode());
 
                 if (!con.getName().isEmpty()) {
                     addSafe(tabl, con, Arrays.asList(
@@ -133,7 +133,7 @@ public class AlterTable extends TableAbstract {
                 if (tablAction.set_def_column() != null) {
                     VexContext exp = tablAction.set_def_column().vex();
                     col.setDefaultValue(getFullCtxText(exp));
-                    db.addAnalysisLauncher(new VexAnalysisLauncher(col, exp));
+                    db.addAnalysisLauncher(new VexAnalysisLauncher(col, exp, fileName));
                 }
 
                 // column options
@@ -224,10 +224,10 @@ public class AlterTable extends TableAbstract {
 
     public static AbstractConstraint parseAlterTableConstraint(Table_actionContext tableAction,
             PgConstraint constrBlank, PgDatabase db, String schemaName,
-            String tableName, String tablespace, boolean isRefMode) {
+            String tableName, String tablespace, String location, boolean isRefMode) {
         constrBlank.setNotValid(tableAction.not_valid != null);
         processTableConstraintBlank(tableAction.tabl_constraint, constrBlank, db,
-                schemaName, tableName, tablespace, isRefMode);
+                schemaName, tableName, tablespace, location, isRefMode);
         return constrBlank;
     }
 }

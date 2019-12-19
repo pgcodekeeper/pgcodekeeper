@@ -6,20 +6,16 @@ import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
-import cz.startnet.utils.pgdiff.parsers.antlr.CustomParserListener;
-import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.AbstractExprWithNmspc;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
+import ru.taximaxim.codekeeper.apgdiff.log.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -30,10 +26,13 @@ public abstract class AbstractAnalysisLauncher {
 
     protected PgStatementWithSearchPath stmt;
     protected final ParserRuleContext ctx;
+    private final String location;
 
-    public AbstractAnalysisLauncher(PgStatementWithSearchPath stmt, ParserRuleContext ctx) {
+    public AbstractAnalysisLauncher(PgStatementWithSearchPath stmt,
+            ParserRuleContext ctx, String location) {
         this.stmt = stmt;
         this.ctx = ctx;
+        this.location = location;
     }
 
     public PgStatementWithSearchPath getStmt() {
@@ -53,22 +52,17 @@ public abstract class AbstractAnalysisLauncher {
         }
     }
 
-    public Set<GenericColumn> launchAnalyze(List<? super AntlrError> errors) {
+    public Set<GenericColumn> launchAnalyze(List<Object> errors) {
         // Duplicated objects don't have parent, skip them
         if (stmt.getParent() == null) {
             return Collections.emptySet();
         }
 
-        PgObjLocation loc = stmt.getLocation();
-        String filePath = loc == null ? null : loc.getFilePath();
-
         try {
             return analyze(ctx);
-        } catch (UnresolvedReferenceException ex) {
-            unresolvRefExHandler(ex, errors, ctx, filePath);
         } catch (Exception ex) {
-            addError(errors, CustomParserListener.handleParserContextException(
-                    ex, filePath, ctx));
+            Log.log(Log.LOG_ERROR, ex.toString(), ex);
+            errors.add(location + ' ' + ex);
         }
 
         return Collections.emptySet();
@@ -115,19 +109,5 @@ public abstract class AbstractAnalysisLauncher {
         analyzer.addReference("new", implicitTable);
         analyzer.addReference("old", implicitTable);
         return analyze(ctx, analyzer);
-    }
-
-    private void unresolvRefExHandler(UnresolvedReferenceException ex,
-            List<? super AntlrError> errors, ParserRuleContext ctx, String location) {
-        if (ex.getErrorToken() == null) {
-            ex.setErrorToken(ctx.getStart());
-        }
-        addError(errors, CustomSQLParserListener.handleUnresolvedReference(ex, location));
-    }
-
-    private void addError(List<? super AntlrError> errors, AntlrError err) {
-        if (errors != null) {
-            errors.add(err);
-        }
     }
 }
