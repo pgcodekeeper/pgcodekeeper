@@ -189,6 +189,7 @@ public class PgColumn extends AbstractColumn implements PgOptionContainer  {
 
         if (isGenerated() != newColumn.isGenerated()
                 || (isGenerated() && !Objects.equals(getDefaultValue(), newColumn.getDefaultValue()))) {
+            isNeedDepcies.set(true);
             return true;
         }
 
