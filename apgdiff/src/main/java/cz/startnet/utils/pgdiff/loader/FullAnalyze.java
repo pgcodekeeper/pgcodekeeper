@@ -23,7 +23,7 @@ public final class FullAnalyze {
         this.errors = errors;
     }
 
-    public static void fullAnalyze(PgDatabase db, List<? super Object> errors)
+    public static void fullAnalyze(PgDatabase db, List<Object> errors)
             throws InterruptedException, IOException {
         new FullAnalyze(db, errors).fullAnalyze();
     }
