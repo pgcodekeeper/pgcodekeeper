@@ -1,6 +1,12 @@
 package ru.taximaxim.codekeeper.ui.prefs.heap;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.util.Locale;
+import java.util.stream.Stream;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
@@ -22,7 +28,9 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
  */
 public class HeapSizeChecker implements IStartup {
 
-    private static final long RECOMMENDED_SIZE_IN_GB = 2;
+    private static final long RECOMMENDED_SIZE_GB = 2;
+    private static final double EMPIRICAL_SIZE_GB = 1.7;
+    public static final String XMX_HEAP_PARAMETER = "Xmx";
 
     private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
 
@@ -35,7 +43,7 @@ public class HeapSizeChecker implements IStartup {
                 MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoQuestion(
                         shell, Messages.HeapSizeChecker_heap_size_warning_title,
                         MessageFormat.format(Messages.HeapSizeChecker_heap_size_warning,
-                                RECOMMENDED_SIZE_IN_GB),
+                                RECOMMENDED_SIZE_GB),
                         Messages.HeapSizeChecker_do_not_ask_again,
                         false, null, null);
 
@@ -49,7 +57,51 @@ public class HeapSizeChecker implements IStartup {
     }
 
     private boolean isHeapLessThanNecessary() {
-        // TODO add logic for check heap size
-        return true;
+        try (Stream<String> lineStream = Files.lines(
+                Paths.get(System.getProperty("eclipse.launcher")) //$NON-NLS-1$
+                .resolve("eclipse.ini"), //$NON-NLS-1$
+                StandardCharsets.UTF_8)) {
+            String xmxLine = lineStream.filter(l -> l.contains(XMX_HEAP_PARAMETER))
+                    .findAny().orElse(null);
+
+            if (xmxLine == null) {
+                // TODO show message box instead of throw the exception
+                throw new IllegalArgumentException(
+                        "There is no 'Xmx' property in eclipse.ini file."); //$NON-NLS-1$
+            }
+
+            double eclipseIniHeapSizeGb = 0;
+            String unit = xmxLine.substring(xmxLine.length() - 1).toUpperCase(Locale.ROOT);
+            int xmxValueBeginIdx = xmxLine.indexOf(XMX_HEAP_PARAMETER) + 3;
+            String valueStr = xmxLine.substring(xmxValueBeginIdx, xmxLine.length() - 1);
+            switch (unit) {
+            case "G":
+                eclipseIniHeapSizeGb = Double.parseDouble(valueStr);
+                break;
+            case "M":
+                eclipseIniHeapSizeGb = Double.parseDouble(valueStr) / 1024;
+                break;
+            case "K":
+                eclipseIniHeapSizeGb = Double.parseDouble(valueStr) / 1024 / 1024;
+                break;
+            default:
+                if (!Character.isDigit(unit.charAt(0))) {
+                    // TODO show message box instead of throw the exception
+                    throw new IllegalArgumentException(
+                            "There is incorrect unit of 'Xmx' property in eclipse.ini file."); //$NON-NLS-1$
+                }
+                valueStr = xmxLine.substring(xmxValueBeginIdx, xmxLine.length());
+                eclipseIniHeapSizeGb = Double.parseDouble(valueStr) / 1024 / 1024 / 1024;
+                break;
+            }
+            return RECOMMENDED_SIZE_GB > eclipseIniHeapSizeGb;
+        } catch (IOException | IllegalArgumentException e) {
+            // Runtime.getRuntime().maxMemory() - shows the size 2 times larger, so divide by 2
+            if (EMPIRICAL_SIZE_GB > Runtime.getRuntime().maxMemory() / 1024 / 1024 / 1024 / 2) {
+                // TODO show message box with warning about xmx size
+                // and with recommendation to increase to 2 Gb
+            };
+            return RECOMMENDED_SIZE_GB*1024*1024*1024 > Runtime.getRuntime().maxMemory();
+        }
     }
 }
