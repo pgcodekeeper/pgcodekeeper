@@ -197,7 +197,7 @@ public class ModelExporter extends AbstractModelExporter {
         }
     }
 
-    private List<? extends PgStatement> getAbstrFuncsOrOpers(AbstractSchema schema, DbObjType type) {
+    private Collection<? extends PgStatement> getAbstrFuncsOrOpers(AbstractSchema schema, DbObjType type) {
         switch(type) {
         case FUNCTION:
         case PROCEDURE:
@@ -363,7 +363,7 @@ public class ModelExporter extends AbstractModelExporter {
         writeProjVersion(outDir.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER));
     }
 
-    private void dumpAbstrFunctionsOrOperators(List<? extends PgStatement> abstrFuncsOrOpers,
+    private void dumpAbstrFunctionsOrOperators(Collection<? extends PgStatement> abstrFuncsOrOpers,
             Path parentDir, DbObjType type) throws IOException {
         if (abstrFuncsOrOpers.isEmpty()) {
             return;
@@ -388,10 +388,11 @@ public class ModelExporter extends AbstractModelExporter {
         }
     }
 
-    private void dumpObjects(List<? extends PgStatementWithSearchPath> objects,
+    private void dumpObjects(Collection<? extends PgStatementWithSearchPath> objects,
             Path parentOutDir) throws IOException {
         if (!objects.isEmpty()) {
-            Path objectDir = parentOutDir.resolve(objects.get(0).getStatementType().name());
+            Path objectDir = parentOutDir.resolve(objects.iterator().next()
+                    .getStatementType().name());
 
             for (PgStatementWithSearchPath obj : objects) {
                 String dump = getDumpSql(obj);

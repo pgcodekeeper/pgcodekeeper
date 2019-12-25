@@ -169,6 +169,7 @@ public class SequencesReader extends JdbcReader {
 
         try (ResultSet res = loader.runner.runScript(loader.statement, sbUnionQuery.toString())) {
             while (res.next()) {
+                PgDiffUtils.checkCancelled(loader.monitor);
                 AbstractSequence seq = seqs.get(res.getString("qname"));
                 seq.setStartWith(res.getString("start_value"));
                 seq.setMinMaxInc(res.getLong("increment_by"), res.getLong("max_value"),

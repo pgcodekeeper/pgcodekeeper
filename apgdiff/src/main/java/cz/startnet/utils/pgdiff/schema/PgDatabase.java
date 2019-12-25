@@ -6,8 +6,10 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -15,7 +17,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.AbstractAnalysisLauncher;
@@ -33,11 +34,11 @@ public class PgDatabase extends PgStatement {
      */
     private AbstractSchema defaultSchema;
 
-    private final List<AbstractSchema> schemas = new ArrayList<>();
-    private final List<PgExtension> extensions = new ArrayList<>();
-    private final List<MsAssembly> assemblies = new ArrayList<>();
-    private final List<MsRole> roles = new ArrayList<>();
-    private final List<MsUser> users = new ArrayList<>();
+    private final Map<String, AbstractSchema> schemas = new LinkedHashMap<>();
+    private final Map<String, PgExtension> extensions = new LinkedHashMap<>();
+    private final Map<String, MsAssembly> assemblies = new LinkedHashMap<>();
+    private final Map<String, MsRole> roles = new LinkedHashMap<>();
+    private final Map<String, MsUser> users = new LinkedHashMap<>();
 
     // Contains object definitions
     private final Map<String, Set<PgObjLocation>> objDefinitions = new HashMap<>();
@@ -139,13 +140,7 @@ public class PgDatabase extends PgStatement {
             return getDefaultSchema();
         }
 
-        for (final AbstractSchema schema : schemas) {
-            if (schema.getName().equals(name)) {
-                return schema;
-            }
-        }
-
-        return null;
+        return schemas.get(name);
     }
 
     /**
@@ -153,15 +148,12 @@ public class PgDatabase extends PgStatement {
      *
      * @return {@link #schemas}
      */
-    public List<AbstractSchema> getSchemas() {
-        return Collections.unmodifiableList(schemas);
+    public Collection<AbstractSchema> getSchemas() {
+        return Collections.unmodifiableCollection(schemas.values());
     }
 
     public void addSchema(final AbstractSchema schema) {
-        assertUnique(this::getSchema, schema);
-        schemas.add(schema);
-        schema.setParent(this);
-        resetHash();
+        addUnique(schemas, schema, this);
     }
 
     public boolean containsExtension(final String name) {
@@ -177,20 +169,38 @@ public class PgDatabase extends PgStatement {
     }
 
     @Override
-    protected void fillDescendantsList(List<List<? extends PgStatement>> l) {
+    protected void fillDescendantsList(List<Collection<? extends PgStatement>> l) {
         fillChildrenList(l);
-        for (AbstractSchema schema : schemas) {
+        for (AbstractSchema schema : schemas.values()) {
             schema.fillDescendantsList(l);
         }
     }
 
     @Override
-    protected void fillChildrenList(List<List<? extends PgStatement>> l) {
-        l.add(schemas);
-        l.add(extensions);
-        l.add(assemblies);
-        l.add(roles);
-        l.add(users);
+    protected void fillChildrenList(List<Collection<? extends PgStatement>> l) {
+        l.add(schemas.values());
+        l.add(extensions.values());
+        l.add(assemblies.values());
+        l.add(roles.values());
+        l.add(users.values());
+    }
+
+    @Override
+    public PgStatement getChild(String name, DbObjType type) {
+        switch (type) {
+        case SCHEMA:
+            return getSchema(name);
+        case EXTENSION:
+            return getExtension(name);
+        case ASSEMBLY:
+            return getAssembly(name);
+        case ROLE:
+            return getRole(name);
+        case USER:
+            return getUser(name);
+        default:
+            return null;
+        }
     }
 
     @Override
@@ -225,13 +235,7 @@ public class PgDatabase extends PgStatement {
      * @return found extension or null
      */
     public PgExtension getExtension(final String name) {
-        for(final PgExtension ext : extensions) {
-            if(ext.getName().equals(name)) {
-                return ext;
-            }
-        }
-
-        return null;
+        return extensions.get(name);
     }
 
     /**
@@ -239,15 +243,12 @@ public class PgDatabase extends PgStatement {
      *
      * @return {@link #extensions}
      */
-    public List<PgExtension> getExtensions() {
-        return Collections.unmodifiableList(extensions);
+    public Collection<PgExtension> getExtensions() {
+        return Collections.unmodifiableCollection(extensions.values());
     }
 
     public void addExtension(final PgExtension extension) {
-        assertUnique(this::getExtension, extension);
-        extensions.add(extension);
-        extension.setParent(this);
-        resetHash();
+        addUnique(extensions, extension, this);
     }
 
     /**
@@ -258,13 +259,7 @@ public class PgDatabase extends PgStatement {
      * @return found assembly or null
      */
     public MsAssembly getAssembly(final String name) {
-        for (final MsAssembly ass : assemblies) {
-            if (ass.getName().equals(name)) {
-                return ass;
-            }
-        }
-
-        return null;
+        return assemblies.get(name);
     }
 
     /**
@@ -275,13 +270,7 @@ public class PgDatabase extends PgStatement {
      * @return found role or null
      */
     public MsRole getRole(final String name) {
-        for (final MsRole role : roles) {
-            if (role.getName().equals(name)) {
-                return role;
-            }
-        }
-
-        return null;
+        return roles.get(name);
     }
 
     /**
@@ -292,13 +281,7 @@ public class PgDatabase extends PgStatement {
      * @return found user or null
      */
     public MsUser getUser(final String name) {
-        for (final MsUser user : users) {
-            if (user.getName().equals(name)) {
-                return user;
-            }
-        }
-
-        return null;
+        return users.get(name);
     }
 
     /**
@@ -306,8 +289,8 @@ public class PgDatabase extends PgStatement {
      *
      * @return {@link #assemblies}
      */
-    public List<MsAssembly> getAssemblies() {
-        return Collections.unmodifiableList(assemblies);
+    public Collection<MsAssembly> getAssemblies() {
+        return Collections.unmodifiableCollection(assemblies.values());
     }
 
     /**
@@ -315,8 +298,8 @@ public class PgDatabase extends PgStatement {
      *
      * @return {@link #roles}
      */
-    public List<MsRole> getRoles() {
-        return Collections.unmodifiableList(roles);
+    public Collection<MsRole> getRoles() {
+        return Collections.unmodifiableCollection(roles.values());
     }
 
     /**
@@ -324,34 +307,25 @@ public class PgDatabase extends PgStatement {
      *
      * @return {@link #users}
      */
-    public List<MsUser> getUsers() {
-        return Collections.unmodifiableList(users);
+    public Collection<MsUser> getUsers() {
+        return Collections.unmodifiableCollection(users.values());
     }
 
     public void addAssembly(final MsAssembly assembly) {
-        assertUnique(this::getAssembly, assembly);
-        assemblies.add(assembly);
-        assembly.setParent(this);
-        resetHash();
+        addUnique(assemblies, assembly, this);
     }
 
     public void addRole(final MsRole role) {
-        assertUnique(this::getRole, role);
-        roles.add(role);
-        role.setParent(this);
-        resetHash();
+        addUnique(roles, role, this);
     }
 
     public void addUser(final MsUser user) {
-        assertUnique(this::getRole, user);
-        users.add(user);
-        user.setParent(this);
-        resetHash();
+        addUnique(users, user, this);
     }
 
     public void sortColumns() {
         if (isPostgres()) {
-            for (AbstractSchema schema : schemas) {
+            for (AbstractSchema schema : schemas.values()) {
                 schema.getTables().forEach(t -> ((AbstractPgTable) t).sortColumns());
             }
         }
@@ -389,11 +363,11 @@ public class PgDatabase extends PgStatement {
     public boolean compareChildren(PgStatement obj) {
         if (obj instanceof PgDatabase) {
             PgDatabase db = (PgDatabase) obj;
-            return PgDiffUtils.setlikeEquals(extensions, db.extensions)
-                    && PgDiffUtils.setlikeEquals(schemas, db.schemas)
-                    && PgDiffUtils.setlikeEquals(assemblies, db.assemblies)
-                    && PgDiffUtils.setlikeEquals(roles, db.roles)
-                    && PgDiffUtils.setlikeEquals(users, db.users);
+            return extensions.equals(db.extensions)
+                    && schemas.equals(db.schemas)
+                    && assemblies.equals(db.assemblies)
+                    && roles.equals(db.roles)
+                    && users.equals(db.users);
         }
         return false;
     }

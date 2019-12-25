@@ -80,6 +80,11 @@ public class JavaHasher implements Hasher {
         return result;
     }
 
+    @Override
+    public void putUnordered(Map<String, ? extends IHashable> map) {
+        result = PRIME * result + map.hashCode();
+    }
+
     private int unordered(Collection<?> c) {
         int h = 0;
         for (Object el : c) {

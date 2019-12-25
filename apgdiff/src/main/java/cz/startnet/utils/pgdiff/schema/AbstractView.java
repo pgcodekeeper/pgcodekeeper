@@ -1,11 +1,12 @@
 package cz.startnet.utils.pgdiff.schema;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
@@ -13,9 +14,9 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 public abstract class AbstractView extends PgStatementWithSearchPath
 implements IStatementContainer, IRelation {
 
-    private final List<PgRule> rules = new ArrayList<>();
-    private final List<AbstractTrigger> triggers = new ArrayList<>();
-    private final List<AbstractIndex> indexes = new ArrayList<>();
+    private final Map<String, PgRule> rules = new LinkedHashMap<>();
+    private final Map<String, AbstractTrigger> triggers = new LinkedHashMap<>();
+    private final Map<String, AbstractIndex> indexes = new LinkedHashMap<>();
 
     @Override
     public DbObjType getStatementType() {
@@ -27,10 +28,24 @@ implements IStatementContainer, IRelation {
     }
 
     @Override
-    protected void fillChildrenList(List<List<? extends PgStatement>> l) {
-        l.add(rules);
-        l.add(triggers);
-        l.add(indexes);
+    protected void fillChildrenList(List<Collection<? extends PgStatement>> l) {
+        l.add(rules.values());
+        l.add(triggers.values());
+        l.add(indexes.values());
+    }
+
+    @Override
+    public PgStatement getChild(String name, DbObjType type) {
+        switch (type) {
+        case RULE:
+            return getRule(name);
+        case TRIGGER:
+            return getTrigger(name);
+        case INDEX:
+            return getIndex(name);
+        default:
+            return null;
+        }
     }
 
     @Override
@@ -63,26 +78,17 @@ implements IStatementContainer, IRelation {
      */
     @Override
     public PgRule getRule(final String name) {
-        for (PgRule rule : rules) {
-            if (rule.getName().equals(name)) {
-                return rule;
-            }
-        }
-
-        return null;
+        return rules.get(name);
     }
 
     @Override
-    public List<PgRule> getRules() {
-        return Collections.unmodifiableList(rules);
+    public Collection<PgRule> getRules() {
+        return Collections.unmodifiableCollection(rules.values());
     }
 
     @Override
     public void addRule(final PgRule rule) {
-        assertUnique(this::getRule, rule);
-        rules.add(rule);
-        rule.setParent(this);
-        resetHash();
+        addUnique(rules, rule, this);
     }
 
     /**
@@ -94,50 +100,32 @@ implements IStatementContainer, IRelation {
      */
     @Override
     public AbstractTrigger getTrigger(final String name) {
-        for (AbstractTrigger trigger : triggers) {
-            if (trigger.getName().equals(name)) {
-                return trigger;
-            }
-        }
-
-        return null;
+        return triggers.get(name);
     }
 
     @Override
-    public List<AbstractTrigger> getTriggers() {
-        return Collections.unmodifiableList(triggers);
+    public Collection<AbstractTrigger> getTriggers() {
+        return Collections.unmodifiableCollection(triggers.values());
     }
 
     @Override
     public void addTrigger(final AbstractTrigger trigger) {
-        assertUnique(this::getTrigger, trigger);
-        triggers.add(trigger);
-        trigger.setParent(this);
-        resetHash();
+        addUnique(triggers, trigger, this);
     }
 
     @Override
     public AbstractIndex getIndex(String name) {
-        for (AbstractIndex index : indexes) {
-            if (index.getName().equals(name)) {
-                return index;
-            }
-        }
-
-        return null;
+        return indexes.get(name);
     }
 
     @Override
-    public List<AbstractIndex> getIndexes() {
-        return Collections.unmodifiableList(indexes);
+    public Collection<AbstractIndex> getIndexes() {
+        return Collections.unmodifiableCollection(indexes.values());
     }
 
     @Override
     public void addIndex(AbstractIndex index) {
-        assertUnique(this::getIndex, index);
-        indexes.add(index);
-        index.setParent(this);
-        resetHash();
+        addUnique(indexes, index, this);
     }
 
     @Override
@@ -170,9 +158,9 @@ implements IStatementContainer, IRelation {
     public boolean compareChildren(PgStatement obj) {
         if(obj instanceof AbstractView) {
             AbstractView view = (AbstractView) obj;
-            return PgDiffUtils.setlikeEquals(rules, view.rules)
-                    && PgDiffUtils.setlikeEquals(triggers, view.triggers)
-                    && PgDiffUtils.setlikeEquals(indexes, view.indexes);
+            return rules.equals(view.rules)
+                    && triggers.equals(view.triggers)
+                    && indexes.equals(view.indexes);
         }
         return false;
     }

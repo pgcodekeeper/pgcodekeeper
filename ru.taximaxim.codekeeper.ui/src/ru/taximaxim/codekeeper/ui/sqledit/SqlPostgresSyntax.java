@@ -7,7 +7,7 @@ import ru.taximaxim.codekeeper.apgdiff.sql.Keyword.KeywordCategory;
 
 public class SqlPostgresSyntax {
 
-    private final String[] comment = {
+    private static final String[] COMMENT = {
             "--" //$NON-NLS-1$
     };
 
@@ -21,7 +21,7 @@ public class SqlPostgresSyntax {
             .map(Entry::getKey)
             .toArray(String[]::new);
 
-    private final String[] types = {
+    private static final String[] TYPES = {
             "abstime", //$NON-NLS-1$
             "aclitem", //$NON-NLS-1$
             "anyarray", //$NON-NLS-1$
@@ -100,7 +100,7 @@ public class SqlPostgresSyntax {
             "xid", //$NON-NLS-1$
     };
 
-    private final String[] functions = {
+    private static final String[] FUNCTIONS = {
             "RI_FKey_cascade_del", //$NON-NLS-1$
             "RI_FKey_cascade_upd", //$NON-NLS-1$
             "RI_FKey_check_ins", //$NON-NLS-1$
@@ -2139,7 +2139,7 @@ public class SqlPostgresSyntax {
     };
 
     public String[] getFunctions() {
-        return functions;
+        return FUNCTIONS;
     }
 
     public String[] getReservedwords() {
@@ -2151,7 +2151,7 @@ public class SqlPostgresSyntax {
     }
 
     public String[] getTypes() {
-        return types;
+        return TYPES;
     }
 
     public Object[] getAllWords() {
@@ -2161,6 +2161,6 @@ public class SqlPostgresSyntax {
     }
 
     public String[] getSingleLineComments() {
-        return comment;
+        return COMMENT;
     }
 }

@@ -6,7 +6,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.MsDiffUtils;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
@@ -34,7 +33,6 @@ public abstract class AbstractPgFunction extends AbstractFunction {
     private String body;
     private String returns;
 
-    protected final List<Argument> arguments = new ArrayList<>();
     protected final List<String> transforms = new ArrayList<>();
     protected final Map<String, String> configurations = new LinkedHashMap<>();
     protected final Map<String, String> returnsColumns = new LinkedHashMap<>();
@@ -62,32 +60,9 @@ public abstract class AbstractPgFunction extends AbstractFunction {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
-        AbstractPgFunction newAbstractPgFunction = (AbstractPgFunction) newCondition;
-
-        if (!compareUnalterable(newAbstractPgFunction)) {
-            if (needDrop(newAbstractPgFunction)) {
-                isNeedDepcies.set(true);
-                return true;
-            } else {
-                sb.append(newAbstractPgFunction.getCreationSQL());
-            }
-        }
-
-        if (!Objects.equals(getOwner(), newAbstractPgFunction.getOwner())) {
-            newAbstractPgFunction.alterOwnerSQL(sb);
-        }
-        alterPrivileges(newAbstractPgFunction, sb);
-        if (!Objects.equals(getComment(), newAbstractPgFunction.getComment())) {
-            sb.append("\n\n");
-            newAbstractPgFunction.appendCommentSql(sb);
-        }
-        return sb.length() > startLength;
+    protected String getFunctionFullSQL(boolean isCreate) {
+        return getCreationSQL();
     }
-
-    protected abstract boolean needDrop(AbstractPgFunction newFunction);
 
     /**
      * Alias for {@link #getSignature()} which provides a unique function ID.
@@ -293,21 +268,6 @@ public abstract class AbstractPgFunction extends AbstractFunction {
     }
 
     /**
-     * Getter for {@link #arguments}. List cannot be modified.
-     *
-     * @return {@link #arguments}
-     */
-    @Override
-    public List<Argument> getArguments() {
-        return Collections.unmodifiableList(arguments);
-    }
-
-    public void addArgument(final Argument argument) {
-        arguments.add(argument);
-        resetHash();
-    }
-
-    /**
      * @return the returns
      */
     @Override
@@ -348,23 +308,12 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         return signatureCache;
     }
 
-    /**
-     * Compares two objects whether they are equal. If both objects are of the
-     * same class but they equal just in whitespace in {@link #body}, they are
-     * considered being equal.
-     *
-     * @param func                     object to be compared
-     * @return true if {@code object} is PgFunction and the function code is
-     *         the same when compared ignoring whitespace, otherwise returns
-     *         false
-     */
-    public boolean compareUnalterable(AbstractPgFunction func) {
-        boolean equals = false;
+    @Override
+    protected boolean compareUnalterable(AbstractFunction function) {
+        if (function instanceof AbstractPgFunction && super.compareUnalterable(function)) {
+            AbstractPgFunction func = (AbstractPgFunction) function;
 
-        if (this == func) {
-            equals = true;
-        } else {
-            equals = Objects.equals(body, func.getBody())
+            return Objects.equals(body, func.getBody())
                     && isWindow == func.isWindow()
                     && Objects.equals(language, func.getLanguage())
                     && Objects.equals(parallel, func.getParallel())
@@ -375,26 +324,16 @@ public abstract class AbstractPgFunction extends AbstractFunction {
                     && rows == func.getRows()
                     && Objects.equals(cost, func.getCost())
                     && Objects.equals(returns, func.getReturns())
-                    && arguments.equals(func.arguments)
                     && transforms.equals(func.transforms)
                     && configurations.equals(func.configurations);
         }
-        return equals;
-    }
 
-    @Override
-    public boolean compare(PgStatement obj) {
-        if (this == obj) {
-            return true;
-        }
-
-        return obj instanceof AbstractPgFunction && super.compare(obj)
-                && compareUnalterable((AbstractPgFunction) obj);
+        return false;
     }
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.putOrdered(arguments);
+        super.computeHash(hasher);
         hasher.put(returns);
         hasher.put(body);
         hasher.put(transforms);
@@ -412,8 +351,7 @@ public abstract class AbstractPgFunction extends AbstractFunction {
 
     @Override
     public AbstractFunction shallowCopy() {
-        AbstractPgFunction functionDst = getFunctionCopy();
-        copyBaseFields(functionDst);
+        AbstractPgFunction functionDst = (AbstractPgFunction) super.shallowCopy();
         functionDst.setReturns(getReturns());
         functionDst.setBody(getBody());
         functionDst.setWindow(isWindow());
@@ -425,20 +363,12 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         functionDst.setRows(getRows());
         functionDst.cost = getCost();
         functionDst.setParallel(getParallel());
-        for (Argument argSrc : arguments) {
-            Argument argDst = new Argument(argSrc.getMode(), argSrc.getName(), argSrc.getDataType());
-            argDst.setDefaultExpression(argSrc.getDefaultExpression());
-            argDst.setReadOnly(argSrc.isReadOnly());
-            functionDst.addArgument(argDst);
-        }
         functionDst.transforms.addAll(transforms);
         functionDst.returnsColumns.putAll(returnsColumns);
         functionDst.configurations.putAll(configurations);
 
         return functionDst;
     }
-
-    protected abstract AbstractPgFunction getFunctionCopy();
 
     @Override
     public String getQualifiedName() {

@@ -3,7 +3,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 import java.util.Collections;
 import java.util.List;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_itemContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_subqueryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_setContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_stmt_for_psqlContext;
@@ -26,28 +25,27 @@ public class Update extends AbstractExprWithNmspc<Update_stmt_for_psqlContext> {
 
     @Override
     public List<ModPair<String, String>> analyze(Update_stmt_for_psqlContext update) {
+        // this select is used to collect namespaces for this UPDATE operation
+        Select select = new Select(this);
         With_clauseContext with = update.with_clause();
         if (with != null) {
-            analyzeCte(with);
+            select.analyzeCte(with);
         }
 
-        addNameReference(update.update_table_name, update.alias, null);
+        select.addNameReference(update.update_table_name, update.alias, null);
 
         if (update.FROM() != null) {
-            for (From_itemContext fromItem : update.from_item()) {
-                //TODO collect to current namespace
-                new Select(this).from(fromItem);
-            }
+            select.from(update.from_item());
         }
 
         for (Update_setContext updateSet : update.update_set()) {
-            addColumnsDepcies(update.update_table_name, updateSet.column);
+            select.addColumnsDepcies(update.update_table_name, updateSet.column);
 
             Table_subqueryContext subQuery = updateSet.table_subquery();
             if (subQuery != null) {
-                new Select(this).analyze(subQuery.select_stmt());
+                new Select(select).analyze(subQuery.select_stmt());
             } else if (!updateSet.value.isEmpty()) {
-                ValueExpr vex = new ValueExpr(this);
+                ValueExpr vex = new ValueExpr(select);
                 for (VexContext vexCtx : updateSet.value) {
                     vex.analyze(new Vex(vexCtx));
                 }
@@ -57,8 +55,12 @@ public class Update extends AbstractExprWithNmspc<Update_stmt_for_psqlContext> {
         if (update.WHERE() != null) {
             VexContext vex = update.vex();
             if (vex != null) {
-                new ValueExpr(this).analyze(new Vex(vex));
+                new ValueExpr(select).analyze(new Vex(vex));
             }
+        }
+
+        if (update.RETURNING() != null) {
+            return select.sublist(update.select_list().select_sublist(), new ValueExpr(select));
         }
 
         return Collections.emptyList();

@@ -53,10 +53,7 @@ public class PgDiffDepciesTest {
             // inherits
             {"table_inherits_usr_t2"},
             // меняеются колонки в наследующей таблице и добавляется
-            // сиквенс, пользователь выбра таблицу
-            // TODO если в этом тесте удалить из исходной базы seq1,
-            // то он не появится в скрипте, потому, что нет связи от
-            // сиквенса к таблице по кр мере со стороны парсера
+            // сиквенс, пользователь выбрал таблицу
             {"inherit_table_usr"},
             // колонка меняет тип на новый, пользователь выбрал только тип
             {"chg_col_type_usr_dom2"},
@@ -242,7 +239,7 @@ public class PgDiffDepciesTest {
      */
     private final String userSelTemplate;
 
-    final PgDiffArguments args = new PgDiffArguments();
+    private final PgDiffArguments args = new PgDiffArguments();
 
     public PgDiffDepciesTest(final String userSelTemplate, Boolean isEnableDepcies) {
         this.dbTemplate = userSelTemplate.replaceAll("_usr.*", "");

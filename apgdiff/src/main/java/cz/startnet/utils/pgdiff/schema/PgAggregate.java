@@ -173,7 +173,7 @@ public class PgAggregate extends AbstractPgFunction {
     }
 
     @Override
-    protected boolean needDrop(AbstractPgFunction newFunction) {
+    public boolean needDrop(AbstractFunction newFunction) {
         return true;
     }
 
@@ -215,11 +215,7 @@ public class PgAggregate extends AbstractPgFunction {
     }
 
     @Override
-    public boolean compareUnalterable(AbstractPgFunction func) {
-        if (this == func) {
-            return true;
-        }
-
+    protected boolean compareUnalterable(AbstractFunction func) {
         if (func instanceof PgAggregate && super.compareUnalterable(func)) {
             PgAggregate aggr = (PgAggregate) func;
             return directCount == aggr.directCount

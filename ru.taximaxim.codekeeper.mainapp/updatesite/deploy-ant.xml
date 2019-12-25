@@ -12,6 +12,9 @@
 			<echo message="cloning site repo" />
 			<exec executable="git" dir="${project.build.directory}" failonerror="true">
 				<arg value="clone" />
+				<arg value="--depth=1"/>
+				<arg value="--no-tags"/>
+				<arg value="--single-branch"/>
 				<arg value="git@github.com:pgcodekeeper/pgcodekeeper.github.io.git" />
 				<arg value="pgcodekeeper.github.io" />
 			</exec>

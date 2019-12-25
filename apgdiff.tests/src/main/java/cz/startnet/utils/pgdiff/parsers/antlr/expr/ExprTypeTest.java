@@ -9,6 +9,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import org.junit.Assert;
@@ -74,7 +75,7 @@ public class ExprTypeTest {
     private String getRelationColumnsTypes(PgDatabase db) throws IOException, InterruptedException {
         StringBuilder cols = new StringBuilder();
         for (AbstractSchema schema : db.getSchemas()) {
-            List<AbstractView> views = schema.getViews();
+            Collection<AbstractView> views = schema.getViews();
             if (views.isEmpty()) {
                 continue;
             }

@@ -102,7 +102,6 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
-import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.CONTEXT;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
@@ -165,14 +164,12 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private DiffTableViewer diffTable;
     private DiffPaneViewer diffPane;
 
-    private LocalResourceManager lrm;
     private boolean isDBLoaded;
     private boolean isCommitCommandAvailable;
     private List<Entry<PgStatement, PgStatement>> manualDepciesSource = new ArrayList<>();
     private List<Entry<PgStatement, PgStatement>> manualDepciesTarget = new ArrayList<>();
 
     private boolean isMsSql;
-    private IEclipsePreferences projPrefs;
     private final Map<String, Boolean> oneTimePrefs = new HashMap<>();
 
     public IProject getProject() {
@@ -213,7 +210,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         proj = new PgDbProject(in.getProject());
         sp = new ProjectEditorSelectionProvider(getProject());
-        projPrefs = proj.getPrefs();
         isMsSql = OpenProjectUtils.checkMsSql(getProject());
 
         // message box
@@ -228,7 +224,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         this.parent = parent;
 
         parent.setLayout(new GridLayout());
-        lrm = new LocalResourceManager(JFaceResources.getResources(), parent);
+        LocalResourceManager lrm = new LocalResourceManager(JFaceResources.getResources(), parent);
 
         SashForm sashOuter = new SashForm(parent, SWT.VERTICAL | SWT.SMOOTH);
         sashOuter.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -414,8 +410,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
                     @Override
                     public void run() {
-                        ApplyCustomDialog dialog = new ApplyCustomDialog(container.getShell(), projPrefs,
-                                isMsSql, oneTimePrefs);
+                        ApplyCustomDialog dialog = new ApplyCustomDialog(container.getShell(),
+                                new OverridablePrefs(proj.getProject(), null), isMsSql, oneTimePrefs);
                         if (dialog.open() == Dialog.OK) {
                             // 'oneTimePrefs' filled by one-time preferences
                             // will be used in 'diff()'
@@ -480,8 +476,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
                     @Override
                     public void run() {
-                        GetChangesCustomDialog dialog = new GetChangesCustomDialog(
-                                container.getShell(), projPrefs, isMsSql, oneTimePrefs);
+                        GetChangesCustomDialog dialog = new GetChangesCustomDialog(container.getShell(),
+                                new OverridablePrefs(proj.getProject(), null), isMsSql, oneTimePrefs);
                         if (dialog.open() == Dialog.OK) {
                             // 'oneTimePrefs' filled by one-time preferences
                             // will be used in 'getChanges()'
@@ -1064,14 +1060,11 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             }
         }
 
-        boolean considerDepcy = mainPrefs.getBoolean(COMMIT_PREF.CONSIDER_DEPCY_IN_COMMIT);
-        Set<TreeElement> sumNewAndDelete = null;
         TreeElement treeCopy = diffTree.getCopy();
-        if (considerDepcy) {
-            Log.log(Log.LOG_INFO, "Processing depcies for project update"); //$NON-NLS-1$
-            sumNewAndDelete = new DepcyTreeExtender(dbProject.getDbObject(),
-                    dbRemote.getDbObject(), treeCopy).getDepcies();
-        }
+
+        Log.log(Log.LOG_INFO, "Processing depcies for project update"); //$NON-NLS-1$
+        Set<TreeElement> sumNewAndDelete = new DepcyTreeExtender(
+                dbProject.getDbObject(), dbRemote.getDbObject(), treeCopy).getDepcies();
 
         Log.log(Log.LOG_INFO, "Querying user for project update"); //$NON-NLS-1$
         // display commit dialog
