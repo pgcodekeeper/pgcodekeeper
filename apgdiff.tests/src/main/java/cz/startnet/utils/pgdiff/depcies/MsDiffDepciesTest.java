@@ -2,7 +2,7 @@ package cz.startnet.utils.pgdiff.depcies;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.List;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,20 +26,27 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 public class MsDiffDepciesTest {
 
     @Parameters
-    public static Collection<?> parameters() {
-        return Arrays.asList(new Object[][] {
+    public static Iterable<Object[]> parameters() {
+        List<Object[]> p = Arrays.asList(new Object[][] {
             {"empty_usr"},
             // создаются две функции f1 и f2, в f2 через 'EXECUTE' вызвается f1,
             // пользователь выбирает функцию f2
-            {"add_ms_func_exec_usr_f2"},
+            {"add_ms_func_exec_usr_f2", true},
             // создаются процедура p1 и функция f2, в f2 через 'EXECUTE' вызвается p1,
             // пользователь выбирает функцию f2
-            {"add_ms_proc_exec_usr_f2"},
+            {"add_ms_proc_exec_usr_f2", true},
             // t1 <- v1 <- v2 <- v3 <- v4
             // изменяются t1, v1, v2, v4
             // пользователь выбирает t1
             {"change_ms_table_usr_t1" }
         });
+
+        int maxLength = p.stream()
+                .mapToInt(oo -> oo.length)
+                .max().getAsInt();
+        return p.stream()
+                .map(oo -> oo.length < maxLength ? Arrays.copyOf(oo, maxLength) : oo)
+                ::iterator;
     }
 
     /**
@@ -54,16 +61,20 @@ public class MsDiffDepciesTest {
      */
     private final String userSelTemplate;
 
-    public MsDiffDepciesTest(final String userSelTemplate) {
+    private final PgDiffArguments args = new PgDiffArguments();
+
+    public MsDiffDepciesTest(final String userSelTemplate, Boolean isEnableDepcies) {
         this.dbTemplate = userSelTemplate.replaceAll("_usr.*", "");
         this.userSelTemplate = userSelTemplate;
+        args.setMsSql(true);
+        if (isEnableDepcies != null) {
+            args.setEnableFunctionBodiesDependencies(isEnableDepcies);
+        }
         Log.log(Log.LOG_DEBUG, dbTemplate + ' ' + userSelTemplate);
     }
 
     @Test(timeout = 120000)
     public void runDiff() throws IOException, InterruptedException {
-        final PgDiffArguments args = new PgDiffArguments();
-        args.setMsSql(true);
         PgDatabase oldDatabase = ApgdiffTestUtils.loadTestDump(
                 getUsrSelName(FILES_POSTFIX.ORIGINAL_SQL), MsDiffDepciesTest.class, args);
         PgDatabase newDatabase = ApgdiffTestUtils.loadTestDump(

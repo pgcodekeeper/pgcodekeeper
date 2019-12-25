@@ -517,8 +517,9 @@ public class DepcyResolver {
             }
             PgStatement oldSt = e.getVertex();
             PgStatement newSt = oldSt.getTwin(newDb);
+            DbObjType type = oldSt.getStatementType();
             if (newSt == null) {
-                if (oldSt.getStatementType() == DbObjType.FUNCTION && oldSt.isPostgres()
+                if (type == DbObjType.FUNCTION && oldSt.isPostgres()
                         && isDefaultsOnlyChange((AbstractFunction) oldSt)) {
                     // when function's signature changes it has no twin
                     // but the dependent object might be unchanged
@@ -527,6 +528,12 @@ public class DepcyResolver {
                 }
                 return;
             }
+
+            if ((type == DbObjType.FUNCTION || type == DbObjType.PROCEDURE)
+                    && !((AbstractFunction) oldSt).needDrop((AbstractFunction) newSt)) {
+                return;
+            }
+
             AtomicBoolean isNeedDepcy = new AtomicBoolean();
             if (oldSt.appendAlterSQL(newSt, new StringBuilder(), isNeedDepcy) && isNeedDepcy.get()) {
                 needDrop = oldSt;

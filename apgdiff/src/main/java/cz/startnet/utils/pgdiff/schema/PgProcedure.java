@@ -76,7 +76,7 @@ public class PgProcedure extends AbstractPgFunction {
     }
 
     @Override
-    protected boolean needDrop(AbstractPgFunction newFunction) {
+    public boolean needDrop(AbstractFunction newFunction) {
         Iterator<Argument> iOld = arguments.iterator();
         Iterator<Argument> iNew = newFunction.arguments.iterator();
         while (iOld.hasNext() && iNew.hasNext()) {

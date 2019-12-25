@@ -65,6 +65,7 @@ public class RulesReader extends JdbcReader {
             break;
         case "D":
             r.setEnabledState("DISABLE");
+            break;
         }
 
         loader.submitAntlrTask(command, p -> p.sql().statement(0)

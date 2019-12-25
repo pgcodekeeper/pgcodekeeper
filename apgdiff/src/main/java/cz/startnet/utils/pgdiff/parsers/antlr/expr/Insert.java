@@ -23,20 +23,27 @@ public class Insert extends AbstractExprWithNmspc<Insert_stmt_for_psqlContext> {
 
     @Override
     public List<ModPair<String, String>> analyze(Insert_stmt_for_psqlContext insert) {
+        // this select is used to collect namespaces for this INSERT operation
+        Select select = new Select(this);
         With_clauseContext with = insert.with_clause();
         if (with != null) {
-            analyzeCte(with);
+            select.analyzeCte(with);
         }
 
-        addNameReference(insert.insert_table_name, null, null);
+        select.addNameReference(insert.insert_table_name, null, null);
+
         Insert_columnsContext columns = insert.insert_columns();
         if (columns != null) {
-            addColumnsDepcies(insert.insert_table_name, columns.indirection_identifier());
+            select.addColumnsDepcies(insert.insert_table_name, columns.indirection_identifier());
         }
 
         Select_stmtContext selectCtx = insert.select_stmt();
         if (selectCtx != null) {
-            new Select(this).analyze(selectCtx);
+            new Select(select).analyze(selectCtx);
+        }
+
+        if (insert.RETURNING() != null) {
+            return select.sublist(insert.select_list().select_sublist(), new ValueExpr(select));
         }
 
         return Collections.emptyList();

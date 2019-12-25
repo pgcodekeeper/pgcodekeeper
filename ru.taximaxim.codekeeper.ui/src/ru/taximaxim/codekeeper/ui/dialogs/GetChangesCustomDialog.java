@@ -3,7 +3,6 @@ package ru.taximaxim.codekeeper.ui.dialogs;
 import java.text.MessageFormat;
 import java.util.Map;
 
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
@@ -18,6 +17,7 @@ import org.eclipse.swt.widgets.Shell;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
 
 /**
  * Dialog box for filling in one-time preferences that will be used
@@ -30,16 +30,16 @@ public class GetChangesCustomDialog extends Dialog {
     private Button btnSimplifyView;
     private Button btnUseGlobalIgnoreList;
 
-    private final IEclipsePreferences projPS;
+    private final OverridablePrefs prefs;
     private final boolean isMsSql;
 
     private final Map<String, Boolean> customSettings;
 
-    public GetChangesCustomDialog(Shell parentShell, IEclipsePreferences projPS,
+    public GetChangesCustomDialog(Shell parentShell, OverridablePrefs prefs,
             boolean isMsSql, Map<String, Boolean> customSettings) {
         super(parentShell);
         this.customSettings = customSettings;
-        this.projPS = projPS;
+        this.prefs = prefs;
         this.isMsSql = isMsSql;
     }
 
@@ -63,7 +63,7 @@ public class GetChangesCustomDialog extends Dialog {
         GridData gd = new GridData();
         gd.horizontalIndent = 10;
         btnNoPrivileges.setLayoutData(gd);
-        btnNoPrivileges.setSelection(projPS.getBoolean(PREF.NO_PRIVILEGES, false));
+        btnNoPrivileges.setSelection(prefs.getBooleanOfRootPref(PREF.NO_PRIVILEGES));
 
         btnEnableFuncDep = new Button(panel, SWT.CHECK);
         btnEnableFuncDep.setText(Messages.GeneralPrefPage_enable_body_dependencies);
@@ -71,7 +71,7 @@ public class GetChangesCustomDialog extends Dialog {
         gd = new GridData();
         gd.horizontalIndent = 10;
         btnEnableFuncDep.setLayoutData(gd);
-        btnEnableFuncDep.setSelection(projPS.getBoolean(PREF.ENABLE_BODY_DEPENDENCIES, false));
+        btnEnableFuncDep.setSelection(prefs.getBooleanOfRootPref(PREF.ENABLE_BODY_DEPENDENCIES));
 
         if (!isMsSql) {
             btnSimplifyView = new Button(panel, SWT.CHECK);
@@ -79,7 +79,7 @@ public class GetChangesCustomDialog extends Dialog {
             gd = new GridData();
             gd.horizontalIndent = 10;
             btnSimplifyView.setLayoutData(gd);
-            btnSimplifyView.setSelection(projPS.getBoolean(PREF.SIMPLIFY_VIEW, false));
+            btnSimplifyView.setSelection(prefs.getBooleanOfRootPref(PREF.SIMPLIFY_VIEW));
         }
 
         btnUseGlobalIgnoreList = new Button(panel, SWT.CHECK);
@@ -87,7 +87,7 @@ public class GetChangesCustomDialog extends Dialog {
         gd = new GridData();
         gd.horizontalIndent = 10;
         btnUseGlobalIgnoreList.setLayoutData(gd);
-        btnUseGlobalIgnoreList.setSelection(projPS.getBoolean(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, true));
+        btnUseGlobalIgnoreList.setSelection(prefs.isUseGlobalIgnoreList());
 
         return panel;
     }

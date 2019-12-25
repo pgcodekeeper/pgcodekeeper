@@ -2729,7 +2729,7 @@ after_ops
     | LIMIT (vex | ALL)
     | OFFSET vex (ROW | ROWS)?
     | FETCH (FIRST | NEXT) vex? (ROW | ROWS) ONLY?
-    | FOR (UPDATE | NO KEY UPDATE | SHARE | NO KEY SHARE) (OF schema_qualified_name (COMMA schema_qualified_name)*)? NOWAIT?
+    | FOR (UPDATE | NO KEY UPDATE | SHARE | KEY SHARE) (OF schema_qualified_name (COMMA schema_qualified_name)*)? (NOWAIT | SKIP_ LOCKED)?
     ;
 
 // select_stmt copy that doesn't consume external parens

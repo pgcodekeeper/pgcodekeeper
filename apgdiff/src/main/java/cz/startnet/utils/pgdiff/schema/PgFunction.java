@@ -113,7 +113,7 @@ public class PgFunction extends AbstractPgFunction {
     }
 
     @Override
-    protected boolean needDrop(AbstractPgFunction newFunction) {
+    public boolean needDrop(AbstractFunction newFunction) {
         if (newFunction == null ||
                 !Objects.equals(getReturns(), newFunction.getReturns())) {
             return true;
