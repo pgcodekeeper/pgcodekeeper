@@ -107,10 +107,9 @@ public class AlterTable extends TableAbstract {
             if (tablAction.column != null) {
                 PgColumn col;
                 if (tabl.getInherits().isEmpty()) {
-                    col = (PgColumn) getSafe(AbstractTable::getColumn, tabl,
-                            QNameParser.getFirstNameCtx(tablAction.column.identifier()));
+                    col = (PgColumn) getSafe(AbstractTable::getColumn, tabl, tablAction.column);
                 } else {
-                    String colName = QNameParser.getFirstName(tablAction.column.identifier());
+                    String colName = tablAction.column.getText();
                     col = (PgColumn) tabl.getColumn(colName);
                     if (col == null) {
                         col = new PgColumn(colName);
