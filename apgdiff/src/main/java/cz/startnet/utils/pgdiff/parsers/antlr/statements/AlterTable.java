@@ -5,9 +5,9 @@ import java.util.List;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_column_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Column_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_foreign_optionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Foreign_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -61,7 +61,7 @@ public class AlterTable extends TableAbstract {
 
         for (Table_actionContext tablAction : ctx.table_action()) {
             IdentifierContext column = tablAction.column;
-            Alter_column_actionContext colAction = tablAction.alter_column_action();
+            Column_actionContext colAction = tablAction.column_action();
 
             if (column != null && tablAction.DROP() != null) {
                 loc.setWarningText(DangerStatement.DROP_COLUMN);
@@ -158,7 +158,7 @@ public class AlterTable extends TableAbstract {
     }
 
     private void parseColumnAction(AbstractSchema schema, PgColumn col,
-            Alter_column_actionContext colAction) {
+            Column_actionContext colAction) {
         // column statistics
         if (colAction.STATISTICS() != null) {
             col.setStatistics(Integer.valueOf(colAction.signed_number_literal().getText()));

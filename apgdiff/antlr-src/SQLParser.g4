@@ -371,7 +371,7 @@ alter_table_statement
 table_action
     : ADD COLUMN? if_not_exists? table_column_definition
     | DROP COLUMN? if_exists? column=identifier cascade_restrict?
-    | ALTER COLUMN? column=identifier alter_column_action
+    | ALTER COLUMN? column=identifier column_action
     | ADD tabl_constraint=constraint_common (NOT not_valid=VALID)?
     | validate_constraint
     | drop_constraint
@@ -398,7 +398,7 @@ table_action
     | ALTER CONSTRAINT identifier table_deferrable? table_initialy_immed?
     ;
 
-alter_column_action
+column_action
     : (SET DATA)? TYPE data_type collate_identifier? (USING vex)?
     | ADD identity_body
     | set_def_column
