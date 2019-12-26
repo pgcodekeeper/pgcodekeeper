@@ -125,3 +125,10 @@ VACUUM FULL FREEZE VERBOSE ANALYZE vaccluster;
 VACUUM (FULL 1, FREEZE 0, VERBOSE true, ANALYZE false, DISABLE_PAGE_SKIPPING on, SKIP_LOCKED off, INDEX_CLEANUP true, TRUNCATE off) vaccluster;
 ANALYZE VERBOSE q.t1 (c1, c2), public.t2 (c1, c2);
 ANALYZE (VERBOSE TRUE, SKIP_LOCKED 1) public.t1 (c1, c2), public.t2 (c1, c2);
+CREATE EXTENSION hstore SCHEMA public FROM unpackaged;
+TRUNCATE truncate_a;
+TRUNCATE TABLE trunc_c,trunc_d,trunc_e,truncate_a,trunc_b;  -- ok
+TRUNCATE TABLE truncate_a RESTRICT; -- fail
+TRUNCATE TABLE truncate_a CASCADE;  -- ok
+TRUNCATE ONLY trunc_fb, trunc_fa;
+TRUNCATE truncate_b RESTART IDENTITY;
