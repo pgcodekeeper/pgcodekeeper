@@ -783,7 +783,6 @@ MODULAR : '%';
 EXP : '^';
 
 DOT : '.';
-QUOTE_CHAR : '\'';
 DOUBLE_QUOTE : '"';
 DOLLAR : '$';
 LEFT_BRACKET : '[';
@@ -905,13 +904,13 @@ fragment UnterminatedQuotedIdentifier
 
 // Some Unicode Character Ranges
 fragment
-Control_Characters                  :   '\u0001' .. '\u001F';
+Control_Characters                  :   '\u0001' .. '\u0008' | '\u000B' | '\u000C' | '\u000E' .. '\u001F';
 fragment
 Extended_Control_Characters         :   '\u0080' .. '\u009F';
 
-Character_String_Literal
-  : [eEnN]? QUOTE_CHAR ( ESC_SEQ | ~('\'') )* QUOTE_CHAR
-  ;
+BeginCharacterStringConstant
+    : [eEnN]? '\'' -> pushMode(StringMode)
+    ;
 
 fragment
 EXPONENT : ('e'|'E') ('+'|'-')? Digit+ ;
@@ -964,6 +963,14 @@ White_Space
   : ( Control_Characters  | Extended_Control_Characters )+ -> channel(HIDDEN)
   ;
 
+New_Line
+    : ('\u000D' | '\u000D'? '\u000A') -> channel(HIDDEN)
+    ;
+
+Tab
+    : '\u0009' -> channel(HIDDEN)
+    ;
+
 BOM: '\ufeff';
 
 BAD
@@ -980,4 +987,17 @@ Text_between_Dollar
 
 EndDollarStringConstant
     : '$' Tag? '$' {getText().equals(_tags.peek())}? {_tags.pop();} -> popMode
+    ;
+
+mode StringMode;
+Text_Between_Quote
+    : (ESC_SEQ | ~('\''))
+    ;
+
+String_Joiner
+    : '\'' ((Space | Tab | White_Space| LineComment)* New_Line)+ (Space | Tab | White_Space | LineComment)* '\''
+    ;
+
+EndCharacterStringConstant
+    : '\'' -> popMode
     ;

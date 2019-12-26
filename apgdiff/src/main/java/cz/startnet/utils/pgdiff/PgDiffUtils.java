@@ -103,11 +103,6 @@ public final class PgDiffUtils {
         return name.substring(1, name.length() - 1).replace("\"\"", "\"");
     }
 
-    // TODO dollar quotes
-    public static String unquoteQuotedString(String s) {
-        return s.substring(1, s.length() - 1).replace("''", "'");
-    }
-
     @Deprecated
     // TODO use antlr context's getText()
     public static String normalizeWhitespaceUnquoted(String string) {
