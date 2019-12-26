@@ -371,19 +371,7 @@ alter_table_statement
 table_action
     : ADD COLUMN? if_not_exists? table_column_definition
     | DROP COLUMN? if_exists? column=identifier cascade_restrict?
-    | ALTER COLUMN? column=identifier (
-        (SET DATA)? TYPE datatype=data_type collate_identifier? (USING expression=vex)?
-        | set_def_column
-        | drop_def
-        | (set=SET | DROP) NOT NULL
-        | SET STATISTICS signed_number_literal
-        | SET storage_parameter
-        | define_foreign_options
-        | RESET names_in_parens
-        | set_storage
-        | ADD identity_body
-        | alter_identity+
-        | DROP IDENTITY if_exists?)
+    | ALTER COLUMN? column=identifier alter_column_action
     | ADD tabl_constraint=constraint_common (NOT not_valid=VALID)?
     | validate_constraint
     | drop_constraint
@@ -410,6 +398,21 @@ table_action
     | ALTER CONSTRAINT identifier table_deferrable? table_initialy_immed?
     ;
 
+alter_column_action
+    : (SET DATA)? TYPE data_type collate_identifier? (USING vex)?
+    | ADD identity_body
+    | set_def_column
+    | drop_def
+    | (set=SET | DROP) NOT NULL
+    | DROP IDENTITY if_exists?
+    | SET storage_parameter
+    | SET STATISTICS signed_number_literal
+    | SET STORAGE storage_option
+    | RESET names_in_parens
+    | define_foreign_options
+    | alter_identity+
+    ;
+
 identity_body
     : GENERATED (ALWAYS | BY DEFAULT) AS IDENTITY (LEFT_PAREN sequence_body+ RIGHT_PAREN)?
     ;
@@ -418,10 +421,6 @@ alter_identity
     : SET GENERATED (ALWAYS | BY DEFAULT)
     | SET sequence_body
     | RESTART (WITH? NUMBER_LITERAL)?
-    ;
-
-set_storage
-    : SET STORAGE storage_option
     ;
 
 storage_option
