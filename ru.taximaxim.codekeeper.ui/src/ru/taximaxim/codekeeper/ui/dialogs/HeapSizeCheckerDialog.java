@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -30,6 +31,8 @@ import ru.taximaxim.codekeeper.ui.prefs.heap.HeapSizeChecker;
  * Dialog box for changing heap size.
  */
 public class HeapSizeCheckerDialog extends Dialog {
+
+    private static String LINK_ECLIPSE_INI_INFO = "https://wiki.eclipse.org/Eclipse.ini"; //$NON-NLS-1$
 
     private Combo combo;
 
@@ -70,12 +73,13 @@ public class HeapSizeCheckerDialog extends Dialog {
 
     @Override
     protected void okPressed() {
+        String selectedHeapSizeGb = combo.getItem(combo.getSelectionIndex());
         Path path = Paths.get(System.getProperty("eclipse.launcher")) //$NON-NLS-1$
                 .resolve("eclipse.ini"); //$NON-NLS-1$
         try (Stream<String> lineStream = Files.lines(path, StandardCharsets.UTF_8)) {
             String xmxLineWintNewHeapSizeGb = new StringBuilder()
                     .append('-').append(HeapSizeChecker.XMX_HEAP_PARAMETER)
-                    .append(Integer.parseInt(combo.getItem(combo.getSelectionIndex())))
+                    .append(Integer.parseInt(selectedHeapSizeGb))
                     .append("G").toString(); //$NON-NLS-1$
 
             List<String> lines = lineStream.collect(Collectors.toList());
@@ -110,7 +114,10 @@ public class HeapSizeCheckerDialog extends Dialog {
                 }
             }
         } catch (IOException e) {
-            // TODO show a message with information about editing a file manually
+            MessageDialog.openWarning(Display.getDefault().getActiveShell(),
+                    Messages.HeapSizeCheckerDialog_manual_heap_editing_title,
+                    MessageFormat.format(Messages.HeapSizeCheckerDialog_manual_heap_editing,
+                            selectedHeapSizeGb, path.toAbsolutePath(), LINK_ECLIPSE_INI_INFO));
         } finally {
             super.okPressed();
         }

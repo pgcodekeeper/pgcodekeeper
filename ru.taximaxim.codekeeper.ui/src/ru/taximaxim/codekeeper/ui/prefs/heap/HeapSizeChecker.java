@@ -16,6 +16,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IStartup;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.dialogs.HeapSizeCheckerDialog;
@@ -28,9 +29,9 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
  */
 public class HeapSizeChecker implements IStartup {
 
-    private static final long RECOMMENDED_SIZE_GB = 2;
-    private static final double EMPIRICAL_SIZE_GB = 1.7;
-    public static final String XMX_HEAP_PARAMETER = "Xmx";
+    private static final int RECOMMENDED_SIZE_GB = 2;
+    private static final double EMPIRICAL_RECOMMENDED_SIZE_GB = 1.7;
+    public static final String XMX_HEAP_PARAMETER = "Xmx"; //$NON-NLS-1$
 
     private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
 
@@ -59,15 +60,14 @@ public class HeapSizeChecker implements IStartup {
     private boolean isHeapLessThanNecessary() {
         try (Stream<String> lineStream = Files.lines(
                 Paths.get(System.getProperty("eclipse.launcher")) //$NON-NLS-1$
-                .resolve("eclipse.ini"), //$NON-NLS-1$
-                StandardCharsets.UTF_8)) {
+                .resolve("eclipse.ini"), StandardCharsets.UTF_8)) { //$NON-NLS-1$
             String xmxLine = lineStream.filter(l -> l.contains(XMX_HEAP_PARAMETER))
                     .findAny().orElse(null);
 
             if (xmxLine == null) {
-                // TODO show message box instead of throw the exception
-                throw new IllegalArgumentException(
+                Log.log(Log.LOG_WARNING,
                         "There is no 'Xmx' property in eclipse.ini file."); //$NON-NLS-1$
+                return isEmpiricalLessThanJvmAttemptsToUse();
             }
 
             double eclipseIniHeapSizeGb = 0;
@@ -86,22 +86,24 @@ public class HeapSizeChecker implements IStartup {
                 break;
             default:
                 if (!Character.isDigit(unit.charAt(0))) {
-                    // TODO show message box instead of throw the exception
-                    throw new IllegalArgumentException(
-                            "There is incorrect unit of 'Xmx' property in eclipse.ini file."); //$NON-NLS-1$
+                    Log.log(Log.LOG_ERROR, MessageFormat.format(
+                            "'{0}' has incorrect unit of 'Xmx' property" //$NON-NLS-1$
+                            + " in eclipse.ini file", xmxLine)); //$NON-NLS-1$
+                    return isEmpiricalLessThanJvmAttemptsToUse();
                 }
                 valueStr = xmxLine.substring(xmxValueBeginIdx, xmxLine.length());
                 eclipseIniHeapSizeGb = Double.parseDouble(valueStr) / 1024 / 1024 / 1024;
                 break;
             }
             return RECOMMENDED_SIZE_GB > eclipseIniHeapSizeGb;
-        } catch (IOException | IllegalArgumentException e) {
-            // Runtime.getRuntime().maxMemory() - shows the size 2 times larger, so divide by 2
-            if (EMPIRICAL_SIZE_GB > Runtime.getRuntime().maxMemory() / 1024 / 1024 / 1024 / 2) {
-                // TODO show message box with warning about xmx size
-                // and with recommendation to increase to 2 Gb
-            };
-            return RECOMMENDED_SIZE_GB*1024*1024*1024 > Runtime.getRuntime().maxMemory();
+        } catch (IOException e) {
+            return isEmpiricalLessThanJvmAttemptsToUse();
         }
+    }
+
+    private boolean isEmpiricalLessThanJvmAttemptsToUse() {
+        // 'Runtime.getRuntime().maxMemory()' - shows the size 2 times bigger
+        // than it is, therefore division by 2 is used
+        return EMPIRICAL_RECOMMENDED_SIZE_GB > Runtime.getRuntime().maxMemory() / 1024 / 1024 / 1024 / 2;
     }
 }
