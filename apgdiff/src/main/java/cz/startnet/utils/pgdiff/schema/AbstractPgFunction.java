@@ -32,6 +32,7 @@ public abstract class AbstractPgFunction extends AbstractFunction {
     private String volatileType;
     private String body;
     private String returns;
+    private String supportFunc;
 
     protected final List<String> transforms = new ArrayList<>();
     protected final Map<String, String> configurations = new LinkedHashMap<>();
@@ -283,6 +284,15 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         resetHash();
     }
 
+    public String getSupportFunc() {
+        return supportFunc;
+    }
+
+    public void setSupportFunc(String supportFunc) {
+        this.supportFunc = supportFunc;
+        resetHash();
+    }
+
     /**
      * @return unmodifiable RETURNS TABLE map
      */
@@ -325,7 +335,8 @@ public abstract class AbstractPgFunction extends AbstractFunction {
                     && Objects.equals(cost, func.getCost())
                     && Objects.equals(returns, func.getReturns())
                     && transforms.equals(func.transforms)
-                    && configurations.equals(func.configurations);
+                    && configurations.equals(func.configurations)
+                    && Objects.equals(supportFunc, func.getSupportFunc());
         }
 
         return false;
@@ -335,6 +346,7 @@ public abstract class AbstractPgFunction extends AbstractFunction {
     public void computeHash(Hasher hasher) {
         super.computeHash(hasher);
         hasher.put(returns);
+        hasher.put(supportFunc);
         hasher.put(body);
         hasher.put(transforms);
         hasher.put(configurations);
@@ -353,6 +365,7 @@ public abstract class AbstractPgFunction extends AbstractFunction {
     public AbstractFunction shallowCopy() {
         AbstractPgFunction functionDst = (AbstractPgFunction) super.shallowCopy();
         functionDst.setReturns(getReturns());
+        functionDst.setSupportFunc(getSupportFunc());
         functionDst.setBody(getBody());
         functionDst.setWindow(isWindow());
         functionDst.language = getLanguage();

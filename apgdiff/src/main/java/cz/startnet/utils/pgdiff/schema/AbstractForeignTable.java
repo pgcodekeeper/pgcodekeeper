@@ -46,7 +46,8 @@ public abstract class AbstractForeignTable extends AbstractPgTable {
 
     @Override
     protected boolean isNeedRecreate(AbstractTable newTable) {
-        return !this.getClass().equals(newTable.getClass())
+        return super.isNeedRecreate(newTable)
+                || !this.getClass().equals(newTable.getClass())
                 || !Objects.equals(serverName, ((AbstractForeignTable)newTable).getServerName());
     }
 

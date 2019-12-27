@@ -6,6 +6,7 @@ import java.sql.SQLException;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.launcher.ViewAnalysisLauncher;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.AbstractSchema;
@@ -41,6 +42,9 @@ public class ViewsReader extends JdbcReader {
             String tableSpace = res.getString("table_space");
             if (tableSpace != null && !tableSpace.isEmpty()) {
                 v.setTablespace(tableSpace);
+            }
+            if (SupportedVersion.VERSION_12.isLE(loader.version)) {
+                v.setMethod(res.getString("access_method"));
             }
         }
 

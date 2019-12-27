@@ -52,6 +52,8 @@ public class PgDiffTest {
                     {"delete_table_option"},
                     // Tests scenario where TABLE is modified by changing of an option.
                     {"modify_table_option"},
+                    // Tests scenario where access method of TABLE is changed.
+                    {"modify_table_access_method"},
                     // Tests scenario where TABLE with partition is added.
                     {"add_table_with_partition"},
                     // Tests scenario where WITH OIDS is dropped from TABLE.
@@ -103,6 +105,10 @@ public class PgDiffTest {
                     {"drop_column"},
                     // Tests scenario where COLUMNs are dropped from partitioned TABLE.
                     {"drop_col_from_partitioned_tbl"},
+                    // Tests scenario where generated COLUMN is added to TABLE definition.
+                    {"add_column_generated"},
+                    // Tests scenario where generated COLUMN is modified.
+                    {"modify_column_generated"},
                     // Tests scenario where new TABLE is added.
                     {"add_table"},
                     // Tests scenario where new FOREIGN TABLE is added.
@@ -131,6 +137,8 @@ public class PgDiffTest {
                     {"modify_table_row_security"},
                     // Tests scenario where TABLE logged status is changed.
                     {"modify_table_unlogged"},
+                    // Tests scenario where new TABLE with generated column is added.
+                    {"add_table_with_generated_col"},
                     // Tests scenario where TABLE CONSTRAINT is added.
                     {"add_constraint"},
                     // Tests scenario where TABLE CONSTRAINT with tablespace is added.
@@ -202,6 +210,10 @@ public class PgDiffTest {
                     {"drop_function_args"},
                     // Tests scenario where FUNCTION with args is modified.
                     {"modify_function_args"},
+                    // Tests scenario where new FUNCTION with support function is added.
+                    {"add_function_with_support_function"},
+                    // Tests scenario where FUNCTION with support function is modified.
+                    {"modify_function_with_support_function"},
                     // изменить тип out аргумента
                     {"function_out_type_chg"},
                     // изменить out параметра
@@ -410,6 +422,8 @@ public class PgDiffTest {
                     {"modify_empty_foreign_table"},
                     // Tests scenario where materialized VIEW options is changed.
                     {"modify_materialized_view_options"},
+                    // Tests scenario where materialized VIEW access method is changed.
+                    {"modify_materialized_view_access_method"},
                     // Tests scenario where materialized VIEW is changed.
                     {"modify_materialized_view"},
                     //Tests scenario where empty SEQUENCE is compared.
