@@ -995,7 +995,7 @@ Text_Between_Quote
     ;
 
 String_Joiner
-    : '\'' ((Space | Tab | White_Space| LineComment)* New_Line)+ (Space | Tab | White_Space | LineComment)* '\''
+    : '\'' ((Space | Tab | White_Space| LineComment)* New_Line)+ (Space | Tab | White_Space)* '\''
     ;
 
 EndCharacterStringConstant
