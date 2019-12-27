@@ -468,6 +468,7 @@ public final class Messages extends NLS {
     public static String HeapSizeCheckerDialog_heap_size_updated;
     public static String HeapSizeCheckerDialog_restart_offer;
     public static String HeapSizeCheckerDialog_manual_heap_editing_title;
+    public static String HeapSizeCheckerDialog_manual_heap_editing_link;
     public static String HeapSizeCheckerDialog_manual_heap_editing;
 
     public static String IgnoredObjectPrefListEditor_already_present;
