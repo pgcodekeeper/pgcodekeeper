@@ -60,7 +60,7 @@ public class HeapSizeChecker implements IStartup {
     private boolean isHeapLessThanNecessary() {
         try (Stream<String> lineStream = Files.lines(
                 Paths.get(System.getProperty("eclipse.launcher")) //$NON-NLS-1$
-                .resolve("eclipse.ini"), StandardCharsets.UTF_8)) { //$NON-NLS-1$
+                .getParent().resolve("eclipse.ini"), StandardCharsets.UTF_8)) { //$NON-NLS-1$
             String xmxLine = lineStream.filter(l -> l.contains(XMX_HEAP_PARAMETER))
                     .findAny().orElse(null);
 

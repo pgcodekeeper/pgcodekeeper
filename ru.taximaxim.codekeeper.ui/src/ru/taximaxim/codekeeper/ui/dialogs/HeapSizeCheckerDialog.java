@@ -80,7 +80,7 @@ public class HeapSizeCheckerDialog extends Dialog {
     protected void okPressed() {
         String selectedHeapSizeGb = combo.getItem(combo.getSelectionIndex());
         Path path = Paths.get(System.getProperty("eclipse.launcher")) //$NON-NLS-1$
-                .resolve("eclipse.ini"); //$NON-NLS-1$
+                .getParent().resolve("eclipse.ini"); //$NON-NLS-1$
         try (Stream<String> lineStream = Files.lines(path, StandardCharsets.UTF_8)) {
             String xmxLineWintNewHeapSizeGb = new StringBuilder()
                     .append('-').append(HeapSizeChecker.XMX_HEAP_PARAMETER)
